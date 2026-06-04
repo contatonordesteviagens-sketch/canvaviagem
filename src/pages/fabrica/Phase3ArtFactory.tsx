@@ -72,8 +72,8 @@ const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
 // um visual coerente com o "tom" daquela categoria (oferta = âmbar/quente,
 // experiência = navy/dourado luxo). O usuário pode customizar livremente depois;
 // só são re-aplicadas se ele ainda estiver usando os defaults da OUTRA categoria.
-const DEFAULT_COLORS_OFERTA = { primary: "#F59E0B", secondary: "#FCD34D" };
-const DEFAULT_COLORS_EXPERIENCIA = { primary: "#0C2340", secondary: "#C9A84C" };
+const DEFAULT_COLORS_OFERTA = { primary: "#080808", secondary: "#F5F906" };
+const DEFAULT_COLORS_EXPERIENCIA = { primary: "#080808", secondary: "#F5F906" };
 
 const isSameHex = (a: string, b: string) =>
   (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
@@ -501,7 +501,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
 
   // Tipografia global (família + escala título/descrição + cor de override)
-  const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Inter");
+  const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Montserrat");
   const setFontFamily = (v: string) => { setFontFamilyState(v); update({ fontFamily: v } as any); };
   const [titleScale, setTitleScaleState] = useState<number>(((state as any).titleScale as number) || 1);
   const setTitleScale = (v: number) => { setTitleScaleState(v); update({ titleScale: v } as any); };
@@ -509,6 +509,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setDescScale = (v: number) => { setDescScaleState(v); update({ descScale: v } as any); };
   const [textColorOverride, setTextColorOverrideState] = useState<string>((state as any).textColorOverride || "");
   const [autoTextColor, setAutoTextColor] = useState<string>("#ffffff");
+  const [autoLuminance, setAutoLuminance] = useState<number>(0.5);
   // Cor efetiva: se o usuário escolheu manualmente, respeita; senão usa auto-contraste.
   const effectiveTextColor = textColorOverride || autoTextColor;
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
@@ -808,7 +809,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     setTotalOverrideState(state.totalOverride || "");
     setShowPixBannerState((state as any).showPixBanner !== false);
     setPixBannerTextState((state as any).pixBannerText || "");
-    setFontFamilyState((state as any).fontFamily || "Inter");
+    setFontFamilyState((state as any).fontFamily || "Montserrat");
     setTitleScaleState(((state as any).titleScale as number) || 1);
     setDescScaleState(((state as any).descScale as number) || 1);
     setTextColorOverrideState((state as any).textColorOverride || "");
@@ -1196,6 +1197,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const pal = paletteOverride || selectedPalette(primaryColor, secondaryColor);
         return {
           imageUrl: imgUrl,
+          imageLuminance: autoLuminance,
           format,
           destination,
           city: state.city,
@@ -2308,10 +2310,28 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     <input type="checkbox" checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} className="accent-yellow-400" />
                     Mostrar valor total
                   </label>
+                    {showTotal && (
+                      <input
+                        type="text"
+                        placeholder="Ex: Total: R$ 1.500,00"
+                        className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-yellow-400 mt-1"
+                        value={totalOverride}
+                        onChange={(e) => setTotalOverride(e.target.value)}
+                      />
+                    )}
                   <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">
                     <input type="checkbox" checked={showPixBanner} onChange={(e) => setShowPixBanner(e.target.checked)} className="accent-yellow-400" />
                     Mostrar faixa de desconto
                   </label>
+                    {showPixBanner && (
+                      <input
+                        type="text"
+                        placeholder="Ex: 5% OFF A VISTA NO PIX"
+                        className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-yellow-400 mt-1"
+                        value={pixBannerText}
+                        onChange={(e) => setPixBannerText(e.target.value)}
+                      />
+                    )}
                 </div>
               )}
             </div>
@@ -2342,7 +2362,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <div>
                 <label className={labelCls}>Fonte</label>
                 <select
-                  value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Inter"}
+                  value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Montserrat"}
                   onChange={(e) => setFontFamily(e.target.value)}
                   className={inputCls}
                 >
@@ -2416,7 +2436,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               </div>
 
               <button
-                onClick={() => { setFontFamily("Inter"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
+                onClick={() => { setFontFamily("Montserrat"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
                 className="text-[11px] text-white/60 hover:text-white underline"
               >
                 Restaurar padrão

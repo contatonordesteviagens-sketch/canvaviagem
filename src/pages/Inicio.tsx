@@ -48,10 +48,10 @@ export default function Inicio() {
 
   const checkout = (planId: string) => {
     const STRIPE: Record<string, string> = {
-      smart_monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-      smart_annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
-      elite_monthly: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
-      elite_annual: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
+      smart_monthly: "https://checkout.ticto.app/O92B5A71E",
+      smart_annual: "https://checkout.ticto.app/O8EBF4E91",
+      elite_monthly: "https://checkout.ticto.app/O15C50840",
+      elite_annual: "https://checkout.ticto.app/OEABD4A5A",
     };
     const targetUrl = STRIPE[planId] || "/planos";
     if (targetUrl.startsWith("http")) {
