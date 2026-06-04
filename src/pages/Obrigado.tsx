@@ -26,38 +26,30 @@ declare global {
   }
 }
 
-const trackPurchaseOnAllPixels = (value: number, currency: string) => {
-  if (typeof window === 'undefined' || !window.fbq) {
-    console.warn('[Meta Pixel] fbq not available');
-    return;
-  }
+const trackPurchaseOnAllPixels = (value: number, currency: string, eventID: string) => {
+  if (typeof window === 'undefined' || !window.fbq) return false;
   PT_PIXEL_IDS.forEach((pixelId) => {
     try {
-      window.fbq('trackSingle', pixelId, 'Purchase', { value, currency });
-      console.log(`[Meta Pixel] Purchase sent to pixel: ${pixelId}`);
+      window.fbq('trackSingle', pixelId, 'Purchase', { value, currency }, { eventID });
+      console.log(`[Meta Pixel] Purchase → ${pixelId} (eventID: ${eventID})`);
     } catch (e) {
-      console.warn(`[Meta Pixel] Failed to send Purchase to pixel ${pixelId}:`, e);
+      console.warn(`[Meta Pixel] Purchase fail ${pixelId}:`, e);
     }
   });
+  return true;
 };
 
-const trackSubscribeOnAllPixels = (value: number, currency: string, predictedLtv?: number) => {
-  if (typeof window === 'undefined' || !window.fbq) {
-    console.warn('[Meta Pixel] fbq not available');
-    return;
-  }
+const trackSubscribeOnAllPixels = (value: number, currency: string, predictedLtv: number, eventID: string) => {
+  if (typeof window === 'undefined' || !window.fbq) return false;
   PT_PIXEL_IDS.forEach((pixelId) => {
     try {
-      window.fbq('trackSingle', pixelId, 'Subscribe', {
-        value,
-        currency,
-        predicted_ltv: predictedLtv || value * 12,
-      });
-      console.log(`[Meta Pixel] Subscribe sent to pixel: ${pixelId}`);
+      window.fbq('trackSingle', pixelId, 'Subscribe', { value, currency, predicted_ltv: predictedLtv }, { eventID });
+      console.log(`[Meta Pixel] Subscribe → ${pixelId} (eventID: ${eventID})`);
     } catch (e) {
-      console.warn(`[Meta Pixel] Failed to send Subscribe to pixel ${pixelId}:`, e);
+      console.warn(`[Meta Pixel] Subscribe fail ${pixelId}:`, e);
     }
   });
+  return true;
 };
 
 /**
@@ -161,12 +153,23 @@ const Obrigado = () => {
   }, [emailFromUrl]);
 
   useEffect(() => {
-    // Delay to ensure Meta Pixel is fully initialized from index.html
-    const timer = setTimeout(() => {
-      if (!tracked) {
-        console.log('[Meta Pixel] Disparando Purchase e Subscribe em todos os pixels...');
-        trackPurchaseOnAllPixels(29.0, 'BRL');
-        trackSubscribeOnAllPixels(29.0, 'BRL', 29.0 * 12);
+    if (tracked) return;
+    // Generate a stable eventID per page load for dedup (CAPI + Pixel)
+    const eventID = `obrigado_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    // Idempotency guard against double-fire on the same browser session
+    const sessionKey = `purchase_fired_${eventID.slice(0, 20)}`;
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 30; // 30 × 500ms = 15s
+
+    const tryFire = () => {
+      if (cancelled || tracked) return;
+      attempts++;
+      const fbqReady = typeof window !== 'undefined' && typeof window.fbq === 'function';
+      if (fbqReady) {
+        console.log(`[Meta Pixel] fbq ready after ${attempts} attempt(s) — firing Purchase/Subscribe`);
+        const okP = trackPurchaseOnAllPixels(29.0, 'BRL', `${eventID}_p`);
+        const okS = trackSubscribeOnAllPixels(29.0, 'BRL', 29.0 * 12, `${eventID}_s`);
         trackESPurchase(9.09, 'USD');
         trackESSubscribe(9.09, 'USD', 9.09 * 12);
         // Google Ads conversion
@@ -175,14 +178,28 @@ const Obrigado = () => {
             send_to: 'AW-18034387036/QeQUCJ-g7Y0cENzQu5dD',
             value: 29.0,
             currency: 'BRL',
-            transaction_id: Date.now().toString(),
+            transaction_id: eventID,
           });
         }
-        setTracked(true);
+        if (okP && okS) {
+          sessionStorage.setItem(sessionKey, '1');
+          setTracked(true);
+          return;
+        }
       }
-    }, 2500); // 2.5s delay to ensure all pixels are initialized
+      if (attempts >= maxAttempts) {
+        console.error('[Meta Pixel] fbq NUNCA ficou disponível após 15s. Purchase NÃO disparou.');
+        return;
+      }
+      setTimeout(tryFire, 500);
+    };
 
-    return () => clearTimeout(timer);
+    // Start after a short tick so index.html pixel snippet has a chance to inject fbq
+    const startTimer = setTimeout(tryFire, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(startTimer);
+    };
   }, [tracked]);
 
   useEffect(() => {

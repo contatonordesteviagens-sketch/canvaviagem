@@ -1,0 +1,193 @@
+﻿
+      if (state.siteContent.canvaViagemUrl) {
+        const savedUrl = state.siteContent.canvaViagemUrl.replace(/\/$/, "");
+        if (savedUrl.includes(`/${CANVA_VIAGEM_DOMAIN}/view/`)) {
+          return savedUrl.split("/").pop() || "";
+        }
+        return savedUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
+      }
+      return buildSiteSlug(state.agencyName || "");
+    });
+    const [isCanvaViagemPublishing, setIsCanvaViagemPublishing] = useState(false);
+  
+    // â”€â”€ ESTADOS E FUNÃ‡Ã•ES PARA A PUBLICAÃ‡ÃƒO 1-CLIQUE NO VERCEL â”€â”€
+    const [vercelSubdomain, setVercelSubdomain] = useState(() => {
+      if (state.siteContent.vercelUrl) {
+        return state.siteContent.vercelUrl.replace("https://", "").replace(".vercel.app", "");
+      }
+      const rawAgency = state.agencyName || "";
+      return rawAgency
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // remove acentos
+        .replace(/[^a-z0-9]/g, "-") // apenas minusculas e hifens
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+    });
+  
+    const [isVercelDeploying, setIsVercelDeploying] = useState(false);
+    const [customVercelToken, setCustomVercelToken] = useState(() => localStorage.getItem("vercel_token") || "");
+    const [showVercelConfig, setShowVercelConfig] = useState(false);
+  
+>   const handleVercelPublish = async () => {
+      const token = (import.meta.env.VITE_VERCEL_TOKEN || customVercelToken || "").trim();
+      if (!token) {
+        toast.error("Vercel Token nÃ£o configurado! Clique em 'Configurar Conta' abaixo e insira seu token.");
+        setShowVercelConfig(true);
+        return;
+      }
+  
+      const cleanSubdomain = vercelSubdomain
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9-]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+  
+      if (!cleanSubdomain) {
+        toast.error("Por favor, digite um nome de subdomÃ­nio vÃ¡lido.");
+        return;
+      }
+  
+      setIsVercelDeploying(true);
+      const toastId = toast.loading("Preparando publicaÃ§Ã£o no Vercel...");
+  
+      try {
+        toast.loading("Otimizando imagens do site (isso pode levar alguns segundos)...", { id: toastId });
+        
+        let finalHtml = html;
+        const base64Regex = /src="(data:image\/[^;]+;base64,[^"]+)"/g;
+        const matches = [...finalHtml.matchAll(base64Regex)];
+        
+        for (let i = 0; i < matches.length; i++) {
+          const fullMatch = matches[i][0];
+          const base64Data = matches[i][1];
+          
+          try {
+            const mimeType = base64Data.split(';')[0].split(':')[1];
+            const b64Data = base64Data.split(',')[1];
+            const byteCharacters = atob(b64Data);
+            const byteArrays = [];
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+              const slice = byteCharacters.slice(offset, offset + 512);
+              const byteNumbers = new Array(slice.length);
+              for (let j = 0; j < slice.length; j++) {
+                byteNumbers[j] = slice.charCodeAt(j);
+              }
+              const byteArray = new Uint8Array(byteNumbers);
+              byteArrays.push(byteArray);
+            }
+            const blob = new Blob(byteArrays, { type: mimeType });
+              </div>
+  
+              {showVercelConfig && (
+                <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 space-y-3">
+                  <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider">
+                    Vercel Access Token:
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      value={customVercelToken}
+                      onChange={(e) => setCustomVercelToken(e.target.value)}
+                      placeholder="Sua chave secreta da Vercel"
+                      className="flex-1 bg-black/40 border border-amber-500/20 px-3 py-2 text-sm text-white rounded-lg 
+outline-none focus:border-amber-400"
+                    />
+                    <button
+                      onClick={() => handleSaveToken(customVercelToken)}
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-lg 
+transition-all"
+                    >
+                      Salvar Token
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-white/50 leading-relaxed">
+                    Crie um token em <a href="https://vercel.com/account/tokens" target="_blank" 
+className="text-amber-400 hover:underline">vercel.com/account/tokens</a> e cole aqui.
+                  </p>
+                </div>
+              )}
+  
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+>                 onClick={handleVercelPublish}
+                  disabled={isVercelDeploying}
+                  className="py-3.5 px-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 
+hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${primaryColor}, #F59E0B)`,
+                    boxShadow: `0 4px 12px ${primaryColor}33`
+                  }}
+                >
+                  {isVercelDeploying ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Publicando...
+                    </>
+                  ) : (
+                    <>
+                      Publicar Site
+                    </>
+                  )}
+                </button>
+  
+                <button
+>                 onClick={handleVercelPublish}
+                  disabled={isVercelDeploying}
+                  className="py-3.5 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 
+hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
+                  style={{ 
+                    background: "linear-gradient(135deg, #10B981, #34D399)",
+                    boxShadow: "0 4px 12px rgba(16,185,129,0.2)"
+                  }}
+                >
+                  {isVercelDeploying ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      Atualizando...
+                    </>
+                  ) : (
+                    <>
+                      Atualizar Site
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+  
+  
+          {/* PUBLICAÃ‡ÃƒO EM SUBDOMÃNIO CANVA VIAGEM */}
+          <div className="my-4 p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl text-left">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <div className="text-[10px] font-black text-white/40 uppercase tracking-[0.18em] mb-1">
+                  Nova opÃ§Ã£o
+                </div>
+                <h4 className="text-lg font-black text-white leading-tight">
+                  Publicar com link Canva Viagem
+                </h4>
+                <p className="text-xs text-white/60 mt-1 leading-relaxed">
+                  Gera um link seguro no seu domÃ­nio principal, como canvaviagem.com/view/nome-da-agencia.
+                </p>
+              </div>
+              <LinkIcon className="w-5 h-5 text-white/40 flex-shrink-0" />
+            </div>
+  
+            {state.siteContent.canvaViagemUrl && (
+              <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col sm:flex-row 
+sm:items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Link Canva Viagem 
+publicado</div>
+                  <a
+                    href={state.siteContent.canvaViagemUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-bold text-white hover:underline flex items-center gap-1.5 mt-0.5 group"
+                  >
+
+

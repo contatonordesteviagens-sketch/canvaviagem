@@ -1,0 +1,172 @@
+﻿
+>   const handleVercelPublish = async () => {
+      const token = (import.meta.env.VITE_VERCEL_TOKEN || customVercelToken || "").trim();
+      if (!token) {
+        toast.error("Vercel Token nÃ£o configurado! Clique em 'Configurar Conta' abaixo e insira seu token.");
+        setShowVercelConfig(true);
+        return;
+      }
+  
+      const cleanSubdomain = vercelSubdomain
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9-]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+  
+      if (!cleanSubdomain) {
+        toast.error("Por favor, digite um nome de subdomÃ­nio vÃ¡lido.");
+        return;
+      }
+  
+      setIsVercelDeploying(true);
+      const toastId = toast.loading("Preparando publicaÃ§Ã£o no Vercel...");
+  
+      try {
+        toast.loading("Otimizando imagens do site (isso pode levar alguns segundos)...", { id: toastId });
+        
+        let finalHtml = html;
+        const base64Regex = /src="(data:image\/[^;]+;base64,[^"]+)"/g;
+        const matches = [...finalHtml.matchAll(base64Regex)];
+        
+        for (let i = 0; i < matches.length; i++) {
+          const fullMatch = matches[i][0];
+          const base64Data = matches[i][1];
+          
+          try {
+            const mimeType = base64Data.split(';')[0].split(':')[1];
+            const b64Data = base64Data.split(',')[1];
+            const byteCharacters = atob(b64Data);
+            const byteArrays = [];
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+              const slice = byteCharacters.slice(offset, offset + 512);
+              const byteNumbers = new Array(slice.length);
+              for (let j = 0; j < slice.length; j++) {
+                byteNumbers[j] = slice.charCodeAt(j);
+              }
+              const byteArray = new Uint8Array(byteNumbers);
+              byteArrays.push(byteArray);
+            }
+            const blob = new Blob(byteArrays, { type: mimeType });
+            
+            const ext = mimeType.split('/')[1] || 'webp';
+            const filename = `vercel_assets/${user?.id || 'anon'}_${Date.now()}_${i}.${ext}`;
+            
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from("thumbnails")
+              .upload(filename, blob, { contentType: mimeType, upsert: true });
+              
+            if (!uploadError && uploadData) {
+              const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(filename).data.publicUrl;
+              finalHtml = finalHtml.replace(fullMatch, `src="${publicUrl}"`);
+            }
+          } catch (e) {
+            console.warn("Falha ao fazer upload da imagem base64", e);
+          }
+        }
+  
+        toast.loading("Enviando cÃ³digo otimizado para o Vercel...", { id: toastId });
+  
+        const domain = `${cleanSubdomain}.vercel.app`;
+>                 onClick={handleVercelPublish}
+                  disabled={isVercelDeploying}
+                  className="py-3.5 px-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 
+hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${primaryColor}, #F59E0B)`,
+                    boxShadow: `0 4px 12px ${primaryColor}33`
+                  }}
+                >
+                  {isVercelDeploying ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Publicando...
+                    </>
+                  ) : (
+                    <>
+                      Publicar Site
+                    </>
+                  )}
+                </button>
+  
+                <button
+>                 onClick={handleVercelPublish}
+                  disabled={isVercelDeploying}
+                  className="py-3.5 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 
+hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
+                  style={{ 
+                    background: "linear-gradient(135deg, #10B981, #34D399)",
+                    boxShadow: "0 4px 12px rgba(16,185,129,0.2)"
+                  }}
+                >
+                  {isVercelDeploying ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      Atualizando...
+                    </>
+                  ) : (
+                    <>
+                      Atualizar Site
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+  
+  
+          {/* PUBLICAÃ‡ÃƒO EM SUBDOMÃNIO CANVA VIAGEM */}
+          <div className="my-4 p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl text-left">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <div className="text-[10px] font-black text-white/40 uppercase tracking-[0.18em] mb-1">
+                  Nova opÃ§Ã£o
+                </div>
+                <h4 className="text-lg font-black text-white leading-tight">
+                  Publicar com link Canva Viagem
+                </h4>
+                <p className="text-xs text-white/60 mt-1 leading-relaxed">
+                  Gera um link seguro no seu domÃ­nio principal, como canvaviagem.com/view/nome-da-agencia.
+                </p>
+              </div>
+              <LinkIcon className="w-5 h-5 text-white/40 flex-shrink-0" />
+            </div>
+  
+            {state.siteContent.canvaViagemUrl && (
+              <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col sm:flex-row 
+sm:items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Link Canva Viagem 
+publicado</div>
+                  <a
+                    href={state.siteContent.canvaViagemUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-bold text-white hover:underline flex items-center gap-1.5 mt-0.5 group"
+                  >
+                    {state.siteContent.canvaViagemUrl}
+                    <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition-colors" />
+                  </a>
+                </div>
+                <a
+                  href={state.siteContent.canvaViagemUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-lg bg-white hover:bg-gray-200 text-black font-bold text-xs 
+transition-all text-center"
+                >
+                  Abrir site
+                </a>
+              </div>
+            )}
+  
+            <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
+              Link do cliente:
+            </label>
+            <div className="flex items-center mb-3">
+              <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs 
+text-white/40 select-none">
+
+
