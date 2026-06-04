@@ -3026,201 +3026,160 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const totalStrV5 = (totalOverride && totalOverride.trim())
         || (!isNaN(totalNumV5) ? `Total: ${curSym} ${fmtBRv5(totalNumV5, hasCentsV5)}` : "");
 
-      // Card dimensÃµes
-      const cardW = Math.round(width * (format === "story" ? 0.86 : 0.78));
-      const cardX = Math.round((width - cardW) / 2);
-      const basePriceOffset = format === "story" ? 280 : 230;
-      
-      const willShowBottomTxt = showTotal ? !!(totalStrV5 || bottomSuffix) : !!bottomSuffix;
-      let cardH = basePriceOffset + 10;
-      if (willShowBottomTxt) cardH += 35;
-      if (showPixBanner) cardH += 40;
-      const cardY = format === "story" ? Math.round(height * 0.42) : Math.round(height * 0.40);
-      const cardR = 32;
-
-      // Desenha card Aurora semi-transparente
       const hexToRgbaV5 = (hexColor: string, alpha: number) => {
         const h = (hexColor || "#ffffff").replace("#", "");
         if (h.length !== 6) return `rgba(255, 255, 255, ${alpha})`;
-        const r = parseInt(h.substring(0,2), 16);
-        const g = parseInt(h.substring(2,4), 16);
-        const b = parseInt(h.substring(4,6), 16);
+        const r = parseInt(h.substring(0, 2), 16);
+        const g = parseInt(h.substring(2, 4), 16);
+        const b = parseInt(h.substring(4, 6), 16);
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
       };
-      
-      const v5TextMain = "#ffffff"; // Forcado para branco devido ao dark glow
-      const v5TextMuted = hexToRgbaV5(v5TextMain, 0.7);
-      const v5TextFaint = hexToRgbaV5(v5TextMain, 0.5);
+
+      // V5 refeito: tudo dentro de uma área sólida e segura. Nada flutua sobre a foto.
+      const cardW = Math.round(width * (format === "story" ? 0.86 : 0.82));
+      const cardX = Math.round((width - cardW) / 2);
+      const cardH = format === "story" ? 610 : 500;
+      const idealY = format === "story" ? Math.round(height * 0.33) : Math.round(height * 0.36);
+      const cardY = Math.min(Math.max(safeTop, idealY), panelBottom - cardH - 55);
+      const cardR = 28;
+      const cardPad = 42;
+      const cardInnerW = cardW - cardPad * 2;
+      const cxV5 = cardX + cardW / 2;
+      const onCard = getSafeColor(v5Primary, "#ffffff");
+      const mutedOnCard = hexToRgbaV5(onCard, 0.76);
+      const accentOnCard = ensureContrast(v5Secondary, v5Primary, 0.35);
 
       ctx.save();
-      // Glow border is now secondary color
-      ctx.shadowColor = v5Secondary;
-      ctx.shadowBlur = 40;
-      fillRoundRect(ctx, cardX - 3, cardY - 3, cardW + 6, cardH + 6, cardR, hexToRgbaV5(v5TextMain, 0.05));
+      ctx.shadowColor = "rgba(0,0,0,0.42)";
+      ctx.shadowBlur = 34;
+      ctx.shadowOffsetY = 12;
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, cardR, hexToRgbaV5(v5Primary, 0.96));
       ctx.restore();
 
       ctx.save();
-      // Glass card fill -> using primaryColor
-      fillRoundRect(ctx, cardX, cardY, cardW, cardH, cardR, hexToRgbaV5(v5Primary, 0.92));
-      
-      // Card border stroke
-      ctx.strokeStyle = hexToRgbaV5(v5TextMain, 0.15);
-      ctx.lineWidth = 2;
-      roundRect(ctx, cardX, cardY, cardW, cardH, cardR);
+      ctx.strokeStyle = hexToRgbaV5(v5Secondary, 0.82);
+      ctx.lineWidth = 4;
+      roundRect(ctx, cardX + 2, cardY + 2, cardW - 4, cardH - 4, cardR - 2);
       ctx.stroke();
       ctx.restore();
 
-      const cxV5 = cardX + cardW / 2;
-      const leftPadV5 = cardX + 40;
+      let cursorY = cardY + cardPad;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = accentOnCard;
+      ctx.font = `900 ${format === "story" ? 26 : 22}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, taglineV5, cxV5, cursorY, cardInnerW, 14);
+      cursorY += format === "story" ? 78 : 64;
 
-      // 1) Tagline
-      ctx.textAlign = "left";
-      ctx.fillStyle = v5Secondary;
-      ctx.font = "900 20px Inter, Arial, sans-serif";
-      safeFillText(ctx, taglineV5, leftPadV5, cardY + 45, cardW - 80, 12);
+      ctx.fillStyle = onCard;
+      let titleFsV5 = format === "story" ? 70 : 58;
+      ctx.font = `900 ${titleFsV5}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(titleLineV5).width > cardInnerW && titleFsV5 > 32) {
+        titleFsV5 -= 2;
+        ctx.font = `900 ${titleFsV5}px Inter, Arial, sans-serif`;
+      }
+      safeFillText(ctx, titleLineV5, cxV5, cursorY, cardInnerW, 22);
+      cursorY += titleFsV5 + 32;
 
-      // 2) TÃ­tulo Destino
-      ctx.fillStyle = v5TextMain;
-      ctx.font = "900 56px Inter, Arial, sans-serif";
-      safeFillText(ctx, titleLineV5, leftPadV5, cardY + 105, cardW - 80, 18);
-
-      // 3) Dias / Info
       if (daysTextV5) {
-        ctx.fillStyle = v5TextMuted;
-        ctx.font = "700 28px Inter, Arial, sans-serif";
-        ctx.fillText(daysTextV5.toUpperCase(), leftPadV5, cardY + 155);
+        const dayLabel = daysTextV5.toUpperCase();
+        ctx.font = `900 ${format === "story" ? 26 : 22}px Inter, Arial, sans-serif`;
+        const dayW = Math.min(cardInnerW, ctx.measureText(dayLabel).width + 44);
+        fillRoundRect(ctx, cxV5 - dayW / 2, cursorY - 34, dayW, 50, 25, hexToRgbaV5(v5Secondary, 0.18));
+        ctx.fillStyle = accentOnCard;
+        safeFillText(ctx, dayLabel, cxV5, cursorY, dayW - 32, 12);
+        cursorY += 52;
       }
 
-      // 4) Icons Highlights (horizontal next to daysText)
-      const iconSizeV5 = 44;
-      const iconGapV5 = 12;
-      const iconStartX = leftPadV5;
-        const iconStartY = cardY + 155 + 20; // Below daysTextV5
-      iconListV5.forEach((k, idx) => {
-        const ix = iconStartX + idx * (iconSizeV5 + iconGapV5);
-        fillRoundRect(ctx, ix, iconStartY, iconSizeV5, iconSizeV5, iconSizeV5 / 2, hexToRgbaV5(v5TextMain, 0.08));
-        drawMonoIcon(ctx, k, ix + iconSizeV5 / 2, iconStartY + iconSizeV5 / 2, iconSizeV5 * 0.6, v5TextMain);
+      const iconSizeV5 = format === "story" ? 48 : 42;
+      const iconGapV5 = 18;
+      const iconsW = Math.min(iconListV5.length, 4) * iconSizeV5 + Math.max(0, Math.min(iconListV5.length, 4) - 1) * iconGapV5;
+      let iconX = cxV5 - iconsW / 2;
+      iconListV5.slice(0, 4).forEach((k) => {
+        fillRoundRect(ctx, iconX, cursorY - iconSizeV5 / 2, iconSizeV5, iconSizeV5, iconSizeV5 / 2, hexToRgbaV5(onCard, 0.10));
+        drawMonoIcon(ctx, k, iconX + iconSizeV5 / 2, cursorY, iconSizeV5 * 0.56, onCard);
+        iconX += iconSizeV5 + iconGapV5;
       });
+      cursorY += iconSizeV5 / 2 + (format === "story" ? 52 : 42);
 
-      // 5) Price Block (Lado a lado: Prefix/Pill + Price)
-      // Base Y para alinhar tudo
-      const priceBaseY = cardY + basePriceOffset - 25; // Subiu para preencher o espaco
-      
-      // Right-aligned Price Value
-      ctx.fillStyle = v5TextMain;
-      const rightX = cardX + cardW - 40;
-      ctx.textAlign = "right";
-      
-      // Increased price size by ~30%
-      let valSize = format === "story" ? 130 : 105;
-      const symSize = Math.round(valSize * 0.35);
       const currencyLabelV5 = (currencySymbol || curSym || "R$").trim();
-      
-      // Centavos pequenos
+      let safePillTxt = pillTxtV5;
+      if (safePillTxt === "Ã€ VISTA" || safePillTxt === "A VISTA" || safePillTxt === "? VISTA") safePillTxt = "À VISTA";
+      let displayPrefix = (pricePrefix || leftTopV5 || "a partir de").toUpperCase();
+      if ((paymentMode === "cash" || paymentMode === "cash_discount") && /^(À|Ã€|A|\?)\s*VISTA$/i.test(displayPrefix)) displayPrefix = "";
+
+      if (displayPrefix) {
+        ctx.fillStyle = mutedOnCard;
+        ctx.font = `800 ${format === "story" ? 24 : 20}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, displayPrefix, cxV5, cursorY, cardInnerW, 12);
+        cursorY += 34;
+      }
+
+      ctx.font = `900 ${format === "story" ? 28 : 24}px Inter, Arial, sans-serif`;
+      const pillW = Math.min(cardInnerW, ctx.measureText(safePillTxt).width + 48);
+      const pillH = format === "story" ? 50 : 44;
+      fillRoundRect(ctx, cxV5 - pillW / 2, cursorY - 32, pillW, pillH, 14, v5Secondary);
+      ctx.fillStyle = contrastOn(v5Secondary);
+      ctx.textBaseline = "middle";
+      safeFillText(ctx, safePillTxt, cxV5, cursorY - 32 + pillH / 2 + 1, pillW - 28, 12);
+      ctx.textBaseline = "alphabetic";
+      cursorY += format === "story" ? 84 : 72;
+
       const centsMatchV5 = valNumV5.match(/^(.+?)([,.]\d{1,2})$/);
       const mainValV5 = centsMatchV5 ? centsMatchV5[1] : valNumV5;
       const centsValV5 = centsMatchV5 ? centsMatchV5[2] : "";
-      
+      let valSize = format === "story" ? 118 : 94;
+      let symSize = Math.round(valSize * 0.34);
+      const measurePrice = () => {
+        ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
+        const symW = ctx.measureText(currencyLabelV5).width;
+        const centsW = centsValV5 ? ctx.measureText(centsValV5).width : 0;
+        ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
+        return symW + 18 + ctx.measureText(mainValV5 || "CONSULTE").width + (centsW ? centsW + 8 : 0);
+      };
+      while (measurePrice() > cardInnerW && valSize > 48) {
+        valSize -= 4;
+        symSize = Math.round(valSize * 0.34);
+      }
+      const priceY = cursorY;
+      const totalPriceW = measurePrice();
+      let drawX = cxV5 - totalPriceW / 2;
+      ctx.textAlign = "left";
+      ctx.fillStyle = accentOnCard;
       ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
-      const centsW = centsMatchV5 ? ctx.measureText(centsValV5).width : 0;
-      
+      ctx.fillText(currencyLabelV5, drawX, priceY - valSize * 0.35);
+      drawX += ctx.measureText(currencyLabelV5).width + 18;
+      ctx.fillStyle = onCard;
       ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
-      const mainValW = ctx.measureText(mainValV5).width;
-      
-      // Desenha centavos pequenos (se houver) e o valor principal
-      if (centsMatchV5) {
-          ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
-          ctx.fillText(centsValV5, rightX, priceBaseY - valSize * 0.45);
-          ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
-          ctx.fillText(mainValV5, rightX - centsW - 5, priceBaseY);
-      } else {
-          ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
-          ctx.fillText(valNumV5, rightX, priceBaseY);
+      ctx.fillText(mainValV5 || "CONSULTE", drawX, priceY);
+      drawX += ctx.measureText(mainValV5 || "CONSULTE").width + 8;
+      if (centsValV5) {
+        ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(centsValV5, drawX, priceY - valSize * 0.45);
       }
-      
-      const valW = mainValW + (centsW ? centsW + 5 : 0);
-      
-      // Moeda R$
-      ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
-      ctx.fillStyle = v5Secondary;
-      const symW = ctx.measureText(curSym).width;
-      ctx.fillText(currencyLabelV5, rightX - valW - 15, priceBaseY - valSize * 0.35);
-
-      const priceLeftX = rightX - valW - 15 - symW - 25;
-
-      // Pill & Prefix to the left of the price
-      const pillH = 40;
-      
-      // Format Pill Text properly for bugged chars
-      let safePillTxt = pillTxtV5;
-      if (safePillTxt === "Ã€ VISTA" || safePillTxt === "A VISTA" || safePillTxt === "? VISTA") {
-          safePillTxt = "À VISTA";
-      }
-      
-      ctx.font = "900 24px Inter, Arial, sans-serif";
-      const pillW = ctx.measureText(safePillTxt).width + 24;
-      
-      // Resolve prefix to measure its width
-      let displayPrefix = (pricePrefix || leftTopV5).toUpperCase();
-      if ((paymentMode === "cash" || paymentMode === "cash_discount") && (displayPrefix === "À VISTA" || displayPrefix === "Ã€ VISTA" || displayPrefix === "? VISTA" || displayPrefix === "A VISTA")) {
-         displayPrefix = ""; // don't draw duplicate "A VISTA"
-      }
-      ctx.font = "800 18px Inter, Arial, sans-serif";
-      const prefixW = displayPrefix ? ctx.measureText(displayPrefix).width : 0;
-      
-      const maxLeftW = Math.max(pillW, prefixW);
-      const pillLeft = priceLeftX - maxLeftW; // Align left block so it doesn't overlap right block
-      
-      // Desenhar Pill
-      const pillY = priceBaseY - pillH - 4; // Pill base aligns near bottom of numbers
-      fillRoundRect(ctx, pillLeft, pillY, pillW, pillH, 8, v5Secondary);
-      ctx.fillStyle = contrastOn(v5Secondary);
       ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = "900 24px Inter, Arial, sans-serif";
-      ctx.fillText(safePillTxt, pillLeft + pillW / 2, pillY + pillH / 2 + 1);
-      ctx.textBaseline = "alphabetic";
+      cursorY += valSize * 0.24 + 36;
 
-      // Prefix acima da Pill
-      if (displayPrefix) {
-        ctx.fillStyle = hexToRgbaV5(v5TextMain, 0.6);
-        ctx.font = "800 18px Inter, Arial, sans-serif";
-        ctx.textAlign = "left";
-        ctx.fillText(displayPrefix, pillLeft, pillY - 10);
+      const bottomTxt = ((showTotal && totalOverride?.trim()) || paymentSuffix || "por pessoa").trim();
+      if (bottomTxt) {
+        ctx.fillStyle = mutedOnCard;
+        ctx.font = `800 ${format === "story" ? 24 : 20}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, bottomTxt, cxV5, cursorY, cardInnerW, 12);
+        cursorY += 36;
       }
 
-      // Total / Suffix
-      let bottomTxt = showTotal ? (totalStrV5 || bottomSuffix) : bottomSuffix;
-      // Trata bug "412341231" caso ele aparea do nada (se o usuario no quer isso)
-      // Actually totalStrV5 currently evaluates to Total: R$ 150 because of default behavior
-      if (bottomTxt) {
-          ctx.fillStyle = v5TextMain;
-          ctx.font = "700 22px Inter, Arial, sans-serif";
-          ctx.textAlign = "right";
-          ctx.fillText(bottomTxt, rightX, priceBaseY + 34);
-        }
-
-      // Pix/Promo Badge lateral (Abaixo do price block)
-        if (showPixBanner) {
-          const rawPixLabel = ((pixBannerText && pixBannerText.trim()) || "10% OFF NO PIX").toUpperCase();
-          
-          ctx.font = "900 16px Inter, Arial, sans-serif";
-          const textW = ctx.measureText(rawPixLabel).width;
-          
-          const pixPadX = 14;
-          const pixW = textW + pixPadX * 2;
-          const pixH = 32;
-          const pixY = priceBaseY + (bottomTxt ? 50 : 25);
-          
-          // Draw yellow pill
-          fillRoundRect(ctx, rightX - pixW, pixY, pixW, pixH, 16, v5Secondary);
-          
-          ctx.fillStyle = contrastOn(v5Secondary);
-          ctx.textBaseline = "middle";
-          ctx.textAlign = "center";
-          ctx.fillText(rawPixLabel, rightX - pixW + pixW / 2, pixY + pixH / 2 + 1);
-          ctx.textBaseline = "alphabetic";
-        }
+      if (showPixBanner) {
+        const rawPixLabel = ((pixBannerText && pixBannerText.trim()) || "10% OFF NO PIX").toUpperCase();
+        ctx.font = `900 ${format === "story" ? 22 : 18}px Inter, Arial, sans-serif`;
+        const pixW = Math.min(cardInnerW, ctx.measureText(rawPixLabel).width + 38);
+        const pixH = format === "story" ? 42 : 36;
+        const pixY = Math.min(cursorY - 26, cardY + cardH - pixH - 28);
+        fillRoundRect(ctx, cxV5 - pixW / 2, pixY, pixW, pixH, pixH / 2, v5Secondary);
+        ctx.fillStyle = contrastOn(v5Secondary);
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, rawPixLabel, cxV5, pixY + pixH / 2 + 1, pixW - 28, 12);
+        ctx.textBaseline = "alphabetic";
+      }
 
       await drawFinalBranding(
         ctx, width, height, logoDataUrl, 
