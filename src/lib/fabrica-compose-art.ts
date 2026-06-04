@@ -3642,6 +3642,7 @@ export interface IAElement {
 
 export interface IALayoutSchema {
   elements: IAElement[];
+  style?: string;
 }
 
 export async function renderIAPuraLayout(
