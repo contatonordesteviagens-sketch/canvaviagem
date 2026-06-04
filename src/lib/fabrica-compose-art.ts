@@ -450,7 +450,7 @@ async function drawFinalBranding(
   // TAREFA 3 â€” ANCORAGEM DE BASE (CHÃƒO DA GAIOLA)
   // O footerY deve ser calculado retroativamente a partir de PANEL_BOTTOM menos a altura do rodapÃ©.
   // Ajustado para ficar muito mais prÃ³ximo do chÃ£o da arte (80px no quadrado, 150px no story)
-  const panelBottom = isIAPura ? (ch - 30) : (isStory ? ch - 150 : ch - 40);
+  const panelBottom = isIAPura ? (ch - 20) : (isStory ? ch - 100 : ch - 50);
   const footerY = panelBottom - footerHeight;
 
   // 1. Fundo do RodapÃ© (VÃ‰U GRADIENTE ESCURO) - REMOVIDO
@@ -2216,7 +2216,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         // DEDICATED RENDERER FOR V1 SQUARE 1:1 FOOTER
         // ==========================================
         const footerHeight = 100;
-        const footerY = height - footerHeight - 20;
+        const footerY = height - footerHeight - 10;
         const centerY = footerY + footerHeight / 2;
 
         // 1. VÃ©u Gradiente Escuro
