@@ -181,6 +181,89 @@ interface Highlight {
   icon?: IconKey;
 }
 
+// ============================================================
+// \ud83d\udcc0 LAYOUT_TOKENS \u2014 substitui os tern\u00e1rios isStory mais cr\u00edticos.
+// Para adicionar formato 4:5 ou 1:1 Pro, adicione uma terceira chave aqui.
+// ============================================================
+const LAYOUT_TOKENS = {
+  square: {
+    safeTop:         80,
+    safeBottom:      150,
+    footerReserve:   160,
+    titleMinSize:    28,
+    titleMaxSize:    72,
+    cardPadX:        60,
+    priceMinSize:    30,
+    highlightPillH:  52,
+  },
+  story: {
+    safeTop:         140,
+    safeBottom:      310,
+    footerReserve:   310,
+    titleMinSize:    32,
+    titleMaxSize:    96,
+    cardPadX:        80,
+    priceMinSize:    36,
+    highlightPillH:  64,
+  },
+} as const;
+type LayoutFormat = keyof typeof LAYOUT_TOKENS;
+
+// ============================================================
+// \ud83d\udcd0 measurePriceCard \u2014 calcula altura m\u00ednima do card de pre\u00e7o ANTES de desenhar.
+// Evita overflow silencioso quando todos os toggles opcionais est\u00e3o ativos.
+// Com 4 toggles (prefix + total + pix + parcelas) h\u00e1 16 combina\u00e7\u00f5es \u2014
+// o motor estava calibrado para ~2; esta fun\u00e7\u00e3o cobre todas.
+// ============================================================
+interface PriceCardMeasure {
+  cardH: number;
+  hasPrefix: boolean;
+  hasInstallments: boolean;
+  hasPrice: boolean;
+  hasSuffix: boolean;
+  hasTotal: boolean;
+  hasPixBanner: boolean;
+}
+
+function measurePriceCard(
+  priceFontSize: number,
+  isStory: boolean,
+  opts: {
+    pricePrefix?: string;
+    installments?: string;
+    paymentMode?: PaymentMode;
+    price?: string;
+    paymentSuffix?: string;
+    showTotal?: boolean;
+    showPixBanner?: boolean;
+  }
+): PriceCardMeasure {
+  const pad = isStory ? 36 : 28;
+  const gap = isStory ? 10 : 8;
+
+  const hasPrefix       = !!(opts.pricePrefix?.trim());
+  const hasInstallments = !!(opts.installments?.trim()) && opts.paymentMode === \"installments\";
+  const hasPrice        = !!(opts.price?.trim()) && opts.paymentMode !== \"free_quote\";
+  const hasSuffix       = !!(opts.paymentSuffix?.trim());
+  const hasTotal        = !!opts.showTotal && opts.paymentMode !== \"free_quote\";
+  const hasPixBanner    = !!opts.showPixBanner && opts.paymentMode !== \"free_quote\";
+
+  const lines: number[] = [];
+  if (hasPrefix)       lines.push(isStory ? 30 : 24);
+  if (hasInstallments) lines.push(isStory ? 44 : 36);
+  if (hasPrice)        lines.push(priceFontSize + 14);
+  if (hasSuffix)       lines.push(isStory ? 28 : 22);
+  if (hasTotal)        lines.push(isStory ? 26 : 20);
+  if (hasPixBanner)    lines.push(isStory ? 48 : 40);
+
+  const innerH = lines.length > 0
+    ? lines.reduce((a, h) => a + h + gap, 0) - gap
+    : 0;
+  const cardH = Math.max(innerH + pad * 2, isStory ? 150 : 120);
+
+  return { cardH, hasPrefix, hasInstallments, hasPrice, hasSuffix, hasTotal, hasPixBanner };
+}
+
 interface ComposeTravelAdOptions {
   imageUrl: string;
   format: Format;
@@ -583,13 +666,21 @@ const ICON_SYMBOL: Record<IconKey, string> = {
   wifi: "wifi",
 };
 
+// Cache de imagens já carregadas — evita re-download entre passos de lumiância, paleta e render.
+// Escopo de módulo: persiste durante a sessão do browser. base64 são cacheados por referência (seguros).
+const __imageCache = new Map<string, HTMLImageElement>();
+
 function loadImage(src: string): Promise<HTMLImageElement> {
+  // Cache hit: retorna imediato sem novo download/decode
+  const cached = __imageCache.get(src);
+  if (cached) return Promise.resolve(cached);
+
   return new Promise((resolve, reject) => {
     const img = new Image();
     if (src && !src.startsWith("data:")) {
       img.crossOrigin = "anonymous";
     }
-    img.onload = () => resolve(img);
+    img.onload = () => { __imageCache.set(src, img); resolve(img); };
     img.onerror = () => reject(new Error("Falha ao carregar imagem base"));
     img.src = src;
   });
@@ -1162,6 +1253,18 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   }
 
   const image = await loadImage(imageUrl);
+
+  // \ud83d\udee1\ufe0f Garante que as fontes est\u00e3o prontas antes de medir/desenhar.
+  // Sem isso, measureText usa m\u00e9tricas de fallback (Arial) no 1\u00ba render ap\u00f3s hard-refresh
+  // \u2192 wrap incoerente (t\u00edtulo que "cabia" no design vaza no render real).
+  if ((document as any).fonts?.ready) {
+    try {
+      await Promise.race([
+        (document as any).fonts.ready,
+        new Promise<void>(resolve => setTimeout(resolve, 500)), // timeout de seguran\u00e7a
+      ]);
+    } catch { /* falha silenciosa \u2014 continua com as fontes dispon\u00edveis no momento */ }
+  }
 
   // Title-case helper to evitar "saindo de fortaleza" minusculo
   const toTitle = (s?: string) =>
@@ -3624,25 +3727,42 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (variant === 1) return await renderV1Experiencia();
       if (variant === 2) return await renderV2Experiencia();
       if (variant === 3) {
-        // FORÇADO: opera exclusivamente na categoria Oferta de Destino (bypassa isExperience)
         return await renderSafeSquareOffer();
       }
       if (variant === 4) return await renderV4Experiencia();
       if (variant === 5) {
-        // Reutiliza o motor Aurora Premium que é altamente estético e compatível
         return await renderSafeSquareOffer();
       }
       
       return await renderV0Experiencia();
     }
 
-    // Fallback para Ofertas (Matriz, Gancho, etc.)
     return await renderSafeSquareOffer();
   } catch (error) {
-    console.error("Ad Engine Error:", error);
-    // Fallback: tenta V0 antes de desistir; se também falhar, propaga o erro real
+    const baseMsg = (error as Error)?.message || String(error);
+
+    const isTainted =
+      baseMsg.toLowerCase().includes("tainted") ||
+      baseMsg.toLowerCase().includes("securityerror") ||
+      baseMsg.toLowerCase().includes("cross-origin") ||
+      baseMsg.toLowerCase().includes("cors");
+    if (isTainted) {
+      throw new Error(
+        "Foto bloqueada por segurança (CORS). Use Pexels ou faça upload do arquivo no seu dispositivo."
+      );
+    }
+
+    console.error("[Fábrica Motor] Falha ao renderizar variante:", {
+      variant: forceVariant ?? variation,
+      strategy,
+      isExperience,
+      paymentMode,
+      error: baseMsg,
+    });
+
     try {
-      return await renderV0Experiencia();
+      console.warn("[Fábrica Motor] Usando renderSafeSquareOffer como fallback de emergência.");
+      return await renderSafeSquareOffer();
     } catch (innerErr) {
       const baseMsg = (error as Error)?.message || String(error);
       const innerMsg = (innerErr as Error)?.message || String(innerErr);
