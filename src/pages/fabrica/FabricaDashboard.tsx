@@ -754,9 +754,10 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               </button>
             </div>
         </div>
+      </div>
 
-        {/* Right Side: Package Management (7 Cols) */}
-        <div className="lg:col-span-7 space-y-6">
+      {/* Right Side: Package Management (7 Cols) */}
+      <div className="lg:col-span-7 space-y-6">
           
           {/* Temporariamente oculto - voltar depois */}
           {false && <BusinessExtractor onExtract={handleExtractorData} />}
@@ -921,13 +922,13 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                               <h4 className="text-sm font-bold text-white leading-tight mb-1 truncate">{pkg.title}</h4>
                               <p className="text-xs text-white/50 line-clamp-2 leading-relaxed mb-2 pr-4">{pkg.description}</p>
                               
-                              <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                                {pkg.price}
+                              <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg w-fit mt-0.5 max-w-full">
+                                <span className="line-clamp-2">{pkg.price}</span>
                               </span>
                             </div>
 
                             {/* Action Tools Overlay */}
-                            <div className="flex gap-1 items-center">
+                            <div className="flex gap-1 items-center shrink-0">
                               {pkg.isDraft ? (
                                 <button
                                   onClick={() => togglePublish(pkg.id, true)}
@@ -991,8 +992,6 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 </div>
               )}
             </div>
-          </div>
-
           </div>
         </div>
       </div>
