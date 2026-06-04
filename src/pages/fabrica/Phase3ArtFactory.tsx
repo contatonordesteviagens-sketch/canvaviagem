@@ -1515,14 +1515,19 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
-      // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
+      // Rotação determinística entre variantes do compositor (V0/V1/V3/V4/V5 — V2 desativada)
       const TOTAL_VARIANTS = 6;
+      const DISABLED_VARIANTS = [2];
       const recent = variantHistoryRef.current.slice(-2);
-      let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));
+      let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i)
+        .filter((v) => !DISABLED_VARIANTS.includes(v))
+        .filter((v) => !recent.includes(v));
       if (candidates.length === 0) {
-        candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i);
+        candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !DISABLED_VARIANTS.includes(v));
       }
-      const nextVariant = forcedVariant !== null ? forcedVariant : candidates[Math.floor(Math.random() * candidates.length)];
+      const nextVariant = forcedVariant !== null && !DISABLED_VARIANTS.includes(forcedVariant)
+        ? forcedVariant
+        : candidates[Math.floor(Math.random() * candidates.length)];
       variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariant];
 
       const imagesCustom = await Promise.all(
