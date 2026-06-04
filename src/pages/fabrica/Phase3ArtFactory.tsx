@@ -20,7 +20,7 @@ type CustomSource = "upload" | "link";
 
 interface Props { onNext: () => void; onBack: () => void; }
 
-const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-v3-premium";
+const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-v4-v5-safe-layout";
 
 const BADGE_BG: Record<string, string> = {
   blue: "bg-blue-500/15 text-blue-400 border-blue-500/30",
@@ -1309,9 +1309,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
         finishCycle(composed.length);
-        // 🛡️ CRÍTICO: Limpa forcedVariant para que V0-V4 voltem a rotacionar
-        // Sem isso, o fallback de erro da IA Pura trava TODAS as gerações em Variant 0
-        if (forcedVariant !== null) setForcedVariant(null);
+        // Mantém a versão escolhida pelo usuário. Se V5 está selecionada, o próximo clique continua em V5.
         retryCountRef.current = 0;
 
         toast.success(`${composed.length} ${composed.length === 1 ? "variação gerada" : "variações geradas"} com foto real!`);
