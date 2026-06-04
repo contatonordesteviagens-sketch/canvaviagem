@@ -677,7 +677,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                           href={url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
+                          className="flex-1 min-w-0 flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
