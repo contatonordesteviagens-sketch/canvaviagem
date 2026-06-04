@@ -20,11 +20,7 @@ type CustomSource = "upload" | "link";
 
 interface Props { onNext: () => void; onBack: () => void; }
 
-const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-v3-premium";
-
-// ⚙️ TOTAL DE VARIANTES DO COMPOSITOR CANVAS
-// Altere AQUI ao adicionar V6, V7... — afeta rotação auto, lote A/B e bounds de forceVariant.
-const CANVAS_TOTAL_VARIANTS = 6;
+const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-v4-v5-safe-layout";
 
 const BADGE_BG: Record<string, string> = {
   blue: "bg-blue-500/15 text-blue-400 border-blue-500/30",
@@ -76,8 +72,8 @@ const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
 // um visual coerente com o "tom" daquela categoria (oferta = âmbar/quente,
 // experiência = navy/dourado luxo). O usuário pode customizar livremente depois;
 // só são re-aplicadas se ele ainda estiver usando os defaults da OUTRA categoria.
-const DEFAULT_COLORS_OFERTA = { primary: "#F59E0B", secondary: "#FCD34D" };
-const DEFAULT_COLORS_EXPERIENCIA = { primary: "#0C2340", secondary: "#C9A84C" };
+const DEFAULT_COLORS_OFERTA = { primary: "#080808", secondary: "#F5F906" };
+const DEFAULT_COLORS_EXPERIENCIA = { primary: "#080808", secondary: "#F5F906" };
 
 const isSameHex = (a: string, b: string) =>
   (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
@@ -407,7 +403,7 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   const ig = v.instagram.trim() ? `@${v.instagram.replace(/^@/, "").trim()}` : "";
   const wa = v.whatsapp.trim();
   const contactLine = wa
-    ? `📲 Fale comigo agora: *${wa}* ${ig ? `| ${ig}` : ""}`
+    ? `📲 Fale comigo agora: ${wa}${ig ? ` | ${ig}` : ""}`
     : ig
     ? `📲 Nos siga: ${ig}`
     : "📲 Entre em contato para reservar!";
@@ -420,8 +416,8 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
 
   const priceBlock = hasPrice
     ? hasInstall
-      ? `💳 Apenas ${v.installments} de *${priceStr}* ${v.paymentSuffix}`
-      : `💰 Por apenas *${priceStr}* ${v.paymentSuffix}`
+      ? `💳 Apenas ${v.installments} de ${priceStr} ${v.paymentSuffix}`
+      : `💰 Por apenas ${priceStr} ${v.paymentSuffix}`
     : "💬 Solicite seu orçamento personalizado!";
 
   const periodLine = period ? `🗓️ ${period}` : "";
@@ -441,16 +437,16 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
     return caps;
   }
 
-  // Variante Oferta: direto e comercial
+  // Variante Oferta: 3 estilos distintos
   const caps: string[] = [
-    // Variação 1 — Urgência + preço em destaque
-    `🚨 *${v.promoName || "OFERTA ESPECIAL"}* — ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n⚠️ Vagas limitadas! Não perca essa oportunidade.\n\n${contactLine}`,
+    // Variação 1 — Benefícios/Inclusos
+    `🚨 ${v.promoName || "OFERTA ESPECIAL"} — ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n⚠️ Vagas limitadas! Não perca essa oportunidade.\n\n${contactLine}`,
 
-    // Variação 2 — Storytelling + preço
+    // Variação 2 — SEO / Posicionamento Google
+    `${dest}: Pacote completo com a ${agency} 🌎\n\nProcurando o melhor pacote para ${dest}? Veja o que está incluso:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nAgência especializada em ${dest} — atendimento humanizado e suporte 24h. Solicite seu orçamento.\n\n${contactLine}`,
+
+    // Variação 3 — Storytelling / CTA direto
     `Partiu ${dest}? ✈️\n\nMontamos um pacote COMPLETO pra você não se preocupar com nada:\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n👉 Me chama agora e garanta sua vaga!\n\n${contactLine}`,
-
-    // Variação 3 — Benefícios + prova social
-    `📍 ${dest} — Um pacote que você vai amar!\n\nIncluso na sua viagem:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n✅ Agência especializada. Atendimento humanizado. Suporte 24h.\n\n${contactLine}`,
   ];
   return caps;
 };
@@ -505,7 +501,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
 
   // Tipografia global (família + escala título/descrição + cor de override)
-  const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Inter");
+  const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Montserrat");
   const setFontFamily = (v: string) => { setFontFamilyState(v); update({ fontFamily: v } as any); };
   const [titleScale, setTitleScaleState] = useState<number>(((state as any).titleScale as number) || 1);
   const setTitleScale = (v: number) => { setTitleScaleState(v); update({ titleScale: v } as any); };
@@ -513,6 +509,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setDescScale = (v: number) => { setDescScaleState(v); update({ descScale: v } as any); };
   const [textColorOverride, setTextColorOverrideState] = useState<string>((state as any).textColorOverride || "");
   const [autoTextColor, setAutoTextColor] = useState<string>("#ffffff");
+  const [autoLuminance, setAutoLuminance] = useState<number>(0.5);
   // Cor efetiva: se o usuário escolheu manualmente, respeita; senão usa auto-contraste.
   const effectiveTextColor = textColorOverride || autoTextColor;
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
@@ -720,31 +717,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   ]));
 
   const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
-
-  // Tabela de sufixos-padrão por modo de pagamento.
-  // Evita sufixo "stale" ao trocar de modo (ex: "por pessoa" persistindo quando muda para "à vista").
-  const PAYMENT_MODE_DEFAULT_SUFFIX: Partial<Record<PaymentMode, string>> = {
-    installments:  "por pessoa",
-    cash:          "à vista",
-    cash_discount: "à vista com desconto",
-    from:          "por pessoa",
-    daily:         "por diária",
-    monthly:       "por mês",
-    down_plus:     "",
-    free_quote:    "",
-    custom_label:  "",
-  };
-
-  const setPaymentMode = (m: PaymentMode) => {
-    setPaymentModeState(m);
-    update({ lastPaymentMode: m });
-    // Auto-deriva sufixo padrão apenas se o usuário nunca personalizou — preserva customizações.
-    if (!state.lastPaymentSuffix) {
-      const autoSuffix = PAYMENT_MODE_DEFAULT_SUFFIX[m] ?? "por pessoa";
-      setPaymentSuffixState(autoSuffix);
-      update({ lastPaymentSuffix: autoSuffix });
-    }
-  };
+  const setPaymentMode = (m: PaymentMode) => { setPaymentModeState(m); update({ lastPaymentMode: m }); };
 
   const [paymentLabelState, setPaymentLabelState] = useState(state.lastPaymentLabel || "");
   const setPaymentLabel = (label: string) => { setPaymentLabelState(label); update({ lastPaymentLabel: label }); };
@@ -779,6 +752,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [loading, setLoading] = useState(false);
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false); // Nova feature: Lote A/B (3 variações)
+  const [variationsOpen, setVariationsOpen] = useState(false); // Versão do Layout colapsável
   const [generatedImage, setGeneratedImage] = useState<string>("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [variationCounter, setVariationCounter] = useState(0);
@@ -836,7 +810,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     setTotalOverrideState(state.totalOverride || "");
     setShowPixBannerState((state as any).showPixBanner !== false);
     setPixBannerTextState((state as any).pixBannerText || "");
-    setFontFamilyState((state as any).fontFamily || "Inter");
+    setFontFamilyState((state as any).fontFamily || "Montserrat");
     setTitleScaleState(((state as any).titleScale as number) || 1);
     setDescScaleState(((state as any).descScale as number) || 1);
     setTextColorOverrideState((state as any).textColorOverride || "");
@@ -992,30 +966,15 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       toast.error("Selecione uma imagem válida");
       return;
     }
-    if (file.size > 15 * 1024 * 1024) {
-      toast.error("Imagem muito grande (máx 15MB)");
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx 8MB)");
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        // Comprime para máx 1200px — reduz base64 de 4-8MB para ~200-400KB.
-        // 1200px é suficiente para renders de 1080px sem perda perceptiva.
-        const MAX_DIM = 1200;
-        const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
-        const c = document.createElement("canvas");
-        c.width = Math.round(img.width * scale);
-        c.height = Math.round(img.height * scale);
-        const ctx2d = c.getContext("2d");
-        ctx2d?.drawImage(img, 0, 0, c.width, c.height);
-        const compressed = c.toDataURL("image/jpeg", 0.82);
-        // base64 vive APENAS em memória do browser → nunca toca o banco
-        setCustomImageData(compressed);
-        toast.success(`Imagem carregada (${Math.round(compressed.length * 0.75 / 1024)}KB em memória)`);
-      };
-      img.onerror = () => toast.error("Erro ao processar imagem");
-      img.src = String(reader.result || "");
+      // base64 vive APENAS em memória do browser → nunca toca o banco
+      setCustomImageData(String(reader.result || ""));
+      toast.success("Imagem carregada (apenas em memória)");
     };
     reader.onerror = () => toast.error("Erro ao ler imagem");
     reader.readAsDataURL(file);
@@ -1239,6 +1198,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const pal = paletteOverride || selectedPalette(primaryColor, secondaryColor);
         return {
           imageUrl: imgUrl,
+          imageLuminance: autoLuminance,
           format,
           destination,
           city: state.city,
@@ -1300,14 +1260,19 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
 
-        // Rotação anti-repetição entre variantes do compositor (V0–V5).
-        // CANVAS_TOTAL_VARIANTS controla o pool — altere lá ao adicionar V6+.
+        // Rotação determinística entre variantes do compositor (V0/V1/V3/V4/V5 — V2 desativada)
+        const TOTAL_VARIANTS_PHOTO = 6;
+        const DISABLED_VARIANTS_PHOTO = [2];
         const recentPhoto = variantHistoryRef.current.slice(-2);
-        let candidatesPhoto = Array.from({ length: CANVAS_TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recentPhoto.includes(v));
+        let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i)
+          .filter((v) => !DISABLED_VARIANTS_PHOTO.includes(v))
+          .filter((v) => !recentPhoto.includes(v));
         if (candidatesPhoto.length === 0) {
-          candidatesPhoto = Array.from({ length: CANVAS_TOTAL_VARIANTS }, (_, i) => i);
+          candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i).filter((v) => !DISABLED_VARIANTS_PHOTO.includes(v));
         }
-        const nextVariantPhoto = forcedVariant !== null ? forcedVariant : candidatesPhoto[Math.floor(Math.random() * candidatesPhoto.length)];
+        const nextVariantPhoto = forcedVariant !== null && !DISABLED_VARIANTS_PHOTO.includes(forcedVariant)
+          ? forcedVariant
+          : candidatesPhoto[Math.floor(Math.random() * candidatesPhoto.length)];
         variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantPhoto];
 
         const composed = await Promise.all(
@@ -1317,13 +1282,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 photoRefs[idx],
                 localStrategy,
                 freshSeedPhoto + idx,
-                // 🛡️ forceVariant fixada: todas as imagens do lote usam a mesma variante.
-                // Auto: rotação por slot para garantir layouts distintos no lote.
-                typeof nextVariantPhoto === "number"
-                  ? (forcedVariant !== null
-                      ? nextVariantPhoto
-                      : (nextVariantPhoto + idx) % CANVAS_TOTAL_VARIANTS)
-                  : undefined,
+                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 6 : undefined,
                 palette
               )
             );
@@ -1355,9 +1314,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
         finishCycle(composed.length);
-        // 🛡️ CRÍTICO: Limpa forcedVariant para que V0-V4 voltem a rotacionar
-        // Sem isso, o fallback de erro da IA Pura trava TODAS as gerações em Variant 0
-        if (forcedVariant !== null) setForcedVariant(null);
+        // Mantém a versão escolhida pelo usuário. Se V5 está selecionada, o próximo clique continua em V5.
         retryCountRef.current = 0;
 
         toast.success(`${composed.length} ${composed.length === 1 ? "variação gerada" : "variações geradas"} com foto real!`);
@@ -1558,14 +1515,19 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
-      // Rotação anti-repetição entre variantes do compositor (V0–V5).
-      // CANVAS_TOTAL_VARIANTS controla o pool — altere lá ao adicionar V6+.
+      // Rotação determinística entre variantes do compositor (V0/V1/V3/V4/V5 — V2 desativada)
+      const TOTAL_VARIANTS = 6;
+      const DISABLED_VARIANTS = [2];
       const recent = variantHistoryRef.current.slice(-2);
-      let candidates = Array.from({ length: CANVAS_TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));
+      let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i)
+        .filter((v) => !DISABLED_VARIANTS.includes(v))
+        .filter((v) => !recent.includes(v));
       if (candidates.length === 0) {
-        candidates = Array.from({ length: CANVAS_TOTAL_VARIANTS }, (_, i) => i);
+        candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !DISABLED_VARIANTS.includes(v));
       }
-      const nextVariant = forcedVariant !== null ? forcedVariant : candidates[Math.floor(Math.random() * candidates.length)];
+      const nextVariant = forcedVariant !== null && !DISABLED_VARIANTS.includes(forcedVariant)
+        ? forcedVariant
+        : candidates[Math.floor(Math.random() * candidates.length)];
       variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariant];
 
       const imagesCustom = await Promise.all(
@@ -1575,13 +1537,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               refImage,
               localStrategy,
               freshSeedCustom + idx,
-              // 🛡️ forceVariant fixada: todas as imagens do lote usam a mesma variante.
-              // Auto: rotação por slot para garantir layouts distintos no lote.
-              typeof nextVariant === "number"
-                ? (forcedVariant !== null
-                    ? nextVariant
-                    : (nextVariant + idx) % CANVAS_TOTAL_VARIANTS)
-                : undefined,
+              typeof nextVariant === "number" ? (nextVariant + idx) % 6 : undefined,
               palette
             )
           );
@@ -1815,120 +1771,61 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </div>
           </div>
         </div>
-      {/* 0 e 1 · Modo e Categoria */}
+      {/* 0 · Modo de Criação (Foto Real | Sua Imagem) */}
       <div className={`${sectionCls} space-y-5`}>
-        {/* Modo de Geração - Segmented Control */}
         <div>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Criação</h3>
           <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
             <button
               onClick={() => setGenMode("photo")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "photo" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "photo" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
             >
               <ImageIcon className="w-3.5 h-3.5" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(ilimitada)</span>
             </button>
             <button
               onClick={() => setGenMode("custom")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
             >
               <Upload className="w-3.5 h-3.5" /> Sua Imagem
             </button>
+          </div>
+
+          {/* Seletor de Versão (V0..V5) — COLAPSÁVEL */}
+          <div className="mt-3">
             <button
               type="button"
-              disabled
-              title="Em manutenção — reativaremos em breve"
-              aria-disabled="true"
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold text-white/30 cursor-not-allowed opacity-50"
+              onClick={() => setVariationsOpen(v => !v)}
+              className="w-full flex items-center justify-between text-[10px] font-bold text-white/40 hover:text-white/70 uppercase tracking-widest transition-colors py-1.5"
             >
-              <Wand2 className="w-3.5 h-3.5" /> IA Pura <span className="hidden sm:inline font-normal opacity-70">(desativado)</span>
+              <span className="flex items-center gap-1.5">
+                Variações
+                {forcedVariant !== null && (
+                  <span className="text-amber-400 normal-case tracking-normal">· V{forcedVariant} fixada</span>
+                )}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${variationsOpen ? "rotate-180" : ""}`} />
             </button>
-          </div>
-
-          {/* Modo IA Pura — desativado em manutenção */}
-          {genMode === "ai" && (
-            <div className="mt-3 p-3 rounded-xl border border-amber-400/20 bg-amber-500/5">
-              <p className="text-[11px] text-amber-200/90 leading-relaxed">
-                ✨ <strong>IA Pura em manutenção.</strong> Este recurso está temporariamente indisponível. Por favor, utilize o modo "Foto Real" ou "Sua Imagem".
-              </p>
-            </div>
-          )}
-
-
-
-
-          {/* Seletor de Versão (V0..V4) — para correções cirúrgicas em cada layout */}
-          <div className="mt-4">
-            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">
-              0b · Versão do Layout
-            </h3>
-            <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full gap-1">
-              <button
-                onClick={() => setForcedVariant(null)}
-                className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === null ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                title="Rotação automática (sorteia entre V0..V4)"
-              >
-                Auto
-              </button>
-              {[0, 1, 2, 3, 4, 5].map((v) => (
+            {variationsOpen && (
+              <div className="mt-2 flex bg-black/40 p-1 rounded-xl border border-white/5 w-full gap-1">
                 <button
-                  key={v}
-                  onClick={() => setForcedVariant(v)}
-                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === v ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                  title={`Forçar variação V${v}`}
+                  onClick={() => setForcedVariant(null)}
+                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${forcedVariant === null ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                  title="Rotação automática"
                 >
-                  V{v}
+                  Auto
                 </button>
-              ))}
-            </div>
-            <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
-              {forcedVariant === null
-                ? "Rotação automática entre V0..V5 a cada clique."
-                : <>Gerando sempre a <strong className="text-white">V{forcedVariant}</strong>. Selecione "Auto" para retomar a rotação.</>}
-            </p>
-          </div>
-        </div>
-
-        {/* Categoria - Compacta */}
-        <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Tipo de Anúncio</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {CATEGORIAS.map((c) => {
-              const isExperiencia = c.id === "experiencia_destino";
-              const selected = categoria === c.id;
-              return (
-                <button
-                  key={c.id}
-                  disabled={isExperiencia}
-                  onClick={() => {
-                    if (!isExperiencia) setCategoria(c.id);
-                  }}
-                  className={`p-3 rounded-xl border-2 text-left transition-all flex flex-col justify-between min-h-[85px] ${
-                    isExperiencia
-                      ? "border-white/5 bg-black/10 opacity-35 cursor-not-allowed pointer-events-none"
-                      : selected
-                      ? "shadow-lg scale-[1.02]"
-                      : "border-white/5 bg-black/20 hover:bg-white/[0.04]"
-                  }`}
-                  style={selected && !isExperiencia ? { borderColor: c.accent, background: `${c.accent}33` } : undefined}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl leading-none">{c.emoji}</span>
-                    <span
-                      className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border tracking-wider"
-                      style={{ background: `${c.accent}26`, borderColor: `${c.accent}66`, color: c.accent }}
-                    >
-                      {c.badge}
-                    </span>
-                    {isExperiencia && (
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border tracking-wider bg-amber-500/20 border-amber-500/40 text-amber-400 animate-pulse">
-                        EM BREVE
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm font-bold text-white leading-tight">{c.name}</div>
-                </button>
-              );
-            })}
+                {[0, 1, 2, 3, 4, 5].map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setForcedVariant(v)}
+                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${forcedVariant === v ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                    title={`Forçar V${v}`}
+                  >
+                    V{v}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1961,6 +1858,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
       </div>
+
 
       {/* 1b · Galeria Pexels (modo foto ou IA Pura) */}
       {(genMode === "photo" || genMode === "ai") && (
@@ -2362,10 +2260,28 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     <input type="checkbox" checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} className="accent-yellow-400" />
                     Mostrar valor total
                   </label>
+                    {showTotal && (
+                      <input
+                        type="text"
+                        placeholder="Ex: Total: R$ 1.500,00"
+                        className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-yellow-400 mt-1"
+                        value={totalOverride}
+                        onChange={(e) => setTotalOverride(e.target.value)}
+                      />
+                    )}
                   <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">
                     <input type="checkbox" checked={showPixBanner} onChange={(e) => setShowPixBanner(e.target.checked)} className="accent-yellow-400" />
                     Mostrar faixa de desconto
                   </label>
+                    {showPixBanner && (
+                      <input
+                        type="text"
+                        placeholder="Ex: 5% OFF A VISTA NO PIX"
+                        className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-yellow-400 mt-1"
+                        value={pixBannerText}
+                        onChange={(e) => setPixBannerText(e.target.value)}
+                      />
+                    )}
                 </div>
               )}
             </div>
@@ -2396,7 +2312,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <div>
                 <label className={labelCls}>Fonte</label>
                 <select
-                  value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Inter"}
+                  value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Montserrat"}
                   onChange={(e) => setFontFamily(e.target.value)}
                   className={inputCls}
                 >
@@ -2470,7 +2386,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               </div>
 
               <button
-                onClick={() => { setFontFamily("Inter"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
+                onClick={() => { setFontFamily("Montserrat"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
                 className="text-[11px] text-white/60 hover:text-white underline"
               >
                 Restaurar padrão
@@ -2675,26 +2591,24 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         
         {/* IA Pura agora roda no servidor — chave não é mais necessária */}
 
-        {/* Feature: Lote A/B (3 variações) */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 flex items-center justify-between gap-4 hover:bg-white/[0.05] transition-colors cursor-pointer group" onClick={() => setIsBatchMode(!isBatchMode)}>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                Gerar Lote de Teste A/B
-              </h4>
-              <span className="bg-indigo-500/20 text-indigo-300 text-[9px] px-1.5 py-0.5 rounded border border-indigo-500/30 font-bold uppercase">Premium</span>
-            </div>
-            <p className="text-[10px] text-white/50 mt-1 leading-relaxed">
-              Gera 3 variações diferentes desta arte de uma vez só. {genMode === "ai" ? "Usa apenas 1 crédito de IA!" : "Mais velocidade."}
-            </p>
-          </div>
-          
-          {/* Switch toggle visual */}
-          <div className={`w-12 h-6 rounded-full relative transition-colors ${isBatchMode ? 'bg-indigo-500' : 'bg-white/10'}`}>
-            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300 ${isBatchMode ? 'left-7' : 'left-1'}`} />
-          </div>
-        </div>
+        {/* Feature: 3 variações (minimalista) */}
+        <button
+          type="button"
+          onClick={() => setIsBatchMode(!isBatchMode)}
+          title={isBatchMode ? "Desativar: gerar apenas 1 arte" : "Ativar: gerar 3 variações diferentes de uma vez"}
+          className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-bold transition-all border ${
+            isBatchMode
+              ? "bg-indigo-500/15 border-indigo-500/40 text-indigo-200"
+              : "bg-white/[0.02] border-white/10 text-white/50 hover:text-white hover:bg-white/[0.05]"
+          }`}
+        >
+          <Sparkles className={`w-3.5 h-3.5 ${isBatchMode ? "text-indigo-300" : "text-white/40"}`} />
+          Gerar 3 variações diferentes
+          <span className={`w-7 h-3.5 rounded-full relative transition-colors ${isBatchMode ? "bg-indigo-500" : "bg-white/15"}`}>
+            <span className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white transition-all ${isBatchMode ? "left-4" : "left-0.5"}`} />
+          </span>
+        </button>
+
 
 
 

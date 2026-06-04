@@ -403,9 +403,9 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
 
       {/* Main Responsive Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Left Side: Agency Info & Brand (5 Cols) */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="md:col-span-5 space-y-6">
           
           {/* CARD 1: IDENTIDADE & PERFIL DA AGÊNCIA */}
           <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
@@ -677,7 +677,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                           href={url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 min-w-0 flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
+                          className="flex-1 flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -754,10 +754,9 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               </button>
             </div>
         </div>
-      </div>
 
-      {/* Right Side: Package Management (7 Cols) */}
-      <div className="lg:col-span-7 space-y-6">
+        {/* Right Side: Package Management (7 Cols) */}
+        <div className="md:col-span-7 space-y-6">
           
           {/* Temporariamente oculto - voltar depois */}
           {false && <BusinessExtractor onExtract={handleExtractorData} />}
@@ -922,13 +921,13 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                               <h4 className="text-sm font-bold text-white leading-tight mb-1 truncate">{pkg.title}</h4>
                               <p className="text-xs text-white/50 line-clamp-2 leading-relaxed mb-2 pr-4">{pkg.description}</p>
                               
-                              <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg w-fit mt-0.5 max-w-full">
-                                <span className="line-clamp-2">{pkg.price}</span>
+                              <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                                {pkg.price}
                               </span>
                             </div>
 
                             {/* Action Tools Overlay */}
-                            <div className="flex gap-1 items-center shrink-0">
+                            <div className="flex gap-1 items-center">
                               {pkg.isDraft ? (
                                 <button
                                   onClick={() => togglePublish(pkg.id, true)}
@@ -992,6 +991,8 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 </div>
               )}
             </div>
+          </div>
+
           </div>
         </div>
       </div>
