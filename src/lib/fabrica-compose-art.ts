@@ -2605,7 +2605,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const pixH = 36;
           const pixX = cardCenterX - pixW / 2;
           fillRoundRect(ctx, pixX, extrasY, pixW, pixH, pixH / 2, secondaryColor);
-          ctx.fillStyle = ensureContrast(secondaryColor, "#0a0a0a", 0.4);
+          ctx.fillStyle = "#0a0a0a";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(pixTxtV2, cardCenterX, extrasY + pixH / 2 + 1);
@@ -2618,8 +2618,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.fillStyle = v2CardBg;
           ctx.font = "900 30px Inter, Arial, sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText(travelPeriod.trim().toUpperCase(), width / 2, priceCardY - 28);
-          periodYOffset = 56;
+          ctx.fillText(travelPeriod.trim().toUpperCase(), width / 2, priceCardY - 38);
+          periodYOffset = 90;
         }
         ctx.textAlign = "left";
 
@@ -2630,8 +2630,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = "900 52px Inter, Arial, sans-serif";
         const titleLines = wrapTextSafe(ctx, resolvedTitle, contentWidth - 40, 2, 32);
         const isMultiLine = titleLines.length > 1;
-        const promoH = hasPromoV2 ? 34 : 0;
-        const faixaH = (isMultiLine ? 150 : 110) + promoH;
+        const promoH = hasPromoV2 ? 28 : 0;
+        const faixaH = (isMultiLine ? 134 : 96) + promoH;
 
         // ðŸ›¡ï¸ DYNAMIC COLLISION PROTECTION ENGINE ðŸ›¡ï¸
         const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
