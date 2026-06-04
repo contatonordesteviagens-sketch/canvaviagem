@@ -3114,7 +3114,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // Increased price size by ~30%
       let valSize = format === "story" ? 130 : 105;
       const symSize = Math.round(valSize * 0.35);
-      const curSym = (currencySymbol || "R$").trim();
+      const currencyLabelV5 = (currencySymbol || curSym || "R$").trim();
       
       // Centavos pequenos
       const centsMatchV5 = valNumV5.match(/^(.+?)([,.]\d{1,2})$/);
@@ -3144,7 +3144,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
       ctx.fillStyle = v5Secondary;
       const symW = ctx.measureText(curSym).width;
-      ctx.fillText(curSym, rightX - valW - 15, priceBaseY - valSize * 0.35);
+      ctx.fillText(currencyLabelV5, rightX - valW - 15, priceBaseY - valSize * 0.35);
 
       const priceLeftX = rightX - valW - 15 - symW - 25;
 
