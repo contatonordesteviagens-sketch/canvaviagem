@@ -242,11 +242,11 @@ function measurePriceCard(
   const gap = isStory ? 10 : 8;
 
   const hasPrefix       = !!(opts.pricePrefix?.trim());
-  const hasInstallments = !!(opts.installments?.trim()) && opts.paymentMode === \"installments\";
-  const hasPrice        = !!(opts.price?.trim()) && opts.paymentMode !== \"free_quote\";
+  const hasInstallments = !!(opts.installments?.trim()) && opts.paymentMode === "installments";
+  const hasPrice        = !!(opts.price?.trim()) && opts.paymentMode !== "free_quote";
   const hasSuffix       = !!(opts.paymentSuffix?.trim());
-  const hasTotal        = !!opts.showTotal && opts.paymentMode !== \"free_quote\";
-  const hasPixBanner    = !!opts.showPixBanner && opts.paymentMode !== \"free_quote\";
+  const hasTotal        = !!opts.showTotal && opts.paymentMode !== "free_quote";
+  const hasPixBanner    = !!opts.showPixBanner && opts.paymentMode !== "free_quote";
 
   const lines: number[] = [];
   if (hasPrefix)       lines.push(isStory ? 30 : 24);
