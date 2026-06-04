@@ -752,6 +752,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [loading, setLoading] = useState(false);
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false); // Nova feature: Lote A/B (3 variações)
+  const [variationsOpen, setVariationsOpen] = useState(false); // Versão do Layout colapsável
   const [generatedImage, setGeneratedImage] = useState<string>("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [variationCounter, setVariationCounter] = useState(0);
