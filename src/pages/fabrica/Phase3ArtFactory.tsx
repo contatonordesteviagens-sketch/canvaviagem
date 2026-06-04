@@ -1820,7 +1820,34 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        {/* Tipo de Anúncio e Formato — ocultos: só existe uma opção ativa */}
+        {/* Formato do Anúncio */}
+        <div>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">2 · Formato do Anúncio</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setFormat("square")}
+              className={`p-4 rounded-xl border-2 text-left transition-all ${
+                format === "square" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
+              }`}
+              style={format === "square" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
+            >
+              <Square className="w-6 h-6 mb-2 text-white/80" />
+              <div className="text-sm font-bold text-white">Quadrado 1:1</div>
+              <div className="text-[11px] text-white/55">Feed Instagram (1080×1080)</div>
+            </button>
+            <button
+              onClick={() => setFormat("story")}
+              className={`p-4 rounded-xl border-2 text-left transition-all ${
+                format === "story" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
+              }`}
+              style={format === "story" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
+            >
+              <Smartphone className="w-6 h-6 mb-2 text-white/80" />
+              <div className="text-sm font-bold text-white">Stories / Reels 9:16</div>
+              <div className="text-[11px] text-white/55">Vertical com safe zones (1080×1920)</div>
+            </button>
+          </div>
+        </div>
       </div>
 
 
