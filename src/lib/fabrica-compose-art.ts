@@ -3105,8 +3105,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, ln, leftX, titleStartYV5 + i * (titleFsV5 + 8), leftW, 18);
       });
 
-      const iconSizeV5 = format === "story" ? 46 : 38;
-      const iconGapV5 = 14;
+      const iconSizeV5 = format === "story" ? 69 : 57;
+      const iconGapV5 = 18;
       const iconYV5 = cardY + cardH - (format === "story" ? 78 : 64);
       let iconX = leftX;
       iconListV5.slice(0, 4).forEach((k) => {
