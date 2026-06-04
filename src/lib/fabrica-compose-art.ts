@@ -2623,12 +2623,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         ctx.textAlign = "left";
 
-        // 2) Intelligent Multi-line Headline Bar
+        // 2) Intelligent Multi-line Headline Bar (with optional promoName accent)
+        const promoTagV2 = (promoName || "").trim().toUpperCase();
+        const hasPromoV2 = promoTagV2.length > 0;
         const resolvedTitle = (titleText || "").toUpperCase();
         ctx.font = "900 52px Inter, Arial, sans-serif";
         const titleLines = wrapTextSafe(ctx, resolvedTitle, contentWidth - 40, 2, 32);
         const isMultiLine = titleLines.length > 1;
-        const faixaH = isMultiLine ? 150 : 110;
+        const promoH = hasPromoV2 ? 34 : 0;
+        const faixaH = (isMultiLine ? 150 : 110) + promoH;
 
         // ðŸ›¡ï¸ DYNAMIC COLLISION PROTECTION ENGINE ðŸ›¡ï¸
         const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
