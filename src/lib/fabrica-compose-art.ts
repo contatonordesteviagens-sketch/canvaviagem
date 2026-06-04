@@ -181,6 +181,89 @@ interface Highlight {
   icon?: IconKey;
 }
 
+// ============================================================
+// \ud83d\udcc0 LAYOUT_TOKENS \u2014 substitui os tern\u00e1rios isStory mais cr\u00edticos.
+// Para adicionar formato 4:5 ou 1:1 Pro, adicione uma terceira chave aqui.
+// ============================================================
+const LAYOUT_TOKENS = {
+  square: {
+    safeTop:         80,
+    safeBottom:      150,
+    footerReserve:   160,
+    titleMinSize:    28,
+    titleMaxSize:    72,
+    cardPadX:        60,
+    priceMinSize:    30,
+    highlightPillH:  52,
+  },
+  story: {
+    safeTop:         140,
+    safeBottom:      310,
+    footerReserve:   310,
+    titleMinSize:    32,
+    titleMaxSize:    96,
+    cardPadX:        80,
+    priceMinSize:    36,
+    highlightPillH:  64,
+  },
+} as const;
+type LayoutFormat = keyof typeof LAYOUT_TOKENS;
+
+// ============================================================
+// \ud83d\udcd0 measurePriceCard \u2014 calcula altura m\u00ednima do card de pre\u00e7o ANTES de desenhar.
+// Evita overflow silencioso quando todos os toggles opcionais est\u00e3o ativos.
+// Com 4 toggles (prefix + total + pix + parcelas) h\u00e1 16 combina\u00e7\u00f5es \u2014
+// o motor estava calibrado para ~2; esta fun\u00e7\u00e3o cobre todas.
+// ============================================================
+interface PriceCardMeasure {
+  cardH: number;
+  hasPrefix: boolean;
+  hasInstallments: boolean;
+  hasPrice: boolean;
+  hasSuffix: boolean;
+  hasTotal: boolean;
+  hasPixBanner: boolean;
+}
+
+function measurePriceCard(
+  priceFontSize: number,
+  isStory: boolean,
+  opts: {
+    pricePrefix?: string;
+    installments?: string;
+    paymentMode?: PaymentMode;
+    price?: string;
+    paymentSuffix?: string;
+    showTotal?: boolean;
+    showPixBanner?: boolean;
+  }
+): PriceCardMeasure {
+  const pad = isStory ? 36 : 28;
+  const gap = isStory ? 10 : 8;
+
+  const hasPrefix       = !!(opts.pricePrefix?.trim());
+  const hasInstallments = !!(opts.installments?.trim()) && opts.paymentMode === \"installments\";
+  const hasPrice        = !!(opts.price?.trim()) && opts.paymentMode !== \"free_quote\";
+  const hasSuffix       = !!(opts.paymentSuffix?.trim());
+  const hasTotal        = !!opts.showTotal && opts.paymentMode !== \"free_quote\";
+  const hasPixBanner    = !!opts.showPixBanner && opts.paymentMode !== \"free_quote\";
+
+  const lines: number[] = [];
+  if (hasPrefix)       lines.push(isStory ? 30 : 24);
+  if (hasInstallments) lines.push(isStory ? 44 : 36);
+  if (hasPrice)        lines.push(priceFontSize + 14);
+  if (hasSuffix)       lines.push(isStory ? 28 : 22);
+  if (hasTotal)        lines.push(isStory ? 26 : 20);
+  if (hasPixBanner)    lines.push(isStory ? 48 : 40);
+
+  const innerH = lines.length > 0
+    ? lines.reduce((a, h) => a + h + gap, 0) - gap
+    : 0;
+  const cardH = Math.max(innerH + pad * 2, isStory ? 150 : 120);
+
+  return { cardH, hasPrefix, hasInstallments, hasPrice, hasSuffix, hasTotal, hasPixBanner };
+}
+
 interface ComposeTravelAdOptions {
   imageUrl: string;
   format: Format;
@@ -508,8 +591,8 @@ async function drawFinalBranding(
   ctx.save();
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
-  // Revertido para Bold (700) e tamanhos mais impactantes conforme desejo do usuario
-  const fontSize = isStory ? 36 : 30; 
+  // Tamanhos reduzidos conforme desejo do usuario para nao vazar a imagem
+  const fontSize = isStory ? 24 : 20; 
   const safeFont = fontFamily || "Inter";
   ctx.font = `700 ${fontSize}px ${safeFont}, sans-serif`;
   
@@ -583,13 +666,21 @@ const ICON_SYMBOL: Record<IconKey, string> = {
   wifi: "wifi",
 };
 
+// Cache de imagens já carregadas — evita re-download entre passos de lumiância, paleta e render.
+// Escopo de módulo: persiste durante a sessão do browser. base64 são cacheados por referência (seguros).
+const __imageCache = new Map<string, HTMLImageElement>();
+
 function loadImage(src: string): Promise<HTMLImageElement> {
+  // Cache hit: retorna imediato sem novo download/decode
+  const cached = __imageCache.get(src);
+  if (cached) return Promise.resolve(cached);
+
   return new Promise((resolve, reject) => {
     const img = new Image();
     if (src && !src.startsWith("data:")) {
       img.crossOrigin = "anonymous";
     }
-    img.onload = () => resolve(img);
+    img.onload = () => { __imageCache.set(src, img); resolve(img); };
     img.onerror = () => reject(new Error("Falha ao carregar imagem base"));
     img.src = src;
   });
@@ -1163,6 +1254,18 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   const image = await loadImage(imageUrl);
 
+  // \ud83d\udee1\ufe0f Garante que as fontes est\u00e3o prontas antes de medir/desenhar.
+  // Sem isso, measureText usa m\u00e9tricas de fallback (Arial) no 1\u00ba render ap\u00f3s hard-refresh
+  // \u2192 wrap incoerente (t\u00edtulo que "cabia" no design vaza no render real).
+  if ((document as any).fonts?.ready) {
+    try {
+      await Promise.race([
+        (document as any).fonts.ready,
+        new Promise<void>(resolve => setTimeout(resolve, 500)), // timeout de seguran\u00e7a
+      ]);
+    } catch { /* falha silenciosa \u2014 continua com as fontes dispon\u00edveis no momento */ }
+  }
+
   // Title-case helper to evitar "saindo de fortaleza" minusculo
   const toTitle = (s?: string) =>
     (s || "")
@@ -1612,14 +1715,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const ty = startY + row * rowGap;
           
           const iconSize = 64;
-          drawMonoIcon(ctx, b.icon as IconKey, tx + iconSize/2, ty, iconSize, navy);
-          
           const isDuration = /\d+\s*dia/i.test(b.text) || /noite/i.test(b.text);
+          if (!isDuration) {
+            drawMonoIcon(ctx, b.icon as IconKey, tx + iconSize/2, ty, iconSize, navy);
+          }
+          
           let bfs = isDuration ? 37 : 49;
           ctx.fillStyle = navy;
           ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
           ctx.textAlign = "left";
-          const textX = tx + iconSize + 14;
+          const textX = isDuration ? tx + 10 : tx + iconSize + 14;
           const textMaxW = colW - (iconSize + 14);
           while (ctx.measureText(b.text).width > textMaxW && bfs > 16) {
             bfs -= 1;
@@ -3106,14 +3211,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = auroraGrad;
       ctx.fillRect(0, 0, width, height);
 
-      const v5Primary = primaryColor || "#7C3AED"; // Roxo elegante por padrão
-      const v5Secondary = secondaryColor || "#FBBF24"; // Amarelo/Dourado quente
+      const v5Primary = primaryColor || "#7C3AED";
+      const v5Secondary = secondaryColor || "#FBBF24";
       const destinoV5 = (destination || "DESTINO").toUpperCase();
-      const taglineV5 = ((promoName || "OPORTUNIDADE ÚNICA").trim()).toUpperCase();
+      const taglineV5 = ((promoName || "OFERTA ESPECIAL").trim()).toUpperCase();
       const titleLineV5 = (() => {
-        const t = (titleText || destinoV5).trim();
-        const firstLine = t.split(/\r?\n/)[0] || t;
-        return firstLine.replace(new RegExp(`^${taglineV5}\\s*`, "i"), "").trim() || destinoV5;
+        const t = (destination || destinoV5).trim();
+        return t.toUpperCase() || destinoV5;
       })();
 
       const daysItemV5 = highlights.find((h) => /\d+\s*dia|\d+\s*noite|janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/i.test(h?.text || ""));
@@ -3121,8 +3225,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const iconListV5: IconKey[] = (() => {
         const fromHl = highlights
           .map((h) => h?.icon as IconKey | undefined)
-          .filter((k): k is IconKey => !!k);
-        if (fromHl.length === 0) return ["plane", "hotel", "coffee", "guide"] as IconKey[];
+          .filter((k): k is IconKey => !!k && k !== "check");
+        if (fromHl.length === 0) return ["plane", "hotel", "coffee", "camera"] as IconKey[];
         const seen = new Set<IconKey>(); const out: IconKey[] = [];
         for (const k of fromHl) { if (!seen.has(k)) { seen.add(k); out.push(k); if (out.length >= 4) break; } }
         return out;
@@ -3144,6 +3248,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         return `${parcNV5}X`;
       })().toUpperCase();
 
+      // Preço — parse robusto com fallback para exibir o raw se não puder parsear
       const priceRawV5 = (price || "").trim();
       const priceNumV5 = parseFloat(priceRawV5.replace(/\./g, "").replace(",", "."));
       const hasCentsV5 = /[.,]\d{1,2}\s*$/.test(priceRawV5);
@@ -3152,9 +3257,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
           minimumFractionDigits: withCents ? 2 : 0,
           maximumFractionDigits: withCents ? 2 : 0,
         });
-      const valNumV5 = !isNaN(priceNumV5)
+      // Garante que sempre há um valor para exibir
+      const valNumV5 = (!isNaN(priceNumV5) && priceNumV5 > 0)
         ? fmtBRv5(priceNumV5, hasCentsV5)
-        : priceRawV5;
+        : (priceRawV5 || "---");
 
       const totalMultiplierV5 = (paymentMode === "cash" || paymentMode === "cash_discount") ? 1 : parseInt(parcNV5, 10);
       const totalNumV5 = !isNaN(priceNumV5) ? priceNumV5 * totalMultiplierV5 : NaN;
@@ -3621,25 +3727,42 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (variant === 1) return await renderV1Experiencia();
       if (variant === 2) return await renderV2Experiencia();
       if (variant === 3) {
-        // FORÇADO: opera exclusivamente na categoria Oferta de Destino (bypassa isExperience)
         return await renderSafeSquareOffer();
       }
       if (variant === 4) return await renderV4Experiencia();
       if (variant === 5) {
-        // Reutiliza o motor Aurora Premium que é altamente estético e compatível
         return await renderSafeSquareOffer();
       }
       
       return await renderV0Experiencia();
     }
 
-    // Fallback para Ofertas (Matriz, Gancho, etc.)
     return await renderSafeSquareOffer();
   } catch (error) {
-    console.error("Ad Engine Error:", error);
-    // Fallback: tenta V0 antes de desistir; se também falhar, propaga o erro real
+    const baseMsg = (error as Error)?.message || String(error);
+
+    const isTainted =
+      baseMsg.toLowerCase().includes("tainted") ||
+      baseMsg.toLowerCase().includes("securityerror") ||
+      baseMsg.toLowerCase().includes("cross-origin") ||
+      baseMsg.toLowerCase().includes("cors");
+    if (isTainted) {
+      throw new Error(
+        "Foto bloqueada por segurança (CORS). Use Pexels ou faça upload do arquivo no seu dispositivo."
+      );
+    }
+
+    console.error("[Fábrica Motor] Falha ao renderizar variante:", {
+      variant: forceVariant ?? variation,
+      strategy,
+      isExperience,
+      paymentMode,
+      error: baseMsg,
+    });
+
     try {
-      return await renderV0Experiencia();
+      console.warn("[Fábrica Motor] Usando renderSafeSquareOffer como fallback de emergência.");
+      return await renderSafeSquareOffer();
     } catch (innerErr) {
       const baseMsg = (error as Error)?.message || String(error);
       const innerMsg = (innerErr as Error)?.message || String(innerErr);

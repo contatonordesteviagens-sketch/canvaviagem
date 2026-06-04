@@ -22,6 +22,10 @@ interface Props { onNext: () => void; onBack: () => void; }
 
 const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-v3-premium";
 
+// ⚙️ TOTAL DE VARIANTES DO COMPOSITOR CANVAS
+// Altere AQUI ao adicionar V6, V7... — afeta rotação auto, lote A/B e bounds de forceVariant.
+const CANVAS_TOTAL_VARIANTS = 6;
+
 const BADGE_BG: Record<string, string> = {
   blue: "bg-blue-500/15 text-blue-400 border-blue-500/30",
   purple: "bg-purple-500/15 text-purple-400 border-purple-500/30",
@@ -716,7 +720,31 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   ]));
 
   const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
-  const setPaymentMode = (m: PaymentMode) => { setPaymentModeState(m); update({ lastPaymentMode: m }); };
+
+  // Tabela de sufixos-padrão por modo de pagamento.
+  // Evita sufixo "stale" ao trocar de modo (ex: "por pessoa" persistindo quando muda para "à vista").
+  const PAYMENT_MODE_DEFAULT_SUFFIX: Partial<Record<PaymentMode, string>> = {
+    installments:  "por pessoa",
+    cash:          "à vista",
+    cash_discount: "à vista com desconto",
+    from:          "por pessoa",
+    daily:         "por diária",
+    monthly:       "por mês",
+    down_plus:     "",
+    free_quote:    "",
+    custom_label:  "",
+  };
+
+  const setPaymentMode = (m: PaymentMode) => {
+    setPaymentModeState(m);
+    update({ lastPaymentMode: m });
+    // Auto-deriva sufixo padrão apenas se o usuário nunca personalizou — preserva customizações.
+    if (!state.lastPaymentSuffix) {
+      const autoSuffix = PAYMENT_MODE_DEFAULT_SUFFIX[m] ?? "por pessoa";
+      setPaymentSuffixState(autoSuffix);
+      update({ lastPaymentSuffix: autoSuffix });
+    }
+  };
 
   const [paymentLabelState, setPaymentLabelState] = useState(state.lastPaymentLabel || "");
   const setPaymentLabel = (label: string) => { setPaymentLabelState(label); update({ lastPaymentLabel: label }); };
@@ -964,15 +992,30 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       toast.error("Selecione uma imagem válida");
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
-      toast.error("Imagem muito grande (máx 8MB)");
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx 15MB)");
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
-      // base64 vive APENAS em memória do browser → nunca toca o banco
-      setCustomImageData(String(reader.result || ""));
-      toast.success("Imagem carregada (apenas em memória)");
+      const img = new Image();
+      img.onload = () => {
+        // Comprime para máx 1200px — reduz base64 de 4-8MB para ~200-400KB.
+        // 1200px é suficiente para renders de 1080px sem perda perceptiva.
+        const MAX_DIM = 1200;
+        const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width * scale);
+        c.height = Math.round(img.height * scale);
+        const ctx2d = c.getContext("2d");
+        ctx2d?.drawImage(img, 0, 0, c.width, c.height);
+        const compressed = c.toDataURL("image/jpeg", 0.82);
+        // base64 vive APENAS em memória do browser → nunca toca o banco
+        setCustomImageData(compressed);
+        toast.success(`Imagem carregada (${Math.round(compressed.length * 0.75 / 1024)}KB em memória)`);
+      };
+      img.onerror = () => toast.error("Erro ao processar imagem");
+      img.src = String(reader.result || "");
     };
     reader.onerror = () => toast.error("Erro ao ler imagem");
     reader.readAsDataURL(file);
@@ -1257,13 +1300,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
 
-        // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
-        // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V4.
-        const TOTAL_VARIANTS_PHOTO = 6;
+        // Rotação anti-repetição entre variantes do compositor (V0–V5).
+        // CANVAS_TOTAL_VARIANTS controla o pool — altere lá ao adicionar V6+.
         const recentPhoto = variantHistoryRef.current.slice(-2);
-        let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i).filter((v) => !recentPhoto.includes(v));
+        let candidatesPhoto = Array.from({ length: CANVAS_TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recentPhoto.includes(v));
         if (candidatesPhoto.length === 0) {
-          candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i);
+          candidatesPhoto = Array.from({ length: CANVAS_TOTAL_VARIANTS }, (_, i) => i);
         }
         const nextVariantPhoto = forcedVariant !== null ? forcedVariant : candidatesPhoto[Math.floor(Math.random() * candidatesPhoto.length)];
         variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantPhoto];
@@ -1275,7 +1317,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 photoRefs[idx],
                 localStrategy,
                 freshSeedPhoto + idx,
-                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 6 : undefined,
+                // 🛡️ forceVariant fixada: todas as imagens do lote usam a mesma variante.
+                // Auto: rotação por slot para garantir layouts distintos no lote.
+                typeof nextVariantPhoto === "number"
+                  ? (forcedVariant !== null
+                      ? nextVariantPhoto
+                      : (nextVariantPhoto + idx) % CANVAS_TOTAL_VARIANTS)
+                  : undefined,
                 palette
               )
             );
@@ -1510,12 +1558,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
-      // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
-      const TOTAL_VARIANTS = 6;
+      // Rotação anti-repetição entre variantes do compositor (V0–V5).
+      // CANVAS_TOTAL_VARIANTS controla o pool — altere lá ao adicionar V6+.
       const recent = variantHistoryRef.current.slice(-2);
-      let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));
+      let candidates = Array.from({ length: CANVAS_TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));
       if (candidates.length === 0) {
-        candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i);
+        candidates = Array.from({ length: CANVAS_TOTAL_VARIANTS }, (_, i) => i);
       }
       const nextVariant = forcedVariant !== null ? forcedVariant : candidates[Math.floor(Math.random() * candidates.length)];
       variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariant];
@@ -1527,7 +1575,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               refImage,
               localStrategy,
               freshSeedCustom + idx,
-              typeof nextVariant === "number" ? (nextVariant + idx) % 6 : undefined,
+              // 🛡️ forceVariant fixada: todas as imagens do lote usam a mesma variante.
+              // Auto: rotação por slot para garantir layouts distintos no lote.
+              typeof nextVariant === "number"
+                ? (forcedVariant !== null
+                    ? nextVariant
+                    : (nextVariant + idx) % CANVAS_TOTAL_VARIANTS)
+                : undefined,
               palette
             )
           );

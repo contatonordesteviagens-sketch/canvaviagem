@@ -1489,6 +1489,25 @@ const PublishOnLovableCard = ({
                       .replace(/^-|-$/g, "");
   });
   const [canvaViagemSubdomain, setCanvaViagemSubdomain] = useState<string>(() => buildSiteSlug(state.agencyName || ""));
+  const subdomain = canvaViagemSubdomain;
+  const setSubdomain = setCanvaViagemSubdomain;
+  const finalSubdomain = buildSiteSlug(canvaViagemSubdomain || state.agencyName || "");
+
+  const publishToCanvaViagem = async (slug: string) => {
+    const cleanSlug = buildSiteSlug(slug);
+    if (cleanSlug.length < 3) {
+      return { success: false, message: "El enlace debe tener al menos 3 caracteres." };
+    }
+    const url = `https://${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`;
+    setPublishedUrl(url);
+    update({
+      siteContent: {
+        ...state.siteContent,
+        canvaViagemUrl: `${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`,
+      },
+    });
+    return { success: true, url };
+  };
 
   useEffect(() => {
     if (state.siteContent.canvaViagemUrl) {
@@ -1561,7 +1580,7 @@ const PublishOnLovableCard = ({
         throw new Error(dbError.message || "Error al guardar sitio en la base de datos.");
       }
 
-      const result = await publishToCanvaViagem(finalSubdomain, html);
+      const result = await publishToCanvaViagem(finalSubdomain);
       if (result.success) {
         toast.success(
           <div>
@@ -1587,6 +1606,16 @@ const PublishOnLovableCard = ({
       toast.success("¡HTML copiado! Pégalo en Lovable.");
     } catch {
       toast.error("No se pudo copiar. Usa el botón Descargar HTML.");
+    }
+  };
+
+  const copyUpdatePrompt = async () => {
+    try {
+      const prompt = generateUpdatePackagesPrompt(state);
+      await navigator.clipboard.writeText(prompt);
+      toast.success("🚀 Prompt de actualización copiado.");
+    } catch {
+      toast.error("Error al copiar el prompt.");
     }
   };
 

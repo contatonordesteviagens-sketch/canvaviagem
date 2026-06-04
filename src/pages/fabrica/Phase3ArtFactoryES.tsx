@@ -518,6 +518,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const setDescScale = (v: number) => { setDescScaleState(v); update({ descScale: v } as any); };
   const [textColorOverride, setTextColorOverrideState] = useState<string>((state as any).textColorOverride || "");
   const [autoTextColor, setAutoTextColor] = useState<string>("#ffffff");
+  const [autoLuminance, setAutoLuminance] = useState<number>(0.5);
   // Cor efetiva: se o usuário escolheu manualmente, respeita; senão usa auto-contraste.
   const effectiveTextColor = textColorOverride || autoTextColor;
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
@@ -1204,6 +1205,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         const pal = paletteOverride || selectedPalette(primaryColor, secondaryColor);
         return {
           imageUrl: imgUrl,
+          imageLuminance: autoLuminance,
           format,
           destination,
           city: state.city,
@@ -2290,6 +2292,15 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                     <input type="checkbox" checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} className="accent-yellow-400" />
                     Mostrar valor total
                   </label>
+                    {showTotal && (
+                      <input
+                        type="text"
+                        placeholder="Ex: Total: R$ 1.500,00"
+                        className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-yellow-400 mt-1"
+                        value={totalOverride}
+                        onChange={(e) => setTotalOverride(e.target.value)}
+                      />
+                    )}
                   <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">
                     <input type="checkbox" checked={showPixBanner} onChange={(e) => setShowPixBanner(e.target.checked)} className="accent-yellow-400" />
                     Mostrar cinta de descuento
@@ -2761,3 +2772,4 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     </div>
   );
 };
+
