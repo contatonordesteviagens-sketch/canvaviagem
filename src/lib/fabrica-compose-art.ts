@@ -3035,72 +3035,102 @@ const panelBottom = RULES.PANEL_BOTTOM;
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
       };
 
-      // V5 refeito: tudo dentro de uma área sólida e segura. Nada flutua sobre a foto.
-      const cardW = Math.round(width * (format === "story" ? 0.86 : 0.82));
+      // V5 correto: card horizontal compacto, com informaÃ§Ãµes Ã  esquerda e preÃ§o Ã  direita.
+      const cardW = Math.round(width * (format === "story" ? 0.88 : 0.82));
       const cardX = Math.round((width - cardW) / 2);
-      const cardH = format === "story" ? 610 : 500;
-      const idealY = format === "story" ? Math.round(height * 0.33) : Math.round(height * 0.36);
-      const cardY = Math.min(Math.max(safeTop, idealY), panelBottom - cardH - 55);
-      const cardR = 28;
-      const cardPad = 42;
-      const cardInnerW = cardW - cardPad * 2;
-      const cxV5 = cardX + cardW / 2;
+      const cardH = format === "story" ? 420 : 315;
+      const idealY = format === "story" ? Math.round(height * 0.43) : Math.round(height * 0.35);
+      const cardY = Math.min(Math.max(safeTop, idealY), panelBottom - cardH - 72);
+      const cardR = 26;
+      const cardPadX = format === "story" ? 48 : 40;
+      const cardInnerW = cardW - cardPadX * 2;
+      const leftW = Math.round(cardInnerW * (format === "story" ? 0.55 : 0.58));
+      const gapW = format === "story" ? 28 : 32;
+      const rightW = cardInnerW - leftW - gapW;
+      const leftX = cardX + cardPadX;
+      const rightX = leftX + leftW + gapW;
+      const rightCx = rightX + rightW / 2;
       const onCard = getSafeColor(v5Primary, "#ffffff");
       const mutedOnCard = hexToRgbaV5(onCard, 0.76);
       const accentOnCard = ensureContrast(v5Secondary, v5Primary, 0.35);
 
       ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.42)";
+      ctx.shadowColor = "rgba(0,0,0,0.44)";
       ctx.shadowBlur = 34;
       ctx.shadowOffsetY = 12;
       fillRoundRect(ctx, cardX, cardY, cardW, cardH, cardR, hexToRgbaV5(v5Primary, 0.96));
       ctx.restore();
 
       ctx.save();
-      ctx.strokeStyle = hexToRgbaV5(v5Secondary, 0.82);
+      ctx.strokeStyle = hexToRgbaV5(v5Secondary, 0.86);
       ctx.lineWidth = 4;
       roundRect(ctx, cardX + 2, cardY + 2, cardW - 4, cardH - 4, cardR - 2);
       ctx.stroke();
       ctx.restore();
 
-      let cursorY = cardY + cardPad;
-      ctx.textAlign = "center";
       ctx.textBaseline = "alphabetic";
+      ctx.textAlign = "left";
       ctx.fillStyle = accentOnCard;
-      ctx.font = `900 ${format === "story" ? 26 : 22}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, taglineV5, cxV5, cursorY, cardInnerW, 14);
-      cursorY += format === "story" ? 78 : 64;
+      ctx.font = `900 ${format === "story" ? 25 : 21}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, taglineV5, leftX, cardY + (format === "story" ? 62 : 54), leftW, 12);
+
+      let titleFsV5 = format === "story" ? 54 : 42;
+      let titleLinesV5: string[] = [];
+      const buildTitleLinesV5 = () => {
+        const words = titleLineV5.split(/\s+/).filter(Boolean);
+        const lines: string[] = [];
+        let line = "";
+        ctx.font = `900 ${titleFsV5}px Inter, Arial, sans-serif`;
+        for (const word of words) {
+          const test = line ? `${line} ${word}` : word;
+          if (ctx.measureText(test).width > leftW && line) {
+            lines.push(line);
+            line = word;
+          } else {
+            line = test;
+          }
+        }
+        if (line) lines.push(line);
+        return lines;
+      };
+      do {
+        titleLinesV5 = buildTitleLinesV5();
+        if (titleLinesV5.length > 2 || titleLinesV5.some((ln) => ctx.measureText(ln).width > leftW)) titleFsV5 -= 2;
+      } while ((titleLinesV5.length > 2 || titleLinesV5.some((ln) => ctx.measureText(ln).width > leftW)) && titleFsV5 > 28);
 
       ctx.fillStyle = onCard;
-      let titleFsV5 = format === "story" ? 70 : 58;
       ctx.font = `900 ${titleFsV5}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(titleLineV5).width > cardInnerW && titleFsV5 > 32) {
-        titleFsV5 -= 2;
-        ctx.font = `900 ${titleFsV5}px Inter, Arial, sans-serif`;
-      }
-      safeFillText(ctx, titleLineV5, cxV5, cursorY, cardInnerW, 22);
-      cursorY += titleFsV5 + 32;
+      const titleStartYV5 = cardY + (format === "story" ? 126 : 105);
+      titleLinesV5.slice(0, 2).forEach((ln, i) => {
+        safeFillText(ctx, ln, leftX, titleStartYV5 + i * (titleFsV5 + 8), leftW, 18);
+      });
+
+      const iconSizeV5 = format === "story" ? 46 : 38;
+      const iconGapV5 = 14;
+      const iconYV5 = cardY + cardH - (format === "story" ? 78 : 64);
+      let iconX = leftX;
+      iconListV5.slice(0, 4).forEach((k) => {
+        fillRoundRect(ctx, iconX, iconYV5 - iconSizeV5 / 2, iconSizeV5, iconSizeV5, iconSizeV5 / 2, hexToRgbaV5(onCard, 0.12));
+        drawMonoIcon(ctx, k, iconX + iconSizeV5 / 2, iconYV5, iconSizeV5 * 0.55, onCard);
+        iconX += iconSizeV5 + iconGapV5;
+      });
 
       if (daysTextV5) {
         const dayLabel = daysTextV5.toUpperCase();
-        ctx.font = `900 ${format === "story" ? 26 : 22}px Inter, Arial, sans-serif`;
-        const dayW = Math.min(cardInnerW, ctx.measureText(dayLabel).width + 44);
-        fillRoundRect(ctx, cxV5 - dayW / 2, cursorY - 34, dayW, 50, 25, hexToRgbaV5(v5Secondary, 0.18));
-        ctx.fillStyle = accentOnCard;
-        safeFillText(ctx, dayLabel, cxV5, cursorY, dayW - 32, 12);
-        cursorY += 52;
+        ctx.font = `900 ${format === "story" ? 20 : 17}px Inter, Arial, sans-serif`;
+        const dayW = Math.min(leftW - (iconX - leftX) - 18, ctx.measureText(dayLabel).width + 34);
+        if (dayW > 90) {
+          const dayX = iconX + 8;
+          fillRoundRect(ctx, dayX, iconYV5 - 24, dayW, 44, 22, hexToRgbaV5(v5Secondary, 0.18));
+          ctx.fillStyle = accentOnCard;
+          ctx.textAlign = "center";
+          safeFillText(ctx, dayLabel, dayX + dayW / 2, iconYV5 + 6, dayW - 26, 10);
+          ctx.textAlign = "left";
+        }
       }
 
-      const iconSizeV5 = format === "story" ? 48 : 42;
-      const iconGapV5 = 18;
-      const iconsW = Math.min(iconListV5.length, 4) * iconSizeV5 + Math.max(0, Math.min(iconListV5.length, 4) - 1) * iconGapV5;
-      let iconX = cxV5 - iconsW / 2;
-      iconListV5.slice(0, 4).forEach((k) => {
-        fillRoundRect(ctx, iconX, cursorY - iconSizeV5 / 2, iconSizeV5, iconSizeV5, iconSizeV5 / 2, hexToRgbaV5(onCard, 0.10));
-        drawMonoIcon(ctx, k, iconX + iconSizeV5 / 2, cursorY, iconSizeV5 * 0.56, onCard);
-        iconX += iconSizeV5 + iconGapV5;
-      });
-      cursorY += iconSizeV5 / 2 + (format === "story" ? 52 : 42);
+      ctx.fillStyle = hexToRgbaV5(onCard, 0.22);
+      ctx.fillRect(rightX - gapW / 2, cardY + 46, 2, cardH - 92);
 
       const currencyLabelV5 = (currencySymbol || curSym || "R$").trim();
       let safePillTxt = pillTxtV5;
@@ -3108,47 +3138,45 @@ const panelBottom = RULES.PANEL_BOTTOM;
       let displayPrefix = (pricePrefix || leftTopV5 || "a partir de").toUpperCase();
       if ((paymentMode === "cash" || paymentMode === "cash_discount") && /^(À|Ã€|A|\?)\s*VISTA$/i.test(displayPrefix)) displayPrefix = "";
 
-      if (displayPrefix) {
-        ctx.fillStyle = mutedOnCard;
-        ctx.font = `800 ${format === "story" ? 24 : 20}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, displayPrefix, cxV5, cursorY, cardInnerW, 12);
-        cursorY += 34;
-      }
+      ctx.textAlign = "center";
+      ctx.fillStyle = mutedOnCard;
+      ctx.font = `900 ${format === "story" ? 24 : 19}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, displayPrefix || "A PARTIR DE", rightCx, cardY + (format === "story" ? 95 : 78), rightW, 10);
 
-      ctx.font = `900 ${format === "story" ? 28 : 24}px Inter, Arial, sans-serif`;
-      const pillW = Math.min(cardInnerW, ctx.measureText(safePillTxt).width + 48);
-      const pillH = format === "story" ? 50 : 44;
-      fillRoundRect(ctx, cxV5 - pillW / 2, cursorY - 32, pillW, pillH, 14, v5Secondary);
+      ctx.font = `900 ${format === "story" ? 30 : 25}px Inter, Arial, sans-serif`;
+      const pillW = Math.min(rightW, ctx.measureText(safePillTxt).width + 48);
+      const pillH = format === "story" ? 50 : 42;
+      const pillY = cardY + (format === "story" ? 112 : 91);
+      fillRoundRect(ctx, rightCx - pillW / 2, pillY, pillW, pillH, 14, v5Secondary);
       ctx.fillStyle = contrastOn(v5Secondary);
       ctx.textBaseline = "middle";
-      safeFillText(ctx, safePillTxt, cxV5, cursorY - 32 + pillH / 2 + 1, pillW - 28, 12);
+      safeFillText(ctx, safePillTxt, rightCx, pillY + pillH / 2 + 1, pillW - 28, 12);
       ctx.textBaseline = "alphabetic";
-      cursorY += format === "story" ? 84 : 72;
 
       const centsMatchV5 = valNumV5.match(/^(.+?)([,.]\d{1,2})$/);
       const mainValV5 = centsMatchV5 ? centsMatchV5[1] : valNumV5;
       const centsValV5 = centsMatchV5 ? centsMatchV5[2] : "";
-      let valSize = format === "story" ? 118 : 94;
+      let valSize = format === "story" ? 118 : 92;
       let symSize = Math.round(valSize * 0.34);
       const measurePrice = () => {
         ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
         const symW = ctx.measureText(currencyLabelV5).width;
         const centsW = centsValV5 ? ctx.measureText(centsValV5).width : 0;
         ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
-        return symW + 18 + ctx.measureText(mainValV5 || "CONSULTE").width + (centsW ? centsW + 8 : 0);
+        return symW + 14 + ctx.measureText(mainValV5 || "CONSULTE").width + (centsW ? centsW + 8 : 0);
       };
-      while (measurePrice() > cardInnerW && valSize > 48) {
+      while (measurePrice() > rightW && valSize > 44) {
         valSize -= 4;
         symSize = Math.round(valSize * 0.34);
       }
-      const priceY = cursorY;
+      const priceY = cardY + (format === "story" ? 275 : 210);
       const totalPriceW = measurePrice();
-      let drawX = cxV5 - totalPriceW / 2;
+      let drawX = rightCx - totalPriceW / 2;
       ctx.textAlign = "left";
       ctx.fillStyle = accentOnCard;
       ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
       ctx.fillText(currencyLabelV5, drawX, priceY - valSize * 0.35);
-      drawX += ctx.measureText(currencyLabelV5).width + 18;
+      drawX += ctx.measureText(currencyLabelV5).width + 14;
       ctx.fillStyle = onCard;
       ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
       ctx.fillText(mainValV5 || "CONSULTE", drawX, priceY);
@@ -3157,27 +3185,25 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
         ctx.fillText(centsValV5, drawX, priceY - valSize * 0.45);
       }
-      ctx.textAlign = "center";
-      cursorY += valSize * 0.24 + 36;
 
       const bottomTxt = ((showTotal && totalOverride?.trim()) || paymentSuffix || "por pessoa").trim();
       if (bottomTxt) {
+        ctx.textAlign = "center";
         ctx.fillStyle = mutedOnCard;
         ctx.font = `800 ${format === "story" ? 24 : 20}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, bottomTxt, cxV5, cursorY, cardInnerW, 12);
-        cursorY += 36;
+        safeFillText(ctx, bottomTxt, rightCx, priceY + (format === "story" ? 44 : 36), rightW, 12);
       }
 
       if (showPixBanner) {
         const rawPixLabel = ((pixBannerText && pixBannerText.trim()) || "10% OFF NO PIX").toUpperCase();
         ctx.font = `900 ${format === "story" ? 22 : 18}px Inter, Arial, sans-serif`;
-        const pixW = Math.min(cardInnerW, ctx.measureText(rawPixLabel).width + 38);
-        const pixH = format === "story" ? 42 : 36;
-        const pixY = Math.min(cursorY - 26, cardY + cardH - pixH - 28);
-        fillRoundRect(ctx, cxV5 - pixW / 2, pixY, pixW, pixH, pixH / 2, v5Secondary);
+        const pixW = Math.min(rightW, ctx.measureText(rawPixLabel).width + 38);
+        const pixH = format === "story" ? 42 : 34;
+        const pixY = cardY + cardH - pixH - 20;
+        fillRoundRect(ctx, rightCx - pixW / 2, pixY, pixW, pixH, pixH / 2, v5Secondary);
         ctx.fillStyle = contrastOn(v5Secondary);
         ctx.textBaseline = "middle";
-        safeFillText(ctx, rawPixLabel, cxV5, pixY + pixH / 2 + 1, pixW - 28, 12);
+        safeFillText(ctx, rawPixLabel, rightCx, pixY + pixH / 2 + 1, pixW - 28, 12);
         ctx.textBaseline = "alphabetic";
       }
 
