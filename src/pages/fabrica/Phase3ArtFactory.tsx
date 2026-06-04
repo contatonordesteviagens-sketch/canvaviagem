@@ -2555,26 +2555,24 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         
         {/* IA Pura agora roda no servidor — chave não é mais necessária */}
 
-        {/* Feature: Lote A/B (3 variações) */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 flex items-center justify-between gap-4 hover:bg-white/[0.05] transition-colors cursor-pointer group" onClick={() => setIsBatchMode(!isBatchMode)}>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                Gerar Lote de Teste A/B
-              </h4>
-              <span className="bg-indigo-500/20 text-indigo-300 text-[9px] px-1.5 py-0.5 rounded border border-indigo-500/30 font-bold uppercase">Premium</span>
-            </div>
-            <p className="text-[10px] text-white/50 mt-1 leading-relaxed">
-              Gera 3 variações diferentes desta arte de uma vez só. {genMode === "ai" ? "Usa apenas 1 crédito de IA!" : "Mais velocidade."}
-            </p>
-          </div>
-          
-          {/* Switch toggle visual */}
-          <div className={`w-12 h-6 rounded-full relative transition-colors ${isBatchMode ? 'bg-indigo-500' : 'bg-white/10'}`}>
-            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300 ${isBatchMode ? 'left-7' : 'left-1'}`} />
-          </div>
-        </div>
+        {/* Feature: 3 variações (minimalista) */}
+        <button
+          type="button"
+          onClick={() => setIsBatchMode(!isBatchMode)}
+          title={isBatchMode ? "Desativar: gerar apenas 1 arte" : "Ativar: gerar 3 variações diferentes de uma vez"}
+          className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-bold transition-all border ${
+            isBatchMode
+              ? "bg-indigo-500/15 border-indigo-500/40 text-indigo-200"
+              : "bg-white/[0.02] border-white/10 text-white/50 hover:text-white hover:bg-white/[0.05]"
+          }`}
+        >
+          <Sparkles className={`w-3.5 h-3.5 ${isBatchMode ? "text-indigo-300" : "text-white/40"}`} />
+          Gerar 3 variações diferentes
+          <span className={`w-7 h-3.5 rounded-full relative transition-colors ${isBatchMode ? "bg-indigo-500" : "bg-white/15"}`}>
+            <span className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white transition-all ${isBatchMode ? "left-4" : "left-0.5"}`} />
+          </span>
+        </button>
+
 
 
 
