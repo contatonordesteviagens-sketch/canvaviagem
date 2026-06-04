@@ -2145,8 +2145,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
  * Reenquadra (cover crop) uma imagem qualquer para o aspecto pedido (story 9:16 ou square 1:1).
  * Garante que a IA, que normalmente devolve em ~quadrado, fique no formato correto da rede social.
  */
-}
-
 export async function reframeImageToAspect(
   imageDataUrl: string,
   format: Format
