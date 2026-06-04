@@ -2605,7 +2605,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const pixH = 36;
           const pixX = cardCenterX - pixW / 2;
           fillRoundRect(ctx, pixX, extrasY, pixW, pixH, pixH / 2, secondaryColor);
-          ctx.fillStyle = ensureContrast(secondaryColor, "#0a0a0a", 0.4);
+          ctx.fillStyle = "#0a0a0a";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(pixTxtV2, cardCenterX, extrasY + pixH / 2 + 1);
