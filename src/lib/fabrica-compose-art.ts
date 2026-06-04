@@ -2216,7 +2216,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         // DEDICATED RENDERER FOR V1 SQUARE 1:1 FOOTER
         // ==========================================
         const footerHeight = 100;
-        const footerY = height - footerHeight - 20;
+        const footerY = height - footerHeight - 10;
         const centerY = footerY + footerHeight / 2;
 
         // 1. VÃ©u Gradiente Escuro
