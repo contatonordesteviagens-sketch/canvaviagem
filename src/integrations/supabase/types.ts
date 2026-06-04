@@ -601,6 +601,7 @@ export type Database = {
           created_at: string
           html: string
           id: string
+          locale: string
           owner_id: string | null
           updated_at: string
         }
@@ -608,6 +609,7 @@ export type Database = {
           created_at?: string
           html: string
           id: string
+          locale?: string
           owner_id?: string | null
           updated_at?: string
         }
@@ -615,6 +617,7 @@ export type Database = {
           created_at?: string
           html?: string
           id?: string
+          locale?: string
           owner_id?: string | null
           updated_at?: string
         }
