@@ -139,10 +139,19 @@ export default function Inicio() {
             <p className="section-subtitle">Assista à criação de uma campanha, uma página e a organização de leads dentro do Canva Viagem.</p>
             
               <div className="demo-frame">
-              <img src={dashboardInterno} alt="Demonstração da plataforma por dentro" loading="lazy" />
+              <video 
+                autoPlay 
+                muted 
+                loop 
+                playsInline
+                poster={dashboardInterno}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }}
+              >
+                <source src="/demo-viagem.mp4" type="video/mp4" />
+              </video>
               <div className="demo-play">
                 <Play size={20} style={{ flexShrink: 0 }} />
-                <span style={{ marginRight: '8px' }}>Ver prévia da plataforma</span>
+                <span className="demo-play-text" style={{ marginLeft: '8px' }}>Ver prévia da plataforma</span>
               </div>
             </div>
             <p className="demo-disclaimer">Demonstração visual da plataforma. Exemplo representativo das funcionalidades.</p>

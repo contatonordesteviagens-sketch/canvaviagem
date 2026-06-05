@@ -424,6 +424,10 @@ button, a {
   transition: transform 0.3s ease;
 }
 
+.demo-play-text {
+  display: none;
+}
+
 .demo-frame:hover .demo-play {
   transform: scale(1.1);
 }
@@ -464,6 +468,7 @@ button, a {
 @media (min-width: 768px) {
   .demo-frame { max-width: 720px; }
   .demo-play { width: 220px; height: 56px; border-radius: 999px; }
+  .demo-play-text { display: inline; }
   .steps-grid { max-width: 820px; grid-template-columns: repeat(3, 1fr); }
   .step-card { min-height: 150px; }
 }
