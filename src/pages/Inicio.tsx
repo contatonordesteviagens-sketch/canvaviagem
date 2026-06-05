@@ -24,6 +24,7 @@ export default function Inicio() {
   const [isYearly, setIsYearly] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [activeToolTab, setActiveToolTab] = useState<string>("featured");
+  const [videoOpen, setVideoOpen] = useState(false);
 
   useEffect(() => {
     const sticky = document.querySelector('.mobile-sticky');
@@ -138,7 +139,7 @@ export default function Inicio() {
             <h2 className="section-title">Veja a plataforma por dentro em 60 segundos</h2>
             <p className="section-subtitle">Assista à criação de uma campanha, uma página e a organização de leads dentro do Canva Viagem.</p>
             
-              <div className="demo-frame">
+              <div className="demo-frame" onClick={() => setVideoOpen(true)} style={{ cursor: 'pointer' }}>
               <video 
                 autoPlay 
                 muted 
