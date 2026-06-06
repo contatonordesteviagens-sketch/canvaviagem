@@ -139,22 +139,30 @@ export default function Inicio() {
             <h2 className="section-title">Veja a plataforma por dentro em 60 segundos</h2>
             <p className="section-subtitle">Assista à criação de uma campanha, uma página e a organização de leads dentro do Canva Viagem.</p>
             
-              <div className="demo-frame" onClick={() => setVideoOpen(true)} style={{ cursor: 'pointer' }}>
-              <video 
-                autoPlay 
-                muted 
-                loop 
-                playsInline
-                poster={dashboardInterno}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }}
-              >
-                <source src="/demo-viagem.mp4" type="video/mp4" />
-              </video>
-              <div className="demo-play">
-                <Play size={20} style={{ flexShrink: 0 }} />
-                <span className="demo-play-text" style={{ marginLeft: '8px' }}>Ver prévia da plataforma</span>
+              <div className="demo-frame" onClick={() => setVideoOpen(true)} style={{ cursor: 'pointer', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', pointerEvents: 'none' }}>
+                  <iframe 
+                    src="https://www.youtube.com/embed/P0_4EdEOQAc?autoplay=1&mute=1&controls=0&loop=1&playlist=P0_4EdEOQAc&modestbranding=1&rel=0&showinfo=0&disablekb=1"
+                    style={{ 
+                      position: 'absolute', 
+                      top: '50%', 
+                      left: '50%', 
+                      width: '150%', 
+                      height: '150%', 
+                      transform: 'translate(-50%, -50%)', 
+                      opacity: 0.8 
+                    }}
+                    frameBorder="0"
+                    allow="autoplay; encrypted-media"
+                  />
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(15, 23, 42, 0.2)' }}></div>
+                </div>
+                
+                <div className="demo-play" style={{ zIndex: 10 }}>
+                  <Play size={20} style={{ flexShrink: 0 }} />
+                  <span className="demo-play-text" style={{ marginLeft: '8px' }}>Ver prévia da plataforma</span>
+                </div>
               </div>
-            </div>
             <p className="demo-disclaimer">Demonstração visual da plataforma. Exemplo representativo das funcionalidades.</p>
 
             <div className="steps-grid">
