@@ -81,14 +81,14 @@ export default function Inicio() {
     },
     {
       question: "Tem suporte?",
-      answer: "Sim. O suporte depende do plano contratado. No plano Elite, o atendimento é prioritário via WhatsApp."
+      answer: "Sim. O suporte é garantido. O atendimento é prioritário via WhatsApp para os assinantes."
     },
     {
       question: "Posso cancelar quando quiser?",
       answer: "Sim. Não existe fidelidade. Cancele quando quiser pelo painel ou pelo suporte."
     },
     {
-      question: "O que está incluso no plano Elite?",
+      question: "O que está incluso na assinatura?",
       answer: "Artes ilimitadas, sites express, CRM de leads, recursos de IA e suporte prioritário via WhatsApp."
     }
   ];
@@ -119,7 +119,7 @@ export default function Inicio() {
                 <li>Acesso imediato e garantia de 7 dias</li>
               </ul>
               
-              <a href="#planos" className="btn btn-white">Assinar Plano Elite Agora →</a>
+              <a href="#planos" className="btn btn-white">Assinar a Plataforma Agora →</a>
               <br />
               <a href="#demo" className="hero-secondary">Ver a plataforma por dentro ↓</a>
               
@@ -444,7 +444,7 @@ export default function Inicio() {
               Ferramentas profissionais para todas as tarefas
             </h2>
             <p className="text-[#64748b] text-base md:text-lg max-w-3xl mx-auto mb-12">
-              Seja para um trabalho paralelo ou um projeto pessoal, o Canva Viagem Elite oferece acesso a recursos Pro e ferramentas de IA avançados para que você possa criar conteúdo profissional mais rapidamente, em um só lugar.
+              Seja para um trabalho paralelo ou um projeto pessoal, o Canva Viagem oferece acesso a recursos Pro e ferramentas de IA avançados para que você possa criar conteúdo profissional mais rapidamente, em um só lugar.
             </p>
 
             {/* Navigation Tabs (Pills) */}
@@ -918,7 +918,7 @@ export default function Inicio() {
           <div className="inicio-container">
             <h2>Pronto para profissionalizar sua agência em minutos?</h2>
             <p>Junte-se a agentes de viagens que usam tecnologia, IA e design para criar conteúdo com mais velocidade.</p>
-            <a href="#planos" className="btn btn-primary" style={{ background: "#06B6D4", boxShadow: "0 14px 34px rgba(6, 182, 212, 0.26)" }}>Assinar Elite Agora</a>
+            <a href="#planos" className="btn btn-primary" style={{ background: "#06B6D4", boxShadow: "0 14px 34px rgba(6, 182, 212, 0.26)" }}>Adquirir Plataforma Agora</a>
             <div className="final-microcopy">Liberação imediata • Pagamento seguro • Garantia de 7 dias</div>
           </div>
         </section>
