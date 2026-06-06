@@ -24,7 +24,6 @@ export default function Inicio() {
   const [isYearly, setIsYearly] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [activeToolTab, setActiveToolTab] = useState<string>("featured");
-  const [videoOpen, setVideoOpen] = useState(false);
 
   useEffect(() => {
     const sticky = document.querySelector('.mobile-sticky');
@@ -32,10 +31,9 @@ export default function Inicio() {
     if (!sticky) return;
     
     const handleScroll = () => {
-      const scrollPercent = window.scrollY / (document.body.scrollHeight - window.innerHeight);
       const isPlanosVisible = planos ? planos.getBoundingClientRect().top < window.innerHeight : false;
 
-      if (scrollPercent > 0.35 && !isPlanosVisible) {
+      if (!isPlanosVisible) {
         sticky.classList.add('is-visible');
       } else {
         sticky.classList.remove('is-visible');
@@ -139,29 +137,15 @@ export default function Inicio() {
             <h2 className="section-title">Veja a plataforma por dentro em 60 segundos</h2>
             <p className="section-subtitle">Assista à criação de uma campanha, uma página e a organização de leads dentro do Canva Viagem.</p>
             
-              <div className="demo-frame" onClick={() => setVideoOpen(true)} style={{ cursor: 'pointer', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', pointerEvents: 'none' }}>
-                  <iframe 
-                    src="https://www.youtube.com/embed/P0_4EdEOQAc?autoplay=1&mute=1&controls=0&loop=1&playlist=P0_4EdEOQAc&modestbranding=1&rel=0&showinfo=0&disablekb=1"
-                    style={{ 
-                      position: 'absolute', 
-                      top: '50%', 
-                      left: '50%', 
-                      width: '150%', 
-                      height: '150%', 
-                      transform: 'translate(-50%, -50%)', 
-                      opacity: 0.8 
-                    }}
-                    frameBorder="0"
-                    allow="autoplay; encrypted-media"
-                  />
-                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(15, 23, 42, 0.2)' }}></div>
-                </div>
-                
-                <div className="demo-play" style={{ zIndex: 10 }}>
-                  <Play size={20} style={{ flexShrink: 0 }} />
-                  <span className="demo-play-text" style={{ marginLeft: '8px' }}>Ver prévia da plataforma</span>
-                </div>
+              <div className="demo-frame" style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: '22px', overflow: 'hidden' }}>
+                <iframe 
+                  src="https://www.youtube.com/embed/P0_4EdEOQAc"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Tour pela plataforma"
+                />
               </div>
             <p className="demo-disclaimer">Demonstração visual da plataforma. Exemplo representativo das funcionalidades.</p>
 
@@ -959,37 +943,8 @@ export default function Inicio() {
           <span>Plano Anual</span>
           <span>12x R$ 49<small>,85</small></span>
         </div>
-        <a href="#planos" className="sticky-btn">Assinar agora <Check size={16} /></a>
+        <a href="#planos" className="sticky-btn">Ver Planos <Check size={16} /></a>
       </div>
-
-      {/* Video Modal Overlay */}
-      {videoOpen && (
-        <div 
-          onClick={() => setVideoOpen(false)}
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 10002, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
-        >
-          <div 
-            onClick={e => e.stopPropagation()}
-            style={{ width: "100%", maxWidth: 960, position: "relative" }}
-          >
-            <button 
-              onClick={() => setVideoOpen(false)}
-              style={{ position: "absolute", top: -42, right: 0, background: "transparent", border: "none", color: "#fff", fontSize: 28, cursor: "pointer", fontWeight: 300 }}
-            >
-              ✕
-            </button>
-            <div style={{ position: "relative", paddingTop: "56.25%", borderRadius: 16, overflow: "hidden", border: `1px solid rgba(124, 58, 237, 0.5)`, boxShadow: `0 24px 80px rgba(124, 58, 237, 0.3)` }}>
-              <iframe 
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
-                src="https://www.youtube.com/embed/P0_4EdEOQAc?autoplay=1" 
-                allow="autoplay; encrypted-media" 
-                allowFullScreen 
-                title="Tour pela plataforma" 
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

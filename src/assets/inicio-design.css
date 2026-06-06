@@ -221,6 +221,12 @@ button, a {
   align-items: center;
 }
 
+@media (max-width: 767px) {
+  .header-cta {
+    display: none;
+  }
+}
+
 .hero {
   background: var(--gradient-main);
   color: white;
