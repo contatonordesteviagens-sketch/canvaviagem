@@ -961,6 +961,36 @@ export default function Inicio() {
         </div>
         <a href="#planos" className="sticky-btn">Assinar agora <Check size={16} /></a>
       </div>
+
+      {/* Video Modal Overlay */}
+      {videoOpen && (
+        <div 
+          onClick={() => setVideoOpen(false)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 10002, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()}
+            style={{ width: "100%", maxWidth: 960, position: "relative" }}
+          >
+            <button 
+              onClick={() => setVideoOpen(false)}
+              style={{ position: "absolute", top: -42, right: 0, background: "transparent", border: "none", color: "#fff", fontSize: 28, cursor: "pointer", fontWeight: 300 }}
+            >
+              ✕
+            </button>
+            <div style={{ position: "relative", paddingTop: "56.25%", borderRadius: 16, overflow: "hidden", border: `1px solid rgba(124, 58, 237, 0.5)`, boxShadow: `0 24px 80px rgba(124, 58, 237, 0.3)` }}>
+              <iframe 
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
+                src="https://www.youtube.com/embed/P0_4EdEOQAc?autoplay=1" 
+                allow="autoplay; encrypted-media" 
+                allowFullScreen 
+                title="Tour pela plataforma" 
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
