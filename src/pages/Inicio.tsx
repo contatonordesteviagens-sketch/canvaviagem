@@ -139,6 +139,7 @@ export default function Inicio() {
               <div className="hero-proof">
                 <span>Pagamento seguro via Hotmart</span>
               </div>
+            </div>
             <div className="w-full max-w-[600px] mx-auto mt-8 sm:mt-12 flex justify-center px-4 sm:px-0">
               <ProductDemo showStartDemo={false} />
             </div>
@@ -825,7 +826,7 @@ export default function Inicio() {
         {/* EMPILHAMENTO DE VALOR */}
         <section className="offer-stack inicio-section">
           <div className="inicio-container w-full max-w-[800px] mx-auto px-4 sm:px-8">
-            <p className="text-center text-[10px] sm:text-xs text-[#8b3dff] tracking-[1.5px] font-extrabold mb-2 uppercase">
+            <p className="text-center text-[10px] sm:text-xs text-[#7C3AED] tracking-[1.5px] font-extrabold mb-2 uppercase">
               A CONTA NÃO FECHA NO MERCADO TRADICIONAL
             </p>
             <h2 className="text-[24px] sm:text-[32px] mb-6 sm:mb-8 text-center font-black leading-tight text-slate-900">
@@ -856,16 +857,17 @@ export default function Inicio() {
                 </li>
               </ul>
               
-              <div className="mt-5 sm:mt-6 text-center bg-[#FEF2F2] p-4 sm:p-5 rounded-xl border border-dashed border-[#FCA5A5]">
-                <p className="text-[#EF4444] text-[12px] sm:text-[13px] mb-1 sm:mb-2 font-semibold px-2">Custo total para sua agência no mercado tradicional:</p>
-                <div className="text-[15px] sm:text-[18px] font-extrabold text-[#EF4444] line-through px-2">R$ 3.240/mês + R$ 1.500 único</div>
+              <div className="mt-5 sm:mt-6 text-center bg-[#FEF2F2] p-4 sm:p-5 rounded-[16px] border border-[#FECACA]">
+                <p className="text-[#DC2626] text-[12px] sm:text-[13px] mb-1 sm:mb-2 font-bold px-2">Custo total no mercado tradicional:</p>
+                <div className="text-[16px] sm:text-[20px] font-black text-[#DC2626] line-through px-2">R$ 3.240/mês + R$ 1.500 único</div>
               </div>
               
-              <div className="mt-4 sm:mt-5 text-center bg-[#F5F3FF] p-5 sm:p-7 rounded-xl border border-[#C4B5FD]">
-                <p className="text-[#8b3dff] text-[11px] sm:text-[12px] font-bold mb-2 uppercase tracking-[1px]">Com o Canva Viagem Elite</p>
-                <div className="text-[28px] sm:text-[36px] font-black text-[#8b3dff] leading-none mb-2">Apenas R$ 97/mês</div>
-                <p className="text-[#64748b] text-[11px] sm:text-[12px] mt-2 font-medium px-2 leading-tight">
-                  Ou R$ 497 no plano anual (Economia de mais de R$ 38.000,00 por ano comparado a uma equipe completa).
+              <div className="mt-4 sm:mt-5 text-center bg-[#F8FAFC] p-6 sm:p-8 rounded-[16px] border-2 border-[#7C3AED] shadow-[0_12px_40px_rgba(124,58,237,0.12)] relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#7C3AED] to-[#06B6D4]"></div>
+                <p className="text-[#7C3AED] text-[11px] sm:text-[12px] font-black mb-2 uppercase tracking-[1px]">Com o Canva Viagem Elite</p>
+                <div className="text-[32px] sm:text-[42px] font-black text-[#0F172A] leading-none mb-2">Apenas R$ 97<span className="text-[18px] sm:text-[22px] text-[#475569] font-bold">/mês</span></div>
+                <p className="text-[#475569] text-[12px] sm:text-[13px] mt-3 font-semibold px-2 leading-snug">
+                  Ou R$ 497 no plano anual (Economia de mais de R$ 38.000,00 por ano comparado a uma equipe).
                 </p>
               </div>
             </div>
