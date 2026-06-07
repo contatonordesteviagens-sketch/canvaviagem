@@ -106,8 +106,19 @@ export default function Inicio() {
         <section id="hero" className="hero">
           <div className="inicio-container hero-inner">
             <div className="hero-copy">
-              <h1>Crie posts, anúncios e páginas para vender viagens em minutos.</h1>
-              <p>O Canva Viagem reúne mídias prontas, IA para anúncios, criador de páginas e CRM para ajudar sua agência a aparecer melhor, atender mais rápido e vender pacotes com mais profissionalismo.</p>
+              {/* Badge +500 agências */}
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '100px', padding: '6px 16px 6px 6px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', marginLeft: '4px' }}>
+                  <img src="https://i.pravatar.cc/100?img=12" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-4px', position: 'relative', zIndex: 4 }} />
+                  <img src="https://i.pravatar.cc/100?img=32" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-10px', position: 'relative', zIndex: 3 }} />
+                  <img src="https://i.pravatar.cc/100?img=45" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-10px', position: 'relative', zIndex: 2 }} />
+                  <img src="https://i.pravatar.cc/100?img=5" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-10px', position: 'relative', zIndex: 1 }} />
+                </div>
+                <span style={{ fontSize: '13px', fontWeight: '500', color: 'rgba(255,255,255,0.9)' }}>+500 agências aprovam</span>
+              </div>
+
+              <h1>Você só foca na venda de viagens. O Canva Viagem cuida do resto.</h1>
+              <p>Site completo, CRM para organizar clientes, criador de anúncios automático e +400 mídias de viagens! Tudo rodando no piloto automático, no mesmo ecossistema para você atrair viajantes de alto padrão e fechar pacotes todos os dias.</p>
               
               <ul className="hero-bullets">
                 <li>400+ mídias prontas para turismo</li>
@@ -134,7 +145,7 @@ export default function Inicio() {
         {/* 3. DEMONSTRAÇÃO DA PLATAFORMA */}
         <section id="demo" className="demo inicio-section">
           <div className="inicio-container">
-            <h2 className="section-title">Veja a plataforma por dentro em 60 segundos</h2>
+            <h2 className="section-title">Veja a plataforma por dentro em 60 segundos 👇</h2>
             <p className="section-subtitle">Assista à criação de uma campanha, uma página e a organização de leads dentro do Canva Viagem.</p>
             
               <div className="demo-frame" style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: '22px', overflow: 'hidden' }}>
@@ -196,9 +207,8 @@ export default function Inicio() {
           </div>
         </section>
 
-        {/* DEPOIMENTOS — OCULTO ATÉ HAVER DEPOIMENTOS REAIS */}
-        {/* Para ativar: remover o style={{ display: 'none' }} abaixo */}
-        <section className="testimonials inicio-section" style={{ display: 'none' }} aria-hidden="true">
+        {/* DEPOIMENTOS */}
+        <section className="testimonials inicio-section">
           <div className="inicio-container">
             <h2 className="section-title">Quem usa, entende o valor nos primeiros minutos</h2>
             <p className="section-subtitle">Veja relatos reais de agentes e profissionais do turismo que começaram a usar o Canva Viagem.</p>
@@ -832,6 +842,54 @@ export default function Inicio() {
           <p>Assine hoje e garanta acesso às funcionalidades atuais da plataforma enquanto a oferta estiver disponível.</p>
         </section>
 
+        {/* EMPILHAMENTO DE VALOR */}
+        <section className="offer-stack inicio-section">
+          <div className="inicio-container">
+            <p style={{ textAlign: "center", fontSize: 11, color: "#8b3dff", letterSpacing: 2, fontWeight: 800, marginBottom: 12, textTransform: "uppercase" }}>
+              A CONTA NÃO FECHA NO MERCADO TRADICIONAL
+            </p>
+            <h2 className="section-title">Se você fosse contratar tudo isso separado:</h2>
+            
+            <div style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 24, padding: "32px 28px", marginTop: "32px" }}>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '20px' }}>
+                  <span style={{ fontSize: '16px', color: "#64748b" }}>Plataforma de CRM:</span>
+                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: "#0f172a" }}>R$ 150/mês</span>
+                </li>
+                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '20px' }}>
+                  <span style={{ fontSize: '16px', color: "#64748b" }}>Construtor de Sites Express:</span>
+                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: "#0f172a" }}>R$ 90/mês</span>
+                </li>
+                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '20px' }}>
+                  <span style={{ fontSize: '16px', color: "#64748b" }}>Designer Freelancer (30 artes):</span>
+                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500/mês</span>
+                </li>
+                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '20px' }}>
+                  <span style={{ fontSize: '16px', color: "#64748b" }}>Editor de Vídeo (15 vídeos):</span>
+                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500/mês</span>
+                </li>
+                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '20px' }}>
+                  <span style={{ fontSize: '16px', color: "#64748b" }}>Site Pronto Completo:</span>
+                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500 único</span>
+                </li>
+              </ul>
+              
+              <div style={{ marginTop: '32px', textAlign: 'center', background: 'rgba(239,68,68,0.05)', padding: '24px', borderRadius: '16px', border: '1px dashed rgba(239,68,68,0.3)' }}>
+                <p style={{ color: '#ef4444', fontSize: '14px', marginBottom: '8px', fontWeight: '600' }}>Custo total para sua agência no mercado tradicional:</p>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#ef4444', textDecoration: 'line-through' }}>R$ 3.240/mês + R$ 1.500 único</div>
+              </div>
+              
+              <div style={{ marginTop: '24px', textAlign: 'center', background: 'rgba(139, 61, 255, 0.05)', padding: '32px 24px', borderRadius: '16px', border: `2px solid #8b3dff`, boxShadow: `0 0 30px rgba(139, 61, 255, 0.1)` }}>
+                <p style={{ color: "#8b3dff", fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Com o Canva Viagem Elite</p>
+                <div style={{ fontSize: '42px', fontWeight: '900', color: "#8b3dff", lineHeight: '1' }}>Apenas R$ 97/mês</div>
+                <p style={{ color: '#64748b', fontSize: '14px', marginTop: '12px', fontWeight: '500' }}>
+                  Ou R$ 497 no plano anual (Economia de mais de R$ 38.000,00 por ano comparado a uma equipe completa).
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* 10. PLANOS / PRICING */}
         <section id="planos" className="pricing inicio-section">
           <div className="inicio-container">
@@ -853,14 +911,14 @@ export default function Inicio() {
                 <span>Dias</span>
               </div>
               <div>
-                <h2>Risco zero para sua agência</h2>
+                <h2>Garantia Incondicional de Resultado</h2>
                 <p style={{ marginTop: "14px", fontSize: "15.5px", lineHeight: "1.6" }}>
-                  Você tem 7 dias para testar o Canva Viagem. Crie posts, legendas, páginas e veja se a plataforma faz sentido para sua rotina. Se não gostar, solicite reembolso dentro do prazo da garantia.
+                  O risco é 100% meu — não seu. Assine hoje. Use a nossa IA, baixe os criativos premium e poste nas suas redes. Se você não achar que o visual da sua agência subiu de nível, aperte um botão no painel e devolvemos 100% do seu dinheiro. Sem perguntas. Reembolso automático garantido pela Hotmart.
                 </p>
                 <ul className="guarantee-list">
-                  <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Teste antes de decidir</li>
+                  <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Teste na prática por 7 dias</li>
                   <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Acesso imediato após o pagamento</li>
-                  <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Reembolso conforme a política de garantia</li>
+                  <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Reembolso com um clique (Garantia Hotmart)</li>
                 </ul>
                 <a href="#" className="refund-link" style={{ marginTop: "24px" }}>Ver política de reembolso</a>
               </div>

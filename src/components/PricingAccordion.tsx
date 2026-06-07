@@ -58,12 +58,12 @@ export function PricingAccordion() {
                 padding: '16px', textAlign: 'center', width: '100%'
               }}>
                 <div className="text-[13px] sm:text-[17px] font-[800] text-[#15803D] flex items-center justify-center gap-1 whitespace-nowrap">
-                  12x de R$ 49,85 <span className="font-[700] opacity-80">ou R$ 482 à vista</span>
+                  12x de R$ 49,60 <span className="font-[700] opacity-80">ou R$ 497 à vista</span>
                 </div>
               </div>
               
               <div style={{ width: '100%', textAlign: 'center', fontSize: '13px', color: '#B45309', fontWeight: '700', opacity: 0.85, marginTop: '8px', background: '#FEF3C7', borderRadius: '8px', padding: '6px', border: '1px solid #FDE68A' }}>
-                💰 Economize R$ 682 no anual
+                💰 Economize R$ 667 no anual
               </div>
             </div>
 
@@ -93,7 +93,7 @@ export function PricingAccordion() {
                     </div>
 
                     <a
-                      href="https://pay.hotmart.com/C106141067C?off=ts1hgsho&checkoutMode=10"
+                      href="https://pay.hotmart.com/C106141067C?off=1wecpk2v&checkoutMode=10"
                       className="w-full text-center py-3.5 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 flex items-center justify-center"
                       style={{ background: '#7C3AED' }}
                     >
