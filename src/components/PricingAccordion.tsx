@@ -51,19 +51,15 @@ export function PricingAccordion() {
                 Acesso completo por 12 meses com o maior desconto.
               </p>
               
-              {/* PREÇO VERDE UNIFICADO (Conforme pedido) */}
-              <div className="mt-4" style={{
-                background: 'linear-gradient(135deg, #F0FDF4, #DCFCE7)',
-                border: '1px solid #86EFAC', borderRadius: '12px',
-                padding: '16px', textAlign: 'center', width: '100%'
-              }}>
-                <div className="text-[13px] sm:text-[17px] font-[800] text-[#15803D] flex items-center justify-center gap-1 whitespace-nowrap">
-                  12x de R$ 49,60 <span className="font-[700] opacity-80">ou R$ 497 à vista</span>
+              <div className="mt-5 flex flex-col items-center w-full">
+                <div className="flex items-baseline justify-center gap-1 text-[#7C3AED]">
+                  <span className="text-[16px] font-bold">12x</span>
+                  <span className="text-[36px] sm:text-[42px] font-black leading-[0.9] tracking-tight">R$ 49,60</span>
                 </div>
-              </div>
-              
-              <div style={{ width: '100%', textAlign: 'center', fontSize: '13px', color: '#B45309', fontWeight: '700', opacity: 0.85, marginTop: '8px', background: '#FEF3C7', borderRadius: '8px', padding: '6px', border: '1px solid #FDE68A' }}>
-                💰 Economize R$ 667 no anual
+                
+                <div className="bg-[#F0FDF4] border border-[#86EFAC] text-[#15803D] text-[12px] sm:text-[13px] font-bold px-4 py-1.5 rounded-full mt-3 shadow-sm text-center">
+                  💳 Ou R$ 497 à vista <span className="opacity-80 font-semibold">(Economize R$ 667)</span>
+                </div>
               </div>
             </div>
 
@@ -131,10 +127,13 @@ export function PricingAccordion() {
                 Sem compromisso.
               </p>
               
-              {/* Preço Mensal Centralizado */}
-              <div className="mt-3">
-                <div className="text-3xl font-black text-slate-900 leading-none flex items-baseline justify-center gap-1">
-                  R$ 97<span className="text-sm text-slate-500 font-bold">/mês</span>
+              <div className="mt-5 flex flex-col items-center w-full">
+                <div className="flex items-baseline justify-center gap-1 text-slate-800">
+                  <span className="text-[36px] sm:text-[42px] font-black leading-[0.9] tracking-tight">R$ 97</span>
+                  <span className="text-[16px] sm:text-[18px] font-bold text-slate-500">/mês</span>
+                </div>
+                <div className="bg-slate-100 text-slate-600 text-[11px] sm:text-[12px] font-medium px-4 py-1.5 rounded-full mt-3 text-center">
+                  Cancele quando quiser, sem taxas.
                 </div>
               </div>
             </div>

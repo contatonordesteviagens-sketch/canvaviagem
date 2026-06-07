@@ -234,21 +234,21 @@ export default function Inicio() {
           <div className="inicio-container">
             <h2 className="section-title">Veja como o Canva Viagem funciona na prática</h2>
             <p className="section-subtitle">Uma demonstração rápida mostrando como transformar uma ideia de pacote em conteúdo, página e organização comercial.</p>
-            <div className="hiw-grid">
-              <div className="hiw-card">
-                <div className="hiw-number">1</div>
-                <h3>Campanha criada</h3>
-                <p>Digite o destino e gere textos, ideias e chamadas para divulgar o pacote.</p>
+            <div className="grid grid-cols-1 gap-6 sm:gap-8 mt-8 md:mt-12 w-full max-w-[800px] mx-auto px-4 sm:px-0">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl font-black mb-4">1</div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">Campanha criada</h3>
+                <p className="text-sm text-slate-600 leading-snug">Digite o destino e gere textos, ideias e chamadas para divulgar o pacote.</p>
               </div>
-              <div className="hiw-card">
-                <div className="hiw-number">2</div>
-                <h3>Página pronta</h3>
-                <p>Monte uma página simples para apresentar o pacote e enviar no WhatsApp.</p>
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl font-black mb-4">2</div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">Página pronta</h3>
+                <p className="text-sm text-slate-600 leading-snug">Monte uma página simples para apresentar o pacote e enviar no WhatsApp.</p>
               </div>
-              <div className="hiw-card">
-                <div className="hiw-number">3</div>
-                <h3>Lead organizado</h3>
-                <p>Registre contatos, orçamentos e oportunidades no CRM integrado.</p>
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl font-black mb-4">3</div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">Lead organizado</h3>
+                <p className="text-sm text-slate-600 leading-snug">Registre contatos, orçamentos e oportunidades no CRM integrado.</p>
               </div>
             </div>
           </div>
@@ -333,30 +333,30 @@ export default function Inicio() {
               <div>
                 <h2>Criado por quem vive o turismo</h2>
                 <p className="authority-text">O Canva Viagem foi criado por Lucas Ferrari, especialista em marketing para agências, receptivos e profissionais do turismo. A plataforma nasceu para ajudar agências a criar conteúdo, páginas e campanhas com mais velocidade, sem depender de designer, social media ou agência cara.</p>
-                <div className="authority-stats">
-                  <div className="stat-card">
-                    <div className="stat-number">10+</div>
-                    <div className="stat-label">Anos no turismo e marketing</div>
+                <div className="grid grid-cols-3 gap-2 mt-6 max-w-[600px] mx-auto md:mx-0">
+                  <div className="bg-white border border-slate-200 rounded-xl p-2 sm:p-3 shadow-sm text-center">
+                    <div className="text-[18px] sm:text-[26px] font-black text-[#7C3AED] leading-none mb-1">10+</div>
+                    <div className="text-[10px] sm:text-[13px] text-slate-600 leading-tight">Anos no turismo</div>
                   </div>
-                  <div className="stat-card">
-                    <div className="stat-number">100%</div>
-                    <div className="stat-label">Foco em agências de viagens</div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-2 sm:p-3 shadow-sm text-center">
+                    <div className="text-[18px] sm:text-[26px] font-black text-[#7C3AED] leading-none mb-1">100%</div>
+                    <div className="text-[10px] sm:text-[13px] text-slate-600 leading-tight">Foco em agências</div>
                   </div>
-                  <div className="stat-card">
-                    <div className="stat-number" style={{ fontSize: "18px" }}>Suporte</div>
-                    <div className="stat-label">Comunidade de agentes e agências</div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-2 sm:p-3 shadow-sm text-center">
+                    <div className="text-[16px] sm:text-[20px] font-black text-[#7C3AED] leading-none mb-1 mt-0.5 sm:mt-1">Suporte</div>
+                    <div className="text-[10px] sm:text-[13px] text-slate-600 leading-tight">Comunidade VIP</div>
                   </div>
                 </div>
                 
-                <div className="authority-actions" style={{ display: 'flex', gap: '12px', marginTop: '32px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                  <a href="#" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px', background: 'white', border: '1px solid #E2E8F0', color: '#0F172A', fontWeight: '800' }}>
+                <div className="grid grid-cols-2 gap-3 mt-6 max-w-[400px] mx-auto md:mx-0">
+                  <a href="#" className="flex items-center justify-center gap-2 h-12 bg-white border border-slate-200 rounded-xl font-bold text-[13px] sm:text-[15px] text-slate-900 shadow-sm transition-colors hover:bg-slate-50">
                     <Instagram size={18} color="#E1306C" /> Instagram
                   </a>
-                  <a href="#" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px', background: 'white', border: '1px solid #E2E8F0', color: '#0F172A', fontWeight: '800' }}>
+                  <a href="#" className="flex items-center justify-center gap-2 h-12 bg-white border border-slate-200 rounded-xl font-bold text-[13px] sm:text-[15px] text-slate-900 shadow-sm transition-colors hover:bg-slate-50">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#25D366" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                     WhatsApp
                   </a>
-                  <a href="#demo" className="btn btn-primary" style={{ padding: '0 16px' }}>
+                  <a href="#demo" className="col-span-2 flex items-center justify-center h-12 bg-[#7C3AED] text-white rounded-xl font-bold text-[14px] sm:text-[16px] shadow-md hover:bg-[#6D28D9] transition-colors">
                     Ver demonstração
                   </a>
                 </div>
@@ -373,36 +373,36 @@ export default function Inicio() {
               <p className="section-subtitle w-full text-center" style={{ textAlign: 'center', margin: '0 auto 32px' }}>Uma plataforma para criar conteúdo, divulgar pacotes, montar páginas e organizar leads sem depender de várias ferramentas.</p>
             </div>
             
-            <div className="features-grid mx-auto" style={{ margin: '0 auto' }}>
-              <div className="feature-card">
-                <div className="feature-icon"><Instagram size={20} /></div>
-                <h3>Posts e Carrosséis</h3>
-                <p>Formatos prontos para divulgar destinos, pacotes e datas especiais.</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mt-8 w-full max-w-[940px] mx-auto px-4 sm:px-0">
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
+                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><Instagram size={20} /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">Posts e Carrosséis</h3>
+                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Formatos prontos para divulgar destinos e pacotes.</p>
               </div>
-              <div className="feature-card">
-                <div className="feature-icon"><Video size={20} /></div>
-                <h3>Vídeos Curtos</h3>
-                <p>Roteiros e templates para Reels, Stories e vídeos de oferta.</p>
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
+                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><Video size={20} /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">Vídeos Curtos</h3>
+                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Roteiros e templates para Reels e Stories.</p>
               </div>
-              <div className="feature-card">
-                <div className="feature-icon"><BookOpen size={20} /></div>
-                <h3>Legendas com IA</h3>
-                <p>Textos criados para divulgar pacotes com mais clareza e persuasão.</p>
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
+                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><BookOpen size={20} /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">Legendas com IA</h3>
+                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Textos criados para divulgar pacotes com clareza.</p>
               </div>
-              <div className="feature-card">
-                <div className="feature-icon"><LayoutDashboard size={20} /></div>
-                <h3>Sites Express</h3>
-                <p>Páginas de venda para pacotes específicos, prontas para compartilhar.</p>
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
+                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><LayoutDashboard size={20} /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">Sites Express</h3>
+                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Páginas de venda para pacotes prontas para envio.</p>
               </div>
-              <div className="feature-card">
-                <div className="feature-icon"><Calendar size={20} /></div>
-                <h3>CRM Integrado</h3>
-                <p>Organize leads, orçamentos e contatos em um único painel.</p>
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
+                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><Calendar size={20} /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">CRM Integrado</h3>
+                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Organize leads, orçamentos e contatos.</p>
               </div>
-              <div className="feature-card">
-                <div className="feature-icon"><Clock size={20} /></div>
-                <h3>Automação</h3>
-                <p>Recursos para acelerar sua rotina de conteúdo e atendimento.</p>
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
+                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><Clock size={20} /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">Automação</h3>
+                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Recursos para acelerar sua rotina de conteúdo.</p>
               </div>
             </div>
             
@@ -862,11 +862,20 @@ export default function Inicio() {
                 <div className="text-[16px] sm:text-[20px] font-black text-[#DC2626] line-through px-2">R$ 3.240/mês + R$ 1.500 único</div>
               </div>
               
-              <div className="mt-4 sm:mt-5 text-center bg-[#F8FAFC] p-6 sm:p-8 rounded-[16px] border-2 border-[#7C3AED] shadow-[0_12px_40px_rgba(124,58,237,0.12)] relative overflow-hidden">
+              <div className="mt-4 sm:mt-5 text-center bg-[#F8FAFC] py-8 px-4 sm:p-8 rounded-[16px] border-2 border-[#7C3AED] shadow-[0_12px_40px_rgba(124,58,237,0.12)] relative overflow-hidden flex flex-col items-center justify-center">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#7C3AED] to-[#06B6D4]"></div>
-                <p className="text-[#7C3AED] text-[11px] sm:text-[12px] font-black mb-2 uppercase tracking-[1px]">Com o Canva Viagem Elite</p>
-                <div className="text-[32px] sm:text-[42px] font-black text-[#0F172A] leading-none mb-2">Apenas R$ 97<span className="text-[18px] sm:text-[22px] text-[#475569] font-bold">/mês</span></div>
-                <p className="text-[#475569] text-[12px] sm:text-[13px] mt-3 font-semibold px-2 leading-snug">
+                <p className="text-[#7C3AED] text-[11px] sm:text-[12px] font-black mb-3 uppercase tracking-[1px] bg-[#7C3AED]/10 px-3 py-1 rounded-full">Com o Canva Viagem Elite</p>
+                
+                <div className="flex flex-col items-center justify-center">
+                  <span className="text-[16px] sm:text-[18px] font-bold text-[#0F172A] mb-1">Apenas</span>
+                  <div className="flex items-end justify-center gap-1 leading-none">
+                    <span className="text-[24px] sm:text-[32px] font-bold text-[#0F172A] mb-1">R$</span>
+                    <span className="text-[54px] sm:text-[64px] font-black text-[#0F172A] leading-[0.8] tracking-tight">97</span>
+                    <span className="text-[18px] sm:text-[22px] text-[#475569] font-bold mb-1">/mês</span>
+                  </div>
+                </div>
+                
+                <p className="text-[#475569] text-[12px] sm:text-[13px] mt-4 font-semibold px-2 leading-snug max-w-[300px]">
                   Ou R$ 497 no plano anual (Economia de mais de R$ 38.000,00 por ano comparado a uma equipe).
                 </p>
               </div>
