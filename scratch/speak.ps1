@@ -1,5 +1,0 @@
-Add-Type -AssemblyName System.speech
-$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer
-$speak.Rate = 2
-$speak.SelectVoice('Microsoft Daniel')
-$speak.Speak('Olá! Entendi perfeitamente a sua ideia sensacional. Vamos criar a publicação em um clique diretamente na sua conta do Vercel! O funcionamento será fantástico: você pode configurar a variável VITE_VERCEL_TOKEN no seu arquivo ponto env, e com isso o token fica 100% oculto dos seus agentes de viagem. Eles só vão ver um botão lindo chamado Publicar no Vercel. O sistema gera automaticamente o subdomínio usando o nome da agência deles limpo, sem acentos, e coloca o site no ar instantaneamente. Se eles alterarem pacotes ou dados do site e clicarem de novo, o Vercel atualiza o mesmo projeto automaticamente! Também adicionei um painel retrátil no painel para caso queira inserir o token de forma dinâmica. Já comecei a alterar os arquivos Phase4LandingBuilder em português e espanhol para que tudo funcione perfeitamente. Vamos a isso!')
