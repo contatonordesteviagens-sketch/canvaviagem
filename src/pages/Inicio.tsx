@@ -139,8 +139,7 @@ export default function Inicio() {
               <div className="hero-proof">
                 <span>Pagamento seguro via Hotmart</span>
               </div>
-            </div>
-            <div className="hero-visual" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <div className="w-full max-w-[600px] mx-auto mt-8 sm:mt-12 flex justify-center px-4 sm:px-0">
               <ProductDemo showStartDemo={false} />
             </div>
           </div>
@@ -152,10 +151,12 @@ export default function Inicio() {
             <h2 className="section-title">Dashboard inteligente feito para quem vende viagens</h2>
             <p className="section-subtitle">Tudo o que sua agência precisa em uma única tela, fácil de usar e direto ao ponto.</p>
             
-            <div style={{ maxWidth: '800px', margin: '32px auto 0', borderRadius: '22px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
-              <img src={heroDashboard} alt="Dashboard da plataforma" style={{ width: '100%', display: 'block' }} />
+            <div className="w-full max-w-[800px] mx-auto mt-8 sm:mt-10 rounded-[16px] sm:rounded-[22px] overflow-hidden border border-black/5 shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
+              <img src={heroDashboard} alt="Dashboard da plataforma" className="w-full block" />
             </div>
-            <p className="demo-disclaimer" style={{ marginTop: '16px', textAlign: 'center', fontSize: '14px', color: '#64748b' }}>Visão geral do painel da plataforma. Exemplo representativo.</p>
+            <p className="mt-4 sm:mt-6 text-center text-[12px] sm:text-[14px] text-slate-500 px-4">
+              Visão geral do painel da plataforma. Exemplo representativo.
+            </p>
 
             <div className="steps-grid">
               <div className="step-card">
@@ -212,15 +213,15 @@ export default function Inicio() {
             </p>
             <h2 className="section-title" style={{ color: '#fff', marginBottom: '40px' }}>Resultados diretos no WhatsApp de quem usa</h2>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', alignItems: 'start' }}>
-              <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <img src={depoimento1} alt="Resultado no WhatsApp" style={{ width: '100%', display: 'block' }} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 items-start mt-8 sm:mt-12 px-4 sm:px-0">
+              <div className="rounded-[16px] overflow-hidden border border-white/10 shadow-lg">
+                <img src={depoimento1} alt="Resultado no WhatsApp" className="w-full block" />
               </div>
-              <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <img src={depoimento2} alt="Resultado no WhatsApp" style={{ width: '100%', display: 'block' }} />
+              <div className="rounded-[16px] overflow-hidden border border-white/10 shadow-lg">
+                <img src={depoimento2} alt="Resultado no WhatsApp" className="w-full block" />
               </div>
-              <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <img src={depoimento3} alt="Resultado no WhatsApp" style={{ width: '100%', display: 'block' }} />
+              <div className="rounded-[16px] overflow-hidden border border-white/10 shadow-lg">
+                <img src={depoimento3} alt="Resultado no WhatsApp" className="w-full block" />
               </div>
             </div>
             <p className="testimonials-note" style={{ color: 'rgba(255,255,255,0.5)', marginTop: '32px', textAlign: 'center', fontSize: '13px' }}>Depoimentos reais. Resultados variam conforme oferta, atendimento, audiência e divulgação.</p>
@@ -823,45 +824,47 @@ export default function Inicio() {
 
         {/* EMPILHAMENTO DE VALOR */}
         <section className="offer-stack inicio-section">
-          <div className="inicio-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <p style={{ textAlign: "center", fontSize: 10, color: "#8b3dff", letterSpacing: 1.5, fontWeight: 800, marginBottom: 8, textTransform: "uppercase" }}>
+          <div className="inicio-container w-full max-w-[800px] mx-auto px-4 sm:px-8">
+            <p className="text-center text-[10px] sm:text-xs text-[#8b3dff] tracking-[1.5px] font-extrabold mb-2 uppercase">
               A CONTA NÃO FECHA NO MERCADO TRADICIONAL
             </p>
-            <h2 className="section-title" style={{ fontSize: '32px', marginBottom: '32px' }}>Se você fosse contratar tudo isso separado:</h2>
+            <h2 className="text-[24px] sm:text-[32px] mb-6 sm:mb-8 text-center font-black leading-tight text-slate-900">
+              Se você fosse contratar tudo isso separado:
+            </h2>
             
-            <div style={{ background: "#FAFAFA", border: "1px solid #F1F5F9", borderRadius: 16, padding: "32px", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', color: "#64748b", flex: 1 }}>Plataforma de CRM:</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a", whiteSpace: 'nowrap' }}>R$ 150/mês</span>
+            <div className="bg-[#FAFAFA] border border-[#F1F5F9] rounded-2xl p-5 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] w-full">
+              <ul className="flex flex-col gap-3 sm:gap-4 list-none p-0 m-0">
+                <li className="flex justify-between items-center border-b border-[#E2E8F0] pb-3 sm:pb-4 gap-2">
+                  <span className="text-[13px] sm:text-[15px] text-[#64748b] leading-tight flex-1">Plataforma de CRM:</span>
+                  <span className="text-[13px] sm:text-[15px] font-bold text-[#0f172a] whitespace-nowrap text-right">R$ 150/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', color: "#64748b", flex: 1 }}>Construtor de Sites Express:</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a", whiteSpace: 'nowrap' }}>R$ 90/mês</span>
+                <li className="flex justify-between items-center border-b border-[#E2E8F0] pb-3 sm:pb-4 gap-2">
+                  <span className="text-[13px] sm:text-[15px] text-[#64748b] leading-tight flex-1">Construtor de Sites Express:</span>
+                  <span className="text-[13px] sm:text-[15px] font-bold text-[#0f172a] whitespace-nowrap text-right">R$ 90/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', color: "#64748b", flex: 1 }}>Designer Freelancer (30 artes):</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a", whiteSpace: 'nowrap' }}>R$ 1.500/mês</span>
+                <li className="flex justify-between items-center border-b border-[#E2E8F0] pb-3 sm:pb-4 gap-2">
+                  <span className="text-[13px] sm:text-[15px] text-[#64748b] leading-tight flex-1">Designer Freelancer (30 artes):</span>
+                  <span className="text-[13px] sm:text-[15px] font-bold text-[#0f172a] whitespace-nowrap text-right">R$ 1.500/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', color: "#64748b", flex: 1 }}>Editor de Vídeo (15 vídeos):</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a", whiteSpace: 'nowrap' }}>R$ 1.500/mês</span>
+                <li className="flex justify-between items-center border-b border-[#E2E8F0] pb-3 sm:pb-4 gap-2">
+                  <span className="text-[13px] sm:text-[15px] text-[#64748b] leading-tight flex-1">Editor de Vídeo (15 vídeos):</span>
+                  <span className="text-[13px] sm:text-[15px] font-bold text-[#0f172a] whitespace-nowrap text-right">R$ 1.500/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', color: "#64748b", flex: 1 }}>Site Pronto Completo:</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a", whiteSpace: 'nowrap' }}>R$ 1.500 único</span>
+                <li className="flex justify-between items-center border-b border-[#E2E8F0] pb-3 sm:pb-4 gap-2">
+                  <span className="text-[13px] sm:text-[15px] text-[#64748b] leading-tight flex-1">Site Pronto Completo:</span>
+                  <span className="text-[13px] sm:text-[15px] font-bold text-[#0f172a] whitespace-nowrap text-right">R$ 1.500 único</span>
                 </li>
               </ul>
               
-              <div style={{ marginTop: '24px', textAlign: 'center', background: '#FEF2F2', padding: '16px', borderRadius: '12px', border: '1px dashed #FCA5A5' }}>
-                <p style={{ color: '#EF4444', fontSize: '13px', marginBottom: '4px', fontWeight: '500' }}>Custo total para sua agência no mercado tradicional:</p>
-                <div style={{ fontSize: '18px', fontWeight: '800', color: '#EF4444', textDecoration: 'line-through' }}>R$ 3.240/mês + R$ 1.500 único</div>
+              <div className="mt-5 sm:mt-6 text-center bg-[#FEF2F2] p-4 sm:p-5 rounded-xl border border-dashed border-[#FCA5A5]">
+                <p className="text-[#EF4444] text-[12px] sm:text-[13px] mb-1 sm:mb-2 font-semibold px-2">Custo total para sua agência no mercado tradicional:</p>
+                <div className="text-[15px] sm:text-[18px] font-extrabold text-[#EF4444] line-through px-2">R$ 3.240/mês + R$ 1.500 único</div>
               </div>
               
-              <div style={{ marginTop: '16px', textAlign: 'center', background: '#F5F3FF', padding: '24px', borderRadius: '12px', border: `1px solid #C4B5FD` }}>
-                <p style={{ color: "#8b3dff", fontSize: '12px', fontWeight: 'bold', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Com o Canva Viagem Elite</p>
-                <div style={{ fontSize: '36px', fontWeight: '900', color: "#8b3dff", lineHeight: '1' }}>Apenas R$ 97/mês</div>
-                <p style={{ color: '#64748b', fontSize: '12px', marginTop: '8px', fontWeight: '500' }}>
+              <div className="mt-4 sm:mt-5 text-center bg-[#F5F3FF] p-5 sm:p-7 rounded-xl border border-[#C4B5FD]">
+                <p className="text-[#8b3dff] text-[11px] sm:text-[12px] font-bold mb-2 uppercase tracking-[1px]">Com o Canva Viagem Elite</p>
+                <div className="text-[28px] sm:text-[36px] font-black text-[#8b3dff] leading-none mb-2">Apenas R$ 97/mês</div>
+                <p className="text-[#64748b] text-[11px] sm:text-[12px] mt-2 font-medium px-2 leading-tight">
                   Ou R$ 497 no plano anual (Economia de mais de R$ 38.000,00 por ano comparado a uma equipe completa).
                 </p>
               </div>
