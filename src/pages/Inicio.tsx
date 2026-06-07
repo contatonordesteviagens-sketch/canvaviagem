@@ -11,6 +11,10 @@ import antesAmador from "@/assets/antes_amador.png";
 import depoisPremium from "@/assets/depois_premium.png";
 import crmLeads from "@/assets/crm_leads.png";
 import paginaRoteiro from "@/assets/pagina_venda_roteiro.png";
+import depoimento1 from "@/assets/depoimento1.jpg";
+import depoimento2 from "@/assets/depoimento2.png";
+import depoimento3 from "@/assets/depoimento3.jpg";
+import { ProductDemo } from "../components/planos/ProductDemo";
 import { PricingAccordion } from "@/components/PricingAccordion";
 
 // Import local premium tools showcase images
@@ -136,8 +140,8 @@ export default function Inicio() {
                 <span>Pagamento seguro via Hotmart</span>
               </div>
             </div>
-            <div className="hero-visual">
-              <img src={heroDashboard} alt="Plataforma Canva Viagem" />
+            <div className="hero-visual" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+              <ProductDemo showStartDemo={false} />
             </div>
           </div>
         </section>
@@ -145,20 +149,13 @@ export default function Inicio() {
         {/* 3. DEMONSTRAÇÃO DA PLATAFORMA */}
         <section id="demo" className="demo inicio-section">
           <div className="inicio-container">
-            <h2 className="section-title">Veja a plataforma por dentro em 60 segundos 👇</h2>
-            <p className="section-subtitle">Assista à criação de uma campanha, uma página e a organização de leads dentro do Canva Viagem.</p>
+            <h2 className="section-title">Dashboard inteligente feito para quem vende viagens</h2>
+            <p className="section-subtitle">Tudo o que sua agência precisa em uma única tela, fácil de usar e direto ao ponto.</p>
             
-              <div className="demo-frame" style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: '22px', overflow: 'hidden' }}>
-                <iframe 
-                  src="https://www.youtube.com/embed/P0_4EdEOQAc"
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title="Tour pela plataforma"
-                />
-              </div>
-            <p className="demo-disclaimer">Demonstração visual da plataforma. Exemplo representativo das funcionalidades.</p>
+            <div className="demo-frame" style={{ borderRadius: '22px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
+              <img src={heroDashboard} alt="Dashboard da plataforma" style={{ width: '100%', display: 'block' }} />
+            </div>
+            <p className="demo-disclaimer" style={{ marginTop: '16px' }}>Visão geral do painel da plataforma. Exemplo representativo.</p>
 
             <div className="steps-grid">
               <div className="step-card">
@@ -207,44 +204,26 @@ export default function Inicio() {
           </div>
         </section>
 
-        {/* DEPOIMENTOS */}
-        <section className="testimonials inicio-section">
+        {/* DEPOIMENTOS PROVA REAL */}
+        <section className="testimonials inicio-section" style={{ backgroundColor: '#050D1A', padding: '80px 20px' }}>
           <div className="inicio-container">
-            <h2 className="section-title">Quem usa, entende o valor nos primeiros minutos</h2>
-            <p className="section-subtitle">Veja relatos reais de agentes e profissionais do turismo que começaram a usar o Canva Viagem.</p>
-            <div className="testimonials-grid">
-              {/* Depoimento 1 — substituir pelos dados reais quando disponíveis */}
-              <div className="testimonial-card">
-                <div className="testimonial-avatar">A</div>
-                <div className="testimonial-stars">★★★★★</div>
-                <p className="testimonial-text">"Usei a plataforma para montar posts e páginas de pacotes com muito mais rapidez. Facilitou bastante minha rotina de divulgação."</p>
-                <div className="testimonial-author">
-                  <strong>Nome do Cliente</strong>
-                  <span>Cidade · Agência</span>
-                </div>
+            <p style={{ textAlign: "center", fontSize: 11, color: "#00E5FF", letterSpacing: 2, fontWeight: 800, marginBottom: 12, textTransform: "uppercase" }}>
+              PROVA REAL INDISCUTÍVEL
+            </p>
+            <h2 className="section-title" style={{ color: '#fff', marginBottom: '40px' }}>Resultados diretos no WhatsApp de quem usa</h2>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', alignItems: 'start' }}>
+              <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <img src={depoimento1} alt="Resultado no WhatsApp" style={{ width: '100%', display: 'block' }} />
               </div>
-              {/* Depoimento 2 */}
-              <div className="testimonial-card">
-                <div className="testimonial-avatar">B</div>
-                <div className="testimonial-stars">★★★★★</div>
-                <p className="testimonial-text">"Depoimento real aqui."</p>
-                <div className="testimonial-author">
-                  <strong>Nome do Cliente</strong>
-                  <span>Cidade · Agência</span>
-                </div>
+              <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <img src={depoimento2} alt="Resultado no WhatsApp" style={{ width: '100%', display: 'block' }} />
               </div>
-              {/* Depoimento 3 */}
-              <div className="testimonial-card">
-                <div className="testimonial-avatar">C</div>
-                <div className="testimonial-stars">★★★★★</div>
-                <p className="testimonial-text">"Depoimento real aqui."</p>
-                <div className="testimonial-author">
-                  <strong>Nome do Cliente</strong>
-                  <span>Cidade · Agência</span>
-                </div>
+              <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <img src={depoimento3} alt="Resultado no WhatsApp" style={{ width: '100%', display: 'block' }} />
               </div>
             </div>
-            <p className="testimonials-note">Depoimentos reais. Resultados variam conforme oferta, atendimento, audiência e divulgação.</p>
+            <p className="testimonials-note" style={{ color: 'rgba(255,255,255,0.5)', marginTop: '32px' }}>Depoimentos reais. Resultados variam conforme oferta, atendimento, audiência e divulgação.</p>
           </div>
         </section>
 
@@ -844,45 +823,45 @@ export default function Inicio() {
 
         {/* EMPILHAMENTO DE VALOR */}
         <section className="offer-stack inicio-section">
-          <div className="inicio-container">
-            <p style={{ textAlign: "center", fontSize: 11, color: "#8b3dff", letterSpacing: 2, fontWeight: 800, marginBottom: 12, textTransform: "uppercase" }}>
+          <div className="inicio-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <p style={{ textAlign: "center", fontSize: 10, color: "#8b3dff", letterSpacing: 1.5, fontWeight: 800, marginBottom: 8, textTransform: "uppercase" }}>
               A CONTA NÃO FECHA NO MERCADO TRADICIONAL
             </p>
-            <h2 className="section-title">Se você fosse contratar tudo isso separado:</h2>
+            <h2 className="section-title" style={{ fontSize: '32px', marginBottom: '32px' }}>Se você fosse contratar tudo isso separado:</h2>
             
-            <div style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 24, padding: "32px 28px", marginTop: "32px" }}>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '20px' }}>
-                  <span style={{ fontSize: '16px', color: "#64748b" }}>Plataforma de CRM:</span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: "#0f172a" }}>R$ 150/mês</span>
+            <div style={{ background: "#FAFAFA", border: "1px solid #F1F5F9", borderRadius: 16, padding: "32px", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+                  <span style={{ fontSize: '15px', color: "#64748b" }}>Plataforma de CRM:</span>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a" }}>R$ 150/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '20px' }}>
-                  <span style={{ fontSize: '16px', color: "#64748b" }}>Construtor de Sites Express:</span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: "#0f172a" }}>R$ 90/mês</span>
+                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+                  <span style={{ fontSize: '15px', color: "#64748b" }}>Construtor de Sites Express:</span>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a" }}>R$ 90/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '20px' }}>
-                  <span style={{ fontSize: '16px', color: "#64748b" }}>Designer Freelancer (30 artes):</span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500/mês</span>
+                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+                  <span style={{ fontSize: '15px', color: "#64748b" }}>Designer Freelancer (30 artes):</span>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '20px' }}>
-                  <span style={{ fontSize: '16px', color: "#64748b" }}>Editor de Vídeo (15 vídeos):</span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500/mês</span>
+                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+                  <span style={{ fontSize: '15px', color: "#64748b" }}>Editor de Vídeo (15 vídeos):</span>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '20px' }}>
-                  <span style={{ fontSize: '16px', color: "#64748b" }}>Site Pronto Completo:</span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500 único</span>
+                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+                  <span style={{ fontSize: '15px', color: "#64748b" }}>Site Pronto Completo:</span>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500 único</span>
                 </li>
               </ul>
               
-              <div style={{ marginTop: '32px', textAlign: 'center', background: 'rgba(239,68,68,0.05)', padding: '24px', borderRadius: '16px', border: '1px dashed rgba(239,68,68,0.3)' }}>
-                <p style={{ color: '#ef4444', fontSize: '14px', marginBottom: '8px', fontWeight: '600' }}>Custo total para sua agência no mercado tradicional:</p>
-                <div style={{ fontSize: '24px', fontWeight: '800', color: '#ef4444', textDecoration: 'line-through' }}>R$ 3.240/mês + R$ 1.500 único</div>
+              <div style={{ marginTop: '24px', textAlign: 'center', background: '#FEF2F2', padding: '16px', borderRadius: '12px', border: '1px dashed #FCA5A5' }}>
+                <p style={{ color: '#EF4444', fontSize: '13px', marginBottom: '4px', fontWeight: '500' }}>Custo total para sua agência no mercado tradicional:</p>
+                <div style={{ fontSize: '18px', fontWeight: '800', color: '#EF4444', textDecoration: 'line-through' }}>R$ 3.240/mês + R$ 1.500 único</div>
               </div>
               
-              <div style={{ marginTop: '24px', textAlign: 'center', background: 'rgba(139, 61, 255, 0.05)', padding: '32px 24px', borderRadius: '16px', border: `2px solid #8b3dff`, boxShadow: `0 0 30px rgba(139, 61, 255, 0.1)` }}>
-                <p style={{ color: "#8b3dff", fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Com o Canva Viagem Elite</p>
-                <div style={{ fontSize: '42px', fontWeight: '900', color: "#8b3dff", lineHeight: '1' }}>Apenas R$ 97/mês</div>
-                <p style={{ color: '#64748b', fontSize: '14px', marginTop: '12px', fontWeight: '500' }}>
+              <div style={{ marginTop: '16px', textAlign: 'center', background: '#F5F3FF', padding: '24px', borderRadius: '12px', border: `1px solid #C4B5FD` }}>
+                <p style={{ color: "#8b3dff", fontSize: '12px', fontWeight: 'bold', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Com o Canva Viagem Elite</p>
+                <div style={{ fontSize: '36px', fontWeight: '900', color: "#8b3dff", lineHeight: '1' }}>Apenas R$ 97/mês</div>
+                <p style={{ color: '#64748b', fontSize: '12px', marginTop: '8px', fontWeight: '500' }}>
                   Ou R$ 497 no plano anual (Economia de mais de R$ 38.000,00 por ano comparado a uma equipe completa).
                 </p>
               </div>
