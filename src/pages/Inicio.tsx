@@ -152,10 +152,10 @@ export default function Inicio() {
             <h2 className="section-title">Dashboard inteligente feito para quem vende viagens</h2>
             <p className="section-subtitle">Tudo o que sua agência precisa em uma única tela, fácil de usar e direto ao ponto.</p>
             
-            <div className="demo-frame" style={{ borderRadius: '22px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
+            <div style={{ maxWidth: '800px', margin: '32px auto 0', borderRadius: '22px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}>
               <img src={heroDashboard} alt="Dashboard da plataforma" style={{ width: '100%', display: 'block' }} />
             </div>
-            <p className="demo-disclaimer" style={{ marginTop: '16px' }}>Visão geral do painel da plataforma. Exemplo representativo.</p>
+            <p className="demo-disclaimer" style={{ marginTop: '16px', textAlign: 'center', fontSize: '14px', color: '#64748b' }}>Visão geral do painel da plataforma. Exemplo representativo.</p>
 
             <div className="steps-grid">
               <div className="step-card">
@@ -205,7 +205,7 @@ export default function Inicio() {
         </section>
 
         {/* DEPOIMENTOS PROVA REAL */}
-        <section className="testimonials inicio-section" style={{ backgroundColor: '#050D1A', padding: '80px 20px' }}>
+        <section className="testimonials inicio-section" style={{ backgroundColor: '#050D1A' }}>
           <div className="inicio-container">
             <p style={{ textAlign: "center", fontSize: 11, color: "#00E5FF", letterSpacing: 2, fontWeight: 800, marginBottom: 12, textTransform: "uppercase" }}>
               PROVA REAL INDISCUTÍVEL
@@ -223,7 +223,7 @@ export default function Inicio() {
                 <img src={depoimento3} alt="Resultado no WhatsApp" style={{ width: '100%', display: 'block' }} />
               </div>
             </div>
-            <p className="testimonials-note" style={{ color: 'rgba(255,255,255,0.5)', marginTop: '32px' }}>Depoimentos reais. Resultados variam conforme oferta, atendimento, audiência e divulgação.</p>
+            <p className="testimonials-note" style={{ color: 'rgba(255,255,255,0.5)', marginTop: '32px', textAlign: 'center', fontSize: '13px' }}>Depoimentos reais. Resultados variam conforme oferta, atendimento, audiência e divulgação.</p>
           </div>
         </section>
 
@@ -831,25 +831,25 @@ export default function Inicio() {
             
             <div style={{ background: "#FAFAFA", border: "1px solid #F1F5F9", borderRadius: 16, padding: "32px", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', color: "#64748b" }}>Plataforma de CRM:</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a" }}>R$ 150/mês</span>
+                <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+                  <span style={{ fontSize: '15px', color: "#64748b", flex: 1 }}>Plataforma de CRM:</span>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a", whiteSpace: 'nowrap' }}>R$ 150/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', color: "#64748b" }}>Construtor de Sites Express:</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a" }}>R$ 90/mês</span>
+                <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+                  <span style={{ fontSize: '15px', color: "#64748b", flex: 1 }}>Construtor de Sites Express:</span>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a", whiteSpace: 'nowrap' }}>R$ 90/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', color: "#64748b" }}>Designer Freelancer (30 artes):</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500/mês</span>
+                <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+                  <span style={{ fontSize: '15px', color: "#64748b", flex: 1 }}>Designer Freelancer (30 artes):</span>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a", whiteSpace: 'nowrap' }}>R$ 1.500/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', color: "#64748b" }}>Editor de Vídeo (15 vídeos):</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500/mês</span>
+                <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+                  <span style={{ fontSize: '15px', color: "#64748b", flex: 1 }}>Editor de Vídeo (15 vídeos):</span>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a", whiteSpace: 'nowrap' }}>R$ 1.500/mês</span>
                 </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', color: "#64748b" }}>Site Pronto Completo:</span>
-                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a" }}>R$ 1.500 único</span>
+                <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+                  <span style={{ fontSize: '15px', color: "#64748b", flex: 1 }}>Site Pronto Completo:</span>
+                  <span style={{ fontSize: '15px', fontWeight: 'bold', color: "#0f172a", whiteSpace: 'nowrap' }}>R$ 1.500 único</span>
                 </li>
               </ul>
               
