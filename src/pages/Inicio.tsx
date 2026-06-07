@@ -140,7 +140,7 @@ export default function Inicio() {
                 <span>Pagamento seguro via Hotmart</span>
               </div>
             </div>
-            <div className="w-full max-w-[600px] mx-auto mt-8 sm:mt-12 flex justify-center px-4 sm:px-0">
+            <div className="w-full max-w-[500px] md:max-w-none mx-auto mt-8 md:mt-0 flex justify-center md:justify-end px-4 sm:px-0 md:scale-110 lg:scale-[1.15] md:origin-right">
               <ProductDemo showStartDemo={false} />
             </div>
           </div>
@@ -234,21 +234,21 @@ export default function Inicio() {
           <div className="inicio-container">
             <h2 className="section-title">Veja como o Canva Viagem funciona na prática</h2>
             <p className="section-subtitle">Uma demonstração rápida mostrando como transformar uma ideia de pacote em conteúdo, página e organização comercial.</p>
-            <div className="grid grid-cols-1 gap-6 sm:gap-8 mt-8 md:mt-12 w-full max-w-[800px] mx-auto px-4 sm:px-0">
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl font-black mb-4">1</div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Campanha criada</h3>
-                <p className="text-sm text-slate-600 leading-snug">Digite o destino e gere textos, ideias e chamadas para divulgar o pacote.</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-8 md:mt-12 w-full max-w-[1100px] mx-auto px-4 sm:px-0">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col items-center text-center">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl md:text-2xl font-black mb-4 md:mb-6">1</div>
+                <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2">Campanha criada</h3>
+                <p className="text-sm md:text-base text-slate-600 leading-snug md:leading-relaxed">Digite o destino e gere textos, ideias e chamadas para divulgar o pacote.</p>
               </div>
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl font-black mb-4">2</div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Página pronta</h3>
-                <p className="text-sm text-slate-600 leading-snug">Monte uma página simples para apresentar o pacote e enviar no WhatsApp.</p>
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col items-center text-center">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl md:text-2xl font-black mb-4 md:mb-6">2</div>
+                <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2">Página pronta</h3>
+                <p className="text-sm md:text-base text-slate-600 leading-snug md:leading-relaxed">Monte uma página simples para apresentar o pacote e enviar no WhatsApp.</p>
               </div>
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl font-black mb-4">3</div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Lead organizado</h3>
-                <p className="text-sm text-slate-600 leading-snug">Registre contatos, orçamentos e oportunidades no CRM integrado.</p>
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col items-center text-center">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl md:text-2xl font-black mb-4 md:mb-6">3</div>
+                <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2">Lead organizado</h3>
+                <p className="text-sm md:text-base text-slate-600 leading-snug md:leading-relaxed">Registre contatos, orçamentos e oportunidades no CRM integrado.</p>
               </div>
             </div>
           </div>
@@ -333,18 +333,18 @@ export default function Inicio() {
               <div>
                 <h2>Criado por quem vive o turismo</h2>
                 <p className="authority-text">O Canva Viagem foi criado por Lucas Ferrari, especialista em marketing para agências, receptivos e profissionais do turismo. A plataforma nasceu para ajudar agências a criar conteúdo, páginas e campanhas com mais velocidade, sem depender de designer, social media ou agência cara.</p>
-                <div className="grid grid-cols-3 gap-2 mt-6 max-w-[600px] mx-auto md:mx-0">
-                  <div className="bg-white border border-slate-200 rounded-xl p-2 sm:p-3 shadow-sm text-center">
-                    <div className="text-[18px] sm:text-[26px] font-black text-[#7C3AED] leading-none mb-1">10+</div>
-                    <div className="text-[10px] sm:text-[13px] text-slate-600 leading-tight">Anos no turismo</div>
+                <div className="grid grid-cols-3 gap-2 md:gap-4 mt-6 max-w-[600px] mx-auto md:mx-0">
+                  <div className="bg-white border border-slate-200 rounded-xl p-2 sm:p-4 shadow-sm text-center">
+                    <div className="text-[18px] sm:text-[32px] font-black text-[#7C3AED] leading-none mb-1 md:mb-2">10+</div>
+                    <div className="text-[10px] sm:text-[14px] font-medium text-slate-600 leading-tight">Anos no turismo</div>
                   </div>
-                  <div className="bg-white border border-slate-200 rounded-xl p-2 sm:p-3 shadow-sm text-center">
-                    <div className="text-[18px] sm:text-[26px] font-black text-[#7C3AED] leading-none mb-1">100%</div>
-                    <div className="text-[10px] sm:text-[13px] text-slate-600 leading-tight">Foco em agências</div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-2 sm:p-4 shadow-sm text-center">
+                    <div className="text-[18px] sm:text-[32px] font-black text-[#7C3AED] leading-none mb-1 md:mb-2">100%</div>
+                    <div className="text-[10px] sm:text-[14px] font-medium text-slate-600 leading-tight">Foco em agências</div>
                   </div>
-                  <div className="bg-white border border-slate-200 rounded-xl p-2 sm:p-3 shadow-sm text-center">
-                    <div className="text-[16px] sm:text-[20px] font-black text-[#7C3AED] leading-none mb-1 mt-0.5 sm:mt-1">Suporte</div>
-                    <div className="text-[10px] sm:text-[13px] text-slate-600 leading-tight">Comunidade VIP</div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-2 sm:p-4 shadow-sm text-center">
+                    <div className="text-[16px] sm:text-[24px] font-black text-[#7C3AED] leading-none mb-1 mt-0.5 sm:mt-1 md:mb-2">Suporte</div>
+                    <div className="text-[10px] sm:text-[14px] font-medium text-slate-600 leading-tight">Comunidade VIP</div>
                   </div>
                 </div>
                 
@@ -373,36 +373,36 @@ export default function Inicio() {
               <p className="section-subtitle w-full text-center" style={{ textAlign: 'center', margin: '0 auto 32px' }}>Uma plataforma para criar conteúdo, divulgar pacotes, montar páginas e organizar leads sem depender de várias ferramentas.</p>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mt-8 w-full max-w-[940px] mx-auto px-4 sm:px-0">
-              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
-                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><Instagram size={20} /></div>
-                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">Posts e Carrosséis</h3>
-                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Formatos prontos para divulgar destinos e pacotes.</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mt-8 md:mt-12 w-full max-w-[1000px] mx-auto px-4 sm:px-0">
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-6 text-left hover:bg-[#1e293b]/80 transition-colors">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3 md:mb-4"><Instagram size={20} className="md:w-[24px] md:h-[24px]" /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">Posts e Carrosséis</h3>
+                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Formatos prontos para divulgar destinos e pacotes.</p>
               </div>
-              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
-                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><Video size={20} /></div>
-                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">Vídeos Curtos</h3>
-                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Roteiros e templates para Reels e Stories.</p>
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-6 text-left hover:bg-[#1e293b]/80 transition-colors">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3 md:mb-4"><Video size={20} className="md:w-[24px] md:h-[24px]" /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">Vídeos Curtos</h3>
+                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Roteiros e templates para Reels e Stories.</p>
               </div>
-              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
-                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><BookOpen size={20} /></div>
-                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">Legendas com IA</h3>
-                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Textos criados para divulgar pacotes com clareza.</p>
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-6 text-left hover:bg-[#1e293b]/80 transition-colors">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3 md:mb-4"><BookOpen size={20} className="md:w-[24px] md:h-[24px]" /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">Legendas com IA</h3>
+                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Textos criados para divulgar pacotes com clareza.</p>
               </div>
-              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
-                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><LayoutDashboard size={20} /></div>
-                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">Sites Express</h3>
-                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Páginas de venda para pacotes prontas para envio.</p>
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-6 text-left hover:bg-[#1e293b]/80 transition-colors">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3 md:mb-4"><LayoutDashboard size={20} className="md:w-[24px] md:h-[24px]" /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">Sites Express</h3>
+                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Páginas de venda para pacotes prontas para envio.</p>
               </div>
-              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
-                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><Calendar size={20} /></div>
-                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">CRM Integrado</h3>
-                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Organize leads, orçamentos e contatos.</p>
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-6 text-left hover:bg-[#1e293b]/80 transition-colors">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3 md:mb-4"><Calendar size={20} className="md:w-[24px] md:h-[24px]" /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">CRM Integrado</h3>
+                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Organize leads, orçamentos e contatos.</p>
               </div>
-              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-5 text-left">
-                <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3"><Clock size={20} /></div>
-                <h3 className="text-white font-bold text-[14px] sm:text-[16px] mb-1">Automação</h3>
-                <p className="text-white/60 text-[12px] sm:text-[14px] leading-tight">Recursos para acelerar sua rotina de conteúdo.</p>
+              <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-6 text-left hover:bg-[#1e293b]/80 transition-colors">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3 md:mb-4"><Clock size={20} className="md:w-[24px] md:h-[24px]" /></div>
+                <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">Automação</h3>
+                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Recursos para acelerar sua rotina de conteúdo.</p>
               </div>
             </div>
             
