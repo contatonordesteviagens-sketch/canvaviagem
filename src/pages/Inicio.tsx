@@ -140,7 +140,7 @@ export default function Inicio() {
                 <span>Pagamento seguro via Hotmart</span>
               </div>
             </div>
-            <div className="w-full max-w-[500px] md:max-w-none mx-auto mt-8 md:mt-0 flex justify-center md:justify-end px-4 sm:px-0 md:scale-110 lg:scale-[1.15] md:origin-right">
+            <div className="w-full max-w-[500px] md:max-w-[650px] mx-auto mt-8 md:mt-0 flex justify-center md:justify-end px-4 sm:px-0">
               <ProductDemo showStartDemo={false} />
             </div>
           </div>
