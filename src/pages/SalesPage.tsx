@@ -21,8 +21,8 @@ import { WorldMap } from "@/components/ui/map";
 const STRIPE = {
   smart_monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
   smart_annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
-  elite_monthly: "https://pay.hotmart.com/C106141067C?off=8qkh1yh6&checkoutMode=10",
-  elite_annual: "https://pay.hotmart.com/C106141067C?off=1wecpk2v&checkoutMode=10",
+  elite_monthly: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
+  elite_annual: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
 };
 
 const T = {
@@ -219,7 +219,7 @@ const ExitIntent = ({ onCheckout }: { onCheckout: (plan: "smart_annual" | "elite
                 boxShadow: "0 8px 24px rgba(255, 51, 102, 0.4)"
               }}
             >
-              Garantir Plano Elite (R$ 497/ano) ⭐
+              Garantir Plano Elite (R$ 347/ano) ⭐
             </button>
 
             {/* Botão Plano Start */}
@@ -381,38 +381,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <div style={{ position: "relative", zIndex: 1 }}>
         <Reveal>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
-            <div style={{ 
-              display: 'inline-flex', alignItems: 'center', gap: '8px', 
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', 
-              borderRadius: '100px', padding: '6px 16px 6px 6px'
-            }}>
-              <div style={{ display: 'flex', marginLeft: '4px' }}>
-                <img src="https://i.pravatar.cc/100?img=12" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-4px', position: 'relative', zIndex: 4 }} />
-                <img src="https://i.pravatar.cc/100?img=32" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-10px', position: 'relative', zIndex: 3 }} />
-                <img src="https://i.pravatar.cc/100?img=45" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-10px', position: 'relative', zIndex: 2 }} />
-                <img src="https://i.pravatar.cc/100?img=5" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-10px', position: 'relative', zIndex: 1 }} />
-              </div>
-              <span style={{ fontSize: '13px', fontWeight: '500', color: 'rgba(255,255,255,0.9)' }}>+500 agências</span>
-            </div>
+          <div style={{ display: "inline-flex", gap: 8, alignItems: "center",
+            background: "rgba(255,255,255,0.04)", border: T.border, borderRadius: 100,
+            padding: "6px 14px", fontSize: 10.5, color: T.accent, fontWeight: 700,
+            letterSpacing: 1.2, marginBottom: 22, maxWidth: "100%" }}>
+            <span className="relative flex h-2 w-2 flex-shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+            </span>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+              PARA AGÊNCIAS DE VIAGEM QUE QUEREM PARAR DE PARECER AMADORAS
+            </span>
           </div>
         </Reveal>
 
         <Reveal delay={0.05}>
           <h1 style={{ fontSize: "clamp(26px, 5.5vw, 52px)", fontWeight: 900, lineHeight: 1.1,
             maxWidth: 960, margin: "0 auto 18px", letterSpacing: -1 }}>
-            Você só foca na venda de viagens.{" "}
+            Tenha um feed profissional de{" "}
             <span style={{ background: `linear-gradient(135deg, ${T.accent}, #fff)`,
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              O Canva Viagem cuida do resto.
-            </span>
+              R$ 10k/mês
+            </span>{" "}
+            e crie anúncios de viagens automáticos com Inteligência Artificial!
           </h1>
         </Reveal>
 
         {/* Video Demonstration directly under Headline */}
         <Reveal delay={0.1}>
           <div style={{ margin: "32px auto", maxWidth: 800 }}>
-            <p style={{ fontSize: 14, color: T.accent, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Veja a plataforma por dentro em 60 segundos 👇</p>
             <ProductDemo />
           </div>
         </Reveal>
@@ -420,7 +417,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         {/* Subheadline directly below Video */}
         <Reveal delay={0.15}>
           <p style={{ fontSize: 16, color: T.text2, maxWidth: 820, margin: "0 auto 28px", lineHeight: 1.6 }}>
-            Site completo, CRM para organizar clientes, criador de anúncios automático e +400 mídias de viagens! Tudo rodando no piloto automático, no mesmo ecossistema para você atrair viajantes de alto padrão e fechar pacotes todos os dias. <strong style={{ color: T.accent }}>A partir de R$ 16,41/mês.</strong>
+            A única plataforma do mercado de turismo que combina <strong style={{ color: T.text }}>250+ vídeos 4K</strong> e <strong style={{ color: T.text }}>artes editáveis no Canva</strong> com a revolucionária <strong style={{ color: T.accent }}>Fábrica de Anúncios com I.A</strong> — onde você digita a oferta e recebe o anúncio pronto, com preços, parcelas e o seu logo em 5 segundos. <strong style={{ color: T.accent }}>A partir de R$ 16,41/mês.</strong>
           </p>
         </Reveal>
 
@@ -847,59 +844,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </div>
       </section>
 
-      {/* ─── EMPILHAMENTO DE VALOR (Offer Stack) ─── */}
-      <section style={{ padding: "70px 20px" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto" }}>
-          <Reveal>
-            <p style={{ textAlign: "center", fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>
-              A CONTA NÃO FECHA NO MERCADO TRADICIONAL
-            </p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 900, textAlign: "center", marginBottom: 36, lineHeight: 1.2 }}>
-              Se você fosse contratar tudo isso separado:
-            </h2>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div style={{ background: T.card, border: T.border, borderRadius: 24, padding: "32px 28px" }}>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '20px' }}>
-                  <span style={{ fontSize: '16px', color: T.text2 }}>Plataforma de CRM:</span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: T.text }}>R$ 150/mês</span>
-                </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '20px' }}>
-                  <span style={{ fontSize: '16px', color: T.text2 }}>Construtor de Sites Express:</span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: T.text }}>R$ 90/mês</span>
-                </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '20px' }}>
-                  <span style={{ fontSize: '16px', color: T.text2 }}>Designer Freelancer (30 artes):</span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: T.text }}>R$ 1.500/mês</span>
-                </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '20px' }}>
-                  <span style={{ fontSize: '16px', color: T.text2 }}>Editor de Vídeo (15 vídeos):</span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: T.text }}>R$ 1.500/mês</span>
-                </li>
-                <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '20px' }}>
-                  <span style={{ fontSize: '16px', color: T.text2 }}>Site Completo de Viagens:</span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: T.text }}>R$ 1.500 único</span>
-                </li>
-              </ul>
-              
-              <div style={{ marginTop: '32px', textAlign: 'center', background: 'rgba(239,68,68,0.1)', padding: '24px', borderRadius: '16px', border: '1px dashed rgba(239,68,68,0.3)' }}>
-                <p style={{ color: '#F87171', fontSize: '14px', marginBottom: '8px' }}>Custo total para sua agência no mercado tradicional:</p>
-                <div style={{ fontSize: '24px', fontWeight: '800', color: '#EF4444', textDecoration: 'line-through' }}>R$ 3.240/mês + R$ 1.500 único</div>
-              </div>
-              
-              <div style={{ marginTop: '24px', textAlign: 'center', background: 'rgba(0, 229, 255, 0.1)', padding: '32px 24px', borderRadius: '16px', border: `2px solid ${T.accent}`, boxShadow: `0 0 30px ${T.accent}33` }}>
-                <p style={{ color: T.accent, fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Com o Canva Viagem Elite</p>
-                <div style={{ fontSize: '42px', fontWeight: '900', color: T.accent, lineHeight: '1' }}>Apenas R$ 97/mês</div>
-                <p style={{ color: '#fff', fontSize: '14px', marginTop: '12px', opacity: 0.9 }}>
-                  Ou R$ 497 no plano anual (Economia de mais de R$ 38.000,00 por ano comparado a uma equipe completa).
-                </p>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
       {/* ─── PREÇO ─── */}
       <section id="pricing" ref={pricingRef} style={{ padding: "80px 20px", position: "relative" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
@@ -1021,14 +965,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                   ) : (
                     <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>41</span>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>,41</span>
+                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>28</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,91</span>
                       <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
                     </div>
                   )}
 
                   <p style={{ fontSize: 12, color: T.text2, marginBottom: 28 }}>
-                    {billingPeriod === "monthly" ? "Assinatura mensal sem fidelidade" : "Equivalente a R$ 497,00 cobrados anualmente (Economia massiva)"}
+                    {billingPeriod === "monthly" ? "Assinatura mensal sem fidelidade" : "Equivalente a R$ 347,00 cobrados anualmente (Economia massiva)"}
                   </p>
 
                   <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 12 }}>
@@ -1196,27 +1140,28 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <div style={{ width: 90, height: 90, borderRadius: "50%", margin: "0 auto 24px",
               background: `${T.accent}15`, border: `2px solid ${T.accent}`,
               display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>🛡️</div>
-            <h3 style={{ fontSize: 28, fontWeight: 900, marginBottom: 10 }}>Garantia Incondicional de Resultado</h3>
+            <h3 style={{ fontSize: 28, fontWeight: 900, marginBottom: 10 }}>Garantia Dupla</h3>
             <p style={{ fontSize: 15, color: T.accent, fontWeight: 700, marginBottom: 28 }}>
               O risco é 100% meu — não seu.
             </p>
           </Reveal>
           <Reveal delay={0.1}>
             <div style={{ display: "flex", flexDirection: "column", gap: 14, textAlign: "left", marginBottom: 32 }}>
-              <div style={{ display: "flex", gap: 16, background: T.card, border: `1px solid ${T.accent}33`, borderRadius: 14, padding: "18px 20px" }}>
-                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: T.accent, color: "#000", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 16, flexShrink: 0 }}>1</div>
+              {[
+                { n: "1", t: "7 dias para testar tudo", s: "Acesso completo. Não gostou? Devolvo." },
+                { n: "2", t: "Qualidade não convenceu?", s: "100% de volta." },
+              ].map(g => (
+                <div key={g.n} style={{ display: "flex", gap: 16, background: T.card,
+                  border: `1px solid ${T.accent}33`, borderRadius: 14, padding: "18px 20px" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: T.accent,
+                    color: "#000", display: "flex", alignItems: "center", justifyContent: "center",
+                    fontWeight: 900, fontSize: 16, flexShrink: 0 }}>{g.n}</div>
                   <div>
-                    <p style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: T.text, lineHeight: 1.4 }}>Teste na Prática por 7 dias</p>
-                    <p style={{ margin: 0, fontSize: 13, color: T.text2, lineHeight: 1.6 }}>Assine hoje. Use a nossa IA, baixe os criativos premium e poste nas suas redes. Se você não achar que o visual da sua agência subiu de nível, aperte um botão no painel e devolvemos 100% do seu dinheiro. Sem perguntas.</p>
+                    <p style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: T.text, lineHeight: 1.4 }}>{g.t}</p>
+                    <p style={{ margin: 0, fontSize: 13, color: T.text2, lineHeight: 1.6 }}>{g.s}</p>
                   </div>
-              </div>
-              <div style={{ display: "flex", gap: 16, background: T.card, border: `1px solid ${T.accent}33`, borderRadius: 14, padding: "18px 20px" }}>
-                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: T.accent, color: "#000", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 16, flexShrink: 0 }}>2</div>
-                  <div>
-                    <p style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: T.text, lineHeight: 1.4 }}>Reembolso automático e garantido</p>
-                    <p style={{ margin: 0, fontSize: 13, color: T.text2, lineHeight: 1.6 }}>O reembolso é garantido pela própria plataforma da Stripe. O botão de cancelamento fica visível e a um clique de distância no seu painel.</p>
-                  </div>
-              </div>
+                </div>
+              ))}
             </div>
 
             {/* SECURE STRIPE BANNER */}
@@ -1283,7 +1228,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 padding: "20px 36px", borderRadius: 16, border: "none", cursor: "pointer",
                 width: "100%", maxWidth: 480, textTransform: "uppercase", letterSpacing: 0.5,
                 boxShadow: `0 16px 50px ${T.accent}66` }}>
-              QUERO ACESSO ELITE — R$ 41,41/MÊS →
+              QUERO ACESSO ELITE — R$ 28,91/MÊS →
             </button>
             <p style={{ marginTop: 14, fontSize: 12, color: T.text3 }}>
               Acesso em 2 min · Garantia dupla · Cancele quando quiser
