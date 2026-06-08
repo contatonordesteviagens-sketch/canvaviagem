@@ -17,25 +17,33 @@ serve(async (req) => {
             return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
         }
 
-        // Process only approved purchases
-        const event = payload.event
-        if (event === 'PURCHASE_APPROVED') {
-            const data = payload.data
-            const buyer = data.buyer
-            const purchase = data.purchase
-            const product = data.product
+        // Handle Approved and Canceled events
+        const event = payload.event;
+        const validEvents = ['PURCHASE_APPROVED', 'PURCHASE_CANCELED', 'PURCHASE_REFUNDED', 'PURCHASE_CHARGEBACK', 'SUBSCRIPTION_CANCELLATION'];
+        
+        if (validEvents.includes(event)) {
+            const data = payload.data;
+            const buyer = data.buyer;
+            const product = data.product;
+            // Handle both purchase and subscription payloads
+            const purchase = data.purchase || {};
+            const subscription = data.subscription || {};
+            
+            // Determine the correct status
+            const status = event === 'PURCHASE_APPROVED' ? 'APPROVED' : 'CANCELED';
+            const transactionId = purchase.transaction || subscription.subscriber_code || `${buyer.email}_${product.id}`;
 
             const { error } = await supabaseAdmin
                 .from('hotmart_sales')
                 .upsert({
-                    h_transaction: purchase.transaction,
+                    h_transaction: transactionId,
                     h_email: buyer.email,
                     h_product_id: product.id.toString(),
                     h_product_name: product.name,
-                    h_purchase_date: purchase.order_date,
-                    h_price_value: purchase.price.value,
-                    h_price_currency: purchase.price.currency_code,
-                    h_status: 'APPROVED',
+                    h_purchase_date: purchase.order_date || new Date().toISOString(),
+                    h_price_value: purchase.price?.value || 0,
+                    h_price_currency: purchase.price?.currency_code || 'BRL',
+                    h_status: status,
                     h_buyer_name: buyer.name,
                     h_is_order_bump: purchase.is_order_bump || false
                 }, { onConflict: 'h_transaction' })
