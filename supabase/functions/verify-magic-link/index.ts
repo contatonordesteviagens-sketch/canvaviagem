@@ -252,6 +252,24 @@ serve(async (req) => {
     } catch (stripeErr) {
       console.error("[VERIFY-MAGIC-LINK] Error checking Stripe (continuing anyway):", stripeErr);
     }
+
+    // --- HOTMART SUBSCRIPTION CHECK ---
+    if (!isSubscribed) {
+      console.log("[VERIFY-MAGIC-LINK] Checking Hotmart sales for:", email);
+      const { data: hotmartSales, error: hotmartError } = await supabaseAdmin
+        .from("hotmart_sales")
+        .select("h_product_id")
+        .eq("h_email", email.toLowerCase())
+        .eq("h_status", "APPROVED")
+        .in("h_product_id", ["7876791", "6745545"]) // IDs do Canva Viagem (Assinatura e Vitalício)
+        .limit(1);
+
+      if (!hotmartError && hotmartSales && hotmartSales.length > 0) {
+        console.log("[VERIFY-MAGIC-LINK] Found active Hotmart purchase!");
+        isSubscribed = true;
+      }
+    }
+    // ---------------------------------
     // ---------------------------------
 
     return new Response(

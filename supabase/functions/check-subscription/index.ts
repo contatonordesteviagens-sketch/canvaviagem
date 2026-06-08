@@ -264,7 +264,47 @@ serve(async (req) => {
       });
     }
 
-    logStep("No active subscription or one-off payment found");
+    logStep("No active subscription or one-off payment found in Stripe");
+
+    // --- HOTMART SUBSCRIPTION CHECK ---
+    if (dbClient) {
+      logStep("Checking Hotmart sales for user", { email });
+      const { data: hotmartSales, error: hotmartError } = await dbClient
+        .from("hotmart_sales")
+        .select("h_product_id")
+        .eq("h_email", email.toLowerCase())
+        .eq("h_status", "APPROVED")
+        .in("h_product_id", ["7876791", "6745545"]) // IDs do Canva Viagem (Assinatura e Vitalício)
+        .limit(1);
+
+      if (!hotmartError && hotmartSales && hotmartSales.length > 0) {
+        logStep("Found valid Hotmart purchase. Granting Elite access.");
+        
+        await dbClient
+          .from("subscriptions")
+          .upsert(
+            {
+              user_id: userId,
+              status: "active",
+              stripe_customer_id: null,
+              stripe_subscription_id: null,
+              product_id: "elite_hotmart",
+              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            },
+            { onConflict: "user_id" }
+          );
+
+        return new Response(JSON.stringify({
+          subscribed: true,
+          product_id: "elite_hotmart",
+          subscription_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+    }
+    // ---------------------------------
 
     // Best-effort DB update (only if service role key is available)
     if (dbClient) {
