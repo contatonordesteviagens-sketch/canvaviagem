@@ -17,6 +17,7 @@ import { Loader2 } from "lucide-react";
 const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
 const Index = lazy(() => import("./pages/Index"));
 const IndexES = lazy(() => import("./pages/IndexES"));
+const Inicio = lazy(() => import("./pages/Inicio"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const CalendarES = lazy(() => import("./pages/CalendarES"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -106,6 +107,7 @@ const App = () => (
                     {/* ROTAS PORTUGUÊS */}
                     <Route path="/" element={<Index />} />
                     <Route path="/pt" element={<Index />} />
+                    <Route path="/inicio" element={<Inicio />} />
                     <Route path="/calendar" element={
                       <ProtectedRoute requireSubscription>
                         <Calendar />
