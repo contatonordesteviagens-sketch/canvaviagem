@@ -232,23 +232,23 @@ export default function Inicio() {
         {/* COMO FUNCIONA NA PRÁTICA */}
         <section className="how-it-works inicio-section">
           <div className="inicio-container">
-            <h2 className="section-title">Veja como o Canva Viagem funciona na prática</h2>
-            <p className="section-subtitle">Uma demonstração rápida mostrando como transformar uma ideia de pacote em conteúdo, página e organização comercial.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-8 md:mt-12 w-full max-w-[1100px] mx-auto px-4 sm:px-0">
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col items-center text-center">
-                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl md:text-2xl font-black mb-4 md:mb-6">1</div>
-                <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2">Campanha criada</h3>
-                <p className="text-sm md:text-base text-slate-600 leading-snug md:leading-relaxed">Digite o destino e gere textos, ideias e chamadas para divulgar o pacote.</p>
+            <h2 className="section-title" style={{ color: '#F8FAFC' }}>Veja como o Canva Viagem funciona na prática</h2>
+            <p className="section-subtitle" style={{ color: '#94A3B8' }}>Uma demonstração rápida mostrando como transformar uma ideia de pacote em conteúdo, página e organização comercial.</p>
+            <div className="hiw-grid">
+              <div className="hiw-card" style={{ padding: '20px 16px' }}>
+                <div className="hiw-number">1</div>
+                <h3>Campanha criada</h3>
+                <p>Digite o destino e gere textos, ideias e chamadas para divulgar o pacote.</p>
               </div>
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col items-center text-center">
-                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl md:text-2xl font-black mb-4 md:mb-6">2</div>
-                <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2">Página pronta</h3>
-                <p className="text-sm md:text-base text-slate-600 leading-snug md:leading-relaxed">Monte uma página simples para apresentar o pacote e enviar no WhatsApp.</p>
+              <div className="hiw-card" style={{ padding: '20px 16px' }}>
+                <div className="hiw-number">2</div>
+                <h3>Página pronta</h3>
+                <p>Monte uma página simples para apresentar o pacote e enviar no WhatsApp.</p>
               </div>
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col items-center text-center">
-                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-indigo-50 text-[#7C3AED] flex items-center justify-center text-xl md:text-2xl font-black mb-4 md:mb-6">3</div>
-                <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2">Lead organizado</h3>
-                <p className="text-sm md:text-base text-slate-600 leading-snug md:leading-relaxed">Registre contatos, orçamentos e oportunidades no CRM integrado.</p>
+              <div className="hiw-card" style={{ padding: '20px 16px' }}>
+                <div className="hiw-number">3</div>
+                <h3>Lead organizado</h3>
+                <p>Registre contatos, orçamentos e oportunidades no CRM integrado.</p>
               </div>
             </div>
           </div>
