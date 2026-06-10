@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { ExternalLink, Heart, Crown } from "lucide-react";
+import { ExternalLink, Heart, Crown, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
@@ -7,6 +7,7 @@ interface PremiumCardProps {
   id?: string;
   title: string;
   url: string;
+  driveUrl?: string | null;
   imageUrl?: string;
   category?: string;
   isNew?: boolean;
@@ -71,7 +72,8 @@ const PremiumCardComponent = ({
   onToggleFavorite,
   onPremiumRequired,
   loading = "lazy",
-  fetchPriority = "auto"
+  fetchPriority = "auto",
+  driveUrl
 }: PremiumCardProps) => {
   const gradient = getTypeGradient(contentType, title);
   const navigate = useNavigate();
@@ -188,10 +190,21 @@ const PremiumCardComponent = ({
           </h3>
 
           {/* CTA Button */}
-          <button className="w-full bg-white/95 backdrop-blur-sm text-foreground font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>Editar</span>
-          </button>
+          <div className="flex gap-2">
+            <button className="flex-1 bg-white/95 backdrop-blur-sm text-foreground font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Editar</span>
+            </button>
+            {driveUrl && (
+              <button 
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(driveUrl, '_blank'); }} 
+                className="flex-1 bg-primary text-primary-foreground font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 text-sm transition-all duration-300 hover:brightness-110 active:scale-95 shadow-sm"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Baixar</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </a>

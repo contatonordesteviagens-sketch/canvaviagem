@@ -16,6 +16,7 @@ export interface CalendarEntry {
     url: string;
     type: string;
     icon: string;
+    drive_url?: string | null;
   } | null;
   caption?: {
     id: string;
@@ -55,7 +56,7 @@ export const useCalendarEntries = (year: number, month: number) => {
         .from("calendar_entries")
         .select(`
           *,
-          content_item:content_items(id, title, url, type, icon),
+          content_item:content_items(id, title, url, type, icon, drive_url),
           caption:captions(id, destination, text, hashtags)
         `)
         .eq("year", year)

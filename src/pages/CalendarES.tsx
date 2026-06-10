@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, ExternalLink, Copy, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, Copy, Loader2, Download } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PremiumGate } from "@/components/PremiumGate";
@@ -102,6 +102,7 @@ const CalendarES = () => {
           title: dbEntry.content_item.title,
           url: dbEntry.content_item.url,
           icon: dbEntry.content_item.icon,
+          drive_url: dbEntry.content_item.drive_url,
         } : null,
         caption: dbEntry.caption ? {
           destination: dbEntry.caption.destination,
@@ -132,6 +133,7 @@ const CalendarES = () => {
           title: video.title,
           url: video.url,
           icon: video.icon,
+          drive_url: video.drive_url,
         },
         caption: caption ? {
           destination: caption.destination,
@@ -319,14 +321,27 @@ const CalendarES = () => {
                     <p className="font-medium mb-2 md:mb-3 text-sm md:text-base">
                       {selectedDayContent.template.title}
                     </p>
-                    <Button 
-                      className="w-full"
-                      size="sm"
-                      onClick={() => window.open(selectedDayContent.template!.url, '_blank')}
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Editar en Canva
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button 
+                        className="w-full"
+                        size="sm"
+                        onClick={() => window.open(selectedDayContent.template!.url, '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Editar en Canva
+                      </Button>
+                      {selectedDayContent.template!.drive_url && (
+                        <Button 
+                          variant="secondary"
+                          className="w-full"
+                          size="sm"
+                          onClick={() => window.open(selectedDayContent.template!.drive_url, '_blank')}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Baixar Vídeo
+                        </Button>
+                      )}
+                    </div>
                   </Card>
                 </div>
               )}

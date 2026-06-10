@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ExternalLink, Copy } from "lucide-react";
+import { ExternalLink, Copy, Download } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PremiumGate } from "@/components/PremiumGate";
@@ -46,7 +46,7 @@ const Calendar = () => {
 
     if (dbEntry) {
       return {
-        template: dbEntry.content_item ? { title: dbEntry.content_item.title, url: dbEntry.content_item.url, icon: dbEntry.content_item.icon } : null,
+        template: dbEntry.content_item ? { title: dbEntry.content_item.title, url: dbEntry.content_item.url, icon: dbEntry.content_item.icon, drive_url: dbEntry.content_item.drive_url } : null,
         caption: dbEntry.caption ? { destination: dbEntry.caption.destination, text: dbEntry.caption.text, hashtags: dbEntry.caption.hashtags } : null,
         notes: dbEntry.notes,
         isFromDatabase: true,
@@ -63,7 +63,7 @@ const Calendar = () => {
         ) || allCaptions[templateIndex % allCaptions.length];
       }
       return {
-        template: { title: video.title, url: video.url, icon: video.icon },
+        template: { title: video.title, url: video.url, icon: video.icon, drive_url: video.drive_url },
         caption: caption ? { destination: caption.destination, text: caption.text, hashtags: caption.hashtags } : null,
         notes: null,
         isFromDatabase: false,
@@ -112,9 +112,16 @@ const Calendar = () => {
                       <h3 className="text-lg font-bold flex items-center gap-2">🎬 Vídeo do Dia</h3>
                       <Card className="p-4 bg-muted/40 border-primary/20">
                         <p className="font-bold mb-4 text-lg">{selectedDayContent.template.title}</p>
-                        <Button className="w-full h-12 text-lg font-bold shadow-lg" onClick={() => window.open(selectedDayContent.template!.url, '_blank')}>
-                          <ExternalLink className="mr-2 h-5 w-5" /> Abrir no Canva
-                        </Button>
+                        <div className="flex flex-col gap-3">
+                          <Button className="w-full h-12 text-lg font-bold shadow-lg" onClick={() => window.open(selectedDayContent.template!.url, '_blank')}>
+                            <ExternalLink className="mr-2 h-5 w-5" /> Abrir no Canva
+                          </Button>
+                          {selectedDayContent.template!.drive_url && (
+                            <Button variant="secondary" className="w-full h-12 text-lg font-bold shadow-lg border-primary/20 hover:bg-primary/5" onClick={() => window.open(selectedDayContent.template!.drive_url, '_blank')}>
+                              <Download className="mr-2 h-5 w-5" /> Baixar Vídeo
+                            </Button>
+                          )}
+                        </div>
                       </Card>
                     </div>
                   )}

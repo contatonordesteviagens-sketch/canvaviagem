@@ -24,6 +24,7 @@ export interface ContentItem {
   media_url: string | null;
   media_type: 'gif' | 'video' | null;
   is_highlighted: boolean;
+  drive_url: string | null;
 }
 
 export interface Caption {
@@ -405,6 +406,7 @@ export const useUpdateContentItem = () => {
       description?: string | null;
       is_active?: boolean;
       language?: string;
+      drive_url?: string | null;
     }) => {
       const { id, ...updateData } = data;
       const { error } = await supabase
@@ -488,6 +490,7 @@ export const useCreateContentItem = () => {
       language?: string;
       is_new?: boolean;
       is_active?: boolean;
+      drive_url?: string | null;
     }) => {
       const { error } = await supabase
         .from("content_items")
@@ -500,6 +503,7 @@ export const useCreateContentItem = () => {
           language: data.language || null,
           is_new: data.is_new ?? false,
           is_active: data.is_active ?? true,
+          drive_url: data.drive_url || null,
         });
 
       if (error) throw error;

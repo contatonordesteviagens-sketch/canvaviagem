@@ -29,8 +29,9 @@ interface EditModalProps {
     description?: string | null;
     is_active?: boolean;
     language?: string | null;
+    drive_url?: string | null;
   } | null;
-  onSave: (id: string, data: { title: string; url: string; description: string; is_active: boolean; language: string }) => void;
+  onSave: (id: string, data: { title: string; url: string; description: string; is_active: boolean; language: string; drive_url: string | null }) => void;
   isSaving?: boolean;
 }
 
@@ -46,6 +47,7 @@ export const EditModal = ({
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [language, setLanguage] = useState("pt");
+  const [driveUrl, setDriveUrl] = useState("");
 
   useEffect(() => {
     if (item) {
@@ -54,12 +56,13 @@ export const EditModal = ({
       setDescription(item.description || "");
       setIsActive(item.is_active ?? true);
       setLanguage(item.language || "pt");
+      setDriveUrl(item.drive_url || "");
     }
   }, [item]);
 
   const handleSave = () => {
     if (item) {
-      onSave(item.id, { title, url, description, is_active: isActive, language });
+      onSave(item.id, { title, url, description, is_active: isActive, language, drive_url: driveUrl.trim() || null });
     }
   };
 
@@ -82,12 +85,22 @@ export const EditModal = ({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="url">URL / Link</Label>
+            <Label htmlFor="url">URL / Link Canva</Label>
             <Input
               id="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://..."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="driveUrl">Link do Google Drive (Opcional)</Label>
+            <Input
+              id="driveUrl"
+              value={driveUrl}
+              onChange={(e) => setDriveUrl(e.target.value)}
+              placeholder="https://drive.google.com/..."
             />
           </div>
 

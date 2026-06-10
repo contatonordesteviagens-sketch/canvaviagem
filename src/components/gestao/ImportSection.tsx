@@ -112,6 +112,7 @@ export const ImportSection = () => {
   // Quick import single mode (separated fields)
   const [quickTitle, setQuickTitle] = useState<string>("");
   const [quickUrl, setQuickUrl] = useState<string>("");
+  const [quickDriveUrl, setQuickDriveUrl] = useState<string>("");
   const [quickCaption, setQuickCaption] = useState<string>("");
   const [autoSchedule, setAutoSchedule] = useState<boolean>(true);
   const [importMode, setImportMode] = useState<"single" | "bulk">("single");
@@ -494,6 +495,7 @@ export const ImportSection = () => {
           media_url: mediaUrl.trim() || null,
           media_type: mediaType,
           is_highlighted: autoHighlight,
+          drive_url: quickDriveUrl.trim() || null,
         })
         .select("id")
         .single();
@@ -543,6 +545,7 @@ export const ImportSection = () => {
       // Clear fields
       setQuickTitle("");
       setQuickUrl("");
+      setQuickDriveUrl("");
       setQuickCaption("");
       setMediaUrl("");
       setMediaType(null);
@@ -817,6 +820,15 @@ export const ImportSection = () => {
                 </div>
 
                 <div className="space-y-2">
+                  <Label>Link do Google Drive (Baixar Vídeo)</Label>
+                  <Input
+                    placeholder="https://drive.google.com/..."
+                    value={quickDriveUrl}
+                    onChange={(e) => setQuickDriveUrl(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     Legenda do Vídeo (Opcional)
@@ -961,6 +973,7 @@ export const ImportSection = () => {
                     onClick={() => {
                       setQuickTitle("");
                       setQuickUrl("");
+                      setQuickDriveUrl("");
                       setQuickCaption("");
                       setMediaUrl("");
                       setMediaType(null);

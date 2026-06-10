@@ -9,7 +9,7 @@ const Footer = lazy(() => import("@/components/Footer").then(module => ({ defaul
 import { Button } from "@/components/ui/button";
 import { contentLibrary } from "@/data/content-library";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight, Play } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight, Play, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
@@ -526,7 +526,7 @@ const Index = () => {
                           key={template.id || `free-feed-${index}`}
                           id={template.id || `free-feed-${index}`}
                           title={template.title}
-                          url={template.url}
+                          url={template.url} driveUrl={template.drive_url}
                           imageUrl={template.image_url}
                           category={template.category}
                           isNew={(template as any).isNew || (template as any).is_new}
@@ -553,7 +553,7 @@ const Index = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                     {firstFourVideos.map((template, index) => (
                       <PremiumCard
-                        key={template.id} id={template.id} title={template.title} url={template.url}
+                        key={template.id} id={template.id} title={template.title} url={template.url} driveUrl={template.drive_url}
                         isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
                         imageUrl={template.image_url || undefined}
                         aspectRatio="9/16"
@@ -608,7 +608,7 @@ const Index = () => {
                           key={template.id || `home-feed-${index}`}
                           id={template.id || `home-feed-${index}`}
                           title={template.title}
-                          url={template.url}
+                          url={template.url} driveUrl={template.drive_url}
                           imageUrl={template.image_url}
                           category={template.category}
                           isNew={(template as any).isNew || (template as any).is_new}
@@ -630,7 +630,7 @@ const Index = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                     {remainingVideos.map((template, index) => (
                       <PremiumCard
-                        key={template.id} id={template.id} title={template.title} url={template.url}
+                        key={template.id} id={template.id} title={template.title} url={template.url} driveUrl={template.drive_url}
                         isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
                         imageUrl={template.image_url || undefined}
                         aspectRatio={template.image_url ? "9/16" : "1/1"}
@@ -798,16 +798,28 @@ const Index = () => {
                         {item.description && (
                           <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{item.description}</p>
                         )}
-                        <Button
-                          className="w-full mt-3"
-                          onClick={() => {
-                            trackClick(item.type, item.id);
-                            window.open(item.url, '_blank');
-                          }}
-                        >
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          Editar no Canva
-                        </Button>
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            className="flex-1"
+                            onClick={() => {
+                              trackClick(item.type, item.id);
+                              window.open(item.url, '_blank');
+                            }}
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Editar
+                          </Button>
+                          {item.drive_url && (
+                            <Button
+                              variant="secondary"
+                              className="flex-1"
+                              onClick={() => window.open(item.drive_url, '_blank')}
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Baixar
+                            </Button>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
@@ -849,7 +861,7 @@ const Index = () => {
                       key={template.id}
                       id={template.id}
                       title={template.title}
-                      url={template.url}
+                      url={template.url} driveUrl={template.drive_url}
                       isNew={newestIds.includes(template.id)}
                       icon={getIcon(template.type, template.icon)}
                       // Performance: Limit images to first 6 items in category view
@@ -919,7 +931,7 @@ const Index = () => {
                     key={template.id || `local-${index}`}
                     id={template.id || `local-${index}`}
                     title={template.title}
-                    url={template.url}
+                    url={template.url} driveUrl={template.drive_url}
                     imageUrl={template.image_url}
                     category={template.category}
                     isNew={(template as any).isNew || (template as any).is_new}
@@ -983,7 +995,7 @@ const Index = () => {
                         key={template.id}
                         id={template.id}
                         title={template.title}
-                        url={template.url}
+                        url={template.url} driveUrl={template.drive_url}
                         isNew={newestIds.includes(template.id)}
                         icon={getIcon(template.type, template.icon)}
                         aspectRatio="9/16"
@@ -1267,7 +1279,7 @@ const Index = () => {
                           key={template.id}
                           id={template.id}
                           title={template.title}
-                          url={template.url}
+                          url={template.url} driveUrl={template.drive_url}
                           icon={getIcon(template.type, template.icon)}
                           aspectRatio="9/16"
                           onClick={() => handleCardClick(template)}
@@ -1295,7 +1307,7 @@ const Index = () => {
                           key={template.id}
                           id={template.id}
                           title={template.title}
-                          url={template.url}
+                          url={template.url} driveUrl={template.drive_url}
                           icon={getIcon(template.type, template.icon)}
                           aspectRatio="4/5"
                           onClick={() => handleCardClick(template)}
@@ -1323,7 +1335,7 @@ const Index = () => {
                           key={template.id}
                           id={template.id}
                           title={template.title}
-                          url={template.url}
+                          url={template.url} driveUrl={template.drive_url}
                           icon={getIcon(template.type, template.icon)}
                           aspectRatio="9/16"
                           onClick={() => handleCardClick(template)}
