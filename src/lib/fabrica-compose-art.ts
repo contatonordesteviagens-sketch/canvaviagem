@@ -1,4 +1,4 @@
-﻿
+
 type Format = "square" | "story";
 type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
 
@@ -1265,7 +1265,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
     // 4. Texto acima do preco ("a partir de" ou "pagamento")
     const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
     const isDownPlus = paymentMode === "down_plus";
-    const topTxt = isCash ? "pagamento" : (isDownPlus ? "entrada +" : (pricePrefix !== undefined ? pricePrefix : "a partir de"));
+    const topTxt = pricePrefix !== undefined ? pricePrefix : (isCash ? "pagamento" : (isDownPlus ? "entrada +" : "a partir de"));
     
     ctx.font = `600 13px Inter, Arial, sans-serif`;
     ctx.fillText(topTxt, cx, y + 118);
@@ -1760,7 +1760,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
         const isDownPlus = paymentMode === "down_plus";
         
-        const topTxt = isCash ? "pagamento" : (isDownPlus ? "entrada +" : (pricePrefix !== undefined ? pricePrefix : "a partir de"));
+        const topTxt = pricePrefix !== undefined ? pricePrefix : (isCash ? "pagamento" : (isDownPlus ? "entrada +" : "a partir de"));
         let mainTxt = `${parcN}X`;
         if (isCash) mainTxt = "A VISTA";
         else if (isDownPlus) {
@@ -2489,9 +2489,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const instMatchV2 = (installments || "10x").match(/(\d{1,2})\s*x/i);
         const parcNV2 = instMatchV2 ? instMatchV2[1] : "10";
 
-        const prefixTxtV2 = (isCashV2
-          ? (pricePrefix !== undefined ? pricePrefix : "pagamento")
-          : (isDownPlusV2 ? (pricePrefix || "entrada +") : (pricePrefix !== undefined ? pricePrefix : "a partir de"))
+        const prefixTxtV2 = (pricePrefix !== undefined ? pricePrefix : 
+          (isCashV2 ? "pagamento" : (isDownPlusV2 ? "entrada +" : "a partir de"))
         ).toString().toUpperCase();
 
         const pillTxtV2 = (isCashV2 ? "À VISTA" : `${parcNV2}X`).toUpperCase();
