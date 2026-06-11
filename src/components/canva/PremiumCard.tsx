@@ -266,8 +266,13 @@ const PremiumCardComponent = ({
 
             {finalDriveUrl && (
               <button 
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(finalDriveUrl, '_blank'); }} 
-                title="Baixar Vídeo"
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  navigator.clipboard.writeText(finalDriveUrl);
+                  toast.success("Link do Drive copiado! Abra o seu navegador Chrome/Safari e cole o link para baixar.");
+                }} 
+                title="Copiar Link do Drive"
                 className="flex-[1] bg-primary text-primary-foreground font-medium py-1.5 px-1 md:py-2 md:px-2 rounded-lg flex items-center justify-center gap-1 text-[10px] md:text-xs transition-all duration-300 hover:brightness-110 active:scale-95 shadow-sm"
               >
                 <Download className="w-3.5 h-3.5" />
