@@ -753,6 +753,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 <Plus className="w-3.5 h-3.5" /> Começar Novo Projeto (Fase 1)
               </button>
             </div>
+          </div>
         </div>
 
         {/* Right Side: Package Management (7 Cols) */}
@@ -991,8 +992,6 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 </div>
               )}
             </div>
-          </div>
-
           </div>
         </div>
       </div>
