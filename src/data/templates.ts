@@ -7,6 +7,7 @@ export interface Template {
   is_new?: boolean;
   image_url?: string;
   icon?: string;
+  drive_url?: string;
 }
 
 export const templates: Template[] = [
