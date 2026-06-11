@@ -409,10 +409,26 @@ export const useUpdateContentItem = () => {
       drive_url?: string | null;
     }) => {
       const { id, ...updateData } = data;
-      const { error } = await supabase
+      let { error } = await supabase
         .from("content_items")
         .update({ ...updateData, updated_at: new Date().toISOString() })
         .eq("id", id);
+
+      // Fallback para atraso de cache do banco
+      if (error && error.message?.includes("drive_url") && updateData.drive_url) {
+        console.warn("Fallback de drive_url ativado no update.");
+        const fallbackData: any = { ...updateData };
+        const driveUrl = fallbackData.drive_url;
+        delete fallbackData.drive_url;
+        fallbackData.description = (fallbackData.description || "") + "\n\n🔗 Link do Drive: " + driveUrl;
+        
+        const retryResult = await supabase
+          .from("content_items")
+          .update({ ...fallbackData, updated_at: new Date().toISOString() })
+          .eq("id", id);
+          
+        error = retryResult.error;
+      }
 
       if (error) throw error;
     },

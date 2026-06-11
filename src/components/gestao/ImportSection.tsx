@@ -492,6 +492,7 @@ export const ImportSection = () => {
         media_url: mediaUrl.trim() || null,
         media_type: mediaType,
         is_highlighted: autoHighlight,
+        is_featured: autoFavorite,
         drive_url: quickDriveUrl.trim() || null,
       };
 
