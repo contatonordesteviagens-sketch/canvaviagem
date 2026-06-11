@@ -532,6 +532,8 @@ const Index = () => {
                           isNew={(template as any).isNew || (template as any).is_new}
                           icon={getIcon(template.type, template.icon)}
                           aspectRatio="4/5"
+                          contentType={template.type}
+                          description={template.description}
                           onClick={() => handleCardClick(template as ContentItem)}
                           isFavorite={template.id ? isFavorite("content_item", template.id) : false}
                           onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
@@ -557,6 +559,9 @@ const Index = () => {
                         isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
                         imageUrl={template.image_url || undefined}
                         aspectRatio="9/16"
+                        category={template.category}
+                        contentType={template.type}
+                        description={template.description}
                         // Performance: Prioritize first 2 items (especially on mobile)
                         loading={index < 2 ? "eager" : "lazy"}
                         fetchPriority={index < 2 ? "high" : "auto"}
@@ -614,6 +619,8 @@ const Index = () => {
                           isNew={(template as any).isNew || (template as any).is_new}
                           icon={getIcon(template.type, template.icon)}
                           aspectRatio="4/5"
+                          contentType={template.type}
+                          description={template.description}
                           onClick={() => handleCardClick(template as ContentItem)}
                           isFavorite={template.id ? isFavorite("content_item", template.id) : false}
                           onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
@@ -634,7 +641,9 @@ const Index = () => {
                         isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
                         imageUrl={template.image_url || undefined}
                         aspectRatio={template.image_url ? "9/16" : "1/1"}
+                        category={template.category}
                         contentType={template.type}
+                        description={template.description}
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
@@ -864,9 +873,11 @@ const Index = () => {
                       url={template.url} driveUrl={template.drive_url}
                       isNew={newestIds.includes(template.id)}
                       icon={getIcon(template.type, template.icon)}
-                      // Performance: Limit images to first 6 items in category view
                       imageUrl={index < 6 && template.image_url ? template.image_url : undefined}
                       aspectRatio="9/16"
+                      category={template.category}
+                      contentType={template.type}
+                      description={template.description}
                       onClick={() => handleCardClick(template)}
                       isFavorite={isFavorite("content_item", template.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
@@ -937,6 +948,8 @@ const Index = () => {
                     isNew={(template as any).isNew || (template as any).is_new}
                     icon={getIcon(template.type, template.icon)}
                     aspectRatio="4/5"
+                    contentType={template.type}
+                    description={template.description}
                     onClick={() => handleCardClick(template as ContentItem)}
                     isFavorite={template.id ? isFavorite("content_item", template.id) : false}
                     onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
@@ -972,6 +985,8 @@ const Index = () => {
                           url={story.url}
                           icon="📅"
                           aspectRatio="1/1"
+                          contentType={story.type}
+                          description={story.description}
                           onClick={() => handleCardClick(story)}
                           isFavorite={isFavorite("content_item", story.id)}
                           onToggleFavorite={() => handleToggleFavorite("content_item", story.id)}
@@ -999,6 +1014,8 @@ const Index = () => {
                         isNew={newestIds.includes(template.id)}
                         icon={getIcon(template.type, template.icon)}
                         aspectRatio="9/16"
+                        contentType={template.type}
+                        description={template.description}
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
@@ -1282,6 +1299,8 @@ const Index = () => {
                           url={template.url} driveUrl={template.drive_url}
                           icon={getIcon(template.type, template.icon)}
                           aspectRatio="9/16"
+                          contentType={template.type}
+                          description={template.description}
                           onClick={() => handleCardClick(template)}
                           isFavorite={true}
                           onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
@@ -1310,6 +1329,8 @@ const Index = () => {
                           url={template.url} driveUrl={template.drive_url}
                           icon={getIcon(template.type, template.icon)}
                           aspectRatio="4/5"
+                          contentType={template.type}
+                          description={template.description}
                           onClick={() => handleCardClick(template)}
                           isFavorite={true}
                           onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
@@ -1338,6 +1359,8 @@ const Index = () => {
                           url={template.url} driveUrl={template.drive_url}
                           icon={getIcon(template.type, template.icon)}
                           aspectRatio="9/16"
+                          contentType={template.type}
+                          description={template.description}
                           onClick={() => handleCardClick(template)}
                           isFavorite={true}
                           onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}

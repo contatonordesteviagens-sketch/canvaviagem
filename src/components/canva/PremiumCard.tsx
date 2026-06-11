@@ -1,7 +1,8 @@
 import { memo } from "react";
-import { ExternalLink, Heart, Crown, Download } from "lucide-react";
+import { ExternalLink, Heart, Crown, Download, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface PremiumCardProps {
   id?: string;
@@ -22,6 +23,7 @@ interface PremiumCardProps {
   onPremiumRequired?: () => void;
   loading?: "lazy" | "eager";
   fetchPriority?: "high" | "low" | "auto";
+  description?: string | null;
 }
 
 // Color per content type
@@ -73,10 +75,32 @@ const PremiumCardComponent = ({
   onPremiumRequired,
   loading = "lazy",
   fetchPriority = "auto",
-  driveUrl
+  driveUrl,
+  description
 }: PremiumCardProps) => {
   const gradient = getTypeGradient(contentType, title);
   const navigate = useNavigate();
+
+  const getFallbackDriveUrl = () => {
+    if (category === 'nacional') return "https://drive.google.com/drive/folders/10KCEnIdj6oC8rtOAEl-G0nHtPfC56ln9?usp=drive_link";
+    if (category === 'internacional') return "https://drive.google.com/drive/folders/10LWKcjLVA6L1FLkzRGDpDmCkKlTHoNOu";
+    // For anything else, fall back to "Extras"
+    return "https://drive.google.com/drive/folders/14uF1au_WY7XI5X2lfkQUKq8LGVl0OHO7";
+  };
+
+  const isVideo = contentType === 'video' || contentType === 'seasonal';
+  const finalDriveUrl = driveUrl || (isVideo ? getFallbackDriveUrl() : null);
+
+  const handleCopyCaption = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (description) {
+      navigator.clipboard.writeText(description);
+      toast.success("Legenda copiada para a área de transferência!");
+    } else {
+      toast.info("Este vídeo ainda não possui legenda cadastrada.");
+    }
+  };
 
   const handleClick = (e: React.MouseEvent) => {
     if (onPremiumRequired) {
@@ -190,18 +214,33 @@ const PremiumCardComponent = ({
           </h3>
 
           {/* CTA Button */}
-          <div className="flex gap-2">
-            <button className="flex-1 bg-white/95 backdrop-blur-sm text-foreground font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
-              <ExternalLink className="w-3.5 h-3.5" />
+          <div className="flex gap-1.5">
+            <button className="flex-[1.5] bg-white/95 backdrop-blur-sm text-foreground font-medium py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center justify-center gap-1.5 text-xs md:text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
+              <ExternalLink className="w-3.5 h-3.5 md:w-4 md:h-4" />
               <span>Editar</span>
             </button>
-            {driveUrl && (
+            
+            {isVideo && (
               <button 
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(driveUrl, '_blank'); }} 
-                className="flex-1 bg-primary text-primary-foreground font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 text-sm transition-all duration-300 hover:brightness-110 active:scale-95 shadow-sm"
+                onClick={handleCopyCaption}
+                title="Copiar Legenda"
+                className="flex-[1] bg-secondary/90 text-secondary-foreground font-medium py-1.5 px-1 md:py-2 md:px-2 rounded-lg flex items-center justify-center gap-1 text-[10px] md:text-xs transition-all duration-300 hover:bg-secondary active:scale-95 shadow-sm"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">Legenda</span>
+                <span className="md:hidden">Cópia</span>
+              </button>
+            )}
+
+            {finalDriveUrl && (
+              <button 
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(finalDriveUrl, '_blank'); }} 
+                title="Baixar Vídeo"
+                className="flex-[1] bg-primary text-primary-foreground font-medium py-1.5 px-1 md:py-2 md:px-2 rounded-lg flex items-center justify-center gap-1 text-[10px] md:text-xs transition-all duration-300 hover:brightness-110 active:scale-95 shadow-sm"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Baixar</span>
+                <span className="hidden md:inline">Baixar</span>
+                <span className="md:hidden">Drive</span>
               </button>
             )}
           </div>
