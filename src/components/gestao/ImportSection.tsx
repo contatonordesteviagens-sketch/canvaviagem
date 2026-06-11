@@ -480,25 +480,44 @@ export const ImportSection = () => {
     setIsQuickImporting(true);
 
     try {
-      // Create the content item with new media fields
-      const { data: createdItem, error } = await supabase
+      let insertPayload: any = {
+        title: quickTitle.trim(),
+        url: quickUrl.trim(),
+        description: quickCaption.trim() || null,
+        type: selectedType,
+        icon: getDefaultIconByType(selectedType),
+        category: influencer || location || null,
+        language: language,
+        is_active: true,
+        media_url: mediaUrl.trim() || null,
+        media_type: mediaType,
+        is_highlighted: autoHighlight,
+        drive_url: quickDriveUrl.trim() || null,
+      };
+
+      // Tenta inserir normalmente
+      let { data: createdItem, error } = await supabase
         .from("content_items")
-        .insert({
-          title: quickTitle.trim(),
-          url: quickUrl.trim(),
-          description: quickCaption.trim() || null,
-          type: selectedType,
-          icon: getDefaultIconByType(selectedType),
-          category: influencer || location || null,
-          language: language,
-          is_active: true,
-          media_url: mediaUrl.trim() || null,
-          media_type: mediaType,
-          is_highlighted: autoHighlight,
-          drive_url: quickDriveUrl.trim() || null,
-        })
+        .insert(insertPayload)
         .select("id")
         .single();
+
+      // Fallback: se o banco de dados do Lovable ainda não reconhecer a coluna drive_url,
+      // salva o link temporariamente dentro da descrição para não bloquear o usuário.
+      if (error && error.message?.includes("drive_url") && quickDriveUrl.trim()) {
+        console.warn("Fallback de drive_url ativado devido a atraso no banco de dados.");
+        delete insertPayload.drive_url;
+        insertPayload.description = (insertPayload.description || "") + "\n\n🔗 Link do Drive: " + quickDriveUrl.trim();
+        
+        const retryResult = await supabase
+          .from("content_items")
+          .insert(insertPayload)
+          .select("id")
+          .single();
+          
+        createdItem = retryResult.data;
+        error = retryResult.error;
+      }
 
       if (error) throw error;
 
