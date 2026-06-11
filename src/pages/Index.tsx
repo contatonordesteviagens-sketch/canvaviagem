@@ -760,7 +760,7 @@ const Index = () => {
                     <Card key={item.id} className="overflow-hidden border-primary/30 shadow-lg hover:shadow-xl transition-shadow">
                       {/* Animated Media (GIF or Video) */}
                       {item.media_url ? (
-                        <div className="aspect-video bg-muted">
+                        <div className={['video', 'seasonal', 'story', 'weekly-story'].includes(item.type) ? "aspect-[9/16] bg-muted" : item.type === 'feed' ? "aspect-square bg-muted" : "aspect-video bg-muted"}>
                           {item.media_type === 'gif' ? (
                             <img
                               src={item.media_url}
@@ -786,7 +786,7 @@ const Index = () => {
                           )}
                         </div>
                       ) : item.image_url ? (
-                        <div className="aspect-video bg-muted">
+                        <div className={['video', 'seasonal', 'story', 'weekly-story'].includes(item.type) ? "aspect-[9/16] bg-muted" : item.type === 'feed' ? "aspect-square bg-muted" : "aspect-video bg-muted"}>
                           <img
                             src={item.image_url}
                             alt={item.title}
@@ -795,7 +795,7 @@ const Index = () => {
                           />
                         </div>
                       ) : (
-                        <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                        <div className={`${['video', 'seasonal', 'story', 'weekly-story'].includes(item.type) ? "aspect-[9/16]" : item.type === 'feed' ? "aspect-square" : "aspect-video"} bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center`}>
                           <span className="text-4xl">{item.icon || "✨"}</span>
                         </div>
                       )}
@@ -807,9 +807,9 @@ const Index = () => {
                         {item.description && (
                           <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{item.description}</p>
                         )}
-                        <div className="flex gap-2 mt-3">
+                        <div className="grid grid-cols-2 gap-2 mt-3">
                           <Button
-                            className="flex-1"
+                            className="col-span-2"
                             onClick={() => {
                               trackClick(item.type, item.id);
                               window.open(item.url, '_blank');
@@ -818,11 +818,34 @@ const Index = () => {
                             <ExternalLink className="w-4 h-4 mr-2" />
                             Editar
                           </Button>
-                          {item.drive_url && (
+
+                          {(item.type === 'video' || item.type === 'seasonal') && (
+                            <Button
+                              variant="outline"
+                              className="col-span-1"
+                              onClick={() => {
+                                if (!item.description) {
+                                  toast.error("Este conteúdo não possui legenda cadastrada.");
+                                  return;
+                                }
+                                navigator.clipboard.writeText(item.description);
+                                toast.success("Legenda copiada para a área de transferência!");
+                              }}
+                            >
+                              <Copy className="w-4 h-4 mr-2" />
+                              Legenda
+                            </Button>
+                          )}
+
+                          {(item.drive_url || ((item.type === 'video' || item.type === 'seasonal') && "https://drive.google.com/drive/folders/10LWKcjLVA6L1FLkzRGDpDmCkKlTHoNOu?usp=sharing")) && (
                             <Button
                               variant="secondary"
-                              className="flex-1"
-                              onClick={() => window.open(item.drive_url, '_blank')}
+                              className="col-span-1"
+                              onClick={() => {
+                                const driveLink = item.drive_url || "https://drive.google.com/drive/folders/10LWKcjLVA6L1FLkzRGDpDmCkKlTHoNOu?usp=sharing";
+                                navigator.clipboard.writeText(driveLink);
+                                toast.success("Link do Drive copiado! Cole no seu navegador Chrome/Safari.");
+                              }}
                             >
                               <Download className="w-4 h-4 mr-2" />
                               Baixar
