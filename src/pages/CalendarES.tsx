@@ -84,7 +84,7 @@ const CalendarES = () => {
 
   // Get content for a specific day - first check database, then fallback to rotation
   const getContentForDay = (day: number): { 
-    template: { title: string; url: string; icon?: string } | null; 
+    template: { title: string; url: string; icon?: string; drive_url?: string } | null; 
     caption: { destination: string; text: string; hashtags: string } | null;
     notes: string | null;
     isFromDatabase: boolean;
