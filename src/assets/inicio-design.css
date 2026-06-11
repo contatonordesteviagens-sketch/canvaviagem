@@ -128,6 +128,33 @@ button, a {
   color: #475569;
 }
 
+/* Tailwind text utilities need extra specificity inside this legacy landing CSS. */
+.inicio-page .text-white { color: #ffffff; }
+.inicio-page .text-slate-200 { color: #e2e8f0; }
+.inicio-page .text-slate-300 { color: #cbd5e1; }
+.inicio-page .text-slate-400 { color: #94a3b8; }
+.inicio-page .text-slate-500 { color: #64748b; }
+.inicio-page .text-slate-600 { color: #475569; }
+.inicio-page .text-slate-700 { color: #334155; }
+.inicio-page .text-slate-800 { color: #1e293b; }
+.inicio-page .text-slate-900 { color: #0f172a; }
+.inicio-page .text-purple-200 { color: #e9d5ff; }
+.inicio-page .text-purple-300 { color: #d8b4fe; }
+.inicio-page .text-purple-400 { color: #c084fc; }
+.inicio-page .text-purple-600 { color: #9333ea; }
+.inicio-page .text-purple-700 { color: #7e22ce; }
+.inicio-page .text-red-300 { color: #fca5a5; }
+.inicio-page .text-red-900 { color: #7f1d1d; }
+.inicio-page .text-red-950 { color: #450a0a; }
+.inicio-page .text-green-400 { color: #4ade80; }
+.inicio-page .text-green-500 { color: #22c55e; }
+.inicio-page .text-green-600 { color: #16a34a; }
+.inicio-page .text-green-700 { color: #15803d; }
+.inicio-page .text-green-800 { color: #166534; }
+.inicio-page .text-green-900 { color: #14532d; }
+.inicio-page .text-green-950 { color: #052e16; }
+.inicio-page .text-yellow-400 { color: #facc15; }
+
 /* 4. BOTÕES */
 .btn {
   height: 54px;
@@ -219,12 +246,6 @@ button, a {
   border: none;
   display: flex;
   align-items: center;
-}
-
-@media (max-width: 767px) {
-  .header-cta {
-    display: none;
-  }
 }
 
 .hero {
@@ -430,10 +451,6 @@ button, a {
   transition: transform 0.3s ease;
 }
 
-.demo-play-text {
-  display: none;
-}
-
 .demo-frame:hover .demo-play {
   transform: scale(1.1);
 }
@@ -474,7 +491,6 @@ button, a {
 @media (min-width: 768px) {
   .demo-frame { max-width: 720px; }
   .demo-play { width: 220px; height: 56px; border-radius: 999px; }
-  .demo-play-text { display: inline; }
   .steps-grid { max-width: 820px; grid-template-columns: repeat(3, 1fr); }
   .step-card { min-height: 150px; }
 }
@@ -1599,7 +1615,7 @@ button, a {
 .hiw-card h3 { font-size: 16px; font-weight: 800; color: #F1F5F9; margin: 0; }
 .hiw-card p { font-size: 14px; color: #94A3B8; line-height: 1.6; margin: 0; }
 
-/* TESTIMONIALS (hidden placeholder — remove display:none on section to activate) */
+/* TESTIMONIALS */
 .testimonials { background: #F8FAFC; }
 .testimonials-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 32px; }
 @media (min-width: 768px) { .testimonials-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -1611,4 +1627,65 @@ button, a {
 .testimonial-author strong { font-size: 14px; font-weight: 800; color: #0F172A; }
 .testimonial-author span { font-size: 12px; color: #64748B; }
 .testimonials-note { text-align: center; font-size: 12px; color: #94A3B8; margin-top: 24px; }
+
+@media (max-width: 767px) {
+  .inicio-page {
+    overflow-x: hidden;
+    padding-bottom: 76px;
+  }
+
+  #hero .inicio-container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .mobile-sticky {
+    height: 68px;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .mobile-sticky > span {
+    min-width: 0;
+    font-size: 12.5px;
+    line-height: 1.15;
+  }
+
+  .mobile-sticky .btn {
+    width: auto;
+    max-width: none;
+    min-width: 148px;
+    height: 44px;
+    padding: 0 14px;
+    margin: 0;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
+  .social-proof-grid {
+    display: flex !important;
+    overflow-x: auto;
+    gap: 14px;
+    margin-left: -20px;
+    margin-right: -20px;
+    padding: 0 20px 10px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .social-proof-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .social-proof-chat {
+    min-width: 314px;
+    max-width: 314px;
+    min-height: 390px;
+    scroll-snap-align: start;
+  }
+
+  .social-proof-chat .text-\[13px\] {
+    font-size: 12.5px;
+  }
+}
 /* END OF FILE */
