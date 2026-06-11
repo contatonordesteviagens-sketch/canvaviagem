@@ -246,8 +246,8 @@ const PremiumCardComponent = ({
           </h3>
 
           {/* CTA Button */}
-          <div className="flex gap-1.5">
-            <button className="flex-[1.5] bg-white/95 backdrop-blur-sm text-foreground font-medium py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center justify-center gap-1.5 text-xs md:text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
+          <div className="grid grid-cols-2 md:flex gap-1.5">
+            <button className="col-span-2 md:col-span-1 md:flex-[1.5] bg-white/95 backdrop-blur-sm text-foreground font-medium py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center justify-center gap-1.5 text-xs md:text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
               <ExternalLink className="w-3.5 h-3.5 md:w-4 md:h-4" />
               <span>Editar</span>
             </button>
@@ -256,7 +256,7 @@ const PremiumCardComponent = ({
               <button 
                 onClick={handleCopyCaption}
                 title="Copiar Legenda"
-                className="flex-[1] bg-secondary/90 text-secondary-foreground font-medium py-1.5 px-1 md:py-2 md:px-2 rounded-lg flex items-center justify-center gap-1 text-[10px] md:text-xs transition-all duration-300 hover:bg-secondary active:scale-95 shadow-sm"
+                className="col-span-1 md:flex-[1] bg-secondary/90 text-secondary-foreground font-medium py-1.5 px-1 md:py-2 md:px-2 rounded-lg flex items-center justify-center gap-1 text-[10px] md:text-xs transition-all duration-300 hover:bg-secondary active:scale-95 shadow-sm"
               >
                 <Copy className="w-3.5 h-3.5" />
                 <span className="hidden md:inline">Legenda</span>
@@ -273,7 +273,7 @@ const PremiumCardComponent = ({
                   toast.success("Link do Drive copiado! Abra o seu navegador Chrome/Safari e cole o link para baixar.");
                 }} 
                 title="Copiar Link do Drive"
-                className="flex-[1] bg-primary text-primary-foreground font-medium py-1.5 px-1 md:py-2 md:px-2 rounded-lg flex items-center justify-center gap-1 text-[10px] md:text-xs transition-all duration-300 hover:brightness-110 active:scale-95 shadow-sm"
+                className="col-span-1 md:flex-[1] bg-primary text-primary-foreground font-medium py-1.5 px-1 md:py-2 md:px-2 rounded-lg flex items-center justify-center gap-1 text-[10px] md:text-xs transition-all duration-300 hover:brightness-110 active:scale-95 shadow-sm"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span className="hidden md:inline">Baixar</span>
