@@ -126,7 +126,7 @@ const Gestao = () => {
     });
   };
 
-  const handleSaveItem = (id: string, data: { title: string; url: string; description: string; is_active: boolean; language: string }) => {
+  const handleSaveItem = (id: string, data: { title: string; url: string; description: string; is_active: boolean; language: string; drive_url?: string | null }) => {
     updateContent.mutate(
       { id, ...data },
       {

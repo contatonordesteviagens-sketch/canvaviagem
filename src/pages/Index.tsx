@@ -86,7 +86,6 @@ import {
   useTrackClick,
   useFeaturedItems,
   useNewestItemIds,
-  useHighlightedItems,
   ContentItem,
   Caption,
 } from "@/hooks/useContent";
@@ -146,7 +145,6 @@ const Index = () => {
   const { data: toolsData, isLoading: toolsLoading } = useMarketingTools();
   const { data: offersData, isLoading: offersLoading } = useContentItems('offer');
   const { data: newestIds = [] } = useNewestItemIds();
-  const { data: highlightedItems, isLoading: highlightsLoading } = useHighlightedItems();
   const { trackClick } = useTrackClick();
   const { trackPageView } = useTrackPageView();
   const { favorites, isFavorite, toggleFavorite, favoritesCount, MAX_FAVORITES } = useFavorites();
@@ -749,14 +747,14 @@ const Index = () => {
         return (
           <section className="animate-fade-in">
             {/* Highlights Section - Show at top if there are highlighted items */}
-            {highlightedItems && highlightedItems.length > 0 && (
+            {featuredVideos && featuredVideos.length > 0 && (
               <div className="mb-8">
                 <SectionHeader
-                  title="✨ Destaques da Semana"
-                  subtitle="Conteúdos em destaque selecionados para você"
+                  icon={<Sparkles className="w-5 h-5 text-amber-400" />}
+                  title="Destaques da Semana"
                 />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {highlightedItems.map(item => (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {featuredVideos.map(item => (
                     <Card key={item.id} className="overflow-hidden border-primary/30 shadow-lg hover:shadow-xl transition-shadow">
                       {/* Animated Media (GIF or Video) */}
                       {item.media_url ? (
