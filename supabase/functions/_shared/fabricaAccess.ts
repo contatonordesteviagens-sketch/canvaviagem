@@ -1,6 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const ELITE_PRODUCT_IDS = new Set(["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"]);
+const ELITE_PRODUCT_IDS = new Set([
+  "prod_TkvaozfpkAcbpM", // Elite atual (create-subscription)
+  "prod_UTFlCWzNqvqSNx",
+  "prod_UTFsXcKq8m0mol",
+  "prod_UTSmPe3GPt8iHt",
+]);
 
 type HeadersMap = Record<string, string>;
 
