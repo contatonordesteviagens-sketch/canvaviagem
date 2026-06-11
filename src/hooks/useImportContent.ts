@@ -156,6 +156,9 @@ export const useImportContent = () => {
       queryClient.invalidateQueries({ queryKey: ["content-items"] });
       queryClient.invalidateQueries({ queryKey: ["captions"] });
       queryClient.invalidateQueries({ queryKey: ["marketing-tools"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-items"] });
+      queryClient.invalidateQueries({ queryKey: ["highlighted-items"] });
+      queryClient.invalidateQueries({ queryKey: ["video-templates"] });
       setParsedItems([]);
     },
   });

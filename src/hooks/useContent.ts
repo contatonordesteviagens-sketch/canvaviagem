@@ -528,6 +528,8 @@ export const useCreateContentItem = () => {
       queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
       queryClient.invalidateQueries({ queryKey: ["content-items"] });
       queryClient.invalidateQueries({ queryKey: ["video-templates"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-items"] });
+      queryClient.invalidateQueries({ queryKey: ["highlighted-items"] });
     },
   });
 };

@@ -448,6 +448,9 @@ export const ImportSection = () => {
         // Invalidate queries to refresh data
         queryClient.invalidateQueries({ queryKey: ["content-items"] });
         queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+        queryClient.invalidateQueries({ queryKey: ["featured-items"] });
+        queryClient.invalidateQueries({ queryKey: ["highlighted-items"] });
+        queryClient.invalidateQueries({ queryKey: ["video-templates"] });
       }
 
       if (errorCount > 0) {
@@ -576,6 +579,8 @@ export const ImportSection = () => {
       queryClient.invalidateQueries({ queryKey: ["content-items"] });
       queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
       queryClient.invalidateQueries({ queryKey: ["highlighted-items"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-items"] });
+      queryClient.invalidateQueries({ queryKey: ["video-templates"] });
     } catch (error: any) {
       console.error("Single import error:", error);
       toast.error("Erro ao importar vídeo: " + (error?.message || "Erro desconhecido"));
