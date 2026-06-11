@@ -142,7 +142,9 @@ const PremiumCardComponent = ({
     }
 
     if (onClick) onClick();
-    // Comportamento padrão de link (target="_blank") fará o trabalho
+    
+    // Explicitly open external link since we removed the <a> tag
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
@@ -154,12 +156,17 @@ const PremiumCardComponent = ({
   const isRelative = url.startsWith("/");
 
   return (
-    <a
-      href={url}
-      target={isRelative ? undefined : "_blank"}
-      rel={isRelative ? undefined : "noopener noreferrer"}
-      className="group block relative"
+    <div
+      className="group block relative cursor-pointer"
       onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick(e as unknown as React.MouseEvent);
+        }
+      }}
     >
       <div
         className={cn(
@@ -271,7 +278,7 @@ const PremiumCardComponent = ({
           </div>
         </div>
       </div>
-    </a>
+    </div>
   );
 };
 
