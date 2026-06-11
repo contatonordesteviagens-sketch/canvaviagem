@@ -1483,9 +1483,9 @@ const Index = () => {
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Product",
-          "name": "Canva Viagem — Plataforma de Conteúdo para Agência de Viagem",
-          "description": "Plataforma com 250+ vídeos prontos, artes editáveis no Canva, calendário editorial de 365 dias e 11 agentes de IA de marketing para agências de viagem.",
-          "image": ["https://storage.googleapis.com/gpt-engineer-file-uploads/gv52nlymyDZCKjaUbvIf7y1xoY12/social-images/social-1767713927214-canva mobile.jpg"],
+          "name": "Canva Viagem — IA e Marketing para Agências de Viagens",
+          "description": "Plataforma com IA para anúncios, páginas de venda, conteúdos prontos, vídeos, artes, legendas e CRM para agências de viagens.",
+          "image": ["https://canvaviagem.com/meta_app_icon_1024.png"],
           "brand": { "@type": "Brand", "name": "Canva Viagem" },
           "offers": {
             "@type": "AggregateOffer",
@@ -1509,9 +1509,9 @@ const Index = () => {
         })}</script>
       </Helmet>
       <SeoMetadata
-        title="Vídeos prontos para Agência de Viagem"
-        description="Acesse centenas de templates de vídeos Reels e artes para agências de viagens. Conteúdo premium pronto para editar no Canva."
-        keywords="templates canva viagens, reels turismo, artes agência de viagens, marketing turístico"
+        title="Canva Viagem | IA e Marketing para Agências de Viagens"
+        description="Crie anúncios com IA, páginas de venda, vídeos, artes, legendas e organize leads em uma plataforma feita para agências de viagens venderem mais."
+        keywords="marketing para agência de viagens, IA para agência de viagens, conteúdo para Instagram turismo, CRM para agência de viagens, páginas de venda turismo"
       />
       <Header onCategoryChange={setActiveCategory} />
 
