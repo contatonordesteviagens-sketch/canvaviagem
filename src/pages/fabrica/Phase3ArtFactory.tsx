@@ -1035,9 +1035,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const MAX_HIGHLIGHTS = 6;
   const addHighlight = () => {
     const v = newHl.trim();
-    if (!v || highlights.length >= MAX_HIGHLIGHTS) return;
+    if (!v) {
+      toast.error("Digite o nome do benefício/serviço primeiro.");
+      return;
+    }
+    if (highlights.length >= MAX_HIGHLIGHTS) {
+      toast.error(`Máximo de ${MAX_HIGHLIGHTS} atingido.`);
+      return;
+    }
     setHighlights([...highlights, { text: v, icon: "check" }]);
     setNewHl("");
+    toast.success("Adicionado! Clique no ícone para alterar se quiser.");
   };
   const removeHighlight = (i: number) => setHighlights(highlights.filter((_, idx) => idx !== i));
   const updateHighlightText = (i: number, text: string) =>
@@ -1424,6 +1432,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 paymentMode,
                 installments,
                 paymentSuffix,
+                paymentLabel: paymentLabel || undefined,
+                pricePrefix: pricePrefix || undefined,
+                titleOverride: resolvedAdTitle,
+                titleVariations: adTitleVariations,
+                showTotal,
+                totalOverride: totalOverride || undefined,
+                showPixBanner,
+                pixBannerText: pixBannerText || undefined,
                 logoDataUrl: state.logoBase64,
                 logoFormat: state.logoFormat,
                 footerContact1Icon: state.footerContact1Icon,
@@ -1435,6 +1451,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 descScale,
                 textColorOverride,
                 imageUrl: reframedBg,
+                isExperience: categoria === "experiencia_destino",
               } as any, layoutJson as any);
 
               finalImages.push(canvas.toDataURL("image/png", 0.9));
@@ -2574,8 +2591,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 />
                 <button
                   onClick={addHighlight}
-                  disabled={!newHl.trim()}
-                  className="text-xs font-bold px-2 py-1 rounded text-black disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:brightness-110 flex-shrink-0"
+                  className={`text-xs font-bold px-2 py-1 rounded text-black transition-all hover:brightness-110 flex-shrink-0 ${!newHl.trim() ? 'opacity-50' : 'opacity-100'}`}
                   style={{ background: secondaryColor }}
                   title="Adicionar"
                 >
