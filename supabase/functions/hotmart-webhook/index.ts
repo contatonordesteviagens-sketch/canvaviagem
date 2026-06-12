@@ -70,26 +70,8 @@ async function triggerZaiaWebhook(envVar: string, data: { email: string; name?: 
   }
 }
 
-async function sendMagicLinkEmail(resend: Resend, email: string, magicLink: string, name: string, plan: string) {
-  try {
-    await resend.emails.send({
-      from: "Canva Viagem <contato@canvaviagem.com>",
-      to: [email],
-      subject: `🎉 Seu acesso ${plan} - Canva Viagem`,
-      html: `
-        <div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f9fafb;border-radius:16px">
-          <h2>Olá, ${name}!</h2>
-          <p>Sua compra na Hotmart foi aprovada. Bem-vindo ao plano <strong>${plan}</strong>!</p>
-          <p>Acesse sua conta com 1 clique:</p>
-          <a href="${magicLink}" style="display:inline-block;background:#000;color:#fff;padding:16px 28px;border-radius:10px;text-decoration:none;font-weight:bold;margin:20px 0">ACESSAR MINHA CONTA →</a>
-          <p style="color:#9ca3af;font-size:11px">Link válido por 24h. Em caso de dúvidas: lucas@rochadigitalmidia.com.br</p>
-        </div>
-      `,
-    });
-  } catch (e) {
-    logStep("Resend email failed", { error: (e as Error).message });
-  }
-}
+// E-mails (magic link + welcome) usam o utilitário compartilhado
+// em ../_shared/welcomeEmail.ts (mesmo módulo usado pelo Stripe).
 
 async function ensureUserAndOnboarding(
   supabase: any,
