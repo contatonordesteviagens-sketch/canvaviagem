@@ -618,7 +618,7 @@ const Index = () => {
                           icon={getIcon(template.type, template.icon)}
                           aspectRatio="4/5"
                           contentType={template.type}
-                          description={template.description}
+                          description={(template as any).description}
                           onClick={() => handleCardClick(template as ContentItem)}
                           isFavorite={template.id ? isFavorite("content_item", template.id) : false}
                           onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
