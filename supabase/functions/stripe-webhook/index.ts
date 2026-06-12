@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { sendWelcomeEmail, sendAutoMagicLinkEmail } from "../_shared/welcomeEmail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -195,7 +196,7 @@ async function ensureUserAndOnboarding(
   // 5. Send emails via Resend if available
   if (resend && magicLink) {
     await sendAutoMagicLinkEmail(supabase, resend, normalizedEmail, magicLink, token, name || "Visitante");
-    await sendWelcomeEmail(supabase, resend, normalizedEmail, productId);
+    await sendWelcomeEmail(supabase, resend, normalizedEmail, productId, "stripe");
   }
 
   // 6. Trigger Zaia Welcome (with the generated magic link for WhatsApp delivery!)
@@ -396,104 +397,9 @@ async function handleCheckoutExpired(session: Stripe.Checkout.Session, supabase:
 }
 
 // EMAIL TEMPLATES (Restored)
-async function sendAutoMagicLinkEmail(supabase: any, resend: any, email: string, magicLink: string, token: string, customerName: string) {
-  try {
-    const emailResponse = await resend.emails.send({
-      from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
-      to: [email],
-      subject: "🔐 Seu Link de Acesso - Canva Viagem",
-      html: `
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-        <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Seu Link de Acesso</title></head>
-        <body style="margin: 0; padding: 0; font-family: sans-serif; background: #667eea;">
-          <div style="background: white; max-width: 600px; margin: 40px auto; padding: 20px; text-align: center; border-radius: 10px;">
-             <h1>Olá, ${customerName}!</h1>
-             <p>Seu pagamento foi confirmado! Clique abaixo para acessar:</p>
-             <a href="${magicLink}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Acessar Minha Conta</a>
-              <p style="margin-top: 20px; font-size: 12px; color: #888;">Link expira em 24 horas.</p>
-          </div>
-        </body>
-        </html>
-      `,
-    });
-    if (emailResponse?.error) {
-      logStep("ERROR: Resend rejected auto magic link email", { email: redactEmail(email), error: emailResponse.error });
-      await supabase.from("email_events").insert({
-        email_id: token,
-        type: "failed",
-        email_type: "magic_link_auto",
-        recipient_email: email,
-        metadata: { token_id: token, provider_error: emailResponse.error },
-      });
-      return;
-    }
-    await supabase.from("email_events").insert({
-      email_id: emailResponse?.data?.id || token,
-      type: "sent",
-      email_type: "magic_link_auto",
-      recipient_email: email,
-      metadata: { token_id: token },
-    });
-    logStep("Auto magic link email sent", { email: redactEmail(email), emailId: emailResponse?.data?.id });
-  } catch (error: any) {
-    logStep("ERROR: Failed to send auto magic link email", { error: error.message });
-  }
-}
-
-const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
-
-async function sendWelcomeEmail(supabase: any, resend: any, email: string, productId?: string) {
-  const appUrl = Deno.env.get("APP_URL") || "https://canvaviagem.com";
-  const isElite = !!productId && ELITE_PRODUCT_IDS.includes(productId);
-  const planName = isElite ? "Plano Elite 👑" : "Plano Start";
-  const ctaUrl = isElite ? `${appUrl}/fabrica` : `${appUrl}/`;
-  const ctaLabel = isElite ? "🚀 Acessar a Fábrica" : "🌴 Acessar meu Painel";
-  const eliteExtras = isElite
-    ? `<li><strong>🏭 Fábrica de Anúncios IA</strong> (exclusivo Elite)</li>
-       <li><strong>🌐 Criador de Sites de Viagem</strong> (exclusivo Elite)</li>`
-    : `<li>Vídeos Reels Virais</li>
-       <li>Robôs de IA</li>
-       <li>Templates Editáveis</li>`;
-  try {
-    const emailResponse = await resend.emails.send({
-      from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
-      to: [email],
-      subject: `🚀 Bem-vindo ao Canva Viagem — ${planName}`,
-      html: `
-        <!DOCTYPE html>
-        <html><body>
-          <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px;">
-             <h1>Bem-vindo ao Canva Viagem! 🌴</h1>
-             <p>Sua assinatura do <strong>${planName}</strong> está ativa.</p>
-             <p>Você agora tem acesso a:</p>
-             <ul>${eliteExtras}</ul>
-             <p style="margin-top:24px"><a href="${ctaUrl}" style="background:#0ea5e9;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">${ctaLabel}</a></p>
-          </div>
-        </body></html>
-      `,
-    });
-    if (emailResponse?.error) {
-      logStep("ERROR welcome email", { email: redactEmail(email), error: emailResponse.error });
-      await supabase.from("email_events").insert({
-        email_id: `${email}-welcome-${Date.now()}`,
-        type: "failed",
-        email_type: isElite ? "welcome_elite" : "welcome_start",
-        recipient_email: email,
-        metadata: { product_id: productId, provider_error: emailResponse.error },
-      });
-      return;
-    }
-    await supabase.from("email_events").insert({
-      email_id: emailResponse?.data?.id || `${email}-welcome-${Date.now()}`,
-      type: "sent",
-      email_type: isElite ? "welcome_elite" : "welcome_start",
-      recipient_email: email,
-      metadata: { product_id: productId },
-    });
-    logStep("Welcome email sent", { email: redactEmail(email), productId, emailId: emailResponse?.data?.id });
-  } catch (error: any) { logStep("ERROR welcome email", { error: error.message }); }
-}
+// sendAutoMagicLinkEmail e sendWelcomeEmail foram movidos para
+// `../_shared/welcomeEmail.ts` para serem reutilizados pelos webhooks
+// Stripe e Hotmart com a mesma lógica.
 
 async function sendCancellationEmail(resend: any, email: string) {
   const appUrl = Deno.env.get("APP_URL") || "https://canvatrip.lovable.app";
