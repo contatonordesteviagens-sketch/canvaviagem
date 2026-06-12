@@ -817,16 +817,12 @@ const Index = () => {
                             Editar
                           </Button>
 
-                          {(item.type === 'video' || item.type === 'seasonal') && (
+                          {item.description && (
                             <Button
                               variant="outline"
-                              className="col-span-1"
+                              className="col-span-2"
                               onClick={() => {
-                                if (!item.description) {
-                                  toast.error("Este conteúdo não possui legenda cadastrada.");
-                                  return;
-                                }
-                                navigator.clipboard.writeText(item.description);
+                                navigator.clipboard.writeText(item.description!);
                                 toast.success("Legenda copiada para a área de transferência!");
                               }}
                             >
@@ -835,13 +831,12 @@ const Index = () => {
                             </Button>
                           )}
 
-                          {(item.drive_url || ((item.type === 'video' || item.type === 'seasonal') && "https://drive.google.com/drive/folders/10LWKcjLVA6L1FLkzRGDpDmCkKlTHoNOu?usp=sharing")) && (
+                          {item.drive_url && (
                             <Button
                               variant="secondary"
-                              className="col-span-1"
+                              className="col-span-2"
                               onClick={() => {
-                                const driveLink = item.drive_url || "https://drive.google.com/drive/folders/10LWKcjLVA6L1FLkzRGDpDmCkKlTHoNOu?usp=sharing";
-                                navigator.clipboard.writeText(driveLink);
+                                navigator.clipboard.writeText(item.drive_url!);
                                 toast.success("Link do Drive copiado! Cole no seu navegador Chrome/Safari.");
                               }}
                             >
