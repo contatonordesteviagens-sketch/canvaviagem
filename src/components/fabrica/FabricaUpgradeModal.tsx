@@ -17,7 +17,7 @@ export const FabricaUpgradeModal = ({ open, onOpenChange }: FabricaUpgradeModalP
 
   const handlePlansClick = () => {
     onOpenChange(false);
-    navigate("/planos");
+    navigate("/inicio");
   };
 
   return (
@@ -72,7 +72,7 @@ export const FabricaUpgradeModal = ({ open, onOpenChange }: FabricaUpgradeModalP
 
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Button onClick={handlePlansClick} className="font-extrabold uppercase tracking-wide">
-              Conhecer os planos
+              Ir para o Início
             </Button>
             <Button variant="ghost" onClick={() => onOpenChange(false)}>
               Agora não

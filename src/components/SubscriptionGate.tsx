@@ -53,9 +53,9 @@ export const SubscriptionGate = ({ children }: SubscriptionGateProps) => {
           <p className="text-muted-foreground">
             Para acessar as ferramentas, ative sua assinatura.
           </p>
-          <Button onClick={() => navigate("/planos")} className="w-full">
+          <Button onClick={() => navigate("/inicio")} className="w-full">
             <CreditCard className="mr-2 h-4 w-4" />
-            Ver Planos
+            Ir para o Início
           </Button>
         </CardContent>
       </Card>

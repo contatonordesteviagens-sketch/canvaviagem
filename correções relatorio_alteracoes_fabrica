@@ -1,0 +1,127 @@
+# Relatório de Alterações: Fábrica V2
+
+Este documento detalha **todas as alterações** que foram feitas por mim (Antigravity) nas últimas interações para corrigir o layout (botões vazando) e refinar o design (remoção do checkmark ✅ e adição do botão "Tirar do Site").
+
+Como eu acabei sobrescrevendo as alterações que o agente do Lovable havia feito, você pode usar este relatório para restaurar o estado do Lovable e, em seguida, me pedir para re-aplicar essas mudanças exatas.
+
+---
+
+## 1. Correção de Layout: Evitando que botões e textos "vazem"
+**Arquivo:** `src/pages/fabrica/FabricaDashboard.tsx`
+
+Havia um problema onde o título do destino muito longo ou botões causavam um overflow (vazamento) no card de pacotes publicados, quebrando o layout do grid.
+
+**O que foi feito:**
+Adicionei a classe `min-w-0` na tag `<a>` que envolve o pacote publicado para permitir que o flexbox aplique o `truncate` corretamente no texto do título, evitando que ele empurre os outros elementos para fora da tela.
+
+**Trecho Modificado:**
+```tsx
+// Antes:
+<a href={`/pacote/${pkg.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 flex-1 hover:bg-black/20 p-2 rounded-lg transition-colors">
+
+// Depois:
+<a href={`/pacote/${pkg.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 flex-1 min-w-0 hover:bg-black/20 p-2 rounded-lg transition-colors">
+```
+
+---
+
+## 2. Nova Funcionalidade: Botão "Tirar do Site"
+**Arquivos:** `src/pages/fabrica/FabricaDashboard.tsx` e `src/pages/fabrica/Phase2Ativos.tsx`
+
+O texto "No Site" era apenas um selo indicativo (um `span`). O usuário solicitou que fosse um botão para remover o pacote do site diretamente pelo painel.
+
+**O que foi feito:**
+Substituí o `span` estático por um `<button>` com a função `onClick={() => togglePublish(pkg)}` para alternar o status de publicação.
+
+**Trecho Modificado (em ambos os arquivos):**
+```tsx
+// Antes:
+<span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full">
+  No Site
+</span>
+
+// Depois:
+<button 
+  onClick={(e) => {
+    e.preventDefault();
+    togglePublish(pkg);
+  }} 
+  className="text-xs font-medium text-red-400 bg-red-400/10 px-2 py-1 rounded-full hover:bg-red-400/20 transition-colors cursor-pointer"
+>
+  Tirar do Site
+</button>
+```
+*(Nota: No `FabricaDashboard.tsx` foi necessário o `e.preventDefault()` pois o botão fica dentro de uma tag `<a>`).*
+
+---
+
+## 3. Limpeza Visual: Substituição do "✅" por "•"
+**Arquivos:** `src/pages/fabrica/Phase3ArtFactory.tsx` e `src/pages/fabrica/Phase3ArtFactoryES.tsx`
+
+O cliente solicitou uma "descrição simples" sem o ruído visual do emoji de checkmark nas descrições e legendas geradas para os pacotes.
+
+**O que foi feito:**
+
+**A) Na Geração das Legendas do Instagram (Função `buildAdCaptions`):**
+Substituí as ocorrências do emoji ✅ por • nas strings de texto.
+
+```tsx
+// Antes:
+const benefitLines = v.highlights
+  .slice(0, 4)
+  .map((h) => `✅ ${h.text}`)
+  .join("\n");
+
+// ... e nas strings das variações:
+`\n✅ Agência especializada. Atendimento humanizado. Suporte 24h.\n\n${contactLine}`
+
+// Depois:
+const benefitLines = v.highlights
+  .slice(0, 4)
+  .map((h) => `• ${h.text}`)
+  .join("\n");
+
+// ... e nas strings das variações:
+`\n• Agência especializada. Atendimento humanizado. Suporte 24h.\n\n${contactLine}`
+```
+
+**B) Na Geração da Descrição do Pacote pro Site (`syncGeneratedPackageToSite`):**
+Mudei a forma como os highlights são concatenados na descrição final do pacote. Em vez de quebrar linha com checkmarks, juntei-os na mesma linha separados por ` • `.
+
+```tsx
+// Antes:
+const descLines = highlights.slice(0, 4).map((h) => `✅ ${h.text}`).join("\n");
+
+// Depois:
+const descLines = highlights.slice(0, 4).map((h) => h.text).join(" • ");
+```
+
+---
+
+## 4. Correção de Erro de Compilação (Syntax Error)
+**Arquivo:** `src/lib/fabrica-compose-art.ts`
+
+Havia um erro de sintaxe que impedia o build do Vite, onde aspas duplas estavam sendo escapadas incorretamente (`\"`).
+
+**O que foi feito:**
+Removi as barras invertidas (`\`) das aspas.
+
+```typescript
+// Antes (Linha 245):
+const hasInstallments = !!(opts.installments?.trim()) && opts.paymentMode === \"installments\";
+const hasPrice        = !!(opts.price?.trim()) && opts.paymentMode !== \"free_quote\";
+const hasTotal        = !!opts.showTotal && opts.paymentMode !== \"free_quote\";
+const hasPixBanner    = !!opts.showPixBanner && opts.paymentMode !== \"free_quote\";
+
+// Depois:
+const hasInstallments = !!(opts.installments?.trim()) && opts.paymentMode === "installments";
+const hasPrice        = !!(opts.price?.trim()) && opts.paymentMode !== "free_quote";
+const hasTotal        = !!opts.showTotal && opts.paymentMode !== "free_quote";
+const hasPixBanner    = !!opts.showPixBanner && opts.paymentMode !== "free_quote";
+```
+
+---
+
+## Próximos Passos
+1. Você pode ir no Github/Lovable e restaurar (fazer um revert ou restaurar a sessão) para o ponto onde o agente Lovable finalizou os anúncios dele (Fase 1 e etc).
+2. Após você garantir que o Lovable está 100% como você queria, me avise e eu **re-aplicarei essas exatas correções** do relatório em cima do código mais recente.

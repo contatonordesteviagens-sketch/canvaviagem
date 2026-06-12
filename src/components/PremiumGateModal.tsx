@@ -18,7 +18,7 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate("/planos");
+          navigate("/inicio");
           onClose();
           return 0;
         }
@@ -30,7 +30,7 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
   }, [isOpen, navigate, onClose]);
 
   const handleRedirect = () => {
-    navigate("/planos");
+    navigate("/inicio");
     onClose();
   };
 
@@ -78,7 +78,7 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
                 style={{ width: `${(timeLeft / 5) * 100}%` }}
               />
             </div>
-            <p className="text-[10px] text-white/40 font-semibold tracking-wide">Direcionando você para os planos</p>
+            <p className="text-[10px] text-white/40 font-semibold tracking-wide">Direcionando você para o início</p>
           </div>
 
           {/* Hype Benefits List */}
