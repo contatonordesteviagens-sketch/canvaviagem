@@ -221,7 +221,6 @@ const App = () => {
                     <Route path="/es/obrigado" element={<ObrigadoES />} />
                     <Route path="/es/fabrica" element={<FabricaES />} />
                     <Route path="/es/inicio" element={<InicioES />} />
-                    <Route path="/inicio/es" element={<InicioES />} />
 
                     {/* Auth e outras rotas compartilhadas */}
                     <Route path="/auth" element={<Auth />} />
