@@ -11,7 +11,6 @@ export interface ContentItem {
   category: string | null;
   subcategory: string | null;
   image_url: string | null;
-  featured_image_url: string | null;
   icon: string;
   description: string | null;
   is_new: boolean;

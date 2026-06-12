@@ -1,1 +1,0 @@
-ALTER TABLE content_items ADD COLUMN IF NOT EXISTS featured_image_url TEXT;

@@ -90,12 +90,6 @@ export const ContentSection = ({
   const [sortOrder, setSortOrder] = useState<SortOrder>("recent"); // Default to recent
   const [languageFilter, setLanguageFilter] = useState<"all" | "pt" | "es">("all");
   const [featuredLanguageTab, setFeaturedLanguageTab] = useState<"pt" | "es">("pt");
-  const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>({});
-
-  const getVisibleCount = (tabId: string) => visibleCounts[tabId] || 24;
-  const handleLoadMore = (tabId: string) => {
-    setVisibleCounts(prev => ({ ...prev, [tabId]: (prev[tabId] || 24) + 24 }));
-  };
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -493,7 +487,7 @@ export const ContentSection = ({
     try {
       const { error } = await supabase
         .from("content_items")
-        .update({ featured_image_url: imageUrl })
+        .update({ image_url: imageUrl })
         .eq("id", id);
 
       if (error) throw error;
@@ -552,95 +546,65 @@ export const ContentSection = ({
     }
   };
 
-  const renderVideoGrid = (items: ContentItem[], table: "content_items", tabId: string) => {
-    const visibleCount = getVisibleCount(tabId);
-    const visibleItems = items.slice(0, visibleCount);
-    const hasMore = items.length > visibleCount;
+  const renderVideoGrid = (items: ContentItem[], table: "content_items") => (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={(event) => handleDragEnd(event, items, table)}
+    >
+      <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {items.map((item) => (
+            <SortableCard key={item.id} id={item.id} disabled={sortOrder !== "custom"}>
+              <EditableCard
+                id={item.id}
+                title={item.title}
+                url={item.url}
+                icon={item.icon}
+                description={item.description}
+                hasCaption={!!item.description?.trim()}
+                isActive={item.is_active}
+                isNew={item.is_new}
+                isFeatured={item.is_featured}
+                onToggleFeatured={handleToggleFeatured}
+                onEdit={onEditItem}
+                onDelete={onDeleteItem}
+              />
+            </SortableCard>
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
 
-    return (
-      <div className="space-y-6">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={(event) => handleDragEnd(event, items, table)}
-        >
-          <SortableContext items={visibleItems.map(i => i.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {visibleItems.map((item) => (
-                <SortableCard key={item.id} id={item.id} disabled={sortOrder !== "custom"}>
-                  <EditableCard
-                    id={item.id}
-                    title={item.title}
-                    url={item.url}
-                    icon={item.icon}
-                    description={item.description}
-                    hasCaption={!!item.description?.trim()}
-                    isActive={item.is_active}
-                    isNew={item.is_new}
-                    isFeatured={item.is_featured}
-                    onToggleFeatured={handleToggleFeatured}
-                    onEdit={onEditItem}
-                    onDelete={onDeleteItem}
-                  />
-                </SortableCard>
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
-        {hasMore && (
-          <div className="flex justify-center mt-6">
-            <Button variant="outline" onClick={() => handleLoadMore(tabId)}>
-              Carregar mais (Exibindo {visibleCount} de {items.length})
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderItemGrid = (items: ContentItem[], table: "content_items", tabId: string) => {
-    const visibleCount = getVisibleCount(tabId);
-    const visibleItems = items.slice(0, visibleCount);
-    const hasMore = items.length > visibleCount;
-
-    return (
-      <div className="space-y-6">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={(event) => handleDragEnd(event, items, table)}
-        >
-          <SortableContext items={visibleItems.map(i => i.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {visibleItems.map((item) => (
-                <SortableCard key={item.id} id={item.id} disabled={sortOrder !== "custom"}>
-                  <EditableCard
-                    id={item.id}
-                    title={item.title}
-                    url={item.url}
-                    icon={item.icon}
-                    description={item.description}
-                    hasCaption={!!item.description?.trim()}
-                    isActive={item.is_active}
-                    isNew={item.is_new}
-                    onEdit={onEditItem}
-                    onDelete={onDeleteItem}
-                  />
-                </SortableCard>
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
-        {hasMore && (
-          <div className="flex justify-center mt-6">
-            <Button variant="outline" onClick={() => handleLoadMore(tabId)}>
-              Carregar mais (Exibindo {visibleCount} de {items.length})
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  };
+  const renderItemGrid = (items: ContentItem[], table: "content_items") => (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={(event) => handleDragEnd(event, items, table)}
+    >
+      <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {items.map((item) => (
+            <SortableCard key={item.id} id={item.id} disabled={sortOrder !== "custom"}>
+              <EditableCard
+                id={item.id}
+                title={item.title}
+                url={item.url}
+                icon={item.icon}
+                description={item.description}
+                hasCaption={!!item.description?.trim()}
+                isActive={item.is_active}
+                isNew={item.is_new}
+                onEdit={onEditItem}
+                onDelete={onDeleteItem}
+              />
+            </SortableCard>
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
 
   const renderCaptionGrid = (captionList: Caption[], table: "captions") => (
     <DndContext
@@ -872,7 +836,7 @@ export const ContentSection = ({
               showLanguageFilter={true}
             />
           </div>
-          {renderVideoGrid(videoItems, "content_items", "videos")}
+          {renderVideoGrid(videoItems, "content_items")}
         </TabsContent>
 
         {/* Artes Tab */}
@@ -910,7 +874,7 @@ export const ContentSection = ({
               showTypeFilter={false}
             />
           </div>
-          {renderItemGrid(feedItems, "content_items", "feed")}
+          {renderItemGrid(feedItems, "content_items")}
         </TabsContent>
 
         {/* Stories Tab */}
@@ -948,7 +912,7 @@ export const ContentSection = ({
               showTypeFilter={false}
             />
           </div>
-          {renderItemGrid(storyItems, "content_items", "story")}
+          {renderItemGrid(storyItems, "content_items")}
         </TabsContent>
 
         {/* Legendas Nacionais Tab */}
@@ -1055,7 +1019,7 @@ export const ContentSection = ({
               showTypeFilter={false}
             />
           </div>
-          {renderItemGrid(resourceItems, "content_items", "resource")}
+          {renderItemGrid(resourceItems, "content_items")}
         </TabsContent>
       </Tabs>
 
