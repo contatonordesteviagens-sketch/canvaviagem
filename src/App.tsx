@@ -221,7 +221,7 @@ const App = () => {
                     <Route path="/es/obrigado" element={<ObrigadoES />} />
                     <Route path="/es/fabrica" element={<FabricaES />} />
                     {/* Canonical Spanish landing page route. */}
-                    <Route path="/es/inicio" element={<InicioES />} />
+                    <Route path="/es/inicio" caseSensitive={false} element={<InicioES />} />
 
                     {/* Auth e outras rotas compartilhadas */}
                     <Route path="/auth" element={<Auth />} />
