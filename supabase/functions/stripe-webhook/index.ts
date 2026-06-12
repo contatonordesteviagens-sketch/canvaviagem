@@ -196,7 +196,7 @@ async function ensureUserAndOnboarding(
   // 5. Send emails via Resend if available
   if (resend && magicLink) {
     await sendAutoMagicLinkEmail(supabase, resend, normalizedEmail, magicLink, token, name || "Visitante");
-    await sendWelcomeEmail(supabase, resend, normalizedEmail, productId);
+    await sendWelcomeEmail(supabase, resend, normalizedEmail, productId, "stripe");
   }
 
   // 6. Trigger Zaia Welcome (with the generated magic link for WhatsApp delivery!)
