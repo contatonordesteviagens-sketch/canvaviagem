@@ -1527,9 +1527,9 @@ const Index = () => {
           "brand": { "@type": "Brand", "name": "Canva Viagem" },
           "offers": {
             "@type": "AggregateOffer",
-            "lowPrice": "16.41", "highPrice": "29.00", "priceCurrency": "BRL", "offerCount": "2",
+            "lowPrice": "49.85", "highPrice": "97.00", "priceCurrency": "BRL", "offerCount": "2",
             "offers": [
-              { "@type": "Offer", "name": "Plano Anual", "price": "197.00", "priceCurrency": "BRL", "availability": "https://schema.org/InStock", "url": "https://canvaviagem.com/planos", "priceValidUntil": "2026-12-31" },
+              { "@type": "Offer", "name": "Plano Anual", "price": "482.00", "priceCurrency": "BRL", "availability": "https://schema.org/InStock", "url": "https://canvaviagem.com/planos", "priceValidUntil": "2026-12-31" },
               { "@type": "Offer", "name": "Plano Mensal", "price": "29.00", "priceCurrency": "BRL", "availability": "https://schema.org/InStock", "url": "https://canvaviagem.com/planos", "priceValidUntil": "2026-12-31" }
             ]
           },
@@ -1542,7 +1542,7 @@ const Index = () => {
             { "@type": "Question", "name": "O que é o Canva Viagem?", "acceptedAnswer": { "@type": "Answer", "text": "Plataforma com 250+ vídeos prontos para agências de viagem postarem no Instagram. Editáveis no Canva. Planos a partir de R$29/mês." } },
             { "@type": "Question", "name": "Preciso saber editar vídeo?", "acceptedAnswer": { "@type": "Answer", "text": "Não. Os vídeos já estão prontos e editáveis no Canva, que é gratuito e fácil de usar." } },
             { "@type": "Question", "name": "Funcionam para qual rede social?", "acceptedAnswer": { "@type": "Answer", "text": "Instagram (Reels, Feed e Stories), TikTok e YouTube Shorts." } },
-            { "@type": "Question", "name": "Qual o preço?", "acceptedAnswer": { "@type": "Answer", "text": "Plano Anual R$197 (~R$16,41/mês) ou Mensal R$29, via Stripe." } }
+            { "@type": "Question", "name": "Qual o preço?", "acceptedAnswer": { "@type": "Answer", "text": "Plano Anual R$482 (12x R$49,85) ou Mensal a partir de R$29." } }
           ]
         })}</script>
       </Helmet>

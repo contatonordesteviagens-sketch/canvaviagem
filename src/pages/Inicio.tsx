@@ -765,7 +765,7 @@ export default function Inicio() {
                 <h3>Canva Viagem</h3>
                 <div className="compare-row">
                   <span className="compare-label">Custo</span>
-                  <span className="compare-value">A partir de R$ 97/mês</span>
+                  <span className="compare-value">A partir de R$ 482 / ano</span>
                 </div>
                 <div className="compare-row">
                   <span className="compare-label">Tempo</span>
@@ -794,7 +794,7 @@ export default function Inicio() {
                       <td>Custo Médio</td>
                       <td>A partir de R$80 por arte ou sob demanda</td>
                       <td>R$97 único</td>
-                      <td>A partir de R$ 97/mês</td>
+                      <td>A partir de R$ 482 / ano</td>
                     </tr>
                     <tr>
                       <td>Tempo de Entrega</td>
@@ -812,7 +812,7 @@ export default function Inicio() {
                </table>
             </div>
             
-            <p className="comparison-note" style={{ textAlign: "center", fontSize: "12px", color: "#64748B", marginTop: "16px" }}>O menor valor disponível é no plano anual à vista. O plano mensal custa R$97/mês.</p>
+            <p className="comparison-note" style={{ textAlign: "center", fontSize: "12px", color: "#64748B", marginTop: "16px" }}>O menor valor disponível é no plano anual à vista. O plano mensal custa R$29/mês.</p>
 
           </div>
         </section>
@@ -876,7 +876,7 @@ export default function Inicio() {
                 </div>
                 
                 <p className="text-[#475569] text-[12px] sm:text-[13px] mt-4 font-semibold px-2 leading-snug max-w-[300px]">
-                  Ou R$ 497 no plano anual (Economia de mais de R$ 38.000,00 por ano comparado a uma equipe).
+                  Ou R$ 697 no plano anual (Economia de mais de R$ 38.000,00 por ano comparado a uma equipe).
                 </p>
               </div>
             </div>
