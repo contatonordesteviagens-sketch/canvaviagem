@@ -72,7 +72,7 @@ export const SitesSection = () => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <a
-                            href={`https://${site.id}.canvaviagem.com`}
+                            href={`${window.location.origin}/view/${site.id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-xs"

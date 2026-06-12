@@ -506,23 +506,6 @@ export const ImportSection = () => {
         .select("id")
         .single();
 
-      // Fallback: se o banco de dados do Lovable ainda não reconhecer a coluna drive_url,
-      // salva o link temporariamente dentro da descrição para não bloquear o usuário.
-      if (error && error.message?.includes("drive_url") && quickDriveUrl.trim()) {
-        console.warn("Fallback de drive_url ativado devido a atraso no banco de dados.");
-        delete insertPayload.drive_url;
-        insertPayload.description = (insertPayload.description || "") + "\n\n🔗 Link do Drive: " + quickDriveUrl.trim();
-        
-        const retryResult = await supabase
-          .from("content_items")
-          .insert(insertPayload)
-          .select("id")
-          .single();
-          
-        createdItem = retryResult.data;
-        error = retryResult.error;
-      }
-
       if (error) throw error;
 
       const actions: string[] = [];
