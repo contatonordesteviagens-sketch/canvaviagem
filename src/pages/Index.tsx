@@ -750,7 +750,6 @@ const Index = () => {
             {featuredVideos && featuredVideos.length > 0 && (
               <div className="mb-8">
                 <SectionHeader
-                  icon={<Sparkles className="w-5 h-5 text-amber-400" />}
                   title="Destaques da Semana"
                 />
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
