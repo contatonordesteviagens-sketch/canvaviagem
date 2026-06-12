@@ -93,7 +93,7 @@ export default function InicioES() {
   const trustProofMetrics = [
     ["7 días", "para probar con garantía"],
     ["12 meses", "de acceso en el plan anual"],
-    ["$350", "de ahorro frente a 12 meses pagando mensual"],
+    ["US$350", "de ahorro frente a 12 meses pagando mensual"],
     ["1 lugar", "para IA, páginas, contenidos y CRM"]
   ];
 
@@ -210,7 +210,7 @@ export default function InicioES() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 mb-7 md:mb-6 w-full sm:w-auto">
               <a href="#planos" className="btn btn-primary text-base md:text-lg py-4 px-8 w-full sm:w-auto shadow-[0_0_30px_rgba(124,58,237,0.5)] hover:shadow-[0_0_50px_rgba(124,58,237,0.7)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
-                Probar 7 días sin riesgo
+                Probar 7 días con garantía
               </a>
               <a href="#video-prova" className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 py-3.5 md:py-4 px-5 md:px-8 rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 text-sm md:text-base">
                 <Play size={20} fill="currentColor" /> Ver Lucas usando la herramienta
@@ -236,7 +236,7 @@ export default function InicioES() {
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-sm font-medium text-slate-400">
               <div className="flex items-center gap-1.5"><ShieldCheck size={16} className="text-green-400"/> Acceso inmediato</div>
               <span className="opacity-50 hidden sm:block">•</span>
-              <div className="flex items-center gap-1.5">Pago seguro</div>
+              <div className="flex items-center gap-1.5">Pago seguro en USD</div>
               <span className="opacity-50 hidden sm:block">•</span>
               <div className="flex items-center gap-1.5">Garantía de 7 días</div>
             </div>
@@ -390,6 +390,9 @@ export default function InicioES() {
               <p className="text-lg text-slate-600 font-medium">
                 Este video muestra el flujo real: cómo la plataforma ayuda a crear contenidos, páginas, campañas y organizar leads. No necesitas comprar a ciegas ni imaginar cómo funciona por dentro.
               </p>
+              <p className="text-[13px] text-slate-500 font-bold mt-3">
+                Video de 2 min: así se crea una oferta completa, de principio a fin.
+              </p>
             </div>
 
             {/* Video Container Premium */}
@@ -433,7 +436,7 @@ export default function InicioES() {
               {/* CTA Abaixo do Video */}
               <div className="mt-12 text-center">
                 <a href="#planos" className="btn btn-primary text-lg py-4 px-10 shadow-lg hover:-translate-y-1 transition-transform inline-block">
-                  Probar la plataforma ahora
+                  Probar con garantía de 7 días
                 </a>
               </div>
             </div>
@@ -533,7 +536,7 @@ export default function InicioES() {
               </div>
             </div>
             <div className="w-full flex justify-center mt-10">
-              <a href="#planos" className="btn btn-primary" style={{ background: "#06B6D4" }}>Probar la plataforma ahora</a>
+              <a href="#planos" className="btn btn-primary" style={{ background: "#06B6D4" }}>Probar con garantía de 7 días</a>
             </div>
           </div>
         </section>
@@ -1115,7 +1118,7 @@ export default function InicioES() {
                 <h3>Diseñador Freelance</h3>
                 <div className="compare-row">
                   <span className="compare-label">Costo Promedio</span>
-                  <span className="compare-value">A partir de $ 40 por arte o bajo demanda</span>
+                  <span className="compare-value">A partir de US$40 por arte o bajo demanda</span>
                 </div>
                 <div className="compare-row">
                   <span className="compare-label">Tiempo</span>
@@ -1131,7 +1134,7 @@ export default function InicioES() {
                 <h3>Pack de Canva</h3>
                 <div className="compare-row">
                   <span className="compare-label">Costo Promedio</span>
-                  <span className="compare-value">$ 50 único</span>
+                  <span className="compare-value">US$50 único</span>
                 </div>
                 <div className="compare-row">
                   <span className="compare-label">Tiempo</span>
@@ -1148,7 +1151,7 @@ export default function InicioES() {
                 <h3>TravelMarketing</h3>
                 <div className="compare-row">
                   <span className="compare-label">Costo</span>
-                  <span className="compare-value">A partir de $ 50/mes</span>
+                  <span className="compare-value">A partir de US$50/mes</span>
                 </div>
                 <div className="compare-row">
                   <span className="compare-label">Tiempo</span>
@@ -1175,9 +1178,9 @@ export default function InicioES() {
                  <tbody>
                     <tr>
                       <td>Costo Promedio</td>
-                      <td>A partir de $ 40 por arte o bajo demanda</td>
-                      <td>$ 50 único</td>
-                      <td>A partir de $ 50/mes</td>
+                      <td>A partir de US$40 por arte o bajo demanda</td>
+                      <td>US$50 único</td>
+                      <td>A partir de US$50/mes</td>
                     </tr>
                     <tr>
                       <td>Tiempo de Entrega</td>
@@ -1195,7 +1198,7 @@ export default function InicioES() {
                </table>
             </div>
             
-            <p className="comparison-note w-full text-center" style={{ textAlign: "center", fontSize: "12px", color: "#64748B", marginTop: "16px" }}>El menor valor disponible es en el plan anual al contado. El plan mensual cuesta $ 50/mes.</p>
+            <p className="comparison-note w-full text-center" style={{ textAlign: "center", fontSize: "12px", color: "#64748B", marginTop: "16px" }}>El menor valor disponible es en el plan anual al contado. El plan mensual cuesta US$50/mes.</p>
 
           </div>
         </section>
@@ -1246,23 +1249,23 @@ export default function InicioES() {
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px' }}>
                   <span style={{ fontSize: '18px', color: '#94A3B8' }}>Plataforma de CRM:</span>
-                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>$ 75/mes</span>
+                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>US$75/mes</span>
                 </li>
                 <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px' }}>
                   <span style={{ fontSize: '18px', color: '#94A3B8' }}>Constructor de Sitios Express:</span>
-                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>$ 45/mes</span>
+                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>US$45/mes</span>
                 </li>
                 <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px' }}>
                   <span style={{ fontSize: '18px', color: '#94A3B8' }}>Diseñador Freelance (30 artes):</span>
-                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>$ 750/mes</span>
+                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>US$750/mes</span>
                 </li>
                 <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px' }}>
                   <span style={{ fontSize: '18px', color: '#94A3B8' }}>Editor de Video (15 videos):</span>
-                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>$ 750/mes</span>
+                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>US$750/mes</span>
                 </li>
                 <li style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px' }}>
                   <span style={{ fontSize: '18px', color: '#94A3B8' }}>Sitio Web Completo:</span>
-                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>$ 750 único</span>
+                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>US$750 único</span>
                 </li>
               </ul>
               
@@ -1273,8 +1276,8 @@ export default function InicioES() {
               
               <div style={{ marginTop: '24px', textAlign: 'center', background: 'rgba(16,185,129,0.1)', padding: '40px 24px', borderRadius: '16px', border: '2px solid #10B981', boxShadow: '0 0 30px rgba(16,185,129,0.2)' }}>
                 <p style={{ color: '#34D399', fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '2px' }}>Con TravelMarketing</p>
-                <div style={{ fontSize: '48px', fontWeight: '900', color: '#10B981', lineHeight: '1' }}>Solo $ 50/mes</div>
-                <p style={{ color: '#E2E8F0', fontSize: '16px', marginTop: '16px', lineHeight: '1.5' }}>Con la plataforma, tu agencia reúne contenido, IA, páginas y CRM en un solo lugar. El plan mensual cuesta $50/mes y el anual reduce el costo total del año.</p>
+                <div style={{ fontSize: '48px', fontWeight: '900', color: '#10B981', lineHeight: '1' }}>Solo US$50/mes</div>
+                <p style={{ color: '#E2E8F0', fontSize: '16px', marginTop: '16px', lineHeight: '1.5' }}>Con la plataforma, tu agencia reúne contenido, IA, páginas y CRM en un solo lugar. El plan mensual cuesta US$50/mes y el anual reduce el costo total del año.</p>
               </div>
             </div>
           </div>
@@ -1352,7 +1355,7 @@ export default function InicioES() {
                   <div className="text-center text-[13px] font-bold text-slate-400 mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-4">
                     <span>⚡ Acceso inmediato</span>
                     <span className="hidden sm:inline">•</span>
-                    <span>🔒 Pago seguro</span>
+                    <span>🔒 Pago seguro por Hotmart</span>
                     <span className="hidden sm:inline">•</span>
                     <span>✅ Garantía de 7 días</span>
                   </div>
@@ -1367,7 +1370,7 @@ export default function InicioES() {
           <div className="inicio-container">
             <div className="w-full flex flex-col items-center justify-center text-center mx-auto">
               <h2 className="section-title w-full text-center" style={{ textAlign: 'center' }}>Elige cómo quieres entrar</h2>
-              <p className="section-subtitle w-full text-center" style={{ textAlign: 'center', margin: '0 auto 32px' }}>El plan mensual es para probar pagando mes a mes. El plan anual es la mejor elección si quieres acceso por 12 meses y ahorrar $350 frente a pagar mensual todo el año.</p>
+              <p className="section-subtitle w-full text-center" style={{ textAlign: 'center', margin: '0 auto 32px' }}>El plan mensual es para probar pagando mes a mes. El plan anual es la mejor elección si quieres acceso por 12 meses y ahorrar US$350 frente a pagar mensual todo el año. Los precios están en dólares (USD).</p>
             </div>
 
             <div className="max-w-5xl mx-auto mb-10 bg-white border border-slate-200 rounded-3xl p-5 md:p-8 shadow-sm">
@@ -1437,7 +1440,7 @@ export default function InicioES() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 text-left max-w-xl mx-auto md:mx-0">
                   <div className="flex items-start gap-2 text-slate-300"><CheckCircle2 size={20} className="text-green-500 shrink-0" /> Acceso inmediato</div>
                   <div className="flex items-start gap-2 text-slate-300"><CheckCircle2 size={20} className="text-green-500 shrink-0" /> 7 días para probar</div>
-                  <div className="flex items-start gap-2 text-slate-300"><CheckCircle2 size={20} className="text-green-500 shrink-0" /> Pago seguro</div>
+                  <div className="flex items-start gap-2 text-slate-300"><CheckCircle2 size={20} className="text-green-500 shrink-0" /> Pago seguro por Hotmart</div>
                   <div className="flex items-start gap-2 text-slate-300"><CheckCircle2 size={20} className="text-green-500 shrink-0" /> Reembolso conforme a política</div>
                 </div>
                 <div className="text-center md:text-left">
@@ -1474,7 +1477,11 @@ export default function InicioES() {
                 },
                 {
                   q: "¿Mensual o anual?",
-                  a: "El mensual cuesta $50/mes y es ideal para probar con menor compromiso. El anual cuesta $250/año, equivale a pagar mucho menos que 12 mensualidades y es el plan con mayor ahorro."
+                  a: "El mensual cuesta US$50/mes y es ideal para probar con menor compromiso. El anual cuesta US$250/año, equivale a pagar mucho menos que 12 mensualidades y es el plan con mayor ahorro."
+                },
+                {
+                  q: "¿Puedo pagar desde mi país (México, Colombia, Argentina, Perú, etc.)?",
+                  a: "Sí. Los precios están en dólares (USD) y el pago se procesa de forma segura por Hotmart. Puedes pagar desde diferentes países con tarjeta internacional, según las opciones disponibles en el checkout."
                 },
                 {
                   q: "¿Qué pasa después del pago?",
@@ -1515,11 +1522,11 @@ export default function InicioES() {
           <div className="inicio-container max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-5xl font-black text-white mb-6 leading-tight">La próxima oferta de tu agencia puede salir más clara, más rápida y más profesional hoy</h2>
             <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-3xl mx-auto">Elige un plan, entra con acceso inmediato y usa la garantía de 7 días para validar TravelMarketing con un paquete real de tu agencia.</p>
-            <a href="#planos" className="btn btn-primary text-xl py-5 px-12 shadow-[0_0_30px_rgba(124,58,237,0.4)] hover:-translate-y-1 inline-block">Elegir mi plan y empezar hoy</a>
+            <a href="#planos" className="btn btn-primary text-xl py-5 px-12 shadow-[0_0_30px_rgba(124,58,237,0.4)] hover:-translate-y-1 inline-block">Probar 7 días con garantía</a>
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-sm font-medium text-slate-400 mt-6">
               <div className="flex items-center gap-1.5"><ShieldCheck size={16} className="text-green-400"/> Acceso inmediato</div>
               <span className="hidden sm:inline">•</span>
-              <div className="flex items-center gap-1.5">Pago seguro</div>
+              <div className="flex items-center gap-1.5">Pago seguro en USD</div>
               <span className="hidden sm:inline">•</span>
               <div className="flex items-center gap-1.5">Garantía de 7 días</div>
             </div>
@@ -1550,7 +1557,7 @@ export default function InicioES() {
         </div>
         <div className="inicio-container">
            <div className="payment-safe">
-             <ShieldCheck size={16} /> Acceso inmediato • Pago seguro • Garantía de 7 días
+             <ShieldCheck size={16} /> Acceso inmediato • Pago seguro en USD • Garantía de 7 días
            </div>
         </div>
       </footer>

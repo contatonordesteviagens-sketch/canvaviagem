@@ -45,13 +45,13 @@ export function PricingAccordionES() {
               
               <div className="mt-6 mb-2">
                 <div className="text-3xl font-black text-slate-800 leading-none flex items-baseline justify-center gap-1">
-                  $50<span className="text-sm text-slate-500 font-bold">/mes</span>
+                  US$50<span className="text-sm text-slate-500 font-bold">/mes</span>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col gap-3 text-left mb-8 flex-grow">
-              <p className="text-sm font-semibold text-slate-600 mb-4 pb-2 border-b border-slate-100">Pagas $50 cada mes. Mantienes acceso mientras la suscripción esté activa. Es simple para empezar, pero no tiene el ahorro del anual.</p>
+              <p className="text-sm font-semibold text-slate-600 mb-4 pb-2 border-b border-slate-100">Pagas US$50 cada mes. Mantienes acceso mientras la suscripción esté activa. Es simple para empezar, pero no tiene el ahorro del anual.</p>
               {PLAN_MENSUAL_FEATURES.map((feature, idx) => (
                 <div key={idx} className="flex items-start gap-2 text-[14px] font-medium text-slate-600 leading-snug">
                   <CheckCircle2 size={16} className="text-slate-400 shrink-0 mt-0.5" />
@@ -66,10 +66,10 @@ export function PricingAccordionES() {
                 className="w-full text-center py-3.5 rounded-xl font-bold border-2 transition-all hover:bg-slate-50 active:scale-95 flex items-center justify-center text-[15px]"
                 style={{ borderColor: '#CBD5E1', color: '#64748B' }}
               >
-                Elegir mensual por $50
+                Elegir mensual por US$50
               </a>
               <p className="text-center text-[12px] text-slate-500 font-semibold mt-3">
-                Checkout seguro por Hotmart. Garantía de 7 días.
+                Pago seguro por Hotmart. Tarjetas internacionales. Precios en dólares (USD).
               </p>
             </div>
           </div>
@@ -109,7 +109,7 @@ export function PricingAccordionES() {
                 {/* Visual Math Comparison */}
                 <div className="flex flex-col items-center justify-center mb-4 text-center">
                   <div className="text-[15px] text-slate-400 font-medium mb-1">
-                  Si pagaras mensual: $50 x 12 = <span className="line-through">$600/año</span>
+                  Si pagaras mensual: US$50 x 12 = <span className="line-through">US$600/año</span>
                   </div>
                 </div>
 
@@ -120,15 +120,15 @@ export function PricingAccordionES() {
                   boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.5)'
                 }}>
                   <div className="text-[40px] font-[900] text-[#15803D] leading-none mb-1">
-                    $250<span className="text-[18px] font-bold">/año</span>
+                    US$250<span className="text-[18px] font-bold">/año</span>
                   </div>
                   <div className="text-[14px] text-[#15803D] font-bold opacity-90 mt-2 bg-green-100 rounded-md py-1 px-3 inline-block">
-                    Ahorro real: $350
+                    Ahorro real: US$350
                   </div>
                 </div>
                 
                 <div className="text-[13px] text-slate-500 font-semibold mt-3">
-                  Puedes pagar al contado o en 12x de $25 en el checkout. El acceso sigue siendo anual.
+                  Puedes pagar al contado o en 12x de US$25 en el checkout. El acceso sigue siendo anual.
                 </div>
                 <div className="text-[13px] text-green-700 font-black mt-2">
                   Equivale a ahorrar cerca de 58% frente a pagar mensual por 12 meses.
@@ -150,18 +150,20 @@ export function PricingAccordionES() {
                 href="https://pay.hotmart.com/C106141067C?off=ts1hgsho&checkoutMode=10"
                 className="w-full text-center py-5 rounded-2xl font-black text-white shadow-[0_15px_30px_-10px_rgba(124,58,237,0.7)] hover:bg-[#6D28D9] transition-all active:scale-95 flex items-center justify-center text-[19px] bg-gradient-to-r from-[#7C3AED] to-[#6D28D9]"
               >
-                Elegir anual y ahorrar $350
+                Elegir anual y ahorrar US$350
               </a>
               <p className="text-center text-[12px] text-slate-500 font-semibold mt-3">
                 Recomendado para agencias que quieren publicar ofertas todo el año, reducir el costo total y tener 12 meses de acceso claro.
               </p>
               <p className="text-center text-[12px] text-slate-500 font-semibold mt-2">
-                Checkout seguro por Hotmart. Garantía de 7 días.
+                Pago seguro por Hotmart. Tarjetas internacionales. Precios en dólares (USD).
               </p>
               <div className="text-center text-[13px] font-bold text-slate-400 mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-4 md:hidden">
                 <span>⚡ Acceso inmediato</span>
                 <span className="hidden sm:inline">|</span>
-                <span>🔒 Pago seguro</span>
+                <span>🔒 Pago seguro por Hotmart</span>
+                <span className="hidden sm:inline">|</span>
+                <span>Tarjetas internacionales</span>
                 <span className="hidden sm:inline">|</span>
                 <span>✅ Garantía de 7 días</span>
               </div>
@@ -172,7 +174,11 @@ export function PricingAccordionES() {
       
     </div>
     <div className="w-full text-center mt-8 hidden md:flex items-center justify-center gap-4 text-slate-500 font-medium text-sm">
-      <span>🔒 Pago seguro</span>
+      <span>🔒 Pago seguro por Hotmart</span>
+      <span>|</span>
+      <span>Tarjetas internacionales</span>
+      <span>|</span>
+      <span>Precios en USD</span>
       <span>|</span>
       <span>⚡ Acceso inmediato</span>
       <span>|</span>
