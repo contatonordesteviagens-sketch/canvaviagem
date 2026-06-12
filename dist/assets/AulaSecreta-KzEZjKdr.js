@@ -1,1 +1,0 @@
-import{j as e}from"./index-B0K42FWK.js";const r=()=>e.jsx("iframe",{src:`/webinar/index.html?v=${new Date().getTime()}`,title:"Aula Secreta",style:{width:"100vw",height:"100vh",border:"none",position:"fixed",top:0,left:0,zIndex:9999}});export{r as default};

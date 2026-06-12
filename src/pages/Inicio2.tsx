@@ -231,7 +231,7 @@ export default function Inicio2() {
   }, []);
 
   return (
-    <div className="inicio-page">
+    <div className="inicio-page" data-page-version="inicio2-pt-br-2026-06-12">
       <header className="site-header">
         <div className="header-inner">
           <img src={logoImage} alt="Canva Viagem" className="logo" />
