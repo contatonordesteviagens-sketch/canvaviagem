@@ -223,6 +223,41 @@ serve(async (req) => {
       }
     }
 
+    // --- HOTMART CHECK ---
+    logStep("Checking hotmart_sales for the user's email");
+    if (dbClient) {
+      const { data: hotmartSale, error: hotmartError } = await dbClient
+        .from("hotmart_sales")
+        .select("*")
+        .eq("h_email", email.toLowerCase())
+        .eq("h_status", "APPROVED")
+        .order("h_purchase_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (hotmartSale) {
+        logStep("Found valid Hotmart sale", { saleId: hotmartSale.id, productId: hotmartSale.h_product_id });
+
+        // Grant subscription for 1 year (or indefinite, here setting expiry to 365 days from purchase)
+        const purchaseDate = new Date(hotmartSale.h_purchase_date);
+        const expiryDate = new Date(purchaseDate.getTime() + (365 * 24 * 60 * 60 * 1000)).toISOString();
+
+        await dbClient.from("subscriptions").upsert({
+          user_id: userId,
+          status: "active",
+          stripe_customer_id: null,
+          stripe_subscription_id: hotmartSale.h_transaction,
+          product_id: hotmartSale.h_product_id || "hotmart_sub",
+          current_period_end: expiryDate,
+        }, { onConflict: "user_id" });
+
+        return new Response(JSON.stringify({ subscribed: true, product_id: hotmartSale.h_product_id, subscription_end: expiryDate }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+    }
+
     if (localActiveSub) {
       logStep("Stripe did not show upgrade; returning local active subscription", { productId: localActiveSub.product_id });
       return new Response(JSON.stringify({ subscribed: true, product_id: localActiveSub.product_id, subscription_end: localActiveSub.current_period_end }), {
