@@ -14,20 +14,18 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
       return;
     }
 
+    if (timeLeft <= 0) {
+      navigate("/inicio");
+      onClose();
+      return;
+    }
+
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          navigate("/inicio");
-          onClose();
-          return 0;
-        }
-        return prev - 1;
-      });
+      setTimeLeft((prev) => prev - 1);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isOpen, navigate, onClose]);
+  }, [isOpen, timeLeft, navigate, onClose]);
 
   const handleRedirect = () => {
     navigate("/inicio");
