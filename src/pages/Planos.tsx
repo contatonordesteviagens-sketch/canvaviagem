@@ -28,7 +28,7 @@ import { ProductDemo } from "@/components/planos/ProductDemo";
 
 const STRIPE = {
   monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-  annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
+  annual: "https://pay.hotmart.com/C106141067C?off=ts1hgsho&checkoutMode=10",
   // Elite — Payment Links reais da Stripe
   elite_monthly: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
   elite_annual: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
@@ -289,9 +289,13 @@ const Planos = () => {
 
   const handleCheckout = async () => {
     setCtaClicked(true);
+    if (billingCycle === "annual") {
+      trackInitiateCheckout(482);
+      window.open(STRIPE.annual, "_blank");
+      return;
+    }
     setIsPixModalOpen(true);
-    const amount = billingCycle === "annual" ? 197 : 29;
-    trackInitiateCheckout(amount);
+    trackInitiateCheckout(29);
   };
 
   const handleEliteCheckout = () => {

@@ -11,23 +11,19 @@ const Sucesso = () => {
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
-    // Refresh subscription status
     refreshSubscription();
 
-    // Countdown and redirect
+    if (countdown <= 0) {
+      navigate("/");
+      return;
+    }
+
     const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          navigate("/");
-          return 0;
-        }
-        return prev - 1;
-      });
+      setCountdown((prev) => prev - 1);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [navigate, refreshSubscription]);
+  }, [countdown, navigate, refreshSubscription]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 flex items-center justify-center p-4">

@@ -20,7 +20,7 @@ import { WorldMap } from "@/components/ui/map";
 // ────────────────────────────────────────────────────────────
 const STRIPE = {
   smart_monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-  smart_annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
+  smart_annual: "https://pay.hotmart.com/C106141067C?off=ts1hgsho&checkoutMode=10",
   elite_monthly: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
   elite_annual: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
 };
@@ -59,7 +59,7 @@ const HOW_IT_WORKS = [
 
 // Comparativo justo: pack único vs designer freelancer vs Canva Viagem
 const COMPARISON = [
-  { feature: "Investimento",  hotmart: "R$ 197 uma vez", design: "R$ 1.500 / mês", us: "A partir de R$ 197 / ano" },
+  { feature: "Investimento",  hotmart: "R$ 197 uma vez", design: "R$ 1.500 / mês", us: "A partir de R$ 482 / ano" },
   { feature: "Conteúdo",      hotmart: "150 reels fixos", design: "4–8 entregas/mês", us: "250+ vídeos 4K + Sites de Vendas" },
   { feature: "Atualizações",  hotmart: "❌ Nenhuma", design: "Depende dele", us: "✅ Acesso vitalício à evolução" },
   { feature: "IAs e Scripts", hotmart: "❌ Não tem", design: "❌ Não tem", us: "✅ 11 IAs + Fábrica de Anúncios" },
@@ -242,7 +242,7 @@ const ExitIntent = ({ onCheckout }: { onCheckout: (plan: "smart_annual" | "elite
               onMouseEnter={e => e.currentTarget.style.borderColor = T.accent}
               onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)"}
             >
-              Garantir Plano Start (R$ 197/ano)
+              Garantir Plano Start (R$ 482/ano)
             </button>
           </div>
           
@@ -346,9 +346,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     setCtaClicked(true);
     trackCtaClick(plan);
     let priceVal = 347;
-    if (plan === "smart_monthly") priceVal = 29.9;
-    else if (plan === "smart_annual") priceVal = 197;
-    else if (plan === "elite_monthly") priceVal = 97;
+    if (plan === "elite_monthly") priceVal = 97;
+    else if (plan === "elite_annual") priceVal = 697;
+    else if (plan === "smart_monthly") priceVal = 29;
+    else if (plan === "smart_annual") priceVal = 482;
     trackInitiateCheckout(priceVal);
     
     const baseUrl = STRIPE[plan];
@@ -1044,14 +1045,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                   ) : (
                     <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>16</span>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>,41</span>
-                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>49</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,85</span>
+                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>em 12x</span>
                     </div>
                   )}
 
                   <p style={{ fontSize: 12, color: T.text3, marginBottom: 28 }}>
-                    {billingPeriod === "monthly" ? "Assinatura mensal recorrente" : "Equivalente a R$ 197,00 cobrados anualmente"}
+                    {billingPeriod === "monthly" ? "Assinatura mensal recorrente" : "Ou R$ 482,00 à vista"}
                   </p>
 
                   <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 12 }}>
