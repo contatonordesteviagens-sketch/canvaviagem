@@ -96,10 +96,11 @@ export const FeaturedCard = ({
   };
 
   const handleDownloadImage = async () => {
-    if (!item.image_url) return;
+    const displayUrl = item.featured_image_url || item.image_url;
+    if (!displayUrl) return;
     
     try {
-      const response = await fetch(item.image_url);
+      const response = await fetch(displayUrl);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       
@@ -129,10 +130,10 @@ export const FeaturedCard = ({
         </div>
         
         {/* Image or Placeholder */}
-        <div className="aspect-[9/16] relative">
-          {item.image_url ? (
+        <div className="relative aspect-[9/16] w-full group overflow-hidden bg-muted">
+          {(item.featured_image_url || item.image_url) ? (
             <img 
-              src={item.image_url} 
+              src={item.featured_image_url || item.image_url} 
               alt={item.title}
               className="w-full h-full object-cover"
             />
@@ -152,7 +153,7 @@ export const FeaturedCard = ({
               <ImagePlus className="h-4 w-4 mr-1" />
               Imagem
             </Button>
-            {item.image_url && (
+            {(item.featured_image_url || item.image_url) && (
               <Button 
                 size="sm" 
                 variant="outline"

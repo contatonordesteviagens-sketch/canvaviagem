@@ -783,10 +783,10 @@ const Index = () => {
                             />
                           )}
                         </div>
-                      ) : item.image_url ? (
+                      ) : (item.featured_image_url || item.image_url) ? (
                         <div className={['video', 'seasonal', 'story', 'weekly-story'].includes(item.type) ? "aspect-[9/16] bg-muted" : item.type === 'feed' ? "aspect-square bg-muted" : "aspect-video bg-muted"}>
                           <img
-                            src={item.image_url}
+                            src={item.featured_image_url || item.image_url!}
                             alt={item.title}
                             className="w-full h-full object-cover"
                             loading="lazy"
