@@ -143,9 +143,12 @@ async function ensureUserAndOnboarding(
   if (tErr) logStep("ERROR: magic link token", { error: tErr.message });
   else magicLink = `${siteUrl}/auth/verify?token=${token}`;
 
-  // 5. Resend
+  // 5. Resend — usa o MESMO utilitário compartilhado do Stripe.
+  // O productId canônico (`prod_TkvaozfpkAcbpM` para Elite ou `hotmart_start` para Start)
+  // garante que o e-mail de boas-vindas escolha o template/CTA correto.
   if (resend && magicLink) {
-    await sendMagicLinkEmail(resend, normalizedEmail, magicLink, name || "Visitante", plan);
+    await sendAutoMagicLinkEmail(supabase, resend, normalizedEmail, magicLink, token, name || "Visitante");
+    await sendWelcomeEmail(supabase, resend, normalizedEmail, canonical_product_id, "hotmart");
   }
 
   // 6. Zaia
