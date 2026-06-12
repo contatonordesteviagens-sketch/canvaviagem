@@ -9,7 +9,7 @@ const Footer = lazy(() => import("@/components/Footer").then(module => ({ defaul
 import { Button } from "@/components/ui/button";
 import { contentLibrary } from "@/data/content-library";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight, Play, Download } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight, Play, Download, Copy } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
@@ -618,7 +618,7 @@ const Index = () => {
                           icon={getIcon(template.type, template.icon)}
                           aspectRatio="4/5"
                           contentType={template.type}
-                          description={template.description}
+                          description={(template as any).description}
                           onClick={() => handleCardClick(template as ContentItem)}
                           isFavorite={template.id ? isFavorite("content_item", template.id) : false}
                           onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
@@ -750,7 +750,6 @@ const Index = () => {
             {featuredVideos && featuredVideos.length > 0 && (
               <div className="mb-8">
                 <SectionHeader
-                  icon={<Sparkles className="w-5 h-5 text-amber-400" />}
                   title="Destaques da Semana"
                 />
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
