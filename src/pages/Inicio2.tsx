@@ -41,6 +41,7 @@ const supportWhatsAppUrl =
 const instagramUrl = "https://www.instagram.com/lucasferrari.pro/";
 const annualCheckoutUrl = "https://pay.hotmart.com/C106141067C?off=ts1hgsho&checkoutMode=10";
 const monthlyCheckoutUrl = "https://pay.hotmart.com/C106141067C?off=8qkh1yh6&checkoutMode=10";
+const metaPixelId = "916689227676142";
 
 const pricingFeatures = [
   "250 vídeos Reels de destinos",
@@ -229,6 +230,18 @@ export default function Inicio2() {
   const [activeToolTab, setActiveToolTab] = useState("featured");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [heroMutedActive, setHeroMutedActive] = useState(true);
+
+  const trackCheckoutClick = (value: number, plan: "anual" | "mensal") => {
+    const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
+    if (!fbq) return;
+
+    fbq("trackSingle", metaPixelId, "InitiateCheckout", {
+      value,
+      currency: "BRL",
+      content_name: `Canva Viagem ${plan}`,
+      content_category: "inicio2",
+    });
+  };
 
   useEffect(() => {
     document.documentElement.lang = "pt-BR";
@@ -706,7 +719,11 @@ export default function Inicio2() {
                   ))}
                 </ul>
 
-                <a href={annualCheckoutUrl} className="inicio2-price-cta inicio2-price-cta-primary">
+                <a
+                  href={annualCheckoutUrl}
+                  onClick={() => trackCheckoutClick(482, "anual")}
+                  className="inicio2-price-cta inicio2-price-cta-primary"
+                >
                   Garantir acesso anual com desconto
                 </a>
                 <p className="inicio2-price-note">Acesso imediato • Hotmart • 7 dias de garantia</p>
@@ -734,7 +751,11 @@ export default function Inicio2() {
                   ))}
                 </ul>
 
-                <a href={monthlyCheckoutUrl} className="inicio2-price-cta inicio2-price-cta-secondary">
+                <a
+                  href={monthlyCheckoutUrl}
+                  onClick={() => trackCheckoutClick(97, "mensal")}
+                  className="inicio2-price-cta inicio2-price-cta-secondary"
+                >
                   Começar no plano mensal
                 </a>
                 <p className="inicio2-price-note">Pagamento seguro pela Hotmart</p>
