@@ -326,17 +326,41 @@ export default function Inicio2() {
               <div className="flex items-center gap-2 text-slate-300 font-semibold"><CheckCircle2 className="text-purple-400" size={18} /> Criador acompanhado por 66 mil pessoas</div>
             </div>
 
-            <div className="inicio2-hero-product">
-              <div className="inicio2-hero-product-top">
-                <span>Preview real da plataforma</span>
-                <strong>IA + páginas + CRM</strong>
+            <div id="video-prova" className="inicio2-hero-video">
+              <div className="inicio2-hero-video-top">
+                <span>Veja antes de comprar</span>
+                <strong>Vídeo real da ferramenta</strong>
               </div>
-              <img
-                src={dashboardInterno}
-                alt="Painel interno do Canva Viagem com ferramentas para criar anúncios, páginas e organizar leads"
-              />
-              <div className="inicio2-hero-product-footer">
-                <span>Você entra, escolhe o que quer criar e adapta para o pacote da sua agência.</span>
+              <div className="inicio2-hero-video-frame">
+                {heroMutedActive ? (
+                  <>
+                    <iframe
+                      title="Lucas usando o Canva Viagem"
+                      src="https://www.youtube.com/embed/INkZn5pdPeM?autoplay=1&mute=1&controls=0&loop=1&playlist=INkZn5pdPeM&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
+                      allow="autoplay; encrypted-media; picture-in-picture"
+                      allowFullScreen
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setHeroMutedActive(false)}
+                      className="absolute inset-0 flex items-center justify-center bg-slate-950/10 hover:bg-slate-950/0 transition-colors"
+                    >
+                      <span className="bg-white text-slate-950 font-black rounded-full px-6 py-3 shadow-xl flex items-center gap-2">
+                        <Play size={18} fill="currentColor" /> Assistir com som
+                      </span>
+                    </button>
+                  </>
+                ) : (
+                  <iframe
+                    title="Lucas usando o Canva Viagem com áudio"
+                    src="https://www.youtube.com/embed/INkZn5pdPeM?autoplay=1&controls=1&modestbranding=1&rel=0"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                  />
+                )}
+              </div>
+              <div className="inicio2-hero-video-footer">
+                <span>Vídeo curto: veja Lucas criando uma oferta e mostrando como a ferramenta funciona por dentro.</span>
               </div>
             </div>
           </div>
@@ -391,54 +415,6 @@ export default function Inicio2() {
                   <p className="text-slate-400 leading-relaxed">{copy}</p>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="video-prova" className="bg-slate-50 pt-20 pb-20 border-b border-slate-200">
-          <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-10">
-              <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">demonstração antes da decisão</p>
-              <h2 className="section-title w-full text-center">Veja Lucas usando a ferramenta antes de comprar</h2>
-              <p className="section-subtitle w-full text-center">
-                O vídeo mostra o fluxo real: criar conteúdos, páginas, campanhas e organizar leads. Você não precisa comprar no escuro.
-              </p>
-              <p className="text-xs md:text-sm text-slate-500 font-semibold mt-3">
-                Vídeo curto: veja como uma oferta sai do pacote bruto para uma apresentação pronta.
-              </p>
-            </div>
-
-            <div className="max-w-4xl mx-auto rounded-[28px] overflow-hidden border border-slate-200 bg-slate-900 shadow-2xl">
-              <div className="relative aspect-video">
-                {heroMutedActive ? (
-                  <>
-                    <iframe
-                      title="Lucas usando o Canva Viagem"
-                      src="https://www.youtube.com/embed/INkZn5pdPeM?autoplay=1&mute=1&controls=0&loop=1&playlist=INkZn5pdPeM&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
-                      className="absolute inset-0 w-full h-full"
-                      allow="autoplay; encrypted-media; picture-in-picture"
-                      allowFullScreen
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setHeroMutedActive(false)}
-                      className="absolute inset-0 flex items-center justify-center bg-slate-950/10 hover:bg-slate-950/0 transition-colors"
-                    >
-                      <span className="bg-white text-slate-950 font-black rounded-full px-6 py-3 shadow-xl flex items-center gap-2">
-                        <Play size={18} fill="currentColor" /> Assistir com som
-                      </span>
-                    </button>
-                  </>
-                ) : (
-                  <iframe
-                    title="Lucas usando o Canva Viagem com áudio"
-                    src="https://www.youtube.com/embed/INkZn5pdPeM?autoplay=1&controls=1&modestbranding=1&rel=0"
-                    className="absolute inset-0 w-full h-full"
-                    allow="autoplay; encrypted-media; picture-in-picture"
-                    allowFullScreen
-                  />
-                )}
-              </div>
             </div>
           </div>
         </section>
