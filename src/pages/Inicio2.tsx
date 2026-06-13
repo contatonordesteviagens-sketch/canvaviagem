@@ -30,7 +30,6 @@ import depoimento1 from "@/assets/depoimento1.jpg";
 import depoimento2 from "@/assets/depoimento2.png";
 import depoimento3 from "@/assets/depoimento3.jpg";
 import { ProductDemo } from "@/components/planos/ProductDemo";
-import { PricingAccordion } from "@/components/PricingAccordion";
 
 import showcaseAdCreation from "@/assets/images/showcase-ad-creation.png";
 import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
@@ -41,6 +40,19 @@ import showcasePremiumMedias from "@/assets/images/showcase-premium-medias.png";
 const supportWhatsAppUrl =
   "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20sobre%20o%20Canva%20Viagem";
 const instagramUrl = "https://www.instagram.com/lucasferrari.pro/";
+const annualCheckoutUrl = "https://pay.hotmart.com/C106141067C?off=1wecpk2v&checkoutMode=10";
+const monthlyCheckoutUrl = "https://pay.hotmart.com/C106141067C?off=8qkh1yh6&checkoutMode=10";
+
+const pricingFeatures = [
+  "250 vídeos Reels de destinos",
+  "400 artes e stories",
+  "Gerador de anúncios com IA",
+  "Construtor de sites e páginas de pacote",
+  "CRM para organizar leads",
+  "Ferramentas de IA para agentes de viagem",
+  "Legendas, roteiros e textos de oferta",
+  "Suporte via WhatsApp",
+];
 
 const quickOutcomeCards = [
   {
@@ -699,9 +711,66 @@ export default function Inicio2() {
                 Comece no mensal por R$ 97 ou escolha o plano anual para pagar menos por mês e ter 12 meses de acesso. O checkout é seguro pela Hotmart.
               </p>
             </div>
-            <PricingAccordion />
+            <div className="inicio2-pricing-grid">
+              <article className="inicio2-price-card inicio2-price-card-featured">
+                <div className="inicio2-price-badge">Mais escolhido • maior economia</div>
+                <div className="inicio2-price-head">
+                  <p className="inicio2-price-kicker">Plano anual</p>
+                  <h3>12 meses para transformar sua apresentação</h3>
+                  <p>Pague menos por mês e tenha tempo para aplicar a ferramenta em campanhas reais da sua agência.</p>
+                </div>
+
+                <div className="inicio2-price-value">
+                  <span>12x</span>
+                  <strong>R$ 49,60</strong>
+                </div>
+                <p className="inicio2-price-cash">ou R$ 497 à vista • economia de R$ 667</p>
+
+                <ul className="inicio2-price-features">
+                  {pricingFeatures.map((feature) => (
+                    <li key={feature}>
+                      <CheckCircle2 size={18} />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <a href={annualCheckoutUrl} className="inicio2-price-cta inicio2-price-cta-primary">
+                  Assinar anual com desconto
+                </a>
+                <p className="inicio2-price-note">Acesso imediato • Hotmart • 7 dias de garantia</p>
+              </article>
+
+              <article className="inicio2-price-card">
+                <div className="inicio2-price-head">
+                  <p className="inicio2-price-kicker">Plano mensal</p>
+                  <h3>Comece com menor compromisso</h3>
+                  <p>Ideal para testar a ferramenta primeiro e decidir depois se quer ficar por mais tempo.</p>
+                </div>
+
+                <div className="inicio2-price-value inicio2-price-value-secondary">
+                  <strong>R$ 97</strong>
+                  <span>/mês</span>
+                </div>
+                <p className="inicio2-price-cash inicio2-price-cash-muted">Sem fidelidade. Cancele quando quiser.</p>
+
+                <ul className="inicio2-price-features">
+                  {pricingFeatures.slice(0, 6).map((feature) => (
+                    <li key={feature}>
+                      <CheckCircle2 size={18} />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <a href={monthlyCheckoutUrl} className="inicio2-price-cta inicio2-price-cta-secondary">
+                  Assinar mensal
+                </a>
+                <p className="inicio2-price-note">Pagamento seguro pela Hotmart</p>
+              </article>
+            </div>
             <div className="mt-8 text-center text-sm text-slate-500 font-semibold">
-              Pagamento seguro pela Hotmart. Acesso imediato. Garantia de 7 dias.
+              Pagamento seguro pela Hotmart. Acesso imediato. Garantia de 7 dias. Sem alterar valores no checkout.
             </div>
           </div>
         </section>
