@@ -115,6 +115,23 @@ const trialPlanSteps = [
   ["Dia 3", "organize interessados e orçamentos para validar se o fluxo serve para sua agência"],
 ];
 
+const objectionCards = [
+  ["Será que eu vou saber usar?", "Sim. A ideia é você entrar, escolher o que quer criar e seguir modelos prontos. Não precisa começar do zero."],
+  ["Isso serve para agência pequena?", "Serve principalmente para agência pequena, consultor e equipe enxuta que precisa parecer mais profissional sem contratar uma estrutura cara."],
+  ["Preciso entender de design?", "Não. A plataforma entrega caminhos prontos para anúncio, página, legenda, vídeo e organização. Você ajusta para o pacote que está vendendo."],
+  ["Vou conseguir usar no meu negócio?", "Se você vende viagens, pacotes, roteiros, grupos ou experiências pelo WhatsApp e Instagram, a ferramenta foi pensada para sua rotina."],
+  ["Vale a pena pagar por isso?", "Se ela economizar algumas horas por mês e melhorar a apresentação de uma única oferta, o plano anual já tende a se pagar rápido."],
+  ["O acesso é imediato?", "Sim. Depois da compra pela Hotmart, você recebe as instruções de acesso no e-mail usado no checkout."],
+  ["Tem suporte?", "Sim. Você tem suporte via WhatsApp para tirar dúvidas de acesso e uso da plataforma."],
+  ["Mensal ou anual?", "O mensal é para testar com menor compromisso. O anual é a melhor escolha: custa menos por mês, libera 12 meses e economiza R$ 667."],
+];
+
+const afterPurchaseSteps = [
+  ["1", "Compra segura", "Você escolhe mensal ou anual e finaliza pela Hotmart."],
+  ["2", "Acesso liberado", "As instruções chegam no e-mail usado no checkout."],
+  ["3", "Primeira oferta", "Use um pacote real para criar anúncio, página e textos de venda."],
+];
+
 const socialProofChats = [
   {
     label: "Venda para Disney",
@@ -247,7 +264,7 @@ export default function Inicio2() {
       <header className="site-header">
         <div className="header-inner">
           <img src={logoImage} alt="Canva Viagem" className="logo" />
-          <a href="#planos" className="header-cta">Ver planos</a>
+          <a href="#planos" className="header-cta">Escolher plano</a>
         </div>
       </header>
 
@@ -268,33 +285,33 @@ export default function Inicio2() {
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] mb-4 md:mb-6 tracking-tight">
-              <span className="md:hidden">Transforme pacotes em ofertas prontas para vender</span>
-              <span className="hidden md:inline">Transforme cada pacote de viagem em uma oferta pronta para vender em minutos</span>
+              <span className="md:hidden">Crie ofertas de viagem profissionais para vender melhor</span>
+              <span className="hidden md:inline">Crie ofertas de viagem profissionais para vender mais pelo WhatsApp e Instagram</span>
             </h1>
 
             <p className="text-lg md:text-xl text-slate-300 font-medium mb-3 md:mb-4 max-w-3xl mx-auto leading-relaxed">
               <span className="md:hidden">
-                IA, páginas, conteúdos prontos e CRM para vender viagens com mais confiança.
+                IA, páginas, conteúdos prontos e CRM para sua agência vender com aparência profissional.
               </span>
               <span className="hidden md:inline">
-                O Canva Viagem reúne IA, páginas de pacote, conteúdos prontos e CRM para sua agência publicar campanhas, responder no WhatsApp e organizar orçamentos sem depender de designer nem de várias ferramentas separadas.
+                O Canva Viagem reúne IA, páginas de pacote, conteúdos prontos e CRM para sua agência transformar um pacote simples em anúncio, página, legenda e acompanhamento de lead sem depender de designer nem de várias ferramentas separadas.
               </span>
             </p>
 
             <div className="bg-red-500/10 border border-red-500/20 px-5 md:px-6 py-3 rounded-xl mb-6 md:mb-10">
               <p className="text-red-300 font-medium md:text-lg">
                 <span className="md:hidden">
-                  Se sua oferta parece improvisada, o cliente duvida. O Canva Viagem muda essa percepção.
+                  Se a oferta parece improvisada, o cliente duvida. Aqui você deixa o pacote mais claro e vendável.
                 </span>
                 <span className="hidden md:inline">
-                  Se o pacote parece improvisado, o cliente pede desconto antes de enxergar valor. A plataforma existe para resolver esse momento.
+                  Quando o pacote parece improvisado, o cliente compara só preço. Quando a oferta parece profissional, ele entende valor antes de pedir desconto.
                 </span>
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 mb-7 md:mb-6 w-full sm:w-auto">
               <a href="#planos" className="btn btn-primary text-base md:text-lg py-4 px-8 w-full sm:w-auto shadow-[0_0_30px_rgba(124,58,237,0.5)] hover:shadow-[0_0_50px_rgba(124,58,237,0.7)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
-                Testar 7 dias com garantia
+                Quero acessar o Canva Viagem
               </a>
               <a href="#video-prova" className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 py-3.5 md:py-4 px-5 md:px-8 rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 text-sm md:text-base">
                 <Play size={20} fill="currentColor" /> Ver Lucas usando a ferramenta
@@ -302,7 +319,7 @@ export default function Inicio2() {
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 w-full mb-6 md:mb-10">
-              {["Demo real antes da compra", "+66 mil seguidores", "Preço e garantia visíveis", "Suporte por WhatsApp"].map((item) => (
+              {["Acesso imediato", "Checkout seguro Hotmart", "7 dias de garantia", "Suporte por WhatsApp"].map((item) => (
                 <div key={item} className="bg-white/5 border border-white/10 rounded-xl px-3 md:px-4 py-3 text-[12px] md:text-sm font-bold text-slate-200 flex items-center justify-center gap-2 leading-tight min-h-[58px]">
                   <ShieldCheck size={16} className="text-green-400 shrink-0" />
                   {item}
@@ -311,9 +328,9 @@ export default function Inicio2() {
             </div>
 
             <div className="hidden sm:flex flex-wrap justify-center gap-4 md:gap-8 mb-10">
-              <div className="flex items-center gap-2 text-slate-300 font-semibold"><CheckCircle2 className="text-purple-400" size={18} /> Não é um pack genérico</div>
-              <div className="flex items-center gap-2 text-slate-300 font-semibold"><CheckCircle2 className="text-purple-400" size={18} /> Plataforma SaaS para turismo</div>
-              <div className="flex items-center gap-2 text-slate-300 font-semibold"><CheckCircle2 className="text-purple-400" size={18} /> Criador com audiência pública</div>
+              <div className="flex items-center gap-2 text-slate-300 font-semibold"><CheckCircle2 className="text-purple-400" size={18} /> Feito para turismo</div>
+              <div className="flex items-center gap-2 text-slate-300 font-semibold"><CheckCircle2 className="text-purple-400" size={18} /> Conteúdo + IA + CRM</div>
+              <div className="flex items-center gap-2 text-slate-300 font-semibold"><CheckCircle2 className="text-purple-400" size={18} /> Criador acompanhado por 66 mil pessoas</div>
             </div>
 
             <div className="w-full max-w-[560px] mx-auto">
@@ -356,7 +373,7 @@ export default function Inicio2() {
                 <p>Você quer postar mais, mas trava em arte, legenda, roteiro, página, anúncio e follow-up.</p>
                 <p>Enquanto isso, a agência que parece mais organizada ganha confiança antes mesmo do orçamento.</p>
               </div>
-              <a href="#planos" className="btn btn-primary mt-8 inline-flex">Quero vender com mais profissionalismo</a>
+              <a href="#planos" className="btn btn-primary mt-8 inline-flex">Criar ofertas mais profissionais</a>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
@@ -671,7 +688,7 @@ export default function Inicio2() {
                   <p><strong>Plano anual:</strong> 12x de R$ 49,60 ou R$ 497 à vista, com 12 meses de acesso.</p>
                   <p><strong>Você recebe:</strong> IA, páginas, conteúdos, CRM, mídias, materiais de apoio, suporte e garantia.</p>
                 </div>
-                <a href="#planos" className="btn btn-primary mt-8 inline-flex">Ver planos e garantia</a>
+              <a href="#planos" className="btn btn-primary mt-8 inline-flex">Escolher meu plano</a>
               </div>
             </div>
           </div>
@@ -706,9 +723,9 @@ export default function Inicio2() {
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto">
               <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">oferta brasileira</p>
-              <h2 className="section-title w-full text-center">Escolha como quer entrar</h2>
+              <h2 className="section-title w-full text-center">Escolha seu acesso sem confusão</h2>
               <p className="section-subtitle w-full text-center" style={{ textAlign: "center", margin: "0 auto 32px" }}>
-                Comece no mensal por R$ 97 ou escolha o plano anual para pagar menos por mês e ter 12 meses de acesso. O checkout é seguro pela Hotmart.
+                O mensal é para começar com menor compromisso. O anual é a melhor escolha para quem quer pagar menos por mês, ter 12 meses de acesso e economizar R$ 667.
               </p>
             </div>
             <div className="inicio2-pricing-grid">
@@ -716,8 +733,8 @@ export default function Inicio2() {
                 <div className="inicio2-price-badge">Mais escolhido • maior economia</div>
                 <div className="inicio2-price-head">
                   <p className="inicio2-price-kicker">Plano anual</p>
-                  <h3>12 meses para transformar sua apresentação</h3>
-                  <p>Pague menos por mês e tenha tempo para aplicar a ferramenta em campanhas reais da sua agência.</p>
+                  <h3>Melhor escolha para vender com consistência</h3>
+                  <p>Para quem quer usar a ferramenta o ano inteiro, criar campanhas com mais frequência e pagar menos por mês.</p>
                 </div>
 
                 <div className="inicio2-price-value">
@@ -736,7 +753,7 @@ export default function Inicio2() {
                 </ul>
 
                 <a href={annualCheckoutUrl} className="inicio2-price-cta inicio2-price-cta-primary">
-                  Assinar anual com desconto
+                  Garantir acesso anual com desconto
                 </a>
                 <p className="inicio2-price-note">Acesso imediato • Hotmart • 7 dias de garantia</p>
               </article>
@@ -764,13 +781,53 @@ export default function Inicio2() {
                 </ul>
 
                 <a href={monthlyCheckoutUrl} className="inicio2-price-cta inicio2-price-cta-secondary">
-                  Assinar mensal
+                  Começar no plano mensal
                 </a>
                 <p className="inicio2-price-note">Pagamento seguro pela Hotmart</p>
               </article>
             </div>
             <div className="mt-8 text-center text-sm text-slate-500 font-semibold">
               Pagamento seguro pela Hotmart. Acesso imediato. Garantia de 7 dias. Sem alterar valores no checkout.
+            </div>
+            <div className="inicio2-after-purchase">
+              <div className="inicio2-after-copy">
+                <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-2">depois da compra</p>
+                <h3>Você não compra e fica perdido.</h3>
+                <p>O caminho é simples: pagamento seguro, acesso liberado e primeira oferta criada com um pacote real da sua agência.</p>
+              </div>
+              <div className="inicio2-after-steps">
+                {afterPurchaseSteps.map(([number, title, copy]) => (
+                  <div key={title} className="inicio2-after-step">
+                    <span>{number}</span>
+                    <strong>{title}</strong>
+                    <p>{copy}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="inicio2-objections bg-slate-950 py-16 md:py-24">
+          <div className="inicio-container">
+            <div className="text-center max-w-3xl mx-auto mb-10">
+              <p className="text-cyan-300 font-black uppercase tracking-[0.2em] text-xs mb-3">antes de decidir</p>
+              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">Dúvidas normais de quem nunca viu o Canva Viagem</h2>
+              <p className="text-slate-300 text-lg leading-relaxed mt-4">
+                Se você chegou frio, estas são as perguntas que precisam estar claras antes de colocar o cartão.
+              </p>
+            </div>
+            <div className="inicio2-objection-grid">
+              {objectionCards.map(([title, copy]) => (
+                <div key={title} className="inicio2-objection-card">
+                  <CheckCircle2 size={20} />
+                  <h3>{title}</h3>
+                  <p>{copy}</p>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-10">
+              <a href="#planos" className="btn btn-primary inline-flex">Quero escolher meu plano</a>
             </div>
           </div>
         </section>
@@ -788,7 +845,7 @@ export default function Inicio2() {
                 <p className="text-lg text-slate-700 leading-relaxed">
                   Use a IA, baixe materiais, monte uma página de pacote e organize seus leads. Se você não sentir que a apresentação da sua agência subiu de nível, acione a garantia dentro do prazo da Hotmart.
                 </p>
-                <a href="#planos" className="btn btn-primary mt-6 inline-flex">Acessar com garantia</a>
+                <a href="#planos" className="btn btn-primary mt-6 inline-flex">Garantir acesso com 7 dias de garantia</a>
               </div>
             </div>
           </div>
@@ -824,10 +881,10 @@ export default function Inicio2() {
               Sua próxima oferta pode parecer mais clara, mais profissional e mais fácil de vender hoje.
             </h2>
             <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-3xl mx-auto">
-              Escolha um plano, entre com acesso imediato e use a garantia de 7 dias para validar o Canva Viagem com um pacote real da sua agência.
+              Escolha um plano, receba acesso imediato e use a garantia de 7 dias para validar o Canva Viagem com um pacote real da sua agência.
             </p>
             <a href="#planos" className="btn btn-primary text-xl py-5 px-12 shadow-[0_0_30px_rgba(124,58,237,0.4)] hover:-translate-y-1 inline-block">
-              Testar 7 dias com garantia
+              Quero acessar o Canva Viagem agora
             </a>
           </div>
         </section>
@@ -862,7 +919,7 @@ export default function Inicio2() {
           <span>12x R$ 49<small>,60</small></span>
           <small>ou R$ 497 à vista</small>
         </div>
-        <a href="#planos" className="sticky-btn">Ver planos <Check size={16} /></a>
+        <a href="#planos" className="sticky-btn">Escolher plano <Check size={16} /></a>
       </div>
     </div>
   );

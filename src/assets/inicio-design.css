@@ -1203,6 +1203,109 @@ button, a {
   font-weight: 800;
 }
 
+.inicio2-after-purchase {
+  display: grid;
+  gap: 18px;
+  width: 100%;
+  max-width: 960px;
+  margin: 34px auto 0;
+  border: 1px solid #E2E8F0;
+  border-radius: 28px;
+  background: #F8FAFC;
+  padding: 22px;
+}
+
+.inicio2-after-copy h3 {
+  margin: 0;
+  color: #0F172A;
+  font-size: 28px;
+  line-height: 1.08;
+  font-weight: 950;
+}
+
+.inicio2-after-copy p {
+  margin: 10px 0 0;
+  color: #64748B;
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 650;
+}
+
+.inicio2-after-steps {
+  display: grid;
+  gap: 12px;
+}
+
+.inicio2-after-step {
+  min-width: 0;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  background: #FFFFFF;
+  padding: 16px;
+}
+
+.inicio2-after-step span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: #7C3AED;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 950;
+  margin-bottom: 10px;
+}
+
+.inicio2-after-step strong {
+  display: block;
+  color: #0F172A;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.inicio2-after-step p {
+  margin: 6px 0 0;
+  color: #64748B;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.inicio2-objection-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.inicio2-objection-card {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.045);
+  padding: 18px;
+}
+
+.inicio2-objection-card svg {
+  color: #67E8F9;
+  margin-bottom: 12px;
+}
+
+.inicio2-objection-card h3 {
+  margin: 0;
+  color: #FFFFFF;
+  font-size: 17px;
+  line-height: 1.15;
+  font-weight: 950;
+}
+
+.inicio2-objection-card p {
+  margin: 8px 0 0;
+  color: #CBD5E1;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 @media (min-width: 860px) {
   .inicio2-pricing-grid {
     grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
@@ -1215,6 +1318,20 @@ button, a {
 
   .inicio2-price-card-featured {
     transform: translateY(-8px);
+  }
+
+  .inicio2-after-purchase {
+    grid-template-columns: 0.8fr 1.2fr;
+    align-items: center;
+    padding: 28px;
+  }
+
+  .inicio2-after-steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .inicio2-objection-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
