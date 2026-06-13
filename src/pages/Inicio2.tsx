@@ -29,7 +29,6 @@ import lucasPortrait from "@/assets/lucas-ferrari-portrait.webp";
 import depoimento1 from "@/assets/depoimento1.jpg";
 import depoimento2 from "@/assets/depoimento2.png";
 import depoimento3 from "@/assets/depoimento3.jpg";
-import { ProductDemo } from "@/components/planos/ProductDemo";
 
 import showcaseAdCreation from "@/assets/images/showcase-ad-creation.png";
 import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
@@ -107,12 +106,6 @@ const trustProofMetrics = [
   ["12 meses", "de acesso no plano anual"],
   ["R$ 667", "de economia no plano anual"],
   ["1 lugar", "para IA, páginas, conteúdos e CRM"],
-];
-
-const trialPlanSteps = [
-  ["Dia 1", "entre, conheça os módulos e crie sua primeira campanha para um destino real"],
-  ["Dia 2", "monte uma página de pacote e prepare o texto para enviar pelo WhatsApp"],
-  ["Dia 3", "organize interessados e orçamentos para validar se o fluxo serve para sua agência"],
 ];
 
 const objectionCards = [
@@ -333,8 +326,18 @@ export default function Inicio2() {
               <div className="flex items-center gap-2 text-slate-300 font-semibold"><CheckCircle2 className="text-purple-400" size={18} /> Criador acompanhado por 66 mil pessoas</div>
             </div>
 
-            <div className="w-full max-w-[560px] mx-auto">
-              <ProductDemo showStartDemo={false} />
+            <div className="inicio2-hero-product">
+              <div className="inicio2-hero-product-top">
+                <span>Preview real da plataforma</span>
+                <strong>IA + páginas + CRM</strong>
+              </div>
+              <img
+                src={dashboardInterno}
+                alt="Painel interno do Canva Viagem com ferramentas para criar anúncios, páginas e organizar leads"
+              />
+              <div className="inicio2-hero-product-footer">
+                <span>Você entra, escolhe o que quer criar e adapta para o pacote da sua agência.</span>
+              </div>
             </div>
           </div>
         </section>
@@ -689,31 +692,6 @@ export default function Inicio2() {
                   <p><strong>Você recebe:</strong> IA, páginas, conteúdos, CRM, mídias, materiais de apoio, suporte e garantia.</p>
                 </div>
               <a href="#planos" className="btn btn-primary mt-8 inline-flex">Escolher meu plano</a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-slate-950 py-16 md:py-24">
-          <div className="inicio-container">
-            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-10 items-center">
-              <div>
-                <p className="text-cyan-300 font-black uppercase tracking-[0.2em] text-xs mb-3">plano de teste</p>
-                <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mb-6">
-                  Você não precisa decidir no escuro. Teste com um pacote real.
-                </h2>
-                <p className="text-slate-300 text-lg leading-relaxed">
-                  Entre, crie uma campanha para um destino que sua agência já vende e veja se a ferramenta melhora sua apresentação, velocidade e organização.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                {trialPlanSteps.map(([day, copy]) => (
-                  <div key={day} className="bg-white/5 border border-white/10 rounded-2xl p-5 flex gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-cyan-300 text-slate-950 font-black flex items-center justify-center shrink-0">{day}</div>
-                    <p className="text-slate-300 leading-relaxed">{copy}</p>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
