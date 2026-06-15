@@ -125,7 +125,7 @@ const CalendarES = () => {
         caption = allCaptions.find(c => 
           video.title.toLowerCase().includes(c.destination.toLowerCase().split(' - ')[0].toLowerCase()) ||
           c.destination.toLowerCase().includes(video.title.toLowerCase().split(' ')[0].toLowerCase())
-        ) || allCaptions[templateIndex % allCaptions.length];
+        ) || null;
       }
       
       return {

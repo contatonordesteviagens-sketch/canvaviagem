@@ -60,7 +60,7 @@ const Calendar = () => {
       if (allCaptions && allCaptions.length > 0) {
         caption = allCaptions.find(c =>
           video.title.toLowerCase().includes(c.destination.toLowerCase().split(' - ')[0].toLowerCase())
-        ) || allCaptions[templateIndex % allCaptions.length];
+        ) || null;
       }
       return {
         template: { title: video.title, url: video.url, icon: video.icon, drive_url: video.drive_url },
