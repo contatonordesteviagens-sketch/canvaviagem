@@ -96,6 +96,15 @@ Aplicados apos teste com Maragogi e Fernando de Noronha:
 - Pill de Pix/desconto ganhou mais distancia da linha de total.
 - Rodape recebeu gradiente escuro inferior para dar contraste a logo, telefone e Instagram em fundos claros.
 
+Aplicados apos teste com Gramado em feed e story:
+
+- O kicker do titulo usa o texto selecionado no formulario sem o destino e sem pontuacao final solta, exemplo: `VOCE PRECISA CONHECER`.
+- O destino voltou a ter hierarquia forte: fonte maior, peso 900 e alinhamento pela mesma esquerda do kicker.
+- O bloco de data/periodo deixou de ser apenas contorno e passou a ser um pill preenchido com preto translucido em torno de 34%.
+- O bloco de preco subiu como grupo: label, valor, complemento, total e Pix ficam mais proximos do topo da coluna direita.
+- A distancia entre valor e complemento foi ajustada para a virgula dos centavos nao encostar em `POR PESSOA`.
+- A sombra inferior do rodape foi reforcada para ajudar logo, Instagram e telefone quando a cor de fundo e clara.
+
 ## Como Testar
 
 1. Abrir a Fabrica de Anuncios.
