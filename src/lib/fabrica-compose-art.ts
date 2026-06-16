@@ -1407,6 +1407,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         photoFocusY: 0.45,
         footerReserve: isStoryV6 ? 300 : 145,
         titleSize: Math.round(width * (isStoryV6 ? 0.076 : 0.062)),
+        kickerSize: Math.round(width * (isStoryV6 ? 0.025 : 0.021)),
         subSize: Math.round(width * (isStoryV6 ? 0.038 : 0.032)),
         metaSize: Math.round(width * (isStoryV6 ? 0.028 : 0.024)),
         labelSize: Math.round(width * (isStoryV6 ? 0.043 : 0.034)),
@@ -1436,6 +1437,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = panelRightBg;
       ctx.fillRect(rightX, bottomY, rightW, bottomH);
 
+      const footerGrad = ctx.createLinearGradient(0, height - (isStoryV6 ? 340 : 240), 0, height);
+      footerGrad.addColorStop(0, "rgba(0,0,0,0)");
+      footerGrad.addColorStop(0.55, "rgba(0,0,0,0.10)");
+      footerGrad.addColorStop(1, "rgba(0,0,0,0.34)");
+      ctx.fillStyle = footerGrad;
+      ctx.fillRect(0, height - (isStoryV6 ? 340 : 240), width, isStoryV6 ? 340 : 240);
+
       ctx.save();
       ctx.strokeStyle = "rgba(0,0,0,0.06)";
       ctx.lineWidth = 2;
@@ -1445,9 +1453,20 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.stroke();
       ctx.restore();
 
-      const destinationV6 = (destination || destFmt || "DESTINO").toUpperCase();
-      const cityV6 = cityFmt ? `SAINDO DE ${cityFmt}`.toUpperCase() : "";
+      const destinationRawV6 = (destination || destFmt || "DESTINO").trim();
+      const destinationV6 = destinationRawV6.toUpperCase();
+      const normalizedCityV6 = cityFmt.trim().toLocaleLowerCase("pt-BR");
+      const cityV6 = cityFmt && normalizedCityV6 !== "fortaleza" ? `SAINDO DE ${cityFmt}`.toUpperCase() : "";
       const periodV6 = (travelPeriod || "").trim();
+      const titleRawV6 = (titleText || "").trim();
+      const titleWithoutDestinationV6 = titleRawV6
+        .replace(new RegExp(destinationRawV6.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), "")
+        .replace(/[-–—|:]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      const titleKickerV6 = titleWithoutDestinationV6.length >= 3 && titleWithoutDestinationV6.length <= 26
+        ? titleWithoutDestinationV6.toUpperCase()
+        : "";
       const labelV6 = (() => {
         if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
         if (paymentMode === "down_plus") return pricePrefix || "entrada + parcelas";
@@ -1467,17 +1486,31 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = leftText;
       ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
       const titleMaxW = leftW - T.padX * 2;
-      const titleLines = wrapTextSafe(ctx, destinationV6, titleMaxW, 2, Math.round(T.titleSize * 0.58));
-      const titleLineH = T.titleSize * 1.06;
-      const leftContentH = titleLines.length * titleLineH
+      const buildTitleLinesV6 = () => wrapTextSafe(ctx, destinationV6, titleMaxW, 3, Math.round(T.titleSize * 0.48));
+      const titleLines = buildTitleLinesV6();
+      const titleLineH = T.titleSize * 0.98;
+      const periodPillH = periodV6 ? Math.round(T.metaSize * 1.55) : 0;
+      const leftContentH = (titleKickerV6 ? T.kickerSize * 1.35 : 0)
+        + titleLines.length * titleLineH
         + (cityV6 ? T.subSize * 1.45 : 0)
-        + (periodV6 ? T.metaSize * 1.45 : 0);
-      let leftY = Math.max(bottomY + T.titleSize + 42, bottomY + (usableBottom - bottomY - leftContentH) / 2 + T.titleSize * 0.7);
+        + (periodV6 ? periodPillH + T.metaSize * 0.85 : 0);
+      let leftY = Math.max(bottomY + T.titleSize + 34, bottomY + (usableBottom - bottomY - leftContentH) / 2 + T.titleSize * 0.7);
+
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.14)";
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 4;
+
+      if (titleKickerV6) {
+        ctx.font = `900 ${T.kickerSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, titleKickerV6, leftCx, leftY - T.titleSize * 0.95, titleMaxW, Math.round(T.kickerSize * 0.7));
+      }
 
       titleLines.forEach((line, idx) => {
         safeFillText(ctx, line, leftCx, leftY + idx * titleLineH, titleMaxW, Math.round(T.titleSize * 0.5));
       });
       leftY += titleLines.length * titleLineH + Math.round(T.subSize * 0.75);
+      ctx.restore();
 
       if (cityV6) {
         ctx.font = `900 ${T.subSize}px Inter, Arial, sans-serif`;
@@ -1486,7 +1519,20 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
       if (periodV6) {
         ctx.font = `800 ${T.metaSize}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, periodV6.toUpperCase(), leftCx, leftY, titleMaxW, Math.round(T.metaSize * 0.7));
+        const periodLabel = periodV6.toUpperCase();
+        const periodW = Math.min(titleMaxW, Math.max(width * 0.16, ctx.measureText(periodLabel).width + 42));
+        const periodX = leftCx - periodW / 2;
+        const periodY = leftY - Math.round(periodPillH * 0.72);
+        ctx.save();
+        ctx.strokeStyle = "rgba(0,0,0,0.16)";
+        ctx.lineWidth = 2;
+        fillRoundRect(ctx, periodX, periodY, periodW, periodPillH, periodPillH / 2, "rgba(255,255,255,0.62)");
+        roundRect(ctx, periodX + 1, periodY + 1, periodW - 2, periodPillH - 2, periodPillH / 2);
+        ctx.stroke();
+        ctx.restore();
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, periodLabel, leftCx, periodY + periodPillH / 2 + 1, periodW - 30, Math.round(T.metaSize * 0.7));
+        ctx.textBaseline = "alphabetic";
       }
 
       ctx.fillStyle = rightText;
@@ -1499,10 +1545,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         + (suffixV6 ? T.suffixSize * 1.45 : 0)
         + (totalV6 ? T.suffixSize * 1.35 : 0)
         + (pixV6 ? T.suffixSize * 1.55 : 0);
-      let rightY = Math.max(bottomY + T.labelSize + 46, bottomY + (usableBottom - bottomY - priceBlockH) / 2 + T.labelSize);
+      let rightY = Math.max(bottomY + T.labelSize + 60, bottomY + (usableBottom - bottomY - priceBlockH) / 2 + T.labelSize + 14);
 
       safeFillText(ctx, labelV6, rightCx, rightY, rightMaxW, Math.round(T.labelSize * 0.65));
-      rightY += Math.round(T.labelSize * 1.35);
+      rightY += Math.round(T.labelSize * 1.14);
 
       if (installmentV6) {
         ctx.font = `900 ${T.metaSize}px Inter, Arial, sans-serif`;
@@ -1519,7 +1565,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
       safeFillText(ctx, priceV6, rightCx, rightY + T.priceSize, rightMaxW, Math.round(T.priceSize * 0.55));
-      rightY += Math.round(T.priceSize * 1.42);
+      rightY += Math.round(T.priceSize * 1.34);
 
       if (suffixV6) {
         ctx.fillStyle = rightMuted;
@@ -1531,18 +1577,20 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (totalV6) {
         ctx.fillStyle = rightMuted;
         ctx.font = `700 ${Math.round(T.suffixSize * 0.9)}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, `TOTAL: ${totalV6}`.toUpperCase(), rightCx, rightY, rightMaxW, Math.round(T.suffixSize * 0.62));
-        rightY += Math.round(T.suffixSize * 1.2);
+        const totalLabelV6 = /^total\b/i.test(totalV6.trim()) ? totalV6.trim() : `Total: ${totalV6}`;
+        safeFillText(ctx, totalLabelV6.toUpperCase(), rightCx, rightY, rightMaxW, Math.round(T.suffixSize * 0.62));
+        rightY += Math.round(T.suffixSize * 1.75);
       }
 
       if (pixV6) {
         ctx.font = `900 ${Math.round(T.suffixSize * 0.95)}px Inter, Arial, sans-serif`;
         const pixW = Math.min(rightMaxW, ctx.measureText(pixV6.toUpperCase()).width + 42);
         const pixH = Math.round(T.suffixSize * 1.55);
-        fillRoundRect(ctx, rightCx - pixW / 2, rightY - pixH + 8, pixW, pixH, pixH / 2, primaryColor || "#0C2340");
+        const pixY = rightY - pixH + Math.round(T.suffixSize * 0.9);
+        fillRoundRect(ctx, rightCx - pixW / 2, pixY, pixW, pixH, pixH / 2, primaryColor || "#0C2340");
         ctx.fillStyle = getSafeColor(primaryColor || "#0C2340", "#ffffff");
         ctx.textBaseline = "middle";
-        safeFillText(ctx, pixV6.toUpperCase(), rightCx, rightY - pixH / 2 + 8, pixW - 30, Math.round(T.suffixSize * 0.62));
+        safeFillText(ctx, pixV6.toUpperCase(), rightCx, pixY + pixH / 2 + 1, pixW - 30, Math.round(T.suffixSize * 0.62));
         ctx.textBaseline = "alphabetic";
       }
 

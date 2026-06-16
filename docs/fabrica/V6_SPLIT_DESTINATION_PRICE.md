@@ -84,6 +84,18 @@ Footer:          drawFinalBranding por ultimo
 - Contraste calculado com helpers.
 - V6 respeita `format === "story"` sem criar branch duplicado.
 
+## Ajustes Pos-Teste Visual
+
+Aplicados apos teste com Maragogi e Fernando de Noronha:
+
+- `SAINDO DE FORTALEZA` nao aparece mais quando Fortaleza chega como fallback/padrao do formulario.
+- Destinos longos agora podem ocupar ate 3 linhas, evitando cortar `Fernando de Noronha`.
+- O titulo selecionado no formulario aparece como kicker curto acima do destino quando aplicavel, exemplo: `PACOTE`.
+- `travelPeriod` aparece como pill com leve borda, exemplo: `5 DIAS`.
+- Linha de total nao duplica mais `TOTAL:` quando o texto ja vem com esse prefixo.
+- Pill de Pix/desconto ganhou mais distancia da linha de total.
+- Rodape recebeu gradiente escuro inferior para dar contraste a logo, telefone e Instagram em fundos claros.
+
 ## Como Testar
 
 1. Abrir a Fabrica de Anuncios.
