@@ -4025,7 +4025,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
   try {
     if (isExperience) {
       const v = typeof forceVariant === "number" ? forceVariant : variation;
-      const variant = ((v % 6) + 6) % 6; 
+      const variant = ((v % 8) + 8) % 8; 
 
       if (variant === 0) return await renderV0Experiencia();
       if (variant === 1) return await renderV1Experiencia();
@@ -4039,6 +4039,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         // Reutiliza o motor Aurora Premium que Ã© altamente estÃ©tico e compatÃ­vel
         return await renderSafeSquareOffer();
       }
+        if (variant === 6) return await renderSafeSquareOffer();
+        if (variant === 7) return await renderSafeSquareOffer();
       
       return await renderV0Experiencia();
     }
