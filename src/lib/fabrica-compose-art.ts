@@ -1406,9 +1406,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         padX: Math.round(width * 0.055),
         photoFocusY: 0.45,
         footerReserve: isStoryV6 ? 360 : 190,
-        titleSize: Math.round(width * (isStoryV6 ? 0.092 : 0.074)),
-        kickerSize: Math.round(width * (isStoryV6 ? 0.036 : 0.03)),
-        subSize: Math.round(width * (isStoryV6 ? 0.04 : 0.034)),
+        titleSize: Math.round(width * (isStoryV6 ? 0.076 : 0.062)),
+        kickerSize: Math.round(width * (isStoryV6 ? 0.025 : 0.021)),
+        subSize: Math.round(width * (isStoryV6 ? 0.038 : 0.032)),
         metaSize: Math.round(width * (isStoryV6 ? 0.028 : 0.024)),
         labelSize: Math.round(width * (isStoryV6 ? 0.043 : 0.034)),
         priceSize: Math.round(width * (isStoryV6 ? 0.07 : 0.056)),
@@ -1463,10 +1463,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         .replace(new RegExp(destinationRawV6.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), "")
         .replace(/[-–—|:]+/g, " ")
         .replace(/\s+/g, " ")
-        .replace(/\s+([!?.,])/g, "$1")
-        .replace(/[!?.,]+$/g, "")
         .trim();
-      const titleKickerV6 = titleWithoutDestinationV6.length >= 3 && titleWithoutDestinationV6.length <= 34
+      const titleKickerV6 = titleWithoutDestinationV6.length >= 3 && titleWithoutDestinationV6.length <= 26
         ? titleWithoutDestinationV6.toUpperCase()
         : "";
       const labelV6 = (() => {
@@ -1483,26 +1481,20 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const totalV6 = showTotal ? resolveTotalStr(installments, price || "", curSym, totalOverride) : "";
       const pixV6 = showPixBanner ? (pixBannerText || "").trim() : "";
 
-      const leftTextX = T.padX + Math.round(width * 0.018);
-      const titleMaxW = leftW - leftTextX - Math.round(width * 0.055);
-
-      ctx.textAlign = "left";
+      ctx.textAlign = "center";
       ctx.textBaseline = "alphabetic";
       ctx.fillStyle = leftText;
       ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
-      const buildTitleLinesV6 = () => wrapTextSafe(ctx, destinationV6, titleMaxW, 2, Math.round(T.titleSize * 0.48));
+      const titleMaxW = leftW - T.padX * 2;
+      const buildTitleLinesV6 = () => wrapTextSafe(ctx, destinationV6, titleMaxW, 3, Math.round(T.titleSize * 0.48));
       const titleLines = buildTitleLinesV6();
-      const titleLineH = T.titleSize * 0.9;
+      const titleLineH = T.titleSize * 0.98;
       const periodPillH = periodV6 ? Math.round(T.metaSize * 1.55) : 0;
-      const kickerBlockH = titleKickerV6 ? T.kickerSize + Math.round(T.kickerSize * 0.78) : 0;
-      const leftContentH = kickerBlockH
+      const leftContentH = (titleKickerV6 ? T.kickerSize * 1.35 : 0)
         + titleLines.length * titleLineH
-        + (cityV6 ? T.subSize * 1.35 : 0)
+        + (cityV6 ? T.subSize * 1.45 : 0)
         + (periodV6 ? periodPillH + T.metaSize * 1.2 : 0);
-      let leftTop = Math.max(
-        bottomY + Math.round(height * 0.035),
-        bottomY + (usableBottom - bottomY - leftContentH) / 2
-      );
+      let leftY = Math.max(bottomY + T.titleSize + 34, bottomY + (usableBottom - bottomY - leftContentH) / 2 + T.titleSize * 0.7);
 
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.18)";
@@ -1510,29 +1502,28 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.shadowOffsetY = 4;
 
       if (titleKickerV6) {
-        ctx.font = `700 ${T.kickerSize}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, titleKickerV6, leftTextX, leftTop + T.kickerSize, titleMaxW, Math.round(T.kickerSize * 0.72));
-        leftTop += kickerBlockH;
+        ctx.font = `900 ${T.kickerSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, titleKickerV6, leftCx, leftY - T.titleSize * 0.95, titleMaxW, Math.round(T.kickerSize * 0.7));
       }
 
       ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
       titleLines.forEach((line, idx) => {
-        safeFillText(ctx, line, leftTextX, leftTop + T.titleSize + idx * titleLineH, titleMaxW, Math.round(T.titleSize * 0.54));
+        safeFillText(ctx, line, leftCx, leftY + idx * titleLineH, titleMaxW, Math.round(T.titleSize * 0.5));
       });
-      leftTop += titleLines.length * titleLineH + Math.round(T.subSize * 0.7);
+      leftY += titleLines.length * titleLineH + Math.round(T.subSize * 0.75);
       ctx.restore();
 
       if (cityV6) {
         ctx.font = `900 ${T.subSize}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, cityV6, leftTextX, leftTop + T.subSize, titleMaxW, Math.round(T.subSize * 0.68));
-        leftTop += Math.round(T.subSize * 1.35);
+        safeFillText(ctx, cityV6, leftCx, leftY, titleMaxW, Math.round(T.subSize * 0.68));
+        leftY += Math.round(T.subSize * 1.5);
       }
       if (periodV6) {
         ctx.font = `800 ${T.metaSize}px Inter, Arial, sans-serif`;
         const periodLabel = periodV6.toUpperCase();
         const periodW = Math.min(titleMaxW, Math.max(width * 0.20, ctx.measureText(periodLabel).width + 56));
-        const periodX = leftTextX;
-        const periodY = Math.min(leftTop + Math.round(T.metaSize * 0.45), usableBottom - periodPillH - 10);
+        const periodX = leftCx - periodW / 2;
+        const periodY = Math.min(leftY - Math.round(periodPillH * 0.55), usableBottom - periodPillH - 10);
         ctx.save();
         fillRoundRect(ctx, periodX, periodY, periodW, periodPillH, periodPillH / 2, "rgba(0,0,0,0.34)");
         ctx.restore();
@@ -1540,7 +1531,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textAlign = "center";
         ctx.fillStyle = "#ffffff";
         safeFillText(ctx, periodLabel, periodX + periodW / 2, periodY + periodPillH / 2 + 1, periodW - 34, Math.round(T.metaSize * 0.7));
-        ctx.textAlign = "left";
         ctx.textBaseline = "alphabetic";
       }
 

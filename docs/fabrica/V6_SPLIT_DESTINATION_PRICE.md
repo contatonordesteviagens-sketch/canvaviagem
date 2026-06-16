@@ -111,6 +111,12 @@ Hotfix apos teste com Porto de Galinhas:
 - O tamanho do destino foi reduzido para um limite seguro em nomes de duas linhas.
 - O bloco de data agora respeita o limite superior do rodape para nao colidir com a logo.
 
+Rollback parcial solicitado:
+
+- Desfeito o aumento de titulo/destino aplicado no ajuste anterior.
+- Desfeito o tratamento que removia a pontuacao final do kicker do titulo.
+- Desfeito o alinhamento a esquerda do bloco de titulo; a coluna esquerda voltou a usar composicao centralizada.
+
 ## Como Testar
 
 1. Abrir a Fabrica de Anuncios.
