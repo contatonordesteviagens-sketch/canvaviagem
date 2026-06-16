@@ -132,6 +132,12 @@ Hotfix de legibilidade em nomes compostos:
 - Conectores como `DE`, `DA`, `DO`, `DOS`, `DAS` e `E` nao iniciam a segunda linha quando houver alternativa melhor.
 - O label `A PARTIR DE` desce mais 4px e o preco principal sobe 24px para ficar visualmente mais colado sem sobrepor o complemento.
 
+Microajuste visual:
+
+- Destino desceu 2px.
+- Pill de periodo/dias subiu 2px; em destinos de uma linha, o offset total ficou 5px.
+- Preco principal ficou levemente maior em feed e story.
+
 ## Como Testar
 
 1. Abrir a Fabrica de Anuncios.

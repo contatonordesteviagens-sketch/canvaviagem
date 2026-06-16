@@ -1411,7 +1411,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         subSize: Math.round(width * (isStoryV6 ? 0.038 : 0.032)),
         metaSize: Math.round(width * (isStoryV6 ? 0.028 : 0.024)),
         labelSize: Math.round(width * (isStoryV6 ? 0.043 : 0.034)),
-        priceSize: Math.round(width * (isStoryV6 ? 0.07 : 0.056)),
+        priceSize: Math.round(width * (isStoryV6 ? 0.074 : 0.06)),
         suffixSize: Math.round(width * (isStoryV6 ? 0.024 : 0.019)),
       };
       const bottomY = T.photoH;
@@ -1535,7 +1535,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       ctx.font = `900 ${titleSizeV6}px Inter, Arial, sans-serif`;
       titleLines.forEach((line, idx) => {
-        safeFillText(ctx, line, leftCx, leftY + idx * titleLineH, titleMaxW, Math.round(titleSizeV6 * 0.62));
+        safeFillText(ctx, line, leftCx, leftY + 2 + idx * titleLineH, titleMaxW, Math.round(titleSizeV6 * 0.62));
       });
       leftY += titleLines.length * titleLineH + Math.round(T.subSize * 0.75);
       ctx.restore();
@@ -1550,7 +1550,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const periodLabel = periodV6.toUpperCase();
         const periodW = Math.min(titleMaxW, Math.max(width * 0.20, ctx.measureText(periodLabel).width + 56));
         const periodX = leftCx - periodW / 2;
-        const periodY = Math.min(leftY - Math.round(periodPillH * 0.55) - (titleLines.length === 1 ? 3 : 0), usableBottom - periodPillH - 10);
+        const periodY = Math.min(leftY - Math.round(periodPillH * 0.55) - (titleLines.length === 1 ? 5 : 2), usableBottom - periodPillH - 10);
         ctx.save();
         const periodBg = primaryColor || "#0C2340";
         fillRoundRect(ctx, periodX, periodY, periodW, periodPillH, periodPillH / 2, periodBg);
