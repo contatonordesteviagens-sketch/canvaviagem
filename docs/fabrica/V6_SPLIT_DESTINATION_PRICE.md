@@ -117,6 +117,14 @@ Rollback parcial solicitado:
 - Desfeito o tratamento que removia a pontuacao final do kicker do titulo.
 - Desfeito o alinhamento a esquerda do bloco de titulo; a coluna esquerda voltou a usar composicao centralizada.
 
+Ajuste fino apos comparacao Gramado/Fernando de Noronha:
+
+- O kicker mantem a pontuacao escolhida, mas remove espaco indevido antes de `!`, `?`, `.` ou `,`.
+- Destinos compostos agora sao balanceados em no maximo 2 linhas, evitando o caso `FERNANDO / DE / NORONHA`.
+- O pill de periodo/dias usa a cor primaria da arte, igual ao destaque de Pix/desconto, em vez de cinza.
+- Em destinos de uma linha, o pill de periodo sobe 3px para ficar mais proximo do nome.
+- O label `A PARTIR DE` ficou 5% menor e desceu 2px; o preco principal subiu 2px.
+
 ## Como Testar
 
 1. Abrir a Fabrica de Anuncios.

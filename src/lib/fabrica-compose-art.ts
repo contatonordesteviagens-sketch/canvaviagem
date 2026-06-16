@@ -1463,6 +1463,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         .replace(new RegExp(destinationRawV6.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), "")
         .replace(/[-–—|:]+/g, " ")
         .replace(/\s+/g, " ")
+        .replace(/\s+([!?.,])/g, "$1")
         .trim();
       const titleKickerV6 = titleWithoutDestinationV6.length >= 3 && titleWithoutDestinationV6.length <= 26
         ? titleWithoutDestinationV6.toUpperCase()
@@ -1486,7 +1487,25 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = leftText;
       ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
       const titleMaxW = leftW - T.padX * 2;
-      const buildTitleLinesV6 = () => wrapTextSafe(ctx, destinationV6, titleMaxW, 3, Math.round(T.titleSize * 0.48));
+      const buildTitleLinesV6 = () => {
+        const words = destinationV6.split(/\s+/).filter(Boolean);
+        if (words.length > 1) {
+          let best: { lines: string[]; score: number } | null = null;
+          for (let split = 1; split < words.length; split++) {
+            const first = words.slice(0, split).join(" ");
+            const second = words.slice(split).join(" ");
+            const firstW = ctx.measureText(first).width;
+            const secondW = ctx.measureText(second).width;
+            if (firstW <= titleMaxW && secondW <= titleMaxW) {
+              const orphanPenalty = words[split - 1].length <= 2 || words[split].length <= 2 ? 80 : 0;
+              const score = Math.abs(firstW - secondW) + orphanPenalty;
+              if (!best || score < best.score) best = { lines: [first, second], score };
+            }
+          }
+          if (best) return best.lines;
+        }
+        return wrapTextSafe(ctx, destinationV6, titleMaxW, 2, Math.round(T.titleSize * 0.48));
+      };
       const titleLines = buildTitleLinesV6();
       const titleLineH = T.titleSize * 0.98;
       const periodPillH = periodV6 ? Math.round(T.metaSize * 1.55) : 0;
@@ -1523,19 +1542,21 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const periodLabel = periodV6.toUpperCase();
         const periodW = Math.min(titleMaxW, Math.max(width * 0.20, ctx.measureText(periodLabel).width + 56));
         const periodX = leftCx - periodW / 2;
-        const periodY = Math.min(leftY - Math.round(periodPillH * 0.55), usableBottom - periodPillH - 10);
+        const periodY = Math.min(leftY - Math.round(periodPillH * 0.55) - (titleLines.length === 1 ? 3 : 0), usableBottom - periodPillH - 10);
         ctx.save();
-        fillRoundRect(ctx, periodX, periodY, periodW, periodPillH, periodPillH / 2, "rgba(0,0,0,0.34)");
+        const periodBg = primaryColor || "#0C2340";
+        fillRoundRect(ctx, periodX, periodY, periodW, periodPillH, periodPillH / 2, periodBg);
         ctx.restore();
         ctx.textBaseline = "middle";
         ctx.textAlign = "center";
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = getSafeColor(periodBg, "#ffffff");
         safeFillText(ctx, periodLabel, periodX + periodW / 2, periodY + periodPillH / 2 + 1, periodW - 34, Math.round(T.metaSize * 0.7));
         ctx.textBaseline = "alphabetic";
       }
 
       ctx.fillStyle = rightText;
-      ctx.font = `900 ${T.labelSize}px Inter, Arial, sans-serif`;
+      const labelSizeV6 = Math.round(T.labelSize * 0.95);
+      ctx.font = `900 ${labelSizeV6}px Inter, Arial, sans-serif`;
       const rightMaxW = rightW - T.padX * 2;
       const hasPill = !!installmentV6;
       const priceBlockH = T.labelSize * 1.35
@@ -1546,8 +1567,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         + (pixV6 ? T.suffixSize * 1.55 : 0);
       let rightY = Math.max(bottomY + T.labelSize + 22, bottomY + (usableBottom - bottomY - priceBlockH) / 2 + T.labelSize - Math.round(height * 0.035));
 
-      safeFillText(ctx, labelV6, rightCx, rightY, rightMaxW, Math.round(T.labelSize * 0.65));
-      rightY += Math.round(T.labelSize * 0.92);
+      const labelY = rightY + 2;
+      safeFillText(ctx, labelV6, rightCx, labelY, rightMaxW, Math.round(labelSizeV6 * 0.65));
+      rightY = labelY + Math.round(labelSizeV6 * 0.82);
 
       if (installmentV6) {
         ctx.font = `900 ${T.metaSize}px Inter, Arial, sans-serif`;
@@ -1563,7 +1585,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
 
       ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-      const priceBaseY = rightY + T.priceSize;
+      const priceBaseY = rightY + T.priceSize - 2;
       safeFillText(ctx, priceV6, rightCx, priceBaseY, rightMaxW, Math.round(T.priceSize * 0.52));
       rightY = priceBaseY + Math.round(T.suffixSize * 1.28);
 
