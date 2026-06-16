@@ -11,6 +11,10 @@ import { WhatsappSendModal } from "@/components/fabrica/WhatsappSendModal";
 import { useMarketingTools } from "@/hooks/useContent";
 import { extractPaletteFromCanvas } from "@/lib/extract-palette";
 
+const UI_ACCENT = "#F5F906";
+const UI_ACCENT_SOFT = "rgba(245, 249, 6, 0.12)";
+const UI_ACCENT_BORDER = "rgba(245, 249, 6, 0.75)";
+
 const AGENCY_TYPES: { v: AgencyType; l: string }[] = [
   { v: "autonoma", l: "Agente autônomo / Freelancer" },
   { v: "pequena", l: "Pequena agência (até 3 pessoas)" },
@@ -214,7 +218,7 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
           ].map((x) => (
             <div key={x.s} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${formStep >= x.s ? 'text-black' : 'bg-white/10 text-white/40'}`}
-                   style={formStep >= x.s ? { background: `linear-gradient(135deg, ${state.primaryColor || "#F59E0B"}, #FCD34D)` } : {}}>
+                   style={formStep >= x.s ? { background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)` } : {}}>
                 {formStep > x.s ? <Check className="w-4 h-4" /> : x.s}
               </div>
               <span className={`text-[10px] uppercase font-bold tracking-widest ${formStep >= x.s ? 'text-white' : 'text-white/30'}`}>{x.l}</span>
@@ -248,7 +252,7 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
                       className={`p-3 rounded-xl border text-left transition-all ${
                         state.niche === n.id ? "border-2" : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]"
                       }`}
-                      style={state.niche === n.id ? { borderColor: state.primaryColor, background: `${state.primaryColor}1a` } : undefined}
+                      style={state.niche === n.id ? { borderColor: UI_ACCENT_BORDER, background: UI_ACCENT_SOFT } : undefined}
                     >
                       <div className="text-xl mb-1">{n.emoji}</div>
                       <div className="text-[11px] font-bold text-white leading-tight">{n.label}</div>
@@ -258,7 +262,7 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
               </div>
               <div>
                 <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Seus principais destinos *</label>
-                <DestinosInput destinos={state.destinos} onChange={(d) => update({ destinos: d })} primaryColor={state.primaryColor || "#F59E0B"} />
+                <DestinosInput destinos={state.destinos} onChange={(d) => update({ destinos: d })} primaryColor={UI_ACCENT} />
               </div>
             </motion.div>
           ) : (
@@ -368,7 +372,7 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
               onClick={() => setFormStep(2)}
               disabled={!state.niche || state.destinos.length === 0}
               className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg"
-              style={{ background: `linear-gradient(135deg, ${state.primaryColor || "#F59E0B"}, #FCD34D)` }}
+              style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)` }}
             >
               Próxima Etapa: Diagnóstico <ChevronRight className="w-4 h-4" />
             </button>
@@ -639,7 +643,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
         <button
           onClick={onNext}
           className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110"
-          style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)` }}
+          style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)` }}
         >
           Avançar para Plano <ArrowRight className="w-4 h-4" />
         </button>

@@ -11,6 +11,9 @@ interface Props {
   onBack: () => void;
 }
 
+const UI_ACCENT = "#F5F906";
+const UI_ACCENT_SHADOW = "rgba(245, 249, 6, 0.24)";
+
 const CHECKLIST_30: { week: string; tasks: { key: string; text: string }[] }[] = [
   {
     week: "Semana 1 — Bases",
@@ -246,7 +249,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
           <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2">Filtrando contenido para</div>
           <div className="flex flex-wrap gap-1.5">
             {userDestinos.map((d) => (
-              <span key={d} className="px-2.5 py-1 rounded-full text-[11px] font-bold text-black" style={{ background: state.primaryColor }}>{d}</span>
+              <span key={d} className="px-2.5 py-1 rounded-full text-[11px] font-bold text-black" style={{ background: UI_ACCENT }}>{d}</span>
             ))}
           </div>
         </div>
@@ -286,7 +289,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
               />
               <div className="flex gap-2 pt-1">
-                <button onClick={addPackage} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold text-black" style={{ background: state.primaryColor }}><Check className="w-4 h-4" /> Añadir al Sitio</button>
+                <button onClick={addPackage} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold text-black" style={{ background: UI_ACCENT }}><Check className="w-4 h-4" /> Añadir al Sitio</button>
                 <button onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); }} className="px-4 py-2.5 rounded-lg bg-white/[0.06] border border-white/10 text-white/60 hover:text-white"><X className="w-4 h-4" /></button>
               </div>
             </div>
@@ -308,7 +311,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
                     <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={2} className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none resize-none" />
                     <input value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm font-semibold text-emerald-400 focus:outline-none" />
                     <div className="flex gap-2 pt-1">
-                      <button onClick={() => saveEdit(pkg.id)} className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold text-black" style={{ background: state.primaryColor }}><Check className="w-4 h-4" /> Guardar en el Sitio</button>
+                      <button onClick={() => saveEdit(pkg.id)} className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold text-black" style={{ background: UI_ACCENT }}><Check className="w-4 h-4" /> Guardar en el Sitio</button>
                       <button onClick={() => setEditingId(null)} className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/10 text-white/60"><X className="w-4 h-4" /></button>
                     </div>
                   </div>
@@ -480,7 +483,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
         <button onClick={onBack} className="flex-1 py-4 rounded-xl bg-white/[0.04] border border-white/10 text-white/70 font-semibold hover:bg-white/[0.08] transition-colors">
           Volver
         </button>
-        <button onClick={onNext} className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110" style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`, boxShadow: `0 8px 24px ${state.primaryColor}55` }}>
+        <button onClick={onNext} className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110" style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)`, boxShadow: `0 8px 24px ${UI_ACCENT_SHADOW}` }}>
           Avanzar <ArrowRight className="w-4 h-4" />
         </button>
       </div>

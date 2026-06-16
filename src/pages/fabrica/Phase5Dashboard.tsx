@@ -326,7 +326,7 @@ export const Phase5Dashboard = () => {
     }
   ];
 
-  const primaryColor = state.primaryColor || "#F59E0B";
+  const UI_ACCENT = "#F5F906";
 
   // CÁLCULO DE GAMIFICAÇÃO GLOBAL DA CONTA
   const getAppProgress = () => {
@@ -380,7 +380,7 @@ export const Phase5Dashboard = () => {
       <div className="relative p-6 rounded-3xl overflow-hidden border border-white/10 group bg-black/20">
         <div 
           className="absolute top-0 right-0 w-64 h-64 blur-[100px] rounded-full opacity-20 -mr-10 -mt-10 transition-all group-hover:opacity-30"
-          style={{ background: primaryColor }}
+          style={{ background: UI_ACCENT }}
         />
         <div className="relative z-10 flex flex-col sm:flex-row gap-5 items-center">
           {state.logoBase64 && (

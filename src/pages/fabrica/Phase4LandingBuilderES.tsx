@@ -35,6 +35,10 @@ const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
 const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
 const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
 const CANVA_VIAGEM_DOMAIN = "canvaviagem.com";
+const UI_ACCENT = "#F5F906";
+const UI_ACCENT_SOFT = "rgba(245, 249, 6, 0.12)";
+const UI_ACCENT_BORDER = "rgba(245, 249, 6, 0.75)";
+const UI_ACCENT_SHADOW = "rgba(245, 249, 6, 0.24)";
 const buildSiteSlug = (value: string) =>
   (value || "")
     .toLowerCase()
@@ -647,7 +651,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         {/* Painel Esquerdo: Opções de Configuração (5 colunas em lg) */}
         <div className="w-full space-y-6">
           {/* PUBLICAÇÃO DIRETA NO VERCEL (Movido para o topo) */}
-          <PublishOnLovableCard primaryColor={state.primaryColor} html={previewHTML} onBack={onBack} onNext={onNext} />
+          <PublishOnLovableCard html={previewHTML} onBack={onBack} onNext={onNext} />
 
           <div className="border-b border-white/10 pb-4 pt-6">
             <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -969,8 +973,8 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
               onClick={handleDownload}
               className="flex-1 py-3 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
               style={{
-                background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`,
-                boxShadow: `0 8px 24px ${state.primaryColor}55`,
+                background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)`,
+                boxShadow: `0 8px 24px ${UI_ACCENT_SHADOW}`,
               }}
             >
               <Download className="w-4 h-4" /> Descargar HTML {downloadCount > 0 && `(v${downloadCount})`}
@@ -1458,12 +1462,10 @@ const ImageGallery = ({
 };
 
 const PublishOnLovableCard = ({
-  primaryColor,
   html,
   onBack,
   onNext,
 }: {
-  primaryColor: string;
   html: string;
   onBack: () => void;
   onNext: () => void;
@@ -1626,14 +1628,14 @@ const PublishOnLovableCard = ({
     <div
       className="rounded-3xl p-6 sm:p-8 border-2 relative overflow-hidden"
       style={{
-        background: `linear-gradient(135deg, ${primaryColor}18, #FCD34D08)`,
-        borderColor: `${primaryColor}55`,
-        boxShadow: `0 20px 60px ${primaryColor}22`,
+        background: `linear-gradient(135deg, ${UI_ACCENT_SOFT}, #FCD34D08)`,
+        borderColor: UI_ACCENT_BORDER,
+        boxShadow: `0 20px 60px ${UI_ACCENT_SHADOW}`,
       }}
     >
       <div
         className="absolute -top-20 -right-20 w-60 h-60 rounded-full opacity-30 blur-3xl pointer-events-none"
-        style={{ background: primaryColor }}
+        style={{ background: UI_ACCENT }}
       />
       <div className="relative">
         <div className="flex items-center gap-2 mb-3">
@@ -1658,7 +1660,7 @@ const PublishOnLovableCard = ({
         <div 
           className="my-4 p-6 rounded-2xl border-2 backdrop-blur-xl transition-all relative overflow-hidden text-left"
           style={{ 
-            borderColor: isPublished ? "#10B98188" : `${primaryColor}44`,
+            borderColor: isPublished ? "#10B98188" : UI_ACCENT_BORDER,
             background: isPublished 
               ? "linear-gradient(135deg, rgba(16,185,129,0.08), rgba(0,0,0,0.4))"
               : "linear-gradient(135deg, rgba(245,158,11,0.06), rgba(0,0,0,0.4))",
@@ -1739,7 +1741,7 @@ const PublishOnLovableCard = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="py-3 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all text-sm hover:brightness-110"
-                style={{ background: `linear-gradient(135deg, ${primaryColor}, #F59E0B)` }}
+                style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)` }}
               >
                 🚀 2. Abrir Vercel (Upload)
               </a>
@@ -1843,10 +1845,10 @@ const PublishOnLovableCard = ({
             onClick={onNext}
             className="flex-[2] py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
             style={{ 
-              background: primaryColor, 
-              color: primaryColor === "#000000" ? "#ffffff" : "#000000",
-              border: primaryColor === "#000000" ? "1px solid rgba(255,255,255,0.3)" : "none",
-              boxShadow: `0 0 20px ${primaryColor}55`
+              background: UI_ACCENT,
+              color: "#000000",
+              border: "none",
+              boxShadow: `0 0 20px ${UI_ACCENT_SHADOW}`
             }}
           >
             Siguiente Paso: Diagnóstico <Rocket className="w-5 h-5" />
@@ -1858,16 +1860,14 @@ const PublishOnLovableCard = ({
 };
 
 const FabricaCard = ({ title, children }: { title: string; children: React.ReactNode }) => {
-  const { state } = useFabricaContext();
-  const primaryColor = state.primaryColor || "#F59E0B";
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div
       className="bg-white/[0.03] border rounded-2xl backdrop-blur-xl transition-all duration-300 overflow-hidden"
       style={{
-        borderColor: isOpen ? `${primaryColor}66` : "rgba(255, 255, 255, 0.06)",
-        boxShadow: isOpen ? `0 10px 30px ${primaryColor}15` : "none",
+        borderColor: isOpen ? UI_ACCENT_BORDER : "rgba(255, 255, 255, 0.06)",
+        boxShadow: isOpen ? `0 10px 30px ${UI_ACCENT_SHADOW}` : "none",
       }}
     >
       {/* Header clicável para abrir/fechar */}
@@ -1877,12 +1877,12 @@ const FabricaCard = ({ title, children }: { title: string; children: React.React
       >
         <h3
           className="text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2"
-          style={{ color: isOpen ? primaryColor : "rgba(255, 255, 255, 0.6)" }}
+          style={{ color: isOpen ? UI_ACCENT : "rgba(255, 255, 255, 0.6)" }}
         >
           {isOpen && (
             <span
               className="w-2.5 h-2.5 rounded-full animate-pulse flex-shrink-0"
-              style={{ backgroundColor: primaryColor }}
+              style={{ backgroundColor: UI_ACCENT }}
             />
           )}
           {title}
@@ -1890,9 +1890,9 @@ const FabricaCard = ({ title, children }: { title: string; children: React.React
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 text-sm font-black"
           style={{
-            borderColor: isOpen ? `${primaryColor}66` : "rgba(255, 255, 255, 0.15)",
-            backgroundColor: isOpen ? `${primaryColor}15` : "transparent",
-            color: isOpen ? primaryColor : "rgba(255, 255, 255, 0.6)",
+            borderColor: isOpen ? UI_ACCENT_BORDER : "rgba(255, 255, 255, 0.15)",
+            backgroundColor: isOpen ? UI_ACCENT_SOFT : "transparent",
+            color: isOpen ? UI_ACCENT : "rgba(255, 255, 255, 0.6)",
           }}
         >
           {isOpen ? "–" : "+"}

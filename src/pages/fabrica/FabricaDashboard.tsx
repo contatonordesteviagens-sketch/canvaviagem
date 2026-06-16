@@ -41,6 +41,10 @@ const AGENCY_TYPES = [
   { v: "religioso", l: "Turismo Religioso" },
   { v: "outro", l: "Outro tipo" },
 ] as const;
+
+const UI_ACCENT = "#F5F906";
+const UI_ACCENT_BORDER_SOFT = "rgba(245, 249, 6, 0.35)";
+
 export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update, reset } = useFabricaContext();
   const { user } = useAuth();
@@ -298,7 +302,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       {/* Projetos Salvos */}
       {user && (
         <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl relative overflow-hidden transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
-          <div className="absolute top-0 left-0 w-1 h-full" style={{ background: state.primaryColor || "#F59E0B" }}></div>
+          <div className="absolute top-0 left-0 w-1 h-full" style={{ background: UI_ACCENT }}></div>
           <button
             type="button"
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
@@ -391,7 +395,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   setProjectsPanelOpen(false);
                 }}
                 className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
-                style={{ borderColor: `${state.primaryColor || "#F59E0B"}40` }}
+                style={{ borderColor: UI_ACCENT_BORDER_SOFT }}
               >
                 <span>+ Novo Projeto</span>
               </button>

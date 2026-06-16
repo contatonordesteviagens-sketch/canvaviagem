@@ -74,6 +74,9 @@ const DEFAULT_SUFFIX_EXPERIENCIA = "Tu viaje comienza aquí";
 // só são re-aplicadas se ele ainda estiver usando os defaults da OUTRA categoria.
 const DEFAULT_COLORS_OFERTA = { primary: "#F59E0B", secondary: "#FCD34D" };
 const DEFAULT_COLORS_EXPERIENCIA = { primary: "#0C2340", secondary: "#C9A84C" };
+const UI_ACCENT = "#F5F906";
+const UI_ACCENT_SOFT = "rgba(245, 249, 6, 0.12)";
+const UI_ACCENT_BORDER = "rgba(245, 249, 6, 0.75)";
 
 const isSameHex = (a: string, b: string) =>
   (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
@@ -1888,7 +1891,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               className={`p-4 rounded-xl border-2 text-left transition-all ${
                 format === "square" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
               }`}
-              style={format === "square" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
+              style={format === "square" ? { borderColor: UI_ACCENT_BORDER, background: UI_ACCENT_SOFT } : undefined}
             >
               <Square className="w-6 h-6 mb-2 text-white/80" />
               <div className="text-sm font-bold text-white">Cuadrado 1:1</div>
@@ -1899,7 +1902,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               className={`p-4 rounded-xl border-2 text-left transition-all ${
                 format === "story" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
               }`}
-              style={format === "story" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
+              style={format === "story" ? { borderColor: UI_ACCENT_BORDER, background: UI_ACCENT_SOFT } : undefined}
             >
               <Smartphone className="w-6 h-6 mb-2 text-white/80" />
               <div className="text-sm font-bold text-white">Stories / Reels 9:16</div>
@@ -1927,7 +1930,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                     className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
                       photoQuery === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
                     }`}
-                    style={photoQuery === d ? { background: secondaryColor, borderColor: secondaryColor } : undefined}
+                    style={photoQuery === d ? { background: UI_ACCENT, borderColor: UI_ACCENT } : undefined}
                   >
                     {d}
                   </button>
@@ -1947,7 +1950,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   onClick={() => searchPhotos()}
                   disabled={searchingPhotos}
                   className="px-4 rounded-xl font-bold text-black flex items-center gap-1.5 text-sm disabled:opacity-40 hover:brightness-110"
-                  style={{ background: secondaryColor }}
+                  style={{ background: UI_ACCENT }}
                 >
                   {searchingPhotos ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                   Buscar
@@ -1966,12 +1969,12 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                           className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                             selectedPhotoUrl === p.url ? "scale-95" : "border-white/10 hover:border-white/30"
                           }`}
-                          style={selectedPhotoUrl === p.url ? { borderColor: secondaryColor, borderWidth: 3 } : undefined}
+                          style={selectedPhotoUrl === p.url ? { borderColor: UI_ACCENT, borderWidth: 3 } : undefined}
                         >
                           <img src={p.thumb} alt={p.alt} className="w-full h-full object-cover" />
                           {selectedPhotoUrl === p.url && (
-                            <div className="absolute inset-0 flex items-center justify-center" style={{ background: `${primaryColor}cc` }}>
-                              <Check className="w-8 h-8 text-white" />
+                            <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(245, 249, 6, 0.78)" }}>
+                              <Check className="w-8 h-8 text-black" />
                             </div>
                           )}
                         </button>
@@ -2007,7 +2010,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               className={`flex-1 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${
                 customSource === "upload" ? "text-black" : "bg-white/[0.04] text-white/60 hover:bg-white/[0.08]"
               }`}
-              style={customSource === "upload" ? { background: secondaryColor } : undefined}
+              style={customSource === "upload" ? { background: UI_ACCENT } : undefined}
             >
               <Upload className="w-4 h-4" /> Upload
             </button>
@@ -2016,7 +2019,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               className={`flex-1 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${
                 customSource === "link" ? "text-black" : "bg-white/[0.04] text-white/60 hover:bg-white/[0.08]"
               }`}
-              style={customSource === "link" ? { background: secondaryColor } : undefined}
+              style={customSource === "link" ? { background: UI_ACCENT } : undefined}
             >
               <Link2 className="w-4 h-4" /> Link
             </button>
@@ -2080,7 +2083,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               {destMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setDestMenuOpen(false)} />
-                  <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                  <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: UI_ACCENT_BORDER }}>
                     {DESTINATION_SUGGESTIONS.map((d) => {
                       const active = destination === d;
                       return (
@@ -2090,7 +2093,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                           onClick={() => { setDestination(d); setDestMenuOpen(false); }}
                           className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
                         >
-                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0 text-yellow-300" />}
                           <span className={active ? "" : "ml-5"}>{d}</span>
                         </button>
                       );
@@ -2117,7 +2120,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               {promoMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setPromoMenuOpen(false)} />
-                  <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                  <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: UI_ACCENT_BORDER }}>
                     {(categoria === "experiencia_destino" ? PROMO_NAME_PRESETS_EXPERIENCIA : PROMO_NAME_PRESETS).map((p) => {
                       const active = promoName === p;
                       return (
@@ -2127,7 +2130,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                           onClick={() => { setPromoName(p); setPromoMenuOpen(false); }}
                           className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
                         >
-                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0 text-yellow-300" />}
                           <span className={active ? "" : "ml-5"}>{p}</span>
                         </button>
                       );
@@ -2153,7 +2156,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               {adTitleMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setAdTitleMenuOpen(false)} />
-                  <div className="absolute left-0 right-0 mt-2 max-h-80 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                  <div className="absolute left-0 right-0 mt-2 max-h-80 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: UI_ACCENT_BORDER }}>
                     {(categoria === "experiencia_destino" ? AD_TITLE_PRESETS_EXPERIENCIA : AD_TITLE_PRESETS).map((tpl) => {
                       const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino *");
                       const active = tpl === adTitleTemplate;
@@ -2164,7 +2167,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                           onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
                           className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
                         >
-                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0 text-yellow-300" />}
                           <span className={active ? "" : "ml-5"}>{preview}</span>
                         </button>
                       );
@@ -2191,7 +2194,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             {travelPeriodMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setTravelPeriodMenuOpen(false)} />
-                <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: UI_ACCENT_BORDER }}>
                   {TRAVEL_PERIOD_PRESETS.map((opt) => {
                     const active = travelPeriod === opt;
                     return (
@@ -2201,7 +2204,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                         onClick={() => { setTravelPeriod(opt); setTravelPeriodMenuOpen(false); }}
                         className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
                       >
-                        {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                        {active && <Check className="w-3.5 h-3.5 flex-shrink-0 text-yellow-300" />}
                         <span className={active ? "" : "ml-5"}>{opt}</span>
                       </button>
                     );
@@ -2227,7 +2230,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   className={`px-2 py-1.5 rounded-lg border-2 text-center transition-all ${
                     paymentMode === p.id ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
                   }`}
-                  style={paymentMode === p.id ? { borderColor: secondaryColor, background: `${secondaryColor}1a` } : undefined}
+                  style={paymentMode === p.id ? { borderColor: UI_ACCENT_BORDER, background: UI_ACCENT_SOFT } : undefined}
                 >
                   <span className="text-[11px] font-bold text-white">{p.name}</span>
                 </button>
@@ -2564,7 +2567,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                       <button
                         onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
                         className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
-                        style={{ color: secondaryColor }}
+                        style={{ color: UI_ACCENT }}
                         title="Trocar ícone"
                       >
                         <IconComp className="w-4 h-4" />
@@ -2592,7 +2595,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                           className={`p-1.5 rounded hover:bg-white/10 flex items-center justify-center transition-colors ${h.icon === key ? "bg-white/20" : ""}`}
                           title={label}
                         >
-                          <Icon className="w-3.5 h-3.5" style={{ color: h.icon === key ? secondaryColor : "rgba(255,255,255,0.7)" }} />
+                          <Icon className="w-3.5 h-3.5" style={{ color: h.icon === key ? UI_ACCENT : "rgba(255,255,255,0.7)" }} />
                         </button>
                       ))}
                     </div>
@@ -2604,7 +2607,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             {/* Slot "adicionar" — só aparece se ainda dá pra adicionar */}
             {highlights.length < MAX_HIGHLIGHTS && (
               <div className="bg-white/[0.02] border border-dashed border-white/15 rounded-lg flex gap-1.5 items-center px-2.5 py-2 hover:border-white/30 transition-colors">
-                <Plus className="w-4 h-4 flex-shrink-0" style={{ color: secondaryColor }} />
+                <Plus className="w-4 h-4 flex-shrink-0 text-yellow-300" />
                 <input
                   value={newHl}
                   onChange={(e) => setNewHl(e.target.value)}
@@ -2615,7 +2618,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 <button
                   onClick={addHighlight}
                   className={`text-xs font-bold px-2 py-1 rounded text-black transition-all hover:brightness-110 flex-shrink-0 ${!newHl.trim() ? 'opacity-50' : 'opacity-100'}`}
-                  style={{ background: secondaryColor }}
+                  style={{ background: UI_ACCENT }}
                   title="Adicionar"
                 >
                   +
@@ -2657,7 +2660,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           onClick={() => generateNext()}
           disabled={loading || !destination}
           className="w-full py-4 rounded-xl font-extrabold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
-          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 10px 30px ${primaryColor}66` }}
+          style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)`, boxShadow: "0 10px 30px rgba(245, 249, 6, 0.24)" }}
         >
           {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Gerar Anuncio</>}
         </button>

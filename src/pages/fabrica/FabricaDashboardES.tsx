@@ -39,6 +39,8 @@ const AGENCY_TYPES = [
   { v: "outro", l: "Otro tipo" },
 ] as const;
 
+const UI_ACCENT = "#F5F906";
+
 export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update } = useFabricaContext();
   const { user } = useAuth();
@@ -206,7 +208,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
       {/* Projetos Salvos / Guardados */}
       {user && (
         <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl relative overflow-hidden transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
-          <div className="absolute top-0 left-0 w-1 h-full" style={{ background: state.primaryColor || "#F59E0B" }}></div>
+          <div className="absolute top-0 left-0 w-1 h-full" style={{ background: UI_ACCENT }}></div>
           <button
             type="button"
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
