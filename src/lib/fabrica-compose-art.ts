@@ -893,6 +893,32 @@ function sanitizeAdText(text: string): string {
     .trim();
 }
 
+function extractNumberAndCents(priceRaw: string) {
+  const hasCents = /[.,]\d{1,2}\s*$/.test(priceRaw || "");
+  const num = parseFloat((priceRaw || "").replace(/\./g, "").replace(",", ".").replace(/[^\d.]/g, ""));
+  return { num: isNaN(num) ? 0 : num, hasCents };
+}
+
+function formatBRL(n: number, hasCents: boolean): string {
+  try {
+    return n.toLocaleString("pt-BR", {
+      minimumFractionDigits: hasCents ? 2 : 0,
+      maximumFractionDigits: hasCents ? 2 : 0,
+    });
+  } catch {
+    return n.toFixed(hasCents ? 2 : 0).replace(".", ",");
+  }
+}
+
+function resolveTotalStr(installments: string, rawPrice: string, curSym: string, fallbackTotalOverride?: string) {
+  if (fallbackTotalOverride) return fallbackTotalOverride;
+  const match = (installments || "").match(/(\d{1,2})\s*x/i);
+  const parcN = match ? parseInt(match[1], 10) : 1;
+  const { num, hasCents } = extractNumberAndCents(rawPrice);
+  const total = num * parcN;
+  return total > 0 ? `${curSym} ${formatBRL(total, hasCents)}` : "";
+}
+
 export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<string> {
   __currentDialCode = options.whatsappDialCode || "55";
   const {
@@ -1362,11 +1388,175 @@ const panelBottom = RULES.PANEL_BOTTOM;
   };
 
   const renderSafeSquareOffer = async () => {
-    // Variantes ATIVAS: V0, V1, V2, V3, V4, V5 (todas implementadas).
-    const TOTAL_VARIANTS = 6;
+    // Variantes ATIVAS: V0, V1, V2, V3, V4, V5, V6 (todas implementadas).
+    const TOTAL_VARIANTS = 7;
     let variant = typeof forceVariant === "number"
       ? ((forceVariant % TOTAL_VARIANTS) + TOTAL_VARIANTS) % TOTAL_VARIANTS
       : Math.abs(variation) % TOTAL_VARIANTS;
+
+    // V6 - Split Destination Price
+    // Referencia: foto hero no topo + rodape comercial dividido em 2 colunas.
+    // Dados consumidos: destination, city, travelPeriod, paymentMode, installments,
+    // pricePrefix/paymentLabel, price/paymentSuffix, showTotal e pixBannerText.
+    if (variant === 6) {
+      const isStoryV6 = format === "story";
+      const T = {
+        photoH: Math.round(height * (isStoryV6 ? 0.62 : 0.55)),
+        splitX: Math.round(width * 0.5),
+        padX: Math.round(width * 0.055),
+        photoFocusY: 0.45,
+        footerReserve: isStoryV6 ? 300 : 145,
+        titleSize: Math.round(width * (isStoryV6 ? 0.076 : 0.062)),
+        subSize: Math.round(width * (isStoryV6 ? 0.038 : 0.032)),
+        metaSize: Math.round(width * (isStoryV6 ? 0.028 : 0.024)),
+        labelSize: Math.round(width * (isStoryV6 ? 0.043 : 0.034)),
+        priceSize: Math.round(width * (isStoryV6 ? 0.072 : 0.058)),
+        suffixSize: Math.round(width * (isStoryV6 ? 0.024 : 0.019)),
+      };
+      const bottomY = T.photoH;
+      const bottomH = height - bottomY;
+      const leftW = T.splitX;
+      const rightX = T.splitX;
+      const rightW = width - rightX;
+      const leftCx = leftW / 2;
+      const rightCx = rightX + rightW / 2;
+      const usableBottom = Math.max(bottomY + 220, height - T.footerReserve);
+
+      const photoCrop = fitCover(image.naturalWidth, image.naturalHeight, width, T.photoH, T.photoFocusY);
+      ctx.drawImage(image, photoCrop.sx, photoCrop.sy, photoCrop.sw, photoCrop.sh, 0, 0, width, T.photoH);
+
+      const panelLeftBg = "#ffffff";
+      const panelRightBg = secondaryColor || "#078BD3";
+      const leftText = ensureContrast(primaryColor || "#078BD3", panelLeftBg, 0.35);
+      const rightText = getSafeColor(panelRightBg, "#ffffff");
+      const rightMuted = rightText === "#ffffff" ? "rgba(255,255,255,0.82)" : "rgba(17,17,17,0.72)";
+
+      ctx.fillStyle = panelLeftBg;
+      ctx.fillRect(0, bottomY, leftW, bottomH);
+      ctx.fillStyle = panelRightBg;
+      ctx.fillRect(rightX, bottomY, rightW, bottomH);
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(0,0,0,0.06)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(rightX, bottomY);
+      ctx.lineTo(rightX, height);
+      ctx.stroke();
+      ctx.restore();
+
+      const destinationV6 = (destination || destFmt || "DESTINO").toUpperCase();
+      const cityV6 = cityFmt ? `SAINDO DE ${cityFmt}`.toUpperCase() : "";
+      const periodV6 = (travelPeriod || "").trim();
+      const labelV6 = (() => {
+        if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
+        if (paymentMode === "down_plus") return pricePrefix || "entrada + parcelas";
+        return paymentLabel || pricePrefix || topLabel || "a partir de";
+      })().toString().toUpperCase();
+      let priceV6 = mainPrice || `${curSym} ${price}`.trim();
+      if (hideCents) priceV6 = priceV6.replace(/[.,]\d{2}\s*$/, "");
+      const installmentV6 = paymentMode === "installments" && installments
+        ? installments.toUpperCase().replace(/\s+/g, "")
+        : "";
+      const suffixV6 = (paymentSuffix || bottomSuffix || "").trim();
+      const totalV6 = showTotal ? resolveTotalStr(installments, price || "", curSym, totalOverride) : "";
+      const pixV6 = showPixBanner ? (pixBannerText || "").trim() : "";
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = leftText;
+      ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
+      const titleMaxW = leftW - T.padX * 2;
+      const titleLines = wrapTextSafe(ctx, destinationV6, titleMaxW, 2, Math.round(T.titleSize * 0.58));
+      const titleLineH = T.titleSize * 1.06;
+      const leftContentH = titleLines.length * titleLineH
+        + (cityV6 ? T.subSize * 1.45 : 0)
+        + (periodV6 ? T.metaSize * 1.45 : 0);
+      let leftY = Math.max(bottomY + T.titleSize + 42, bottomY + (usableBottom - bottomY - leftContentH) / 2 + T.titleSize * 0.7);
+
+      titleLines.forEach((line, idx) => {
+        safeFillText(ctx, line, leftCx, leftY + idx * titleLineH, titleMaxW, Math.round(T.titleSize * 0.5));
+      });
+      leftY += titleLines.length * titleLineH + Math.round(T.subSize * 0.75);
+
+      if (cityV6) {
+        ctx.font = `900 ${T.subSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, cityV6, leftCx, leftY, titleMaxW, Math.round(T.subSize * 0.68));
+        leftY += Math.round(T.subSize * 1.5);
+      }
+      if (periodV6) {
+        ctx.font = `800 ${T.metaSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, periodV6.toUpperCase(), leftCx, leftY, titleMaxW, Math.round(T.metaSize * 0.7));
+      }
+
+      ctx.fillStyle = rightText;
+      ctx.font = `900 ${T.labelSize}px Inter, Arial, sans-serif`;
+      const rightMaxW = rightW - T.padX * 2;
+      const hasPill = !!installmentV6;
+      const priceBlockH = T.labelSize * 1.35
+        + (hasPill ? T.metaSize * 1.8 : 0)
+        + T.priceSize * 1.15
+        + (suffixV6 ? T.suffixSize * 1.45 : 0)
+        + (totalV6 ? T.suffixSize * 1.35 : 0)
+        + (pixV6 ? T.suffixSize * 1.55 : 0);
+      let rightY = Math.max(bottomY + T.labelSize + 46, bottomY + (usableBottom - bottomY - priceBlockH) / 2 + T.labelSize);
+
+      safeFillText(ctx, labelV6, rightCx, rightY, rightMaxW, Math.round(T.labelSize * 0.65));
+      rightY += Math.round(T.labelSize * 1.35);
+
+      if (installmentV6) {
+        ctx.font = `900 ${T.metaSize}px Inter, Arial, sans-serif`;
+        const pillText = `${installmentV6} DE`;
+        const pillW = Math.min(rightMaxW, Math.max(150, ctx.measureText(pillText).width + 48));
+        const pillH = Math.round(T.metaSize * 1.55);
+        fillRoundRect(ctx, rightCx - pillW / 2, rightY - pillH + 8, pillW, pillH, 12, "rgba(255,255,255,0.18)");
+        ctx.fillStyle = rightText;
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, pillText, rightCx, rightY - pillH / 2 + 8, pillW - 28, Math.round(T.metaSize * 0.65));
+        ctx.textBaseline = "alphabetic";
+        rightY += Math.round(T.metaSize * 0.95);
+      }
+
+      ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, priceV6, rightCx, rightY + T.priceSize, rightMaxW, Math.round(T.priceSize * 0.55));
+      rightY += Math.round(T.priceSize * 1.42);
+
+      if (suffixV6) {
+        ctx.fillStyle = rightMuted;
+        ctx.font = `800 ${T.suffixSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, suffixV6.toUpperCase(), rightCx, rightY, rightMaxW, Math.round(T.suffixSize * 0.72));
+        rightY += Math.round(T.suffixSize * 1.32);
+      }
+
+      if (totalV6) {
+        ctx.fillStyle = rightMuted;
+        ctx.font = `700 ${Math.round(T.suffixSize * 0.9)}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, `TOTAL: ${totalV6}`.toUpperCase(), rightCx, rightY, rightMaxW, Math.round(T.suffixSize * 0.62));
+        rightY += Math.round(T.suffixSize * 1.2);
+      }
+
+      if (pixV6) {
+        ctx.font = `900 ${Math.round(T.suffixSize * 0.95)}px Inter, Arial, sans-serif`;
+        const pixW = Math.min(rightMaxW, ctx.measureText(pixV6.toUpperCase()).width + 42);
+        const pixH = Math.round(T.suffixSize * 1.55);
+        fillRoundRect(ctx, rightCx - pixW / 2, rightY - pixH + 8, pixW, pixH, pixH / 2, primaryColor || "#0C2340");
+        ctx.fillStyle = getSafeColor(primaryColor || "#0C2340", "#ffffff");
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, pixV6.toUpperCase(), rightCx, rightY - pixH / 2 + 8, pixW - 30, Math.round(T.suffixSize * 0.62));
+        ctx.textBaseline = "alphabetic";
+      }
+
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl,
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined),
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        effectiveTextColor,
+        userFamily,
+        false,
+        logoFormat
+      );
+      return canvas.toDataURL("image/png");
+    }
 
     // â”€â”€ V3 Â· ESTRUTURA (oferta com box destacado) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Spec estrutural â€” layout/visual ainda NÃƒO implementado.

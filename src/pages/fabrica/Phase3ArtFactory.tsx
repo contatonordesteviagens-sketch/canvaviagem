@@ -1268,8 +1268,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
 
-        // Rotação determinística entre variantes do compositor (V0/V1/V3/V4/V5 — V2 desativada)
-        const TOTAL_VARIANTS_PHOTO = 6;
+        // Rotação determinística entre variantes do compositor (V0/V1/V3/V4/V5/V6 — V2 desativada)
+        const TOTAL_VARIANTS_PHOTO = 7;
         const DISABLED_VARIANTS_PHOTO = [2];
         const recentPhoto = variantHistoryRef.current.slice(-2);
         let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i)
@@ -1290,7 +1290,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 photoRefs[idx],
                 localStrategy,
                 freshSeedPhoto + idx,
-                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 6 : undefined,
+                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 7 : undefined,
                 palette
               )
             );
@@ -1532,8 +1532,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
-      // Rotação determinística entre variantes do compositor (V0/V1/V3/V4/V5 — V2 desativada)
-      const TOTAL_VARIANTS = 6;
+      // Rotação determinística entre variantes do compositor (V0/V1/V3/V4/V5/V6 — V2 desativada)
+      const TOTAL_VARIANTS = 7;
       const DISABLED_VARIANTS = [2];
       const recent = variantHistoryRef.current.slice(-2);
       let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i)
@@ -1554,7 +1554,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               refImage,
               localStrategy,
               freshSeedCustom + idx,
-              typeof nextVariant === "number" ? (nextVariant + idx) % 6 : undefined,
+              typeof nextVariant === "number" ? (nextVariant + idx) % 7 : undefined,
               palette
             )
           );
@@ -1807,7 +1807,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </button>
           </div>
 
-          {/* Seletor de Versão (V0..V5) — COLAPSÁVEL */}
+          {/* Seletor de Versão (V0..V6) — COLAPSÁVEL */}
           <div className="mt-3">
             <button
               type="button"
@@ -1831,7 +1831,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 >
                   Auto
                 </button>
-                {[0, 1, 2, 3, 4, 5].map((v) => (
+                {[0, 1, 2, 3, 4, 5, 6].map((v) => (
                   <button
                     key={v}
                     onClick={() => setForcedVariant(v)}

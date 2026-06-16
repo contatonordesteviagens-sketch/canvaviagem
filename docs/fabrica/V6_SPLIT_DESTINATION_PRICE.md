@@ -1,0 +1,123 @@
+# V6 - Split Destination Price
+
+Data: 2026-06-16
+
+## Objetivo
+
+Adicionar uma nova variante real ao motor `composeTravelAd`, baseada na referencia simples de anuncio de viagem com foto hero no topo e bloco inferior dividido em duas colunas.
+
+Esta variante foi criada para ser diferente das V0-V5:
+
+- Nao e painel superior como V0.
+- Nao e painel lateral como V1.
+- Nao e editorial com card centralizado como V2.
+- Nao e box CVC sobre foto cheia como V3.
+- Nao e card central vertical como V4.
+- Nao e glassmorphism premium como V5.
+
+## Anatomia
+
+### Feed 1080x1080
+
+```text
+Foto hero:       x=0%   y=0%   w=100% h=55%
+Bloco inferior:  x=0%   y=55%  w=100% h=45%
+Coluna esquerda: x=0%   y=55%  w=50%  h=45%
+Coluna direita:  x=50%  y=55%  w=50%  h=45%
+Footer:          drawFinalBranding por ultimo
+```
+
+### Story 1080x1920
+
+```text
+Foto hero:       x=0%   y=0%   w=100% h=62%
+Bloco inferior:  x=0%   y=62%  w=100% h=38%
+Coluna esquerda: x=0%   y=62%  w=50%  h=38%
+Coluna direita:  x=50%  y=62%  w=50%  h=38%
+Footer:          drawFinalBranding por ultimo
+```
+
+## Dados Do Formulario Consumidos
+
+| Campo | Uso na V6 |
+|---|---|
+| `imageUrl` | Foto hero no topo com `fitCover` |
+| `destination` | Titulo grande da coluna esquerda |
+| `city` | Linha `SAINDO DE {city}` quando preenchida |
+| `travelPeriod` | Linha de dias/data abaixo do destino |
+| `primaryColor` | Texto da esquerda e pill Pix/desconto |
+| `secondaryColor` | Fundo da coluna direita |
+| `price` | Valor principal |
+| `currencySymbol` | Simbolo de moeda |
+| `installments` | Pill `10X DE` quando modo parcelado |
+| `paymentMode` | Decide label de preco |
+| `paymentLabel` | Label customizado quando aplicavel |
+| `pricePrefix` | Label principal, ex: `a partir de` / `desde` |
+| `paymentSuffix` | Complemento, ex: `por pessoa` |
+| `showTotal` / `totalOverride` | Linha opcional de total |
+| `showPixBanner` / `pixBannerText` | Pill opcional de desconto/Pix |
+| `logoDataUrl` / contatos | Footer padrao via `drawFinalBranding` |
+
+## Arquivos Alterados
+
+- `src/lib/fabrica-compose-art.ts`
+  - `TOTAL_VARIANTS` passou de 6 para 7.
+  - Novo branch `if (variant === 6)` criado dentro de `renderSafeSquareOffer`.
+  - V6 usa `fitCover`, `wrapTextSafe`, `safeFillText`, `ensureContrast`, `getSafeColor`, `fillRoundRect` e `drawFinalBranding`.
+
+- `src/pages/fabrica/Phase3ArtFactory.tsx`
+  - Rotacao PT atualizada para 7 variantes.
+  - Modulo dos lotes atualizado de `% 6` para `% 7`.
+  - Seletor manual agora mostra V0..V6.
+
+- `src/pages/fabrica/Phase3ArtFactoryES.tsx`
+  - Rotacao ES atualizada para 7 variantes.
+  - Modulo dos lotes atualizado de `% 6` para `% 7`.
+  - Seletor manual agora mostra V0..V6.
+
+## Regras De Engenharia Aplicadas
+
+- Branch isolado: V0-V5 nao foram reescritas.
+- Layout em funcao de `width` e `height`, sem coordenadas absolutas soltas.
+- Texto dinamico protegido com `wrapTextSafe` ou `safeFillText`.
+- Footer desenhado por ultimo.
+- Contraste calculado com helpers.
+- V6 respeita `format === "story"` sem criar branch duplicado.
+
+## Como Testar
+
+1. Abrir a Fabrica de Anuncios.
+2. Selecionar modo `Foto Real` ou `Sua Imagem`.
+3. Abrir `Variacoes`.
+4. Selecionar `V6`.
+5. Testar em formato quadrado.
+6. Trocar para story e gerar novamente.
+
+Dados recomendados para primeiro teste:
+
+```text
+Destino: Fernando de Noronha
+Nome da promocao: OFERTA ESPECIAL
+Titulo: Pacote {destino}
+Dias/data: 5 dias, Janeiro
+Modo: Parcelado
+Parcelas: 10x
+Valor: R$ 149,90
+Prefixo: a partir de
+Complemento: por pessoa
+Mostrar total: ligado
+Faixa Pix/desconto: ligada
+```
+
+## Como Repetir O Processo Para V7+
+
+1. Receber uma imagem de referencia.
+2. Identificar se a estrutura e realmente diferente das variantes existentes.
+3. Converter a referencia em anatomia percentual.
+4. Mapear cada texto da imagem para campos reais do formulario.
+5. Criar branch isolado no compositor.
+6. Atualizar `TOTAL_VARIANTS` no motor e nas telas PT/ES.
+7. Atualizar os operadores de modulo nos lotes.
+8. Documentar a nova variante nesta pasta.
+9. Rodar `npm run build`.
+

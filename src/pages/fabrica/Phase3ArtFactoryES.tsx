@@ -1275,9 +1275,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
 
-        // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
-        // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V4.
-        const TOTAL_VARIANTS_PHOTO = 6;
+        // Rotação determinística entre variantes do compositor (V0..V6).
+        // Evita as 2 últimas usadas para garantir imagem nova a cada clique.
+        const TOTAL_VARIANTS_PHOTO = 7;
         const recentPhoto = variantHistoryRef.current.slice(-2);
         let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i).filter((v) => !recentPhoto.includes(v));
         if (candidatesPhoto.length === 0) {
@@ -1293,7 +1293,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 photoRefs[idx],
                 localStrategy,
                 freshSeedPhoto + idx,
-                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 6 : undefined,
+                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 7 : undefined,
                 palette
               )
             );
@@ -1529,8 +1529,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
-      // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
-      const TOTAL_VARIANTS = 6;
+      // Rotação determinística entre variantes do compositor (V0..V6).
+      const TOTAL_VARIANTS = 7;
       const recent = variantHistoryRef.current.slice(-2);
       let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));
       if (candidates.length === 0) {
@@ -1546,7 +1546,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               refImage,
               localStrategy,
               freshSeedCustom + idx,
-              typeof nextVariant === "number" ? (nextVariant + idx) % 6 : undefined,
+              typeof nextVariant === "number" ? (nextVariant + idx) % 7 : undefined,
               palette
             )
           );
@@ -1803,7 +1803,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
 
 
-          {/* Seletor de Versão (V1..V4) — para correções cirúrgicas em cada layout */}
+          {/* Seletor de Versão (V0..V6) — para correções cirúrgicas em cada layout */}
           <div className="mt-4">
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">
               0b · Versión del Diseño
@@ -1812,11 +1812,11 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               <button
                 onClick={() => setForcedVariant(null)}
                 className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === null ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                title="Rotación automática (sortea entre V1..V4)"
+                title="Rotación automática (sortea entre V0..V6)"
               >
                 Auto
               </button>
-              {[1, 2, 3, 4].map((v) => (
+              {[0, 1, 2, 3, 4, 5, 6].map((v) => (
                 <button
                   key={v}
                   onClick={() => setForcedVariant(v)}
@@ -1829,7 +1829,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             </div>
             <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
               {forcedVariant === null
-                ? "Rotação automática entre V1..V4 a cada clique."
+                ? "Rotación automática entre V0..V6 a cada clic."
                 : <>Gerando siempre la <strong className="text-white">V{forcedVariant}</strong>. Selecione "Auto" para retomar la rotación.</>}
             </p>
           </div>
