@@ -1464,6 +1464,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         .replace(/[-–—|:]+/g, " ")
         .replace(/\s+/g, " ")
         .replace(/\s+([!?.,])/g, "$1")
+        .replace(/[!?.,]+$/g, "")
         .trim();
       const titleKickerV6 = titleWithoutDestinationV6.length >= 3 && titleWithoutDestinationV6.length <= 26
         ? titleWithoutDestinationV6.toUpperCase()
@@ -1490,24 +1491,31 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const buildTitleLinesV6 = () => {
         const words = destinationV6.split(/\s+/).filter(Boolean);
         if (words.length > 1) {
-          let best: { lines: string[]; score: number } | null = null;
-          for (let split = 1; split < words.length; split++) {
-            const first = words.slice(0, split).join(" ");
-            const second = words.slice(split).join(" ");
-            const firstW = ctx.measureText(first).width;
-            const secondW = ctx.measureText(second).width;
-            if (firstW <= titleMaxW && secondW <= titleMaxW) {
-              const orphanPenalty = words[split - 1].length <= 2 || words[split].length <= 2 ? 80 : 0;
-              const score = Math.abs(firstW - secondW) + orphanPenalty;
-              if (!best || score < best.score) best = { lines: [first, second], score };
+          const minTitleSize = Math.round(T.titleSize * 0.62);
+          for (let size = T.titleSize; size >= minTitleSize; size -= 1) {
+            ctx.font = `900 ${size}px Inter, Arial, sans-serif`;
+            let best: { lines: string[]; score: number; size: number } | null = null;
+            for (let split = 1; split < words.length; split++) {
+              const first = words.slice(0, split).join(" ");
+              const second = words.slice(split).join(" ");
+              const firstW = ctx.measureText(first).width;
+              const secondW = ctx.measureText(second).width;
+              if (firstW <= titleMaxW && secondW <= titleMaxW) {
+                const secondStartsWithConnector = /^(DE|DA|DO|DOS|DAS|E)$/i.test(words[split]);
+                const score = Math.abs(firstW - secondW) + (secondStartsWithConnector ? 120 : 0);
+                if (!best || score < best.score) best = { lines: [first, second], score, size };
+              }
             }
+            if (best) return best;
           }
-          if (best) return best.lines;
         }
-        return wrapTextSafe(ctx, destinationV6, titleMaxW, 2, Math.round(T.titleSize * 0.48));
+        ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
+        return { lines: wrapTextSafe(ctx, destinationV6, titleMaxW, 2, Math.round(T.titleSize * 0.48)), size: T.titleSize };
       };
-      const titleLines = buildTitleLinesV6();
-      const titleLineH = T.titleSize * 0.98;
+      const titleLayoutV6 = buildTitleLinesV6();
+      const titleLines = titleLayoutV6.lines;
+      const titleSizeV6 = titleLayoutV6.size;
+      const titleLineH = titleSizeV6 * 0.98;
       const periodPillH = periodV6 ? Math.round(T.metaSize * 1.55) : 0;
       const leftContentH = (titleKickerV6 ? T.kickerSize * 1.35 : 0)
         + titleLines.length * titleLineH
@@ -1525,9 +1533,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, titleKickerV6, leftCx, leftY - T.titleSize * 0.95, titleMaxW, Math.round(T.kickerSize * 0.7));
       }
 
-      ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
+      ctx.font = `900 ${titleSizeV6}px Inter, Arial, sans-serif`;
       titleLines.forEach((line, idx) => {
-        safeFillText(ctx, line, leftCx, leftY + idx * titleLineH, titleMaxW, Math.round(T.titleSize * 0.5));
+        safeFillText(ctx, line, leftCx, leftY + idx * titleLineH, titleMaxW, Math.round(titleSizeV6 * 0.62));
       });
       leftY += titleLines.length * titleLineH + Math.round(T.subSize * 0.75);
       ctx.restore();
@@ -1567,9 +1575,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         + (pixV6 ? T.suffixSize * 1.55 : 0);
       let rightY = Math.max(bottomY + T.labelSize + 22, bottomY + (usableBottom - bottomY - priceBlockH) / 2 + T.labelSize - Math.round(height * 0.035));
 
-      const labelY = rightY + 2;
+      const labelY = rightY + 4;
       safeFillText(ctx, labelV6, rightCx, labelY, rightMaxW, Math.round(labelSizeV6 * 0.65));
-      rightY = labelY + Math.round(labelSizeV6 * 0.82);
+      rightY = labelY + Math.round(labelSizeV6 * 0.72);
 
       if (installmentV6) {
         ctx.font = `900 ${T.metaSize}px Inter, Arial, sans-serif`;
@@ -1585,7 +1593,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
 
       ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-      const priceBaseY = rightY + T.priceSize - 2;
+      const priceBaseY = rightY + T.priceSize - 24;
       safeFillText(ctx, priceV6, rightCx, priceBaseY, rightMaxW, Math.round(T.priceSize * 0.52));
       rightY = priceBaseY + Math.round(T.suffixSize * 1.28);
 

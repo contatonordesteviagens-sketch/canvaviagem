@@ -125,6 +125,13 @@ Ajuste fino apos comparacao Gramado/Fernando de Noronha:
 - Em destinos de uma linha, o pill de periodo sobe 3px para ficar mais proximo do nome.
 - O label `A PARTIR DE` ficou 5% menor e desceu 2px; o preco principal subiu 2px.
 
+Hotfix de legibilidade em nomes compostos:
+
+- O kicker remove pontuacao final solta, evitando `VOCE PRECISA CONHECER!` quando o `!` pertence ao titulo completo com destino.
+- Destinos com duas ou mais palavras reduzem a fonte progressivamente ate caberem em exatamente 2 linhas, sem descartar palavras.
+- Conectores como `DE`, `DA`, `DO`, `DOS`, `DAS` e `E` nao iniciam a segunda linha quando houver alternativa melhor.
+- O label `A PARTIR DE` desce mais 4px e o preco principal sobe 24px para ficar visualmente mais colado sem sobrepor o complemento.
+
 ## Como Testar
 
 1. Abrir a Fabrica de Anuncios.
