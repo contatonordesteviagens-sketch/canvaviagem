@@ -1388,8 +1388,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
   };
 
   const renderSafeSquareOffer = async () => {
-    // Variantes ATIVAS: V0, V1, V2, V3, V4, V5, V6 (todas implementadas).
-    const TOTAL_VARIANTS = 7;
+    // Variantes ATIVAS: V0, V1, V2, V3, V4, V5, V6, V7 (todas implementadas).
+    const TOTAL_VARIANTS = 8;
     let variant = typeof forceVariant === "number"
       ? ((forceVariant % TOTAL_VARIANTS) + TOTAL_VARIANTS) % TOTAL_VARIANTS
       : Math.abs(variation) % TOTAL_VARIANTS;
@@ -3572,6 +3572,148 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, rawPixLabel, rightCx, pixY + pixH / 2 + 1, pixW - 28, 12);
         ctx.textBaseline = "alphabetic";
       }
+
+
+    if (variant === 7) {
+      const isStoryV7 = format === "story";
+      const T = {
+        cardW: Math.round(width * (isStoryV7 ? 0.9 : 0.85)),
+        cardH: Math.round(height * (isStoryV7 ? 0.45 : 0.5)),
+        cardR: 45,
+        titleSize: Math.round(width * (isStoryV7 ? 0.08 : 0.065)),
+        subSize: Math.round(width * (isStoryV7 ? 0.038 : 0.032)),
+        labelSize: Math.round(width * (isStoryV7 ? 0.035 : 0.03)),
+        priceSize: Math.round(width * (isStoryV7 ? 0.085 : 0.075)),
+        suffixSize: Math.round(width * (isStoryV7 ? 0.028 : 0.024)),
+        pillTxtSize: Math.round(width * (isStoryV7 ? 0.045 : 0.04)),
+        iconSize: Math.round(width * (isStoryV7 ? 0.06 : 0.05)),
+      };
+      
+      const cardX = (width - T.cardW) / 2;
+      const cardY = isStoryV7 ? height - T.cardH - 220 : height - T.cardH - 150;
+      
+      const cx = width / 2;
+
+      // 1. Fundo cobrindo 100%
+      const photoCrop = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+      ctx.drawImage(image, photoCrop.sx, photoCrop.sy, photoCrop.sw, photoCrop.sh, 0, 0, width, height);
+      
+      // Sombra suave
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.2)";
+      ctx.shadowBlur = 40;
+      ctx.shadowOffsetY = 15;
+      
+      // 2. Card Flutuante Branco
+      ctx.fillStyle = "#FFFFFF";
+      fillRoundRect(ctx, cardX, cardY, T.cardW, T.cardH, T.cardR);
+      ctx.restore();
+
+      // Textos dinamicos
+      const destinationV7 = (destination || destFmt || "CARTAGENA").toUpperCase();
+      const subTextV7 = (cityFmt || (highlights && highlights.length > 0 ? highlights[0].text : "") || travelPeriod || "Incluye desayunos");
+      const promoPillV7 = (promoName || "PACOTE").toUpperCase();
+      
+      // 3. Pilula do topo
+      ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
+      const pillPad = 60;
+      const pillW = ctx.measureText(promoPillV7).width + pillPad;
+      const pillH = Math.round(T.pillTxtSize * 1.8);
+      const pillY = cardY - pillH / 2;
+      
+      ctx.fillStyle = primaryColor || "#E91E63"; // Rosa choque
+      fillRoundRect(ctx, cx - pillW / 2, pillY, pillW, pillH, pillH / 2);
+      
+      ctx.fillStyle = getSafeColor(primaryColor || "#E91E63", "#FFFFFF");
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, promoPillV7, cx, pillY + pillH / 2 + 2, pillW - 20, Math.round(T.pillTxtSize * 0.7));
+      ctx.textBaseline = "alphabetic";
+
+      // 4. Conteudo do Card
+      const cardInnerPad = T.cardW * 0.05;
+      let currentY = cardY + pillH / 2 + T.titleSize + 10;
+      
+      ctx.fillStyle = secondaryColor || "#003366"; // Azul escuro
+      ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, destinationV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.titleSize * 0.6));
+      
+      currentY += T.subSize + 15;
+      ctx.font = `700 ${T.subSize}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, subTextV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.subSize * 0.7));
+
+      // 5. Linha de Icones / Highlights (Abaixo do subtitulo)
+      currentY += 40;
+      const availableIcons = highlights ? highlights.map(h => h ? h.icon : undefined).filter(Boolean) : ["plane", "hotel", "coffee"];
+      const displayIcons = availableIcons.slice(0, 3);
+      
+      const gap = 15;
+      
+      const nightTextV7 = travelPeriod ? travelPeriod : "04 noches";
+      
+      ctx.font = `800 ${T.subSize}px Inter, Arial, sans-serif`;
+      const p1Text = "Hotel";
+      const p1W = ctx.measureText(p1Text).width + 30;
+      const p2Text = nightTextV7;
+      const p2W = ctx.measureText(p2Text).width + 30;
+      const pillHeight = Math.round(T.subSize * 1.8);
+      
+      const totalIconsW = displayIcons.length * T.iconSize + (displayIcons.length > 0 ? (displayIcons.length - 1) * gap : 0);
+      const totalElementsW = totalIconsW + gap + p1W + gap + p2W;
+      
+      let startX = cx - totalElementsW / 2;
+      const alignY = currentY;
+      
+      // Desenha Icones
+      displayIcons.forEach((iconName) => {
+         drawMonoIcon(ctx, iconName, startX + T.iconSize / 2, alignY - T.iconSize / 2, T.iconSize * 0.6, secondaryColor || "#003366");
+         startX += T.iconSize + gap;
+      });
+      
+      // Desenha Pilula 1 (Vermelha)
+      ctx.fillStyle = "#E53935"; // Red
+      fillRoundRect(ctx, startX, alignY - pillHeight + 5, p1W, pillHeight, pillHeight / 2);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = `800 ${T.subSize}px Inter, Arial, sans-serif`;
+      ctx.textBaseline = "middle";
+      ctx.fillText(p1Text, startX + p1W / 2, alignY - pillHeight / 2 + 6);
+      startX += p1W + gap;
+      
+      // Desenha Pilula 2 (Azul)
+      ctx.fillStyle = secondaryColor || "#1E3A8A";
+      fillRoundRect(ctx, startX, alignY - pillHeight + 5, p2W, pillHeight, pillHeight / 2);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillText(p2Text, startX + p2W / 2, alignY - pillHeight / 2 + 6);
+      ctx.textBaseline = "alphabetic";
+
+      // 6. Preco
+      currentY += 60;
+      const labelV7 = (() => {
+        if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "Desde:";
+        if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
+        return paymentLabel || pricePrefix || "Desde:";
+      })().toString();
+      
+      ctx.fillStyle = secondaryColor || "#003366";
+      ctx.font = `800 ${T.labelSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(labelV7, cx, currentY); // Centered
+      
+      currentY += T.priceSize - 5;
+      let priceV7 = mainPrice || `${curSym} ${price}`.trim();
+      const combinedPrice = installments ? `${priceV7} ${installments}` : priceV7;
+      
+      ctx.fillStyle = primaryColor || "#E91E63";
+      ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, combinedPrice, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.priceSize * 0.6));
+      
+      // 7. Sufixo
+      currentY += T.suffixSize + 15;
+      const suffixV7 = (paymentSuffix || bottomSuffix || "Habitación Doble x persona").trim();
+      ctx.fillStyle = secondaryColor || "#003366";
+      ctx.font = `700 ${T.suffixSize}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, suffixV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.suffixSize * 0.7));
+    }
 
       await drawFinalBranding(
         ctx, width, height, logoDataUrl, 

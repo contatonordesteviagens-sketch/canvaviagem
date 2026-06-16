@@ -1280,7 +1280,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
         // Rotação determinística entre variantes do compositor (V0..V6).
         // Evita as 2 últimas usadas para garantir imagem nova a cada clique.
-        const TOTAL_VARIANTS_PHOTO = 7;
+        const TOTAL_VARIANTS_PHOTO = 8;
         const recentPhoto = variantHistoryRef.current.slice(-2);
         let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i).filter((v) => !recentPhoto.includes(v));
         if (candidatesPhoto.length === 0) {
@@ -1533,7 +1533,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       const palette = selectedPalette(primaryColor, secondaryColor);
 
       // Rotação determinística entre variantes do compositor (V0..V6).
-      const TOTAL_VARIANTS = 7;
+      const TOTAL_VARIANTS = 8;
       const recent = variantHistoryRef.current.slice(-2);
       let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));
       if (candidates.length === 0) {
@@ -1806,7 +1806,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
 
 
-          {/* Seletor de Versão (V0..V6) — para correções cirúrgicas em cada layout */}
+          {/* Seletor de Versão (V0..V7) — para correções cirúrgicas em cada layout */}
           <div className="mt-4">
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">
               0b · Versión del Diseño
@@ -1819,7 +1819,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               >
                 Auto
               </button>
-              {[0, 1, 2, 3, 4, 5, 6].map((v) => (
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((v) => (
                 <button
                   key={v}
                   onClick={() => setForcedVariant(v)}
