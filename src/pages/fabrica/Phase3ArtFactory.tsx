@@ -1701,14 +1701,16 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   <button 
                     type="button"
                     onClick={() => update({ logoFormat: "circle" })}
-                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat !== "square" ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
+                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat !== "square" ? "border-white/20 text-black" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
+                    style={state.logoFormat !== "square" ? { background: UI_ACCENT, borderColor: UI_ACCENT } : undefined}
                   >
                     Redonda
                   </button>
                   <button 
                     type="button"
                     onClick={() => update({ logoFormat: "square" })}
-                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat === "square" ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
+                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat === "square" ? "border-white/20 text-black" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
+                    style={state.logoFormat === "square" ? { background: UI_ACCENT, borderColor: UI_ACCENT } : undefined}
                   >
                     Quadrada
                   </button>
@@ -1798,13 +1800,15 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
             <button
               onClick={() => setGenMode("photo")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "photo" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "photo" ? "text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+              style={genMode === "photo" ? { background: UI_ACCENT } : undefined}
             >
               <ImageIcon className="w-3.5 h-3.5" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(ilimitada)</span>
             </button>
             <button
               onClick={() => setGenMode("custom")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "custom" ? "text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+              style={genMode === "custom" ? { background: UI_ACCENT } : undefined}
             >
               <Upload className="w-3.5 h-3.5" /> Sua Imagem
             </button>
@@ -1829,7 +1833,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <div className="mt-2 flex bg-black/40 p-1 rounded-xl border border-white/5 w-full gap-1">
                 <button
                   onClick={() => setForcedVariant(null)}
-                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${forcedVariant === null ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${forcedVariant === null ? "text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+                  style={forcedVariant === null ? { background: UI_ACCENT } : undefined}
                   title="Rotação automática"
                 >
                   Auto
@@ -1838,7 +1843,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   <button
                     key={v}
                     onClick={() => setForcedVariant(v)}
-                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${forcedVariant === v ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${forcedVariant === v ? "text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+                    style={forcedVariant === v ? { background: UI_ACCENT } : undefined}
                     title={`Forçar V${v}`}
                   >
                     V{v}

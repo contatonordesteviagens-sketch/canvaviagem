@@ -1693,14 +1693,16 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   <button 
                     type="button"
                     onClick={() => update({ logoFormat: "circle" })}
-                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat !== "square" ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
+                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat !== "square" ? "border-white/20 text-black" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
+                    style={state.logoFormat !== "square" ? { background: UI_ACCENT, borderColor: UI_ACCENT } : undefined}
                   >
                     Redonda
                   </button>
                   <button 
                     type="button"
                     onClick={() => update({ logoFormat: "square" })}
-                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat === "square" ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
+                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat === "square" ? "border-white/20 text-black" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
+                    style={state.logoFormat === "square" ? { background: UI_ACCENT, borderColor: UI_ACCENT } : undefined}
                   >
                     Quadrada
                   </button>
