@@ -105,6 +105,12 @@ Aplicados apos teste com Gramado em feed e story:
 - A distancia entre valor e complemento foi ajustada para a virgula dos centavos nao encostar em `POR PESSOA`.
 - A sombra inferior do rodape foi reforcada para ajudar logo, Instagram e telefone quando a cor de fundo e clara.
 
+Hotfix apos teste com Porto de Galinhas:
+
+- O titulo da coluna esquerda voltou a usar calculo por topo visual, evitando que o destino cubra o kicker.
+- O tamanho do destino foi reduzido para um limite seguro em nomes de duas linhas.
+- O bloco de data agora respeita o limite superior do rodape para nao colidir com a logo.
+
 ## Como Testar
 
 1. Abrir a Fabrica de Anuncios.
