@@ -1518,7 +1518,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         + (cityV6 ? T.subSize * 1.45 : 0)
         + (periodV6 ? periodPillH + T.metaSize * 1.2 : 0);
       let leftY = Math.max(bottomY + T.titleSize + 34, bottomY + (usableBottom - bottomY - leftContentH) / 2 + T.titleSize * 0.7);
-      leftY += 65; // Baixou o titulo para alinhar perfeitamente com a nova posicao do preco na direita
+      leftY += 15; // Ajuste mais fino para o titulo nao ficar muito baixo
 
       ctx.save();
       // Sombra removida do texto (conforme solicitado pelo usuario)
@@ -1547,8 +1547,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const scaledPeriodPillH = Math.round(periodPillH * 1.1); // Aumentou altura 10%
         const periodW = Math.min(titleMaxW, Math.max(width * 0.20, ctx.measureText(periodLabel).width + 64)); // Ajuste de largura
         const periodX = leftCx - periodW / 2;
-        // Subiu forcadamente em 1cm (40px) alem da posicao normal calculada
-        const periodY = Math.min(leftY - Math.round(scaledPeriodPillH * 0.55) - (titleLines.length === 1 ? 5 : 2), usableBottom - scaledPeriodPillH - 10) - 40;
+        // Desceu forcadamente em 1,5cm (60px) a pedido do usuario
+        const periodY = Math.min(leftY - Math.round(scaledPeriodPillH * 0.55) - (titleLines.length === 1 ? 5 : 2), usableBottom - scaledPeriodPillH - 10) + 60;
         ctx.save();
         const periodBg = primaryColor || "#0C2340";
         fillRoundRect(ctx, periodX, periodY, periodW, scaledPeriodPillH, scaledPeriodPillH / 2, periodBg);
