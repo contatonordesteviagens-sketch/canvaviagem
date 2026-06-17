@@ -3860,8 +3860,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const pixV7 = (paymentPix || "").toUpperCase();
       if (pixV7) {
         ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-        // Ajusta a largura dinamicamente. Vamos assumir que a imagem 2 usa a cor amarela (secondaryColor ou amarela 
-padrao)
+        // Ajusta a largura dinamicamente. Vamos assumir que a imagem 2 usa a cor amarela (secondaryColor ou amarela padrao)
         const pixPad = 60; 
         const textW = ctx.measureText(pixV7).width;
         // Se a string "PIX" tiver presente, adicionamos um espaco extra pro icone (opcional)
