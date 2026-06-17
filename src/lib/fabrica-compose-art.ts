@@ -1568,6 +1568,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         + (totalV6 ? T.suffixSize * 1.35 : 0)
         + (pixV6 ? T.suffixSize * 1.55 : 0);
       let rightY = Math.max(bottomY + T.labelSize + 22, bottomY + (usableBottom - bottomY - priceBlockH) / 2 + T.labelSize - Math.round(height * 0.11)); // Subiu cerca de 2cm a mais
+      rightY -= 45; // Eleva forcadamente todo o bloco em ~1cm
 
       const labelY = rightY + 4;
       safeFillText(ctx, labelV6, rightCx, labelY, rightMaxW, Math.round(labelSizeV6 * 0.65));
