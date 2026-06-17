@@ -1706,7 +1706,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const startY = safeTop + 230;
         const benefitsEnd = startY + (Math.ceil(benefitsList.length / 2) * rowGap);
         const priceBlockY = benefitsEnd + 55;
-        const ringH = 210;
+        const ringH = 190;
 
         const baseBoxH = (priceBlockY - safeTop) + ringH + 30;
         const stripeH = 64;
@@ -1731,15 +1731,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = "900 38px Inter, Arial, sans-serif";
         const pacoteW = ctx.measureText(pacoteText).width + 70;
         const pacoteH = 64;
+        const badgeY = boxY + 84;
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
-        fillRoundRect(ctx, cx - pacoteW/2, boxY + 70 - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
+        fillRoundRect(ctx, cx - pacoteW/2, badgeY - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
         ctx.restore();
         
         ctx.fillStyle = yellow;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(pacoteText, cx, boxY + 70 + 2);
+        ctx.fillText(pacoteText, cx, badgeY + 4);
         ctx.textBaseline = "alphabetic";
 
         // Destino (multiplicado por 1.2x)
@@ -1750,7 +1751,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           destSize -= 2;
           ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
         }
-        safeFillText(ctx, destinoUp, cx, boxY + 140, boxW - 80, 24);
+        safeFillText(ctx, destinoUp, cx, boxY + 155, boxW - 80, 24);
 
         // Grade de 4 BenefÃ­cios
         const colW = (boxW - 100) / 2; // 450px cada coluna
@@ -1784,7 +1785,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const ringX = boxX + 40;
         const ringY = priceBlockY;
         const ringW = boxW - 80;
-
+        
         // Alto Relevo
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.38)";
@@ -1810,7 +1811,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           : (topLabel || "Ã€ VISTA").toString().toUpperCase();
           
         ctx.font = "800 24px Inter, Arial, sans-serif";
-        ctx.fillText(topLabelRender, priceCenterX, ringY + 45); // Movido para cima
+        ctx.fillText(topLabelRender, priceCenterX, ringY + 36); // Movido para cima
         
         ctx.save();
         ctx.shadowColor = "rgba(0, 0, 0, 0.18)";
@@ -1853,7 +1854,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         
         const priceStartX = priceCenterX - (totalW / 2);
-        const priceBaseY = ringY + 142; // mesmo baseline original
+        const priceBaseY = ringY + 128; // Movido para cima
         
         ctx.fillStyle = navy;
         ctx.textAlign = "left";
@@ -1876,7 +1877,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillStyle = navy;
         ctx.globalAlpha = 0.75;
         ctx.font = "800 22px Inter, Arial, sans-serif";
-        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 185); // Movido para baixo
+        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 172); // Movido para cima
         ctx.globalAlpha = 1;
 
         // Faixa de Desconto Pix no rodapÃ© do cartÃ£o amarelo
@@ -2007,7 +2008,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const boxW = Math.round(width * 0.68); // Ajustado de 0.72 para 0.68 para ser menos "largo"
         const boxR = 36;
         const padTop = 36;
-        const titleGap = 12;
+        const titleGap = 24;
         const destGap = 18;
         const totalH = (showTotal && totalStr) ? 36 : 0;
         const totalGap = totalH ? 14 : 0;
@@ -2037,7 +2038,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.restore();
 
         const cx = boxX + boxW / 2;
-        let cursorY = safeBoxY + padTop + 32;
+        let cursorY = safeBoxY + padTop + 42;
         
         const pacoteText = (promoName || "PACOTE").trim().toUpperCase();
         ctx.font = "900 28px Inter, Arial, sans-serif";
@@ -2051,7 +2052,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillStyle = yellow;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(pacoteText, cx, cursorY + 2);
+        ctx.fillText(pacoteText, cx, cursorY + 4);
         ctx.textBaseline = "alphabetic";
         
         cursorY += titleGap + 48;
@@ -2160,11 +2161,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
            valW = ctx.measureText(pMain).width;
         }
         
-        const symSize = Math.round(priceSize * 0.35);
+        const symSize = Math.round(priceSize * 0.45);
         ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
         const symW = ctx.measureText(pSym).width;
         
-        const centsSize = Math.round(priceSize * 0.45);
+        const centsSize = Math.round(priceSize * 0.50);
         ctx.font = `900 ${centsSize}px Inter, Arial, sans-serif`;
         const centsW = pCents ? ctx.measureText(pCents).width : 0;
         
@@ -2193,17 +2194,17 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillText(btmTxt, leftColCx, priceBlockY + 68);
 
         // Desenhar Lado Direito
-        const priceBaseY = priceBlockY + 68; 
+        const priceBaseY = priceBlockY + 70; 
         
         ctx.textAlign = "left";
-        ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(pSym, rightColX, priceBaseY - priceSize + symSize + 10);
+        ctx.font = `800 ${symSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(pSym, rightColX, priceBaseY - priceSize + symSize + 8);
         
         ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
         ctx.fillText(pMain, rightColX + symW + 12, priceBaseY);
         
         if (pCents) {
-           ctx.font = `900 ${centsSize}px Inter, Arial, sans-serif`;
+           ctx.font = `800 ${centsSize}px Inter, Arial, sans-serif`;
            ctx.fillText(pCents, rightColX + symW + 12 + valW + 6, priceBaseY - priceSize + centsSize + 10);
         }
 
