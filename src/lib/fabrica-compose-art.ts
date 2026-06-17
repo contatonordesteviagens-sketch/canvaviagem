@@ -1818,7 +1818,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           : (topLabel || "Ã€ VISTA").toString().toUpperCase();
           
         ctx.font = "800 28px Inter, Arial, sans-serif";
-        ctx.fillText(topLabelRender, priceCenterX, ringY + 32); // Movido para cima
+        ctx.fillText(topLabelRender, priceCenterX, ringY + 28); // Movido para cima
         
         ctx.save();
         ctx.shadowColor = "rgba(0, 0, 0, 0.18)";
@@ -1861,7 +1861,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         
         const priceStartX = priceCenterX - (totalW / 2);
-        const priceBaseY = ringY + 105; // Movido para cima
+        const priceBaseY = ringY + 115; // Movido para cima
         
         ctx.fillStyle = navy;
         ctx.textAlign = "left";
@@ -1884,7 +1884,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillStyle = navy;
         ctx.globalAlpha = 0.75;
         ctx.font = "800 26px Inter, Arial, sans-serif";
-        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 140); // Movido para cima
+        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 144); // Movido para cima
         ctx.globalAlpha = 1;
 
         // Faixa de Desconto Pix no rodapÃ© do cartÃ£o amarelo
