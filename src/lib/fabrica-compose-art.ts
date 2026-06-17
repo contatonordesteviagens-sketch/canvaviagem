@@ -3590,8 +3590,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
     if (variant === 7) {
       const isStoryV7 = format === "story";
       const T = {
+        // Reduzido a altura do card (de 0.48/0.52 para 0.42/0.46) para diminuir a parte branca inferior
         cardW: Math.round(width * (isStoryV7 ? 0.9 : 0.85)),
-        cardH: Math.round(height * (isStoryV7 ? 0.48 : 0.52)),
+        cardH: Math.round(height * (isStoryV7 ? 0.42 : 0.46)),
         cardR: 45,
         titleSize: Math.round(width * (isStoryV7 ? 0.08 : 0.065)),
         subSize: Math.round(width * (isStoryV7 ? 0.038 : 0.032)),
@@ -3604,7 +3605,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       };
       
       const cardX = (width - T.cardW) / 2;
-      const cardY = isStoryV7 ? height - T.cardH - 220 : height - T.cardH - 150;
+      // Ajusta o Y para ficar mais centralizado considerando que o card ta menor
+      const cardY = isStoryV7 ? height - T.cardH - 250 : height - T.cardH - 150;
       
       const cx = width / 2;
   
@@ -3625,7 +3627,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
   
       // Textos dinamicos
       const destinationV7 = (destination || destFmt || "CARTAGENA").toUpperCase();
-      const subTextV7 = (cityFmt || travelPeriod || "Final de semana").toUpperCase();
+      // Se cityFmt nao existir, nao usa travelPeriod como cidade para evitar baguncar
+      const subTextV7 = (cityFmt || "").toUpperCase();
       const promoPillV7 = (promoName || "OFERTA ESPECIAL").toUpperCase();
       
       // 3. Pilula do topo
@@ -3653,57 +3656,71 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
       safeFillText(ctx, destinationV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.titleSize * 0.7));
       
-      currentY += T.subSize + 12;
-      ctx.fillStyle = "#666666"; // Cinza
-      ctx.font = `700 ${T.subSize}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, subTextV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.subSize * 0.7));
+      if (subTextV7) {
+        currentY += T.subSize + 5;
+        ctx.fillStyle = "#666666"; // Cinza
+        ctx.font = `700 ${T.subSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, subTextV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.subSize * 0.7));
+      }
   
-      // 5. Linha de Highlights (Pills em vez de icones voando)
-      currentY += 40;
-      if (highlights && highlights.length > 0) {
-        const displayHls = highlights.slice(0, 2); // Maximo 2 para nao encavalar
-        ctx.font = `800 ${T.subSize * 0.85}px Inter, Arial, sans-serif`;
-        
+      // 5. Bloco de Icones e Dias (Pills combinadas)
+      currentY += subTextV7 ? 35 : 45;
+      
+      const hlIcons = highlights ? highlights.map(h => h?.icon).filter(Boolean).slice(0, 4) : [];
+      const hasIcons = hlIcons.length > 0;
+      const periodText = (travelPeriod || "").toUpperCase();
+      const hasPeriod = periodText.length > 0;
+      
+      if (hasIcons || hasPeriod) {
         const gap = 15;
         const hlPillH = Math.round(T.subSize * 1.7);
+        const iconSpace = T.iconSize * 0.7 + 10; // Espaco por icone
         
-        // Calcula larguras totais para centralizar
-        const hlWidths = displayHls.map((hl) => {
-          const text = (hl?.text || "").toUpperCase();
-          return ctx.measureText(text).width + (hl?.icon ? 55 : 30);
-        });
-        const totalHlsW = hlWidths.reduce((a,b) => a+b, 0) + (hlWidths.length - 1) * gap;
+        let iconsW = 0;
+        if (hasIcons) {
+          iconsW = 20 + (hlIcons.length * iconSpace) - 10 + 20; // Padding left/right e espaco dos icones
+        }
         
-        let startX = cx - totalHlsW / 2;
+        let periodW = 0;
+        ctx.font = `800 ${T.subSize * 0.85}px Inter, Arial, sans-serif`;
+        if (hasPeriod) {
+          periodW = ctx.measureText(periodText).width + 40;
+        }
+        
+        const totalW = (hasIcons ? iconsW : 0) + (hasIcons && hasPeriod ? gap : 0) + (hasPeriod ? periodW : 0);
+        let startX = cx - totalW / 2;
         const alignY = currentY;
         
-        displayHls.forEach((hl, i) => {
-          const text = (hl?.text || "").toUpperCase();
-          const w = hlWidths[i];
+        // Desenha bloco 1: Icones (Cor Primaria)
+        if (hasIcons) {
+          ctx.fillStyle = primaryColor || "#0066FF";
+          fillRoundRect(ctx, startX, alignY - hlPillH + 5, iconsW, hlPillH, hlPillH / 2);
           
-          ctx.fillStyle = i === 0 ? (primaryColor || "#0066FF") : "#000000"; // Primeira primaryColor, segunda preta
-          fillRoundRect(ctx, startX, alignY - hlPillH + 5, w, hlPillH, hlPillH / 2);
+          let iconX = startX + 20;
+          hlIcons.forEach((iconName) => {
+            drawMonoIcon(ctx, iconName, iconX + (T.iconSize * 0.7)/2, alignY - hlPillH / 2 + 5, T.iconSize * 0.7, "#FFFFFF");
+            iconX += iconSpace;
+          });
+          startX += iconsW + gap;
+        }
+        
+        // Desenha bloco 2: Dias / Periodo (Preto)
+        if (hasPeriod) {
+          ctx.fillStyle = "#000000";
+          fillRoundRect(ctx, startX, alignY - hlPillH + 5, periodW, hlPillH, hlPillH / 2);
           
           ctx.fillStyle = "#FFFFFF";
-          ctx.font = `800 ${T.subSize * 0.85}px Inter, Arial, sans-serif`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          
-          if (hl?.icon) {
-            drawMonoIcon(ctx, hl.icon, startX + 26, alignY - hlPillH / 2 + 5, T.iconSize * 0.7, "#FFFFFF");
-            ctx.fillText(text, startX + 26 + (w - 26) / 2, alignY - hlPillH / 2 + 7);
-          } else {
-            ctx.fillText(text, startX + w / 2, alignY - hlPillH / 2 + 7);
-          }
-          
-          startX += w + gap;
-        });
+          ctx.fillText(periodText, startX + periodW / 2, alignY - hlPillH / 2 + 7);
+        }
+        
         ctx.textBaseline = "alphabetic";
         currentY += 15;
       }
   
       // 6. Preco
-      currentY += 45;
+      currentY += 40; // Menos espaco em branco
       const labelV7 = (() => {
         if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
         if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
@@ -3747,7 +3764,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillStyle = "#333333";
         ctx.font = `600 ${T.labelSize}px Inter, Arial, sans-serif`;
         ctx.textAlign = "center";
-        ctx.fillText(`Total: ${curSym} ${totalOverride}`, cx, currentY);
+        // Remove a duplicacao 'Total: R$' se ja estiver no texto
+        const totalText = totalOverride.toLowerCase().includes("total") ? totalOverride : `Total: ${curSym} ${totalOverride}`;
+        ctx.fillText(totalText, cx, currentY);
       }
       
       // 8. Sufixo
