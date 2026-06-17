@@ -3611,15 +3611,17 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const pillH = Math.round(T.pillTxtSize * 1.8);
       let requiredH = pillH / 2; // O topo comeca no meio da pilula
       requiredH += T.titleSize + 15; // Titulo principal
-      requiredH += 45 + Math.round(T.subSize * 1.7); // Bloco de icones/dias
-      requiredH += 40 + T.priceSize; // Preco
+      requiredH += T.titleSize * 0.5 + 40; // Espaco entre titulo e icones
+      requiredH += Math.round(T.subSize * 1.7); // Altura do bloco de icones/dias
+      requiredH += 60; // Espaco ate o preco
+      requiredH += T.priceSize; // Preco
       if (showTotal && totalOverride) requiredH += T.labelSize + 5;
       requiredH += T.suffixSize + 15;
-      requiredH += 50; // Padding inferior (aprox 2cm)
+      requiredH += 20; // Padding inferior (menor parte sobrando)
       
       const cardH = requiredH;
       const cardX = cx - T.cardW / 2;
-      const cardY = isStoryV7 ? height - cardH - 180 : height - cardH - 80;
+      const cardY = isStoryV7 ? height - cardH - 180 : height - cardH - 50; // Bloco sobe mais
   
       // 1. Fundo cobrindo 100%
       const photoCrop = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
@@ -3661,7 +3663,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, destinationV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.titleSize * 0.7));
   
       // 5. Bloco de Icones e Dias (Pills combinadas)
-      currentY += 45;
+      currentY += T.titleSize * 0.5 + 40; // Desce os icones, afastando do titulo
       if (hasIcons || hasPeriod) {
         const gap = 15;
         const hlPillH = Math.round(T.subSize * 1.7);
@@ -3705,7 +3707,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
   
       // 6. Preco
-      currentY += 40; 
+      currentY += 60; // Afasta o preco dos icones
       const labelV7 = (() => {
         if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
         if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
