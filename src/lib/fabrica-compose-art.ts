@@ -1574,9 +1574,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       let rightY = Math.max(bottomY + T.labelSize + 22, bottomY + (usableBottom - bottomY - priceBlockH) / 2 + T.labelSize - Math.round(height * 0.11)); // Subiu cerca de 2cm a mais
       rightY -= 15; // Baixou 30px em relacao a ultima versao para tirar o "A PARTIR DE" da foto
 
-      const labelY = rightY + 4;
+      const labelY = rightY + 24; // Desceu 20px para alinhar visualmente com "VOCE PRECISA CONHECER"
       safeFillText(ctx, labelV6, rightCx, labelY, rightMaxW, Math.round(labelSizeV6 * 0.65));
-      rightY = labelY + Math.round(labelSizeV6 * 0.72) + 12; // Added gap below "A PARTIR DE"
+      // Mantem a acumulacao de rightY identica ao que era antes (rightY + 4) para nao empurrar o resto do bloco pra baixo
+      rightY = (rightY + 4) + Math.round(labelSizeV6 * 0.72) + 12;
 
       if (installmentV6) {
         ctx.font = `900 ${Math.round(T.metaSize * 1.3)}px Inter, Arial, sans-serif`; // 10x de text size increased
