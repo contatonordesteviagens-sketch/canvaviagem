@@ -2569,7 +2569,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const priceCardOverlay = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.32)" : "rgba(255,255,255,0.28)";
       
       // Calculate dynamic price block height to fit everything
-      const hasPixV1 = !!(pixBannerText || "");
+      const pixTxtV1 = showPixBanner ? (pixBannerText || "").trim().toUpperCase() : "";
+      const hasPixV1 = pixTxtV1.length > 0;
       const finalPriceBlockH = hasPixV1 ? 230 : 190;
       
       ctx.save();
@@ -2591,17 +2592,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
       })().toString().toUpperCase();
       ctx.fillText(topLabelRenderV1, px + pw / 2, priceBlockY + 36);
       
-      // Valor formatado (Split V0 style)
+      // Valor formatado (sem quebrar centavos)
       let priceStrV1 = mainPrice || `${curSym} ${price}`.trim();
       if (hideCents) priceStrV1 = priceStrV1.replace(/[.,]\d{2}\s*$/, "");
-      
-      let pMainV1 = priceStrV1;
-      let pCentsV1 = "";
-      if (priceStrV1.includes(",")) {
-        const parts = priceStrV1.split(",");
-        pMainV1 = parts[0];
-        pCentsV1 = "," + parts[1];
-      }
       
       const instTextV1 = installments && (paymentMode === "installments" || paymentMode === "down_plus") 
         ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`) 
@@ -2611,12 +2604,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const instFsV1 = 28;
       
       ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
-      const pMainWV1 = ctx.measureText(pMainV1).width;
+      const pMainWV1 = ctx.measureText(priceStrV1).width;
       ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
       const instWV1 = instTextV1 ? ctx.measureText(instTextV1).width + 12 : 0;
-      const pCentsWV1 = pCentsV1 ? ctx.measureText(pCentsV1).width : 0;
       
-      const totalWV1 = instWV1 + pMainWV1 + pCentsWV1;
+      const totalWV1 = instWV1 + pMainWV1;
       let startXV1 = (px + pw / 2) - totalWV1 / 2;
       
       if (totalWV1 > pw - 20) {
@@ -2632,11 +2624,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillText(instTextV1, startXV1, pyV1);
       }
       ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
-      ctx.fillText(pMainV1, startXV1 + instWV1, pyV1);
-      if (pCentsV1) {
-        ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
-        ctx.fillText(pCentsV1, startXV1 + instWV1 + pMainWV1, pyV1);
-      }
+      ctx.fillText(priceStrV1, startXV1 + instWV1, pyV1);
       
       // Sufixo
       ctx.textAlign = "center";
@@ -2646,10 +2634,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
       
       // Pilula PIX
       if (hasPixV1) {
-        const pixV1 = (pixBannerText || "").toUpperCase();
         const pixFsV1 = 18;
         ctx.font = `900 ${pixFsV1}px Inter, Arial, sans-serif`;
-        const pixWV1 = ctx.measureText(pixV1).width + 36;
+        const pixWV1 = ctx.measureText(pixTxtV1).width + 36;
         const pixHV1 = 36;
         const pixYV1 = pyV1 + 46;
         
@@ -2662,11 +2649,21 @@ const panelBottom = RULES.PANEL_BOTTOM;
         
         ctx.fillStyle = contrastOn(v1Accent);
         ctx.textBaseline = "middle";
-        ctx.fillText(pixV1, px + pw/2, pixYV1 + pixHV1/2 + 1);
+        ctx.fillText(pixTxtV1, px + pw/2, pixYV1 + pixHV1/2 + 1);
         ctx.textBaseline = "alphabetic";
       }
       
       ctx.textAlign = "left";
+
+      // 10) Sombra de base para destacar os contatos
+      const shadowH = 220;
+      const shadowY = height - shadowH;
+      const bottomGrad = ctx.createLinearGradient(0, shadowY, 0, height);
+      bottomGrad.addColorStop(0, "rgba(0,0,0,0)");
+      bottomGrad.addColorStop(0.5, "rgba(0,0,0,0.5)");
+      bottomGrad.addColorStop(1, "rgba(0,0,0,0.85)");
+      ctx.fillStyle = bottomGrad;
+      ctx.fillRect(0, shadowY, width, shadowH);
 
       await drawFinalBranding(
         ctx, width, height, logoDataUrl, 
