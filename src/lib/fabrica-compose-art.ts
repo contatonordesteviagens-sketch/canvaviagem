@@ -1702,26 +1702,33 @@ const panelBottom = RULES.PANEL_BOTTOM;
           { text: "Guia local", icon: "guide" }
         ];
 
-        const rowGap = 80;
-        const startY = safeTop + 230;
-        const benefitsEnd = startY + (Math.ceil(benefitsList.length / 2) * rowGap);
-        const priceBlockY = benefitsEnd + 55;
+        const boxW = 900; // Reduzido de 1000px para 900px
+        const boxX = (width - boxW) / 2;
+        
+        const rowGap = 95; // Aumentado o respiro entre beneficios (era 80)
+        const topPadding = 250; // Respiro do topo ate os icones (era 230)
+        const benefitsH = Math.ceil(benefitsList.length / 2) * rowGap;
+        const priceBlockTopGap = 65; // Respiro entre icones e bloco de preco (era 55)
         const ringH = 190;
-
-        const baseBoxH = (priceBlockY - safeTop) + ringH + 30;
+        
+        const baseBoxH = topPadding + benefitsH + priceBlockTopGap + ringH + 40;
         const stripeH = 64;
-        const boxH = showPixBanner ? baseBoxH + stripeH + 30 : baseBoxH;
+        const stripeGap = 35;
+        const boxH = showPixBanner ? baseBoxH + stripeH + stripeGap : baseBoxH;
+        
+        // Centralizacao Vertical no Story (ou levemente abaixo)
+        const boxY = Math.max(safeTop, (height - boxH) / 2);
 
-        // â”€â”€ [BOX] amarelo arredondado â”€ â”€â”€â”€â”€â”€
-        const boxX = 40;
-        const boxW = width - 80; // 1000px
-        const boxY = safeTop; // Ancorado na Safe Zone
+        const startY = boxY + topPadding;
+        const benefitsEnd = startY + benefitsH;
+        const priceBlockY = benefitsEnd + priceBlockTopGap;
 
+        // ———— [BOX] amarelo arredondado — ——————
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.3)";
-        ctx.shadowBlur = 24;
-        ctx.shadowOffsetY = 8;
-        fillRoundRect(ctx, boxX, boxY, boxW, boxH, 36, yellow);
+        ctx.shadowBlur = 32;
+        ctx.shadowOffsetY = 12;
+        fillRoundRect(ctx, boxX, boxY, boxW, boxH, 40, yellow);
         ctx.restore();
 
         const cx = boxX + boxW / 2;
@@ -1751,11 +1758,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
           destSize -= 2;
           ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
         }
-        safeFillText(ctx, destinoUp, cx, boxY + 155, boxW - 80, 24);
+        safeFillText(ctx, destinoUp, cx, boxY + 165, boxW - 80, 24);
 
         // Grade de 4 BenefÃ­cios
-        const colW = (boxW - 100) / 2; // 450px cada coluna
-        const colGap = 40;
+        const colW = (boxW - 100) / 2; // 400px cada coluna
+        const colGap = 30;
         const startX = boxX + 50;
         
         benefitsList.forEach((b, i) => {
@@ -1882,7 +1889,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         // Faixa de Desconto Pix no rodapÃ© do cartÃ£o amarelo
         if (showPixBanner) {
-          const stripeY = boxY + boxH - 85;
+          const stripeY = boxY + boxH - 94;
           const stripeX = boxX + 40;
           const stripeW = boxW - 80;
           const stripeH = 64;
