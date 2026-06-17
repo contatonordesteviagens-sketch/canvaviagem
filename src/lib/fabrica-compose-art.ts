@@ -3728,8 +3728,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       let pCents = "";
       if (priceV7.includes(",")) {
         const parts = priceV7.split(",");
-        pMain = parts[0] + ",";
-        pCents = parts[1];
+        pMain = parts[0];
+        pCents = "," + parts[1];
       }
 
       const drawCents = (baseX: number, align: "center" | "left") => {
@@ -3793,6 +3793,40 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "center";
       safeFillText(ctx, suffixV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.suffixSize * 0.7));
   
+      // 9. Pilula de Desconto (PIX) na borda inferior do card
+      const pixV7 = (paymentPix || "").toUpperCase();
+      if (pixV7) {
+        ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
+        // Ajusta a largura dinamicamente. Vamos assumir que a imagem 2 usa a cor amarela (secondaryColor ou amarela 
+padrao)
+        const pixPad = 60; 
+        const textW = ctx.measureText(pixV7).width;
+        // Se a string "PIX" tiver presente, adicionamos um espaco extra pro icone (opcional)
+        const pixW = textW + pixPad;
+        const pixH = Math.round(T.pillTxtSize * 1.8);
+        const pixY = cardY + cardH - pixH / 2; // Metade dentro, metade fora do bloco
+        
+        const pillColor = secondaryColor || "#FFD700"; // Amarelo se nao houver cor secundaria
+        ctx.fillStyle = pillColor;
+        fillRoundRect(ctx, cx - pixW / 2, pixY, pixW, pixH, pixH / 2);
+        
+        ctx.fillStyle = getSafeColor(pillColor, "#FFFFFF");
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, pixV7, cx, pixY + pixH / 2 + 2, pixW - 20, Math.round(T.pillTxtSize * 0.7));
+        ctx.textBaseline = "alphabetic";
+      }
+
+      // 10. Sombra Inferior para destacar contatos e logo
+      ctx.save();
+      const shadowGrad = ctx.createLinearGradient(0, height - 120, 0, height);
+      shadowGrad.addColorStop(0, "rgba(0,0,0,0)");
+      shadowGrad.addColorStop(1, "rgba(0,0,0,0.6)");
+      ctx.fillStyle = shadowGrad;
+      ctx.fillRect(0, height - 120, width, 120);
+      ctx.restore();
+
       // Desenha a logo e contatos respeitando a decisao visual suave
       await drawFinalBranding(
         ctx, width, height, logoDataUrl, 
