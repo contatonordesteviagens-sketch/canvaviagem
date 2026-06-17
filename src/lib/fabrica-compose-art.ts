@@ -2050,21 +2050,35 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.restore();
 
         const cx = boxX + boxW / 2;
-        let cursorY = safeBoxY + padTop + 42;
+        let cursorY = safeBoxY + padTop + 25; // Subiu ~0.5cm
         
+        // Titulo Promoção + Data (Lado a Lado)
         const pacoteText = (promoName || "PACOTE").trim().toUpperCase();
         ctx.font = "900 28px Inter, Arial, sans-serif";
-        const pacoteW = ctx.measureText(pacoteText).width + 60;
+        const pacoteW = ctx.measureText(pacoteText).width + 50;
         const pacoteH = 50;
+        
+        const dateText = (travelDate || "").trim().toUpperCase();
+        const dateW = dateText ? ctx.measureText(dateText).width + 40 : 0;
+        const gap = 12;
+        const totalBadgeW = dateText ? pacoteW + gap + dateW : pacoteW;
+        const badgeStartX = cx - totalBadgeW / 2;
+
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
-        fillRoundRect(ctx, cx - pacoteW/2, cursorY - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
+        fillRoundRect(ctx, badgeStartX, cursorY - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
+        if (dateText) {
+          fillRoundRect(ctx, badgeStartX + pacoteW + gap, cursorY - pacoteH/2, dateW, pacoteH, pacoteH/2, navy);
+        }
         ctx.restore();
         
         ctx.fillStyle = yellow;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(pacoteText, cx, cursorY + 4);
+        ctx.fillText(pacoteText, badgeStartX + pacoteW/2, cursorY + 4);
+        if (dateText) {
+          ctx.fillText(dateText, badgeStartX + pacoteW + gap + dateW/2, cursorY + 4);
+        }
         ctx.textBaseline = "alphabetic";
         
         cursorY += titleGap + 48;
@@ -2234,38 +2248,51 @@ const panelBottom = RULES.PANEL_BOTTOM;
         // [PROMO] faixa horizontal com texto Pix (opcional)
         // Fundo da faixa = primaryColor (navy padrao). Texto sempre com contraste.
         if (showPixBanner) {
-          const stripeY = cursorY + 24;
-          const stripeX = boxX + 40;
-          const stripeW = boxW - 80;
-          const stripeBg = navyRaw; // mantem a cor escolhida pelo usuario p/ a faixa
-          const stripeFg = contrastOn(stripeBg); // texto preto/branco automatico
-          fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, stripeBg);
+          // Calcula a largura exata do texto primeiro para centralizar e diminuir a barra preta
+          const customBanner = (pixBannerText || "").trim();
+          let totalPixW = 0;
+          const pixText = `${descN}% OFF A VISTA NO`;
+          const pixIconSize = 36;
+          const pixGap = 12;
+          const pillPad = 10;
+          let pillW = 0;
+          
+          ctx.font = "900 26px Inter, Arial, sans-serif";
+          if (customBanner) {
+            totalPixW = ctx.measureText(customBanner).width;
+          } else {
+            const pixTextW = ctx.measureText(pixText).width;
+            ctx.font = "800 28px Inter, Arial, sans-serif";
+            const pixLabelW = ctx.measureText("pix").width;
+            pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
+            totalPixW = pixTextW + pixGap + pillW;
+          }
+
+          // A faixa agora nao ocupa mais a tela toda! (diminuir a largura do bloco preto)
+          const stripeW = totalPixW + 60; // Margem de respiro justa
+          const stripeX = cx - stripeW / 2;
+          
+          // Desce um pouco (cursorY + 35 em vez de +24) e diminui a altura (stripeH = 50)
+          const stripeY = cursorY + 35;
+          const myStripeH = 50; 
+          
+          const stripeBg = navyRaw;
+          const stripeFg = contrastOn(stripeBg);
+          fillRoundRect(ctx, stripeX, stripeY, stripeW, myStripeH, 25, stripeBg); // Bordas mais arredondadas
+          
           ctx.fillStyle = stripeFg;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.font = "900 26px Inter, Arial, sans-serif";
-
-          const customBanner = (pixBannerText || "").trim();
+          
           if (customBanner) {
-            ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
+            ctx.font = "900 24px Inter, Arial, sans-serif";
+            ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + myStripeH / 2 + 1);
           } else {
-            // "{N}% OFF A VISTA NO  [pix]"
-            const pixText = `${descN}% OFF A VISTA NO`;
+            ctx.font = "900 24px Inter, Arial, sans-serif";
             const pixTextW = ctx.measureText(pixText).width;
-            const pixIconSize = 36;
-            const pixGap = 12;
-            ctx.font = "800 28px Inter, Arial, sans-serif";
-            const pixLabelW = ctx.measureText("pix").width;
-            ctx.font = "900 26px Inter, Arial, sans-serif";
-            // pÃ­lula branca atras do logo+pix p/ garantir visibilidade da marca Pix
-            const pillPad = 10;
-            const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
-            const pillH = stripeH - 16;
-            const totalPixW = pixTextW + pixGap + pillW;
             const pixStartX = stripeX + (stripeW - totalPixW) / 2;
             ctx.textAlign = "left";
-            ctx.fillStyle = stripeFg;
-            ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
+            ctx.fillText(pixText, pixStartX, stripeY + myStripeH / 2 + 1);
             const pillX = pixStartX + pixTextW + pixGap;
             const pillY = stripeY + (stripeH - pillH) / 2;
             fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
