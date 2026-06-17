@@ -2445,19 +2445,38 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const logoReserve = format === "story" ? safeTop : (hasLogo ? 110 : 24);
 
       // 4) BADGE pÃ­lula
-      const badgeText = (promoName || "OFERTA ESPECIAL").toUpperCase();
-      const badgeBg   = v1Accent;
-      const badgeFg   = contrastOn(badgeBg);
-      const badgeH    = 56;
+      const badgesV1: string[] = [];
+      if (promoName) badgesV1.push(promoName.toUpperCase());
+      if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza') badgesV1.push(`Saindo de ${cityFmt}`);
+      if (travelPeriod && travelPeriod.trim()) badgesV1.push(travelPeriod.trim().toUpperCase());
+      if (badgesV1.length === 0) badgesV1.push("OFERTA ESPECIAL");
+
       const badgeY    = logoReserve;
+      const badgeH    = 56;
+      let badgeX = px;
       ctx.font = "800 22px Inter, Arial, sans-serif";
-      const badgeTextW = ctx.measureText(badgeText).width;
-      const badgeW = Math.min(pw, badgeTextW + 40);
-      fillRoundRect(ctx, px, badgeY, badgeW, badgeH, badgeH / 2, badgeBg);
-      ctx.fillStyle = badgeFg;
-      ctx.textAlign = "left"; ctx.textBaseline = "middle";
-      safeFillText(ctx, badgeText, px + 20, badgeY + badgeH / 2, badgeW - 40, 14);
+      
+      badgesV1.forEach((bText, i) => {
+         const badgeTextW = ctx.measureText(bText).width;
+         const badgeW = Math.min(pw, badgeTextW + 40);
+         // O primeiro badge usa a cor de destaque. Os extras usam fundo mais neutro.
+         const bBg = i === 0 ? v1Accent : (v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)");
+         const bFg = i === 0 ? contrastOn(bBg) : v1OnPanel;
+         
+         ctx.save();
+         ctx.shadowColor = "rgba(0,0,0,0.15)";
+         ctx.shadowBlur = 8;
+         ctx.shadowOffsetY = 4;
+         fillRoundRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2, bBg);
+         ctx.restore();
+         
+         ctx.fillStyle = bFg;
+         ctx.textAlign = "center"; ctx.textBaseline = "middle";
+         safeFillText(ctx, bText, badgeX + badgeW/2, badgeY + badgeH / 2, badgeW - 40, 14);
+         badgeX += badgeW + 10;
+      });
       ctx.textBaseline = "alphabetic";
+      ctx.textAlign = "left";
 
       // 5) TÃTULO PRINCIPAL (Gap ajustado para 65px no feed p/ compensar baseline e nunca sobrepor!)
       const titleY = badgeY + badgeH + (format === "story" ? 40 : 65); 
@@ -2489,9 +2508,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
       }
 
+      ctx.save();
+      ctx.shadowColor = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.3)";
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 4;
       titleLines.forEach((ln, i) => {
-        ctx.fillText(ln, px, titleY + i * (mainTitleSize + 8));
+        ctx.fillText(ln, px, titleY + i * (mainTitleSize + 12));
       });
+      ctx.restore();
 
       const titleBlockH = titleLines.length * (mainTitleSize + 8);
 
@@ -2503,11 +2527,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       
       // 8) BENEFITS â€” pÃ­lulas adaptativas no espaco restante
       let benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0);
-      if (travelPeriod && travelPeriod.trim()) {
-        const tp = travelPeriod.trim();
-        benefitsListV1 = benefitsListV1.filter(b => b.text.toLowerCase() !== tp.toLowerCase());
-        benefitsListV1.unshift({ text: tp, icon: "calendar" as IconKey });
-      }
+      // Removemos a logica de adicionar travelPeriod aos beneficios pois ja esta nas badges do topo!
       benefitsListV1 = benefitsListV1.slice(0, 6);
       const hlStart = titleY + titleBlockH + (format === "story" ? 24 : 16);
       
@@ -2547,30 +2567,105 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // 9) PRICE CARD overlay
       const priceCardOverlay = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.32)" : "rgba(255,255,255,0.28)";
-      fillRoundRect(ctx, px, priceBlockY, pw, priceBlockH, 18, priceCardOverlay);
+      
+      // Calculate dynamic price block height to fit everything
+      const hasPixV1 = !!(pixBannerText || "");
+      const finalPriceBlockH = hasPixV1 ? 230 : 190;
+      
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.15)";
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 6;
+      fillRoundRect(ctx, px, priceBlockY, pw, finalPriceBlockH, 18, priceCardOverlay);
+      ctx.restore();
+      
       ctx.textAlign = "center";
+      
+      // Prefixo (Top Label ou Parcela)
       ctx.fillStyle = v1Accent;
       ctx.font = "800 22px Inter, Arial, sans-serif";
-      ctx.fillText((topLabel || "A VISTA").toString().toUpperCase(), px + pw / 2, priceBlockY + 36);
-      ctx.fillStyle = v1OnPanel;
+      const topLabelRenderV1 = (() => {
+        if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
+        if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
+        return paymentLabel || pricePrefix || "a partir de";
+      })().toString().toUpperCase();
+      ctx.fillText(topLabelRenderV1, px + pw / 2, priceBlockY + 36);
       
-      let priceStrV1 = mainPrice || `${curSym} ${price}`;
-      if (hideCents) {
-        // Remove os decimais/centavos do final da string de preÃ§o caso desativado
-        priceStrV1 = priceStrV1.replace(/[.,]\d{2}\s*$/, "");
+      // Valor formatado (Split V0 style)
+      let priceStrV1 = mainPrice || `${curSym} ${price}`.trim();
+      if (hideCents) priceStrV1 = priceStrV1.replace(/[.,]\d{2}\s*$/, "");
+      
+      let pMainV1 = priceStrV1;
+      let pCentsV1 = "";
+      if (priceStrV1.includes(",")) {
+        const parts = priceStrV1.split(",");
+        pMainV1 = parts[0];
+        pCentsV1 = "," + parts[1];
       }
+      
+      const instTextV1 = installments && (paymentMode === "installments" || paymentMode === "down_plus") 
+        ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`) 
+        : "";
 
-      let pfsV1 = 76;
-      ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(priceStrV1).width > pw - 32 && pfsV1 > 30) {
-        pfsV1 -= 4;
-        ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
+      const priceFsV1 = 64;
+      const instFsV1 = 28;
+      
+      ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
+      const pMainWV1 = ctx.measureText(pMainV1).width;
+      ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
+      const instWV1 = instTextV1 ? ctx.measureText(instTextV1).width + 12 : 0;
+      const pCentsWV1 = pCentsV1 ? ctx.measureText(pCentsV1).width : 0;
+      
+      const totalWV1 = instWV1 + pMainWV1 + pCentsWV1;
+      let startXV1 = (px + pw / 2) - totalWV1 / 2;
+      
+      if (totalWV1 > pw - 20) {
+        startXV1 = px + 10;
       }
-      const priceBaseY = priceBlockY + 36 + pfsV1 + 4;
-      safeFillText(ctx, priceStrV1, px + pw / 2, priceBaseY, pw - 40, 24);
+      
+      const pyV1 = priceBlockY + 95;
+      
+      ctx.textAlign = "left";
+      ctx.fillStyle = v1OnPanel;
+      if (instTextV1) {
+        ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
+        ctx.fillText(instTextV1, startXV1, pyV1);
+      }
+      ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
+      ctx.fillText(pMainV1, startXV1 + instWV1, pyV1);
+      if (pCentsV1) {
+        ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
+        ctx.fillText(pCentsV1, startXV1 + instWV1 + pMainWV1, pyV1);
+      }
+      
+      // Sufixo
+      ctx.textAlign = "center";
       ctx.fillStyle = v1Accent;
-      ctx.font = "800 22px Inter, Arial, sans-serif"; // Negrito forte para legibilidade mÃ¡xima
-      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBaseY + 30); // Ajustado Y para ser exatamente 30px abaixo da linha de base do valor principal
+      ctx.font = "800 20px Inter, Arial, sans-serif";
+      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, pyV1 + 32);
+      
+      // Pilula PIX
+      if (hasPixV1) {
+        const pixV1 = (pixBannerText || "").toUpperCase();
+        const pixFsV1 = 18;
+        ctx.font = `900 ${pixFsV1}px Inter, Arial, sans-serif`;
+        const pixWV1 = ctx.measureText(pixV1).width + 36;
+        const pixHV1 = 36;
+        const pixYV1 = pyV1 + 46;
+        
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.15)";
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetY = 2;
+        fillRoundRect(ctx, (px + pw/2) - pixWV1/2, pixYV1, pixWV1, pixHV1, 18, v1Accent);
+        ctx.restore();
+        
+        ctx.fillStyle = contrastOn(v1Accent);
+        ctx.textBaseline = "middle";
+        ctx.fillText(pixV1, px + pw/2, pixYV1 + pixHV1/2 + 1);
+        ctx.textBaseline = "alphabetic";
+      }
+      
       ctx.textAlign = "left";
 
       await drawFinalBranding(
