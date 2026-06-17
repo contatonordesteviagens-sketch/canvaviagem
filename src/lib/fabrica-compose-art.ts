@@ -2246,14 +2246,19 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const badgeY = safeAnchorY;
       let badgeX = (width / 2) - (totalBadgeW / 2);
 
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.12)";
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 4;
       badges.forEach((text, i) => {
         const w = badgeWidths[i];
-        fillRoundRect(ctx, badgeX, badgeY, w, badgeH, 8, v0BadgeBg);
+        fillRoundRect(ctx, badgeX, badgeY, w, badgeH, 12, v0BadgeBg);
         ctx.fillStyle = v0OnBadge;
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText(text, badgeX + w / 2, badgeY + badgeH / 2);
         badgeX += w + badgeGap;
       });
+      ctx.restore();
       ctx.textBaseline = "alphabetic";
 
       // 7) Headline (1 linha, fonte adaptativa)
@@ -2305,12 +2310,22 @@ const panelBottom = RULES.PANEL_BOTTOM;
       });
 
       // Fundo sutil para o bloco de preco
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.08)";
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 4;
       ctx.fillStyle = "rgba(0,0,0,0.06)";
       fillRoundRect(ctx, priceX, rowTopY, priceBlockW, contentRowH + 20, 16);
+      ctx.restore();
 
-      // Preço centralizado
+      // Preço centralizado verticalmente
       const priceCenterX = priceX + priceBlockW / 2;
       ctx.textAlign = "center";
+      
+      // Calculate vertical offset to center the 124px tall content inside the box
+      const boxH = contentRowH + 20;
+      const contentH = 124;
+      const offsetY = (boxH - contentH) / 2 - 30;
       
       // Prefixo
       const prefixText = (() => {
@@ -2320,7 +2335,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       })().toString();
 
       ctx.fillStyle = v0OnPanel; ctx.font = "600 20px Inter, Arial, sans-serif";
-      safeFillText(ctx, prefixText, priceCenterX, rowTopY + 30, priceBlockW - 20, 14);
+      safeFillText(ctx, prefixText, priceCenterX, rowTopY + 30 + offsetY, priceBlockW - 20, 14);
       
       // Valores e Parcelas
       const priceStrV0 = mainPrice || `${curSym} ${price}`.trim();
@@ -2342,12 +2357,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       const pMainW = ctx.measureText(pMainV0).width;
       ctx.font = `900 ${instFs}px Inter, Arial, sans-serif`;
-      const instW = instText ? ctx.measureText(instText).width + 10 : 0;
+      const instW = instText ? ctx.measureText(instText).width + 16 : 0;
       const pCentsW = pCentsV0 ? ctx.measureText(pCentsV0).width : 0;
 
       const totalW = instW + pMainW + pCentsW;
       const startX = priceCenterX - totalW / 2;
-      const py = rowTopY + 80;
+      const py = rowTopY + 80 + offsetY;
 
       ctx.textAlign = "left";
       ctx.fillStyle = v0OnPanel;
@@ -2377,7 +2392,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const pixW = ctx.measureText(pixV0).width + 30;
         const pixH = 34;
         const pixY = py + 40;
-        fillRoundRect(ctx, priceCenterX - pixW/2, pixY, pixW, pixH, 8, v0BadgeBg);
+        fillRoundRect(ctx, priceCenterX - pixW/2, pixY, pixW, pixH, 16, v0BadgeBg);
         ctx.fillStyle = v0OnBadge;
         ctx.textBaseline = "middle";
         ctx.fillText(pixV0, priceCenterX, pixY + pixH/2 + 1);
