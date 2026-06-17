@@ -1520,9 +1520,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       let leftY = Math.max(bottomY + T.titleSize + 34, bottomY + (usableBottom - bottomY - leftContentH) / 2 + T.titleSize * 0.7);
 
       ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.18)";
-      ctx.shadowBlur = 12;
-      ctx.shadowOffsetY = 4;
+      // Sombra removida do texto (conforme solicitado pelo usuario)
 
       if (titleKickerV6) {
         ctx.font = `900 ${T.kickerSize}px Inter, Arial, sans-serif`;
@@ -1569,7 +1567,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         + (suffixV6 ? T.suffixSize * 1.45 : 0)
         + (totalV6 ? T.suffixSize * 1.35 : 0)
         + (pixV6 ? T.suffixSize * 1.55 : 0);
-      let rightY = Math.max(bottomY + T.labelSize + 22, bottomY + (usableBottom - bottomY - priceBlockH) / 2 + T.labelSize - Math.round(height * 0.035));
+      let rightY = Math.max(bottomY + T.labelSize + 22, bottomY + (usableBottom - bottomY - priceBlockH) / 2 + T.labelSize - Math.round(height * 0.11)); // Subiu cerca de 2cm a mais
 
       const labelY = rightY + 4;
       safeFillText(ctx, labelV6, rightCx, labelY, rightMaxW, Math.round(labelSizeV6 * 0.65));
@@ -1602,21 +1600,21 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       if (totalV6) {
         ctx.fillStyle = rightMuted;
-        ctx.font = `700 ${Math.round(T.suffixSize * 0.9)}px Inter, Arial, sans-serif`;
+        ctx.font = `700 ${Math.round(T.suffixSize * 1.1)}px Inter, Arial, sans-serif`; // Total aumentado em ~20%
         const totalLabelV6 = /^total\b/i.test(totalV6.trim()) ? totalV6.trim() : `Total: ${totalV6}`;
-        safeFillText(ctx, totalLabelV6.toUpperCase(), rightCx, rightY, rightMaxW, Math.round(T.suffixSize * 0.62));
-        rightY += Math.round(T.suffixSize * 1.75);
+        safeFillText(ctx, totalLabelV6.toUpperCase(), rightCx, rightY, rightMaxW, Math.round(T.suffixSize * 0.75));
+        rightY += Math.round(T.suffixSize * 2.0); // Mais espaco apos o Total
       }
 
       if (pixV6) {
-        ctx.font = `900 ${Math.round(T.suffixSize * 0.95)}px Inter, Arial, sans-serif`;
-        const pixW = Math.min(rightMaxW, ctx.measureText(pixV6.toUpperCase()).width + 42);
-        const pixH = Math.round(T.suffixSize * 1.55);
-        const pixY = rightY - pixH + Math.round(T.suffixSize * 0.9);
+        ctx.font = `900 ${Math.round(T.suffixSize * 1.15)}px Inter, Arial, sans-serif`; // PIX aumentado em ~20%
+        const pixW = Math.min(rightMaxW, ctx.measureText(pixV6.toUpperCase()).width + 50); // Ajuste na largura
+        const pixH = Math.round(T.suffixSize * 1.85); // Altura aumentada
+        const pixY = rightY - pixH + Math.round(T.suffixSize * 1.1); // Reposicionamento
         fillRoundRect(ctx, rightCx - pixW / 2, pixY, pixW, pixH, pixH / 2, primaryColor || "#0C2340");
         ctx.fillStyle = getSafeColor(primaryColor || "#0C2340", "#ffffff");
         ctx.textBaseline = "middle";
-        safeFillText(ctx, pixV6.toUpperCase(), rightCx, pixY + pixH / 2 + 1, pixW - 30, Math.round(T.suffixSize * 0.62));
+        safeFillText(ctx, pixV6.toUpperCase(), rightCx, pixY + pixH / 2 + 1, pixW - 34, Math.round(T.suffixSize * 0.75));
         ctx.textBaseline = "alphabetic";
       }
 
