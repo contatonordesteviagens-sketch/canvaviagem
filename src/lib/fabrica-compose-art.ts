@@ -1574,22 +1574,22 @@ const panelBottom = RULES.PANEL_BOTTOM;
       rightY = labelY + Math.round(labelSizeV6 * 0.72);
 
       if (installmentV6) {
-        ctx.font = `900 ${Math.round(T.metaSize * 1.35)}px Inter, Arial, sans-serif`; // Aumentado o 10x de
+        ctx.font = `900 ${Math.round(T.metaSize * 1.35)}px Inter, Arial, sans-serif`; // Aumentado o "10x de"
         const pillText = `${installmentV6} DE`;
         const pillW = Math.min(rightMaxW, Math.max(160, ctx.measureText(pillText).width + 64));
-        const pillH = Math.round(T.metaSize * 1.95);
-        fillRoundRect(ctx, rightCx - pillW / 2, rightY - pillH + 8, pillW, pillH, 14, "rgba(255,255,255,0.18)");
+        const pillH = Math.round(T.metaSize * 1.95); // Aumentou a altura da pilula
+        fillRoundRect(ctx, rightCx - pillW / 2, rightY - pillH + 12, pillW, pillH, 14, "rgba(255,255,255,0.18)");
         ctx.fillStyle = rightText;
         ctx.textBaseline = "middle";
-        safeFillText(ctx, pillText, rightCx, rightY - pillH / 2 + 8, pillW - 28, Math.round(T.metaSize * 0.9));
+        safeFillText(ctx, pillText, rightCx, rightY - pillH / 2 + 12, pillW - 28, Math.round(T.metaSize * 0.9));
         ctx.textBaseline = "alphabetic";
-        rightY += Math.round(T.metaSize * 0.4); // Reduzi o gap aqui embaixo para o preco subir!
+        rightY += Math.round(T.metaSize * 1.3); // Avanca o Y proporcionalmente ao novo tamanho da pilula
       }
 
       ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-      const priceBaseY = rightY + T.priceSize - 55; // Puxou o preco fortemente para cima (aprox 2cm)
+      const priceBaseY = rightY + T.priceSize - 35; // Sobe o preco R$ para ficar mais perto do "10x de"
       safeFillText(ctx, priceV6, rightCx, priceBaseY, rightMaxW, Math.round(T.priceSize * 0.52));
-      rightY = priceBaseY + Math.round(T.suffixSize * 1.28);
+      rightY = priceBaseY + Math.round(T.suffixSize * 2.2); // Aumenta bastante o gap aqui embaixo para a virgula nao encostar no "POR PESSOA"
 
       if (suffixV6) {
         ctx.fillStyle = rightMuted;
