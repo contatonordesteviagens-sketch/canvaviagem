@@ -1738,16 +1738,29 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = "900 32px Inter, Arial, sans-serif";
         const pacoteW = ctx.measureText(pacoteText).width + 70;
         const pacoteH = 52;
-        const badgeY = boxY + 84;
+        const badgeY = boxY + 64; // Subiu ~0.5cm (era 84)
+
+        const dateText = (travelDate || "").trim().toUpperCase();
+        const dateW = dateText ? ctx.measureText(dateText).width + 40 : 0;
+        const gap = 12;
+        const totalBadgeW = dateText ? pacoteW + gap + dateW : pacoteW;
+        const badgeStartX = cx - totalBadgeW / 2;
+
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
-        fillRoundRect(ctx, cx - pacoteW/2, badgeY - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
+        fillRoundRect(ctx, badgeStartX, badgeY - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
+        if (dateText) {
+          fillRoundRect(ctx, badgeStartX + pacoteW + gap, badgeY - pacoteH/2, dateW, pacoteH, pacoteH/2, navy);
+        }
         ctx.restore();
         
         ctx.fillStyle = yellow;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(pacoteText, cx, badgeY + 4);
+        ctx.fillText(pacoteText, badgeStartX + pacoteW/2, badgeY + 4);
+        if (dateText) {
+          ctx.fillText(dateText, badgeStartX + pacoteW + gap + dateW/2, badgeY + 4);
+        }
         ctx.textBaseline = "alphabetic";
 
         // Destino (multiplicado por 1.2x)
@@ -1887,48 +1900,74 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 135); // Movido para cima
         ctx.globalAlpha = 1;
 
-        // Faixa de Desconto Pix no rodapÃ© do cartÃ£o amarelo
+        // Faixa de Desconto Pix no rodapé do cartão amarelo
         if (showPixBanner) {
-          const stripeY = boxY + boxH - 94;
-          const stripeX = boxX + 40;
-          const stripeW = boxW - 80;
-          const stripeH = 64;
-          fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, navyRaw);
+          const customBanner = (pixBannerText || "").trim();
+          let totalPixW = 0;
+          const pixText = `${descN}% OFF A VISTA NO`;
+          const pixIconSize = 32;
+          const pixGap = 10;
+          const pillPad = 8;
+          let pillW = 0;
+
+          ctx.font = "900 26px Inter, Arial, sans-serif";
+          if (customBanner) {
+            totalPixW = ctx.measureText(customBanner).width;
+          } else {
+            const pixTextW = ctx.measureText(pixText).width;
+            ctx.font = "800 24px Inter, Arial, sans-serif";
+            const pixLabelW = ctx.measureText("pix").width;
+            pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
+            totalPixW = pixTextW + pixGap + pillW;
+          }
+
+          const stripeW = totalPixW + 60; // Margem de respiro justa
+          const stripeX = cx - stripeW / 2; // Centralizado
+          
+          // Desce um pouco (+10px) e diminui a altura (stripeH = 50)
+          const stripeY = boxY + boxH - 80;
+          const myStripeH = 50; 
+          
+          fillRoundRect(ctx, stripeX, stripeY, stripeW, myStripeH, 25, navyRaw); // Bordas mais arredondadas
           ctx.fillStyle = contrastOn(navyRaw);
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.font = "900 26px Inter, Arial, sans-serif";
           
-          const customBanner = (pixBannerText || "").trim();
           if (customBanner) {
-            ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
+            ctx.font = "900 24px Inter, Arial, sans-serif";
+            ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + myStripeH / 2 + 1);
           } else {
-            const pixText = `${descN}% OFF A VISTA NO`;
+            ctx.font = "900 24px Inter, Arial, sans-serif";
             const pixTextW = ctx.measureText(pixText).width;
-            const pixIconSize = 32;
-            const pixGap = 10;
-            ctx.font = "800 24px Inter, Arial, sans-serif";
-            const pixLabelW = ctx.measureText("pix").width;
-            
-            const pillPad = 8;
-            const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
-            const pillH = stripeH - 16;
-            const totalPixW = pixTextW + pixGap + pillW;
             const pixStartX = stripeX + (stripeW - totalPixW) / 2;
-            
             ctx.textAlign = "left";
-            ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2);
+            ctx.fillText(pixText, pixStartX, stripeY + myStripeH / 2);
+            
             const pillX = pixStartX + pixTextW + pixGap;
-            const pillY = stripeY + (stripeH - pillH) / 2;
+            const pillY = stripeY + (myStripeH - (myStripeH - 16)) / 2;
+            const pillH = myStripeH - 16;
             fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
             
             const pxCx = pillX + pillPad + pixIconSize / 2;
-            const pxCy = stripeY + stripeH / 2;
-            drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
+            const pxCy = stripeY + myStripeH / 2;
             
-            ctx.fillStyle = "#32BCAD";
-            ctx.font = "900 24px Inter, Arial, sans-serif";
-            ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + stripeH / 2);
+            ctx.fillStyle = navyRaw;
+            ctx.beginPath();
+            ctx.arc(pxCx, pxCy, pixIconSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.moveTo(pxCx - 4, pxCy - 6);
+            ctx.lineTo(pxCx + 6, pxCy);
+            ctx.lineTo(pxCx - 4, pxCy + 6);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.fillStyle = navyRaw;
+            ctx.textAlign = "left";
+            ctx.font = "800 24px Inter, Arial, sans-serif";
+            ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + myStripeH / 2 + 1);
           }
           ctx.textBaseline = "alphabetic";
         }
