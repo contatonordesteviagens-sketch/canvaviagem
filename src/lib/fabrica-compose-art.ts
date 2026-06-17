@@ -1970,8 +1970,22 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         const cx = boxX + boxW / 2;
         let cursorY = safeBoxY + padTop + 32;
-        ctx.fillStyle = navy; ctx.textAlign = "center"; ctx.font = "900 44px Inter, Arial, sans-serif";
-        ctx.fillText("PACOTE", cx, cursorY);
+        
+        const pacoteText = "PACOTE";
+        ctx.font = "900 28px Inter, Arial, sans-serif";
+        const pacoteW = ctx.measureText(pacoteText).width + 60;
+        const pacoteH = 50;
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.15)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
+        fillRoundRect(ctx, cx - pacoteW/2, cursorY - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
+        ctx.restore();
+        
+        ctx.fillStyle = yellow;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(pacoteText, cx, cursorY + 2);
+        ctx.textBaseline = "alphabetic";
+        
         cursorY += titleGap + 48;
 
         ctx.font = "500 56px Inter, Arial, sans-serif";
@@ -1990,13 +2004,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
           }
           daysW = ctx.measureText(daysText).width;
         }
-        const sepGap = 18; const iconSize = Math.round(benefitsFontSize * 1.8); const iconGap = 18;
+        const sepGap = 24; const iconSize = Math.round(benefitsFontSize * 1.8); const iconGap = 18;
         const iconsTotal = iconList.length * iconSize + Math.max(0, iconList.length - 1) * iconGap;
         
         const hasDays = !!(daysText && daysText.trim());
-        const sepW = hasDays ? 4 : 0;
+        const sepW = 0;
         const actualGap = hasDays ? sepGap : 0;
-        const infoTotalW = (hasDays ? daysW + actualGap : 0) + sepW + (hasDays ? actualGap : 0) + iconsTotal;
+        const infoTotalW = (hasDays ? daysW + actualGap : 0) + iconsTotal;
         
         let infoX = cx - infoTotalW / 2;
         ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillStyle = navy;
@@ -2004,8 +2018,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (hasDays) {
           safeFillText(ctx, daysText, infoX, cursorY, boxW * 0.5, 14);
           infoX += daysW + actualGap;
-          ctx.fillRect(infoX, cursorY - 18, sepW, 36);
-          infoX += sepW + actualGap;
         }
         iconList.forEach((k, i) => {
           drawMonoIcon(ctx, k, infoX + i * (iconSize + iconGap) + iconSize / 2, cursorY, iconSize, navy);
@@ -2023,11 +2035,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         const priceBlockY = ringY + 30;
 
-        // Quebra "R$ 229" em simbolo pequeno + valor gigante
-        const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
-        const sym = priceParts ? priceParts[1].trim() : curSym;
-        const valNum = priceParts ? priceParts[2].trim() : priceStr;
-
         const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
         const isDownPlus = paymentMode === "down_plus";
         
@@ -2040,49 +2047,73 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         const btmTxt = isCash ? (paymentSuffix || "por pessoa").trim() : (isDownPlus ? "parcelas" : "sem juros");
 
-        // Tamanhos das fontes mais refinados para nÃ£o dominar (Task: centralizar e diminuir)
+        // Quebra preco com centavos (V0 style)
+        let pStr = priceStr.trim();
+        let pSym = curSym;
+        let pMain = pStr;
+        let pCents = "";
+        
+        const symMatch = pStr.match(/^(\D+)\s*(.*)$/);
+        if (symMatch) {
+           pSym = symMatch[1].trim();
+           pMain = symMatch[2].trim();
+        }
+        
+        const centsMatch = pMain.match(/^([\d.]+)(,\d{2})$/);
+        if (centsMatch) {
+           pMain = centsMatch[1];
+           pCents = centsMatch[2];
+        }
+
+        // Tamanhos esquerdos
         let pTxtSize = isCash ? 32 : 46; 
         ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
         const mainTxtW = ctx.measureText(mainTxt).width;
         
+        ctx.font = "600 20px Inter, Arial, sans-serif";
+        const topTxtW = ctx.measureText(topTxt.toUpperCase()).width;
+        
         ctx.font = "600 18px Inter, Arial, sans-serif";
-        const topTxtW = ctx.measureText(topTxt).width;
         const btmTxtW = ctx.measureText(btmTxt).width;
         
         const leftColW = Math.max(mainTxtW, topTxtW, btmTxtW);
 
-        // Lado direito (preÃ§o)
-        let priceSize = 110;
+        // Lado direito (preco)
+        let priceSize = 120;
         ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-        let valW = ctx.measureText(valNum).width;
+        let valW = ctx.measureText(pMain).width;
         
-        // Se o valor for muito grande, reduz um pouco
-        while (valW > ringW * 0.45 && priceSize > 48) {
+        while (valW > ringW * 0.40 && priceSize > 48) {
            priceSize -= 4;
            ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-           valW = ctx.measureText(valNum).width;
+           valW = ctx.measureText(pMain).width;
         }
         
-        const symSize = Math.round(priceSize * 0.36);
+        const symSize = Math.round(priceSize * 0.35);
         ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
-        const symW = ctx.measureText(sym).width;
-        const rightColW = symW + 12 + valW;
+        const symW = ctx.measureText(pSym).width;
+        
+        const centsSize = Math.round(priceSize * 0.45);
+        ctx.font = `900 ${centsSize}px Inter, Arial, sans-serif`;
+        const centsW = pCents ? ctx.measureText(pCents).width : 0;
+        
+        const rightColW = symW + 12 + valW + (pCents ? 6 + centsW : 0);
 
         // Layout Centralizado
-        const midGap = 32;
+        const midGap = 40;
         const totalW = leftColW + midGap + rightColW;
         const startX = ringX + (ringW - totalW) / 2;
         
         const leftColX = startX;
         const rightColX = startX + leftColW + midGap;
 
-        // Desenhar Lado Esquerdo centralizado em si mesmo para harmonizar
+        // Desenhar Lado Esquerdo centralizado
         ctx.textAlign = "center";
         ctx.fillStyle = navy;
         const leftColCx = leftColX + leftColW / 2;
         
-        ctx.font = "600 18px Inter, Arial, sans-serif";
-        ctx.fillText(topTxt, leftColCx, priceBlockY - 2);
+        ctx.font = "600 20px Inter, Arial, sans-serif";
+        ctx.fillText(topTxt.toUpperCase(), leftColCx, priceBlockY - 2);
         
         ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
         ctx.fillText(mainTxt, leftColCx, priceBlockY + 36);
@@ -2090,16 +2121,20 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = "600 18px Inter, Arial, sans-serif";
         ctx.fillText(btmTxt, leftColCx, priceBlockY + 68);
 
-        // Desenhar Lado Direito (alinhado pela baseline de mainTxt)
-        // Baseline de mainTxt Ã© priceBlockY + 36. O valor gigante centraliza visualmente com isso
-        const priceBaseY = priceBlockY + 60; 
+        // Desenhar Lado Direito
+        const priceBaseY = priceBlockY + 68; 
         
         ctx.textAlign = "left";
         ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(sym, rightColX, priceBaseY - priceSize * 0.45);
+        ctx.fillText(pSym, rightColX, priceBaseY - priceSize + symSize + 10);
         
         ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(valNum, rightColX + symW + 12, priceBaseY);
+        ctx.fillText(pMain, rightColX + symW + 12, priceBaseY);
+        
+        if (pCents) {
+           ctx.font = `900 ${centsSize}px Inter, Arial, sans-serif`;
+           ctx.fillText(pCents, rightColX + symW + 12 + valW + 6, priceBaseY - priceSize + centsSize + 10);
+        }
 
         cursorY = ringY + ringH + totalGap;
 
