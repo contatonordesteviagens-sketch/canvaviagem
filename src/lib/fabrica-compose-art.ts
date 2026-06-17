@@ -2264,6 +2264,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = v0OnPanel;
       const iconSize0 = 28;
       const iconTextGap = 42; // espaÃ§o reservado para o Ã­cone + margem
+      ctx.textAlign = "left";
       benefitsList.forEach((b, i) => {
         const iconKey = (b.icon as IconKey) || (["bus", "map", "guide", "star"][i] as IconKey) || "check";
         const lineY = rowTopY + 28 + i * benefitLineH;
