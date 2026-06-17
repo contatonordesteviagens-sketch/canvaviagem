@@ -2232,17 +2232,27 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza') badges.push(`Saindo de ${cityFmt}`);
       if (travelPeriod && travelPeriod.trim()) badges.push(travelPeriod.trim().toUpperCase());
 
-      const badgeY = safeAnchorY;
-      let badgeX = left;
-
+      ctx.font = "800 24px Inter, Arial, sans-serif";
+      const badgeGap = 15;
+      let totalBadgeW = 0;
+      const badgeWidths: number[] = [];
       badges.forEach(text => {
-        ctx.font = "800 24px Inter, Arial, sans-serif";
         const w = ctx.measureText(text).width + 30;
+        badgeWidths.push(w);
+        totalBadgeW += w;
+      });
+      if (badges.length > 0) totalBadgeW += badgeGap * (badges.length - 1);
+
+      const badgeY = safeAnchorY;
+      let badgeX = (width / 2) - (totalBadgeW / 2);
+
+      badges.forEach((text, i) => {
+        const w = badgeWidths[i];
         fillRoundRect(ctx, badgeX, badgeY, w, badgeH, 8, v0BadgeBg);
         ctx.fillStyle = v0OnBadge;
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText(text, badgeX + w / 2, badgeY + badgeH / 2);
-        badgeX += w + 15;
+        badgeX += w + badgeGap;
       });
       ctx.textBaseline = "alphabetic";
 
@@ -2250,7 +2260,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = v0OnPanel;
       ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
       const titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, safeAnchorY + 12 + titleSize);
-      safeFillText(ctx, titleText, left, titleY, width - left - 40, 22);
+      ctx.textAlign = "center";
+      safeFillText(ctx, titleText, width / 2, titleY, width - 80, 22);
 
       // 8) Benefits + PreÃ§o lado a lado â€” preÃ§o ALINHADO Ã€ DIREITA pra eliminar
       //    o espaÃ§o em branco que sobrava no canto direito.
@@ -2263,14 +2274,24 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       ctx.fillStyle = v0OnPanel;
       const iconSize0 = 28;
-      const iconTextGap = 42; // espaÃ§o reservado para o Ã­cone + margem
+      const iconTextGap = 52; 
       ctx.textAlign = "left";
       benefitsList.forEach((b, i) => {
         const iconKey = (b.icon as IconKey) || (["bus", "map", "guide", "star"][i] as IconKey) || "check";
         const lineY = rowTopY + 28 + i * benefitLineH;
-        // Desenha Ã­cone grÃ¡fico
-        drawMonoIcon(ctx, iconKey, benefitsX + iconSize0 / 2, lineY - iconSize0 * 0.25, iconSize0, v0OnPanel);
-        // Texto ao lado do Ã­cone, com auto-shrink
+        
+        // Fundo do icone (bolinha preta)
+        const cx = benefitsX + iconSize0 / 2;
+        const cy = lineY - iconSize0 * 0.25;
+        ctx.beginPath();
+        ctx.arc(cx, cy, iconSize0 * 0.8, 0, Math.PI * 2);
+        ctx.fillStyle = v0OnPanel;
+        ctx.fill();
+        
+        // Desenha icone grafico (amarelo) por cima
+        drawMonoIcon(ctx, iconKey, cx, cy, iconSize0 * 0.85, v0PanelBg);
+        
+        // Texto ao lado do icone, com auto-shrink
         let bfs = 26;
         ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
         const textMaxW = benefitsMaxW - iconTextGap;
