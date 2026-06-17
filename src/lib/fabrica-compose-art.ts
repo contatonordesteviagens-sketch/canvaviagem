@@ -1740,7 +1740,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const pacoteH = 52;
         const badgeY = boxY + 64; // Subiu ~0.5cm (era 84)
 
-        const dateText = (travelDate || "").trim().toUpperCase();
+        const dateText = (travelPeriod || "").trim().toUpperCase();
         const dateW = dateText ? ctx.measureText(dateText).width + 40 : 0;
         const gap = 12;
         const totalBadgeW = dateText ? pacoteW + gap + dateW : pacoteW;
@@ -2097,7 +2097,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const pacoteW = ctx.measureText(pacoteText).width + 50;
         const pacoteH = 50;
         
-        const dateText = (travelDate || "").trim().toUpperCase();
+        const dateText = (travelPeriod || "").trim().toUpperCase();
         const dateW = dateText ? ctx.measureText(dateText).width + 40 : 0;
         const gap = 12;
         const totalBadgeW = dateText ? pacoteW + gap + dateW : pacoteW;
