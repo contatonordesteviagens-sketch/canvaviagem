@@ -1726,13 +1726,24 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         const cx = boxX + boxW / 2;
 
-        // TÃ­tulo "PACOTE"
-        ctx.fillStyle = navy;
-        ctx.textAlign = "center";
+        // Titulo "PACOTE" como Badge
+        const pacoteText = (promoName || "PACOTE").trim().toUpperCase();
         ctx.font = "900 38px Inter, Arial, sans-serif";
-        ctx.fillText("PACOTE", cx, boxY + 70);
+        const pacoteW = ctx.measureText(pacoteText).width + 70;
+        const pacoteH = 64;
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.15)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
+        fillRoundRect(ctx, cx - pacoteW/2, boxY + 70 - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
+        ctx.restore();
+        
+        ctx.fillStyle = yellow;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(pacoteText, cx, boxY + 70 + 2);
+        ctx.textBaseline = "alphabetic";
 
         // Destino (multiplicado por 1.2x)
+        ctx.fillStyle = navy;
         let destSize = 68;
         ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
         while (ctx.measureText(destinoUp).width > boxW - 80 && destSize > 32) {
@@ -1806,14 +1817,60 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.shadowBlur = 12;
         ctx.shadowOffsetY = 4;
         
-        let priceFs = 96;
-        ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
-        while (ctx.measureText(priceStr).width > ringW - 40 && priceFs > 30) {
-          priceFs -= 4;
-          ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+        // Quebra "R$ 149,90" em partes
+        const symMatch = priceStr.match(/^([^\d]+)\s*(.*)$/);
+        let pSym = "R$";
+        let pVal = priceStr;
+        if (symMatch) { pSym = symMatch[1].trim(); pVal = symMatch[2].trim(); }
+        const centsMatch = pVal.match(/^(.*)(,\d{2})$/);
+        let pMain = pVal;
+        let pCents = "";
+        if (centsMatch) { pMain = centsMatch[1]; pCents = centsMatch[2]; }
+        
+        let priceSize = 100;
+        let symSize = Math.round(priceSize * 0.45);
+        let centSize = Math.round(priceSize * 0.5);
+        
+        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+        let mainW = ctx.measureText(pMain).width;
+        ctx.font = `800 ${symSize}px Inter, Arial, sans-serif`;
+        let symW = ctx.measureText(pSym).width + 6;
+        ctx.font = `800 ${centSize}px Inter, Arial, sans-serif`;
+        let centW = pCents ? ctx.measureText(pCents).width + 4 : 0;
+        let totalW = symW + mainW + centW;
+        
+        while (totalW > ringW - 60 && priceSize > 40) {
+          priceSize -= 4;
+          symSize = Math.round(priceSize * 0.45);
+          centSize = Math.round(priceSize * 0.5);
+          ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+          mainW = ctx.measureText(pMain).width;
+          ctx.font = `800 ${symSize}px Inter, Arial, sans-serif`;
+          symW = ctx.measureText(pSym).width + 6;
+          ctx.font = `800 ${centSize}px Inter, Arial, sans-serif`;
+          centW = pCents ? ctx.measureText(pCents).width + 4 : 0;
+          totalW = symW + mainW + centW;
         }
+        
+        const startX = priceCenterX - (totalW / 2);
+        const priceBaseY = ringY + 142; // mesmo baseline original
+        
         ctx.fillStyle = navy;
-        safeFillText(ctx, priceStr, priceCenterX, ringY + 142, ringW - 40, 24); // Movido para baixo
+        ctx.textAlign = "left";
+        
+        // Simbolo no topo esquerdo
+        ctx.font = `800 ${symSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(pSym, startX, priceBaseY - priceSize + symSize + 8);
+        
+        // Valor principal
+        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(pMain, startX + symW, priceBaseY);
+        
+        // Centavos no topo direito
+        if (pCents) {
+          ctx.font = `800 ${centSize}px Inter, Arial, sans-serif`;
+          ctx.fillText(pCents, startX + symW + mainW + 4, priceBaseY - priceSize + centSize + 10);
+        }
         ctx.restore();
         
         ctx.fillStyle = navy;
@@ -1955,7 +2012,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const totalH = (showTotal && totalStr) ? 36 : 0;
         const totalGap = totalH ? 14 : 0;
         const stripeH = 64;
-        const padBottom = 36;
+        const padBottom = 48; // Aumentado para respirar melhor
 
         const priceBlockH = 130; // Reduzido de 160 para remover espaco vazio dentro do box
         const ringH = priceBlockH - 8;
@@ -1999,6 +2056,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         
         cursorY += titleGap + 48;
 
+        // Restaura cor para o destino
+        ctx.fillStyle = navy;
+        ctx.textAlign = "center";
+        
         ctx.font = "500 56px Inter, Arial, sans-serif";
         let destSize = 56;
         while (ctx.measureText(destinoUp).width > boxW - 80 && destSize > 32) {
