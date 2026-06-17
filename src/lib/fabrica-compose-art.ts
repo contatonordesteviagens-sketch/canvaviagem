@@ -2348,7 +2348,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.globalAlpha = 1;
 
       // Pilula PIX
-      const pixV0 = (paymentPix || "").toUpperCase();
+      const pixV0 = (pixBannerText || "").toUpperCase();
       if (pixV0) {
         const pixFs = 16;
         ctx.font = `800 ${pixFs}px Inter, Arial, sans-serif`;
@@ -3857,7 +3857,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, suffixV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.suffixSize * 0.7));
   
       // 9. Pilula de Desconto (PIX) na borda inferior do card
-      const pixV7 = (paymentPix || "").toUpperCase();
+      const pixV7 = (pixBannerText || "").toUpperCase();
       if (pixV7) {
         ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
         // Ajusta a largura dinamicamente. Vamos assumir que a imagem 2 usa a cor amarela (secondaryColor ou amarela padrao)
