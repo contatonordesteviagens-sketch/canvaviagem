@@ -3467,9 +3467,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, ln, leftX, titleStartYV5 + i * (titleFsV5 + 8), leftW, 18);
       });
 
-      const iconSizeV5 = format === "story" ? 69 : 57;
-      const iconGapV5 = 18;
-      const iconYV5 = cardY + cardH - (format === "story" ? 78 : 64);
+      const iconSizeV5 = format === "story" ? 84 : 72; // Icones maiores! (eram 69 : 57)
+      const iconGapV5 = 22; // Mais respiro entre os icones maiores
+      const iconYV5 = cardY + cardH - (format === "story" ? 88 : 74);
       let iconX = leftX;
       iconListV5.slice(0, 4).forEach((k) => {
         fillRoundRect(ctx, iconX, iconYV5 - iconSizeV5 / 2, iconSizeV5, iconSizeV5, iconSizeV5 / 2, hexToRgbaV5(onCard, 0.12));
@@ -3477,19 +3477,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         iconX += iconSizeV5 + iconGapV5;
       });
 
-      if (daysTextV5) {
-        const dayLabel = daysTextV5.toUpperCase();
-        ctx.font = `900 ${format === "story" ? 20 : 17}px Inter, Arial, sans-serif`;
-        const dayW = Math.min(leftW - (iconX - leftX) - 18, ctx.measureText(dayLabel).width + 34);
-        if (dayW > 90) {
-          const dayX = iconX + 8;
-          fillRoundRect(ctx, dayX, iconYV5 - 24, dayW, 44, 22, hexToRgbaV5(v5Secondary, 0.18));
-          ctx.fillStyle = accentOnCard;
-          ctx.textAlign = "center";
-          safeFillText(ctx, dayLabel, dayX + dayW / 2, iconYV5 + 6, dayW - 26, 10);
-          ctx.textAlign = "left";
-        }
-      }
+      // O texto do periodo ("Feriado prolongado") foi removido para deixar o espaco apenas para os icones!
 
       ctx.fillStyle = hexToRgbaV5(onCard, 0.22);
       ctx.fillRect(rightX - gapW / 2, cardY + 46, 2, cardH - 92);
