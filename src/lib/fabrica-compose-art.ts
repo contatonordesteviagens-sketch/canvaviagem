@@ -689,7 +689,7 @@ function drawMonoIcon(
   ctx.scale(s, s);
   
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1.8;
+  ctx.lineWidth = 1.3;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
@@ -710,7 +710,7 @@ function drawMonoIcon(
       "M2 22h20"
     ],
     plane: [
-      "M17.8 19.2 16 11l3.5-3.5a2.1 2.1 0 0 0-3-3L13 8 4.8 6.2c-.5-.1-.9.2-1.1.6L3 8l6 3-4 4-3-1-1 1 4 4 1-1-1-3 4-4 3 6 1.2-.7.6-1.1c.4-.2.7-.6.6-1.1z"
+      "M3 21h18", "M5 18l12-12a2.8 2.8 0 0 1 4 4L9 22", "M8 15l4 4", "M15 8l4 4"
     ],
     ship: [
       "M2 21c.6.5 1.2 1 2.5 1 1.3 0 1.9-.5 2.5-1 .6-.5 1.2-1 2.5-1 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.3 0 1.9-.5 2.5-1 .6-.5 1.2-1 2.5-1 1.3 0 1.9.5 2.5 1",
@@ -735,11 +735,7 @@ function drawMonoIcon(
       "M7 2v20",
       "M21 2l-6 6v14h4z"
     ],
-    coffee: [
-      "M18 8h1a4 4 0 0 1 0 8h-1",
-      "M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z",
-      "M6 1v3", "M10 1v3", "M14 1v3"
-    ],
+    coffee: ["M18 8h1a4 4 0 0 1 0 8h-1", "M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z", "M6 1v3", "M10 1v3", "M14 1v3"],
     map: [
       "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z",
       "M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"
@@ -3590,9 +3586,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
     if (variant === 7) {
       const isStoryV7 = format === "story";
       const T = {
-        // Reduzido a altura do card (de 0.48/0.52 para 0.42/0.46) para diminuir a parte branca inferior
         cardW: Math.round(width * (isStoryV7 ? 0.9 : 0.85)),
-        cardH: Math.round(height * (isStoryV7 ? 0.42 : 0.46)),
         cardR: 45,
         titleSize: Math.round(width * (isStoryV7 ? 0.08 : 0.065)),
         subSize: Math.round(width * (isStoryV7 ? 0.038 : 0.032)),
@@ -3604,11 +3598,28 @@ const panelBottom = RULES.PANEL_BOTTOM;
         iconSize: Math.round(width * (isStoryV7 ? 0.06 : 0.05)),
       };
       
-      const cardX = (width - T.cardW) / 2;
-      // Ajusta o Y para ficar mais centralizado considerando que o card ta menor
-      const cardY = isStoryV7 ? height - T.cardH - 250 : height - T.cardH - 150;
-      
       const cx = width / 2;
+      const destinationV7 = (destination || destFmt || "CARTAGENA").toUpperCase();
+      const promoPillV7 = (promoName || "OFERTA ESPECIAL").toUpperCase();
+      
+      const hlIcons = highlights ? highlights.map(h => h?.icon).filter(Boolean).slice(0, 4) : [];
+      const hasIcons = hlIcons.length > 0;
+      const periodText = (travelPeriod || "").toUpperCase();
+      const hasPeriod = periodText.length > 0;
+      
+      // CALCULO DINAMICO DA ALTURA DO CARD
+      const pillH = Math.round(T.pillTxtSize * 1.8);
+      let requiredH = pillH / 2; // O topo comeca no meio da pilula
+      requiredH += T.titleSize + 15; // Titulo principal
+      requiredH += 45 + Math.round(T.subSize * 1.7); // Bloco de icones/dias
+      requiredH += 40 + T.priceSize; // Preco
+      if (showTotal && totalOverride) requiredH += T.labelSize + 5;
+      requiredH += T.suffixSize + 15;
+      requiredH += 50; // Padding inferior (aprox 2cm)
+      
+      const cardH = requiredH;
+      const cardX = cx - T.cardW / 2;
+      const cardY = isStoryV7 ? height - cardH - 180 : height - cardH - 80;
   
       // 1. Fundo cobrindo 100%
       const photoCrop = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
@@ -3622,23 +3633,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
       
       // 2. Card Flutuante Branco
       ctx.fillStyle = "#FFFFFF";
-      fillRoundRect(ctx, cardX, cardY, T.cardW, T.cardH, T.cardR);
+      fillRoundRect(ctx, cardX, cardY, T.cardW, cardH, T.cardR);
       ctx.restore();
-  
-      // Textos dinamicos
-      const destinationV7 = (destination || destFmt || "CARTAGENA").toUpperCase();
-      // Se cityFmt nao existir, nao usa travelPeriod como cidade para evitar baguncar
-      const subTextV7 = (cityFmt || "").toUpperCase();
-      const promoPillV7 = (promoName || "OFERTA ESPECIAL").toUpperCase();
       
       // 3. Pilula do topo
       ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
       const pillPad = 60;
       const pillW = ctx.measureText(promoPillV7).width + pillPad;
-      const pillH = Math.round(T.pillTxtSize * 1.8);
       const pillY = cardY - pillH / 2;
       
-      ctx.fillStyle = primaryColor || "#0066FF"; // Azul Principal
+      ctx.fillStyle = primaryColor || "#0066FF";
       fillRoundRect(ctx, cx - pillW / 2, pillY, pillW, pillH, pillH / 2);
       
       ctx.fillStyle = getSafeColor(primaryColor || "#0066FF", "#FFFFFF");
@@ -3648,63 +3652,44 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, promoPillV7, cx, pillY + pillH / 2 + 2, pillW - 20, Math.round(T.pillTxtSize * 0.7));
       ctx.textBaseline = "alphabetic";
   
-      // 4. Conteudo do Card: Titulo e Subtitulo
+      // 4. Conteudo do Card: Titulo (SEM A CIDADE EMBAIXO)
       const cardInnerPad = T.cardW * 0.05;
       let currentY = cardY + pillH / 2 + T.titleSize + 15;
       
-      ctx.fillStyle = "#000000"; // Preto forte
+      ctx.fillStyle = "#000000"; 
       ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
       safeFillText(ctx, destinationV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.titleSize * 0.7));
-      
-      if (subTextV7) {
-        currentY += T.subSize + 5;
-        ctx.fillStyle = "#666666"; // Cinza
-        ctx.font = `700 ${T.subSize}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, subTextV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.subSize * 0.7));
-      }
   
       // 5. Bloco de Icones e Dias (Pills combinadas)
-      currentY += subTextV7 ? 35 : 45;
-      
-      const hlIcons = highlights ? highlights.map(h => h?.icon).filter(Boolean).slice(0, 4) : [];
-      const hasIcons = hlIcons.length > 0;
-      const periodText = (travelPeriod || "").toUpperCase();
-      const hasPeriod = periodText.length > 0;
-      
+      currentY += 45;
       if (hasIcons || hasPeriod) {
         const gap = 15;
         const hlPillH = Math.round(T.subSize * 1.7);
-        const iconSpace = T.iconSize * 0.7 + 10; // Espaco por icone
+        const iconSpace = T.iconSize * 0.7 + 10;
         
         let iconsW = 0;
-        if (hasIcons) {
-          iconsW = 20 + (hlIcons.length * iconSpace) - 10 + 20; // Padding left/right e espaco dos icones
-        }
+        if (hasIcons) iconsW = 20 + (hlIcons.length * iconSpace) - 10 + 20; 
         
         let periodW = 0;
         ctx.font = `800 ${T.subSize * 0.85}px Inter, Arial, sans-serif`;
-        if (hasPeriod) {
-          periodW = ctx.measureText(periodText).width + 40;
-        }
+        if (hasPeriod) periodW = ctx.measureText(periodText).width + 40;
         
         const totalW = (hasIcons ? iconsW : 0) + (hasIcons && hasPeriod ? gap : 0) + (hasPeriod ? periodW : 0);
         let startX = cx - totalW / 2;
         const alignY = currentY;
         
-        // Desenha bloco 1: Icones (Cor Primaria)
         if (hasIcons) {
           ctx.fillStyle = primaryColor || "#0066FF";
           fillRoundRect(ctx, startX, alignY - hlPillH + 5, iconsW, hlPillH, hlPillH / 2);
           
           let iconX = startX + 20;
           hlIcons.forEach((iconName) => {
-            drawMonoIcon(ctx, iconName, iconX + (T.iconSize * 0.7)/2, alignY - hlPillH / 2 + 5, T.iconSize * 0.7, "#FFFFFF");
+            drawMonoIcon(ctx, iconName, iconX + (T.iconSize * 0.7)/2, alignY - hlPillH / 2 + 5, T.iconSize * 0.7, getSafeColor(primaryColor || "#0066FF", "#FFFFFF"));
             iconX += iconSpace;
           });
           startX += iconsW + gap;
         }
         
-        // Desenha bloco 2: Dias / Periodo (Preto)
         if (hasPeriod) {
           ctx.fillStyle = "#000000";
           fillRoundRect(ctx, startX, alignY - hlPillH + 5, periodW, hlPillH, hlPillH / 2);
@@ -3720,7 +3705,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
   
       // 6. Preco
-      currentY += 40; // Menos espaco em branco
+      currentY += 40; 
       const labelV7 = (() => {
         if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
         if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
@@ -3749,10 +3734,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         
         ctx.textAlign = "left";
         ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(instText, startX, currentY); // '10x de'
+        ctx.fillText(instText, startX, currentY); 
         
         ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(priceV7, startX + instW + 15, currentY); // 'R$ 150'
+        ctx.fillText(priceV7, startX + instW + 15, currentY); 
       } else {
         ctx.textAlign = "center";
         safeFillText(ctx, priceV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.priceSize * 0.7));
@@ -3764,7 +3749,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillStyle = "#333333";
         ctx.font = `600 ${T.labelSize}px Inter, Arial, sans-serif`;
         ctx.textAlign = "center";
-        // Remove a duplicacao 'Total: R$' se ja estiver no texto
         const totalText = totalOverride.toLowerCase().includes("total") ? totalOverride : `Total: ${curSym} ${totalOverride}`;
         ctx.fillText(totalText, cx, currentY);
       }
