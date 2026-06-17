@@ -1950,17 +1950,28 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const boxW = Math.round(width * 0.68); // Ajustado de 0.72 para 0.68 para ser menos "largo"
         const boxR = 36;
         const padTop = 36;
-        const titleH = 50; const titleGap = 12;
-        const destH = 60; const destGap = 18;
-        const infoH = 42; const infoGap = 22;
-        const priceBlockH = 160; 
+        const titleGap = 12;
+        const destGap = 18;
         const totalH = (showTotal && totalStr) ? 36 : 0;
         const totalGap = totalH ? 14 : 0;
         const stripeH = 64;
-        const stripeGap = showPixBanner ? 22 : 0;
         const padBottom = 36;
 
-        const boxH = padTop + titleH + titleGap + destH + destGap + infoH + infoGap + priceBlockH + totalGap + totalH + (showPixBanner ? stripeGap + stripeH : 0) + padBottom;
+        const priceBlockH = 130; // Reduzido de 160 para remover espaco vazio dentro do box
+        const ringH = priceBlockH - 8;
+
+        // Calculo dinamico exato do Box
+        let simY = padTop + 32;       // Altura base do pacote
+        simY += titleGap + 48;        // Pos pacote
+        simY += destGap + 36;         // Pos destino
+        simY += 55;                   // Pos icones
+        simY += ringH;                // Pos bloco de preco
+        simY += totalGap + totalH;    // Pos total
+        if (showPixBanner) {
+          simY += 24 + stripeH;       // Pos pix (stripeGap + stripeH)
+        }
+        
+        const boxH = simY + padBottom;
         const safeBoxY = 180;
 
         ctx.save();
@@ -1971,7 +1982,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const cx = boxX + boxW / 2;
         let cursorY = safeBoxY + padTop + 32;
         
-        const pacoteText = "PACOTE";
+        const pacoteText = (promoName || "PACOTE").trim().toUpperCase();
         ctx.font = "900 28px Inter, Arial, sans-serif";
         const pacoteW = ctx.measureText(pacoteText).width + 60;
         const pacoteH = 50;
@@ -2148,9 +2159,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
 
         // [PROMO] faixa horizontal com texto Pix (opcional)
-        // Fundo da faixa = primaryColor (navy padrÃ£o). Texto sempre com contraste.
+        // Fundo da faixa = primaryColor (navy padrao). Texto sempre com contraste.
         if (showPixBanner) {
-          const stripeY = safeBoxY + boxH - stripeH - 24;
+          const stripeY = cursorY + 24;
           const stripeX = boxX + 40;
           const stripeW = boxW - 80;
           const stripeBg = navyRaw; // mantem a cor escolhida pelo usuario p/ a faixa
