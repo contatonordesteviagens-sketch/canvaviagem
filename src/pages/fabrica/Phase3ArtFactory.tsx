@@ -1293,7 +1293,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 photoRefs[idx],
                 localStrategy,
                 freshSeedPhoto + idx,
-                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 7 : undefined,
+                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % TOTAL_VARIANTS_PHOTO : undefined,
                 palette
               )
             );
@@ -1557,7 +1557,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               refImage,
               localStrategy,
               freshSeedCustom + idx,
-              typeof nextVariant === "number" ? (nextVariant + idx) % 7 : undefined,
+              typeof nextVariant === "number" ? (nextVariant + idx) % TOTAL_VARIANTS : undefined,
               palette
             )
           );
