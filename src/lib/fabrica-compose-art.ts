@@ -2197,15 +2197,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (travelPeriod && travelPeriod.trim()) {
         const tp = travelPeriod.trim();
         benefitsList = benefitsList.filter(b => b.text.toLowerCase() !== tp.toLowerCase());
-        benefitsList.unshift({ text: tp, icon: "calendar" as IconKey });
       }
       benefitsList = benefitsList.slice(0, 6);
       const benefitsCount = Math.max(1, benefitsList.length);
       const benefitLineH = benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34;
       const benefitsBlockH = benefitsCount * benefitLineH;
 
-      // 3) Altura do bloco preÃ§o (fixa, ~120px)
-      const priceBlockH = 120;
+      // 3) Altura do bloco preço (agora maior para caber o PIX e prefixo)
+      const priceBlockH = 160;
       const contentRowH = Math.max(benefitsBlockH, priceBlockH);
 
       // 4) Altura ADAPTATIVA do painel:
@@ -2227,16 +2226,25 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = v0PanelBg;
       ctx.fillRect(0, 0, width, topH);
 
-      // 6) Badge "Saindo de"
+      // 6) Badges (Promo, Saindo de, Dias)
+      const badges: string[] = [];
+      if (promoName) badges.push(promoName.toUpperCase());
+      if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza') badges.push(`Saindo de ${cityFmt}`);
+      if (travelPeriod && travelPeriod.trim()) badges.push(travelPeriod.trim().toUpperCase());
+
       const badgeY = safeAnchorY;
-      if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza') {
-        fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, v0BadgeBg);
+      let badgeX = left;
+
+      badges.forEach(text => {
+        ctx.font = "800 24px Inter, Arial, sans-serif";
+        const w = ctx.measureText(text).width + 30;
+        fillRoundRect(ctx, badgeX, badgeY, w, badgeH, 8, v0BadgeBg);
         ctx.fillStyle = v0OnBadge;
-        ctx.font = "800 26px Inter, Arial, sans-serif";
-        ctx.textAlign = "left"; ctx.textBaseline = "middle";
-        ctx.fillText(`Saindo de ${cityFmt}`, left + 20, badgeY + badgeH / 2);
-        ctx.textBaseline = "alphabetic";
-      }
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(text, badgeX + w / 2, badgeY + badgeH / 2);
+        badgeX += w + 15;
+      });
+      ctx.textBaseline = "alphabetic";
 
       // 7) Headline (1 linha, fonte adaptativa)
       ctx.fillStyle = v0OnPanel;
@@ -2274,30 +2282,85 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textBaseline = "alphabetic";
       });
 
-      // Divisor vertical
-      ctx.fillStyle = v0OnPanel; ctx.globalAlpha = 0.2;
-      ctx.fillRect(priceX - 24, rowTopY, 2, contentRowH);
-      ctx.globalAlpha = 1;
+      // Fundo sutil para o bloco de preco
+      ctx.fillStyle = "rgba(0,0,0,0.06)";
+      fillRoundRect(ctx, priceX, rowTopY, priceBlockW, contentRowH + 20, 16);
 
-      // PreÃ§o â€” agora CENTRALIZADO dentro do bloco direito
+      // Preço centralizado
       const priceCenterX = priceX + priceBlockW / 2;
       ctx.textAlign = "center";
-      ctx.fillStyle = v0OnPanel; ctx.font = "600 22px Inter, Arial, sans-serif";
-      safeFillText(ctx, (topLabel || "por apenas").toString(), priceCenterX, rowTopY + 28, priceBlockW - 20, 14);
-      const priceStr = mainPrice || `${curSym} ${price}`;
-      // Auto-shrink do preÃ§o pra nÃ£o vazar do bloco direito
-      let priceFs = 64;
-      ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(priceStr).width > priceBlockW - 20 && priceFs > 30) {
-        priceFs -= 4;
-        ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      
+      // Prefixo
+      const prefixText = (() => {
+        if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
+        if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
+        return paymentLabel || pricePrefix || "a partir de";
+      })().toString();
+
+      ctx.fillStyle = v0OnPanel; ctx.font = "600 20px Inter, Arial, sans-serif";
+      safeFillText(ctx, prefixText, priceCenterX, rowTopY + 30, priceBlockW - 20, 14);
+      
+      // Valores e Parcelas
+      const priceStrV0 = mainPrice || `${curSym} ${price}`.trim();
+      let pMainV0 = priceStrV0;
+      let pCentsV0 = "";
+      if (priceStrV0.includes(",")) {
+        const parts = priceStrV0.split(",");
+        pMainV0 = parts[0];
+        pCentsV0 = "," + parts[1];
       }
+
+      const instText = installments && (paymentMode === "installments" || paymentMode === "down_plus") 
+        ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`) 
+        : "";
+
+      // Medir e centralizar Parcela + Preço + Centavos
+      const priceFs = 56;
+      const instFs = 28;
+      ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      const pMainW = ctx.measureText(pMainV0).width;
+      ctx.font = `900 ${instFs}px Inter, Arial, sans-serif`;
+      const instW = instText ? ctx.measureText(instText).width + 10 : 0;
+      const pCentsW = pCentsV0 ? ctx.measureText(pCentsV0).width : 0;
+
+      const totalW = instW + pMainW + pCentsW;
+      const startX = priceCenterX - totalW / 2;
+      const py = rowTopY + 80;
+
+      ctx.textAlign = "left";
       ctx.fillStyle = v0OnPanel;
-      safeFillText(ctx, priceStr, priceCenterX, rowTopY + 92, priceBlockW - 20, 24);
-      ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = v0OnPanel;
+      if (instText) {
+        ctx.font = `900 ${instFs}px Inter, Arial, sans-serif`;
+        ctx.fillText(instText, startX, py);
+      }
+      ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      ctx.fillText(pMainV0, startX + instW, py);
+      if (pCentsV0) {
+        ctx.font = `900 ${instFs}px Inter, Arial, sans-serif`;
+        ctx.fillText(pCentsV0, startX + instW + pMainW, py);
+      }
+
+      // Sufixo
+      ctx.textAlign = "center";
+      ctx.font = "600 18px Inter, Arial, sans-serif"; ctx.fillStyle = v0OnPanel;
       ctx.globalAlpha = 0.7;
-      ctx.fillText(bottomSuffix, priceCenterX, rowTopY + 120);
+      ctx.fillText(bottomSuffix, priceCenterX, py + 25);
       ctx.globalAlpha = 1;
+
+      // Pilula PIX
+      const pixV0 = (paymentPix || "").toUpperCase();
+      if (pixV0) {
+        const pixFs = 16;
+        ctx.font = `800 ${pixFs}px Inter, Arial, sans-serif`;
+        const pixW = ctx.measureText(pixV0).width + 30;
+        const pixH = 34;
+        const pixY = py + 40;
+        fillRoundRect(ctx, priceCenterX - pixW/2, pixY, pixW, pixH, 8, v0BadgeBg);
+        ctx.fillStyle = v0OnBadge;
+        ctx.textBaseline = "middle";
+        ctx.fillText(pixV0, priceCenterX, pixY + pixH/2 + 1);
+        ctx.textBaseline = "alphabetic";
+      }
       ctx.textAlign = "left";
 
       // 9) Foto MAIOR na base (porque o painel encolheu)
