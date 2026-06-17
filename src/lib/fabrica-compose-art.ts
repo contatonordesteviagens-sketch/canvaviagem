@@ -3580,17 +3580,18 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
     if (variant === 7) {
       const isStoryV7 = format === "story";
+      const scale = 0.85; // Diminuido em 15% a pedido do usuario
       const T = {
-        cardW: Math.round(width * (isStoryV7 ? 0.9 : 0.85)),
+        cardW: Math.round(width * (isStoryV7 ? 0.9 : 0.85) * scale),
         cardR: 45,
-        titleSize: Math.round(width * (isStoryV7 ? 0.08 : 0.065)),
-        subSize: Math.round(width * (isStoryV7 ? 0.038 : 0.032)),
-        labelSize: Math.round(width * (isStoryV7 ? 0.035 : 0.03)),
-        priceSize: Math.round(width * (isStoryV7 ? 0.095 : 0.085)),
-        installSize: Math.round(width * (isStoryV7 ? 0.045 : 0.038)),
-        suffixSize: Math.round(width * (isStoryV7 ? 0.028 : 0.024)),
-        pillTxtSize: Math.round(width * (isStoryV7 ? 0.045 : 0.04)),
-        iconSize: Math.round(width * (isStoryV7 ? 0.06 : 0.05)),
+        titleSize: Math.round(width * (isStoryV7 ? 0.08 : 0.065) * scale),
+        subSize: Math.round(width * (isStoryV7 ? 0.038 : 0.032) * scale),
+        labelSize: Math.round(width * (isStoryV7 ? 0.035 : 0.03) * scale),
+        priceSize: Math.round(width * (isStoryV7 ? 0.095 : 0.085) * scale),
+        installSize: Math.round(width * (isStoryV7 ? 0.045 : 0.038) * scale),
+        suffixSize: Math.round(width * (isStoryV7 ? 0.028 : 0.024) * scale),
+        pillTxtSize: Math.round(width * (isStoryV7 ? 0.045 : 0.04) * scale),
+        iconSize: Math.round(width * (isStoryV7 ? 0.06 : 0.05) * scale),
       };
       
       const cx = width / 2;
@@ -3606,17 +3607,17 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const pillH = Math.round(T.pillTxtSize * 1.8);
       let requiredH = pillH / 2; // O topo comeca no meio da pilula
       requiredH += T.titleSize + 15; // Titulo principal
-      requiredH += T.titleSize * 0.5 + 40; // Espaco entre titulo e icones
+      requiredH += T.titleSize * 0.5 + 30; // Espaco suavemente reduzido entre titulo e icones
       requiredH += Math.round(T.subSize * 1.7); // Altura do bloco de icones/dias
-      requiredH += 60; // Espaco ate o preco
+      requiredH += 40; // Espaco suavemente reduzido ate o preco
       requiredH += T.priceSize; // Preco
       if (showTotal && totalOverride) requiredH += T.labelSize + 5;
       requiredH += T.suffixSize + 15;
-      requiredH += 20; // Padding inferior (menor parte sobrando)
+      requiredH += 15; // Padding inferior suavemente reduzido
       
       const cardH = requiredH;
       const cardX = cx - T.cardW / 2;
-      const cardY = isStoryV7 ? height - cardH - 180 : height - cardH - 50; // Bloco sobe mais
+      const cardY = (height - cardH) / 2; // Sobe o bloco para exatamente a metade da imagem
   
       // 1. Fundo cobrindo 100%
       const photoCrop = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
@@ -3639,10 +3640,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const pillW = ctx.measureText(promoPillV7).width + pillPad;
       const pillY = cardY - pillH / 2;
       
-      ctx.fillStyle = primaryColor || "#0066FF";
+      const pColor = primaryColor || "#0066FF";
+      const sColor = secondaryColor || pColor;
+
+      ctx.fillStyle = sColor;
       fillRoundRect(ctx, cx - pillW / 2, pillY, pillW, pillH, pillH / 2);
       
-      ctx.fillStyle = getSafeColor(primaryColor || "#0066FF", "#FFFFFF");
+      ctx.fillStyle = getSafeColor(sColor, "#FFFFFF");
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
@@ -3718,13 +3722,46 @@ const panelBottom = RULES.PANEL_BOTTOM;
       let priceV7 = mainPrice || `${curSym} ${price}`.trim();
       
       ctx.fillStyle = primaryColor || "#0066FF";
-      ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
       
+      // LOGICA DE CENTAVOS SUAVE (sem quebrar a estrutura)
+      let pMain = priceV7;
+      let pCents = "";
+      if (priceV7.includes(",")) {
+        const parts = priceV7.split(",");
+        pMain = parts[0] + ",";
+        pCents = parts[1];
+      }
+
+      const drawCents = (baseX: number, align: "center" | "left") => {
+        if (!pCents) {
+          ctx.textAlign = align;
+          ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+          ctx.fillText(priceV7, baseX, currentY);
+          return;
+        }
+        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+        const w1 = ctx.measureText(pMain).width;
+        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
+        const w2 = ctx.measureText(pCents).width;
+        let sx = align === "center" ? baseX - (w1 + w2) / 2 : baseX;
+        
+        ctx.textAlign = "left";
+        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(pMain, sx, currentY);
+        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(pCents, sx + w1, currentY);
+      };
+
       if (installments && (paymentMode === "installments" || paymentMode === "down_plus")) {
-        const priceW = ctx.measureText(priceV7).width;
         ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
         const instText = installments.toLowerCase().includes("de") ? installments : `${installments} de`;
         const instW = ctx.measureText(instText).width;
+        
+        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+        const w1Sim = ctx.measureText(pMain).width;
+        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
+        const w2Sim = pCents ? ctx.measureText(pCents).width : 0;
+        const priceW = w1Sim + w2Sim;
         
         const totalW = instW + 15 + priceW;
         const startX = cx - totalW / 2;
@@ -3733,11 +3770,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
         ctx.fillText(instText, startX, currentY); 
         
-        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(priceV7, startX + instW + 15, currentY); 
+        drawCents(startX + instW + 15, "left");
       } else {
-        ctx.textAlign = "center";
-        safeFillText(ctx, priceV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.priceSize * 0.7));
+        drawCents(cx, "center");
       }
       
       // 7. Total (Se ativo)
@@ -3758,6 +3793,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "center";
       safeFillText(ctx, suffixV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.suffixSize * 0.7));
   
+      // Desenha a logo e contatos respeitando a decisao visual suave
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        effectiveTextColor,
+        userFamily,
+        false
+      );
+
       return canvas.toDataURL("image/png");
     }
     return canvas.toDataURL("image/png");
