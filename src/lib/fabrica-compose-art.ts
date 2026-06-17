@@ -1705,15 +1705,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const boxW = 900; // Reduzido de 1000px para 900px
         const boxX = (width - boxW) / 2;
         
-        const rowGap = 70; // Aumentado o respiro entre beneficios (era 80)
-        const topPadding = 225; // Respiro do topo ate os icones (era 230)
+        const rowGap = 55; // Aumentado o respiro entre beneficios (era 80)
+        const topPadding = 195; // Respiro do topo ate os icones (era 230)
         const benefitsH = Math.ceil(benefitsList.length / 2) * rowGap;
-        const priceBlockTopGap = 45; // Respiro entre icones e bloco de preco (era 55)
-        const ringH = 160;
+        const priceBlockTopGap = 35; // Respiro entre icones e bloco de preco (era 55)
+        const ringH = 150;
         
         const baseBoxH = topPadding + benefitsH + priceBlockTopGap + ringH + 40;
-        const stripeH = 72;
-        const stripeGap = 25;
+        const stripeH = 60;
+        const stripeGap = 15;
         const boxH = showPixBanner ? baseBoxH + stripeH + stripeGap : baseBoxH;
         
         // Centralizacao Vertical no Story (ou levemente abaixo)
@@ -1737,7 +1737,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const pacoteText = (promoName || "PACOTE").trim().toUpperCase();
         ctx.font = "900 32px Inter, Arial, sans-serif";
         const pacoteW = ctx.measureText(pacoteText).width + 70;
-        const pacoteH = 56;
+        const pacoteH = 52;
         const badgeY = boxY + 84;
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
@@ -1752,13 +1752,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         // Destino (multiplicado por 1.2x)
         ctx.fillStyle = navy;
-        let destSize = 58;
+        let destSize = 54;
         ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
         while (ctx.measureText(destinoUp).width > boxW - 80 && destSize > 32) {
           destSize -= 2;
           ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
         }
-        safeFillText(ctx, destinoUp, cx, boxY + 145, boxW - 80, 24);
+        safeFillText(ctx, destinoUp, cx, boxY + 125, boxW - 80, 24);
 
         // Grade de 4 BenefÃ­cios
         const colW = (boxW - 100) / 2; // 400px cada coluna
@@ -1771,11 +1771,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const tx = startX + col * (colW + colGap);
           const ty = startY + row * rowGap;
           
-          const iconSize = 64;
+          const iconSize = 54;
           drawMonoIcon(ctx, b.icon as IconKey, tx + iconSize/2, ty, iconSize, navy);
           
           const isDuration = /\d+\s*dia/i.test(b.text) || /noite/i.test(b.text);
-          let bfs = isDuration ? 34 : 38;
+          let bfs = 32;
           ctx.fillStyle = navy;
           ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
           ctx.textAlign = "left";
@@ -1835,7 +1835,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         let pCents = "";
         if (centsMatch) { pMain = centsMatch[1]; pCents = centsMatch[2]; }
         
-        let priceSize = 95;
+        let priceSize = 85;
         let symSize = Math.round(priceSize * 0.45);
         let centSize = Math.round(priceSize * 0.5);
         
@@ -1861,7 +1861,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         
         const priceStartX = priceCenterX - (totalW / 2);
-        const priceBaseY = ringY + 115; // Movido para cima
+        const priceBaseY = ringY + 105; // Movido para cima
         
         ctx.fillStyle = navy;
         ctx.textAlign = "left";
@@ -1884,7 +1884,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillStyle = navy;
         ctx.globalAlpha = 0.75;
         ctx.font = "800 26px Inter, Arial, sans-serif";
-        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 144); // Movido para cima
+        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 135); // Movido para cima
         ctx.globalAlpha = 1;
 
         // Faixa de Desconto Pix no rodapÃ© do cartÃ£o amarelo
@@ -1897,7 +1897,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.fillStyle = contrastOn(navyRaw);
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.font = "900 28px Inter, Arial, sans-serif";
+          ctx.font = "900 26px Inter, Arial, sans-serif";
           
           const customBanner = (pixBannerText || "").trim();
           if (customBanner) {
@@ -1907,7 +1907,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
             const pixTextW = ctx.measureText(pixText).width;
             const pixIconSize = 32;
             const pixGap = 10;
-            ctx.font = "800 26px Inter, Arial, sans-serif";
+            ctx.font = "800 24px Inter, Arial, sans-serif";
             const pixLabelW = ctx.measureText("pix").width;
             
             const pillPad = 8;
@@ -1927,7 +1927,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
             drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
             
             ctx.fillStyle = "#32BCAD";
-            ctx.font = "900 26px Inter, Arial, sans-serif";
+            ctx.font = "900 24px Inter, Arial, sans-serif";
             ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + stripeH / 2);
           }
           ctx.textBaseline = "alphabetic";
