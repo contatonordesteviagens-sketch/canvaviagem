@@ -1574,20 +1574,20 @@ const panelBottom = RULES.PANEL_BOTTOM;
       rightY = labelY + Math.round(labelSizeV6 * 0.72);
 
       if (installmentV6) {
-        ctx.font = `900 ${T.metaSize}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${Math.round(T.metaSize * 1.35)}px Inter, Arial, sans-serif`; // Aumentado o 10x de
         const pillText = `${installmentV6} DE`;
-        const pillW = Math.min(rightMaxW, Math.max(150, ctx.measureText(pillText).width + 48));
-        const pillH = Math.round(T.metaSize * 1.55);
-        fillRoundRect(ctx, rightCx - pillW / 2, rightY - pillH + 8, pillW, pillH, 12, "rgba(255,255,255,0.18)");
+        const pillW = Math.min(rightMaxW, Math.max(160, ctx.measureText(pillText).width + 64));
+        const pillH = Math.round(T.metaSize * 1.95);
+        fillRoundRect(ctx, rightCx - pillW / 2, rightY - pillH + 8, pillW, pillH, 14, "rgba(255,255,255,0.18)");
         ctx.fillStyle = rightText;
         ctx.textBaseline = "middle";
-        safeFillText(ctx, pillText, rightCx, rightY - pillH / 2 + 8, pillW - 28, Math.round(T.metaSize * 0.65));
+        safeFillText(ctx, pillText, rightCx, rightY - pillH / 2 + 8, pillW - 28, Math.round(T.metaSize * 0.9));
         ctx.textBaseline = "alphabetic";
-        rightY += Math.round(T.metaSize * 0.95);
+        rightY += Math.round(T.metaSize * 0.4); // Reduzi o gap aqui embaixo para o preco subir!
       }
 
       ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-      const priceBaseY = rightY + T.priceSize - 24;
+      const priceBaseY = rightY + T.priceSize - 55; // Puxou o preco fortemente para cima (aprox 2cm)
       safeFillText(ctx, priceV6, rightCx, priceBaseY, rightMaxW, Math.round(T.priceSize * 0.52));
       rightY = priceBaseY + Math.round(T.suffixSize * 1.28);
 
