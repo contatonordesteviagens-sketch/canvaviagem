@@ -2077,7 +2077,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         simY += ringH;                // Pos bloco de preco
         simY += totalGap + totalH;    // Pos total
         if (showPixBanner) {
-          simY += 24 + stripeH;       // Pos pix (stripeGap + stripeH)
+          simY += 12 + stripeH;       // Pos pix (stripeGap + stripeH)
         }
         
         const boxH = simY + padBottom;
@@ -2256,7 +2256,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillText(mainTxt, leftColCx, priceBlockY + 36);
         
         ctx.font = "600 18px Inter, Arial, sans-serif";
-        ctx.fillText(btmTxt, leftColCx, priceBlockY + 68);
+        ctx.fillText(btmTxt, leftColCx, priceBlockY + 74);
 
         // Desenhar Lado Direito
         const priceBaseY = priceBlockY + 70; 
@@ -2312,7 +2312,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const stripeX = cx - stripeW / 2;
           
           // Desce um pouco (cursorY + 35 em vez de +24) e diminui a altura (stripeH = 50)
-          const stripeY = cursorY + 35;
+          const stripeY = cursorY + 12;
           const myStripeH = 50; 
           
           const stripeBg = navyRaw;
