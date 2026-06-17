@@ -1708,10 +1708,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const rowGap = 55; // Aumentado o respiro entre beneficios (era 80)
         const topPadding = 195; // Respiro do topo ate os icones (era 230)
         const benefitsH = Math.ceil(benefitsList.length / 2) * rowGap;
-        const priceBlockTopGap = 35; // Respiro entre icones e bloco de preco (era 55)
+        const priceBlockTopGap = 15; // Respiro entre icones e bloco de preco (era 55)
         const ringH = 150;
         
-        const baseBoxH = topPadding + benefitsH + priceBlockTopGap + ringH + 40;
+        const baseBoxH = topPadding + benefitsH + priceBlockTopGap + ringH + 10;
         const stripeH = 60;
         const stripeGap = 15;
         const boxH = showPixBanner ? baseBoxH + stripeH + stripeGap : baseBoxH;
@@ -1758,7 +1758,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           destSize -= 2;
           ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
         }
-        safeFillText(ctx, destinoUp, cx, boxY + 125, boxW - 80, 24);
+        safeFillText(ctx, destinoUp, cx, boxY + 140, boxW - 80, 24);
 
         // Grade de 4 BenefÃ­cios
         const colW = (boxW - 100) / 2; // 400px cada coluna
