@@ -3588,182 +3588,180 @@ const panelBottom = RULES.PANEL_BOTTOM;
     }
 
     if (variant === 7) {
-    const isStoryV7 = format === "story";
-    const T = {
-      cardW: Math.round(width * (isStoryV7 ? 0.9 : 0.85)),
-      cardH: Math.round(height * (isStoryV7 ? 0.48 : 0.52)),
-      cardR: 45,
-      titleSize: Math.round(width * (isStoryV7 ? 0.08 : 0.065)),
-      subSize: Math.round(width * (isStoryV7 ? 0.038 : 0.032)),
-      labelSize: Math.round(width * (isStoryV7 ? 0.035 : 0.03)),
-      priceSize: Math.round(width * (isStoryV7 ? 0.095 : 0.085)),
-      installSize: Math.round(width * (isStoryV7 ? 0.045 : 0.038)),
-      suffixSize: Math.round(width * (isStoryV7 ? 0.028 : 0.024)),
-      pillTxtSize: Math.round(width * (isStoryV7 ? 0.045 : 0.04)),
-      iconSize: Math.round(width * (isStoryV7 ? 0.06 : 0.05)),
-    };
-    
-    const cardX = (width - T.cardW) / 2;
-    const cardY = isStoryV7 ? height - T.cardH - 220 : height - T.cardH - 150;
-    
-    const cx = width / 2;
-
-    // 1. Fundo cobrindo 100%
-    const photoCrop = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
-    ctx.drawImage(image, photoCrop.sx, photoCrop.sy, photoCrop.sw, photoCrop.sh, 0, 0, width, height);
-    
-    // Sombra suave
-    ctx.save();
-    ctx.shadowColor = "rgba(0,0,0,0.25)";
-    ctx.shadowBlur = 40;
-    ctx.shadowOffsetY = 15;
-    
-    // 2. Card Flutuante Branco
-    ctx.fillStyle = "#FFFFFF";
-    fillRoundRect(ctx, cardX, cardY, T.cardW, T.cardH, T.cardR);
-    ctx.restore();
-
-    // Textos dinamicos
-    const destinationV7 = (destination || destFmt || "CARTAGENA").toUpperCase();
-    const subTextV7 = (cityFmt || travelPeriod || "Final de semana").toUpperCase();
-    const promoPillV7 = (promoName || "OFERTA ESPECIAL").toUpperCase();
-    
-    // 3. Pilula do topo (Centralizada metade dentro, metade fora do topo do card)
-    ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-    const pillPad = 60;
-    const pillW = ctx.measureText(promoPillV7).width + pillPad;
-    const pillH = Math.round(T.pillTxtSize * 1.8);
-    const pillY = cardY - pillH / 2;
-    
-    ctx.fillStyle = primaryColor || "#0066FF"; // Azul Principal
-    fillRoundRect(ctx, cx - pillW / 2, pillY, pillW, pillH, pillH / 2);
-    
-    ctx.fillStyle = getSafeColor(primaryColor || "#0066FF", "#FFFFFF");
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-    safeFillText(ctx, promoPillV7, cx, pillY + pillH / 2 + 2, pillW - 20, Math.round(T.pillTxtSize * 0.7));
-    ctx.textBaseline = "alphabetic";
-
-    // 4. Conteudo do Card: Titulo e Subtitulo
-    const cardInnerPad = T.cardW * 0.05;
-    let currentY = cardY + pillH / 2 + T.titleSize + 15;
-    
-    ctx.fillStyle = "#000000"; // Preto forte
-    ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
-    safeFillText(ctx, destinationV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.titleSize * 0.7));
-    
-    currentY += T.subSize + 12;
-    ctx.fillStyle = "#666666"; // Cinza
-    ctx.font = `700 ${T.subSize}px Inter, Arial, sans-serif`;
-    safeFillText(ctx, subTextV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.subSize * 0.7));
-
-    // 5. Linha de Highlights (Pills em vez de icones voando)
-    currentY += 40;
-    if (highlights && highlights.length > 0) {
-      const displayHls = highlights.slice(0, 2); // Maximo 2 para nao encavalar
-      ctx.font = `800 ${T.subSize * 0.85}px Inter, Arial, sans-serif`;
+      const isStoryV7 = format === "story";
+      const T = {
+        cardW: Math.round(width * (isStoryV7 ? 0.9 : 0.85)),
+        cardH: Math.round(height * (isStoryV7 ? 0.48 : 0.52)),
+        cardR: 45,
+        titleSize: Math.round(width * (isStoryV7 ? 0.08 : 0.065)),
+        subSize: Math.round(width * (isStoryV7 ? 0.038 : 0.032)),
+        labelSize: Math.round(width * (isStoryV7 ? 0.035 : 0.03)),
+        priceSize: Math.round(width * (isStoryV7 ? 0.095 : 0.085)),
+        installSize: Math.round(width * (isStoryV7 ? 0.045 : 0.038)),
+        suffixSize: Math.round(width * (isStoryV7 ? 0.028 : 0.024)),
+        pillTxtSize: Math.round(width * (isStoryV7 ? 0.045 : 0.04)),
+        iconSize: Math.round(width * (isStoryV7 ? 0.06 : 0.05)),
+      };
       
-      const gap = 15;
-      const hlPillH = Math.round(T.subSize * 1.7);
+      const cardX = (width - T.cardW) / 2;
+      const cardY = isStoryV7 ? height - T.cardH - 220 : height - T.cardH - 150;
       
-      // Calcula larguras totais para centralizar
-      const hlWidths = displayHls.map((hl) => {
-        const text = (hl?.text || "").toUpperCase();
-        return ctx.measureText(text).width + (hl?.icon ? 55 : 30);
-      });
-      const totalHlsW = hlWidths.reduce((a,b) => a+b, 0) + (hlWidths.length - 1) * gap;
+      const cx = width / 2;
+  
+      // 1. Fundo cobrindo 100%
+      const photoCrop = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+      ctx.drawImage(image, photoCrop.sx, photoCrop.sy, photoCrop.sw, photoCrop.sh, 0, 0, width, height);
       
-      let startX = cx - totalHlsW / 2;
-      const alignY = currentY;
+      // Sombra suave
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.25)";
+      ctx.shadowBlur = 40;
+      ctx.shadowOffsetY = 15;
       
-      displayHls.forEach((hl, i) => {
-        const text = (hl?.text || "").toUpperCase();
-        const w = hlWidths[i];
-        
-        ctx.fillStyle = i === 0 ? (primaryColor || "#0066FF") : "#000000"; // Primeira primaryColor, segunda preta
-        fillRoundRect(ctx, startX, alignY - hlPillH + 5, w, hlPillH, hlPillH / 2);
-        
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = `800 ${T.subSize * 0.85}px Inter, Arial, sans-serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        
-        if (hl?.icon) {
-          // Icone maior e mais visivel
-          drawMonoIcon(ctx, hl.icon, startX + 26, alignY - hlPillH / 2 + 5, T.iconSize * 0.7, "#FFFFFF");
-          ctx.fillText(text, startX + 26 + (w - 26) / 2, alignY - hlPillH / 2 + 7);
-        } else {
-          ctx.fillText(text, startX + w / 2, alignY - hlPillH / 2 + 7);
-        }
-        
-        startX += w + gap;
-      });
+      // 2. Card Flutuante Branco
+      ctx.fillStyle = "#FFFFFF";
+      fillRoundRect(ctx, cardX, cardY, T.cardW, T.cardH, T.cardR);
+      ctx.restore();
+  
+      // Textos dinamicos
+      const destinationV7 = (destination || destFmt || "CARTAGENA").toUpperCase();
+      const subTextV7 = (cityFmt || travelPeriod || "Final de semana").toUpperCase();
+      const promoPillV7 = (promoName || "OFERTA ESPECIAL").toUpperCase();
+      
+      // 3. Pilula do topo
+      ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
+      const pillPad = 60;
+      const pillW = ctx.measureText(promoPillV7).width + pillPad;
+      const pillH = Math.round(T.pillTxtSize * 1.8);
+      const pillY = cardY - pillH / 2;
+      
+      ctx.fillStyle = primaryColor || "#0066FF"; // Azul Principal
+      fillRoundRect(ctx, cx - pillW / 2, pillY, pillW, pillH, pillH / 2);
+      
+      ctx.fillStyle = getSafeColor(primaryColor || "#0066FF", "#FFFFFF");
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, promoPillV7, cx, pillY + pillH / 2 + 2, pillW - 20, Math.round(T.pillTxtSize * 0.7));
       ctx.textBaseline = "alphabetic";
-      currentY += 15;
-    }
-
-    // 6. Preco
-    currentY += 45;
-    const labelV7 = (() => {
-      if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
-      if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
-      return paymentLabel || pricePrefix || "a partir de";
-    })().toString();
-    
-    ctx.fillStyle = "#000000"; // Preto forte para label
-    ctx.font = `800 ${T.labelSize}px Inter, Arial, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText(labelV7, cx, currentY); 
-    
-    currentY += T.priceSize;
-    let priceV7 = mainPrice || `${curSym} ${price}`.trim();
-    
-    ctx.fillStyle = primaryColor || "#0066FF"; // Azul principal
-    ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-    
-    if (installments && (paymentMode === "installments" || paymentMode === "down_plus")) {
-      // 10x na frente (esq) e preco atrs (dir)
-      const priceW = ctx.measureText(priceV7).width;
-      ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
-      // Limpa 'x' ou 'X' se ja tiver 'de'
-      const instText = installments.toLowerCase().includes("de") ? installments : `${installments} de`;
-      const instW = ctx.measureText(instText).width;
+  
+      // 4. Conteudo do Card: Titulo e Subtitulo
+      const cardInnerPad = T.cardW * 0.05;
+      let currentY = cardY + pillH / 2 + T.titleSize + 15;
       
-      const totalW = instW + 15 + priceW;
-      const startX = cx - totalW / 2;
+      ctx.fillStyle = "#000000"; // Preto forte
+      ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, destinationV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.titleSize * 0.7));
       
-      ctx.textAlign = "left";
-      ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(instText, startX, currentY); // '10x de'
+      currentY += T.subSize + 12;
+      ctx.fillStyle = "#666666"; // Cinza
+      ctx.font = `700 ${T.subSize}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, subTextV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.subSize * 0.7));
+  
+      // 5. Linha de Highlights (Pills em vez de icones voando)
+      currentY += 40;
+      if (highlights && highlights.length > 0) {
+        const displayHls = highlights.slice(0, 2); // Maximo 2 para nao encavalar
+        ctx.font = `800 ${T.subSize * 0.85}px Inter, Arial, sans-serif`;
+        
+        const gap = 15;
+        const hlPillH = Math.round(T.subSize * 1.7);
+        
+        // Calcula larguras totais para centralizar
+        const hlWidths = displayHls.map((hl) => {
+          const text = (hl?.text || "").toUpperCase();
+          return ctx.measureText(text).width + (hl?.icon ? 55 : 30);
+        });
+        const totalHlsW = hlWidths.reduce((a,b) => a+b, 0) + (hlWidths.length - 1) * gap;
+        
+        let startX = cx - totalHlsW / 2;
+        const alignY = currentY;
+        
+        displayHls.forEach((hl, i) => {
+          const text = (hl?.text || "").toUpperCase();
+          const w = hlWidths[i];
+          
+          ctx.fillStyle = i === 0 ? (primaryColor || "#0066FF") : "#000000"; // Primeira primaryColor, segunda preta
+          fillRoundRect(ctx, startX, alignY - hlPillH + 5, w, hlPillH, hlPillH / 2);
+          
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = `800 ${T.subSize * 0.85}px Inter, Arial, sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          
+          if (hl?.icon) {
+            drawMonoIcon(ctx, hl.icon, startX + 26, alignY - hlPillH / 2 + 5, T.iconSize * 0.7, "#FFFFFF");
+            ctx.fillText(text, startX + 26 + (w - 26) / 2, alignY - hlPillH / 2 + 7);
+          } else {
+            ctx.fillText(text, startX + w / 2, alignY - hlPillH / 2 + 7);
+          }
+          
+          startX += w + gap;
+        });
+        ctx.textBaseline = "alphabetic";
+        currentY += 15;
+      }
+  
+      // 6. Preco
+      currentY += 45;
+      const labelV7 = (() => {
+        if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
+        if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
+        return paymentLabel || pricePrefix || "a partir de";
+      })().toString();
       
+      ctx.fillStyle = "#000000";
+      ctx.font = `800 ${T.labelSize}px Inter, Arial, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(labelV7, cx, currentY); 
+      
+      currentY += T.priceSize;
+      let priceV7 = mainPrice || `${curSym} ${price}`.trim();
+      
+      ctx.fillStyle = primaryColor || "#0066FF";
       ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(priceV7, startX + instW + 15, currentY); // 'R$ 150'
-    } else {
+      
+      if (installments && (paymentMode === "installments" || paymentMode === "down_plus")) {
+        const priceW = ctx.measureText(priceV7).width;
+        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
+        const instText = installments.toLowerCase().includes("de") ? installments : `${installments} de`;
+        const instW = ctx.measureText(instText).width;
+        
+        const totalW = instW + 15 + priceW;
+        const startX = cx - totalW / 2;
+        
+        ctx.textAlign = "left";
+        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(instText, startX, currentY); // '10x de'
+        
+        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(priceV7, startX + instW + 15, currentY); // 'R$ 150'
+      } else {
+        ctx.textAlign = "center";
+        safeFillText(ctx, priceV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.priceSize * 0.7));
+      }
+      
+      // 7. Total (Se ativo)
+      if (showTotal && totalOverride) {
+        currentY += T.labelSize + 5;
+        ctx.fillStyle = "#333333";
+        ctx.font = `600 ${T.labelSize}px Inter, Arial, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText(`Total: ${curSym} ${totalOverride}`, cx, currentY);
+      }
+      
+      // 8. Sufixo
+      currentY += T.suffixSize + 15;
+      const suffixV7 = (paymentSuffix || bottomSuffix || "por pessoa").trim();
+      ctx.fillStyle = "#000000";
+      ctx.font = `700 ${T.suffixSize}px Inter, Arial, sans-serif`;
       ctx.textAlign = "center";
-      safeFillText(ctx, priceV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.priceSize * 0.7));
+      safeFillText(ctx, suffixV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.suffixSize * 0.7));
+  
+      return canvas.toDataURL("image/png");
     }
-    
-    // 7. Total (Se ativo)
-    if (showTotal && totalOverride) {
-      currentY += T.labelSize + 5;
-      ctx.fillStyle = "#333333";
-      ctx.font = `600 ${T.labelSize}px Inter, Arial, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText(`Total: ${curSym} ${totalOverride}`, cx, currentY);
-    }
-    
-    // 8. Sufixo
-    currentY += T.suffixSize + 15;
-    const suffixV7 = (paymentSuffix || bottomSuffix || "por pessoa").trim();
-    ctx.fillStyle = "#000000"; // Preto forte
-    ctx.font = `700 ${T.suffixSize}px Inter, Arial, sans-serif`;
-    ctx.textAlign = "center";
-    safeFillText(ctx, suffixV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.suffixSize * 0.7));
-
     return canvas.toDataURL("image/png");
-  }
-
+  };
 
 
   // ============================================================
