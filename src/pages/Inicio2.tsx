@@ -349,7 +349,7 @@ export default function Inicio2() {
                   <>
                     <iframe
                       title="Lucas usando o Canva Viagem"
-                      src="https://www.youtube.com/embed/INkZn5pdPeM?autoplay=1&mute=1&controls=0&loop=1&playlist=INkZn5pdPeM&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
+                      src="https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&mute=1&controls=0&loop=1&playlist=R2MyCdox--I&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
                       allow="autoplay; encrypted-media; picture-in-picture"
                       allowFullScreen
                     />
@@ -366,7 +366,7 @@ export default function Inicio2() {
                 ) : (
                   <iframe
                     title="Lucas usando o Canva Viagem com áudio"
-                    src="https://www.youtube.com/embed/INkZn5pdPeM?autoplay=1&controls=1&modestbranding=1&rel=0"
+                    src="https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&controls=1&modestbranding=1&rel=0"
                     allow="autoplay; encrypted-media; picture-in-picture"
                     allowFullScreen
                   />
