@@ -1518,6 +1518,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         + (cityV6 ? T.subSize * 1.45 : 0)
         + (periodV6 ? periodPillH + T.metaSize * 1.2 : 0);
       let leftY = Math.max(bottomY + T.titleSize + 34, bottomY + (usableBottom - bottomY - leftContentH) / 2 + T.titleSize * 0.7);
+      leftY += 65; // Baixou o titulo para alinhar perfeitamente com a nova posicao do preco na direita
 
       ctx.save();
       // Sombra removida do texto (conforme solicitado pelo usuario)
@@ -1540,19 +1541,22 @@ const panelBottom = RULES.PANEL_BOTTOM;
         leftY += Math.round(T.subSize * 1.5);
       }
       if (periodV6) {
-        ctx.font = `800 ${T.metaSize}px Inter, Arial, sans-serif`;
+        const scaledMetaSize = Math.round(T.metaSize * 1.1); // Aumentou 10%
+        ctx.font = `800 ${scaledMetaSize}px Inter, Arial, sans-serif`;
         const periodLabel = periodV6.toUpperCase();
-        const periodW = Math.min(titleMaxW, Math.max(width * 0.20, ctx.measureText(periodLabel).width + 56));
+        const scaledPeriodPillH = Math.round(periodPillH * 1.1); // Aumentou altura 10%
+        const periodW = Math.min(titleMaxW, Math.max(width * 0.20, ctx.measureText(periodLabel).width + 64)); // Ajuste de largura
         const periodX = leftCx - periodW / 2;
-        const periodY = Math.min(leftY - Math.round(periodPillH * 0.55) - (titleLines.length === 1 ? 5 : 2), usableBottom - periodPillH - 10);
+        // Subiu forcadamente em 1cm (40px) alem da posicao normal calculada
+        const periodY = Math.min(leftY - Math.round(scaledPeriodPillH * 0.55) - (titleLines.length === 1 ? 5 : 2), usableBottom - scaledPeriodPillH - 10) - 40;
         ctx.save();
         const periodBg = primaryColor || "#0C2340";
-        fillRoundRect(ctx, periodX, periodY, periodW, periodPillH, periodPillH / 2, periodBg);
+        fillRoundRect(ctx, periodX, periodY, periodW, scaledPeriodPillH, scaledPeriodPillH / 2, periodBg);
         ctx.restore();
         ctx.textBaseline = "middle";
         ctx.textAlign = "center";
         ctx.fillStyle = getSafeColor(periodBg, "#ffffff");
-        safeFillText(ctx, periodLabel, periodX + periodW / 2, periodY + periodPillH / 2 + 1, periodW - 34, Math.round(T.metaSize * 0.7));
+        safeFillText(ctx, periodLabel, periodX + periodW / 2, periodY + scaledPeriodPillH / 2 + 1, periodW - 34, Math.round(scaledMetaSize * 0.7));
         ctx.textBaseline = "alphabetic";
       }
 
@@ -1568,7 +1572,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         + (totalV6 ? T.suffixSize * 1.35 : 0)
         + (pixV6 ? T.suffixSize * 1.55 : 0);
       let rightY = Math.max(bottomY + T.labelSize + 22, bottomY + (usableBottom - bottomY - priceBlockH) / 2 + T.labelSize - Math.round(height * 0.11)); // Subiu cerca de 2cm a mais
-      rightY -= 45; // Eleva forcadamente todo o bloco em ~1cm
+      rightY -= 15; // Baixou 30px em relacao a ultima versao para tirar o "A PARTIR DE" da foto
 
       const labelY = rightY + 4;
       safeFillText(ctx, labelV6, rightCx, labelY, rightMaxW, Math.round(labelSizeV6 * 0.65));
