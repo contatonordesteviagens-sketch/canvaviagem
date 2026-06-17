@@ -1571,25 +1571,28 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       const labelY = rightY + 4;
       safeFillText(ctx, labelV6, rightCx, labelY, rightMaxW, Math.round(labelSizeV6 * 0.65));
-      rightY = labelY + Math.round(labelSizeV6 * 0.72);
+      rightY = labelY + Math.round(labelSizeV6 * 0.72) + 12; // Added gap below "A PARTIR DE"
 
       if (installmentV6) {
-        ctx.font = `900 ${Math.round(T.metaSize * 1.35)}px Inter, Arial, sans-serif`; // Aumentado o "10x de"
+        ctx.font = `900 ${Math.round(T.metaSize * 1.3)}px Inter, Arial, sans-serif`; // 10x de text size increased
         const pillText = `${installmentV6} DE`;
         const pillW = Math.min(rightMaxW, Math.max(160, ctx.measureText(pillText).width + 64));
-        const pillH = Math.round(T.metaSize * 1.95); // Aumentou a altura da pilula
-        fillRoundRect(ctx, rightCx - pillW / 2, rightY - pillH + 12, pillW, pillH, 14, "rgba(255,255,255,0.18)");
+        const pillH = Math.round(T.metaSize * 1.85); // pill height
+        
+        // Draw pill exactly at current rightY
+        fillRoundRect(ctx, rightCx - pillW / 2, rightY, pillW, pillH, 14, "rgba(255,255,255,0.18)");
         ctx.fillStyle = rightText;
         ctx.textBaseline = "middle";
-        safeFillText(ctx, pillText, rightCx, rightY - pillH / 2 + 12, pillW - 28, Math.round(T.metaSize * 0.9));
+        safeFillText(ctx, pillText, rightCx, rightY + pillH / 2, pillW - 28, Math.round(T.metaSize * 0.9));
         ctx.textBaseline = "alphabetic";
-        rightY += Math.round(T.metaSize * 1.3); // Avanca o Y proporcionalmente ao novo tamanho da pilula
+        
+        rightY += pillH + 8; // Advance rightY PAST the pill with a small gap
       }
 
       ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-      const priceBaseY = rightY + T.priceSize - 35; // Sobe o preco R$ para ficar mais perto do "10x de"
+      const priceBaseY = rightY + T.priceSize - 12; // Base for price text
       safeFillText(ctx, priceV6, rightCx, priceBaseY, rightMaxW, Math.round(T.priceSize * 0.52));
-      rightY = priceBaseY + Math.round(T.suffixSize * 2.2); // Aumenta bastante o gap aqui embaixo para a virgula nao encostar no "POR PESSOA"
+      rightY = priceBaseY + Math.round(T.suffixSize * 2.2); // VERY LARGE gap below price to prevent comma overlapping "POR PESSOA"
 
       if (suffixV6) {
         ctx.fillStyle = rightMuted;
