@@ -1852,7 +1852,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           totalW = symW + mainW + centW;
         }
         
-        const startX = priceCenterX - (totalW / 2);
+        const priceStartX = priceCenterX - (totalW / 2);
         const priceBaseY = ringY + 142; // mesmo baseline original
         
         ctx.fillStyle = navy;
@@ -1860,16 +1860,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
         
         // Simbolo no topo esquerdo
         ctx.font = `800 ${symSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(pSym, startX, priceBaseY - priceSize + symSize + 8);
+        ctx.fillText(pSym, priceStartX, priceBaseY - priceSize + symSize + 8);
         
         // Valor principal
         ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(pMain, startX + symW, priceBaseY);
+        ctx.fillText(pMain, priceStartX + symW, priceBaseY);
         
         // Centavos no topo direito
         if (pCents) {
           ctx.font = `800 ${centSize}px Inter, Arial, sans-serif`;
-          ctx.fillText(pCents, startX + symW + mainW + 4, priceBaseY - priceSize + centSize + 10);
+          ctx.fillText(pCents, priceStartX + symW + mainW + 4, priceBaseY - priceSize + centSize + 10);
         }
         ctx.restore();
         
@@ -2098,7 +2098,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const ringX = boxX + 30;
         const ringY = cursorY;
         const ringW = boxW - 60;
-        const ringH = priceBlockH - 8;
         ctx.save();
         ctx.fillStyle = yellowDark;
         roundRect(ctx, ringX, ringY, ringW, ringH, 24);
