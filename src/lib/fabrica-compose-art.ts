@@ -3665,12 +3665,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.font = `800 ${T.subSize * 0.85}px Inter, Arial, sans-serif`;
       
       const gap = 15;
-      const hlPillH = Math.round(T.subSize * 1.6);
+      const hlPillH = Math.round(T.subSize * 1.7);
       
       // Calcula larguras totais para centralizar
       const hlWidths = displayHls.map((hl) => {
         const text = (hl?.text || "").toUpperCase();
-        return ctx.measureText(text).width + (hl?.icon ? 45 : 30);
+        return ctx.measureText(text).width + (hl?.icon ? 55 : 30);
       });
       const totalHlsW = hlWidths.reduce((a,b) => a+b, 0) + (hlWidths.length - 1) * gap;
       
@@ -3681,7 +3681,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const text = (hl?.text || "").toUpperCase();
         const w = hlWidths[i];
         
-        ctx.fillStyle = i === 0 ? "#E53935" : "#000000"; // Primeira vermelha, segunda preta
+        ctx.fillStyle = i === 0 ? (primaryColor || "#0066FF") : "#000000"; // Primeira primaryColor, segunda preta
         fillRoundRect(ctx, startX, alignY - hlPillH + 5, w, hlPillH, hlPillH / 2);
         
         ctx.fillStyle = "#FFFFFF";
@@ -3690,9 +3690,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textBaseline = "middle";
         
         if (hl?.icon) {
-          // Se tiver icone, desenha no comeco da pilula
-          drawMonoIcon(ctx, hl.icon, startX + 22, alignY - hlPillH / 2 + 5, T.iconSize * 0.45, "#FFFFFF");
-          ctx.fillText(text, startX + 22 + (w - 22) / 2, alignY - hlPillH / 2 + 7);
+          // Icone maior e mais visivel
+          drawMonoIcon(ctx, hl.icon, startX + 26, alignY - hlPillH / 2 + 5, T.iconSize * 0.7, "#FFFFFF");
+          ctx.fillText(text, startX + 26 + (w - 26) / 2, alignY - hlPillH / 2 + 7);
         } else {
           ctx.fillText(text, startX + w / 2, alignY - hlPillH / 2 + 7);
         }
@@ -3723,33 +3723,43 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
     
     if (installments && (paymentMode === "installments" || paymentMode === "down_plus")) {
-      // Desenha o preco gigante e o '10x' menor ao lado, sem encavalar
+      // 10x na frente (esq) e preco atrs (dir)
       const priceW = ctx.measureText(priceV7).width;
       ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
-      const instW = ctx.measureText(installments).width;
+      // Limpa 'x' ou 'X' se ja tiver 'de'
+      const instText = installments.toLowerCase().includes("de") ? installments : `${installments} de`;
+      const instW = ctx.measureText(instText).width;
       
-      const totalW = priceW + 15 + instW;
+      const totalW = instW + 15 + priceW;
       const startX = cx - totalW / 2;
       
       ctx.textAlign = "left";
-      ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(priceV7, startX, currentY);
-      
       ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
-      // Desenha o 10x acompanhando a linha base do preco gigante
-      ctx.fillText(installments, startX + priceW + 15, currentY);
+      ctx.fillText(instText, startX, currentY); // '10x de'
+      
+      ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(priceV7, startX + instW + 15, currentY); // 'R$ 150'
     } else {
       ctx.textAlign = "center";
-      safeFillText(ctx, priceV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.priceSize * 0.7));
+      safeFillText(ctx, priceV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.priceSize * 0.7));
     }
     
-    // 7. Sufixo
+    // 7. Total (Se ativo)
+    if (showTotal && totalOverride) {
+      currentY += T.labelSize + 5;
+      ctx.fillStyle = "#333333";
+      ctx.font = `600 ${T.labelSize}px Inter, Arial, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(`Total: ${curSym} ${totalOverride}`, cx, currentY);
+    }
+    
+    // 8. Sufixo
     currentY += T.suffixSize + 15;
     const suffixV7 = (paymentSuffix || bottomSuffix || "por pessoa").trim();
     ctx.fillStyle = "#000000"; // Preto forte
     ctx.font = `700 ${T.suffixSize}px Inter, Arial, sans-serif`;
     ctx.textAlign = "center";
-    safeFillText(ctx, suffixV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.suffixSize * 0.7));
+    safeFillText(ctx, suffixV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.suffixSize * 0.7));
 
     return canvas.toDataURL("image/png");
   }
