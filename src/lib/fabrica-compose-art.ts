@@ -2063,8 +2063,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const destGap = 18;
         const totalH = (showTotal && totalStr) ? 36 : 0;
         const totalGap = totalH ? 14 : 0;
-        const stripeH = 64;
-        const padBottom = 48; // Aumentado para respirar melhor
+        const stripeH = 50;
+        const padBottom = 20; // Reduzido drasticamente para remover espaco vazio
 
         const priceBlockH = 130; // Reduzido de 160 para remover espaco vazio dentro do box
         const ringH = priceBlockH - 8;
@@ -2089,35 +2089,21 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.restore();
 
         const cx = boxX + boxW / 2;
-        let cursorY = safeBoxY + padTop + 25; // Subiu ~0.5cm
+        let cursorY = safeBoxY + padTop + 42;
         
-        // Titulo Promoção + Data (Lado a Lado)
         const pacoteText = (promoName || "PACOTE").trim().toUpperCase();
         ctx.font = "900 28px Inter, Arial, sans-serif";
-        const pacoteW = ctx.measureText(pacoteText).width + 50;
+        const pacoteW = ctx.measureText(pacoteText).width + 60;
         const pacoteH = 50;
-        
-        const dateText = (travelPeriod || "").trim().toUpperCase();
-        const dateW = dateText ? ctx.measureText(dateText).width + 40 : 0;
-        const gap = 12;
-        const totalBadgeW = dateText ? pacoteW + gap + dateW : pacoteW;
-        const badgeStartX = cx - totalBadgeW / 2;
-
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
-        fillRoundRect(ctx, badgeStartX, cursorY - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
-        if (dateText) {
-          fillRoundRect(ctx, badgeStartX + pacoteW + gap, cursorY - pacoteH/2, dateW, pacoteH, pacoteH/2, navy);
-        }
+        fillRoundRect(ctx, cx - pacoteW/2, cursorY - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
         ctx.restore();
         
         ctx.fillStyle = yellow;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(pacoteText, badgeStartX + pacoteW/2, cursorY + 4);
-        if (dateText) {
-          ctx.fillText(dateText, badgeStartX + pacoteW + gap + dateW/2, cursorY + 4);
-        }
+        ctx.fillText(pacoteText, cx, cursorY + 4);
         ctx.textBaseline = "alphabetic";
         
         cursorY += titleGap + 48;
