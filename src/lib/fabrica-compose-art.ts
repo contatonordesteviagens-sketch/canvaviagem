@@ -1430,6 +1430,43 @@ const panelBottom = RULES.PANEL_BOTTOM;
           .replace(new RegExp(escapedDest, "ig"), "")
           .replace(/\s+([!?.,])/g, "$1")
           .replace(/[!?.,]+$/g, "")
+          .trim()
+        : "";
+      const titleLead = (titleLeadRaw || (headline !== destinationText ? headline : promoText));
+      const periodText = (travelPeriod || "").trim();
+      const priceLabel = (pricePrefix || paymentLabel || topLabel || "PRECO").toString().trim();
+      let priceText = mainPrice || `${curSym} ${price}`.trim();
+      if (hideCents) priceText = priceText.replace(/[.,]\d{2}\s*$/, "");
+      const suffixText = (paymentSuffix || bottomSuffix || "").trim();
+      const ctaText = (pixBannerText || "RESERVAR AGORA").trim();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      const pillH = Math.round(width * (isStoryV8Luxury ? 0.07 : 0.056));
+      const pillY = Math.round(height * (isStoryV8Luxury ? 0.055 : 0.04));
+      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.027))}px Inter, Arial, sans-serif`;
+      const promoW = Math.min(width - pad * 2, Math.max(width * 0.34, ctx.measureText(promoText).width + pillH * 1.55));
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.32)";
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 5;
+      fillRoundRect(ctx, width / 2 - promoW / 2, pillY, promoW, pillH, pillH / 2, accent);
+      ctx.restore();
+      ctx.fillStyle = onAccent;
+      safeFillText(ctx, promoText, width / 2, pillY + pillH / 2 + 1, promoW - 32, 14);
+
+      const titleMaxW = width - pad * 2;
+      const leadSize = Math.round(width * (isStoryV8Luxury ? 0.044 : 0.038));
+      ctx.font = `900 ${leadSize}px Inter, Arial, sans-serif`;
+      const leadLines = wrapTextSafe(ctx, titleLead, titleMaxW, 2, Math.round(leadSize * 0.62));
+      const destBase = Math.round(width * (isStoryV8Luxury ? 0.076 : 0.065));
+      ctx.font = `900 ${destBase}px Inter, Arial, sans-serif`;
+      const destinationLines = wrapTextSafe(ctx, destinationText, titleMaxW, 2, Math.round(destBase * 0.54));
+      const leadLineH = Math.round(leadSize * 0.94);
+      const destLineH = Math.round(destBase * 0.9);
+      const titleStartY = pillY + pillH + Math.round(height * (isStoryV8Luxury ? 0.04 : 0.025)) + leadLineH / 2;
+
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.78)";
       ctx.shadowBlur = 18;
