@@ -1412,8 +1412,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = overlay;
       ctx.fillRect(0, 0, width, height);
 
-      const promoText = (promoName || "SUPER OFERTA").trim().toUpperCase();
-      const destinationText = (destination || destFmt || "DESTINO").trim().toUpperCase();
+      const promoText = (promoName || "SUPER OFERTA").trim();
+      const destinationText = (destination || destFmt || "DESTINO").trim();
       const titleTemplateV8 = (titleText || titleOverride || "").trim();
       const titleTextV8 = titleTemplateV8
         .replace(/\{destino\}/ig, destinationText)
@@ -1421,7 +1421,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         .replace(/!{2,}/g, "!")
         .trim();
       const headline = titleTextV8 && !/^pacote\s+\{?destino\}?$/i.test(titleTextV8)
-        ? titleTextV8.toUpperCase()
+        ? titleTextV8
         : destinationText;
       const escapedDest = destinationText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const titleLeadRaw = titleTemplateV8
@@ -1462,8 +1462,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const ctaH = Math.round(width * (isStoryV8Luxury ? 0.074 : 0.062));
       const brandSafeTop = isStoryV8Luxury ? height - 270 : height - 155;
       const ctaY = Math.min(
-        Math.round(height * (isStoryV8Luxury ? 0.775 : 0.81)),
-        brandSafeTop - ctaH - Math.round(height * (isStoryV8Luxury ? 0.026 : 0.015))
+        Math.round(height * (isStoryV8Luxury ? 0.775 : 0.85)),
+        brandSafeTop - ctaH - Math.round(height * (isStoryV8Luxury ? 0.026 : 0.012))
       );
 
       // Re-add contentY to avoid colliding with the DEZEMBRO pill (infoY)
@@ -1509,13 +1509,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "left";
       ctx.fillStyle = onAccent;
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.031 : 0.026))}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, priceLabel, myPriceBoxX + 30, priceBoxY + Math.round(priceBoxH * 0.18), priceBoxW - 60, 12);
+      safeFillText(ctx, priceLabel, myPriceBoxX + 24, priceBoxY + Math.round(priceBoxH * 0.20), priceBoxW - 48, 12);
       
       const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
       const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
       const priceMain = (priceMatch?.[2] || priceText).trim();
       const priceCents = (priceMatch?.[3] || "").trim();
-      const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.095 : 0.082)); // Menor
+      const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.090 : 0.082));
       const priceSmallSize = Math.round(priceMainSize * 0.46);
       
       // Move price up 2px as requested
@@ -1527,7 +1527,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = onAccent;
       ctx.font = `900 ${priceSmallSize}px Inter, Arial, sans-serif`;
       ctx.fillText(priceSymbol, priceStartX, priceBaseY - Math.round(priceMainSize * 0.12));
-      let priceCursorX = priceStartX + (priceSymbol ? ctx.measureText(priceSymbol).width + 12 : 0);
+      let priceCursorX = priceStartX + (priceSymbol ? ctx.measureText(priceSymbol).width + 8 : 0);
       ctx.font = `900 ${priceMainSize}px Inter, Arial, sans-serif`;
       ctx.fillText(priceMain, priceCursorX, priceBaseY);
       priceCursorX += ctx.measureText(priceMain).width + 4;
