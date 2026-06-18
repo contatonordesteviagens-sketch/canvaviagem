@@ -1414,7 +1414,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       const promoText = (promoName || "SUPER OFERTA").trim().toUpperCase();
       const destinationText = (destination || destFmt || "DESTINO").trim().toUpperCase();
-      const titleTextV8 = (titleText || titleOverride || "").trim()
+      const titleTemplateV8 = (titleText || titleOverride || "").trim();
+      const titleTextV8 = titleTemplateV8
         .replace(/\{destino\}/ig, destinationText)
         .replace(/\s+([!?.,])/g, "$1")
         .replace(/!{2,}/g, "!")
@@ -1422,6 +1423,17 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const headline = titleTextV8 && !/^pacote\s+\{?destino\}?$/i.test(titleTextV8)
         ? titleTextV8.toUpperCase()
         : destinationText;
+      const escapedDest = destinationText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const titleLeadRaw = titleTemplateV8
+        ? titleTemplateV8
+          .replace(/\{destino\}/ig, "")
+          .replace(new RegExp(escapedDest, "ig"), "")
+          .replace(/\s+([!?.,])/g, "$1")
+          .replace(/[!?.,]+$/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+        : "";
+      const titleLead = (titleLeadRaw || (headline !== destinationText ? headline : promoText)).toUpperCase();
       const periodText = (travelPeriod || "").trim().toUpperCase();
       const priceLabel = (pricePrefix || paymentLabel || topLabel || "PRECO").toString().trim().toUpperCase();
       let priceText = mainPrice || `${curSym} ${price}`.trim();
@@ -1446,22 +1458,33 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, promoText, width / 2, pillY + pillH / 2 + 1, promoW - 32, 14);
 
       const titleMaxW = width - pad * 2;
-      const titleBase = Math.round(width * (isStoryV8Luxury ? 0.082 : 0.073));
-      ctx.font = `900 ${titleBase}px Inter, Arial, sans-serif`;
-      const titleLines = wrapTextSafe(ctx, headline, titleMaxW, isStoryV8Luxury ? 3 : 2, Math.round(titleBase * 0.48));
-      const titleLineH = Math.round(titleBase * 0.9);
-      const titleStartY = pillY + pillH + Math.round(height * 0.045) + titleLineH / 2;
+      const leadSize = Math.round(width * (isStoryV8Luxury ? 0.048 : 0.044));
+      ctx.font = `900 ${leadSize}px Inter, Arial, sans-serif`;
+      const leadLines = wrapTextSafe(ctx, titleLead, titleMaxW, 2, Math.round(leadSize * 0.62));
+      const destBase = Math.round(width * (isStoryV8Luxury ? 0.083 : 0.078));
+      ctx.font = `900 ${destBase}px Inter, Arial, sans-serif`;
+      const destinationLines = wrapTextSafe(ctx, destinationText, titleMaxW, 2, Math.round(destBase * 0.54));
+      const leadLineH = Math.round(leadSize * 0.94);
+      const destLineH = Math.round(destBase * 0.9);
+      const titleStartY = pillY + pillH + Math.round(height * 0.04) + leadLineH / 2;
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.78)";
       ctx.shadowBlur = 18;
       ctx.shadowOffsetY = 5;
       ctx.fillStyle = "#f7f3e8";
-      titleLines.forEach((line, idx) => {
-        safeFillText(ctx, line, width / 2, titleStartY + idx * titleLineH, titleMaxW, Math.round(titleBase * 0.5));
+      ctx.font = `900 ${leadSize}px Inter, Arial, sans-serif`;
+      leadLines.forEach((line, idx) => {
+        safeFillText(ctx, line, width / 2, titleStartY + idx * leadLineH, titleMaxW, Math.round(leadSize * 0.62));
+      });
+      ctx.font = `900 ${destBase}px Inter, Arial, sans-serif`;
+      const destStartY = titleStartY + leadLines.length * leadLineH + Math.round(height * 0.012) + destLineH / 2;
+      destinationLines.forEach((line, idx) => {
+        safeFillText(ctx, line, width / 2, destStartY + idx * destLineH, titleMaxW, Math.round(destBase * 0.54));
       });
       ctx.restore();
 
-      const infoY = titleStartY + titleLines.length * titleLineH + Math.round(height * 0.018);
+      const titleBottomY = destStartY + Math.max(0, destinationLines.length - 0.5) * destLineH;
+      const infoY = titleBottomY + Math.round(height * 0.026);
       const infoText = periodText || destinationText;
       if (infoText) {
         const infoH = Math.round(width * (isStoryV8Luxury ? 0.064 : 0.054));
@@ -1474,9 +1497,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
 
       const priceBoxX = pad;
-      const priceBoxY = Math.round(height * (isStoryV8Luxury ? 0.50 : 0.41));
-      const priceBoxW = Math.round(width * (isStoryV8Luxury ? 0.52 : 0.43));
-      const priceBoxH = Math.round(height * (isStoryV8Luxury ? 0.18 : 0.235));
+      const contentY = Math.round(height * (isStoryV8Luxury ? 0.455 : 0.42));
+      const priceBoxY = contentY;
+      const priceBoxW = Math.round(width * (isStoryV8Luxury ? 0.50 : 0.43));
+      const priceBoxH = Math.round(height * (isStoryV8Luxury ? 0.165 : 0.235));
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.38)";
       ctx.shadowBlur = 24;
@@ -1495,10 +1519,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, suffixText, priceBoxX + 36, priceBoxY + Math.round(priceBoxH * 0.82), priceBoxW - 72, 12);
       }
 
-      const cardW = Math.round(width * (isStoryV8Luxury ? 0.38 : 0.285));
+      const cardW = Math.round(width * (isStoryV8Luxury ? 0.38 : 0.30));
       const cardX = width - pad - cardW;
-      const cardY = Math.round(height * (isStoryV8Luxury ? 0.46 : 0.36));
-      const cardH = Math.round(height * (isStoryV8Luxury ? 0.26 : 0.43));
+      const cardY = contentY - Math.round(height * (isStoryV8Luxury ? 0.01 : 0.005));
+      const ctaH = Math.round(width * (isStoryV8Luxury ? 0.078 : 0.066));
+      const ctaY = Math.round(height * (isStoryV8Luxury ? 0.80 : 0.78));
+      const cardH = Math.min(
+        Math.round(height * (isStoryV8Luxury ? 0.275 : 0.35)),
+        Math.max(180, ctaY - cardY - Math.round(height * 0.035))
+      );
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.34)";
       ctx.shadowBlur = 28;
@@ -1515,17 +1544,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "center";
       benefitItems.forEach((item, idx) => {
         const cy = cardY + benefitGap * idx + benefitGap / 2;
-        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cardX + cardW / 2, cy - Math.round(width * 0.025), Math.round(width * 0.045), gold);
+        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cardX + cardW / 2, cy - Math.round(width * 0.021), Math.round(width * 0.04), gold);
         ctx.fillStyle = shadeColor(gold, -32);
-        ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.024 : 0.021))}px Inter, Arial, sans-serif`;
+        ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.022 : 0.019))}px Inter, Arial, sans-serif`;
         const lines = wrapTextSafe(ctx, String(item.text || ""), cardW - 42, 2, 11);
         lines.forEach((line, lineIdx) => {
-          safeFillText(ctx, line.toUpperCase(), cardX + cardW / 2, cy + Math.round(width * 0.025) + lineIdx * Math.round(width * 0.025), cardW - 42, 10);
+          safeFillText(ctx, line.toUpperCase(), cardX + cardW / 2, cy + Math.round(width * 0.022) + lineIdx * Math.round(width * 0.022), cardW - 42, 10);
         });
       });
 
-      const ctaH = Math.round(width * (isStoryV8Luxury ? 0.085 : 0.072));
-      const ctaY = height - (isStoryV8Luxury ? 310 : 160);
       const ctaX = pad;
       const ctaW = width - pad * 2;
       ctx.save();
