@@ -47,7 +47,7 @@ Para corrigir uma variante:
 4. Documente a mudanca em `docs/fabrica/`.
 5. Rode uma validacao antes de commitar.
 
-## Como Criar Uma Nova Versao V7+
+## Como Criar Uma Nova Versao V9+
 
 1. Receba a imagem de referencia do usuario.
 2. Identifique se ela e realmente uma estrutura nova ou apenas ajuste de uma variante existente.
@@ -76,7 +76,7 @@ Logo/contatos -> drawFinalBranding
 5. Crie o novo branch no compositor:
 
 ```ts
-if (variant === 7) {
+if (variant === 9) {
   // nova anatomia
 }
 ```
@@ -84,11 +84,11 @@ if (variant === 7) {
 6. Atualize o total de variantes:
 
 ```ts
-const TOTAL_VARIANTS = 8;
+const TOTAL_VARIANTS = 10;
 ```
 
 7. Atualize seletores e rotacao nas telas PT/ES.
-8. Documente a nova variante em `docs/fabrica/V7_NOME_DA_VARIANTE.md`.
+8. Documente a nova variante em `docs/fabrica/V9_NOME_DA_VARIANTE.md`.
 9. Valide sintaxe/build.
 10. Commit e push.
 
@@ -283,11 +283,14 @@ Objetivo: criar e ajustar variantes de imagens no motor Canvas sem quebrar verso
 Leia antes:
 - docs/fabrica/AGENTE_VARIANTES_IMAGENS.md
 - docs/fabrica/V6_SPLIT_DESTINATION_PRICE.md
+- docs/fabrica/V8_LUXURY_EXPERIENCE_DEAL.md
 - src/lib/fabrica-compose-art.ts
 
 Regras:
 - Mexa somente na variante pedida.
 - Para V6, trabalhe dentro de `if (variant === 6)`.
+- Para V7, trabalhe dentro de `if (variant === 7)`.
+- Para V8, trabalhe dentro de `if (variant === 8)`.
 - Para nova versao, crie branch novo `if (variant === N)`.
 - Nomes compostos nunca podem sumir nem passar de 2 linhas quando a variante exigir isso.
 - Microajustes de print devem ser literais em px.
@@ -299,4 +302,3 @@ Regras:
 ## Status
 
 Este treinamento foi criado depois da iteracao da V6 Split Destination Price, com prints reais de Gramado, Fernando de Noronha, Buzios e Porto de Galinhas.
-

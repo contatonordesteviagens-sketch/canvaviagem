@@ -1384,11 +1384,331 @@ const panelBottom = RULES.PANEL_BOTTOM;
   };
 
   const renderSafeSquareOffer = async () => {
-    // Variantes ATIVAS: V0, V1, V2, V3, V4, V5, V6, V7 (todas implementadas).
-    const TOTAL_VARIANTS = 8;
+    // Variantes ATIVAS: V0, V1, V2, V3, V4, V5, V6, V7, V8.
+    const TOTAL_VARIANTS = 9;
     let variant = typeof forceVariant === "number"
       ? ((forceVariant % TOTAL_VARIANTS) + TOTAL_VARIANTS) % TOTAL_VARIANTS
       : Math.abs(variation) % TOTAL_VARIANTS;
+
+    // V8 - Luxury Experience Deal
+    // Foto full-bleed, texto solto no topo, preco forte a esquerda,
+    // beneficios em card a direita e CTA na base. V7 permanece intacta.
+    if (variant === 8) {
+      const isStoryV8Luxury = format === "story";
+      const accent = primaryColor || "#0b8c8f";
+      const gold = secondaryColor || "#d9b15f";
+      const onAccent = getSafeColor(accent, "#ffffff");
+      const onGold = getSafeColor(gold, "#1f1605");
+      const pad = Math.round(width * (isStoryV8Luxury ? 0.065 : 0.052));
+
+      const crop = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.48);
+      ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, height);
+
+      const overlay = ctx.createLinearGradient(0, 0, 0, height);
+      overlay.addColorStop(0, "rgba(0,0,0,0.66)");
+      overlay.addColorStop(isStoryV8Luxury ? 0.34 : 0.28, "rgba(0,0,0,0.34)");
+      overlay.addColorStop(0.58, "rgba(0,0,0,0.08)");
+      overlay.addColorStop(1, "rgba(0,0,0,0.60)");
+      ctx.fillStyle = overlay;
+      ctx.fillRect(0, 0, width, height);
+
+      const promoText = (promoName || "SUPER OFERTA").trim().toUpperCase();
+      const destinationText = (destination || destFmt || "DESTINO").trim().toUpperCase();
+      const titleTextV8 = (titleText || titleOverride || "").trim()
+        .replace(/\{destino\}/ig, destinationText)
+        .replace(/\s+([!?.,])/g, "$1")
+        .replace(/!{2,}/g, "!")
+        .trim();
+      const headline = titleTextV8 && !/^pacote\s+\{?destino\}?$/i.test(titleTextV8)
+        ? titleTextV8.toUpperCase()
+        : destinationText;
+      const periodText = (travelPeriod || "").trim().toUpperCase();
+      const priceLabel = (pricePrefix || paymentLabel || topLabel || "PRECO").toString().trim().toUpperCase();
+      let priceText = mainPrice || `${curSym} ${price}`.trim();
+      if (hideCents) priceText = priceText.replace(/[.,]\d{2}\s*$/, "");
+      const suffixText = (paymentSuffix || bottomSuffix || "").trim().toUpperCase();
+      const ctaText = (pixBannerText || "RESERVAR AGORA").trim().toUpperCase();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      const pillH = Math.round(width * (isStoryV8Luxury ? 0.07 : 0.056));
+      const pillY = Math.round(height * 0.055);
+      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.027))}px Inter, Arial, sans-serif`;
+      const promoW = Math.min(width - pad * 2, Math.max(width * 0.34, ctx.measureText(promoText).width + pillH * 1.55));
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.32)";
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 5;
+      fillRoundRect(ctx, width / 2 - promoW / 2, pillY, promoW, pillH, pillH / 2, accent);
+      ctx.restore();
+      ctx.fillStyle = onAccent;
+      safeFillText(ctx, promoText, width / 2, pillY + pillH / 2 + 1, promoW - 32, 14);
+
+      const titleMaxW = width - pad * 2;
+      const titleBase = Math.round(width * (isStoryV8Luxury ? 0.082 : 0.073));
+      ctx.font = `900 ${titleBase}px Inter, Arial, sans-serif`;
+      const titleLines = wrapTextSafe(ctx, headline, titleMaxW, isStoryV8Luxury ? 3 : 2, Math.round(titleBase * 0.48));
+      const titleLineH = Math.round(titleBase * 0.9);
+      const titleStartY = pillY + pillH + Math.round(height * 0.045) + titleLineH / 2;
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.78)";
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 5;
+      ctx.fillStyle = "#f7f3e8";
+      titleLines.forEach((line, idx) => {
+        safeFillText(ctx, line, width / 2, titleStartY + idx * titleLineH, titleMaxW, Math.round(titleBase * 0.5));
+      });
+      ctx.restore();
+
+      const infoY = titleStartY + titleLines.length * titleLineH + Math.round(height * 0.018);
+      const infoText = periodText || destinationText;
+      if (infoText) {
+        const infoH = Math.round(width * (isStoryV8Luxury ? 0.064 : 0.054));
+        ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.029))}px Inter, Arial, sans-serif`;
+        const infoW = Math.min(width - pad * 2, Math.max(width * 0.42, ctx.measureText(infoText).width + 84));
+        fillRoundRect(ctx, width / 2 - infoW / 2, infoY, infoW, infoH, infoH / 2, gold);
+        ctx.fillStyle = onGold;
+        drawMonoIcon(ctx, "check", width / 2 - infoW / 2 + infoH * 0.55, infoY + infoH / 2, infoH * 0.42, onGold);
+        safeFillText(ctx, infoText, width / 2 + infoH * 0.15, infoY + infoH / 2 + 1, infoW - infoH * 1.5, 12);
+      }
+
+      const priceBoxX = pad;
+      const priceBoxY = Math.round(height * (isStoryV8Luxury ? 0.50 : 0.41));
+      const priceBoxW = Math.round(width * (isStoryV8Luxury ? 0.52 : 0.43));
+      const priceBoxH = Math.round(height * (isStoryV8Luxury ? 0.18 : 0.235));
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.38)";
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 9;
+      fillRoundRect(ctx, priceBoxX, priceBoxY, priceBoxW, priceBoxH, 26, accent);
+      ctx.restore();
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = onAccent;
+      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.033 : 0.031))}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, priceLabel, priceBoxX + 34, priceBoxY + Math.round(priceBoxH * 0.22), priceBoxW - 68, 12);
+      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.11 : 0.105))}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, priceText, priceBoxX + 34, priceBoxY + Math.round(priceBoxH * 0.58), priceBoxW - 68, 32);
+      if (suffixText) {
+        ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.031 : 0.029))}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, suffixText, priceBoxX + 36, priceBoxY + Math.round(priceBoxH * 0.82), priceBoxW - 72, 12);
+      }
+
+      const cardW = Math.round(width * (isStoryV8Luxury ? 0.38 : 0.285));
+      const cardX = width - pad - cardW;
+      const cardY = Math.round(height * (isStoryV8Luxury ? 0.46 : 0.36));
+      const cardH = Math.round(height * (isStoryV8Luxury ? 0.26 : 0.43));
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.34)";
+      ctx.shadowBlur = 28;
+      ctx.shadowOffsetY = 12;
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, 24, "rgba(247,243,232,0.94)");
+      ctx.restore();
+
+      const benefitItems = (highlights && highlights.length ? highlights : [
+        { icon: "star" as IconKey, text: "Melhores experiencias" },
+        { icon: "heart" as IconKey, text: "Atendimento premium" },
+        { icon: "check" as IconKey, text: "Beneficios exclusivos" },
+      ]).slice(0, 3);
+      const benefitGap = cardH / Math.max(1, benefitItems.length);
+      ctx.textAlign = "center";
+      benefitItems.forEach((item, idx) => {
+        const cy = cardY + benefitGap * idx + benefitGap / 2;
+        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cardX + cardW / 2, cy - Math.round(width * 0.025), Math.round(width * 0.045), gold);
+        ctx.fillStyle = shadeColor(gold, -32);
+        ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.024 : 0.021))}px Inter, Arial, sans-serif`;
+        const lines = wrapTextSafe(ctx, String(item.text || ""), cardW - 42, 2, 11);
+        lines.forEach((line, lineIdx) => {
+          safeFillText(ctx, line.toUpperCase(), cardX + cardW / 2, cy + Math.round(width * 0.025) + lineIdx * Math.round(width * 0.025), cardW - 42, 10);
+        });
+      });
+
+      const ctaH = Math.round(width * (isStoryV8Luxury ? 0.085 : 0.072));
+      const ctaY = height - (isStoryV8Luxury ? 310 : 160);
+      const ctaX = pad;
+      const ctaW = width - pad * 2;
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.35)";
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 8;
+      fillRoundRect(ctx, ctaX, ctaY, ctaW, ctaH, 16, accent);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = gold;
+      roundRect(ctx, ctaX + 1.5, ctaY + 1.5, ctaW - 3, ctaH - 3, 14);
+      ctx.stroke();
+      ctx.restore();
+      ctx.textAlign = "center";
+      ctx.fillStyle = gold;
+      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.034 : 0.031))}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, `${ctaText} ->`, width / 2, ctaY + ctaH / 2 + 2, ctaW - 70, 12);
+
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl,
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined),
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        "#ffffff",
+        userFamily,
+        false,
+        logoFormat
+      );
+      return canvas.toDataURL("image/png");
+    }
+
+    // V8 legacy local draft (New York) kept disabled to avoid losing context.
+    // It is intentionally not reachable; the active V8 is Luxury Experience Deal above.
+    // Referencia: foto hero no topo + painel branco centralizado + botao de preco azul.
+    // Referencia: foto hero no topo + painel branco centralizado + botao de preco azul.
+    // Dados consumidos: destination, promoName/titleOverride, travelPeriod, pricePrefix/paymentLabel,
+    // price/currencySymbol, logo/contatos. Layout parametrizado para square e story.
+    if (variant === 80) {
+      const isStoryV8 = format === "story";
+      const accentV8 = ensureContrast(primaryColor || "#0A659E", "#ffffff", 0.45);
+      const deepAccentV8 = shadeColor(accentV8, -12);
+      const panelBgV8 = "#f7f8fa";
+      const photoH = Math.round(height * (isStoryV8 ? 0.58 : 0.45));
+      const footerBandH = Math.round(height * (isStoryV8 ? 0.13 : 0.095));
+      const panelY = photoH;
+      const panelH = height - photoH;
+      const contentBottom = height - footerBandH - Math.round(height * (isStoryV8 ? 0.035 : 0.022));
+      const cx = width / 2;
+      const maxW = Math.round(width * (isStoryV8 ? 0.82 : 0.72));
+
+      const photoCrop = fitCover(image.naturalWidth, image.naturalHeight, width, photoH, 0.48);
+      ctx.drawImage(image, photoCrop.sx, photoCrop.sy, photoCrop.sw, photoCrop.sh, 0, 0, width, photoH);
+
+      ctx.fillStyle = panelBgV8;
+      ctx.fillRect(0, panelY, width, panelH);
+
+      const topShade = ctx.createLinearGradient(0, panelY, 0, panelY + Math.round(height * 0.08));
+      topShade.addColorStop(0, "rgba(0,0,0,0.08)");
+      topShade.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = topShade;
+      ctx.fillRect(0, panelY, width, Math.round(height * 0.08));
+
+      const footerY = height - footerBandH;
+      ctx.fillStyle = deepAccentV8;
+      ctx.fillRect(0, footerY, width, footerBandH);
+
+      const destinationV8 = (destination || destFmt || "NEW YORK").trim().toUpperCase();
+      const titleRawV8 = (titleText || titleOverride || promoName || "").trim();
+      const genericPromoV8 = /^(OFERTA|PACOTE|PROMO|PROMOCAO|PROMOÇÃO|VIAGEM|ANUNCIO|ANÚNCIO)/i.test(titleRawV8);
+      const promoV8 = genericPromoV8 || titleRawV8.length < 3
+        ? "CONSULTAR SAIDAS*"
+        : titleRawV8
+            .replace(new RegExp((destination || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), "")
+            .replace(/\s+/g, " ")
+            .replace(/\s+([!?.,])/g, "$1")
+            .trim()
+            .toUpperCase();
+      const periodV8 = (travelPeriod || "").trim().toUpperCase();
+      const rawLabelV8 = (pricePrefix || paymentLabel || topLabel || "DESDE").toString().trim();
+      const labelV8 = /^a\s+partir\s+de$/i.test(rawLabelV8) ? "DESDE" : rawLabelV8.toUpperCase();
+      let priceV8 = mainPrice || `${curSym} ${price}`.trim();
+      if (hideCents) priceV8 = priceV8.replace(/[.,]\d{2}\s*$/, "");
+      const priceButtonTextV8 = `${labelV8} ${priceV8}`.replace(/\s+/g, " ").trim();
+
+      const titleBaseSize = Math.round(width * (isStoryV8 ? 0.084 : 0.058));
+      const promoSize = Math.round(width * (isStoryV8 ? 0.03 : 0.021));
+      const periodSize = Math.round(width * (isStoryV8 ? 0.055 : 0.036));
+      const buttonTextSize = Math.round(width * (isStoryV8 ? 0.064 : 0.043));
+      const minTitleSize = Math.round(titleBaseSize * 0.58);
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = accentV8;
+      ctx.font = `900 ${titleBaseSize}px Inter, Arial, sans-serif`;
+
+      const buildTitleLinesV8 = () => {
+        const words = destinationV8.split(/\s+/).filter(Boolean);
+        for (let size = titleBaseSize; size >= minTitleSize; size -= 1) {
+          ctx.font = `900 ${size}px Inter, Arial, sans-serif`;
+          if (ctx.measureText(destinationV8).width <= maxW) return { lines: [destinationV8], size };
+          if (words.length > 1) {
+            let best: { lines: string[]; score: number; size: number } | null = null;
+            for (let split = 1; split < words.length; split++) {
+              const first = words.slice(0, split).join(" ");
+              const second = words.slice(split).join(" ");
+              const firstW = ctx.measureText(first).width;
+              const secondW = ctx.measureText(second).width;
+              if (firstW <= maxW && secondW <= maxW) {
+                const secondStartsConnector = /^(DE|DA|DO|DOS|DAS|E)$/i.test(words[split]);
+                const score = Math.abs(firstW - secondW) + (secondStartsConnector ? 120 : 0);
+                if (!best || score < best.score) best = { lines: [first, second], score, size };
+              }
+            }
+            if (best) return best;
+          }
+        }
+        ctx.font = `900 ${minTitleSize}px Inter, Arial, sans-serif`;
+        return { lines: wrapTextSafe(ctx, destinationV8, maxW, 2, Math.round(minTitleSize * 0.7)), size: minTitleSize };
+      };
+
+      const titleLayoutV8 = buildTitleLinesV8();
+      const titleLinesV8 = titleLayoutV8.lines;
+      const titleSizeV8 = titleLayoutV8.size;
+      const titleLineH = Math.round(titleSizeV8 * 1.04);
+      const buttonH = Math.round(width * (isStoryV8 ? 0.115 : 0.07));
+      ctx.font = `900 ${buttonTextSize}px Inter, Arial, sans-serif`;
+      const buttonW = Math.min(Math.round(width * (isStoryV8 ? 0.72 : 0.46)), Math.max(Math.round(width * 0.34), ctx.measureText(priceButtonTextV8).width + Math.round(width * 0.09)));
+      const gap1 = Math.round(height * (isStoryV8 ? 0.028 : 0.027));
+      const gap2 = Math.round(height * (isStoryV8 ? 0.028 : 0.034));
+      const contentH = titleLinesV8.length * titleLineH + promoSize * 1.45 + gap1 + periodSize * 1.2 + gap2 + buttonH;
+      let y = Math.max(panelY + titleSizeV8 + Math.round(height * 0.035), panelY + (contentBottom - panelY - contentH) / 2 + titleSizeV8);
+
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.08)";
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 3;
+      ctx.fillStyle = accentV8;
+      ctx.font = `900 ${titleSizeV8}px Inter, Arial, sans-serif`;
+      for (const line of titleLinesV8) {
+        safeFillText(ctx, line, cx, y, maxW, Math.round(titleSizeV8 * 0.68));
+        y += titleLineH;
+      }
+      ctx.restore();
+
+      if (promoV8) {
+        ctx.fillStyle = accentV8;
+        ctx.font = `800 ${promoSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, promoV8, cx, y + Math.round(promoSize * 0.55), maxW, Math.round(promoSize * 0.72));
+        y += promoSize * 1.45 + gap1;
+      } else {
+        y += gap1;
+      }
+
+      if (periodV8) {
+        ctx.fillStyle = accentV8;
+        ctx.font = `900 ${periodSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, periodV8, cx, y + periodSize, maxW, Math.round(periodSize * 0.72));
+        y += periodSize * 1.25 + gap2;
+      }
+
+      const buttonX = cx - buttonW / 2;
+      const buttonY = Math.min(y, contentBottom - buttonH);
+      ctx.save();
+      ctx.shadowColor = "rgba(10,101,158,0.22)";
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 5;
+      fillRoundRect(ctx, buttonX, buttonY, buttonW, buttonH, buttonH / 2, accentV8);
+      ctx.restore();
+      ctx.fillStyle = getSafeColor(accentV8, "#ffffff");
+      ctx.font = `900 ${buttonTextSize}px Inter, Arial, sans-serif`;
+      ctx.textBaseline = "middle";
+      safeFillText(ctx, priceButtonTextV8, cx, buttonY + buttonH / 2 + 1, buttonW - Math.round(width * 0.06), Math.round(buttonTextSize * 0.62));
+      ctx.textBaseline = "alphabetic";
+
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl,
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined),
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        "#ffffff",
+        userFamily,
+        false,
+        logoFormat
+      );
+      return canvas.toDataURL("image/png");
+    }
 
     // V6 - Split Destination Price
     // Referencia: foto hero no topo + rodape comercial dividido em 2 colunas.
