@@ -30,16 +30,13 @@ const parseList = (raw?: string | null) =>
 const HOTMART_ELITE_PRODUCT_IDS = parseList(Deno.env.get("HOTMART_ELITE_PRODUCT_IDS"));
 const HOTMART_START_PRODUCT_IDS = parseList(Deno.env.get("HOTMART_START_PRODUCT_IDS"));
 
-function resolveTier(hotmartProductId: string | null): { plan: "Elite" | "Start" | "Unknown"; canonical_product_id: string | null } {
+function resolveTier(hotmartProductId: string | null): { plan: "Elite" | "Unknown"; canonical_product_id: string | null } {
   if (!hotmartProductId) return { plan: "Unknown", canonical_product_id: null };
   if (HOTMART_ELITE_PRODUCT_IDS.has(hotmartProductId)) {
     return { plan: "Elite", canonical_product_id: CANONICAL_ELITE_PRODUCT_ID };
   }
-  if (HOTMART_START_PRODUCT_IDS.has(hotmartProductId)) {
-    return { plan: "Start", canonical_product_id: CANONICAL_START_PRODUCT_ID };
-  }
-  // Default: trate como Start (não-elite) para liberar acesso básico sem rebaixar pagantes.
-  return { plan: "Start", canonical_product_id: CANONICAL_START_PRODUCT_ID };
+  // Se não estiver na lista HOTMART_ELITE_PRODUCT_IDS, é um produto de fora (ex: pacote 150 vídeos). Bloqueia.
+  return { plan: "Unknown", canonical_product_id: null };
 }
 
 async function findExistingUserIdByEmail(supabase: any, email: string): Promise<string | null> {
@@ -84,7 +81,12 @@ async function ensureUserAndOnboarding(
 ) {
   const normalizedEmail = email.toLowerCase().trim();
   const { plan, canonical_product_id } = resolveTier(hotmartProductId);
-  logStep("Onboarding", { email: redactEmail(normalizedEmail), plan, hotmartProductId });
+  logStep("Onboarding Check", { email: redactEmail(normalizedEmail), plan, hotmartProductId });
+
+  if (plan === "Unknown" || !canonical_product_id) {
+    logStep("REJEITADO: Este produto da Hotmart não pertence ao Canva Viagem (não libera acesso).", { hotmartProductId });
+    return;
+  }
 
   // 1. Find or create user
   let userId = await findExistingUserIdByEmail(supabase, normalizedEmail);
