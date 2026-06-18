@@ -1492,19 +1492,32 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const infoW = Math.min(width - pad * 2, Math.max(width * 0.42, ctx.measureText(infoText).width + 84));
         fillRoundRect(ctx, width / 2 - infoW / 2, infoY, infoW, infoH, infoH / 2, gold);
         ctx.fillStyle = onGold;
-        drawMonoIcon(ctx, "check", width / 2 - infoW / 2 + infoH * 0.55, infoY + infoH / 2, infoH * 0.42, onGold);
-        safeFillText(ctx, infoText, width / 2 + infoH * 0.15, infoY + infoH / 2 + 1, infoW - infoH * 1.5, 12);
+        safeFillText(ctx, infoText, width / 2, infoY + infoH / 2 + 1, infoW - 32, 12);
       }
 
-      const priceBoxX = pad;
+            const priceBoxX = pad;
       const minContentGap = Math.round(height * 0.03);
       const contentY = Math.max(
         Math.round(height * (isStoryV8Luxury ? 0.455 : 0.425)),
         Math.round(infoY + (periodText ? Math.round(width * (isStoryV8Luxury ? 0.064 : 0.054)) : 0) + minContentGap)
       );
-      const priceBoxY = contentY;
+      
+      const ctaH = Math.round(width * (isStoryV8Luxury ? 0.074 : 0.062));
+      const brandSafeTop = isStoryV8Luxury ? height - 270 : height - 155;
+      const ctaY = Math.min(
+        Math.round(height * (isStoryV8Luxury ? 0.775 : 0.735)),
+        brandSafeTop - ctaH - Math.round(height * 0.026)
+      );
+      
+      const unifiedY = contentY;
+      const unifiedH = Math.min(
+        Math.round(height * (isStoryV8Luxury ? 0.275 : 0.35)),
+        Math.max(180, ctaY - unifiedY - Math.round(height * 0.035))
+      );
+
+      const priceBoxY = unifiedY;
       const priceBoxW = Math.round(width * (isStoryV8Luxury ? 0.50 : 0.43));
-      const priceBoxH = Math.round(height * (isStoryV8Luxury ? 0.165 : 0.235));
+      const priceBoxH = unifiedH;
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.38)";
       ctx.shadowBlur = 24;
@@ -1522,7 +1535,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const priceCents = (priceMatch?.[3] || "").trim();
       const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.105 : 0.098));
       const priceSmallSize = Math.round(priceMainSize * 0.46);
-      const priceBaseY = priceBoxY + Math.round(priceBoxH * 0.64);
+      const priceBaseY = priceBoxY + Math.round(priceBoxH * 0.58);
       const priceStartX = priceBoxX + 34;
       ctx.save();
       ctx.textBaseline = "alphabetic";
@@ -1544,18 +1557,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
 
       const cardW = Math.round(width * (isStoryV8Luxury ? 0.38 : 0.30));
-      const cardX = width - pad - cardW;
-      const cardY = contentY - Math.round(height * (isStoryV8Luxury ? 0.01 : 0.005));
-      const ctaH = Math.round(width * (isStoryV8Luxury ? 0.074 : 0.062));
-      const brandSafeTop = isStoryV8Luxury ? height - 270 : height - 155;
-      const ctaY = Math.min(
-        Math.round(height * (isStoryV8Luxury ? 0.775 : 0.735)),
-        brandSafeTop - ctaH - Math.round(height * 0.026)
-      );
-      const cardH = Math.min(
-        Math.round(height * (isStoryV8Luxury ? 0.275 : 0.35)),
-        Math.max(180, ctaY - cardY - Math.round(height * 0.035))
-      );
+      const cardX = priceBoxX + priceBoxW - 20; // OVERLAP
+      const cardY = unifiedY;
+      const cardH = unifiedH;
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.34)";
       ctx.shadowBlur = 28;
@@ -1582,7 +1586,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       });
 
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.034 : 0.031))}px Inter, Arial, sans-serif`;
-      const ctaTextFinal = `${ctaText} ->`;
+      const ctaTextFinal = `${ctaText} →`;
       const ctaW = Math.min(width - pad * 2, Math.max(width * 0.36, ctx.measureText(ctaTextFinal).width + ctaH * 1.85));
       const ctaX = width / 2 - ctaW / 2;
       ctx.save();
