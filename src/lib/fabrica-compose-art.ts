@@ -1516,8 +1516,28 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = onAccent;
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.033 : 0.031))}px Inter, Arial, sans-serif`;
       safeFillText(ctx, priceLabel, priceBoxX + 34, priceBoxY + Math.round(priceBoxH * 0.22), priceBoxW - 68, 12);
-      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.11 : 0.105))}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, priceText, priceBoxX + 34, priceBoxY + Math.round(priceBoxH * 0.58), priceBoxW - 68, 32);
+      const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
+      const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
+      const priceMain = (priceMatch?.[2] || priceText).trim();
+      const priceCents = (priceMatch?.[3] || "").trim();
+      const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.105 : 0.098));
+      const priceSmallSize = Math.round(priceMainSize * 0.46);
+      const priceBaseY = priceBoxY + Math.round(priceBoxH * 0.64);
+      const priceStartX = priceBoxX + 34;
+      ctx.save();
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = onAccent;
+      ctx.font = `900 ${priceSmallSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(priceSymbol, priceStartX, priceBaseY - Math.round(priceMainSize * 0.12));
+      let priceCursorX = priceStartX + (priceSymbol ? ctx.measureText(priceSymbol).width + 12 : 0);
+      ctx.font = `900 ${priceMainSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(priceMain, priceCursorX, priceBaseY);
+      priceCursorX += ctx.measureText(priceMain).width + 4;
+      if (priceCents) {
+        ctx.font = `900 ${priceSmallSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(priceCents, priceCursorX, priceBaseY - Math.round(priceMainSize * 0.12));
+      }
+      ctx.restore();
       if (suffixText) {
         ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.031 : 0.029))}px Inter, Arial, sans-serif`;
         safeFillText(ctx, suffixText, priceBoxX + 36, priceBoxY + Math.round(priceBoxH * 0.82), priceBoxW - 72, 12);
@@ -1540,7 +1560,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.shadowColor = "rgba(0,0,0,0.34)";
       ctx.shadowBlur = 28;
       ctx.shadowOffsetY = 12;
-      fillRoundRect(ctx, cardX, cardY, cardW, cardH, 24, "rgba(247,243,232,0.94)");
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, 24, gold);
       ctx.restore();
 
       const benefitItems = (highlights && highlights.length ? highlights : [
@@ -1552,8 +1572,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "center";
       benefitItems.forEach((item, idx) => {
         const cy = cardY + benefitGap * idx + benefitGap / 2;
-        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cardX + cardW / 2, cy - Math.round(width * 0.021), Math.round(width * 0.04), gold);
-        ctx.fillStyle = shadeColor(gold, -32);
+        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cardX + cardW / 2, cy - Math.round(width * 0.021), Math.round(width * 0.04), onGold);
+        ctx.fillStyle = onGold;
         ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.022 : 0.019))}px Inter, Arial, sans-serif`;
         const lines = wrapTextSafe(ctx, String(item.text || ""), cardW - 42, 2, 11);
         lines.forEach((line, lineIdx) => {
@@ -1561,8 +1581,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         });
       });
 
-      const ctaX = pad;
-      const ctaW = width - pad * 2;
+      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.034 : 0.031))}px Inter, Arial, sans-serif`;
+      const ctaTextFinal = `${ctaText} ->`;
+      const ctaW = Math.min(width - pad * 2, Math.max(width * 0.36, ctx.measureText(ctaTextFinal).width + ctaH * 1.85));
+      const ctaX = width / 2 - ctaW / 2;
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.35)";
       ctx.shadowBlur = 18;
@@ -1575,8 +1597,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.restore();
       ctx.textAlign = "center";
       ctx.fillStyle = gold;
-      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.034 : 0.031))}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, `${ctaText} ->`, width / 2, ctaY + ctaH / 2 + 2, ctaW - 70, 12);
+      safeFillText(ctx, ctaTextFinal, width / 2, ctaY + ctaH / 2 + 2, ctaW - ctaH, 12);
 
       await drawFinalBranding(
         ctx, width, height, logoDataUrl,
