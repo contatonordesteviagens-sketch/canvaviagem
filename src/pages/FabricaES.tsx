@@ -451,6 +451,7 @@ const FabricaContentES = () => {
   const navigate = useNavigate();
   const { subscription, isAdmin, user, loading: authLoading } = useAuth();
   const [accessGranted, setAccessGranted] = useState(false);
+  const [mutedActive, setMutedActive] = useState(true);
 
   // Navigate is now handled gracefully during render with <Navigate />
 
@@ -536,11 +537,46 @@ const FabricaContentES = () => {
             Esta herramienta es exclusiva para miembros del <strong className="text-cyan-400">Plan Elite</strong>. ¡Mejora ahora para tener acceso ilimitado a la Fábrica de Anuncios y al Creador de Sitios de Viajes!
           </p>
 
+          {/* Video Preview */}
+          <div className="relative aspect-video bg-muted rounded-xl overflow-hidden mb-6 border border-cyan-500/20 shadow-lg">
+            {mutedActive ? (
+              <>
+                <iframe
+                  className="absolute inset-0 h-full w-full border-0 pointer-events-none"
+                  src={`https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&mute=1&controls=0&loop=1&playlist=R2MyCdox--I&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0`}
+                  title="Demostración de la Fábrica de Anuncios Canva Viajes"
+                  allow="autoplay; encrypted-media"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMutedActive(false)}
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/45 transition-colors hover:bg-background/35"
+                >
+                  <span className="rounded-full border border-primary/25 bg-background/90 px-4 py-1.5 text-[10px] font-black uppercase tracking-wide text-primary">
+                    Ver con sonido
+                  </span>
+                  <span className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-xs font-black uppercase tracking-wide text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95">
+                    <Play className="h-3.5 w-3.5 fill-current" />
+                    Activar audio del video
+                  </span>
+                </button>
+              </>
+            ) : (
+              <iframe
+                className="absolute inset-0 h-full w-full border-0"
+                src={`https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0`}
+                title="Demostración de la Fábrica de Anuncios Canva Viajes"
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+              />
+            )}
+          </div>
+
           <div className="grid gap-4 mb-6">
             {/* Opción Anual */}
             <div className="border border-orange-500/30 bg-orange-500/[0.02] hover:bg-orange-500/[0.04] p-5 rounded-2xl text-left relative overflow-hidden transition-all shadow-[0_0_15px_rgba(249,115,22,0.05)]">
               <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-red-600 text-[9px] font-black uppercase text-white px-2.5 py-1 rounded-bl-xl tracking-wider">
-                MAYOR AHORRO (70% DE DESCUENTO)
+                MAYOR AHORRO ($ 682 DE AHORRO)
               </div>
               
               <div className="flex justify-between items-start mb-2 mt-1">
@@ -552,18 +588,18 @@ const FabricaContentES = () => {
                   <p className="text-[10px] text-white/40 mt-0.5">Acceso completo por 12 meses</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-xl font-black text-white">$ 28,91</span>
+                  <span className="text-xl font-black text-white">$ 49,85</span>
                   <span className="text-[11px] text-white/50">/mes</span>
-                  <p className="text-[9px] text-orange-400 font-bold mt-0.5">$ 347 cobrado anualmente</p>
+                  <p className="text-[9px] text-orange-400 font-bold mt-0.5">$ 482 cobrado anualmente</p>
                 </div>
               </div>
               
               <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-2.5 mb-4 text-[10px] text-orange-200 leading-normal">
-                💡 <strong>Análisis de Ahorro:</strong> Comprar mensualmente por 1 año cuesta $ 1.164. ¡En el plan anual, pagas solo $ 347 — un ahorro garantizado del <strong>70% de descuento real ($ 817,00/año ahorrados)</strong>!
+                💡 <strong>Análisis de Ahorro:</strong> Comprar mensualmente por 1 año cuesta $ 1.164. ¡En el plan anual, pagas solo $ 482 — un ahorro garantizado de <strong>$ 682,00/año ahorrados</strong>!
               </div>
 
               <button 
-                onClick={() => navigate("/inicio")}
+                onClick={() => navigate("/inicio2")}
                 className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs transition-all shadow-lg shadow-orange-500/20 uppercase tracking-wider border-0 cursor-pointer text-center"
               >
                 Garantizar Anual con Descuento →
@@ -583,7 +619,7 @@ const FabricaContentES = () => {
                 </div>
               </div>
               <button 
-                onClick={() => navigate("/inicio")}
+                onClick={() => navigate("/inicio2")}
                 className="w-full bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-bold py-2 px-3 rounded-xl text-xs mt-1 transition-colors border-0 cursor-pointer text-center"
               >
                 Suscribir Mensual por $ 97 →
