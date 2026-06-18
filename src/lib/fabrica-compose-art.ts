@@ -611,9 +611,9 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, color: string) {
+function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, color?: string | CanvasGradient | CanvasPattern) {
   ctx.save();
-  ctx.fillStyle = color;
+  if (color) ctx.fillStyle = color;
   roundRect(ctx, x, y, w, h, r);
   ctx.fill();
   ctx.restore();
@@ -2698,6 +2698,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const pixIconSize = 36;
           const pixGap = 12;
           const pillPad = 10;
+          const pillH = 40;
           let pillW = 0;
           
           ctx.font = "900 26px Inter, Arial, sans-serif";
@@ -2737,14 +2738,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
             ctx.textAlign = "left";
             ctx.fillText(pixText, pixStartX, stripeY + myStripeH / 2 + 1);
             const pillX = pixStartX + pixTextW + pixGap;
-            const pillY = stripeY + (stripeH - pillH) / 2;
+            const pillY = stripeY + (myStripeH - pillH) / 2;
             fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
             const pxCx = pillX + pillPad + pixIconSize / 2;
-            const pxCy = stripeY + stripeH / 2;
+            const pxCy = stripeY + myStripeH / 2;
             drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
             ctx.fillStyle = "#32BCAD";
             ctx.font = "900 28px Inter, Arial, sans-serif";
-            ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + stripeH / 2 + 1);
+            ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + myStripeH / 2 + 1);
           }
           ctx.textBaseline = "alphabetic";
         }

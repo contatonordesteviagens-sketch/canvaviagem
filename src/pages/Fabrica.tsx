@@ -23,7 +23,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  Users
+  Users,
+  Play
 } from "lucide-react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
@@ -37,7 +38,6 @@ const FabricaInner = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "phase" | "library">("dashboard");
   const [librarySubTab, setLibrarySubTab] = useState<"ofertas" | "galeria">("ofertas");
-  const [mutedActive, setMutedActive] = useState(true);
 
   useEffect(() => {
     const snapshot = (location.state as { prefillSnapshot?: any } | null)?.prefillSnapshot;
@@ -467,6 +467,7 @@ const FabricaInner = () => {
 const FabricaContent = () => {
   const navigate = useNavigate();
   const { subscription, isAdmin, user, loading: authLoading } = useAuth();
+  const [mutedActive, setMutedActive] = useState(true);
 
   // Navigate is now handled gracefully during render with <Navigate />
 
