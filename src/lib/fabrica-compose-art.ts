@@ -1430,43 +1430,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
           .replace(new RegExp(escapedDest, "ig"), "")
           .replace(/\s+([!?.,])/g, "$1")
           .replace(/[!?.,]+$/g, "")
-          .replace(/\s+/g, " ")
-          .trim()
-        : "";
-      const titleLead = (titleLeadRaw || (headline !== destinationText ? headline : promoText)).toUpperCase();
-      const periodText = (travelPeriod || "").trim().toUpperCase();
-      const priceLabel = (pricePrefix || paymentLabel || topLabel || "PRECO").toString().trim().toUpperCase();
-      let priceText = mainPrice || `${curSym} ${price}`.trim();
-      if (hideCents) priceText = priceText.replace(/[.,]\d{2}\s*$/, "");
-      const suffixText = (paymentSuffix || bottomSuffix || "").trim().toUpperCase();
-      const ctaText = (pixBannerText || "RESERVAR AGORA").trim().toUpperCase();
-
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-
-      const pillH = Math.round(width * (isStoryV8Luxury ? 0.07 : 0.056));
-      const pillY = Math.round(height * 0.055);
-      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.027))}px Inter, Arial, sans-serif`;
-      const promoW = Math.min(width - pad * 2, Math.max(width * 0.34, ctx.measureText(promoText).width + pillH * 1.55));
-      ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.32)";
-      ctx.shadowBlur = 14;
-      ctx.shadowOffsetY = 5;
-      fillRoundRect(ctx, width / 2 - promoW / 2, pillY, promoW, pillH, pillH / 2, accent);
-      ctx.restore();
-      ctx.fillStyle = onAccent;
-      safeFillText(ctx, promoText, width / 2, pillY + pillH / 2 + 1, promoW - 32, 14);
-
-      const titleMaxW = width - pad * 2;
-      const leadSize = Math.round(width * (isStoryV8Luxury ? 0.044 : 0.04));
-      ctx.font = `900 ${leadSize}px Inter, Arial, sans-serif`;
-      const leadLines = wrapTextSafe(ctx, titleLead, titleMaxW, 2, Math.round(leadSize * 0.62));
-      const destBase = Math.round(width * (isStoryV8Luxury ? 0.076 : 0.071));
-      ctx.font = `900 ${destBase}px Inter, Arial, sans-serif`;
-      const destinationLines = wrapTextSafe(ctx, destinationText, titleMaxW, 2, Math.round(destBase * 0.54));
-      const leadLineH = Math.round(leadSize * 0.94);
-      const destLineH = Math.round(destBase * 0.9);
-      const titleStartY = pillY + pillH + Math.round(height * 0.04) + leadLineH / 2;
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.78)";
       ctx.shadowBlur = 18;
@@ -1496,30 +1459,32 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
 
             const priceBoxX = pad;
-// Define block heights and Y positions
-      const unifiedH = Math.min(
-        Math.round(height * (isStoryV8Luxury ? 0.25 : 0.35)), 
-        Math.max(180, Math.round(height * 0.35))
-      );
-
       const ctaH = Math.round(width * (isStoryV8Luxury ? 0.074 : 0.062));
       const brandSafeTop = isStoryV8Luxury ? height - 270 : height - 155;
       const ctaY = Math.min(
-        Math.round(height * (isStoryV8Luxury ? 0.775 : 0.735)),
-        brandSafeTop - ctaH - Math.round(height * 0.026)
+        Math.round(height * (isStoryV8Luxury ? 0.775 : 0.81)),
+        brandSafeTop - ctaH - Math.round(height * (isStoryV8Luxury ? 0.026 : 0.015))
       );
 
-      // Anchor boxes to the bottom, just above the CTA
-      const desiredUnifiedY = ctaY - unifiedH - Math.round(height * (isStoryV8Luxury ? 0.05 : 0.035));
-      const unifiedY = Math.max(
-        Math.round(height * (isStoryV8Luxury ? 0.455 : 0.425)), 
-        desiredUnifiedY
+      // Re-add contentY to avoid colliding with the DEZEMBRO pill (infoY)
+      const minContentGap = Math.round(height * 0.035);
+      const contentY = Math.max(
+        Math.round(height * (isStoryV8Luxury ? 0.455 : 0.40)),
+        Math.round(infoY + (periodText ? Math.round(width * (isStoryV8Luxury ? 0.064 : 0.054)) : 0) + minContentGap)
       );
+
+      // Calculate maximum allowed height so it perfectly fits between contentY and ctaY
+      const maxAllowedH = ctaY - contentY - Math.round(height * (isStoryV8Luxury ? 0.05 : 0.03));
+      const preferredH = Math.round(height * (isStoryV8Luxury ? 0.25 : 0.26)); // Slightly smaller default
+      const unifiedH = Math.max(160, Math.min(maxAllowedH, preferredH)); // Dynamic height based on available space!
+
+      // Anchor boxes to the bottom, just above the CTA
+      const unifiedY = ctaY - unifiedH - Math.round(height * (isStoryV8Luxury ? 0.05 : 0.03));
 
       // Layout widths and X positions (Separated)
       const gap = Math.round(width * 0.03); // Gap between boxes
-      const priceBoxW = Math.round(width * (isStoryV8Luxury ? 0.45 : 0.43));
-      const cardW = Math.round(width * (isStoryV8Luxury ? 0.40 : 0.35));
+      const priceBoxW = Math.round(width * (isStoryV8Luxury ? 0.45 : 0.41));
+      const cardW = Math.round(width * (isStoryV8Luxury ? 0.40 : 0.34));
       
       // Center the two boxes together
       const totalBoxesW = priceBoxW + gap + cardW;
@@ -1543,14 +1508,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       ctx.textAlign = "left";
       ctx.fillStyle = onAccent;
-      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.031 : 0.029))}px Inter, Arial, sans-serif`;
+      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.031 : 0.026))}px Inter, Arial, sans-serif`;
       safeFillText(ctx, priceLabel, myPriceBoxX + 30, priceBoxY + Math.round(priceBoxH * 0.18), priceBoxW - 60, 12);
       
       const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
       const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
       const priceMain = (priceMatch?.[2] || priceText).trim();
       const priceCents = (priceMatch?.[3] || "").trim();
-      const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.095 : 0.088)); // Menor
+      const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.095 : 0.082)); // Menor
       const priceSmallSize = Math.round(priceMainSize * 0.46);
       
       // Move price up 2px as requested
