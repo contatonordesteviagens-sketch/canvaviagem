@@ -1458,10 +1458,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, promoText, width / 2, pillY + pillH / 2 + 1, promoW - 32, 14);
 
       const titleMaxW = width - pad * 2;
-      const leadSize = Math.round(width * (isStoryV8Luxury ? 0.048 : 0.044));
+      const leadSize = Math.round(width * (isStoryV8Luxury ? 0.044 : 0.04));
       ctx.font = `900 ${leadSize}px Inter, Arial, sans-serif`;
       const leadLines = wrapTextSafe(ctx, titleLead, titleMaxW, 2, Math.round(leadSize * 0.62));
-      const destBase = Math.round(width * (isStoryV8Luxury ? 0.083 : 0.078));
+      const destBase = Math.round(width * (isStoryV8Luxury ? 0.076 : 0.071));
       ctx.font = `900 ${destBase}px Inter, Arial, sans-serif`;
       const destinationLines = wrapTextSafe(ctx, destinationText, titleMaxW, 2, Math.round(destBase * 0.54));
       const leadLineH = Math.round(leadSize * 0.94);
@@ -1497,7 +1497,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
 
       const priceBoxX = pad;
-      const contentY = Math.round(height * (isStoryV8Luxury ? 0.455 : 0.42));
+      const minContentGap = Math.round(height * 0.03);
+      const contentY = Math.max(
+        Math.round(height * (isStoryV8Luxury ? 0.455 : 0.425)),
+        Math.round(infoY + (periodText ? Math.round(width * (isStoryV8Luxury ? 0.064 : 0.054)) : 0) + minContentGap)
+      );
       const priceBoxY = contentY;
       const priceBoxW = Math.round(width * (isStoryV8Luxury ? 0.50 : 0.43));
       const priceBoxH = Math.round(height * (isStoryV8Luxury ? 0.165 : 0.235));
@@ -1522,8 +1526,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const cardW = Math.round(width * (isStoryV8Luxury ? 0.38 : 0.30));
       const cardX = width - pad - cardW;
       const cardY = contentY - Math.round(height * (isStoryV8Luxury ? 0.01 : 0.005));
-      const ctaH = Math.round(width * (isStoryV8Luxury ? 0.078 : 0.066));
-      const ctaY = Math.round(height * (isStoryV8Luxury ? 0.80 : 0.78));
+      const ctaH = Math.round(width * (isStoryV8Luxury ? 0.074 : 0.062));
+      const brandSafeTop = isStoryV8Luxury ? height - 270 : height - 155;
+      const ctaY = Math.min(
+        Math.round(height * (isStoryV8Luxury ? 0.775 : 0.735)),
+        brandSafeTop - ctaH - Math.round(height * 0.026)
+      );
       const cardH = Math.min(
         Math.round(height * (isStoryV8Luxury ? 0.275 : 0.35)),
         Math.max(180, ctaY - cardY - Math.round(height * 0.035))
