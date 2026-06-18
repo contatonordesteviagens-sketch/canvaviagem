@@ -470,11 +470,17 @@ const FabricaContent = () => {
 
   // Navigate is now handled gracefully during render with <Navigate />
 
-  const isStart = subscription.subscribed && 
-    (subscription.productId?.includes("smart") || 
-     subscription.productId?.includes("start") || 
-     subscription.productId?.includes("basic"));
-  const isElite = subscription.subscribed && !isStart;
+  const ELITE_PRODUCT_IDS = [
+    "prod_TkvaozfpkAcbpM", // Hotmart Webhook Canonical
+    "prod_UTFlCWzNqvqSNx", // Stripe
+    "prod_UTFsXcKq8m0mol", // Stripe
+    "prod_UTSmPe3GPt8iHt", // Stripe
+  ];
+
+  // O usuário é Elite SOMENTE se tiver um desses IDs ou se for um produto de legado (ticto)
+  const isElite = subscription.subscribed && 
+    (subscription.productId ? (ELITE_PRODUCT_IDS.includes(subscription.productId) || subscription.productId.includes("ticto") || subscription.productId.includes("elite")) : false);
+    
   const hasAccess = isAdmin || isElite;
 
   // Spinner SÓ no primeiro carregamento real (sem user e sem acesso já concedido).

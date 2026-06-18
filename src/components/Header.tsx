@@ -153,11 +153,17 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
 
   // Intercept navigation to gated routes (Fábrica / Painel de Marketing)
   const handleNavClick = (to: string) => {
-    const isStart = subscription.subscribed && 
-      (subscription.productId?.includes("smart") || 
-       subscription.productId?.includes("start") || 
-       subscription.productId?.includes("basic"));
-    const isElite = subscription.subscribed && !isStart;
+    const ELITE_PRODUCT_IDS = [
+      "prod_TkvaozfpkAcbpM", // Hotmart Webhook Canonical
+      "prod_UTFlCWzNqvqSNx", // Stripe
+      "prod_UTFsXcKq8m0mol", // Stripe
+      "prod_UTSmPe3GPt8iHt", // Stripe
+    ];
+  
+    const isElite = subscription.subscribed && 
+      (subscription.productId ? (ELITE_PRODUCT_IDS.includes(subscription.productId) || subscription.productId.includes("ticto") || subscription.productId.includes("elite")) : false);
+      
+    const isStart = subscription.subscribed && !isElite;
 
     if ((to === "/fabrica" || to === "/painel-marketing") && !isAdmin && !isElite) {
       setFabricaUpgradeOpen(true);
