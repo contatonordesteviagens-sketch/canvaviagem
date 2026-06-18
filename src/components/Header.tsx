@@ -112,7 +112,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
     { to: isESRoute ? "/es" : "/", label: t('header.home'), icon: Home },
     { to: isESRoute ? "/es/calendar" : "/calendar", label: t('header.calendar'), icon: Calendar },
     { to: "/blog", label: "Blog", icon: FileText, state: { fromInternal: true } },
-    { to: isESRoute ? "/es/planos" : "/planos", label: t('header.plans'), icon: CreditCard },
+    { to: isESRoute ? "/es/inicio" : "/inicio2", label: t('header.plans'), icon: CreditCard },
   ];
 
   // Additional nav items for logged-in users

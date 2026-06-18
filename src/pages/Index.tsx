@@ -463,7 +463,7 @@ const Index = () => {
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
                   Ferramentas gratuitas disponíveis na plataforma. Para vídeos, artes e stories —{" "}
-                  <button onClick={() => navigate("/planos")} className="underline font-semibold text-foreground">veja o plano Pro</button>.
+                  <button onClick={() => navigate("/inicio2")} className="underline font-semibold text-foreground">veja o plano Pro</button>.
                 </p>
                 {toolsLoading ? (
                   <ToolSkeleton />
@@ -1707,7 +1707,7 @@ const Index = () => {
                     onClick={() => {
                       localStorage.setItem("cv_festa_popup_seen_v3", "true");
                       setShowFestaPopup(false);
-                      navigate("/planos");
+                      navigate("/inicio2");
                     }}
                     className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold px-8 py-6 rounded-xl text-xs transition-all uppercase tracking-wider border-0"
                   >

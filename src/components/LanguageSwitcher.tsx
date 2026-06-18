@@ -22,8 +22,8 @@ export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps)
     
     if (targetLang === 'es') {
       // Navigate to ES version
-      if (currentPath.includes('/planos') || currentPath.includes('/es/planos')) {
-        window.location.href = '/es/planos' + searchParams;
+      if (currentPath.includes('/inicio2') || currentPath.includes('/es/inicio')) {
+        window.location.href = '/es/inicio' + searchParams;
       } else if (currentPath.includes('/calendar') || currentPath.includes('/es/calendar')) {
         window.location.href = '/es/calendar' + searchParams;
       } else if (currentPath.includes('/fabrica') || currentPath.includes('/es/fabrica')) {
@@ -33,8 +33,8 @@ export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps)
       }
     } else {
       // Navigate to PT version - use explicit /pt paths to force language
-      if (currentPath.includes('/planos') || currentPath.includes('/es/planos')) {
-        window.location.href = '/planos' + searchParams;
+      if (currentPath.includes('/inicio2') || currentPath.includes('/es/inicio')) {
+        window.location.href = '/inicio2' + searchParams;
       } else if (currentPath.includes('/calendar') || currentPath.includes('/es/calendar')) {
         window.location.href = '/calendar' + searchParams;
       } else if (currentPath.includes('/fabrica') || currentPath.includes('/es/fabrica')) {

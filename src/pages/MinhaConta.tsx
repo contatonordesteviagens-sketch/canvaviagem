@@ -50,7 +50,7 @@ export default function MinhaConta() {
       }
     } catch {
       // fallback: redirect to plans page
-      navigate("/planos");
+      navigate("/inicio2");
     } finally {
       setLoadingPortal(false);
     }
@@ -162,7 +162,7 @@ export default function MinhaConta() {
                   ) : (
                     <Button
                       className="w-full"
-                      onClick={() => navigate("/planos")}
+                      onClick={() => navigate("/inicio2")}
                     >
                       <Crown className="h-4 w-4 mr-2" />
                       Ver Planos PRO
@@ -186,7 +186,7 @@ export default function MinhaConta() {
                       <Button 
                         size="sm"
                         className="w-full bg-[#00E5FF] text-[#050D1A] hover:bg-[#00c2db] font-extrabold text-[11px] uppercase tracking-wider h-9 border-none"
-                        onClick={() => navigate("/planos")}
+                        onClick={() => navigate("/inicio2")}
                       >
                         Fazer Upgrade para Elite →
                       </Button>

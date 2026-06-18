@@ -33,7 +33,7 @@ export default function Diferencas() {
       {/* Header / Back Button */}
       <nav className="sticky top-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/5 px-6 py-4">
         <button 
-          onClick={() => navigate("/planos")}
+          onClick={() => navigate("/inicio2")}
           className="flex items-center gap-2 text-sm font-bold text-cyan-400 hover:text-white transition-colors"
         >
           <ChevronLeft size={20} /> VOLTAR PARA PLANOS
@@ -118,7 +118,7 @@ export default function Diferencas() {
             Comece agora e tenha acesso a tudo que vimos acima por menos de R$1/dia no plano anual.
           </p>
           <button 
-            onClick={() => navigate("/planos")}
+            onClick={() => navigate("/inicio2")}
             className="bg-cyan-400 text-black font-black px-10 py-5 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(0,212,255,0.3)] text-lg uppercase tracking-tight"
           >
             Escolher meu Plano agora →

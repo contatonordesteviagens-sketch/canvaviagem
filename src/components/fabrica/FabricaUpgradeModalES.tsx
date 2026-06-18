@@ -9,7 +9,7 @@ interface FabricaUpgradeModalESProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const FABRICA_VIDEO_ID = "Xqcw-NpPz08";
+const FABRICA_VIDEO_ID = "R2MyCdox--I";
 
 export const FabricaUpgradeModalES = ({ open, onOpenChange }: FabricaUpgradeModalESProps) => {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export const FabricaUpgradeModalES = ({ open, onOpenChange }: FabricaUpgradeModa
 
   const handlePlansClick = () => {
     onOpenChange(false);
-    navigate("/inicio");
+    navigate("/inicio2");
   };
 
   return (
