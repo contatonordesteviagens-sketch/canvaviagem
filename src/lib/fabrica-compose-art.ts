@@ -2158,7 +2158,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
           infoX += daysW + actualGap;
         }
         iconList.forEach((k, i) => {
-          drawMonoIcon(ctx, k, infoX + i * (iconSize + iconGap) + iconSize / 2, cursorY, iconSize, navy);
+          const ix = infoX + i * (iconSize + iconGap) + iconSize / 2;
+          ctx.beginPath();
+          ctx.arc(ix, cursorY, iconSize * 0.7, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(0,0,0,0.06)";
+          ctx.fill();
+          drawMonoIcon(ctx, k, ix, cursorY, iconSize, navy);
         });
         ctx.textBaseline = "alphabetic"; cursorY += 55;
         const ringX = boxX + 30;
@@ -2256,7 +2261,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillText(mainTxt, leftColCx, priceBlockY + 36);
         
         ctx.font = "600 18px Inter, Arial, sans-serif";
-        ctx.fillText(btmTxt, leftColCx, priceBlockY + 74);
+        ctx.fillText(btmTxt, leftColCx, priceBlockY + 62);
 
         // Desenhar Lado Direito
         const priceBaseY = priceBlockY + 70; 
