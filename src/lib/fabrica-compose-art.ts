@@ -1457,10 +1457,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, promoText, width / 2, pillY + pillH / 2 + 1, promoW - 32, 14);
 
       const titleMaxW = width - pad * 2;
-      const leadSize = Math.round(width * (isStoryV8Luxury ? 0.044 : 0.038));
+      const leadSize = Math.round(width * (isStoryV8Luxury ? 0.048 : 0.038));
       ctx.font = `900 ${leadSize}px Inter, Arial, sans-serif`;
       const leadLines = wrapTextSafe(ctx, titleLead, titleMaxW, 2, Math.round(leadSize * 0.62));
-      const destBase = Math.round(width * (isStoryV8Luxury ? 0.076 : 0.065));
+      const destBase = Math.round(width * (isStoryV8Luxury ? 0.085 : 0.065));
       ctx.font = `900 ${destBase}px Inter, Arial, sans-serif`;
       const destinationLines = wrapTextSafe(ctx, destinationText, titleMaxW, 2, Math.round(destBase * 0.54));
       const leadLineH = Math.round(leadSize * 0.94);
@@ -1489,7 +1489,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (infoText) {
         const infoH = Math.round(width * (isStoryV8Luxury ? 0.064 : 0.054));
         ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.029))}px Inter, Arial, sans-serif`;
-        const infoW = Math.min(width - pad * 2, Math.max(width * 0.28, ctx.measureText(infoText).width + 44));
+        const infoW = Math.min(width - pad * 2, ctx.measureText(infoText).width + 56);
         fillRoundRect(ctx, width / 2 - infoW / 2, infoY, infoW, infoH, infoH / 2, gold);
         ctx.fillStyle = onGold;
         safeFillText(ctx, infoText, width / 2, infoY + infoH / 2 + 1, infoW - 32, 12);
@@ -1499,7 +1499,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const ctaH = Math.round(width * (isStoryV8Luxury ? 0.074 : 0.062));
       const brandSafeTop = isStoryV8Luxury ? height - 270 : height - 155;
       const ctaY = Math.min(
-        Math.round(height * (isStoryV8Luxury ? 0.775 : 0.85)),
+        Math.round(height * (isStoryV8Luxury ? 0.76 : 0.85)),
         brandSafeTop - ctaH - Math.round(height * (isStoryV8Luxury ? 0.026 : 0.012))
       );
 
@@ -1512,7 +1512,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // Calculate maximum allowed height so it perfectly fits between contentY and ctaY
       const maxAllowedH = ctaY - contentY - Math.round(height * (isStoryV8Luxury ? 0.05 : 0.03));
-      const preferredH = Math.round(height * (isStoryV8Luxury ? 0.22 : 0.23)); // Smaller default
+      const preferredH = Math.round(height * (isStoryV8Luxury ? 0.18 : 0.23)); // Stories were too tall
       const unifiedH = Math.max(150, Math.min(maxAllowedH, preferredH)); // Dynamic height based on available space!
 
       // Anchor boxes to the bottom, just above the CTA
@@ -1552,7 +1552,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
       const priceMain = (priceMatch?.[2] || priceText).trim();
       const priceCents = (priceMatch?.[3] || "").trim();
-      const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.090 : 0.082));
+      const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.085 : 0.082));
       const priceSmallSize = Math.round(priceMainSize * 0.46);
       
       // Move price down to be harmonious with new height
@@ -1587,7 +1587,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.textAlign = "left";
           ctx.fillStyle = onAccent;
           ctx.font = `700 ${Math.round(width * 0.025)}px Inter, Arial, sans-serif`;
-          safeFillText(ctx, totalOverride.trim(), myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.86), priceBoxW - 40, 10);
+          safeFillText(ctx, totalOverride.trim(), myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.88), priceBoxW - 40, 10);
       }
 
       // Draw Yellow Card (Icons)
