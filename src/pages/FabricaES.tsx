@@ -22,7 +22,8 @@ import {
   Library,
   Users,
   Menu,
-  X
+  X,
+  Play
 } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
