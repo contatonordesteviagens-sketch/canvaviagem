@@ -682,6 +682,7 @@ function drawMonoIcon(
   cy: number,
   size: number,
   color: string,
+  strokeWidth = 1.3,
 ) {
   ctx.save();
   const s = size / 24;
@@ -689,7 +690,7 @@ function drawMonoIcon(
   ctx.scale(s, s);
   
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1.3;
+  ctx.lineWidth = strokeWidth;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
@@ -1518,9 +1519,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const availableBoxH = Math.max(150, ctaY - contentY - boxBottomGap);
       const benefitCount = benefitItems.length;
       const numRows = Math.ceil(benefitCount / 2);
-      const cardVerticalPad = Math.round(height * (benefitCount <= 4 ? 0.045 : 0.032));
-      const maxBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.082 : 0.088));
-      const minBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.055 : 0.058));
+      const cardVerticalPad = Math.round(height * (benefitCount <= 4 ? 0.038 : 0.028));
+      const maxBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.074 : 0.078));
+      const minBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.052 : 0.054));
       const fitBenefitGap = Math.floor((availableBoxH - cardVerticalPad) / Math.max(1, numRows));
       const benefitGap = Math.max(minBenefitGap, Math.min(maxBenefitGap, fitBenefitGap));
       const cardH = Math.min(availableBoxH, numRows * benefitGap + cardVerticalPad);
@@ -1534,7 +1535,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const hasCents = !!tempPriceMatch?.[3] && !hideCents;
       const priceBoxBaseW = Math.round(width * (isStoryV8Luxury ? 0.40 : 0.35));
       const priceBoxW = hasCents ? priceBoxBaseW : priceBoxBaseW - Math.round(width * 0.06);
-      const cardW = Math.round(width * (isStoryV8Luxury ? 0.35 : 0.32));
+      const cardW = Math.round(width * (isStoryV8Luxury ? 0.33 : 0.30));
       const gap = Math.round(width * 0.022);
       const totalBoxesW = priceBoxW + gap + cardW;
       const startX = (width - totalBoxesW) / 2 - (isStoryV8Luxury ? 0 : 20);
@@ -1602,10 +1603,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const benefitPadY = Math.max(16, Math.round(cardH * 0.08));
       const benefitCellW = (cardW - benefitPadX * 2) / 2;
       const benefitSlotH = (cardH - benefitPadY * 2) / Math.max(1, numRows);
-      const benefitIconSize = Math.round(width * (benefitCount <= 4 ? 0.026 : 0.022));
-      const benefitBubbleR = Math.round(benefitIconSize * 0.96);
-      const benefitFontSize = Math.round(width * (benefitCount <= 4 ? 0.0152 : 0.0134));
-      const benefitLineH = Math.round(benefitFontSize * 1.02);
+      const benefitIconSize = Math.round(width * (benefitCount <= 4 ? 0.028 : 0.0245));
+      const benefitBubbleR = Math.round(benefitIconSize * 1.08);
+      const benefitFontSize = Math.round(width * (benefitCount <= 4 ? 0.0162 : 0.0145));
+      const benefitLineH = Math.round(benefitFontSize * 1.04);
 
       ctx.textAlign = "center";
       benefitItems.forEach((item, idx) => {
@@ -1620,12 +1621,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const textStartY = slotTop + benefitSlotH * 0.58;
 
         ctx.save();
-        ctx.fillStyle = "rgba(0,0,0,0.045)";
+        ctx.fillStyle = "rgba(0,0,0,0.105)";
         ctx.beginPath();
         ctx.arc(cx, iconY - benefitIconSize * 0.08, benefitBubbleR, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
-        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cx, iconY, benefitIconSize, onGold);
+        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cx, iconY, benefitIconSize, onGold, 1.85);
 
         ctx.fillStyle = onGold;
         ctx.font = `800 ${benefitFontSize}px Inter, Arial, sans-serif`;
