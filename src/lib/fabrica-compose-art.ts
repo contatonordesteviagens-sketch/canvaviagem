@@ -1527,14 +1527,30 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const cardH = Math.min(availableBoxH, numRows * benefitGap + cardVerticalPad);
       const cardY = Math.max(contentY, ctaY - cardH - boxBottomGap);
 
-      const pricePreferredH = Math.round(height * (isStoryV8Luxury ? 0.18 : 0.23));
-      const priceBoxH = Math.max(150, Math.min(cardH, pricePreferredH));
+      const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
+      const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
+      const priceMain = (priceMatch?.[2] || priceText).trim();
+      const priceCents = (priceMatch?.[3] || "").trim();
+      const hasCents = !!priceCents && !hideCents;
+      const hasTotalLine = rawShowTotal !== false && !!totalOverride && totalOverride.trim() !== "";
+      const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.085 : 0.082));
+      const priceSmallSize = Math.round(priceMainSize * 0.46);
+      const priceLabelSize = Math.round(width * (isStoryV8Luxury ? 0.027 : 0.024));
+      const suffixSize = Math.round(width * (isStoryV8Luxury ? 0.024 : 0.022));
+      const totalSize = Math.round(width * 0.0235);
+      const priceBoxBaseW = Math.round(width * (
+        hasCents
+          ? (isStoryV8Luxury ? 0.36 : 0.32)
+          : hasTotalLine
+            ? (isStoryV8Luxury ? 0.33 : 0.30)
+            : (isStoryV8Luxury ? 0.30 : 0.28)
+      ));
+      const priceBoxW = priceBoxBaseW;
+      const priceBoxH = Math.round(
+        20 + priceLabelSize + 8 + priceMainSize + (suffixText ? 8 + suffixSize : 0) + (hasTotalLine ? 8 + totalSize : 0) + 16
+      );
       const priceBoxY = Math.max(contentY, cardY + cardH / 2 - priceBoxH / 2);
 
-      const tempPriceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
-      const hasCents = !!tempPriceMatch?.[3] && !hideCents;
-      const priceBoxBaseW = Math.round(width * (isStoryV8Luxury ? 0.40 : 0.35));
-      const priceBoxW = hasCents ? priceBoxBaseW : priceBoxBaseW - Math.round(width * 0.06);
       const cardW = Math.round(width * (isStoryV8Luxury ? 0.33 : 0.30));
       const gap = Math.round(width * 0.022);
       const totalBoxesW = priceBoxW + gap + cardW;
@@ -1551,16 +1567,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       ctx.textAlign = "left";
       ctx.fillStyle = onAccent;
-      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.031 : 0.026))}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, priceLabel, priceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.16) - 2, priceBoxW - 40, 12);
+      ctx.font = `900 ${priceLabelSize}px Inter, Arial, sans-serif`;
+      const priceLabelY = priceBoxY + 32;
+      safeFillText(ctx, priceLabel, priceBoxX + 20, priceLabelY, priceBoxW - 40, 12);
 
-      const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
-      const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
-      const priceMain = (priceMatch?.[2] || priceText).trim();
-      const priceCents = (priceMatch?.[3] || "").trim();
-      const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.085 : 0.082));
-      const priceSmallSize = Math.round(priceMainSize * 0.46);
-      const priceBaseY = priceBoxY + Math.round(priceBoxH * 0.48);
+      const priceBaseY = priceLabelY + priceMainSize + 6;
       const priceStartX = priceBoxX + 20;
 
       ctx.save();
@@ -1581,15 +1592,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (suffixText) {
         ctx.textAlign = "left";
         ctx.fillStyle = onAccent;
-        ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.025 : 0.023))}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, suffixText, priceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.65) - 1, priceBoxW - 40, 10);
+        ctx.font = `800 ${suffixSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, suffixText, priceBoxX + 20, priceBaseY + 36, priceBoxW - 40, 10);
       }
 
-      if (rawShowTotal !== false && totalOverride && totalOverride.trim() !== "") {
+      if (hasTotalLine) {
         ctx.textAlign = "left";
         ctx.fillStyle = onAccent;
-        ctx.font = `700 ${Math.round(width * 0.025)}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, totalOverride.trim(), priceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.84) - 1, priceBoxW - 40, 10);
+        ctx.font = `700 ${totalSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, totalOverride.trim(), priceBoxX + 20, priceBaseY + 36 + suffixSize + 10, priceBoxW - 40, 10);
       }
 
       ctx.save();
