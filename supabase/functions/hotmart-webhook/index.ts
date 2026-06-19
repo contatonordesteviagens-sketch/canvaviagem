@@ -27,7 +27,7 @@ const CANONICAL_START_PRODUCT_ID = "hotmart_start";
 const parseList = (raw?: string | null) =>
   new Set((raw ?? "").split(",").map((s) => s.trim()).filter(Boolean));
 
-const HOTMART_ELITE_PRODUCT_IDS = parseList(Deno.env.get("HOTMART_ELITE_PRODUCT_IDS"));
+const HOTMART_ELITE_PRODUCT_IDS = parseList(Deno.env.get("HOTMART_ELITE_PRODUCT_IDS") || "7876791");
 const HOTMART_START_PRODUCT_IDS = parseList(Deno.env.get("HOTMART_START_PRODUCT_IDS"));
 
 function resolveTier(hotmartProductId: string | null): { plan: "Elite" | "Unknown"; canonical_product_id: string | null } {
