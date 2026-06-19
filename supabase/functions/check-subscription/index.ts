@@ -19,7 +19,12 @@ const GENERIC_ERRORS = {
   configError: "Service configuration error",
 };
 
-const ELITE_PRODUCT_IDS = new Set(["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"]);
+const ELITE_PRODUCT_IDS = new Set([
+  "prod_UTFlCWzNqvqSNx", // Elite Anual (Stripe)
+  "prod_UTFsXcKq8m0mol", // Elite Mensal (Stripe)
+  "prod_UTSmPe3GPt8iHt", // Start (Stripe)
+  "prod_TkvaozfpkAcbpM", // Hotmart Webhook Canonical
+]);
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

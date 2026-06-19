@@ -11,6 +11,7 @@ import { useActiveUsers, ActiveUser } from "@/hooks/useActiveUsers";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { UserDetailsModal } from "./UserDetailsModal";
 
 type StatusFilter = "all" | "active" | "canceled" | "past_due" | "trialing" | "inactive";
 
@@ -18,6 +19,8 @@ export const UsersSection = () => {
   const { data: users, isLoading } = useActiveUsers();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [selectedUser, setSelectedUser] = useState<ActiveUser | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
 
   const filteredUsers = useMemo(() => {
@@ -252,7 +255,14 @@ export const UsersSection = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredUsers.map((user) => (
-                    <TableRow key={user.user_id}>
+                    <TableRow 
+                      key={user.user_id}
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setIsModalOpen(true);
+                      }}
+                    >
                       <TableCell className="font-medium">{user.email}</TableCell>
                       <TableCell>{getStatusBadge(user.status)}</TableCell>
                       <TableCell>
@@ -271,6 +281,12 @@ export const UsersSection = () => {
           )}
         </CardContent>
       </Card>
+
+      <UserDetailsModal 
+        user={selectedUser}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </div>
   );
 };
