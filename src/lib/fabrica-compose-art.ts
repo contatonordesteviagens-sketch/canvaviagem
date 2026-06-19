@@ -1593,6 +1593,20 @@ const panelBottom = RULES.PANEL_BOTTOM;
           safeFillText(ctx, totalOverride.trim(), myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.84) - 1, priceBoxW - 40, 10);
       }
 
+      // Calculate Yellow Box Dynamic Height & 2-Column Layout
+      const benefitItems = (highlights && highlights.length ? highlights : [
+        { icon: "star" as IconKey, text: "Melhores experiencias" },
+        { icon: "heart" as IconKey, text: "Atendimento premium" },
+        { icon: "check" as IconKey, text: "Beneficios exclusivos" },
+      ]).slice(0, 6); // Allow up to 6 icons!
+      
+      const numRows = Math.ceil(benefitItems.length / 2);
+      const benefitGap = Math.round(height * (isStoryV8Luxury ? 0.085 : 0.095));
+      const cardH = numRows * benefitGap + Math.round(height * 0.035);
+      
+      // Center the yellow box vertically relative to the black box!
+      const cardY = priceBoxY + (priceBoxH / 2) - (cardH / 2);
+
       // Draw Yellow Card (Icons)
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.34)";
@@ -1601,31 +1615,31 @@ const panelBottom = RULES.PANEL_BOTTOM;
       fillRoundRect(ctx, cardX, cardY, cardW, cardH, 24, gold);
       ctx.restore();
 
-      const benefitItems = (highlights && highlights.length ? highlights : [
-        { icon: "star" as IconKey, text: "Melhores experiencias" },
-        { icon: "heart" as IconKey, text: "Atendimento premium" },
-        { icon: "check" as IconKey, text: "Beneficios exclusivos" },
-      ]).slice(0, 6); // Allow up to 6 icons!
-      
-      const benefitGap = cardH / Math.max(1, benefitItems.length);
       ctx.textAlign = "center";
       benefitItems.forEach((item, idx) => {
-        const cy = cardY + benefitGap * idx + benefitGap / 2;
-        // Make icons slightly smaller
+        const row = Math.floor(idx / 2);
+        const col = idx % 2;
+        let cx = cardX + (col === 0 ? cardW * 0.25 : cardW * 0.75);
+        if (idx === benefitItems.length - 1 && benefitItems.length % 2 !== 0) {
+            cx = cardX + cardW / 2; // center odd last item
+        }
+        const cy = cardY + benefitGap * row + benefitGap / 2;
+        
         const iconSz = Math.round(width * 0.032);
         const iconY = cy - Math.round(width * 0.020);
         ctx.save();
         ctx.fillStyle = "rgba(0,0,0,0.06)";
         ctx.beginPath();
-        ctx.arc(cardX + cardW / 2, iconY - iconSz * 0.1, iconSz * 1.1, 0, Math.PI * 2);
+        ctx.arc(cx, iconY - iconSz * 0.1, iconSz * 1.1, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
-        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cardX + cardW / 2, iconY, iconSz, onGold);
+        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cx, iconY, iconSz, onGold);
+        
         ctx.fillStyle = onGold;
-        ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.019 : 0.017))}px Inter, Arial, sans-serif`;
-        const lines = wrapTextSafe(ctx, String(item.text || ""), cardW - 30, 2, 9);
+        ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.017 : 0.015))}px Inter, Arial, sans-serif`;
+        const lines = wrapTextSafe(ctx, String(item.text || ""), cardW / 2 - 15, 3, 9);
         lines.forEach((line, lineIdx) => {
-          safeFillText(ctx, line, cardX + cardW / 2, cy + Math.round(width * 0.02) + lineIdx * Math.round(width * 0.02), cardW - 20, 9);
+          safeFillText(ctx, line, cx, cy + Math.round(width * 0.02) + lineIdx * Math.round(width * 0.018), cardW / 2 - 10, 9);
         });
       });
 
