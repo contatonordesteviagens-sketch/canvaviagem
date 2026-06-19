@@ -1520,12 +1520,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // Layout widths and X positions (Separated)
       const gap = Math.round(width * 0.022); // Tighter gap to bring them to center
-      const priceBoxW = Math.round(width * (isStoryV8Luxury ? 0.40 : 0.38)); // Reduced by ~1cm
+      const priceBoxW = Math.round(width * (isStoryV8Luxury ? 0.40 : 0.35)); // Reduced by ~1cm
       const cardW = Math.round(width * (isStoryV8Luxury ? 0.33 : 0.30)); // Reduced by ~1-2cm
       
       // Center the two boxes together
       const totalBoxesW = priceBoxW + gap + cardW;
-      const startX = (width - totalBoxesW) / 2;
+      const startX = (width - totalBoxesW) / 2 - (isStoryV8Luxury ? 0 : 20); // Moved a bit to the left
 
       const myPriceBoxX = startX;
       const priceBoxY = unifiedY;
@@ -1546,7 +1546,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "left";
       ctx.fillStyle = onAccent;
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.031 : 0.026))}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, priceLabel, myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.16) - 1, priceBoxW - 40, 12);
+      safeFillText(ctx, priceLabel, myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.16) - 2, priceBoxW - 40, 12);
       
       const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
       const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
@@ -1579,7 +1579,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textAlign = "left";
         ctx.fillStyle = onAccent;
         ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.025 : 0.023))}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, suffixText, myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.65), priceBoxW - 40, 10);
+        safeFillText(ctx, suffixText, myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.65) - 1, priceBoxW - 40, 10);
       }
 
       // Show Total Value if exists -> At the bottom of the box
@@ -1587,7 +1587,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.textAlign = "left";
           ctx.fillStyle = onAccent;
           ctx.font = `700 ${Math.round(width * 0.025)}px Inter, Arial, sans-serif`;
-          safeFillText(ctx, totalOverride.trim(), myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.84), priceBoxW - 40, 10);
+          safeFillText(ctx, totalOverride.trim(), myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.84) - 1, priceBoxW - 40, 10);
       }
 
       // Draw Yellow Card (Icons)
