@@ -1535,8 +1535,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const priceBoxH = unifiedH;
 
       const cardX = myPriceBoxX + priceBoxW + gap;
-      const cardY = unifiedY - Math.round(height * 0.022); // Aumentar ~1cm acima
-      const cardH = unifiedH + Math.round(height * 0.034); // Aumentar ~1cm acima + ~0.5cm abaixo
+      let cardY = unifiedY - Math.round(height * 0.022); // Aumentar ~1cm acima
+      let cardH = unifiedH + Math.round(height * 0.034); // Aumentar ~1cm acima + ~0.5cm abaixo
 
       // Draw Black Price Box
       ctx.save();
@@ -1602,10 +1602,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       
       const numRows = Math.ceil(benefitItems.length / 2);
       const benefitGap = Math.round(height * (isStoryV8Luxury ? 0.085 : 0.095));
-      const cardH = numRows * benefitGap + Math.round(height * 0.035);
+      cardH = numRows * benefitGap + Math.round(height * 0.035);
       
       // Center the yellow box vertically relative to the black box!
-      const cardY = priceBoxY + (priceBoxH / 2) - (cardH / 2);
+      cardY = priceBoxY + (priceBoxH / 2) - (cardH / 2);
 
       // Draw Yellow Card (Icons)
       ctx.save();
