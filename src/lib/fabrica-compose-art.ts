@@ -1520,7 +1520,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // Layout widths and X positions (Separated)
       const gap = Math.round(width * 0.022); // Tighter gap to bring them to center
-      const priceBoxW = Math.round(width * (isStoryV8Luxury ? 0.40 : 0.35)); // Reduced by ~1cm
+      const tempPriceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
+      const hasCents = tempPriceMatch?.[3] && !hideCents;
+      const priceBoxBaseW = Math.round(width * (isStoryV8Luxury ? 0.40 : 0.35));
+      const priceBoxW = hasCents ? priceBoxBaseW : priceBoxBaseW - Math.round(width * 0.06);
       const cardW = Math.round(width * (isStoryV8Luxury ? 0.33 : 0.30)); // Reduced by ~1-2cm
       
       // Center the two boxes together
@@ -1602,7 +1605,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         { icon: "star" as IconKey, text: "Melhores experiencias" },
         { icon: "heart" as IconKey, text: "Atendimento premium" },
         { icon: "check" as IconKey, text: "Beneficios exclusivos" },
-      ]).slice(0, 5); // Allow up to 5 icons!
+      ]).slice(0, 6); // Allow up to 6 icons!
       
       const benefitGap = cardH / Math.max(1, benefitItems.length);
       ctx.textAlign = "center";
