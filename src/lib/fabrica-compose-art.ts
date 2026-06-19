@@ -1465,7 +1465,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const destinationLines = wrapTextSafe(ctx, destinationText, titleMaxW, 2, Math.round(destBase * 0.54));
       const leadLineH = Math.round(leadSize * 0.94);
       const destLineH = Math.round(destBase * 0.9);
-      const titleStartY = pillY + pillH + Math.round(height * (isStoryV8Luxury ? 0.04 : 0.025)) + leadLineH / 2 - 2;
+      const titleStartY = pillY + pillH + Math.round(height * (isStoryV8Luxury ? 0.04 : 0.025)) + leadLineH / 2 - 4;
 
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.78)";
@@ -1477,14 +1477,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, line, width / 2, titleStartY + idx * leadLineH, titleMaxW, Math.round(leadSize * 0.62));
       });
       ctx.font = `900 ${destBase}px Inter, Arial, sans-serif`;
-      const destStartY = titleStartY + leadLines.length * leadLineH + Math.round(height * 0.012) + destLineH / 2;
+      const destStartY = titleStartY + leadLines.length * leadLineH + Math.round(height * 0.012) + destLineH / 2 - 2;
       destinationLines.forEach((line, idx) => {
         safeFillText(ctx, line, width / 2, destStartY + idx * destLineH, titleMaxW, Math.round(destBase * 0.54));
       });
       ctx.restore();
 
       const titleBottomY = destStartY + Math.max(0, destinationLines.length - 0.5) * destLineH;
-      const infoY = titleBottomY + Math.round(height * 0.026);
+      const infoY = titleBottomY + Math.round(height * 0.026) - 2;
       const infoText = periodText || destinationText;
       if (infoText) {
         const infoH = Math.round(width * (isStoryV8Luxury ? 0.064 : 0.054));
