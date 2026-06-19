@@ -1438,7 +1438,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       let priceText = mainPrice || `${curSym} ${price}`.trim();
       if (hideCents) priceText = priceText.replace(/[.,]\d{2}\s*$/, "");
       const suffixText = (paymentSuffix || bottomSuffix || "").trim();
-      const ctaText = (pixBannerText || "RESERVAR AGORA").trim();
+      const ctaText = (rawShowPixBanner !== false ? (pixBannerText || "RESERVAR AGORA") : "GARANTIR VAGA").trim();
 
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -1546,7 +1546,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "left";
       ctx.fillStyle = onAccent;
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.031 : 0.026))}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, priceLabel, myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.20) - 1, priceBoxW - 40, 12);
+      safeFillText(ctx, priceLabel, myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.16) - 1, priceBoxW - 40, 12);
       
       const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
       const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
@@ -1556,7 +1556,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const priceSmallSize = Math.round(priceMainSize * 0.46);
       
       // Move price down to be harmonious with new height
-      const priceBaseY = priceBoxY + Math.round(priceBoxH * 0.50); 
+      const priceBaseY = priceBoxY + Math.round(priceBoxH * 0.48); 
       const priceStartX = myPriceBoxX + 20;
       
       ctx.save();
@@ -1579,15 +1579,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textAlign = "left";
         ctx.fillStyle = onAccent;
         ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.025 : 0.023))}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, suffixText, myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.68), priceBoxW - 40, 10);
+        safeFillText(ctx, suffixText, myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.65), priceBoxW - 40, 10);
       }
 
       // Show Total Value if exists -> At the bottom of the box
-      if (totalOverride && totalOverride.trim() !== "") {
+      if (rawShowTotal !== false && totalOverride && totalOverride.trim() !== "") {
           ctx.textAlign = "left";
           ctx.fillStyle = onAccent;
           ctx.font = `700 ${Math.round(width * 0.025)}px Inter, Arial, sans-serif`;
-          safeFillText(ctx, totalOverride.trim(), myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.88), priceBoxW - 40, 10);
+          safeFillText(ctx, totalOverride.trim(), myPriceBoxX + 20, priceBoxY + Math.round(priceBoxH * 0.84), priceBoxW - 40, 10);
       }
 
       // Draw Yellow Card (Icons)
@@ -1602,14 +1602,22 @@ const panelBottom = RULES.PANEL_BOTTOM;
         { icon: "star" as IconKey, text: "Melhores experiencias" },
         { icon: "heart" as IconKey, text: "Atendimento premium" },
         { icon: "check" as IconKey, text: "Beneficios exclusivos" },
-      ]).slice(0, 4); // Allow 4 icons!
+      ]).slice(0, 5); // Allow up to 5 icons!
       
       const benefitGap = cardH / Math.max(1, benefitItems.length);
       ctx.textAlign = "center";
       benefitItems.forEach((item, idx) => {
         const cy = cardY + benefitGap * idx + benefitGap / 2;
         // Make icons slightly smaller
-        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cardX + cardW / 2, cy - Math.round(width * 0.018), Math.round(width * 0.035), onGold);
+        const iconSz = Math.round(width * 0.032);
+        const iconY = cy - Math.round(width * 0.020);
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,0.06)";
+        ctx.beginPath();
+        ctx.arc(cardX + cardW / 2, iconY - iconSz * 0.1, iconSz * 1.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cardX + cardW / 2, iconY, iconSz, onGold);
         ctx.fillStyle = onGold;
         ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.019 : 0.017))}px Inter, Arial, sans-serif`;
         const lines = wrapTextSafe(ctx, String(item.text || ""), cardW - 30, 2, 9);
