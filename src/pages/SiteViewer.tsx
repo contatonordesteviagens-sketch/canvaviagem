@@ -21,7 +21,7 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
 
       try {
         const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient('https://zdjtcwtakgizbsbbwtgc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkanRjd3Rha2dpemJzYmJ3dGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzIxMjMsImV4cCI6MjA4NDYwODEyM30.juuc45o-OZbLQcx2LaMLyltRABAVy70kgJ_L_JXeUEs');
+        const supabase = createClient('https://mgdsjxasolxoclchyqdx.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nZHNqeGFzb2x4b2NsY2h5cWR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwNTA1NTQsImV4cCI6MjA4NDYyNjU1NH0.3EEvDMLjGvcEQKOkB4rfrBzXrCGBnkXKNFT9oYV2H9U');
 
         const { data, error } = await supabase
           .from('public_sites')

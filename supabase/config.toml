@@ -1,4 +1,4 @@
-project_id = "zdjtcwtakgizbsbbwtgc"
+project_id = "mgdsjxasolxoclchyqdx"
 
 [functions.stripe-webhook]
 verify_jwt = false
@@ -59,3 +59,7 @@ verify_jwt = false
 
 [functions.fabrica-edit-photo]
 verify_jwt = false
+
+[functions.hotmart-webhook]
+verify_jwt = false
+
