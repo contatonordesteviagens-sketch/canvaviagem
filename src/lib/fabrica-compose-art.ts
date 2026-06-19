@@ -1599,15 +1599,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.restore();
 
       const benefitPadX = Math.round(cardW * 0.11);
-      const benefitPadY = Math.max(18, Math.round(cardH * 0.12));
+      const benefitPadY = Math.max(16, Math.round(cardH * 0.08));
       const benefitCellW = (cardW - benefitPadX * 2) / 2;
-      const benefitRowGap = numRows > 1
-        ? (cardH - benefitPadY * 2) / (numRows - 1)
-        : 0;
-      const benefitIconSize = Math.round(width * (benefitCount <= 4 ? 0.029 : 0.024));
-      const benefitBubbleR = Math.round(benefitIconSize * (benefitCount <= 4 ? 1.08 : 0.96));
-      const benefitFontSize = Math.round(width * (benefitCount <= 4 ? 0.0165 : 0.0142));
-      const benefitLineH = Math.round(benefitFontSize * 1.08);
+      const benefitSlotH = (cardH - benefitPadY * 2) / Math.max(1, numRows);
+      const benefitIconSize = Math.round(width * (benefitCount <= 4 ? 0.026 : 0.022));
+      const benefitBubbleR = Math.round(benefitIconSize * 0.96);
+      const benefitFontSize = Math.round(width * (benefitCount <= 4 ? 0.0152 : 0.0134));
+      const benefitLineH = Math.round(benefitFontSize * 1.02);
 
       ctx.textAlign = "center";
       benefitItems.forEach((item, idx) => {
@@ -1617,10 +1615,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (idx === benefitItems.length - 1 && benefitItems.length % 2 !== 0) {
           cx = cardX + cardW / 2;
         }
-        const cy = numRows > 1
-          ? cardY + benefitPadY + benefitRowGap * row
-          : cardY + cardH / 2;
-        const iconY = cy - Math.round(benefitFontSize * 1.45);
+        const slotTop = cardY + benefitPadY + benefitSlotH * row;
+        const iconY = slotTop + benefitSlotH * 0.30;
+        const textStartY = slotTop + benefitSlotH * 0.58;
 
         ctx.save();
         ctx.fillStyle = "rgba(0,0,0,0.045)";
@@ -1636,7 +1633,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ? cardW - benefitPadX * 2
           : benefitCellW - 8;
         const lines = wrapTextSafe(ctx, String(item.text || ""), textMaxW, 2, 9);
-        const textStartY = cy + Math.round(benefitFontSize * 0.95);
         lines.forEach((line, lineIdx) => {
           safeFillText(ctx, line, cx, textStartY + lineIdx * benefitLineH, textMaxW, 9);
         });
