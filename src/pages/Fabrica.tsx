@@ -23,12 +23,16 @@ import {
   Menu,
   X,
   ChevronDown,
-  Users
+  Users,
+  Play,
+  CheckCircle2,
+  ShieldCheck
 } from "lucide-react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
-import { hasEliteAccess } from "@/lib/planAccess";
+import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
+import { ELITE_OFFER, shouldShowStartUpgradeVideo } from "@/lib/eliteOffer";
 
 const FabricaInner = () => {
   const { state, setPhase, update } = useFabricaContext();
@@ -468,12 +472,21 @@ const FabricaContent = () => {
   const navigate = useNavigate();
   const { subscription, isAdmin, user, loading: authLoading } = useAuth();
   const [accessGranted, setAccessGranted] = useState(false);
+  const [videoWithSound, setVideoWithSound] = useState(false);
+  const [showUpgradeVideo, setShowUpgradeVideo] = useState(false);
 
   // Navigate is now handled gracefully during render with <Navigate />
 
   const isElite = hasEliteAccess(subscription);
+  const isStart = hasStartAccess(subscription);
   const hasAccess = isAdmin || isElite;
   const canUseFabrica = hasAccess;
+
+  useEffect(() => {
+    if (!canUseFabrica && user && isStart) {
+      setShowUpgradeVideo(shouldShowStartUpgradeVideo());
+    }
+  }, [canUseFabrica, user, isStart]);
 
   useEffect(() => {
     if (hasAccess && !accessGranted) {
@@ -514,7 +527,7 @@ const FabricaContent = () => {
           backgroundImage: "radial-gradient(circle at 50% 30%, rgba(0,229,255,0.08) 0%, transparent 60%)"
         }}
       >
-        <div className="max-w-md w-full bg-[#050D1A] border border-cyan-500/20 rounded-3xl p-6 md:p-8 shadow-2xl shadow-cyan-500/5 relative z-10 text-center">
+        <div className="max-w-2xl w-full bg-[#050D1A] border border-cyan-500/20 rounded-3xl p-6 md:p-8 shadow-2xl shadow-cyan-500/5 relative z-10 text-center">
           {/* Header Badge */}
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 mb-6">
             <Crown className="w-4 h-4 text-cyan-400 animate-bounce" />
@@ -529,6 +542,44 @@ const FabricaContent = () => {
           </p>
 
           {/* Cards de Opções */}
+          {showUpgradeVideo && (
+            <div className="mb-5 overflow-hidden rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] text-left">
+              <div className="relative aspect-video bg-black">
+                <iframe
+                  className="absolute inset-0 h-full w-full"
+                  src={`https://www.youtube.com/embed/${ELITE_OFFER.videoId}?rel=0&modestbranding=1&playsinline=1&autoplay=1&mute=${videoWithSound ? "0" : "1"}`}
+                  title="Plano Elite Canva Viagem"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+              <div className="flex flex-col gap-3 p-3 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-start gap-2 text-[11px] leading-relaxed text-white/70">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
+                  <span>Veja o que o Elite libera antes de escolher mensal ou anual.</span>
+                </div>
+                {!videoWithSound && (
+                  <button
+                    onClick={() => setVideoWithSound(true)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 py-2 text-[11px] font-bold text-cyan-100 transition hover:bg-cyan-400/15"
+                  >
+                    <Play className="h-3.5 w-3.5" />
+                    Assistir com som
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-2 mb-5 text-left sm:grid-cols-3">
+            {["Fabrica de anuncios", "Criador de sites", "Canva Viagem completo"].map((benefit) => (
+              <div key={benefit} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] font-semibold text-white/75">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-cyan-300" />
+                <span>{benefit}</span>
+              </div>
+            ))}
+          </div>
+
           <div className="grid gap-4 mb-6">
             {/* Opção Anual */}
             <div className="border border-orange-500/30 bg-orange-500/[0.02] hover:bg-orange-500/[0.04] p-5 rounded-2xl text-left relative overflow-hidden transition-all shadow-[0_0_15px_rgba(249,115,22,0.05)]">
@@ -556,7 +607,7 @@ const FabricaContent = () => {
               </div>
 
               <button 
-                onClick={() => navigate("/inicio")}
+                onClick={() => navigate(ELITE_OFFER.landingPath)}
                 className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs transition-all shadow-lg shadow-orange-500/20 uppercase tracking-wider border-0 cursor-pointer text-center"
               >
                 Garantir Anual com Desconto →
@@ -576,7 +627,7 @@ const FabricaContent = () => {
                 </div>
               </div>
               <button 
-                onClick={() => navigate("/inicio")}
+                onClick={() => navigate(ELITE_OFFER.landingPath)}
                 className="w-full bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-bold py-2 px-3 rounded-xl text-xs mt-1 transition-colors border-0 cursor-pointer text-center"
               >
                 Assinar Mensal por R$ 97 →

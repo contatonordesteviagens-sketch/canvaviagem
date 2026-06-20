@@ -35,12 +35,13 @@ import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
 import showcaseCrm from "@/assets/images/showcase-crm.png";
 import showcaseScheduler from "@/assets/images/showcase-scheduler.png";
 import showcasePremiumMedias from "@/assets/images/showcase-premium-medias.png";
+import { ELITE_OFFER } from "@/lib/eliteOffer";
 
 const supportWhatsAppUrl =
   "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20sobre%20o%20Canva%20Viagem";
 const instagramUrl = "https://www.instagram.com/lucasferrari.pro/";
-const annualCheckoutUrl = "https://pay.hotmart.com/C106141067C?off=ts1hgsho&checkoutMode=10";
-const monthlyCheckoutUrl = "https://pay.hotmart.com/C106141067C?off=8qkh1yh6&checkoutMode=10";
+const annualCheckoutUrl = ELITE_OFFER.annualCheckoutUrl;
+const monthlyCheckoutUrl = ELITE_OFFER.monthlyCheckoutUrl;
 const metaPixelId = "916689227676142";
 
 const pricingFeatures = [
@@ -105,7 +106,7 @@ const includedResultCards = [
 const trustProofMetrics = [
   ["7 dias", "para testar com garantia"],
   ["12 meses", "de acesso no plano anual"],
-  ["R$ 682", "de economia no plano anual"],
+  ["R$ 817", "de economia no plano anual"],
   ["1 lugar", "para IA, páginas, conteúdos e CRM"],
 ];
 
@@ -117,7 +118,7 @@ const objectionCards = [
   ["Vale a pena pagar por isso?", "Se ela economizar algumas horas por mês e melhorar a apresentação de uma única oferta, o plano anual já tende a se pagar rápido."],
   ["O acesso é imediato?", "Sim. Depois da compra pela Hotmart, você recebe as instruções de acesso no e-mail usado no checkout."],
   ["Tem suporte?", "Sim. Você tem suporte via WhatsApp para tirar dúvidas de acesso e uso da plataforma."],
-  ["Mensal ou anual?", "O mensal é para testar com menor compromisso. O anual é a melhor escolha: custa menos por mês, libera 12 meses e economiza R$ 682."],
+  ["Mensal ou anual?", "O mensal é para testar com menor compromisso. O anual é a melhor escolha: custa menos por mês, libera 12 meses e economiza R$ 817."],
 ];
 
 const afterPurchaseSteps = [
@@ -177,7 +178,7 @@ const faqs = [
   },
   {
     q: "Mensal ou anual, qual escolher?",
-    a: "O mensal custa R$ 97/mês e serve para começar com menor compromisso. O anual custa 12x de R$ 49,85 ou R$ 482,00 à vista, libera 12 meses de acesso e é o plano com maior economia.",
+    a: "O mensal custa R$ 97/mês e serve para começar com menor compromisso. O anual custa R$ 347 por ano, libera 12 meses de acesso e é o plano com maior economia.",
   },
   {
     q: "O pagamento é seguro?",
@@ -677,7 +678,7 @@ export default function Inicio2() {
                 <h3 className="text-2xl font-black text-slate-950 mb-5">Com Canva Viagem</h3>
                 <div className="text-slate-700 space-y-4">
                   <p><strong>Plano mensal:</strong> R$ 97/mês, sem compromisso.</p>
-                  <p><strong>Plano anual:</strong> 12x de R$ 49,85 ou R$ 482,00 à vista, com 12 meses de acesso.</p>
+                  <p><strong>Plano anual:</strong> R$ 347 por ano, com 12 meses de acesso.</p>
                   <p><strong>Você recebe:</strong> IA, páginas, conteúdos, CRM, mídias, materiais de apoio, suporte e garantia.</p>
                 </div>
               <a href="#planos" className="btn btn-primary mt-8 inline-flex">Escolher meu plano</a>
@@ -692,7 +693,7 @@ export default function Inicio2() {
               <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">oferta brasileira</p>
               <h2 className="section-title w-full text-center">Escolha seu acesso sem confusão</h2>
               <p className="section-subtitle w-full text-center" style={{ textAlign: "center", margin: "0 auto 32px" }}>
-                O mensal é para começar com menor compromisso. O anual é a melhor escolha para quem quer pagar menos por mês, ter 12 meses de acesso e economizar R$ 682.
+                O mensal é para começar com menor compromisso. O anual é a melhor escolha para quem quer pagar menos por mês, ter 12 meses de acesso e economizar R$ 817.
               </p>
             </div>
             <div className="inicio2-pricing-grid">
@@ -705,10 +706,10 @@ export default function Inicio2() {
                 </div>
 
                 <div className="inicio2-price-value">
-                  <span>12x</span>
-                  <strong>R$ 49,85</strong>
+                  <span>Equiv.</span>
+                  <strong>R$ 28,91</strong>
                 </div>
-                <p className="inicio2-price-cash">ou R$ 482,00 à vista • economia de R$ 682</p>
+                <p className="inicio2-price-cash">R$ 347 cobrado anualmente • economia de R$ 817</p>
 
                 <ul className="inicio2-price-features">
                   {pricingFeatures.map((feature) => (
@@ -721,7 +722,7 @@ export default function Inicio2() {
 
                 <a
                   href={annualCheckoutUrl}
-                  onClick={() => trackCheckoutClick(482, "anual")}
+                  onClick={() => trackCheckoutClick(347, "anual")}
                   className="inicio2-price-cta inicio2-price-cta-primary"
                 >
                   Garantir acesso anual com desconto
@@ -892,7 +893,7 @@ export default function Inicio2() {
       <div className="mobile-sticky">
         <div className="sticky-price">
           <span>12x R$ 49<small>,85</small></span>
-          <small>ou R$ 482,00 à vista</small>
+          <small>R$ 347 por ano</small>
         </div>
         <a href="#planos" className="sticky-btn">Escolher plano <Check size={16} /></a>
       </div>

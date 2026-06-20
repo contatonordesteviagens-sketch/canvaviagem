@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Lock, CreditCard, Loader2 } from "lucide-react";
+import { ELITE_OFFER } from "@/lib/eliteOffer";
 
 interface SubscriptionGateProps {
   children: React.ReactNode;
@@ -53,7 +54,7 @@ export const SubscriptionGate = ({ children }: SubscriptionGateProps) => {
           <p className="text-muted-foreground">
             Para acessar as ferramentas, ative sua assinatura.
           </p>
-          <Button onClick={() => navigate("/inicio")} className="w-full">
+          <Button onClick={() => navigate(ELITE_OFFER.landingPath)} className="w-full">
             <CreditCard className="mr-2 h-4 w-4" />
             Ir para o Início
           </Button>
