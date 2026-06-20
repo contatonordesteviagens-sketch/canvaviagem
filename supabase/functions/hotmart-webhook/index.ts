@@ -305,6 +305,15 @@ serve(async (req) => {
     // Handle cancellation
     if (event === "SUBSCRIPTION_CANCELLATION" || event === "PURCHASE_REFUNDED") {
       const normalizedEmail = email.toLowerCase().trim();
+      const { plan } = resolveTier(hotmartProductId);
+      if (plan === "Unknown") {
+        logStep("Cancellation ignored: Hotmart product is not authorized for Canva Viagem", { hotmartProductId });
+        return new Response(JSON.stringify({ ok: true, ignored: "unauthorized_product" }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const userId = await findExistingUserIdByEmail(supabase, normalizedEmail);
       if (userId) {
         await supabase.from("subscriptions").update({
@@ -312,8 +321,12 @@ serve(async (req) => {
           updated_at: new Date().toISOString(),
         })
           .eq("user_id", userId)
-          .like("stripe_subscription_id", "hotmart:%");
-        logStep("Subscription deactivated", { event, email: redactEmail(normalizedEmail) });
+          .eq("stripe_subscription_id", `hotmart:${transaction}`);
+        logStep("Hotmart subscription deactivated", {
+          event,
+          email: redactEmail(normalizedEmail),
+          transaction,
+        });
         await triggerZaiaWebhook("ZAIA_WEBHOOK_CANCELLATION", { email: normalizedEmail, name });
       }
       return new Response(JSON.stringify({ ok: true }), {
