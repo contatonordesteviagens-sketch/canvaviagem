@@ -2,19 +2,12 @@
 // Usado tanto pelo webhook do Stripe quanto pelo webhook da Hotmart, garantindo
 // que o disparo do Resend permaneça consistente independente do gateway.
 
-// Mantemos a mesma fonte de verdade do `fabricaAccess.ts` para reconhecer Elite.
-export const ELITE_PRODUCT_IDS = new Set<string>([
-  "prod_TkvaozfpkAcbpM", // Elite atual (create-subscription / canônico)
-  "prod_UTFlCWzNqvqSNx",
-  "prod_UTFsXcKq8m0mol",
-  "prod_UTSmPe3GPt8iHt",
-  "hotmart_elite",
-]);
+import { isEliteProduct } from "./planAccess.ts";
 
 export type PlanLevel = "Elite" | "Start";
 
 export function resolvePlanFromProductId(productId?: string | null): PlanLevel {
-  if (productId && ELITE_PRODUCT_IDS.has(productId)) return "Elite";
+  if (isEliteProduct(productId)) return "Elite";
   return "Start";
 }
 

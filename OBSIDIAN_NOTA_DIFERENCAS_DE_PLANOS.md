@@ -1,28 +1,75 @@
-# Diferenças de Planos: Hotmart vs Stripe
+# Canva Viagem - Planos, Hotmart, Stripe e Lovable Cloud
 
-## Regra de Ouro (MUITO IMPORTANTE)
-**A Hotmart NÃO TEM Plano Start.** 
-A Hotmart possui APENAS o Plano **Elite** (dividido em assinatura Mensal e Anual). 
+Atualizado em: 2026-06-20 15:21:50 -03:00
 
-**O Plano Start existe APENAS na Stripe.**
+## Estado real
 
----
+- Deploy em producao: **NAO confirmado / NAO feito por mim**.
+- Codigo local: corrigido e `npm run build` passou.
+- Caminho correto de producao: **Lovable Cloud**, nao Supabase CLI local linkado no projeto `mgdsjxasolxoclchyqdx`.
+- Risco bloqueado no codigo: hardcode ativo para `mgdsjxasolxoclchyqdx` foi removido do componente da Fabrica e a validacao local agora bloqueia esse projeto em codigo ativo.
 
-### Comportamento no Sistema (Webhooks)
+## Regra oficial de planos
 
-#### 1. Webhook da Hotmart (`supabase/functions/hotmart-webhook/index.ts`)
-* A função `resolveTier` deve procurar APENAS por produtos do plano Elite (`HOTMART_ELITE_PRODUCT_IDS`).
-* Qualquer outro produto não mapeado como Elite que chegue via Hotmart **DEVE SER REJEITADO** ("Unknown"). Se o usuário comprou algo diferente de Elite na Hotmart, o webhook ignora e não cria a conta, o que está correto de acordo com a regra de negócios.
+### Stripe
 
-#### 2. Webhook da Stripe (`supabase/functions/stripe-webhook/index.ts`)
-* A Stripe processa normalmente todos os planos (Start, Elite Mensal, Elite Anual, etc.).
-* O webhook envia o `product_id` real da Stripe direto para a tabela `subscriptions` do banco de dados.
+- `prod_TkvaozfpkAcbpM` = **Start**.
+- `prod_UTFsXcKq8m0mol` = **Elite mensal**.
+- `prod_UTSmPe3GPt8iHt` = **Elite anual R$347**.
+- `prod_UTFlCWzNqvqSNx` = **Elite antigo/anual R$497**.
 
-#### 3. Frontend / Acessos (Blindagem da Fábrica)
-* A Fábrica do Canva Viagem é **estritamente** restrita a usuários Elite.
-* Para garantir a segurança e impedir que usuários do plano Start (Stripe) burlem o acesso, implementamos um bloqueio absoluto baseado em **IDs literais**. O usuário SÓ tem acesso à Fábrica se o seu `product_id` for exatamente um dos seguintes:
-  - `prod_TkvaozfpkAcbpM` (Webhook da Hotmart)
-  - `prod_UTFlCWzNqvqSNx` (Stripe Elite 1)
-  - `prod_UTFsXcKq8m0mol` (Stripe Elite 2)
-  - `prod_UTSmPe3GPt8iHt` (Stripe Elite 3)
-* Qualquer ID fora desta lista (o que inclui os IDs aleatórios da Stripe para o plano Start) terá o acesso barrado na mesma hora, sendo redirecionado para a página `/inicio2` (Tela "Desbloqueie a Fábrica").
+### Hotmart
+
+- Hotmart, neste fluxo do Canva Viagem, deve liberar apenas **Elite**.
+- Produto Hotmart autorizado conhecido: `7876791`.
+- Comprador Hotmart autorizado deve ser salvo internamente como `hotmart_elite`.
+- Nao usar `prod_TkvaozfpkAcbpM` como canônico Hotmart, porque esse ID e Start da Stripe.
+
+## Regra de acesso
+
+- Canva Viagem / painel principal: qualquer assinante ativo Start ou Elite.
+- Fabrica / ferramentas Elite / painel marketing Elite: somente Stripe Elite, Hotmart Elite ou admin real.
+- Nao liberar Fabrica por `localStorage`, bypass, projeto errado ou heuristica de valor.
+
+## Arquivos locais corrigidos
+
+- `src/lib/planAccess.ts`
+- `supabase/functions/_shared/planAccess.ts`
+- `supabase/functions/hotmart-webhook/index.ts`
+- `src/components/fabrica/BusinessExtractor.tsx`
+- `scripts/validate-official-supabase.mjs`
+- `docs_sistema/DADOS_VINCULACAO_HOTMART_API.md`
+
+## O que ainda falta no Lovable Cloud
+
+1. Abrir **Funcoes de borda** e confirmar/publicar:
+   - `hotmart-webhook`
+   - `stripe-webhook`
+   - `check-subscription`
+   - `send-magic-link`
+   - `generate-magic-link-url`
+   - `fabrica-extract-business-info`
+2. Em **Segredos**, garantir nomes exatos:
+   - `HOTMART_HOTTOK`
+   - `HOTMART_ELITE_PRODUCT_IDS`
+   - `STRIPE_SECRET_KEY`
+   - `STRIPE_WEBHOOK_SECRET`
+   - `RESEND_API_KEY`
+3. Configurar Hotmart para apontar para a URL real da function `hotmart-webhook` no Lovable Cloud.
+4. Testar compra Hotmart real ou webhook simulado com produto `7876791`.
+
+## Criterio de sucesso Hotmart
+
+Um comprador Hotmart deve:
+
+1. Ter e-mail recebido no webhook.
+2. Ser encontrado ou criado no Auth.
+3. Ter perfil criado/atualizado.
+4. Ter assinatura ativa com `product_id = hotmart_elite`.
+5. Receber magic link por e-mail.
+6. Conseguir login com o e-mail de compra.
+7. Acessar Canva Viagem e Fabrica.
+
+## Observacao critica
+
+Nao afirmar que esta funcionando em producao ate publicar no Lovable Cloud e testar com usuario real. A correcao local esta pronta; producao depende do deploy/atualizacao das funcoes no Lovable Cloud.

@@ -28,6 +28,7 @@ import {
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
+import { hasEliteAccess } from "@/lib/planAccess";
 
 const FabricaInner = () => {
   const { state, setPhase, update } = useFabricaContext();
@@ -463,29 +464,20 @@ const FabricaInner = () => {
   );
 };
 
-const FABRICA_ACCESS_KEY = "cv-fabrica-access-granted";
-
 const FabricaContent = () => {
   const navigate = useNavigate();
   const { subscription, isAdmin, user, loading: authLoading } = useAuth();
-  const [accessGranted, setAccessGranted] = useState<boolean>(() => {
-    try { return localStorage.getItem(FABRICA_ACCESS_KEY) === "1"; } catch { return false; }
-  });
+  const [accessGranted, setAccessGranted] = useState(false);
 
   // Navigate is now handled gracefully during render with <Navigate />
 
-  const isStart = subscription.subscribed && 
-    (subscription.productId?.includes("smart") || 
-     subscription.productId?.includes("start") || 
-     subscription.productId?.includes("basic"));
-  const isElite = subscription.subscribed && !isStart;
+  const isElite = hasEliteAccess(subscription);
   const hasAccess = isAdmin || isElite;
-  const canUseFabrica = accessGranted || hasAccess;
+  const canUseFabrica = hasAccess;
 
   useEffect(() => {
     if (hasAccess && !accessGranted) {
       setAccessGranted(true);
-      try { localStorage.setItem(FABRICA_ACCESS_KEY, "1"); } catch {}
     }
   }, [hasAccess, accessGranted]);
 

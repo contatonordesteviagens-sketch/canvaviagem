@@ -1,11 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-
-const ELITE_PRODUCT_IDS = new Set([
-  "prod_TkvaozfpkAcbpM", // Elite atual (create-subscription)
-  "prod_UTFlCWzNqvqSNx",
-  "prod_UTFsXcKq8m0mol",
-  "prod_UTSmPe3GPt8iHt",
-]);
+import { assertOfficialSupabaseProject } from "./officialProjectGuard.ts";
+import { isEliteProduct } from "./planAccess.ts";
 
 type HeadersMap = Record<string, string>;
 
@@ -16,6 +11,8 @@ const jsonResponse = (body: Record<string, unknown>, status: number, headers: He
   });
 
 export async function verifyFabricaEliteAccess(req: Request, corsHeaders: HeadersMap) {
+  assertOfficialSupabaseProject("fabrica-access");
+
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return { ok: false as const, response: jsonResponse({ error: "Login necessário" }, 401, corsHeaders) };
@@ -58,7 +55,7 @@ export async function verifyFabricaEliteAccess(req: Request, corsHeaders: Header
 
   const endDate = subscription?.current_period_end ? new Date(subscription.current_period_end) : null;
   const isCurrent = !endDate || endDate > new Date();
-  const isElite = !!subscription?.product_id && ELITE_PRODUCT_IDS.has(subscription.product_id) && isCurrent;
+  const isElite = isEliteProduct(subscription?.product_id) && isCurrent;
 
   if (!isElite) {
     return { ok: false as const, response: jsonResponse({ error: "Plano Elite necessário" }, 403, corsHeaders) };

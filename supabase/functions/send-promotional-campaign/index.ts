@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { isEliteProduct } from "../_shared/planAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -160,9 +161,8 @@ serve(async (req) => {
         .select("user_id, product_id")
         .eq("status", "active");
 
-      const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
       const startUserIds = (activeSubs || [])
-        .filter(s => !s.product_id || !ELITE_PRODUCT_IDS.includes(s.product_id))
+        .filter(s => !isEliteProduct(s.product_id))
         .map(s => s.user_id);
 
       let targetUsers: { email: string; name: string }[] = [];

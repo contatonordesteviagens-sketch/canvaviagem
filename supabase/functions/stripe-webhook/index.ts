@@ -3,6 +3,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { sendWelcomeEmail, sendAutoMagicLinkEmail } from "../_shared/welcomeEmail.ts";
+import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -210,6 +211,8 @@ async function ensureUserAndOnboarding(
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  assertOfficialSupabaseProject("stripe-webhook");
 
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");

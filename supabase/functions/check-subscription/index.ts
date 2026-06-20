@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
+import { isEliteProduct, normalizeHotmartProductId } from "../_shared/planAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,13 +20,6 @@ const GENERIC_ERRORS = {
   serviceError: "Service temporarily unavailable",
   configError: "Service configuration error",
 };
-
-const ELITE_PRODUCT_IDS = new Set([
-  "prod_UTFlCWzNqvqSNx", // Elite Anual (Stripe)
-  "prod_UTFsXcKq8m0mol", // Elite Mensal (Stripe)
-  "prod_UTSmPe3GPt8iHt", // Start (Stripe)
-  "prod_TkvaozfpkAcbpM", // Hotmart Webhook Canonical
-]);
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -48,6 +43,7 @@ serve(async (req) => {
     : null;
 
   try {
+    assertOfficialSupabaseProject("check-subscription");
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -113,7 +109,7 @@ serve(async (req) => {
         const endDate = localSub.current_period_end;
         if (!endDate || new Date(endDate) > new Date()) {
           localActiveSub = localSub;
-          if (ELITE_PRODUCT_IDS.has(localSub.product_id) || localSub.product_id.includes("ticto")) {
+          if (isEliteProduct(localSub.product_id)) {
             logStep("Elite/Ticto subscription found in local database", { productId: localSub.product_id });
             return new Response(JSON.stringify({ 
               subscribed: true, 
@@ -146,12 +142,12 @@ serve(async (req) => {
 
           for (const candidate of allSubscriptions) {
             const productId = (candidate.items.data[0]?.price?.product as string | null) ?? null;
-            if (!selected || (productId && ELITE_PRODUCT_IDS.has(productId))) {
+            if (!selected || isEliteProduct(productId)) {
               selected = { customerId: customer.id, subscription: candidate, productId };
             }
-            if (productId && ELITE_PRODUCT_IDS.has(productId)) break;
+            if (isEliteProduct(productId)) break;
           }
-          if (selected?.productId && ELITE_PRODUCT_IDS.has(selected.productId)) break;
+          if (isEliteProduct(selected?.productId)) break;
         }
 
         if (selected) {
@@ -246,17 +242,25 @@ serve(async (req) => {
         // Grant subscription for 1 year (or indefinite, here setting expiry to 365 days from purchase)
         const purchaseDate = new Date(hotmartSale.h_purchase_date);
         const expiryDate = new Date(purchaseDate.getTime() + (365 * 24 * 60 * 60 * 1000)).toISOString();
+        const productId = normalizeHotmartProductId(hotmartSale.h_product_id);
+        if (!productId) {
+          logStep("Hotmart sale ignored because product is not authorized for access", { productId: hotmartSale.h_product_id });
+          return new Response(JSON.stringify({ subscribed: false, product_id: null, subscription_end: null }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
 
         await dbClient.from("subscriptions").upsert({
           user_id: userId,
           status: "active",
           stripe_customer_id: null,
-          stripe_subscription_id: hotmartSale.h_transaction,
-          product_id: hotmartSale.h_product_id || "hotmart_sub",
+          stripe_subscription_id: `hotmart:${hotmartSale.h_transaction}`,
+          product_id: productId,
           current_period_end: expiryDate,
         }, { onConflict: "user_id" });
 
-        return new Response(JSON.stringify({ subscribed: true, product_id: hotmartSale.h_product_id, subscription_end: expiryDate }), {
+        return new Response(JSON.stringify({ subscribed: true, product_id: productId, subscription_end: expiryDate }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         });

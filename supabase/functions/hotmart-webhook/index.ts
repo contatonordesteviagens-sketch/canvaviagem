@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { sendWelcomeEmail, sendAutoMagicLinkEmail } from "../_shared/welcomeEmail.ts";
+import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,18 +18,16 @@ const logStep = (step: string, details?: any) => {
 const redactEmail = (e?: string | null) =>
   !e ? "(no-email)" : `${e.slice(0, 2)}***@${e.split("@")[1] ?? "?"}`;
 
-// Canonical Elite product ID (same set used by fabricaAccess.ts).
+// Canonical Hotmart Elite product ID (same set used by fabricaAccess.ts).
 // When Hotmart product matches the Elite list, we persist this ID in
-// `subscriptions.product_id` so the existing gate recognizes Elite automatically.
-const CANONICAL_ELITE_PRODUCT_ID = "prod_TkvaozfpkAcbpM";
-const CANONICAL_START_PRODUCT_ID = "hotmart_start";
+// `subscriptions.product_id` without colliding with Stripe Start products.
+const CANONICAL_ELITE_PRODUCT_ID = "hotmart_elite";
 
 // Read secret-driven lists of Hotmart product IDs (comma-separated).
 const parseList = (raw?: string | null) =>
   new Set((raw ?? "").split(",").map((s) => s.trim()).filter(Boolean));
 
 const HOTMART_ELITE_PRODUCT_IDS = parseList(Deno.env.get("HOTMART_ELITE_PRODUCT_IDS") || "7876791");
-const HOTMART_START_PRODUCT_IDS = parseList(Deno.env.get("HOTMART_START_PRODUCT_IDS"));
 
 function resolveTier(hotmartProductId: string | null): { plan: "Elite" | "Unknown"; canonical_product_id: string | null } {
   if (!hotmartProductId) return { plan: "Unknown", canonical_product_id: null };
@@ -37,6 +36,55 @@ function resolveTier(hotmartProductId: string | null): { plan: "Elite" | "Unknow
   }
   // Se não estiver na lista HOTMART_ELITE_PRODUCT_IDS, é um produto de fora (ex: pacote 150 vídeos). Bloqueia.
   return { plan: "Unknown", canonical_product_id: null };
+}
+
+function parsePurchaseDate(raw: unknown): string {
+  if (typeof raw === "number") return new Date(raw).toISOString();
+  if (typeof raw === "string" && raw.trim()) {
+    const parsed = new Date(raw);
+    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString();
+  }
+  return new Date().toISOString();
+}
+
+function resolvePurchaseStatus(event: string, rawStatus: unknown): string {
+  const status = typeof rawStatus === "string" ? rawStatus.toUpperCase() : "";
+  if (event === "SUBSCRIPTION_CANCELLATION") return "CANCELED";
+  if (event === "PURCHASE_REFUNDED") return "REFUNDED";
+  if (event === "PURCHASE_APPROVED" || event === "PURCHASE_COMPLETE") return "APPROVED";
+  return status || event || "UNKNOWN";
+}
+
+async function upsertHotmartSale(
+  supabase: any,
+  params: {
+    transaction: string;
+    email: string;
+    productId: string | null;
+    productName?: string | null;
+    purchaseDate: string;
+    priceValue?: number | null;
+    priceCurrency?: string | null;
+    status: string;
+    buyerName?: string | null;
+    buyerPhone?: string | null;
+  },
+) {
+  const { error } = await supabase.from("hotmart_sales").upsert({
+    h_transaction: params.transaction,
+    h_email: params.email.toLowerCase().trim(),
+    h_product_id: params.productId || "unknown",
+    h_product_name: params.productName || null,
+    h_purchase_date: params.purchaseDate,
+    h_price_value: params.priceValue ?? null,
+    h_price_currency: params.priceCurrency || null,
+    h_status: params.status,
+    h_buyer_name: params.buyerName || null,
+    h_buyer_phone: params.buyerPhone || null,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "h_transaction" });
+
+  if (error) logStep("ERROR: hotmart_sales upsert", { error: error.message });
 }
 
 async function findExistingUserIdByEmail(supabase: any, email: string): Promise<string | null> {
@@ -146,8 +194,8 @@ async function ensureUserAndOnboarding(
   else magicLink = `${siteUrl}/auth/verify?token=${token}`;
 
   // 5. Resend — usa o MESMO utilitário compartilhado do Stripe.
-  // O productId canônico (`prod_TkvaozfpkAcbpM` para Elite ou `hotmart_start` para Start)
-  // garante que o e-mail de boas-vindas escolha o template/CTA correto.
+  // O productId canonico (`hotmart_elite`) garante que o email de boas-vindas
+  // escolha o template/CTA correto sem colidir com produtos Start da Stripe.
   if (resend && magicLink) {
     await sendAutoMagicLinkEmail(supabase, resend, normalizedEmail, magicLink, token, name || "Visitante");
     await sendWelcomeEmail(supabase, resend, normalizedEmail, canonical_product_id, "hotmart");
@@ -166,6 +214,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    assertOfficialSupabaseProject("hotmart-webhook");
     const rawBody = await req.text();
 
     // Validate hottok — Hotmart sends it in header `x-hotmart-hottok` or legacy `h-hotmart-h-token`,
@@ -196,6 +245,7 @@ serve(async (req) => {
     const APPROVED_EVENTS = new Set([
       "PURCHASE_APPROVED",
       "PURCHASE_COMPLETE",
+      "PURCHASE_REFUNDED",
       "SUBSCRIPTION_CANCELLATION", // handled separately below
     ]);
 
@@ -213,11 +263,15 @@ serve(async (req) => {
     const product = data.product ?? {};
     const subscription = data.subscription ?? {};
 
-    const email: string | undefined = buyer.email;
+    const email: string | undefined = buyer.email?.toLowerCase?.().trim?.() ?? buyer.email;
     const name: string | undefined = buyer.name || buyer.first_name;
     const phone: string | null = buyer.checkout_phone || buyer.phone || null;
     const transaction: string = purchase.transaction || subscription.code || crypto.randomUUID();
     const hotmartProductId: string | null = product.id != null ? String(product.id) : (product.ucode ?? null);
+    const purchaseDate = parsePurchaseDate(purchase.approved_date || purchase.order_date || purchase.date || data.creation_date);
+    const purchaseStatus = resolvePurchaseStatus(event, purchase.status);
+    const priceValue = Number(purchase.price?.value ?? purchase.full_price?.value ?? data.commissions?.[0]?.value);
+    const priceCurrency = purchase.price?.currency_code || purchase.full_price?.currency_code || purchase.currency_code || null;
 
     if (!email) {
       logStep("ERROR: missing buyer email");
@@ -235,8 +289,21 @@ serve(async (req) => {
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const resend = resendKey ? new Resend(resendKey) : null;
 
+    await upsertHotmartSale(supabase, {
+      transaction,
+      email,
+      productId: hotmartProductId,
+      productName: product.name || product.ucode || null,
+      purchaseDate,
+      priceValue: Number.isFinite(priceValue) ? priceValue : null,
+      priceCurrency,
+      status: purchaseStatus,
+      buyerName: name || null,
+      buyerPhone: phone,
+    });
+
     // Handle cancellation
-    if (event === "SUBSCRIPTION_CANCELLATION") {
+    if (event === "SUBSCRIPTION_CANCELLATION" || event === "PURCHASE_REFUNDED") {
       const normalizedEmail = email.toLowerCase().trim();
       const userId = await findExistingUserIdByEmail(supabase, normalizedEmail);
       if (userId) {
@@ -244,7 +311,7 @@ serve(async (req) => {
           status: "canceled",
           updated_at: new Date().toISOString(),
         }).eq("user_id", userId);
-        logStep("Subscription canceled", { email: redactEmail(normalizedEmail) });
+        logStep("Subscription deactivated", { event, email: redactEmail(normalizedEmail) });
         await triggerZaiaWebhook("ZAIA_WEBHOOK_CANCELLATION", { email: normalizedEmail, name });
       }
       return new Response(JSON.stringify({ ok: true }), {

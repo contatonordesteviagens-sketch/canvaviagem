@@ -27,6 +27,7 @@ import {
 import { useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 import { CloudSaveIndicatorES } from "@/components/fabrica/CloudSaveIndicatorES";
+import { hasEliteAccess } from "@/lib/planAccess";
 
 const FabricaInnerES = () => {
   const { state, setPhase } = useFabricaContext();
@@ -454,39 +455,9 @@ const FabricaContentES = () => {
 
   // Navigate is now handled gracefully during render with <Navigate />
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "f") {
-        const pass = window.prompt("Acceso Maestro - Ingresa la contraseña administrativa:");
-        if (pass) {
-          const msgBuffer = new TextEncoder().encode(pass);
-          crypto.subtle.digest("SHA-256", msgBuffer).then((hashBuffer) => {
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-            
-            if (hashHex === "8995c0a802ed9e5a1631f0e084a1b14265776573c36a94db673397fe699e2e55" || pass === "rickbread") {
-              localStorage.setItem("cv_bypass", "true");
-              localStorage.setItem("fabrica-unlocked", "true");
-              alert("¡Acceso maestro activado con éxito!");
-              window.location.reload();
-            } else {
-              alert("Contraseña incorrecta.");
-            }
-          });
-        }
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [user]);
-
-  const isStart = subscription.subscribed && 
-    (subscription.productId?.includes("smart") || 
-     subscription.productId?.includes("start") || 
-     subscription.productId?.includes("basic"));
-  const isElite = subscription.subscribed && !isStart;
-  const hasAccess = isAdmin || isElite || localStorage.getItem("cv_bypass") === "true";
-  const canUseFabrica = accessGranted || hasAccess;
+  const isElite = hasEliteAccess(subscription);
+  const hasAccess = isAdmin || isElite;
+  const canUseFabrica = hasAccess;
 
   useEffect(() => {
     if (hasAccess) setAccessGranted(true);

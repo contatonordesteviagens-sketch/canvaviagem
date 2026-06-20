@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
 import { FabricaUpgradeModalES } from "@/components/fabrica/FabricaUpgradeModalES";
+import { hasEliteAccess } from "@/lib/planAccess";
 
 interface BottomNavProps {
   activeCategory: CategoryType;
@@ -32,17 +33,9 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
         navigate("/auth");
         return;
       }
-      const ELITE_PRODUCT_IDS = [
-        "prod_TkvaozfpkAcbpM", // Hotmart Webhook Canonical
-        "prod_UTFlCWzNqvqSNx", // Stripe
-        "prod_UTFsXcKq8m0mol", // Stripe
-        "prod_UTSmPe3GPt8iHt", // Stripe
-      ];
-    
-      const isElite = subscription.subscribed && 
-        (subscription.productId ? (ELITE_PRODUCT_IDS.includes(subscription.productId) || subscription.productId.includes("ticto") || subscription.productId.includes("elite")) : false);
+      const isElite = hasEliteAccess(subscription);
         
-      const isUnlocked = isElite || isAdmin || localStorage.getItem("fabrica-unlocked") === "true";
+      const isUnlocked = isElite || isAdmin;
 
       if (isUnlocked) {
         navigate(language === "es" ? "/es/fabrica" : "/fabrica");
@@ -109,4 +102,3 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
     </>
   );
 };
-

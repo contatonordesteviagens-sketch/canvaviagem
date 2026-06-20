@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import { hasEliteAccess } from "@/lib/planAccess";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -60,17 +61,7 @@ export const ProtectedRoute = ({
         return <Navigate to="/inicio2" replace />;
     }
 
-    const ELITE_PRODUCT_IDS = [
-      "prod_TkvaozfpkAcbpM", // Hotmart Webhook Canonical
-      "prod_UTFlCWzNqvqSNx", // Stripe
-      "prod_UTFsXcKq8m0mol", // Stripe
-      "prod_UTSmPe3GPt8iHt", // Stripe
-    ];
-  
-    const isElite = subscription.subscribed && 
-      (subscription.productId ? (ELITE_PRODUCT_IDS.includes(subscription.productId) || subscription.productId.includes("ticto") || subscription.productId.includes("elite")) : false);
-    
-    const isStart = subscription.subscribed && !isElite;
+    const isElite = hasEliteAccess(subscription);
 
     if (requireElite && !isElite && !isAdmin) {
         return <Navigate to="/fabrica" replace />;

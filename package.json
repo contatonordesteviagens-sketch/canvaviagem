@@ -5,10 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/validate-official-supabase.mjs --skip-cli-link",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "safety:hotmart": "node scripts/validate-official-supabase.mjs",
+    "safety:supabase": "node scripts/validate-official-supabase.mjs",
+    "deploy:supabase:functions": "npm run safety:supabase && npx supabase functions deploy --project-ref zdjtcwtakgizbsbbwtgc"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

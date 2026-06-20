@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isEliteProduct } from "@/lib/planAccess";
 
 interface MarketingSource {
   source: string;
@@ -75,10 +76,9 @@ export const useMarketingStats = () => {
         .from("abandoned_checkouts")
         .select("id");
 
-      const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
       const activeSubs = subscriptions || [];
       const startSubscribersCount = activeSubs.filter(
-        s => s.status === "active" && (!s.product_id || !ELITE_PRODUCT_IDS.includes(s.product_id))
+        s => s.status === "active" && !isEliteProduct(s.product_id)
       ).length;
 
       const failedPaymentsCount = (abandonedCheckouts || []).length + 

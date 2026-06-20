@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Crown, Calendar, LogOut, ExternalLink, Loader2, Factory, Trash2, FileDown } from "lucide-react";
 import { useDiagnosticos, useDeleteDiagnostico } from "@/hooks/useFabricaDiagnosticos";
 import { generateDiagnosticoPDF } from "@/lib/fabrica-pdf";
+import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
 
 interface ProfileData {
   name: string | null;
@@ -115,17 +116,8 @@ export default function MinhaConta() {
                 <span className="text-sm">Verificando plano...</span>
               </div>
             ) : (() => {
-              const ELITE_PRODUCT_IDS = [
-                "prod_TkvaozfpkAcbpM", // Hotmart Webhook Canonical
-                "prod_UTFlCWzNqvqSNx", // Stripe
-                "prod_UTFsXcKq8m0mol", // Stripe
-                "prod_UTSmPe3GPt8iHt", // Stripe
-              ];
-            
-              const isElite = subscription.subscribed && 
-                (subscription.productId ? (ELITE_PRODUCT_IDS.includes(subscription.productId) || subscription.productId.includes("ticto") || subscription.productId.includes("elite")) : false);
-                
-              const isStart = subscription.subscribed && !isElite;
+              const isElite = hasEliteAccess(subscription);
+              const isStart = hasStartAccess(subscription);
 
               return (
                 <>

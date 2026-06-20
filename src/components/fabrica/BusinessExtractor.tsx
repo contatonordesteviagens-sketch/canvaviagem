@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Sparkles, Link as LinkIcon, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { getGeminiApiKey } from "@/pages/vendedor-ia/services/gemini";
+import { supabase } from "@/integrations/supabase/client";
 
 export const BusinessExtractor = ({ onExtract }: { onExtract: (data: any) => void }) => {
   const [loading, setLoading] = useState(false);
@@ -39,17 +40,18 @@ export const BusinessExtractor = ({ onExtract }: { onExtract: (data: any) => voi
       toast.info(`Iniciando extração inteligente via IA...`, { duration: 3000 });
       
       const apiKey = getGeminiApiKey();
-      const response = await fetch("https://mgdsjxasolxoclchyqdx.supabase.co/functions/v1/fabrica-extract-business-info", {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const response = await supabase.functions.invoke("fabrica-extract-business-info", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, content, geminiApiKey: apiKey })
+        headers: sessionData.session?.access_token
+          ? { Authorization: `Bearer ${sessionData.session.access_token}` }
+          : undefined,
+        body: { type, content, geminiApiKey: apiKey },
       });
-      
-      const responseData = await response.json().catch(() => null);
-      if (!response.ok) {
-        throw new Error(responseData?.error || "Erro ao comunicar com a inteligência artificial");
+      if (response.error) {
+        throw new Error(response.error.message || "Erro ao comunicar com a inteligencia artificial");
       }
-      const data = responseData;
+      const data = response.data;
       
       onExtract(data);
       incrementLimit();
