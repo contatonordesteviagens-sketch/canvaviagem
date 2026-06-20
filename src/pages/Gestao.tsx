@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LayoutDashboard, FolderOpen, Upload, StickyNote, Eye, History, Users, MessageSquare, Globe } from "lucide-react";
+import { Loader2, LayoutDashboard, FolderOpen, Upload, History, Users, MessageSquare, Globe } from "lucide-react";
 import {
   useAllContentItems,
   useAllCaptions,
@@ -20,8 +20,6 @@ import { toast } from "sonner";
 // Components
 import { ContentSection } from "@/components/gestao/ContentSection";
 import { ImportSection } from "@/components/gestao/ImportSection";
-import { NotesSection } from "@/components/gestao/NotesSection";
-import { PreviewSection } from "@/components/gestao/PreviewSection";
 import { DashboardSection } from "@/components/gestao/DashboardSection";
 import { HistorySection } from "@/components/gestao/HistorySection";
 import { UsersSection } from "@/components/gestao/UsersSection";
@@ -202,14 +200,6 @@ const Gestao = () => {
               <Upload className="h-4 w-4" />
               Importar
             </TabsTrigger>
-            <TabsTrigger value="notes" className="flex items-center gap-2 flex-1 min-w-[120px]">
-              <StickyNote className="h-4 w-4" />
-              Notas
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="flex items-center gap-2 flex-1 min-w-[120px]">
-              <Eye className="h-4 w-4" />
-              Preview
-            </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center gap-2 flex-1 min-w-[120px]">
               <History className="h-4 w-4" />
               Histórico
@@ -256,16 +246,6 @@ const Gestao = () => {
           {/* Import Tab */}
           <TabsContent value="import" className="mt-0">
             <ImportSection />
-          </TabsContent>
-
-          {/* Notes Tab */}
-          <TabsContent value="notes" className="mt-0">
-            <NotesSection />
-          </TabsContent>
-
-          {/* Preview Tab */}
-          <TabsContent value="preview" className="mt-0">
-            <PreviewSection />
           </TabsContent>
 
           {/* History Tab */}

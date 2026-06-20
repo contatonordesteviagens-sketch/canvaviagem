@@ -35,24 +35,20 @@ const AdminLogin = () => {
         return;
       }
 
-      const userEmail = data.user.email?.toLowerCase();
-      
-      if (userEmail !== 'lucashenriquephd@gmail.com') {
-        // Check if user has admin role in database
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
+      // Check if user has admin role in database
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
 
-        if (!roleData) {
-          // Not an admin - sign out silently and show same generic error
-          await supabase.auth.signOut();
-          setError(genericError);
-          setLoading(false);
-          return;
-        }
+      if (!roleData) {
+        // Not an admin - sign out silently and show same generic error
+        await supabase.auth.signOut();
+        setError(genericError);
+        setLoading(false);
+        return;
       }
 
       toast.success("Login realizado com sucesso!");

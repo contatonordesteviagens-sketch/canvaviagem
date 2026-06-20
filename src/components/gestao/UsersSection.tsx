@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Users, CheckCircle, XCircle, Clock, AlertTriangle, Download } from "lucide-react";
+import { Search, Users, CheckCircle, XCircle, Clock, AlertTriangle, Download, Copy } from "lucide-react";
 import { useActiveUsers, ActiveUser } from "@/hooks/useActiveUsers";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -284,8 +284,18 @@ export const UsersSection = () => {
                       setIsModalOpen(true);
                     }}
                   >
-                    <TableCell className="font-medium text-gray-900">
-                      {user.email}
+                    <TableCell 
+                      className="font-medium text-gray-900 group relative"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(user.email);
+                        toast({ title: "Email copiado!", description: user.email });
+                      }}
+                    >
+                      <div className="flex items-center gap-2" title="Clique para copiar">
+                        {user.email}
+                        <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
+                      </div>
                     </TableCell>
                     <TableCell>
                       {getStatusBadge(user.status)}

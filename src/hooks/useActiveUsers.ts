@@ -94,7 +94,7 @@ export const useActiveUsers = () => {
         }
 
         return {
-          user_id: profile.user_id,
+          user_id: profile.id || profile.user_id,
           email: finalEmail,
           name: emailRecord?.name || profile.name || null,
           status: status,

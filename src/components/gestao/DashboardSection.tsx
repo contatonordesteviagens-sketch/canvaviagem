@@ -68,151 +68,87 @@ const OverviewTab = ({ dateRange }: OverviewTabProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Stripe KPI Cards - Principais */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/20 rounded-full">
-                <DollarSign className="h-6 w-6 text-primary" />
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">MRR</span>
               </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stripeLoading ? "..." : formatCurrency(stripeData?.mrr || 0)}
-                </p>
-                <p className="text-sm text-muted-foreground">MRR</p>
-              </div>
+              <p className="text-xl font-bold">
+                {stripeLoading ? "..." : formatCurrency(stripeData?.mrr || 0)}
+              </p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-500/10 rounded-full">
-                <Users className="h-6 w-6 text-green-600" />
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-green-600" />
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Ativos</span>
               </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stripeLoading ? "..." : stripeData?.activeSubscribers || stats?.activeSubscribers || 0}
-                </p>
-                <p className="text-sm text-muted-foreground">Assinantes Ativos</p>
-              </div>
+              <p className="text-xl font-bold">
+                {stripeLoading ? "..." : stripeData?.activeSubscribers || stats?.activeSubscribers || 0}
+              </p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-red-500/10 rounded-full">
-                <Percent className="h-6 w-6 text-red-600" />
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Percent className="h-4 w-4 text-red-600" />
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Churn</span>
               </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stripeLoading ? "..." : `${stripeData?.churnRate || 0}%`}
-                </p>
-                <p className="text-sm text-muted-foreground">Taxa de Cancelamento</p>
-              </div>
+              <p className="text-xl font-bold">
+                {stripeLoading ? "..." : `${stripeData?.churnRate || 0}%`}
+              </p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-500/10 rounded-full">
-                <CreditCard className="h-6 w-6 text-blue-600" />
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Target className="h-4 w-4 text-violet-600" />
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Ticket M.</span>
               </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stripeLoading ? "..." : formatCurrency(stripeData?.currentMonthRevenue || 0)}
-                </p>
-                <p className="text-sm text-muted-foreground">Faturamento Mensal</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Novas Métricas Stripe */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-emerald-500/10 rounded-full">
-                <Wallet className="h-6 w-6 text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stripeLoading ? "..." : formatCurrency(stripeData?.totalRevenue || 0)}
-                </p>
-                <p className="text-sm text-muted-foreground">Receita Total</p>
-              </div>
+              <p className="text-xl font-bold">
+                {stripeLoading ? "..." : formatCurrency(stripeData?.averageTicket || 0)}
+              </p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-violet-500/10 rounded-full">
-                <Target className="h-6 w-6 text-violet-600" />
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-amber-600" />
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">LTV</span>
               </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stripeLoading ? "..." : formatCurrency(stripeData?.averageTicket || 0)}
-                </p>
-                <p className="text-sm text-muted-foreground">Ticket Médio</p>
-              </div>
+              <p className="text-xl font-bold">
+                {stripeLoading ? "..." : formatCurrency(stripeData?.estimatedLTV || 0)}
+              </p>
             </div>
           </CardContent>
         </Card>
-
+        
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-amber-500/10 rounded-full">
-                <TrendingUp className="h-6 w-6 text-amber-600" />
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Wallet className="h-4 w-4 text-emerald-600" />
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total</span>
               </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stripeLoading ? "..." : formatCurrency(stripeData?.estimatedLTV || 0)}
-                </p>
-                <p className="text-sm text-muted-foreground">LTV Estimado</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-rose-500/10 rounded-full">
-                <UserX className="h-6 w-6 text-rose-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stripeLoading ? "..." : stripeData?.monthlyChurns || 0}
-                </p>
-                <p className="text-sm text-muted-foreground">Cancelamentos (Mês)</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-cyan-500/10 rounded-full">
-                <Clock className="h-6 w-6 text-cyan-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stripeLoading ? "..." : stripeData?.trialingCount || 0}
-                </p>
-                <p className="text-sm text-muted-foreground">Em Trial</p>
-              </div>
+              <p className="text-xl font-bold">
+                {stripeLoading ? "..." : formatCurrency(stripeData?.totalRevenue || 0)}
+              </p>
             </div>
           </CardContent>
         </Card>

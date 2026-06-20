@@ -4,7 +4,7 @@ import { useUserDetails, useDeleteUserSite } from "@/hooks/useUserDetails";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Phone, Download, Trash2, ExternalLink, Image as ImageIcon, Activity, Clock, AlertTriangle } from "lucide-react";
+import { Phone, Download, Trash2, ExternalLink, Image as ImageIcon, Activity, Clock, AlertTriangle, Copy } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -138,9 +138,19 @@ export const UserDetailsModal = ({ user, open, onOpenChange }: UserDetailsModalP
                 <Skeleton className="h-16 w-full" />
               ) : (
                 <div className="bg-muted/30 rounded-lg p-4 flex flex-col gap-3">
-                  <div className="flex items-center gap-2 text-sm">
+                  <div 
+                    className="flex items-center gap-2 text-sm group cursor-pointer w-max"
+                    onClick={() => {
+                      if (details?.phone) {
+                        navigator.clipboard.writeText(details.phone);
+                        toast({ title: "WhatsApp copiado!", description: details.phone });
+                      }
+                    }}
+                    title="Clique para copiar"
+                  >
                     <Phone className="h-4 w-4 text-muted-foreground" />
                     <span>{details?.phone || "Não cadastrado"}</span>
+                    {details?.phone && <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />}
                   </div>
                   {details?.phone && (
                     <Button variant="outline" className="w-full" onClick={() => handleWhatsApp(details.phone!)}>
