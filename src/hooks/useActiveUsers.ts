@@ -53,7 +53,7 @@ export const useActiveUsers = () => {
       // Query hotmart_sales to find users who bought via Hotmart
       const { data: hotmartSalesResult } = await supabase
         .from("hotmart_sales")
-        .select("h_email, h_buyer_name, status");
+        .select("h_email, h_buyer_name, h_status, h_price_value, h_product_name, h_purchase_date");
 
       const hotmartSales = hotmartSalesResult || [];
 
@@ -85,11 +85,11 @@ export const useActiveUsers = () => {
             if ((sub as any).plan_amount) plan_value = `R$ ${((sub as any).plan_amount / 100).toFixed(2).replace('.', ',')}`;
             
             origem = sub.stripe_subscription_id ? "Stripe" : "Hotmart";
-        } else if (hotmartSale && (hotmartSale.status === "APPROVED" || hotmartSale.status === "COMPLETED")) {
+        } else if (hotmartSale && (hotmartSale.h_status === "APPROVED" || hotmartSale.h_status === "COMPLETED")) {
             // Se tem venda aprovada na Hotmart mas não tem sub, marca como Ativo Elite
             status = "active";
-            plan_name = "Plano Elite";
-            plan_value = "R$ 197,00"; // ou o valor padrão da Hotmart
+            plan_name = hotmartSale.h_product_name || "Plano Elite";
+            plan_value = hotmartSale.h_price_value ? `R$ ${Number(hotmartSale.h_price_value).toFixed(2).replace('.', ',')}` : "R$ 197,00";
             origem = "Hotmart";
         }
 
@@ -100,7 +100,7 @@ export const useActiveUsers = () => {
           status: status,
           stripe_customer_id: sub?.stripe_customer_id || profile.stripe_customer_id || null,
           stripe_subscription_id: sub?.stripe_subscription_id || null,
-          created_at: profile.created_at || sub?.created_at || new Date().toISOString(),
+          created_at: sub?.created_at || hotmartSale?.h_purchase_date || profile.created_at || new Date().toISOString(),
           current_period_end: sub?.current_period_end || null,
           profile_id: profile.id,
           product_id: sub?.product_id || null,
@@ -138,6 +138,29 @@ export const useActiveUsers = () => {
           plan_name,
           plan_value,
           origem,
+        });
+      });
+
+      // Adiciona vendas Hotmart órfãs (que não tem profile nem subscription)
+      const existingEmails = new Set(users.map(u => u.email.toLowerCase()));
+      const orphanHotmart = hotmartSales.filter(h => h.h_email && !existingEmails.has(h.h_email.toLowerCase()));
+      
+      orphanHotmart.forEach((sale) => {
+        const email = sale.h_email.toLowerCase();
+        users.push({
+          user_id: `hotmart_orphan_${email}`, // Fake ID just for keying
+          email: email,
+          name: sale.h_buyer_name || null,
+          status: (sale.h_status === "APPROVED" || sale.h_status === "COMPLETED") ? "active" : "canceled",
+          stripe_customer_id: null,
+          stripe_subscription_id: null,
+          created_at: sale.h_purchase_date || new Date().toISOString(),
+          current_period_end: null,
+          profile_id: undefined,
+          product_id: null,
+          plan_name: sale.h_product_name || "Plano Elite",
+          plan_value: sale.h_price_value ? `R$ ${Number(sale.h_price_value).toFixed(2).replace('.', ',')}` : "R$ 197,00",
+          origem: "Hotmart",
         });
       });
 
