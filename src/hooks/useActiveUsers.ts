@@ -50,10 +50,14 @@ export const useActiveUsers = () => {
       
       const emailData = emailDataResult || [];
 
-      // Query hotmart_sales to find users who bought via Hotmart
-      const { data: hotmartSalesResult } = await supabase
-        .from("hotmart_sales")
-        .select("h_email, h_buyer_name, h_status, h_price_value, h_product_name, h_purchase_date");
+      // Query hotmart_sales to find users who bought via Hotmart (Using edge function to bypass RLS)
+      const { data: hotmartSalesResult, error: hotmartSalesError } = await supabase.functions.invoke(
+        "get-hotmart-sales"
+      );
+      
+      if (hotmartSalesError) {
+        console.error("Erro ao buscar hotmart sales:", hotmartSalesError);
+      }
 
       const hotmartSales = hotmartSalesResult || [];
 
