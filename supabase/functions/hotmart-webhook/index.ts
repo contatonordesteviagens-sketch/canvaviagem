@@ -310,7 +310,9 @@ serve(async (req) => {
         await supabase.from("subscriptions").update({
           status: "canceled",
           updated_at: new Date().toISOString(),
-        }).eq("user_id", userId);
+        })
+          .eq("user_id", userId)
+          .like("stripe_subscription_id", "hotmart:%");
         logStep("Subscription deactivated", { event, email: redactEmail(normalizedEmail) });
         await triggerZaiaWebhook("ZAIA_WEBHOOK_CANCELLATION", { email: normalizedEmail, name });
       }
