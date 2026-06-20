@@ -147,9 +147,13 @@ serve(async (req) => {
     if (fromUnix || toUnix) {
       allPaidInvoicesParams.created = {};
       if (fromUnix) allPaidInvoicesParams.created.gte = fromUnix;
-      if (toUnix) allPaidInvoicesParams.created.lte = toUnix;
+    if (toUnix) allPaidInvoicesParams.created.lte = toUnix;
     }
     const allPaidInvoices = await stripe.invoices.list(allPaidInvoicesParams);
+
+    // ============ HOTMART DATA FETCH ============
+    const { data: allHotmartSalesData, error: hotmartError } = await supabaseAdmin.from("hotmart_sales").select("*");
+    const allHotmartSales = allHotmartSalesData || [];
 
     // Calculate MRR from active subscriptions
     let mrr = 0;
@@ -248,21 +252,90 @@ serve(async (req) => {
       .reverse()
       .slice(-6);
 
+    // ============ HOTMART AGGREGATION ============
+    let hotmartActiveCount = 0;
+    let hotmartMrr = 0;
+    let hotmartTotalRevenue = 0;
+    let hotmartCanceledCount = 0;
+    let hotmartMonthlyChurns = 0;
+    let hotmartCurrentMonthRevenue = 0;
+    let hotmartLastMonthRevenue = 0;
+
+    for (const sale of allHotmartSales) {
+      const price = sale.h_price_value || 197; // Fallback to 197 if null
+      const saleDate = new Date(sale.h_purchase_date || sale.created_at || Date.now());
+
+      // Only count within date filter if from/to are provided
+      const isWithinFilter = (!from || saleDate >= new Date(from)) && (!to || saleDate <= new Date(to));
+
+      if (isWithinFilter) {
+        hotmartTotalRevenue += price;
+
+        if (saleDate >= currentMonthStart) {
+          hotmartCurrentMonthRevenue += price;
+        } else if (saleDate >= lastMonthStart) {
+          hotmartLastMonthRevenue += price;
+        }
+
+        // Group by month for revenue chart (Stripe uses recentInvoices only, but we use allHotmartSales)
+        if (saleDate >= sixMonthsAgo) {
+          const rKey = `${monthNames[saleDate.getMonth()]}/${saleDate.getFullYear().toString().slice(-2)}`;
+          const existingRev = revenueChartData.find(d => d.month === rKey);
+          if (existingRev) existingRev.revenue += price;
+        }
+      }
+
+      // Active / Canceled / MRR (all time, not date filtered)
+      if (sale.h_status === "APPROVED" || sale.h_status === "COMPLETED") {
+        hotmartActiveCount++;
+        hotmartMrr += price;
+
+        // Add to subscription chart
+        if (saleDate >= sixMonthsAgo) {
+          const key = `${monthNames[saleDate.getMonth()]}/${saleDate.getFullYear().toString().slice(-2)}`;
+          const existingSub = subscriptionChartData.find(d => d.month === key);
+          if (existingSub) existingSub.subscriptions += 1;
+        }
+      } else if (sale.h_status === "CANCELED" || sale.h_status === "REFUNDED") {
+        hotmartCanceledCount++;
+        const cancelDate = sale.updated_at ? new Date(sale.updated_at) : saleDate;
+        if (cancelDate >= currentMonthStart) {
+          hotmartMonthlyChurns++;
+        }
+      }
+    }
+
+    const combinedMrr = mrr + hotmartMrr;
+    const combinedActive = activeSubscriptions.data.length + hotmartActiveCount;
+    const combinedCustomers = customers.data.length + allHotmartSales.length;
+    
+    const combinedTotalSubscriptions = (allSubscriptions.data.length || 1) + hotmartActiveCount + hotmartCanceledCount;
+    const combinedChurnRate = ((canceledCount + hotmartCanceledCount) / combinedTotalSubscriptions) * 100;
+    
+    const combinedCurrentRevenue = currentMonthRevenue + hotmartCurrentMonthRevenue;
+    const combinedLastRevenue = lastMonthRevenue + hotmartLastMonthRevenue;
+    const combinedGrowth = combinedLastRevenue > 0 
+      ? ((combinedCurrentRevenue - combinedLastRevenue) / combinedLastRevenue) * 100 
+      : 0;
+      
+    const combinedAverageTicket = combinedActive > 0 ? combinedMrr / combinedActive : 0;
+    const combinedLTV = combinedChurnRate > 0 ? combinedMrr / (combinedChurnRate / 100) : 0;
+
     const dashboardData = {
-      mrr: Math.round(mrr * 100) / 100,
-      activeSubscribers: activeSubscriptions.data.length,
-      totalCustomers: customers.data.length,
-      churnRate: Math.round(churnRate * 100) / 100,
-      currentMonthRevenue: Math.round(currentMonthRevenue * 100) / 100,
-      lastMonthRevenue: Math.round(lastMonthRevenue * 100) / 100,
-      growth: Math.round(growth * 100) / 100,
+      mrr: Math.round(combinedMrr * 100) / 100,
+      activeSubscribers: combinedActive,
+      totalCustomers: combinedCustomers,
+      churnRate: Math.round(combinedChurnRate * 100) / 100,
+      currentMonthRevenue: Math.round(combinedCurrentRevenue * 100) / 100,
+      lastMonthRevenue: Math.round(combinedLastRevenue * 100) / 100,
+      growth: Math.round(combinedGrowth * 100) / 100,
       revenueChartData,
       subscriptionChartData,
       // Novas métricas
-      totalRevenue: Math.round(totalRevenue * 100) / 100,
-      averageTicket: Math.round(averageTicket * 100) / 100,
-      estimatedLTV: Math.round(estimatedLTV * 100) / 100,
-      monthlyChurns,
+      totalRevenue: Math.round((totalRevenue + hotmartTotalRevenue) * 100) / 100,
+      averageTicket: Math.round(combinedAverageTicket * 100) / 100,
+      estimatedLTV: Math.round(combinedLTV * 100) / 100,
+      monthlyChurns: monthlyChurns + hotmartMonthlyChurns,
       trialingCount: trialingSubscriptions.data.length,
     };
 
