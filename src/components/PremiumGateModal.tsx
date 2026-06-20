@@ -46,7 +46,7 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
 
   const handleRedirect = () => {
     onClose();
-    navigate(ELITE_OFFER.landingPath);
+    navigate("/inicio2");
   };
 
   return (
