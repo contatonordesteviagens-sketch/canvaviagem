@@ -97,6 +97,15 @@ export const useActiveUsers = () => {
             origem = "Hotmart";
         }
 
+        // Tenta encontrar a data mais antiga possível para representar o início real
+        const dates = [
+          sub?.created_at,
+          hotmartSale?.h_purchase_date,
+          profile.created_at
+        ].filter(Boolean).map(d => new Date(d as string).getTime());
+        
+        const oldestDate = dates.length > 0 ? new Date(Math.min(...dates)).toISOString() : new Date().toISOString();
+
         return {
           user_id: profile.id || profile.user_id,
           email: finalEmail,
@@ -104,7 +113,7 @@ export const useActiveUsers = () => {
           status: status,
           stripe_customer_id: sub?.stripe_customer_id || profile.stripe_customer_id || null,
           stripe_subscription_id: sub?.stripe_subscription_id || null,
-          created_at: sub?.created_at || hotmartSale?.h_purchase_date || profile.created_at || new Date().toISOString(),
+          created_at: oldestDate,
           current_period_end: sub?.current_period_end || null,
           profile_id: profile.id,
           product_id: sub?.product_id || null,
