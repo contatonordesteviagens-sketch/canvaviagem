@@ -112,12 +112,13 @@ export const UsersSection = () => {
       return;
     }
 
-    const headers = ["Email", "Status", "Plano", "Valor", "Inscrito em", "Válido até", "Stripe Customer ID"];
+    const headers = ["Email", "Status", "Plano", "Origem", "Valor", "Inscrito em", "Válido até", "Stripe Customer ID"];
 
     const rows = usersToExport.map((user) => [
       user.email,
       getStatusText(user.status),
       user.plan_name,
+      user.origem || "-",
       user.plan_value,
       formatDate(user.created_at),
       formatDate(user.current_period_end),
@@ -267,6 +268,7 @@ export const UsersSection = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Plano</TableHead>
+                    <TableHead>Origem</TableHead>
                     <TableHead>Valor</TableHead>
                     <TableHead>Inscrito em</TableHead>
                     <TableHead>Válido até</TableHead>
@@ -275,25 +277,41 @@ export const UsersSection = () => {
                 <TableBody>
                   {filteredUsers.map((user) => (
                     <TableRow 
-                      key={user.user_id}
-                      className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setIsModalOpen(true);
-                      }}
-                    >
-                      <TableCell className="font-medium">{user.email}</TableCell>
-                      <TableCell>{getStatusBadge(user.status)}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="font-semibold text-xs">
-                          {user.plan_name}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-green-600 dark:text-green-400 font-semibold">{user.plan_value}</TableCell>
-                      <TableCell>{formatDate(user.created_at)}</TableCell>
-                      <TableCell>{formatDate(user.current_period_end)}</TableCell>
-                    </TableRow>
-                  ))}
+                    key={user.user_id} 
+                    className="cursor-pointer hover:bg-gray-50"
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setIsModalOpen(true);
+                    }}
+                  >
+                    <TableCell className="font-medium text-gray-900">
+                      {user.email}
+                    </TableCell>
+                    <TableCell>
+                      {getStatusBadge(user.status)}
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        {user.plan_name}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.origem === 'Stripe' ? 'bg-purple-100 text-purple-800' : user.origem === 'Hotmart' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'}`}>
+                        {user.origem}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm font-semibold text-emerald-600">
+                        {user.plan_value}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-gray-500">
+                      {formatDate(user.created_at)}
+                    </TableCell>
+                    <TableCell className="text-gray-500">
+                      {user.current_period_end ? formatDate(user.current_period_end) : "-"}
+                    </TableCell>
+                  </TableRow>))}
                 </TableBody>
               </Table>
             </div>

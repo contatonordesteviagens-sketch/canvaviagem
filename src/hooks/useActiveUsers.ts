@@ -15,6 +15,7 @@ export interface ActiveUser {
   product_id: string | null;
   plan_name: string;
   plan_value: string;
+  origem?: string;
 }
 
 export const useActiveUsers = () => {
@@ -29,34 +30,18 @@ export const useActiveUsers = () => {
 
       if (subError) throw subError;
 
-      // Tentar usar a view mascarada de profiles primeiro via REST API
-      // (evita conflito de tipos com o SDK)
-      let maskedProfiles: Array<{
-        user_id: string;
-        email_masked: string;
-        name: string | null;
-        stripe_id_masked: string | null;
-        id: string;
-        created_at: string;
-      }> = [];
-      
-      try {
-        const session = await supabase.auth.getSession();
-        const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles_admin_view?select=user_id,email_masked,name,stripe_id_masked,id,created_at&limit=2000`,
-          {
-            headers: {
-              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-            },
-          }
-        );
-        if (response.ok) {
-          maskedProfiles = await response.json();
-        }
-      } catch (err) {
-        console.log("View profiles_admin_view not available, using fallback", err);
+      // Buscar todos os perfis diretamente usando o SDK
+      // O RLS permite admin ler public.profiles
+      const { data: allProfiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, email, name, stripe_customer_id, id, created_at");
+
+      if (profilesError) {
+        console.error("Erro ao buscar profiles:", profilesError);
+        throw profilesError;
       }
+      
+      const maskedProfiles = allProfiles || [];
 
       // We query user_email_automations as the primary source for real emails since the user is an admin
       const { data: emailDataResult } = await supabase
@@ -73,6 +58,7 @@ export const useActiveUsers = () => {
         let plan_name = "Gratuito";
         let plan_value = "R$ 0,00";
         let status = "inactive" as ActiveUser["status"];
+        let origem = "Orgânico";
         
         if (sub) {
             status = sub.status as ActiveUser["status"];
@@ -82,14 +68,19 @@ export const useActiveUsers = () => {
 
             if ((sub as any).plan_name) plan_name = (sub as any).plan_name;
             if ((sub as any).plan_amount) plan_value = `R$ ${((sub as any).plan_amount / 100).toFixed(2).replace('.', ',')}`;
+            
+            origem = sub.stripe_subscription_id ? "Stripe" : "Hotmart";
         }
+
+        // Se quisermos extrair real emails
+        const finalEmail = emailRecord?.email || profile.email || "Email não disponível";
 
         return {
           user_id: profile.user_id,
-          email: emailRecord?.email || profile.email_masked || "Email não disponível",
+          email: finalEmail,
           name: emailRecord?.name || profile.name || null,
           status: status,
-          stripe_customer_id: sub?.stripe_customer_id || profile.stripe_id_masked || null,
+          stripe_customer_id: sub?.stripe_customer_id || profile.stripe_customer_id || null,
           stripe_subscription_id: sub?.stripe_subscription_id || null,
           created_at: profile.created_at || sub?.created_at || new Date().toISOString(),
           current_period_end: sub?.current_period_end || null,
@@ -97,6 +88,7 @@ export const useActiveUsers = () => {
           product_id: sub?.product_id || null,
           plan_name,
           plan_value,
+          origem,
         };
       });
 
@@ -109,6 +101,7 @@ export const useActiveUsers = () => {
         const isElite = isEliteProduct(sub.product_id);
         let plan_name = isElite ? "Plano Elite" : "Plano Start";
         let plan_value = isElite ? "R$ 90,00" : "R$ 39,00";
+        let origem = sub.stripe_subscription_id ? "Stripe" : "Hotmart";
 
         if ((sub as any).plan_name) plan_name = (sub as any).plan_name;
         if ((sub as any).plan_amount) plan_value = `R$ ${((sub as any).plan_amount / 100).toFixed(2).replace('.', ',')}`;
@@ -126,6 +119,7 @@ export const useActiveUsers = () => {
           product_id: sub.product_id,
           plan_name,
           plan_value,
+          origem,
         });
       });
 
