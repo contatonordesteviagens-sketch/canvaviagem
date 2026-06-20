@@ -50,6 +50,13 @@ export const useActiveUsers = () => {
       
       const emailData = emailDataResult || [];
 
+      // Query hotmart_sales to find users who bought via Hotmart
+      const { data: hotmartSalesResult } = await supabase
+        .from("hotmart_sales")
+        .select("h_email, h_buyer_name, status");
+
+      const hotmartSales = hotmartSalesResult || [];
+
       // Mapeia todos os perfis (usuários do sistema)
       const users: ActiveUser[] = maskedProfiles.map((profile) => {
         const sub = subscriptions.find((s) => s.user_id === profile.user_id);
@@ -60,6 +67,14 @@ export const useActiveUsers = () => {
         let status = "inactive" as ActiveUser["status"];
         let origem = "Orgânico";
         
+        // Se quisermos extrair real emails
+        const finalEmail = emailRecord?.email || profile.email || "Email não disponível";
+
+        // Verifica se há venda na Hotmart por este email
+        const hotmartSale = finalEmail !== "Email não disponível" 
+          ? hotmartSales.find(h => h.h_email && h.h_email.toLowerCase() === finalEmail.toLowerCase())
+          : undefined;
+
         if (sub) {
             status = sub.status as ActiveUser["status"];
             const isElite = isEliteProduct(sub.product_id);
@@ -70,10 +85,13 @@ export const useActiveUsers = () => {
             if ((sub as any).plan_amount) plan_value = `R$ ${((sub as any).plan_amount / 100).toFixed(2).replace('.', ',')}`;
             
             origem = sub.stripe_subscription_id ? "Stripe" : "Hotmart";
+        } else if (hotmartSale && (hotmartSale.status === "APPROVED" || hotmartSale.status === "COMPLETED")) {
+            // Se tem venda aprovada na Hotmart mas não tem sub, marca como Ativo Elite
+            status = "active";
+            plan_name = "Plano Elite";
+            plan_value = "R$ 197,00"; // ou o valor padrão da Hotmart
+            origem = "Hotmart";
         }
-
-        // Se quisermos extrair real emails
-        const finalEmail = emailRecord?.email || profile.email || "Email não disponível";
 
         return {
           user_id: profile.user_id,
