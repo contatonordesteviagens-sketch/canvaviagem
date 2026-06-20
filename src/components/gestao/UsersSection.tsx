@@ -19,6 +19,7 @@ export const UsersSection = () => {
   const { data: users, isLoading } = useActiveUsers();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [planFilter, setPlanFilter] = useState<string>("all");
   const [selectedUser, setSelectedUser] = useState<ActiveUser | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
@@ -33,9 +34,15 @@ export const UsersSection = () => {
       // Filtro por status
       const matchesStatus = statusFilter === "all" || user.status === statusFilter;
 
-      return matchesSearch && matchesStatus;
+      // Filtro por plano
+      const matchesPlan = planFilter === "all" || 
+        (planFilter === "elite" && user.plan_name.toLowerCase().includes("elite")) ||
+        (planFilter === "start" && user.plan_name.toLowerCase().includes("start")) ||
+        (planFilter === "free" && user.plan_name.toLowerCase().includes("gratuito"));
+
+      return matchesSearch && matchesStatus && matchesPlan;
     });
-  }, [users, searchQuery, statusFilter]);
+  }, [users, searchQuery, statusFilter, planFilter]);
 
   const getStatusBadge = (status: ActiveUser["status"]) => {
     switch (status) {
@@ -225,6 +232,18 @@ export const UsersSection = () => {
                 <SelectItem value="past_due">Inadimplentes</SelectItem>
                 <SelectItem value="trialing">Trial</SelectItem>
                 <SelectItem value="inactive">Inativos</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={planFilter} onValueChange={(v) => setPlanFilter(v)}>
+              <SelectTrigger className="w-full md:w-48">
+                <SelectValue placeholder="Filtrar por plano" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os planos</SelectItem>
+                <SelectItem value="elite">Plano Elite</SelectItem>
+                <SelectItem value="start">Plano Start</SelectItem>
+                <SelectItem value="free">Gratuito</SelectItem>
               </SelectContent>
             </Select>
           </div>
