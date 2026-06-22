@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Crown, Play, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Crown, Play, ShieldCheck, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,7 +28,7 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
         eyebrow: "Upgrade Start para Elite",
         title: "Libere a Fabrica e transforme pacote em campanha",
         description:
-          "Seu plano atual ja libera o Canva Viagem. O Elite adiciona a Fabrica de Anuncios, paginas de pacote e criacao guiada para vender com mais clareza.",
+          "Seu Start continua ativo para o Canva Viagem. O Elite libera a Fabrica completa: anuncios, paginas, CRM, IA e materiais de venda.",
         primary: "Ver planos Elite",
         secondary: "Continuar no Start",
       };
@@ -38,7 +38,7 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
       eyebrow: "Acesso Elite",
       title: "Esse recurso e exclusivo do Plano Elite",
       description:
-        "Assine o Elite para liberar a Fabrica, criador de sites, campanhas, CRM e ferramentas de IA para vender viagens com mais velocidade.",
+        "Para usar este recurso, escolha o Elite mensal ou anual. Ele libera Canva Viagem completo, Fabrica, criador de sites, CRM e ferramentas de IA.",
       primary: "Conhecer o Plano Elite",
       secondary: "Agora nao",
     };
@@ -51,7 +51,7 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[92vh] w-[calc(100vw-24px)] max-w-4xl overflow-y-auto border border-cyan-300/20 bg-[#050914] p-0 text-white shadow-2xl shadow-cyan-950/50 sm:rounded-[24px]">
+      <DialogContent className="max-h-[92vh] w-[calc(100vw-24px)] max-w-[880px] overflow-y-auto border border-cyan-300/20 bg-[#050914] p-0 text-white shadow-2xl shadow-cyan-950/50 sm:rounded-[24px] [&>button]:right-4 [&>button]:top-4 [&>button]:z-20 [&>button]:rounded-full [&>button]:border [&>button]:border-white/10 [&>button]:bg-white/10 [&>button]:p-2 [&>button]:text-white/70 [&>button]:opacity-100 hover:[&>button]:bg-white/15 hover:[&>button]:text-white">
         <div className="relative overflow-hidden rounded-[inherit]">
           <div
             className="pointer-events-none absolute inset-0 opacity-90"
@@ -61,14 +61,14 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
             }}
           />
 
-          <div className="relative grid lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="p-5 sm:p-8 lg:p-9">
+          <div className="relative grid lg:grid-cols-[1fr_330px]">
+            <div className="p-5 sm:p-7 lg:p-8">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3.5 py-1.5 shadow-[0_0_24px_rgba(34,211,238,0.12)]">
                 <Crown className="h-4 w-4 text-cyan-300" />
                 <span className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100">{copy.eyebrow}</span>
               </div>
 
-              <DialogTitle className="max-w-[560px] text-3xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl">
+              <DialogTitle className="max-w-[520px] text-3xl font-black leading-[1.03] tracking-tight text-white sm:text-4xl">
                 {copy.title}
               </DialogTitle>
               <DialogDescription className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300 sm:text-base">
@@ -77,10 +77,10 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
 
               <div className="mt-6 grid gap-2.5 text-sm font-semibold text-slate-100">
                 {[
-                  "Fabrica de anuncios e campanhas com IA",
-                  "Criador de paginas de pacote e oferta",
-                  "Materiais prontos para WhatsApp e CRM",
-                  "Acesso imediato com garantia de 7 dias",
+                  "Canva Viagem completo",
+                  "Fabrica de anuncios, imagens e campanhas",
+                  "Criador de sites e paginas de pacote",
+                  "CRM, IA e materiais para WhatsApp",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 flex-none text-emerald-300 drop-shadow-[0_0_10px_rgba(110,231,183,0.35)]" />
@@ -89,28 +89,32 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
                 ))}
               </div>
 
-              <div className="mt-7 grid gap-3 sm:grid-cols-2">
-                <div className="relative overflow-hidden rounded-2xl border border-orange-300/25 bg-orange-300/[0.08] p-4 shadow-[0_16px_42px_rgba(249,115,22,0.12)]">
-                  <div className="absolute right-3 top-3 rounded-full bg-orange-300 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-950">
-                    Melhor valor
+              <div className="mt-7 grid gap-3 sm:grid-cols-[1.08fr_0.92fr]">
+                <div className="rounded-2xl border border-orange-300/30 bg-orange-300/[0.08] p-4 shadow-[0_16px_42px_rgba(249,115,22,0.12)]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-xs font-black uppercase tracking-wide text-orange-100">Elite anual</p>
+                    <span className="rounded-full bg-orange-300 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-950">
+                      Melhor valor
+                    </span>
                   </div>
-                  <p className="text-xs font-black uppercase tracking-wide text-orange-100">Elite anual</p>
-                  <div className="mt-3 flex items-end gap-1">
-                    <strong className="text-3xl font-black text-white">{ELITE_OFFER.annualMonthlyEquivalent}</strong>
-                    <span className="pb-1 text-xs font-bold text-orange-100/75">/mes equivalente</span>
+                  <div className="mt-3">
+                    <strong className="block text-[34px] font-black leading-none text-white">{ELITE_OFFER.annualPrice}</strong>
+                    <span className="mt-1 block text-sm font-black text-orange-100">por 12 meses de acesso</span>
                   </div>
-                  <p className="mt-2 text-xs font-bold text-orange-100">{ELITE_OFFER.annualPrice} cobrados anualmente</p>
-                  <p className="mt-1 text-xs text-orange-100/70">Economia anual de {ELITE_OFFER.annualSavings}.</p>
+                  <p className="mt-3 rounded-xl border border-orange-200/15 bg-orange-950/25 px-3 py-2 text-xs font-semibold leading-relaxed text-orange-50">
+                    Equivale a {ELITE_OFFER.annualMonthlyEquivalent}/mes. Economia de {ELITE_OFFER.annualSavings} comparado ao mensal por 1 ano.
+                  </p>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
                   <p className="text-xs font-black uppercase tracking-wide text-slate-300">Elite mensal</p>
-                  <div className="mt-3 flex items-end gap-1">
-                    <strong className="text-3xl font-black text-white">{ELITE_OFFER.monthlyPrice}</strong>
-                    <span className="pb-1 text-xs font-bold text-slate-400">/mes</span>
+                  <div className="mt-3">
+                    <strong className="block text-[34px] font-black leading-none text-white">{ELITE_OFFER.monthlyPrice}</strong>
+                    <span className="mt-1 block text-sm font-black text-slate-300">por mes</span>
                   </div>
-                  <p className="mt-2 text-xs text-slate-400">Sem fidelidade. Cancele quando quiser.</p>
-                  <p className="mt-1 text-xs text-slate-500">Ideal para testar o Elite por mes.</p>
+                  <p className="mt-3 rounded-xl border border-white/10 bg-slate-950/35 px-3 py-2 text-xs leading-relaxed text-slate-300">
+                    Recorrente, sem fidelidade. Cancele quando quiser.
+                  </p>
                 </div>
               </div>
 
@@ -132,7 +136,7 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
               </div>
             </div>
 
-            <div className="border-t border-white/10 bg-slate-950/45 p-4 sm:p-5 lg:border-l lg:border-t-0 lg:p-6">
+            <div className="border-t border-white/10 bg-slate-950/45 p-4 sm:p-5 lg:border-l lg:border-t-0">
               {showVideo ? (
                 <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-xl">
                   <div className="relative aspect-video">
@@ -173,17 +177,17 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
                   </div>
                 </div>
               ) : (
-                <div className="flex h-full min-h-[360px] flex-col justify-between rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-inner shadow-white/5">
+                <div className="flex h-full min-h-[320px] flex-col justify-between rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-inner shadow-white/5">
                   <div>
                     <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-300/15 text-orange-100 shadow-[0_0_32px_rgba(249,115,22,0.18)]">
-                      <Wand2 className="h-7 w-7" />
+                      <Sparkles className="h-7 w-7" />
                     </div>
-                    <h4 className="text-2xl font-black leading-tight text-white">O que muda quando voce entra no Elite</h4>
+                    <h4 className="text-2xl font-black leading-tight text-white">Entregaveis do Elite</h4>
                     <div className="mt-5 grid gap-3">
                       {[
-                        ["Campanhas", "anuncios e textos guiados por IA"],
-                        ["Paginas", "ofertas de pacote com estrutura pronta"],
-                        ["Execucao", "materiais para vender sem sair do painel"],
+                        ["Fabrica", "geracao de imagens, anuncios e campanhas"],
+                        ["Sites", "paginas de pacote e ofertas prontas"],
+                        ["Canva Viagem", "biblioteca, artes, videos, IA e CRM"],
                       ].map(([title, body]) => (
                         <div key={title} className="rounded-2xl border border-white/10 bg-slate-950/45 p-3">
                           <p className="text-xs font-black uppercase tracking-wide text-cyan-200">{title}</p>
