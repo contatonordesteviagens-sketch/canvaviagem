@@ -381,21 +381,6 @@ const Index = () => {
     );
   };
 
-  const mergedVideoTemplates = useMemo(() => {
-    const dbVideos = videoTemplates || [];
-    return dbVideos.map(dbVideo => {
-      const localMatch = localTemplates.find(lt => lt.title === dbVideo.title);
-      if (localMatch) {
-        return {
-          ...dbVideo,
-          description: localMatch.description || dbVideo.description,
-          drive_url: localMatch.drive_url || dbVideo.drive_url
-        };
-      }
-      return dbVideo;
-    });
-  }, [videoTemplates]);
-
   const filteredVideos = useMemo(() => filterTemplates(mergedVideoTemplates), [mergedVideoTemplates, searchQuery, contentFilters, accessFilters]);
   const displayedVideos = showAllVideos ? filteredVideos : filteredVideos.slice(0, 8);
 
@@ -457,8 +442,8 @@ const Index = () => {
   }, [toolsData]);
 
   // Get weekly stories from story templates
-  const weeklyStories = storyTemplates?.filter(s => s.type === 'weekly-story') || [];
-  const regularStories = storyTemplates?.filter(s => s.type === 'story') || [];
+  const weeklyStories = mergedStoryTemplates?.filter(s => s.type === 'weekly-story') || [];
+  const regularStories = mergedStoryTemplates?.filter(s => s.type === 'story') || [];
 
   // Loading skeletons for different types
   const VideoSkeleton = () => (
@@ -678,11 +663,11 @@ const Index = () => {
                 </Suspense>
 
                 {/* Artes para Agência de Viagens (Feed) — 2 cols mobile, 4 cols desktop */}
-                {!feedLoading && localFeedTemplates.length > 0 && (
+                {!feedLoading && mergedFeedTemplates.length > 0 && (
                   <div className="space-y-3">
                     <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground pt-2">Artes para Agência de Viagens</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                      {localFeedTemplates.slice(0, 4).map((template, index) => (
+                      {mergedFeedTemplates.slice(0, 4).map((template, index) => (
                         <PremiumCard
                           key={template.id || `home-feed-${index}`}
                           id={template.id || `home-feed-${index}`}
@@ -823,13 +808,13 @@ const Index = () => {
         return (
           <section className="animate-fade-in">
             {/* Highlights Section - Show at top if there are highlighted items */}
-            {featuredVideos && featuredVideos.length > 0 && (
+            {mergedFeaturedVideos && mergedFeaturedVideos.length > 0 && (
               <div className="mb-8">
                 <SectionHeader
                   title="Destaques da Semana"
                 />
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  {featuredVideos.map(item => (
+                  {mergedFeaturedVideos.map(item => (
                     <Card key={item.id} className="overflow-hidden border-primary/30 shadow-lg hover:shadow-xl transition-shadow">
                       {/* Animated Media (GIF or Video) */}
                       {item.media_url ? (
@@ -1376,7 +1361,7 @@ const Index = () => {
             <div className="space-y-8">
               {/* Favorite Videos */}
               {(() => {
-                const favoriteVideos = videoTemplates?.filter(v => isFavorite("content_item", v.id)) || [];
+                const favoriteVideos = mergedVideoTemplates?.filter(v => isFavorite("content_item", v.id)) || [];
                 if (favoriteVideos.length === 0) return null;
                 return (
                   <div>
@@ -1406,7 +1391,7 @@ const Index = () => {
 
               {/* Favorite Feed */}
               {(() => {
-                const favoriteFeed = feedTemplates?.filter(f => isFavorite("content_item", f.id)) || [];
+                const favoriteFeed = mergedFeedTemplates?.filter(f => isFavorite("content_item", f.id)) || [];
                 if (favoriteFeed.length === 0) return null;
                 return (
                   <div>
@@ -1436,7 +1421,7 @@ const Index = () => {
 
               {/* Favorite Stories */}
               {(() => {
-                const favoriteStories = storyTemplates?.filter(s => isFavorite("content_item", s.id)) || [];
+                const favoriteStories = mergedStoryTemplates?.filter(s => isFavorite("content_item", s.id)) || [];
                 if (favoriteStories.length === 0) return null;
                 return (
                   <div>
