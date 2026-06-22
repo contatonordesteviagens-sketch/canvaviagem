@@ -61,10 +61,19 @@ export const useActiveUsers = () => {
 
       const hotmartSales = hotmartSalesResult || [];
 
+      // Otimização O(1): Criar Hash Maps para buscas instantâneas
+      const subMap = new Map(subscriptions.map(s => [s.user_id, s]));
+      const emailMap = new Map(emailData.map(e => [e.user_id, e]));
+      const hotmartMap = new Map(
+        hotmartSales
+          .filter(h => h.h_email)
+          .map(h => [h.h_email.toLowerCase(), h])
+      );
+
       // Mapeia todos os perfis (usuários do sistema)
       const users: ActiveUser[] = maskedProfiles.map((profile) => {
-        const sub = subscriptions.find((s) => s.user_id === profile.user_id);
-        const emailRecord = emailData?.find((e) => e.user_id === profile.user_id);
+        const sub = subMap.get(profile.user_id);
+        const emailRecord = emailMap.get(profile.user_id);
         
         let plan_name = "Gratuito";
         let plan_value = "R$ 0,00";
@@ -76,7 +85,7 @@ export const useActiveUsers = () => {
 
         // Verifica se há venda na Hotmart por este email
         const hotmartSale = finalEmail !== "Email não disponível" 
-          ? hotmartSales.find(h => h.h_email && h.h_email.toLowerCase() === finalEmail.toLowerCase())
+          ? hotmartMap.get(finalEmail.toLowerCase())
           : undefined;
 
         if (sub) {
@@ -128,7 +137,7 @@ export const useActiveUsers = () => {
       const orphanSubs = subscriptions.filter(s => !profileUserIds.has(s.user_id));
       
       orphanSubs.forEach((sub) => {
-        const emailRecord = emailData?.find((e) => e.user_id === sub.user_id);
+        const emailRecord = emailMap.get(sub.user_id);
         const isElite = isEliteProduct(sub.product_id);
         let plan_name = isElite ? "Plano Elite" : "Plano Start";
         let plan_value = isElite ? "R$ 90,00" : "R$ 39,00";
