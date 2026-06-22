@@ -14,13 +14,62 @@ import {
     Copy,
     Wand2,
     TrendingUp,
-    RefreshCw
+    RefreshCw,
+    UserCheck,
+    AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function HotmartManager() {
     const [activeTab, setActiveTab] = useState("overview");
+    const [repairEmail, setRepairEmail] = useState("");
+    const [repairName, setRepairName] = useState("");
+    const [repairPhone, setRepairPhone] = useState("");
+    const [repairTransaction, setRepairTransaction] = useState("");
+    const [repairLoading, setRepairLoading] = useState(false);
+    const [repairResult, setRepairResult] = useState<{ magic_link?: string; current_period_end?: string } | null>(null);
+
+    const runHotmartRepair = async () => {
+        const email = repairEmail.trim().toLowerCase();
+        if (!email || !email.includes("@")) {
+            toast.error("Informe o e-mail do comprador");
+            return;
+        }
+
+        setRepairLoading(true);
+        setRepairResult(null);
+        try {
+            const { data, error } = await supabase.functions.invoke("admin-hotmart-repair", {
+                body: {
+                    email,
+                    name: repairName.trim() || undefined,
+                    phone: repairPhone.trim() || undefined,
+                    transaction: repairTransaction.trim() || undefined,
+                    productId: "C106141067C",
+                    productName: "Canva Viagem",
+                    periodDays: 365,
+                },
+            });
+
+            if (error) throw error;
+            if (data?.error) throw new Error(data.error);
+
+            setRepairResult(data);
+            toast.success("Acesso Hotmart Elite liberado");
+        } catch (error: any) {
+            toast.error(error?.message || "Nao foi possivel reparar o acesso");
+        } finally {
+            setRepairLoading(false);
+        }
+    };
+
+    const copyMagicLink = async () => {
+        if (!repairResult?.magic_link) return;
+        await navigator.clipboard.writeText(repairResult.magic_link);
+        toast.success("Link magico copiado");
+    };
 
     return (
         <div className="p-8 space-y-8 max-w-7xl mx-auto">
@@ -65,6 +114,75 @@ export default function HotmartManager() {
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
+                    <Card className="bg-red-950/25 border-red-500/30 rounded-3xl overflow-hidden shadow-2xl">
+                        <CardHeader>
+                            <CardTitle className="text-white flex items-center gap-2">
+                                <AlertTriangle className="w-5 h-5 text-red-300" />
+                                Reparo imediato de comprador Hotmart
+                            </CardTitle>
+                            <CardDescription className="text-red-100/70">
+                                Use quando a Hotmart confirmou a compra, mas o usuario nao recebeu acesso. Isso cria/ativa a assinatura Elite e gera link de entrada.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <Input
+                                    value={repairEmail}
+                                    onChange={(event) => setRepairEmail(event.target.value)}
+                                    placeholder="E-mail do comprador"
+                                    className="bg-slate-950/70 border-red-500/20 rounded-xl"
+                                />
+                                <Input
+                                    value={repairName}
+                                    onChange={(event) => setRepairName(event.target.value)}
+                                    placeholder="Nome"
+                                    className="bg-slate-950/70 border-red-500/20 rounded-xl"
+                                />
+                                <Input
+                                    value={repairPhone}
+                                    onChange={(event) => setRepairPhone(event.target.value)}
+                                    placeholder="Telefone"
+                                    className="bg-slate-950/70 border-red-500/20 rounded-xl"
+                                />
+                                <Input
+                                    value={repairTransaction}
+                                    onChange={(event) => setRepairTransaction(event.target.value)}
+                                    placeholder="Codigo/transacao Hotmart"
+                                    className="bg-slate-950/70 border-red-500/20 rounded-xl"
+                                />
+                            </div>
+                            <div className="flex flex-col md:flex-row gap-3 md:items-center">
+                                <Button
+                                    onClick={runHotmartRepair}
+                                    disabled={repairLoading}
+                                    className="bg-red-500 hover:bg-red-600 text-white font-black rounded-xl"
+                                >
+                                    {repairLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <UserCheck className="w-4 h-4 mr-2" />}
+                                    Liberar acesso Elite
+                                </Button>
+                                <p className="text-xs text-red-100/60">
+                                    Produto autorizado: Canva Viagem Hotmart Elite. Prazo aplicado: 365 dias.
+                                </p>
+                            </div>
+                            {repairResult?.magic_link && (
+                                <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-4">
+                                    <p className="text-sm font-bold text-emerald-100 mb-2">Acesso liberado. Envie este link ao cliente:</p>
+                                    <div className="flex flex-col md:flex-row gap-2">
+                                        <Input
+                                            value={repairResult.magic_link}
+                                            readOnly
+                                            className="bg-slate-950/70 border-emerald-500/20 rounded-xl text-xs"
+                                        />
+                                        <Button onClick={copyMagicLink} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 font-bold">
+                                            <Copy className="w-4 h-4 mr-2" />
+                                            Copiar
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-sm rounded-3xl overflow-hidden shadow-2xl">
                             <CardHeader className="pb-2">
