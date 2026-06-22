@@ -1,7 +1,18 @@
 import { useState, useEffect, useMemo, Suspense, lazy } from "react";
 // Build trigger: Freemium Transition - 2026-02-27
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import PremiumCard from "@/components/canva/PremiumCard";
+import DashboardFeatures from "@/components/canva/DashboardFeatures";
+import TopBanner from "@/components/TopBanner";
+import CategoryTabs from "@/components/CategoryTabs";
 import { useAuth } from "@/contexts/AuthContext";
+import { templates as localTemplates, feedTemplates as localFeedTemplates, storyTemplates as localStoryTemplates, weeklyStories as localWeeklyStories } from "@/data/templates";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  useContentItems,
+  useFeaturedItems,
+} from "@/hooks/useContent";
 import { Header } from "@/components/Header";
 import SeoMetadata from "@/components/SeoMetadata";
 const BottomNav = lazy(() => import("@/components/canva/BottomNav").then(module => ({ default: module.BottomNav })));
@@ -167,6 +178,57 @@ const Index = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location.state]);
+
+  // 🔥 SCRIPT DE MIGRAÇÃO (Roda uma vez para sincronizar legendas locais com o Supabase)
+  useEffect(() => {
+    const migrate = async () => {
+      const isMigrated = localStorage.getItem('migrated_templates_v2');
+      if (isMigrated || !user) return;
+
+      console.log('🔄 Iniciando migração para o Supabase...');
+      const allLocalTemplates = [
+        ...localTemplates,
+        ...localFeedTemplates,
+        ...localStoryTemplates,
+        ...localWeeklyStories
+      ];
+
+      let updateCount = 0;
+      const { data: dbItems, error: fetchError } = await supabase.from('content_items').select('id, title, description, drive_url');
+      
+      if (fetchError || !dbItems) {
+        console.error('Erro ao buscar itens:', fetchError);
+        return;
+      }
+
+      for (const item of dbItems) {
+        const localMatch = allLocalTemplates.find(t => t.title === item.title);
+        if (localMatch) {
+          const updates: any = {};
+          if (localMatch.description && localMatch.description !== item.description) {
+            updates.description = localMatch.description;
+          }
+          if (localMatch.drive_url && localMatch.drive_url !== item.drive_url) {
+            updates.drive_url = localMatch.drive_url;
+          }
+
+          if (Object.keys(updates).length > 0) {
+            const { error } = await supabase.from('content_items').update(updates).eq('id', item.id);
+            if (!error) {
+              updateCount++;
+              console.log(`✅ Atualizado: ${item.title}`);
+            }
+          }
+        }
+      }
+
+      console.log(`🎉 Migração concluída! ${updateCount} itens atualizados.`);
+      localStorage.setItem('migrated_templates_v2', 'true');
+      toast.success(`Banco sincronizado! ${updateCount} legendas/links atualizados. Atualize a página para ver.`);
+    };
+
+    migrate();
+  }, [user]);
 
   // Note: Removed blocking loader for better LCP. 
   // We handle loading states within individual components or sections.
