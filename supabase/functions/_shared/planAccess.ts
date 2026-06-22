@@ -9,7 +9,10 @@ export const ELITE_PRODUCT_IDS = new Set([
   "hotmart_elite",
 ]);
 
-export const HOTMART_ELITE_PRODUCT_IDS = new Set(["7876791"]);
+export const HOTMART_ELITE_PRODUCT_IDS = new Set([
+  "7876791",
+  "C106141067C",
+]);
 export const CANONICAL_HOTMART_ELITE_PRODUCT_ID = "hotmart_elite";
 
 export function isEliteProduct(productId?: string | null) {
@@ -19,6 +22,7 @@ export function isEliteProduct(productId?: string | null) {
 
 export function normalizeHotmartProductId(productId?: string | null): string | null {
   if (!productId) return null;
-  if (HOTMART_ELITE_PRODUCT_IDS.has(productId)) return CANONICAL_HOTMART_ELITE_PRODUCT_ID;
+  const normalized = productId.trim();
+  if (HOTMART_ELITE_PRODUCT_IDS.has(normalized)) return CANONICAL_HOTMART_ELITE_PRODUCT_ID;
   return null;
 }

@@ -27,11 +27,12 @@ const CANONICAL_ELITE_PRODUCT_ID = "hotmart_elite";
 const parseList = (raw?: string | null) =>
   new Set((raw ?? "").split(",").map((s) => s.trim()).filter(Boolean));
 
-const HOTMART_ELITE_PRODUCT_IDS = parseList(Deno.env.get("HOTMART_ELITE_PRODUCT_IDS") || "7876791");
+const HOTMART_ELITE_PRODUCT_IDS = parseList(Deno.env.get("HOTMART_ELITE_PRODUCT_IDS") || "");
+["7876791", "C106141067C"].forEach((productId) => HOTMART_ELITE_PRODUCT_IDS.add(productId));
 
 function resolveTier(hotmartProductId: string | null): { plan: "Elite" | "Unknown"; canonical_product_id: string | null } {
   if (!hotmartProductId) return { plan: "Unknown", canonical_product_id: null };
-  if (HOTMART_ELITE_PRODUCT_IDS.has(hotmartProductId)) {
+  if (HOTMART_ELITE_PRODUCT_IDS.has(hotmartProductId.trim())) {
     return { plan: "Elite", canonical_product_id: CANONICAL_ELITE_PRODUCT_ID };
   }
   // Se não estiver na lista HOTMART_ELITE_PRODUCT_IDS, é um produto de fora (ex: pacote 150 vídeos). Bloqueia.

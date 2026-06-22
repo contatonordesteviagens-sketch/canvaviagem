@@ -231,7 +231,7 @@ serve(async (req) => {
         .from("hotmart_sales")
         .select("*")
         .eq("h_email", email.toLowerCase())
-        .eq("h_status", "APPROVED")
+        .in("h_status", ["APPROVED", "COMPLETED", "COMPLETE", "ACTIVE"])
         .order("h_purchase_date", { ascending: false })
         .limit(1)
         .maybeSingle();

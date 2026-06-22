@@ -58,7 +58,7 @@ Na Hotmart, para este produto do Canva Viagem, só existe o equivalente ao **Pla
 - Quem compra o produto correto pela Hotmart deve ter acesso total.
 - Deve liberar Canva Viagem + Fábrica + todas as ferramentas incluídas no Elite.
 - Não existe Plano Start via Hotmart neste fluxo.
-- Produto Hotmart autorizado conhecido: `7876791`.
+- Produtos/codigos Hotmart autorizados conhecidos: `7876791` e `C106141067C`.
 - O produto Hotmart autorizado deve ser convertido internamente para o produto canonico Elite usado pelo sistema: `hotmart_elite`.
 
 ### Regra de Acesso Correta
@@ -77,7 +77,7 @@ Manter separados explicitamente:
 
 - `START_PRODUCT_IDS`
 - `STRIPE_ELITE_PRODUCT_IDS`
-- `HOTMART_ELITE_PRODUCT_IDS`
+- `HOTMART_ELITE_PRODUCT_IDS` (mesmo se o segredo vier incompleto, o codigo deve manter `7876791` e `C106141067C` como lista minima autorizada)
 - produto canonico Hotmart Elite: `hotmart_elite`
 
 Arquivos prováveis para revisar:
