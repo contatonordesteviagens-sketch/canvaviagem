@@ -381,7 +381,22 @@ const Index = () => {
     );
   };
 
-  const filteredVideos = useMemo(() => filterTemplates(videoTemplates), [videoTemplates, searchQuery, contentFilters, accessFilters]);
+  const mergedVideoTemplates = useMemo(() => {
+    const dbVideos = videoTemplates || [];
+    return dbVideos.map(dbVideo => {
+      const localMatch = localTemplates.find(lt => lt.title === dbVideo.title);
+      if (localMatch) {
+        return {
+          ...dbVideo,
+          description: localMatch.description || dbVideo.description,
+          drive_url: localMatch.drive_url || dbVideo.drive_url
+        };
+      }
+      return dbVideo;
+    });
+  }, [videoTemplates]);
+
+  const filteredVideos = useMemo(() => filterTemplates(mergedVideoTemplates), [mergedVideoTemplates, searchQuery, contentFilters, accessFilters]);
   const displayedVideos = showAllVideos ? filteredVideos : filteredVideos.slice(0, 8);
 
   const filteredCaptions = useMemo(() => filterCaptions(), [captionsData, searchQuery]);

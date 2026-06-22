@@ -1217,7 +1217,7 @@ export const feedTemplates: Template[] = [
     type: "feed",
     image_url: "/artes/arte-gratis-1.webp",
     is_new: true
-   , "drive_url": "https://drive.google.com/file/d/10LeDT87lhcl9XFOck533SscCs5I2iqqZ/view?usp=drive_link" , "description": "✨ Descubra as maravilhas de Maragogi! ✈️🌍\n\nDescubra as maravilhas de Maragogi! 🐠🌴 Suas águas cristalinas e corais são perfeitas para snorkeling e passeios de buggy. Nosso pacote a partir de 10x de R$450,00 inclui ✈️ passagens, 🏨 hospedagem e traslados para você aproveitar o melhor do destino. ✔️ Um pedacinho do paraíso brasileiro te espera. Fale com a gente pelo WhatsApp: (99) 9 9999-9999\n\n🔥 Imagine você relaxando e aproveitando cada momento sem preocupações. Nosso pacote é pensado para você viver o melhor dessa viagem e colecionar momentos inesquecíveis!\n\n👇 Clique no link da BIO ou nos chame no WhatsApp para garantir seu pacote exclusivo agora!\n📲 (99) 9 9999-9999\\n\\n#BelezasDoBrasil #ViajarPeloBrasil #FériasNoBrasil"},
+    },
   {
     id: "local-feed-2",
     title: "Rio de Janeiro (Grátis)",
@@ -1225,7 +1225,7 @@ export const feedTemplates: Template[] = [
     type: "feed",
     image_url: "/artes/arte-gratis-2.webp",
     is_new: true
-   , "drive_url": "https://drive.google.com/file/d/10WyscibbG8F45bzSUJ0LWxhRYNBq9UiX/view?usp=drive_link" , "description": "✨ Descubra as maravilhas de Rio de Janeiro! ✈️🌍\n\nDescubra o Rio de Janeiro e viva experiências únicas! 🌄✨ Conhecida como a Cidade Maravilhosa, o Rio tem o Cristo Redentor, o Pão de Açúcar e praias famosas como Copacabana. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para explorar os pontos turísticos mais icônicos. ✔️ Uma viagem para se encantar com cada cantinho da cidade. Entre em contato pelo WhatsApp: (99) 9 9999-9999\n\n🔥 Imagine você relaxando e aproveitando cada momento sem preocupações. Nosso pacote é pensado para você viver o melhor dessa viagem e colecionar momentos inesquecíveis!\n\n👇 Clique no link da BIO ou nos chame no WhatsApp para garantir seu pacote exclusivo agora!\n📲 (99) 9 9999-9999\\n\\n#ViajarÉViver #MagiaDosDestinos #FériasInesquecíveis"},
+    },
   {
     id: "local-feed-3",
     title: "3 Desejos para o Feriado",
@@ -1233,7 +1233,7 @@ export const feedTemplates: Template[] = [
     type: "feed",
     image_url: "/artes/arte-paga-1.webp",
     is_new: true
-    , "description": "✨ A aventura te espera com 3 Desejos para o Feriado! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#3DesejosparaoFeriado #ViagemPerfeita #AgenciaDeViagens"},
+    },
   {
     id: "local-feed-4",
     title: "Explorar o Mundo",
@@ -1241,23 +1241,23 @@ export const feedTemplates: Template[] = [
     type: "feed",
     image_url: "/artes/arte-paga-2.webp",
     is_new: true
-    , "description": "✨ A aventura te espera com Explorar o Mundo! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#ExploraroMundo #ViagemPerfeita #AgenciaDeViagens"},
-  { title: "Feed Arte 1", url: "https://www.canva.com/design/DAGiNV9zcOg/jXSDpSTmksgu1fRODn9e0g/view?utm_content=DAGiNV9zcOg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed"   , "description": "✨ A aventura te espera com Feed Arte 1! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#FeedArte1 #ViagemPerfeita #AgenciaDeViagens"},
-  { title: "Feed Arte 2", url: "https://www.canva.com/design/DAGifn0vJ5I/LtyUY9gGlChc-pxvei3bsw/view?utm_content=DAGifn0vJ5I&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed"   , "description": "✨ A aventura te espera com Feed Arte 2! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#FeedArte2 #ViagemPerfeita #AgenciaDeViagens"},
-  { title: "Feed Arte 3", url: "https://www.canva.com/design/DAGiOBEVLY8/xT87ZDCn_VKeK6AXMCr0yQ/view?utm_content=DAGiOBEVLY8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed"   , "description": "✨ A aventura te espera com Feed Arte 3! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#FeedArte3 #ViagemPerfeita #AgenciaDeViagens"},
-  { title: "Feed Arte 5", url: "https://www.canva.com/design/DAGiOUhpooE/LmnTreX2G68yNYErZ9mdHw/view?utm_content=DAGiOUhpooE&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed"   , "description": "✨ A aventura te espera com Feed Arte 5! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#FeedArte5 #ViagemPerfeita #AgenciaDeViagens"},
+    },
+  { title: "Feed Arte 1", url: "https://www.canva.com/design/DAGiNV9zcOg/jXSDpSTmksgu1fRODn9e0g/view?utm_content=DAGiNV9zcOg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed"   },
+  { title: "Feed Arte 2", url: "https://www.canva.com/design/DAGifn0vJ5I/LtyUY9gGlChc-pxvei3bsw/view?utm_content=DAGifn0vJ5I&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed"   },
+  { title: "Feed Arte 3", url: "https://www.canva.com/design/DAGiOBEVLY8/xT87ZDCn_VKeK6AXMCr0yQ/view?utm_content=DAGiOBEVLY8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed"   },
+  { title: "Feed Arte 5", url: "https://www.canva.com/design/DAGiOUhpooE/LmnTreX2G68yNYErZ9mdHw/view?utm_content=DAGiOUhpooE&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed"   },
 ];
 
 export const storyTemplates: Template[] = [
-  { title: "Story Arte 1", url: "https://www.canva.com/design/DAGiOVX_JZY/F4R-fuuQ7B8DerVl9yH0Jw/view?utm_content=DAGiOVX_JZY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story"   , "description": "✨ A aventura te espera com Story Arte 1! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#StoryArte1 #ViagemPerfeita #AgenciaDeViagens"},
-  { title: "Story Arte 2", url: "https://www.canva.com/design/DAGifzSI834/3aBvmcMoWMa4pfE1vo9PTA/view?utm_content=DAGifzSI834&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story"   , "description": "✨ A aventura te espera com Story Arte 2! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#StoryArte2 #ViagemPerfeita #AgenciaDeViagens"},
+  { title: "Story Arte 1", url: "https://www.canva.com/design/DAGiOVX_JZY/F4R-fuuQ7B8DerVl9yH0Jw/view?utm_content=DAGiOVX_JZY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story"   },
+  { title: "Story Arte 2", url: "https://www.canva.com/design/DAGifzSI834/3aBvmcMoWMa4pfE1vo9PTA/view?utm_content=DAGifzSI834&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story"   },
 ];
 
 export const weeklyStories: Template[] = [
-  { title: "Semana 1", url: "https://www.canva.com/design/DAGie5Ni45g/Mp-nIDB59t5TX9aAUFX1mQ/view?utm_content=DAGie5Ni45g&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story"   , "description": "✨ A aventura te espera com Semana 1! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#Semana1 #ViagemPerfeita #AgenciaDeViagens"},
-  { title: "Semana 2", url: "https://www.canva.com/design/DAGifpaTJCg/TXjUXR3HBYiJVU3IpVNurA/view?utm_content=DAGifpaTJCg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story"   , "description": "✨ A aventura te espera com Semana 2! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#Semana2 #ViagemPerfeita #AgenciaDeViagens"},
-  { title: "Semana 3", url: "https://www.canva.com/design/DAGhttuR8tQ/GlvKUT5ZX5yXcpRAN6AMIw/view?utm_content=DAGhttuR8tQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story"   , "description": "✨ A aventura te espera com Semana 3! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#Semana3 #ViagemPerfeita #AgenciaDeViagens"},
-  { title: "Semana 4", url: "https://www.canva.com/design/DAGi29_D8kg/JOCZKABeWOkAKZAK3WT0lQ/view?utm_content=DAGi29_D8kg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "story"   , "description": "✨ A aventura te espera com Semana 4! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#Semana4 #ViagemPerfeita #AgenciaDeViagens"},
+  { title: "Semana 1", url: "https://www.canva.com/design/DAGie5Ni45g/Mp-nIDB59t5TX9aAUFX1mQ/view?utm_content=DAGie5Ni45g&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story"   },
+  { title: "Semana 2", url: "https://www.canva.com/design/DAGifpaTJCg/TXjUXR3HBYiJVU3IpVNurA/view?utm_content=DAGifpaTJCg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story"   },
+  { title: "Semana 3", url: "https://www.canva.com/design/DAGhttuR8tQ/GlvKUT5ZX5yXcpRAN6AMIw/view?utm_content=DAGhttuR8tQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story"   },
+  { title: "Semana 4", url: "https://www.canva.com/design/DAGi29_D8kg/JOCZKABeWOkAKZAK3WT0lQ/view?utm_content=DAGi29_D8kg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "story"   },
 ];
 
 export const aiTools = [
@@ -1331,7 +1331,7 @@ export const iaVendedorTool = {
   url: "/vendedor-ia",
   icon: "🤖",
   is_new: true
-  , "description": "✨ A aventura te espera com IA Vendedor de Viagens! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#IAVendedordeViagens #ViagemPerfeita #AgenciaDeViagens"};
+  };
 
 export const resources = [
   {
