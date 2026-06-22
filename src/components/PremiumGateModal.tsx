@@ -36,9 +36,9 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
 
     return {
       eyebrow: "Acesso Elite",
-      title: "Esse recurso faz parte do Plano Elite",
+      title: "Esse recurso e exclusivo do Plano Elite",
       description:
-        "Entre pelo plano mensal ou anual e acesse Canva Viagem, Fabrica de Anuncios, criador de sites, CRM e ferramentas de IA para turismo.",
+        "Assine o Elite para liberar a Fabrica, criador de sites, campanhas, CRM e ferramentas de IA para vender viagens com mais velocidade.",
       primary: "Conhecer o Plano Elite",
       secondary: "Agora nao",
     };
@@ -51,67 +51,73 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[92vh] w-[calc(100vw-24px)] max-w-3xl overflow-y-auto border border-cyan-400/20 bg-[#040912] p-0 text-white shadow-2xl shadow-cyan-950/40 sm:rounded-2xl">
-        <div className="relative overflow-hidden">
+      <DialogContent className="max-h-[92vh] w-[calc(100vw-24px)] max-w-4xl overflow-y-auto border border-cyan-300/20 bg-[#050914] p-0 text-white shadow-2xl shadow-cyan-950/50 sm:rounded-[24px]">
+        <div className="relative overflow-hidden rounded-[inherit]">
           <div
-            className="pointer-events-none absolute inset-0 opacity-80"
+            className="pointer-events-none absolute inset-0 opacity-90"
             style={{
               background:
-                "radial-gradient(circle at 18% 12%, rgba(34,211,238,0.22), transparent 34%), radial-gradient(circle at 84% 18%, rgba(249,115,22,0.18), transparent 30%)",
+                "radial-gradient(circle at 18% 10%, rgba(34,211,238,0.24), transparent 34%), radial-gradient(circle at 92% 0%, rgba(249,115,22,0.22), transparent 28%), linear-gradient(135deg, rgba(6,182,212,0.08), transparent 46%)",
             }}
           />
 
-          <div className="relative grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="p-5 sm:p-7">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1.5">
+          <div className="relative grid lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="p-5 sm:p-8 lg:p-9">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3.5 py-1.5 shadow-[0_0_24px_rgba(34,211,238,0.12)]">
                 <Crown className="h-4 w-4 text-cyan-300" />
-                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200">{copy.eyebrow}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100">{copy.eyebrow}</span>
               </div>
 
-              <DialogTitle className="text-2xl font-black leading-tight tracking-tight text-white sm:text-4xl">
+              <DialogTitle className="max-w-[560px] text-3xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl">
                 {copy.title}
               </DialogTitle>
-              <DialogDescription className="mt-3 max-w-xl text-sm leading-relaxed text-slate-300 sm:text-base">
+              <DialogDescription className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300 sm:text-base">
                 {copy.description}
               </DialogDescription>
 
-              <div className="mt-5 grid gap-2 text-sm text-slate-200">
+              <div className="mt-6 grid gap-2.5 text-sm font-semibold text-slate-100">
                 {[
-                  "Fabrica de anuncios com IA",
-                  "Criador de paginas de pacote",
-                  "CRM e materiais para WhatsApp",
-                  "Acesso imediato com 7 dias de garantia",
+                  "Fabrica de anuncios e campanhas com IA",
+                  "Criador de paginas de pacote e oferta",
+                  "Materiais prontos para WhatsApp e CRM",
+                  "Acesso imediato com garantia de 7 dias",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 flex-none text-emerald-300" />
+                    <CheckCircle2 className="h-4 w-4 flex-none text-emerald-300 drop-shadow-[0_0_10px_rgba(110,231,183,0.35)]" />
                     <span>{item}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-6 grid gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:grid-cols-2">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-wide text-orange-200">Elite anual</p>
-                  <div className="mt-1 flex items-end gap-1">
-                    <strong className="text-2xl font-black text-white">{ELITE_OFFER.annualMonthlyEquivalent}</strong>
-                    <span className="pb-1 text-xs font-bold text-slate-400">/mes equivalente</span>
+              <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                <div className="relative overflow-hidden rounded-2xl border border-orange-300/25 bg-orange-300/[0.08] p-4 shadow-[0_16px_42px_rgba(249,115,22,0.12)]">
+                  <div className="absolute right-3 top-3 rounded-full bg-orange-300 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-950">
+                    Melhor valor
                   </div>
-                  <p className="mt-1 text-xs font-semibold text-orange-200">{ELITE_OFFER.annualPrice} cobrados anualmente</p>
+                  <p className="text-xs font-black uppercase tracking-wide text-orange-100">Elite anual</p>
+                  <div className="mt-3 flex items-end gap-1">
+                    <strong className="text-3xl font-black text-white">{ELITE_OFFER.annualMonthlyEquivalent}</strong>
+                    <span className="pb-1 text-xs font-bold text-orange-100/75">/mes equivalente</span>
+                  </div>
+                  <p className="mt-2 text-xs font-bold text-orange-100">{ELITE_OFFER.annualPrice} cobrados anualmente</p>
+                  <p className="mt-1 text-xs text-orange-100/70">Economia anual de {ELITE_OFFER.annualSavings}.</p>
                 </div>
-                <div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
                   <p className="text-xs font-black uppercase tracking-wide text-slate-300">Elite mensal</p>
-                  <div className="mt-1 flex items-end gap-1">
-                    <strong className="text-2xl font-black text-white">{ELITE_OFFER.monthlyPrice}</strong>
+                  <div className="mt-3 flex items-end gap-1">
+                    <strong className="text-3xl font-black text-white">{ELITE_OFFER.monthlyPrice}</strong>
                     <span className="pb-1 text-xs font-bold text-slate-400">/mes</span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-400">Sem fidelidade, cancele quando quiser.</p>
+                  <p className="mt-2 text-xs text-slate-400">Sem fidelidade. Cancele quando quiser.</p>
+                  <p className="mt-1 text-xs text-slate-500">Ideal para testar o Elite por mes.</p>
                 </div>
               </div>
 
               <div className="mt-6 flex flex-col gap-2 sm:flex-row">
                 <Button
                   onClick={handleRedirect}
-                  className="h-12 flex-1 rounded-xl bg-cyan-300 font-black uppercase tracking-wide text-slate-950 hover:bg-cyan-200"
+                  className="h-[52px] flex-1 rounded-2xl bg-cyan-300 px-5 font-black uppercase tracking-wide text-slate-950 shadow-[0_14px_35px_rgba(34,211,238,0.28)] transition hover:bg-cyan-200"
                 >
                   {copy.primary}
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -119,14 +125,14 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
                 <Button
                   variant="ghost"
                   onClick={onClose}
-                  className="h-12 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white"
+                  className="h-[52px] rounded-2xl px-5 font-bold text-slate-300 hover:bg-white/10 hover:text-white"
                 >
                   {copy.secondary}
                 </Button>
               </div>
             </div>
 
-            <div className="border-t border-white/10 bg-slate-950/60 p-4 lg:border-l lg:border-t-0">
+            <div className="border-t border-white/10 bg-slate-950/45 p-4 sm:p-5 lg:border-l lg:border-t-0 lg:p-6">
               {showVideo ? (
                 <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-xl">
                   <div className="relative aspect-video">
@@ -162,23 +168,33 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
                   <div className="p-4">
                     <p className="text-sm font-bold text-white">Veja a Fabrica criando uma oferta por dentro.</p>
                     <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                      Mostramos o produto antes da compra para o upgrade ser uma decisao clara, nao impulso.
+                      Mostramos o produto antes da compra para o upgrade ser uma decisao clara.
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="flex h-full min-h-[260px] flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.035] p-5">
+                <div className="flex h-full min-h-[360px] flex-col justify-between rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-inner shadow-white/5">
                   <div>
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-400/15 text-orange-200">
-                      <Wand2 className="h-6 w-6" />
+                    <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-300/15 text-orange-100 shadow-[0_0_32px_rgba(249,115,22,0.18)]">
+                      <Wand2 className="h-7 w-7" />
                     </div>
-                    <h4 className="text-xl font-black text-white">O upgrade que libera a area de criacao.</h4>
-                    <p className="mt-3 text-sm leading-relaxed text-slate-400">
-                      Se voce ja usa o Start, o proximo passo natural e liberar a Fabrica para criar anuncios, paginas e campanhas sem sair do painel.
-                    </p>
+                    <h4 className="text-2xl font-black leading-tight text-white">O que muda quando voce entra no Elite</h4>
+                    <div className="mt-5 grid gap-3">
+                      {[
+                        ["Campanhas", "anuncios e textos guiados por IA"],
+                        ["Paginas", "ofertas de pacote com estrutura pronta"],
+                        ["Execucao", "materiais para vender sem sair do painel"],
+                      ].map(([title, body]) => (
+                        <div key={title} className="rounded-2xl border border-white/10 bg-slate-950/45 p-3">
+                          <p className="text-xs font-black uppercase tracking-wide text-cyan-200">{title}</p>
+                          <p className="mt-1 text-sm leading-relaxed text-slate-300">{body}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="mt-5 rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-xs text-emerald-100">
-                    <ShieldCheck className="mb-2 h-4 w-4" />
+
+                  <div className="mt-5 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4 text-xs font-semibold leading-relaxed text-emerald-50">
+                    <ShieldCheck className="mb-2 h-4 w-4 text-emerald-200" />
                     7 dias de garantia. Se nao fizer sentido para sua rotina, voce pode cancelar dentro do prazo.
                   </div>
                 </div>
