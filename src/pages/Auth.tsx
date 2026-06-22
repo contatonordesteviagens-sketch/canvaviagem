@@ -74,7 +74,7 @@ const Auth = () => {
       } else if (subscription.subscribed) {
         navigate("/");
       } else {
-        navigate("/inicio");
+        navigate("/inicio2");
       }
     }
   }, [user, loading, subscription, navigate, redirectTo]);
@@ -291,7 +291,7 @@ const Auth = () => {
               </div>
               <Button
                 variant="outline"
-                onClick={() => navigate("/inicio")}
+                onClick={() => navigate("/inicio2")}
                 className="w-full h-14 rounded-2xl border-dashed border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all"
               >
                 <Sparkles className="mr-2 h-4 w-4 text-amber-500" />

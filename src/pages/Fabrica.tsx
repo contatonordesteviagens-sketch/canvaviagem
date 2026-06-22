@@ -10,8 +10,7 @@ import { FabricaDashboard } from "@/pages/fabrica/FabricaDashboard";
 import { FabricaLibrary } from "@/pages/fabrica/FabricaLibrary";
 import { 
   ArrowLeft, 
-  Crown, 
-  Sparkles, 
+  Sparkles,
   Loader2, 
   LayoutDashboard, 
   Image as ImageIcon, 
@@ -23,16 +22,12 @@ import {
   Menu,
   X,
   ChevronDown,
-  Users,
-  Play,
-  CheckCircle2,
-  ShieldCheck
+  Users
 } from "lucide-react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
-import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
-import { ELITE_OFFER, shouldShowStartUpgradeVideo } from "@/lib/eliteOffer";
+import { hasEliteAccess } from "@/lib/planAccess";
 
 const FabricaInner = () => {
   const { state, setPhase, update } = useFabricaContext();
@@ -472,21 +467,12 @@ const FabricaContent = () => {
   const navigate = useNavigate();
   const { subscription, isAdmin, user, loading: authLoading } = useAuth();
   const [accessGranted, setAccessGranted] = useState(false);
-  const [videoWithSound, setVideoWithSound] = useState(false);
-  const [showUpgradeVideo, setShowUpgradeVideo] = useState(false);
 
   // Navigate is now handled gracefully during render with <Navigate />
 
   const isElite = hasEliteAccess(subscription);
-  const isStart = hasStartAccess(subscription);
   const hasAccess = isAdmin || isElite;
   const canUseFabrica = hasAccess;
-
-  useEffect(() => {
-    if (!canUseFabrica && user && isStart) {
-      setShowUpgradeVideo(shouldShowStartUpgradeVideo());
-    }
-  }, [canUseFabrica, user, isStart]);
 
   useEffect(() => {
     if (hasAccess && !accessGranted) {
@@ -520,131 +506,7 @@ const FabricaContent = () => {
   }
 
   if (!canUseFabrica) {
-    return (
-      <div 
-        className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center p-4 relative overflow-hidden"
-        style={{
-          backgroundImage: "radial-gradient(circle at 50% 30%, rgba(0,229,255,0.08) 0%, transparent 60%)"
-        }}
-      >
-        <div className="max-w-2xl w-full bg-[#050D1A] border border-cyan-500/20 rounded-3xl p-6 md:p-8 shadow-2xl shadow-cyan-500/5 relative z-10 text-center">
-          {/* Header Badge */}
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 mb-6">
-            <Crown className="w-4 h-4 text-cyan-400 animate-bounce" />
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-cyan-400">Upgrade Recomendado</span>
-          </div>
-
-          <h2 className="text-2xl md:text-3xl font-black text-white mb-2 tracking-tight">
-            Desbloqueie a Fábrica 👑
-          </h2>
-          <p className="text-xs text-white/60 mb-6 leading-relaxed">
-            Esta ferramenta é exclusive para membros do <strong className="text-cyan-400">Plano Elite</strong>. Faça o upgrade agora para ter acesso ilimitado à Fábrica de Anúncios e Criador de Sites de Viagem!
-          </p>
-
-          {/* Cards de Opções */}
-          {showUpgradeVideo && (
-            <div className="mb-5 overflow-hidden rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] text-left">
-              <div className="relative aspect-video bg-black">
-                <iframe
-                  className="absolute inset-0 h-full w-full"
-                  src={`https://www.youtube.com/embed/${ELITE_OFFER.videoId}?rel=0&modestbranding=1&playsinline=1&autoplay=1&mute=${videoWithSound ? "0" : "1"}`}
-                  title="Plano Elite Canva Viagem"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
-              <div className="flex flex-col gap-3 p-3 md:flex-row md:items-center md:justify-between">
-                <div className="flex items-start gap-2 text-[11px] leading-relaxed text-white/70">
-                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
-                  <span>Veja o que o Elite libera antes de escolher mensal ou anual.</span>
-                </div>
-                {!videoWithSound && (
-                  <button
-                    onClick={() => setVideoWithSound(true)}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 py-2 text-[11px] font-bold text-cyan-100 transition hover:bg-cyan-400/15"
-                  >
-                    <Play className="h-3.5 w-3.5" />
-                    Assistir com som
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 gap-2 mb-5 text-left sm:grid-cols-3">
-            {["Fabrica de anuncios", "Criador de sites", "Canva Viagem completo"].map((benefit) => (
-              <div key={benefit} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] font-semibold text-white/75">
-                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-cyan-300" />
-                <span>{benefit}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid gap-4 mb-6">
-            {/* Opção Anual */}
-            <div className="border border-orange-500/30 bg-orange-500/[0.02] hover:bg-orange-500/[0.04] p-5 rounded-2xl text-left relative overflow-hidden transition-all shadow-[0_0_15px_rgba(249,115,22,0.05)]">
-              <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-red-600 text-[9px] font-black uppercase text-white px-2.5 py-1 rounded-bl-xl tracking-wider">
-                MAIOR ECONOMIA (70% DE DESCONTO)
-              </div>
-              
-              <div className="flex justify-between items-start mb-2 mt-1">
-                <div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm font-black text-orange-400">Plano Elite Anual</span>
-                    <Sparkles className="w-3.5 h-3.5 text-orange-400 animate-pulse" />
-                  </div>
-                  <p className="text-[10px] text-white/40 mt-0.5">Acesso completo por 12 meses</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-xl font-black text-white">R$ 28,91</span>
-                  <span className="text-[11px] text-white/50">/mês</span>
-                  <p className="text-[9px] text-orange-400 font-bold mt-0.5">R$ 347 cobrado anualmente</p>
-                </div>
-              </div>
-              
-              <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-2.5 mb-4 text-[10px] text-orange-200 leading-normal">
-                💡 <strong>Análise de Economia:</strong> Comprar mensalmente por 1 ano custa R$ 1.164. No plano anual, você paga apenas R$ 347 — uma economia garantida de <strong>70% de desconto real (R$ 817,00/ano poupados)</strong>!
-              </div>
-
-              <button 
-                onClick={() => navigate("/inicio2")}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs transition-all shadow-lg shadow-orange-500/20 uppercase tracking-wider border-0 cursor-pointer text-center"
-              >
-                Garantir Anual com Desconto →
-              </button>
-            </div>
-
-            {/* Opção Mensal */}
-            <div className="border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] p-4 rounded-2xl text-left transition-all">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <span className="text-xs font-bold text-white/80">Plano Elite Mensal</span>
-                  <p className="text-[10px] text-white/40 mt-0.5">Acesso recorrente, cancele quando quiser</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-lg font-black text-white">R$ 97</span>
-                  <span className="text-[10px] text-white/50">/mês</span>
-                </div>
-              </div>
-              <button 
-                onClick={() => navigate("/inicio2")}
-                className="w-full bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-bold py-2 px-3 rounded-xl text-xs mt-1 transition-colors border-0 cursor-pointer text-center"
-              >
-                Assinar Mensal por R$ 97 →
-              </button>
-            </div>
-          </div>
-
-          {/* Botão de Voltar */}
-          <button 
-            onClick={() => navigate("/")}
-            className="text-xs text-white/40 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition-colors border-0 bg-transparent cursor-pointer"
-          >
-            ← Voltar para o Painel
-          </button>
-        </div>
-      </div>
-    );
+    return <Navigate to="/inicio2?upgrade=fabrica" replace />;
   }
 
   return (
