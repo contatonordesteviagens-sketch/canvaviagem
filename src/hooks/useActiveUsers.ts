@@ -16,6 +16,9 @@ export interface ActiveUser {
   plan_name: string;
   plan_value: string;
   origem?: string;
+  phone?: string | null;
+  sites?: any[];
+  canceled_at?: string | null;
 }
 
 export const useActiveUsers = () => {
@@ -34,7 +37,7 @@ export const useActiveUsers = () => {
       // O RLS permite admin ler public.profiles
       const { data: allProfiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("user_id, email, name, stripe_customer_id, id, created_at");
+        .select("user_id, email, name, stripe_customer_id, id, created_at, phone");
 
       if (profilesError) {
         console.error("Erro ao buscar profiles:", profilesError);
@@ -42,6 +45,16 @@ export const useActiveUsers = () => {
       }
       
       const maskedProfiles = allProfiles || [];
+
+      // Buscar todos os sites criados pelos usuários (Para a auditoria de lixo/cancelados)
+      const { data: sitesData, error: sitesError } = await supabase
+        .from("public_sites")
+        .select("id, owner_id, html, created_at, updated_at");
+
+      if (sitesError) {
+        console.error("Erro ao buscar sites:", sitesError);
+      }
+      const allSites = sitesData || [];
 
       // We query user_email_automations as the primary source for real emails since the user is an admin
       const { data: emailDataResult } = await supabase
@@ -70,6 +83,15 @@ export const useActiveUsers = () => {
           .map(h => [h.h_email.toLowerCase(), h])
       );
 
+      // O(1) Map para Sites
+      const sitesMap = new Map<string, any[]>();
+      allSites.forEach(site => {
+        if (site.owner_id) {
+          if (!sitesMap.has(site.owner_id)) sitesMap.set(site.owner_id, []);
+          sitesMap.get(site.owner_id)!.push(site);
+        }
+      });
+
       // Mapeia todos os perfis (usuários do sistema)
       const users: ActiveUser[] = maskedProfiles.map((profile) => {
         const sub = subMap.get(profile.user_id);
@@ -88,6 +110,8 @@ export const useActiveUsers = () => {
           ? hotmartMap.get(finalEmail.toLowerCase())
           : undefined;
 
+        if (hotmartSale) origem = "Hotmart";
+
         if (sub) {
             status = sub.status as ActiveUser["status"];
             const isElite = isEliteProduct(sub.product_id);
@@ -97,13 +121,16 @@ export const useActiveUsers = () => {
             if ((sub as any).plan_name) plan_name = (sub as any).plan_name;
             if ((sub as any).plan_amount) plan_value = `R$ ${((sub as any).plan_amount / 100).toFixed(2).replace('.', ',')}`;
             
-            origem = sub.stripe_subscription_id ? "Stripe" : "Hotmart";
-        } else if (hotmartSale && (hotmartSale.h_status === "APPROVED" || hotmartSale.h_status === "COMPLETED")) {
-            // Se tem venda aprovada na Hotmart mas não tem sub, marca como Ativo Elite
-            status = "active";
+            origem = sub.stripe_subscription_id ? "Stripe" : (hotmartSale ? "Hotmart" : "Orgânico");
+        } else if (hotmartSale) {
+            const hStatus = hotmartSale.h_status;
+            if (hStatus === "APPROVED" || hStatus === "COMPLETED") status = "active";
+            else if (hStatus === "CANCELED" || hStatus === "REFUNDED" || hStatus === "CHARGEBACK") status = "canceled";
+            else if (hStatus === "DELAYED") status = "past_due";
+            else status = "inactive";
+
             plan_name = hotmartSale.h_product_name || "Plano Elite";
             plan_value = hotmartSale.h_price_value ? `R$ ${Number(hotmartSale.h_price_value).toFixed(2).replace('.', ',')}` : "R$ 197,00";
-            origem = "Hotmart";
         }
 
         // Tenta encontrar a data mais antiga possível para representar o início real
@@ -129,6 +156,9 @@ export const useActiveUsers = () => {
           plan_name,
           plan_value,
           origem,
+          phone: profile.phone,
+          sites: sitesMap.get(profile.id) || sitesMap.get(profile.user_id) || [],
+          canceled_at: status === "canceled" ? (sub?.updated_at || hotmartSale?.h_updated_at || hotmartSale?.updated_at || null) : null,
         };
       });
 
@@ -160,6 +190,9 @@ export const useActiveUsers = () => {
           plan_name,
           plan_value,
           origem,
+          phone: null,
+          sites: sitesMap.get(sub.user_id) || [],
+          canceled_at: sub.status === "canceled" ? sub.updated_at : null,
         });
       });
 
@@ -183,6 +216,9 @@ export const useActiveUsers = () => {
           plan_name: sale.h_product_name || "Plano Elite",
           plan_value: sale.h_price_value ? `R$ ${Number(sale.h_price_value).toFixed(2).replace('.', ',')}` : "R$ 197,00",
           origem: "Hotmart",
+          phone: sale.h_buyer_phone || null,
+          sites: [], // Orphan hotmart won't have matched sites unless by email (skipped for now)
+          canceled_at: (sale.h_status === "CANCELED" || sale.h_status === "REFUNDED" || sale.h_status === "CHARGEBACK") ? (sale.h_updated_at || sale.updated_at) : null,
         });
       });
 

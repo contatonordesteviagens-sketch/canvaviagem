@@ -66,10 +66,9 @@ export const UserDetailsModal = ({ user, open, onOpenChange }: UserDetailsModalP
 
   // Canceled Alert Logic
   let canceledDays = -1;
-  if (user.status === "canceled") {
-    const endDate = user.current_period_end ? new Date(user.current_period_end) : new Date();
-    canceledDays = differenceInDays(new Date(), endDate);
-    if (canceledDays < 0) canceledDays = 0; // If end date is in future but canceled
+  if (user.status === "canceled" && user.canceled_at) {
+    canceledDays = differenceInDays(new Date(), new Date(user.canceled_at));
+    if (canceledDays < 0) canceledDays = 0;
   }
 
   return (

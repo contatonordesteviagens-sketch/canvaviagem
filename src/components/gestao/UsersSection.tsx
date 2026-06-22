@@ -268,10 +268,11 @@ export const UsersSection = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Plano</TableHead>
+                    <TableHead>Sites</TableHead>
                     <TableHead>Origem</TableHead>
                     <TableHead>Valor</TableHead>
+                    <TableHead>Avisos</TableHead>
                     <TableHead>Inscrito em</TableHead>
-                    <TableHead>Válido até</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -306,6 +307,15 @@ export const UsersSection = () => {
                       </span>
                     </TableCell>
                     <TableCell>
+                      {user.sites && user.sites.length > 0 ? (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          {user.sites.length} Gerado{user.sites.length > 1 ? 's' : ''}
+                        </Badge>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.origem === 'Stripe' ? 'bg-purple-100 text-purple-800' : user.origem === 'Hotmart' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'}`}>
                         {user.origem}
                       </span>
@@ -315,11 +325,31 @@ export const UsersSection = () => {
                         {user.plan_value}
                       </span>
                     </TableCell>
-                    <TableCell className="text-gray-500">
-                      {formatDate(user.created_at)}
+                    <TableCell>
+                      {user.status === "canceled" && user.canceled_at ? (() => {
+                        const daysSinceCancel = Math.floor((new Date().getTime() - new Date(user.canceled_at).getTime()) / (1000 * 3600 * 24));
+                        if (daysSinceCancel >= 7 && daysSinceCancel <= 29) {
+                          return (
+                            <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 cursor-pointer border-yellow-300">
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              Contatar ({daysSinceCancel}d)
+                            </Badge>
+                          );
+                        } else if (daysSinceCancel >= 30 && user.sites && user.sites.length > 0) {
+                          return (
+                            <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer border-red-300">
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              Lixo Limpar ({daysSinceCancel}d)
+                            </Badge>
+                          );
+                        } else if (daysSinceCancel >= 30) {
+                          return <span className="text-gray-400 text-xs">Fantasma ({daysSinceCancel}d)</span>;
+                        }
+                        return <span className="text-gray-400 text-xs">Recente ({daysSinceCancel}d)</span>;
+                      })() : "-"}
                     </TableCell>
                     <TableCell className="text-gray-500">
-                      {user.current_period_end ? formatDate(user.current_period_end) : "-"}
+                      {formatDate(user.created_at)}
                     </TableCell>
                   </TableRow>))}
                 </TableBody>
