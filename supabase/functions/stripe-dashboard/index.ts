@@ -79,6 +79,15 @@ serve(async (req) => {
     const fromUnix = from ? Math.floor(new Date(from).getTime() / 1000) : undefined;
     const toUnix = to ? Math.floor(new Date(to).getTime() / 1000) : undefined;
 
+    // Helper to fetch all pages from Stripe
+    async function fetchAll(iterable: any) {
+      const items = [];
+      for await (const item of iterable) {
+        items.push(item);
+      }
+      return { data: items };
+    }
+
     // ============ STRIPE DATA FETCH ============
     const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeSecretKey) {
@@ -96,7 +105,7 @@ serve(async (req) => {
       if (fromUnix) activeSubsParams.created.gte = fromUnix;
       if (toUnix) activeSubsParams.created.lte = toUnix;
     }
-    const activeSubscriptions = await stripe.subscriptions.list(activeSubsParams);
+    const activeSubscriptions = await fetchAll(stripe.subscriptions.list(activeSubsParams));
 
     let allSubsParams: any = { limit: 100 };
     if (fromUnix || toUnix) {
@@ -104,7 +113,7 @@ serve(async (req) => {
       if (fromUnix) allSubsParams.created.gte = fromUnix;
       if (toUnix) allSubsParams.created.lte = toUnix;
     }
-    const allSubscriptions = await stripe.subscriptions.list(allSubsParams);
+    const allSubscriptions = await fetchAll(stripe.subscriptions.list(allSubsParams));
 
     let canceledSubsParams: any = { status: "canceled", limit: 100 };
     if (fromUnix || toUnix) {
@@ -112,7 +121,7 @@ serve(async (req) => {
       if (fromUnix) canceledSubsParams.created.gte = fromUnix;
       if (toUnix) canceledSubsParams.created.lte = toUnix;
     }
-    const canceledSubscriptions = await stripe.subscriptions.list(canceledSubsParams);
+    const canceledSubscriptions = await fetchAll(stripe.subscriptions.list(canceledSubsParams));
 
     let trialingSubsParams: any = { status: "trialing", limit: 100 };
     if (fromUnix || toUnix) {
@@ -120,7 +129,7 @@ serve(async (req) => {
       if (fromUnix) trialingSubsParams.created.gte = fromUnix;
       if (toUnix) trialingSubsParams.created.lte = toUnix;
     }
-    const trialingSubscriptions = await stripe.subscriptions.list(trialingSubsParams);
+    const trialingSubscriptions = await fetchAll(stripe.subscriptions.list(trialingSubsParams));
 
     // Fetch customers
     let customersParams: any = { limit: 100 };
@@ -129,29 +138,29 @@ serve(async (req) => {
       if (fromUnix) customersParams.created.gte = fromUnix;
       if (toUnix) customersParams.created.lte = toUnix;
     }
-    const customers = await stripe.customers.list(customersParams);
+    const customers = await fetchAll(stripe.customers.list(customersParams));
 
     // Fetch invoices for revenue calculation
     const now = new Date();
     const currentMonthStart = from ? new Date(from) : new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonthStart = from ? new Date(currentMonthStart.getTime() - (currentMonthStart.getTime() - (to ? new Date(to).getTime() : now.getTime()))) : new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    const invoices = await stripe.invoices.list({
+    const invoices = await fetchAll(stripe.invoices.list({
       status: "paid",
       created: {
         gte: Math.floor(lastMonthStart.getTime() / 1000),
       },
       limit: 100,
-    });
+    }));
 
     // Fetch ALL paid invoices for total revenue (if date range is used, only for that range)
     let allPaidInvoicesParams: any = { status: "paid", limit: 100 };
     if (fromUnix || toUnix) {
       allPaidInvoicesParams.created = {};
       if (fromUnix) allPaidInvoicesParams.created.gte = fromUnix;
-    if (toUnix) allPaidInvoicesParams.created.lte = toUnix;
+      if (toUnix) allPaidInvoicesParams.created.lte = toUnix;
     }
-    const allPaidInvoices = await stripe.invoices.list(allPaidInvoicesParams);
+    const allPaidInvoices = await fetchAll(stripe.invoices.list(allPaidInvoicesParams));
 
     // ============ HOTMART DATA FETCH ============
     const { data: allHotmartSalesData, error: hotmartError } = await supabaseAdmin.from("hotmart_sales").select("*");
@@ -177,6 +186,8 @@ serve(async (req) => {
     // Calculate revenue for current and last month
     let currentMonthRevenue = 0;
     let lastMonthRevenue = 0;
+    let lastMonthRevenueMTD = 0;
+    const currentDayOfMonth = now.getDate();
 
     for (const invoice of invoices.data) {
       const invoiceDate = new Date(invoice.created * 1000);
@@ -184,6 +195,9 @@ serve(async (req) => {
         currentMonthRevenue += invoice.amount_paid / 100;
       } else {
         lastMonthRevenue += invoice.amount_paid / 100;
+        if (invoiceDate.getDate() <= currentDayOfMonth) {
+          lastMonthRevenueMTD += invoice.amount_paid / 100;
+        }
       }
     }
 
@@ -204,9 +218,9 @@ serve(async (req) => {
       return canceledAt && canceledAt >= currentMonthStart;
     }).length;
 
-    // Calculate growth
-    const growth = lastMonthRevenue > 0 
-      ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 
+    // Calculate growth (Month-To-Date comparison)
+    const growth = lastMonthRevenueMTD > 0 
+      ? ((currentMonthRevenue - lastMonthRevenueMTD) / lastMonthRevenueMTD) * 100 
       : 0;
 
     // Calculate average ticket
@@ -219,13 +233,13 @@ serve(async (req) => {
 
     // Get recent invoices for chart data (last 6 months)
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-    const recentInvoices = await stripe.invoices.list({
+    const recentInvoices = await fetchAll(stripe.invoices.list({
       status: "paid",
       created: {
         gte: Math.floor(sixMonthsAgo.getTime() / 1000),
       },
       limit: 100,
-    });
+    }));
 
     // Group revenue by month
     const revenueByMonth: { [key: string]: number } = {};
@@ -262,6 +276,8 @@ serve(async (req) => {
     let hotmartMonthlyChurns = 0;
     let hotmartCurrentMonthRevenue = 0;
     let hotmartLastMonthRevenue = 0;
+    let hotmartLastMonthRevenueMTD = 0;
+    const currentDayOfMonthForHotmart = now.getDate();
 
     for (const sale of allHotmartSales) {
       const price = sale.h_price_value || 197; // Fallback to 197 if null
@@ -277,6 +293,9 @@ serve(async (req) => {
           hotmartCurrentMonthRevenue += price;
         } else if (saleDate >= lastMonthStart) {
           hotmartLastMonthRevenue += price;
+          if (saleDate.getDate() <= currentDayOfMonthForHotmart) {
+            hotmartLastMonthRevenueMTD += price;
+          }
         }
 
         // Group by month for revenue chart (Stripe uses recentInvoices only, but we use allHotmartSales)
@@ -316,8 +335,9 @@ serve(async (req) => {
     
     const combinedCurrentRevenue = currentMonthRevenue + hotmartCurrentMonthRevenue;
     const combinedLastRevenue = lastMonthRevenue + hotmartLastMonthRevenue;
-    const combinedGrowth = combinedLastRevenue > 0 
-      ? ((combinedCurrentRevenue - combinedLastRevenue) / combinedLastRevenue) * 100 
+    const combinedLastRevenueMTD = lastMonthRevenueMTD + hotmartLastMonthRevenueMTD;
+    const combinedGrowth = combinedLastRevenueMTD > 0 
+      ? ((combinedCurrentRevenue - combinedLastRevenueMTD) / combinedLastRevenueMTD) * 100 
       : 0;
       
     const combinedAverageTicket = combinedActive > 0 ? combinedMrr / combinedActive : 0;
