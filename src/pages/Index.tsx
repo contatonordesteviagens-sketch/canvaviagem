@@ -22,7 +22,6 @@ import { contentLibrary } from "@/data/content-library";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight, Play, Download, Copy } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Info } from "lucide-react";
