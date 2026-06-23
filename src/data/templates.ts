@@ -1173,59 +1173,61 @@ export const weeklyStories: Template[] = [
 
 export const aiTools = [
   {
-    title: "IA Vendedor de Viagens (novo)",
+    id: "ia-vendedor",
+    title: "IA Vendedor de Viagens",
     url: "/vendedor-ia",
     icon: "🤖",
     description: "Assistente IA para vender viagens"
   },
   {
-    title: "Criador de Headlines (Mr. Beast)",
-    url: "https://chatgpt.com/g/g-mXIK1OLtB-headlines-de-alto-impacto",
-    icon: "🎯",
-    description: "Crie títulos de alto impacto para seus conteúdos"
+    id: "ia-narrador",
+    title: "Narração de Ofertas de Viagens",
+    url: "https://chatgpt.com/g/g-zuVzD4urh-redador",
+    icon: "🎙️",
+    description: "Narrar com sua voz - Crie narrações profissionais para vídeos"
   },
   {
-    title: "Criador de Promessas Únicas",
-    url: "https://chatgpt.com/g/g-pvCUBPOH1-gerador-de-promessas-com-mecanismo-unico",
-    icon: "✨",
-    description: "Gere promessas com mecanismo único"
+    id: "ia-planejador",
+    title: "Planejador de Viagens e Orçamento",
+    url: "https://chatgpt.com/g/g-r8SGCXKNZ-travel-guidetrip-planner-budget-therapy-flights",
+    icon: "✈️",
+    description: "Organize roteiros completos e orçamentos para voos e estadias"
   },
   {
-    title: "Criador de Quizz 2.0",
-    url: "https://chatgpt.com/g/g-673e0736558881918f8e65ed8c8c5e81-funil-de-quiz-2-0",
-    icon: "❓",
-    description: "Crie funis de quiz interativos"
+    id: "ia-reels-viral",
+    title: "Criador de Reels de Viagem Viral",
+    url: "https://chatgpt.com/g/g-6851247efce881918e6a24af2dda817f-travelogpt",
+    icon: "📱",
+    description: "Desenvolva roteiros persuasivos e virais para Instagram e TikTok"
   },
   {
-    title: "Mapa de Dores e Desejos",
-    url: "https://chatgpt.com/g/g-673e2ac6d1f08191bac9d38be1970598-mapa-de-dores-e-desejos",
-    icon: "🎯",
-    description: "Mapeie dores e desejos do seu público"
+    id: "ia-especialista-mkt",
+    title: "Especialista em MKT de Viagens",
+    url: "https://chatgpt.com/g/g-wSNbQvXiW-kokomo-s-travel-marketing-maven",
+    icon: "📈",
+    description: "Agente avançado especialista em estratégias de marketing digital"
   },
   {
-    title: "Criador de Cursos em Vídeo",
-    url: "https://chatgpt.com/g/g-e53YJbtqR-criador-de-cursos-em-video",
-    icon: "🎓",
-    description: "Desenvolva cursos em vídeo profissionais"
+    id: "ia-mkt-luxo",
+    title: "MKT de Viagens de Luxo",
+    url: "https://chatgpt.com/g/g-69da78b2a00881919aee189836db975a-luxury-travel-marketing-copilot",
+    icon: "💎",
+    description: "Estratégias de vendas exclusivas para atrair o público de alto padrão"
   },
   {
-    title: "Criador de Bônus e Order Bumps",
-    url: "https://chatgpt.com/g/g-gYZKgxBX6-criador-de-bonus-e-order-bumps",
-    icon: "🎁",
-    description: "Crie bônus e ofertas irresistíveis"
+    id: "ia-planejamento-reels",
+    title: "Planejamento de Reels",
+    url: "https://chatgpt.com/g/g-69b17250b3448191b799a5b0e5414b5a-travel-reel-studio",
+    icon: "🎬",
+    description: "Estruture o seu calendário de vídeos e conteúdo passo a passo"
   },
   {
-    title: "Corpo de Anúncios",
-    url: "https://chatgpt.com/g/g-67e9da4bd78881919f6c27aa46c0c076-corpo-de-anuncios",
-    icon: "📝",
-    description: "Desenvolva textos persuasivos para anúncios"
-  },
-  {
-    title: "9 Óticas de Hooks",
-    url: "https://chatgpt.com/g/g-67e9d49f4dc88191b0e9e850ef4bb8ed-9-oticas-de-hooks",
-    icon: "🪝",
-    description: "Crie ganchos com 9 óticas diferentes"
-  },
+    id: "ia-mkt-b2b",
+    title: "MKT de Viagens B2B",
+    url: "https://chatgpt.com/g/g-69d8bcd147048191ae8cad3fe0137a6e-marketing-manager-why-not-travel",
+    icon: "💼",
+    description: "Abordagens comerciais precisas para atrair clientes e empresas corporativas"
+  }
 ];
 
 // Narração de Ofertas separada para ficar em primeiro

@@ -1,3 +1,4 @@
+import { aiTools } from "@/data/templates";
 import { useState, useEffect, useMemo, Suspense, lazy } from "react";
 // Build trigger: Freemium Transition - 2026-02-27
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -149,7 +150,8 @@ const Index = () => {
   const { data: feedTemplates, isLoading: feedLoading } = useContentItems('feed');
   const { data: storyTemplates, isLoading: storiesLoading } = useContentItems(['story', 'weekly-story']);
   const { data: captionsData, isLoading: captionsLoading } = useCaptions();
-  const { data: toolsData, isLoading: toolsLoading } = useMarketingTools();
+  const toolsData = aiTools;
+  const toolsLoading = false;
   const { data: offersData, isLoading: offersLoading } = useContentItems('offer');
   const { data: newestIds = [] } = useNewestItemIds();
   const { trackClick } = useTrackClick();
