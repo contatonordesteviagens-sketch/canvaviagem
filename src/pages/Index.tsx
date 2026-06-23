@@ -381,7 +381,7 @@ const Index = () => {
     );
   };
 
-  const filteredVideos = useMemo(() => filterTemplates(mergedVideoTemplates), [mergedVideoTemplates, searchQuery, contentFilters, accessFilters]);
+  const filteredVideos = useMemo(() => filterTemplates(videoTemplates), [videoTemplates, searchQuery, contentFilters, accessFilters]);
   const displayedVideos = showAllVideos ? filteredVideos : filteredVideos.slice(0, 8);
 
   const filteredCaptions = useMemo(() => filterCaptions(), [captionsData, searchQuery]);
@@ -1361,7 +1361,7 @@ const Index = () => {
             <div className="space-y-8">
               {/* Favorite Videos */}
               {(() => {
-                const favoriteVideos = mergedVideoTemplates?.filter(v => isFavorite("content_item", v.id)) || [];
+                const favoriteVideos = videoTemplates?.filter(v => isFavorite("content_item", v.id)) || [];
                 if (favoriteVideos.length === 0) return null;
                 return (
                   <div>
