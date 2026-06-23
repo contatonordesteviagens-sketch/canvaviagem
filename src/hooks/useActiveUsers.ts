@@ -106,7 +106,7 @@ export const useActiveUsers = () => {
         const finalEmail = emailRecord?.email || profile.email || "Email não disponível";
 
         // Verifica se há venda na Hotmart por este email
-        const hotmartSale = finalEmail !== "Email não disponível" 
+        const hotmartSale: any = finalEmail !== "Email não disponível" 
           ? hotmartMap.get(finalEmail.toLowerCase())
           : undefined;
 
