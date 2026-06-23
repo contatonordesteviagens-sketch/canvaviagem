@@ -26,9 +26,8 @@ export const checkIfItemIsPremium = (type: string, title?: string, index?: numbe
 
     // AI Tools / Marketing Tools logic
     if (type === 'tool' || type === 'marketing_tool') {
-        const freeKeywords = ['anúncio', 'narração'];
-        const isFreeIA = freeKeywords.some(keyword => itemTitle.includes(keyword));
-        return !isFreeIA;
+        // All AI tools are now premium (exclusive for Elite/Start subscribers)
+        return true;
     }
 
     // Primary content types: All others are premium

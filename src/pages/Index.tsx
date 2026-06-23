@@ -438,9 +438,9 @@ const Index = () => {
 
   const firstFourTools = useMemo(() => {
     if (!toolsData) return [];
-    const prioritizedTitles = ["Corpo de Anúncios", "Narração de Ofertas de Viagens"];
+    const prioritizedTitles = ["IA Vendedor de Viagens", "Narração de Ofertas de Viagens"];
     const tools = [...toolsData];
-    const filteredTools = tools.filter(t => !t.title.includes("Mr. Beast") && !t.title.includes("Promessas Únicas") && !t.title.includes("9 Óticas"));
+    const filteredTools = tools;
     return filteredTools.sort((a, b) => {
       const aIndex = prioritizedTitles.findIndex(t => a.title.toLowerCase().includes(t.toLowerCase()));
       const bIndex = prioritizedTitles.findIndex(t => b.title.toLowerCase().includes(t.toLowerCase()));

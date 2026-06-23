@@ -1,8 +1,4 @@
-export interface DownloadItem {
-  title: string;
-  url: string;
-  category: 'nacionais' | 'internacionais' | 'extras';
-}
+export interface DownloadItem { title: string; url: string; category: string; }
 
 export const downloadLinks: DownloadItem[] = [
   {
@@ -11,7 +7,7 @@ export const downloadLinks: DownloadItem[] = [
     "category": "extras"
   },
   {
-    "title": "África",
+    "title": "Paris",
     "url": "https://drive.google.com/drive/folders/10LWKcjLVA6L1FLkzRGDpDmCkKlTHoNOu",
     "category": "internacionais"
   },
@@ -481,11 +477,6 @@ export const downloadLinks: DownloadItem[] = [
     "category": "nacionais"
   },
   {
-    "title": "Paris",
-    "url": "https://drive.google.com/drive/folders/10LWKcjLVA6L1FLkzRGDpDmCkKlTHoNOu",
-    "category": "internacionais"
-  },
-  {
     "title": "PHI PHI",
     "url": "https://drive.google.com/file/d/1715AG9DS8x04gPYkyagsNRpZpBVf5b52/view?usp=drive_link",
     "category": "internacionais"
@@ -614,5 +605,15 @@ export const downloadLinks: DownloadItem[] = [
     "title": "Uxua - Ponta do Corumbau",
     "url": "https://drive.google.com/file/d/1UuuCYEpdWFu9eCPXxnEDeZIUGBk84Dn-/view?usp=drive_link",
     "category": "nacionais"
+  },
+  {
+    "title": "Copa - Seleções & Destinos 2",
+    "url": "https://drive.google.com/file/d/1uO9xa797-z9lewFqbcjN4MA61lONK7kF/view?usp=sharing",
+    "category": "extras"
+  },
+  {
+    "title": "Mês dos namorados",
+    "url": "https://drive.google.com/file/d/1WfOmkLqlfWf89NGADXYUuh30dXl6AfvX/view?usp=drive_link",
+    "category": "extras"
   }
 ];
