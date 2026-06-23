@@ -30,9 +30,9 @@ const Downloads = () => {
   const renderSection = (title: string, items: DownloadItem[], icon: string) => {
     if (items.length === 0) return null;
     return (
-      <div className="mb-10">
-        <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gap-2 border-b border-primary/20 pb-2">
-          <span>{icon}</span> {title} <span className="text-sm font-normal text-muted-foreground ml-2">({items.length})</span>
+      <div className="mb-10 animate-fade-in">
+        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-foreground/90 border-b pb-2">
+          <span>{icon}</span> {title}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {items.map((item, idx) => (
