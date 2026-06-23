@@ -1114,8 +1114,6 @@ const Index = () => {
           </section>
         );
 
-      // removed stories case
-
       case 'downloads':
         return (
           <section className="animate-fade-in">
@@ -1126,7 +1124,7 @@ const Index = () => {
 
             <div className="max-w-2xl mx-auto bg-card rounded-3xl shadow-canva p-6">
               <ResourceSection
-                title="📥 Biblioteca de Vídeos"
+                title="🗂️ Biblioteca de Vídeos"
                 resources={videoDownloads.map(r => ({
                   ...r,
                   onPremiumRequired: getPremiumCallback('downloads', true, 'resource', r.name)
@@ -1135,6 +1133,47 @@ const Index = () => {
                 locked={!isSubscribed}
                 onLockedClick={() => setShowPremiumGate(true)}
               />
+
+              {/* Downloads Individuais */}
+              {downloadLinks.length > 0 && (
+                <div className="mt-8 space-y-4">
+                  <Suspense fallback={<div className="h-48 bg-muted/10 animate-pulse rounded-2xl" />}>
+                    <ResourceSection
+                      title="Downloads Individuais por Destino"
+                      description="Baixe os vídeos originais direto do Google Drive."
+                      resources={(showAllDownloads ? downloadLinks : downloadLinks.slice(0, 10)).map(link => ({
+                        name: link.title,
+                        url: link.url,
+                        icon: "📥",
+                        onPremiumRequired: getPremiumCallback('all', true, 'resource', link.title)
+                      }))}
+                      locked={!isSubscribed}
+                      onLockedClick={() => setShowPremiumGate(true)}
+                    />
+                  </Suspense>
+                  {downloadLinks.length > 10 && (
+                    <div className="flex justify-center mt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAllDownloads(!showAllDownloads)}
+                        className="gap-2 rounded-full px-6"
+                      >
+                        {showAllDownloads ? (
+                          <>
+                            <ChevronUp className="h-4 w-4" />
+                            Mostrar menos
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-4 w-4" />
+                            Ver todos os {downloadLinks.length} destinos
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </section>
         );
@@ -1308,47 +1347,6 @@ const Index = () => {
                       onLockedClick={() => setShowPremiumGate(true)}
                     />
                   </Suspense>
-
-                  {/* Downloads Individuais */}
-                  {downloadLinks.length > 0 && (
-                    <div className="mt-8 space-y-4">
-                      <Suspense fallback={<div className="h-48 bg-muted/10 animate-pulse rounded-2xl" />}>
-                        <ResourceSection
-                          title="Downloads Individuais por Destino"
-                          description="Baixe os vídeos originais direto do Google Drive."
-                          resources={(showAllDownloads ? downloadLinks : downloadLinks.slice(0, 10)).map(link => ({
-                            name: link.title,
-                            url: link.url,
-                            icon: "📥",
-                            onPremiumRequired: getPremiumCallback('all', true, 'resource', link.title)
-                          }))}
-                          locked={!isSubscribed}
-                          onLockedClick={() => setShowPremiumGate(true)}
-                        />
-                      </Suspense>
-                      {downloadLinks.length > 10 && (
-                        <div className="flex justify-center mt-4">
-                          <Button
-                            variant="outline"
-                            onClick={() => setShowAllDownloads(!showAllDownloads)}
-                            className="gap-2 rounded-full px-6"
-                          >
-                            {showAllDownloads ? (
-                              <>
-                                <ChevronUp className="h-4 w-4" />
-                                Mostrar menos
-                              </>
-                            ) : (
-                              <>
-                                <ChevronDown className="h-4 w-4" />
-                                Ver todos os {downloadLinks.length} destinos
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </>
               )}
             </div>
