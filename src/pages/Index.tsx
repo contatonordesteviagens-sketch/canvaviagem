@@ -11,10 +11,11 @@ import SeoMetadata from "@/components/SeoMetadata";
 const BottomNav = lazy(() => import("@/components/canva/BottomNav").then(module => ({ default: module.BottomNav })));
 const Footer = lazy(() => import("@/components/Footer").then(module => ({ default: module.Footer })));
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { downloadLinks } from "@/data/downloads";
 import { contentLibrary } from "@/data/content-library";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight, Play, Download, Copy } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight, Play, Download, Copy, Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
@@ -123,6 +124,7 @@ const Index = () => {
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
   const [showAllDownloads, setShowAllDownloads] = useState(false);
+  const [downloadSearch, setDownloadSearch] = useState("");
   const [contentFilters, setContentFilters] = useState<ContentFilterType[]>([]);
   const [accessFilters, setAccessFilters] = useState<AccessFilterType[]>([]);
   const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
@@ -1136,42 +1138,92 @@ const Index = () => {
 
               {/* Downloads Individuais */}
               {downloadLinks.length > 0 && (
-                <div className="mt-8 space-y-4">
-                  <Suspense fallback={<div className="h-48 bg-muted/10 animate-pulse rounded-2xl" />}>
-                    <ResourceSection
-                      title="Downloads Individuais por Destino"
-                      description="Baixe os vídeos originais direto do Google Drive."
-                      resources={(showAllDownloads ? downloadLinks : downloadLinks.slice(0, 10)).map(link => ({
-                        name: link.title,
-                        url: link.url,
-                        icon: "📥",
-                        onPremiumRequired: getPremiumCallback('all', true, 'resource', link.title)
-                      }))}
-                      locked={!isSubscribed}
-                      onLockedClick={() => setShowPremiumGate(true)}
-                    />
-                  </Suspense>
-                  {downloadLinks.length > 10 && (
-                    <div className="flex justify-center mt-4">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowAllDownloads(!showAllDownloads)}
-                        className="gap-2 rounded-full px-6"
-                      >
-                        {showAllDownloads ? (
-                          <>
-                            <ChevronUp className="h-4 w-4" />
-                            Mostrar menos
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown className="h-4 w-4" />
-                            Ver todos os {downloadLinks.length} destinos
-                          </>
-                        )}
-                      </Button>
+                <div className="mt-8">
+                  <div className="bg-card/50 border border-border/50 rounded-3xl p-6 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                      <div>
+                        <h3 className="text-xl font-bold flex items-center gap-2">
+                          Downloads Individuais por Destino
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">Baixe os vídeos originais direto do Google Drive.</p>
+                      </div>
+                      <div className="relative w-full sm:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Buscar destino..."
+                          value={downloadSearch}
+                          onChange={(e) => setDownloadSearch(e.target.value)}
+                          className="pl-9 rounded-full bg-background/50 border-muted"
+                        />
+                      </div>
                     </div>
-                  )}
+
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                      {downloadLinks
+                        .filter(link => link.title.toLowerCase().includes(downloadSearch.toLowerCase()))
+                        .slice(0, showAllDownloads ? undefined : 12)
+                        .map((link, idx) => {
+                          const isLocked = !isSubscribed;
+                          return (
+                            <Button
+                              key={idx}
+                              variant="outline"
+                              asChild={!isLocked}
+                              className="h-auto py-3 px-2 flex flex-col items-center justify-center gap-2 hover:bg-primary/5 hover:border-primary/30 transition-all rounded-2xl relative overflow-hidden group"
+                              onClick={(e) => {
+                                if (isLocked) {
+                                  e.preventDefault();
+                                  setShowPremiumGate(true);
+                                } else {
+                                  const cb = getPremiumCallback('all', true, 'resource', link.title);
+                                  if (cb) cb();
+                                }
+                              }}
+                            >
+                              {isLocked ? (
+                                <div className="flex flex-col items-center justify-center w-full h-full gap-2 text-center cursor-pointer">
+                                  <span className="text-3xl sm:text-4xl">📥</span>
+                                  <span className="text-[10px] sm:text-xs font-medium line-clamp-2 leading-tight w-full px-1">{link.title}</span>
+                                </div>
+                              ) : (
+                                <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center w-full h-full gap-2 text-center">
+                                  <span className="text-3xl sm:text-4xl group-hover:scale-110 transition-transform">📥</span>
+                                  <span className="text-[10px] sm:text-xs font-medium line-clamp-2 leading-tight w-full px-1">{link.title}</span>
+                                </a>
+                              )}
+                            </Button>
+                          );
+                        })}
+                    </div>
+                    
+                    {downloadLinks.filter(link => link.title.toLowerCase().includes(downloadSearch.toLowerCase())).length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        Nenhum destino encontrado para "{downloadSearch}"
+                      </div>
+                    )}
+
+                    {downloadLinks.filter(link => link.title.toLowerCase().includes(downloadSearch.toLowerCase())).length > 12 && (
+                      <div className="flex justify-center mt-6">
+                        <Button
+                          variant="ghost"
+                          onClick={() => setShowAllDownloads(!showAllDownloads)}
+                          className="gap-2 rounded-full px-6 hover:bg-muted/50"
+                        >
+                          {showAllDownloads ? (
+                            <>
+                              <ChevronUp className="h-4 w-4" />
+                              Mostrar menos
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4" />
+                              Ver todos os destinos
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
