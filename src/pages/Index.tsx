@@ -435,8 +435,8 @@ const Index = () => {
   }, [toolsData]);
 
   // Get weekly stories from story templates
-  const weeklyStories = mergedStoryTemplates?.filter(s => s.type === 'weekly-story') || [];
-  const regularStories = mergedStoryTemplates?.filter(s => s.type === 'story') || [];
+  const weeklyStories = storyTemplates?.filter(s => s.type === 'weekly-story') || [];
+  const regularStories = storyTemplates?.filter(s => s.type === 'story') || [];
 
   // Loading skeletons for different types
   const VideoSkeleton = () => (
@@ -656,11 +656,11 @@ const Index = () => {
                 </Suspense>
 
                 {/* Artes para Agência de Viagens (Feed) — 2 cols mobile, 4 cols desktop */}
-                {!feedLoading && mergedFeedTemplates.length > 0 && (
+                {!feedLoading && feedTemplates.length > 0 && (
                   <div className="space-y-3">
                     <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground pt-2">Artes para Agência de Viagens</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                      {mergedFeedTemplates.slice(0, 4).map((template, index) => (
+                      {feedTemplates.slice(0, 4).map((template, index) => (
                         <PremiumCard
                           key={template.id || `home-feed-${index}`}
                           id={template.id || `home-feed-${index}`}
@@ -801,13 +801,13 @@ const Index = () => {
         return (
           <section className="animate-fade-in">
             {/* Highlights Section - Show at top if there are highlighted items */}
-            {mergedFeaturedVideos && mergedFeaturedVideos.length > 0 && (
+            {featuredVideos && featuredVideos.length > 0 && (
               <div className="mb-8">
                 <SectionHeader
                   title="Destaques da Semana"
                 />
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  {mergedFeaturedVideos.map(item => (
+                  {featuredVideos.map(item => (
                     <Card key={item.id} className="overflow-hidden border-primary/30 shadow-lg hover:shadow-xl transition-shadow">
                       {/* Animated Media (GIF or Video) */}
                       {item.media_url ? (
@@ -1384,7 +1384,7 @@ const Index = () => {
 
               {/* Favorite Feed */}
               {(() => {
-                const favoriteFeed = mergedFeedTemplates?.filter(f => isFavorite("content_item", f.id)) || [];
+                const favoriteFeed = feedTemplates?.filter(f => isFavorite("content_item", f.id)) || [];
                 if (favoriteFeed.length === 0) return null;
                 return (
                   <div>
@@ -1414,7 +1414,7 @@ const Index = () => {
 
               {/* Favorite Stories */}
               {(() => {
-                const favoriteStories = mergedStoryTemplates?.filter(s => isFavorite("content_item", s.id)) || [];
+                const favoriteStories = storyTemplates?.filter(s => isFavorite("content_item", s.id)) || [];
                 if (favoriteStories.length === 0) return null;
                 return (
                   <div>
