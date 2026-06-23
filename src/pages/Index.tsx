@@ -552,7 +552,7 @@ const Index = () => {
                           url={tool.url}
                           icon={tool.icon}
                           description={tool.description || "Ferramenta de IA para marketing"}
-                          isNew={tool.is_new}
+                          isNew={(tool as any).is_new}
                           onClick={() => { 
                             trackClick('tool', tool.id); 
                             trackActivity('tool');
@@ -656,7 +656,7 @@ const Index = () => {
                           <ToolCard
                             key={tool.id} id={tool.id} title={tool.title} url={tool.url}
                             icon={tool.icon} description={tool.description || "Ferramenta de IA"}
-                            isNew={tool.is_new}
+                            isNew={(tool as any).is_new}
                             onClick={() => { 
                               trackClick('tool', tool.id); 
                               trackActivity('tool');
@@ -1267,7 +1267,7 @@ const Index = () => {
                       url={tool.url}
                       icon={tool.icon}
                       description={tool.description || "Ferramenta de IA para marketing"}
-                      isNew={tool.is_new}
+                      isNew={(tool as any).is_new}
                       onClick={() => {
                         trackClick('tool', tool.id);
                         trackActivity('tool'); // +20 pts
