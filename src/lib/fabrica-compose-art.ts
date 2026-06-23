@@ -611,9 +611,9 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, color: string) {
+function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, color?: string) {
   ctx.save();
-  ctx.fillStyle = color;
+  if (color) ctx.fillStyle = color;
   roundRect(ctx, x, y, w, h, r);
   ctx.fill();
   ctx.restore();
