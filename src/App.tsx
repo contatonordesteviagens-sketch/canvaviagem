@@ -103,6 +103,7 @@ const CanvaClone = lazy(() => import("./pages/CanvaClone"));
 const SalesPage = lazy(() => import("./pages/SalesPage"));
 const Diferencas = lazy(() => import("./pages/Diferencas"));
 const MinhaConta = lazy(() => import("./pages/MinhaConta"));
+const Downloads = lazy(() => import("./pages/Downloads"));
 const Fabrica = lazy(() => import("./pages/Fabrica"));
 const FabricaES = lazy(() => import("./pages/FabricaES"));
 const PainelMarketing = lazy(() => import("./pages/PainelMarketing"));
@@ -223,6 +224,12 @@ const App = () => {
                     <Route path="/es/fabrica" element={<FabricaES />} />
                     {/* Canonical Spanish landing page route. */}
                     <Route path="/es/inicio" caseSensitive={false} element={<InicioES />} />
+
+                    <Route path="/downloads" element={
+                      <ProtectedRoute requireSubscription>
+                        <Downloads />
+                      </ProtectedRoute>
+                    } />
 
                     {/* Auth e outras rotas compartilhadas */}
                     <Route path="/auth" element={<Auth />} />
