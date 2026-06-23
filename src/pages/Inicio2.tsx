@@ -43,9 +43,19 @@ const instagramUrl = "https://www.instagram.com/lucasferrari.pro/";
 const annualCheckoutUrl = ELITE_OFFER.annualCheckoutUrl;
 const monthlyCheckoutUrl = ELITE_OFFER.monthlyCheckoutUrl;
 const metaPixelId = "916689227676142";
+const reelsMainGifUrl =
+  "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm5kcmcybmE2aTFkOTU3ZDNqYmZkbHQ2YjRibjB1NjFtN2RoNWdrMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6osnZ6joYcPfERZsaE/giphy.gif";
+const reelsPreviewGifs = [
+  "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3J2anV0aTVkYWowbDl1ZXFtNnB4ZWUwcnVnZTVzOW91ZzNncGNvNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbylDFYWSU46XeLcsS/giphy.gif",
+  "https://media4.giphy.com/media/VVMI7dobalrJhKmQOZ/giphy.gif",
+  "https://media4.giphy.com/media/tJPdq4gvTvr8CgIyWI/giphy.gif",
+];
+const profilePreviewImageUrl =
+  "https://rochadigitalmidia.com.br/wp-content/uploads/2025/09/1-1024x1024.png";
 
 const pricingFeatures = [
-  "250 vídeos Reels de destinos",
+  "250 vídeos Reels de destinos nacionais e internacionais",
+  "Templates editáveis no Canva para personalizar logo e telefone",
   "400 artes e stories",
   "Gerador de anúncios com IA",
   "Construtor de sites e páginas de pacote",
@@ -96,7 +106,7 @@ const platformProofScreens = [
 
 const includedResultCards = [
   ["IA para anúncios", "Gere textos, ganchos, CTA e ideias para destinos e promoções."],
-  ["Conteúdos prontos", "Publique vídeos, posts, stories e artes de turismo sem partir do zero."],
+  ["250 Reels prontos", "Publique vídeos de destinos nacionais e internacionais sem partir do zero."],
   ["Páginas de venda", "Envie pacotes com uma apresentação clara, visual e mais confiável."],
   ["CRM de leads", "Acompanhe interessados, orçamentos e oportunidades depois do primeiro contato."],
   ["Materiais de apoio", "Use legendas, roteiros, textos de WhatsApp e recursos de campanha."],
@@ -107,17 +117,14 @@ const trustProofMetrics = [
   ["7 dias", "para testar com garantia"],
   ["12 meses", "de acesso no plano anual"],
   ["R$ 817", "de economia no plano anual"],
-  ["1 lugar", "para IA, páginas, conteúdos e CRM"],
+  ["250 Reels", "para deixar o perfil mais profissional"],
 ];
 
 const objectionCards = [
   ["Será que eu vou saber usar?", "Sim. A ideia é você entrar, escolher o que quer criar e seguir modelos prontos. Não precisa começar do zero."],
   ["Isso serve para agência pequena?", "Serve principalmente para agência pequena, consultor e equipe enxuta que precisa parecer mais profissional sem contratar uma estrutura cara."],
-  ["Preciso entender de design?", "Não. A plataforma entrega caminhos prontos para anúncio, página, legenda, vídeo e organização. Você ajusta para o pacote que está vendendo."],
-  ["Vou conseguir usar no meu negócio?", "Se você vende viagens, pacotes, roteiros, grupos ou experiências pelo WhatsApp e Instagram, a ferramenta foi pensada para sua rotina."],
   ["Vale a pena pagar por isso?", "Se ela economizar algumas horas por mês e melhorar a apresentação de uma única oferta, o plano anual já tende a se pagar rápido."],
   ["O acesso é imediato?", "Sim. Depois da compra pela Hotmart, você recebe as instruções de acesso no e-mail usado no checkout."],
-  ["Tem suporte?", "Sim. Você tem suporte via WhatsApp para tirar dúvidas de acesso e uso da plataforma."],
   ["Mensal ou anual?", "O mensal é para testar com menor compromisso. O anual é a melhor escolha: custa menos por mês, libera 12 meses e economiza R$ 817."],
 ];
 
@@ -267,7 +274,7 @@ export default function Inicio2() {
   }, []);
 
   return (
-    <div className="inicio-page" data-page-version="inicio2-pt-br-2026-06-12">
+    <div className="inicio-page" data-page-version="inicio2-pt-br-2026-06-23-reels">
       <header className="site-header">
         <div className="header-inner">
           <img src={logoImage} alt="Canva Viagem" className="logo" />
@@ -375,6 +382,78 @@ export default function Inicio2() {
               </div>
               <div className="inicio2-hero-video-footer">
                 <span>Vídeo curto: veja Lucas criando uma oferta e mostrando como a ferramenta funciona por dentro.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white py-14 md:py-20 border-b border-slate-100">
+          <div className="inicio-container">
+            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-10 lg:gap-14 items-start">
+              <div>
+                <p className="text-cyan-600 font-black uppercase tracking-[0.2em] text-xs mb-3">250 reels prontos</p>
+                <h2 className="text-3xl md:text-5xl font-black text-slate-950 leading-tight mb-5">
+                  Seu perfil bonito e profissional em 1 dia, sem gravar tudo do zero.
+                </h2>
+                <p className="text-lg text-slate-600 leading-relaxed mb-6">
+                  Você recebe vídeos Reels de destinos nacionais e internacionais para publicar, adaptar no Canva e manter o Instagram da agência com aparência de marca profissional.
+                </p>
+
+                <div className="space-y-3 mb-7">
+                  {[
+                    "250 vídeos Reels para destinos nacionais e internacionais",
+                    "Templates editáveis no Canva para inserir sua logo e telefone",
+                    "Qualidade FHD e uso livre de direitos autorais",
+                    "Textos de legenda para copiar, adaptar e publicar",
+                  ].map((item) => (
+                    <div key={item} className="flex items-start gap-3 text-slate-800 font-bold">
+                      <CheckCircle2 size={20} className="text-emerald-500 mt-0.5 shrink-0" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <a href="#planos" className="btn btn-primary inline-flex">Quero receber os 250 Reels</a>
+              </div>
+
+              <div className="space-y-5">
+                <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-4 shadow-2xl shadow-slate-200/70">
+                  <img
+                    src={profilePreviewImageUrl}
+                    alt="Exemplo de perfil bonito e profissional criado com vídeos de viagem"
+                    loading="lazy"
+                    className="w-full rounded-[1.5rem] object-cover"
+                  />
+                </div>
+                <div className="rounded-[2rem] bg-slate-950 p-4 md:p-5 shadow-2xl shadow-cyan-950/20">
+                  <div className="mx-auto max-w-[220px] overflow-hidden rounded-[1.75rem] border-[10px] border-slate-800 bg-slate-900 shadow-xl">
+                    <img
+                      src={reelsMainGifUrl}
+                      alt="Demonstração animada dos vídeos Reels entregues"
+                      loading="lazy"
+                      className="aspect-[9/16] w-full object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 md:mt-12">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <h3 className="text-xl md:text-2xl font-black text-slate-950">Exemplos do tipo de Reels que você recebe</h3>
+                <span className="hidden sm:inline text-sm font-black uppercase tracking-[0.18em] text-slate-400">publicar + adaptar + vender</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5">
+                {reelsPreviewGifs.map((gifUrl, index) => (
+                  <div key={gifUrl} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-lg shadow-slate-200/70">
+                    <img
+                      src={gifUrl}
+                      alt={`Exemplo de vídeo Reel de viagem ${index + 1}`}
+                      loading="lazy"
+                      className="aspect-[9/16] w-full object-cover"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -706,10 +785,12 @@ export default function Inicio2() {
                 </div>
 
                 <div className="inicio2-price-value">
-                  <span>Equiv.</span>
-                  <strong>R$ 28,91</strong>
+                  <span>Anual</span>
+                  <strong>{ELITE_OFFER.annualPrice}</strong>
                 </div>
-                <p className="inicio2-price-cash">R$ 347 cobrado anualmente • economia de R$ 817</p>
+                <p className="inicio2-price-cash">
+                  Equivale a {ELITE_OFFER.annualMonthlyEquivalent}/mês • economia de {ELITE_OFFER.annualSavings}
+                </p>
 
                 <ul className="inicio2-price-features">
                   {pricingFeatures.map((feature) => (
@@ -738,7 +819,7 @@ export default function Inicio2() {
                 </div>
 
                 <div className="inicio2-price-value inicio2-price-value-secondary">
-                  <strong>R$ 97</strong>
+                  <strong>{ELITE_OFFER.monthlyPrice}</strong>
                   <span>/mês</span>
                 </div>
                 <p className="inicio2-price-cash inicio2-price-cash-muted">Sem fidelidade. Cancele quando quiser.</p>
@@ -892,8 +973,8 @@ export default function Inicio2() {
 
       <div className="mobile-sticky">
         <div className="sticky-price">
-          <span>12x R$ 49<small>,85</small></span>
-          <small>R$ 347 por ano</small>
+          <span>{ELITE_OFFER.annualPrice}<small>/ano</small></span>
+          <small>{ELITE_OFFER.annualMonthlyEquivalent}/mês equivalente</small>
         </div>
         <a href="#planos" className="sticky-btn">Escolher plano <Check size={16} /></a>
       </div>
