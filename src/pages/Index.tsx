@@ -1180,9 +1180,14 @@ const Index = () => {
                                 }
                               }}
                             >
+                              {isLocked && (
+                                <div className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm p-1 rounded-full shadow-sm">
+                                  <Crown className="w-3 h-3 text-amber-500 fill-amber-500" />
+                                </div>
+                              )}
                               {isLocked ? (
-                                <div className="flex flex-col items-center justify-center w-full h-full gap-2 text-center cursor-pointer">
-                                  <span className="text-3xl sm:text-4xl">📥</span>
+                                <div className="flex flex-col items-center justify-center w-full h-full gap-2 text-center cursor-pointer opacity-60">
+                                  <span className="text-3xl sm:text-4xl grayscale">📥</span>
                                   <span className="text-[10px] sm:text-xs font-medium line-clamp-2 leading-tight w-full px-1">{link.title}</span>
                                 </div>
                               ) : (
