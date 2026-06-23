@@ -11,6 +11,7 @@ import SeoMetadata from "@/components/SeoMetadata";
 const BottomNav = lazy(() => import("@/components/canva/BottomNav").then(module => ({ default: module.BottomNav })));
 const Footer = lazy(() => import("@/components/Footer").then(module => ({ default: module.Footer })));
 import { Button } from "@/components/ui/button";
+import { downloadLinks } from "@/data/downloads";
 import { contentLibrary } from "@/data/content-library";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight, Play, Download, Copy } from "lucide-react";
@@ -374,7 +375,20 @@ const Index = () => {
     );
   };
 
-  const filteredVideos = useMemo(() => filterTemplates(videoTemplates), [videoTemplates, searchQuery, contentFilters, accessFilters]);
+  const filteredVideos = useMemo(() => {
+    return filterTemplates(videoTemplates).map(video => {
+      if (video.drive_url) return video;
+      const matchingLink = downloadLinks.find(link => 
+        link.title.toLowerCase().trim() === video.title.toLowerCase().trim() ||
+        link.title.toLowerCase().includes(video.title.toLowerCase()) ||
+        video.title.toLowerCase().includes(link.title.toLowerCase())
+      );
+      if (matchingLink) {
+        return { ...video, drive_url: matchingLink.url };
+      }
+      return video;
+    });
+  }, [videoTemplates, searchQuery, contentFilters, accessFilters]);
   const displayedVideos = showAllVideos ? filteredVideos : filteredVideos.slice(0, 8);
 
   const filteredCaptions = useMemo(() => filterCaptions(), [captionsData, searchQuery]);
