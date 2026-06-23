@@ -42,9 +42,8 @@ export const templates: Template[] = [
     "type": "video",
     "category": "influencer-eva",
     "is_new": true,
-    "description": "Descubra as maravilhas de Dubai! 🏙️✨ Com o Burj Khalifa e os shoppings de luxo, Dubai é um destino moderno e fascinante. Nosso pacote a partir de 10x de R$450,00 inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer o deserto e a cidade.\n✔️ Um destino internacional cheio de glamour te espera.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#BelezasDeDubai #ViajarPeloMundo #FériasInternacionais",
-    "drive_url": "https://drive.google.com/file/d/13BCK3_0ZhbK0Ogenc8bAydyOObsUcmlG/view?usp=drive_link"
-  },
+    "description": "Descubra as maravilhas de Dubai! 🏙️✨ Com o Burj Khalifa e os shoppings de luxo, Dubai é um destino moderno e fascinante. Nosso pacote a partir de 10x de R$450,00 inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer o deserto e a cidade.\n✔️ Um destino internacional cheio de glamour te espera.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#BelezasDeDubai #ViajarPeloMundo #FériasInternacionais"
+  , "drive_url": "https://drive.google.com/file/d/13BCK3_0ZhbK0Ogenc8bAydyOObsUcmlG/view?usp=drive_link"},
   {
     "title": "Eva - Paris 2",
     "url": "https://www.canva.com/design/DAG9TO_rCfY/KfeUizKIZ37ELrlcqW__Kg/view?utm_content=DAG9TO_rCfY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -67,9 +66,8 @@ export const templates: Template[] = [
     "type": "video",
     "category": "influencer-eva",
     "is_new": true,
-    "description": "Levante cedo para viajar para Foz do Iguaçu e viva um dia incrível! 🌊✨ As Cataratas e o Parque das Aves são paradas obrigatórias nesse destino cheio de natureza. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você começar o dia com o pé direito.\n✔️ Nada como um amanhecer rumo a um destino dos sonhos.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#AcordarCedo #ViagemDosSonhos #FériasIncríveis",
-    "drive_url": "https://drive.google.com/file/d/10i5BGZUQ9BxjzOhbFCRQ-dJUhltV8nav/view?usp=drive_link"
-  },
+    "description": "Levante cedo para viajar para Foz do Iguaçu e viva um dia incrível! 🌊✨ As Cataratas e o Parque das Aves são paradas obrigatórias nesse destino cheio de natureza. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você começar o dia com o pé direito.\n✔️ Nada como um amanhecer rumo a um destino dos sonhos.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#AcordarCedo #ViagemDosSonhos #FériasIncríveis"
+  , "drive_url": "https://drive.google.com/file/d/10i5BGZUQ9BxjzOhbFCRQ-dJUhltV8nav/view?usp=drive_link"},
   {
     "title": "Bia - Ceará",
     "url": "https://www.canva.com/design/DAG9TZvP9zQ/Iuv0I4ERobM3QdbyCCiQQw/view?utm_content=DAG9TZvP9zQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -92,9 +90,8 @@ export const templates: Template[] = [
     "type": "video",
     "category": "influencer-bia",
     "is_new": true,
-    "description": "Viaje para Jericoacoara - CE 2 com segurança e tranquilidade! 🧳✈️ Adicione o seguro bagagem ao seu pacote e proteja sua mala contra perdas, danos ou extravios. Jeri é um destino mágico, e queremos que você curta cada momento sem imprevistos.\n✔️ Cobertura completa e assistência rápida para qualquer situação.\nAdicione ao seu pacote pelo WhatsApp: (99) 9 9999-9999\n#SeguroBagagem #ViagemTranquila #ViajarComSegurança",
-    "drive_url": "https://drive.google.com/file/d/11KjCpWManwQUucEcR5MNJWL-a5-U1jdr/view?usp=drive_link"
-  },
+    "description": "Viaje para Jericoacoara - CE 2 com segurança e tranquilidade! 🧳✈️ Adicione o seguro bagagem ao seu pacote e proteja sua mala contra perdas, danos ou extravios. Jeri é um destino mágico, e queremos que você curta cada momento sem imprevistos.\n✔️ Cobertura completa e assistência rápida para qualquer situação.\nAdicione ao seu pacote pelo WhatsApp: (99) 9 9999-9999\n#SeguroBagagem #ViagemTranquila #ViajarComSegurança"
+  , "drive_url": "https://drive.google.com/file/d/11KjCpWManwQUucEcR5MNJWL-a5-U1jdr/view?usp=drive_link"},
   {
     "title": "1ª vez no aeroporto",
     "url": "https://www.canva.com/design/DAGkwz6Stn8/5DPMi1DhNpaXJI-J3NKGxw/view?utm_content=DAGkwz6Stn8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -117,9 +114,8 @@ export const templates: Template[] = [
     "title": "Colômbia",
     "url": "https://www.canva.com/design/DAGgIc5rv80/gVw4XEdLKrZwSdcz1yXHug/view?utm_content=DAGgIc5rv80&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua primeira aventura como mochileiro em Colômbia! 🏔️🧳 Conhecida por Cartagena e Medellín, a Colômbia é um destino épico. Dicas como levar uma mochila leve e reservar passeios guiados garantem uma viagem sem estresse.\n✔️ Um guia essencial para começar sua jornada.\nSalve e planeje pelo WhatsApp: (99) 9 9999-9999\n#MochileirosDePrimeiraViagem #DicasDeMochileiro #AventuraPeloMundo \nVeneza\nExplore Veneza sem gastar muito! 🚤✨ Com os canais e a Praça de São Marcos, Veneza é mágica. Dicas como viajar na baixa temporada e escolher hospedagens econômicas ajudam a curtir ao máximo com orçamento limitado.\n✔️ Aproveite sua próxima aventura italiana com pouco.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#ViajarComPouco #DicasDeViagem #ViagemEconomica",
-    "drive_url": "https://drive.google.com/file/d/16Jfb9ZRiR6uAG6VV0rSxpsKv1cQE4L0L/view?usp=drive_link"
-  },
+    "description": "Planeje sua primeira aventura como mochileiro em Colômbia! 🏔️🧳 Conhecida por Cartagena e Medellín, a Colômbia é um destino épico. Dicas como levar uma mochila leve e reservar passeios guiados garantem uma viagem sem estresse.\n✔️ Um guia essencial para começar sua jornada.\nSalve e planeje pelo WhatsApp: (99) 9 9999-9999\n#MochileirosDePrimeiraViagem #DicasDeMochileiro #AventuraPeloMundo \nVeneza\nExplore Veneza sem gastar muito! 🚤✨ Com os canais e a Praça de São Marcos, Veneza é mágica. Dicas como viajar na baixa temporada e escolher hospedagens econômicas ajudam a curtir ao máximo com orçamento limitado.\n✔️ Aproveite sua próxima aventura italiana com pouco.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#ViajarComPouco #DicasDeViagem #ViagemEconomica"
+  , "drive_url": "https://drive.google.com/file/d/16Jfb9ZRiR6uAG6VV0rSxpsKv1cQE4L0L/view?usp=drive_link"},
   {
     "title": "Destinos Europa",
     "url": "https://www.canva.com/design/DAGgIUG7euo/Js89o2jxqADTtUSWygOcXQ/view?utm_content=DAGgIUG7euo&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -142,16 +138,14 @@ export const templates: Template[] = [
     "title": "Green Island",
     "url": "https://www.canva.com/design/DAGgIbjdtE0/eYVe9FWc-0ZHcOYKLnsi8w/view?utm_content=DAGgIbjdtE0&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "✨ A aventura te espera com Green Island! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#GreenIsland #ViagemPerfeita #AgenciaDeViagens",
-    "drive_url": "https://drive.google.com/file/d/16I46MjTa3z2VYwtwWxQ5Vn2huBXG9HAu/view?usp=drive_link"
-  },
+    "description": "✨ A aventura te espera com Green Island! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#GreenIsland #ViagemPerfeita #AgenciaDeViagens"
+  , "drive_url": "https://drive.google.com/file/d/16I46MjTa3z2VYwtwWxQ5Vn2huBXG9HAu/view?usp=drive_link"},
   {
     "title": "Itália",
     "url": "https://www.canva.com/design/DAGgIYNbZUY/eqdtdLIqCxdg_LcMsx_Kiw/view?utm_content=DAGgIYNbZUY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Passaporte vencido antes de ir para Itália? 🛂✈️ Não se preocupe! Saiba como resolver rapidamente: renove com antecedência e verifique as exigências do destino. Itália tem Roma, Veneza e a Costa Amalfitana, destinos imperdíveis.\n✔️ Planeje com antecedência e evite problemas no embarque.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#PassaporteVencido #DicasDeViagem #PlanejamentoDeViagem",
-    "drive_url": "https://drive.google.com/file/d/123DM5h9VObNWH2PC7sMw9RfpNQb2j0tE/view?usp=drive_link"
-  },
+    "description": "Passaporte vencido antes de ir para Itália? 🛂✈️ Não se preocupe! Saiba como resolver rapidamente: renove com antecedência e verifique as exigências do destino. Itália tem Roma, Veneza e a Costa Amalfitana, destinos imperdíveis.\n✔️ Planeje com antecedência e evite problemas no embarque.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#PassaporteVencido #DicasDeViagem #PlanejamentoDeViagem"
+  , "drive_url": "https://drive.google.com/file/d/123DM5h9VObNWH2PC7sMw9RfpNQb2j0tE/view?usp=drive_link"},
   {
     "title": "Itens Proibidos na Viagem",
     "url": "https://www.canva.com/design/DAGiH3WGzjI/3zoZqBG1jNnHUuyIqka2Tg/view?utm_content=DAGiH3WGzjI&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -181,7 +175,7 @@ export const templates: Template[] = [
     "url": "https://www.canva.com/design/DAGgITNYaS4/RMeuZ_9Sg776J6t7WpCfiw/view?utm_content=DAGgITNYaS4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
     "description": "✨ A aventura te espera com Resort All inclusive! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#ResortAllinclusive #ViagemPerfeita #AgenciaDeViagens"
-  },
+  , "drive_url": "https://drive.google.com/file/d/15WHXHoOa7jBFkpPRd9P0npGno102t169/view?usp=drive_link"},
   {
     "title": "Tipos de viajantes",
     "url": "https://www.canva.com/design/DAGiH0U9WOk/qIKJKOYtQr-FJPyq0Bu-Vw/view?utm_content=DAGiH0U9WOk&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -192,37 +186,32 @@ export const templates: Template[] = [
     "title": "Vale Sagrado",
     "url": "https://www.canva.com/design/DAGgIaWq6JM/w5oMJAcSAnbT-IdIr4RHhg/view?utm_content=DAGgIaWq6JM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Está na hora de planejar suas férias dos sonhos no Vale Sagrado! 🏔️✨ ComSorry about that, something didn't go as planned. Please try again, and if you're still seeing this message, go ahead and restart the app.\n\n\n\n\n\n\nLEGENDAS AGÊNCIA DE VIAGEM\nARTE 1\nEstá na hora de deixar de sonhar e começar a planejar suas férias dos sonhos. Que tal curtir 5 dias no paraíso, com tudo que você precisa para relaxar e aproveitar ao máximo? 😎🌊\n🔸 Pacote Completo Inclui: ✈️ Passagem aérea de ida e volta 🧳 Bagagem despachada 🏨 5 diárias em hotel de luxo\nE o melhor: você pode fazer tudo isso em até 10x de R$450,00! Não perca a chance de viver essa experiência única. 🌟\n📲 Garanta já o seu pacote e prepare-se para uma aventura que vai ficar marcada na memória!\n#ViajarÉViver #CancunDream #AgenciaDeViagens #PacotesDeViagem #DestinoDosSonhos  #DescontoEspecial",
-    "drive_url": "https://drive.google.com/file/d/153DwvNqOJzPksR1XjUXHoMYp6IX79_n2/view?usp=drive_link"
-  },
+    "description": "Está na hora de planejar suas férias dos sonhos no Vale Sagrado! 🏔️✨ ComSorry about that, something didn't go as planned. Please try again, and if you're still seeing this message, go ahead and restart the app.\n\n\n\n\n\n\nLEGENDAS AGÊNCIA DE VIAGEM\nARTE 1\nEstá na hora de deixar de sonhar e começar a planejar suas férias dos sonhos. Que tal curtir 5 dias no paraíso, com tudo que você precisa para relaxar e aproveitar ao máximo? 😎🌊\n🔸 Pacote Completo Inclui: ✈️ Passagem aérea de ida e volta 🧳 Bagagem despachada 🏨 5 diárias em hotel de luxo\nE o melhor: você pode fazer tudo isso em até 10x de R$450,00! Não perca a chance de viver essa experiência única. 🌟\n📲 Garanta já o seu pacote e prepare-se para uma aventura que vai ficar marcada na memória!\n#ViajarÉViver #CancunDream #AgenciaDeViagens #PacotesDeViagem #DestinoDosSonhos  #DescontoEspecial"
+  , "drive_url": "https://drive.google.com/file/d/153DwvNqOJzPksR1XjUXHoMYp6IX79_n2/view?usp=drive_link"},
   {
     "title": "Veneza",
     "url": "https://www.canva.com/design/DAGgIb2XeXY/7fKgFr7W8fFjrsIYVscUsw/view?utm_content=DAGgIb2XeXY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Viaje em família para Veneza! 🚤✨ Conhecida pelos canais e pela Praça de São Marcos, Veneza é mágica para crianças e adultos. Outras opções incríveis incluem Paris, Orlando e Lisboa, com pacotes que incluem ✈️ passagens e 🏨 hospedagem.\n✔️ Momentos inesquecíveis para todas as idades garantidos.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViagemComCrianças #FériasEmFamília #Veneza",
-    "drive_url": "https://drive.google.com/file/d/14z2pfoMaPJaaYmorF3wri-7h0YT00rtD/view?usp=drive_link"
-  },
+    "description": "Viaje em família para Veneza! 🚤✨ Conhecida pelos canais e pela Praça de São Marcos, Veneza é mágica para crianças e adultos. Outras opções incríveis incluem Paris, Orlando e Lisboa, com pacotes que incluem ✈️ passagens e 🏨 hospedagem.\n✔️ Momentos inesquecíveis para todas as idades garantidos.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViagemComCrianças #FériasEmFamília #Veneza"
+  , "drive_url": "https://drive.google.com/file/d/14z2pfoMaPJaaYmorF3wri-7h0YT00rtD/view?usp=drive_link"},
   {
     "title": "Florianópolis",
     "url": "https://www.canva.com/design/DAGhwSfDeH4/RuNAiv6jYqNO5DgZkingog/view?utm_content=DAGhwSfDeH4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Relembre momentos incríveis em Florianópolis - SC! 🏖️🌅 Conhecida como a \"Ilha da Magia\", Floripa tem praias para todos os gostos, de Jurerê a Campeche. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem, para você planejar sua próxima viagem dos sonhos.\n✔️ Um destino com paisagens de tirar o fôlego e muita diversão.\nDescubra mais pelo WhatsApp: (99) 9 9999-9999\n#Florianópolis #TBTDeViagem #DestinoIncrível",
-    "drive_url": "https://drive.google.com/file/d/10WpZTgI6o3Tunt9zZfOhl78qJwFHA_K6/view?usp=drive_link"
-  },
+    "description": "Relembre momentos incríveis em Florianópolis - SC! 🏖️🌅 Conhecida como a \"Ilha da Magia\", Floripa tem praias para todos os gostos, de Jurerê a Campeche. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem, para você planejar sua próxima viagem dos sonhos.\n✔️ Um destino com paisagens de tirar o fôlego e muita diversão.\nDescubra mais pelo WhatsApp: (99) 9 9999-9999\n#Florianópolis #TBTDeViagem #DestinoIncrível"
+  , "drive_url": "https://drive.google.com/file/d/10WpZTgI6o3Tunt9zZfOhl78qJwFHA_K6/view?usp=drive_link"},
   {
     "title": "Gramado",
     "url": "https://www.canva.com/design/DAGhwMD4p38/n5PE59SkUst9g6gz9r8TGA/view?utm_content=DAGhwMD4p38&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Evite surpresas no aeroporto ao viajar para Gramado! 🧳✈️ Confira dicas para não ter problemas com excesso de bagagem e curta o charme da Serra Gaúcha, com suas ruas floridas e o clima europeu. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Viaje tranquilo e aproveite cada momento sem estresse.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ExcessoDeBagagem #ViagemSemEstresse",
-    "drive_url": "https://drive.google.com/file/d/11L2RzID7XdutobpsEidXivyKsuumC2zs/view?usp=drive_link"
-  },
+    "description": "Evite surpresas no aeroporto ao viajar para Gramado! 🧳✈️ Confira dicas para não ter problemas com excesso de bagagem e curta o charme da Serra Gaúcha, com suas ruas floridas e o clima europeu. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Viaje tranquilo e aproveite cada momento sem estresse.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ExcessoDeBagagem #ViagemSemEstresse"
+  , "drive_url": "https://drive.google.com/file/d/1ZllH2c8PoKcgviU13W2CcGo_jyxCeBIp/view?usp=drive_link"},
   {
     "title": "Jalapão -",
     "url": "https://www.canva.com/design/DAGhwEYMGGc/UG3YbQaMWIPKSpohnITB1w/view?utm_content=DAGhwEYMGGc&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Sonha com o Jalapão - TO? 🏜️🌄 Esse destino é famoso pelas dunas douradas, cachoeiras cristalinas e fervedouros únicos. Nosso pacote a partir de R$2.500 inclui ✈️ passagens, 🏨 hospedagem e passeios guiados para explorar o melhor da região.\n✔️ Uma experiência de tranquilidade e conexão com a natureza.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#Jalapão #DestinoDosSonhos #FériasNoParaíso",
-    "drive_url": "https://drive.google.com/file/d/112UUcnFQlh6a6j4QtLXuyX83KO9w6MKZ/view?usp=drive_link"
-  },
+    "description": "Sonha com o Jalapão - TO? 🏜️🌄 Esse destino é famoso pelas dunas douradas, cachoeiras cristalinas e fervedouros únicos. Nosso pacote a partir de R$2.500 inclui ✈️ passagens, 🏨 hospedagem e passeios guiados para explorar o melhor da região.\n✔️ Uma experiência de tranquilidade e conexão com a natureza.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#Jalapão #DestinoDosSonhos #FériasNoParaíso"
+  , "drive_url": "https://drive.google.com/file/d/112UUcnFQlh6a6j4QtLXuyX83KO9w6MKZ/view?usp=drive_link"},
   {
     "title": "João Pessoa",
     "url": "https://www.canva.com/design/DAGhwZzplL0/fEvo_iUeyHONkXVHzfYWJA/view?utm_content=DAGhwZzplL0&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -233,37 +222,32 @@ export const templates: Template[] = [
     "title": "Maceió - AL",
     "url": "https://www.canva.com/design/DAGhwnD60oU/drXQPfEBddupMAG1nRFLFw/view?utm_content=DAGhwnD60oU&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Está na hora de planejar suas férias dos sonhos em Maceió - AL! 🌴✨ Curta 5 dias nesse paraíso nordestino com praias de águas cristalinas e coqueiros que parecem de cartão-postal. Nosso pacote inclui: ✈️ passagens aéreas de ida e volta, 🧳 bagagem despachada e 🏨 5 diárias em um hotel de luxo com vista para o mar. Tudo isso por apenas 10x de R$450,00!\n✔️ Um destino perfeito para relaxar e tirar fotos incríveis 📸.\nGaranta seu pacote agora no WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MaceióDream #AgenciaDeViagens",
-    "drive_url": "https://drive.google.com/file/d/11EaH5lDoZ-vz7qlySeti0YlYF71VXQb8/view?usp=drive_link"
-  },
+    "description": "Está na hora de planejar suas férias dos sonhos em Maceió - AL! 🌴✨ Curta 5 dias nesse paraíso nordestino com praias de águas cristalinas e coqueiros que parecem de cartão-postal. Nosso pacote inclui: ✈️ passagens aéreas de ida e volta, 🧳 bagagem despachada e 🏨 5 diárias em um hotel de luxo com vista para o mar. Tudo isso por apenas 10x de R$450,00!\n✔️ Um destino perfeito para relaxar e tirar fotos incríveis 📸.\nGaranta seu pacote agora no WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MaceióDream #AgenciaDeViagens"
+  , "drive_url": "https://drive.google.com/file/d/11EaH5lDoZ-vz7qlySeti0YlYF71VXQb8/view?usp=drive_link"},
   {
     "title": "Maragogi",
     "url": "https://www.canva.com/design/DAGhw_eHvbM/qxWP7WwLFPC7KF7NySVs4g/view?utm_content=DAGhw_eHvbM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Descubra as maravilhas de Maragogi! 🐠🌴 Suas águas cristalinas e corais são perfeitas para snorkeling e passeios de buggy. Nosso pacote a partir de 10x de R$450,00 inclui ✈️ passagens, 🏨 hospedagem e traslados para você aproveitar o melhor do destino.\n✔️ Um pedacinho do paraíso brasileiro te espera.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#BelezasDoBrasil #ViajarPeloBrasil #FériasNoBrasil",
-    "drive_url": "https://drive.google.com/file/d/10LeDT87lhcl9XFOck533SscCs5I2iqqZ/view?usp=drive_link"
-  },
+    "description": "Descubra as maravilhas de Maragogi! 🐠🌴 Suas águas cristalinas e corais são perfeitas para snorkeling e passeios de buggy. Nosso pacote a partir de 10x de R$450,00 inclui ✈️ passagens, 🏨 hospedagem e traslados para você aproveitar o melhor do destino.\n✔️ Um pedacinho do paraíso brasileiro te espera.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#BelezasDoBrasil #ViajarPeloBrasil #FériasNoBrasil"
+  , "drive_url": "https://drive.google.com/file/d/10LeDT87lhcl9XFOck533SscCs5I2iqqZ/view?usp=drive_link"},
   {
     "title": "Natal -",
     "url": "https://www.canva.com/design/DAGhwzeB__g/tzzeNJVuhZ69H9bzdqjyAA/view?utm_content=DAGhwzeB__g&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Curta o calor em 3 paraísos: Natal - RN, Porto de Galinhas e Angra dos Reis! 🏖️☀️ Natal tem dunas incríveis e passeios de buggy em Genipabu, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções de praias paradisíacas para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n #DestinosDeVerão #ViajarÉViver",
-    "drive_url": "https://drive.google.com/file/d/1vYhYavLpGaDnMdvti8tmHV_CAsv-MLNG/view?usp=drive_link"
-  },
+    "description": "Curta o calor em 3 paraísos: Natal - RN, Porto de Galinhas e Angra dos Reis! 🏖️☀️ Natal tem dunas incríveis e passeios de buggy em Genipabu, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções de praias paradisíacas para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n #DestinosDeVerão #ViajarÉViver"
+  , "drive_url": "https://drive.google.com/file/d/1vYhYavLpGaDnMdvti8tmHV_CAsv-MLNG/view?usp=drive_link"},
   {
     "title": "Pantanal",
     "url": "https://www.canva.com/design/DAGhwGGAzDo/k-esCqBx31QG2ZoilCXc_w/view?utm_content=DAGhwGGAzDo&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Viva dias inesquecíveis no Pantanal! 🐾🌿 Conhecido pela biodiversidade, esse destino é ideal para safáris fotográficos e observação de animais como onças e jacarés. Nosso pacote para 2 adultos inclui ✈️ passagens e hospedagem, por apenas R$2.900.\n✔️ Uma aventura na natureza que você nunca vai esquecer.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#PantanalDosSonhos #PacoteDeViagem #FériasInesquecíveis",
-    "drive_url": "https://drive.google.com/file/d/11-A9Nw4g9P0pY-FbtgeV2PNQBir1qi3E/view?usp=drive_link"
-  },
+    "description": "Viva dias inesquecíveis no Pantanal! 🐾🌿 Conhecido pela biodiversidade, esse destino é ideal para safáris fotográficos e observação de animais como onças e jacarés. Nosso pacote para 2 adultos inclui ✈️ passagens e hospedagem, por apenas R$2.900.\n✔️ Uma aventura na natureza que você nunca vai esquecer.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#PantanalDosSonhos #PacoteDeViagem #FériasInesquecíveis"
+  , "drive_url": "https://drive.google.com/file/d/11-A9Nw4g9P0pY-FbtgeV2PNQBir1qi3E/view?usp=drive_link"},
   {
     "title": "Rio de Janeiro",
     "url": "https://www.canva.com/design/DAGhxyWDmZw/zAtIqQAWopsfzD3XmNoVlQ/view?utm_content=DAGhxyWDmZw&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Descubra o Rio de Janeiro e viva experiências únicas! 🌄✨ Conhecida como a Cidade Maravilhosa, o Rio tem o Cristo Redentor, o Pão de Açúcar e praias famosas como Copacabana. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para explorar os pontos turísticos mais icônicos.\n✔️ Uma viagem para se encantar com cada cantinho da cidade.\nEntre em contato pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MagiaDosDestinos #FériasInesquecíveis",
-    "drive_url": "https://drive.google.com/file/d/10WyscibbG8F45bzSUJ0LWxhRYNBq9UiX/view?usp=drive_link"
-  },
+    "description": "Descubra o Rio de Janeiro e viva experiências únicas! 🌄✨ Conhecida como a Cidade Maravilhosa, o Rio tem o Cristo Redentor, o Pão de Açúcar e praias famosas como Copacabana. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para explorar os pontos turísticos mais icônicos.\n✔️ Uma viagem para se encantar com cada cantinho da cidade.\nEntre em contato pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MagiaDosDestinos #FériasInesquecíveis"
+  , "drive_url": "https://drive.google.com/file/d/10WyscibbG8F45bzSUJ0LWxhRYNBq9UiX/view?usp=drive_link"},
   {
     "title": "Rota das Emoções",
     "url": "https://www.canva.com/design/DAGhweeLbpA/vjpvI0SswmRQO9eMVodzPw/view?utm_content=DAGhweeLbpA&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -274,9 +258,8 @@ export const templates: Template[] = [
     "title": "Seychelles",
     "url": "https://www.canva.com/design/DAGgIZTaKmY/p_oJQNqw2lzTi9Iwsn8j2A/view?utm_content=DAGgIZTaKmY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Evite erros ao planejar sua viagem para Seychelles! 🏝️✈️ Conhecidas pelas praias de areia branca e tartarugas gigantes, as Seychelles são um paraíso. Confira dicas para uma jornada sem dores de cabeça, com ✈️ passagens e 🏨 hospedagem organizadas por nós.\n✔️ Viaje com mais segurança e aproveite cada momento.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ViagemInternacional #ViajarSemEstresse",
-    "drive_url": "https://drive.google.com/file/d/15Zv4yNxO22wgGS3ndsdBMIFMJZrGEQLn/view?usp=drive_link"
-  },
+    "description": "Evite erros ao planejar sua viagem para Seychelles! 🏝️✈️ Conhecidas pelas praias de areia branca e tartarugas gigantes, as Seychelles são um paraíso. Confira dicas para uma jornada sem dores de cabeça, com ✈️ passagens e 🏨 hospedagem organizadas por nós.\n✔️ Viaje com mais segurança e aproveite cada momento.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ViagemInternacional #ViajarSemEstresse"
+  , "drive_url": "https://drive.google.com/file/d/15Zv4yNxO22wgGS3ndsdBMIFMJZrGEQLn/view?usp=drive_link"},
   {
     "title": "Talin Estônia",
     "url": "https://www.canva.com/design/DAGgIcMi9Cw/iMTL2rcrMkidPTfF26_wvA/view?utm_content=DAGgIcMi9Cw&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -287,16 +270,14 @@ export const templates: Template[] = [
     "title": "Tailândia",
     "url": "https://www.canva.com/design/DAGgIW08oec/20D9OkJgnfUwUPf7HY5zdw/view?utm_content=DAGgIW08oec&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Escolha o destino perfeito para Tailândia! 🏝️✨ Conhecida pelos templos, mercados e praias como Krabi, a Tailândia é ideal para todos os estilos. Nossa equipe te ajuda a planejar a viagem dos sonhos, com ✈️ passagens e 🏨 hospedagem inclusas.\n✔️ Um lugar para relaxar, explorar ou se aventurar.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DestinoIdeal #PlanejeSuaViagem #FériasDosSonhos",
-    "drive_url": "https://drive.google.com/file/d/15htqp9okcLW1Bdoaql8VXAB8Rqpy3cI1/view?usp=drive_link"
-  },
+    "description": "Escolha o destino perfeito para Tailândia! 🏝️✨ Conhecida pelos templos, mercados e praias como Krabi, a Tailândia é ideal para todos os estilos. Nossa equipe te ajuda a planejar a viagem dos sonhos, com ✈️ passagens e 🏨 hospedagem inclusas.\n✔️ Um lugar para relaxar, explorar ou se aventurar.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DestinoIdeal #PlanejeSuaViagem #FériasDosSonhos"
+  , "drive_url": "https://drive.google.com/file/d/15htqp9okcLW1Bdoaql8VXAB8Rqpy3cI1/view?usp=drive_link"},
   {
     "title": "Veneza",
     "url": "https://www.canva.com/design/DAGgIb2XeXY/7fKgFr7W8fFjrsIYVscUsw/view?utm_content=DAGgIb2XeXY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Viaje em família para Veneza! 🚤✨ Conhecida pelos canais e pela Praça de São Marcos, Veneza é mágica para crianças e adultos. Outras opções incríveis incluem Paris, Orlando e Lisboa, com pacotes que incluem ✈️ passagens e 🏨 hospedagem.\n✔️ Momentos inesquecíveis para todas as idades garantidos.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViagemComCrianças #FériasEmFamília #Veneza",
-    "drive_url": "https://drive.google.com/file/d/14z2pfoMaPJaaYmorF3wri-7h0YT00rtD/view?usp=drive_link"
-  },
+    "description": "Viaje em família para Veneza! 🚤✨ Conhecida pelos canais e pela Praça de São Marcos, Veneza é mágica para crianças e adultos. Outras opções incríveis incluem Paris, Orlando e Lisboa, com pacotes que incluem ✈️ passagens e 🏨 hospedagem.\n✔️ Momentos inesquecíveis para todas as idades garantidos.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViagemComCrianças #FériasEmFamília #Veneza"
+  , "drive_url": "https://drive.google.com/file/d/14z2pfoMaPJaaYmorF3wri-7h0YT00rtD/view?usp=drive_link"},
   {
     "title": "Bia (Black Friday)",
     "url": "https://www.canva.com/design/DAG2Tvngdhs/My6C92vRgzpf_z4ibppq5Q/view?utm_content=DAG2Tvngdhs&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -307,9 +288,8 @@ export const templates: Template[] = [
     "title": "Bia (Carnaval Salvador)",
     "url": "https://www.canva.com/design/DAG2dvQ0Yz8/ihxicpkJls4fNaU7LY4n7g/view?utm_content=DAG2dvQ0Yz8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "seasonal",
-    "description": "✨ Descubra as maravilhas de Salvador - BA! ✈️🌍\n\nViajar para Salvador - BA é colecionar momentos inesquecíveis! 🎭🌴 Explore o Pelourinho, prove o acarajé e sinta a energia única da Bahia. Nossos pacotes oferecem ✈️ passagens e 🏨 hospedagem, para você viver uma experiência cultural rica e vibrante. ✔️ Invista em memórias que valem mais que qualquer coisa. Planeje pelo WhatsApp: (99) 9 9999-9999\n\n🔥 Imagine você relaxando e aproveitando cada momento sem preocupações. Nosso pacote é pensado para você viver o melhor dessa viagem e colecionar momentos inesquecíveis!\n\n👇 Clique no link da BIO ou nos chame no WhatsApp para garantir seu pacote exclusivo agora!\n📲 (99) 9 9999-9999\\n\\n#ViajarÉInvestir #FériasPerfeitas #MomentosInesquecíveis",
-    "drive_url": "https://drive.google.com/file/d/11Ea8Vvrgff2o7h-FKfeHpvmAPG6mnd4M/view?usp=drive_link"
-  },
+    "description": "✨ Descubra as maravilhas de Salvador - BA! ✈️🌍\n\nViajar para Salvador - BA é colecionar momentos inesquecíveis! 🎭🌴 Explore o Pelourinho, prove o acarajé e sinta a energia única da Bahia. Nossos pacotes oferecem ✈️ passagens e 🏨 hospedagem, para você viver uma experiência cultural rica e vibrante. ✔️ Invista em memórias que valem mais que qualquer coisa. Planeje pelo WhatsApp: (99) 9 9999-9999\n\n🔥 Imagine você relaxando e aproveitando cada momento sem preocupações. Nosso pacote é pensado para você viver o melhor dessa viagem e colecionar momentos inesquecíveis!\n\n👇 Clique no link da BIO ou nos chame no WhatsApp para garantir seu pacote exclusivo agora!\n📲 (99) 9 9999-9999\\n\\n#ViajarÉInvestir #FériasPerfeitas #MomentosInesquecíveis"
+  , "drive_url": "https://drive.google.com/file/d/11Ea8Vvrgff2o7h-FKfeHpvmAPG6mnd4M/view?usp=drive_link"},
   {
     "title": "Bia (Destino dos sonhos)",
     "url": "https://www.canva.com/design/DAG2ShXwTgQ/TykqR0LrPfrflxz-arMk2A/view?utm_content=DAG2ShXwTgQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -362,8 +342,7 @@ export const templates: Template[] = [
     "title": "Celebre o Natal",
     "url": "https://www.canva.com/design/DAG2LkHZ4Sk/_yTOsI7028OobGeEPyDGDA/view?utm_content=DAG2LkHZ4Sk&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "seasonal",
-    "description": "Curta o calor em 3 paraísos: Natal - RN, Porto de Galinhas e Angra dos Reis! 🏖️☀️ Natal tem dunas incríveis e passeios de buggy em Genipabu, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções de praias paradisíacas para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n #DestinosDeVerão #ViajarÉViver",
-    "drive_url": "https://drive.google.com/file/d/1vYhYavLpGaDnMdvti8tmHV_CAsv-MLNG/view?usp=drive_link"
+    "description": "Curta o calor em 3 paraísos: Natal - RN, Porto de Galinhas e Angra dos Reis! 🏖️☀️ Natal tem dunas incríveis e passeios de buggy em Genipabu, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções de praias paradisíacas para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n #DestinosDeVerão #ViajarÉViver"
   },
   {
     "title": "Eva - Black Friday",
@@ -387,8 +366,7 @@ export const templates: Template[] = [
     "title": "Frase de Natal",
     "url": "https://www.canva.com/design/DAG2MP7UnZ8/B3FaakS8WlmUjEVdhGvBhw/view?utm_content=DAG2MP7UnZ8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "seasonal",
-    "description": "Curta o calor em 3 paraísos: Natal - RN, Porto de Galinhas e Angra dos Reis! 🏖️☀️ Natal tem dunas incríveis e passeios de buggy em Genipabu, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções de praias paradisíacas para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n #DestinosDeVerão #ViajarÉViver",
-    "drive_url": "https://drive.google.com/file/d/1vYhYavLpGaDnMdvti8tmHV_CAsv-MLNG/view?usp=drive_link"
+    "description": "Curta o calor em 3 paraísos: Natal - RN, Porto de Galinhas e Angra dos Reis! 🏖️☀️ Natal tem dunas incríveis e passeios de buggy em Genipabu, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções de praias paradisíacas para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n #DestinosDeVerão #ViajarÉViver"
   },
   {
     "title": "Frase Réveillon",
@@ -436,16 +414,14 @@ export const templates: Template[] = [
     "title": "Natal dos Sonhos",
     "url": "https://www.canva.com/design/DAG2LnOTuIA/6CltNCXcbKnxlObEPzB0eg/view?utm_content=DAG2LnOTuIA&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "seasonal",
-    "description": "Curta o calor em 3 paraísos: Natal - RN, Porto de Galinhas e Angra dos Reis! 🏖️☀️ Natal tem dunas incríveis e passeios de buggy em Genipabu, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções de praias paradisíacas para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n #DestinosDeVerão #ViajarÉViver",
-    "drive_url": "https://drive.google.com/file/d/1vYhYavLpGaDnMdvti8tmHV_CAsv-MLNG/view?usp=drive_link"
+    "description": "Curta o calor em 3 paraísos: Natal - RN, Porto de Galinhas e Angra dos Reis! 🏖️☀️ Natal tem dunas incríveis e passeios de buggy em Genipabu, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções de praias paradisíacas para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n #DestinosDeVerão #ViajarÉViver"
   },
   {
     "title": "Natal Gramado",
     "url": "https://www.canva.com/design/DAG2N5iiD_g/qSqV4BXxZNT629GfErS42A/view?utm_content=DAG2N5iiD_g&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "seasonal",
-    "description": "Evite surpresas no aeroporto ao viajar para Gramado! 🧳✈️ Confira dicas para não ter problemas com excesso de bagagem e curta o charme da Serra Gaúcha, com suas ruas floridas e o clima europeu. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Viaje tranquilo e aproveite cada momento sem estresse.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ExcessoDeBagagem #ViagemSemEstresse",
-    "drive_url": "https://drive.google.com/file/d/11L2RzID7XdutobpsEidXivyKsuumC2zs/view?usp=drive_link"
-  },
+    "description": "Evite surpresas no aeroporto ao viajar para Gramado! 🧳✈️ Confira dicas para não ter problemas com excesso de bagagem e curta o charme da Serra Gaúcha, com suas ruas floridas e o clima europeu. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Viaje tranquilo e aproveite cada momento sem estresse.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ExcessoDeBagagem #ViagemSemEstresse"
+  , "drive_url": "https://drive.google.com/file/d/1ZllH2c8PoKcgviU13W2CcGo_jyxCeBIp/view?usp=drive_link"},
   {
     "title": "Páscoa Relaxante",
     "url": "https://www.canva.com/design/DAG2N7dTofI/wJapsS0wfFGkYAVzUSm6hA/view?utm_content=DAG2N7dTofI&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -474,30 +450,26 @@ export const templates: Template[] = [
     "title": "África",
     "url": "https://www.canva.com/design/DAGgIEMmR_M/9f-k7CtYZlHsTYhCHkg/view?utm_content=DAGgIEMmR_M&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Explore a África sem gastar muito! 🦒📸 De safáris na Tanzânia a praias em Zanzibar, há opções para todos os bolsos. Dicas como viajar na baixa temporada e escolher hospedagens econômicas ajudam a curtir ao máximo.\n✔️ Aproveite sua próxima aventura africana com orçamento limitado.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#ViajarComPouco #DicasDeViagem #ViagemEconomica",
-    "drive_url": "https://drive.google.com/file/d/17Ofo4jAnLbnikaWetBAx6tJnvmjau_8q/view?usp=drive_link"
-  },
+    "description": "Explore a África sem gastar muito! 🦒📸 De safáris na Tanzânia a praias em Zanzibar, há opções para todos os bolsos. Dicas como viajar na baixa temporada e escolher hospedagens econômicas ajudam a curtir ao máximo.\n✔️ Aproveite sua próxima aventura africana com orçamento limitado.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#ViajarComPouco #DicasDeViagem #ViagemEconomica"
+  , "drive_url": "https://drive.google.com/file/d/17Ofo4jAnLbnikaWetBAx6tJnvmjau_8q/view?usp=drive_link"},
   {
     "title": "Aruba",
     "url": "https://www.canva.com/design/DAGgIFd9l88/54j3J9Q23L8z0P4f-p_j1Q/view?utm_content=DAGgIFd9l88&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Viaje para Aruba com segurança! 🏖️✈️ Adicione o seguro bagagem ao seu pacote e proteja sua mala contra perdas ou extravios. Aruba é famosa pelas praias de Eagle Beach e pela vibe caribenha, perfeita para relaxar.\n✔️ Cobertura completa para curtir sem preocupações.\nAdicione ao seu pacote pelo WhatsApp: (99) 9 9999-9999\n#SeguroBagagem #ViagemTranquila #ViajarComSegurança",
-    "drive_url": "https://drive.google.com/file/d/14Qetkp_UKJzEmhgR6phVqsUPt0qgFQEW/view?usp=drive_link"
-  },
+    "description": "Viaje para Aruba com segurança! 🏖️✈️ Adicione o seguro bagagem ao seu pacote e proteja sua mala contra perdas ou extravios. Aruba é famosa pelas praias de Eagle Beach e pela vibe caribenha, perfeita para relaxar.\n✔️ Cobertura completa para curtir sem preocupações.\nAdicione ao seu pacote pelo WhatsApp: (99) 9 9999-9999\n#SeguroBagagem #ViagemTranquila #ViajarComSegurança"
+  , "drive_url": "https://drive.google.com/file/d/14Qetkp_UKJzEmhgR6phVqsUPt0qgFQEW/view?usp=drive_link"},
   {
     "title": "Bariloche",
     "url": "https://www.canva.com/design/DAGgICGduVA/AE_OxvSOWEEtHfPOD_4AWA/view?utm_content=DAGgICGduVA&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem para Bariloche sem preocupações! ❄️✈️ Conhecida pelas montanhas nevadas e chocolates artesanais, Bariloche é perfeita para o inverno. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para esquiar, em até 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens",
-    "drive_url": "https://drive.google.com/file/d/13lituNWpsQYcVpH-B2iBYWaYMZHAFZiP/view?usp=drive_link"
-  },
+    "description": "Planeje sua viagem para Bariloche sem preocupações! ❄️✈️ Conhecida pelas montanhas nevadas e chocolates artesanais, Bariloche é perfeita para o inverno. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para esquiar, em até 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens"
+  , "drive_url": "https://drive.google.com/file/d/13lituNWpsQYcVpH-B2iBYWaYMZHAFZiP/view?usp=drive_link"},
   {
     "title": "Boston",
     "url": "https://www.canva.com/design/DAGgIGMu4RE/Tnp3KV3JhHKDaxuoPwunBQ/view?utm_content=DAGgIGMu4RE&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Curta dias de sol em Boston! 🏛️✨ Explore a Freedom Trail e o charme histórico dessa cidade americana. Nossos pacotes especiais incluem ✈️ passagens, 🏨 hospedagem e passeios, com facilidade de pagamento para tornar sua viagem ainda mais tranquila.\n✔️ Uma aventura inesquecível te espera na Nova Inglaterra.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#PartiuBoston #ViagemDosSonhos #FériasIncríveis",
-    "drive_url": "https://drive.google.com/file/d/17CJOrapIBVZl5PoVHAvOU4PPT4NsJIjh/view?usp=drive_link"
-  },
+    "description": "Curta dias de sol em Boston! 🏛️✨ Explore a Freedom Trail e o charme histórico dessa cidade americana. Nossos pacotes especiais incluem ✈️ passagens, 🏨 hospedagem e passeios, com facilidade de pagamento para tornar sua viagem ainda mais tranquila.\n✔️ Uma aventura inesquecível te espera na Nova Inglaterra.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#PartiuBoston #ViagemDosSonhos #FériasIncríveis"
+  , "drive_url": "https://drive.google.com/file/d/17CJOrapIBVZl5PoVHAvOU4PPT4NsJIjh/view?usp=drive_link"},
   {
     "title": "Bruxelas",
     "url": "https://www.canva.com/design/DAGgIHM3a8A/8sTBGWxCgx5a_V33JtFu_A/view?utm_content=DAGgIHM3a8A&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -508,44 +480,38 @@ export const templates: Template[] = [
     "title": "Budapeste",
     "url": "https://www.canva.com/design/DAGkxkJV9sU/D72AYyJxa27ztlbkzrRHzg/view?utm_content=DAGkxkJV9sU&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Transforme seus sonhos em realidade em Budapeste! 🏰✨ Conhecida pelo Parlamento e pelas termas, Budapeste é perfeita para quem ama história e relaxamento. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios para explorar a cidade.\n✔️ Uma viagem para se encantar com a Europa Oriental.\nPlaneje sua aventura pelo WhatsApp: (99) 9 9999-9999\n#ExplorarOMundo #ViagemSemComplicação #AgenciaDeViagens",
-    "drive_url": "https://drive.google.com/file/d/14CUIscnbzCX9DM1Ui9CRWiGG6Px2uVwd/view?usp=drive_link"
-  },
+    "description": "Transforme seus sonhos em realidade em Budapeste! 🏰✨ Conhecida pelo Parlamento e pelas termas, Budapeste é perfeita para quem ama história e relaxamento. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios para explorar a cidade.\n✔️ Uma viagem para se encantar com a Europa Oriental.\nPlaneje sua aventura pelo WhatsApp: (99) 9 9999-9999\n#ExplorarOMundo #ViagemSemComplicação #AgenciaDeViagens"
+  , "drive_url": "https://drive.google.com/file/d/14CUIscnbzCX9DM1Ui9CRWiGG6Px2uVwd/view?usp=drive_link"},
   {
     "title": "Cancún",
     "url": "https://www.canva.com/design/DAGleD4ewV0/h6k2V1slWWhWMjBOb6RqvA/view?utm_content=DAGleD4ewV0&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Nossos clientes amam suas viagens para Cancún! 🏖️✨ Com praias de areia branca e águas turquesas, Cancún é um paraíso no México. Trabalhamos para garantir que cada experiência seja única, com ✈️ passagens e 🏨 hospedagem inclusas.\n✔️ Faça parte dessas histórias de sucesso e viva o Caribe.\nPlaneje sua viagem pelo WhatsApp: (99) 9 9999-9999\n#FeedbackDeClientes #ViagemIncrível #SatisfaçãoGarantida",
-    "drive_url": "https://drive.google.com/file/d/12RpuACuT0MGESYXOxra0kRm291OLXBtz/view?usp=drive_link"
-  },
+    "description": "Nossos clientes amam suas viagens para Cancún! 🏖️✨ Com praias de areia branca e águas turquesas, Cancún é um paraíso no México. Trabalhamos para garantir que cada experiência seja única, com ✈️ passagens e 🏨 hospedagem inclusas.\n✔️ Faça parte dessas histórias de sucesso e viva o Caribe.\nPlaneje sua viagem pelo WhatsApp: (99) 9 9999-9999\n#FeedbackDeClientes #ViagemIncrível #SatisfaçãoGarantida"
+  , "drive_url": "https://drive.google.com/file/d/12RpuACuT0MGESYXOxra0kRm291OLXBtz/view?usp=drive_link"},
   {
     "title": "Capadócia",
     "url": "https://www.canva.com/design/DAGgIMYGeUo/hNOn3acstET00eZMSZevCQ/view?utm_content=DAGgIMYGeUo&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Busca aventura na Capadócia? 🎈✨ Conhecida pelos passeios de balão e pelas formações rochosas únicas, a Capadócia é perfeita para quem ama emoção. Nossos pacotes cheios de adrenalina incluem ✈️ passagens e hospedagem, a partir de 10x de R$190,00.\n✔️ Um destino para explorar e se divertir ao máximo.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#DestinoDeAventura #PacotesDeViagem #ViagemAventura",
-    "drive_url": "https://drive.google.com/file/d/11joLZdCBVZ7MkrXEqRVgoR76vJ4SpdpX/view?usp=drive_link"
-  },
+    "description": "Busca aventura na Capadócia? 🎈✨ Conhecida pelos passeios de balão e pelas formações rochosas únicas, a Capadócia é perfeita para quem ama emoção. Nossos pacotes cheios de adrenalina incluem ✈️ passagens e hospedagem, a partir de 10x de R$190,00.\n✔️ Um destino para explorar e se divertir ao máximo.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#DestinoDeAventura #PacotesDeViagem #ViagemAventura"
+  , "drive_url": "https://drive.google.com/file/d/11joLZdCBVZ7MkrXEqRVgoR76vJ4SpdpX/view?usp=drive_link"},
   {
     "title": "Chicago",
     "url": "https://www.canva.com/design/DAGgIEv81n8/16sFv3o7t2n_95k022u8_A/view?utm_content=DAGgIEv81n8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Não deixe seus sonhos de viagem para Chicago para depois! 🏙️✨ Conhecida pela arquitetura e pela pizza deep-dish, Chicago é um destino vibrante. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios, com facilidade no pagamento.\n✔️ Ofertas especiais para você explorar essa cidade incrível.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ViajeMaisVivaMais #PacotesDeViagem #FériasDosSonhos",
-    "drive_url": "https://drive.google.com/file/d/176Y8TsXip9DhhKgtoxWDJ3i27nzvS599/view?usp=drive_link"
-  },
+    "description": "Não deixe seus sonhos de viagem para Chicago para depois! 🏙️✨ Conhecida pela arquitetura e pela pizza deep-dish, Chicago é um destino vibrante. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios, com facilidade no pagamento.\n✔️ Ofertas especiais para você explorar essa cidade incrível.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ViajeMaisVivaMais #PacotesDeViagem #FériasDosSonhos"
+  , "drive_url": "https://drive.google.com/file/d/176Y8TsXip9DhhKgtoxWDJ3i27nzvS599/view?usp=drive_link"},
   {
     "title": "Cozumel",
     "url": "https://www.canva.com/design/DAGgIGpU45c/L2mK-u75F_cQ_i-q1R2D6w/view?utm_content=DAGgIGpU45c&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "✨ A aventura te espera com Cozumel! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#Cozumel #ViagemPerfeita #AgenciaDeViagens",
-    "drive_url": "https://drive.google.com/file/d/12kazChdZyF0deFFzuIZ1Cq2Dj8d7rYsp/view?usp=drive_link"
-  },
+    "description": "✨ A aventura te espera com Cozumel! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#Cozumel #ViagemPerfeita #AgenciaDeViagens"
+  , "drive_url": "https://drive.google.com/file/d/12kazChdZyF0deFFzuIZ1Cq2Dj8d7rYsp/view?usp=drive_link"},
   {
     "title": "Cusco",
     "url": "https://www.canva.com/design/DAGgIH1_gY8/11l8w_5g_5v_7y_7x_8o_A/view?utm_content=DAGgIH1_gY8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Prepare-se para Cusco! 🏔️🧳 Saiba como agir se sua bagagem for extraviada: informe a companhia aérea, tenha o comprovante de despacho e contrate um seguro viagem. Cusco é a porta de entrada para Machu Picchu, com história e cultura incríveis.\n✔️ Dicas para resolver imprevistos e curtir sua viagem.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #BagagemExtraviada #ViagemSemEstresse",
-    "drive_url": "https://drive.google.com/file/d/13lnK_smqj5kU7ukYH21H6bKs1hXyWkH9/view?usp=drive_link"
-  },
+    "description": "Prepare-se para Cusco! 🏔️🧳 Saiba como agir se sua bagagem for extraviada: informe a companhia aérea, tenha o comprovante de despacho e contrate um seguro viagem. Cusco é a porta de entrada para Machu Picchu, com história e cultura incríveis.\n✔️ Dicas para resolver imprevistos e curtir sua viagem.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #BagagemExtraviada #ViagemSemEstresse"
+  , "drive_url": "https://drive.google.com/file/d/13lnK_smqj5kU7ukYH21H6bKs1hXyWkH9/view?usp=drive_link"},
   {
     "title": "DISNEY",
     "url": "https://www.canva.com/design/DAG2LCX13mE/xUzLv91eUXUH_vWak40iaA/view?utm_content=DAG2LCX13mE&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -562,51 +528,44 @@ export const templates: Template[] = [
     "title": "Egito",
     "url": "https://www.canva.com/design/DAGgIH1_gY8/11l8w_5g_5v_7y_7x_8o_A/view?utm_content=DAGgIH1_gY8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Aproveite dias incríveis no Egito! 🏜️✨ Conheça as Pirâmides de Gizé e o Rio Nilo com nosso pacote para 2 adultos, que inclui ✈️ passagens, 🏨 hospedagem e passeios guiados, a partir de 10x de R$150,00.\n✔️ Uma viagem histórica cheia de descanso e descobertas.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#ExcursãoEgito #ÚltimasVagas #FériasPerfeitas",
-    "drive_url": "https://drive.google.com/file/d/12JM1Bxbqx7UPxIVdRLHNBIApQLJAyIIp/view?usp=drive_link"
-  },
+    "description": "Aproveite dias incríveis no Egito! 🏜️✨ Conheça as Pirâmides de Gizé e o Rio Nilo com nosso pacote para 2 adultos, que inclui ✈️ passagens, 🏨 hospedagem e passeios guiados, a partir de 10x de R$150,00.\n✔️ Uma viagem histórica cheia de descanso e descobertas.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#ExcursãoEgito #ÚltimasVagas #FériasPerfeitas"
+  , "drive_url": "https://drive.google.com/file/d/12JM1Bxbqx7UPxIVdRLHNBIApQLJAyIIp/view?usp=drive_link"},
   {
     "title": "Filipinas",
     "url": "https://www.canva.com/design/DAGgIE0GMEg/nMMdOVIYmO1IUpw4vOLmQg/view?utm_content=DAGgIE0GMEg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Faça uma viagem rápida e econômica para as Filipinas! 🏖️✈️ Conhecidas pelas praias de Boracay e Palawan, as Filipinas são um destino dos sonhos. Nosso pacote inclui ✈️ passagens aéreas de ida e volta de São Paulo, por apenas R$520,00.\n✔️ Conforto e tranquilidade para explorar esse paraíso asiático.\nGaranta sua passagem pelo WhatsApp: (99) 9 9999-9999\n#ViagemEconomica #PassagensAéreas #Filipinas",
-    "drive_url": "https://drive.google.com/file/d/12XPKOUI1PYH1Wv9QRFcZ5DjWrrNx_5Bc/view?usp=drive_link"
-  },
+    "description": "Faça uma viagem rápida e econômica para as Filipinas! 🏖️✈️ Conhecidas pelas praias de Boracay e Palawan, as Filipinas são um destino dos sonhos. Nosso pacote inclui ✈️ passagens aéreas de ida e volta de São Paulo, por apenas R$520,00.\n✔️ Conforto e tranquilidade para explorar esse paraíso asiático.\nGaranta sua passagem pelo WhatsApp: (99) 9 9999-9999\n#ViagemEconomica #PassagensAéreas #Filipinas"
+  , "drive_url": "https://drive.google.com/file/d/12XPKOUI1PYH1Wv9QRFcZ5DjWrrNx_5Bc/view?usp=drive_link"},
   {
     "title": "Fort Lauderdale",
     "url": "https://www.canva.com/design/DAGgIAhaqtE/12aTG-FlJoUZgKv6eYjfYQ/view?utm_content=DAGgIAhaqtE&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Viaje para Fort Lauderdale com conforto! 🏖️✈️ Leve travesseiro de pescoço, vista roupas leves e hidrate-se durante o voo para aproveitar ao máximo. Conhecida como a \"Veneza da América\", Fort Lauderdale tem canais e praias lindas.\n✔️ Dicas para um voo tranquilo e uma viagem inesquecível.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ConfortoNosVoos #VooConfortável",
-    "drive_url": "https://drive.google.com/file/d/11lI17jUd0UAEegy80UKB6rCu2mynLkc1/view?usp=drive_link"
-  },
+    "description": "Viaje para Fort Lauderdale com conforto! 🏖️✈️ Leve travesseiro de pescoço, vista roupas leves e hidrate-se durante o voo para aproveitar ao máximo. Conhecida como a \"Veneza da América\", Fort Lauderdale tem canais e praias lindas.\n✔️ Dicas para um voo tranquilo e uma viagem inesquecível.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ConfortoNosVoos #VooConfortável"
+  , "drive_url": "https://drive.google.com/file/d/11lI17jUd0UAEegy80UKB6rCu2mynLkc1/view?usp=drive_link"},
   {
     "title": "Grécia",
     "url": "https://www.canva.com/design/DAGgIGpU45c/L2mK-u75F_cQ_i-q1R2D6w/view?utm_content=DAGgIGpU45c&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem dos sonhos para a Grécia! 🏛️✨ Com ilhas como Santorini e Mykonos, a Grécia é perfeita para quem ama história e praias. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios, com parcelamento em até 12x.\n✔️ Um destino incrível para relaxar e explorar.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ExplorarOMundo #PacotesDeViagem #FériasPerfeitas",
-    "drive_url": "https://drive.google.com/file/d/12w7XtopwQlCFeq5dAVx8b_6YTPkGVru_/view?usp=drive_link"
-  },
+    "description": "Planeje sua viagem dos sonhos para a Grécia! 🏛️✨ Com ilhas como Santorini e Mykonos, a Grécia é perfeita para quem ama história e praias. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios, com parcelamento em até 12x.\n✔️ Um destino incrível para relaxar e explorar.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ExplorarOMundo #PacotesDeViagem #FériasPerfeitas"
+  , "drive_url": "https://drive.google.com/file/d/12w7XtopwQlCFeq5dAVx8b_6YTPkGVru_/view?usp=drive_link"},
   {
     "title": "Israel",
     "url": "https://www.canva.com/design/DAGgIEv81n8/16sFv3o7t2n_95k022u8_A/view?utm_content=DAGgIEv81n8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Evite erros ao planejar sua viagem para Israel! 🏛️✈️ Conhecido pela história de Jerusalém e pelo Mar Morto, Israel é um destino único. Confira dicas para uma jornada sem dores de cabeça, com ✈️ passagens e 🏨 hospedagem organizadas por nós.\n✔️ Viaje com mais segurança e aproveite cada momento.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ViagemInternacional #ViajarSemEstresse",
-    "drive_url": "https://drive.google.com/file/d/13YP7q3sD2sUsdzothWCmbhFmfK1X8U7A/view?usp=drive_link"
-  },
+    "description": "Evite erros ao planejar sua viagem para Israel! 🏛️✈️ Conhecido pela história de Jerusalém e pelo Mar Morto, Israel é um destino único. Confira dicas para uma jornada sem dores de cabeça, com ✈️ passagens e 🏨 hospedagem organizadas por nós.\n✔️ Viaje com mais segurança e aproveite cada momento.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ViagemInternacional #ViajarSemEstresse"
+  , "drive_url": "https://drive.google.com/file/d/13YP7q3sD2sUsdzothWCmbhFmfK1X8U7A/view?usp=drive_link"},
   {
     "title": "Jordânia",
     "url": "https://www.canva.com/design/DAGgIFd9l88/54j3J9Q23L8z0P4f-p_j1Q/view?utm_content=DAGgIFd9l88&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua primeira aventura como mochileiro em Jordânia! 🏜️🧳 Conhecida por Petra e pelo deserto de Wadi Rum, Jordânia é um destino épico. Dicas como levar uma mochila leve e reservar passeios guiados garantem uma viagem sem estresse.\n✔️ Um guia essencial para começar sua jornada.\nSalve e planeje pelo WhatsApp: (99) 9 9999-9999\n#MochileirosDePrimeiraViagem #DicasDeMochileiro #AventuraPeloMundo",
-    "drive_url": "https://drive.google.com/file/d/13FoBEspFXJhDTEuWzIRX3sC3h3kXmmZE/view?usp=drive_link"
-  },
+    "description": "Planeje sua primeira aventura como mochileiro em Jordânia! 🏜️🧳 Conhecida por Petra e pelo deserto de Wadi Rum, Jordânia é um destino épico. Dicas como levar uma mochila leve e reservar passeios guiados garantem uma viagem sem estresse.\n✔️ Um guia essencial para começar sua jornada.\nSalve e planeje pelo WhatsApp: (99) 9 9999-9999\n#MochileirosDePrimeiraViagem #DicasDeMochileiro #AventuraPeloMundo"
+  , "drive_url": "https://drive.google.com/file/d/13FoBEspFXJhDTEuWzIRX3sC3h3kXmmZE/view?usp=drive_link"},
   {
     "title": "Lima",
     "url": "https://www.canva.com/design/DAGgIABwarE/NZnn5WxJGQOvbzt2lS70KA/view?utm_content=DAGgIABwarE&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Viajar para Lima é colecionar momentos inesquecíveis! 🍽️✨ Conhecida pela gastronomia premiada e pelo centro histórico, Lima é um destino vibrante. Nossos pacotes oferecem ✈️ passagens e 🏨 hospedagem para você viver uma experiência cultural única.\n✔️ Invista em memórias que valem mais que qualquer coisa.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉInvestir #FériasPerfeitas #MomentosInesquecíveis",
-    "drive_url": "https://drive.google.com/file/d/16zxunOAHFxDW6fk8Ik2zo5-hOTWPq3dz/view?usp=drive_link"
-  },
+    "description": "Viajar para Lima é colecionar momentos inesquecíveis! 🍽️✨ Conhecida pela gastronomia premiada e pelo centro histórico, Lima é um destino vibrante. Nossos pacotes oferecem ✈️ passagens e 🏨 hospedagem para você viver uma experiência cultural única.\n✔️ Invista em memórias que valem mais que qualquer coisa.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉInvestir #FériasPerfeitas #MomentosInesquecíveis"
+  , "drive_url": "https://drive.google.com/file/d/16zxunOAHFxDW6fk8Ik2zo5-hOTWPq3dz/view?usp=drive_link"},
   {
     "title": "Machu Picchu",
     "url": "https://www.canva.com/design/DAGgIFd9l88/54j3J9Q23L8z0P4f-p_j1Q/view?utm_content=DAGgIFd9l88&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -617,9 +576,8 @@ export const templates: Template[] = [
     "title": "Maldivas",
     "url": "https://www.canva.com/design/DAGgIDyBNgg/iqZtppBAHjRERXni8aH7Uw/view?utm_content=DAGgIDyBNgg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Reduza o estresse nas Maldivas! 🏝️✨ Com bangalôs sobre o mar e águas cristalinas, esse destino é perfeito para relaxar. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem, para você desconectar e conhecer a cultura local.\n✔️ Uma viagem para renovar as energias e se encantar.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #ReduçãoDoEstresse #ExplorandoNovasCulturas",
-    "drive_url": "https://drive.google.com/file/d/1KgDLZBTbhtxKBwmPHCwdsMtknBv3O3JQ/view?usp=drive_link"
-  },
+    "description": "Reduza o estresse nas Maldivas! 🏝️✨ Com bangalôs sobre o mar e águas cristalinas, esse destino é perfeito para relaxar. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem, para você desconectar e conhecer a cultura local.\n✔️ Uma viagem para renovar as energias e se encantar.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #ReduçãoDoEstresse #ExplorandoNovasCulturas"
+  , "drive_url": "https://drive.google.com/file/d/1KgDLZBTbhtxKBwmPHCwdsMtknBv3O3JQ/view?usp=drive_link"},
   {
     "title": "Montevidéu",
     "url": "https://www.canva.com/design/DAGgIEv81n8/16sFv3o7t2n_95k022u8_A/view?utm_content=DAGgIEv81n8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -660,9 +618,8 @@ export const templates: Template[] = [
     "title": "Phi Phi",
     "url": "https://www.canva.com/design/DAGgIHM3a8A/8sTBGWxCgx5a_V33JtFu_A/view?utm_content=DAGgIHM3a8A&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Suas férias estão chegando, e Phi Phi te espera! 🏝️✨ Conhecida pelas águas cristalinas e falésias, Phi Phi é um paraíso na Tailândia. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios de barco para explorar as ilhas, tudo organizado para você.\n✔️ Não deixe para última hora e garanta uma viagem perfeita.\nFale agora pelo WhatsApp: (99) 9 9999-9999\n#PlanejeSuasFérias #ViagemSemEstresse #FériasPerfeitas",
-    "drive_url": "https://drive.google.com/file/d/1715AG9DS8x04gPYkyagsNRpZpBVf5b52/view?usp=drive_link"
-  },
+    "description": "Suas férias estão chegando, e Phi Phi te espera! 🏝️✨ Conhecida pelas águas cristalinas e falésias, Phi Phi é um paraíso na Tailândia. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios de barco para explorar as ilhas, tudo organizado para você.\n✔️ Não deixe para última hora e garanta uma viagem perfeita.\nFale agora pelo WhatsApp: (99) 9 9999-9999\n#PlanejeSuasFérias #ViagemSemEstresse #FériasPerfeitas"
+  , "drive_url": "https://drive.google.com/file/d/1715AG9DS8x04gPYkyagsNRpZpBVf5b52/view?usp=drive_link"},
   {
     "title": "Pisa",
     "url": "https://www.canva.com/design/DAGgIEMmR_M/9f-k7CtYZlHsTYhCHkg/view?utm_content=DAGgIEMmR_M&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -673,9 +630,8 @@ export const templates: Template[] = [
     "title": "Praga",
     "url": "https://www.canva.com/design/DAGgIH1_gY8/11l8w_5g_5v_7y_7x_8o_A/view?utm_content=DAGgIH1_gY8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Descubra Praga com pacotes exclusivos! 🏰✨ Conhecida pela Ponte Carlos e pelo Castelo de Praga, essa cidade é um conto de fadas. Nossos pacotes oferecem ✈️ passagens, 🏨 hospedagem e passeios, com preços acessíveis e suporte completo.\n✔️ Condições facilitadas para todos os perfis de viajantes.\nPlaneje sua viagem pelo WhatsApp: (99) 9 9999-9999\n#DescubraOMundo #ViajeComEstilo #AgenciaDeViagens",
-    "drive_url": "https://drive.google.com/file/d/173n8iP4v75kIDj_NPucHRP4oOUXPKwZa/view?usp=drive_link"
-  },
+    "description": "Descubra Praga com pacotes exclusivos! 🏰✨ Conhecida pela Ponte Carlos e pelo Castelo de Praga, essa cidade é um conto de fadas. Nossos pacotes oferecem ✈️ passagens, 🏨 hospedagem e passeios, com preços acessíveis e suporte completo.\n✔️ Condições facilitadas para todos os perfis de viajantes.\nPlaneje sua viagem pelo WhatsApp: (99) 9 9999-9999\n#DescubraOMundo #ViajeComEstilo #AgenciaDeViagens"
+  , "drive_url": "https://drive.google.com/file/d/173n8iP4v75kIDj_NPucHRP4oOUXPKwZa/view?usp=drive_link"},
   {
     "title": "Punta Cana",
     "url": "https://www.canva.com/design/DAGgIKZu79g/cML-09vBKb9uzoxMLro2sA/view?utm_content=DAGgIKZu79g&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -686,9 +642,8 @@ export const templates: Template[] = [
     "title": "Salar de Uyuni",
     "url": "https://www.canva.com/design/DAGgIMYGeUo/hNOn3acstET00eZMSZevCQ/view?utm_content=DAGgIMYGeUo&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Escolha o destino perfeito para Salar de Uyuni! 🏜️📸 O maior deserto de sal do mundo é ideal para fotos incríveis e paisagens surreais. Nossa equipe te ajuda a planejar a viagem dos sonhos, com ✈️ passagens e 🏨 hospedagem inclusas.\n✔️ Um lugar para relaxar, explorar ou se aventurar.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DestinoIdeal #PlanejeSuaViagem #FériasDosSonhos",
-    "drive_url": "https://drive.google.com/file/d/14lfWkvHalF4KKFP1YEYrVok_NJgr7Rbf/view?usp=drive_link"
-  },
+    "description": "Escolha o destino perfeito para Salar de Uyuni! 🏜️📸 O maior deserto de sal do mundo é ideal para fotos incríveis e paisagens surreais. Nossa equipe te ajuda a planejar a viagem dos sonhos, com ✈️ passagens e 🏨 hospedagem inclusas.\n✔️ Um lugar para relaxar, explorar ou se aventurar.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DestinoIdeal #PlanejeSuaViagem #FériasDosSonhos"
+  , "drive_url": "https://drive.google.com/file/d/14lfWkvHalF4KKFP1YEYrVok_NJgr7Rbf/view?usp=drive_link"},
   {
     "title": "São Francisco",
     "url": "https://www.canva.com/design/DAGgICJnnqQ/bmbU2kAUJFJUYIf2woRW3g/view?utm_content=DAGgICJnnqQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -729,79 +684,68 @@ export const templates: Template[] = [
     "title": "Amsterdã",
     "url": "https://www.canva.com/design/DAGgIR3Uj_s/J7DMRsphXv0alSR7Pdb9eg/view?utm_content=DAGgIR3Uj_s&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Evite surpresas no aeroporto ao viajar para Amsterdã! 🧳✈️ Confira dicas para não ter problemas com excesso de bagagem e curta os canais, os museus como o Van Gogh e as tulipas holandesas. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Viaje tranquilo e aproveite cada momento sem estresse.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ExcessoDeBagagem #ViagemSemEstresse",
-    "drive_url": "https://drive.google.com/file/d/14lt3EasFTVCE_WbRidGQxemKoMIb8G9-/view?usp=drive_link"
-  },
+    "description": "Evite surpresas no aeroporto ao viajar para Amsterdã! 🧳✈️ Confira dicas para não ter problemas com excesso de bagagem e curta os canais, os museus como o Van Gogh e as tulipas holandesas. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Viaje tranquilo e aproveite cada momento sem estresse.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ExcessoDeBagagem #ViagemSemEstresse"
+  , "drive_url": "https://drive.google.com/file/d/14lt3EasFTVCE_WbRidGQxemKoMIb8G9-/view?usp=drive_link"},
   {
     "title": "Amsterdã 2",
     "url": "https://www.canva.com/design/DAGgIcmzY_E/r3WQBPg9qcEiHDFe-b-TCg/view?utm_content=DAGgIcmzY_E&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Evite surpresas no aeroporto ao viajar para Amsterdã! 🧳✈️ Confira dicas para não ter problemas com excesso de bagagem e curta os canais, os museus como o Van Gogh e as tulipas holandesas. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Viaje tranquilo e aproveite cada momento sem estresse.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ExcessoDeBagagem #ViagemSemEstresse",
-    "drive_url": "https://drive.google.com/file/d/14lt3EasFTVCE_WbRidGQxemKoMIb8G9-/view?usp=drive_link"
-  },
+    "description": "Evite surpresas no aeroporto ao viajar para Amsterdã! 🧳✈️ Confira dicas para não ter problemas com excesso de bagagem e curta os canais, os museus como o Van Gogh e as tulipas holandesas. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Viaje tranquilo e aproveite cada momento sem estresse.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ExcessoDeBagagem #ViagemSemEstresse"
+  , "drive_url": "https://drive.google.com/file/d/14lt3EasFTVCE_WbRidGQxemKoMIb8G9-/view?usp=drive_link"},
   {
     "title": "Atenas",
     "url": "https://www.canva.com/design/DAGgIVLFL6c/sN4xUOkZJTbGJ5vZ6kQ18Q/view?utm_content=DAGgIVLFL6c&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Proporcione uma experiência mágica em Atenas! 🏛️✨ Conhecida pela Acrópole e pela história grega, Atenas é um destino fascinante. Nosso pacote em até 12x sem juros inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer a cidade.\n✔️ Viva momentos únicos nesse destino histórico.\nGaranta seu pacote pelo WhatsApp: (99) 9 9999-9999\n#Atenas #FériasInternacionais #MagiaDaViagem",
-    "drive_url": "https://drive.google.com/file/d/14UQcXCy5m5KruQryEqeR-S2Y36bPUYVa/view?usp=drive_link"
-  },
+    "description": "Proporcione uma experiência mágica em Atenas! 🏛️✨ Conhecida pela Acrópole e pela história grega, Atenas é um destino fascinante. Nosso pacote em até 12x sem juros inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer a cidade.\n✔️ Viva momentos únicos nesse destino histórico.\nGaranta seu pacote pelo WhatsApp: (99) 9 9999-9999\n#Atenas #FériasInternacionais #MagiaDaViagem"
+  , "drive_url": "https://drive.google.com/file/d/14UQcXCy5m5KruQryEqeR-S2Y36bPUYVa/view?usp=drive_link"},
   {
     "title": "Bali",
     "url": "https://www.canva.com/design/DAGgIBc0onY/x4vLLY939_RdIrA4XICf5w/view?utm_content=DAGgIBc0onY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Desbrave Bali com pacotes a partir de R$9.500! 🏝️✨ Com templos como Uluwatu e praias paradisíacas, Bali é um destino internacional incrível. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer a cultura balinesa.\n✔️ Uma viagem para relaxar e se conectar com a natureza.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ExploreOMundo #PacotesInternacionais #FériasIncríveis",
-    "drive_url": "https://drive.google.com/file/d/13nE_5UouaL2uuX6KwnjFyzjd3X3wY_EU/view?usp=drive_link"
-  },
+    "description": "Desbrave Bali com pacotes a partir de R$9.500! 🏝️✨ Com templos como Uluwatu e praias paradisíacas, Bali é um destino internacional incrível. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer a cultura balinesa.\n✔️ Uma viagem para relaxar e se conectar com a natureza.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ExploreOMundo #PacotesInternacionais #FériasIncríveis"
+  , "drive_url": "https://drive.google.com/file/d/13nE_5UouaL2uuX6KwnjFyzjd3X3wY_EU/view?usp=drive_link"},
   {
     "title": "Bangkok",
     "url": "https://www.canva.com/design/DAGgIeC0clw/AowfyjEsUwNBiOEGmYqUTw/view?utm_content=DAGgIeC0clw&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Sonha com Bangkok? 🏯✨ Conhecida pelos templos como o Wat Arun e pelos mercados flutuantes, Bangkok é um destino vibrante. Nosso pacote a partir de R$2.500 inclui ✈️ passagens, 🏨 hospedagem e passeios para explorar a cidade.\n✔️ Um destino para explorar a cultura tailandesa.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#Bangkok #DestinoDosSonhos #FériasIncríveis",
-    "drive_url": "https://drive.google.com/file/d/17ZxvJqdPt4WGuosoyOQF2MK2lWqbL7BS/view?usp=drive_link"
-  },
+    "description": "Sonha com Bangkok? 🏯✨ Conhecida pelos templos como o Wat Arun e pelos mercados flutuantes, Bangkok é um destino vibrante. Nosso pacote a partir de R$2.500 inclui ✈️ passagens, 🏨 hospedagem e passeios para explorar a cidade.\n✔️ Um destino para explorar a cultura tailandesa.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#Bangkok #DestinoDosSonhos #FériasIncríveis"
+  , "drive_url": "https://drive.google.com/file/d/17ZxvJqdPt4WGuosoyOQF2MK2lWqbL7BS/view?usp=drive_link"},
   {
     "title": "Barcelona",
     "url": "https://www.canva.com/design/DAGgIVLFL6c/sN4xUOkZJTbGJ5vZ6kQ18Q/view?utm_content=DAGgIVLFL6c&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Celebre o Dia do Turista em Barcelona! 🏛️✨ Explore a Sagrada Família e o Parc Güell com nossos pacotes que oferecem ✈️ passagens e 🏨 hospedagem. Barcelona é perfeita para quem ama arquitetura e cultura catalã.\n✔️ O mundo é cheio de descobertas para viajantes apaixonados.\nPlaneje sua viagem pelo WhatsApp: (99) 9 9999-9999\n#DiaDoTurista #ExplorarOMundo #FériasInesquecíveis",
-    "drive_url": "https://drive.google.com/file/d/14UiSdexiKw5YFaymTv8RlNIhYLNz83Ow/view?usp=drive_link"
-  },
+    "description": "Celebre o Dia do Turista em Barcelona! 🏛️✨ Explore a Sagrada Família e o Parc Güell com nossos pacotes que oferecem ✈️ passagens e 🏨 hospedagem. Barcelona é perfeita para quem ama arquitetura e cultura catalã.\n✔️ O mundo é cheio de descobertas para viajantes apaixonados.\nPlaneje sua viagem pelo WhatsApp: (99) 9 9999-9999\n#DiaDoTurista #ExplorarOMundo #FériasInesquecíveis"
+  , "drive_url": "https://drive.google.com/file/d/14UiSdexiKw5YFaymTv8RlNIhYLNz83Ow/view?usp=drive_link"},
   {
     "title": "Berlim",
     "url": "https://www.canva.com/design/DAGgICa3icM/XUL5DCACv4mYeGq4syIzmw/view?utm_content=DAGgICa3icM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Relembre momentos incríveis em Berlim! 🏛️✨ Conhecida pelo Muro de Berlim e pela vida noturna vibrante, Berlim é um destino cheio de história. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você planejar sua próxima viagem dos sonhos.\n✔️ Um destino com cultura e modernidade para se apaixonar.\nDescubra mais pelo WhatsApp: (99) 9 9999-9999\n#Berlim #TBTDeViagem #DestinoIncrível",
-    "drive_url": "https://drive.google.com/file/d/16tvUY6Yl9nLoRsOaYiZU9gzr_hK-STiJ/view?usp=drive_link"
-  },
+    "description": "Relembre momentos incríveis em Berlim! 🏛️✨ Conhecida pelo Muro de Berlim e pela vida noturna vibrante, Berlim é um destino cheio de história. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você planejar sua próxima viagem dos sonhos.\n✔️ Um destino com cultura e modernidade para se apaixonar.\nDescubra mais pelo WhatsApp: (99) 9 9999-9999\n#Berlim #TBTDeViagem #DestinoIncrível"
+  , "drive_url": "https://drive.google.com/file/d/16tvUY6Yl9nLoRsOaYiZU9gzr_hK-STiJ/view?usp=drive_link"},
   {
     "title": "Buenos Aires",
     "url": "https://www.canva.com/design/DAGgIfy2Ca0/Hr95Q6ST7258CMco-HbxDQ/view?utm_content=DAGgIfy2Ca0&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Crie memórias inesquecíveis em Buenos Aires! 🕺✨ Conhecida pelo tango e pela gastronomia, como o bife de chorizo, Buenos Aires é um destino vibrante. Nossos pacotes oferecem ✈️ passagens e 🏨 hospedagem para você viver momentos únicos.\n✔️ Viajar é a melhor forma de colecionar experiências.\nPlaneje sua viagem pelo WhatsApp: (99) 9 9999-9999\n#ColecioneMemórias #ExperiênciasInesquecíveis #FériasDosSonhos",
-    "drive_url": "https://drive.google.com/file/d/11_83xtMwYDS_E15nSddFC-nddLwVXzwr/view?usp=drive_link"
-  },
+    "description": "Crie memórias inesquecíveis em Buenos Aires! 🕺✨ Conhecida pelo tango e pela gastronomia, como o bife de chorizo, Buenos Aires é um destino vibrante. Nossos pacotes oferecem ✈️ passagens e 🏨 hospedagem para você viver momentos únicos.\n✔️ Viajar é a melhor forma de colecionar experiências.\nPlaneje sua viagem pelo WhatsApp: (99) 9 9999-9999\n#ColecioneMemórias #ExperiênciasInesquecíveis #FériasDosSonhos"
+  , "drive_url": "https://drive.google.com/file/d/11_83xtMwYDS_E15nSddFC-nddLwVXzwr/view?usp=drive_link"},
   {
     "title": "Cartagena",
     "url": "https://www.canva.com/design/DAGgIaIGeIM/JYgK-PBpXfnIqH0znFw-zw/view?utm_content=DAGgIaIGeIM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem para Cartagena com antecedência! 🏖️✨ Para garantir as melhores ofertas em passagens e hospedagem, programe-se com 3 a 6 meses. Cartagena é famosa pela cidade murada e pelas praias caribenhas.\n✔️ Economize e evite imprevistos para uma viagem perfeita.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #PlanejamentoDeViagem #FériasPerfeitas",
-    "drive_url": "https://drive.google.com/file/d/11P9THfMnqi8jdhN5B1FLVCzYJj4Szx5I/view?usp=drive_link"
-  },
+    "description": "Planeje sua viagem para Cartagena com antecedência! 🏖️✨ Para garantir as melhores ofertas em passagens e hospedagem, programe-se com 3 a 6 meses. Cartagena é famosa pela cidade murada e pelas praias caribenhas.\n✔️ Economize e evite imprevistos para uma viagem perfeita.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #PlanejamentoDeViagem #FériasPerfeitas"
+  , "drive_url": "https://drive.google.com/file/d/11P9THfMnqi8jdhN5B1FLVCzYJj4Szx5I/view?usp=drive_link"},
   {
     "title": "Dubai",
     "url": "https://www.canva.com/design/DAGgIQx3iW8/D8lV3a_3aHeKQ1JI3Pd3OQ/view?utm_content=DAGgIQx3iW8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Descubra as maravilhas de Dubai! 🏙️✨ Com o Burj Khalifa e os shoppings de luxo, Dubai é um destino moderno e fascinante. Nosso pacote a partir de 10x de R$450,00 inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer o deserto e a cidade.\n✔️ Um destino internacional cheio de glamour te espera.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#BelezasDeDubai #ViajarPeloMundo #FériasInternacionais",
-    "drive_url": "https://drive.google.com/file/d/13BCK3_0ZhbK0Ogenc8bAydyOObsUcmlG/view?usp=drive_link"
-  },
+    "description": "Descubra as maravilhas de Dubai! 🏙️✨ Com o Burj Khalifa e os shoppings de luxo, Dubai é um destino moderno e fascinante. Nosso pacote a partir de 10x de R$450,00 inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer o deserto e a cidade.\n✔️ Um destino internacional cheio de glamour te espera.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#BelezasDeDubai #ViajarPeloMundo #FériasInternacionais"
+  , "drive_url": "https://drive.google.com/file/d/13BCK3_0ZhbK0Ogenc8bAydyOObsUcmlG/view?usp=drive_link"},
   {
     "title": "Florença",
     "url": "https://www.canva.com/design/DAGgIe1FmSk/bFSgFqaodmrSZsV04AtBhQ/view?utm_content=DAGgIe1FmSk&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Saia da rotina em Florença! 🏛️✨ Conhecida pela Duomo e pela arte renascentista, Florença é um destino cultural. Nossos pacotes a partir de 10x de R$150,00 incluem ✈️ passagens, 🏨 hospedagem e passeios para explorar a Toscana.\n✔️ Um destino único para sua próxima aventura.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#NovosDestinos #PacotesDeViagem #ExplorarOMundo",
-    "drive_url": "https://drive.google.com/file/d/14ZnngFhqqtTeXoAvWqyNDhansf_oW0DB/view?usp=drive_link"
-  },
+    "description": "Saia da rotina em Florença! 🏛️✨ Conhecida pela Duomo e pela arte renascentista, Florença é um destino cultural. Nossos pacotes a partir de 10x de R$150,00 incluem ✈️ passagens, 🏨 hospedagem e passeios para explorar a Toscana.\n✔️ Um destino único para sua próxima aventura.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#NovosDestinos #PacotesDeViagem #ExplorarOMundo"
+  , "drive_url": "https://drive.google.com/file/d/14ZnngFhqqtTeXoAvWqyNDhansf_oW0DB/view?usp=drive_link"},
   {
     "title": "Frankfurt",
     "url": "https://www.canva.com/design/DAGgIaE8E9Q/jnbP70f-e2-JTnfHvpFIIw/view?utm_content=DAGgIaE8E9Q&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -812,51 +756,44 @@ export const templates: Template[] = [
     "title": "Havana",
     "url": "https://www.canva.com/design/DAGgIIzdW8Q/pCZAay9vuoXa2Xms6_So5w/view?utm_content=DAGgIIzdW8Q&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Cada viagem para Havana é um novo capítulo na sua vida! 🎶✨ Conhecida pela música, pelos carros antigos e pela história, Havana é um destino vibrante. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você criar memórias inesquecíveis.\n✔️ Uma aventura única na capital cubana te espera.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#NovaHistória #FériasIncríveis #ColecioneMomentos",
-    "drive_url": "https://drive.google.com/file/d/14mzIawQF4E5QhAeinx1QAr_v5XORXwQm/view?usp=drive_link"
-  },
+    "description": "Cada viagem para Havana é um novo capítulo na sua vida! 🎶✨ Conhecida pela música, pelos carros antigos e pela história, Havana é um destino vibrante. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você criar memórias inesquecíveis.\n✔️ Uma aventura única na capital cubana te espera.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#NovaHistória #FériasIncríveis #ColecioneMomentos"
+  , "drive_url": "https://drive.google.com/file/d/17_J_3GOioKrHbYxSzrUdEg9D9XV96wMq/view?usp=drive_link"},
   {
     "title": "Havana 2",
     "url": "https://www.canva.com/design/DAGgIfy2Ca0/Hr95Q6ST7258CMco-HbxDQ/view?utm_content=DAGgIfy2Ca0&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Cada viagem para Havana é um novo capítulo na sua vida! 🎶✨ Conhecida pela música, pelos carros antigos e pela história, Havana é um destino vibrante. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você criar memórias inesquecíveis.\n✔️ Uma aventura única na capital cubana te espera.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#NovaHistória #FériasIncríveis #ColecioneMomentos",
-    "drive_url": "https://drive.google.com/file/d/14mzIawQF4E5QhAeinx1QAr_v5XORXwQm/view?usp=drive_link"
-  },
+    "description": "Cada viagem para Havana é um novo capítulo na sua vida! 🎶✨ Conhecida pela música, pelos carros antigos e pela história, Havana é um destino vibrante. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você criar memórias inesquecíveis.\n✔️ Uma aventura única na capital cubana te espera.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#NovaHistória #FériasIncríveis #ColecioneMomentos"
+  , "drive_url": "https://drive.google.com/file/d/17_J_3GOioKrHbYxSzrUdEg9D9XV96wMq/view?usp=drive_link"},
   {
     "title": "Hong Kong",
     "url": "https://www.canva.com/design/DAGkxrEQhaA/Uxja1UOzzbRORe3gapcq9A/view?utm_content=DAGkxrEQhaA&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Faça uma viagem rápida e econômica para Hong Kong! 🏙️✈️ Conhecida pelo skyline e pelos mercados noturnos, Hong Kong é um destino vibrante. Nosso pacote inclui ✈️ passagens aéreas de ida e volta de São Paulo, por apenas R$520,00.\n✔️ Conforto e tranquilidade para explorar esse destino asiático.\nGaranta sua passagem pelo WhatsApp: (99) 9 9999-9999\n#ViagemEconomica #PassagensAéreas #HongKong",
-    "drive_url": "https://drive.google.com/file/d/11P5Qs2gbTDatiGJC6bdGJAoGEqMR6hxQ/view?usp=drive_link"
-  },
+    "description": "Faça uma viagem rápida e econômica para Hong Kong! 🏙️✈️ Conhecida pelo skyline e pelos mercados noturnos, Hong Kong é um destino vibrante. Nosso pacote inclui ✈️ passagens aéreas de ida e volta de São Paulo, por apenas R$520,00.\n✔️ Conforto e tranquilidade para explorar esse destino asiático.\nGaranta sua passagem pelo WhatsApp: (99) 9 9999-9999\n#ViagemEconomica #PassagensAéreas #HongKong"
+  , "drive_url": "https://drive.google.com/file/d/11P5Qs2gbTDatiGJC6bdGJAoGEqMR6hxQ/view?usp=drive_link"},
   {
     "title": "Ilha de Páscoa",
     "url": "https://www.canva.com/design/DAGgIBc0onY/x4vLLY939_RdIrA4XICf5w/view?utm_content=DAGgIBc0onY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Invista em experiências na Ilha de Páscoa! 🗿✨ Conhecida pelos moais e pela cultura Rapa Nui, esse destino é único. Cada viagem traz aprendizados e memórias, e nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você explorar a ilha.\n✔️ Fique rico em histórias para contar por toda a vida.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#LembreteDeViagem #ExperiênciasIncríveis #ColecioneMomentos",
-    "drive_url": "https://drive.google.com/file/d/13xncXj0kYKHhA7CwZmMODnuUplNm8CHj/view?usp=drive_link"
-  },
+    "description": "Invista em experiências na Ilha de Páscoa! 🗿✨ Conhecida pelos moais e pela cultura Rapa Nui, esse destino é único. Cada viagem traz aprendizados e memórias, e nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você explorar a ilha.\n✔️ Fique rico em histórias para contar por toda a vida.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#LembreteDeViagem #ExperiênciasIncríveis #ColecioneMomentos"
+  , "drive_url": "https://drive.google.com/file/d/13xncXj0kYKHhA7CwZmMODnuUplNm8CHj/view?usp=drive_link"},
   {
     "title": "Istambul",
     "url": "https://www.canva.com/design/DAGgIFgynkQ/sTk_DjnzNhbRFLmpJgDAkQ/view?utm_content=DAGgIFgynkQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Curta o calor em 3 paraísos: Istambul, Dubai e Phuket! 🌍✨ Istambul tem o Grand Bazaar e a Mesquita Azul, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções internacionais para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DestinosDeVerão #ViajarÉViver",
-    "drive_url": "https://drive.google.com/file/d/11XeR8mUA74-_PVfdF01d2Hr3wELdrqFZ/view?usp=drive_link"
-  },
+    "description": "Curta o calor em 3 paraísos: Istambul, Dubai e Phuket! 🌍✨ Istambul tem o Grand Bazaar e a Mesquita Azul, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções internacionais para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DestinosDeVerão #ViajarÉViver"
+  , "drive_url": "https://drive.google.com/file/d/11XeR8mUA74-_PVfdF01d2Hr3wELdrqFZ/view?usp=drive_link"},
   {
     "title": "Itália",
     "url": "https://www.canva.com/design/DAGgIQX9aoE/NzEO3LVAaZLmNIrFwf0OjA/view?utm_content=DAGgIQX9aoE&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Passaporte vencido antes de ir para Itália? 🛂✈️ Não se preocupe! Saiba como resolver rapidamente: renove com antecedência e verifique as exigências do destino. Itália tem Roma, Veneza e a Costa Amalfitana, destinos imperdíveis.\n✔️ Planeje com antecedência e evite problemas no embarque.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#PassaporteVencido #DicasDeViagem #PlanejamentoDeViagem",
-    "drive_url": "https://drive.google.com/file/d/123DM5h9VObNWH2PC7sMw9RfpNQb2j0tE/view?usp=drive_link"
-  },
+    "description": "Passaporte vencido antes de ir para Itália? 🛂✈️ Não se preocupe! Saiba como resolver rapidamente: renove com antecedência e verifique as exigências do destino. Itália tem Roma, Veneza e a Costa Amalfitana, destinos imperdíveis.\n✔️ Planeje com antecedência e evite problemas no embarque.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#PassaporteVencido #DicasDeViagem #PlanejamentoDeViagem"
+  , "drive_url": "https://drive.google.com/file/d/123DM5h9VObNWH2PC7sMw9RfpNQb2j0tE/view?usp=drive_link"},
   {
     "title": "Las Vegas",
     "url": "https://www.canva.com/design/DAGgIaE8E9Q/jnbP70f-e2-JTnfHvpFIIw/view?utm_content=DAGgIaE8E9Q&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Aproveite dias incríveis em Las Vegas! 🎰✨ Conhecida pelos cassinos e shows, Las Vegas é pura diversão. Nosso pacote para 2 adultos inclui ✈️ passagens, 🏨 hospedagem e passeios, a partir de 10x de R$150,00.\n✔️ Uma viagem cheia de entretenimento e glamour.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#ExcursãoLasVegas #ÚltimasVagas #FériasPerfeitas",
-    "drive_url": "https://drive.google.com/file/d/1395jEwtwNqIFjDehC9zhGCY-xZdsDf8u/view?usp=drive_link"
-  },
+    "description": "Aproveite dias incríveis em Las Vegas! 🎰✨ Conhecida pelos cassinos e shows, Las Vegas é pura diversão. Nosso pacote para 2 adultos inclui ✈️ passagens, 🏨 hospedagem e passeios, a partir de 10x de R$150,00.\n✔️ Uma viagem cheia de entretenimento e glamour.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#ExcursãoLasVegas #ÚltimasVagas #FériasPerfeitas"
+  , "drive_url": "https://drive.google.com/file/d/1395jEwtwNqIFjDehC9zhGCY-xZdsDf8u/view?usp=drive_link"},
   {
     "title": "Lisboa",
     "url": "https://www.canva.com/design/DAGgIVf4UOQ/50ss3rLMLZTo86vSgVp1gA/view?utm_content=DAGgIVf4UOQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -879,9 +816,8 @@ export const templates: Template[] = [
     "title": "Madri",
     "url": "https://www.canva.com/design/DAGgIOg8LZs/ktrot3t27LZWsHrQz6iOHQ/view?utm_content=DAGgIOg8LZs&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Prepare-se para Madri! 🏛️✈️ Leve um adaptador universal, contrate um seguro viagem e verifique passaporte 🛂 e visto para evitar imprevistos. Madri tem o Palácio Real e a Plaza Mayor, perfeitos para explorar a cultura espanhola.\n✔️ Itens essenciais para curtir a capital espanhola sem preocupações.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ViagemInternacional #FériasPerfeitas",
-    "drive_url": "https://drive.google.com/file/d/11KUUHXnZ6hUOhB1ralJnU_Z0KUT-Flkh/view?usp=drive_link"
-  },
+    "description": "Prepare-se para Madri! 🏛️✈️ Leve um adaptador universal, contrate um seguro viagem e verifique passaporte 🛂 e visto para evitar imprevistos. Madri tem o Palácio Real e a Plaza Mayor, perfeitos para explorar a cultura espanhola.\n✔️ Itens essenciais para curtir a capital espanhola sem preocupações.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ViagemInternacional #FériasPerfeitas"
+  , "drive_url": "https://drive.google.com/file/d/11KUUHXnZ6hUOhB1ralJnU_Z0KUT-Flkh/view?usp=drive_link"},
   {
     "title": "Miami",
     "url": "https://www.canva.com/design/DAGgIaIGeIM/JYgK-PBpXfnIqH0znFw-zw/view?utm_content=DAGgIaIGeIM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -976,9 +912,8 @@ export const templates: Template[] = [
     "title": "Veneza",
     "url": "https://www.canva.com/design/DAGgIIzdW8Q/pCZAay9vuoXa2Xms6_So5w/view?utm_content=DAGgIIzdW8Q&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Viaje em família para Veneza! 🚤✨ Conhecida pelos canais e pela Praça de São Marcos, Veneza é mágica para crianças e adultos. Outras opções incríveis incluem Paris, Orlando e Lisboa, com pacotes que incluem ✈️ passagens e 🏨 hospedagem.\n✔️ Momentos inesquecíveis para todas as idades garantidos.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViagemComCrianças #FériasEmFamília #Veneza",
-    "drive_url": "https://drive.google.com/file/d/14z2pfoMaPJaaYmorF3wri-7h0YT00rtD/view?usp=drive_link"
-  },
+    "description": "Viaje em família para Veneza! 🚤✨ Conhecida pelos canais e pela Praça de São Marcos, Veneza é mágica para crianças e adultos. Outras opções incríveis incluem Paris, Orlando e Lisboa, com pacotes que incluem ✈️ passagens e 🏨 hospedagem.\n✔️ Momentos inesquecíveis para todas as idades garantidos.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViagemComCrianças #FériasEmFamília #Veneza"
+  , "drive_url": "https://drive.google.com/file/d/14z2pfoMaPJaaYmorF3wri-7h0YT00rtD/view?usp=drive_link"},
   {
     "title": "5 Praias Floripa",
     "url": "https://www.canva.com/design/DAGhwS47xPc/nB1DGxHhCj4jH1ZATP8xeQ/view?utm_content=DAGhwS47xPc&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -995,15 +930,14 @@ export const templates: Template[] = [
     "title": "Alter do Chão",
     "url": "https://www.canva.com/design/DAGhwMPXsXA/RvDv-RPL5DPL73FWyISG_w/view?utm_content=DAGhwMPXsXA&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Explore novos horizontes em Alter do Chão! 🏝️🌊 Conhecido como o \"Caribe Amazônico\", esse destino tem praias de água doce e uma vibe única. Nossos pacotes especiais incluem ✈️ passagens, 🏨 hospedagem e passeios de barco, com condições facilitadas de pagamento.\n✔️ Um paraíso no coração da Amazônia para sua próxima aventura.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#ExploreOMundo #PacoteDeViagem #ViagemSemComplicações",
-    "drive_url": "https://drive.google.com/file/d/1MbuUZT24JUU06g26z7tl_CdzVbseYbfO/view?usp=drive_link"
-  },
+    "description": "Explore novos horizontes em Alter do Chão! 🏝️🌊 Conhecido como o \"Caribe Amazônico\", esse destino tem praias de água doce e uma vibe única. Nossos pacotes especiais incluem ✈️ passagens, 🏨 hospedagem e passeios de barco, com condições facilitadas de pagamento.\n✔️ Um paraíso no coração da Amazônia para sua próxima aventura.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#ExploreOMundo #PacoteDeViagem #ViagemSemComplicações"
+  , "drive_url": "https://drive.google.com/file/d/1MbuUZT24JUU06g26z7tl_CdzVbseYbfO/view?usp=drive_link"},
   {
     "title": "Amazônia",
     "url": "https://www.canva.com/design/DAGhw828f00/kS69K92z1Zf-c30Hw20DkQ/view?utm_content=DAGhw828f00&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
     "description": "Embarque em um cruzeiro completo pela Amazônia! 🌿🚤 Desfrute de 5 dias navegando pelos rios, com gastronomia regional, atividades como trilhas e observação de botos, e paradas em comunidades locais. Nosso pacote inclui tudo: alimentação, passeios e hospedagem a bordo, com parcelamento facilitado.\n✔️ Uma experiência única para se conectar com a natureza.\nReserve pelo WhatsApp: (99) 9 9999-9999\n#CruzeiroDosSonhos #EmbarqueJá #FériasInesquecíveis"
-  },
+  , "drive_url": "https://drive.google.com/file/d/10ZTyd1vYInx56mc34jUrsyMC6c3uqMu-/view?usp=drive_link"},
   {
     "title": "Amazonas",
     "url": "https://www.canva.com/design/DAGhw828f00/kS69K92z1Zf-c30Hw20DkQ/view?utm_content=DAGhw828f00&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -1014,9 +948,8 @@ export const templates: Template[] = [
     "title": "Angra dos Reis",
     "url": "https://www.canva.com/design/DAGhvTRTvRg/PPKZZv7xizd-XnytywMa7Q/view?utm_content=DAGhvTRTvRg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Explore as maravilhas de Angra dos Reis! ⛵🌊 Com ilhas paradisíacas como Ilha Grande e Lopes Mendes, esse destino é perfeito para quem ama o mar. Nosso pacote a partir de 10x de R$250,00 inclui ✈️ passagens, 🏨 hospedagem e passeios de barco.\n✔️ Um roteiro cheio de praias e natureza para suas férias.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#PasseiosAngra #PraiasDoRJ #FériasPerfeitas \n5 Praias Floripa\nPrepare-se para 5 Praias Floripa! 🏖️✈️ Leve um adaptador universal, contrate um seguro viagem e verifique passaporte 🛂 e identidade para evitar imprevistos. Florianópolis tem praias incríveis como Joaquina e Daniela, perfeitas para o verão.\n✔️ Itens essenciais para curtir a Ilha da Magia sem preocupações.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ViagemNacional #FériasPerfeitas",
-    "drive_url": "https://drive.google.com/file/d/11I4vws3kvAi3eVkdHX8drR3Lb2i6Hn0Q/view?usp=drive_link"
-  },
+    "description": "Explore as maravilhas de Angra dos Reis! ⛵🌊 Com ilhas paradisíacas como Ilha Grande e Lopes Mendes, esse destino é perfeito para quem ama o mar. Nosso pacote a partir de 10x de R$250,00 inclui ✈️ passagens, 🏨 hospedagem e passeios de barco.\n✔️ Um roteiro cheio de praias e natureza para suas férias.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#PasseiosAngra #PraiasDoRJ #FériasPerfeitas \n5 Praias Floripa\nPrepare-se para 5 Praias Floripa! 🏖️✈️ Leve um adaptador universal, contrate um seguro viagem e verifique passaporte 🛂 e identidade para evitar imprevistos. Florianópolis tem praias incríveis como Joaquina e Daniela, perfeitas para o verão.\n✔️ Itens essenciais para curtir a Ilha da Magia sem preocupações.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ViagemNacional #FériasPerfeitas"
+  , "drive_url": "https://drive.google.com/file/d/11I4vws3kvAi3eVkdHX8drR3Lb2i6Hn0Q/view?usp=drive_link"},
   {
     "title": "Arraial do Cabo",
     "url": "https://www.canva.com/design/DAGhx1FIZ9A/8qF6DjcZAv4_IN_qwJuYMw/view?utm_content=DAGhx1FIZ9A&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -1027,86 +960,74 @@ export const templates: Template[] = [
     "title": "Balneário Camboriú",
     "url": "https://www.canva.com/design/DAGkxPpLy4w/HSkS1GTYdNiwDfyG9B1f9g/view?utm_content=DAGkxPpLy4w&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Sonha com Balneário Camboriú? 🏙️🏖️ Conhecida pelos arranha-céus e pela praia central, esse destino é perfeito para quem busca diversão e modernidade. Nosso pacote a partir de R$2.500 inclui ✈️ passagens, 🏨 hospedagem e passeios como o Parque Unipraias.\n✔️ Um destino para curtir dias de sol e agito.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#BalneárioCamboriú #DestinoDosSonhos #FériasIncríveis",
-    "drive_url": "https://drive.google.com/file/d/16MLNHPAj0FHwPygFH8OUY0QSoDbWnTgc/view?usp=drive_link"
-  },
+    "description": "Sonha com Balneário Camboriú? 🏙️🏖️ Conhecida pelos arranha-céus e pela praia central, esse destino é perfeito para quem busca diversão e modernidade. Nosso pacote a partir de R$2.500 inclui ✈️ passagens, 🏨 hospedagem e passeios como o Parque Unipraias.\n✔️ Um destino para curtir dias de sol e agito.\nGaranta sua vaga pelo WhatsApp: (99) 9 9999-9999\n#BalneárioCamboriú #DestinoDosSonhos #FériasIncríveis"
+  , "drive_url": "https://drive.google.com/file/d/16MLNHPAj0FHwPygFH8OUY0QSoDbWnTgc/view?usp=drive_link"},
   {
     "title": "Fernando de Noronha",
     "url": "https://www.canva.com/design/DAGgHZ-fCuI/RFrxKhGE6O92snzhuuv0BA/view?utm_content=DAGgHZ-fCuI&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem para Fernando de Noronha sem preocupações! 🐠🏝️ Esse arquipélago é famoso pelas praias paradisíacas e vida marinha rica, ideal para mergulhos inesquecíveis. Nosso pacote completo inclui ✈️ passagens aéreas, 🏨 hospedagem em pousada charmosa e até opções de passeios para explorar a ilha, tudo em até 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens",
-    "drive_url": "https://drive.google.com/file/d/10yEMLzRjLik8_3MM-Oz77oBJQWZODZHX/view?usp=drive_link"
-  },
+    "description": "Planeje sua viagem para Fernando de Noronha sem preocupações! 🐠🏝️ Esse arquipélago é famoso pelas praias paradisíacas e vida marinha rica, ideal para mergulhos inesquecíveis. Nosso pacote completo inclui ✈️ passagens aéreas, 🏨 hospedagem em pousada charmosa e até opções de passeios para explorar a ilha, tudo em até 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens"
+  , "drive_url": "https://drive.google.com/file/d/10yEMLzRjLik8_3MM-Oz77oBJQWZODZHX/view?usp=drive_link"},
   {
     "title": "Fernando de Noronha 2",
     "url": "https://www.canva.com/design/DAGgHZ-fCuI/RFrxKhGE6O92snzhuuv0BA/view?utm_content=DAGgHZ-fCuI&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem para Fernando de Noronha sem preocupações! 🐠🏝️ Esse arquipélago é famoso pelas praias paradisíacas e vida marinha rica, ideal para mergulhos inesquecíveis. Nosso pacote completo inclui ✈️ passagens aéreas, 🏨 hospedagem em pousada charmosa e até opções de passeios para explorar a ilha, tudo em até 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens",
-    "drive_url": "https://drive.google.com/file/d/10yEMLzRjLik8_3MM-Oz77oBJQWZODZHX/view?usp=drive_link"
-  },
+    "description": "Planeje sua viagem para Fernando de Noronha sem preocupações! 🐠🏝️ Esse arquipélago é famoso pelas praias paradisíacas e vida marinha rica, ideal para mergulhos inesquecíveis. Nosso pacote completo inclui ✈️ passagens aéreas, 🏨 hospedagem em pousada charmosa e até opções de passeios para explorar a ilha, tudo em até 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens"
+  , "drive_url": "https://drive.google.com/file/d/10yEMLzRjLik8_3MM-Oz77oBJQWZODZHX/view?usp=drive_link"},
   {
     "title": "Florianópolis",
     "url": "https://www.canva.com/design/DAGhwS47xPc/nB1DGxHhCj4jH1ZATP8xeQ/view?utm_content=DAGhwS47xPc&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Relembre momentos incríveis em Florianópolis - SC! 🏖️🌅 Conhecida como a \"Ilha da Magia\", Floripa tem praias para todos os gostos, de Jurerê a Campeche. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem, para você planejar sua próxima viagem dos sonhos.\n✔️ Um destino com paisagens de tirar o fôlego e muita diversão.\nDescubra mais pelo WhatsApp: (99) 9 9999-9999\n#Florianópolis #TBTDeViagem #DestinoIncrível",
-    "drive_url": "https://drive.google.com/file/d/10WpZTgI6o3Tunt9zZfOhl78qJwFHA_K6/view?usp=drive_link"
-  },
+    "description": "Relembre momentos incríveis em Florianópolis - SC! 🏖️🌅 Conhecida como a \"Ilha da Magia\", Floripa tem praias para todos os gostos, de Jurerê a Campeche. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem, para você planejar sua próxima viagem dos sonhos.\n✔️ Um destino com paisagens de tirar o fôlego e muita diversão.\nDescubra mais pelo WhatsApp: (99) 9 9999-9999\n#Florianópolis #TBTDeViagem #DestinoIncrível"
+  , "drive_url": "https://drive.google.com/file/d/10WpZTgI6o3Tunt9zZfOhl78qJwFHA_K6/view?usp=drive_link"},
   {
     "title": "Florianópolis - SC",
     "url": "https://www.canva.com/design/DAGhx_YRl4E/KkH3YyyjWUbaHasgdbRhnw/view?utm_content=DAGhx_YRl4E&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Relembre momentos incríveis em Florianópolis - SC! 🏖️🌅 Conhecida como a \"Ilha da Magia\", Floripa tem praias para todos os gostos, de Jurerê a Campeche. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem, para você planejar sua próxima viagem dos sonhos.\n✔️ Um destino com paisagens de tirar o fôlego e muita diversão.\nDescubra mais pelo WhatsApp: (99) 9 9999-9999\n#Florianópolis #TBTDeViagem #DestinoIncrível",
-    "drive_url": "https://drive.google.com/file/d/10WpZTgI6o3Tunt9zZfOhl78qJwFHA_K6/view?usp=drive_link"
-  },
+    "description": "Relembre momentos incríveis em Florianópolis - SC! 🏖️🌅 Conhecida como a \"Ilha da Magia\", Floripa tem praias para todos os gostos, de Jurerê a Campeche. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem, para você planejar sua próxima viagem dos sonhos.\n✔️ Um destino com paisagens de tirar o fôlego e muita diversão.\nDescubra mais pelo WhatsApp: (99) 9 9999-9999\n#Florianópolis #TBTDeViagem #DestinoIncrível"
+  , "drive_url": "https://drive.google.com/file/d/10WpZTgI6o3Tunt9zZfOhl78qJwFHA_K6/view?usp=drive_link"},
   {
     "title": "Foz do Iguaçu",
     "url": "https://www.canva.com/design/DAGhx1v1w7w/F17wJ25v9l9cQ65F-E_36g/view?utm_content=DAGhx1v1w7w&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Levante cedo para viajar para Foz do Iguaçu e viva um dia incrível! 🌊✨ As Cataratas e o Parque das Aves são paradas obrigatórias nesse destino cheio de natureza. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você começar o dia com o pé direito.\n✔️ Nada como um amanhecer rumo a um destino dos sonhos.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#AcordarCedo #ViagemDosSonhos #FériasIncríveis",
-    "drive_url": "https://drive.google.com/file/d/10i5BGZUQ9BxjzOhbFCRQ-dJUhltV8nav/view?usp=drive_link"
-  },
+    "description": "Levante cedo para viajar para Foz do Iguaçu e viva um dia incrível! 🌊✨ As Cataratas e o Parque das Aves são paradas obrigatórias nesse destino cheio de natureza. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem para você começar o dia com o pé direito.\n✔️ Nada como um amanhecer rumo a um destino dos sonhos.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#AcordarCedo #ViagemDosSonhos #FériasIncríveis"
+  , "drive_url": "https://drive.google.com/file/d/10i5BGZUQ9BxjzOhbFCRQ-dJUhltV8nav/view?usp=drive_link"},
   {
     "title": "Fortaleza - CE",
     "url": "https://www.canva.com/design/DAGhx2zhYTo/TP_AUJzDtnYgSNnPH1pBQQ/view?utm_content=DAGhx2zhYTo&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Fortaleza - CE te espera para uma viagem inesquecível! 🌊✨ Reúna a galera e curta o sol, as praias como Morro Branco e a cultura vibrante do Ceará. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para explorar a cidade e arredores.\n✔️ Uma experiência perfeita para grupos de amigos ou família.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#BoraPraFortaleza #ViagemComAmigos #FériasNaPraia",
-    "drive_url": "https://drive.google.com/file/d/1EqYrTE5jDMNNBoSlL28CLuj3-1GuJGPb/view?usp=drive_link"
-  },
+    "description": "Fortaleza - CE te espera para uma viagem inesquecível! 🌊✨ Reúna a galera e curta o sol, as praias como Morro Branco e a cultura vibrante do Ceará. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para explorar a cidade e arredores.\n✔️ Uma experiência perfeita para grupos de amigos ou família.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#BoraPraFortaleza #ViagemComAmigos #FériasNaPraia"
+  , "drive_url": "https://drive.google.com/file/d/1EqYrTE5jDMNNBoSlL28CLuj3-1GuJGPb/view?usp=drive_link"},
   {
     "title": "Genipabu",
     "url": "https://www.canva.com/design/DAGhwaQuLJg/kKB3SFgHCa39cJx01EnpNg/view?utm_content=DAGhwaQuLJg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Viaje em família para Genipabu! 🐪🌴 Conhecido pelas dunas e passeios de buggy, esse destino é perfeito para crianças e adultos. Outras opções incríveis incluem Gramado, Florianópolis e Pantanal, com pacotes que incluem ✈️ passagens e 🏨 hospedagem.\n✔️ Momentos inesquecíveis para todas as idades garantidos.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViagemComCrianças #FériasEmFamília #Genipabu \nDestinos Internacionais ✈️",
-    "drive_url": "https://drive.google.com/file/d/164zk3RU3OkQ_lfEVE9u9hw4y2YdDILnX/view?usp=drive_link"
-  },
+    "description": "Viaje em família para Genipabu! 🐪🌴 Conhecido pelas dunas e passeios de buggy, esse destino é perfeito para crianças e adultos. Outras opções incríveis incluem Gramado, Florianópolis e Pantanal, com pacotes que incluem ✈️ passagens e 🏨 hospedagem.\n✔️ Momentos inesquecíveis para todas as idades garantidos.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViagemComCrianças #FériasEmFamília #Genipabu \nDestinos Internacionais ✈️"
+  , "drive_url": "https://drive.google.com/file/d/164zk3RU3OkQ_lfEVE9u9hw4y2YdDILnX/view?usp=drive_link"},
   {
     "title": "Gramado",
     "url": "https://www.canva.com/design/DAGhwMD4p38/n5PE59SkUst9g6gz9r8TGA/view?utm_content=DAGhwMD4p38&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Evite surpresas no aeroporto ao viajar para Gramado! 🧳✈️ Confira dicas para não ter problemas com excesso de bagagem e curta o charme da Serra Gaúcha, com suas ruas floridas e o clima europeu. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Viaje tranquilo e aproveite cada momento sem estresse.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ExcessoDeBagagem #ViagemSemEstresse",
-    "drive_url": "https://drive.google.com/file/d/11L2RzID7XdutobpsEidXivyKsuumC2zs/view?usp=drive_link"
-  },
+    "description": "Evite surpresas no aeroporto ao viajar para Gramado! 🧳✈️ Confira dicas para não ter problemas com excesso de bagagem e curta o charme da Serra Gaúcha, com suas ruas floridas e o clima europeu. Nosso pacote inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Viaje tranquilo e aproveite cada momento sem estresse.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#DicasDeViagem #ExcessoDeBagagem #ViagemSemEstresse"
+  , "drive_url": "https://drive.google.com/file/d/1ZllH2c8PoKcgviU13W2CcGo_jyxCeBIp/view?usp=drive_link"},
   {
     "title": "Jalapão - TO",
     "url": "https://www.canva.com/design/DAGhwEYMGGc/UG3YbQaMWIPKSpohnITB1w/view?utm_content=DAGhwEYMGGc&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Sonha com o Jalapão - TO? 🏜️🌄 Esse destino é famoso pelas dunas douradas, cachoeiras cristalinas e fervedouros únicos. Nosso pacote a partir de R$2.500 inclui ✈️ passagens, 🏨 hospedagem e passeios guiados para explorar o melhor da região.\n✔️ Uma experiência de tranquilidade e conexão com a natureza.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#Jalapão #DestinoDosSonhos #FériasNoParaíso",
-    "drive_url": "https://drive.google.com/file/d/112UUcnFQlh6a6j4QtLXuyX83KO9w6MKZ/view?usp=drive_link"
-  },
+    "description": "Sonha com o Jalapão - TO? 🏜️🌄 Esse destino é famoso pelas dunas douradas, cachoeiras cristalinas e fervedouros únicos. Nosso pacote a partir de R$2.500 inclui ✈️ passagens, 🏨 hospedagem e passeios guiados para explorar o melhor da região.\n✔️ Uma experiência de tranquilidade e conexão com a natureza.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#Jalapão #DestinoDosSonhos #FériasNoParaíso"
+  , "drive_url": "https://drive.google.com/file/d/112UUcnFQlh6a6j4QtLXuyX83KO9w6MKZ/view?usp=drive_link"},
   {
     "title": "Jericoacoara - CE",
     "url": "https://www.canva.com/design/DAGhxtB6T-o/RCEDEQt4lZNBjH4PvtHkag/view?utm_content=DAGhxtB6T-o&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Relaxe em Jericoacoara - CE, um dos destinos mais charmosos do Brasil! 🌅✨ Conhecida pelo pôr do sol na Duna do Por do Sol e pela Lagoa do Paraíso, Jeri é perfeita para quem ama natureza e tranquilidade. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e traslados, com parcelamento no boleto para facilitar sua viagem.\n✔️ Atendimento personalizado para você viajar sem preocupações.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#PlanejeSuasFérias #PacotesImperdíveis #FériasDosSonhos",
-    "drive_url": "https://drive.google.com/file/d/11KjCpWManwQUucEcR5MNJWL-a5-U1jdr/view?usp=drive_link"
-  },
+    "description": "Relaxe em Jericoacoara - CE, um dos destinos mais charmosos do Brasil! 🌅✨ Conhecida pelo pôr do sol na Duna do Por do Sol e pela Lagoa do Paraíso, Jeri é perfeita para quem ama natureza e tranquilidade. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e traslados, com parcelamento no boleto para facilitar sua viagem.\n✔️ Atendimento personalizado para você viajar sem preocupações.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#PlanejeSuasFérias #PacotesImperdíveis #FériasDosSonhos"
+  , "drive_url": "https://drive.google.com/file/d/11KjCpWManwQUucEcR5MNJWL-a5-U1jdr/view?usp=drive_link"},
   {
     "title": "Jericoacoara - CE 2",
     "url": "https://www.canva.com/design/DAGhxtB6T-o/RCEDEQt4lZNBjH4PvtHkag/view?utm_content=DAGhxtB6T-o&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Relaxe em Jericoacoara - CE, um dos destinos mais charmosos do Brasil! 🌅✨ Conhecida pelo pôr do sol na Duna do Por do Sol e pela Lagoa do Paraíso, Jeri é perfeita para quem ama natureza e tranquilidade. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e traslados, com parcelamento no boleto para facilitar sua viagem.\n✔️ Atendimento personalizado para você viajar sem preocupações.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#PlanejeSuasFérias #PacotesImperdíveis #FériasDosSonhos",
-    "drive_url": "https://drive.google.com/file/d/11KjCpWManwQUucEcR5MNJWL-a5-U1jdr/view?usp=drive_link"
-  },
+    "description": "Relaxe em Jericoacoara - CE, um dos destinos mais charmosos do Brasil! 🌅✨ Conhecida pelo pôr do sol na Duna do Por do Sol e pela Lagoa do Paraíso, Jeri é perfeita para quem ama natureza e tranquilidade. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e traslados, com parcelamento no boleto para facilitar sua viagem.\n✔️ Atendimento personalizado para você viajar sem preocupações.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#PlanejeSuasFérias #PacotesImperdíveis #FériasDosSonhos"
+  , "drive_url": "https://drive.google.com/file/d/11KjCpWManwQUucEcR5MNJWL-a5-U1jdr/view?usp=drive_link"},
   {
     "title": "João Pessoa",
     "url": "https://www.canva.com/design/DAGhwRksmlI/gyGrROLbdlUM3cT9tEzM7g/view?utm_content=DAGhwRksmlI&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -1118,42 +1039,37 @@ export const templates: Template[] = [
     "url": "https://www.canva.com/design/DAGhv3tKwjM/hkKEdAi4X4NLB0fkiaIMVw/view?utm_content=DAGhv3tKwjM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
     "description": "✨ A aventura te espera com Lençóis Maranhenses! ✈️🌍\\n\\n🔥 Nossos pacotes e conteúdos são criados para você colecionar momentos inesquecíveis sem preocupações.\\n\\n👇 Clique no link da BIO para aproveitar as melhores condições!\\n📲 (99) 9 9999-9999\\n\\n#LençóisMaranhenses #ViagemPerfeita #AgenciaDeViagens"
-  },
+  , "drive_url": "https://drive.google.com/file/d/10ZKe1KeMUJLfd1tMTZzpyBfbuj3DpsAB/view?usp=drive_link"},
   {
     "title": "Maceió - AL",
     "url": "https://www.canva.com/design/DAGhw3sD28w/yFm8fW4z_5yXo0Xf_8_p_A/view?utm_content=DAGhw3sD28w&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Está na hora de planejar suas férias dos sonhos em Maceió - AL! 🌴✨ Curta 5 dias nesse paraíso nordestino com praias de águas cristalinas e coqueiros que parecem de cartão-postal. Nosso pacote inclui: ✈️ passagens aéreas de ida e volta, 🧳 bagagem despachada e 🏨 5 diárias em um hotel de luxo com vista para o mar. Tudo isso por apenas 10x de R$450,00!\n✔️ Um destino perfeito para relaxar e tirar fotos incríveis 📸.\nGaranta seu pacote agora no WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MaceióDream #AgenciaDeViagens",
-    "drive_url": "https://drive.google.com/file/d/11EaH5lDoZ-vz7qlySeti0YlYF71VXQb8/view?usp=drive_link"
-  },
+    "description": "Está na hora de planejar suas férias dos sonhos em Maceió - AL! 🌴✨ Curta 5 dias nesse paraíso nordestino com praias de águas cristalinas e coqueiros que parecem de cartão-postal. Nosso pacote inclui: ✈️ passagens aéreas de ida e volta, 🧳 bagagem despachada e 🏨 5 diárias em um hotel de luxo com vista para o mar. Tudo isso por apenas 10x de R$450,00!\n✔️ Um destino perfeito para relaxar e tirar fotos incríveis 📸.\nGaranta seu pacote agora no WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MaceióDream #AgenciaDeViagens"
+  , "drive_url": "https://drive.google.com/file/d/11EaH5lDoZ-vz7qlySeti0YlYF71VXQb8/view?usp=drive_link"},
   {
     "title": "Maceió - AL 2",
     "url": "https://www.canva.com/design/DAGhxmTOAhQ/wrNbplr_yXOl3ZDrWlJexQ/view?utm_content=DAGhxmTOAhQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Está na hora de planejar suas férias dos sonhos em Maceió - AL! 🌴✨ Curta 5 dias nesse paraíso nordestino com praias de águas cristalinas e coqueiros que parecem de cartão-postal. Nosso pacote inclui: ✈️ passagens aéreas de ida e volta, 🧳 bagagem despachada e 🏨 5 diárias em um hotel de luxo com vista para o mar. Tudo isso por apenas 10x de R$450,00!\n✔️ Um destino perfeito para relaxar e tirar fotos incríveis 📸.\nGaranta seu pacote agora no WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MaceióDream #AgenciaDeViagens",
-    "drive_url": "https://drive.google.com/file/d/11EaH5lDoZ-vz7qlySeti0YlYF71VXQb8/view?usp=drive_link"
-  },
+    "description": "Está na hora de planejar suas férias dos sonhos em Maceió - AL! 🌴✨ Curta 5 dias nesse paraíso nordestino com praias de águas cristalinas e coqueiros que parecem de cartão-postal. Nosso pacote inclui: ✈️ passagens aéreas de ida e volta, 🧳 bagagem despachada e 🏨 5 diárias em um hotel de luxo com vista para o mar. Tudo isso por apenas 10x de R$450,00!\n✔️ Um destino perfeito para relaxar e tirar fotos incríveis 📸.\nGaranta seu pacote agora no WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MaceióDream #AgenciaDeViagens"
+  , "drive_url": "https://drive.google.com/file/d/11EaH5lDoZ-vz7qlySeti0YlYF71VXQb8/view?usp=drive_link"},
   {
     "title": "Maragogi",
     "url": "https://www.canva.com/design/DAGhw_eHvbM/qxWP7WwLFPC7KF7NySVs4g/view?utm_content=DAGhw_eHvbM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Descubra as maravilhas de Maragogi! 🐠🌴 Suas águas cristalinas e corais são perfeitas para snorkeling e passeios de buggy. Nosso pacote a partir de 10x de R$450,00 inclui ✈️ passagens, 🏨 hospedagem e traslados para você aproveitar o melhor do destino.\n✔️ Um pedacinho do paraíso brasileiro te espera.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#BelezasDoBrasil #ViajarPeloBrasil #FériasNoBrasil",
-    "drive_url": "https://drive.google.com/file/d/10LeDT87lhcl9XFOck533SscCs5I2iqqZ/view?usp=drive_link"
-  },
+    "description": "Descubra as maravilhas de Maragogi! 🐠🌴 Suas águas cristalinas e corais são perfeitas para snorkeling e passeios de buggy. Nosso pacote a partir de 10x de R$450,00 inclui ✈️ passagens, 🏨 hospedagem e traslados para você aproveitar o melhor do destino.\n✔️ Um pedacinho do paraíso brasileiro te espera.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#BelezasDoBrasil #ViajarPeloBrasil #FériasNoBrasil"
+  , "drive_url": "https://drive.google.com/file/d/10LeDT87lhcl9XFOck533SscCs5I2iqqZ/view?usp=drive_link"},
   {
     "title": "Maragogi - AL",
     "url": "https://www.canva.com/design/DAGhwJyD-m4/TE1xwqFNlGEAgV4gjLRX-w/view?utm_content=DAGhwJyD-m4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Descubra as maravilhas de Maragogi! 🐠🌴 Suas águas cristalinas e corais são perfeitas para snorkeling e passeios de buggy. Nosso pacote a partir de 10x de R$450,00 inclui ✈️ passagens, 🏨 hospedagem e traslados para você aproveitar o melhor do destino.\n✔️ Um pedacinho do paraíso brasileiro te espera.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#BelezasDoBrasil #ViajarPeloBrasil #FériasNoBrasil",
-    "drive_url": "https://drive.google.com/file/d/10LeDT87lhcl9XFOck533SscCs5I2iqqZ/view?usp=drive_link"
-  },
+    "description": "Descubra as maravilhas de Maragogi! 🐠🌴 Suas águas cristalinas e corais são perfeitas para snorkeling e passeios de buggy. Nosso pacote a partir de 10x de R$450,00 inclui ✈️ passagens, 🏨 hospedagem e traslados para você aproveitar o melhor do destino.\n✔️ Um pedacinho do paraíso brasileiro te espera.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#BelezasDoBrasil #ViajarPeloBrasil #FériasNoBrasil"
+  , "drive_url": "https://drive.google.com/file/d/10LeDT87lhcl9XFOck533SscCs5I2iqqZ/view?usp=drive_link"},
   {
     "title": "Natal - RN",
     "url": "https://www.canva.com/design/DAGhwz53i7M/20_V42J1bT-lW9404WJ_7w/view?utm_content=DAGhwz53i7M&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Curta o calor em 3 paraísos: Natal - RN, Porto de Galinhas e Angra dos Reis! 🏖️☀️ Natal tem dunas incríveis e passeios de buggy em Genipabu, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções de praias paradisíacas para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n #DestinosDeVerão #ViajarÉViver",
-    "drive_url": "https://drive.google.com/file/d/1vYhYavLpGaDnMdvti8tmHV_CAsv-MLNG/view?usp=drive_link"
-  },
+    "description": "Curta o calor em 3 paraísos: Natal - RN, Porto de Galinhas e Angra dos Reis! 🏖️☀️ Natal tem dunas incríveis e passeios de buggy em Genipabu, perfeitos para o verão. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você escolher seu destino favorito.\n✔️ Três opções de praias paradisíacas para suas férias.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n #DestinosDeVerão #ViajarÉViver"
+  , "drive_url": "https://drive.google.com/file/d/1vYhYavLpGaDnMdvti8tmHV_CAsv-MLNG/view?usp=drive_link"},
   {
     "title": "Ouro Preto",
     "url": "https://www.canva.com/design/DAGhyI8YO-s/7t2BK0UOu13ckNb6PEbl6A/view?utm_content=DAGhyI8YO-s&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -1164,30 +1080,26 @@ export const templates: Template[] = [
     "title": "Pantanal",
     "url": "https://www.canva.com/design/DAGhwGGAzDo/k-esCqBx31QG2ZoilCXc_w/view?utm_content=DAGhwGGAzDo&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Viva dias inesquecíveis no Pantanal! 🐾🌿 Conhecido pela biodiversidade, esse destino é ideal para safáris fotográficos e observação de animais como onças e jacarés. Nosso pacote para 2 adultos inclui ✈️ passagens e hospedagem, por apenas R$2.900.\n✔️ Uma aventura na natureza que você nunca vai esquecer.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#PantanalDosSonhos #PacoteDeViagem #FériasInesquecíveis",
-    "drive_url": "https://drive.google.com/file/d/11-A9Nw4g9P0pY-FbtgeV2PNQBir1qi3E/view?usp=drive_link"
-  },
+    "description": "Viva dias inesquecíveis no Pantanal! 🐾🌿 Conhecido pela biodiversidade, esse destino é ideal para safáris fotográficos e observação de animais como onças e jacarés. Nosso pacote para 2 adultos inclui ✈️ passagens e hospedagem, por apenas R$2.900.\n✔️ Uma aventura na natureza que você nunca vai esquecer.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#PantanalDosSonhos #PacoteDeViagem #FériasInesquecíveis"
+  , "drive_url": "https://drive.google.com/file/d/11-A9Nw4g9P0pY-FbtgeV2PNQBir1qi3E/view?usp=drive_link"},
   {
     "title": "Porto de Galinhas",
     "url": "https://www.canva.com/design/DAGhwGiUmwQ/yUkdvMfiPGQS6oeEOVG3aQ/view?utm_content=DAGhwGiUmwQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem para Porto de Galinhas pelo nosso site! 🏖️✈️ Rápido, seguro e com ofertas exclusivas, nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para explorar as piscinas naturais e a vila charmosa de Porto.\n✔️ Tudo pronto para sua próxima aventura em poucos cliques.\nAcesse pelo WhatsApp: (99) 9 9999-9999\n#CompreOnline #PacotesDeViagem #FériasDosSonhos",
-    "drive_url": "https://drive.google.com/file/d/113qBaiObhwaIVivBhxIVej7gAss1Ekci/view?usp=drive_link"
-  },
+    "description": "Planeje sua viagem para Porto de Galinhas pelo nosso site! 🏖️✈️ Rápido, seguro e com ofertas exclusivas, nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para explorar as piscinas naturais e a vila charmosa de Porto.\n✔️ Tudo pronto para sua próxima aventura em poucos cliques.\nAcesse pelo WhatsApp: (99) 9 9999-9999\n#CompreOnline #PacotesDeViagem #FériasDosSonhos"
+  , "drive_url": "https://drive.google.com/file/d/1jvqUDXoVPVgOci374m7LH0v3oy0alK_w/view?usp=drive_link"},
   {
     "title": "Recife",
     "url": "https://www.canva.com/design/DAGhw3sD28w/yFm8fW4z_5yXo0Xf_8_p_A/view?utm_content=DAGhw3sD28w&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Busca conforto em Recife? 🌴✨ Nosso pacote para a capital pernambucana inclui café da manhã delicioso, Wi-Fi, TV e estacionamento, a partir de 10x de R$450,00. Explore o Recife Antigo e as praias de Boa Viagem com total comodidade.\n✔️ Tudo pensado para você relaxar e aproveitar ao máximo.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#PacotesCompletos #ViajarComConforto #BenefíciosExclusivos",
-    "drive_url": "https://drive.google.com/file/d/10R4FB_cytxJtbLbyToePYOwBSuxpXE5A/view?usp=drive_link"
-  },
+    "description": "Busca conforto em Recife? 🌴✨ Nosso pacote para a capital pernambucana inclui café da manhã delicioso, Wi-Fi, TV e estacionamento, a partir de 10x de R$450,00. Explore o Recife Antigo e as praias de Boa Viagem com total comodidade.\n✔️ Tudo pensado para você relaxar e aproveitar ao máximo.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#PacotesCompletos #ViajarComConforto #BenefíciosExclusivos"
+  , "drive_url": "https://drive.google.com/file/d/10R4FB_cytxJtbLbyToePYOwBSuxpXE5A/view?usp=drive_link"},
   {
     "title": "Rio de Janeiro",
     "url": "https://www.canva.com/design/DAGhx_hxmTI/JpbgiwdrRa1oFsQX1cEJIA/view?utm_content=DAGhx_hxmTI&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Descubra o Rio de Janeiro e viva experiências únicas! 🌄✨ Conhecida como a Cidade Maravilhosa, o Rio tem o Cristo Redentor, o Pão de Açúcar e praias famosas como Copacabana. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para explorar os pontos turísticos mais icônicos.\n✔️ Uma viagem para se encantar com cada cantinho da cidade.\nEntre em contato pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MagiaDosDestinos #FériasInesquecíveis",
-    "drive_url": "https://drive.google.com/file/d/10WyscibbG8F45bzSUJ0LWxhRYNBq9UiX/view?usp=drive_link"
-  },
+    "description": "Descubra o Rio de Janeiro e viva experiências únicas! 🌄✨ Conhecida como a Cidade Maravilhosa, o Rio tem o Cristo Redentor, o Pão de Açúcar e praias famosas como Copacabana. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para explorar os pontos turísticos mais icônicos.\n✔️ Uma viagem para se encantar com cada cantinho da cidade.\nEntre em contato pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MagiaDosDestinos #FériasInesquecíveis"
+  , "drive_url": "https://drive.google.com/file/d/10WyscibbG8F45bzSUJ0LWxhRYNBq9UiX/view?usp=drive_link"},
   {
     "title": "Rota das Emoções",
     "url": "https://www.canva.com/design/DAGhwfgi3L4/WT5FvMVg4ZV26zgCdLBV-A/view?utm_content=DAGhwfgi3L4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
@@ -1198,16 +1110,14 @@ export const templates: Template[] = [
     "title": "Salvador - BA",
     "url": "https://www.canva.com/design/DAGhw9-Yw7k/g_192p953xYd8gGf3D7W9w/view?utm_content=DAGhw9-Yw7k&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Viajar para Salvador - BA é colecionar momentos inesquecíveis! 🎭🌴 Explore o Pelourinho, prove o acarajé e sinta a energia única da Bahia. Nossos pacotes oferecem ✈️ passagens e 🏨 hospedagem, para você viver uma experiência cultural rica e vibrante.\n✔️ Invista em memórias que valem mais que qualquer coisa.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉInvestir #FériasPerfeitas #MomentosInesquecíveis",
-    "drive_url": "https://drive.google.com/file/d/11Ea8Vvrgff2o7h-FKfeHpvmAPG6mnd4M/view?usp=drive_link"
-  },
+    "description": "Viajar para Salvador - BA é colecionar momentos inesquecíveis! 🎭🌴 Explore o Pelourinho, prove o acarajé e sinta a energia única da Bahia. Nossos pacotes oferecem ✈️ passagens e 🏨 hospedagem, para você viver uma experiência cultural rica e vibrante.\n✔️ Invista em memórias que valem mais que qualquer coisa.\nPlaneje pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉInvestir #FériasPerfeitas #MomentosInesquecíveis"
+  , "drive_url": "https://drive.google.com/file/d/11Ea8Vvrgff2o7h-FKfeHpvmAPG6mnd4M/view?usp=drive_link"},
   {
     "title": "Trancoso - BA",
     "url": "https://www.canva.com/design/DAGhx91gbYs/ZrP6pSy-0JFNwSuMRCuL0g/view?utm_content=DAGhx91gbYs&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem dos sonhos para Trancoso - BA! 🏖️✨ Com praias paradisíacas e um centrinho charmoso, Trancoso é perfeito para relaxar e curtir a natureza. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios, com parcelamento em até 12x.\n✔️ Um destino incrível para quem busca paz e beleza.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ExplorarOMundo #PacotesDeViagem #FériasPerfeitas",
-    "drive_url": "https://drive.google.com/file/d/11E5sLSzQwF5DkCQG43uh5492tDNcmuRF/view?usp=drive_link"
-  }
+    "description": "Planeje sua viagem dos sonhos para Trancoso - BA! 🏖️✨ Com praias paradisíacas e um centrinho charmoso, Trancoso é perfeito para relaxar e curtir a natureza. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios, com parcelamento em até 12x.\n✔️ Um destino incrível para quem busca paz e beleza.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ExplorarOMundo #PacotesDeViagem #FériasPerfeitas"
+  , "drive_url": "https://drive.google.com/file/d/1LzpTyiMRisNfFU4eHe1lih4muE0up3cS/view?usp=drive_link"}
 ];
 
 export const feedTemplates: Template[] = [
@@ -1218,7 +1128,7 @@ export const feedTemplates: Template[] = [
     type: "feed",
     image_url: "/artes/arte-gratis-1.webp",
     is_new: true
-    },
+    , "drive_url": "https://drive.google.com/file/d/10LeDT87lhcl9XFOck533SscCs5I2iqqZ/view?usp=drive_link"},
   {
     id: "local-feed-2",
     title: "Rio de Janeiro (Grátis)",
@@ -1226,7 +1136,7 @@ export const feedTemplates: Template[] = [
     type: "feed",
     image_url: "/artes/arte-gratis-2.webp",
     is_new: true
-    },
+    , "drive_url": "https://drive.google.com/file/d/10WyscibbG8F45bzSUJ0LWxhRYNBq9UiX/view?usp=drive_link"},
   {
     id: "local-feed-3",
     title: "3 Desejos para o Feriado",
