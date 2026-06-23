@@ -2,17 +2,10 @@ import { useState, useEffect, useMemo, Suspense, lazy } from "react";
 // Build trigger: Freemium Transition - 2026-02-27
 import { useNavigate, useLocation, Link } from "react-router-dom";
 
-import DashboardFeatures from "@/components/canva/DashboardFeatures";
-import TopBanner from "@/components/TopBanner";
-import CategoryTabs from "@/components/CategoryTabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { templates as localTemplates, feedTemplates as localFeedTemplates, storyTemplates as localStoryTemplates, weeklyStories as localWeeklyStories } from "@/data/templates";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  useContentItems,
-  useFeaturedItems,
-} from "@/hooks/useContent";
 import { Header } from "@/components/Header";
 import SeoMetadata from "@/components/SeoMetadata";
 const BottomNav = lazy(() => import("@/components/canva/BottomNav").then(module => ({ default: module.BottomNav })));
