@@ -611,9 +611,9 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, color: string) {
+function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, color?: string) {
   ctx.save();
-  ctx.fillStyle = color;
+  if (color) ctx.fillStyle = color;
   roundRect(ctx, x, y, w, h, r);
   ctx.fill();
   ctx.restore();
@@ -2592,7 +2592,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
           
           // Desce um pouco (cursorY + 35 em vez de +24) e diminui a altura (stripeH = 50)
           const stripeY = cursorY + 12;
-          const myStripeH = 50; 
+          const myStripeH = 50;
+          const stripeH = myStripeH;
+          const pillH = myStripeH - 16;
           
           const stripeBg = navyRaw;
           const stripeFg = contrastOn(stripeBg);

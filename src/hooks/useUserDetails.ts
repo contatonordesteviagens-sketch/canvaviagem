@@ -55,7 +55,7 @@ export const useUserDetails = (userId: string | null) => {
             if (response.ok) {
               const resJson = await response.json();
               if (resJson && resJson.length > 0 && resJson[0].email_masked) {
-                const { data: hotmartSale } = await supabase
+                const { data: hotmartSale } = await (supabase as any)
                   .from("hotmart_sales")
                   .select("h_buyer_phone")
                   .eq("h_email", resJson[0].email_masked)
@@ -74,7 +74,7 @@ export const useUserDetails = (userId: string | null) => {
 
       // Fetch from leads if still null
       if (!phone) {
-        const { data: lead } = await supabase
+        const { data: lead } = await (supabase as any)
           .from("leads")
           .select("whatsapp")
           .eq("user_id", userId)
