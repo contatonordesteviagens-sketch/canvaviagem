@@ -996,44 +996,43 @@ const Index = () => {
 
       case 'feed':
         return (
-          <section className="animate-fade-in">
-            <SectionHeader
-              title="Arte para Agência de Viagens"
-              subtitle="Posts prontos para engajar seu público"
-            />
-
-            {feedLoading ? (
-              <FeedSkeleton />
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filterTemplates(allFeedTemplates).map((template, index) => (
-                  <PremiumCard
-                    key={template.id || `local-${index}`}
-                    id={template.id || `local-${index}`}
-                    title={template.title}
-                    url={template.url} driveUrl={template.drive_url}
-                    imageUrl={template.image_url}
-                    category={template.category}
-                    isNew={(template as any).isNew || (template as any).is_new}
-                    icon={getIcon(template.type, template.icon)}
-                    aspectRatio="4/5"
-                    contentType={template.type}
-                    description={template.description}
-                    onClick={() => handleCardClick(template as ContentItem)}
-                    isFavorite={template.id ? isFavorite("content_item", template.id) : false}
-                    onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
-                    onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title, index)}
-                    isPremium={checkIfItemIsPremium(template.type, template.title, index)}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-        );
-
-      case 'stories':
-        return (
           <section className="space-y-12 animate-fade-in">
+            {/* Artes para Agência de Viagens */}
+            <div>
+              <SectionHeader
+                title="Arte para Feed e Stories"
+                subtitle="Posts prontos para engajar seu público"
+              />
+
+              {feedLoading ? (
+                <FeedSkeleton />
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {filterTemplates(allFeedTemplates).map((template, index) => (
+                    <PremiumCard
+                      key={template.id || `local-${index}`}
+                      id={template.id || `local-${index}`}
+                      title={template.title}
+                      url={template.url} driveUrl={template.drive_url}
+                      imageUrl={template.image_url}
+                      category={template.category}
+                      isNew={(template as any).isNew || (template as any).is_new}
+                      icon={getIcon(template.type, template.icon)}
+                      aspectRatio="4/5"
+                      contentType={template.type}
+                      description={template.description}
+                      onClick={() => handleCardClick(template as ContentItem)}
+                      isFavorite={template.id ? isFavorite("content_item", template.id) : false}
+                      onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
+                      onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title, index)}
+                      isPremium={checkIfItemIsPremium(template.type, template.title, index)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Stories Semanais */}
             {storiesLoading ? (
               <StorySkeleton />
             ) : (
@@ -1067,6 +1066,7 @@ const Index = () => {
                   </div>
                 )}
 
+                {/* Templates de Stories */}
                 <div>
                   <SectionHeader
                     title="Templates de Stories"
@@ -1099,79 +1099,7 @@ const Index = () => {
           </section>
         );
 
-      // offers case handled below after 'tools'
-
-      case 'captions':
-        return (
-          <section className="animate-fade-in">
-            <SectionHeader
-              title="Legendas Prontas"
-              subtitle="Copie e cole legendas profissionais para seus posts"
-            />
-
-            {captionsLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <Skeleton key={i} className="h-48 rounded-xl" />
-                ))}
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {displayedCaptions.map((caption, index) => (
-                    <div key={caption.id} onClick={() => handleCaptionClick(caption)}>
-                      <CaptionCard
-                        id={caption.id}
-                        destination={caption.destination}
-                        text={caption.text}
-                        hashtags={caption.hashtags}
-                        isFavorite={isFavorite("caption", caption.id)}
-                        onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                        onPremiumRequired={getPremiumCallback(activeCategory, false, 'caption', caption.destination, index)}
-                        isPremium={checkIfItemIsPremium('caption', caption.destination, index)}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {filteredCaptions.length > 8 && (
-                  <div className="flex justify-center mt-8">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowAllCaptions(!showAllCaptions)}
-                      className="gap-2 rounded-full px-6"
-                    >
-                      {showAllCaptions ? (
-                        <>
-                          <ChevronUp className="h-4 w-4" />
-                          Mostrar menos
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="h-4 w-4" />
-                          Ver mais legendas
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-
-                {/* Resources and Downloads — lazy loaded, merged for component compatibility */}
-                <Suspense fallback={<div className="h-48 bg-muted/10 animate-pulse rounded-2xl" />}>
-                  <ResourceSection
-                    title="Recursos e Downloads"
-                    resources={[...resources, ...videoDownloads].map(r => ({
-                      ...r,
-                      onPremiumRequired: getPremiumCallback('all', true, 'resource', r.name)
-                    }))}
-                    locked={!isSubscribed}
-                    onLockedClick={() => setShowPremiumGate(true)}
-                  />
-                </Suspense>
-              </>
-            )}
-          </section>
-        );
+      // removed stories case
 
       case 'downloads':
         return (
@@ -1251,50 +1179,123 @@ const Index = () => {
           cta: contentLibrary.filter(i => i.category === 'cta').length,
         };
         return (
-          <section className="animate-fade-in">
-            <SectionHeader
-              title="Central de Conteúdo"
-              subtitle="Ofertas, destinos em alta, scripts e frases de impacto"
-            />
+          <section className="space-y-12 animate-fade-in">
+            {/* Ofertas */}
+            <div>
+              <SectionHeader
+                title="Ofertas Validadas"
+                subtitle="Ofertas, destinos em alta, scripts e frases de impacto"
+              />
 
-            <Tabs defaultValue="offer" className="w-full">
-              <TabsList className="flex w-full overflow-x-auto no-scrollbar mb-6 gap-1 bg-muted/50 p-1 rounded-xl">
-                <TabsTrigger value="offer" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
-                  📢 Ofertas <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.offer}</Badge>
-                </TabsTrigger>
-                <TabsTrigger value="ranking" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
-                  📊 Destinos <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.ranking}</Badge>
-                </TabsTrigger>
-                <TabsTrigger value="script" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
-                  📋 Scripts <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.script}</Badge>
-                </TabsTrigger>
-                <TabsTrigger value="cta" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
-                  🔥 Frases <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.cta}</Badge>
-                </TabsTrigger>
-              </TabsList>
+              <Tabs defaultValue="offer" className="w-full">
+                <TabsList className="flex w-full overflow-x-auto no-scrollbar mb-6 gap-1 bg-muted/50 p-1 rounded-xl">
+                  <TabsTrigger value="offer" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
+                    📢 Ofertas <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.offer}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="ranking" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
+                    📊 Destinos <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.ranking}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="script" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
+                    📋 Scripts <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.script}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="cta" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
+                    🔥 Frases <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.cta}</Badge>
+                  </TabsTrigger>
+                </TabsList>
 
-              {(['offer', 'ranking', 'script', 'cta'] as const).map((cat) => (
-                <TabsContent key={cat} value={cat}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {contentLibrary
-                      .filter(item => item.category === cat)
-                      .map((item) => (
-                        <OfferCard
-                          key={item.id}
-                          id={item.id}
-                          title={item.title}
-                          text={item.text}
-                          fullText={item.fullText}
-                          isFavorite={isFavorite("content_item", item.id)}
-                          onToggleFavorite={() => handleToggleFavorite("content_item", item.id)}
-                          onPremiumRequired={getPremiumCallback('offers', item.isPremium)}
-                          isPremium={item.isPremium}
+                {(['offer', 'ranking', 'script', 'cta'] as const).map((cat) => (
+                  <TabsContent key={cat} value={cat}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {contentLibrary
+                        .filter(item => item.category === cat)
+                        .map((item) => (
+                          <OfferCard
+                            key={item.id}
+                            id={item.id}
+                            title={item.title}
+                            text={item.text}
+                            fullText={item.fullText}
+                            isFavorite={isFavorite("content_item", item.id)}
+                            onToggleFavorite={() => handleToggleFavorite("content_item", item.id)}
+                            onPremiumRequired={getPremiumCallback('offers', item.isPremium)}
+                            isPremium={item.isPremium}
+                          />
+                        ))}
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </div>
+
+            {/* Legendas */}
+            <div>
+              <SectionHeader
+                title="Legendas Prontas"
+                subtitle="Copie e cole legendas profissionais para seus posts"
+              />
+
+              {captionsLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[...Array(6)].map((_, i) => (
+                    <Skeleton key={i} className="h-48 rounded-xl" />
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {displayedCaptions.map((caption, index) => (
+                      <div key={caption.id} onClick={() => handleCaptionClick(caption)}>
+                        <CaptionCard
+                          id={caption.id}
+                          destination={caption.destination}
+                          text={caption.text}
+                          hashtags={caption.hashtags}
+                          isFavorite={isFavorite("caption", caption.id)}
+                          onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
+                          onPremiumRequired={getPremiumCallback(activeCategory, false, 'caption', caption.destination, index)}
+                          isPremium={checkIfItemIsPremium('caption', caption.destination, index)}
                         />
-                      ))}
+                      </div>
+                    ))}
                   </div>
-                </TabsContent>
-              ))}
-            </Tabs>
+
+                  {filteredCaptions.length > 8 && (
+                    <div className="flex justify-center mt-8">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAllCaptions(!showAllCaptions)}
+                        className="gap-2 rounded-full px-6"
+                      >
+                        {showAllCaptions ? (
+                          <>
+                            <ChevronUp className="h-4 w-4" />
+                            Mostrar menos
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-4 w-4" />
+                            Ver mais legendas
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Resources and Downloads — lazy loaded, merged for component compatibility */}
+                  <Suspense fallback={<div className="h-48 bg-muted/10 animate-pulse rounded-2xl" />}>
+                    <ResourceSection
+                      title="Recursos e Downloads"
+                      resources={[...resources, ...videoDownloads].map(r => ({
+                        ...r,
+                        onPremiumRequired: getPremiumCallback('all', true, 'resource', r.name)
+                      }))}
+                      locked={!isSubscribed}
+                      onLockedClick={() => setShowPremiumGate(true)}
+                    />
+                  </Suspense>
+                </>
+              )}
+            </div>
           </section>
         );
       }

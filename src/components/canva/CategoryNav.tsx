@@ -20,19 +20,17 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
 
   const categories: { id: CategoryType; label: string; icon: React.ReactNode; isNew?: boolean }[] = [
     { id: 'all', label: 'Tudo', icon: <LayoutGrid className="w-6 h-6" /> },
-    { id: 'fabrica', label: 'Fábrica', icon: <Wand2 className="w-6 h-6" /> }, // Atualizado ícone e removido tag Novo
+    { id: 'fabrica', label: 'Fábrica', icon: <Wand2 className="w-6 h-6" />, isNew: true }, // 'Novo' added
     // Recursos PRO
     { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6" /> },
-    { id: 'feed', label: t('category.feed'), icon: <Image className="w-6 h-6" /> },
-    { id: 'stories', label: t('category.stories'), icon: <LayoutGrid className="w-6 h-6" /> },
-    { id: 'offers', label: "Ofertas", icon: <Megaphone className="w-6 h-6" />, isNew: true },
+    { id: 'feed', label: "Artes para Feed e Stories", icon: <Image className="w-6 h-6" /> },
+    { id: 'offers', label: "Ofertas e Legendas", icon: <Megaphone className="w-6 h-6" /> }, // 'Novo' removed
     { id: 'downloads', label: t('category.downloads'), icon: <Download className="w-6 h-6" /> },
 
     // Ferramentas Gratuitas
-    { id: 'captions', label: t('category.captions'), icon: <FileText className="w-6 h-6" /> },
     { id: 'tools', label: t('category.tools'), icon: <Bot className="w-6 h-6" /> },
     { id: 'videoaula', label: t('category.videoaula'), icon: <GraduationCap className="w-6 h-6" /> },
-    { id: 'contracts', label: "Contratos", icon: <FileText className="w-6 h-6" /> }, // New
+    { id: 'contracts', label: "Contratos", icon: <FileText className="w-6 h-6" /> },
 
     { id: 'favorites', label: t('category.favorites'), icon: <Heart className="w-6 h-6" /> },
   ];
