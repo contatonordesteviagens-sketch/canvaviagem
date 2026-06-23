@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, Suspense, lazy } from "react";
 // Build trigger: Freemium Transition - 2026-02-27
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import PremiumCard from "@/components/canva/PremiumCard";
+
 import DashboardFeatures from "@/components/canva/DashboardFeatures";
 import TopBanner from "@/components/TopBanner";
 import CategoryTabs from "@/components/CategoryTabs";
