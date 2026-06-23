@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { downloadLinks } from "@/data/downloads";
 import { contentLibrary } from "@/data/content-library";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight, Play, Download, Copy, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight, Play, Download, Copy, Search, Crown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
@@ -552,7 +552,7 @@ const Index = () => {
                           url={tool.url}
                           icon={tool.icon}
                           description={tool.description || "Ferramenta de IA para marketing"}
-                          isNew={tool.is_new}
+                          isNew={(tool as any).is_new}
                           onClick={() => { 
                             trackClick('tool', tool.id); 
                             trackActivity('tool');
@@ -656,7 +656,7 @@ const Index = () => {
                           <ToolCard
                             key={tool.id} id={tool.id} title={tool.title} url={tool.url}
                             icon={tool.icon} description={tool.description || "Ferramenta de IA"}
-                            isNew={tool.is_new}
+                            isNew={(tool as any).is_new}
                             onClick={() => { 
                               trackClick('tool', tool.id); 
                               trackActivity('tool');
@@ -1267,7 +1267,7 @@ const Index = () => {
                       url={tool.url}
                       icon={tool.icon}
                       description={tool.description || "Ferramenta de IA para marketing"}
-                      isNew={tool.is_new}
+                      isNew={(tool as any).is_new}
                       onClick={() => {
                         trackClick('tool', tool.id);
                         trackActivity('tool'); // +20 pts
