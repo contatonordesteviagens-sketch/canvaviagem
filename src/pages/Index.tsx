@@ -99,7 +99,7 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 
 // Static resources (downloads and resources that don't need DB management)
-import { resources, videoDownloads, feedTemplates as localFeedTemplates } from "@/data/templates";
+import { resources, videoDownloads } from "@/data/templates";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useGamification } from "@/hooks/useGamification";

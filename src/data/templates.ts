@@ -8,7 +8,6 @@ export interface Template {
   image_url?: string;
   icon?: string;
   drive_url?: string;
-  drive_url?: string;
   description?: string;
 }
 
