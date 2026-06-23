@@ -1166,38 +1166,42 @@ const Index = () => {
                         .slice(0, showAllDownloads ? undefined : 12)
                         .map((link, idx) => {
                           const isLocked = !isSubscribed;
-                          return (
-                            <Button
-                              key={idx}
-                              variant="outline"
-                              asChild={!isLocked}
-                              className="h-auto py-3 px-2 flex flex-col items-center justify-center gap-2 hover:bg-primary/5 hover:border-primary/30 transition-all rounded-2xl relative overflow-hidden group"
-                              onClick={(e) => {
-                                if (isLocked) {
+                          if (isLocked) {
+                            return (
+                              <Button
+                                key={idx}
+                                variant="outline"
+                                className="h-auto py-3 px-2 flex flex-col items-center justify-center gap-2 hover:bg-primary/5 hover:border-primary/30 transition-all rounded-2xl relative overflow-hidden group"
+                                onClick={(e) => {
                                   e.preventDefault();
                                   setShowPremiumGate(true);
-                                } else {
-                                  const cb = getPremiumCallback('all', true, 'resource', link.title);
-                                  if (cb) cb();
-                                }
-                              }}
-                            >
-                              {isLocked && (
+                                }}
+                              >
                                 <div className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm p-1 rounded-full shadow-sm">
                                   <Crown className="w-3 h-3 text-amber-500 fill-amber-500" />
                                 </div>
-                              )}
-                              {isLocked ? (
                                 <div className="flex flex-col items-center justify-center w-full h-full gap-2 text-center cursor-pointer opacity-60">
                                   <span className="text-3xl sm:text-4xl grayscale">📥</span>
                                   <span className="text-[10px] sm:text-xs font-medium line-clamp-2 leading-tight w-full px-1">{link.title}</span>
                                 </div>
-                              ) : (
-                                <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center w-full h-full gap-2 text-center">
-                                  <span className="text-3xl sm:text-4xl group-hover:scale-110 transition-transform">📥</span>
-                                  <span className="text-[10px] sm:text-xs font-medium line-clamp-2 leading-tight w-full px-1">{link.title}</span>
-                                </a>
-                              )}
+                              </Button>
+                            );
+                          }
+                          return (
+                            <Button
+                              key={idx}
+                              variant="outline"
+                              asChild
+                              className="h-auto py-3 px-2 flex flex-col items-center justify-center gap-2 hover:bg-primary/5 hover:border-primary/30 transition-all rounded-2xl relative overflow-hidden group"
+                              onClick={() => {
+                                const cb = getPremiumCallback('all', true, 'resource', link.title);
+                                if (cb) cb();
+                              }}
+                            >
+                              <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center w-full h-full gap-2 text-center">
+                                <span className="text-3xl sm:text-4xl group-hover:scale-110 transition-transform">📥</span>
+                                <span className="text-[10px] sm:text-xs font-medium line-clamp-2 leading-tight w-full px-1">{link.title}</span>
+                              </a>
                             </Button>
                           );
                         })}
