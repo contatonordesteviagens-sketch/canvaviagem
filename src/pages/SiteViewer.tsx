@@ -86,7 +86,7 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
            title="Ambiente da Agência"
            className="w-full h-full border-0 m-0 p-0"
            style={{ width: '100vw', height: '100vh', border: 'none', display: 'block' }}
-           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+           sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
          />
        )}
     </div>
