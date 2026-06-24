@@ -216,12 +216,6 @@ export function VoiceOnboarding() {
     return `${m}:${s}`;
   };
 
-  if (fabricaState.agencyName && state === "idle") {
-    // Se já preencheu, podemos esconder ou mostrar um botão pequeno,
-    // mas o requisito era mostrar para quem ainda não preencheu o perfil.
-    return null;
-  }
-
   return (
     <div className="bg-gradient-to-r from-violet-600/20 to-amber-500/20 border border-amber-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-sm mb-8">
       <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl -z-10 translate-x-1/2 -translate-y-1/2"></div>

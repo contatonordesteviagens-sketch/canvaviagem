@@ -880,7 +880,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
           console.log("[Supabase Sync] ✓ Salvo na nuvem");
           setLastSyncedAt(new Date());
           setSyncStatus("saved");
-          if (data?.id && !state.projectId) {
+          if (data?.id && (state.projectId?.startsWith("proj_") || !state.projectId)) {
             stateRef.current.projectId = data.id;
             setState(prev => ({ ...prev, projectId: data.id }));
           }

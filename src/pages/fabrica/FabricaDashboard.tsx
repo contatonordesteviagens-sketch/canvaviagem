@@ -694,7 +694,12 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                         <button
                           type="button"
                           onClick={() => {
-                            const p = savedProjects?.find(x => x.id === site.id);
+                            const p = savedProjects?.find(x => {
+                              const snap = x.state_snapshot as any;
+                              const urlSlug = snap?.siteContent?.canvaViagemUrl?.replace('https://', '')?.split('.')[0] || snap?.siteContent?.vercelUrl?.replace('https://', '')?.split('.')[0];
+                              const agencySlug = x.agency_name ? slugify(x.agency_name) : null;
+                              return urlSlug === site.id || agencySlug === site.id || x.id === site.id;
+                            });
                             if (p && p.state_snapshot) {
                               const currentName = state.agencyName || 'Sem nome';
                               const targetName = p.agency_name || 'Sem nome';
