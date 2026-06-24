@@ -172,9 +172,9 @@ serve(async (req) => {
       );
     }
 
-    // Criar link de verificação
-    const baseUrl = siteUrl || Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
-    console.log("[MAGIC-LINK] Using base URL:", baseUrl);
+    // Criar link de verificação - SEMPRE usar SITE_URL do servidor (nunca aceitar do cliente)
+    // para evitar open redirect / phishing via siteUrl controlado pelo atacante.
+    const baseUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
     const magicLink = `${baseUrl}/auth/verify?token=${token}`;
     console.log("[MAGIC-LINK] Magic link generated successfully");
 
