@@ -1227,6 +1227,62 @@ export const aiTools = [
     url: "https://chatgpt.com/g/g-69d8bcd147048191ae8cad3fe0137a6e-marketing-manager-why-not-travel",
     icon: "💼",
     description: "Abordagens comerciais precisas para atrair clientes e empresas corporativas"
+  },
+  {
+    id: "ia-headlines",
+    title: "Criador de Headlines (Mr. Beast)",
+    url: "https://chatgpt.com/g/g-mXIK1OLtB-headlines-de-alto-impacto",
+    icon: "🎯",
+    description: "Crie títulos de alto impacto para seus conteúdos"
+  },
+  {
+    id: "ia-promessas",
+    title: "Criador de Promessas Únicas",
+    url: "https://chatgpt.com/g/g-pvCUBPOH1-gerador-de-promessas-com-mecanismo-unico",
+    icon: "✨",
+    description: "Gere promessas com mecanismo único"
+  },
+  {
+    id: "ia-quizz",
+    title: "Criador de Quizz 2.0",
+    url: "https://chatgpt.com/g/g-673e0736558881918f8e65ed8c8c5e81-funil-de-quiz-2-0",
+    icon: "❓",
+    description: "Crie funis de quiz interativos"
+  },
+  {
+    id: "ia-mapa-dores",
+    title: "Mapa de Dores e Desejos",
+    url: "https://chatgpt.com/g/g-673e2ac6d1f08191bac9d38be1970598-mapa-de-dores-e-desejos",
+    icon: "🎯",
+    description: "Mapeie dores e desejos do seu público"
+  },
+  {
+    id: "ia-cursos",
+    title: "Criador de Cursos em Vídeo",
+    url: "https://chatgpt.com/g/g-e53YJbtqR-criador-de-cursos-em-video",
+    icon: "🎓",
+    description: "Desenvolva cursos em vídeo profissionais"
+  },
+  {
+    id: "ia-bonus",
+    title: "Criador de Bônus e Order Bumps",
+    url: "https://chatgpt.com/g/g-gYZKgxBX6-criador-de-bonus-e-order-bumps",
+    icon: "🎁",
+    description: "Crie bônus e ofertas irresistíveis"
+  },
+  {
+    id: "ia-corpo-anuncios",
+    title: "Corpo de Anúncios",
+    url: "https://chatgpt.com/g/g-67e9da4bd78881919f6c27aa46c0c076-corpo-de-anuncios",
+    icon: "📝",
+    description: "Desenvolva textos persuasivos para anúncios"
+  },
+  {
+    id: "ia-9-oticas",
+    title: "9 Óticas de Hooks",
+    url: "https://chatgpt.com/g/g-67e9d49f4dc88191b0e9e850ef4bb8ed-9-oticas-de-hooks",
+    icon: "🪝",
+    description: "Crie ganchos com 9 óticas diferentes"
   }
 ];
 
