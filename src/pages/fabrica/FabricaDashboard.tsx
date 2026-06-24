@@ -4,6 +4,7 @@ import { useDiagnosticos, useSaveDiagnostico } from "@/hooks/useFabricaDiagnosti
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
+import { VoiceOnboarding } from "@/components/fabrica/VoiceOnboarding";
 import { 
   Upload, 
   X, 
@@ -299,6 +300,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
   return (
     <div className="space-y-8 animate-fadeIn max-w-[1280px] mx-auto pb-12">
+      <VoiceOnboarding />
       {/* Projetos Salvos */}
       {user && (
         <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl relative overflow-hidden transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
