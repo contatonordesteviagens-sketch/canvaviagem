@@ -1283,6 +1283,27 @@ export const aiTools = [
     url: "https://chatgpt.com/g/g-67e9d49f4dc88191b0e9e850ef4bb8ed-9-oticas-de-hooks",
     icon: "🪝",
     description: "Crie ganchos com 9 óticas diferentes"
+  },
+  {
+    id: "ia-elevenlabs",
+    title: "ElevenLabs (Narração IA)",
+    url: "https://elevenlabs.io/",
+    icon: "🎙️",
+    description: "Geração de vozes realistas e clonagem de voz com IA"
+  },
+  {
+    id: "ia-fishaudio",
+    title: "Fish Audio (Clonagem de Voz)",
+    url: "https://fish.audio/",
+    icon: "🐟",
+    description: "Crie narrações profissionais e clone sua própria voz"
+  },
+  {
+    id: "ia-googleflow",
+    title: "Google Flow (Vídeos IA)",
+    url: "https://labs.google/fx/tools/flow",
+    icon: "🎥",
+    description: "Geração avançada de vídeos com Inteligência Artificial"
   }
 ];
 
