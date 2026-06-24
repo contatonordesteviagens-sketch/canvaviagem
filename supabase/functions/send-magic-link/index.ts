@@ -98,7 +98,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, name, phone, siteUrl } = await req.json();
+    const { email, name, phone } = await req.json();
 
     console.log("[MAGIC-LINK] Processing request:", {
       email: email ? email.substring(0, 5) + "***" : "missing",
