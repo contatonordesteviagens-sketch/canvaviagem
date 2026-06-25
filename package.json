@@ -100,11 +100,11 @@
     "vite": "^5.4.19"
   },
   "overrides": {
-    "dompurify": "^3.2.7",
+    "dompurify": "^3.4.11",
     "ws": "^8.18.3"
   },
   "resolutions": {
-    "dompurify": "^3.2.7",
+    "dompurify": "^3.4.11",
     "ws": "^8.18.3"
   }
 }
