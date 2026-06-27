@@ -606,7 +606,6 @@ export type Database = {
           id: string
           locale: string
           owner_id: string | null
-          project_id: string | null
           updated_at: string
         }
         Insert: {
@@ -615,7 +614,6 @@ export type Database = {
           id: string
           locale?: string
           owner_id?: string | null
-          project_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -624,7 +622,6 @@ export type Database = {
           id?: string
           locale?: string
           owner_id?: string | null
-          project_id?: string | null
           updated_at?: string
         }
         Relationships: []
