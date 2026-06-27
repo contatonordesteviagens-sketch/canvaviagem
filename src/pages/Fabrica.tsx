@@ -8,6 +8,7 @@ import { Phase4LandingBuilder } from "@/pages/fabrica/Phase4LandingBuilder";
 import { Phase5Dashboard } from "@/pages/fabrica/Phase5Dashboard";
 import { FabricaDashboard } from "@/pages/fabrica/FabricaDashboard";
 import { FabricaLibrary } from "@/pages/fabrica/FabricaLibrary";
+import { VoiceOnboarding } from "@/components/fabrica/VoiceOnboarding";
 import { 
   ArrowLeft, 
   Sparkles,
@@ -413,25 +414,43 @@ const FabricaInner = () => {
 
       {/* ── CONTEÚDO PRINCIPAL (ÁREA DE TRABALHO) ── */}
       <main className="flex-1 min-w-0 min-h-screen pt-20 md:pt-8 px-4 md:px-8 pb-24 overflow-y-auto bg-[#0A0A0B]">
-        {/* Admin Quick Phase Selector */}
+        {/* Top Bar with Voice AI and Phase Shortcuts */}
         {isAdmin && (
-          <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center gap-2 overflow-x-auto">
-            <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest mr-2 select-none">Atalhos Admin:</span>
-            {['Anúncio', 'Site', 'CRM', 'Plano', 'Checkup'].map((name, idx) => {
-              const num = idx + 1;
-              return (
+          <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center flex-wrap gap-2 relative z-40">
+            <VoiceOnboarding />
+
+            <div className="h-4 w-px bg-white/10 mx-1 hidden xl:block"></div>
+
+            <div className="flex items-center gap-2 flex-1 overflow-x-auto no-scrollbar">
               <button
-                key={num}
                 onClick={() => {
-                  setPhase(num);
-                  setActiveTab("phase");
+                  setActiveTab("dashboard");
                 }}
-                className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-colors ${
-                  activeTab === "phase" && state.currentPhase === num ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60"
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap ${
+                  activeTab === "dashboard" ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
                 }`}
-              >{name} (F{num})</button>
-              );
-            })}
+              >
+                Painel
+              </button>
+
+              {['Anúncio', 'Site', 'CRM', 'Plano', 'Checkup', 'Formulário'].map((name, idx) => {
+                const num = idx + 1;
+                return (
+                <button
+                  key={num}
+                  onClick={() => {
+                    setPhase(num);
+                    setActiveTab("phase");
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap ${
+                    activeTab === "phase" && state.currentPhase === num ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {name}
+                </button>
+                );
+              })}
+            </div>
           </div>
         )}
 

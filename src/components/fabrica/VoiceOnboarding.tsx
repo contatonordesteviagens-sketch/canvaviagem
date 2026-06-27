@@ -217,46 +217,44 @@ export function VoiceOnboarding() {
   };
 
   return (
-    <div className="mb-6 flex flex-col items-center justify-center">
+    <div className="flex items-center">
       {state === "idle" && (
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex items-center gap-2 mr-4">
           <button
             onClick={startRecording}
-            className="flex items-center justify-center w-10 h-10 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white rounded-full transition-all active:scale-95 border border-white/10"
+            className="flex items-center justify-center w-7 h-7 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-lg transition-all active:scale-95 border border-amber-500/20"
             title="Gravar por voz"
           >
-            <Mic className="w-4 h-4" />
+            <Mic className="w-3.5 h-3.5" />
           </button>
-          <span className="text-[10px] text-white/40 uppercase tracking-wide">
-            Adicione pacotes e informações da sua empresa
+          <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest select-none whitespace-nowrap">
+            Adicione informações da sua empresa
           </span>
         </div>
       )}
 
       {state === "recording" && (
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/30 px-3 py-1.5 rounded-full">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span className="text-red-400 text-xs font-bold font-mono">{formatTime(timer)}</span>
+        <div className="flex items-center gap-2 mr-4">
+          <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 px-3 py-1 rounded-full">
+            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+            <span className="text-red-400 text-[10px] font-bold font-mono">{formatTime(timer)}</span>
+            <span className="text-[9px] text-red-400/70 uppercase tracking-wide ml-1">
+              Gravando...
+            </span>
             <button
               onClick={stopRecording}
-              className="bg-red-500 hover:bg-red-600 text-white p-1 rounded-full transition-transform active:scale-95 ml-1"
+              className="bg-red-500 hover:bg-red-600 text-white p-0.5 rounded-sm transition-transform active:scale-95 ml-2"
             >
               <Square className="w-3 h-3" />
             </button>
           </div>
-          <span className="text-[10px] text-red-400/70 uppercase tracking-wide">
-            Gravando...
-          </span>
         </div>
       )}
 
       {(state === "uploading" || state === "transcribing" || state === "extracting") && (
-        <div className="flex flex-col items-center gap-2 text-amber-400">
-          <div className="bg-amber-500/10 p-2 rounded-full border border-amber-500/30">
-            <Loader2 className="w-4 h-4 animate-spin" />
-          </div>
-          <span className="text-[10px] uppercase tracking-wide font-bold">
+        <div className="flex items-center gap-2 text-amber-400 mr-4">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span className="text-[9px] uppercase tracking-wide font-bold whitespace-nowrap">
             {state === "uploading" && "Enviando..."}
             {state === "transcribing" && "Ouvindo áudio..."}
             {state === "extracting" && "Extraindo..."}
@@ -265,14 +263,12 @@ export function VoiceOnboarding() {
       )}
 
       {state === "error" && (
-        <div className="flex flex-col items-center gap-2 text-red-400">
-          <div className="flex items-center gap-2 text-xs bg-red-500/10 px-3 py-1.5 rounded-full border border-red-500/30">
-            <AlertCircle className="w-3 h-3" />
-            <span className="font-bold">{errorMsg}</span>
-          </div>
+        <div className="flex items-center gap-2 text-red-400 mr-4">
+          <AlertCircle className="w-3.5 h-3.5" />
+          <span className="font-bold text-[10px]">{errorMsg}</span>
           <button 
             onClick={() => setState("idle")}
-            className="text-[10px] text-white/50 hover:text-white underline"
+            className="text-[9px] text-white/50 hover:text-white underline ml-2 whitespace-nowrap"
           >
             Tentar novamente
           </button>
@@ -280,7 +276,7 @@ export function VoiceOnboarding() {
       )}
 
       {state === "review" && extractedData && (
-        <div className="mt-4 w-full max-w-2xl bg-black/60 border border-white/10 rounded-xl p-6 space-y-6">
+        <div className="absolute top-[110%] left-0 z-50 w-full max-w-2xl bg-[#0F0F11] border border-white/10 rounded-xl p-6 space-y-6 shadow-2xl">
           <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
             <Check className="w-4 h-4" /> Revise os Dados
           </h3>
