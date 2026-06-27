@@ -756,8 +756,8 @@ export default function Inicio2() {
               <div className="bg-green-50 border border-green-200 rounded-3xl p-6">
                 <h3 className="text-2xl font-black text-slate-950 mb-5">Com Canva Viagem</h3>
                 <div className="text-slate-700 space-y-4">
-                  <p><strong>Plano mensal:</strong> R$ 97/mês, sem compromisso.</p>
-                  <p><strong>Plano anual:</strong> R$ 347 por ano, com 12 meses de acesso.</p>
+                  <p><strong>Plano mensal:</strong> 3 dias grátis, depois R$ 97/mês, sem compromisso.</p>
+                  <p><strong>Plano anual:</strong> 3 dias grátis, depois R$ 482 por ano, com 12 meses de acesso.</p>
                   <p><strong>Você recebe:</strong> IA, páginas, conteúdos, CRM, mídias, materiais de apoio, suporte e garantia.</p>
                 </div>
               <a href="#planos" className="btn btn-primary mt-8 inline-flex">Escolher meu plano</a>
@@ -772,12 +772,12 @@ export default function Inicio2() {
               <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">oferta brasileira</p>
               <h2 className="section-title w-full text-center">Escolha seu acesso sem confusão</h2>
               <p className="section-subtitle w-full text-center" style={{ textAlign: "center", margin: "0 auto 32px" }}>
-                O mensal é para começar com menor compromisso. O anual é a melhor escolha para quem quer pagar menos por mês, ter 12 meses de acesso e economizar R$ 817.
+                O mensal é para começar com menor compromisso. O anual é a melhor escolha para quem quer pagar menos por mês, ter 12 meses de acesso e economizar {ELITE_OFFER.annualSavings}. Ambos com 3 dias de teste grátis.
               </p>
             </div>
             <div className="inicio2-pricing-grid">
               <article className="inicio2-price-card inicio2-price-card-featured">
-                <div className="inicio2-price-badge">Mais escolhido • maior economia</div>
+                <div className="inicio2-price-badge">3 dias grátis • maior economia</div>
                 <div className="inicio2-price-head">
                   <p className="inicio2-price-kicker">Plano anual</p>
                   <h3>Melhor escolha para vender com consistência</h3>
@@ -803,12 +803,12 @@ export default function Inicio2() {
 
                 <a
                   href={annualCheckoutUrl}
-                  onClick={() => trackCheckoutClick(347, "anual")}
+                  onClick={() => trackCheckoutClick(482, "anual")}
                   className="inicio2-price-cta inicio2-price-cta-primary"
                 >
-                  Garantir acesso anual com desconto
+                  Começar teste de 3 dias grátis
                 </a>
-                <p className="inicio2-price-note">Acesso imediato • Stripe • 7 dias de garantia</p>
+                <p className="inicio2-price-note">3 dias grátis • Stripe • 7 dias de garantia</p>
               </article>
 
               <article className="inicio2-price-card">
@@ -822,7 +822,7 @@ export default function Inicio2() {
                   <strong>{ELITE_OFFER.monthlyPrice}</strong>
                   <span>/mês</span>
                 </div>
-                <p className="inicio2-price-cash inicio2-price-cash-muted">Sem fidelidade. Cancele quando quiser.</p>
+                <p className="inicio2-price-cash inicio2-price-cash-muted">Teste por 3 dias grátis. Sem fidelidade.</p>
 
                 <ul className="inicio2-price-features">
                   {pricingFeatures.slice(0, 6).map((feature) => (
@@ -838,9 +838,9 @@ export default function Inicio2() {
                   onClick={() => trackCheckoutClick(97, "mensal")}
                   className="inicio2-price-cta inicio2-price-cta-secondary"
                 >
-                  Começar no plano mensal
+                  Começar teste de 3 dias grátis
                 </a>
-                <p className="inicio2-price-note">Pagamento seguro pela Stripe</p>
+                <p className="inicio2-price-note">3 dias grátis • Pagamento seguro pela Stripe</p>
               </article>
             </div>
             <div className="mt-8 text-center text-sm text-slate-500 font-semibold">
@@ -976,7 +976,7 @@ export default function Inicio2() {
           <span>{ELITE_OFFER.annualPrice}<small>/ano</small></span>
           <small>{ELITE_OFFER.annualMonthlyEquivalent}/mês equivalente</small>
         </div>
-        <a href="#planos" className="sticky-btn">Escolher plano <Check size={16} /></a>
+        <a href="#planos" className="sticky-btn">Testar grátis <Check size={16} /></a>
       </div>
     </div>
   );

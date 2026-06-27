@@ -1,13 +1,15 @@
 export const ELITE_OFFER = {
   landingPath: "/inicio2",
   monthlyPrice: "R$ 97",
-  annualPrice: "R$ 347",
-  annualMonthlyEquivalent: "R$ 28,91",
+  annualPrice: "R$ 482",
+  annualMonthlyEquivalent: "R$ 40,16",
   yearlyMonthlyTotal: "R$ 1.164",
-  annualSavings: "R$ 817",
+  annualSavings: "R$ 682",
   videoId: "R2MyCdox--I",
-  monthlyCheckoutUrl: "URL_STRIPE_MENSAL",
-  annualCheckoutUrl: "URL_STRIPE_ANUAL",
+  monthlyCheckoutUrl: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
+  annualCheckoutUrl: "https://buy.stripe.com/6oUdRa0Hwa2Qcz1dNa8so0i",
+  hasFreeTrial: true,
+  freeTrialDays: 3,
   startVideoCooldownMs: 30 * 60 * 1000,
 };
 
