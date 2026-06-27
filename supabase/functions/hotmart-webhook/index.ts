@@ -71,7 +71,7 @@ async function upsertHotmartSale(
     buyerPhone?: string | null;
   },
 ) {
-  const { error } = await supabase.from("hotmart_sales").upsert({
+  const payload = {
     h_transaction: params.transaction,
     h_email: params.email.toLowerCase().trim(),
     h_product_id: params.productId || "unknown",
@@ -83,9 +83,19 @@ async function upsertHotmartSale(
     h_buyer_name: params.buyerName || null,
     h_buyer_phone: params.buyerPhone || null,
     updated_at: new Date().toISOString(),
-  }, { onConflict: "h_transaction" });
+  };
 
-  if (error) logStep("ERROR: hotmart_sales upsert", { error: error.message });
+  const { data: existing, error: selErr } = await supabase.from("hotmart_sales").select("id").eq("h_transaction", params.transaction).maybeSingle();
+  
+  if (selErr) {
+    logStep("WARN: hotmart_sales table might not exist", { error: selErr.message });
+  } else if (existing) {
+    const { error } = await supabase.from("hotmart_sales").update(payload).eq("h_transaction", params.transaction);
+    if (error) logStep("ERROR: hotmart_sales update", { error: error.message });
+  } else {
+    const { error } = await supabase.from("hotmart_sales").insert([payload]);
+    if (error) logStep("ERROR: hotmart_sales insert", { error: error.message });
+  }
 }
 
 async function findExistingUserIdByEmail(supabase: any, email: string, fallbackAuthLoop = false): Promise<string | null> {
@@ -159,7 +169,7 @@ async function ensureUserAndOnboarding(
     }
   }
 
-  // 2. Upsert profile
+  // 2. Upsert profile safely
   const profilePayload: any = {
     user_id: userId,
     email: normalizedEmail,
@@ -167,19 +177,38 @@ async function ensureUserAndOnboarding(
     updated_at: new Date().toISOString(),
   };
   if (phone) profilePayload.phone = phone;
-  const { error: pErr } = await supabase.from("profiles").upsert(profilePayload, { onConflict: "user_id" });
-  if (pErr) logStep("ERROR: profile upsert", { error: pErr.message });
 
-  // 3. Upsert subscription (source of truth for tier — same table used by Stripe)
-  const { error: sErr } = await supabase.from("subscriptions").upsert({
+  const { data: existingProfile } = await supabase.from("profiles").select("user_id").eq("user_id", userId).maybeSingle();
+  if (existingProfile) {
+    const { error: pErr } = await supabase.from("profiles").update(profilePayload).eq("user_id", userId);
+    if (pErr) logStep("ERROR: profile update", { error: pErr.message });
+  } else {
+    const { error: pErr } = await supabase.from("profiles").insert([profilePayload]);
+    if (pErr) logStep("ERROR: profile insert", { error: pErr.message });
+  }
+
+  // 3. Upsert subscription safely
+  const subPayload = {
     user_id: userId,
     stripe_customer_id: null,
     stripe_subscription_id: `hotmart:${hotmartTransaction}`,
     status: "active",
     product_id: canonical_product_id,
     updated_at: new Date().toISOString(),
-  }, { onConflict: "user_id" });
-  if (sErr) logStep("ERROR: subscription upsert", { error: sErr.message });
+  };
+  
+  const { data: existingSub, error: subSelErr } = await supabase.from("subscriptions").select("id").eq("user_id", userId).maybeSingle();
+  if (subSelErr) {
+    logStep("WARN: subscription table issue?", { error: subSelErr.message });
+  }
+  
+  if (existingSub) {
+    const { error: sErr } = await supabase.from("subscriptions").update(subPayload).eq("user_id", userId);
+    if (sErr) logStep("ERROR: subscription update", { error: sErr.message });
+  } else {
+    const { error: sErr } = await supabase.from("subscriptions").insert([subPayload]);
+    if (sErr) logStep("ERROR: subscription insert", { error: sErr.message });
+  }
 
   // 4. Magic link
   const siteUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.com";
