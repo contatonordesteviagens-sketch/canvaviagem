@@ -1,0 +1,1 @@
+ALTER TABLE public.public_sites ADD COLUMN IF NOT EXISTS project_id TEXT; CREATE INDEX IF NOT EXISTS idx_public_sites_project_id ON public.public_sites(project_id);
