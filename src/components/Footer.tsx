@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Instagram } from "lucide-react";
+import { Instagram, Youtube } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -7,6 +7,10 @@ const socialLinks = [{
   name: "Instagram",
   url: "https://instagram.com/canvaviagem",
   icon: Instagram
+}, {
+  name: "YouTube",
+  url: "https://www.youtube.com/@CanvaViagem",
+  icon: Youtube
 }];
 
 export const Footer = () => {

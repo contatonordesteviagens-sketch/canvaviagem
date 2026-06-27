@@ -15,11 +15,6 @@ function redactEmail(email?: string | null): string {
   if (!email) return "(no-email)";
   const [user, domain] = email.split("@");
   return `${user.slice(0, 2)}***@${domain ?? "?"}`;
-
-function redactEmail(email?: string | null): string {
-  if (!email) return "(no-email)";
-  const [user, domain] = email.split("@");
-  return `${user.slice(0, 2)}***@${domain ?? "?"}`;
 }
 
 const FROM = () =>
