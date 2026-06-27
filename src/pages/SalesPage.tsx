@@ -20,7 +20,7 @@ import { WorldMap } from "@/components/ui/map";
 // ────────────────────────────────────────────────────────────
 const STRIPE = {
   smart_monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-  smart_annual: "https://pay.hotmart.com/C106141067C?off=ts1hgsho&checkoutMode=10",
+  smart_annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
   elite_monthly: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
   elite_annual: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
 };
@@ -59,11 +59,11 @@ const HOW_IT_WORKS = [
 
 // Comparativo justo: pack único vs designer freelancer vs Canva Viagem
 const COMPARISON = [
-  { feature: "Investimento",  hotmart: "R$ 197 uma vez", design: "R$ 1.500 / mês", us: "A partir de R$ 482 / ano" },
-  { feature: "Conteúdo",      hotmart: "150 reels fixos", design: "4–8 entregas/mês", us: "250+ vídeos 4K + Sites de Vendas" },
-  { feature: "Atualizações",  hotmart: "❌ Nenhuma", design: "Depende dele", us: "✅ Acesso vitalício à evolução" },
-  { feature: "IAs e Scripts", hotmart: "❌ Não tem", design: "❌ Não tem", us: "✅ 11 IAs + Fábrica de Anúncios" },
-  { feature: "Suporte",       hotmart: "Só do produtor", design: "1 freelancer", us: "WhatsApp VIP direto com o Lucas" },
+  { feature: "Investimento",  outroPack: "R$ 197 uma vez", design: "R$ 1.500 / mês", us: "A partir de R$ 482 / ano" },
+  { feature: "Conteúdo",      outroPack: "150 reels fixos", design: "4–8 entregas/mês", us: "250+ vídeos 4K + Sites de Vendas" },
+  { feature: "Atualizações",  outroPack: "❌ Nenhuma", design: "Depende dele", us: "✅ Acesso vitalício à evolução" },
+  { feature: "IAs e Scripts", outroPack: "❌ Não tem", design: "❌ Não tem", us: "✅ 11 IAs + Fábrica de Anúncios" },
+  { feature: "Suporte",       outroPack: "Só do produtor", design: "1 freelancer", us: "WhatsApp VIP direto com o Lucas" },
 ];
 
 const FAQS = [
@@ -73,7 +73,7 @@ const FAQS = [
   { q: "E se eu cancelar, perco os vídeos baixados?", a: "Não. Tudo o que você baixou e usou nas suas redes continua seu para sempre. Você só perde acesso ao acervo novo e às atualizações." },
   { q: "Tem suporte em português via WhatsApp?", a: "Sim, no plano anual. Atendimento humano em horário comercial — não chatbot. Tempo médio de resposta: 2 horas." },
   { q: "Os vídeos são exclusivos?", a: "Não exclusivos no sentido literal — mas com 250+ vídeos por destino e a customização do Canva (seu logo, sua cor, sua legenda), a chance de aparecer igual ao concorrente é mínima." },
-  { q: "Qual a diferença do pack único da Hotmart?", a: "O pack é uma fatia parada no tempo (150 reels e fim). Aqui você tem 250+ vídeos, +400 artes, 11 IAs, scripts de WhatsApp, calendário e novas entregas toda semana — pelo mesmo preço cobrado uma vez no pack." },
+  { q: "Qual a diferença do pack único do mercado?", a: "O pack é uma fatia parada no tempo (150 reels e fim). Aqui você tem 250+ vídeos, +400 artes, 11 IAs, scripts de WhatsApp, calendário e novas entregas toda semana — pelo mesmo preço cobrado uma vez no pack." },
   { q: "Funciona pra agência pequena (1 pessoa)?", a: "Foi feito justamente pra você. Quem trabalha sozinho é quem mais ganha tempo: 5 minutos por dia substituem um designer e um social media." },
 ];
 
@@ -770,7 +770,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                   <tr>
                     <th style={{ textAlign: "left", padding: "12px 14px", fontSize: 12, color: T.text3, fontWeight: 700 }}></th>
                     <th style={{ padding: "12px 14px", fontSize: 13, color: T.text2, fontWeight: 700, textAlign: "center" }}>
-                      Pack único Hotmart
+                      Pack único do mercado
                     </th>
                     <th style={{ padding: "12px 14px", fontSize: 13, color: T.text2, fontWeight: 700, textAlign: "center" }}>
                       Designer freelancer
@@ -788,7 +788,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <tr key={row.feature}>
                       <td style={{ padding: "14px 14px", fontSize: 13, fontWeight: 700, color: T.text,
                         background: T.card, borderRadius: "10px 0 0 10px" }}>{row.feature}</td>
-                      <td style={{ padding: "14px 14px", textAlign: "center", fontSize: 13, color: T.text3, background: T.card }}>{row.hotmart}</td>
+                      <td style={{ padding: "14px 14px", textAlign: "center", fontSize: 13, color: T.text3, background: T.card }}>{row.outroPack}</td>
                       <td style={{ padding: "14px 14px", textAlign: "center", fontSize: 13, color: T.text3, background: T.card }}>{row.design}</td>
                       <td style={{ padding: "14px 14px", textAlign: "center", fontSize: 13, fontWeight: 800, color: T.accent,
                         background: `${T.accent}10`, borderRight: `2px solid ${T.accent}`, borderLeft: `2px solid ${T.accent}`,

@@ -63,25 +63,12 @@ export const useActiveUsers = () => {
       
       const emailData = emailDataResult || [];
 
-      // Query hotmart_sales to find users who bought via Hotmart (Using edge function to bypass RLS)
-      const { data: hotmartSalesResult, error: hotmartSalesError } = await supabase.functions.invoke(
-        "get-hotmart-sales"
-      );
-      
-      if (hotmartSalesError) {
-        console.error("Erro ao buscar hotmart sales:", hotmartSalesError);
-      }
 
-      const hotmartSales = hotmartSalesResult || [];
 
       // Otimização O(1): Criar Hash Maps para buscas instantâneas
       const subMap = new Map(subscriptions.map(s => [s.user_id, s]));
       const emailMap = new Map(emailData.map(e => [e.user_id, e]));
-      const hotmartMap = new Map(
-        hotmartSales
-          .filter(h => h.h_email)
-          .map(h => [h.h_email.toLowerCase(), h])
-      );
+
 
       // O(1) Map para Sites
       const sitesMap = new Map<string, any[]>();
@@ -105,12 +92,7 @@ export const useActiveUsers = () => {
         // Se quisermos extrair real emails
         const finalEmail = emailRecord?.email || profile.email || "Email não disponível";
 
-        // Verifica se há venda na Hotmart por este email
-        const hotmartSale: any = finalEmail !== "Email não disponível" 
-          ? hotmartMap.get(finalEmail.toLowerCase())
-          : undefined;
 
-        if (hotmartSale) origem = "Hotmart";
 
         if (sub) {
             status = sub.status as ActiveUser["status"];
@@ -121,22 +103,13 @@ export const useActiveUsers = () => {
             if ((sub as any).plan_name) plan_name = (sub as any).plan_name;
             if ((sub as any).plan_amount) plan_value = `R$ ${((sub as any).plan_amount / 100).toFixed(2).replace('.', ',')}`;
             
-            origem = sub.stripe_subscription_id ? "Stripe" : (hotmartSale ? "Hotmart" : "Orgânico");
-        } else if (hotmartSale) {
-            const hStatus = hotmartSale.h_status;
-            if (hStatus === "APPROVED" || hStatus === "COMPLETED") status = "active";
-            else if (hStatus === "CANCELED" || hStatus === "REFUNDED" || hStatus === "CHARGEBACK") status = "canceled";
-            else if (hStatus === "DELAYED") status = "past_due";
-            else status = "inactive";
-
-            plan_name = hotmartSale.h_product_name || "Plano Elite";
-            plan_value = hotmartSale.h_price_value ? `R$ ${Number(hotmartSale.h_price_value).toFixed(2).replace('.', ',')}` : "R$ 197,00";
+            origem = sub.stripe_subscription_id ? "Stripe" : "Orgânico";
         }
 
         // Tenta encontrar a data mais antiga possível para representar o início real
         const dates = [
           sub?.created_at,
-          hotmartSale?.h_purchase_date,
+
           profile.created_at
         ].filter(Boolean).map(d => new Date(d as string).getTime());
         
@@ -158,7 +131,7 @@ export const useActiveUsers = () => {
           origem,
           phone: profile.phone,
           sites: sitesMap.get(profile.id) || sitesMap.get(profile.user_id) || [],
-          canceled_at: status === "canceled" ? (sub?.updated_at || hotmartSale?.h_updated_at || hotmartSale?.updated_at || null) : null,
+          canceled_at: status === "canceled" ? (sub?.updated_at || null) : null,
         };
       });
 
@@ -171,7 +144,7 @@ export const useActiveUsers = () => {
         const isElite = isEliteProduct(sub.product_id);
         let plan_name = isElite ? "Plano Elite" : "Plano Start";
         let plan_value = isElite ? "R$ 90,00" : "R$ 39,00";
-        let origem = sub.stripe_subscription_id ? "Stripe" : "Hotmart";
+        let origem = sub.stripe_subscription_id ? "Stripe" : "Orgânico";
 
         if ((sub as any).plan_name) plan_name = (sub as any).plan_name;
         if ((sub as any).plan_amount) plan_value = `R$ ${((sub as any).plan_amount / 100).toFixed(2).replace('.', ',')}`;
@@ -196,31 +169,7 @@ export const useActiveUsers = () => {
         });
       });
 
-      // Adiciona vendas Hotmart órfãs (que não tem profile nem subscription)
-      const existingEmails = new Set(users.map(u => u.email.toLowerCase()));
-      const orphanHotmart = hotmartSales.filter(h => h.h_email && !existingEmails.has(h.h_email.toLowerCase()));
-      
-      orphanHotmart.forEach((sale) => {
-        const email = sale.h_email.toLowerCase();
-        users.push({
-          user_id: `hotmart_orphan_${email}`, // Fake ID just for keying
-          email: email,
-          name: sale.h_buyer_name || null,
-          status: (sale.h_status === "APPROVED" || sale.h_status === "COMPLETED") ? "active" : "canceled",
-          stripe_customer_id: null,
-          stripe_subscription_id: null,
-          created_at: sale.h_purchase_date || new Date().toISOString(),
-          current_period_end: null,
-          profile_id: undefined,
-          product_id: null,
-          plan_name: sale.h_product_name || "Plano Elite",
-          plan_value: sale.h_price_value ? `R$ ${Number(sale.h_price_value).toFixed(2).replace('.', ',')}` : "R$ 197,00",
-          origem: "Hotmart",
-          phone: sale.h_buyer_phone || null,
-          sites: [], // Orphan hotmart won't have matched sites unless by email (skipped for now)
-          canceled_at: (sale.h_status === "CANCELED" || sale.h_status === "REFUNDED" || sale.h_status === "CHARGEBACK") ? (sale.h_updated_at || sale.updated_at) : null,
-        });
-      });
+
 
       // Ordenar por data de criação mais recente
       users.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());

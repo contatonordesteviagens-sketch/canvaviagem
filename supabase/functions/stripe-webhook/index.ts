@@ -409,8 +409,7 @@ async function handleCheckoutExpired(session: Stripe.Checkout.Session, supabase:
 
 // EMAIL TEMPLATES (Restored)
 // sendAutoMagicLinkEmail e sendWelcomeEmail foram movidos para
-// `../_shared/welcomeEmail.ts` para serem reutilizados pelos webhooks
-// Stripe e Hotmart com a mesma lógica.
+// `../_shared/welcomeEmail.ts` para serem reutilizados pelos webhooks.
 
 async function sendCancellationEmail(resend: any, email: string) {
   const appUrl = Deno.env.get("APP_URL") || "https://canvatrip.lovable.app";

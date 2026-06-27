@@ -1,9 +1,66 @@
 node_modules
 .git
+.agency-agents
+.agents
+.codex
+.lovable
+dist
+docs
+docs_sistema
+maintenance
+scratch
 supabase
 Vendedor-de-Viagens-IA-main
+BACKUP_TOTAL_FÁBRICA_24_ABRIL
+CANVA_VIAGEM_ESTAVEL_24_ABRIL
+agencias-viagem - marketing e campanhas
+canvaviagem-public-temp
+geração de imagens engenharia como funciona
+legendas
+lovable-canvaviagem
+SISTEMA DE VENDA DE VIAGENS
+sites ladinpages referencias
+SITES REFERENCIAS PARA IMPLEMENTAR
 *.txt
 *.ps1
+*.py
+*.cjs
+*.sql
+*.md
 migrated_prompt_history
 scratch_test_extractor.js
 check_supabase.js
+adapt_*
+add_*
+build_*
+check_*
+clean_*
+debug_*
+deep_*
+extract_*
+fetch_yt.js
+final_*
+fix_*
+force_*
+generate_*
+gerar_*
+inject*
+insert_*
+old_*
+patch*
+redesign*
+refactor_*
+remove_*
+rename_*
+replace_*
+scratch_*
+script*
+sync_*
+temp_*
+test*
+update-*
+update_*
+v0_*
+v3_*
+models.json
+bun.lock

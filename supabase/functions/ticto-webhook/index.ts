@@ -344,22 +344,6 @@ serve(async (req) => {
           productId || "monthly_access_ticto"
         );
 
-        // Opcionalmente salvar na tabela de vendas
-        try {
-          const { error: salesErr } = await supabaseAdmin
-            .from("hotmart_sales") // Reutilizando a estrutura de vendas genérica ou salvando para referência
-            .upsert({
-              h_transaction: transactionId,
-              h_email: email,
-              h_product_id: productId || "monthly_access_ticto",
-              h_product_name: productName,
-              h_status: "APPROVED",
-              h_buyer_name: name,
-            }, { onConflict: "h_transaction" });
-          if (salesErr) logStep("WARN: Failed to save sale record in hotmart_sales", { error: salesErr.message });
-        } catch (e: any) {
-          logStep("WARN: Error writing sale record", { error: e.message });
-        }
 
       } else {
         logStep("WARN: Email not found in payload data");

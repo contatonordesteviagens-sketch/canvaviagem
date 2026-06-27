@@ -8,21 +8,7 @@ export const ELITE_PRODUCT_IDS = new Set([
   "prod_UTFlCWzNqvqSNx",
   "hotmart_elite",
 ]);
-
-export const HOTMART_ELITE_PRODUCT_IDS = new Set([
-  "7876791",
-  "C106141067C",
-]);
-export const CANONICAL_HOTMART_ELITE_PRODUCT_ID = "hotmart_elite";
-
 export function isEliteProduct(productId?: string | null) {
   if (!productId) return false;
   return ELITE_PRODUCT_IDS.has(productId) || productId.includes("ticto") || productId.includes("elite");
-}
-
-export function normalizeHotmartProductId(productId?: string | null): string | null {
-  if (!productId) return null;
-  const normalized = productId.trim();
-  if (HOTMART_ELITE_PRODUCT_IDS.has(normalized)) return CANONICAL_HOTMART_ELITE_PRODUCT_ID;
-  return null;
 }

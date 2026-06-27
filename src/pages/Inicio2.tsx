@@ -124,12 +124,12 @@ const objectionCards = [
   ["Será que eu vou saber usar?", "Sim. A ideia é você entrar, escolher o que quer criar e seguir modelos prontos. Não precisa começar do zero."],
   ["Isso serve para agência pequena?", "Serve principalmente para agência pequena, consultor e equipe enxuta que precisa parecer mais profissional sem contratar uma estrutura cara."],
   ["Vale a pena pagar por isso?", "Se ela economizar algumas horas por mês e melhorar a apresentação de uma única oferta, o plano anual já tende a se pagar rápido."],
-  ["O acesso é imediato?", "Sim. Depois da compra pela Hotmart, você recebe as instruções de acesso no e-mail usado no checkout."],
+  ["O acesso é imediato?", "Sim. Depois da compra pela Stripe, você recebe as instruções de acesso no e-mail usado no checkout."],
   ["Mensal ou anual?", "O mensal é para testar com menor compromisso. O anual é a melhor escolha: custa menos por mês, libera 12 meses e economiza R$ 817."],
 ];
 
 const afterPurchaseSteps = [
-  ["1", "Compra segura", "Você escolhe mensal ou anual e finaliza pela Hotmart."],
+  ["1", "Compra segura", "Você escolhe mensal ou anual e finaliza pela Stripe."],
   ["2", "Acesso liberado", "As instruções chegam no e-mail usado no checkout."],
   ["3", "Primeira oferta", "Use um pacote real para criar anúncio, página e textos de venda."],
 ];
@@ -189,7 +189,7 @@ const faqs = [
   },
   {
     q: "O pagamento é seguro?",
-    a: "Sim. O pagamento é processado pela Hotmart, com acesso imediato e garantia de 7 dias conforme as regras do checkout.",
+    a: "Sim. O pagamento é processado pela Stripe, com acesso imediato e garantia de 7 dias conforme as regras do checkout.",
   },
   {
     q: "E se eu não gostar?",
@@ -333,7 +333,7 @@ export default function Inicio2() {
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 w-full mb-6 md:mb-10">
-              {["Acesso imediato", "Checkout seguro Hotmart", "7 dias de garantia", "Suporte por WhatsApp"].map((item) => (
+              {["Acesso imediato", "Checkout seguro Stripe", "7 dias de garantia", "Suporte por WhatsApp"].map((item) => (
                 <div key={item} className="bg-white/5 border border-white/10 rounded-xl px-3 md:px-4 py-3 text-[12px] md:text-sm font-bold text-slate-200 flex items-center justify-center gap-2 leading-tight min-h-[58px]">
                   <ShieldCheck size={16} className="text-green-400 shrink-0" />
                   {item}
@@ -808,7 +808,7 @@ export default function Inicio2() {
                 >
                   Garantir acesso anual com desconto
                 </a>
-                <p className="inicio2-price-note">Acesso imediato • Hotmart • 7 dias de garantia</p>
+                <p className="inicio2-price-note">Acesso imediato • Stripe • 7 dias de garantia</p>
               </article>
 
               <article className="inicio2-price-card">
@@ -840,11 +840,11 @@ export default function Inicio2() {
                 >
                   Começar no plano mensal
                 </a>
-                <p className="inicio2-price-note">Pagamento seguro pela Hotmart</p>
+                <p className="inicio2-price-note">Pagamento seguro pela Stripe</p>
               </article>
             </div>
             <div className="mt-8 text-center text-sm text-slate-500 font-semibold">
-              Pagamento seguro pela Hotmart. Acesso imediato. Garantia de 7 dias. Sem alterar valores no checkout.
+              Pagamento seguro pela Stripe. Acesso imediato. Garantia de 7 dias. Sem alterar valores no checkout.
             </div>
             <div className="inicio2-after-purchase">
               <div className="inicio2-after-copy">
@@ -900,7 +900,7 @@ export default function Inicio2() {
               <div>
                 <h2 className="text-3xl md:text-4xl font-black text-slate-950 mb-4">O risco fica do nosso lado.</h2>
                 <p className="text-lg text-slate-700 leading-relaxed">
-                  Use a IA, baixe materiais, monte uma página de pacote e organize seus leads. Se você não sentir que a apresentação da sua agência subiu de nível, acione a garantia dentro do prazo da Hotmart.
+                  Use a IA, baixe materiais, monte uma página de pacote e organize seus leads. Se você não sentir que a apresentação da sua agência subiu de nível, acione a garantia dentro do prazo da Stripe.
                 </p>
                 <a href="#planos" className="btn btn-primary mt-6 inline-flex">Garantir acesso com 7 dias de garantia</a>
               </div>
@@ -967,7 +967,7 @@ export default function Inicio2() {
           </div>
         </div>
         <div className="footer-bottom">
-          <ShieldCheck size={16} /> Pagamento seguro via Hotmart
+          <ShieldCheck size={16} /> Pagamento seguro via Stripe
         </div>
       </footer>
 

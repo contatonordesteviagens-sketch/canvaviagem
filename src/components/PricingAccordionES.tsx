@@ -62,14 +62,14 @@ export function PricingAccordionES() {
 
             <div className="mt-auto pt-4">
               <a
-                href="https://pay.hotmart.com/C106141067C?off=8qkh1yh6&checkoutMode=10"
+                href="https://buy.stripe.com/eVqeVe61Q3Es9mPbF28so0h"
                 className="w-full text-center py-3.5 rounded-xl font-bold border-2 transition-all hover:bg-slate-50 active:scale-95 flex items-center justify-center text-[15px]"
                 style={{ borderColor: '#CBD5E1', color: '#64748B' }}
               >
                 Elegir mensual por US$50
               </a>
               <p className="text-center text-[12px] text-slate-500 font-semibold mt-3">
-                Pago seguro por Hotmart. Tarjetas internacionales. Precios en dólares (USD).
+                Pago seguro por Stripe. Tarjetas internacionales. Precios en dólares (USD).
               </p>
             </div>
           </div>
@@ -147,7 +147,7 @@ export function PricingAccordionES() {
 
             <div className="mt-auto">
               <a
-                href="https://pay.hotmart.com/C106141067C?off=ts1hgsho&checkoutMode=10"
+                href="https://buy.stripe.com/aFaaEY61Q2AoeH94cA8so0g"
                 className="w-full text-center py-5 rounded-2xl font-black text-white shadow-[0_15px_30px_-10px_rgba(124,58,237,0.7)] hover:bg-[#6D28D9] transition-all active:scale-95 flex items-center justify-center text-[19px] bg-gradient-to-r from-[#7C3AED] to-[#6D28D9]"
               >
                 Elegir anual y ahorrar US$350
@@ -156,12 +156,12 @@ export function PricingAccordionES() {
                 Recomendado para agencias que quieren publicar ofertas todo el año, reducir el costo total y tener 12 meses de acceso claro.
               </p>
               <p className="text-center text-[12px] text-slate-500 font-semibold mt-2">
-                Pago seguro por Hotmart. Tarjetas internacionales. Precios en dólares (USD).
+                Pago seguro por Stripe. Tarjetas internacionales. Precios en dólares (USD).
               </p>
               <div className="text-center text-[13px] font-bold text-slate-400 mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-4 md:hidden">
                 <span>⚡ Acceso inmediato</span>
                 <span className="hidden sm:inline">|</span>
-                <span>🔒 Pago seguro por Hotmart</span>
+                <span>🔒 Pago seguro por Stripe</span>
                 <span className="hidden sm:inline">|</span>
                 <span>Tarjetas internacionales</span>
                 <span className="hidden sm:inline">|</span>
@@ -174,7 +174,7 @@ export function PricingAccordionES() {
       
     </div>
     <div className="w-full text-center mt-8 hidden md:flex items-center justify-center gap-4 text-slate-500 font-medium text-sm">
-      <span>🔒 Pago seguro por Hotmart</span>
+      <span>🔒 Pago seguro por Stripe</span>
       <span>|</span>
       <span>Tarjetas internacionales</span>
       <span>|</span>

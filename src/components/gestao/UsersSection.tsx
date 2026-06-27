@@ -316,7 +316,7 @@ export const UsersSection = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.origem === 'Stripe' ? 'bg-purple-100 text-purple-800' : user.origem === 'Hotmart' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'}`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.origem === 'Stripe' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
                         {user.origem}
                       </span>
                     </TableCell>

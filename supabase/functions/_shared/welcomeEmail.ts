@@ -1,6 +1,6 @@
 // Utilitário compartilhado para e-mails transacionais de boas-vindas e magic link.
-// Usado tanto pelo webhook do Stripe quanto pelo webhook da Hotmart, garantindo
-// que o disparo do Resend permaneça consistente independente do gateway.
+// Usado pelo webhook do Stripe para garantir
+// que o disparo do Resend permaneça consistente.
 
 import { isEliteProduct } from "./planAccess.ts";
 
@@ -32,7 +32,6 @@ export async function sendUnifiedWelcomeEmail(
   token: string,
   customerName: string,
   productId?: string | null,
-  gateway: "stripe" | "hotmart" = "stripe",
 ) {
   if (!resend) return;
   const plan = resolvePlanFromProductId(productId ?? null);

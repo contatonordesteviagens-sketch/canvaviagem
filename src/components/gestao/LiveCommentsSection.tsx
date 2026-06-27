@@ -2132,7 +2132,7 @@ export const LiveCommentsSection = () => {
                   Link de Compra (Checkout)
                 </label>
                 <Input
-                  placeholder="Ex: https://checkout.hotmart.com/..."
+                  placeholder="Ex: https://buy.stripe.com/..."
                   value={offerCheckoutUrl}
                   onChange={(e) => setOfferCheckoutUrl(e.target.value)}
                   className="bg-muted/30 border-muted-foreground/15 text-sm"

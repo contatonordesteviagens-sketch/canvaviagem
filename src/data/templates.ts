@@ -1331,7 +1331,7 @@ export const resources = [
   },
   {
     name: "Comunidade Agente Lucrativo",
-    url: "https://hotmart.com/pt-br/club/agente-lucrativo",
+    url: "URL_STRIPE",
     icon: "👥"
   },
   {

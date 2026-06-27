@@ -137,7 +137,7 @@ export default function Inicio() {
               <a href="#demo" className="hero-secondary">Ver a plataforma por dentro ↓</a>
               
               <div className="hero-proof">
-                <span>Pagamento seguro via Hotmart</span>
+                <span>Pagamento seguro via Stripe</span>
               </div>
             </div>
             <div className="w-full max-w-[500px] md:max-w-[650px] mx-auto mt-8 md:mt-0 flex justify-center md:justify-end px-4 sm:px-0">
@@ -906,12 +906,12 @@ export default function Inicio() {
               <div>
                 <h2>Garantia Incondicional de Resultado</h2>
                 <p style={{ marginTop: "14px", fontSize: "15.5px", lineHeight: "1.6" }}>
-                  O risco é 100% meu — não seu. Assine hoje. Use a nossa IA, baixe os criativos premium e poste nas suas redes. Se você não achar que o visual da sua agência subiu de nível, aperte um botão no painel e devolvemos 100% do seu dinheiro. Sem perguntas. Reembolso automático garantido pela Hotmart.
+                  O risco é 100% meu — não seu. Assine hoje. Use a nossa IA, baixe os criativos premium e poste nas suas redes. Se você não achar que o visual da sua agência subiu de nível, aperte um botão no painel e devolvemos 100% do seu dinheiro. Sem perguntas. Reembolso automático garantido pela Stripe.
                 </p>
                 <ul className="guarantee-list">
                   <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Teste na prática por 7 dias</li>
                   <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Acesso imediato após o pagamento</li>
-                  <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Reembolso com um clique (Garantia Hotmart)</li>
+                  <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Reembolso com um clique (Garantia Stripe)</li>
                 </ul>
                 <a href="#" className="refund-link" style={{ marginTop: "24px" }}>Ver política de reembolso</a>
               </div>
@@ -983,7 +983,7 @@ export default function Inicio() {
         </div>
         <div className="inicio-container">
            <div className="payment-safe">
-             <ShieldCheck size={16} /> Pagamento seguro via Hotmart
+             <ShieldCheck size={16} /> Pagamento seguro via Stripe
            </div>
         </div>
       </footer>

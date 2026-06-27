@@ -46,14 +46,6 @@ const StripeLogoSVG = () => (
   </svg>
 );
 
-const HotmartLogoSVG = () => (
-  <span style={{
-    fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.6)',
-    border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px',
-    padding: '2px 8px', letterSpacing: '0.5px'
-  }}>HOTMART</span>
-);
-
 const TRAIL_IMAGES = [
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&q=80",
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=300&q=80",
@@ -186,7 +178,6 @@ const PixCheckoutModal = ({
             <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-zinc-100">
               <span className="text-[9px] text-zinc-300 uppercase tracking-widest font-bold">Pago vía</span>
               <StripeLogoSVG />
-              <HotmartLogoSVG />
             </div>
           </div>
         </div>
@@ -221,7 +212,7 @@ const FAQS = [
     a: "Imediatamente ap├│s o pagamento, voc├¬ recebe um e-mail com acesso ├á plataforma Canva Viagem ÔÇö uma ├írea de membros web, acess├¡vel pelo computador ou celular, sem precisar instalar nada. O acesso ├® liberado em menos de 2 minutos.",
   },
   {
-    q: "Eu j├í comprei o Pack de 150 Reels na Hotmart/Kiwifi. ├ë a mesma coisa?",
+    q: "Eu j├í comprei o Pack de 150 Reels do mercado. ├ë a mesma coisa?",
     a: "N├úo. O pack antigo era um produto pontual, sem atualiza├º├Áes. O Canva Viagem ├® uma assinatura com acervo crescente (novos v├¡deos toda semana), IAs especializadas, scripts de WhatsApp e estratégia de marketing ÔÇö um sistema completo, n├úo apenas um pacote de v├¡deos.",
   },
   {

@@ -28,49 +28,7 @@ export const useUserDetails = (userId: string | null) => {
         .eq("user_id", userId)
         .maybeSingle();
 
-      // Fetch phone from hotmart_sales if not in profile
       let phone = profile?.phone || null;
-      
-      if (!phone) {
-        // Try getting email from subscriptions to check hotmart_sales
-        const { data: sub } = await supabase
-          .from("subscriptions")
-          .select("user_id, status")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        if (sub) {
-          // Find email using admin view
-          try {
-            const session = await supabase.auth.getSession();
-            const response = await fetch(
-              `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles_admin_view?select=email_masked&user_id=eq.${userId}`,
-              {
-                headers: {
-                  'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-                  'Authorization': `Bearer ${session.data.session?.access_token}`,
-                },
-              }
-            );
-            if (response.ok) {
-              const resJson = await response.json();
-              if (resJson && resJson.length > 0 && resJson[0].email_masked) {
-                const { data: hotmartSale } = await (supabase as any)
-                  .from("hotmart_sales")
-                  .select("h_buyer_phone")
-                  .eq("h_email", resJson[0].email_masked)
-                  .maybeSingle();
-                
-                if (hotmartSale?.h_buyer_phone) {
-                  phone = hotmartSale.h_buyer_phone;
-                }
-              }
-            }
-          } catch (e) {
-            console.error("Error fetching email for hotmart check", e);
-          }
-        }
-      }
 
       // Fetch from leads if still null
       if (!phone) {

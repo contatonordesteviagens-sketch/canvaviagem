@@ -128,7 +128,7 @@ const BlogPost11 = () => {
                             {
                                 icon: <CheckCircle2 className="text-purple-500" size={24} />,
                                 title: "4. Afiliado de Plataformas de Reservas",
-                                desc: "Booking.com, Hotmart, Trivago e outros têm programas que pagam comissão por reservas feitas via seu link. Sem estoque, sem atendimento. Funciona 24h enquanto você dorme.",
+                                desc: "Booking.com, Trivago e outros têm programas que pagam comissão por reservas feitas via seu link. Sem estoque, sem atendimento. Funciona 24h enquanto você dorme.",
                                 highlight: "Potencial: R$300 a R$3.000/mês"
                             },
                             {

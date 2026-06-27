@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
-import { isEliteProduct, normalizeHotmartProductId } from "../_shared/planAccess.ts";
+import { isEliteProduct } from "../_shared/planAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -224,48 +224,7 @@ serve(async (req) => {
       }
     }
 
-    // --- HOTMART CHECK ---
-    logStep("Checking hotmart_sales for the user's email");
-    if (dbClient) {
-      const { data: hotmartSale, error: hotmartError } = await dbClient
-        .from("hotmart_sales")
-        .select("*")
-        .eq("h_email", email.toLowerCase())
-        .in("h_status", ["APPROVED", "COMPLETED", "COMPLETE", "ACTIVE"])
-        .order("h_purchase_date", { ascending: false })
-        .limit(1)
-        .maybeSingle();
 
-      if (hotmartSale) {
-        logStep("Found valid Hotmart sale", { saleId: hotmartSale.id, productId: hotmartSale.h_product_id });
-
-        // Grant subscription for 1 year (or indefinite, here setting expiry to 365 days from purchase)
-        const purchaseDate = new Date(hotmartSale.h_purchase_date);
-        const expiryDate = new Date(purchaseDate.getTime() + (365 * 24 * 60 * 60 * 1000)).toISOString();
-        const productId = normalizeHotmartProductId(hotmartSale.h_product_id);
-        if (!productId) {
-          logStep("Hotmart sale ignored because product is not authorized for access", { productId: hotmartSale.h_product_id });
-          return new Response(JSON.stringify({ subscribed: false, product_id: null, subscription_end: null }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          });
-        }
-
-        await dbClient.from("subscriptions").upsert({
-          user_id: userId,
-          status: "active",
-          stripe_customer_id: null,
-          stripe_subscription_id: `hotmart:${hotmartSale.h_transaction}`,
-          product_id: productId,
-          current_period_end: expiryDate,
-        }, { onConflict: "user_id" });
-
-        return new Response(JSON.stringify({ subscribed: true, product_id: productId, subscription_end: expiryDate }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-    }
 
     if (localActiveSub) {
       logStep("Stripe did not show upgrade; returning local active subscription", { productId: localActiveSub.product_id });

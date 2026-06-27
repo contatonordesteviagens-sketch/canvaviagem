@@ -1355,7 +1355,7 @@ export default function InicioES() {
                   <div className="text-center text-[13px] font-bold text-slate-400 mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-4">
                     <span>⚡ Acceso inmediato</span>
                     <span className="hidden sm:inline">•</span>
-                    <span>🔒 Pago seguro por Hotmart</span>
+                    <span>🔒 Pago seguro por Stripe</span>
                     <span className="hidden sm:inline">•</span>
                     <span>✅ Garantía de 7 días</span>
                   </div>
@@ -1440,7 +1440,7 @@ export default function InicioES() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 text-left max-w-xl mx-auto md:mx-0">
                   <div className="flex items-start gap-2 text-slate-300"><CheckCircle2 size={20} className="text-green-500 shrink-0" /> Acceso inmediato</div>
                   <div className="flex items-start gap-2 text-slate-300"><CheckCircle2 size={20} className="text-green-500 shrink-0" /> 7 días para probar</div>
-                  <div className="flex items-start gap-2 text-slate-300"><CheckCircle2 size={20} className="text-green-500 shrink-0" /> Pago seguro por Hotmart</div>
+                  <div className="flex items-start gap-2 text-slate-300"><CheckCircle2 size={20} className="text-green-500 shrink-0" /> Pago seguro por Stripe</div>
                   <div className="flex items-start gap-2 text-slate-300"><CheckCircle2 size={20} className="text-green-500 shrink-0" /> Reembolso conforme a política</div>
                 </div>
                 <div className="text-center md:text-left">
@@ -1481,7 +1481,7 @@ export default function InicioES() {
                 },
                 {
                   q: "¿Puedo pagar desde mi país (México, Colombia, Argentina, Perú, etc.)?",
-                  a: "Sí. Los precios están en dólares (USD) y el pago se procesa de forma segura por Hotmart. Puedes pagar desde diferentes países con tarjeta internacional, según las opciones disponibles en el checkout."
+                  a: "Sí. Los precios están en dólares (USD) y el pago se procesa de forma segura por Stripe. Puedes pagar desde diferentes países con tarjeta internacional, según las opciones disponibles en el checkout."
                 },
                 {
                   q: "¿Qué pasa después del pago?",

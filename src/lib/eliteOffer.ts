@@ -6,8 +6,8 @@ export const ELITE_OFFER = {
   yearlyMonthlyTotal: "R$ 1.164",
   annualSavings: "R$ 817",
   videoId: "R2MyCdox--I",
-  monthlyCheckoutUrl: "https://pay.hotmart.com/C106141067C?off=8qkh1yh6&checkoutMode=10",
-  annualCheckoutUrl: "https://pay.hotmart.com/C106141067C?off=ts1hgsho&checkoutMode=10",
+  monthlyCheckoutUrl: "URL_STRIPE_MENSAL",
+  annualCheckoutUrl: "URL_STRIPE_ANUAL",
   startVideoCooldownMs: 30 * 60 * 1000,
 };
 

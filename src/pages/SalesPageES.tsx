@@ -57,11 +57,11 @@ const HOW_IT_WORKS = [
 
 // Comparativo justo: pack único vs designer freelancer vs Canva Viagem
 const COMPARISON = [
-  { feature: "Inversión",  hotmart: "$ 118 USD una vez", design: "$ 300 USD / mes", us: "Desde $ 118 USD / año" },
-  { feature: "Contenido",      hotmart: "150 reels fijos", design: "4–8 entregas/mes", us: "250+ videos 4K + Sitios de Ventas" },
-  { feature: "Actualizaciones",  hotmart: "❌ Ninguna", design: "Depende de él", us: "✅ Acceso de por vida a la evolución" },
-  { feature: "IAs y Scripts", hotmart: "❌ No tiene", design: "❌ No tiene", us: "✅ 11 IAs + Fábrica de Anuncios" },
-  { feature: "Soporte",       hotmart: "Solo del productor", design: "1 freelancer", us: "WhatsApp VIP directo con Lucas" },
+  { feature: "Inversión",  outroPack: "$ 118 USD una vez", design: "$ 300 USD / mes", us: "Desde $ 118 USD / año" },
+  { feature: "Contenido",      outroPack: "150 reels fijos", design: "4–8 entregas/mes", us: "250+ videos 4K + Sitios de Ventas" },
+  { feature: "Actualizaciones",  outroPack: "❌ Ninguna", design: "Depende de él", us: "✅ Acceso de por vida a la evolución" },
+  { feature: "IAs y Scripts", outroPack: "❌ No tiene", design: "❌ No tiene", us: "✅ 11 IAs + Fábrica de Anuncios" },
+  { feature: "Soporte",       outroPack: "Solo del productor", design: "1 freelancer", us: "WhatsApp VIP directo con Lucas" },
 ];
 
 const FAQS = [
@@ -71,7 +71,7 @@ const FAQS = [
   { q: "¿Y si cancelo, pierdo los videos descargados?", a: "No. Todo lo que hayas descargado y usado en tus redes sigue siendo tuyo para siempre. Solo pierdes el acceso al nuevo contenido y a las actualizaciones." },
   { q: "¿Hay soporte en español vía WhatsApp?", a: "Sí, en el plan anual. Atención humana en horario comercial (no es un chatbot). Tiempo promedio de respuesta: 2 horas." },
   { q: "¿Los videos son exclusivos?", a: "No exclusivos en el sentido literal, pero con más de 250 videos por destino y la personalización de Canva (tu logo, tu color, tu subtítulo), la probabilidad de aparecer igual a la competencia es mínima." },
-  { q: "¿Cuál es la diferencia con el pack único de Hotmart?", a: "El pack es una porción estática en el tiempo (150 reels y ya). Aquí tienes más de 250 videos, más de 400 diseños, 11 IAs, guiones de WhatsApp, calendario y nuevas entregas cada semana, por el mismo precio que se cobra una sola vez en un pack." },
+  { q: "¿Cuál es la diferencia con el pack único del mercado?", a: "El pack es una porción estática en el tiempo (150 reels y ya). Aquí tienes más de 250 videos, más de 400 diseños, 11 IAs, guiones de WhatsApp, calendario y nuevas entregas cada semana, por el mismo precio que se cobra una sola vez en un pack." },
   { q: "¿Funciona para una agencia pequeña (de 1 persona)?", a: "Fue hecho justamente para ti. Quien trabaja solo es quien más tiempo ahorra: 5 minutos al día reemplazan a un diseñador y a un social media." },
 ];
 
@@ -768,7 +768,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                   <tr>
                     <th style={{ textAlign: "left", padding: "12px 14px", fontSize: 12, color: T.text3, fontWeight: 700 }}></th>
                     <th style={{ padding: "12px 14px", fontSize: 13, color: T.text2, fontWeight: 700, textAlign: "center" }}>
-                      Pack único Hotmart
+                      Pack único del mercado
                     </th>
                     <th style={{ padding: "12px 14px", fontSize: 13, color: T.text2, fontWeight: 700, textAlign: "center" }}>
                       Diseñador freelancer
@@ -786,7 +786,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <tr key={row.feature}>
                       <td style={{ padding: "14px 14px", fontSize: 13, fontWeight: 700, color: T.text,
                         background: T.card, borderRadius: "10px 0 0 10px" }}>{row.feature}</td>
-                      <td style={{ padding: "14px 14px", textAlign: "center", fontSize: 13, color: T.text3, background: T.card }}>{row.hotmart}</td>
+                      <td style={{ padding: "14px 14px", textAlign: "center", fontSize: 13, color: T.text3, background: T.card }}>{row.outroPack}</td>
                       <td style={{ padding: "14px 14px", textAlign: "center", fontSize: 13, color: T.text3, background: T.card }}>{row.design}</td>
                       <td style={{ padding: "14px 14px", textAlign: "center", fontSize: 13, fontWeight: 800, color: T.accent,
                         background: `${T.accent}10`, borderRight: `2px solid ${T.accent}`, borderLeft: `2px solid ${T.accent}`,

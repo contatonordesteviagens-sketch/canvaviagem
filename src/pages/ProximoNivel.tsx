@@ -24,12 +24,12 @@ import {
   Bot,
   Key
 } from "lucide-react";
-const HOTMART_CHECKOUT_URL = "https://pay.hotmart.com/X100779687E?checkoutMode=10";
+const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09";
 const YOUTUBE_VIDEO_ID = "0uPJm4FNRfI";
 
 const ProximoNivel = () => {
   const handleCTAClick = () => {
-    window.open(HOTMART_CHECKOUT_URL, "_blank", "noopener,noreferrer");
+    window.open(STRIPE_CHECKOUT_URL, "_blank", "noopener,noreferrer");
   };
 
   const scrollToPricing = () => {
