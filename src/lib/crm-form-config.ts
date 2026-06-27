@@ -31,6 +31,7 @@ export interface CrmFormConfig {
   buttonLabel: string;
   successMessage: string;
   whatsappRedirect: boolean;
+  primaryColor?: string;
   fields: CrmFormField[];
 }
 
@@ -146,6 +147,7 @@ export const createDefaultCrmFormConfig = (locale: "pt-BR" | "es" = "pt-BR"): Cr
       ? "Solicitud recibida. Nuestro equipo se pondra en contacto pronto."
       : "Solicitacao recebida. Nossa equipe vai entrar em contato em breve.",
     whatsappRedirect: true,
+    primaryColor: "#F59E0B",
     fields: isEs ? defaultCrmFormFieldsES : defaultCrmFormFieldsBR,
   };
 };
