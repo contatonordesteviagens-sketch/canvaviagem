@@ -73,9 +73,9 @@ const FabricaInner = () => {
     if (activeTab === "library") {
       return librarySubTab === "ofertas" ? "Minhas Ofertas" : "Minha Biblioteca";
     }
-    if (state.currentPhase === 1) return "AnÃºncio";
+    if (state.currentPhase === 1) return "Anúncio";
     if (state.currentPhase === 2) return "Site";
-    if (state.currentPhase === 6) return "FormulÃ¡rios";
+    if (state.currentPhase === 6) return "Formulários";
     if (state.currentPhase === 3) return "CRM";
     if (state.currentPhase === 4) return "Plano";
     if (state.currentPhase === 5) return "Checkup";
@@ -94,8 +94,8 @@ const FabricaInner = () => {
         {/* Brand Header */}
         <div className="p-6 border-b border-white/5 flex items-center gap-3">
           <div>
-            <div className="text-xs font-black text-white leading-none tracking-tight">FÃ¡brica de Destinos</div>
-            <div className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5">Painel de CriaÃ§Ã£o</div>
+            <div className="text-xs font-black text-white leading-none tracking-tight">Fábrica de Destinos</div>
+            <div className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5">Painel de Criação</div>
           </div>
         </div>
 
@@ -112,7 +112,7 @@ const FabricaInner = () => {
               }`}
             >
               <LayoutDashboard className={`w-4 h-4 ${activeTab === "dashboard" ? "text-amber-400" : "text-white/40"}`} />
-              <span>Painel FÃ¡brica</span>
+              <span>Painel Fábrica</span>
             </button>
           </div>
 
@@ -134,7 +134,7 @@ const FabricaInner = () => {
             >
               <div className="flex items-center gap-3">
                 <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 1 ? "text-amber-400" : "text-white/40"}`} />
-                <span>AnÃºncio</span>
+                <span>Anúncio</span>
               </div>
               <span className="text-[10px] text-white/30 font-bold">F1</span>
             </button>
@@ -178,7 +178,7 @@ const FabricaInner = () => {
               >
                 <div className="flex items-center gap-3">
                   <ClipboardList className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 6 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>FormulÃ¡rios</span>
+                  <span>Formulários</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold">F3</span>
               </button>
@@ -282,7 +282,7 @@ const FabricaInner = () => {
 
         {/* Bottom Actions */}
         <div className="p-4 border-t border-white/5 space-y-3">
-          {/* âœ… FIX #5: Indicador de sync visÃ­vel em todas as fases */}
+          {/* âœ… FIX #5: Indicador de sync visível em todas as fases */}
           <CloudSaveIndicator />
           <div className="pt-2">
             <button
@@ -295,13 +295,13 @@ const FabricaInner = () => {
         </div>
       </aside>
 
-      {/* â”€â”€ MOBILE HEADER (SELETOR COMPATÃVEL) â”€â”€ */}
+      {/* â”€â”€ MOBILE HEADER (SELETOR COMPATÍVEL) â”€â”€ */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0F0F11] border-b border-white/5 flex items-center justify-between px-4 z-50 animate-slideDown">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-500 to-yellow-300">
             <Sparkles className="w-3.5 h-3.5 text-black" />
           </div>
-          <span className="text-xs font-black uppercase tracking-wider text-white">FÃ¡brica</span>
+          <span className="text-xs font-black uppercase tracking-wider text-white">Fábrica</span>
           <span className="text-white/30">/</span>
           <span className="text-xs font-bold text-amber-400">{getPhaseName()}</span>
         </div>
@@ -332,7 +332,7 @@ const FabricaInner = () => {
             ðŸ“Š Painel Inicial
           </button>
           
-          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">GeraÃ§Ã£o</div>
+          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Geração</div>
           <button
             onClick={() => {
               setPhase(1);
@@ -343,7 +343,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ðŸ–¼ï¸ AnÃºncio (F1)
+            ðŸ–¼ï¸ Anúncio (F1)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Ferramentas</div>
@@ -369,7 +369,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 6 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            FormulÃ¡rios (F3)
+            Formulários (F3)
           </button>
           <button
             onClick={() => {
@@ -408,7 +408,7 @@ const FabricaInner = () => {
             âš¡ Checkup (F6)
           </button>
 
-          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">ConteÃºdo</div>
+          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Conteúdo</div>
           <button
             onClick={() => {
               setActiveTab("library");
@@ -439,13 +439,13 @@ const FabricaInner = () => {
               onClick={() => navigate("/")}
               className="w-full py-3 px-4 rounded-xl text-left text-sm font-semibold text-white/50"
             >
-              â† Voltar ao InÃ­cio
+              â† Voltar ao Início
             </button>
           </div>
         </div>
       )}
 
-      {/* â”€â”€ CONTEÃšDO PRINCIPAL (ÃREA DE TRABALHO) â”€â”€ */}
+      {/* â”€â”€ CONTEÃšDO PRINCIPAL (ÁREA DE TRABALHO) â”€â”€ */}
       <main className="flex-1 min-w-0 min-h-screen pt-20 md:pt-8 px-4 md:px-8 pb-24 overflow-y-auto bg-[#0A0A0B]">
         {/* Top Bar with Voice AI and Phase Shortcuts */}
         {isAdmin && (
@@ -467,9 +467,9 @@ const FabricaInner = () => {
               </button>
 
               {[
-                { name: 'AnÃºncio', phase: 1 },
+                { name: 'Anúncio', phase: 1 },
                 { name: 'Site', phase: 2 },
-                { name: 'FormulÃ¡rio', phase: 6 },
+                { name: 'Formulário', phase: 6 },
                 { name: 'CRM', phase: 3 },
                 { name: 'Plano', phase: 4 },
                 { name: 'Checkup', phase: 5 },
@@ -539,8 +539,8 @@ const FabricaContent = () => {
     }
   }, [hasAccess, accessGranted]);
 
-  // Spinner SÃ“ no primeiro carregamento real (sem user e sem acesso jÃ¡ concedido).
-  // ReverificaÃ§Ãµes silenciosas em background NÃƒO devem mais derrubar pra esta tela.
+  // Spinner SÃ“ no primeiro carregamento real (sem user e sem acesso já concedido).
+  // Reverificações silenciosas em background NÃƒO devem mais derrubar pra esta tela.
   if (!accessGranted && authLoading && !user) {
     return (
       <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white">
@@ -559,7 +559,7 @@ const FabricaContent = () => {
     return (
       <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center text-white">
         <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mb-2" />
-        <span className="text-sm text-white/60">Verificando sessÃ£o...</span>
+        <span className="text-sm text-white/60">Verificando sessão...</span>
       </div>
     );
   }
@@ -570,7 +570,7 @@ const FabricaContent = () => {
 
   return (
     <>
-      <SeoMetadata title="FÃ¡brica de Viagens | Canva Viagem" description="Sistema completo de marketing e geraÃ§Ã£o de anÃºncios com IA para agÃªncias de viagens." />
+      <SeoMetadata title="Fábrica de Viagens | Canva Viagem" description="Sistema completo de marketing e geração de anúncios com IA para agências de viagens." />
       <FabricaInner />
     </>
   );

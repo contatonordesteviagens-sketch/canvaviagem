@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,29 @@ export default function HotmartManager() {
     const [repairLoading, setRepairLoading] = useState(false);
     const [repairResult, setRepairResult] = useState<{ magic_link?: string; current_period_end?: string } | null>(null);
 
+    const [totalSales, setTotalSales] = useState(0);
+    const [salesData, setSalesData] = useState<any[]>([]);
+    const [salesLoading, setSalesLoading] = useState(true);
+
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                const { data, error } = await supabase.functions.invoke("get-hotmart-sales");
+                if (data && !error && mounted) {
+                    setSalesData(data);
+                    const total = data.reduce((acc: number, sale: any) => acc + (sale.h_price_value || 0), 0);
+                    setTotalSales(total);
+                }
+            } catch (err) {
+                console.error("Failed to load hotmart sales", err);
+            } finally {
+                if (mounted) setSalesLoading(false);
+            }
+        })();
+        return () => { mounted = false; };
+    }, []);
+
     const runHotmartRepair = async () => {
         const email = repairEmail.trim().toLowerCase();
         if (!email || !email.includes("@")) {
@@ -57,6 +80,10 @@ export default function HotmartManager() {
             if (data?.error) throw new Error(data.error);
 
             setRepairResult(data);
+            setRepairEmail("");
+            setRepairName("");
+            setRepairPhone("");
+            setRepairTransaction("");
             toast.success("Acesso Hotmart Elite liberado");
         } catch (error: any) {
             toast.error(error?.message || "Nao foi possivel reparar o acesso");
@@ -190,13 +217,15 @@ export default function HotmartManager() {
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center justify-between">
-                                    <div className="text-4xl font-black text-white">R$ 0,00</div>
+                                    <div className="text-4xl font-black text-white">
+                                        {salesLoading ? "..." : new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totalSales)}
+                                    </div>
                                     <div className="p-3 bg-green-500/10 rounded-2xl">
                                         <LineChart className="w-6 h-6 text-green-500" />
                                     </div>
                                 </div>
                                 <p className="text-xs text-slate-500 mt-4 flex items-center gap-1">
-                                    Conecte sua API para ver dados em tempo real
+                                    {salesLoading ? "Carregando dados..." : `${salesData.length} vendas sincronizadas da Hotmart`}
                                 </p>
                             </CardContent>
                         </Card>
@@ -224,7 +253,7 @@ export default function HotmartManager() {
                                 <div className="flex items-center justify-between">
                                     <div className="text-2xl font-black text-yellow-500 uppercase">Aguardando</div>
                                     <div className="p-3 bg-yellow-500/10 rounded-2xl">
-                                        <RefreshCw className="w-6 h-6 text-yellow-500 animate-spin-slow" />
+                                        <RefreshCw className="w-6 h-6 text-yellow-500 animate-spin" style={{ animationDuration: '8s' }} />
                                     </div>
                                 </div>
                                 <p className="text-xs text-slate-500 mt-4">Nenhum sinal recebido nos últimos 7 dias</p>
@@ -425,15 +454,4 @@ export default function HotmartManager() {
     );
 }
 
-// Add spinning animation if not present
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes spin-slow {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  .animate-spin-slow {
-    animation: spin-slow 8s linear infinite;
-  }
-`;
-document.head.appendChild(style);
+
