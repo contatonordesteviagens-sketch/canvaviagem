@@ -93,7 +93,7 @@ export function VoiceOnboarding() {
       setState("transcribing");
       
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fabrica-transcribe-audio`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fabrica-transcribe-audio?stream=false`,
         {
           method: "POST",
           headers: {
@@ -104,38 +104,16 @@ export function VoiceOnboarding() {
       );
 
       if (!response.ok) {
-        throw new Error("Falha na transcrição de áudio.");
+        const errPayload = await response.json().catch(() => ({}));
+        throw new Error(errPayload?.error || "Falha na transcrição de áudio.");
       }
 
-      if (!response.body) throw new Error("Sem resposta do servidor.");
+      const transcribeData = await response.json();
+      const fullText: string = (transcribeData?.text || "").trim();
+      setTranscript(fullText);
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let fullText = "";
-
-      // Ler streaming SSE
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.type === "transcript.text.delta") {
-                fullText += data.text;
-                setTranscript(fullText);
-              } else if (data.type === "transcript.text.done") {
-                fullText = data.text;
-                setTranscript(fullText);
-              }
-            } catch (e) {
-              // Ignorar erros de parse se o pedaço estiver quebrado
-            }
-          }
-        }
+      if (!fullText || fullText.length < 5) {
+        throw new Error("Não conseguimos entender o áudio. Fale mais alto e por pelo menos 10 segundos.");
       }
 
       // 3. Extrair informações de negócios com LLM
