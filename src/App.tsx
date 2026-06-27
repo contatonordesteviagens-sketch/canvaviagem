@@ -109,6 +109,7 @@ const FabricaES = lazy(() => import("./pages/FabricaES"));
 const PainelMarketing = lazy(() => import("./pages/PainelMarketing"));
 const SiteViewer = lazy(() => import("./pages/SiteViewer"));
 const VendedorIA = lazy(() => import("./pages/vendedor-ia/VendedorIA"));
+const Tutorial = lazy(() => import("./pages/Tutorial"));
 
 const RESERVED_CANVA_VIAGEM_SUBDOMAINS = new Set([
   "www",
@@ -259,6 +260,11 @@ const App = () => {
                     <Route path="/minha-conta" element={
                       <ProtectedRoute>
                         <MinhaConta />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/tutorial" element={
+                      <ProtectedRoute>
+                        <Tutorial />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin-login" element={<AdminLogin />} />

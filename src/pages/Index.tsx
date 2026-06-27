@@ -11,6 +11,7 @@ import { Header } from "@/components/Header";
 import SeoMetadata from "@/components/SeoMetadata";
 const BottomNav = lazy(() => import("@/components/canva/BottomNav").then(module => ({ default: module.BottomNav })));
 const Footer = lazy(() => import("@/components/Footer").then(module => ({ default: module.Footer })));
+import { WelcomeTutorialPopup } from "@/components/WelcomeTutorialPopup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { downloadLinks } from "@/data/downloads";
@@ -1900,6 +1901,7 @@ const Index = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      <WelcomeTutorialPopup />
     </div>
   );
 };
