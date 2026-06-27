@@ -606,7 +606,7 @@ const FabricaContentES = () => {
               </div>
 
               <button 
-                onClick={() => navigate("/inicio2")}
+                onClick={() => navigate("/inicio")}
                 className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs transition-all shadow-lg shadow-orange-500/20 uppercase tracking-wider border-0 cursor-pointer text-center"
               >
                 Garantizar Anual con Descuento →
@@ -626,7 +626,7 @@ const FabricaContentES = () => {
                 </div>
               </div>
               <button 
-                onClick={() => navigate("/inicio2")}
+                onClick={() => navigate("/inicio")}
                 className="w-full bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-bold py-2 px-3 rounded-xl text-xs mt-1 transition-colors border-0 cursor-pointer text-center"
               >
                 Suscribir Mensual por $ 97 →

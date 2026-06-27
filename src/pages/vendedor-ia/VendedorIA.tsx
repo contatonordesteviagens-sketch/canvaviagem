@@ -233,7 +233,7 @@ const VendedorIA: React.FC = () => {
               Voltar
             </button>
             <button
-              onClick={() => navigate('/inicio2')}
+              onClick={() => navigate('/inicio')}
               className="flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-colors"
             >
               Ver Planos

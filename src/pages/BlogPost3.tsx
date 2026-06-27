@@ -271,10 +271,10 @@ const BlogPost3 = () => {
                                 Plano Mensal: R$29/mês · Plano Anual: R$197 (economize R$151)
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3 justify-center relative z-10">
-                                <Link to="/inicio2" className="inline-block bg-white text-slate-900 font-black px-8 py-4 rounded-2xl hover:bg-slate-100 transition-all text-base shadow-xl active:scale-95">
+                                <Link to="/inicio" className="inline-block bg-white text-slate-900 font-black px-8 py-4 rounded-2xl hover:bg-slate-100 transition-all text-base shadow-xl active:scale-95">
                                     QUERO O PLANO ANUAL R$197 →
                                 </Link>
-                                <Link to="/inicio2" className="inline-block bg-transparent border-2 border-white/30 text-white font-bold px-8 py-4 rounded-2xl hover:border-white/60 transition-all text-base active:scale-95">
+                                <Link to="/inicio" className="inline-block bg-transparent border-2 border-white/30 text-white font-bold px-8 py-4 rounded-2xl hover:border-white/60 transition-all text-base active:scale-95">
                                     Ver plano mensal R$29
                                 </Link>
                             </div>

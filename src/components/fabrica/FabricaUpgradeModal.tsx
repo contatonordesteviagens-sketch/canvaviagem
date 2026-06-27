@@ -17,7 +17,7 @@ export const FabricaUpgradeModal = ({ open, onOpenChange }: FabricaUpgradeModalP
 
   const handlePlansClick = () => {
     onOpenChange(false);
-    navigate("/inicio2");
+    navigate("/inicio");
   };
 
   return (

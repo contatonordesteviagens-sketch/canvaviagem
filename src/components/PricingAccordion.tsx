@@ -43,46 +43,6 @@ export function PricingAccordion() {
             MAIS POPULAR — MELHOR VALOR
           </div>
 
-const CANVA_VIAGEM_FEATURES = [
-  "250 vídeos Reels de destinos",
-  "400 Artes e stories",
-  "Gerador de anúncio",
-  "Construtor de Sites",
-  "Acesso ao CRM de leads",
-  "Ferramentas Agentes de IA",
-  "Legendas e textos de oferta",
-  "Gerador de roteiros",
-  "Suporte via WhatsApp"
-];
-
-export function PricingAccordion() {
-  const [selectedPlan, setSelectedPlan] = useState("anual");
-
-  return (
-    <div className="w-full max-w-[500px] mx-auto flex flex-col gap-5 mt-8">
-      {/* PLANO ANUAL */}
-      <div
-        onClick={() => setSelectedPlan("anual")}
-        className="relative cursor-pointer"
-      >
-        <div
-          className={`relative rounded-2xl bg-white border transition-all duration-300 ${
-            selectedPlan === "anual" 
-              ? "z-10 border-[#7C3AED] border-[3px] shadow-[0_10px_30px_-10px_rgba(124,58,237,0.3)]" 
-              : "border-slate-200 hover:border-purple-300"
-          }`}
-        >
-          {/* Badge */}
-          <div style={{
-            position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
-            background: 'linear-gradient(90deg, #F59E0B, #EF4444)',
-            color: 'white', fontSize: '11px', fontWeight: '800',
-            padding: '4px 16px', borderRadius: '20px', whiteSpace: 'nowrap',
-            boxShadow: '0 4px 12px rgba(239,68,68,0.35)'
-          }}>
-            MAIS POPULAR — MELHOR VALOR
-          </div>
-
           <div className="p-5 pt-6">
             <div className="flex flex-col items-center text-center w-full">
               <h3 className="text-2xl font-black text-slate-900 leading-tight">
@@ -206,6 +166,16 @@ export function PricingAccordion() {
 
                     <a
                       href={ELITE_OFFER.monthlyCheckoutUrl}
+                      className="w-full text-center py-3.5 rounded-xl font-bold border-2 transition-transform active:scale-95 flex items-center justify-center"
+                      style={{ borderColor: '#3B82F6', color: '#3B82F6' }}
+                    >
+                      Começar teste de 3 dias grátis
+                    </a>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>

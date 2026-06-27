@@ -1,5 +1,5 @@
 export const ELITE_OFFER = {
-  landingPath: "/inicio2",
+  landingPath: "/inicio",
   monthlyPrice: "R$ 97",
   annualPrice: "R$ 482",
   annualMonthlyEquivalent: "R$ 40,16",

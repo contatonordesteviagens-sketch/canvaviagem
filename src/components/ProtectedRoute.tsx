@@ -58,7 +58,7 @@ export const ProtectedRoute = ({
     // 3. Check Subscription (if required)
     // Note: Admins bypass subscription checks ensuring they can access everything
     if (requireSubscription && !subscription.subscribed && !isAdmin) {
-        return <Navigate to="/inicio2" replace />;
+        return <Navigate to="/inicio" replace />;
     }
 
     const isElite = hasEliteAccess(subscription);

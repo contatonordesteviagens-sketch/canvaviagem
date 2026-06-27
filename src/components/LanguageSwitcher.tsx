@@ -22,7 +22,7 @@ export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps)
     
     if (targetLang === 'es') {
       // Navigate to ES version
-      if (currentPath.includes('/inicio2') || currentPath.includes('/es/inicio')) {
+      if (currentPath.includes('/inicio') || currentPath.includes('/es/inicio')) {
         window.location.href = '/es/inicio' + searchParams;
       } else if (currentPath.includes('/calendar') || currentPath.includes('/es/calendar')) {
         window.location.href = '/es/calendar' + searchParams;
@@ -33,8 +33,8 @@ export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps)
       }
     } else {
       // Navigate to PT version - use explicit /pt paths to force language
-      if (currentPath.includes('/inicio2') || currentPath.includes('/es/inicio')) {
-        window.location.href = '/inicio2' + searchParams;
+      if (currentPath.includes('/inicio') || currentPath.includes('/es/inicio')) {
+        window.location.href = '/inicio' + searchParams;
       } else if (currentPath.includes('/calendar') || currentPath.includes('/es/calendar')) {
         window.location.href = '/calendar' + searchParams;
       } else if (currentPath.includes('/fabrica') || currentPath.includes('/es/fabrica')) {

@@ -96,6 +96,7 @@ const BlogPost49 = lazy(() => import("./pages/BlogPost49"));
 const BlogPost50 = lazy(() => import("./pages/BlogPost50"));
 const Blog = lazy(() => import("./pages/Blog"));
 const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
+const Inicio = lazy(() => import("./pages/Inicio"));
 const Inicio2 = lazy(() => import("./pages/Inicio2"));
 const InicioES = lazy(() => import("./pages/InicioES"));
 const CanvaClone = lazy(() => import("./pages/CanvaClone"));
@@ -193,8 +194,8 @@ const App = () => {
                     } />
                     <Route path="/planos" element={<SalesPage />} />
                     <Route path="/pt/planos" element={<SalesPage />} />
-                    <Route path="/inicio" element={<Navigate to="/inicio2" replace />} />
-                    <Route path="/inicio2" element={<Inicio2 />} />
+                    <Route path="/inicio" element={<Inicio2 />} />
+                    <Route path="/inicio2" element={<Inicio />} />
                     <Route path="/canva" element={<CanvaClone />} />
                     <Route path="/diferencas" element={<Diferencas />} />
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />

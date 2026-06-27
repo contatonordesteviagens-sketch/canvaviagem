@@ -46,7 +46,7 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
 
   const handleRedirect = () => {
     onClose();
-    navigate("/inicio2");
+    navigate("/inicio");
   };
 
   return (

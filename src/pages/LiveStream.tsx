@@ -1997,7 +1997,7 @@ const LiveStream = () => {
                       {/* VER OUTROS PLANOS */}
                       <div className="text-center flex-shrink-0">
                         <a
-                          href="/inicio2"
+                          href="/inicio"
                           className="text-zinc-400 hover:text-zinc-800 text-xs font-black transition-colors underline uppercase tracking-widest"
                         >
                           ver outros planos

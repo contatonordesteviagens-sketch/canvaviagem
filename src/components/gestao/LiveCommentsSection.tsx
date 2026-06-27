@@ -148,7 +148,7 @@ export const LiveCommentsSection = () => {
   const [offerTitle, setOfferTitle] = useState("🔥 OFERTA EXCLUSIVA DA LIVE LIBERADA!");
   const [offerDesc, setOfferDesc] = useState("Adquira o Canva Viagem Vitalício + Fábrica de Anúncios I.A com Desconto!");
   const [offerPrice, setOfferPrice] = useState("Apenas 12x de R$ 29,70 ou R$ 297 à vista");
-  const [offerCheckoutUrl, setOfferCheckoutUrl] = useState("/inicio2");
+  const [offerCheckoutUrl, setOfferCheckoutUrl] = useState("/inicio");
   const [offerBannerUrl, setOfferBannerUrl] = useState("");
 
   // Dialog State for Comments
@@ -543,7 +543,7 @@ export const LiveCommentsSection = () => {
         setOfferTitle(parsed.title || "🔥 OFERTA EXCLUSIVA DA LIVE LIBERADA!");
         setOfferDesc(parsed.description || "Adquira o Canva Viagem Vitalício + Fábrica de Anúncios I.A com Desconto!");
         setOfferPrice(parsed.price || "Apenas 12x de R$ 29,70 ou R$ 297 à vista");
-        setOfferCheckoutUrl(parsed.checkoutUrl || "/inicio2");
+        setOfferCheckoutUrl(parsed.checkoutUrl || "/inicio");
         setOfferBannerUrl(parsed.bannerUrl || "");
       } catch (e) {
         console.error("Error parsing saved offer settings", e);
@@ -620,7 +620,7 @@ export const LiveCommentsSection = () => {
             setOfferTitle(globalSettings.offerSettings.title || "🔥 OFERTA EXCLUSIVA DA LIVE LIBERADA!");
             setOfferDesc(globalSettings.offerSettings.description || "Adquira o Canva Viagem Vitalício + Fábrica de Anúncios I.A com Desconto!");
             setOfferPrice(globalSettings.offerSettings.price || "Apenas 12x de R$ 29,70 ou R$ 297 à vista");
-            setOfferCheckoutUrl(globalSettings.offerSettings.checkoutUrl || "/inicio2");
+            setOfferCheckoutUrl(globalSettings.offerSettings.checkoutUrl || "/inicio");
             setOfferBannerUrl(globalSettings.offerSettings.bannerUrl || "");
             localStorage.setItem("live_stream_offer_settings", JSON.stringify(globalSettings.offerSettings));
           }

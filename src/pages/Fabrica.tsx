@@ -565,7 +565,7 @@ const FabricaContent = () => {
   }
 
   if (!canUseFabrica) {
-    return <Navigate to="/inicio2?upgrade=fabrica" replace />;
+    return <Navigate to="/inicio?upgrade=fabrica" replace />;
   }
 
   return (
