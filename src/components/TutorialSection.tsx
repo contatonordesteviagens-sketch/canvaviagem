@@ -6,18 +6,23 @@ import {
   Instagram,
   Play,
   Youtube,
+  PlayCircle,
+  Trophy,
+  Star
 } from "lucide-react";
 
 type TutorialVideo = {
   id: number;
+  lesson: string;
   title: string;
   shortTitle: string;
-  lesson: string;
   videoId: string;
   url: string;
   thumbnail: string;
+  duration?: string;
 };
 
+// Organized classes based on user instructions and Canva Viagem content
 export const TUTORIAL_VIDEOS: TutorialVideo[] = [
   {
     id: 1,
@@ -26,70 +31,78 @@ export const TUTORIAL_VIDEOS: TutorialVideo[] = [
     shortTitle: "Boas-vindas ao Canva Viagem",
     videoId: "ZNegTIt05i4",
     url: "https://www.youtube.com/watch?v=ZNegTIt05i4",
-    thumbnail: "https://i3.ytimg.com/vi/ZNegTIt05i4/hqdefault.jpg",
+    thumbnail: "https://i3.ytimg.com/vi/ZNegTIt05i4/maxresdefault.jpg",
+    duration: "03:45",
   },
   {
     id: 2,
     lesson: "Aula 2",
-    title: "AULA 2 - LOGIN APOS A COMPRA CANVA VIAGEM",
-    shortTitle: "Login apos a compra",
+    title: "AULA 2 - LOGIN APÓS A COMPRA CANVA VIAGEM",
+    shortTitle: "Login após a compra",
     videoId: "Ris4PvVTYNM",
     url: "https://www.youtube.com/watch?v=Ris4PvVTYNM",
-    thumbnail: "https://i3.ytimg.com/vi/Ris4PvVTYNM/hqdefault.jpg",
+    thumbnail: "https://i3.ytimg.com/vi/Ris4PvVTYNM/maxresdefault.jpg",
+    duration: "05:12",
   },
   {
     id: 3,
     lesson: "Aula 3",
-    title: "AULA 3 - COMO EDITAR VIDEO REELS DE VIAGENS NO CANVA VIAGEM",
-    shortTitle: "Editar Reels de viagens no Canva",
-    videoId: "-AmTWng3q-Y",
-    url: "https://www.youtube.com/watch?v=-AmTWng3q-Y",
-    thumbnail: "https://i2.ytimg.com/vi/-AmTWng3q-Y/hqdefault.jpg",
+    title: "AULA 3 - OPÇÕES EXTRAS DE EDIÇÃO NO CANVA",
+    shortTitle: "Opções extras de edição",
+    videoId: "1VTN8gh65kM",
+    url: "https://www.youtube.com/watch?v=1VTN8gh65kM",
+    thumbnail: "https://i3.ytimg.com/vi/1VTN8gh65kM/maxresdefault.jpg",
+    duration: "08:30",
   },
   {
     id: 4,
     lesson: "Aula 4",
-    title: "AULA 4 - OPCOES EXTRAS DE EDICAO NO CANVA",
-    shortTitle: "Opcoes extras de edicao",
-    videoId: "1VTN8gh65kM",
-    url: "https://www.youtube.com/watch?v=1VTN8gh65kM",
-    thumbnail: "https://i2.ytimg.com/vi/1VTN8gh65kM/hqdefault.jpg",
+    title: "AULA 4 - OFERTAS E VÍDEOS PRONTOS CANVA VIAGEM",
+    shortTitle: "Ofertas e vídeos prontos",
+    videoId: "llybalfBjAo",
+    url: "https://www.youtube.com/watch?v=llybalfBjAo",
+    thumbnail: "https://i3.ytimg.com/vi/llybalfBjAo/maxresdefault.jpg",
+    duration: "06:15",
   },
   {
     id: 5,
     lesson: "Aula 5",
-    title: "AULA 5 - OFERTAS E VIDEOS PRONTOS CANVA VIAGEM",
-    shortTitle: "Ofertas e videos prontos",
-    videoId: "llybalfBjAo",
-    url: "https://www.youtube.com/watch?v=llybalfBjAo",
-    thumbnail: "https://i1.ytimg.com/vi/llybalfBjAo/hqdefault.jpg",
+    title: "AULA 5 - ERRO VÍDEO REELS",
+    shortTitle: "Corrigir erro em vídeo Reels",
+    videoId: "T0SCGt35shE",
+    url: "https://www.youtube.com/watch?v=T0SCGt35shE",
+    thumbnail: "https://i3.ytimg.com/vi/T0SCGt35shE/maxresdefault.jpg",
+    duration: "04:20",
   },
   {
     id: 6,
     lesson: "Aula 6",
-    title: "AULA 6 - ERRO VIDEO REELS",
-    shortTitle: "Corrigir erro em video Reels",
-    videoId: "T0SCGt35shE",
-    url: "https://www.youtube.com/watch?v=T0SCGt35shE",
-    thumbnail: "https://i1.ytimg.com/vi/T0SCGt35shE/hqdefault.jpg",
+    title: "AULA 6 - FERRAMENTAS DE INTELIGÊNCIA ARTIFICIAL CANVA VIAGEM",
+    shortTitle: "Inteligência Artificial",
+    videoId: "i9B4sLFBlJc",
+    url: "https://www.youtube.com/watch?v=i9B4sLFBlJc",
+    thumbnail: "https://i3.ytimg.com/vi/i9B4sLFBlJc/maxresdefault.jpg",
+    duration: "07:10",
   },
   {
     id: 7,
     lesson: "Aula 7",
-    title: "AULA 7 - FERRAMENTAS DE INTELIGENCIA ARTIFICIAL CANVA VIAGEM",
-    shortTitle: "Ferramentas de inteligencia artificial",
-    videoId: "i9B4sLFBlJc",
-    url: "https://www.youtube.com/watch?v=i9B4sLFBlJc",
-    thumbnail: "https://i2.ytimg.com/vi/i9B4sLFBlJc/hqdefault.jpg",
+    title: "AULA 7 - COMO EDITAR VÍDEO REELS DE VIAGENS",
+    shortTitle: "Editar Reels de viagens",
+    videoId: "-AmTWng3q-Y",
+    url: "https://www.youtube.com/watch?v=-AmTWng3q-Y",
+    thumbnail: "https://i3.ytimg.com/vi/-AmTWng3q-Y/maxresdefault.jpg",
+    duration: "09:45",
   },
   {
     id: 8,
     lesson: "Aula 8",
-    title: "AULA 8 - FABRICA DE DESTINOS",
-    shortTitle: "Fabrica de Destinos",
+    title: "AULA 8 - FÁBRICA DE DESTINOS",
+    shortTitle: "Fábrica de Destinos",
     videoId: "Z8-aFoblDu0",
     url: "https://www.youtube.com/watch?v=Z8-aFoblDu0",
-    thumbnail: "https://i3.ytimg.com/vi/Z8-aFoblDu0/hqdefault.jpg",
+    thumbnail: "https://i3.ytimg.com/vi/Z8-aFoblDu0/maxresdefault.jpg",
+    duration: "05:55",
   },
 ];
 
@@ -102,97 +115,88 @@ export const TutorialSection = () => {
   const nextVideo = TUTORIAL_VIDEOS[activeIndex + 1];
 
   const progress = useMemo(
-    () => Math.round(((activeIndex + 1) / TUTORIAL_VIDEOS.length) * 100),
-    [activeIndex],
+    () => Math.round(((activeIndex) / TUTORIAL_VIDEOS.length) * 100),
+    [activeIndex]
   );
 
   return (
-    <section className="w-full space-y-6">
-      <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#070b12] shadow-2xl shadow-black/30">
-        <div className="grid min-h-[640px] grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px]">
-          <div className="flex flex-col">
-            <div className="flex flex-col gap-5 border-b border-white/10 bg-[#0b1220] px-4 py-5 sm:px-6 lg:px-8">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div className="max-w-3xl">
-                  <div className="mb-3 inline-flex items-center rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-cyan-100">
-                    Area de membros
-                  </div>
-                  <h2 className="text-2xl font-black leading-tight text-white sm:text-3xl">
-                    Academia Canva Viagem
-                  </h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                    Assista na ordem, aplique dentro da plataforma e avance para a proxima aula quando terminar.
-                  </p>
-                </div>
+    <section className="w-full flex flex-col gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
+        
+        {/* Main Video Area */}
+        <div className="flex-1 flex flex-col gap-4">
+          <div className="relative w-full rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10 group aspect-video">
+            <iframe
+              key={activeVideo.videoId}
+              src={`https://www.youtube.com/embed/${activeVideo.videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0`}
+              title={activeVideo.title}
+              className="absolute top-0 left-0 w-full h-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
 
-                <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <div className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-300">
-                    <span>Progresso</span>
-                    <span>{progress}%</span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                    <div
-                      className="h-full rounded-full bg-cyan-300 transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                </div>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 rounded-2xl bg-gradient-to-r from-[#0b1220] to-[#0d1627] border border-white/5 shadow-lg">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="px-3 py-1 text-[10px] sm:text-xs font-black uppercase tracking-widest text-cyan-400 bg-cyan-400/10 rounded-full border border-cyan-400/20">
+                  {activeVideo.lesson}
+                </span>
+                {progress === 100 && (
+                  <span className="flex items-center gap-1 px-3 py-1 text-[10px] sm:text-xs font-black uppercase tracking-widest text-yellow-400 bg-yellow-400/10 rounded-full border border-yellow-400/20">
+                    <Trophy className="w-3 h-3" /> Curso Concluído
+                  </span>
+                )}
               </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+                {activeVideo.shortTitle}
+              </h2>
+              <p className="mt-2 text-slate-400 text-sm font-medium flex items-center gap-2">
+                Canva Viagem Academia <Star className="w-4 h-4 text-cyan-400 fill-cyan-400/20" />
+              </p>
             </div>
 
-            <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-xl">
-                <div className="aspect-video w-full">
-                  <iframe
-                    key={activeVideo.videoId}
-                    src={`https://www.youtube.com/embed/${activeVideo.videoId}?autoplay=0&rel=0&modestbranding=1`}
-                    title={activeVideo.title}
-                    className="h-full w-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                </div>
-              </div>
+            <div className="flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => nextVideo && setActiveIndex(activeIndex + 1)}
+                disabled={!nextVideo}
+                className="relative group inline-flex items-center justify-center gap-3 px-8 py-4 text-sm sm:text-base font-black text-slate-900 bg-cyan-400 rounded-xl overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(34,211,238,0.5)] focus:outline-none disabled:opacity-50 disabled:pointer-events-none"
+              >
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                <span className="relative z-10 flex items-center gap-2">
+                  {nextVideo ? "Avançar para Próxima Aula" : "Trilha Concluída"}
+                  {nextVideo ? <ArrowRight className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
 
-              <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <div className="text-sm font-bold uppercase tracking-[0.18em] text-cyan-200">
-                    {activeVideo.lesson}
-                  </div>
-                  <h3 className="mt-1 text-xl font-black leading-tight text-white sm:text-2xl">
-                    {activeVideo.shortTitle}
-                  </h3>
-                  <a
-                    href={activeVideo.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-400 transition-colors hover:text-cyan-200"
-                  >
-                    Abrir no YouTube
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => nextVideo && setActiveIndex(activeIndex + 1)}
-                  disabled={!nextVideo}
-                  className="inline-flex min-h-[52px] items-center justify-center gap-3 rounded-2xl bg-cyan-300 px-6 py-3 text-sm font-black text-slate-950 shadow-lg shadow-cyan-950/30 transition-all hover:-translate-y-0.5 hover:bg-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-200 focus:ring-offset-2 focus:ring-offset-[#070b12] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500 disabled:shadow-none disabled:hover:translate-y-0"
-                >
-                  {nextVideo ? "Avancar para a proxima aula" : "Curso concluido"}
-                  {nextVideo ? <ArrowRight className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
-                </button>
+        {/* Sidebar Navigation */}
+        <div className="w-full lg:w-[400px] flex flex-col gap-4">
+          <div className="p-6 rounded-2xl bg-[#0b1220] border border-white/5 shadow-lg flex flex-col gap-4">
+            <div>
+              <h3 className="text-lg font-black text-white mb-1">Conteúdo do Curso</h3>
+              <p className="text-sm text-slate-400 font-medium">Seu progresso atual</p>
+            </div>
+            
+            <div className="w-full bg-white/5 rounded-full h-2.5 overflow-hidden">
+              <div 
+                className="bg-gradient-to-r from-cyan-500 to-cyan-300 h-2.5 rounded-full transition-all duration-500 ease-out relative"
+                style={{ width: `${progress}%` }}
+              >
+                <div className="absolute inset-0 bg-white/20 w-full h-full animate-pulse" />
               </div>
+            </div>
+            <div className="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <span>{activeIndex} de {TUTORIAL_VIDEOS.length} aulas</span>
+              <span className="text-cyan-400">{progress}% completo</span>
             </div>
           </div>
 
-          <aside className="border-t border-white/10 bg-[#0a101b] xl:border-l xl:border-t-0">
-            <div className="border-b border-white/10 p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Trilha completa</p>
-              <p className="mt-1 text-sm text-slate-300">{TUTORIAL_VIDEOS.length} aulas organizadas do canal oficial.</p>
-            </div>
-
-            <div className="max-h-[680px] space-y-2 overflow-y-auto p-3">
+          <div className="flex-1 bg-[#0b1220] border border-white/5 rounded-2xl p-4 overflow-hidden flex flex-col max-h-[600px]">
+            <div className="overflow-y-auto pr-2 space-y-2 custom-scrollbar">
               {TUTORIAL_VIDEOS.map((video, index) => {
                 const isActive = index === activeIndex;
                 const isWatched = index < activeIndex;
@@ -200,74 +204,104 @@ export const TutorialSection = () => {
                 return (
                   <button
                     key={video.videoId}
-                    type="button"
                     onClick={() => setActiveIndex(index)}
-                    className={`group grid w-full grid-cols-[104px_minmax(0,1fr)] gap-3 rounded-2xl border p-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-cyan-200 ${
+                    className={`w-full text-left group relative p-3 rounded-xl transition-all duration-300 flex gap-4 ${
                       isActive
-                        ? "border-cyan-300/60 bg-cyan-300/10"
-                        : "border-transparent bg-white/[0.03] hover:border-white/10 hover:bg-white/[0.06]"
+                        ? "bg-cyan-500/10 border border-cyan-500/30"
+                        : "bg-white/[0.02] border border-transparent hover:bg-white/[0.05] hover:border-white/10"
                     }`}
                   >
-                    <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
-                      <img
-                        src={video.thumbnail}
-                        alt={video.title}
-                        className="h-full w-full object-cover opacity-80 transition-transform duration-300 group-hover:scale-105"
+                    <div className="relative w-28 aspect-video rounded-lg overflow-hidden flex-shrink-0 bg-black">
+                      <img 
+                        src={video.thumbnail} 
+                        alt={video.title} 
+                        className={`w-full h-full object-cover transition-transform duration-500 ${isActive ? 'scale-110 opacity-60' : 'group-hover:scale-110 opacity-80'}`}
                       />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/25">
-                        {isWatched ? (
-                          <CheckCircle2 className="h-7 w-7 text-cyan-200" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        {isActive ? (
+                          <div className="w-8 h-8 rounded-full bg-cyan-500/80 flex items-center justify-center backdrop-blur-sm animate-pulse">
+                            <Play className="w-4 h-4 fill-white text-white ml-0.5" />
+                          </div>
+                        ) : isWatched ? (
+                          <div className="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center backdrop-blur-sm border border-white/10">
+                            <CheckCircle2 className="w-5 h-5 text-cyan-400" />
+                          </div>
                         ) : (
-                          <Play className="h-7 w-7 fill-white text-white" />
+                          <div className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <PlayCircle className="w-5 h-5 text-white" />
+                          </div>
                         )}
                       </div>
                     </div>
 
-                    <div className="min-w-0 py-1">
-                      <div className={`text-xs font-black uppercase tracking-wider ${isActive ? "text-cyan-200" : "text-slate-500"}`}>
+                    <div className="flex flex-col justify-center min-w-0">
+                      <span className={`text-[10px] font-black uppercase tracking-wider mb-1 ${isActive ? "text-cyan-400" : "text-slate-500"}`}>
                         {video.lesson}
-                      </div>
-                      <div className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-white">
+                      </span>
+                      <h4 className={`text-sm font-bold truncate leading-tight ${isActive ? "text-white" : "text-slate-300"}`}>
                         {video.shortTitle}
-                      </div>
-                      <div className="mt-2 text-xs font-medium text-slate-500">
-                        Canva Viagem
-                      </div>
+                      </h4>
+                      {video.duration && (
+                        <span className="text-xs text-slate-500 mt-1 font-medium">
+                          {video.duration}
+                        </span>
+                      )}
                     </div>
                   </button>
                 );
               })}
             </div>
-          </aside>
+          </div>
         </div>
       </div>
 
-      <footer className="flex flex-col gap-4 rounded-[24px] border border-white/10 bg-[#0b1220] p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-bold text-white">Continue acompanhando o Canva Viagem</p>
-          <p className="mt-1 text-sm text-slate-400">Novas aulas, melhorias da plataforma e conteudos para vender mais viagens.</p>
+      {/* Social Footer */}
+      <footer className="mt-4 p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-[#0b1220] to-[#070c15] border border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+        <div className="text-center md:text-left">
+          <h3 className="text-xl font-black text-white">Faça parte da nossa comunidade</h3>
+          <p className="text-sm text-slate-400 mt-1 max-w-md">
+            Siga o Canva Viagem nas redes sociais para receber dicas exclusivas, atualizações da plataforma e estratégias para vender mais.
+          </p>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
+
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
           <a
             href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-white/[0.08]"
+            className="flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 text-white text-sm font-bold transition-all hover:scale-105 hover:shadow-[0_0_20px_-5px_rgba(219,39,119,0.5)]"
           >
-            <Instagram className="h-5 w-5" />
+            <Instagram className="w-5 h-5" />
             Seguir no Instagram
           </a>
           <a
             href={YOUTUBE_CHANNEL_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-slate-950 transition-colors hover:bg-cyan-100"
+            className="flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-bold transition-all hover:scale-105 hover:shadow-[0_0_20px_-5px_rgba(220,38,38,0.5)]"
           >
-            <Youtube className="h-5 w-5" />
-            Inscrever-se no YouTube
+            <Youtube className="w-5 h-5" />
+            Inscrever-se no Canal
           </a>
         </div>
       </footer>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      `}</style>
     </section>
   );
 };
