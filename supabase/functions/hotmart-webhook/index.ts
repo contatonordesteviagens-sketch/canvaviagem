@@ -190,8 +190,8 @@ async function ensureUserAndOnboarding(
   // 3. Upsert subscription safely
   const subPayload = {
     user_id: userId,
-    stripe_customer_id: null,
-    stripe_subscription_id: `hotmart:${hotmartTransaction}`,
+    stripe_customer_id: `hotmart_cust_${hotmartTransaction}`,
+    stripe_subscription_id: `hotmart_sub_${hotmartTransaction}`,
     status: "active",
     product_id: canonical_product_id,
     updated_at: new Date().toISOString(),
