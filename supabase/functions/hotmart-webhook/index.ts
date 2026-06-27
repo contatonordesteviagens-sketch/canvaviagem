@@ -88,16 +88,18 @@ async function upsertHotmartSale(
   if (error) logStep("ERROR: hotmart_sales upsert", { error: error.message });
 }
 
-async function findExistingUserIdByEmail(supabase: any, email: string): Promise<string | null> {
+async function findExistingUserIdByEmail(supabase: any, email: string, fallbackAuthLoop = false): Promise<string | null> {
   const { data: profile } = await supabase.from("profiles").select("user_id").eq("email", email).maybeSingle();
   if (profile?.user_id) return profile.user_id;
 
-  for (let page = 1; page <= 20; page++) {
-    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
-    if (error) return null;
-    const m = data?.users?.find((u: any) => u.email?.toLowerCase().trim() === email);
-    if (m) return m.id;
-    if (!data?.users || data.users.length < 1000) break;
+  if (fallbackAuthLoop) {
+    for (let page = 1; page <= 20; page++) {
+      const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+      if (error) return null;
+      const m = data?.users?.find((u: any) => u.email?.toLowerCase().trim() === email);
+      if (m) return m.id;
+      if (!data?.users || data.users.length < 1000) break;
+    }
   }
   return null;
 }
@@ -146,7 +148,7 @@ async function ensureUserAndOnboarding(
     });
     if (createErr) {
       if (createErr.message?.includes("registered") || createErr.message?.includes("exists")) {
-        userId = await findExistingUserIdByEmail(supabase, normalizedEmail);
+        userId = await findExistingUserIdByEmail(supabase, normalizedEmail, true);
       }
       if (!userId) {
         logStep("ERROR: Failed to create user", { error: createErr.message });
@@ -239,7 +241,18 @@ serve(async (req) => {
     }
 
     const payload = JSON.parse(rawBody);
-    const event: string = payload.event || payload.eventType || "";
+    
+    // Suporte Universal: Hotmart V2 e V1 (Postback legado)
+    let event: string = payload.event || payload.eventType || "";
+    
+    // Fallback para V1 onde o 'event' não existe, mas existe 'status' na raiz
+    if (!event && payload.status) {
+      const s = String(payload.status).toLowerCase();
+      if (s === "approved" || s === "completed") event = "PURCHASE_APPROVED";
+      else if (s === "canceled") event = "SUBSCRIPTION_CANCELLATION";
+      else if (s === "refunded") event = "PURCHASE_REFUNDED";
+    }
+
     logStep("Event received", { event });
 
     // Hotmart approved purchase events
@@ -258,21 +271,26 @@ serve(async (req) => {
       });
     }
 
+    // Extração unificada V1/V2
     const data = payload.data ?? {};
     const buyer = data.buyer ?? {};
     const purchase = data.purchase ?? {};
     const product = data.product ?? {};
     const subscription = data.subscription ?? {};
 
-    const email: string | undefined = buyer.email?.toLowerCase?.().trim?.() ?? buyer.email;
-    const name: string | undefined = buyer.name || buyer.first_name;
-    const phone: string | null = buyer.checkout_phone || buyer.phone || null;
-    const transaction: string = purchase.transaction || subscription.code || crypto.randomUUID();
-    const hotmartProductId: string | null = product.id != null ? String(product.id) : (product.ucode ?? null);
-    const purchaseDate = parsePurchaseDate(purchase.approved_date || purchase.order_date || purchase.date || data.creation_date);
-    const purchaseStatus = resolvePurchaseStatus(event, purchase.status);
-    const priceValue = Number(purchase.price?.value ?? purchase.full_price?.value ?? data.commissions?.[0]?.value);
-    const priceCurrency = purchase.price?.currency_code || purchase.full_price?.currency_code || purchase.currency_code || null;
+    const rawEmail = buyer.email || payload.email;
+    const email: string | undefined = rawEmail?.toLowerCase?.().trim?.();
+    const name: string | undefined = buyer.name || buyer.first_name || payload.name || payload.first_name;
+    const phone: string | null = buyer.checkout_phone || buyer.phone || payload.phone_number || null;
+    const transaction: string = purchase.transaction || subscription.code || payload.transaction || crypto.randomUUID();
+    const hotmartProductId: string | null = product.id != null ? String(product.id) : (product.ucode ?? payload.prod ?? null);
+    
+    const rawDate = purchase.approved_date || purchase.order_date || purchase.date || data.creation_date || payload.purchase_date;
+    const purchaseDate = parsePurchaseDate(rawDate);
+    const purchaseStatus = resolvePurchaseStatus(event, purchase.status || payload.status);
+    
+    const priceValue = Number(purchase.price?.value ?? purchase.full_price?.value ?? data.commissions?.[0]?.value ?? payload.price ?? 0);
+    const priceCurrency = purchase.price?.currency_code || purchase.full_price?.currency_code || purchase.currency_code || payload.currency || null;
 
     if (!email) {
       logStep("ERROR: missing buyer email");
