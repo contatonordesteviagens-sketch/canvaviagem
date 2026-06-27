@@ -4,7 +4,7 @@ import { useDiagnosticos, useSaveDiagnostico } from "@/hooks/useFabricaDiagnosti
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
-import { VoiceOnboarding } from "@/components/fabrica/VoiceOnboarding";
+
 import { 
   Upload, 
   X, 
@@ -80,7 +80,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   };
 
   // Sites publicados reais (canvaviagem.com) deste usuário
-  const [publishedSites, setPublishedSites] = useState<{ id: string; updated_at: string }[]>([]);
+  const [publishedSites, setPublishedSites] = useState<{ id: string; updated_at: string; project_id?: string | null }[]>([]);
   // Leads reais capturados (sincronizado com CRM Fase 5)
   const [realLeadsCount, setRealLeadsCount] = useState<number>(0);
 
@@ -91,7 +91,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       try {
         const { data: sites } = await supabase
           .from("public_sites")
-          .select("id, updated_at")
+          .select("id, updated_at, project_id")
           .eq("owner_id", user.id)
           .eq("locale", "pt-BR")
           .order("updated_at", { ascending: false });
@@ -300,7 +300,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
   return (
     <div className="space-y-8 animate-fadeIn max-w-[1280px] mx-auto pb-12">
-      <VoiceOnboarding />
+
       {/* Projetos Salvos */}
       {user && (
         <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl relative overflow-hidden transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
@@ -695,6 +695,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                           type="button"
                           onClick={() => {
                             const p = savedProjects?.find(x => {
+                              if (site.project_id) return x.id === site.project_id;
                               const snap = x.state_snapshot as any;
                               const urlSlug = snap?.siteContent?.canvaViagemUrl?.replace('https://', '')?.split('.')[0] || snap?.siteContent?.vercelUrl?.replace('https://', '')?.split('.')[0];
                               const agencySlug = x.agency_name ? slugify(x.agency_name) : null;

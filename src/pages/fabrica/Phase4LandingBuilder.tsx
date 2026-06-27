@@ -1974,6 +1974,7 @@ const PublishOnLovableCard = ({
         .upsert({
           id: publishId,
           owner_id: user.id,
+          project_id: publishId,
           html: html,
           locale: 'pt-BR'
         });
@@ -2106,6 +2107,7 @@ const PublishOnLovableCard = ({
         .upsert({
           id: cleanSlug,
           owner_id: user.id,
+          project_id: state.projectId || null,
           html: finalHtml,
           locale: 'pt-BR'
         });

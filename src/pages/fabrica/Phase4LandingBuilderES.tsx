@@ -1575,6 +1575,7 @@ const PublishOnLovableCard = ({
         .upsert({
           id: publishId,
           owner_id: user.id,
+          project_id: publishId,
           html: html,
           locale: 'es'
         });
