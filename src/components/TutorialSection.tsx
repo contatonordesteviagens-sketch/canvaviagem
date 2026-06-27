@@ -31,7 +31,7 @@ export const TUTORIAL_VIDEOS: TutorialVideo[] = [
     shortTitle: "Boas-vindas ao Canva Viagem",
     videoId: "ZNegTIt05i4",
     url: "https://www.youtube.com/watch?v=ZNegTIt05i4",
-    thumbnail: "https://i3.ytimg.com/vi/ZNegTIt05i4/maxresdefault.jpg",
+    thumbnail: "https://i3.ytimg.com/vi/ZNegTIt05i4/hqdefault.jpg",
     duration: "03:45",
   },
   {
@@ -41,7 +41,7 @@ export const TUTORIAL_VIDEOS: TutorialVideo[] = [
     shortTitle: "Login após a compra",
     videoId: "Ris4PvVTYNM",
     url: "https://www.youtube.com/watch?v=Ris4PvVTYNM",
-    thumbnail: "https://i3.ytimg.com/vi/Ris4PvVTYNM/maxresdefault.jpg",
+    thumbnail: "https://i3.ytimg.com/vi/Ris4PvVTYNM/hqdefault.jpg",
     duration: "05:12",
   },
   {
@@ -51,7 +51,7 @@ export const TUTORIAL_VIDEOS: TutorialVideo[] = [
     shortTitle: "Opções extras de edição",
     videoId: "1VTN8gh65kM",
     url: "https://www.youtube.com/watch?v=1VTN8gh65kM",
-    thumbnail: "https://i3.ytimg.com/vi/1VTN8gh65kM/maxresdefault.jpg",
+    thumbnail: "https://i3.ytimg.com/vi/1VTN8gh65kM/hqdefault.jpg",
     duration: "08:30",
   },
   {
@@ -61,7 +61,7 @@ export const TUTORIAL_VIDEOS: TutorialVideo[] = [
     shortTitle: "Ofertas e vídeos prontos",
     videoId: "llybalfBjAo",
     url: "https://www.youtube.com/watch?v=llybalfBjAo",
-    thumbnail: "https://i3.ytimg.com/vi/llybalfBjAo/maxresdefault.jpg",
+    thumbnail: "https://i3.ytimg.com/vi/llybalfBjAo/hqdefault.jpg",
     duration: "06:15",
   },
   {
@@ -71,7 +71,7 @@ export const TUTORIAL_VIDEOS: TutorialVideo[] = [
     shortTitle: "Corrigir erro em vídeo Reels",
     videoId: "T0SCGt35shE",
     url: "https://www.youtube.com/watch?v=T0SCGt35shE",
-    thumbnail: "https://i3.ytimg.com/vi/T0SCGt35shE/maxresdefault.jpg",
+    thumbnail: "https://i3.ytimg.com/vi/T0SCGt35shE/hqdefault.jpg",
     duration: "04:20",
   },
   {
@@ -81,7 +81,7 @@ export const TUTORIAL_VIDEOS: TutorialVideo[] = [
     shortTitle: "Inteligência Artificial",
     videoId: "i9B4sLFBlJc",
     url: "https://www.youtube.com/watch?v=i9B4sLFBlJc",
-    thumbnail: "https://i3.ytimg.com/vi/i9B4sLFBlJc/maxresdefault.jpg",
+    thumbnail: "https://i3.ytimg.com/vi/i9B4sLFBlJc/hqdefault.jpg",
     duration: "07:10",
   },
   {
@@ -91,7 +91,7 @@ export const TUTORIAL_VIDEOS: TutorialVideo[] = [
     shortTitle: "Editar Reels de viagens",
     videoId: "-AmTWng3q-Y",
     url: "https://www.youtube.com/watch?v=-AmTWng3q-Y",
-    thumbnail: "https://i3.ytimg.com/vi/-AmTWng3q-Y/maxresdefault.jpg",
+    thumbnail: "https://i3.ytimg.com/vi/-AmTWng3q-Y/hqdefault.jpg",
     duration: "09:45",
   },
   {
@@ -101,7 +101,7 @@ export const TUTORIAL_VIDEOS: TutorialVideo[] = [
     shortTitle: "Fábrica de Destinos",
     videoId: "Z8-aFoblDu0",
     url: "https://www.youtube.com/watch?v=Z8-aFoblDu0",
-    thumbnail: "https://i3.ytimg.com/vi/Z8-aFoblDu0/maxresdefault.jpg",
+    thumbnail: "https://i3.ytimg.com/vi/Z8-aFoblDu0/hqdefault.jpg",
     duration: "05:55",
   },
 ];
