@@ -23,14 +23,12 @@ const cleanEmail = (email?: string) => (email || "").toLowerCase().trim();
 const cleanPhone = (phone?: string) => (phone || "").replace(/\D/g, "") || null;
 
 async function findExistingUserIdByEmail(supabase: any, email: string): Promise<string | null> {
-  for (let page = 1; page <= 20; page++) {
-    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
-    if (error) throw error;
-    const match = data?.users?.find((user: any) => user.email?.toLowerCase().trim() === email);
-    if (match?.id) return match.id;
-    if (!data?.users || data.users.length < 1000) break;
-  }
-  return null;
+  const { data } = await supabase
+    .from("profiles")
+    .select("user_id")
+    .eq("email", email)
+    .maybeSingle();
+  return data?.user_id || null;
 }
 
 serve(async (req) => {

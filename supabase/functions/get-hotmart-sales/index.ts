@@ -54,7 +54,8 @@ serve(async (req) => {
     // Fetch hotmart sales using service role key (bypasses RLS and GRANTS)
     const { data: hotmartSales, error: dbError } = await supabaseAdmin
       .from("hotmart_sales")
-      .select("h_email, h_buyer_name, h_status, h_price_value, h_product_name, h_purchase_date");
+      .select("h_email, h_buyer_name, h_status, h_price_value, h_product_name, h_purchase_date")
+      .order("h_purchase_date", { ascending: false });
 
     if (dbError) {
       console.error("Error fetching hotmart sales:", dbError);
