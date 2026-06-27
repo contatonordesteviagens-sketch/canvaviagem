@@ -205,7 +205,7 @@ export function VoiceOnboarding() {
           >
             <Mic className="w-3.5 h-3.5" />
           </button>
-          <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest select-none whitespace-nowrap">
+          <span className="text-[9px] font-black text-white/60 uppercase tracking-widest select-none whitespace-nowrap">
             Adicione informações da sua empresa
           </span>
         </div>
