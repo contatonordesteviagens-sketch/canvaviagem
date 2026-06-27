@@ -27,6 +27,7 @@ import {
 } from "@/lib/crm-form-config";
 
 const fieldTypes = Object.keys(crmFieldTypeLabels) as CrmFieldType[];
+const colorPresets = ["#F59E0B", "#2563EB", "#10B981", "#EC4899", "#7C3AED", "#0F172A"];
 
 const encodeEmbedConfig = (value: unknown) => {
   try {
@@ -81,6 +82,33 @@ const FieldSelect = ({
   </label>
 );
 
+const ColorInput = ({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) => (
+  <label className="block space-y-1.5">
+    <span className="text-[10px] font-black uppercase tracking-widest text-white/35">{label}</span>
+    <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-2">
+      <input
+        type="color"
+        value={/^#[0-9a-fA-F]{6}$/.test(value) ? value : "#000000"}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-10 w-12 cursor-pointer rounded-lg border-0 bg-transparent p-0"
+      />
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="min-w-0 flex-1 bg-transparent px-1 text-sm font-bold uppercase text-white outline-none"
+      />
+    </div>
+  </label>
+);
+
 export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { state, update } = useFabricaContext();
   const { user } = useAuth();
@@ -91,6 +119,15 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
   const embedKey = form.id || state.projectId || user?.id || "FORM_ID";
   const embedOwnerId = user?.id || "";
   const publicOrigin = "https://canvaviagem.com";
+  const formTheme = {
+    primaryColor: form.primaryColor || state.primaryColor || "#F59E0B",
+    backgroundColor: form.backgroundColor || "#F8FAFC",
+    textColor: form.textColor || "#0F172A",
+    fieldBackgroundColor: form.fieldBackgroundColor || "#FFFFFF",
+    fieldTextColor: form.fieldTextColor || "#0F172A",
+    fieldBorderColor: form.fieldBorderColor || "#E2E8F0",
+    buttonTextColor: form.buttonTextColor || "#111827",
+  };
 
   const visibleFields = useMemo(
     () => form.fields.filter((field) => field.visible !== false).sort((a, b) => a.order - b.order),
@@ -107,7 +144,7 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
     settings: {
       buttonLabel: form.buttonLabel,
       successMessage: form.successMessage,
-      primaryColor: form.primaryColor,
+      ...formTheme,
       whatsappRedirect: form.whatsappRedirect,
       whatsapp: state.whatsapp,
       whatsappDialCode: state.whatsappDialCode,
@@ -162,7 +199,7 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
 
     setSaving(true);
     try {
-      const publicForm = normalizeCrmFormConfig({ ...form, id: embedKey });
+      const publicForm = normalizeCrmFormConfig({ ...form, ...formTheme, id: embedKey });
       update({ crmForm: publicForm });
 
       const { error } = await (supabase as any).from("crm_forms").upsert({
@@ -176,7 +213,13 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
           successMessage: publicForm.successMessage,
           whatsappRedirect: publicForm.whatsappRedirect,
           agencyName: state.agencyName,
-          primaryColor: state.primaryColor,
+          primaryColor: publicForm.primaryColor || state.primaryColor,
+          backgroundColor: publicForm.backgroundColor,
+          textColor: publicForm.textColor,
+          fieldBackgroundColor: publicForm.fieldBackgroundColor,
+          fieldTextColor: publicForm.fieldTextColor,
+          fieldBorderColor: publicForm.fieldBorderColor,
+          buttonTextColor: publicForm.buttonTextColor,
           whatsapp: state.whatsapp,
           whatsappDialCode: state.whatsappDialCode,
         },
@@ -252,6 +295,53 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
                 className="h-5 w-5 accent-amber-400"
               />
             </label>
+          </section>
+
+          <section className="rounded-3xl border border-white/10 bg-zinc-950/60 p-5">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-lg font-black text-white">Aparencia do formulario</h2>
+                <p className="mt-1 text-xs leading-relaxed text-white/45">
+                  Por padrao usa a cor da agencia. Para embeds externos, personalize o fundo, letras, campos e botao.
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  setForm({
+                    primaryColor: state.primaryColor || "#F59E0B",
+                    backgroundColor: "#F8FAFC",
+                    textColor: "#0F172A",
+                    fieldBackgroundColor: "#FFFFFF",
+                    fieldTextColor: "#0F172A",
+                    fieldBorderColor: "#E2E8F0",
+                    buttonTextColor: "#111827",
+                  })
+                }
+                className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-xs font-bold text-white/70 transition-colors hover:bg-white/[0.1] hover:text-white"
+              >
+                Sincronizar com o site
+              </button>
+            </div>
+            <div className="mb-4 flex flex-wrap gap-2">
+              {colorPresets.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setForm({ primaryColor: color })}
+                  className="h-9 w-9 rounded-full border border-white/20 ring-offset-2 ring-offset-zinc-950 transition-transform hover:scale-105"
+                  style={{ backgroundColor: color, boxShadow: formTheme.primaryColor === color ? "0 0 0 2px rgba(255,255,255,.9)" : undefined }}
+                  title={color}
+                />
+              ))}
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <ColorInput label="Cor principal" value={formTheme.primaryColor} onChange={(value) => setForm({ primaryColor: value })} />
+              <ColorInput label="Fundo" value={formTheme.backgroundColor} onChange={(value) => setForm({ backgroundColor: value })} />
+              <ColorInput label="Texto" value={formTheme.textColor} onChange={(value) => setForm({ textColor: value })} />
+              <ColorInput label="Fundo dos campos" value={formTheme.fieldBackgroundColor} onChange={(value) => setForm({ fieldBackgroundColor: value })} />
+              <ColorInput label="Texto dos campos" value={formTheme.fieldTextColor} onChange={(value) => setForm({ fieldTextColor: value })} />
+              <ColorInput label="Borda dos campos" value={formTheme.fieldBorderColor} onChange={(value) => setForm({ fieldBorderColor: value })} />
+              <ColorInput label="Texto do botao" value={formTheme.buttonTextColor} onChange={(value) => setForm({ buttonTextColor: value })} />
+            </div>
           </section>
 
           <section className="rounded-3xl border border-white/10 bg-zinc-950/60 p-5">
@@ -357,28 +447,61 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
         <aside className="space-y-5">
           <section className="rounded-3xl border border-white/10 bg-zinc-950/70 p-5">
             <h2 className="text-lg font-black text-white">Previa</h2>
-            <div className="mt-4 rounded-2xl bg-zinc-100 p-4 text-zinc-950">
-              <div className="text-xs font-black uppercase tracking-widest text-zinc-500">Orcamento</div>
+            <div
+              className="mt-4 rounded-[28px] border p-5 shadow-[0_18px_45px_rgba(15,23,42,.12)]"
+              style={{
+                backgroundColor: formTheme.backgroundColor,
+                color: formTheme.textColor,
+                borderColor: formTheme.fieldBorderColor,
+              }}
+            >
+              <div className="text-xs font-black uppercase tracking-widest opacity-55">Orcamento</div>
               <div className="mt-2 text-xl font-black">Fale com um consultor</div>
               <div className="mt-4 grid grid-cols-1 gap-3">
                 {visibleFields.map((field) => (
                   <label key={field.id} className="block">
-                    <span className="mb-1.5 block text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                    <span className="mb-1.5 block text-[10px] font-black uppercase tracking-widest opacity-55">
                       {field.label} {field.required ? "*" : ""}
                     </span>
-                    {field.type === "textarea" ? (
-                      <textarea disabled placeholder={field.placeholder} className="h-20 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm" />
+                    {field.type === "checkbox" ? (
+                      <div
+                        className="flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-bold"
+                        style={{ backgroundColor: formTheme.fieldBackgroundColor, borderColor: formTheme.fieldBorderColor, color: formTheme.fieldTextColor }}
+                      >
+                        <span className="h-5 w-5 rounded-md border" style={{ borderColor: formTheme.primaryColor }} />
+                        {field.placeholder || "Sim"}
+                      </div>
+                    ) : field.type === "textarea" ? (
+                      <textarea
+                        disabled
+                        placeholder={field.placeholder}
+                        className="h-20 w-full rounded-2xl border px-4 py-3 text-sm"
+                        style={{ backgroundColor: formTheme.fieldBackgroundColor, borderColor: formTheme.fieldBorderColor, color: formTheme.fieldTextColor }}
+                      />
                     ) : field.type === "select" || field.type === "radio" ? (
-                      <select disabled className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm">
+                      <select
+                        disabled
+                        className="w-full rounded-2xl border px-4 py-3 text-sm"
+                        style={{ backgroundColor: formTheme.fieldBackgroundColor, borderColor: formTheme.fieldBorderColor, color: formTheme.fieldTextColor }}
+                      >
                         <option>{field.placeholder || "Selecione..."}</option>
                       </select>
                     ) : (
-                      <input disabled type={field.type === "tel" ? "tel" : field.type} placeholder={field.placeholder} className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm" />
+                      <input
+                        disabled
+                        type={field.type === "tel" ? "tel" : field.type}
+                        placeholder={field.placeholder}
+                        className="w-full rounded-2xl border px-4 py-3 text-sm"
+                        style={{ backgroundColor: formTheme.fieldBackgroundColor, borderColor: formTheme.fieldBorderColor, color: formTheme.fieldTextColor }}
+                      />
                     )}
                   </label>
                 ))}
               </div>
-              <button className="mt-4 w-full rounded-xl bg-amber-400 px-4 py-3 text-sm font-black text-zinc-950">
+              <button
+                className="mt-4 w-full rounded-2xl px-4 py-3.5 text-sm font-black shadow-[0_14px_30px_rgba(15,23,42,.16)]"
+                style={{ backgroundColor: formTheme.primaryColor, color: formTheme.buttonTextColor }}
+              >
                 {form.buttonLabel}
               </button>
             </div>

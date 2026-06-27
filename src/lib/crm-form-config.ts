@@ -32,6 +32,12 @@ export interface CrmFormConfig {
   successMessage: string;
   whatsappRedirect: boolean;
   primaryColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  fieldBackgroundColor?: string;
+  fieldTextColor?: string;
+  fieldBorderColor?: string;
+  buttonTextColor?: string;
   fields: CrmFormField[];
 }
 
@@ -148,6 +154,12 @@ export const createDefaultCrmFormConfig = (locale: "pt-BR" | "es" = "pt-BR"): Cr
       : "Solicitacao recebida. Nossa equipe vai entrar em contato em breve.",
     whatsappRedirect: true,
     primaryColor: "#F59E0B",
+    backgroundColor: "#F8FAFC",
+    textColor: "#0F172A",
+    fieldBackgroundColor: "#FFFFFF",
+    fieldTextColor: "#0F172A",
+    fieldBorderColor: "#E2E8F0",
+    buttonTextColor: "#111827",
     fields: isEs ? defaultCrmFormFieldsES : defaultCrmFormFieldsBR,
   };
 };

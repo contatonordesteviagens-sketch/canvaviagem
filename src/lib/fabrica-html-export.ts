@@ -888,6 +888,15 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
         { id: "1", title: "Roteiro Sob Medida", description: "Montamos o seu roteiro ideal com hospedagem, transporte e passeios.", price: "Sob consulta", imageUrl: "", ctaLabel: "Quero esse" },
       ];
   const crmForm = normalizeCrmFormConfig(state.crmForm, "pt-BR");
+  const crmFormTheme = {
+    primaryColor: crmForm.primaryColor || state.primaryColor || "#F59E0B",
+    backgroundColor: crmForm.backgroundColor || "#F8FAFC",
+    textColor: crmForm.textColor || "#0F172A",
+    fieldBackgroundColor: crmForm.fieldBackgroundColor || "#FFFFFF",
+    fieldTextColor: crmForm.fieldTextColor || "#0F172A",
+    fieldBorderColor: crmForm.fieldBorderColor || "#E2E8F0",
+    buttonTextColor: crmForm.buttonTextColor || "#111827",
+  };
   const crmFormRows = renderCrmFormRows(crmForm, pacotes);
 
   const wppMsg = (titulo: string) =>
@@ -1107,21 +1116,23 @@ section{padding:80px 0}
 .social-icon span{line-height:1;color:inherit;font-weight:inherit}
 .footer-socials{margin-top:18px}
 .footer-socials .social-icon{background:rgba(255,255,255,.08);color:#fff}
-.orc-form{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.04)}
+.orc-form{background:var(--form-bg,#fff);border:1px solid var(--form-field-border,rgba(0,0,0,.06));border-radius:28px;padding:34px;box-shadow:0 24px 60px rgba(15,23,42,.12);color:var(--form-text,var(--ink))}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .form-row.single{grid-template-columns:1fr}
 .field-full{grid-column:1 / -1}
 .field-half{min-width:0}
-.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.field input,.field select,.field textarea{width:100%;padding:13px 14px;border:1.5px solid rgba(0,0,0,.08);border-radius:10px;font-size:15px;font-family:'Inter',sans-serif;background:#fff;color:var(--ink);transition:border .2s;-webkit-appearance:none;appearance:none}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brand)}
-.field textarea{resize:vertical;min-height:90px}
+.field label{display:block;font-size:11px;font-weight:800;color:var(--form-text,var(--muted));opacity:.62;text-transform:uppercase;letter-spacing:1.1px;margin-bottom:8px}
+.field input,.field select,.field textarea{width:100%;padding:15px 16px;border:1.5px solid var(--form-field-border,rgba(0,0,0,.08));border-radius:18px;font-size:16px;font-weight:600;font-family:'Inter',sans-serif;background:var(--form-field-bg,#fff);color:var(--form-field-text,var(--ink));transition:border .2s,box-shadow .2s;-webkit-appearance:none;appearance:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
+.field input[type=date]{min-height:54px;color-scheme:light}
+.field select{background-image:linear-gradient(45deg,transparent 50%,var(--form-text,var(--ink)) 50%),linear-gradient(135deg,var(--form-text,var(--ink)) 50%,transparent 50%);background-position:calc(100% - 20px) 22px,calc(100% - 14px) 22px;background-size:6px 6px,6px 6px;background-repeat:no-repeat;padding-right:38px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--form-primary,var(--brand));box-shadow:0 0 0 4px rgba(245,158,11,.18),inset 0 1px 0 rgba(255,255,255,.55)}
+.field textarea{resize:vertical;min-height:108px}
 .choice-list{display:grid;gap:8px}
-.choice-option{display:flex!important;align-items:center;gap:10px;border:1.5px solid rgba(0,0,0,.08);border-radius:10px;padding:12px 14px;color:var(--ink);font-size:14px;text-transform:none!important;letter-spacing:0!important;margin:0!important}
+.choice-option{display:flex!important;align-items:center;gap:10px;border:1.5px solid var(--form-field-border,rgba(0,0,0,.08));border-radius:18px;padding:14px 16px;background:var(--form-field-bg,#fff);color:var(--form-field-text,var(--ink));font-size:14px;text-transform:none!important;letter-spacing:0!important;margin:0!important}
 .choice-option input{width:auto!important;padding:0!important;border-radius:4px}
 .single-choice{cursor:pointer}
-.form-submit{width:100%;padding:16px;font-size:15px;justify-content:center;margin-top:8px}
-@media (max-width: 840px){.orc-grid{grid-template-columns:1fr;gap:32px}.form-row{grid-template-columns:1fr;gap:12px;margin-bottom:12px}.orc-form{padding:24px 20px;border-radius:16px}.contact-item{padding:14px}}
+.form-submit{width:100%;padding:16px;font-size:16px;justify-content:center;margin-top:10px;border-radius:20px;background:var(--form-primary,var(--brand));color:var(--form-button-text,#fff);box-shadow:0 16px 34px rgba(15,23,42,.16)}
+@media (max-width: 840px){.orc-grid{grid-template-columns:1fr;gap:32px}.form-row{grid-template-columns:1fr;gap:12px;margin-bottom:12px}.orc-form{padding:22px 18px;border-radius:24px}.contact-item{padding:14px}}
 
 /* FAQ */
 .faq-bg{background:var(--soft)}
@@ -1352,7 +1363,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         </div>
         ${socialIcons}
       </div>
-      <form class="orc-form" onsubmit="handleMainFormSubmit(event)">
+      <form class="orc-form" onsubmit="handleMainFormSubmit(event)" style="--form-primary:${esc(crmFormTheme.primaryColor)};--form-bg:${esc(crmFormTheme.backgroundColor)};--form-text:${esc(crmFormTheme.textColor)};--form-field-bg:${esc(crmFormTheme.fieldBackgroundColor)};--form-field-text:${esc(crmFormTheme.fieldTextColor)};--form-field-border:${esc(crmFormTheme.fieldBorderColor)};--form-button-text:${esc(crmFormTheme.buttonTextColor)};">
         ${crmFormRows}
         <button type="submit" class="btn form-submit">${esc(crmForm.buttonLabel || "Enviar pelo WhatsApp")}</button>
       </form>

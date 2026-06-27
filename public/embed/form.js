@@ -26,9 +26,22 @@
       settings: {
         buttonLabel: "Enviar pelo WhatsApp",
         successMessage: "Solicitacao recebida. Nossa equipe vai entrar em contato em breve.",
-        primaryColor: "#F59E0B"
+        primaryColor: "#F59E0B",
+        backgroundColor: "#F8FAFC",
+        textColor: "#0F172A",
+        fieldBackgroundColor: "#FFFFFF",
+        fieldTextColor: "#0F172A",
+        fieldBorderColor: "#E2E8F0",
+        buttonTextColor: "#111827"
       }
     };
+  }
+
+  function safeColor(value, fallback) {
+    var text = String(value || "").trim();
+    if (/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(text)) return text;
+    if (/^rgba?\([\d\s.,%]+\)$/.test(text)) return text;
+    return fallback;
   }
 
   function getSessionId() {
@@ -146,9 +159,15 @@
   function render(container, formData) {
     var settings = formData.settings || {};
     var fields = (formData.fields || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
-    var accent = settings.primaryColor || "#F59E0B";
+    var accent = safeColor(settings.primaryColor, "#F59E0B");
+    var background = safeColor(settings.backgroundColor, "#F8FAFC");
+    var text = safeColor(settings.textColor, "#0F172A");
+    var fieldBg = safeColor(settings.fieldBackgroundColor, "#FFFFFF");
+    var fieldText = safeColor(settings.fieldTextColor, "#0F172A");
+    var fieldBorder = safeColor(settings.fieldBorderColor, "#E2E8F0");
+    var buttonText = safeColor(settings.buttonTextColor, "#111827");
     container.innerHTML =
-      '<style>.cv-form-wrap{font-family:Inter,Arial,sans-serif;background:#fff;border:1px solid rgba(15,23,42,.10);border-radius:18px;padding:24px;box-shadow:0 18px 45px rgba(15,23,42,.10);max-width:760px}.cv-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cv-field{display:block;min-width:0}.cv-field-full{grid-column:1/-1}.cv-field span{display:block;margin-bottom:7px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b}.cv-field input,.cv-field select,.cv-field textarea{box-sizing:border-box;width:100%;border:1px solid rgba(15,23,42,.14);border-radius:10px;padding:13px 14px;font:500 15px Inter,Arial,sans-serif;color:#0f172a;background:#fff;outline:none}.cv-field textarea{min-height:96px;resize:vertical}.cv-field input:focus,.cv-field select:focus,.cv-field textarea:focus{border-color:' + accent + '}.cv-choice{display:flex;align-items:center;gap:10px;color:#0f172a}.cv-submit{width:100%;margin-top:16px;border:0;border-radius:12px;background:' + accent + ';color:#111827;padding:15px 18px;font:900 15px Inter,Arial,sans-serif;cursor:pointer}.cv-msg{display:none;margin-top:12px;border-radius:12px;background:#ecfdf5;color:#065f46;padding:12px 14px;font-size:14px;font-weight:700}.cv-msg.show{display:block}@media(max-width:640px){.cv-form-wrap{padding:18px;border-radius:14px}.cv-form-grid{grid-template-columns:1fr}.cv-field-half{grid-column:1/-1}}</style>' +
+      '<style>.cv-form-wrap{font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;background:' + background + ';border:1px solid ' + fieldBorder + ';border-radius:28px;padding:26px;box-shadow:0 24px 60px rgba(15,23,42,.14);max-width:760px;color:' + text + ';-webkit-font-smoothing:antialiased}.cv-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cv-field{display:block;min-width:0}.cv-field-full{grid-column:1/-1}.cv-field span{display:block;margin-bottom:8px;font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:' + text + ';opacity:.62}.cv-field input,.cv-field select,.cv-field textarea{box-sizing:border-box;width:100%;border:1.5px solid ' + fieldBorder + ';border-radius:18px;padding:15px 16px;font:650 16px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;color:' + fieldText + ';background:' + fieldBg + ';outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.55);transition:border-color .18s,box-shadow .18s,transform .18s;-webkit-appearance:none;appearance:none}.cv-field input[type=date]{min-height:54px;color-scheme:light}.cv-field select{background-image:linear-gradient(45deg,transparent 50%,' + text + ' 50%),linear-gradient(135deg,' + text + ' 50%,transparent 50%);background-position:calc(100% - 20px) 22px,calc(100% - 14px) 22px;background-size:6px 6px,6px 6px;background-repeat:no-repeat;padding-right:38px}.cv-field textarea{min-height:108px;resize:vertical}.cv-field input:focus,.cv-field select:focus,.cv-field textarea:focus{border-color:' + accent + ';box-shadow:0 0 0 4px color-mix(in srgb,' + accent + ' 20%,transparent),inset 0 1px 0 rgba(255,255,255,.55)}.cv-choice{display:flex;align-items:center;gap:10px;color:' + text + ';border:1.5px solid ' + fieldBorder + ';border-radius:18px;background:' + fieldBg + ';padding:14px 16px}.cv-choice input{accent-color:' + accent + '}.cv-submit{width:100%;margin-top:18px;border:0;border-radius:20px;background:' + accent + ';color:' + buttonText + ';padding:16px 18px;font:900 16px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;cursor:pointer;box-shadow:0 16px 34px rgba(15,23,42,.16);transition:transform .18s,box-shadow .18s}.cv-submit:hover{transform:translateY(-1px);box-shadow:0 20px 42px rgba(15,23,42,.20)}.cv-submit:disabled{cursor:wait;opacity:.72;transform:none}.cv-msg{display:none;margin-top:14px;border-radius:18px;background:#ecfdf5;color:#065f46;padding:13px 15px;font-size:14px;font-weight:800}.cv-msg.show{display:block}@media(max-width:640px){.cv-form-wrap{padding:18px;border-radius:24px}.cv-form-grid{grid-template-columns:1fr;gap:12px}.cv-field-half{grid-column:1/-1}.cv-field input,.cv-field select,.cv-field textarea{font-size:16px;border-radius:17px;padding:15px}.cv-submit{border-radius:18px}}</style>' +
       '<form class="cv-form-wrap"><div class="cv-form-grid">' + fields.map(renderField).join("") + '</div><button class="cv-submit" type="submit">' + escapeHtml(settings.buttonLabel || "Enviar pelo WhatsApp") + '</button><div class="cv-msg">' + escapeHtml(settings.successMessage || "Solicitacao recebida.") + "</div></form>";
 
     var form = container.querySelector("form");
