@@ -28,6 +28,14 @@ import {
 
 const fieldTypes = Object.keys(crmFieldTypeLabels) as CrmFieldType[];
 
+const encodeEmbedConfig = (value: unknown) => {
+  try {
+    return window.btoa(unescape(encodeURIComponent(JSON.stringify(value))));
+  } catch {
+    return "";
+  }
+};
+
 const FieldInput = ({
   label,
   value,
@@ -81,6 +89,7 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
 
   const form = normalizeCrmFormConfig(state.crmForm);
   const embedKey = form.id || state.projectId || user?.id || "FORM_ID";
+  const embedOwnerId = user?.id || "";
   const publicOrigin = "https://canvaviagem.com";
 
   const visibleFields = useMemo(
@@ -88,7 +97,24 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
     [form.fields],
   );
 
-  const embedCode = `<div data-canva-viagem-form="${embedKey}"></div>
+  const embedConfig = encodeEmbedConfig({
+    id: embedKey,
+    embed_key: embedKey,
+    owner_id: embedOwnerId,
+    name: form.name,
+    description: form.description,
+    fields: form.fields,
+    settings: {
+      buttonLabel: form.buttonLabel,
+      successMessage: form.successMessage,
+      primaryColor: form.primaryColor,
+      whatsappRedirect: form.whatsappRedirect,
+      whatsapp: state.whatsapp,
+      whatsappDialCode: state.whatsappDialCode,
+    },
+  });
+
+  const embedCode = `<div data-canva-viagem-form="${embedKey}" data-canva-viagem-owner="${embedOwnerId}" data-canva-viagem-config="${embedConfig}"></div>
 <script async src="${publicOrigin}/embed/form.js"></script>`;
 
   const setForm = (patch: Partial<typeof form>) => {

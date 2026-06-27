@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
 
     const { data, error } = await supabase
       .from("crm_forms")
-      .select("id, name, description, fields, settings, embed_key, status")
+      .select("id, owner_id, name, description, fields, settings, embed_key, status")
       .or(`id.eq.${formId},embed_key.eq.${formId}`)
       .eq("status", "active")
       .maybeSingle();

@@ -1,5 +1,6 @@
 (function () {
   var SUPABASE_URL = "https://zdjtcwtakgizbsbbwtgc.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkanRjd3Rha2dpemJzYmJ3dGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzIxMjMsImV4cCI6MjA4NDYwODEyM30.juuc45o-OZbLQcx2LaMLyltRABAVy70kgJ_L_JXeUEs";
   var containers = document.querySelectorAll("[data-canva-viagem-form]");
   if (!containers.length) return;
 
@@ -28,6 +29,40 @@
         primaryColor: "#F59E0B"
       }
     };
+  }
+
+  function getSessionId() {
+    var key = "cv_embed_session_id";
+    try {
+      var existing = window.localStorage.getItem(key);
+      if (existing) return existing.slice(0, 100);
+      var created = "cv_embed_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+      window.localStorage.setItem(key, created);
+      return created.slice(0, 100);
+    } catch (_) {
+      return ("cv_embed_" + Date.now() + "_" + Math.random().toString(36).slice(2)).slice(0, 100);
+    }
+  }
+
+  function decodeInlineConfig(container) {
+    var raw = container.getAttribute("data-canva-viagem-config");
+    if (!raw) return null;
+    try {
+      return JSON.parse(decodeURIComponent(escape(window.atob(raw))));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function withMeta(formData, embedKey, ownerId) {
+    var fallback = defaultForm(embedKey);
+    var merged = formData && typeof formData === "object" ? formData : fallback;
+    merged.id = merged.id || embedKey;
+    merged.embed_key = merged.embed_key || embedKey;
+    merged.owner_id = merged.owner_id || merged.agency_id || ownerId || "";
+    merged.fields = Array.isArray(merged.fields) && merged.fields.length ? merged.fields : fallback.fields;
+    merged.settings = merged.settings || fallback.settings;
+    return merged;
   }
 
   function renderField(field) {
@@ -75,6 +110,39 @@
     };
   }
 
+  function submitAnalyticsFallback(formData, payload, normalized) {
+    var ownerId = formData.owner_id || formData.agency_id;
+    if (!ownerId) return Promise.reject(new Error("missing owner"));
+
+    return fetch(SUPABASE_URL + "/rest/v1/analytics_events", {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: "Bearer " + SUPABASE_ANON_KEY,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        user_id: ownerId,
+        session_id: getSessionId(),
+        event_type: "lead_captured",
+        url_path: window.location.href,
+        event_data: {
+          ...normalized,
+          status: "novo",
+          source: "embed_fallback",
+          form_id: formData.id,
+          embed_key: formData.embed_key || formData.id,
+          source_url: window.location.href,
+          source_domain: window.location.hostname,
+          form_payload: payload
+        }
+      })
+    }).then(function (res) {
+      if (!res.ok) throw new Error("analytics fallback failed");
+    });
+  }
+
   function render(container, formData) {
     var settings = formData.settings || {};
     var fields = (formData.fields || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
@@ -91,6 +159,7 @@
       button.disabled = true;
       button.textContent = "Enviando...";
       var payload = formPayload(form);
+      var normalized = normalize(payload);
       fetch(SUPABASE_URL + "/functions/v1/submit-crm-form", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -98,13 +167,16 @@
           form_id: formData.id,
           embed_key: formData.embed_key || formData.id,
           payload: payload,
-          normalized: normalize(payload),
+          normalized: normalized,
           source_url: window.location.href,
           source_domain: window.location.hostname,
           user_agent: navigator.userAgent
         })
       }).then(function (res) {
         if (!res.ok) throw new Error("submit failed");
+      }).catch(function () {
+        return submitAnalyticsFallback(formData, payload, normalized);
+      }).then(function () {
         form.reset();
         msg.classList.add("show");
       }).catch(function () {
@@ -118,9 +190,11 @@
 
   Array.prototype.forEach.call(containers, function (container) {
     var embedKey = container.getAttribute("data-canva-viagem-form");
+    var ownerId = container.getAttribute("data-canva-viagem-owner") || "";
+    var inlineConfig = decodeInlineConfig(container);
     fetch(SUPABASE_URL + "/functions/v1/get-crm-form?form_id=" + encodeURIComponent(embedKey))
-      .then(function (res) { return res.ok ? res.json() : defaultForm(embedKey); })
-      .then(function (data) { render(container, data && data.id ? data : defaultForm(embedKey)); })
-      .catch(function () { render(container, defaultForm(embedKey)); });
+      .then(function (res) { return res.ok ? res.json() : inlineConfig || defaultForm(embedKey); })
+      .then(function (data) { render(container, withMeta(data, embedKey, ownerId)); })
+      .catch(function () { render(container, withMeta(inlineConfig || defaultForm(embedKey), embedKey, ownerId)); });
   });
 })();
