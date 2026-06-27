@@ -3,6 +3,11 @@ import type { Context } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import {
+  createDefaultCrmFormConfig,
+  normalizeCrmFormConfig,
+  type CrmFormConfig,
+} from "@/lib/crm-form-config";
 
 export type Niche = "nordeste" | "sul" | "internacional" | "cruzeiro" | "aventura" | "luademel" | "";
 
@@ -169,6 +174,7 @@ export interface FabricaState {
   lastCleanPhoto?: string; // foto limpa do destino gerada na Fase 3 (sem texto do anúncio)
   allGeneratedAdImages?: string[]; // lista de todas as artes geradas pelo usuário
   siteContent: SiteContent;
+  crmForm: CrmFormConfig;
 
   // Persistência da Fase 3 (para não resetar ao voltar)
   lastCategoria?: string;
@@ -321,6 +327,7 @@ const defaultStateBR: FabricaState = {
       { num: "99%", label: "Satisfação" },
     ],
   },
+  crmForm: createDefaultCrmFormConfig("pt-BR"),
   lastCategoria: "oferta_pacote",
   lastFormat: "story",
   lastPrice: "149,90",
@@ -402,6 +409,7 @@ const defaultStateES: FabricaState = {
       { num: "99%", label: "Satisfacción" },
     ],
   },
+  crmForm: createDefaultCrmFormConfig("es"),
   lastAdTitle: "Paquete {destino}",
   lastPaymentSuffix: "por persona",
   lastCurrency: "USD1",
@@ -515,6 +523,7 @@ const readPersistedState = (userId?: string | null): FabricaState => {
           ...((parsed.siteContent && parsed.siteContent.sections) || {}),
         },
       },
+      crmForm: normalizeCrmFormConfig(parsed.crmForm, isEs() ? "es" : "pt-BR"),
     };
   } catch {
     return getBaseState();
@@ -644,6 +653,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
               ...(snapshot.siteContent?.sections || {}),
             },
           },
+          crmForm: normalizeCrmFormConfig(snapshot.crmForm, isEs() ? "es" : "pt-BR"),
         } as FabricaState;
 
         stateRef.current = merged;
@@ -753,6 +763,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
               metaPixelId: primary.metaPixelId || fallback.metaPixelId || "",
               ga4Id: primary.ga4Id || fallback.ga4Id || "",
               socialLinks: primary.socialLinks?.length ? primary.socialLinks : (fallback.socialLinks || []),
+              crmForm: normalizeCrmFormConfig(primary.crmForm || fallback.crmForm, isEs() ? "es" : "pt-BR"),
               siteContent: {
                 ...getBaseState().siteContent,
                 ...(fallback.siteContent || {}),

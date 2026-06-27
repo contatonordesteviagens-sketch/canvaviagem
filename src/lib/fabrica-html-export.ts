@@ -1,4 +1,5 @@
-import type { FabricaState } from "@/hooks/useFabricaContext";
+﻿import type { FabricaState } from "@/hooks/useFabricaContext";
+import { normalizeCrmFormConfig, type CrmFormConfig, type CrmFormField } from "@/lib/crm-form-config";
 
 const SB_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SB_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
@@ -10,10 +11,10 @@ const esc = (s: string) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-// Imagens premium padrão por destino (fallback quando o usuário não enviou foto)
+// Imagens premium padrÃ£o por destino (fallback quando o usuÃ¡rio nÃ£o enviou foto)
 const DEFAULT_DEST_IMG = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80";
 
-// Helpers de cor — gera tons mais escuros/claros pra header e gradientes
+// Helpers de cor â€” gera tons mais escuros/claros pra header e gradientes
 function hexToRgb(hex: string) {
   const h = hex.replace("#", "");
   const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
@@ -26,11 +27,11 @@ function darken(hex: string, amount = 0.7) {
   return `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
 }
 
-// Helper para estruturar o preço visualmente (como E-commerce)
+// Helper para estruturar o preÃ§o visualmente (como E-commerce)
 function parsePriceHTML(priceStr: string): string {
   const s = esc(priceStr);
   // Captura Moeda + Valor (ex: R$ 1.499,90)
-  const regex = /^(.*?)(R\$|US\$|€|£|AR\$)\s?([\d.,]+)(.*)$/i;
+  const regex = /^(.*?)(R\$|US\$|â‚¬|Â£|AR\$)\s?([\d.,]+)(.*)$/i;
   const m = s.match(regex);
   
   if (!m) return `<div class="price-main">${s}</div>`;
@@ -80,7 +81,7 @@ const formatWhatsAppDisplay = (raw: string, dial = "55") => {
   const digits = String(raw || "").replace(/\D/g, "");
   const dialCode = String(dial || "55").replace(/\D/g, "") || "55";
   const national = digits.startsWith(dialCode) ? digits.slice(dialCode.length) : digits;
-  if (!national) return "—";
+  if (!national) return "â€”";
   if (dialCode === "55" && national.length >= 10) {
     const ddd = national.slice(0, 2);
     const number = national.slice(2);
@@ -89,6 +90,79 @@ const formatWhatsAppDisplay = (raw: string, dial = "55") => {
     return `+${dialCode} (${ddd}) ${first}${last ? `-${last}` : ""}`;
   }
   return `+${dialCode} ${national}`;
+};
+
+const renderCrmFormField = (field: CrmFormField, pacotes: Array<{ title: string }>): string => {
+  if (field.visible === false) return "";
+  const required = field.required ? " required" : "";
+  const label = esc(field.label);
+  const name = esc(field.id);
+  const placeholder = field.placeholder ? ` placeholder="${esc(field.placeholder)}"` : "";
+  const widthClass = field.width === "half" ? "field-half" : "field-full";
+  const base = (control: string) => `<div class="field ${widthClass}" data-crm-field="${name}"><label>${label}</label>${control}</div>`;
+
+  if (field.type === "textarea") {
+    return base(`<textarea name="${name}"${placeholder}${required}></textarea>`);
+  }
+
+  if (field.type === "select") {
+    const options = field.options?.length
+      ? field.options
+      : field.id === "destino"
+        ? [...pacotes.map((p) => p.title), "Outro / sob medida"]
+        : [];
+    return base(`<select name="${name}"${required}><option value="">${esc(field.placeholder || "Selecione...")}</option>${options
+      .filter(Boolean)
+      .map((option) => `<option>${esc(option)}</option>`)
+      .join("")}</select>`);
+  }
+
+  if (field.type === "radio") {
+    const options = field.options?.length ? field.options : ["Sim", "Nao"];
+    return base(`<div class="choice-list">${options
+      .map((option, index) => `<label class="choice-option"><input type="radio" name="${name}" value="${esc(option)}"${index === 0 && field.required ? " required" : ""}> <span>${esc(option)}</span></label>`)
+      .join("")}</div>`);
+  }
+
+  if (field.type === "checkbox") {
+    return base(`<label class="choice-option single-choice"><input type="checkbox" name="${name}" value="sim"${required}> <span>${esc(field.placeholder || "Sim")}</span></label>`);
+  }
+
+  const inputType = field.type === "tel" ? "tel" : field.type === "email" ? "email" : field.type === "number" ? "number" : field.type === "date" ? "date" : "text";
+  const numberAttrs = field.type === "number" ? ` min="0"` : "";
+  return base(`<input type="${inputType}" name="${name}"${placeholder}${required}${numberAttrs}>`);
+};
+
+const renderCrmFormRows = (form: CrmFormConfig, pacotes: Array<{ title: string }>): string => {
+  const fields = form.fields.filter((field) => field.visible !== false).sort((a, b) => a.order - b.order);
+  const rows: string[] = [];
+  let openHalfRow: string[] = [];
+
+  fields.forEach((field) => {
+    const html = renderCrmFormField(field, pacotes);
+    if (!html) return;
+
+    if (field.width === "half") {
+      openHalfRow.push(html);
+      if (openHalfRow.length === 2) {
+        rows.push(`<div class="form-row">${openHalfRow.join("")}</div>`);
+        openHalfRow = [];
+      }
+      return;
+    }
+
+    if (openHalfRow.length) {
+      rows.push(`<div class="form-row ${openHalfRow.length === 1 ? "single" : ""}">${openHalfRow.join("")}</div>`);
+      openHalfRow = [];
+    }
+    rows.push(`<div class="form-row single">${html}</div>`);
+  });
+
+  if (openHalfRow.length) {
+    rows.push(`<div class="form-row ${openHalfRow.length === 1 ? "single" : ""}">${openHalfRow.join("")}</div>`);
+  }
+
+  return rows.join("\n");
 };
 
 const renderSocialIcons = (state: FabricaState, extraClass = "") => {
@@ -109,11 +183,11 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const color = state.primaryColor || "#0F2742";
   const colorDark = darken(color, 0.45);
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
-  // Usa o DDI salvo no estado (padrão Brasil +55)
+  // Usa o DDI salvo no estado (padrÃ£o Brasil +55)
   const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
   const wpp = rawWpp ? (rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`) : "";
   const sc = state.siteContent;
-  const agencia = state.agencyName || "Agência de Viagens";
+  const agencia = state.agencyName || "AgÃªncia de Viagens";
   const cidade = state.city || "Brasil";
   const wppDisplay = formatWhatsAppDisplay(state.whatsapp, state.whatsappDialCode);
   const contactLocation = state.address?.trim() || cidade;
@@ -121,7 +195,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const socialIcons = renderSocialIcons(state);
   const footerSocialIcons = renderSocialIcons(state, "footer-socials");
 
-  // ----- SISTEMA DE ANIMAÇÕES SAZONAIS E TEMÁTICAS -----
+  // ----- SISTEMA DE ANIMAÃ‡Ã•ES SAZONAIS E TEMÃTICAS -----
   let seasonalStyles = "";
   let seasonalScripts = "";
 
@@ -806,26 +880,28 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     sc.heroHeadline?.trim() || "Viagens que transformam para sempre";
   const subheadline =
     sc.heroSubheadline?.trim() ||
-    `Roteiros exclusivos e sob medida para viajantes que não aceitam o comum. Da primeira reunião ao retorno em casa — cuidamos de cada detalhe.`;
+    `Roteiros exclusivos e sob medida para viajantes que nÃ£o aceitam o comum. Da primeira reuniÃ£o ao retorno em casa â€” cuidamos de cada detalhe.`;
 
   const pacotes = state.selectedPackages.length
     ? state.selectedPackages.filter(p => !p.isDraft)
     : [
         { id: "1", title: "Roteiro Sob Medida", description: "Montamos o seu roteiro ideal com hospedagem, transporte e passeios.", price: "Sob consulta", imageUrl: "", ctaLabel: "Quero esse" },
       ];
+  const crmForm = normalizeCrmFormConfig(state.crmForm, "pt-BR");
+  const crmFormRows = renderCrmFormRows(crmForm, pacotes);
 
   const wppMsg = (titulo: string) =>
-    wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}` : "#";
+    wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`OlÃ¡! Tenho interesse em ${titulo}.`)}` : "#";
 
   // Stats default ou personalizado
   const stats = state.siteContent.stats || [
-    { num: "12+", label: "Anos de Experiência" },
+    { num: "12+", label: "Anos de ExperiÃªncia" },
     { num: "15k+", label: "Viajantes Felizes" },
-    { num: "25", label: "Países Atendidos" },
-    { num: "99%", label: "Satisfação" },
+    { num: "25", label: "PaÃ­ses Atendidos" },
+    { num: "99%", label: "SatisfaÃ§Ã£o" },
   ];
 
-  // Avatar com inicial — gera SVG inline pra não depender de rede
+  // Avatar com inicial â€” gera SVG inline pra nÃ£o depender de rede
   const avatarSvg = (nome: string, bg: string) => {
     const initial = (nome || "?").trim().charAt(0).toUpperCase();
     const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'><rect width='80' height='80' rx='40' fill='${bg}'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' font-family='Inter, Arial, sans-serif' font-size='32' font-weight='700' fill='white'>${initial}</text></svg>`;
@@ -873,7 +949,7 @@ ${pixelCode}
 ${ga4Code}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${esc(agencia)} — Consultoria Premium de Viagens</title>
+<title>${esc(agencia)} â€” Consultoria Premium de Viagens</title>
 <meta name="description" content="${esc(subheadline)}">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -988,7 +1064,7 @@ section{padding:80px 0}
 @media (max-width: 980px){.destinos-grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width: 640px){.destinos-grid{grid-template-columns:1fr}}
 
-/* EQUIPE / POR QUE NÓS */
+/* EQUIPE / POR QUE NÃ“S */
 .equipe{background:var(--ink);color:#fff}
 .equipe h2,.equipe h3{color:#fff}
 .equipe-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
@@ -1016,7 +1092,7 @@ section{padding:80px 0}
 .depo-meta{font-size:12px;color:var(--muted)}
 @media (max-width: 980px){.depo-grid{grid-template-columns:1fr;gap:16px}}
 
-/* ORÇAMENTO */
+/* ORÃ‡AMENTO */
 .orc-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:48px;align-items:start}
 .orc-info h2{font-size:clamp(28px,3.6vw,40px);margin-bottom:18px}
 .orc-info > p{color:var(--muted);font-size:15px;margin-bottom:32px;line-height:1.7}
@@ -1034,10 +1110,16 @@ section{padding:80px 0}
 .orc-form{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.04)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .form-row.single{grid-template-columns:1fr}
+.field-full{grid-column:1 / -1}
+.field-half{min-width:0}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
 .field input,.field select,.field textarea{width:100%;padding:13px 14px;border:1.5px solid rgba(0,0,0,.08);border-radius:10px;font-size:15px;font-family:'Inter',sans-serif;background:#fff;color:var(--ink);transition:border .2s;-webkit-appearance:none;appearance:none}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brand)}
 .field textarea{resize:vertical;min-height:90px}
+.choice-list{display:grid;gap:8px}
+.choice-option{display:flex!important;align-items:center;gap:10px;border:1.5px solid rgba(0,0,0,.08);border-radius:10px;padding:12px 14px;color:var(--ink);font-size:14px;text-transform:none!important;letter-spacing:0!important;margin:0!important}
+.choice-option input{width:auto!important;padding:0!important;border-radius:4px}
+.single-choice{cursor:pointer}
 .form-submit{width:100%;padding:16px;font-size:15px;justify-content:center;margin-top:8px}
 @media (max-width: 840px){.orc-grid{grid-template-columns:1fr;gap:32px}.form-row{grid-template-columns:1fr;gap:12px;margin-bottom:12px}.orc-form{padding:24px 20px;border-radius:16px}.contact-item{padding:14px}}
 
@@ -1049,7 +1131,7 @@ section{padding:80px 0}
 .faq-item summary{padding:20px 22px;font-weight:600;font-size:15px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;color:var(--ink)}
 .faq-item summary::-webkit-details-marker{display:none}
 .faq-item summary::after{content:"+";font-size:22px;color:var(--brand);font-weight:300;transition:transform .2s;flex-shrink:0}
-.faq-item[open] summary::after{content:"–"}
+.faq-item[open] summary::after{content:"â€“"}
 .faq-item p{padding:0 22px 22px;color:var(--muted);font-size:14.5px;line-height:1.7}
 
 /* FOOTER */
@@ -1098,14 +1180,14 @@ ${seasonalStyles}
 </head>
 <body>
 <!--
-  [SISTEMA: DIRETRIZ DE INTEGRIDADE CRÍTICA - LOVABLE AI]
+  [SISTEMA: DIRETRIZ DE INTEGRIDADE CRÃTICA - LOVABLE AI]
   PROIBIDO ALTERAR IMAGENS OU RECONSTRUIR O DESIGN.
-  ESTE É UM SITE DE TURISMO REAL COM FOTOS SELECIONADAS PELO CLIENTE.
+  ESTE Ã‰ UM SITE DE TURISMO REAL COM FOTOS SELECIONADAS PELO CLIENTE.
   REGRAS ABSOLUTAS PARA A IA:
   1. Mantenha EXATAMENTE os atributos 'src' originais de todas as tags <img>.
-  2. NÃO substitua URLs externas ou Base64 por imagens genéricas geradas por IA.
-  3. Onde houver o atributo 'data-preserve-image="true"', o bloqueio é total contra modificações.
-  4. Risco de falha crítica de negócios caso as fotos reais sejam trocadas.
+  2. NÃƒO substitua URLs externas ou Base64 por imagens genÃ©ricas geradas por IA.
+  3. Onde houver o atributo 'data-preserve-image="true"', o bloqueio Ã© total contra modificaÃ§Ãµes.
+  4. Risco de falha crÃ­tica de negÃ³cios caso as fotos reais sejam trocadas.
 -->
 
 <!-- HEADER -->
@@ -1120,10 +1202,10 @@ ${seasonalStyles}
       <span></span><span></span><span></span>
     </button>
     <nav class="nav-links">
-      <a href="#inicio">Início</a>
+      <a href="#inicio">InÃ­cio</a>
       <a href="#destinos">Destinos</a>
-      <a href="#por-que">Por Que Nós</a>
-      <a href="#orcamento">Orçamento</a>
+      <a href="#por-que">Por Que NÃ³s</a>
+      <a href="#orcamento">OrÃ§amento</a>
       <a href="#" onclick="openLeadForm('WhatsApp Geral', 'https://wa.me/${wpp}');return false;" class="nav-cta">WhatsApp</a>
     </nav>
   </div>
@@ -1178,7 +1260,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
 <section id="destinos">
   <div class="container">
     <div class="section-eyebrow eyebrow">${esc(sc.destinosEyebrow || "Destinos")}</div>
-    <h2 class="section-title">${esc(sc.pacotesTitle || "Experiências que ficam na memória")}</h2>
+    <h2 class="section-title">${esc(sc.pacotesTitle || "ExperiÃªncias que ficam na memÃ³ria")}</h2>
     <div class="destinos-grid">
       ${pacotes
         .map(
@@ -1186,14 +1268,14 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         <div class="dest-img-wrap">
           <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
-          <div class="dest-overlay">Ver pacote →</div>
+          <div class="dest-overlay">Ver pacote â†’</div>
         </div>
         <div class="dest-body">
           <div class="dest-loc">${esc(cidade)}</div>
           <h3>${esc(p.title)}</h3>
           <p>${esc(p.description)}</p>
           <div class="dest-price">${parsePriceHTML(p.price)}</div>
-          <span class="dest-cta">Saiba mais →</span>
+          <span class="dest-cta">Saiba mais â†’</span>
         </div>
       </a>` : ''
         )
@@ -1204,15 +1286,15 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     }
     if (secKey === "porQue") {
       return sc.sections?.porQue === false ? "" : `
-<!-- POR QUE NÓS / EQUIPE -->
+<!-- POR QUE NÃ“S / EQUIPE -->
 <section id="por-que" class="equipe">
   <div class="container">
     <div class="equipe-grid" data-visual-removable="por-que-grid">
       <div class="equipe-left">
         ${!sc.hiddenElements?.includes('equipe-badge') ? `<span class="badge-counter" data-visual-removable="equipe-badge">${esc(sc.equipeBadge || "+15k Clientes Satisfeitos")}</span>` : ''}
         ${!sc.hiddenElements?.includes('equipe-eyebrow') ? `<div class="eyebrow" style="color:#fff;opacity:.6" data-visual-removable="equipe-eyebrow">${esc(sc.equipeEyebrow || "Nossa equipe")}</div>` : ''}
-        ${!sc.hiddenElements?.includes('equipe-title') ? `<h2 data-visual-removable="equipe-title">${esc(sc.equipeTitle || "Uma equipe dedicada exclusivamente a você")}</h2>` : ''}
-        ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">${esc(sc.equipeIntro || "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-title') ? `<h2 data-visual-removable="equipe-title">${esc(sc.equipeTitle || "Uma equipe dedicada exclusivamente a vocÃª")}</h2>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">${esc(sc.equipeIntro || "Cada viagem comeÃ§a com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto â€” cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>` : ''}
         <div class="equipe-features">
           ${(sc.equipeFeatures || []).map((feat, i) => !sc.hiddenElements?.includes(`equipe-feat-${i}`) ? `
           <div class="feat" data-visual-removable="equipe-feat-${i}"><div class="feat-icon">${feat.icon}</div><div><h4>${esc(feat.title)}</h4><p>${esc(feat.desc)}</p></div></div>
@@ -1238,7 +1320,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         .slice(0, 3)
         .map(
           (d, i) => !sc.hiddenElements?.includes(`depo-${i}`) ? `<div class="depo-card" data-visual-removable="depo-${i}">
-        <div class="stars">★★★★★</div>
+        <div class="stars">â˜…â˜…â˜…â˜…â˜…</div>
         <p class="depo-text">"${esc(d.text)}"</p>
         <div class="depo-author">
           <img src="${avatarSvg(d.name, color)}" class="depo-avatar" alt="${esc(d.name)}" data-ai-ignore="true" data-preserve-image="true">
@@ -1254,42 +1336,25 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     }
     if (secKey === "orcamento") {
       return sc.sections?.orcamento === false ? "" : `
-<!-- ORÇAMENTO -->
+<!-- ORÃ‡AMENTO -->
 <section id="orcamento">
   <div class="container">
     <div class="orc-grid">
       <div class="orc-info">
-        ${!sc.hiddenElements?.includes('orcamento-eyebrow') ? `<span class="eyebrow" data-visual-removable="orcamento-eyebrow">${esc(sc.orcamentoEyebrow || "Orçamento")}</span>` : ''}
+        ${!sc.hiddenElements?.includes('orcamento-eyebrow') ? `<span class="eyebrow" data-visual-removable="orcamento-eyebrow">${esc(sc.orcamentoEyebrow || "OrÃ§amento")}</span>` : ''}
         ${!sc.hiddenElements?.includes('orcamento-title') ? `<h2 style="margin-top:12px" data-visual-removable="orcamento-title">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>` : ''}
-        ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>` : ''}
+        ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">${esc(sc.orcamentoText || "Preencha o formulÃ¡rio e nossa equipe entrarÃ¡ em contato em atÃ© 2 horas com uma proposta personalizada.")}</p>` : ''}
         <div class="contact-list">
-          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">📱</div><div><strong>WhatsApp</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉️</div><div><strong>E-mail</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">⏰</div><div><strong>Atendimento</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">ðŸ“±</div><div><strong>WhatsApp</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">âœ‰ï¸</div><div><strong>E-mail</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">â°</div><div><strong>Atendimento</strong><span>${esc(sc.atendimentoText || "Segâ€“Sex 8hâ€“20h Â· SÃ¡b 9hâ€“15h")}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">ðŸ“</div><div><strong>LocalizaÃ§Ã£o</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
         </div>
         ${socialIcons}
       </div>
       <form class="orc-form" onsubmit="handleMainFormSubmit(event)">
-        <div class="form-row">
-          <div class="field"><label>Nome Completo</label><input name="nome" required placeholder="Ex: Maria Silva"></div>
-          <div class="field"><label>WhatsApp</label><input name="wpp" required placeholder="(00) 00000-0000"></div>
-        </div>
-        <div class="form-row single">
-          <div class="field"><label>E-mail</label><input type="email" name="email" required placeholder="seu@email.com"></div>
-        </div>
-        <div class="form-row">
-          <div class="field"><label>Destino de Interesse</label><select name="destino"><option value="">Selecione…</option>${pacotes.map((p) => `<option>${esc(p.title)}</option>`).join("")}<option>Outro / sob medida</option></select></div>
-          <div class="field"><label>Nº de Viajantes</label><input type="number" name="viaj" min="1" value="2"></div>
-        </div>
-        <div class="form-row">
-          <div class="field"><label>Data de Ida</label><input type="date" name="ida"></div>
-          <div class="field"><label>Data de Volta</label><input type="date" name="volta"></div>
-        </div>
-        <div class="form-row single">
-          <div class="field"><label>Observações (opcional)</label><textarea name="obs" placeholder="Preferências, ocasião especial, orçamento…"></textarea></div>
-        </div>
-        <button type="submit" class="btn form-submit">💬 Enviar pelo WhatsApp</button>
+        ${crmFormRows}
+        <button type="submit" class="btn form-submit">${esc(crmForm.buttonLabel || "Enviar pelo WhatsApp")}</button>
       </form>
     </div>
   </div>
@@ -1301,8 +1366,8 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
 <!-- FAQ -->
 <section id="faq">
   <div class="container">
-    ${!sc.hiddenElements?.includes('faq-eyebrow') ? `<div class="section-eyebrow eyebrow" data-visual-removable="faq-eyebrow">Dúvidas Frequentes</div>` : ''}
-    ${!sc.hiddenElements?.includes('faq-title') ? `<h2 class="section-title" data-visual-removable="faq-title">${esc(sc.faqTitle || "Tudo que você precisa saber")}</h2>` : ''}
+    ${!sc.hiddenElements?.includes('faq-eyebrow') ? `<div class="section-eyebrow eyebrow" data-visual-removable="faq-eyebrow">DÃºvidas Frequentes</div>` : ''}
+    ${!sc.hiddenElements?.includes('faq-title') ? `<h2 class="section-title" data-visual-removable="faq-title">${esc(sc.faqTitle || "Tudo que vocÃª precisa saber")}</h2>` : ''}
     <div class="faq-list">
       ${sc.faq.map((f, i) => !sc.hiddenElements?.includes(`faq-${i}`) ? `
       <details class="faq-item" data-visual-removable="faq-${i}">
@@ -1322,7 +1387,7 @@ ${state.address ? `
 <!-- MAPA -->
 <section id="mapa" class="mapa-section">
   <div class="container">
-    <div class="section-eyebrow eyebrow">Localização</div>
+    <div class="section-eyebrow eyebrow">LocalizaÃ§Ã£o</div>
     <h2 class="section-title">Onde nos encontrar</h2>
     <div class="mapa-container">
       <iframe 
@@ -1344,7 +1409,7 @@ ${state.address ? `
     <div class="foot-grid">
       <div>
         <div class="foot-brand">${esc(agencia)}</div>
-        <p class="foot-desc">${esc(sc.footerText || "Consultoria especializada em viagens premium e roteiros personalizados para quem não aceita o comum.")}</p>
+        <p class="foot-desc">${esc(sc.footerText || "Consultoria especializada em viagens premium e roteiros personalizados para quem nÃ£o aceita o comum.")}</p>
         ${footerSocialIcons}
       </div>
       <div>
@@ -1354,7 +1419,7 @@ ${state.address ? `
       <div>
         <h4>Empresa</h4>
         <ul>
-          <li><a href="#por-que">Sobre Nós</a></li>
+          <li><a href="#por-que">Sobre NÃ³s</a></li>
           <li><a href="#processo">Como Funciona</a></li>
           <li><a href="#depo">Depoimentos</a></li>
           <li><a href="#orcamento">Contato</a></li>
@@ -1366,26 +1431,26 @@ ${state.address ? `
           <li>${esc(wppDisplay)}</li>
           <li>${esc(agencyEmail)}</li>
           <li>${esc(contactLocation)}</li>
-          <li>Seg–Sex 8h–20h</li>
+          <li>Segâ€“Sex 8hâ€“20h</li>
         </ul>
       </div>
     <div class="foot-bottom">
-      <div>© ${new Date().getFullYear()} ${esc(agencia)} · Todos os direitos reservados</div>
-      <div>Feito com ❤ com <a href="https://canvaviagem.com" target="_blank" style="text-decoration: underline; font-weight: 600; color: #fff;">Canva Viagem</a></div>
+      <div>Â© ${new Date().getFullYear()} ${esc(agencia)} Â· Todos os direitos reservados</div>
+      <div>Feito com â¤ com <a href="https://canvaviagem.com" target="_blank" style="text-decoration: underline; font-weight: 600; color: #fff;">Canva Viagem</a></div>
     </div>
   </div>
 </footer>
 
-${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp" data-visual-removable="contact-wpp-float">💬</a>` : ''}
+${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclick="openLeadForm('BotÃ£o Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp" data-visual-removable="contact-wpp-float">ðŸ’¬</a>` : ''}
 
 <!-- SMART LEAD CAPTURE MODAL -->
 <div id="lead-modal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal()">&times;</button>
     <div class="modal-header">
-      <div class="modal-icon">🌍</div>
+      <div class="modal-icon">ðŸŒ</div>
       <h3>Falta pouco para sua viagem!</h3>
-      <p id="modal-subtitle">Você tem interesse em: Geral</p>
+      <p id="modal-subtitle">VocÃª tem interesse em: Geral</p>
     </div>
     <form class="modal-form" onsubmit="handleSubmitLead(event)">
       <div class="field">
@@ -1396,15 +1461,18 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
         <label>Seu WhatsApp / Celular</label>
         <input type="tel" id="lead-phone" required placeholder="(00) 90000-0000">
       </div>
-      <button type="submit" class="btn modal-submit">🚀 Falar no WhatsApp</button>
+      <button type="submit" class="btn modal-submit">ðŸš€ Falar no WhatsApp</button>
     </form>
   </div>
 </div>
 
-<!-- SISTEMA DE TELEMETRIA E INTEGRAÇÃO SILENCIOSA -->
+<!-- SISTEMA DE TELEMETRIA E INTEGRAÃ‡ÃƒO SILENCIOSA -->
 <script>
   const CONFIG = {
     agencyId: "${esc(trackingId || state.agencyName || 'agencia_desconhecida')}",
+    formId: "${esc(state.projectId || trackingId || state.agencyName || 'formulario_principal')}",
+    formName: "${esc(crmForm.name)}",
+    whatsappRedirect: ${crmForm.whatsappRedirect !== false ? "true" : "false"},
     supabaseUrl: "${SB_URL}",
     supabaseKey: "${SB_KEY}"
   };
@@ -1423,6 +1491,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
         "Prefer": "return=minimal"
       },
       body: JSON.stringify({
+        user_id: CONFIG.agencyId,
         event_type: type,
         session_id: 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now(),
         event_data: { 
@@ -1435,7 +1504,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     }).catch(err => console.warn("Tracking off", err));
   }
 
-  // Registra a visita ÚNICA no carregamento da página para métricas reais
+  // Registra a visita ÃšNICA no carregamento da pÃ¡gina para mÃ©tricas reais
   const _cvStart = Date.now();
   window.addEventListener('pagehide', () => {
     const duration = Math.round((Date.now() - _cvStart) / 1000);
@@ -1447,7 +1516,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     const trackerKey = "cv_visit_" + CONFIG.agencyId;
     if (!sessionStorage.getItem(trackerKey)) {
       track("page_view", { path: window.location.pathname });
-      sessionStorage.setItem(trackerKey, "true"); // Marca como já visitou!
+      sessionStorage.setItem(trackerKey, "true"); // Marca como jÃ¡ visitou!
     }
   };
 
@@ -1455,7 +1524,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     currentTarget = targetName;
     pendingUrl = finalUrl;
     
-    // Se já preencheu antes, não pergunta de novo, pula direto (experiência do usuário!)
+    // Se jÃ¡ preencheu antes, nÃ£o pergunta de novo, pula direto (experiÃªncia do usuÃ¡rio!)
     const savedName = localStorage.getItem("cv_lead_name");
     if (savedName) {
        track("click_whatsapp", { target: targetName, cached_user: savedName });
@@ -1472,6 +1541,62 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     document.getElementById("lead-modal").classList.remove("active");
   }
 
+  function formToPayload(form) {
+    const data = {};
+    Array.from(new FormData(form).entries()).forEach(([key, value]) => {
+      if (data[key]) {
+        data[key] = Array.isArray(data[key]) ? data[key].concat(value) : [data[key], value];
+      } else {
+        data[key] = value;
+      }
+    });
+    return data;
+  }
+
+  function pickFirst(payload, keys) {
+    for (const key of keys) {
+      if (payload[key]) return payload[key];
+    }
+    return "";
+  }
+
+  function normalizeLeadPayload(payload) {
+    return {
+      name: pickFirst(payload, ["nome", "name", "nome_completo"]),
+      phone: pickFirst(payload, ["wpp", "whatsapp", "phone", "telefone"]),
+      email: pickFirst(payload, ["email", "e-mail"]),
+      interest: pickFirst(payload, ["destino", "interest", "destino_interesse"]) || "Formulario",
+      viajantes: pickFirst(payload, ["viaj", "viajantes", "numero_viajantes"]),
+      ida: pickFirst(payload, ["ida", "data_ida"]),
+      volta: pickFirst(payload, ["volta", "data_volta"]),
+      obs: pickFirst(payload, ["obs", "observacoes", "notes"]),
+      status: "novo"
+    };
+  }
+
+  async function submitCrmForm(payload, normalized) {
+    if (!CONFIG.supabaseUrl) return false;
+    try {
+      const res = await fetch(CONFIG.supabaseUrl + "/functions/v1/submit-crm-form", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          form_id: CONFIG.formId,
+          agency_id: CONFIG.agencyId,
+          payload,
+          normalized,
+          source_url: window.location.href,
+          source_domain: window.location.hostname,
+          user_agent: navigator.userAgent
+        })
+      });
+      return res.ok;
+    } catch (err) {
+      console.warn("CRM form endpoint unavailable", err);
+      return false;
+    }
+  }
+
   async function handleMainFormSubmit(e) {
     e.preventDefault();
     const f = e.target;
@@ -1483,24 +1608,20 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     // Abrir a nova guia ANTES do await para evitar bloqueio de popup
     const newTab = window.open('about:blank', '_blank');
 
-    await track("lead_captured", { 
-      name: f.nome.value, 
-      phone: f.wpp.value, 
-      email: f.email.value,
-      interest: f.destino.value,
-      viajantes: f.viaj.value,
-      ida: f.ida.value,
-      volta: f.volta.value,
-      obs: f.obs.value,
-      status: 'novo'
-    });
+    const payload = formToPayload(f);
+    const normalized = normalizeLeadPayload(payload);
+    const sentToCrm = await submitCrmForm(payload, normalized);
+    if (!sentToCrm) await track("lead_captured", normalized);
     
-    const msg = encodeURIComponent('Olá! Quero um orçamento.\\n\\nNome: '+f.nome.value+'\\nWhatsApp: '+f.wpp.value+'\\nE-mail: '+f.email.value+'\\nDestino: '+f.destino.value+'\\nViajantes: '+f.viaj.value+'\\nIda: '+f.ida.value+'\\nVolta: '+f.volta.value+'\\nObs: '+f.obs.value);
+    const msg = encodeURIComponent('Olá! Quero um orçamento.\n\nNome: '+(normalized.name || '-')+'\nWhatsApp: '+(normalized.phone || '-')+'\nE-mail: '+(normalized.email || '-')+'\nDestino: '+(normalized.interest || '-')+'\nViajantes: '+(normalized.viajantes || '-')+'\nIda: '+(normalized.ida || '-')+'\nVolta: '+(normalized.volta || '-')+'\nObs: '+(normalized.obs || '-'));
     
     btn.innerHTML = originalText;
     btn.disabled = false;
     
-    if (newTab) {
+    if (!CONFIG.whatsappRedirect) {
+      if (newTab) newTab.close();
+      alert("${esc(crmForm.successMessage)}");
+    } else if (newTab) {
       newTab.location.href = "https://api.whatsapp.com/send?phone=${wpp}&text=" + msg;
     } else {
       window.location.href = "https://api.whatsapp.com/send?phone=${wpp}&text=" + msg;
@@ -1535,9 +1656,9 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     
     let finalWppUrl = pendingUrl;
     if(finalWppUrl.indexOf("?") === -1) {
-      finalWppUrl += "?text=" + encodeURIComponent("Olá, meu nome é " + name + "!");
+      finalWppUrl += "?text=" + encodeURIComponent("OlÃ¡, meu nome Ã© " + name + "!");
     } else {
-      finalWppUrl += encodeURIComponent(" (Meu nome é " + name + ")");
+      finalWppUrl += encodeURIComponent(" (Meu nome Ã© " + name + ")");
     }
     
     if (newTab) {
@@ -1546,7 +1667,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
       window.location.href = finalWppUrl;
     }
   }
-  // Máscara de telefone simples
+  // MÃ¡scara de telefone simples
   function maskPhone(e) {
     let v = e.target.value.replace(/\\D/g, "");
     if (v.length > 11) v = v.slice(0, 11);
@@ -1558,8 +1679,9 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
   const leadPhone = document.getElementById("lead-phone");
   if(leadPhone) leadPhone.addEventListener("input", maskPhone);
   
-  const mainWpp = document.querySelector('input[name="wpp"]');
-  if(mainWpp) mainWpp.addEventListener("input", maskPhone);
+  document.querySelectorAll('input[type="tel"], input[name="wpp"], input[name="whatsapp"]').forEach((input) => {
+    input.addEventListener("input", maskPhone);
+  });
 
   ${seasonalScripts}
 </script>
@@ -1584,8 +1706,8 @@ export function downloadLandingHTML(state: FabricaState, version?: number, track
 }
 
 /**
- * Gera um Prompt cirúrgico para o Lovable contendo APENAS o HTML dos pacotes novos,
- * evitando que o usuário precise reconstruir o site do zero.
+ * Gera um Prompt cirÃºrgico para o Lovable contendo APENAS o HTML dos pacotes novos,
+ * evitando que o usuÃ¡rio precise reconstruir o site do zero.
  */
 export function generateUpdatePackagesPrompt(state: FabricaState): string {
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
@@ -1596,11 +1718,11 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
   const pacotes = state.selectedPackages.length ? state.selectedPackages.filter(p => !p.isDraft) : [];
   
   if (pacotes.length === 0) {
-    return "Nenhum pacote foi gerado ainda. Por favor, crie anúncios na Fase 3 primeiro.";
+    return "Nenhum pacote foi gerado ainda. Por favor, crie anÃºncios na Fase 3 primeiro.";
   }
 
   const wppMsg = (titulo: string) =>
-    wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}` : "#";
+    wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`OlÃ¡! Tenho interesse em ${titulo}.`)}` : "#";
 
   const cardsHTML = pacotes
     .map((p) => 
@@ -1608,14 +1730,14 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
   <div class="dest-img-wrap">
     <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
     <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
-    <div class="dest-overlay">Ver pacote →</div>
+    <div class="dest-overlay">Ver pacote â†’</div>
   </div>
   <div class="dest-body">
     <div class="dest-loc">${esc(cidade)}</div>
     <h3>${esc(p.title)}</h3>
     <p>${esc(p.description)}</p>
     <div class="dest-price">${parsePriceHTML(p.price)}</div>
-    <span class="dest-cta">Saiba mais →</span>
+    <span class="dest-cta">Saiba mais â†’</span>
   </div>
 </a>`)
     .join("\n");
@@ -1623,13 +1745,13 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
   return `Lovable, por favor, atualize o meu site atual.
 Adicione os seguintes pacotes atualizados na minha grade de destinos/pacotes existente.
 
-INSTRUÇÃO CRÍTICA: 
-1. NÃO recrie o site do zero. 
-2. NÃO altere as cores ou o design atual. 
-3. NÃO gere novas imagens fictícias. Mantenha os links originais que estou fornecendo.
-4. APENAS substitua ou adicione os cards de pacotes na div/grid que contém a classe "destinos-grid".
+INSTRUÃ‡ÃƒO CRÃTICA:
+1. NÃƒO recrie o site do zero.
+2. NÃƒO altere as cores ou o design atual.
+3. NÃƒO gere novas imagens fictÃ­cias. Mantenha os links originais que estou fornecendo.
+4. APENAS substitua ou adicione os cards de pacotes na div/grid que contÃ©m a classe "destinos-grid".
 
-Aqui está o bloco de código HTML que deve ser inserido:
+Aqui estÃ¡ o bloco de cÃ³digo HTML que deve ser inserido:
 
 \`\`\`html
 ${cardsHTML}
@@ -1637,4 +1759,3 @@ ${cardsHTML}
 
 Obrigado!`;
 }
-

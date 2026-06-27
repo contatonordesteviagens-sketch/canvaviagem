@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { FabricaProvider, useFabricaContext } from "@/hooks/useFabricaContext";
 import { Phase1Diagnostico } from "@/pages/fabrica/Phase1Diagnostico";
@@ -6,6 +6,7 @@ import { Phase2Ativos } from "@/pages/fabrica/Phase2Ativos";
 import { Phase3ArtFactory } from "@/pages/fabrica/Phase3ArtFactory";
 import { Phase4LandingBuilder } from "@/pages/fabrica/Phase4LandingBuilder";
 import { Phase5Dashboard } from "@/pages/fabrica/Phase5Dashboard";
+import { Phase6Forms } from "@/pages/fabrica/Phase6Forms";
 import { FabricaDashboard } from "@/pages/fabrica/FabricaDashboard";
 import { FabricaLibrary } from "@/pages/fabrica/FabricaLibrary";
 import { VoiceOnboarding } from "@/components/fabrica/VoiceOnboarding";
@@ -23,7 +24,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  Users
+  Users,
+  ClipboardList
 } from "lucide-react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
@@ -71,8 +73,9 @@ const FabricaInner = () => {
     if (activeTab === "library") {
       return librarySubTab === "ofertas" ? "Minhas Ofertas" : "Minha Biblioteca";
     }
-    if (state.currentPhase === 1) return "Anúncio";
+    if (state.currentPhase === 1) return "AnÃºncio";
     if (state.currentPhase === 2) return "Site";
+    if (state.currentPhase === 6) return "FormulÃ¡rios";
     if (state.currentPhase === 3) return "CRM";
     if (state.currentPhase === 4) return "Plano";
     if (state.currentPhase === 5) return "Checkup";
@@ -86,13 +89,13 @@ const FabricaInner = () => {
         fontFamily: "Inter, sans-serif",
       }}
     >
-      {/* ── SIDEBAR LATERAL ESQUERDA (DESKTOP) ── */}
+      {/* â”€â”€ SIDEBAR LATERAL ESQUERDA (DESKTOP) â”€â”€ */}
       <aside className="w-64 border-r border-white/5 bg-[#0F0F11] flex-shrink-0 flex flex-col hidden md:flex sticky top-0 h-screen z-40 select-none">
         {/* Brand Header */}
         <div className="p-6 border-b border-white/5 flex items-center gap-3">
           <div>
-            <div className="text-xs font-black text-white leading-none tracking-tight">Fábrica de Destinos</div>
-            <div className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5">Painel de Criação</div>
+            <div className="text-xs font-black text-white leading-none tracking-tight">FÃ¡brica de Destinos</div>
+            <div className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5">Painel de CriaÃ§Ã£o</div>
           </div>
         </div>
 
@@ -109,14 +112,14 @@ const FabricaInner = () => {
               }`}
             >
               <LayoutDashboard className={`w-4 h-4 ${activeTab === "dashboard" ? "text-amber-400" : "text-white/40"}`} />
-              <span>Painel Fábrica</span>
+              <span>Painel FÃ¡brica</span>
             </button>
           </div>
 
-          {/* GERAÇÃO */}
+          {/* GERAÃ‡ÃƒO */}
           <div>
             <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2">
-              GERAÇÃO
+              GERAÃ‡ÃƒO
             </div>
             <button
               onClick={() => {
@@ -131,7 +134,7 @@ const FabricaInner = () => {
             >
               <div className="flex items-center gap-3">
                 <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 1 ? "text-amber-400" : "text-white/40"}`} />
-                <span>Anúncio</span>
+                <span>AnÃºncio</span>
               </div>
               <span className="text-[10px] text-white/30 font-bold">F1</span>
             </button>
@@ -162,6 +165,24 @@ const FabricaInner = () => {
                 <span className="text-[10px] text-white/30 font-bold">F2</span>
               </button>
 
+              <button
+                onClick={() => {
+                  setPhase(6);
+                  setActiveTab("phase");
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  activeTab === "phase" && state.currentPhase === 6
+                    ? "bg-white/[0.06] text-white border border-white/10"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <ClipboardList className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 6 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>FormulÃ¡rios</span>
+                </div>
+                <span className="text-[10px] text-white/30 font-bold">F3</span>
+              </button>
+
               {/* F3: CRM */}
               <button
                 onClick={() => {
@@ -178,7 +199,7 @@ const FabricaInner = () => {
                   <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
                   <span>CRM</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold">F3</span>
+                <span className="text-[10px] text-white/30 font-bold">F5</span>
               </button>
 
               {/* F4: Plano */}
@@ -216,15 +237,15 @@ const FabricaInner = () => {
                   <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Checkup</span>
                 </div>
-                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/30"}`}>F5</span>
+                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/30"}`}>F6</span>
               </button>
             </div>
           </div>
 
-          {/* CONTEÚDO */}
+          {/* CONTEÃšDO */}
           <div>
             <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2">
-              CONTEÚDO
+              CONTEÃšDO
             </div>
             <div className="space-y-1">
               <button
@@ -261,7 +282,7 @@ const FabricaInner = () => {
 
         {/* Bottom Actions */}
         <div className="p-4 border-t border-white/5 space-y-3">
-          {/* ✅ FIX #5: Indicador de sync visível em todas as fases */}
+          {/* âœ… FIX #5: Indicador de sync visÃ­vel em todas as fases */}
           <CloudSaveIndicator />
           <div className="pt-2">
             <button
@@ -274,13 +295,13 @@ const FabricaInner = () => {
         </div>
       </aside>
 
-      {/* ── MOBILE HEADER (SELETOR COMPATÍVEL) ── */}
+      {/* â”€â”€ MOBILE HEADER (SELETOR COMPATÃVEL) â”€â”€ */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0F0F11] border-b border-white/5 flex items-center justify-between px-4 z-50 animate-slideDown">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-500 to-yellow-300">
             <Sparkles className="w-3.5 h-3.5 text-black" />
           </div>
-          <span className="text-xs font-black uppercase tracking-wider text-white">Fábrica</span>
+          <span className="text-xs font-black uppercase tracking-wider text-white">FÃ¡brica</span>
           <span className="text-white/30">/</span>
           <span className="text-xs font-bold text-amber-400">{getPhaseName()}</span>
         </div>
@@ -290,7 +311,7 @@ const FabricaInner = () => {
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
-        {/* ✅ FIX #5 Mobile: indicador de sync no header mobile */}
+        {/* âœ… FIX #5 Mobile: indicador de sync no header mobile */}
         <div className="hidden sm:block">
           <CloudSaveIndicator />
         </div>
@@ -308,10 +329,10 @@ const FabricaInner = () => {
               activeTab === "dashboard" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            📊 Painel Inicial
+            ðŸ“Š Painel Inicial
           </button>
           
-          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Geração</div>
+          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">GeraÃ§Ã£o</div>
           <button
             onClick={() => {
               setPhase(1);
@@ -322,7 +343,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            🖼️ Anúncio (F1)
+            ðŸ–¼ï¸ AnÃºncio (F1)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Ferramentas</div>
@@ -336,7 +357,19 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            📄 Site (F2)
+            ðŸ“„ Site (F2)
+          </button>
+          <button
+            onClick={() => {
+              setPhase(6);
+              setActiveTab("phase");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+              activeTab === "phase" && state.currentPhase === 6 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            FormulÃ¡rios (F3)
           </button>
           <button
             onClick={() => {
@@ -348,7 +381,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            👥 CRM (F3)
+            ðŸ‘¥ CRM (F4)
           </button>
           <button
             onClick={() => {
@@ -360,7 +393,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚙️ Plano (F4)
+            âš™ï¸ Plano (F5)
           </button>
           <button
             onClick={() => {
@@ -372,10 +405,10 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚡ Checkup (F5)
+            âš¡ Checkup (F6)
           </button>
 
-          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Conteúdo</div>
+          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">ConteÃºdo</div>
           <button
             onClick={() => {
               setActiveTab("library");
@@ -386,7 +419,7 @@ const FabricaInner = () => {
               activeTab === "library" && librarySubTab === "ofertas" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            📂 Minhas Ofertas
+            ðŸ“‚ Minhas Ofertas
           </button>
           <button
             onClick={() => {
@@ -398,7 +431,7 @@ const FabricaInner = () => {
               activeTab === "library" && librarySubTab === "galeria" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            📚 Minha Biblioteca
+            ðŸ“š Minha Biblioteca
           </button>
 
           <div className="border-t border-white/5 pt-3">
@@ -406,13 +439,13 @@ const FabricaInner = () => {
               onClick={() => navigate("/")}
               className="w-full py-3 px-4 rounded-xl text-left text-sm font-semibold text-white/50"
             >
-              ← Voltar ao Início
+              â† Voltar ao InÃ­cio
             </button>
           </div>
         </div>
       )}
 
-      {/* ── CONTEÚDO PRINCIPAL (ÁREA DE TRABALHO) ── */}
+      {/* â”€â”€ CONTEÃšDO PRINCIPAL (ÃREA DE TRABALHO) â”€â”€ */}
       <main className="flex-1 min-w-0 min-h-screen pt-20 md:pt-8 px-4 md:px-8 pb-24 overflow-y-auto bg-[#0A0A0B]">
         {/* Top Bar with Voice AI and Phase Shortcuts */}
         {isAdmin && (
@@ -433,17 +466,23 @@ const FabricaInner = () => {
                 Painel
               </button>
 
-              {['Anúncio', 'Site', 'CRM', 'Plano', 'Checkup', 'Formulário'].map((name, idx) => {
-                const num = idx + 1;
+              {[
+                { name: 'AnÃºncio', phase: 1 },
+                { name: 'Site', phase: 2 },
+                { name: 'FormulÃ¡rio', phase: 6 },
+                { name: 'CRM', phase: 3 },
+                { name: 'Plano', phase: 4 },
+                { name: 'Checkup', phase: 5 },
+              ].map(({ name, phase }) => {
                 return (
                 <button
-                  key={num}
+                  key={phase}
                   onClick={() => {
-                    setPhase(num);
+                    setPhase(phase);
                     setActiveTab("phase");
                   }}
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap ${
-                    activeTab === "phase" && state.currentPhase === num ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
+                    activeTab === "phase" && state.currentPhase === phase ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   {name}
@@ -470,7 +509,8 @@ const FabricaInner = () => {
           {activeTab === "phase" && (
             <>
               {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} />}
-              {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
+              {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(6)} onBack={() => setPhase(1)} />}
+              {state.currentPhase === 6 && <Phase6Forms onNext={() => setPhase(3)} onBack={() => setPhase(2)} />}
               {state.currentPhase === 3 && <Phase5Dashboard />}
               {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
               {state.currentPhase === 5 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(4)} />}
@@ -499,8 +539,8 @@ const FabricaContent = () => {
     }
   }, [hasAccess, accessGranted]);
 
-  // Spinner SÓ no primeiro carregamento real (sem user e sem acesso já concedido).
-  // Reverificações silenciosas em background NÃO devem mais derrubar pra esta tela.
+  // Spinner SÃ“ no primeiro carregamento real (sem user e sem acesso jÃ¡ concedido).
+  // ReverificaÃ§Ãµes silenciosas em background NÃƒO devem mais derrubar pra esta tela.
   if (!accessGranted && authLoading && !user) {
     return (
       <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white">
@@ -519,7 +559,7 @@ const FabricaContent = () => {
     return (
       <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center text-white">
         <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mb-2" />
-        <span className="text-sm text-white/60">Verificando sessão...</span>
+        <span className="text-sm text-white/60">Verificando sessÃ£o...</span>
       </div>
     );
   }
@@ -530,7 +570,7 @@ const FabricaContent = () => {
 
   return (
     <>
-      <SeoMetadata title="Fábrica de Viagens | Canva Viagem" description="Sistema completo de marketing e geração de anúncios com IA para agências de viagens." />
+      <SeoMetadata title="FÃ¡brica de Viagens | Canva Viagem" description="Sistema completo de marketing e geraÃ§Ã£o de anÃºncios com IA para agÃªncias de viagens." />
       <FabricaInner />
     </>
   );

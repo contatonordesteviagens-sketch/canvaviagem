@@ -198,6 +198,11 @@ export const Phase5Dashboard = () => {
 
     // 3. Tenta persistir no Supabase em background (RLS bypass fallback)
     try {
+      await (supabase as any)
+        .from("crm_form_submissions")
+        .update({ status: newStatus })
+        .eq("id", leadId);
+
       const { data, error } = await supabase
         .from("analytics_events")
         .select("event_data")
@@ -239,7 +244,7 @@ export const Phase5Dashboard = () => {
           .eq("event_type", "click_whatsapp")
           .contains("event_data", { agency_id: agencyTrackingId });
 
-        // 3. Contagem REAL de Leads Capturados (Agora via analytics_events)
+        // 3. Contagem REAL de Leads Capturados (analytics antigo + novos formularios)
         const { count: lCount } = await supabase
           .from("analytics_events")
           .select("*", { count: "exact", head: true })
@@ -274,6 +279,27 @@ export const Phase5Dashboard = () => {
           .order("created_at", { ascending: false })
           .limit(100);
 
+        let formLeads: any[] = [];
+        let formLeadCount = 0;
+        try {
+          const { count: publicFormCount } = await (supabase as any)
+            .from("crm_form_submissions")
+            .select("*", { count: "exact", head: true })
+            .eq("owner_id", agencyTrackingId);
+
+          const { data: publicFormData } = await (supabase as any)
+            .from("crm_form_submissions")
+            .select("*")
+            .eq("owner_id", agencyTrackingId)
+            .order("created_at", { ascending: false })
+            .limit(100);
+
+          formLeadCount = publicFormCount || 0;
+          formLeads = publicFormData || [];
+        } catch (crmFormError) {
+          console.warn("CRM Forms ainda nao disponivel neste ambiente:", crmFormError);
+        }
+
         // Mapeia os dados do analytics_events para o formato de Lead esperado pela interface
         const mappedLeads = (lData || []).map((e: any) => ({
           id: e.id,
@@ -286,16 +312,37 @@ export const Phase5Dashboard = () => {
           numero_viajantes: e.event_data?.viajantes ? parseInt(e.event_data.viajantes) : 1,
           observacoes: e.event_data?.obs || "",
           created_at: e.created_at,
-          status: state.leadStatuses?.[e.id] || e.event_data?.status || 'novo'
+          status: state.leadStatuses?.[e.id] || e.event_data?.status || 'novo',
+          origem: e.event_data?.source_domain || "Site da Fabrica"
         }));
+
+        const mappedFormLeads = formLeads.map((lead: any) => ({
+          id: lead.id,
+          nome_completo: lead.normalized_name || lead.payload?.nome || lead.payload?.name || "Sem Nome",
+          whatsapp: lead.normalized_phone || lead.payload?.wpp || lead.payload?.whatsapp || "",
+          email: lead.normalized_email || lead.payload?.email || "",
+          destino_interesse: lead.normalized_interest || lead.payload?.destino || "Formulario externo",
+          data_ida: lead.payload?.ida || lead.payload?.data_ida || null,
+          data_volta: lead.payload?.volta || lead.payload?.data_volta || null,
+          numero_viajantes: lead.payload?.viaj ? parseInt(lead.payload.viaj) : 1,
+          observacoes: lead.payload?.obs || lead.payload?.observacoes || "",
+          created_at: lead.created_at,
+          status: state.leadStatuses?.[lead.id] || lead.status || "novo",
+          origem: lead.source_domain || "Formulario externo",
+          raw_payload: lead.payload || {},
+        }));
+
+        const allLeads = [...mappedFormLeads, ...mappedLeads].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ).slice(0, 100);
 
         setStats({
           visits: vCount || 0,
           clicks: cCount || 0,
-          leads: lCount || 0,
+          leads: (lCount || 0) + formLeadCount,
           avgTime
         });
-        setLeadsList(mappedLeads);
+        setLeadsList(allLeads);
       } catch (e) {
         console.warn("Falha ao carregar métricas reais:", e);
       } finally {
