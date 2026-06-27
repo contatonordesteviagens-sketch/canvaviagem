@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
-import { sendWelcomeEmail, sendAutoMagicLinkEmail } from "../_shared/welcomeEmail.ts";
+import { sendUnifiedWelcomeEmail } from "../_shared/welcomeEmail.ts";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
 
 const corsHeaders = {
@@ -225,12 +225,18 @@ async function ensureUserAndOnboarding(
   if (tErr) logStep("ERROR: magic link token", { error: tErr.message });
   else magicLink = `${siteUrl}/auth/verify?token=${token}`;
 
-  // 5. Resend — usa o MESMO utilitário compartilhado do Stripe.
-  // O productId canonico (`hotmart_elite`) garante que o email de boas-vindas
-  // escolha o template/CTA correto sem colidir com produtos Start da Stripe.
+  // 5. Resend — Email Unificado (Boas-vindas + Link Mágico)
   if (resend && magicLink) {
-    await sendAutoMagicLinkEmail(supabase, resend, normalizedEmail, magicLink, token, name || "Visitante");
-    await sendWelcomeEmail(supabase, resend, normalizedEmail, canonical_product_id, "hotmart");
+    await sendUnifiedWelcomeEmail(
+      supabase,
+      resend,
+      normalizedEmail,
+      magicLink,
+      token,
+      name || "Visitante",
+      canonical_product_id,
+      "hotmart"
+    );
   }
 
   // 6. Zaia

@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
-import { sendWelcomeEmail, sendAutoMagicLinkEmail } from "../_shared/welcomeEmail.ts";
+import { sendUnifiedWelcomeEmail } from "../_shared/welcomeEmail.ts";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
 
 const corsHeaders = {
@@ -194,10 +194,18 @@ async function ensureUserAndOnboarding(
     logStep("Magic link token created successfully", { email: redactEmail(normalizedEmail) });
   }
 
-  // 5. Send emails via Resend if available
+  // 5. Send unified email via Resend if available
   if (resend && magicLink) {
-    await sendAutoMagicLinkEmail(supabase, resend, normalizedEmail, magicLink, token, name || "Visitante");
-    await sendWelcomeEmail(supabase, resend, normalizedEmail, productId, "stripe");
+    await sendUnifiedWelcomeEmail(
+      supabase,
+      resend,
+      normalizedEmail,
+      magicLink,
+      token,
+      name || "Visitante",
+      productId,
+      "stripe"
+    );
   }
 
   // 6. Trigger Zaia Welcome (with the generated magic link for WhatsApp delivery!)
