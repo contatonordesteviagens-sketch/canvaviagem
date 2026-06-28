@@ -297,11 +297,11 @@ export default function Inicio2() {
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] mb-4 md:mb-6 tracking-tight">
-              Tudo que você precisa para vender viagens na internet em um só lugar.
+              Pare de perder vendas no WhatsApp porque suas ofertas parecem amadoras.
             </h1>
 
             <p className="text-lg md:text-xl text-slate-300 font-medium mb-3 md:mb-4 max-w-3xl mx-auto leading-relaxed">
-              Receba um site pronto, gerador de imagens, 250 vídeos Reels, agentes de Inteligência Artificial e um CRM para organizar seus clientes de forma super fácil e rápida.
+              Receba um site pronto, gerador de imagens, 250 vídeos Reels e IA para sua agência de viagens passar confiança absoluta e fechar mais pacotes. Teste 100% grátis por 3 dias.
             </p>
 
             <div className="bg-green-500/10 border border-green-500/20 px-5 md:px-6 py-3 rounded-xl mb-6 md:mb-10">
@@ -312,7 +312,7 @@ export default function Inicio2() {
 
             <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 mb-7 md:mb-6 w-full sm:w-auto">
               <a href="#planos" className="btn btn-primary text-base md:text-lg py-4 px-8 w-full sm:w-auto shadow-[0_0_30px_rgba(124,58,237,0.5)] hover:shadow-[0_0_50px_rgba(124,58,237,0.7)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
-                Quero acessar o Canva Viagem
+                Quero profissionalizar minha agência agora
               </a>
               <a href="#video-prova" className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 py-3.5 md:py-4 px-5 md:px-8 rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 text-sm md:text-base">
                 <Play size={20} fill="currentColor" /> Ver Lucas usando a ferramenta
@@ -400,7 +400,7 @@ export default function Inicio2() {
                   ))}
                 </div>
 
-                <a href="#planos" className="btn btn-primary inline-flex">Quero receber os 250 Reels</a>
+                <a href="#planos" className="btn btn-primary inline-flex">Liberar meus 250 Reels + Teste Grátis</a>
               </div>
 
               <div className="space-y-6">
@@ -748,9 +748,12 @@ export default function Inicio2() {
             <div className="text-center max-w-3xl mx-auto">
               <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">oferta brasileira</p>
               <h2 className="section-title w-full text-center">Escolha seu acesso sem confusão</h2>
-              <p className="section-subtitle w-full text-center" style={{ textAlign: "center", margin: "0 auto 32px" }}>
-                O mensal é para começar com menor compromisso. O anual é a melhor escolha para quem quer pagar menos por mês, ter 12 meses de acesso e economizar {ELITE_OFFER.annualSavings}. Ambos com 3 dias de teste grátis.
+              <p className="section-subtitle w-full text-center" style={{ textAlign: "center", margin: "0 auto 16px" }}>
+                O mensal é para começar com menor compromisso. O anual é a melhor escolha para quem quer pagar menos por mês, ter 12 meses de acesso e economizar {ELITE_OFFER.annualSavings}.
               </p>
+              <div className="bg-red-50 text-red-700 font-bold px-4 py-3 rounded-xl max-w-2xl mx-auto mb-8 border border-red-100 text-sm md:text-base text-center">
+                ⚠️ Atenção: Não somos um editor de imagens ou só templates. Somos um acelerador de vendas com tudo mastigado para o turismo (Site, IA, CRM e Imagens).
+              </div>
             </div>
             <div className="inicio2-pricing-grid">
               <article className="inicio2-price-card inicio2-price-card-featured">
@@ -781,11 +784,13 @@ export default function Inicio2() {
                 <a
                   href={annualCheckoutUrl}
                   onClick={() => trackCheckoutClick(482, "anual")}
-                  className="inicio2-price-cta inicio2-price-cta-primary"
+                  className="inicio2-price-cta inicio2-price-cta-primary mb-3"
                 >
                   Começar teste de 3 dias grátis
                 </a>
-                <p className="inicio2-price-note">3 dias grátis • Stripe • 7 dias de garantia</p>
+                <p className="text-center text-xs font-bold text-slate-500">
+                  Liberação imediata via PIX ou Cartão de Crédito
+                </p>
               </article>
 
               <article className="inicio2-price-card">
