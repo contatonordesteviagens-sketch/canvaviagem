@@ -419,14 +419,6 @@ export default function Inicio2() {
               <div className="space-y-6">
                 <div className="rounded-[1.5rem] shadow-2xl shadow-slate-200/70 overflow-hidden">
                   <img
-                    src={profilePreviewImageUrl}
-                    alt="Exemplo de perfil bonito e profissional criado com vídeos de viagem"
-                    loading="lazy"
-                    className="w-full h-auto object-cover"
-                  />
-                </div>
-                <div className="rounded-[1.5rem] shadow-2xl shadow-slate-200/70 overflow-hidden">
-                  <img
                     src={reelsMainGifUrl}
                     alt="Demonstração animada dos vídeos Reels entregues"
                     loading="lazy"
