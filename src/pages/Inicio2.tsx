@@ -416,24 +416,22 @@ export default function Inicio2() {
                 <a href="#planos" className="btn btn-primary inline-flex">Quero receber os 250 Reels</a>
               </div>
 
-              <div className="space-y-5">
-                <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-4 shadow-2xl shadow-slate-200/70">
+              <div className="space-y-6">
+                <div className="rounded-[1.5rem] shadow-2xl shadow-slate-200/70 overflow-hidden">
                   <img
                     src={profilePreviewImageUrl}
                     alt="Exemplo de perfil bonito e profissional criado com vídeos de viagem"
                     loading="lazy"
-                    className="w-full rounded-[1.5rem] object-cover"
+                    className="w-full h-auto object-cover"
                   />
                 </div>
-                <div className="rounded-[2rem] bg-slate-950 p-4 md:p-5 shadow-2xl shadow-cyan-950/20">
-                  <div className="mx-auto max-w-[220px] overflow-hidden rounded-[1.75rem] border-[10px] border-slate-800 bg-slate-900 shadow-xl">
-                    <img
-                      src={reelsMainGifUrl}
-                      alt="Demonstração animada dos vídeos Reels entregues"
-                      loading="lazy"
-                      className="aspect-[9/16] w-full object-cover"
-                    />
-                  </div>
+                <div className="rounded-[1.5rem] shadow-2xl shadow-slate-200/70 overflow-hidden">
+                  <img
+                    src={reelsMainGifUrl}
+                    alt="Demonstração animada dos vídeos Reels entregues"
+                    loading="lazy"
+                    className="w-full h-auto object-cover"
+                  />
                 </div>
               </div>
             </div>
