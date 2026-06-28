@@ -54,32 +54,33 @@ const profilePreviewImageUrl =
   "https://rochadigitalmidia.com.br/wp-content/uploads/2025/09/1-1024x1024.png";
 
 const pricingFeatures = [
-  "250 vídeos Reels de destinos nacionais e internacionais",
-  "Templates editáveis no Canva para personalizar logo e telefone",
+  "Fábrica de destinos: Gerador de imagens de ofertas",
+  "Fábrica de destinos: Site pronto editável",
+  "Fábrica de destinos: CRM para organizar leads",
+  "250 vídeos Reels",
+  "Templates editáveis no Canva",
   "400 artes e stories",
-  "Gerador de anúncios com IA",
-  "Construtor de sites e páginas de pacote",
-  "CRM para organizar leads",
-  "Ferramentas de IA para agentes de viagem",
-  "Legendas, roteiros e textos de oferta",
+  "Calendário de postagens",
+  "Agentes de Inteligência Artificial",
+  "Roteiros e ofertas em texto",
   "Suporte via WhatsApp",
 ];
 
 const quickOutcomeCards = [
   {
-    title: "Oferta pronta para vender",
-    copy: "Transforme destino, valor e condições em anúncio, texto de WhatsApp e página de pacote.",
+    title: "Fábrica de Destinos",
+    copy: "Gerador de imagens de ofertas, site pronto editável e CRM para organizar todos os seus leads e clientes.",
+    icon: <LayoutDashboard size={22} />,
+  },
+  {
+    title: "Redes Sociais Prontas",
+    copy: "250 vídeos Reels, 400 artes e stories, templates no Canva e calendário de postagens para não faltar conteúdo.",
+    icon: <Instagram size={22} />,
+  },
+  {
+    title: "Inteligência Artificial",
+    copy: "Agentes inteligentes que criam roteiros e textos de ofertas para você, com suporte sempre no WhatsApp.",
     icon: <MessageSquare size={22} />,
-  },
-  {
-    title: "Aparência profissional",
-    copy: "Use artes, vídeos e páginas pensadas para turismo sem começar de uma tela em branco.",
-    icon: <Star size={22} />,
-  },
-  {
-    title: "Leads sob controle",
-    copy: "Organize contatos, orçamentos e oportunidades para não deixar conversa quente esfriar.",
-    icon: <Users size={22} />,
   },
 ];
 
@@ -105,12 +106,12 @@ const platformProofScreens = [
 ];
 
 const includedResultCards = [
-  ["IA para anúncios", "Gere textos, ganchos, CTA e ideias para destinos e promoções."],
-  ["250 Reels prontos", "Publique vídeos de destinos nacionais e internacionais sem partir do zero."],
-  ["Páginas de venda", "Envie pacotes com uma apresentação clara, visual e mais confiável."],
-  ["CRM de leads", "Acompanhe interessados, orçamentos e oportunidades depois do primeiro contato."],
-  ["Materiais de apoio", "Use legendas, roteiros, textos de WhatsApp e recursos de campanha."],
-  ["Suporte e garantia", "Acesso imediato, ajuda por WhatsApp e 7 dias para testar sem risco."],
+  ["Site Editável e CRM", "Tenha um site pronto para enviar ofertas aos clientes e controle tudo num só lugar."],
+  ["Gerador de Imagens", "Crie imagens bonitas das suas ofertas usando nossa Fábrica de Destinos."],
+  ["250 Reels e 400 Artes", "Receba material de vídeo e imagem para o ano inteiro, tudo pronto para postar."],
+  ["Templates no Canva", "Tudo é personalizável no Canva. Mude as cores, adicione sua logo e telefone."],
+  ["Agentes de IA e Roteiros", "Peça para a Inteligência Artificial criar os roteiros de viagem e os textos de venda."],
+  ["Suporte no WhatsApp", "Você nunca estará sozinho. Tem dúvida? É só chamar nosso time no WhatsApp."],
 ];
 
 const trustProofMetrics = [
@@ -289,37 +290,23 @@ export default function Inicio2() {
           <div className="inicio-container relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
             <div className="flex flex-col items-center gap-4 mb-6 md:mb-8">
               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-900/50 to-blue-900/50 border border-purple-500/30 rounded-full px-5 py-2 backdrop-blur-md shadow-[0_0_20px_rgba(124,58,237,0.2)]">
-                <span className="md:hidden text-xs font-bold text-purple-200 uppercase tracking-wide">
-                  Para agências que vendem pelo WhatsApp e Instagram
-                </span>
-                <span className="hidden md:inline text-sm font-bold text-purple-200 uppercase tracking-wide">
-                  Para agências e consultores de viagem que vendem pelo WhatsApp e Instagram
+                <span className="text-xs md:text-sm font-bold text-purple-200 uppercase tracking-wide">
+                  Tudo mastigado para você vender mais viagens
                 </span>
               </div>
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] mb-4 md:mb-6 tracking-tight">
-              <span className="md:hidden">Crie ofertas de viagem profissionais para vender melhor</span>
-              <span className="hidden md:inline">Crie ofertas de viagem profissionais para vender mais pelo WhatsApp e Instagram</span>
+              Tudo que você precisa para vender viagens na internet em um só lugar.
             </h1>
 
             <p className="text-lg md:text-xl text-slate-300 font-medium mb-3 md:mb-4 max-w-3xl mx-auto leading-relaxed">
-              <span className="md:hidden">
-                IA, páginas, conteúdos prontos e CRM para sua agência vender com aparência profissional.
-              </span>
-              <span className="hidden md:inline">
-                O Canva Viagem reúne IA, páginas de pacote, conteúdos prontos e CRM para sua agência transformar um pacote simples em anúncio, página, legenda e acompanhamento de lead sem depender de designer nem de várias ferramentas separadas.
-              </span>
+              Receba um site pronto, gerador de imagens, 250 vídeos Reels, agentes de Inteligência Artificial e um CRM para organizar seus clientes de forma super fácil e rápida.
             </p>
 
-            <div className="bg-red-500/10 border border-red-500/20 px-5 md:px-6 py-3 rounded-xl mb-6 md:mb-10">
-              <p className="text-red-300 font-medium md:text-lg">
-                <span className="md:hidden">
-                  Se a oferta parece improvisada, o cliente duvida. Aqui você deixa o pacote mais claro e vendável.
-                </span>
-                <span className="hidden md:inline">
-                  Quando o pacote parece improvisado, o cliente compara só preço. Quando a oferta parece profissional, ele entende valor antes de pedir desconto.
-                </span>
+            <div className="bg-green-500/10 border border-green-500/20 px-5 md:px-6 py-3 rounded-xl mb-6 md:mb-10">
+              <p className="text-green-300 font-medium md:text-lg">
+                Esqueça ferramentas difíceis. Nós deixamos a tecnologia simples para você focar no que importa: vender.
               </p>
             </div>
 
@@ -396,15 +383,15 @@ export default function Inicio2() {
                   250 reels prontos para tornar seu perfil bonito e profissional em 1 dia.
                 </h2>
                 <p className="text-lg text-slate-600 leading-relaxed mb-6">
-                  Você recebe vídeos Reels de destinos nacionais e internacionais para publicar, adaptar no Canva e manter o Instagram da agência com aparência de marca profissional.
+                  Não passe mais vergonha no Instagram. Nós entregamos todo o seu conteúdo do ano inteiro preparado, é só colocar sua logo e postar.
                 </p>
 
                 <div className="space-y-3 mb-7">
                   {[
-                    "250 vídeos Reels para destinos nacionais e internacionais",
-                    "Templates editáveis no Canva para inserir sua logo e telefone",
-                    "Qualidade FHD e uso livre de direitos autorais",
-                    "Textos de legenda para copiar, adaptar e publicar",
+                    "250 vídeos Reels focados em destinos de viagem",
+                    "400 artes e stories lindíssimos e de alta qualidade",
+                    "Templates fáceis e totalmente editáveis no Canva",
+                    "Calendário de postagens para saber exatamente o que postar",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3 text-slate-800 font-bold">
                       <CheckCircle2 size={20} className="text-emerald-500 mt-0.5 shrink-0" />
@@ -452,10 +439,10 @@ export default function Inicio2() {
         <section className="bg-white py-14 md:py-20 border-b border-slate-100">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-10">
-              <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">clareza para lead frio</p>
-              <h2 className="section-title w-full text-center">O que você está comprando exatamente?</h2>
+              <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">explicado passo a passo</p>
+              <h2 className="section-title w-full text-center">O que você recebe ao entrar hoje?</h2>
               <p className="section-subtitle w-full text-center">
-                Uma plataforma para transformar pacote de viagem em campanha, página, texto e acompanhamento de lead.
+                Dividimos a plataforma em 3 pilares muito simples de entender e usar: Fábrica, Redes Sociais e Inteligência.
               </p>
             </div>
 
@@ -474,14 +461,14 @@ export default function Inicio2() {
         <section className="bg-slate-950 py-16 md:py-24">
           <div className="inicio-container grid lg:grid-cols-[0.85fr_1.15fr] gap-10 items-center">
             <div>
-              <p className="text-cyan-300 font-black uppercase tracking-[0.2em] text-xs mb-4">o problema real</p>
+              <p className="text-cyan-300 font-black uppercase tracking-[0.2em] text-xs mb-4">como ajudamos você</p>
               <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mb-6">
-                Sua agência não perde venda só por preço. Ela perde quando a oferta parece fraca.
+                Chega de perder vendas por passar uma imagem amadora.
               </h2>
               <div className="space-y-4 text-slate-300 text-lg leading-relaxed">
-                <p>O cliente chama no WhatsApp, recebe um texto corrido, pede desconto e some.</p>
-                <p>Você quer postar mais, mas trava em arte, legenda, roteiro, página, anúncio e follow-up.</p>
-                <p>Enquanto isso, a agência que parece mais organizada ganha confiança antes mesmo do orçamento.</p>
+                <p>O cliente nota quando você manda um texto feio e mal escrito no WhatsApp.</p>
+                <p>A partir de agora, as suas ofertas vão parecer que foram feitas por uma grande agência corporativa.</p>
+                <p>Tudo está mastigado para que mesmo uma criança de 10 anos consiga usar a nossa plataforma.</p>
               </div>
               <a href="#planos" className="btn btn-primary mt-8 inline-flex">Criar ofertas mais profissionais</a>
             </div>
