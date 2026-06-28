@@ -391,9 +391,9 @@ export default function Inicio2() {
           <div className="inicio-container">
             <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-10 lg:gap-14 items-start">
               <div>
-                <p className="text-cyan-600 font-black uppercase tracking-[0.2em] text-xs mb-3">250 reels prontos</p>
+                <p className="text-cyan-600 font-black uppercase tracking-[0.2em] text-xs mb-3">O que você também recebe além IA para vender viagens:</p>
                 <h2 className="text-3xl md:text-5xl font-black text-slate-950 leading-tight mb-5">
-                  Seu perfil bonito e profissional em 1 dia, sem gravar tudo do zero.
+                  250 reels prontos para tornar seu perfil bonito e profissional em 1 dia.
                 </h2>
                 <p className="text-lg text-slate-600 leading-relaxed mb-6">
                   Você recebe vídeos Reels de destinos nacionais e internacionais para publicar, adaptar no Canva e manter o Instagram da agência com aparência de marca profissional.
