@@ -1,4 +1,4 @@
-const hottok = "nePhewzo3QPQVIi8QU5IjqE56EktAi1940697";
+const hottok = "SEU_NOVO_HOTTOK_AQUI";
 const url = "https://zdjtcwtakgizbsbbwtgc.supabase.co/functions/v1/hotmart-webhook";
 
 const payload = {

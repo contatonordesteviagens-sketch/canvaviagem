@@ -29,7 +29,7 @@ async function testWebhook() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-hotmart-hottok': 'nePhewzo3QPQVIi8QU5IjqE56EktAi1940697' // The HOTTOK from .env
+        'x-hotmart-hottok': 'SEU_NOVO_HOTTOK_AQUI' // The HOTTOK from .env
       },
       body: JSON.stringify(payload)
     });

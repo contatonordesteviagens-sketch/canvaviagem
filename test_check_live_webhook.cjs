@@ -33,7 +33,7 @@ async function checkLiveWebhook() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-hotmart-hottok': 'nePhewzo3QPQVIi8QU5IjqE56EktAi1940697' 
+        'x-hotmart-hottok': 'SEU_NOVO_HOTTOK_AQUI' 
       },
       body: JSON.stringify(payload)
     });
