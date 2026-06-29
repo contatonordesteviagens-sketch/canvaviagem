@@ -319,34 +319,34 @@ export default function Inicio2() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] -z-10" />
 
           <div className="inicio-container relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
-            <div className="flex flex-col items-center gap-4 mb-6 md:mb-8">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-purple-500/30 rounded-full px-5 py-2 backdrop-blur-md shadow-[0_0_30px_rgba(124,58,237,0.15)]">
-                <span className="text-xs md:text-sm font-bold text-purple-200 uppercase tracking-widest">
+            <div className="flex flex-col items-center gap-4 mb-5 md:mb-8">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-purple-500/30 rounded-full px-4 py-1.5 md:px-5 md:py-2 backdrop-blur-md shadow-[0_0_30px_rgba(124,58,237,0.15)]">
+                <span className="text-[9px] md:text-xs font-bold text-purple-200 uppercase tracking-widest">
                   Tudo mastigado para você vender mais viagens
                 </span>
               </div>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-[4.5rem] font-black text-white leading-[1.05] mb-3 tracking-tighter">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[4.5rem] font-black text-white leading-[1.05] mb-3 tracking-tighter">
               Venda mais viagens com IA
             </h1>
 
-            <p className="text-base md:text-lg lg:text-xl text-slate-300 font-medium mb-5 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-300 font-medium mb-5 max-w-3xl mx-auto leading-relaxed">
               Receba um site pronto, gerador de ofertas, vídeos e artes prontos, agentes de IA. <strong className="text-white font-black">Teste grátis.</strong>
             </p>
 
-            <div className="bg-emerald-500/10 border border-emerald-500/20 px-5 py-2.5 rounded-xl mb-6 shadow-lg shadow-emerald-500/5 max-w-2xl mx-auto backdrop-blur-sm">
-              <p className="font-semibold text-xs md:text-sm !text-emerald-300" style={{ color: '#6ee7b7' }}>
+            <div className="bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 md:px-5 md:py-2.5 rounded-lg md:rounded-xl mb-6 shadow-lg shadow-emerald-500/5 max-w-2xl mx-auto backdrop-blur-sm">
+              <p className="font-semibold text-[10px] md:text-[13px] !text-emerald-300 leading-snug" style={{ color: '#6ee7b7' }}>
                 Veja o vídeo como usar a ferramenta simples de marketing turístico que te dá tudo pronto para você focar no que importa: seus clientes.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4 mb-6 w-full max-w-2xl mx-auto">
-              <a href="#planos" className="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white text-base md:text-lg font-bold py-3 px-6 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.5)] transition-transform hover:-translate-y-1 flex items-center justify-center whitespace-nowrap">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 md:gap-4 mb-6 w-full max-w-2xl mx-auto">
+              <a href="#planos" className="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white text-sm md:text-base font-bold py-2.5 px-6 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.5)] transition-transform hover:-translate-y-1 flex items-center justify-center whitespace-nowrap">
                 Quero testar agora
               </a>
-              <a href="#video-prova" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-3 px-6 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 whitespace-nowrap text-sm md:text-base">
-                <Play size={18} fill="currentColor" /> Ver vídeo da IA
+              <a href="#video-prova" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-2.5 px-6 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 whitespace-nowrap text-xs md:text-sm">
+                <Play size={16} fill="currentColor" /> Ver vídeo da IA
               </a>
             </div>
 
