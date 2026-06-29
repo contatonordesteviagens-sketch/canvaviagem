@@ -762,6 +762,9 @@ export default function Inicio2() {
                   <p className="inicio2-price-kicker">Plano anual</p>
                   <h3>Melhor escolha para vender com consistência</h3>
                   <p>Para quem quer usar a ferramenta o ano inteiro, criar campanhas com mais frequência e pagar menos por mês.</p>
+                  <div className="mt-4 bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-2 rounded-lg font-medium text-left">
+                    ⏳ <b>Ação Rápida:</b> Assine hoje e garanta esse valor antes do próximo reajuste.
+                  </div>
                 </div>
 
                 <div className="inicio2-price-value">
@@ -791,6 +794,9 @@ export default function Inicio2() {
                 <p className="text-center text-xs font-bold text-slate-500">
                   Liberação imediata via PIX ou Cartão de Crédito
                 </p>
+                <p className="text-center text-[11px] text-slate-400 mt-1 leading-tight px-2">
+                  Não cobraremos hoje. Cancele com 1 clique antes de 3 dias se não gostar.
+                </p>
               </article>
 
               <article className="inicio2-price-card">
@@ -804,7 +810,10 @@ export default function Inicio2() {
                   <strong>{ELITE_OFFER.monthlyPrice}</strong>
                   <span>/mês</span>
                 </div>
-                <p className="inicio2-price-cash inicio2-price-cash-muted">Teste por 3 dias grátis. Sem fidelidade.</p>
+                <p className="inicio2-price-cash inicio2-price-cash-muted">
+                  Teste por 3 dias grátis. Sem fidelidade. <br />
+                  <span className="text-[11px] text-slate-400 block mt-1 leading-tight">Não cobraremos hoje. Cancele com 1 clique se não gostar.</span>
+                </p>
 
                 <ul className="inicio2-price-features">
                   {pricingFeatures.slice(0, 6).map((feature) => (
@@ -923,8 +932,11 @@ export default function Inicio2() {
               Escolha um plano, receba acesso imediato e use a garantia de 7 dias para validar o Canva Viagem com um pacote real da sua agência.
             </p>
             <a href="#planos" className="btn btn-primary text-xl py-5 px-12 shadow-[0_0_30px_rgba(124,58,237,0.4)] hover:-translate-y-1 inline-block">
-              Quero acessar o Canva Viagem agora
+              Iniciar meus 3 dias grátis sem compromisso
             </a>
+            <p className="text-slate-500 text-sm mt-6 flex items-center justify-center gap-2">
+              <ShieldCheck size={16} /> Não cobraremos hoje. Cancele com 1 clique.
+            </p>
           </div>
         </section>
       </main>
