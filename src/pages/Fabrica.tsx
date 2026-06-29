@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { FabricaProvider, useFabricaContext } from "@/hooks/useFabricaContext";
 import { Phase1Diagnostico } from "@/pages/fabrica/Phase1Diagnostico";
@@ -448,8 +448,7 @@ const FabricaInner = () => {
       {/* â”€â”€ CONTEÃšDO PRINCIPAL (ÁREA DE TRABALHO) â”€â”€ */}
       <main className="flex-1 min-w-0 min-h-screen pt-20 md:pt-8 px-4 md:px-8 pb-24 overflow-y-auto bg-[#0A0A0B]">
         {/* Top Bar with Voice AI and Phase Shortcuts */}
-        {isAdmin && (
-          <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center flex-wrap gap-2 relative z-40">
+        <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center flex-wrap gap-2 relative z-40">
             <VoiceOnboarding />
 
             <div className="h-4 w-px bg-white/10 mx-1 hidden xl:block"></div>
@@ -491,7 +490,6 @@ const FabricaInner = () => {
               })}
             </div>
           </div>
-        )}
 
         {/* Dynamic Component Render */}
         <div className="transition-all duration-300">
