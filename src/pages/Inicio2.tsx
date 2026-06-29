@@ -239,6 +239,37 @@ export default function Inicio2() {
   const [activeToolTab, setActiveToolTab] = useState("featured");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [heroMutedActive, setHeroMutedActive] = useState(true);
+  const [activePlan, setActivePlan] = useState(2);
+
+  const plans = [
+    {
+      id: "mensal",
+      name: "Plano Mensal",
+      price: ELITE_OFFER.monthlyPrice,
+      monthlyEquivalent: ELITE_OFFER.monthlyPrice,
+      checkoutUrl: ELITE_OFFER.monthlyCheckoutUrl,
+      trackValue: 97,
+      popular: false,
+    },
+    {
+      id: "semestral",
+      name: "Plano Semestral",
+      price: "R$ 347",
+      monthlyEquivalent: "R$ 57,83",
+      checkoutUrl: "#", // Substituir com link da Stripe em breve
+      trackValue: 347,
+      popular: false,
+    },
+    {
+      id: "anual",
+      name: "Plano Anual",
+      price: ELITE_OFFER.annualPrice,
+      monthlyEquivalent: ELITE_OFFER.annualMonthlyEquivalent,
+      checkoutUrl: ELITE_OFFER.annualCheckoutUrl,
+      trackValue: 482,
+      popular: true,
+    }
+  ];
 
   const trackCheckoutClick = (value: number, plan: "anual" | "mensal") => {
     const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
@@ -755,84 +786,79 @@ export default function Inicio2() {
                 ⚠️ Atenção: Não somos um editor de imagens ou só templates. Somos um acelerador de vendas com tudo mastigado para o turismo (Site, IA, CRM e Imagens).
               </div>
             </div>
-            <div className="inicio2-pricing-grid">
-              <article className="inicio2-price-card inicio2-price-card-featured">
-                <div className="inicio2-price-badge">3 dias grátis • maior economia</div>
-                <div className="inicio2-price-head">
-                  <p className="inicio2-price-kicker">Plano anual</p>
-                  <h3>Melhor escolha para vender com consistência</h3>
-                  <p>Para quem quer usar a ferramenta o ano inteiro, criar campanhas com mais frequência e pagar menos por mês.</p>
-                  <div className="mt-4 bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-2 rounded-lg font-medium text-left">
-                    ⏳ <b>Ação Rápida:</b> Assine hoje e garanta esse valor antes do próximo reajuste.
-                  </div>
-                </div>
-
-                <div className="inicio2-price-value">
-                  <span>Anual</span>
-                  <strong>{ELITE_OFFER.annualPrice}</strong>
-                </div>
-                <p className="inicio2-price-cash">
-                  Equivale a {ELITE_OFFER.annualMonthlyEquivalent}/mês • economia de {ELITE_OFFER.annualSavings}
-                </p>
-
-                <ul className="inicio2-price-features">
+            {/* NOVO BLOCO DE PREÇOS MOBILE */}
+            <div className="max-w-md mx-auto w-full flex flex-col items-center gap-6">
+              
+              {/* Lista única de benefícios */}
+              <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-2">
+                <h3 className="font-bold text-slate-800 mb-4 text-center">O que está incluso em todos os planos:</h3>
+                <ul className="space-y-3 text-sm text-slate-700">
                   {pricingFeatures.map((feature) => (
-                    <li key={feature}>
-                      <CheckCircle2 size={18} />
+                    <li key={feature} className="flex items-start gap-2">
+                      <CheckCircle2 size={18} className="text-purple-600 shrink-0 mt-0.5" />
                       <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
+              </div>
 
-                <a
-                  href={annualCheckoutUrl}
-                  onClick={() => trackCheckoutClick(482, "anual")}
-                  className="inicio2-price-cta inicio2-price-cta-primary mb-3"
-                >
-                  Começar teste de 3 dias grátis
-                </a>
-                <p className="text-center text-xs font-bold text-slate-500">
-                  Liberação imediata via PIX ou Cartão de Crédito
-                </p>
-                <p className="text-center text-[11px] text-slate-400 mt-1 leading-tight px-2">
-                  Não cobraremos hoje. Cancele com 1 clique antes de 3 dias se não gostar.
-                </p>
-              </article>
-
-              <article className="inicio2-price-card">
-                <div className="inicio2-price-head">
-                  <p className="inicio2-price-kicker">Plano mensal</p>
-                  <h3>Comece com menor compromisso</h3>
-                  <p>Ideal para testar a ferramenta primeiro e decidir depois se quer ficar por mais tempo.</p>
-                </div>
-
-                <div className="inicio2-price-value inicio2-price-value-secondary">
-                  <strong>{ELITE_OFFER.monthlyPrice}</strong>
-                  <span>/mês</span>
-                </div>
-                <p className="inicio2-price-cash inicio2-price-cash-muted">
-                  Teste por 3 dias grátis. Sem fidelidade. <br />
-                  <span className="text-[11px] text-slate-400 block mt-1 leading-tight">Não cobraremos hoje. Cancele com 1 clique se não gostar.</span>
-                </p>
-
-                <ul className="inicio2-price-features">
-                  {pricingFeatures.slice(0, 6).map((feature) => (
-                    <li key={feature}>
-                      <CheckCircle2 size={18} />
-                      <span>{feature}</span>
-                    </li>
+              {/* Componente Interativo de Preços */}
+              <div className="border-2 border-slate-100 rounded-[32px] p-4 shadow-sm w-full flex flex-col items-center gap-4 bg-white">
+                <div className="w-full flex flex-col gap-3 relative">
+                  {plans.map((plan, index) => (
+                    <div
+                      key={plan.id}
+                      className={`w-full flex justify-between items-center cursor-pointer border-2 p-4 rounded-2xl transition-all duration-300 ${
+                        activePlan === index ? "border-purple-600 bg-purple-50/50" : "border-slate-200 hover:border-purple-300"
+                      }`}
+                      onClick={() => setActivePlan(index)}
+                    >
+                      <div className="flex flex-col items-start">
+                        <p className="font-semibold text-lg flex items-center gap-2 text-slate-900">
+                          {plan.name}
+                          {plan.popular && (
+                            <span className="py-1 px-2 block rounded-lg bg-purple-100 text-purple-700 text-xs font-bold">
+                              MAIOR ECONOMIA
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-slate-500 text-sm mt-1">
+                          <span className="text-slate-900 font-bold text-lg">{plan.price}</span>
+                          {plan.id !== "mensal" && ` (equivale a ${plan.monthlyEquivalent}/mês)`}
+                        </p>
+                      </div>
+                      
+                      <div
+                        className={`border-2 size-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                          activePlan === index ? "border-purple-600" : "border-slate-300"
+                        }`}
+                      >
+                        <div
+                          className={`size-3 bg-purple-600 rounded-full transition-opacity ${
+                            activePlan === index ? "opacity-100" : "opacity-0"
+                          }`}
+                        ></div>
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
 
-                <a
-                  href={monthlyCheckoutUrl}
-                  onClick={() => trackCheckoutClick(97, "mensal")}
-                  className="inicio2-price-cta inicio2-price-cta-secondary"
-                >
-                  Começar teste de 3 dias grátis
-                </a>
-                <p className="inicio2-price-note">3 dias grátis • Pagamento seguro pela Stripe</p>
-              </article>
+                <div className="w-full mt-2">
+                  <a
+                    href={plans[activePlan].checkoutUrl}
+                    onClick={() => trackCheckoutClick(plans[activePlan].trackValue, plans[activePlan].id as "anual" | "mensal")}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg rounded-full py-4 flex items-center justify-center shadow-lg transition-transform active:scale-95"
+                  >
+                    Começar teste de 3 dias grátis
+                  </a>
+                  <p className="text-center text-xs font-bold text-slate-500 mt-3">
+                    Liberação imediata via PIX ou Cartão
+                  </p>
+                  <p className="text-center text-[11px] text-slate-400 mt-1 leading-tight px-2">
+                    Não cobraremos hoje. Cancele com 1 clique antes de 3 dias.
+                  </p>
+                </div>
+              </div>
             </div>
             <div className="mt-8 text-center text-sm text-slate-500 font-semibold">
               Pagamento seguro pela Stripe. Acesso imediato. Garantia de 7 dias. Sem alterar valores no checkout.
