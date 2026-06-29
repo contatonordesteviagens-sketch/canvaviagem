@@ -315,54 +315,53 @@ export default function Inicio2() {
       </header>
 
       <main>
-        <section id="hero" className="relative bg-[#0F172A] overflow-hidden pt-20 pb-14 md:pt-24 md:pb-16 lg:pt-32 lg:pb-20">
+        <section id="hero" className="relative bg-[#0F172A] overflow-hidden pt-24 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] -z-10" />
 
           <div className="inicio-container relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
             <div className="flex flex-col items-center gap-4 mb-6 md:mb-8">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-900/50 to-blue-900/50 border border-purple-500/30 rounded-full px-5 py-2 backdrop-blur-md shadow-[0_0_20px_rgba(124,58,237,0.2)]">
-                <span className="text-xs md:text-sm font-bold text-purple-200 uppercase tracking-wide">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-purple-500/30 rounded-full px-5 py-2 backdrop-blur-md shadow-[0_0_30px_rgba(124,58,237,0.15)]">
+                <span className="text-xs md:text-sm font-bold text-purple-200 uppercase tracking-widest">
                   Tudo mastigado para você vender mais viagens
                 </span>
               </div>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] mb-4 md:mb-6 tracking-tight">
-              Pare de perder vendas no WhatsApp porque suas ofertas parecem amadoras.
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.05] mb-4 md:mb-6 tracking-tight">
+              Venda mais viagens com IA
             </h1>
 
-            <p className="text-lg md:text-xl text-slate-300 font-medium mb-3 md:mb-4 max-w-3xl mx-auto leading-relaxed">
-              Receba um site pronto, gerador de imagens, 250 vídeos Reels e IA para sua agência de viagens passar confiança absoluta e fechar mais pacotes. Teste 100% grátis por 3 dias.
+            <p className="text-base md:text-lg lg:text-xl text-slate-300 font-medium mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed">
+              Receba um site pronto, gerador de ofertas, vídeos e artes prontos, agentes de IA. <span className="text-white font-bold">Teste grátis.</span>
             </p>
 
-            <div className="bg-green-500/10 border border-green-500/20 px-5 md:px-6 py-3 rounded-xl mb-6 md:mb-10">
-              <p className="text-green-300 font-medium md:text-lg">
-                Esqueça ferramentas difíceis. Nós deixamos a tecnologia simples para você focar no que importa: vender.
+            <div className="bg-green-500/10 border border-green-500/20 px-5 md:px-6 py-3 md:py-4 rounded-xl mb-8 md:mb-10 shadow-lg shadow-green-500/5">
+              <p className="text-green-300 font-medium md:text-base">
+                Veja o vídeo como usar a ferramenta simples de marketing turístico que te dá tudo pronto para você focar no que importa: seus clientes.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 mb-7 md:mb-6 w-full sm:w-auto">
-              <a href="#planos" className="btn btn-primary text-base md:text-lg py-4 px-8 w-full sm:w-auto shadow-[0_0_30px_rgba(124,58,237,0.5)] hover:shadow-[0_0_50px_rgba(124,58,237,0.7)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
-                Quero profissionalizar minha agência agora
+            <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 mb-8 w-full sm:w-auto">
+              <a href="#planos" className="btn btn-primary text-base md:text-lg py-3 md:py-4 px-6 md:px-8 w-full sm:w-auto shadow-[0_0_40px_rgba(124,58,237,0.6)] hover:shadow-[0_0_60px_rgba(124,58,237,0.8)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 rounded-2xl">
+                Quero testar agora
               </a>
-              <a href="#video-prova" className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 py-3.5 md:py-4 px-5 md:px-8 rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 text-sm md:text-base">
-                <Play size={20} fill="currentColor" /> Ver Lucas usando a ferramenta
+              <a href="#video-prova" className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 py-3 md:py-4 px-5 md:px-6 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 text-sm md:text-base backdrop-blur-sm">
+                <Play size={18} fill="currentColor" /> Ver vídeo da IA
               </a>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 w-full mb-6 md:mb-10">
-              {["Acesso imediato", "Checkout seguro Stripe", "7 dias de garantia", "Suporte por WhatsApp"].map((item) => (
-                <div key={item} className="bg-white/5 border border-white/10 rounded-xl px-3 md:px-4 py-3 text-[12px] md:text-sm font-bold text-slate-200 flex items-center justify-center gap-2 leading-tight min-h-[58px]">
-                  <ShieldCheck size={16} className="text-green-400 shrink-0" />
+            <div className="flex flex-wrap justify-center gap-2 w-full mb-8 md:mb-10">
+              {["Acesso imediato", "Checkout seguro Stripe", "3 dias grátis", "7 dias de garantia", "Suporte por WhatsApp"].map((item) => (
+                <div key={item} className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[11px] md:text-xs font-bold text-slate-200 flex items-center justify-center gap-1.5 leading-tight">
+                  <ShieldCheck size={14} className="text-green-400 shrink-0" />
                   {item}
                 </div>
               ))}
             </div>
 
-            <div className="hidden sm:flex flex-wrap justify-center gap-4 md:gap-8 mb-10">
-              <div className="flex items-center gap-2 text-slate-300 font-semibold"><CheckCircle2 className="text-purple-400" size={18} /> Feito para turismo</div>
-              <div className="flex items-center gap-2 text-slate-300 font-semibold"><CheckCircle2 className="text-purple-400" size={18} /> Conteúdo + IA + CRM</div>
-              <div className="flex items-center gap-2 text-slate-300 font-semibold"><CheckCircle2 className="text-purple-400" size={18} /> Criador acompanhado por 66 mil pessoas</div>
+            <div className="hidden sm:flex flex-wrap justify-center gap-4 md:gap-6 mb-10">
+              <div className="flex items-center gap-2 text-slate-300 text-sm font-semibold"><CheckCircle2 className="text-purple-400" size={16} /> Feito para turismo</div>
+              <div className="flex items-center gap-2 text-slate-300 text-sm font-semibold"><CheckCircle2 className="text-purple-400" size={16} /> Conteúdos + IA + Site + CRM</div>
             </div>
 
             <div id="video-prova" className="inicio2-hero-video">
@@ -405,37 +404,37 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-white py-14 md:py-20 border-b border-slate-100">
+        <section className="bg-white py-20 lg:py-28 border-b border-slate-100">
           <div className="inicio-container">
-            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-10 lg:gap-14 items-start">
+            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-12 lg:gap-16 items-center">
               <div>
-                <p className="text-cyan-600 font-black uppercase tracking-[0.2em] text-xs mb-3">O que você também recebe além IA para vender viagens:</p>
-                <h2 className="text-3xl md:text-5xl font-black text-slate-950 leading-tight mb-5">
+                <p className="text-cyan-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">O que você também recebe além IA para vender viagens:</p>
+                <h2 className="text-3xl md:text-5xl font-black text-slate-950 leading-tight mb-6">
                   250 reels prontos para tornar seu perfil bonito e profissional em 1 dia.
                 </h2>
-                <p className="text-lg text-slate-600 leading-relaxed mb-6">
+                <p className="text-lg md:text-xl text-slate-600 leading-relaxed mb-8">
                   Não passe mais vergonha no Instagram. Nós entregamos todo o seu conteúdo do ano inteiro preparado, é só colocar sua logo e postar.
                 </p>
 
-                <div className="space-y-3 mb-7">
+                <div className="space-y-4 mb-10">
                   {[
                     "250 vídeos Reels focados em destinos de viagem",
                     "400 artes e stories lindíssimos e de alta qualidade",
                     "Templates fáceis e totalmente editáveis no Canva",
                     "Calendário de postagens para saber exatamente o que postar",
                   ].map((item) => (
-                    <div key={item} className="flex items-start gap-3 text-slate-800 font-bold">
-                      <CheckCircle2 size={20} className="text-emerald-500 mt-0.5 shrink-0" />
+                    <div key={item} className="flex items-start gap-4 text-slate-800 font-bold text-base md:text-lg bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      <CheckCircle2 size={24} className="text-emerald-500 shrink-0" />
                       <span>{item}</span>
                     </div>
                   ))}
                 </div>
 
-                <a href="#planos" className="btn btn-primary inline-flex">Liberar meus 250 Reels + Teste Grátis</a>
+                <a href="#planos" className="btn btn-primary inline-flex text-lg px-8 py-4 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50">Liberar meus 250 Reels + Teste Grátis</a>
               </div>
 
               <div className="space-y-6">
-                <div className="rounded-[1.5rem] shadow-2xl shadow-slate-200/70 overflow-hidden">
+                <div className="rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden border-4 border-white">
                   <img
                     src={reelsMainGifUrl}
                     alt="Demonstração animada dos vídeos Reels entregues"
@@ -467,78 +466,80 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-white py-14 md:py-20 border-b border-slate-100">
+        <section className="bg-white py-20 lg:py-28 border-b border-slate-100">
           <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-10">
-              <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">explicado passo a passo</p>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">explicado passo a passo</p>
               <h2 className="section-title w-full text-center">O que você recebe ao entrar hoje?</h2>
-              <p className="section-subtitle w-full text-center">
+              <p className="section-subtitle w-full text-center mt-4">
                 Dividimos a plataforma em 3 pilares muito simples de entender e usar: Fábrica, Redes Sociais e Inteligência.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-5">
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
               {quickOutcomeCards.map((card) => (
-                <div key={card.title} className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
-                  <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center mb-4">{card.icon}</div>
-                  <h3 className="text-xl font-black text-slate-900 mb-2">{card.title}</h3>
-                  <p className="text-slate-600 leading-relaxed">{card.copy}</p>
+                <div key={card.title} className="bg-slate-50 border border-slate-100 hover:border-purple-200 rounded-[2rem] p-8 shadow-sm hover:shadow-xl transition-all duration-300 group">
+                  <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">{card.icon}</div>
+                  <h3 className="text-xl font-black text-slate-900 mb-3">{card.title}</h3>
+                  <p className="text-slate-600 leading-relaxed text-base">{card.copy}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="bg-slate-950 py-16 md:py-24">
-          <div className="inicio-container grid lg:grid-cols-[0.85fr_1.15fr] gap-10 items-center">
+        <section className="bg-slate-950 py-20 lg:py-28 relative overflow-hidden">
+          <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
+          <div className="inicio-container grid lg:grid-cols-[0.85fr_1.15fr] gap-12 lg:gap-16 items-center relative z-10">
             <div>
-              <p className="text-cyan-300 font-black uppercase tracking-[0.2em] text-xs mb-4">como ajudamos você</p>
-              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mb-6">
+              <p className="text-cyan-300 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-5">como ajudamos você</p>
+              <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.1] mb-8">
                 Chega de perder vendas por passar uma imagem amadora.
               </h2>
-              <div className="space-y-4 text-slate-300 text-lg leading-relaxed">
+              <div className="space-y-5 text-slate-300 text-lg md:text-xl leading-relaxed font-medium">
                 <p>O cliente nota quando você manda um texto feio e mal escrito no WhatsApp.</p>
                 <p>A partir de agora, as suas ofertas vão parecer que foram feitas por uma grande agência corporativa.</p>
                 <p>Tudo está mastigado para que mesmo uma criança de 10 anos consiga usar a nossa plataforma.</p>
               </div>
-              <a href="#planos" className="btn btn-primary mt-8 inline-flex">Criar ofertas mais profissionais</a>
+              <a href="#planos" className="btn btn-primary mt-10 inline-flex px-8 py-4 text-lg shadow-[0_0_30px_rgba(124,58,237,0.4)]">Criar ofertas mais profissionais</a>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-2 gap-5">
               {[
                 ["Visual amador", "O pacote até é bom, mas a apresentação não passa segurança."],
                 ["WhatsApp bagunçado", "Leads quentes ficam perdidos entre conversas antigas."],
                 ["Dependência de designer", "Você espera terceiros para publicar uma promoção simples."],
                 ["Oferta sem página", "O cliente não entende roteiro, benefícios e condições antes do preço."],
               ].map(([title, copy]) => (
-                <div key={title} className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                  <h3 className="text-white font-black text-lg mb-2">{title}</h3>
-                  <p className="text-slate-400 leading-relaxed">{copy}</p>
+                <div key={title} className="rounded-3xl border border-white/5 bg-white/5 hover:bg-white/10 p-6 backdrop-blur-sm transition-colors shadow-lg">
+                  <h3 className="text-white font-black text-lg mb-3">{title}</h3>
+                  <p className="text-slate-400 leading-relaxed text-sm md:text-base">{copy}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="bg-white py-16 md:py-24">
+        <section className="bg-white py-20 lg:py-28">
           <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-10">
-              <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">não é teoria</p>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">não é teoria</p>
               <h2 className="section-title w-full text-center">O que você vê depois de entrar</h2>
-              <p className="section-subtitle w-full text-center">
+              <p className="section-subtitle w-full text-center mt-4">
                 Prints reais do produto para mostrar como a plataforma organiza sua rotina de venda.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-8">
               {platformProofScreens.map((item) => (
-                <div key={item.title} className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-                  <div className="aspect-[4/3] bg-slate-100 overflow-hidden">
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                <div key={item.title} className="rounded-[2rem] border border-slate-100 bg-white overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl transition-shadow group">
+                  <div className="aspect-[4/3] bg-slate-100 overflow-hidden relative">
+                    <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors z-10"></div>
+                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   </div>
-                  <div className="p-5">
-                    <h3 className="text-lg font-black text-slate-900 mb-2">{item.title}</h3>
-                    <p className="text-slate-600 leading-relaxed">{item.result}</p>
+                  <div className="p-6 md:p-8">
+                    <h3 className="text-xl font-black text-slate-900 mb-3">{item.title}</h3>
+                    <p className="text-slate-600 leading-relaxed text-base">{item.result}</p>
                   </div>
                 </div>
               ))}
@@ -546,29 +547,30 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-slate-50 py-16 md:py-24 border-y border-slate-200">
+        <section className="bg-slate-50 py-20 lg:py-28 border-y border-slate-200">
           <div className="inicio-container">
-            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-10 items-center">
+            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-12 lg:gap-16 items-center">
               <div>
-                <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">antes e depois</p>
-                <h2 className="section-title">A mesma viagem pode parecer barata ou valiosa dependendo da apresentação</h2>
-                <p className="section-subtitle">
+                <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">antes e depois</p>
+                <h2 className="section-title mb-6">A mesma viagem pode parecer barata ou valiosa dependendo da apresentação</h2>
+                <p className="section-subtitle text-lg md:text-xl">
                   O Canva Viagem ajuda sua agência a sair do improviso visual e apresentar pacotes com mais confiança.
                 </p>
               </div>
-              <div className="grid sm:grid-cols-2 gap-5">
-                <div className="rounded-3xl bg-white border border-red-100 overflow-hidden shadow-sm">
+              <div className="grid sm:grid-cols-2 gap-6">
+                <div className="rounded-[2rem] bg-white border border-red-100 overflow-hidden shadow-md">
                   <img src={antesAmador} alt="Oferta de viagem com visual amador" className="w-full" />
-                  <div className="p-5">
-                    <h3 className="font-black text-red-600 mb-1">Antes</h3>
-                    <p className="text-slate-600">Oferta improvisada, pouca clareza e menor percepção de valor.</p>
+                  <div className="p-6 md:p-8 bg-red-50/50">
+                    <h3 className="font-black text-red-600 text-lg mb-2">Antes</h3>
+                    <p className="text-slate-600 text-sm md:text-base leading-relaxed">Oferta improvisada, pouca clareza e menor percepção de valor.</p>
                   </div>
                 </div>
-                <div className="rounded-3xl bg-white border border-green-100 overflow-hidden shadow-sm">
+                <div className="rounded-[2rem] bg-white border border-green-100 overflow-hidden shadow-lg shadow-green-600/5 ring-4 ring-green-500/10 relative">
+                  <div className="absolute top-4 right-4 bg-green-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">Novo Padrão</div>
                   <img src={depoisPremium} alt="Oferta de viagem com visual profissional" className="w-full" />
-                  <div className="p-5">
-                    <h3 className="font-black text-green-600 mb-1">Depois</h3>
-                    <p className="text-slate-600">Apresentação organizada, visual mais premium e oferta mais fácil de entender.</p>
+                  <div className="p-6 md:p-8 bg-green-50/50">
+                    <h3 className="font-black text-green-600 text-lg mb-2">Depois</h3>
+                    <p className="text-slate-600 text-sm md:text-base leading-relaxed">Apresentação organizada, visual premium e oferta muito fácil de entender.</p>
                   </div>
                 </div>
               </div>
@@ -576,43 +578,43 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-white py-16 md:py-24">
+        <section className="bg-white py-20 lg:py-28">
           <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-10">
-              <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">prova e autoridade</p>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">prova e autoridade</p>
               <h2 className="section-title w-full text-center">Criado por Lucas Ferrari, acompanhado por mais de 66 mil pessoas</h2>
-              <p className="section-subtitle w-full text-center">
-                Para o lead frio, confiança vem antes do cartão. Por isso a página mostra quem está por trás, provas reais e o produto por dentro.
+              <p className="section-subtitle w-full text-center mt-4">
+                Milhares de agências já descobriram como simplificar e acelerar a captação de clientes.
               </p>
             </div>
 
-            <div className="grid lg:grid-cols-[0.75fr_1.25fr] gap-8 items-start">
-              <div className="bg-slate-900 rounded-3xl p-6 text-white">
-                <img src={lucasPortrait} alt="Lucas Ferrari" className="w-28 h-28 rounded-2xl object-cover mb-5" />
-                <h3 className="text-2xl font-black mb-3">Lucas Ferrari</h3>
-                <p className="text-slate-300 leading-relaxed mb-5">
+            <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-8 items-start">
+              <div className="bg-slate-900 rounded-[2rem] p-8 text-white shadow-xl shadow-slate-900/10">
+                <img src={lucasPortrait} alt="Lucas Ferrari" className="w-28 h-28 rounded-2xl object-cover mb-6 border-4 border-slate-700/50" />
+                <h3 className="text-2xl font-black mb-4">Lucas Ferrari</h3>
+                <p className="text-slate-300 leading-relaxed text-base mb-8">
                   Especialista em marketing para agências de viagem, receptivos e profissionais do turismo. O Canva Viagem nasceu para resolver uma dor prática: criar ofertas melhores, mais rápido, sem depender de uma operação cara.
                 </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="bg-white text-slate-900 rounded-xl px-4 py-3 font-black flex items-center justify-center gap-2">
-                    <Instagram size={18} /> Instagram
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="bg-white hover:bg-slate-100 transition-colors text-slate-900 rounded-2xl px-4 py-4 font-black flex items-center justify-center gap-2">
+                    <Instagram size={20} /> Instagram
                   </a>
-                  <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="bg-green-500 text-slate-950 rounded-xl px-4 py-3 font-black flex items-center justify-center">
-                    WhatsApp
+                  <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-400 transition-colors text-slate-950 rounded-2xl px-4 py-4 font-black flex items-center justify-center gap-2">
+                    <MessageSquare size={20} /> WhatsApp
                   </a>
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-5">
+              <div className="grid md:grid-cols-2 gap-5 lg:gap-6">
                 {socialProofChats.map((proof) => (
                   <ChatCard key={proof.label} proof={proof} />
                 ))}
               </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-5 mt-8">
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mt-12">
               {[depoimento1, depoimento2, depoimento3].map((image, index) => (
-                <div key={index} className="rounded-3xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+                <div key={index} className="rounded-[2rem] border border-slate-100 overflow-hidden bg-white shadow-lg shadow-slate-200/50 hover:-translate-y-1 transition-transform">
                   <img src={image} alt={`Prova social real ${index + 1}`} className="w-full block" />
                 </div>
               ))}
@@ -620,76 +622,80 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-slate-950 py-16 md:py-24">
-          <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-10">
-              <p className="text-cyan-300 font-black uppercase tracking-[0.2em] text-xs mb-3">valor percebido</p>
-              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mb-4">Tudo que sua agência recebe em um único lugar</h2>
-              <p className="text-slate-300 text-lg">
+        <section className="bg-slate-950 py-20 lg:py-28 relative overflow-hidden">
+          <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+          <div className="inicio-container relative z-10">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <p className="text-cyan-300 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">valor percebido</p>
+              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mb-6">Tudo que sua agência recebe em um único lugar</h2>
+              <p className="text-slate-300 text-lg md:text-xl">
                 Cada recurso foi conectado a um resultado prático: publicar mais rápido, parecer mais profissional e vender com mais organização.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {includedResultCards.map(([title, copy]) => (
-                <div key={title} className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                  <CheckCircle2 size={22} className="text-green-400 mb-4" />
-                  <h3 className="text-white font-black text-xl mb-2">{title}</h3>
-                  <p className="text-slate-400 leading-relaxed">{copy}</p>
+                <div key={title} className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-colors rounded-[2rem] p-8 backdrop-blur-sm">
+                  <CheckCircle2 size={28} className="text-green-400 mb-5" />
+                  <h3 className="text-white font-black text-xl mb-3">{title}</h3>
+                  <p className="text-slate-400 leading-relaxed text-base">{copy}</p>
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-5 lg:gap-6 mt-12">
               {trustProofMetrics.map(([value, label]) => (
-                <div key={value} className="bg-white rounded-2xl p-5 text-center">
-                  <div className="text-3xl font-black text-slate-950">{value}</div>
-                  <div className="text-sm font-bold text-slate-500 mt-1">{label}</div>
+                <div key={value} className="bg-white rounded-[2rem] p-6 lg:p-8 text-center shadow-xl shadow-slate-950/50">
+                  <div className="text-3xl lg:text-4xl font-black text-slate-950 mb-2">{value}</div>
+                  <div className="text-sm font-bold text-slate-500">{label}</div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="demo" className="demo inicio-section bg-white">
+        <section id="demo" className="demo py-20 lg:py-28 bg-white">
           <div className="inicio-container">
-            <h2 className="section-title w-full text-center">Dashboard inteligente para quem vende viagens</h2>
-            <p className="section-subtitle w-full text-center">
-              Tudo que sua agência precisa em uma única tela, fácil de usar e direto ao ponto.
-            </p>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <h2 className="section-title w-full text-center">Dashboard inteligente para quem vende viagens</h2>
+              <p className="section-subtitle w-full text-center mt-4">
+                Tudo que sua agência precisa em uma única tela, fácil de usar e direto ao ponto.
+              </p>
+            </div>
 
-            <div className="w-full max-w-[900px] mx-auto mt-8 sm:mt-10 rounded-[16px] sm:rounded-[22px] overflow-hidden border border-black/5 shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
+            <div className="w-full max-w-[1000px] mx-auto mt-8 sm:mt-10 rounded-[24px] overflow-hidden border border-slate-100 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] transition-shadow">
               <img src={heroDashboard} alt="Dashboard do Canva Viagem" className="w-full block" />
             </div>
 
-            <div className="steps-grid">
-              <div className="step-card">
-                <div className="step-number">1</div>
-                <h3>Digite o destino</h3>
-                <p>Exemplo: pacote para Maldivas, Disney, Gramado ou Jericoacoara.</p>
-              </div>
-              <div className="step-card">
-                <div className="step-number">2</div>
-                <h3>A IA cria</h3>
-                <p>Receba anúncio, legenda, argumentos de venda e estrutura de página.</p>
-              </div>
-              <div className="step-card">
-                <div className="step-number">3</div>
-                <h3>Publique e acompanhe</h3>
-                <p>Use no Instagram, WhatsApp, página de venda e CRM.</p>
-              </div>
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mt-16 max-w-5xl mx-auto">
+              {[
+                ["1", "Digite o destino", "Exemplo: pacote para Maldivas, Disney, Gramado ou Jericoacoara."],
+                ["2", "A IA cria", "Receba anúncio, legenda, argumentos de venda e estrutura de página."],
+                ["3", "Publique e acompanhe", "Use no Instagram, WhatsApp, página de venda e CRM."],
+              ].map(([number, title, copy]) => (
+                <div key={title} className="bg-slate-50 border border-slate-100 rounded-[2rem] p-8 text-center relative overflow-hidden group hover:bg-white hover:border-purple-200 hover:shadow-xl transition-all duration-300">
+                  <div className="absolute top-0 right-0 text-[100px] font-black text-slate-900/5 -mt-8 -mr-4 group-hover:text-purple-600/5 transition-colors">{number}</div>
+                  <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white font-black text-xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-600/30 group-hover:scale-110 transition-transform">
+                    {number}
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900 mb-3">{title}</h3>
+                  <p className="text-slate-600 leading-relaxed text-base relative z-10">{copy}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="tools inicio-section bg-[#F8FAFC] border-y border-slate-200">
+        <section className="py-20 lg:py-28 bg-[#F8FAFC] border-y border-slate-200">
           <div className="inicio-container">
-            <h2 className="section-title w-full text-center">Escolha o que precisa criar hoje</h2>
-            <p className="section-subtitle w-full text-center">
-              A nova página brasileira mantém a força da versão LATAM, mas fala direto com a rotina da agência no Brasil.
-            </p>
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h2 className="section-title w-full text-center">Escolha o que precisa criar hoje</h2>
+              <p className="section-subtitle w-full text-center mt-4">
+                A nova plataforma mantém a força da versão LATAM, mas fala direto com a rotina da agência no Brasil.
+              </p>
+            </div>
 
-            <div className="flex flex-wrap justify-center gap-2 mb-10">
+            <div className="flex flex-wrap justify-center gap-3 mb-12">
               {[
                 { id: "featured", label: "Principais" },
                 { id: "video", label: "Vídeos" },
@@ -701,8 +707,8 @@ export default function Inicio2() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveToolTab(tab.id)}
-                  className={`px-5 py-3 rounded-full font-black text-sm transition-colors ${
-                    activeToolTab === tab.id ? "bg-slate-950 text-white" : "bg-white text-slate-600 border border-slate-200"
+                  className={`px-6 py-3 rounded-full font-black text-sm transition-all duration-300 shadow-sm ${
+                    activeToolTab === tab.id ? "bg-slate-950 text-white shadow-slate-950/20 scale-105" : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                   }`}
                 >
                   {tab.label}
@@ -710,7 +716,7 @@ export default function Inicio2() {
               ))}
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {[
                 [showcaseAdCreation, "Criação de anúncios com IA", "Transforme pacote, preço e condições em anúncio pronto para tráfego e Instagram.", <MessageSquare size={20} />],
                 [showcaseLandingPages, "Páginas de pacote", "Monte uma página mais clara para enviar no WhatsApp e aumentar percepção de valor.", <MonitorSmartphone size={20} />],
@@ -719,13 +725,16 @@ export default function Inicio2() {
                 [showcasePremiumMedias, "Mídias premium", "Use vídeos, artes e materiais de turismo sem depender de uma criação do zero.", <ImageIcon size={20} />],
                 [dashboardInterno, "Tudo no mesmo painel", "Acesse IA, mídia, páginas, CRM e materiais sem trocar de ferramenta o tempo todo.", <LayoutDashboard size={20} />],
               ].map(([image, title, copy, icon]) => (
-                <div key={String(title)} className="rounded-3xl bg-white border border-slate-200 overflow-hidden shadow-sm">
-                  <div className="aspect-[4/3] bg-slate-100 overflow-hidden">
-                    <img src={image as string} alt={String(title)} className="w-full h-full object-cover" />
+                <div key={String(title)} className="rounded-[2rem] bg-white border border-slate-100 overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                  <div className="aspect-[4/3] bg-slate-100 overflow-hidden group">
+                    <img src={image as string} alt={String(title)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   </div>
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 text-purple-700 mb-3">{icon as JSX.Element}<h3 className="font-black text-slate-950">{String(title)}</h3></div>
-                    <p className="text-slate-600 leading-relaxed">{String(copy)}</p>
+                  <div className="p-6 md:p-8">
+                    <div className="flex items-center gap-3 text-purple-700 mb-4 bg-purple-50 w-fit px-3 py-1.5 rounded-xl border border-purple-100">
+                      {icon as JSX.Element}
+                      <h3 className="font-black text-slate-950 text-sm md:text-base">{String(title)}</h3>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed text-sm md:text-base">{String(copy)}</p>
                   </div>
                 </div>
               ))}
@@ -787,15 +796,15 @@ export default function Inicio2() {
               </div>
             </div>
             {/* NOVO BLOCO DE PREÇOS MOBILE & DESKTOP */}
-            <div className="max-w-4xl mx-auto w-full flex flex-col md:flex-row items-stretch gap-6 md:gap-8">
+            <div className="max-w-5xl mx-auto w-full flex flex-col md:flex-row items-stretch gap-6 md:gap-10">
               
               {/* Lista única de benefícios (Coluna Esquerda no Desktop) */}
-              <div className="w-full md:w-1/2 bg-slate-50 border border-slate-200 rounded-3xl p-6 md:p-8 flex flex-col justify-center">
-                <h3 className="font-bold text-xl text-slate-800 mb-6 text-center md:text-left">O que está incluso em todos os planos:</h3>
-                <ul className="space-y-4 text-sm md:text-base text-slate-700">
+              <div className="w-full md:w-1/2 bg-slate-50 border border-slate-200 rounded-[2rem] p-8 lg:p-10 flex flex-col justify-center">
+                <h3 className="font-black text-2xl text-slate-900 mb-8 text-center md:text-left">O que está incluso em todos os planos:</h3>
+                <ul className="space-y-5 text-base text-slate-700 font-medium">
                   {pricingFeatures.map((feature) => (
                     <li key={feature} className="flex items-start gap-3">
-                      <CheckCircle2 size={20} className="text-purple-600 shrink-0 mt-0.5" />
+                      <CheckCircle2 size={24} className="text-purple-600 shrink-0" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -803,38 +812,38 @@ export default function Inicio2() {
               </div>
 
               {/* Componente Interativo de Preços (Coluna Direita no Desktop) */}
-              <div className="w-full md:w-1/2 border-2 border-slate-100 rounded-[32px] p-5 md:p-7 shadow-sm flex flex-col items-center gap-4 bg-white justify-between">
-                <div className="w-full flex flex-col gap-3 md:gap-4 relative">
+              <div className="w-full md:w-1/2 border-4 border-slate-100 rounded-[2rem] p-6 lg:p-8 shadow-xl shadow-slate-200/50 flex flex-col items-center gap-6 bg-white justify-between">
+                <div className="w-full flex flex-col gap-4 relative">
                   {plans.map((plan, index) => (
                     <div
                       key={plan.id}
-                      className={`w-full flex justify-between items-center cursor-pointer border-2 p-4 rounded-2xl transition-all duration-300 ${
-                        activePlan === index ? "border-purple-600 bg-purple-50/50" : "border-slate-200 hover:border-purple-300"
+                      className={`w-full flex justify-between items-center cursor-pointer border-2 p-5 rounded-2xl transition-all duration-300 ${
+                        activePlan === index ? "border-purple-600 bg-purple-50/50 shadow-md shadow-purple-500/10" : "border-slate-200 hover:border-purple-300 hover:bg-slate-50"
                       }`}
                       onClick={() => setActivePlan(index)}
                     >
                       <div className="flex flex-col items-start">
-                        <p className="font-semibold text-lg flex items-center gap-2 text-slate-900">
+                        <p className="font-black text-lg lg:text-xl flex items-center gap-3 text-slate-900">
                           {plan.name}
                           {plan.popular && (
-                            <span className="py-1 px-3 block rounded-lg bg-yellow-100 text-yellow-800 text-xs font-black uppercase tracking-wider">
+                            <span className="py-1 px-3 block rounded-lg bg-yellow-100 text-yellow-800 text-[10px] font-black uppercase tracking-wider">
                               Popular
                             </span>
                           )}
                         </p>
-                        <p className="text-slate-500 text-sm mt-1">
-                          <span className="text-slate-900 font-bold text-lg">{plan.price}</span>
+                        <p className="text-slate-500 text-sm mt-1.5">
+                          <span className="text-slate-900 font-black text-xl lg:text-2xl mr-1">{plan.price}</span>
                           {plan.id !== "mensal" && ` (equivale a ${plan.monthlyEquivalent}/mês)`}
                         </p>
                       </div>
                       
                       <div
-                        className={`border-2 size-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                          activePlan === index ? "border-purple-600" : "border-slate-300"
+                        className={`border-2 size-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                          activePlan === index ? "border-purple-600" : "border-slate-300 bg-white"
                         }`}
                       >
                         <div
-                          className={`size-3 bg-purple-600 rounded-full transition-opacity ${
+                          className={`size-3.5 bg-purple-600 rounded-full transition-opacity ${
                             activePlan === index ? "opacity-100" : "opacity-0"
                           }`}
                         ></div>
@@ -847,20 +856,20 @@ export default function Inicio2() {
                   <a
                     href={plans[activePlan].checkoutUrl}
                     onClick={() => trackCheckoutClick(plans[activePlan].trackValue, plans[activePlan].id as "anual" | "mensal")}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg rounded-full py-4 flex items-center justify-center shadow-lg transition-transform active:scale-95"
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black text-lg lg:text-xl rounded-2xl py-5 flex items-center justify-center shadow-lg shadow-purple-600/30 transition-transform active:scale-95"
                   >
-                    Começar teste de 3 dias grátis
+                    Começar teste grátis
                   </a>
-                  <p className="text-center text-xs font-bold text-slate-500 mt-3">
+                  <p className="text-center text-xs font-bold text-slate-500 mt-4">
                     Liberação imediata via PIX ou Cartão
                   </p>
-                  <p className="text-center text-[11px] text-slate-400 mt-1 leading-tight px-2">
+                  <p className="text-center text-[11px] text-slate-400 mt-1.5 leading-tight px-2">
                     Não cobraremos hoje. Cancele com 1 clique antes de 3 dias.
                   </p>
                 </div>
               </div>
             </div>
-            <div className="mt-8 text-center text-sm text-slate-500 font-semibold">
+            <div className="mt-10 text-center text-sm text-slate-500 font-semibold max-w-2xl mx-auto bg-slate-50 py-3 rounded-xl border border-slate-200">
               Pagamento seguro pela Stripe. Acesso imediato. Garantia de 7 dias. Sem alterar valores no checkout.
             </div>
             <div className="inicio2-after-purchase">
