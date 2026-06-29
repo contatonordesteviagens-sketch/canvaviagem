@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
     const filename = `recording.${ext}`;
 
     const upstream = new FormData();
-    upstream.append("model", "openai/gpt-4o-mini-transcribe");
+    upstream.append("model", "openai/whisper-1");
     upstream.append("file", file, filename);
     if (wantStream) upstream.append("stream", "true");
 
