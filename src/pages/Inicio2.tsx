@@ -329,11 +329,10 @@ export default function Inicio2() {
         </div>
       </header>
 
-      <main>
-        <section id="hero" className="relative bg-[#0F172A] overflow-hidden pt-24 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32">
+      <main>\n<section id="hero" className="relative bg-[#0F172A] overflow-hidden pt-24 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] -z-10" />
 
-          <div className="inicio-container relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
+          <div className="inicio-container relative z-10 mx-auto">
             <div className="flex flex-col items-center gap-4 mb-5 md:mb-8">
               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-purple-500/30 rounded-full px-4 py-1.5 md:px-5 md:py-2 backdrop-blur-md shadow-[0_0_30px_rgba(124,58,237,0.15)]">
                 <span className="text-[9px] md:text-xs font-bold text-purple-200 uppercase tracking-widest">
@@ -379,7 +378,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <div className="w-full bg-white pt-8">
+        \n\n<div className="w-full bg-white pt-8">
           <div className="inicio-container">
             <div className="bg-[#7C3AED] text-white text-center text-[14px] font-medium py-[12px] px-[24px] rounded-[8px] mx-auto max-w-[720px]">
               🟢 Mais de 300 agências entraram na plataforma este mês — os 3 dias grátis incluem acesso completo a todos os recursos, sem restrição.
@@ -387,7 +386,7 @@ export default function Inicio2() {
           </div>
         </div>
 
-        <section className="bg-white py-16">
+        \n\n<section className="bg-white py-16">
           <div className="inicio-container">
             <h2 className="text-center text-[28px] font-bold text-[#0F172A] mb-12">
               Não é curso. Não é só templates. Não é o Canva Pro.
@@ -415,7 +414,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-white py-8 lg:py-12">
+        \n\n<section className="bg-white py-8 lg:py-12">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-10">
               <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">não é teoria</p>
@@ -442,133 +441,94 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-[#0F172A] py-8 lg:py-12">
+        \n\n<section className="py-8 lg:py-12 bg-[#F8FAFC] border-y border-slate-200">
           <div className="inicio-container">
-            <div id="video-prova" className="inicio2-hero-video mx-auto">
-              <div className="inicio2-hero-video-top">
-                <span>Veja antes de comprar</span>
-                <strong>Vídeo real da ferramenta</strong>
-              </div>
-              <div className="inicio2-hero-video-frame">
-                {heroMutedActive ? (
-                  <>
-                    <iframe
-                      title="Lucas usando o Canva Viagem"
-                      src="https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&mute=1&controls=0&loop=1&playlist=R2MyCdox--I&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
-                      allow="autoplay; encrypted-media; picture-in-picture"
-                      allowFullScreen
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setHeroMutedActive(false)}
-                      className="absolute inset-0 flex items-center justify-center bg-slate-950/10 hover:bg-slate-950/0 transition-colors"
-                    >
-                      <span className="bg-white text-slate-950 font-black rounded-full px-6 py-3 shadow-xl flex items-center gap-2">
-                        <Play size={18} fill="currentColor" /> Assistir com som
-                      </span>
-                    </button>
-                  </>
-                ) : (
-                  <iframe
-                    title="Lucas usando o Canva Viagem com áudio"
-                    src="https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&controls=1&modestbranding=1&rel=0"
-                    allow="autoplay; encrypted-media; picture-in-picture"
-                    allowFullScreen
-                  />
-                )}
-              </div>
-              <div className="inicio2-hero-video-footer">
-                <span>Vídeo curto: veja Lucas criando uma oferta e mostrando como a ferramenta funciona por dentro.</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-white py-8 lg:py-12 border-b border-slate-100">
-          <div className="inicio-container">
-            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-center">
-              <div>
-                <p className="text-cyan-600 font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] mb-3">O que você também recebe além da IA para vender viagens:</p>
-                <h2 className="text-2xl md:text-4xl font-black text-slate-950 leading-tight mb-4">
-                  1 ano de postagens de conteúdos para você postar.
-                </h2>
-                <p className="text-base md:text-lg text-slate-600 leading-relaxed mb-6">
-                  Não passe mais vergonha no Instagram. Nós entregamos todo o seu conteúdo do ano inteiro preparado, é só colocar sua logo e postar.
-                </p>
-
-                <div className="space-y-2.5 mb-8">
-                  {[
-                    "250 vídeos Reels focados em destinos de viagem",
-                    "400 artes e stories lindíssimos e de alta qualidade",
-                    "Templates fáceis e totalmente editáveis no Canva",
-                    "Calendário de postagens para saber exatamente o que postar",
-                  ].map((item) => (
-                    <div key={item} className="flex items-center gap-3 text-slate-800 font-semibold text-sm md:text-base bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-100">
-                      <CheckCircle2 size={20} className="text-emerald-500 shrink-0" />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <a href="#planos" className="btn btn-primary inline-flex text-lg px-8 py-4 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50">Liberar meus 250 Reels + Teste Grátis</a>
-              </div>
-
-              <div className="space-y-6">
-                <div className="rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden border-4 border-white">
-                  <img
-                    src={reelsMainGifUrl}
-                    alt="Demonstração animada dos vídeos Reels entregues"
-                    loading="lazy"
-                    className="w-full h-auto object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 md:mt-12">
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <h3 className="text-xl md:text-2xl font-black text-slate-950">Exemplos do tipo de Reels que você recebe</h3>
-                <span className="hidden sm:inline text-sm font-black uppercase tracking-[0.18em] text-slate-400">publicar + adaptar + vender</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5">
-                {reelsPreviewGifs.map((gifUrl, index) => (
-                  <div key={gifUrl} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-lg shadow-slate-200/70">
-                    <img
-                      src={gifUrl}
-                      alt={`Exemplo de vídeo Reel de viagem ${index + 1}`}
-                      loading="lazy"
-                      className="aspect-[9/16] w-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-white py-8 lg:py-12 border-b border-slate-100">
-          <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-10">
-              <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">explicado passo a passo</p>
-              <h2 className="section-title w-full text-center">O que você recebe ao entrar hoje?</h2>
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h2 className="section-title w-full text-center">Escolha o que precisa criar hoje</h2>
               <p className="section-subtitle w-full text-center mt-4">
-                Dividimos a plataforma em 3 pilares muito simples de entender e usar: Fábrica, Redes Sociais e Inteligência.
+                A nova plataforma mantém a força da versão LATAM, mas fala direto com a rotina da agência no Brasil.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-              {quickOutcomeCards.map((card) => (
-                <div key={card.title} className="bg-slate-50 border border-slate-100 hover:border-purple-200 rounded-[2rem] p-8 shadow-sm hover:shadow-xl transition-all duration-300 group">
-                  <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">{card.icon}</div>
-                  <h3 className="text-xl font-black text-slate-900 mb-3">{card.title}</h3>
-                  <p className="text-slate-600 leading-relaxed text-base">{card.copy}</p>
+            <div className="flex flex-wrap justify-center gap-3 mb-12">
+              {[
+                { id: "featured", label: "Principais" },
+                { id: "video", label: "Vídeos" },
+                { id: "design", label: "Artes" },
+                { id: "ia", label: "IA" },
+                { id: "sales", label: "Venda" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveToolTab(tab.id)}
+                  className={`px-6 py-3 rounded-full font-black text-sm transition-all duration-300 shadow-sm ${
+                    activeToolTab === tab.id ? "bg-slate-950 text-white shadow-slate-950/20 scale-105" : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {[
+                [showcaseAdCreation, "Criação de anúncios com IA", "Transforme pacote, preço e condições em anúncio pronto para tráfego e Instagram.", <MessageSquare size={20} />],
+                [showcaseLandingPages, "Páginas de pacote", "Monte uma página mais clara para enviar no WhatsApp e aumentar percepção de valor.", <MonitorSmartphone size={20} />],
+                [showcaseCrm, "CRM de leads", "Organize interessados, orçamentos e próximos retornos sem perder conversa quente.", <Users size={20} />],
+                [showcaseScheduler, "Calendário de postagens", "Saia do improviso e publique com mais constância durante a semana.", <Calendar size={20} />],
+                [showcasePremiumMedias, "Mídias premium", "Use vídeos, artes e materiais de turismo sem depender de uma criação do zero.", <ImageIcon size={20} />],
+                [dashboardInterno, "Tudo no mesmo painel", "Acesse IA, mídia, páginas, CRM e materiais sem trocar de ferramenta o tempo todo.", <LayoutDashboard size={20} />],
+              ].map(([image, title, copy, icon]) => (
+                <div key={String(title)} className="rounded-[2rem] bg-white border border-slate-100 overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                  <div className="aspect-[4/3] bg-slate-100 overflow-hidden group">
+                    <img src={image as string} alt={String(title)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  </div>
+                  <div className="p-6 md:p-8">
+                    <div className="flex items-center gap-3 text-purple-700 mb-4 bg-purple-50 w-fit px-3 py-1.5 rounded-xl border border-purple-100">
+                      {icon as JSX.Element}
+                      <h3 className="font-black text-slate-950 text-sm md:text-base">{String(title)}</h3>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed text-sm md:text-base">{String(copy)}</p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="bg-slate-950 py-8 lg:py-12 relative overflow-hidden">
+        \n\n<section className="bg-slate-50 py-8 lg:py-12 border-y border-slate-200">
+          <div className="inicio-container">
+            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-center">
+              <div>
+                <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">antes e depois</p>
+                <h2 className="section-title mb-6">A mesma viagem pode parecer barata ou valiosa dependendo da apresentação</h2>
+                <p className="section-subtitle text-lg md:text-xl">
+                  O Canva Viagem ajuda sua agência a sair do improviso visual e apresentar pacotes com mais confiança.
+                </p>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-6">
+                <div className="rounded-[2rem] bg-white border border-red-100 overflow-hidden shadow-md">
+                  <img src={antesAmador} alt="Oferta de viagem com visual amador" className="w-full" />
+                  <div className="p-6 md:p-8 bg-red-50/50">
+                    <h3 className="font-black text-red-600 text-lg mb-2">Antes</h3>
+                    <p className="text-slate-600 text-sm md:text-base leading-relaxed">Oferta improvisada, pouca clareza e menor percepção de valor.</p>
+                  </div>
+                </div>
+                <div className="rounded-[2rem] bg-white border border-green-100 overflow-hidden shadow-lg shadow-green-600/5 ring-4 ring-green-500/10 relative">
+                  <div className="absolute top-4 right-4 bg-green-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">Novo Padrão</div>
+                  <img src={depoisPremium} alt="Oferta de viagem com visual profissional" className="w-full" />
+                  <div className="p-6 md:p-8 bg-green-50/50">
+                    <h3 className="font-black text-green-600 text-lg mb-2">Depois</h3>
+                    <p className="text-slate-600 text-sm md:text-base leading-relaxed">Apresentação organizada, visual premium e oferta muito fácil de entender.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        \n\n<section className="bg-slate-950 py-8 lg:py-12 relative overflow-hidden">
           <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
           <div className="inicio-container grid lg:grid-cols-[0.85fr_1.15fr] gap-8 lg:gap-12 items-center relative z-10">
             <div>
@@ -601,38 +561,7 @@ export default function Inicio2() {
         </section>
 
 
-        <section className="bg-slate-50 py-8 lg:py-12 border-y border-slate-200">
-          <div className="inicio-container">
-            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-center">
-              <div>
-                <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">antes e depois</p>
-                <h2 className="section-title mb-6">A mesma viagem pode parecer barata ou valiosa dependendo da apresentação</h2>
-                <p className="section-subtitle text-lg md:text-xl">
-                  O Canva Viagem ajuda sua agência a sair do improviso visual e apresentar pacotes com mais confiança.
-                </p>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-6">
-                <div className="rounded-[2rem] bg-white border border-red-100 overflow-hidden shadow-md">
-                  <img src={antesAmador} alt="Oferta de viagem com visual amador" className="w-full" />
-                  <div className="p-6 md:p-8 bg-red-50/50">
-                    <h3 className="font-black text-red-600 text-lg mb-2">Antes</h3>
-                    <p className="text-slate-600 text-sm md:text-base leading-relaxed">Oferta improvisada, pouca clareza e menor percepção de valor.</p>
-                  </div>
-                </div>
-                <div className="rounded-[2rem] bg-white border border-green-100 overflow-hidden shadow-lg shadow-green-600/5 ring-4 ring-green-500/10 relative">
-                  <div className="absolute top-4 right-4 bg-green-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">Novo Padrão</div>
-                  <img src={depoisPremium} alt="Oferta de viagem com visual profissional" className="w-full" />
-                  <div className="p-6 md:p-8 bg-green-50/50">
-                    <h3 className="font-black text-green-600 text-lg mb-2">Depois</h3>
-                    <p className="text-slate-600 text-sm md:text-base leading-relaxed">Apresentação organizada, visual premium e oferta muito fácil de entender.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-white py-16">
+        \n\n<section className="bg-white py-16">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">POR QUE CONFIAR NO PRODUTO</p>
@@ -700,7 +629,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-slate-950 py-8 lg:py-12 relative overflow-hidden">
+        \n\n<section className="bg-slate-950 py-8 lg:py-12 relative overflow-hidden">
           <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
           <div className="inicio-container relative z-10">
             <div className="text-center max-w-3xl mx-auto mb-10">
@@ -732,7 +661,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section id="demo" className="demo py-8 lg:py-12 bg-white">
+        \n\n<section id="demo" className="demo py-8 lg:py-12 bg-white">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-10">
               <h2 className="section-title w-full text-center">Dashboard inteligente para quem vende viagens</h2>
@@ -764,63 +693,69 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="py-8 lg:py-12 bg-[#F8FAFC] border-y border-slate-200">
+        \n\n<section className="bg-white py-8 lg:py-12 border-b border-slate-100">
           <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <h2 className="section-title w-full text-center">Escolha o que precisa criar hoje</h2>
-              <p className="section-subtitle w-full text-center mt-4">
-                A nova plataforma mantém a força da versão LATAM, mas fala direto com a rotina da agência no Brasil.
-              </p>
-            </div>
+            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-center">
+              <div>
+                <p className="text-cyan-600 font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] mb-3">O que você também recebe além da IA para vender viagens:</p>
+                <h2 className="text-2xl md:text-4xl font-black text-slate-950 leading-tight mb-4">
+                  1 ano de postagens de conteúdos para você postar.
+                </h2>
+                <p className="text-base md:text-lg text-slate-600 leading-relaxed mb-6">
+                  Não passe mais vergonha no Instagram. Nós entregamos todo o seu conteúdo do ano inteiro preparado, é só colocar sua logo e postar.
+                </p>
 
-            <div className="flex flex-wrap justify-center gap-3 mb-12">
-              {[
-                { id: "featured", label: "Principais" },
-                { id: "video", label: "Vídeos" },
-                { id: "design", label: "Artes" },
-                { id: "ia", label: "IA" },
-                { id: "sales", label: "Venda" },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveToolTab(tab.id)}
-                  className={`px-6 py-3 rounded-full font-black text-sm transition-all duration-300 shadow-sm ${
-                    activeToolTab === tab.id ? "bg-slate-950 text-white shadow-slate-950/20 scale-105" : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {[
-                [showcaseAdCreation, "Criação de anúncios com IA", "Transforme pacote, preço e condições em anúncio pronto para tráfego e Instagram.", <MessageSquare size={20} />],
-                [showcaseLandingPages, "Páginas de pacote", "Monte uma página mais clara para enviar no WhatsApp e aumentar percepção de valor.", <MonitorSmartphone size={20} />],
-                [showcaseCrm, "CRM de leads", "Organize interessados, orçamentos e próximos retornos sem perder conversa quente.", <Users size={20} />],
-                [showcaseScheduler, "Calendário de postagens", "Saia do improviso e publique com mais constância durante a semana.", <Calendar size={20} />],
-                [showcasePremiumMedias, "Mídias premium", "Use vídeos, artes e materiais de turismo sem depender de uma criação do zero.", <ImageIcon size={20} />],
-                [dashboardInterno, "Tudo no mesmo painel", "Acesse IA, mídia, páginas, CRM e materiais sem trocar de ferramenta o tempo todo.", <LayoutDashboard size={20} />],
-              ].map(([image, title, copy, icon]) => (
-                <div key={String(title)} className="rounded-[2rem] bg-white border border-slate-100 overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                  <div className="aspect-[4/3] bg-slate-100 overflow-hidden group">
-                    <img src={image as string} alt={String(title)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  </div>
-                  <div className="p-6 md:p-8">
-                    <div className="flex items-center gap-3 text-purple-700 mb-4 bg-purple-50 w-fit px-3 py-1.5 rounded-xl border border-purple-100">
-                      {icon as JSX.Element}
-                      <h3 className="font-black text-slate-950 text-sm md:text-base">{String(title)}</h3>
+                <div className="space-y-2.5 mb-8">
+                  {[
+                    "250 vídeos Reels focados em destinos de viagem",
+                    "400 artes e stories lindíssimos e de alta qualidade",
+                    "Templates fáceis e totalmente editáveis no Canva",
+                    "Calendário de postagens para saber exatamente o que postar",
+                  ].map((item) => (
+                    <div key={item} className="flex items-center gap-3 text-slate-800 font-semibold text-sm md:text-base bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-100">
+                      <CheckCircle2 size={20} className="text-emerald-500 shrink-0" />
+                      <span>{item}</span>
                     </div>
-                    <p className="text-slate-600 leading-relaxed text-sm md:text-base">{String(copy)}</p>
-                  </div>
+                  ))}
                 </div>
-              ))}
+
+                <a href="#planos" className="btn btn-primary inline-flex text-lg px-8 py-4 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50">Liberar meus 250 Reels + Teste Grátis</a>
+              </div>
+
+              <div className="space-y-6">
+                <div className="rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden border-4 border-white">
+                  <img
+                    src={reelsMainGifUrl}
+                    alt="Demonstração animada dos vídeos Reels entregues"
+                    loading="lazy"
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 md:mt-12">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <h3 className="text-xl md:text-2xl font-black text-slate-950">Exemplos do tipo de Reels que você recebe</h3>
+                <span className="hidden sm:inline text-sm font-black uppercase tracking-[0.18em] text-slate-400">publicar + adaptar + vender</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5">
+                {reelsPreviewGifs.map((gifUrl, index) => (
+                  <div key={gifUrl} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-lg shadow-slate-200/70">
+                    <img
+                      src={gifUrl}
+                      alt={`Exemplo de vídeo Reel de viagem ${index + 1}`}
+                      loading="lazy"
+                      className="aspect-[9/16] w-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="bg-white py-16 md:py-24">
+        \n\n<section className="bg-white py-16 md:py-24">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-10">
               <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">comparação honesta</p>
@@ -861,7 +796,44 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section id="planos" className="pricing inicio-section bg-white">
+        \n\n<section className="bg-[#F8FAFC] py-[64px] border-y border-slate-200">
+          <div className="inicio-container">
+            <h2 className="text-center text-[26px] font-bold text-[#0F172A] mb-2">Isso substitui o Canva Pro?</h2>
+            <p className="text-center text-[#64748B] text-[15px] max-w-[560px] mx-auto mb-10">Essa é a dúvida mais comum. A resposta direta:</p>
+            
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
+              <div className="grid grid-cols-[1.5fr_1fr_1fr] text-sm md:text-base min-w-[500px]">
+                {/* Header */}
+                <div className="p-4 md:p-6 font-bold text-slate-700 bg-white">Recurso</div>
+                <div className="p-4 md:p-6 font-bold text-center bg-[#E2E8F0] text-slate-700">Canva Pro</div>
+                <div className="p-4 md:p-6 font-bold text-center bg-[#7C3AED] text-white">Canva Viagem</div>
+                
+                {/* Rows */}
+                {[
+                  ["Templates genéricos", "✅ Muitos", "✅ 400 focados em viagem"],
+                  ["Vídeos de destinos prontos", "❌", "✅ 250 Reels 4K"],
+                  ["IA para criar ofertas de pacote", "❌", "✅"],
+                  ["Página de venda de pacote", "❌", "✅"],
+                  ["CRM de leads", "❌", "✅"],
+                  ["Suporte por WhatsApp", "❌", "✅"],
+                  ["Feito para agência de viagem", "❌", "✅"],
+                ].map(([feature, pro, viagem], idx) => (
+                  <div key={idx} className="contents">
+                    <div className="p-4 md:p-5 border-t border-slate-100 flex items-center font-medium text-slate-700">{feature}</div>
+                    <div className="p-4 md:p-5 border-t border-slate-100 bg-[#F8FAFC] text-center flex items-center justify-center">{pro}</div>
+                    <div className="p-4 md:p-5 border-t border-slate-100 bg-purple-50 font-bold text-center flex items-center justify-center text-purple-900">{viagem}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <p className="text-center text-[#64748B] text-[15px] max-w-[600px] mx-auto mt-6">
+              O Canva Pro é uma ferramenta de design genérica. O Canva Viagem é uma plataforma construída para quem vende viagens vender mais.
+            </p>
+          </div>
+        </section>
+
+        \n\n<section id="planos" className="pricing inicio-section bg-white">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <h2 className="section-title w-full text-center">Escolha como acessar</h2>
@@ -970,7 +942,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="inicio2-objections bg-slate-950 py-16 md:py-24">
+        \n\n<section className="inicio2-objections bg-slate-950 py-16 md:py-24">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-10">
               <p className="text-cyan-300 font-black uppercase tracking-[0.2em] text-xs mb-3">antes de decidir</p>
@@ -994,7 +966,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-green-50 py-16 md:py-20 border-y border-green-200">
+        \n\n<section className="bg-green-50 py-16 md:py-20 border-y border-green-200">
           <div className="inicio-container">
             <div className="max-w-4xl mx-auto grid md:grid-cols-[0.8fr_1.2fr] gap-8 items-center">
               <div className="bg-white rounded-3xl p-8 border border-green-200 text-center">
@@ -1013,44 +985,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-[#F8FAFC] py-[64px] border-y border-slate-200">
-          <div className="inicio-container">
-            <h2 className="text-center text-[26px] font-bold text-[#0F172A] mb-2">Isso substitui o Canva Pro?</h2>
-            <p className="text-center text-[#64748B] text-[15px] max-w-[560px] mx-auto mb-10">Essa é a dúvida mais comum. A resposta direta:</p>
-            
-            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
-              <div className="grid grid-cols-[1.5fr_1fr_1fr] text-sm md:text-base min-w-[500px]">
-                {/* Header */}
-                <div className="p-4 md:p-6 font-bold text-slate-700 bg-white">Recurso</div>
-                <div className="p-4 md:p-6 font-bold text-center bg-[#E2E8F0] text-slate-700">Canva Pro</div>
-                <div className="p-4 md:p-6 font-bold text-center bg-[#7C3AED] text-white">Canva Viagem</div>
-                
-                {/* Rows */}
-                {[
-                  ["Templates genéricos", "✅ Muitos", "✅ 400 focados em viagem"],
-                  ["Vídeos de destinos prontos", "❌", "✅ 250 Reels 4K"],
-                  ["IA para criar ofertas de pacote", "❌", "✅"],
-                  ["Página de venda de pacote", "❌", "✅"],
-                  ["CRM de leads", "❌", "✅"],
-                  ["Suporte por WhatsApp", "❌", "✅"],
-                  ["Feito para agência de viagem", "❌", "✅"],
-                ].map(([feature, pro, viagem], idx) => (
-                  <div key={idx} className="contents">
-                    <div className="p-4 md:p-5 border-t border-slate-100 flex items-center font-medium text-slate-700">{feature}</div>
-                    <div className="p-4 md:p-5 border-t border-slate-100 bg-[#F8FAFC] text-center flex items-center justify-center">{pro}</div>
-                    <div className="p-4 md:p-5 border-t border-slate-100 bg-purple-50 font-bold text-center flex items-center justify-center text-purple-900">{viagem}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <p className="text-center text-[#64748B] text-[15px] max-w-[600px] mx-auto mt-6">
-              O Canva Pro é uma ferramenta de design genérica. O Canva Viagem é uma plataforma construída para quem vende viagens vender mais.
-            </p>
-          </div>
-        </section>
-
-        <section className="faq inicio-section bg-slate-50">
+        \n\n<section className="faq inicio-section bg-slate-50">
           <div className="inicio-container">
             <h2 className="section-title w-full text-center">Perguntas que um comprador frio faria</h2>
             <p className="section-subtitle w-full text-center">
@@ -1074,7 +1009,67 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-[#0F172A] py-[80px]">
+        \n\n
+        <section className="bg-white py-12 border-y border-slate-100">
+          <div className="inicio-container">
+            <div className="max-w-[560px] mx-auto text-center flex flex-col items-center">
+              <h2 className="text-[18px] font-[600] text-[#0F172A] mb-2">Ainda ficou alguma dúvida?</h2>
+              <p className="text-[14px] text-[#64748B] mb-6">Fale com nosso suporte antes de decidir — ou comece o teste grátis agora, sem cartão cobrado hoje.</p>
+              
+              <div className="w-full flex flex-col gap-3">
+                <a href="#planos" className="w-full max-w-[400px] mx-auto bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-[700] text-[16px] py-[14px] px-[32px] rounded-[8px] transition-colors">
+                  Iniciar meus 3 dias grátis agora →
+                </a>
+                <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="w-full max-w-[400px] mx-auto bg-transparent border-[1.5px] border-[#7C3AED] hover:bg-purple-50 text-[#7C3AED] font-[600] text-[15px] py-[12px] px-[32px] rounded-[8px] transition-colors">
+                  Falar com suporte no WhatsApp →
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+\n\n<section className="bg-[#0F172A] py-8 lg:py-12">
+          <div className="inicio-container">
+            <div id="video-prova" className="inicio2-hero-video mx-auto">
+              <div className="inicio2-hero-video-top">
+                <span>Veja antes de comprar</span>
+                <strong>Vídeo real da ferramenta</strong>
+              </div>
+              <div className="inicio2-hero-video-frame">
+                {heroMutedActive ? (
+                  <>
+                    <iframe
+                      title="Lucas usando o Canva Viagem"
+                      src="https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&mute=1&controls=0&loop=1&playlist=R2MyCdox--I&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
+                      allow="autoplay; encrypted-media; picture-in-picture"
+                      allowFullScreen
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setHeroMutedActive(false)}
+                      className="absolute inset-0 flex items-center justify-center bg-slate-950/10 hover:bg-slate-950/0 transition-colors"
+                    >
+                      <span className="bg-white text-slate-950 font-black rounded-full px-6 py-3 shadow-xl flex items-center gap-2">
+                        <Play size={18} fill="currentColor" /> Assistir com som
+                      </span>
+                    </button>
+                  </>
+                ) : (
+                  <iframe
+                    title="Lucas usando o Canva Viagem com áudio"
+                    src="https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&controls=1&modestbranding=1&rel=0"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                  />
+                )}
+              </div>
+              <div className="inicio2-hero-video-footer">
+                <span>Vídeo curto: veja Lucas criando uma oferta e mostrando como a ferramenta funciona por dentro.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        \n\n<section className="bg-[#0F172A] py-[80px]">
           <div className="inicio-container text-center flex flex-col items-center">
             <h2 className="text-[#FFFFFF] text-[32px] font-[800] max-w-[640px] mx-auto leading-tight">
               Sua próxima oferta pode parecer de agência grande — e você pode criar ela hoje.
@@ -1095,7 +1090,7 @@ export default function Inicio2() {
             </div>
           </div>
         </section>
-      </main>
+      \n</main>
 
       <footer className="inicio-footer">
         <div className="inicio-container footer-inner">
