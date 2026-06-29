@@ -404,9 +404,9 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-white py-20 lg:py-28 border-b border-slate-100">
+        <section className="bg-white py-8 lg:py-12 border-b border-slate-100">
           <div className="inicio-container">
-            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-12 lg:gap-16 items-center">
+            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-center">
               <div>
                 <p className="text-cyan-600 font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] mb-3">O que você também recebe além da IA para vender viagens:</p>
                 <h2 className="text-2xl md:text-4xl font-black text-slate-950 leading-tight mb-4">
@@ -466,9 +466,9 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-white py-20 lg:py-28 border-b border-slate-100">
+        <section className="bg-white py-8 lg:py-12 border-b border-slate-100">
           <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="text-center max-w-3xl mx-auto mb-10">
               <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">explicado passo a passo</p>
               <h2 className="section-title w-full text-center">O que você recebe ao entrar hoje?</h2>
               <p className="section-subtitle w-full text-center mt-4">
@@ -488,9 +488,9 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-slate-950 py-20 lg:py-28 relative overflow-hidden">
+        <section className="bg-slate-950 py-8 lg:py-12 relative overflow-hidden">
           <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
-          <div className="inicio-container grid lg:grid-cols-[0.85fr_1.15fr] gap-12 lg:gap-16 items-center relative z-10">
+          <div className="inicio-container grid lg:grid-cols-[0.85fr_1.15fr] gap-8 lg:gap-12 items-center relative z-10">
             <div>
               <p className="text-cyan-300 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-5">como ajudamos você</p>
               <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.1] mb-8">
@@ -520,9 +520,9 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-white py-20 lg:py-28">
+        <section className="bg-white py-8 lg:py-12">
           <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="text-center max-w-3xl mx-auto mb-10">
               <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">não é teoria</p>
               <h2 className="section-title w-full text-center">O que você vê depois de entrar</h2>
               <p className="section-subtitle w-full text-center mt-4">
@@ -547,9 +547,9 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-slate-50 py-20 lg:py-28 border-y border-slate-200">
+        <section className="bg-slate-50 py-8 lg:py-12 border-y border-slate-200">
           <div className="inicio-container">
-            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-12 lg:gap-16 items-center">
+            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-center">
               <div>
                 <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">antes e depois</p>
                 <h2 className="section-title mb-6">A mesma viagem pode parecer barata ou valiosa dependendo da apresentação</h2>
@@ -578,9 +578,9 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-white py-20 lg:py-28">
+        <section className="bg-white py-8 lg:py-12">
           <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="text-center max-w-3xl mx-auto mb-10">
               <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">prova e autoridade</p>
               <h2 className="section-title w-full text-center">Criado por Lucas Ferrari, acompanhado por mais de 66 mil pessoas</h2>
               <p className="section-subtitle w-full text-center mt-4">
@@ -622,10 +622,10 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-slate-950 py-20 lg:py-28 relative overflow-hidden">
+        <section className="bg-slate-950 py-8 lg:py-12 relative overflow-hidden">
           <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
           <div className="inicio-container relative z-10">
-            <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="text-center max-w-3xl mx-auto mb-10">
               <p className="text-cyan-300 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">valor percebido</p>
               <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mb-6">Tudo que sua agência recebe em um único lugar</h2>
               <p className="text-slate-300 text-lg md:text-xl">
@@ -654,9 +654,9 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section id="demo" className="demo py-20 lg:py-28 bg-white">
+        <section id="demo" className="demo py-8 lg:py-12 bg-white">
           <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="text-center max-w-3xl mx-auto mb-10">
               <h2 className="section-title w-full text-center">Dashboard inteligente para quem vende viagens</h2>
               <p className="section-subtitle w-full text-center mt-4">
                 Tudo que sua agência precisa em uma única tela, fácil de usar e direto ao ponto.
@@ -667,7 +667,7 @@ export default function Inicio2() {
               <img src={heroDashboard} alt="Dashboard do Canva Viagem" className="w-full block" />
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mt-16 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mt-10 max-w-5xl mx-auto">
               {[
                 ["1", "Digite o destino", "Exemplo: pacote para Maldivas, Disney, Gramado ou Jericoacoara."],
                 ["2", "A IA cria", "Receba anúncio, legenda, argumentos de venda e estrutura de página."],
@@ -686,7 +686,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="py-20 lg:py-28 bg-[#F8FAFC] border-y border-slate-200">
+        <section className="py-8 lg:py-12 bg-[#F8FAFC] border-y border-slate-200">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <h2 className="section-title w-full text-center">Escolha o que precisa criar hoje</h2>
