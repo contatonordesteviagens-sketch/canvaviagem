@@ -256,7 +256,7 @@ export default function Inicio2() {
       name: "Plano Semestral",
       price: "R$ 347",
       monthlyEquivalent: "R$ 57,83",
-      checkoutUrl: "#", // Substituir com link da Stripe em breve
+      checkoutUrl: "https://buy.stripe.com/8x2cN60HwcaY2Yr38w8so0j",
       trackValue: 347,
       popular: false,
     },
@@ -786,25 +786,25 @@ export default function Inicio2() {
                 ⚠️ Atenção: Não somos um editor de imagens ou só templates. Somos um acelerador de vendas com tudo mastigado para o turismo (Site, IA, CRM e Imagens).
               </div>
             </div>
-            {/* NOVO BLOCO DE PREÇOS MOBILE */}
-            <div className="max-w-md mx-auto w-full flex flex-col items-center gap-6">
+            {/* NOVO BLOCO DE PREÇOS MOBILE & DESKTOP */}
+            <div className="max-w-4xl mx-auto w-full flex flex-col md:flex-row items-stretch gap-6 md:gap-8">
               
-              {/* Lista única de benefícios */}
-              <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-2">
-                <h3 className="font-bold text-slate-800 mb-4 text-center">O que está incluso em todos os planos:</h3>
-                <ul className="space-y-3 text-sm text-slate-700">
+              {/* Lista única de benefícios (Coluna Esquerda no Desktop) */}
+              <div className="w-full md:w-1/2 bg-slate-50 border border-slate-200 rounded-3xl p-6 md:p-8 flex flex-col justify-center">
+                <h3 className="font-bold text-xl text-slate-800 mb-6 text-center md:text-left">O que está incluso em todos os planos:</h3>
+                <ul className="space-y-4 text-sm md:text-base text-slate-700">
                   {pricingFeatures.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2">
-                      <CheckCircle2 size={18} className="text-purple-600 shrink-0 mt-0.5" />
+                    <li key={feature} className="flex items-start gap-3">
+                      <CheckCircle2 size={20} className="text-purple-600 shrink-0 mt-0.5" />
                       <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Componente Interativo de Preços */}
-              <div className="border-2 border-slate-100 rounded-[32px] p-4 shadow-sm w-full flex flex-col items-center gap-4 bg-white">
-                <div className="w-full flex flex-col gap-3 relative">
+              {/* Componente Interativo de Preços (Coluna Direita no Desktop) */}
+              <div className="w-full md:w-1/2 border-2 border-slate-100 rounded-[32px] p-5 md:p-7 shadow-sm flex flex-col items-center gap-4 bg-white justify-between">
+                <div className="w-full flex flex-col gap-3 md:gap-4 relative">
                   {plans.map((plan, index) => (
                     <div
                       key={plan.id}
@@ -817,8 +817,8 @@ export default function Inicio2() {
                         <p className="font-semibold text-lg flex items-center gap-2 text-slate-900">
                           {plan.name}
                           {plan.popular && (
-                            <span className="py-1 px-2 block rounded-lg bg-purple-100 text-purple-700 text-xs font-bold">
-                              MAIOR ECONOMIA
+                            <span className="py-1 px-3 block rounded-lg bg-yellow-100 text-yellow-800 text-xs font-black uppercase tracking-wider">
+                              Popular
                             </span>
                           )}
                         </p>
