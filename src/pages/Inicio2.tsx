@@ -265,6 +265,12 @@ export default function Inicio2() {
       checkoutUrl: ELITE_OFFER.monthlyCheckoutUrl,
       trackValue: 97,
       popular: false,
+      features: [
+        "Acesso a todos os recursos",
+        "Cancele quando quiser",
+        "Suporte via WhatsApp",
+        "3 dias grátis inclusos",
+      ]
     },
     {
       id: "semestral",
@@ -274,6 +280,13 @@ export default function Inicio2() {
       checkoutUrl: "https://buy.stripe.com/8x2cN60HwcaY2Yr38w8so0j",
       trackValue: 347,
       popular: false,
+      features: [
+        "Acesso a todos os recursos",
+        "6 meses de acesso garantido",
+        "Suporte via WhatsApp",
+        "Economia de R$235 vs mensal",
+        "3 dias grátis inclusos",
+      ]
     },
     {
       id: "anual",
@@ -283,6 +296,13 @@ export default function Inicio2() {
       checkoutUrl: ELITE_OFFER.annualCheckoutUrl,
       trackValue: 482,
       popular: true,
+      features: [
+        "Acesso a todos os recursos",
+        "12 meses de acesso completo",
+        "Suporte via WhatsApp",
+        "Suporte prioritário",
+        "3 dias grátis inclusos",
+      ]
     }
   ];
 
@@ -381,7 +401,7 @@ export default function Inicio2() {
         \n\n<div className="w-full bg-white pt-8">
           <div className="inicio-container">
             <div className="bg-[#7C3AED] text-white text-center text-[14px] font-medium py-[12px] px-[24px] rounded-[8px] mx-auto max-w-[720px]">
-              🟢 Mais de 300 agências entraram na plataforma este mês — os 3 dias grátis incluem acesso completo a todos os recursos, sem restrição.
+              🟢 Mais de 200 agências de viagens já usam a plataforma — os 3 dias grátis incluem acesso completo a todos os recursos, sem restrição.
             </div>
           </div>
         </div>
@@ -574,8 +594,24 @@ export default function Inicio2() {
                  <div>
                    <h3 className="text-2xl md:text-3xl font-black mb-4 text-center md:text-left">Lucas Ferrari</h3>
                    <p className="text-slate-300 leading-relaxed text-base mb-6 text-center md:text-left">
-                     Antes de criar o Canva Viagem, Lucas Ferrari gerenciou campanhas de tráfego pago para mais de 40 agências de viagem no Brasil. Ele viu de perto o mesmo problema se repetindo: agentes com pacotes bons, mas sem material profissional para divulgar. O Canva Viagem nasceu para resolver exatamente esse problema — e hoje é usado por mais de 66 mil pessoas no setor de turismo.
+                     Antes de criar o Canva Viagem, Lucas Ferrari gerenciou campanhas de tráfego pago para mais de 40 agências de viagem no Brasil. Ele viu de perto o mesmo problema se repetindo: agentes com pacotes bons, mas sem material profissional para divulgar. O Canva Viagem nasceu para resolver exatamente esse problema — e hoje é usado por mais de 200 agências no setor de turismo.
                    </p>
+
+                   <div className="flex gap-0 border-t border-[#1E293B] mt-[16px] pt-[16px] mb-6">
+                     <div className="w-1/3 text-center border-r border-[#1E293B]">
+                       <div className="text-[22px] font-[800] text-[#7C3AED]">200+</div>
+                       <div className="text-[11px] text-[#94A3B8] mt-[2px]">agências ativas</div>
+                     </div>
+                     <div className="w-1/3 text-center border-r border-[#1E293B]">
+                       <div className="text-[22px] font-[800] text-[#7C3AED]">40+</div>
+                       <div className="text-[11px] text-[#94A3B8] mt-[2px]">agências atendidas</div>
+                     </div>
+                     <div className="w-1/3 text-center">
+                       <div className="text-[22px] font-[800] text-[#7C3AED]">3 anos</div>
+                       <div className="text-[11px] text-[#94A3B8] mt-[2px]">no mercado de turismo</div>
+                     </div>
+                   </div>
+
                    <div className="flex flex-wrap justify-center md:justify-start gap-4">
                      <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="bg-white hover:bg-slate-100 transition-colors text-slate-900 rounded-2xl px-6 py-3 font-black flex items-center justify-center gap-2">
                        <Instagram size={20} /> Instagram
@@ -697,12 +733,12 @@ export default function Inicio2() {
           <div className="inicio-container">
             <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-center">
               <div>
-                <p className="text-cyan-600 font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] mb-3">O que você também recebe além da IA para vender viagens:</p>
+                <p className="text-cyan-600 font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] mb-3">INCLUSO EM TODOS OS PLANOS</p>
                 <h2 className="text-2xl md:text-4xl font-black text-slate-950 leading-tight mb-4">
-                  1 ano de postagens de conteúdos para você postar.
+                  1 ano de conteúdo pronto para postar — sem criar nada do zero.
                 </h2>
                 <p className="text-base md:text-lg text-slate-600 leading-relaxed mb-6">
-                  Não passe mais vergonha no Instagram. Nós entregamos todo o seu conteúdo do ano inteiro preparado, é só colocar sua logo e postar.
+                  Você recebe todo o material do ano, é só colocar sua logo e publicar.
                 </p>
 
                 <div className="space-y-2.5 mb-8">
@@ -884,11 +920,22 @@ export default function Inicio2() {
                         )}
                       </div>
 
+                      <ul className="w-full border-t border-[#E2E8F0] my-[12px] pt-[12px] space-y-2 list-none p-0">
+                        {plan.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start text-[13px] text-[#475569] leading-[1.8]">
+                            <Check className="text-[#7C3AED] w-[16px] h-[16px] shrink-0 mr-2 mt-[2px]" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+
                       {plan.id === "anual" && (
                         <div className="mt-auto pt-4 border-t border-purple-200/50">
-                          <p className="text-green-600 font-bold text-xs leading-snug">
-                            Você economiza R$ 682 em relação ao mensal
-                          </p>
+                          <div className="bg-[#F0FDF4] rounded-[6px] px-[12px] py-[8px]">
+                            <p className="text-[#16A34A] font-[700] text-[14px] leading-snug m-0">
+                              💰 Você economiza R$682 em relação ao mensal
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -896,6 +943,11 @@ export default function Inicio2() {
                 </div>
 
                 <div className="w-full max-w-2xl mt-4">
+                  <div className="bg-[#F5F3FF] border-l-[4px] border-[#7C3AED] rounded-[6px] p-[12px_16px] mb-[16px]">
+                    <p className="text-[14px] text-[#4C1D95] font-medium m-0 text-left">
+                      ⚡ Os 3 dias grátis incluem acesso completo — sem cartão cobrado hoje. Cancele antes do prazo com 1 clique.
+                    </p>
+                  </div>
                   <a
                     href={plans[activePlan].checkoutUrl}
                     onClick={() => trackCheckoutClick(plans[activePlan].trackValue, plans[activePlan].id as "anual" | "mensal")}
@@ -1125,6 +1177,18 @@ export default function Inicio2() {
           Iniciar 3 dias grátis — sem cobrança hoje →
         </a>
       </div>
+
+      <a
+        href="https://wa.me/5585998458995?text=Quero%20saber%20mais%20sobre%20o%20Canva%20Viagem"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-[9999] bg-[#25D366] hover:bg-[#1DA851] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center"
+        aria-label="Fale conosco no WhatsApp"
+      >
+        <svg viewBox="0 0 32 32" className="w-8 h-8 fill-current">
+          <path d="M16.05 1.5C8.03 1.5 1.5 8.03 1.5 16.05c0 2.58.67 5.09 1.94 7.29L1.5 29.5l6.3-1.92c2.14 1.15 4.54 1.76 7.02 1.76 8.01 0 14.54-6.53 14.54-14.54S24.06 1.5 16.05 1.5zm.02 24.52c-2.18 0-4.32-.58-6.19-1.69l-.44-.26-4.62 1.41 1.44-4.51-.29-.46c-1.22-1.93-1.87-4.17-1.87-6.49 0-6.61 5.38-11.99 11.99-11.99 3.2 0 6.21 1.25 8.47 3.51s3.51 5.27 3.51 8.47c-.01 6.61-5.38 11.99-11.99 12zM22.61 19c-.36-.18-2.12-1.05-2.45-1.17-.33-.12-.57-.18-.81.18-.24.36-.93 1.17-1.14 1.41-.21.24-.42.27-.78.09-.36-.18-1.51-.56-2.88-1.78-1.07-1-1.79-2.24-2-2.6-.21-.36-.02-.56.16-.74.16-.16.36-.42.54-.63.18-.21.24-.36.36-.6.12-.24.06-.45-.03-.63-.09-.18-.81-1.95-1.11-2.67-.29-.71-.59-.61-.81-.62h-.69c-.24 0-.63.09-.96.45-.33.36-1.26 1.23-1.26 3 0 1.77 1.29 3.48 1.47 3.72.18.24 2.54 3.88 6.15 5.43 2.45 1.05 3.32 1.15 4.57.97 1.25-.18 2.12-.87 2.42-1.71.3-.84.3-1.56.21-1.71-.09-.15-.33-.24-.69-.42z"/>
+        </svg>
+      </a>
     </div>
   );
 }
