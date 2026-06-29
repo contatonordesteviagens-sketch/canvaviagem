@@ -310,7 +310,7 @@ export default function Inicio2() {
       <header className="site-header">
         <div className="header-inner">
           <img src={logoImage} alt="Canva Viagem" className="logo" />
-          <a href="#planos" className="header-cta">Escolher plano</a>
+          <a href="#planos" className="header-cta">Testar grátis</a>
         </div>
       </header>
 
@@ -408,23 +408,23 @@ export default function Inicio2() {
           <div className="inicio-container">
             <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-12 lg:gap-16 items-center">
               <div>
-                <p className="text-cyan-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">O que você também recebe além IA para vender viagens:</p>
-                <h2 className="text-3xl md:text-5xl font-black text-slate-950 leading-tight mb-6">
-                  250 reels prontos para tornar seu perfil bonito e profissional em 1 dia.
+                <p className="text-cyan-600 font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] mb-3">O que você também recebe além da IA para vender viagens:</p>
+                <h2 className="text-2xl md:text-4xl font-black text-slate-950 leading-tight mb-4">
+                  1 ano de postagens de conteúdos para você postar.
                 </h2>
-                <p className="text-lg md:text-xl text-slate-600 leading-relaxed mb-8">
+                <p className="text-base md:text-lg text-slate-600 leading-relaxed mb-6">
                   Não passe mais vergonha no Instagram. Nós entregamos todo o seu conteúdo do ano inteiro preparado, é só colocar sua logo e postar.
                 </p>
 
-                <div className="space-y-4 mb-10">
+                <div className="space-y-2.5 mb-8">
                   {[
                     "250 vídeos Reels focados em destinos de viagem",
                     "400 artes e stories lindíssimos e de alta qualidade",
                     "Templates fáceis e totalmente editáveis no Canva",
                     "Calendário de postagens para saber exatamente o que postar",
                   ].map((item) => (
-                    <div key={item} className="flex items-start gap-4 text-slate-800 font-bold text-base md:text-lg bg-slate-50 p-3 rounded-xl border border-slate-100">
-                      <CheckCircle2 size={24} className="text-emerald-500 shrink-0" />
+                    <div key={item} className="flex items-center gap-3 text-slate-800 font-semibold text-sm md:text-base bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-100">
+                      <CheckCircle2 size={20} className="text-emerald-500 shrink-0" />
                       <span>{item}</span>
                     </div>
                   ))}
