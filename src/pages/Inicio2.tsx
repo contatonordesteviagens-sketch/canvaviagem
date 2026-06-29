@@ -240,6 +240,21 @@ export default function Inicio2() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [heroMutedActive, setHeroMutedActive] = useState(true);
   const [activePlan, setActivePlan] = useState(2);
+  const [isPricingVisible, setIsPricingVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsPricingVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+    const pricingEl = document.getElementById("planos");
+    if (pricingEl) {
+      observer.observe(pricingEl);
+    }
+    return () => observer.disconnect();
+  }, []);
 
   const plans = [
     {
@@ -322,17 +337,17 @@ export default function Inicio2() {
             <div className="flex flex-col items-center gap-4 mb-5 md:mb-8">
               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-purple-500/30 rounded-full px-4 py-1.5 md:px-5 md:py-2 backdrop-blur-md shadow-[0_0_30px_rgba(124,58,237,0.15)]">
                 <span className="text-[9px] md:text-xs font-bold text-purple-200 uppercase tracking-widest">
-                  Tudo mastigado para você vender mais viagens
+                  Plataforma de marketing para agências de viagem
                 </span>
               </div>
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[4.5rem] font-black text-white leading-[1.05] mb-3 tracking-tighter">
-              Venda mais viagens com IA
+              Sua agência parece profissional ou parece pequena?
             </h1>
 
             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-300 font-medium mb-5 max-w-3xl mx-auto leading-relaxed">
-              Receba um site pronto, gerador de ofertas, vídeos e artes prontos, agentes de IA. <strong className="text-white font-black">Teste grátis.</strong>
+              O Canva Viagem entrega tudo pronto para você criar ofertas, postar no Instagram e organizar seus clientes — sem designer, sem social media, sem improviso.
             </p>
 
             <div className="bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 md:px-5 md:py-2.5 rounded-lg md:rounded-xl mb-6 shadow-lg shadow-emerald-500/5 max-w-2xl mx-auto backdrop-blur-sm">
@@ -342,29 +357,94 @@ export default function Inicio2() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 md:gap-4 mb-6 w-full max-w-2xl mx-auto">
-              <a href="#planos" className="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white text-sm md:text-base font-bold py-2.5 px-6 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.5)] transition-transform hover:-translate-y-1 flex items-center justify-center whitespace-nowrap">
-                Quero testar agora
+              <a href="#planos" className="w-full sm:w-auto min-h-[52px] bg-purple-600 hover:bg-purple-500 text-white text-sm md:text-base font-bold py-2.5 px-6 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.5)] transition-transform hover:-translate-y-1 flex items-center justify-center whitespace-nowrap">
+                Iniciar 3 dias grátis — sem cobrança hoje
               </a>
               <a href="#video-prova" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-2.5 px-6 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 whitespace-nowrap text-xs md:text-sm">
-                <Play size={16} fill="currentColor" /> Ver vídeo da IA
+                <Play size={16} fill="currentColor" /> Ver a ferramenta funcionando
               </a>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-2 w-full max-w-[550px] mx-auto mb-6">
-              {["Acesso imediato", "Checkout seguro Stripe", "3 dias grátis", "7 dias de garantia", "Suporte por WhatsApp"].map((item) => (
-                <div key={item} className="bg-slate-800/60 border border-slate-700 rounded-full px-3 py-1.5 text-[11px] md:text-xs font-semibold text-slate-300 flex items-center justify-center gap-1.5">
-                  <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
-                  {item}
+            <div className="flex flex-wrap justify-center gap-x-3 gap-y-2 w-full max-w-[700px] mx-auto mb-6 text-slate-400 text-[11px] md:text-xs font-semibold">
+              <span className="whitespace-nowrap">✓ Acesso imediato</span>
+              <span className="hidden md:inline">·</span>
+              <span className="whitespace-nowrap">✓ Checkout seguro Stripe</span>
+              <span className="hidden md:inline">·</span>
+              <span className="whitespace-nowrap">✓ 3 dias grátis</span>
+              <span className="hidden md:inline">·</span>
+              <span className="whitespace-nowrap">✓ 7 dias de garantia</span>
+              <span className="hidden md:inline">·</span>
+              <span className="whitespace-nowrap">✓ Cancele com 1 clique</span>
+            </div>
+          </div>
+        </section>
+
+        <div className="w-full bg-white pt-8">
+          <div className="inicio-container">
+            <div className="bg-[#7C3AED] text-white text-center text-[14px] font-medium py-[12px] px-[24px] rounded-[8px] mx-auto max-w-[720px]">
+              🟢 Mais de 300 agências entraram na plataforma este mês — os 3 dias grátis incluem acesso completo a todos os recursos, sem restrição.
+            </div>
+          </div>
+        </div>
+
+        <section className="bg-white py-16">
+          <div className="inicio-container">
+            <h2 className="text-center text-[28px] font-bold text-[#0F172A] mb-12">
+              Não é curso. Não é só templates. Não é o Canva Pro.
+            </h2>
+            <div className="grid md:grid-cols-3 gap-8 mb-10">
+              <div className="flex flex-col items-center text-center">
+                <div className="text-4xl mb-4">🏭</div>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">Fábrica de Ofertas</h3>
+                <p className="text-slate-600">Digita o destino, a IA gera anúncio, página de pacote e roteiro em segundos.</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="text-4xl mb-4">📱</div>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">1 ano de conteúdo pronto</h3>
+                <p className="text-slate-600">250 Reels + 400 artes para postar toda semana sem criar nada do zero.</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="text-4xl mb-4">👥</div>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">CRM para não perder venda</h3>
+                <p className="text-slate-600">Organize leads, cotações e follow-ups em um único lugar.</p>
+              </div>
+            </div>
+            <p className="text-center italic text-[#6B21A8] text-[16px]">
+              Tudo no mesmo painel. Feito para quem vende viagens, não para quem entende de tecnologia.
+            </p>
+          </div>
+        </section>
+
+        <section className="bg-white py-8 lg:py-12">
+          <div className="inicio-container">
+            <div className="text-center max-w-3xl mx-auto mb-10">
+              <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">não é teoria</p>
+              <h2 className="section-title w-full text-center">Veja antes de entrar</h2>
+              <p className="section-subtitle w-full text-center mt-4">
+                Prints reais da plataforma. Sem mockup. Sem promessa vazia.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {platformProofScreens.map((item) => (
+                <div key={item.title} className="rounded-[2rem] border border-slate-100 bg-white overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl transition-shadow group">
+                  <div className="aspect-[4/3] bg-slate-100 overflow-hidden relative">
+                    <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors z-10"></div>
+                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  </div>
+                  <div className="p-6 md:p-8">
+                    <h3 className="text-xl font-black text-slate-900 mb-3">{item.title}</h3>
+                    <p className="text-slate-600 leading-relaxed text-base">{item.result}</p>
+                  </div>
                 </div>
               ))}
             </div>
+          </div>
+        </section>
 
-            <div className="hidden sm:flex flex-wrap justify-center gap-5 mb-8">
-              <div className="flex items-center gap-1.5 text-slate-400 text-xs md:text-sm font-bold"><CheckCircle2 className="text-purple-500" size={16} /> Feito para turismo</div>
-              <div className="flex items-center gap-1.5 text-slate-400 text-xs md:text-sm font-bold"><CheckCircle2 className="text-purple-500" size={16} /> Conteúdos + IA + Site + CRM</div>
-            </div>
-
-            <div id="video-prova" className="inicio2-hero-video">
+        <section className="bg-[#0F172A] py-8 lg:py-12">
+          <div className="inicio-container">
+            <div id="video-prova" className="inicio2-hero-video mx-auto">
               <div className="inicio2-hero-video-top">
                 <span>Veja antes de comprar</span>
                 <strong>Vídeo real da ferramenta</strong>
@@ -520,32 +600,6 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-white py-8 lg:py-12">
-          <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-10">
-              <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">não é teoria</p>
-              <h2 className="section-title w-full text-center">O que você vê depois de entrar</h2>
-              <p className="section-subtitle w-full text-center mt-4">
-                Prints reais do produto para mostrar como a plataforma organiza sua rotina de venda.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {platformProofScreens.map((item) => (
-                <div key={item.title} className="rounded-[2rem] border border-slate-100 bg-white overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl transition-shadow group">
-                  <div className="aspect-[4/3] bg-slate-100 overflow-hidden relative">
-                    <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors z-10"></div>
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  </div>
-                  <div className="p-6 md:p-8">
-                    <h3 className="text-xl font-black text-slate-900 mb-3">{item.title}</h3>
-                    <p className="text-slate-600 leading-relaxed text-base">{item.result}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         <section className="bg-slate-50 py-8 lg:py-12 border-y border-slate-200">
           <div className="inicio-container">
@@ -578,44 +632,68 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="bg-white py-8 lg:py-12">
+        <section className="bg-white py-16">
           <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto mb-10">
-              <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">prova e autoridade</p>
-              <h2 className="section-title w-full text-center">Criado por Lucas Ferrari, acompanhado por mais de 66 mil pessoas</h2>
-              <p className="section-subtitle w-full text-center mt-4">
-                Milhares de agências já descobriram como simplificar e acelerar a captação de clientes.
-              </p>
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">POR QUE CONFIAR NO PRODUTO</p>
+              <h2 className="section-title w-full text-center">Lucas Ferrari não é um guru de marketing. É especialista no problema que você tem.</h2>
             </div>
 
-            <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-8 items-start">
-              <div className="bg-slate-900 rounded-[2rem] p-8 text-white shadow-xl shadow-slate-900/10">
-                <img src={lucasPortrait} alt="Lucas Ferrari" className="w-28 h-28 rounded-2xl object-cover mb-6 border-4 border-slate-700/50" />
-                <h3 className="text-2xl font-black mb-4">Lucas Ferrari</h3>
-                <p className="text-slate-300 leading-relaxed text-base mb-8">
-                  Especialista em marketing para agências de viagem, receptivos e profissionais do turismo. O Canva Viagem nasceu para resolver uma dor prática: criar ofertas melhores, mais rápido, sem depender de uma operação cara.
-                </p>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="bg-white hover:bg-slate-100 transition-colors text-slate-900 rounded-2xl px-4 py-4 font-black flex items-center justify-center gap-2">
-                    <Instagram size={20} /> Instagram
-                  </a>
-                  <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-400 transition-colors text-slate-950 rounded-2xl px-4 py-4 font-black flex items-center justify-center gap-2">
-                    <MessageSquare size={20} /> WhatsApp
-                  </a>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-5 lg:gap-6">
-                {socialProofChats.map((proof) => (
-                  <ChatCard key={proof.label} proof={proof} />
-                ))}
-              </div>
+            <div className="max-w-4xl mx-auto bg-slate-900 rounded-[2rem] p-8 md:p-12 text-white shadow-xl shadow-slate-900/10 mb-16">
+               <div className="flex flex-col md:flex-row items-center gap-8">
+                 <img src={lucasPortrait} alt="Lucas Ferrari" className="w-32 h-32 rounded-2xl object-cover border-4 border-slate-700/50 flex-shrink-0" />
+                 <div>
+                   <h3 className="text-2xl md:text-3xl font-black mb-4 text-center md:text-left">Lucas Ferrari</h3>
+                   <p className="text-slate-300 leading-relaxed text-base mb-6 text-center md:text-left">
+                     Antes de criar o Canva Viagem, Lucas Ferrari gerenciou campanhas de tráfego pago para mais de 40 agências de viagem no Brasil. Ele viu de perto o mesmo problema se repetindo: agentes com pacotes bons, mas sem material profissional para divulgar. O Canva Viagem nasceu para resolver exatamente esse problema — e hoje é usado por mais de 66 mil pessoas no setor de turismo.
+                   </p>
+                   <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                     <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="bg-white hover:bg-slate-100 transition-colors text-slate-900 rounded-2xl px-6 py-3 font-black flex items-center justify-center gap-2">
+                       <Instagram size={20} /> Instagram
+                     </a>
+                     <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-400 transition-colors text-slate-950 rounded-2xl px-6 py-3 font-black flex items-center justify-center gap-2">
+                       <MessageSquare size={20} /> WhatsApp
+                     </a>
+                   </div>
+                 </div>
+               </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mt-12">
-              {[depoimento1, depoimento2, depoimento3].map((image, index) => (
-                <div key={index} className="rounded-[2rem] border border-slate-100 overflow-hidden bg-white shadow-lg shadow-slate-200/50 hover:-translate-y-1 transition-transform">
-                  <img src={image} alt={`Prova social real ${index + 1}`} className="w-full block" />
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+              {[
+                {
+                  text: "Em menos de 24 horas tive minha primeira venda para Disney usando os anúncios que a IA gerou.",
+                  name: "Maria S.",
+                  role: "Agente autônoma • São Paulo, SP",
+                  result: "1ª venda em 24h"
+                },
+                {
+                  text: "Usei aquele modelo de anúncio para a promoção de férias e funcionou aqui na minha cidade. Com pouca verba apareceu muita gente interessada. Fiz 23 orçamentos só ontem e fechei 5 pacotes.",
+                  name: "Ricardo T.",
+                  role: "Agência de Viagens • Curitiba, PR",
+                  result: "5 pacotes fechados"
+                },
+                {
+                  text: "Antes eu mandava o pacote só por texto no WhatsApp e o cliente já pedia desconto. Agora mandei a página com o roteiro mais organizado e a conversa mudou. O cliente entendeu melhor o valor antes de perguntar o preço final.",
+                  name: "Ana C.",
+                  role: "Consultora de Viagens • Rio de Janeiro, RJ",
+                  result: "Venda sem pedir desconto"
+                }
+              ].map((testimonial, index) => (
+                <div key={index} className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-[12px] p-[24px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] flex flex-col">
+                  <div className="flex gap-1 mb-4">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star key={star} size={16} className="fill-[#F59E0B] text-[#F59E0B]" />
+                    ))}
+                  </div>
+                  <p className="text-[#1E293B] text-[15px] leading-[1.6] italic mb-6 flex-grow">
+                    "{testimonial.text}"
+                  </p>
+                  <div className="mt-auto">
+                    <p className="text-[#0F172A] font-bold text-[14px]">{testimonial.name}</p>
+                    <p className="text-[#64748B] text-[13px] mb-3">{testimonial.role}</p>
+                    <p className="text-[#16A34A] font-bold text-[13px]">✓ Resultado: {testimonial.result}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -785,92 +863,93 @@ export default function Inicio2() {
 
         <section id="planos" className="pricing inicio-section bg-white">
           <div className="inicio-container">
-            <div className="text-center max-w-3xl mx-auto">
-              <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">oferta brasileira</p>
-              <h2 className="section-title w-full text-center">Escolha seu acesso sem confusão</h2>
-              <p className="section-subtitle w-full text-center" style={{ textAlign: "center", margin: "0 auto 16px" }}>
-                O mensal é para começar com menor compromisso. O anual é a melhor escolha para quem quer pagar menos por mês, ter 12 meses de acesso e economizar {ELITE_OFFER.annualSavings}.
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h2 className="section-title w-full text-center">Escolha como acessar</h2>
+              <p className="section-subtitle w-full text-center" style={{ textAlign: "center", margin: "0 auto" }}>
+                Mensal para começar sem compromisso. Anual para pagar menos e ter acesso por 12 meses completos.
               </p>
-              <div className="bg-red-50 text-red-700 font-bold px-4 py-3 rounded-xl max-w-2xl mx-auto mb-8 border border-red-100 text-sm md:text-base text-center">
-                ⚠️ Atenção: Não somos um editor de imagens ou só templates. Somos um acelerador de vendas com tudo mastigado para o turismo (Site, IA, CRM e Imagens).
-              </div>
             </div>
-            {/* NOVO BLOCO DE PREÇOS MOBILE & DESKTOP */}
-            <div className="max-w-5xl mx-auto w-full flex flex-col md:flex-row items-stretch gap-6 md:gap-10">
-              
-              {/* Lista única de benefícios (Coluna Esquerda no Desktop) */}
-              <div className="w-full md:w-1/2 bg-slate-50 border border-slate-200 rounded-[2rem] p-8 lg:p-10 flex flex-col justify-center">
-                <h3 className="font-black text-2xl text-slate-900 mb-8 text-center md:text-left">O que está incluso em todos os planos:</h3>
-                <ul className="space-y-5 text-base text-slate-700 font-medium">
-                  {pricingFeatures.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3">
-                      <CheckCircle2 size={24} className="text-purple-600 shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
 
-              {/* Componente Interativo de Preços (Coluna Direita no Desktop) */}
-              <div className="w-full md:w-1/2 border-4 border-slate-100 rounded-[2rem] p-6 lg:p-8 shadow-xl shadow-slate-200/50 flex flex-col items-center gap-6 bg-white justify-between">
-                <div className="w-full flex flex-col gap-4 relative">
+            <div className="max-w-5xl mx-auto w-full flex flex-col items-center gap-10">
+              
+              {/* Componente Interativo de Preços (3 Colunas) */}
+              <div className="w-full border-4 border-slate-100 rounded-[2rem] p-6 lg:p-8 shadow-xl shadow-slate-200/50 flex flex-col items-center gap-8 bg-white">
+                <div className="w-full grid md:grid-cols-3 gap-4">
                   {plans.map((plan, index) => (
                     <div
                       key={plan.id}
-                      className={`w-full flex justify-between items-center cursor-pointer border-2 p-5 rounded-2xl transition-all duration-300 ${
+                      className={`w-full flex flex-col cursor-pointer border-2 p-5 rounded-2xl transition-all duration-300 relative ${
                         activePlan === index ? "border-purple-600 bg-purple-50/50 shadow-md shadow-purple-500/10" : "border-slate-200 hover:border-purple-300 hover:bg-slate-50"
                       }`}
                       onClick={() => setActivePlan(index)}
                     >
-                      <div className="flex flex-col items-start">
-                        <p className="font-black text-lg lg:text-xl flex items-center gap-3 text-slate-900">
-                          {plan.name}
-                          {plan.popular && (
-                            <span className="py-1 px-3 block rounded-lg bg-yellow-100 text-yellow-800 text-[10px] font-black uppercase tracking-wider">
-                              Popular
-                            </span>
-                          )}
+                      {plan.popular && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
+                          ★ Mais Popular
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center mb-4">
+                        <p className="font-black text-lg text-slate-900 uppercase tracking-wide">
+                          {plan.id}
                         </p>
-                        <p className="text-slate-500 text-sm mt-1.5">
-                          <span className="text-slate-900 font-black text-xl lg:text-2xl mr-1">{plan.price}</span>
-                          {plan.id !== "mensal" && ` (equivale a ${plan.monthlyEquivalent}/mês)`}
-                        </p>
+                        <div
+                          className={`border-2 size-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                            activePlan === index ? "border-purple-600" : "border-slate-300 bg-white"
+                          }`}
+                        >
+                          <div
+                            className={`size-2.5 bg-purple-600 rounded-full transition-opacity ${
+                              activePlan === index ? "opacity-100" : "opacity-0"
+                            }`}
+                          ></div>
+                        </div>
                       </div>
                       
-                      <div
-                        className={`border-2 size-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                          activePlan === index ? "border-purple-600" : "border-slate-300 bg-white"
-                        }`}
-                      >
-                        <div
-                          className={`size-3.5 bg-purple-600 rounded-full transition-opacity ${
-                            activePlan === index ? "opacity-100" : "opacity-0"
-                          }`}
-                        ></div>
+                      <div className="flex flex-col mb-2">
+                        <span className="text-slate-900 font-black text-2xl lg:text-3xl">{plan.monthlyEquivalent || plan.price}/mês</span>
+                        {plan.id !== "mensal" && (
+                          <span className="text-slate-500 text-sm font-medium">({plan.price} total)</span>
+                        )}
                       </div>
+
+                      {plan.id === "anual" && (
+                        <div className="mt-auto pt-4 border-t border-purple-200/50">
+                          <p className="text-green-600 font-bold text-xs leading-snug">
+                            Você economiza R$ 682 em relação ao mensal
+                          </p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
 
-                <div className="w-full mt-2">
+                <div className="w-full max-w-2xl mt-4">
                   <a
                     href={plans[activePlan].checkoutUrl}
                     onClick={() => trackCheckoutClick(plans[activePlan].trackValue, plans[activePlan].id as "anual" | "mensal")}
                     className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black text-lg lg:text-xl rounded-2xl py-5 flex items-center justify-center shadow-lg shadow-purple-600/30 transition-transform active:scale-95"
                   >
-                    Começar teste grátis
+                    Começar agora — acesso em menos de 2 minutos
                   </a>
-                  <p className="text-center text-xs font-bold text-slate-500 mt-4">
-                    Liberação imediata via PIX ou Cartão
-                  </p>
-                  <p className="text-center text-[11px] text-slate-400 mt-1.5 leading-tight px-2">
-                    Não cobraremos hoje. Cancele com 1 clique antes de 3 dias.
+                  <p className="text-center text-[12px] font-bold text-[#64748B] mt-4 leading-relaxed px-2">
+                    🔒 Pagamento seguro via Stripe · Não cobraremos hoje · Cancele antes de 3 dias com 1 clique · Garantia de 7 dias após o teste
                   </p>
                 </div>
               </div>
-            </div>
-            <div className="mt-10 text-center text-sm text-slate-500 font-semibold max-w-2xl mx-auto bg-slate-50 py-3 rounded-xl border border-slate-200">
-              Pagamento seguro pela Stripe. Acesso imediato. Garantia de 7 dias. Sem alterar valores no checkout.
+
+              {/* Lista única de benefícios */}
+              <div className="w-full bg-slate-50 border border-slate-200 rounded-[2rem] p-8 lg:p-10 flex flex-col items-center">
+                <p className="text-[#0F172A] text-[15px] font-bold text-center mb-8">Todos os planos incluem exatamente os mesmos recursos — sem plano básico, sem recurso bloqueado.</p>
+                <div className="w-full max-w-4xl grid md:grid-cols-2 gap-x-8 gap-y-5">
+                  {pricingFeatures.map((feature) => (
+                    <div key={feature} className="flex items-start gap-3">
+                      <CheckCircle2 size={24} className="text-purple-600 shrink-0" />
+                      <span className="text-base text-slate-700 font-medium">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
             <div className="inicio2-after-purchase">
               <div className="inicio2-after-copy">
@@ -934,6 +1013,43 @@ export default function Inicio2() {
           </div>
         </section>
 
+        <section className="bg-[#F8FAFC] py-[64px] border-y border-slate-200">
+          <div className="inicio-container">
+            <h2 className="text-center text-[26px] font-bold text-[#0F172A] mb-2">Isso substitui o Canva Pro?</h2>
+            <p className="text-center text-[#64748B] text-[15px] max-w-[560px] mx-auto mb-10">Essa é a dúvida mais comum. A resposta direta:</p>
+            
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
+              <div className="grid grid-cols-[1.5fr_1fr_1fr] text-sm md:text-base min-w-[500px]">
+                {/* Header */}
+                <div className="p-4 md:p-6 font-bold text-slate-700 bg-white">Recurso</div>
+                <div className="p-4 md:p-6 font-bold text-center bg-[#E2E8F0] text-slate-700">Canva Pro</div>
+                <div className="p-4 md:p-6 font-bold text-center bg-[#7C3AED] text-white">Canva Viagem</div>
+                
+                {/* Rows */}
+                {[
+                  ["Templates genéricos", "✅ Muitos", "✅ 400 focados em viagem"],
+                  ["Vídeos de destinos prontos", "❌", "✅ 250 Reels 4K"],
+                  ["IA para criar ofertas de pacote", "❌", "✅"],
+                  ["Página de venda de pacote", "❌", "✅"],
+                  ["CRM de leads", "❌", "✅"],
+                  ["Suporte por WhatsApp", "❌", "✅"],
+                  ["Feito para agência de viagem", "❌", "✅"],
+                ].map(([feature, pro, viagem], idx) => (
+                  <div key={idx} className="contents">
+                    <div className="p-4 md:p-5 border-t border-slate-100 flex items-center font-medium text-slate-700">{feature}</div>
+                    <div className="p-4 md:p-5 border-t border-slate-100 bg-[#F8FAFC] text-center flex items-center justify-center">{pro}</div>
+                    <div className="p-4 md:p-5 border-t border-slate-100 bg-purple-50 font-bold text-center flex items-center justify-center text-purple-900">{viagem}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <p className="text-center text-[#64748B] text-[15px] max-w-[600px] mx-auto mt-6">
+              O Canva Pro é uma ferramenta de design genérica. O Canva Viagem é uma plataforma construída para quem vende viagens vender mais.
+            </p>
+          </div>
+        </section>
+
         <section className="faq inicio-section bg-slate-50">
           <div className="inicio-container">
             <h2 className="section-title w-full text-center">Perguntas que um comprador frio faria</h2>
@@ -958,20 +1074,25 @@ export default function Inicio2() {
           </div>
         </section>
 
-        <section className="final-cta bg-slate-950 py-20 border-b border-slate-800">
-          <div className="inicio-container text-center max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mb-5">
-              Sua próxima oferta pode parecer mais clara, mais profissional e mais fácil de vender hoje.
+        <section className="bg-[#0F172A] py-[80px]">
+          <div className="inicio-container text-center flex flex-col items-center">
+            <h2 className="text-[#FFFFFF] text-[32px] font-[800] max-w-[640px] mx-auto leading-tight">
+              Sua próxima oferta pode parecer de agência grande — e você pode criar ela hoje.
             </h2>
-            <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-3xl mx-auto">
-              Escolha um plano, receba acesso imediato e use a garantia de 7 dias para validar o Canva Viagem com um pacote real da sua agência.
+            <p className="text-[#94A3B8] text-[16px] max-w-[520px] mx-auto mt-[16px] mb-[32px] leading-relaxed">
+              Escolha um plano, receba acesso em minutos e use os 3 dias grátis para criar sua primeira oferta profissional com um pacote real da sua agência.
             </p>
-            <a href="#planos" className="btn btn-primary text-xl py-5 px-12 shadow-[0_0_30px_rgba(124,58,237,0.4)] hover:-translate-y-1 inline-block">
-              Iniciar meus 3 dias grátis sem compromisso
+            <a href="#planos" className="bg-[#7C3AED] text-white px-[40px] py-[16px] rounded-[8px] text-[18px] font-[700] hover:bg-[#6D28D9] transition-colors inline-block">
+              Iniciar meus 3 dias grátis agora
             </a>
-            <p className="text-slate-500 text-sm mt-6 flex items-center justify-center gap-2">
-              <ShieldCheck size={16} /> Não cobraremos hoje. Cancele com 1 clique.
+            <p className="text-[#64748B] text-[13px] mt-[12px]">
+              Não cobraremos hoje. Cancele com 1 clique antes de 3 dias.
             </p>
+            <div className="flex flex-wrap items-center justify-center gap-[24px] mt-[24px] text-[#94A3B8] text-[13px] font-medium">
+              <span>🔒 Stripe</span>
+              <span>⭐ 7 dias de garantia</span>
+              <span>✓ Acesso imediato</span>
+            </div>
           </div>
         </section>
       </main>
@@ -983,6 +1104,10 @@ export default function Inicio2() {
             <p>Conteúdo, IA, páginas e CRM para agências de viagem venderem melhor.</p>
             <div className="footer-contact">
               <a href="mailto:suporte@canvaviagem.com.br" className="footer-contact-link">suporte@canvaviagem.com.br</a>
+              <div className="text-[#94A3B8] text-[12px] mt-2 mb-2 leading-relaxed">
+                Rocha Digital Ltda — CNPJ: [CNPJ]<br/>
+                canvaviagem.com.br é operado pela Rocha Digital Ltda.
+              </div>
               <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="footer-contact-link footer-whatsapp">
                 WhatsApp suporte
               </a>
@@ -1000,12 +1125,10 @@ export default function Inicio2() {
         </div>
       </footer>
 
-      <div className="mobile-sticky">
-        <div className="sticky-price">
-          <span>{ELITE_OFFER.annualPrice}<small>/ano</small></span>
-          <small>{ELITE_OFFER.annualMonthlyEquivalent}/mês equivalente</small>
-        </div>
-        <a href="#planos" className="sticky-btn">Testar grátis <Check size={16} /></a>
+      <div className={`md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#7C3AED] text-white font-bold text-[16px] text-center rounded-t-[8px] transition-transform duration-300 ${isPricingVisible ? 'translate-y-full' : 'translate-y-0'}`}>
+        <a href="#planos" className="block w-full px-[24px] py-[14px]">
+          Iniciar 3 dias grátis — sem cobrança hoje →
+        </a>
       </div>
     </div>
   );
