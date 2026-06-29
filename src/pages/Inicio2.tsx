@@ -327,41 +327,41 @@ export default function Inicio2() {
               </div>
             </div>
 
-            <h1 className="text-5xl md:text-6xl lg:text-[5.5rem] font-black text-white leading-[1.1] mb-6 tracking-tighter">
+            <h1 className="text-4xl md:text-5xl lg:text-[4.5rem] font-black text-white leading-[1.05] mb-3 tracking-tighter">
               Venda mais viagens com IA
             </h1>
 
-            <p className="text-lg md:text-xl lg:text-2xl text-slate-300 font-medium mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base md:text-lg lg:text-xl text-slate-300 font-medium mb-5 max-w-3xl mx-auto leading-relaxed">
               Receba um site pronto, gerador de ofertas, vídeos e artes prontos, agentes de IA. <strong className="text-white font-black">Teste grátis.</strong>
             </p>
 
-            <div className="bg-emerald-500/10 border border-emerald-500/20 px-6 py-4 rounded-2xl mb-12 shadow-lg shadow-emerald-500/5 max-w-2xl mx-auto backdrop-blur-sm">
-              <p className="font-semibold text-sm md:text-base !text-emerald-300" style={{ color: '#6ee7b7' }}>
+            <div className="bg-emerald-500/10 border border-emerald-500/20 px-5 py-2.5 rounded-xl mb-6 shadow-lg shadow-emerald-500/5 max-w-2xl mx-auto backdrop-blur-sm">
+              <p className="font-semibold text-xs md:text-sm !text-emerald-300" style={{ color: '#6ee7b7' }}>
                 Veja o vídeo como usar a ferramenta simples de marketing turístico que te dá tudo pronto para você focar no que importa: seus clientes.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-12 w-full max-w-2xl mx-auto">
-              <a href="#planos" className="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white text-lg font-bold py-4 px-8 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.5)] transition-transform hover:-translate-y-1 flex items-center justify-center whitespace-nowrap">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4 mb-6 w-full max-w-2xl mx-auto">
+              <a href="#planos" className="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white text-base md:text-lg font-bold py-3 px-6 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.5)] transition-transform hover:-translate-y-1 flex items-center justify-center whitespace-nowrap">
                 Quero testar agora
               </a>
-              <a href="#video-prova" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-4 px-8 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-3 whitespace-nowrap">
-                <Play size={20} fill="currentColor" /> Ver vídeo da IA
+              <a href="#video-prova" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-3 px-6 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 whitespace-nowrap text-sm md:text-base">
+                <Play size={18} fill="currentColor" /> Ver vídeo da IA
               </a>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-3 w-full max-w-4xl mx-auto mb-10">
+            <div className="flex flex-wrap justify-center gap-2 w-full max-w-[550px] mx-auto mb-6">
               {["Acesso imediato", "Checkout seguro Stripe", "3 dias grátis", "7 dias de garantia", "Suporte por WhatsApp"].map((item) => (
-                <div key={item} className="bg-slate-800/60 border border-slate-700 rounded-full px-4 py-2 text-xs md:text-sm font-semibold text-slate-300 flex items-center justify-center gap-2">
-                  <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
+                <div key={item} className="bg-slate-800/60 border border-slate-700 rounded-full px-3 py-1.5 text-[11px] md:text-xs font-semibold text-slate-300 flex items-center justify-center gap-1.5">
+                  <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
                   {item}
                 </div>
               ))}
             </div>
 
-            <div className="hidden sm:flex flex-wrap justify-center gap-6 mb-12">
-              <div className="flex items-center gap-2 text-slate-400 text-sm font-bold"><CheckCircle2 className="text-purple-500" size={18} /> Feito para turismo</div>
-              <div className="flex items-center gap-2 text-slate-400 text-sm font-bold"><CheckCircle2 className="text-purple-500" size={18} /> Conteúdos + IA + Site + CRM</div>
+            <div className="hidden sm:flex flex-wrap justify-center gap-5 mb-8">
+              <div className="flex items-center gap-1.5 text-slate-400 text-xs md:text-sm font-bold"><CheckCircle2 className="text-purple-500" size={16} /> Feito para turismo</div>
+              <div className="flex items-center gap-1.5 text-slate-400 text-xs md:text-sm font-bold"><CheckCircle2 className="text-purple-500" size={16} /> Conteúdos + IA + Site + CRM</div>
             </div>
 
             <div id="video-prova" className="inicio2-hero-video">
