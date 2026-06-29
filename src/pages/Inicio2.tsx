@@ -419,7 +419,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<div className="w-full bg-white pt-8">
+        <div className="w-full bg-white pt-8">
           <div className="inicio-container">
             <div className="bg-[#7C3AED] text-white text-center text-[14px] font-medium py-[12px] px-[24px] rounded-[8px] mx-auto max-w-[720px]">
               🟢 Mais de 200 agências de viagens já usam a plataforma — os 3 dias grátis incluem acesso completo a todos os recursos, sem restrição.
@@ -427,7 +427,7 @@ export default function Inicio2() {
           </div>
         </div>
 
-        \n\n<section className="bg-white py-16">
+        <section className="bg-white py-16">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">COMO FUNCIONA NA PRÁTICA</p>
@@ -467,10 +467,15 @@ export default function Inicio2() {
                 </p>
               </div>
             </div>
+            <div className="text-center mt-10">
+              <a href="#planos" className="btn btn-primary inline-flex shadow-[0_0_20px_rgba(124,58,237,0.3)]">
+                Criar minha primeira oferta →
+              </a>
+            </div>
           </div>
         </section>
 
-        \n\n<section className="bg-white py-8 lg:py-12">
+        <section className="bg-white py-8 lg:py-12">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-10">
               <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">não é teoria</p>
@@ -494,10 +499,15 @@ export default function Inicio2() {
                 </div>
               ))}
             </div>
+            <div className="text-center mt-10">
+              <a href="#planos" className="btn btn-primary inline-flex shadow-[0_0_20px_rgba(124,58,237,0.3)]">
+                Quero usar essas ferramentas →
+              </a>
+            </div>
           </div>
         </section>
 
-        \n\n<section className="py-8 lg:py-12 bg-[#F8FAFC] border-y border-slate-200">
+        <section className="py-8 lg:py-12 bg-[#F8FAFC] border-y border-slate-200">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <h2 className="section-title w-full text-center">Escolha o que precisa criar hoje</h2>
@@ -550,10 +560,15 @@ export default function Inicio2() {
                 </div>
               ))}
             </div>
+            <div className="text-center mt-12">
+              <a href="#planos" className="btn btn-primary inline-flex shadow-[0_0_20px_rgba(124,58,237,0.3)] px-8 py-4 text-lg">
+                Garantir acesso a todas as ferramentas →
+              </a>
+            </div>
           </div>
         </section>
 
-        \n\n<section className="bg-slate-50 py-8 lg:py-12 border-y border-slate-200">
+        <section className="bg-slate-50 py-8 lg:py-12 border-y border-slate-200">
           <div className="inicio-container">
             <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-center">
               <div>
@@ -584,7 +599,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<section className="bg-slate-950 py-8 lg:py-12 relative overflow-hidden">
+        <section className="bg-slate-950 py-8 lg:py-12 relative overflow-hidden">
           <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
           <div className="inicio-container grid lg:grid-cols-[0.85fr_1.15fr] gap-8 lg:gap-12 items-center relative z-10">
             <div>
@@ -616,7 +631,7 @@ export default function Inicio2() {
         </section>
 
 
-        \n\n<section className="bg-white py-16">
+        <section className="bg-white py-16">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <p className="text-purple-600 font-black uppercase tracking-[0.25em] text-[11px] md:text-xs mb-4">POR QUE CONFIAR NO PRODUTO</p>
@@ -700,7 +715,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<section className="bg-slate-950 py-8 lg:py-12 relative overflow-hidden">
+        <section className="bg-slate-950 py-8 lg:py-12 relative overflow-hidden">
           <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
           <div className="inicio-container relative z-10">
             <div className="text-center max-w-3xl mx-auto mb-10">
@@ -732,7 +747,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<section id="demo" className="demo py-8 lg:py-12 bg-white">
+        <section id="demo" className="demo py-8 lg:py-12 bg-white">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-10">
               <h2 className="section-title w-full text-center">Dashboard inteligente para quem vende viagens</h2>
@@ -764,7 +779,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<section className="bg-white py-8 lg:py-12 border-b border-slate-100">
+        <section className="bg-white py-8 lg:py-12 border-b border-slate-100">
           <div className="inicio-container">
             <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-center">
               <div>
@@ -826,7 +841,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<section className="bg-white py-16 md:py-24">
+        <section className="bg-white py-16 md:py-24">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-10">
               <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">comparação honesta</p>
@@ -867,7 +882,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<section className="bg-[#F8FAFC] py-[64px] border-y border-slate-200">
+        <section className="bg-[#F8FAFC] py-[64px] border-y border-slate-200">
           <div className="inicio-container">
             <h2 className="text-center text-[26px] font-bold text-[#0F172A] mb-2">Isso substitui o Canva Pro?</h2>
             <p className="text-center text-[#64748B] text-[15px] max-w-[560px] mx-auto mb-10">Essa é a dúvida mais comum. A resposta direta:</p>
@@ -904,7 +919,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<section id="planos" className="pricing inicio-section bg-white">
+        <section id="planos" className="pricing inicio-section bg-white">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <h2 className="section-title w-full text-center">Escolha como acessar</h2>
@@ -1031,7 +1046,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<section className="inicio2-objections bg-slate-950 py-16 md:py-24">
+        <section className="inicio2-objections bg-slate-950 py-16 md:py-24">
           <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-10">
               <p className="text-cyan-300 font-black uppercase tracking-[0.2em] text-xs mb-3">antes de decidir</p>
@@ -1055,7 +1070,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<section className="bg-green-50 py-16 md:py-20 border-y border-green-200">
+        <section className="bg-green-50 py-16 md:py-20 border-y border-green-200">
           <div className="inicio-container">
             <div className="max-w-4xl mx-auto grid md:grid-cols-[0.8fr_1.2fr] gap-8 items-center">
               <div className="bg-white rounded-3xl p-8 border border-green-200 text-center">
@@ -1077,7 +1092,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<section className="faq inicio-section bg-slate-50">
+        <section className="faq inicio-section bg-slate-50">
           <div className="inicio-container">
             <h2 className="section-title w-full text-center">Perguntas que um comprador frio faria</h2>
             <p className="section-subtitle w-full text-center">
@@ -1101,7 +1116,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n
+        
         <section className="bg-white py-12 border-y border-slate-100">
           <div className="inicio-container">
             <div className="max-w-[560px] mx-auto text-center flex flex-col items-center">
@@ -1119,7 +1134,7 @@ export default function Inicio2() {
             </div>
           </div>
         </section>
-\n\n<section className="bg-[#0F172A] py-8 lg:py-12">
+<section className="bg-[#0F172A] py-8 lg:py-12">
           <div className="inicio-container">
             <div id="video-prova" className="inicio2-hero-video mx-auto">
               <div className="inicio2-hero-video-top">
@@ -1161,7 +1176,7 @@ export default function Inicio2() {
           </div>
         </section>
 
-        \n\n<section className="bg-[#0F172A] py-[80px]">
+        <section className="bg-[#0F172A] py-[80px]">
           <div className="inicio-container text-center flex flex-col items-center">
             <h2 className="text-[#FFFFFF] text-[32px] font-[800] max-w-[640px] mx-auto leading-tight">
               Sua próxima oferta pode parecer de agência grande — e você pode criar ela hoje.
