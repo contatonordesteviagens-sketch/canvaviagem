@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
+import YouTube, { YouTubePlayer } from "react-youtube";
 import {
   ArrowRight,
   CheckCircle2,
@@ -110,7 +111,43 @@ const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@CanvaViagem";
 const INSTAGRAM_URL = "https://www.instagram.com/lucasferrari.pro/";
 
 export const TutorialSection = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
+  // Load saved progress from localStorage
+  const getSavedProgress = () => {
+    try {
+      const saved = localStorage.getItem("cv_tutorial_progress");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error("Failed to load tutorial progress", e);
+    }
+    return { index: 0, time: 0 };
+  };
+
+  const savedProgress = useMemo(getSavedProgress, []);
+  const [activeIndex, setActiveIndex] = useState(savedProgress.index);
+  const [startTime, setStartTime] = useState(savedProgress.index === savedProgress.index ? savedProgress.time : 0);
+  const playerRef = useRef<YouTubePlayer>(null);
+
+  // Save index when it changes
+  useEffect(() => {
+    const current = getSavedProgress();
+    if (current.index !== activeIndex) {
+      localStorage.setItem("cv_tutorial_progress", JSON.stringify({ index: activeIndex, time: 0 }));
+      setStartTime(0);
+    }
+  }, [activeIndex]);
+
+  // Periodically save timestamp while playing
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+        const time = playerRef.current.getCurrentTime();
+        if (time > 0) {
+          localStorage.setItem("cv_tutorial_progress", JSON.stringify({ index: activeIndex, time }));
+        }
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [activeIndex]);
   const activeVideo = TUTORIAL_VIDEOS[activeIndex];
   const nextVideo = TUTORIAL_VIDEOS[activeIndex + 1];
 
@@ -126,13 +163,32 @@ export const TutorialSection = () => {
         {/* Main Video Area */}
         <div className="flex-1 flex flex-col gap-4">
           <div className="relative w-full rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10 group aspect-video">
-            <iframe
+            <YouTube
               key={activeVideo.videoId}
-              src={`https://www.youtube.com/embed/${activeVideo.videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0`}
-              title={activeVideo.title}
+              videoId={activeVideo.videoId}
+              opts={{
+                width: '100%',
+                height: '100%',
+                playerVars: {
+                  autoplay: 0,
+                  rel: 0,
+                  modestbranding: 1,
+                  start: startTime > 0 ? Math.floor(startTime) : 0,
+                },
+              }}
+              onReady={(e) => {
+                playerRef.current = e.target;
+              }}
+              onStateChange={(e) => {
+                // 0 = ended
+                if (e.data === 0) {
+                  if (TUTORIAL_VIDEOS[activeIndex + 1]) {
+                    setActiveIndex(activeIndex + 1);
+                  }
+                }
+              }}
               className="absolute top-0 left-0 w-full h-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
+              iframeClassName="w-full h-full border-0"
             />
           </div>
 
