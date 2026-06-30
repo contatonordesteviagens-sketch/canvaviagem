@@ -114,6 +114,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
     { to: isESRoute ? "/es/calendar" : "/calendar", label: t('header.calendar'), icon: Calendar },
     { to: "/blog", label: "Blog", icon: FileText, state: { fromInternal: true } },
     { to: isESRoute ? "/es/inicio" : "/inicio", label: t('header.plans'), icon: CreditCard },
+    { id: "aulas", label: "Aulas", icon: GraduationCap, action: () => handleCategoryClick('videoaula') }
   ];
 
   // Additional nav items for logged-in users
@@ -196,19 +197,34 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
           <nav className="hidden md:flex items-center gap-1">
             {/* Links Principais Inline para limpar o dropdown */}
             <div className="flex items-center gap-1 mr-4 border-r pr-4 border-border/40">
-              {mainNavItems.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all hover:bg-accent/10 hover:text-primary",
-                    location.pathname === item.to ? "bg-primary/10 text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  <item.icon className="w-4 h-4" />
-                  {item.label}
-                </Link>
-              ))}
+              {mainNavItems.map((item) => {
+                if ('action' in item) {
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={item.action}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-accent/10 hover:text-primary"
+                    >
+                      <item.icon className="w-4 h-4" />
+                      {item.label}
+                    </button>
+                  );
+                }
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to!}
+                    state={'state' in item ? item.state : undefined}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all hover:bg-accent/10 hover:text-primary",
+                      location.pathname === item.to ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                    )}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.label}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Progress Bar - Desktop */}
@@ -311,18 +327,36 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
                     Navegação
                   </p>
-                  {mainNavItems.map((item) => (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
-                      activeClassName="bg-primary text-primary-foreground"
-                    >
-                      <item.icon className="h-5 w-5" />
-                      {item.label}
-                    </NavLink>
-                  ))}
+                  {mainNavItems.map((item) => {
+                    if ('action' in item) {
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            item.action!();
+                            setIsOpen(false);
+                          }}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/10 w-full text-left"
+                        >
+                          <item.icon className="h-5 w-5" />
+                          {item.label}
+                        </button>
+                      );
+                    }
+                    return (
+                      <NavLink
+                        key={item.to}
+                        to={item.to!}
+                        state={'state' in item ? item.state : undefined}
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
+                        activeClassName="bg-primary text-primary-foreground"
+                      >
+                        <item.icon className="h-5 w-5" />
+                        {item.label}
+                      </NavLink>
+                    );
+                  })}
 
                   {/* Próximo Nível - Mobile - Only for Portuguese */}
                   {showProximoNivel && (
