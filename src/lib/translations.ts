@@ -27,7 +27,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'category.captions': 'Legendas',
     'category.downloads': 'Downloads',
     'category.tools': 'Ferramentas de IA',
-    'category.videoaula': 'Videoaula',
+    'category.videoaula': 'Aulas',
     'category.favorites': 'Favoritos',
 
     // Bottom Nav
@@ -240,7 +240,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'category.captions': 'Subtítulos',
     'category.downloads': 'Descargas',
     'category.tools': 'Herramientas de IA',
-    'category.videoaula': 'Videoclases',
+    'category.videoaula': 'Clases',
     'category.favorites': 'Favoritos',
 
     // Bottom Nav
