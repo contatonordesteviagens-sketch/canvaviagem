@@ -128,14 +128,69 @@ export const TutorialSection = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const playerRef = useRef<YouTubePlayer>(null);
 
-  // Save index when it changes
+  // Save index when it changes, and reset playing state
   useEffect(() => {
+    if (playerRef.current) {
+      try {
+        if (typeof playerRef.current.stopVideo === 'function') {
+          playerRef.current.stopVideo();
+        }
+      } catch (e) {}
+    }
+    setIsPlaying(false);
+
     const current = getSavedProgress();
     if (current.index !== activeIndex) {
       localStorage.setItem("cv_tutorial_progress", JSON.stringify({ index: activeIndex, time: 0 }));
       setStartTime(0);
     }
   }, [activeIndex]);
+
+  // Ensure video stops and resets to cover when tab is hidden, window blurred, or component unmounts
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (playerRef.current) {
+          try {
+            if (typeof playerRef.current.stopVideo === 'function') {
+              playerRef.current.stopVideo();
+            }
+          } catch (e) {}
+        }
+        setIsPlaying(false);
+      }
+    };
+
+    const handleWindowBlur = () => {
+      if (playerRef.current) {
+        try {
+          if (typeof playerRef.current.stopVideo === 'function') {
+            playerRef.current.stopVideo();
+          }
+        } catch (e) {}
+      }
+      setIsPlaying(false);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleWindowBlur);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleWindowBlur);
+      if (playerRef.current) {
+        try {
+          if (typeof playerRef.current.stopVideo === 'function') {
+            playerRef.current.stopVideo();
+          }
+          if (typeof playerRef.current.destroy === 'function') {
+            playerRef.current.destroy();
+          }
+        } catch (e) {}
+      }
+      setIsPlaying(false);
+    };
+  }, []);
 
   // Periodically save timestamp while playing
   useEffect(() => {
