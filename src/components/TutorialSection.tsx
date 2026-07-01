@@ -214,7 +214,7 @@ export const TutorialSection = () => {
                   if (e.data === 0) {
                     if (TUTORIAL_VIDEOS[activeIndex + 1]) {
                       setActiveIndex(activeIndex + 1);
-                      setIsPlaying(true);
+                      setIsPlaying(false);
                     }
                   }
                 }}
@@ -250,7 +250,7 @@ export const TutorialSection = () => {
                 onClick={() => {
                   if (nextVideo) {
                     setActiveIndex(activeIndex + 1);
-                    setIsPlaying(true);
+                    setIsPlaying(false);
                   }
                 }}
                 disabled={!nextVideo}
@@ -299,7 +299,7 @@ export const TutorialSection = () => {
                     key={video.videoId}
                     onClick={() => {
                       setActiveIndex(index);
-                      setIsPlaying(true);
+                      setIsPlaying(false);
                     }}
                     className={`w-full text-left group relative p-3 rounded-xl transition-all duration-300 flex gap-4 ${
                       isActive
