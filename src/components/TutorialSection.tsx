@@ -125,6 +125,7 @@ export const TutorialSection = () => {
   const savedProgress = useMemo(getSavedProgress, []);
   const [activeIndex, setActiveIndex] = useState(savedProgress.index);
   const [startTime, setStartTime] = useState(savedProgress.index === savedProgress.index ? savedProgress.time : 0);
+  const [isPlaying, setIsPlaying] = useState(false);
   const playerRef = useRef<YouTubePlayer>(null);
 
   // Save index when it changes
@@ -163,33 +164,64 @@ export const TutorialSection = () => {
         {/* Main Video Area */}
         <div className="flex-1 flex flex-col gap-4">
           <div className="relative w-full rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10 group aspect-video">
-            <YouTube
-              key={activeVideo.videoId}
-              videoId={activeVideo.videoId}
-              opts={{
-                width: '100%',
-                height: '100%',
-                playerVars: {
-                  autoplay: 0,
-                  rel: 0,
-                  modestbranding: 1,
-                  start: startTime > 0 ? Math.floor(startTime) : 0,
-                },
-              }}
-              onReady={(e) => {
-                playerRef.current = e.target;
-              }}
-              onStateChange={(e) => {
-                // 0 = ended
-                if (e.data === 0) {
-                  if (TUTORIAL_VIDEOS[activeIndex + 1]) {
-                    setActiveIndex(activeIndex + 1);
+            {!isPlaying ? (
+              <div 
+                onClick={() => setIsPlaying(true)}
+                className="absolute inset-0 w-full h-full cursor-pointer group flex items-center justify-center relative overflow-hidden bg-slate-950"
+              >
+                <img 
+                  src={activeVideo.thumbnail} 
+                  alt={activeVideo.title}
+                  className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                
+                {/* Play Button Overlay */}
+                <div className="relative z-10 flex flex-col items-center gap-4 text-center p-6">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center shadow-[0_0_50px_rgba(6,182,212,0.6)] group-hover:scale-110 group-hover:bg-cyan-400 transition-all duration-300 animate-pulse">
+                    <Play className="w-10 h-10 sm:w-12 sm:h-12 fill-slate-950 ml-1.5" />
+                  </div>
+                  <div className="bg-slate-900/90 backdrop-blur-md border border-white/10 px-6 py-2.5 rounded-full shadow-xl">
+                    <span className="text-xs sm:text-sm font-black text-cyan-400 tracking-wider uppercase flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                      Clique para iniciar a aula {activeIndex + 1}
+                    </span>
+                  </div>
+                  <h3 className="text-lg sm:text-2xl font-black text-white max-w-xl leading-tight drop-shadow-md">
+                    {activeVideo.title}
+                  </h3>
+                </div>
+              </div>
+            ) : (
+              <YouTube
+                key={activeVideo.videoId}
+                videoId={activeVideo.videoId}
+                opts={{
+                  width: '100%',
+                  height: '100%',
+                  playerVars: {
+                    autoplay: 1,
+                    rel: 0,
+                    modestbranding: 1,
+                    start: startTime > 0 ? Math.floor(startTime) : 0,
+                  },
+                }}
+                onReady={(e) => {
+                  playerRef.current = e.target;
+                }}
+                onStateChange={(e) => {
+                  // 0 = ended
+                  if (e.data === 0) {
+                    if (TUTORIAL_VIDEOS[activeIndex + 1]) {
+                      setActiveIndex(activeIndex + 1);
+                      setIsPlaying(true);
+                    }
                   }
-                }
-              }}
-              className="absolute top-0 left-0 w-full h-full border-0"
-              iframeClassName="w-full h-full border-0"
-            />
+                }}
+                className="absolute top-0 left-0 w-full h-full border-0"
+                iframeClassName="w-full h-full border-0"
+              />
+            )}
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 rounded-2xl bg-gradient-to-r from-[#0b1220] to-[#0d1627] border border-white/5 shadow-lg">
@@ -215,7 +247,12 @@ export const TutorialSection = () => {
             <div className="flex-shrink-0">
               <button
                 type="button"
-                onClick={() => nextVideo && setActiveIndex(activeIndex + 1)}
+                onClick={() => {
+                  if (nextVideo) {
+                    setActiveIndex(activeIndex + 1);
+                    setIsPlaying(true);
+                  }
+                }}
                 disabled={!nextVideo}
                 className="relative group inline-flex items-center justify-center gap-3 px-8 py-4 text-sm sm:text-base font-black text-slate-900 bg-cyan-400 rounded-xl overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(34,211,238,0.5)] focus:outline-none disabled:opacity-50 disabled:pointer-events-none"
               >
@@ -260,7 +297,10 @@ export const TutorialSection = () => {
                 return (
                   <button
                     key={video.videoId}
-                    onClick={() => setActiveIndex(index)}
+                    onClick={() => {
+                      setActiveIndex(index);
+                      setIsPlaying(true);
+                    }}
                     className={`w-full text-left group relative p-3 rounded-xl transition-all duration-300 flex gap-4 ${
                       isActive
                         ? "bg-cyan-500/10 border border-cyan-500/30"
