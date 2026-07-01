@@ -115,16 +115,20 @@ export const TutorialSection = () => {
   const getSavedProgress = () => {
     try {
       const saved = localStorage.getItem("cv_tutorial_progress");
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (typeof data?.index === "number" && data.index >= 0 && data.index < TUTORIAL_VIDEOS.length) {
+          return { index: data.index, time: typeof data.time === "number" ? data.time : 0 };
+        }
+      }
     } catch (e) {
       console.error("Failed to load tutorial progress", e);
     }
     return { index: 0, time: 0 };
   };
 
-  const savedProgress = useMemo(getSavedProgress, []);
-  const [activeIndex, setActiveIndex] = useState(savedProgress.index);
-  const [startTime, setStartTime] = useState(savedProgress.index === savedProgress.index ? savedProgress.time : 0);
+  const [activeIndex, setActiveIndex] = useState(() => getSavedProgress().index);
+  const [startTime, setStartTime] = useState(() => getSavedProgress().time);
   const [isPlaying, setIsPlaying] = useState(false);
   const playerRef = useRef<YouTubePlayer>(null);
 
@@ -143,6 +147,8 @@ export const TutorialSection = () => {
     if (current.index !== activeIndex) {
       localStorage.setItem("cv_tutorial_progress", JSON.stringify({ index: activeIndex, time: 0 }));
       setStartTime(0);
+    } else {
+      setStartTime(current.time || 0);
     }
   }, [activeIndex]);
 
@@ -268,8 +274,11 @@ export const TutorialSection = () => {
                   // 0 = ended
                   if (e.data === 0) {
                     if (TUTORIAL_VIDEOS[activeIndex + 1]) {
-                      setActiveIndex(activeIndex + 1);
+                      const nextIdx = activeIndex + 1;
+                      setActiveIndex(nextIdx);
                       setIsPlaying(false);
+                      setStartTime(0);
+                      localStorage.setItem("cv_tutorial_progress", JSON.stringify({ index: nextIdx, time: 0 }));
                     }
                   }
                 }}
@@ -304,8 +313,11 @@ export const TutorialSection = () => {
                 type="button"
                 onClick={() => {
                   if (nextVideo) {
-                    setActiveIndex(activeIndex + 1);
+                    const nextIdx = activeIndex + 1;
+                    setActiveIndex(nextIdx);
                     setIsPlaying(false);
+                    setStartTime(0);
+                    localStorage.setItem("cv_tutorial_progress", JSON.stringify({ index: nextIdx, time: 0 }));
                   }
                 }}
                 disabled={!nextVideo}
@@ -355,6 +367,10 @@ export const TutorialSection = () => {
                     onClick={() => {
                       setActiveIndex(index);
                       setIsPlaying(false);
+                      const current = getSavedProgress();
+                      const newTime = current.index === index ? (current.time || 0) : 0;
+                      setStartTime(newTime);
+                      localStorage.setItem("cv_tutorial_progress", JSON.stringify({ index, time: newTime }));
                     }}
                     className={`w-full text-left group relative p-3 rounded-xl transition-all duration-300 flex gap-4 ${
                       isActive
