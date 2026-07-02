@@ -366,7 +366,7 @@ export default function Inicio2() {
                 </h1>
 
                 <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-300 font-medium mb-5 max-w-2xl leading-relaxed">
-                  O Canva Viagem entrega tudo pronto para você criar ofertas, postar no Instagram e organizar seus clientes — sem designer, sem social media, sem improviso.
+                  O Canva Viagem entrega tudo pronto para você criar ofertas, postar no Instagram, narrar vídeos e organizar seus clientes — sem designer, sem social media, sem locutor, sem improviso.
                 </p>
 
                 <div className="bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 md:px-5 md:py-2.5 rounded-lg md:rounded-xl mb-6 shadow-lg shadow-emerald-500/5 max-w-2xl backdrop-blur-sm">
@@ -414,6 +414,48 @@ export default function Inicio2() {
                     <Users size={16} className="text-emerald-400"/> CRM
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-[#0F172A] pb-12 lg:pb-16 border-b border-slate-800/80">
+          <div className="inicio-container">
+            <div id="video-prova" className="inicio2-hero-video mx-auto">
+              <div className="inicio2-hero-video-top">
+                <span>Veja antes de comprar</span>
+                <strong>Vídeo real da ferramenta</strong>
+              </div>
+              <div className="inicio2-hero-video-frame">
+                {heroMutedActive ? (
+                  <>
+                    <iframe
+                      title="Lucas usando o Canva Viagem"
+                      src="https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&mute=1&controls=0&loop=1&playlist=R2MyCdox--I&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
+                      allow="autoplay; encrypted-media; picture-in-picture"
+                      allowFullScreen
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setHeroMutedActive(false)}
+                      className="absolute inset-0 flex items-center justify-center bg-slate-950/10 hover:bg-slate-950/0 transition-colors"
+                    >
+                      <span className="bg-white text-slate-950 font-black rounded-full px-6 py-3 shadow-xl flex items-center gap-2">
+                        <Play size={18} fill="currentColor" /> Assistir com som
+                      </span>
+                    </button>
+                  </>
+                ) : (
+                  <iframe
+                    title="Lucas usando o Canva Viagem com áudio"
+                    src="https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&controls=1&modestbranding=1&rel=0"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                  />
+                )}
+              </div>
+              <div className="inicio2-hero-video-footer">
+                <span>Vídeo curto: veja Lucas criando uma oferta e mostrando como a ferramenta funciona por dentro.</span>
               </div>
             </div>
           </div>
@@ -1130,47 +1172,6 @@ export default function Inicio2() {
                 <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="w-full max-w-[400px] mx-auto bg-transparent border-[1.5px] border-[#7C3AED] hover:bg-purple-50 text-[#7C3AED] font-[600] text-[15px] py-[12px] px-[32px] rounded-[8px] transition-colors">
                   Falar com suporte no WhatsApp →
                 </a>
-              </div>
-            </div>
-          </div>
-        </section>
-<section className="bg-[#0F172A] py-8 lg:py-12">
-          <div className="inicio-container">
-            <div id="video-prova" className="inicio2-hero-video mx-auto">
-              <div className="inicio2-hero-video-top">
-                <span>Veja antes de comprar</span>
-                <strong>Vídeo real da ferramenta</strong>
-              </div>
-              <div className="inicio2-hero-video-frame">
-                {heroMutedActive ? (
-                  <>
-                    <iframe
-                      title="Lucas usando o Canva Viagem"
-                      src="https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&mute=1&controls=0&loop=1&playlist=R2MyCdox--I&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
-                      allow="autoplay; encrypted-media; picture-in-picture"
-                      allowFullScreen
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setHeroMutedActive(false)}
-                      className="absolute inset-0 flex items-center justify-center bg-slate-950/10 hover:bg-slate-950/0 transition-colors"
-                    >
-                      <span className="bg-white text-slate-950 font-black rounded-full px-6 py-3 shadow-xl flex items-center gap-2">
-                        <Play size={18} fill="currentColor" /> Assistir com som
-                      </span>
-                    </button>
-                  </>
-                ) : (
-                  <iframe
-                    title="Lucas usando o Canva Viagem com áudio"
-                    src="https://www.youtube.com/embed/R2MyCdox--I?autoplay=1&controls=1&modestbranding=1&rel=0"
-                    allow="autoplay; encrypted-media; picture-in-picture"
-                    allowFullScreen
-                  />
-                )}
-              </div>
-              <div className="inicio2-hero-video-footer">
-                <span>Vídeo curto: veja Lucas criando uma oferta e mostrando como a ferramenta funciona por dentro.</span>
               </div>
             </div>
           </div>
