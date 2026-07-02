@@ -22,7 +22,8 @@ import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRi
 import { Skeleton } from "@/components/ui/skeleton";
 import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Info } from "lucide-react";
+import { CheckCircle2, Info, Bot, Image, Video, Zap, ShieldCheck, Layout } from "lucide-react";
+import { ELITE_OFFER } from "@/lib/eliteOffer";
 
 // Lazy load non-critical components
 const PremiumGateModal = lazy(() => import("@/components/PremiumGateModal").then(module => ({ default: module.PremiumGateModal })));
@@ -135,7 +136,6 @@ const Index = () => {
   const [showPremiumGate, setShowPremiumGate] = useState(false);
   const [redirectionTool, setRedirectionTool] = useState<string | null>(null);
   const [showFestaPopup, setShowFestaPopup] = useState(false);
-  const [popupMutedActive, setPopupMutedActive] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -1780,101 +1780,187 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* Startup Announcement Popup for subscribers */}
+      {/* Startup Announcement Popup for subscribers - Mobile First */}
       <AnimatePresence>
         {showFestaPopup && (
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/95 backdrop-blur-md z-[9999] flex items-center justify-center p-4 md:p-6"
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-3 sm:p-4"
           >
             <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
+              initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-[#050D1A] border border-cyan-500/20 rounded-3xl overflow-hidden max-w-2xl w-full relative shadow-2xl shadow-cyan-500/10 flex flex-col"
+              exit={{ scale: 0.95, y: 15 }}
+              className="bg-[#F8FAFC] border border-slate-200 rounded-3xl overflow-y-auto max-h-[92vh] w-[calc(100vw-24px)] max-w-[740px] relative shadow-2xl flex flex-col text-slate-900"
             >
-              {/* Close Button floating over video */}
+              {/* Close Button */}
               <button 
                 onClick={() => {
                   localStorage.setItem("cv_festa_popup_seen_v3", "true");
                   setShowFestaPopup(false);
                 }}
-                className="absolute top-4 right-4 text-white/70 hover:text-white text-lg transition-colors cursor-pointer z-50 bg-black/50 hover:bg-black/80 rounded-full w-8 h-8 flex items-center justify-center border border-white/10"
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer z-50 bg-white hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center border border-slate-200 shadow-sm font-bold"
               >
                 ✕
               </button>
 
-              {/* YouTube Video Player Embed at the VERY TOP */}
-              <div className="relative w-full aspect-video bg-black">
-                {popupMutedActive ? (
-                  <>
-                    <iframe 
-                      className="absolute inset-0 w-full h-full border-0 pointer-events-none"
-                      src="https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=1&mute=1&controls=0&loop=1&playlist=Xqcw-NpPz08&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
-                      title="Fábrica de Anúncios Canva Viagem"
-                      allow="autoplay; encrypted-media"
-                    />
-                    
-                    {/* Silent Overlay */}
-                    <div 
-                      onClick={() => setPopupMutedActive(false)}
-                      className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-black/30 transition-all"
-                    >
-                      <div className="absolute top-4 bg-black/85 border border-cyan-500/25 rounded-full px-4 py-1.5 text-[10px] font-black text-cyan-400 flex items-center gap-2">
-                        <span className="inline-block w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" />
-                        ASSISTIR COM SOM (CLIQUE PARA ATIVAR)
-                      </div>
+              <div className="p-5 sm:p-7 md:p-8">
+                {/* Top Header / Title */}
+                <div className="text-center sm:text-left">
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-100 px-3.5 py-1 shadow-sm">
+                    <Crown className="h-3.5 w-3.5 text-purple-700" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-purple-900">Ecossistema #1 do Turismo</span>
+                  </div>
 
-                      <div className="hover:scale-105 active:scale-95 transition-all animate-bounce flex items-center gap-2 bg-cyan-400 text-slate-950 font-black text-xs px-6 py-3.5 rounded-full shadow-lg shadow-cyan-400/40">
-                        <Play size={12} fill="#050D1A" />
-                        ATIVAR ÁUDIO DO VÍDEO
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <iframe 
-                    className="absolute inset-0 w-full h-full border-0"
-                    src="https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0"
-                    title="Fábrica de Anúncios Canva Viagem"
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen
-                  />
-                )}
-              </div>
-
-              {/* Clean, minimal title and closing instruction at bottom */}
-              <div className="p-6 text-center bg-[#03070F] border-t border-white/5 space-y-4">
-                <div>
-                  <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">
-                    A Fábrica de Anúncios Liberou! 🚀🤖
+                  <h2 className="mt-3 text-2xl sm:text-3xl font-black leading-tight tracking-tight text-slate-900">
+                    A Fábrica de Anúncios Liberou! <span className="text-purple-600">🚀⚡</span>
                   </h2>
-                  <p className="text-gray-400 text-xs mt-1.5 max-w-lg mx-auto leading-relaxed">
-                    A ferramenta mais poderosa do mercado de turismo agora está disponível. Digite a sua oferta e receba seu anúncio pronto com fotos profissionais, preços e o seu logotipo em 5 segundos!
+                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-600 font-medium">
+                    A ferramenta mais poderosa do mercado está pronta. Digite o destino e receba seu anúncio pronto em <strong className="text-slate-900 font-bold">5 segundos</strong>.
                   </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-2">
+                {/* Prévia dos Entregáveis (O que você recebe no Plano Completo) */}
+                <div className="mt-6">
+                  <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 mb-3">
+                    <Sparkles className="h-4 w-4 text-purple-600 fill-purple-600" />
+                    <span>O que você recebe no Plano Completo:</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div className="flex items-start gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-700 mt-0.5">
+                        <Bot className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-900">Fábrica de Anúncios IA</h4>
+                        <p className="text-[11px] text-slate-500 leading-tight mt-0.5">Gerador instantâneo de cards de oferta, fotos e preço com sua logo em 5s.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-100 text-cyan-700 mt-0.5">
+                        <Image className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-900">+3.000 Artes Editáveis</h4>
+                        <p className="text-[11px] text-slate-500 leading-tight mt-0.5">Maior acervo VIP do turismo para Feed, Stories, Reels e WhatsApp.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 mt-0.5">
+                        <Layout className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-900">Construtor de Sites</h4>
+                        <p className="text-[11px] text-slate-500 leading-tight mt-0.5">Páginas de pacote de viagem prontas, editáveis e de alta conversão.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 mt-0.5">
+                        <Video className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-900">Canva Viagem Completo</h4>
+                        <p className="text-[11px] text-slate-500 leading-tight mt-0.5">Vídeos Reels, Vozes IA, roteiros automáticos e CRM de leads incluso.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Valores do Plano Completo */}
+                <div className="mt-6">
+                  <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 mb-3">
+                    <span>💳 Escolha seu plano de acesso:</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {/* Plano Anual */}
+                    <div 
+                      onClick={() => {
+                        localStorage.setItem("cv_festa_popup_seen_v3", "true");
+                        setShowFestaPopup(false);
+                        navigate("/inicio");
+                      }}
+                      className="relative rounded-2xl bg-white border-2 border-[#7C3AED] p-4.5 shadow-md hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between"
+                    >
+                      <div className="absolute -top-3 left-4 bg-gradient-to-r from-amber-500 to-red-500 text-white text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                        Melhor Valor • Mais Popular
+                      </div>
+                      
+                      <div className="pt-2">
+                        <span className="text-xs font-black text-slate-400 uppercase tracking-wide">Elite Anual</span>
+                        <div className="flex items-baseline gap-1 mt-1 text-[#7C3AED]">
+                          <span className="text-sm font-bold">12x</span>
+                          <span className="text-3xl font-black tracking-tight">{ELITE_OFFER.annualMonthlyEquivalent}</span>
+                        </div>
+                        <span className="text-[11px] font-bold text-slate-600 block mt-0.5">ou {ELITE_OFFER.annualPrice} à vista por 1 ano</span>
+                      </div>
+
+                      <div className="mt-3.5 rounded-xl bg-[#F0FDF4] border border-[#86EFAC] p-2 text-[11px] font-bold text-[#15803D] text-center">
+                        Economia de {ELITE_OFFER.annualSavings} + 3 dias grátis
+                      </div>
+                    </div>
+
+                    {/* Plano Mensal */}
+                    <div 
+                      onClick={() => {
+                        localStorage.setItem("cv_festa_popup_seen_v3", "true");
+                        setShowFestaPopup(false);
+                        navigate("/inicio");
+                      }}
+                      className="rounded-2xl bg-white border border-slate-200 p-4.5 shadow-sm hover:border-slate-300 transition-all cursor-pointer flex flex-col justify-between"
+                    >
+                      <div>
+                        <span className="text-xs font-black text-slate-400 uppercase tracking-wide">Elite Mensal</span>
+                        <div className="flex items-baseline gap-1 mt-1 text-slate-900">
+                          <span className="text-3xl font-black tracking-tight">{ELITE_OFFER.monthlyPrice}</span>
+                          <span className="text-xs font-bold text-slate-500">/mês</span>
+                        </div>
+                        <span className="text-[11px] font-semibold text-slate-500 block mt-0.5">Acesso contínuo ao sistema</span>
+                      </div>
+
+                      <div className="mt-3.5 rounded-xl bg-slate-100 border border-slate-200 p-2 text-[11px] font-semibold text-slate-600 text-center">
+                        Recorrente, sem fidelidade. Cancele quando quiser.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botões de Ação */}
+                <div className="mt-7 space-y-3">
                   <Button
                     onClick={() => {
                       localStorage.setItem("cv_festa_popup_seen_v3", "true");
                       setShowFestaPopup(false);
                       navigate("/inicio");
                     }}
-                    className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold px-8 py-6 rounded-xl text-xs transition-all uppercase tracking-wider border-0"
+                    className="w-full h-14 rounded-xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-purple-600/25 flex items-center justify-center gap-2 border-0 transition-all active:scale-[0.99]"
                   >
-                    Conhecer os Planos (Ativar Fábrica) →
+                    <span>🔥 CONHECER OS PLANOS (ATIVAR FÁBRICA) →</span>
                   </Button>
-                  <button 
-                    onClick={() => {
-                      localStorage.setItem("cv_festa_popup_seen_v3", "true");
-                      setShowFestaPopup(false);
-                    }}
-                    className="text-xs text-white/40 hover:text-white font-bold transition-colors bg-transparent border-0 cursor-pointer"
-                  >
-                    Permanecer na Página Atual
-                  </button>
+
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1 border-t border-slate-200/80 text-[11px] font-semibold text-slate-500">
+                    <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                      <span>Garantia incondicional de 7 dias</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        localStorage.setItem("cv_festa_popup_seen_v3", "true");
+                        setShowFestaPopup(false);
+                      }}
+                      className="text-slate-400 hover:text-slate-700 font-bold transition-colors underline underline-offset-2 cursor-pointer bg-transparent border-0"
+                    >
+                      Permanecer na página atual
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
