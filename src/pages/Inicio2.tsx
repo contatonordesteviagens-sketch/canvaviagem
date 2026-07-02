@@ -357,7 +357,7 @@ export default function Inicio2() {
               <div className="w-full lg:w-[60%] flex flex-col items-center lg:items-start text-center lg:text-left">
                 <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-purple-500/30 rounded-full px-4 py-1.5 md:px-5 md:py-2 backdrop-blur-md shadow-[0_0_30px_rgba(124,58,237,0.15)] mb-4 md:mb-6">
                   <span className="text-[10px] md:text-xs font-bold text-purple-200 uppercase tracking-widest">
-                    ✨ Marketing turístico de ponta a ponta
+                    🔥 Acesso imediato liberado para novas agências
                   </span>
                 </div>
 
@@ -389,7 +389,7 @@ export default function Inicio2() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2.5 md:gap-4 mb-6 w-full max-w-2xl">
-                  <a href="#planos" className="w-full sm:w-auto min-h-[52px] bg-purple-600 hover:bg-purple-500 text-white text-sm md:text-base font-bold py-3 px-7 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.5)] transition-transform hover:-translate-y-1 flex items-center justify-center whitespace-nowrap active:scale-95">
+                  <a href="#planos" className="w-full sm:w-auto min-h-[52px] bg-purple-600 hover:bg-purple-500 text-white text-sm md:text-base font-bold py-3 px-7 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1 flex items-center justify-center whitespace-nowrap active:scale-95 animate-[pulse_2.5s_ease-in-out_infinite]">
                     Iniciar 3 dias grátis (Sem cobrança hoje)
                   </a>
                   <a href="#video-prova" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-3 px-6 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 whitespace-nowrap text-xs md:text-sm active:scale-95">
@@ -491,10 +491,10 @@ export default function Inicio2() {
                 Veja como funciona na prática. Sem abstração, sem teoria, direto ao ponto.
               </h2>
             </div>
-            <div className="grid md:grid-cols-3 gap-8 mb-10">
+            <div className="grid md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-10">
               <div className="flex flex-col text-left bg-[#F8FAFC] border border-[#E2E8F0] rounded-[16px] p-6 shadow-sm">
                 <div className="text-4xl mb-4">🏭</div>
-                <h3 className="font-bold text-lg text-slate-900 mb-3">Fábrica de Destinos</h3>
+                <h3 className="font-bold text-lg text-slate-900 mb-3">1. Digite seu roteiro</h3>
                 <p className="text-[#7C3AED] text-[14px] font-bold mb-2">
                   Você digita: Paris, 7 dias, casal, R$8.000
                 </p>
@@ -504,7 +504,7 @@ export default function Inicio2() {
               </div>
               <div className="flex flex-col text-left bg-[#F8FAFC] border border-[#E2E8F0] rounded-[16px] p-6 shadow-sm">
                 <div className="text-4xl mb-4">📱</div>
-                <h3 className="font-bold text-lg text-slate-900 mb-3">Redes Sociais Prontas</h3>
+                <h3 className="font-bold text-lg text-slate-900 mb-3">2. Baixe em 3 minutos</h3>
                 <p className="text-[#7C3AED] text-[14px] font-bold mb-2">
                   Você escolhe o destino no calendário de postagens.
                 </p>
@@ -514,7 +514,7 @@ export default function Inicio2() {
               </div>
               <div className="flex flex-col text-left bg-[#F8FAFC] border border-[#E2E8F0] rounded-[16px] p-6 shadow-sm">
                 <div className="text-4xl mb-4">🤖</div>
-                <h3 className="font-bold text-lg text-slate-900 mb-3">Inteligência Artificial</h3>
+                <h3 className="font-bold text-lg text-slate-900 mb-3">3. Venda na hora no WhatsApp</h3>
                 <p className="text-[#7C3AED] text-[14px] font-bold mb-2">
                   Você pergunta: como convencer um cliente que achou caro?
                 </p>
@@ -572,7 +572,7 @@ export default function Inicio2() {
               </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-3 mb-12">
+            <div className="flex overflow-x-auto whitespace-nowrap md:flex-wrap justify-start md:justify-center gap-2 sm:gap-3 mb-10 pb-2 px-1 scrollbar-none">
               {[
                 { id: "featured", label: "Principais" },
                 { id: "video", label: "Vídeos" },
@@ -584,7 +584,7 @@ export default function Inicio2() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveToolTab(tab.id)}
-                  className={`px-6 py-3 rounded-full font-black text-sm transition-all duration-300 shadow-sm ${
+                  className={`shrink-0 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full font-black text-sm transition-all duration-300 shadow-sm ${
                     activeToolTab === tab.id ? "bg-slate-950 text-white shadow-slate-950/20 scale-105" : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                   }`}
                 >
@@ -641,6 +641,11 @@ export default function Inicio2() {
                     <h3 className="font-black text-red-600 text-lg mb-2">Antes</h3>
                     <p className="text-slate-600 text-sm md:text-base leading-relaxed">Oferta improvisada, pouca clareza e menor percepção de valor.</p>
                   </div>
+                </div>
+                <div className="sm:hidden flex justify-center my-[-10px] z-10">
+                  <span className="bg-purple-600 text-white font-black text-xs uppercase tracking-wider px-4 py-1.5 rounded-full shadow-md animate-bounce">
+                    ⬇️ Veja a transformação com IA ⬇️
+                  </span>
                 </div>
                 <div className="rounded-[2rem] bg-white border border-green-100 overflow-hidden shadow-lg shadow-green-600/5 ring-4 ring-green-500/10 relative">
                   <div className="absolute top-4 right-4 bg-green-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">Novo Padrão</div>
@@ -881,9 +886,9 @@ export default function Inicio2() {
                 <h3 className="text-xl md:text-2xl font-black text-slate-950">Exemplos do tipo de Reels que você recebe</h3>
                 <span className="hidden sm:inline text-sm font-black uppercase tracking-[0.18em] text-slate-400">publicar + adaptar + vender</span>
               </div>
-              <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5">
+              <div className="flex overflow-x-auto whitespace-nowrap sm:grid sm:grid-cols-3 gap-3 sm:gap-4 md:gap-5 pb-3 px-1 scrollbar-none">
                 {reelsPreviewGifs.map((gifUrl, index) => (
-                  <div key={gifUrl} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-lg shadow-slate-200/70">
+                  <div key={gifUrl} className="w-[180px] sm:w-auto shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-lg shadow-slate-200/70">
                     <img
                       src={gifUrl}
                       alt={`Exemplo de vídeo Reel de viagem ${index + 1}`}
@@ -941,8 +946,13 @@ export default function Inicio2() {
         <section className="bg-[#F8FAFC] py-[64px] border-y border-slate-200">
           <div className="inicio-container">
             <h2 className="text-center text-[26px] font-bold text-[#0F172A] mb-2">Isso substitui o Canva Pro?</h2>
-            <p className="text-center text-[#64748B] text-[15px] max-w-[560px] mx-auto mb-10">Essa é a dúvida mais comum. A resposta direta:</p>
+            <p className="text-center text-[#64748B] text-[15px] max-w-[560px] mx-auto mb-6">Essa é a dúvida mais comum. A resposta direta:</p>
             
+            <div className="md:hidden flex justify-center mb-3">
+              <span className="text-xs font-bold text-purple-600 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-full shadow-sm">
+                👉 Arraste para o lado para comparar →
+              </span>
+            </div>
             <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
               <div className="grid grid-cols-[1.5fr_1fr_1fr] text-sm md:text-base min-w-[500px]">
                 {/* Header */}
@@ -1051,15 +1061,15 @@ export default function Inicio2() {
                 </div>
 
                 <div className="w-full max-w-2xl mt-4">
-                  <div className="bg-[#F5F3FF] border-l-[4px] border-[#7C3AED] rounded-[6px] p-[12px_16px] mb-[16px]">
-                    <p className="text-[14px] text-[#4C1D95] font-medium m-0 text-left">
-                      ⚡ Os 3 dias grátis incluem acesso completo, sem cobrança hoje. Cancele antes do prazo com 1 clique.
+                  <div className="bg-[#F0FDF4] border-l-[4px] border-[#16A34A] rounded-[8px] p-[14px_18px] mb-[16px] shadow-sm">
+                    <p className="text-[14px] text-[#15803D] font-bold m-0 text-left flex items-center gap-2">
+                      <span>🛡️</span> Teste 3 dias grátis sem risco. Sem cobrança hoje e cancelamento online em 1 clique.
                     </p>
                   </div>
                   <a
                     href={plans[activePlan].checkoutUrl}
                     onClick={() => trackCheckoutClick(plans[activePlan].trackValue, plans[activePlan].id as "anual" | "mensal")}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black text-lg lg:text-xl rounded-2xl py-5 flex items-center justify-center shadow-lg shadow-purple-600/30 transition-transform active:scale-95"
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black text-lg lg:text-xl rounded-2xl py-5 flex items-center justify-center shadow-lg shadow-purple-600/40 transition-all active:scale-95 animate-[pulse_2s_ease-in-out_infinite]"
                   >
                     Começar agora (Acesso em 2 minutos)
                   </a>
