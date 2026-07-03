@@ -311,7 +311,7 @@ const FabricaInner = () => {
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
-        {/* âœ… FIX #5 Mobile: indicador de sync no header mobile */}
+        {/* ✅ FIX #5 Mobile: indicador de sync no header mobile */}
         <div className="hidden sm:block">
           <CloudSaveIndicator />
         </div>
@@ -319,17 +319,17 @@ const FabricaInner = () => {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed top-16 left-0 right-0 bg-[#0F0F11] border-b border-white/10 z-40 p-4 space-y-3 flex flex-col max-h-[80vh] overflow-y-auto">
+        <div className="md:hidden fixed top-16 left-0 right-0 bg-[#0F0F11] border-b border-white/10 z-40 p-4 space-y-3 flex flex-col max-h-[80vh] overflow-y-auto shadow-2xl">
           <button
             onClick={() => {
               setActiveTab("dashboard");
               setMobileMenuOpen(false);
             }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "dashboard" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ðŸ“Š Painel Inicial
+            <span>📊</span> Painel Inicial
           </button>
           
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Geração</div>
@@ -339,11 +339,11 @@ const FabricaInner = () => {
               setActiveTab("phase");
               setMobileMenuOpen(false);
             }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ðŸ–¼ï¸ Anúncio (F1)
+            <span>🖼️</span> Anúncio (F1)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Ferramentas</div>
@@ -353,11 +353,11 @@ const FabricaInner = () => {
               setActiveTab("phase");
               setMobileMenuOpen(false);
             }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ðŸ“„ Site (F2)
+            <span>📄</span> Site (F2)
           </button>
           <button
             onClick={() => {
@@ -365,11 +365,11 @@ const FabricaInner = () => {
               setActiveTab("phase");
               setMobileMenuOpen(false);
             }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 6 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            Formulários (F3)
+            <span>📝</span> Formulários (F3)
           </button>
           <button
             onClick={() => {
@@ -377,11 +377,11 @@ const FabricaInner = () => {
               setActiveTab("phase");
               setMobileMenuOpen(false);
             }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ðŸ‘¥ CRM (F4)
+            <span>👥</span> CRM (F4)
           </button>
           <button
             onClick={() => {
@@ -389,11 +389,11 @@ const FabricaInner = () => {
               setActiveTab("phase");
               setMobileMenuOpen(false);
             }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            âš™ï¸ Plano (F5)
+            <span>⚙️</span> Plano (F5)
           </button>
           <button
             onClick={() => {
@@ -401,11 +401,11 @@ const FabricaInner = () => {
               setActiveTab("phase");
               setMobileMenuOpen(false);
             }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            âš¡ Checkup (F6)
+            <span>⚡</span> Checkup (F6)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Conteúdo</div>
@@ -415,11 +415,11 @@ const FabricaInner = () => {
               setLibrarySubTab("ofertas");
               setMobileMenuOpen(false);
             }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "library" && librarySubTab === "ofertas" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ðŸ“‚ Minhas Ofertas
+            <span>📂</span> Minhas Ofertas
           </button>
           <button
             onClick={() => {
@@ -427,38 +427,40 @@ const FabricaInner = () => {
               setLibrarySubTab("galeria");
               setMobileMenuOpen(false);
             }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "library" && librarySubTab === "galeria" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ðŸ“š Minha Biblioteca
+            <span>📚</span> Minha Biblioteca
           </button>
 
           <div className="border-t border-white/5 pt-3">
             <button
               onClick={() => navigate("/")}
-              className="w-full py-3 px-4 rounded-xl text-left text-sm font-semibold text-white/50"
+              className="w-full py-3 px-4 rounded-xl text-left text-sm font-semibold text-white/50 flex items-center gap-2"
             >
-              â† Voltar ao Início
+              <span>←</span> Voltar ao Início
             </button>
           </div>
         </div>
       )}
 
-      {/* â”€â”€ CONTEÃšDO PRINCIPAL (ÁREA DE TRABALHO) â”€â”€ */}
+      {/* ——— CONTEÚDO PRINCIPAL (ÁREA DE TRABALHO) ——— */}
       <main className="flex-1 min-w-0 min-h-screen pt-20 md:pt-8 px-4 md:px-8 pb-24 overflow-y-auto bg-[#0A0A0B]">
         {/* Top Bar with Voice AI and Phase Shortcuts */}
-        <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center flex-wrap gap-2 relative z-40">
-            <VoiceOnboarding />
+        <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-2xl bg-black border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 relative z-40">
+            <div className="w-full sm:w-auto flex justify-center sm:justify-start shrink-0">
+              <VoiceOnboarding />
+            </div>
 
-            <div className="h-4 w-px bg-white/10 mx-1 hidden xl:block"></div>
+            <div className="h-4 w-px bg-white/10 mx-1 hidden sm:block"></div>
 
-            <div className="flex items-center gap-2 flex-1 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
               <button
                 onClick={() => {
                   setActiveTab("dashboard");
                 }}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap shrink-0 ${
                   activeTab === "dashboard" ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
                 }`}
               >
@@ -480,7 +482,7 @@ const FabricaInner = () => {
                     setPhase(phase);
                     setActiveTab("phase");
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap ${
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap shrink-0 ${
                     activeTab === "phase" && state.currentPhase === phase ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
                   }`}
                 >

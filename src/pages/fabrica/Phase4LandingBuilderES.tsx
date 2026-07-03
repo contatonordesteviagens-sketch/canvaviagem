@@ -1237,7 +1237,7 @@ const PacoteEditor = ({
           placeholder="Quiero este"
           className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/40"
         />
-        <span className="text-[10px] text-white/40 italic">â†’ "Hola, tengo interés en {pacote.title || "..."}"</span>
+        <span className="text-[10px] text-white/40 italic">→ "Hola, tengo interés en {pacote.title || "..."}"</span>
       </div>
 
       {pickingImage && (

@@ -292,20 +292,22 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
                 ) : (
                   /* View mode */
                   <div className="p-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      {pkg.imageUrl && (
-                        <div className="w-14 h-14 rounded-lg overflow-hidden bg-white/10 flex-shrink-0 border border-white/10">
-                          <img src={pkg.imageUrl} className="w-full h-full object-cover" alt="" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold text-white leading-snug mb-0.5">{pkg.title}</div>
-                        <div className="text-xs text-white/60 line-clamp-2 mb-1.5 leading-relaxed">{pkg.description}</div>
-                        <div className="inline-flex text-[11px] font-bold text-emerald-400 px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-                          {pkg.price}
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-3 mb-3">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        {pkg.imageUrl && (
+                          <div className="w-14 h-14 rounded-lg overflow-hidden bg-white/10 flex-shrink-0 border border-white/10">
+                            <img src={pkg.imageUrl} className="w-full h-full object-cover" alt="" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-bold text-white leading-snug mb-0.5 truncate">{pkg.title}</div>
+                          <div className="text-xs text-white/60 line-clamp-2 mb-1.5 leading-relaxed">{pkg.description}</div>
+                          <div className="inline-flex text-[11px] font-bold text-emerald-400 px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
+                            {pkg.price}
+                          </div>
                         </div>
                       </div>
-                      <div className="flex gap-1 flex-shrink-0 items-center">
+                      <div className="flex flex-wrap gap-1.5 items-center w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-0 border-white/5">
                         {pkg.isDraft ? (
                           <button
                             onClick={() => togglePublish(pkg.id, true)}

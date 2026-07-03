@@ -308,10 +308,10 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           <button
             type="button"
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
-            className="w-full flex items-center justify-between text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
+            className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
           >
             <span className="flex items-center gap-1.5">📂 EDITAR SITES (Projetos Salvos) {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
-            <span className="text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ RECOLHER" : "▼ EXPANDIR / CARREGAR"}</span>
+            <span className="text-[10px] text-white/30 font-medium self-end sm:self-auto">{projectsPanelOpen ? "▲ RECOLHER" : "▼ EXPANDIR / CARREGAR"}</span>
           </button>
           
           {projectsPanelOpen && (
@@ -425,7 +425,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             </h3>
 
             {/* Logo e Nome */}
-            <div className="flex flex-col sm:flex-row gap-6 items-center bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+            <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5">
               {/* Logo Box */}
               <div className="relative group flex-shrink-0">
                 <div 
@@ -462,34 +462,37 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 )}
               </div>
 
+              {/* Nome e Tipo da Agência integrados ao card da Logo no Mobile e Desktop */}
+              <div className="flex-1 w-full space-y-4">
+                <div>
+                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">Nome da Agência *</label>
+                  <input 
+                    type="text"
+                    value={state.agencyName || ""}
+                    onChange={(e) => update({ agencyName: e.target.value })}
+                    placeholder="Nome Comercial da sua Agência"
+                    className="w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus:border-amber-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">Tipo de Agência</label>
+                  <select 
+                    value={state.agencyType || ""}
+                    onChange={(e) => update({ agencyType: e.target.value as any })}
+                    className="w-full bg-[#161619] border border-white/5 hover:border-white/10 focus:border-amber-500/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="" disabled className="text-white/30">Selecione o tipo da sua agência</option>
+                    {AGENCY_TYPES.map((opt) => (
+                      <option key={opt.v} value={opt.v} className="text-white">{opt.l}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
 
-            {/* Inputs de Informação */}
-            <div className="space-y-4">
-              <div>
-                <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">Nome da Agência *</label>
-                <input 
-                  type="text"
-                  value={state.agencyName || ""}
-                  onChange={(e) => update({ agencyName: e.target.value })}
-                  placeholder="Nome Comercial da sua Agência"
-                  className="w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus:border-amber-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">Tipo de Agência</label>
-                <select 
-                  value={state.agencyType || ""}
-                  onChange={(e) => update({ agencyType: e.target.value as any })}
-                  className="w-full bg-[#161619] border border-white/5 hover:border-white/10 focus:border-amber-500/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-all appearance-none cursor-pointer"
-                >
-                  <option value="" disabled className="text-white/30">Selecione o tipo da sua agência</option>
-                  {AGENCY_TYPES.map((opt) => (
-                    <option key={opt.v} value={opt.v} className="text-white">{opt.l}</option>
-                  ))}
-                </select>
-              </div>
+            {/* Inputs de Informação Restantes */}
+            <div className="space-y-4 pt-2">
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -630,7 +633,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             </div>
 
             {/* Cards de contagem */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div 
                 onClick={() => onNavigate?.("phase", 1)}
                 className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
@@ -678,7 +681,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   {publishedSites.map((site) => {
                     const url = `https://${site.id}.canvaviagem.com`;
                     return (
-                      <div key={site.id} className="flex gap-2">
+                      <div key={site.id} className="flex flex-col sm:flex-row gap-2">
                         <a
                           href={url}
                           target="_blank"
@@ -916,31 +919,33 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                       ) : (
                         /* Normal display view */
                         <div>
-                          <div className="flex items-start gap-4">
-                            {/* Package visual asset */}
-                            <div className="w-16 h-16 rounded-xl bg-white/[0.02] border border-white/10 flex-shrink-0 overflow-hidden relative shadow-inner flex items-center justify-center">
-                              {pkg.imageUrl ? (
-                                <img src={pkg.imageUrl} className="w-full h-full object-cover" alt="" />
-                              ) : (
-                                <div className="text-white/20 text-center">
-                                  <ImageIcon className="w-5 h-5 mx-auto" />
-                                  <span className="text-[7px] uppercase font-bold text-white/30 block mt-0.5">Sem Foto</span>
-                                </div>
-                              )}
-                            </div>
+                          <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                            <div className="flex items-start gap-3 flex-1 min-w-0">
+                              {/* Package visual asset */}
+                              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white/[0.02] border border-white/10 flex-shrink-0 overflow-hidden relative shadow-inner flex items-center justify-center">
+                                {pkg.imageUrl ? (
+                                  <img src={pkg.imageUrl} className="w-full h-full object-cover" alt="" />
+                                ) : (
+                                  <div className="text-white/20 text-center">
+                                    <ImageIcon className="w-5 h-5 mx-auto" />
+                                    <span className="text-[7px] uppercase font-bold text-white/30 block mt-0.5">Sem Foto</span>
+                                  </div>
+                                )}
+                              </div>
 
-                            {/* Content Details */}
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-bold text-white leading-tight mb-1 truncate">{pkg.title}</h4>
-                              <p className="text-xs text-white/50 line-clamp-2 leading-relaxed mb-2 pr-4">{pkg.description}</p>
-                              
-                              <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg w-fit mt-0.5 max-w-full">
-                                <span className="line-clamp-2">{pkg.price}</span>
-                              </span>
+                              {/* Content Details */}
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-bold text-white leading-tight mb-1 truncate">{pkg.title}</h4>
+                                <p className="text-xs text-white/50 line-clamp-2 leading-relaxed mb-2 pr-4">{pkg.description}</p>
+                                
+                                <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg w-fit mt-0.5 max-w-full">
+                                  <span className="line-clamp-2">{pkg.price}</span>
+                                </span>
+                              </div>
                             </div>
 
                             {/* Action Tools Overlay */}
-                            <div className="flex gap-1 items-center shrink-0">
+                            <div className="flex flex-wrap gap-1.5 items-center w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-0 border-white/5">
                               {pkg.isDraft ? (
                                 <button
                                   onClick={() => togglePublish(pkg.id, true)}
