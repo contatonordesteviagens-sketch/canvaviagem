@@ -992,7 +992,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           )}
           {onNext && (
             <button onClick={onNext} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 text-sm font-black text-zinc-950 hover:bg-amber-300 transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)]">
-              Avançar: Formulários (F4)
+              Avançar: Checkup (F4)
               <ArrowRight className="h-4 w-4" />
             </button>
           )}

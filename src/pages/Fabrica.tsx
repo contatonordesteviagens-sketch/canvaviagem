@@ -6,7 +6,6 @@ import { Phase2Ativos } from "@/pages/fabrica/Phase2Ativos";
 import { Phase3ArtFactory } from "@/pages/fabrica/Phase3ArtFactory";
 import { Phase4LandingBuilder } from "@/pages/fabrica/Phase4LandingBuilder";
 import { Phase5Dashboard } from "@/pages/fabrica/Phase5Dashboard";
-import { Phase6Forms } from "@/pages/fabrica/Phase6Forms";
 import { FabricaDashboard } from "@/pages/fabrica/FabricaDashboard";
 import { FabricaLibrary } from "@/pages/fabrica/FabricaLibrary";
 import { VoiceOnboarding } from "@/components/fabrica/VoiceOnboarding";
@@ -24,8 +23,7 @@ import {
   Menu,
   X,
   ChevronDown,
-  Users,
-  ClipboardList
+  Users
 } from "lucide-react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
@@ -76,9 +74,8 @@ const FabricaInner = () => {
     if (state.currentPhase === 1) return "Anúncio (F1)";
     if (state.currentPhase === 2) return "Site (F2)";
     if (state.currentPhase === 3) return "CRM (F3)";
-    if (state.currentPhase === 6) return "Formulários (F4)";
-    if (state.currentPhase === 5) return "Checkup (F5)";
-    if (state.currentPhase === 4) return "Plano (F6)";
+    if (state.currentPhase === 5) return "Checkup (F4)";
+    if (state.currentPhase === 4) return "Plano (F5)";
     return "";
   };
 
@@ -184,28 +181,7 @@ const FabricaInner = () => {
                 <span className="text-[10px] text-white/30 font-bold">F3</span>
               </button>
 
-              {/* F4: Formulários */}
-              {isAdmin && (
-                <button
-                  onClick={() => {
-                    setPhase(6);
-                    setActiveTab("phase");
-                  }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                    activeTab === "phase" && state.currentPhase === 6
-                      ? "bg-white/[0.06] text-white border border-white/10"
-                      : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <ClipboardList className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 6 ? "text-amber-400" : "text-white/40"}`} />
-                    <span>Formulários</span>
-                  </div>
-                  <span className="text-[10px] text-white/30 font-bold">F4</span>
-                </button>
-              )}
-
-              {/* F5: Checkup */}
+              {/* F4: Checkup */}
               <button
                 onClick={() => {
                   setPhase(5);
@@ -221,10 +197,10 @@ const FabricaInner = () => {
                   <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Checkup</span>
                 </div>
-                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/30"}`}>F5</span>
+                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/30"}`}>F4</span>
               </button>
 
-              {/* F6: Plano */}
+              {/* F5: Plano */}
               <button
                 onClick={() => {
                   setPhase(4);
@@ -240,7 +216,7 @@ const FabricaInner = () => {
                   <Sliders className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Plano</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold">F6</span>
+                <span className="text-[10px] text-white/30 font-bold">F5</span>
               </button>
             </div>
           </div>
@@ -384,20 +360,6 @@ const FabricaInner = () => {
           >
             <span>👥</span> CRM (F3)
           </button>
-          {isAdmin && (
-            <button
-              onClick={() => {
-                setPhase(6);
-                setActiveTab("phase");
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-                activeTab === "phase" && state.currentPhase === 6 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-              }`}
-            >
-              <span>📝</span> Formulários (F4)
-            </button>
-          )}
           <button
             onClick={() => {
               setPhase(5);
@@ -408,7 +370,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            <span>⚡</span> Checkup (F5)
+            <span>⚡</span> Checkup (F4)
           </button>
           <button
             onClick={() => {
@@ -420,7 +382,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            <span>⚙️</span> Plano (F6)
+            <span>⚙️</span> Plano (F5)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Conteúdo</div>
@@ -485,10 +447,9 @@ const FabricaInner = () => {
               {[
                 { name: 'Anúncio', phase: 1 },
                 { name: 'Site', phase: 2 },
-                { name: 'Formulário', phase: 6 },
                 { name: 'CRM', phase: 3 },
-                { name: 'Plano', phase: 4 },
                 { name: 'Checkup', phase: 5 },
+                { name: 'Plano', phase: 4 },
               ].map(({ name, phase }) => {
                 return (
                 <button
@@ -525,9 +486,8 @@ const FabricaInner = () => {
             <>
               {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} />}
               {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
-              {state.currentPhase === 3 && <Phase5Dashboard onNext={() => setPhase(6)} onBack={() => setPhase(2)} />}
-              {state.currentPhase === 6 && <Phase6Forms onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
-              {state.currentPhase === 5 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(6)} />}
+              {state.currentPhase === 3 && <Phase5Dashboard onNext={() => setPhase(5)} onBack={() => setPhase(2)} />}
+              {state.currentPhase === 5 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(3)} />}
               {state.currentPhase === 4 && <Phase2Ativos onNext={() => {}} onBack={() => setPhase(5)} />}
             </>
           )}

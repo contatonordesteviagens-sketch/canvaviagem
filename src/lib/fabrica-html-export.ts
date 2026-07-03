@@ -1,5 +1,4 @@
-﻿import type { FabricaState } from "@/hooks/useFabricaContext";
-import { normalizeCrmFormConfig, type CrmFormConfig, type CrmFormField } from "@/lib/crm-form-config";
+import type { FabricaState } from "@/hooks/useFabricaContext";
 
 const SB_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SB_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
@@ -14,7 +13,7 @@ const esc = (s: string) =>
 // Imagens premium padrão por destino (fallback quando o usuário não enviou foto)
 const DEFAULT_DEST_IMG = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80";
 
-// Helpers de cor â€” gera tons mais escuros/claros pra header e gradientes
+// Helpers de cor — gera tons mais escuros/claros pra header e gradientes
 function hexToRgb(hex: string) {
   const h = hex.replace("#", "");
   const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
@@ -31,7 +30,7 @@ function darken(hex: string, amount = 0.7) {
 function parsePriceHTML(priceStr: string): string {
   const s = esc(priceStr);
   // Captura Moeda + Valor (ex: R$ 1.499,90)
-  const regex = /^(.*?)(R\$|US\$|â‚¬|£|AR\$)\s?([\d.,]+)(.*)$/i;
+  const regex = /^(.*?)(R\$|US\$|€|£|AR\$)\s?([\d.,]+)(.*)$/i;
   const m = s.match(regex);
   
   if (!m) return `<div class="price-main">${s}</div>`;
@@ -81,7 +80,7 @@ const formatWhatsAppDisplay = (raw: string, dial = "55") => {
   const digits = String(raw || "").replace(/\D/g, "");
   const dialCode = String(dial || "55").replace(/\D/g, "") || "55";
   const national = digits.startsWith(dialCode) ? digits.slice(dialCode.length) : digits;
-  if (!national) return "â€”";
+  if (!national) return "—";
   if (dialCode === "55" && national.length >= 10) {
     const ddd = national.slice(0, 2);
     const number = national.slice(2);
@@ -90,79 +89,6 @@ const formatWhatsAppDisplay = (raw: string, dial = "55") => {
     return `+${dialCode} (${ddd}) ${first}${last ? `-${last}` : ""}`;
   }
   return `+${dialCode} ${national}`;
-};
-
-const renderCrmFormField = (field: CrmFormField, pacotes: Array<{ title: string }>): string => {
-  if (field.visible === false) return "";
-  const required = field.required ? " required" : "";
-  const label = esc(field.label);
-  const name = esc(field.id);
-  const placeholder = field.placeholder ? ` placeholder="${esc(field.placeholder)}"` : "";
-  const widthClass = field.width === "half" ? "field-half" : "field-full";
-  const base = (control: string) => `<div class="field ${widthClass}" data-crm-field="${name}"><label>${label}</label>${control}</div>`;
-
-  if (field.type === "textarea") {
-    return base(`<textarea name="${name}"${placeholder}${required}></textarea>`);
-  }
-
-  if (field.type === "select") {
-    const options = field.options?.length
-      ? field.options
-      : field.id === "destino"
-        ? [...pacotes.map((p) => p.title), "Outro / sob medida"]
-        : [];
-    return base(`<select name="${name}"${required}><option value="">${esc(field.placeholder || "Selecione...")}</option>${options
-      .filter(Boolean)
-      .map((option) => `<option>${esc(option)}</option>`)
-      .join("")}</select>`);
-  }
-
-  if (field.type === "radio") {
-    const options = field.options?.length ? field.options : ["Sim", "Nao"];
-    return base(`<div class="choice-list">${options
-      .map((option, index) => `<label class="choice-option"><input type="radio" name="${name}" value="${esc(option)}"${index === 0 && field.required ? " required" : ""}> <span>${esc(option)}</span></label>`)
-      .join("")}</div>`);
-  }
-
-  if (field.type === "checkbox") {
-    return base(`<label class="choice-option single-choice"><input type="checkbox" name="${name}" value="sim"${required}> <span>${esc(field.placeholder || "Sim")}</span></label>`);
-  }
-
-  const inputType = field.type === "tel" ? "tel" : field.type === "email" ? "email" : field.type === "number" ? "number" : field.type === "date" ? "date" : "text";
-  const numberAttrs = field.type === "number" ? ` min="0"` : "";
-  return base(`<input type="${inputType}" name="${name}"${placeholder}${required}${numberAttrs}>`);
-};
-
-const renderCrmFormRows = (form: CrmFormConfig, pacotes: Array<{ title: string }>): string => {
-  const fields = form.fields.filter((field) => field.visible !== false).sort((a, b) => a.order - b.order);
-  const rows: string[] = [];
-  let openHalfRow: string[] = [];
-
-  fields.forEach((field) => {
-    const html = renderCrmFormField(field, pacotes);
-    if (!html) return;
-
-    if (field.width === "half") {
-      openHalfRow.push(html);
-      if (openHalfRow.length === 2) {
-        rows.push(`<div class="form-row">${openHalfRow.join("")}</div>`);
-        openHalfRow = [];
-      }
-      return;
-    }
-
-    if (openHalfRow.length) {
-      rows.push(`<div class="form-row ${openHalfRow.length === 1 ? "single" : ""}">${openHalfRow.join("")}</div>`);
-      openHalfRow = [];
-    }
-    rows.push(`<div class="form-row single">${html}</div>`);
-  });
-
-  if (openHalfRow.length) {
-    rows.push(`<div class="form-row ${openHalfRow.length === 1 ? "single" : ""}">${openHalfRow.join("")}</div>`);
-  }
-
-  return rows.join("\n");
 };
 
 const renderSocialIcons = (state: FabricaState, extraClass = "") => {
@@ -195,7 +121,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const socialIcons = renderSocialIcons(state);
   const footerSocialIcons = renderSocialIcons(state, "footer-socials");
 
-  // ----- SISTEMA DE ANIMAÃ‡Ã•ES SAZONAIS E TEMÁTICAS -----
+  // ----- SISTEMA DE ANIMAÇÕES SAZONAIS E TEMÁTICAS -----
   let seasonalStyles = "";
   let seasonalScripts = "";
 
@@ -880,24 +806,13 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     sc.heroHeadline?.trim() || "Viagens que transformam para sempre";
   const subheadline =
     sc.heroSubheadline?.trim() ||
-    `Roteiros exclusivos e sob medida para viajantes que não aceitam o comum. Da primeira reunião ao retorno em casa â€” cuidamos de cada detalhe.`;
+    `Roteiros exclusivos e sob medida para viajantes que não aceitam o comum. Da primeira reunião ao retorno em casa — cuidamos de cada detalhe.`;
 
   const pacotes = state.selectedPackages.length
     ? state.selectedPackages.filter(p => !p.isDraft)
     : [
         { id: "1", title: "Roteiro Sob Medida", description: "Montamos o seu roteiro ideal com hospedagem, transporte e passeios.", price: "Sob consulta", imageUrl: "", ctaLabel: "Quero esse" },
       ];
-  const crmForm = normalizeCrmFormConfig(state.crmForm, "pt-BR");
-  const crmFormTheme = {
-    primaryColor: crmForm.primaryColor || state.primaryColor || "#F59E0B",
-    backgroundColor: crmForm.backgroundColor || "#F8FAFC",
-    textColor: crmForm.textColor || "#0F172A",
-    fieldBackgroundColor: crmForm.fieldBackgroundColor || "#FFFFFF",
-    fieldTextColor: crmForm.fieldTextColor || "#0F172A",
-    fieldBorderColor: crmForm.fieldBorderColor || "#E2E8F0",
-    buttonTextColor: crmForm.buttonTextColor || "#111827",
-  };
-  const crmFormRows = renderCrmFormRows(crmForm, pacotes);
 
   const wppMsg = (titulo: string) =>
     wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}` : "#";
@@ -910,7 +825,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     { num: "99%", label: "Satisfação" },
   ];
 
-  // Avatar com inicial â€” gera SVG inline pra não depender de rede
+  // Avatar com inicial — gera SVG inline pra não depender de rede
   const avatarSvg = (nome: string, bg: string) => {
     const initial = (nome || "?").trim().charAt(0).toUpperCase();
     const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'><rect width='80' height='80' rx='40' fill='${bg}'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' font-family='Inter, Arial, sans-serif' font-size='32' font-weight='700' fill='white'>${initial}</text></svg>`;
@@ -958,7 +873,7 @@ ${pixelCode}
 ${ga4Code}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${esc(agencia)} â€” Consultoria Premium de Viagens</title>
+<title>${esc(agencia)} — Consultoria Premium de Viagens</title>
 <meta name="description" content="${esc(subheadline)}">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -1073,7 +988,7 @@ section{padding:80px 0}
 @media (max-width: 980px){.destinos-grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width: 640px){.destinos-grid{grid-template-columns:1fr}}
 
-/* EQUIPE / POR QUE NÃ“S */
+/* EQUIPE / POR QUE NÓS */
 .equipe{background:var(--ink);color:#fff}
 .equipe h2,.equipe h3{color:#fff}
 .equipe-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
@@ -1101,7 +1016,7 @@ section{padding:80px 0}
 .depo-meta{font-size:12px;color:var(--muted)}
 @media (max-width: 980px){.depo-grid{grid-template-columns:1fr;gap:16px}}
 
-/* ORÃ‡AMENTO */
+/* ORÇAMENTO */
 .orc-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:48px;align-items:start}
 .orc-info h2{font-size:clamp(28px,3.6vw,40px);margin-bottom:18px}
 .orc-info > p{color:var(--muted);font-size:15px;margin-bottom:32px;line-height:1.7}
@@ -1116,23 +1031,15 @@ section{padding:80px 0}
 .social-icon span{line-height:1;color:inherit;font-weight:inherit}
 .footer-socials{margin-top:18px}
 .footer-socials .social-icon{background:rgba(255,255,255,.08);color:#fff}
-.orc-form{background:var(--form-bg,#fff);border:1px solid var(--form-field-border,rgba(0,0,0,.06));border-radius:28px;padding:34px;box-shadow:0 24px 60px rgba(15,23,42,.12);color:var(--form-text,var(--ink))}
+.orc-form{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.04)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .form-row.single{grid-template-columns:1fr}
-.field-full{grid-column:1 / -1}
-.field-half{min-width:0}
-.field label{display:block;font-size:11px;font-weight:800;color:var(--form-text,var(--muted));opacity:.62;text-transform:uppercase;letter-spacing:1.1px;margin-bottom:8px}
-.field input,.field select,.field textarea{width:100%;padding:15px 16px;border:1.5px solid var(--form-field-border,rgba(0,0,0,.08));border-radius:18px;font-size:16px;font-weight:600;font-family:'Inter',sans-serif;background:var(--form-field-bg,#fff);color:var(--form-field-text,var(--ink));transition:border .2s,box-shadow .2s;-webkit-appearance:none;appearance:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
-.field input[type=date]{min-height:54px;color-scheme:light}
-.field select{background-image:linear-gradient(45deg,transparent 50%,var(--form-text,var(--ink)) 50%),linear-gradient(135deg,var(--form-text,var(--ink)) 50%,transparent 50%);background-position:calc(100% - 20px) 22px,calc(100% - 14px) 22px;background-size:6px 6px,6px 6px;background-repeat:no-repeat;padding-right:38px}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--form-primary,var(--brand));box-shadow:0 0 0 4px rgba(245,158,11,.18),inset 0 1px 0 rgba(255,255,255,.55)}
-.field textarea{resize:vertical;min-height:108px}
-.choice-list{display:grid;gap:8px}
-.choice-option{display:flex!important;align-items:center;gap:10px;border:1.5px solid var(--form-field-border,rgba(0,0,0,.08));border-radius:18px;padding:14px 16px;background:var(--form-field-bg,#fff);color:var(--form-field-text,var(--ink));font-size:14px;text-transform:none!important;letter-spacing:0!important;margin:0!important}
-.choice-option input{width:auto!important;padding:0!important;border-radius:4px}
-.single-choice{cursor:pointer}
-.form-submit{width:100%;padding:16px;font-size:16px;justify-content:center;margin-top:10px;border-radius:20px;background:var(--form-primary,var(--brand));color:var(--form-button-text,#fff);box-shadow:0 16px 34px rgba(15,23,42,.16)}
-@media (max-width: 840px){.orc-grid{grid-template-columns:1fr;gap:32px}.form-row{grid-template-columns:1fr;gap:12px;margin-bottom:12px}.orc-form{padding:22px 18px;border-radius:24px}.contact-item{padding:14px}}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.field input,.field select,.field textarea{width:100%;padding:13px 14px;border:1.5px solid rgba(0,0,0,.08);border-radius:10px;font-size:15px;font-family:'Inter',sans-serif;background:#fff;color:var(--ink);transition:border .2s;-webkit-appearance:none;appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brand)}
+.field textarea{resize:vertical;min-height:90px}
+.form-submit{width:100%;padding:16px;font-size:15px;justify-content:center;margin-top:8px}
+@media (max-width: 840px){.orc-grid{grid-template-columns:1fr;gap:32px}.form-row{grid-template-columns:1fr;gap:12px;margin-bottom:12px}.orc-form{padding:24px 20px;border-radius:16px}.contact-item{padding:14px}}
 
 /* FAQ */
 .faq-bg{background:var(--soft)}
@@ -1142,7 +1049,7 @@ section{padding:80px 0}
 .faq-item summary{padding:20px 22px;font-weight:600;font-size:15px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;color:var(--ink)}
 .faq-item summary::-webkit-details-marker{display:none}
 .faq-item summary::after{content:"+";font-size:22px;color:var(--brand);font-weight:300;transition:transform .2s;flex-shrink:0}
-.faq-item[open] summary::after{content:"â€“"}
+.faq-item[open] summary::after{content:"–"}
 .faq-item p{padding:0 22px 22px;color:var(--muted);font-size:14.5px;line-height:1.7}
 
 /* FOOTER */
@@ -1193,10 +1100,10 @@ ${seasonalStyles}
 <!--
   [SISTEMA: DIRETRIZ DE INTEGRIDADE CRÍTICA - LOVABLE AI]
   PROIBIDO ALTERAR IMAGENS OU RECONSTRUIR O DESIGN.
-  ESTE Ã‰ UM SITE DE TURISMO REAL COM FOTOS SELECIONADAS PELO CLIENTE.
+  ESTE É UM SITE DE TURISMO REAL COM FOTOS SELECIONADAS PELO CLIENTE.
   REGRAS ABSOLUTAS PARA A IA:
   1. Mantenha EXATAMENTE os atributos 'src' originais de todas as tags <img>.
-  2. NÃƒO substitua URLs externas ou Base64 por imagens genéricas geradas por IA.
+  2. NÃO substitua URLs externas ou Base64 por imagens genéricas geradas por IA.
   3. Onde houver o atributo 'data-preserve-image="true"', o bloqueio é total contra modificações.
   4. Risco de falha crítica de negócios caso as fotos reais sejam trocadas.
 -->
@@ -1279,14 +1186,14 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         <div class="dest-img-wrap">
           <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
-          <div class="dest-overlay">Ver pacote â†’</div>
+          <div class="dest-overlay">Ver pacote →</div>
         </div>
         <div class="dest-body">
           <div class="dest-loc">${esc(cidade)}</div>
           <h3>${esc(p.title)}</h3>
           <p>${esc(p.description)}</p>
           <div class="dest-price">${parsePriceHTML(p.price)}</div>
-          <span class="dest-cta">Saiba mais â†’</span>
+          <span class="dest-cta">Saiba mais →</span>
         </div>
       </a>` : ''
         )
@@ -1297,7 +1204,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     }
     if (secKey === "porQue") {
       return sc.sections?.porQue === false ? "" : `
-<!-- POR QUE NÃ“S / EQUIPE -->
+<!-- POR QUE NÓS / EQUIPE -->
 <section id="por-que" class="equipe">
   <div class="container">
     <div class="equipe-grid" data-visual-removable="por-que-grid">
@@ -1305,7 +1212,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         ${!sc.hiddenElements?.includes('equipe-badge') ? `<span class="badge-counter" data-visual-removable="equipe-badge">${esc(sc.equipeBadge || "+15k Clientes Satisfeitos")}</span>` : ''}
         ${!sc.hiddenElements?.includes('equipe-eyebrow') ? `<div class="eyebrow" style="color:#fff;opacity:.6" data-visual-removable="equipe-eyebrow">${esc(sc.equipeEyebrow || "Nossa equipe")}</div>` : ''}
         ${!sc.hiddenElements?.includes('equipe-title') ? `<h2 data-visual-removable="equipe-title">${esc(sc.equipeTitle || "Uma equipe dedicada exclusivamente a você")}</h2>` : ''}
-        ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">${esc(sc.equipeIntro || "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto â€” cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">${esc(sc.equipeIntro || "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>` : ''}
         <div class="equipe-features">
           ${(sc.equipeFeatures || []).map((feat, i) => !sc.hiddenElements?.includes(`equipe-feat-${i}`) ? `
           <div class="feat" data-visual-removable="equipe-feat-${i}"><div class="feat-icon">${feat.icon}</div><div><h4>${esc(feat.title)}</h4><p>${esc(feat.desc)}</p></div></div>
@@ -1331,7 +1238,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         .slice(0, 3)
         .map(
           (d, i) => !sc.hiddenElements?.includes(`depo-${i}`) ? `<div class="depo-card" data-visual-removable="depo-${i}">
-        <div class="stars">â˜…â˜…â˜…â˜…â˜…</div>
+        <div class="stars">★★★★★</div>
         <p class="depo-text">"${esc(d.text)}"</p>
         <div class="depo-author">
           <img src="${avatarSvg(d.name, color)}" class="depo-avatar" alt="${esc(d.name)}" data-ai-ignore="true" data-preserve-image="true">
@@ -1347,7 +1254,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     }
     if (secKey === "orcamento") {
       return sc.sections?.orcamento === false ? "" : `
-<!-- ORÃ‡AMENTO -->
+<!-- ORÇAMENTO -->
 <section id="orcamento">
   <div class="container">
     <div class="orc-grid">
@@ -1356,16 +1263,33 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         ${!sc.hiddenElements?.includes('orcamento-title') ? `<h2 style="margin-top:12px" data-visual-removable="orcamento-title">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>` : ''}
         ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>` : ''}
         <div class="contact-list">
-          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">ðŸ“±</div><div><strong>WhatsApp</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">âœ‰ï¸</div><div><strong>E-mail</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">â°</div><div><strong>Atendimento</strong><span>${esc(sc.atendimentoText || "Segâ€“Sex 8hâ€“20h · Sáb 9hâ€“15h")}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">ðŸ“</div><div><strong>Localização</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">📱</div><div><strong>WhatsApp</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉️</div><div><strong>E-mail</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">⏰</div><div><strong>Atendimento</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
         </div>
         ${socialIcons}
       </div>
-      <form class="orc-form" onsubmit="handleMainFormSubmit(event)" style="--form-primary:${esc(crmFormTheme.primaryColor)};--form-bg:${esc(crmFormTheme.backgroundColor)};--form-text:${esc(crmFormTheme.textColor)};--form-field-bg:${esc(crmFormTheme.fieldBackgroundColor)};--form-field-text:${esc(crmFormTheme.fieldTextColor)};--form-field-border:${esc(crmFormTheme.fieldBorderColor)};--form-button-text:${esc(crmFormTheme.buttonTextColor)};">
-        ${crmFormRows}
-        <button type="submit" class="btn form-submit">${esc(crmForm.buttonLabel || "Enviar pelo WhatsApp")}</button>
+      <form class="orc-form" onsubmit="handleMainFormSubmit(event)">
+        <div class="form-row">
+          <div class="field"><label>Nome Completo</label><input name="nome" required placeholder="Ex: Maria Silva"></div>
+          <div class="field"><label>WhatsApp</label><input name="wpp" required placeholder="(00) 00000-0000"></div>
+        </div>
+        <div class="form-row single">
+          <div class="field"><label>E-mail</label><input type="email" name="email" required placeholder="seu@email.com"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Destino de Interesse</label><select name="destino"><option value="">Selecione…</option>${pacotes.map((p) => `<option>${esc(p.title)}</option>`).join("")}<option>Outro / sob medida</option></select></div>
+          <div class="field"><label>Nº de Viajantes</label><input type="number" name="viaj" min="1" value="2"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Data de Ida</label><input type="date" name="ida"></div>
+          <div class="field"><label>Data de Volta</label><input type="date" name="volta"></div>
+        </div>
+        <div class="form-row single">
+          <div class="field"><label>Observações (opcional)</label><textarea name="obs" placeholder="Preferências, ocasião especial, orçamento…"></textarea></div>
+        </div>
+        <button type="submit" class="btn form-submit">💬 Enviar pelo WhatsApp</button>
       </form>
     </div>
   </div>
@@ -1442,24 +1366,24 @@ ${state.address ? `
           <li>${esc(wppDisplay)}</li>
           <li>${esc(agencyEmail)}</li>
           <li>${esc(contactLocation)}</li>
-          <li>Segâ€“Sex 8hâ€“20h</li>
+          <li>Seg–Sex 8h–20h</li>
         </ul>
       </div>
     <div class="foot-bottom">
       <div>© ${new Date().getFullYear()} ${esc(agencia)} · Todos os direitos reservados</div>
-      <div>Feito com â¤ com <a href="https://canvaviagem.com" target="_blank" style="text-decoration: underline; font-weight: 600; color: #fff;">Canva Viagem</a></div>
+      <div>Feito com ❤ com <a href="https://canvaviagem.com" target="_blank" style="text-decoration: underline; font-weight: 600; color: #fff;">Canva Viagem</a></div>
     </div>
   </div>
 </footer>
 
-${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp" data-visual-removable="contact-wpp-float">ðŸ’¬</a>` : ''}
+${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp" data-visual-removable="contact-wpp-float">💬</a>` : ''}
 
 <!-- SMART LEAD CAPTURE MODAL -->
 <div id="lead-modal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal()">&times;</button>
     <div class="modal-header">
-      <div class="modal-icon">ðŸŒ</div>
+      <div class="modal-icon">🌍</div>
       <h3>Falta pouco para sua viagem!</h3>
       <p id="modal-subtitle">Você tem interesse em: Geral</p>
     </div>
@@ -1472,18 +1396,15 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
         <label>Seu WhatsApp / Celular</label>
         <input type="tel" id="lead-phone" required placeholder="(00) 90000-0000">
       </div>
-      <button type="submit" class="btn modal-submit">ðŸš€ Falar no WhatsApp</button>
+      <button type="submit" class="btn modal-submit">🚀 Falar no WhatsApp</button>
     </form>
   </div>
 </div>
 
-<!-- SISTEMA DE TELEMETRIA E INTEGRAÃ‡ÃƒO SILENCIOSA -->
+<!-- SISTEMA DE TELEMETRIA E INTEGRAÇÃO SILENCIOSA -->
 <script>
   const CONFIG = {
     agencyId: "${esc(trackingId || state.agencyName || 'agencia_desconhecida')}",
-    formId: "${esc(state.projectId || trackingId || state.agencyName || 'formulario_principal')}",
-    formName: "${esc(crmForm.name)}",
-    whatsappRedirect: ${crmForm.whatsappRedirect !== false ? "true" : "false"},
     supabaseUrl: "${SB_URL}",
     supabaseKey: "${SB_KEY}"
   };
@@ -1502,7 +1423,6 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
         "Prefer": "return=minimal"
       },
       body: JSON.stringify({
-        user_id: CONFIG.agencyId,
         event_type: type,
         session_id: 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now(),
         event_data: { 
@@ -1515,7 +1435,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     }).catch(err => console.warn("Tracking off", err));
   }
 
-  // Registra a visita ÃšNICA no carregamento da página para métricas reais
+  // Registra a visita ÚNICA no carregamento da página para métricas reais
   const _cvStart = Date.now();
   window.addEventListener('pagehide', () => {
     const duration = Math.round((Date.now() - _cvStart) / 1000);
@@ -1552,62 +1472,6 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     document.getElementById("lead-modal").classList.remove("active");
   }
 
-  function formToPayload(form) {
-    const data = {};
-    Array.from(new FormData(form).entries()).forEach(([key, value]) => {
-      if (data[key]) {
-        data[key] = Array.isArray(data[key]) ? data[key].concat(value) : [data[key], value];
-      } else {
-        data[key] = value;
-      }
-    });
-    return data;
-  }
-
-  function pickFirst(payload, keys) {
-    for (const key of keys) {
-      if (payload[key]) return payload[key];
-    }
-    return "";
-  }
-
-  function normalizeLeadPayload(payload) {
-    return {
-      name: pickFirst(payload, ["nome", "name", "nome_completo"]),
-      phone: pickFirst(payload, ["wpp", "whatsapp", "phone", "telefone"]),
-      email: pickFirst(payload, ["email", "e-mail"]),
-      interest: pickFirst(payload, ["destino", "interest", "destino_interesse"]) || "Formulario",
-      viajantes: pickFirst(payload, ["viaj", "viajantes", "numero_viajantes"]),
-      ida: pickFirst(payload, ["ida", "data_ida"]),
-      volta: pickFirst(payload, ["volta", "data_volta"]),
-      obs: pickFirst(payload, ["obs", "observacoes", "notes"]),
-      status: "novo"
-    };
-  }
-
-  async function submitCrmForm(payload, normalized) {
-    if (!CONFIG.supabaseUrl) return false;
-    try {
-      const res = await fetch(CONFIG.supabaseUrl + "/functions/v1/submit-crm-form", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          form_id: CONFIG.formId,
-          agency_id: CONFIG.agencyId,
-          payload,
-          normalized,
-          source_url: window.location.href,
-          source_domain: window.location.hostname,
-          user_agent: navigator.userAgent
-        })
-      });
-      return res.ok;
-    } catch (err) {
-      console.warn("CRM form endpoint unavailable", err);
-      return false;
-    }
-  }
-
   async function handleMainFormSubmit(e) {
     e.preventDefault();
     const f = e.target;
@@ -1619,20 +1483,24 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     // Abrir a nova guia ANTES do await para evitar bloqueio de popup
     const newTab = window.open('about:blank', '_blank');
 
-    const payload = formToPayload(f);
-    const normalized = normalizeLeadPayload(payload);
-    const sentToCrm = await submitCrmForm(payload, normalized);
-    if (!sentToCrm) await track("lead_captured", normalized);
+    await track("lead_captured", { 
+      name: f.nome.value, 
+      phone: f.wpp.value, 
+      email: f.email.value,
+      interest: f.destino.value,
+      viajantes: f.viaj.value,
+      ida: f.ida.value,
+      volta: f.volta.value,
+      obs: f.obs.value,
+      status: 'novo'
+    });
     
-    const msg = encodeURIComponent('Olá! Quero um orçamento.\n\nNome: '+(normalized.name || '-')+'\nWhatsApp: '+(normalized.phone || '-')+'\nE-mail: '+(normalized.email || '-')+'\nDestino: '+(normalized.interest || '-')+'\nViajantes: '+(normalized.viajantes || '-')+'\nIda: '+(normalized.ida || '-')+'\nVolta: '+(normalized.volta || '-')+'\nObs: '+(normalized.obs || '-'));
+    const msg = encodeURIComponent('Olá! Quero um orçamento.\\n\\nNome: '+f.nome.value+'\\nWhatsApp: '+f.wpp.value+'\\nE-mail: '+f.email.value+'\\nDestino: '+f.destino.value+'\\nViajantes: '+f.viaj.value+'\\nIda: '+f.ida.value+'\\nVolta: '+f.volta.value+'\\nObs: '+f.obs.value);
     
     btn.innerHTML = originalText;
     btn.disabled = false;
     
-    if (!CONFIG.whatsappRedirect) {
-      if (newTab) newTab.close();
-      alert("${esc(crmForm.successMessage)}");
-    } else if (newTab) {
+    if (newTab) {
       newTab.location.href = "https://api.whatsapp.com/send?phone=${wpp}&text=" + msg;
     } else {
       window.location.href = "https://api.whatsapp.com/send?phone=${wpp}&text=" + msg;
@@ -1690,9 +1558,8 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
   const leadPhone = document.getElementById("lead-phone");
   if(leadPhone) leadPhone.addEventListener("input", maskPhone);
   
-  document.querySelectorAll('input[type="tel"], input[name="wpp"], input[name="whatsapp"]').forEach((input) => {
-    input.addEventListener("input", maskPhone);
-  });
+  const mainWpp = document.querySelector('input[name="wpp"]');
+  if(mainWpp) mainWpp.addEventListener("input", maskPhone);
 
   ${seasonalScripts}
 </script>
@@ -1741,14 +1608,14 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
   <div class="dest-img-wrap">
     <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
     <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
-    <div class="dest-overlay">Ver pacote â†’</div>
+    <div class="dest-overlay">Ver pacote →</div>
   </div>
   <div class="dest-body">
     <div class="dest-loc">${esc(cidade)}</div>
     <h3>${esc(p.title)}</h3>
     <p>${esc(p.description)}</p>
     <div class="dest-price">${parsePriceHTML(p.price)}</div>
-    <span class="dest-cta">Saiba mais â†’</span>
+    <span class="dest-cta">Saiba mais →</span>
   </div>
 </a>`)
     .join("\n");
@@ -1756,10 +1623,10 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
   return `Lovable, por favor, atualize o meu site atual.
 Adicione os seguintes pacotes atualizados na minha grade de destinos/pacotes existente.
 
-INSTRUÃ‡ÃƒO CRÍTICA:
-1. NÃƒO recrie o site do zero.
-2. NÃƒO altere as cores ou o design atual.
-3. NÃƒO gere novas imagens fictícias. Mantenha os links originais que estou fornecendo.
+INSTRUÇÃO CRÍTICA: 
+1. NÃO recrie o site do zero. 
+2. NÃO altere as cores ou o design atual. 
+3. NÃO gere novas imagens fictícias. Mantenha os links originais que estou fornecendo.
 4. APENAS substitua ou adicione os cards de pacotes na div/grid que contém a classe "destinos-grid".
 
 Aqui está o bloco de código HTML que deve ser inserido:
@@ -1770,3 +1637,4 @@ ${cardsHTML}
 
 Obrigado!`;
 }
+
