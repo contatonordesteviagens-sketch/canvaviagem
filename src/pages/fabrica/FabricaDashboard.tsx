@@ -697,26 +697,43 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                         <button
                           type="button"
                           onClick={() => {
-                            const p = savedProjects?.find(x => {
-                              if (site.project_id) return x.id === site.project_id;
-                              const snap = x.state_snapshot as any;
-                              const urlSlug = snap?.siteContent?.canvaViagemUrl?.replace('https://', '')?.split('.')[0] || snap?.siteContent?.vercelUrl?.replace('https://', '')?.split('.')[0];
-                              const agencySlug = x.agency_name ? slugify(x.agency_name) : null;
-                              return urlSlug === site.id || agencySlug === site.id || x.id === site.id;
-                            });
-                            if (p && p.state_snapshot) {
-                              const currentName = state.agencyName || 'Sem nome';
-                              const targetName = p.agency_name || 'Sem nome';
-                              if (state.agencyName && p.id !== state.projectId) {
-                                const ok = window.confirm(`⚠️ Você tem edições não salvas no projeto "${currentName}".\n\nSe continuar, essas edições serão perdidas.\n\nDeseja mesmo carregar "${targetName}" para editá-lo?`);
-                                if (!ok) return;
-                              }
-                              window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                              toast.success(`📂 Projeto "${targetName}" carregado!`);
-                              setTimeout(() => onNavigate?.("phase", 2), 100);
-                            } else {
-                               toast.error("Projeto não encontrado ou dados inválidos.");
+                            // 1. Tenta encontrar por ID exato do projeto (ignorando user.id se foi salvo com UUID do usuário)
+                            let p = (site.project_id && site.project_id !== user?.id)
+                              ? savedProjects?.find(x => x.id === site.project_id)
+                              : undefined;
+
+                            // 2. Se não encontrou por ID, procura pelo slug da URL ou nome da agência ou ID do site
+                            if (!p) {
+                              p = savedProjects?.find(x => {
+                                const snap = x.state_snapshot as any;
+                                const urlSlug = snap?.siteContent?.canvaViagemUrl?.replace('https://', '')?.split('.')[0] || snap?.siteContent?.vercelUrl?.replace('https://', '')?.split('.')[0];
+                                const agencySlug = x.agency_name ? slugify(x.agency_name) : null;
+                                return urlSlug === site.id || agencySlug === site.id || x.id === site.id || x.id === site.project_id;
+                              });
                             }
+
+                            const currentName = state.agencyName || 'Sem nome';
+                            const targetName = p?.agency_name || site.id;
+
+                            if (state.agencyName && p?.id && p.id !== state.projectId) {
+                              const ok = window.confirm(`⚠️ Você tem edições não salvas no projeto "${currentName}".\n\nSe continuar, essas edições serão perdidas.\n\nDeseja mesmo carregar "${targetName}" para editá-lo?`);
+                              if (!ok) return;
+                            }
+
+                            const snapshotToLoad = (p && p.state_snapshot) ? { ...p.state_snapshot, projectId: p.id } : {
+                              ...state,
+                              projectId: (site.project_id && site.project_id !== user?.id) ? site.project_id : undefined,
+                              agencyName: site.id,
+                              siteContent: {
+                                ...(state.siteContent || {}),
+                                canvaViagemUrl: `https://${site.id}.canvaviagem.com`,
+                                vercelUrl: `https://${site.id}.canvaviagem.com`,
+                              }
+                            };
+
+                            window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: snapshotToLoad }));
+                            toast.success(`📂 Site "${targetName}" carregado no editor!`);
+                            setTimeout(() => onNavigate?.("phase", 4), 100);
                           }}
                           className="px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 text-violet-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
                         >
