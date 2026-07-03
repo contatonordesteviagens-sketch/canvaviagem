@@ -12,6 +12,7 @@ import {
   EyeOff,
   Plus,
   Save,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -253,20 +254,89 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
     <div className="mx-auto max-w-7xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300/80">Formularios</div>
-          <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">Captura de leads para qualquer site</h1>
+          <div className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300/80">Fase 4 • Formulários Avançados & Embeds</div>
+          <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">Personalização de Captura & Integração Externa</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
-            Edite os campos que aparecem no site da Fabrica e publique o mesmo formulario em WordPress, Wix ou HTML.
+            Diferente do seu Site principal (F2), aqui você configura as perguntas estratégicas de qualificação ou gera o código para embutir este formulário em páginas externas (WordPress, Wix, Framer, etc.).
           </p>
         </div>
         <button
           onClick={savePublicForm}
           disabled={saving}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-400 px-5 py-3 text-sm font-black text-zinc-950 transition-transform active:scale-95 disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-400 px-5 py-3 text-sm font-black text-zinc-950 transition-transform active:scale-95 disabled:opacity-60 shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:bg-amber-300"
         >
           {saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-          {saving ? "Salvando..." : "Salvar formulario"}
+          {saving ? "Salvando..." : "Salvar formulário"}
         </button>
+      </div>
+
+      {/* Box Didático Explicativo - Jornada do Lead na Agência */}
+      <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-black/40 to-black/60 p-6 shadow-[0_0_30px_rgba(245,158,11,0.08)] backdrop-blur-xl">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-4 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400/20 text-amber-300 border border-amber-400/30">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                Como Funciona a Jornada do Lead no Canva Viagem?
+                <span className="rounded-full bg-amber-400/20 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-300 border border-amber-400/30">Guia Didático</span>
+              </h3>
+              <p className="text-xs text-white/60">Entenda a ordem lógica das etapas do seu ecossistema digital e o papel deste módulo:</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Passo 1 */}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 relative overflow-hidden group hover:border-white/20 transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">Etapa 1 • F2</span>
+              <span className="text-xs font-bold text-white/30">Site</span>
+            </div>
+            <h4 className="text-sm font-black text-white mb-1 flex items-center gap-1.5">🌐 1. Site da Agência</h4>
+            <p className="text-[11px] leading-relaxed text-white/60">
+              Sua página principal de alta conversão. É o destino para onde você direciona seus anúncios e clientes.
+            </p>
+          </div>
+
+          {/* Passo 2 */}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 relative overflow-hidden group hover:border-white/20 transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30">Etapa 2 • F3</span>
+              <span className="text-xs font-bold text-white/30">CRM</span>
+            </div>
+            <h4 className="text-sm font-black text-white mb-1 flex items-center gap-1.5">👥 2. CRM & Gestão</h4>
+            <p className="text-[11px] leading-relaxed text-white/60">
+              O painel onde chegam os contatos capturados. É aqui que você gerencia seus leads, faz atendimentos e fecha vendas.
+            </p>
+          </div>
+
+          {/* Passo 3 - EM DESTAQUE */}
+          <div className="rounded-2xl border-2 border-amber-400/60 bg-amber-400/[0.08] p-4 relative overflow-hidden shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+            <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-amber-400/10 blur-xl"></div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-amber-400 text-zinc-950 font-extrabold shadow-sm animate-pulse">Etapa 3 • F4 (Aqui!)</span>
+              <span className="text-xs font-bold text-amber-300">Formulários</span>
+            </div>
+            <h4 className="text-sm font-black text-amber-300 mb-1 flex items-center gap-1.5">📝 3. Formulários & Embeds</h4>
+            <p className="text-[11px] leading-relaxed text-amber-100/80">
+              Ferramenta avançada para personalizar as perguntas de qualificação ou levar seu formulário para sites externos (WordPress/Wix).
+            </p>
+          </div>
+
+          {/* Passo 4 */}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 relative overflow-hidden group hover:border-white/20 transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Etapa 4 • F5/F6</span>
+              <span className="text-xs font-bold text-white/30">Estratégia</span>
+            </div>
+            <h4 className="text-sm font-black text-white mb-1 flex items-center gap-1.5">⚡ 4. Checkup & Plano</h4>
+            <p className="text-[11px] leading-relaxed text-white/60">
+              O diagnóstico digital da agência e o planejamento estratégico de metas e crescimento contínuo de faturamento.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
@@ -530,12 +600,12 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
       </div>
 
       <div className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-black/30 p-3 sm:flex-row">
-        <button onClick={onBack} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white/70">
+        <button onClick={onBack} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white/70 hover:bg-white/[0.08] transition-colors">
           <ArrowLeft className="h-4 w-4" />
-          Voltar ao site
+          Voltar: CRM (F3)
         </button>
-        <button onClick={onNext} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 text-sm font-black text-zinc-950">
-          Ir para o CRM
+        <button onClick={onNext} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 text-sm font-black text-zinc-950 hover:bg-amber-300 transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+          Avançar: Checkup (F5)
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>

@@ -73,12 +73,12 @@ const FabricaInner = () => {
     if (activeTab === "library") {
       return librarySubTab === "ofertas" ? "Minhas Ofertas" : "Minha Biblioteca";
     }
-    if (state.currentPhase === 1) return "Anúncio";
-    if (state.currentPhase === 2) return "Site";
-    if (state.currentPhase === 6) return "Formulários";
-    if (state.currentPhase === 3) return "CRM";
-    if (state.currentPhase === 4) return "Plano";
-    if (state.currentPhase === 5) return "Checkup";
+    if (state.currentPhase === 1) return "Anúncio (F1)";
+    if (state.currentPhase === 2) return "Site (F2)";
+    if (state.currentPhase === 3) return "CRM (F3)";
+    if (state.currentPhase === 6) return "Formulários (F4)";
+    if (state.currentPhase === 5) return "Checkup (F5)";
+    if (state.currentPhase === 4) return "Plano (F6)";
     return "";
   };
 
@@ -146,7 +146,7 @@ const FabricaInner = () => {
               FERRAMENTAS
             </div>
             <div className="space-y-1">
-              {/* F2: Site (Moved up) */}
+              {/* F2: Site */}
               <button
                 onClick={() => {
                   setPhase(2);
@@ -165,24 +165,6 @@ const FabricaInner = () => {
                 <span className="text-[10px] text-white/30 font-bold">F2</span>
               </button>
 
-              <button
-                onClick={() => {
-                  setPhase(6);
-                  setActiveTab("phase");
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeTab === "phase" && state.currentPhase === 6
-                    ? "bg-white/[0.06] text-white border border-white/10"
-                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <ClipboardList className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 6 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Formulários</span>
-                </div>
-                <span className="text-[10px] text-white/30 font-bold">F3</span>
-              </button>
-
               {/* F3: CRM */}
               <button
                 onClick={() => {
@@ -199,24 +181,24 @@ const FabricaInner = () => {
                   <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
                   <span>CRM</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold">F5</span>
+                <span className="text-[10px] text-white/30 font-bold">F3</span>
               </button>
 
-              {/* F4: Plano */}
+              {/* F4: Formulários */}
               <button
                 onClick={() => {
-                  setPhase(4);
+                  setPhase(6);
                   setActiveTab("phase");
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeTab === "phase" && state.currentPhase === 4
+                  activeTab === "phase" && state.currentPhase === 6
                     ? "bg-white/[0.06] text-white border border-white/10"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Sliders className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Plano</span>
+                  <ClipboardList className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 6 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Formulários</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold">F4</span>
               </button>
@@ -237,7 +219,26 @@ const FabricaInner = () => {
                   <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Checkup</span>
                 </div>
-                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/30"}`}>F6</span>
+                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/30"}`}>F5</span>
+              </button>
+
+              {/* F6: Plano */}
+              <button
+                onClick={() => {
+                  setPhase(4);
+                  setActiveTab("phase");
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  activeTab === "phase" && state.currentPhase === 4
+                    ? "bg-white/[0.06] text-white border border-white/10"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Sliders className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Plano</span>
+                </div>
+                <span className="text-[10px] text-white/30 font-bold">F6</span>
               </button>
             </div>
           </div>
@@ -361,18 +362,6 @@ const FabricaInner = () => {
           </button>
           <button
             onClick={() => {
-              setPhase(6);
-              setActiveTab("phase");
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "phase" && state.currentPhase === 6 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>📝</span> Formulários (F3)
-          </button>
-          <button
-            onClick={() => {
               setPhase(3);
               setActiveTab("phase");
               setMobileMenuOpen(false);
@@ -381,19 +370,19 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            <span>👥</span> CRM (F4)
+            <span>👥</span> CRM (F3)
           </button>
           <button
             onClick={() => {
-              setPhase(4);
+              setPhase(6);
               setActiveTab("phase");
               setMobileMenuOpen(false);
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "phase" && state.currentPhase === 6 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            <span>⚙️</span> Plano (F5)
+            <span>📝</span> Formulários (F4)
           </button>
           <button
             onClick={() => {
@@ -405,7 +394,19 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            <span>⚡</span> Checkup (F6)
+            <span>⚡</span> Checkup (F5)
+          </button>
+          <button
+            onClick={() => {
+              setPhase(4);
+              setActiveTab("phase");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
+              activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            <span>⚙️</span> Plano (F6)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Conteúdo</div>
@@ -509,11 +510,11 @@ const FabricaInner = () => {
           {activeTab === "phase" && (
             <>
               {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} />}
-              {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(6)} onBack={() => setPhase(1)} />}
-              {state.currentPhase === 6 && <Phase6Forms onNext={() => setPhase(3)} onBack={() => setPhase(2)} />}
-              {state.currentPhase === 3 && <Phase5Dashboard />}
-              {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
-              {state.currentPhase === 5 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(4)} />}
+              {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
+              {state.currentPhase === 3 && <Phase5Dashboard onNext={() => setPhase(6)} onBack={() => setPhase(2)} />}
+              {state.currentPhase === 6 && <Phase6Forms onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
+              {state.currentPhase === 5 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(6)} />}
+              {state.currentPhase === 4 && <Phase2Ativos onNext={() => {}} onBack={() => setPhase(5)} />}
             </>
           )}
         </div>

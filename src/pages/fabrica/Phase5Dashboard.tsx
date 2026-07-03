@@ -5,6 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { buildLandingHTML } from "@/lib/fabrica-html-export";
 import { Loader2, Eye, X as CloseIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { buildLandingHTML } from "@/lib/fabrica-html-export";
+import { Loader2, Eye, X as CloseIcon } from "lucide-react";
 import { 
   TrendingUp, 
   Users, 
@@ -13,6 +20,7 @@ import {
   Calendar, 
   Sparkles, 
   ArrowRight, 
+  ArrowLeft,
   ExternalLink, 
   CheckCircle2, 
   Newspaper,
@@ -29,7 +37,7 @@ import { ptBR } from "date-fns/locale";
 
 const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
 
-export const Phase5Dashboard = () => {
+export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBack?: () => void } = {}) => {
   const { state, setPhase, update } = useFabricaContext();
   const { user } = useAuth();
   const [showUrlHelp, setShowUrlHelp] = useState(false);
@@ -577,8 +585,6 @@ export const Phase5Dashboard = () => {
         </div>
       </div>
 
-      {/* Conteúdo Removido: O bloco de Status Lovable/Vercel e Novidades foi removido para focar o F5 no CRM */}
-
       {/* 🆕 NOVO MÓDULO: CENTRO DE LEADS / CRM INTEGRADO */}
       <div className="bg-white/[0.03] border border-white/10 rounded-3xl overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-6 duration-700 mt-6">
          <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-br from-violet-500/5 to-transparent">
@@ -979,6 +985,24 @@ export const Phase5Dashboard = () => {
                </div>
              )}
            </div>
+        </div>
+      )}
+
+      {/* Barra de Navegação Inferior */}
+      {(onBack || onNext) && (
+        <div className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-black/30 p-3 sm:flex-row mt-8">
+          {onBack && (
+            <button onClick={onBack} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white/70 hover:bg-white/[0.08] transition-colors">
+              <ArrowLeft className="h-4 w-4" />
+              Voltar: Site (F2)
+            </button>
+          )}
+          {onNext && (
+            <button onClick={onNext} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 text-sm font-black text-zinc-950 hover:bg-amber-300 transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+              Avançar: Formulários (F4)
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          )}
         </div>
       )}
 
