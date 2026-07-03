@@ -10,6 +10,7 @@ import {
   Copy,
   Eye,
   EyeOff,
+  Plus,
   Save,
   Trash2,
 } from "lucide-react";
@@ -110,33 +111,9 @@ const ColorInput = ({
 
 export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { state, update } = useFabricaContext();
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  if (!isAdmin) {
-    return (
-      <div className="mx-auto max-w-4xl py-16 text-center animate-in fade-in duration-300">
-        <div className="rounded-3xl border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-black/40 to-black/60 p-8 shadow-[0_0_30px_rgba(245,158,11,0.08)] backdrop-blur-xl">
-          <div className="w-14 h-14 rounded-2xl bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-            🔒
-          </div>
-          <h2 className="text-xl font-black text-white mb-2">Módulo Exclusivo para Administradores</h2>
-          <p className="text-sm text-white/60 max-w-md mx-auto mb-6">
-            A configuração avançada de formulários e geração de embeds externos está disponível exclusivamente para a administração do sistema.
-          </p>
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-sm transition-all"
-            >
-              <ArrowLeft className="w-4 h-4" /> Voltar ao CRM
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   const form = normalizeCrmFormConfig(state.crmForm);
   const embedKey = form.id || state.projectId || user?.id || "FORM_ID";
@@ -274,26 +251,21 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col gap-6 rounded-3xl border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-black/40 to-black/60 p-6 shadow-[0_0_30px_rgba(245,158,11,0.08)] backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-2.5 max-w-3xl">
-          <div className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300/90">Fase 4 • Formulários</div>
-          <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">Adicione o formulário vinculado ao CRM em outro site externo.</h1>
-          <div className="space-y-1.5 text-sm leading-relaxed text-white/65 pt-1">
-            <p>
-              Caso já tenha um site personalize esse formulário e adicione dentro do seu site para captar leads e salvar no CRM na parte anterior fase 3 (F3).
-            </p>
-            <p>
-              Após concluir as perguntas para o cliente preencher salve o formulário e cole o código HTML do formulário no seu site ou páginas externas (WordPress, Wix, Framer, etc.).
-            </p>
-          </div>
+      <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-300/80">Formularios</div>
+          <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">Captura de leads para qualquer site</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
+            Edite os campos que aparecem no site da Fabrica e publique o mesmo formulario em WordPress, Wix ou HTML.
+          </p>
         </div>
         <button
           onClick={savePublicForm}
           disabled={saving}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-400 px-6 py-3.5 text-sm font-black text-zinc-950 transition-all active:scale-95 disabled:opacity-60 shadow-[0_0_20px_rgba(245,158,11,0.25)] hover:bg-amber-300 self-start sm:self-center shrink-0"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-400 px-5 py-3 text-sm font-black text-zinc-950 transition-transform active:scale-95 disabled:opacity-60"
         >
           {saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-          {saving ? "Salvando..." : "Salvar formulário"}
+          {saving ? "Salvando..." : "Salvar formulario"}
         </button>
       </div>
 
@@ -558,12 +530,12 @@ export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: ()
       </div>
 
       <div className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-black/30 p-3 sm:flex-row">
-        <button onClick={onBack} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white/70 hover:bg-white/[0.08] transition-colors">
+        <button onClick={onBack} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white/70">
           <ArrowLeft className="h-4 w-4" />
-          Voltar: CRM (F3)
+          Voltar ao site
         </button>
-        <button onClick={onNext} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 text-sm font-black text-zinc-950 hover:bg-amber-300 transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)]">
-          Avançar: Checkup (F5)
+        <button onClick={onNext} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 text-sm font-black text-zinc-950">
+          Ir para o CRM
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>
