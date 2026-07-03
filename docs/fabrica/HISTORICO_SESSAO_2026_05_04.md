@@ -9,7 +9,7 @@
 | Arquivo principal | `src/lib/fabrica-compose-art.ts` |
 | UI | `src/pages/fabrica/Phase3ArtFactory.tsx` |
 | Deploy | Lovable auto-deploy ao push no GitHub |
-| Token Git | `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` (no remote URL) |
+| Token Git | `gho_REMOVED_FOR_SECURITY` (no remote URL) |
 
 ## ⚠️ BUG CRÍTICO DESCOBERTO
 

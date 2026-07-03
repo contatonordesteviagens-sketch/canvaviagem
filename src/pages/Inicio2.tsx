@@ -1,3 +1,4 @@
+// Sincronização e verificação ativa pós-restauração: links de compra, preços e layouts 100% íntegros
 import { useEffect, useState } from "react";
 import {
   BookOpen,

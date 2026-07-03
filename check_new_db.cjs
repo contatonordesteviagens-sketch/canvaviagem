@@ -1,7 +1,7 @@
 const { createClient } = require("@supabase/supabase-js");
 
 const url = "https://zdjtcwtakgizbsbbwtgc.supabase.co";
-const key = "sb_secret_WTEG07TbKdVHynh6Vnlylw_j7-hjl9V"; // from user screenshot
+const key = "sb_secret_REMOVED_FOR_SECURITY"; // from user screenshot
 
 const supabase = createClient(url, key);
 

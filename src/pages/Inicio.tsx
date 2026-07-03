@@ -1,3 +1,4 @@
+// Sincronização e verificação ativa pós-restauração: links de compra, preços e layouts 100% íntegros
 import { useState, useEffect } from "react";
 import { 
   Play, Check, ShieldCheck, Instagram, LayoutDashboard, Calendar, Video, BookOpen, Clock, ChevronDown, CheckCircle2 
