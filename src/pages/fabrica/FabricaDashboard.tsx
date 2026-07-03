@@ -768,7 +768,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                           onClick={async () => {
                             if (!window.confirm(`⚠️ Deseja realmente excluir o site publicado "${displayUrl}"?`)) return;
                             try {
-                              const { error } = await supabase.from("public_sites").delete().eq("id", site.id).eq("owner_id", user?.id);
+                              const { error } = await supabase.from("public_sites").delete().eq("id", site.id);
                               if (error) throw error;
                               setPublishedSites(prev => prev.filter(s => s.id !== site.id));
                               toast.success("🗑️ Site publicado excluído com sucesso!");
