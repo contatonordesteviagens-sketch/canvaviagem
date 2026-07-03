@@ -105,6 +105,16 @@ export const TUTORIAL_VIDEOS: TutorialVideo[] = [
     thumbnail: "https://i3.ytimg.com/vi/Z8-aFoblDu0/hqdefault.jpg",
     duration: "05:55",
   },
+  {
+    id: 9,
+    lesson: "Aula 9",
+    title: "AULA 9 - COMO CRIAR SITE AGÊNCIA DE VIAGEM",
+    shortTitle: "Como criar site agência de viagem",
+    videoId: "aprUHzZyJxw",
+    url: "https://www.youtube.com/watch?v=aprUHzZyJxw",
+    thumbnail: "https://i3.ytimg.com/vi/aprUHzZyJxw/hqdefault.jpg",
+    duration: "10:00",
+  },
 ];
 
 const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@CanvaViagem";
