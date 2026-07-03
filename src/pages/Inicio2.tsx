@@ -1222,7 +1222,7 @@ export default function Inicio2() {
             </div>
           </div>
         </section>
-      \n</main>
+      </main>
 
       <footer className="inicio-footer">
         <div className="inicio-container footer-inner">
@@ -1231,11 +1231,7 @@ export default function Inicio2() {
             <p>Conteúdo, IA, páginas e CRM para agências de viagem venderem melhor.</p>
             <div className="footer-contact">
               <a href="mailto:suporte@canvaviagem.com.br" className="footer-contact-link">suporte@canvaviagem.com.br</a>
-              <div className="text-[#94A3B8] text-[12px] mt-2 mb-2 leading-relaxed">
-                Rocha Digital Ltda — CNPJ: [CNPJ]<br/>
-                canvaviagem.com.br é operado pela Rocha Digital Ltda.
-              </div>
-              <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="footer-contact-link footer-whatsapp">
+              <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="footer-contact-link footer-whatsapp mt-2">
                 WhatsApp suporte
               </a>
             </div>
