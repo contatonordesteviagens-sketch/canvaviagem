@@ -1189,7 +1189,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 />
               </div>
               <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>
-                CNPJ: 45.312.876/0001-22 · Conexão Criptografada SSL 256-bits
+                Conexão Criptografada SSL 256-bits
               </p>
             </div>
           </Reveal>
@@ -1266,7 +1266,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               { name: "Planos", url: "#pricing" },
               { name: "Termos", url: "/termos" },
               { name: "Privacidade", url: "/privacidade" },
-              { name: "Soporte", url: "https://wa.me/558586411294?text=Preciso%20de%20ajuda", action: trackContact }
+              { name: "Soporte", url: "https://wa.me/5585986411294?text=Preciso%20de%20ajuda", action: trackContact }
             ].map(l => (
               <a 
                 key={l.name} 
@@ -1292,7 +1292,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </div>
 
           <p style={{ fontSize: 11, color: T.text3, lineHeight: 1.6 }}>
-            © 2026 Canva Viagem · Todos os direitos reservados. CNPJ: 45.312.876/0001-22<br/>
+            © 2026 Canva Viagem · Todos os direitos reservados.<br/>
             <span style={{ fontSize: 10, opacity: 0.6 }}>Esta plataforma não possui vínculo oficial com a empresa Canva Pty Ltd.</span>
           </p>
         </div>
@@ -1305,7 +1305,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            href="https://wa.me/558586411294?text=Quiero%20adquirir%20el%20Canva%20Viagem"
+            href="https://wa.me/5585986411294?text=Quiero%20adquirir%20el%20Canva%20Viagem"
             target="_blank"
             rel="noreferrer"
             onClick={() => trackContact()}

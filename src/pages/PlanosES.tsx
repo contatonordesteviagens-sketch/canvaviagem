@@ -1179,12 +1179,8 @@ const PlanosES = () => {
                <span className="text-zinc-200">|</span>
                <a href="/privacidade" className="hover:text-black underline decoration-zinc-200 underline-offset-4">Privacidade</a>
                <span className="text-zinc-200">|</span>
-               <a href="https://wa.me/558586411294?text=Preciso%20de%20suporte%20com%20meu%20plano" target="_blank" className="hover:text-black underline decoration-zinc-200 underline-offset-4 flex items-center gap-1"><MessageCircle className="w-3 h-3"/> Suporte WhatsApp</a>
+               <a href="https://wa.me/5585986411294?text=Preciso%20de%20suporte%20com%20meu%20plano" target="_blank" className="hover:text-black underline decoration-zinc-200 underline-offset-4 flex items-center gap-1"><MessageCircle className="w-3 h-3"/> Suporte WhatsApp</a>
              </div>
-
-             <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-6 opacity-60">
-               CNPJ: 45.312.876/0001-22
-             </p>
              <p className="text-[9px] text-zinc-400 max-w-md leading-relaxed opacity-50 mt-2">
                Esta plataforma não possui qualquer vínculo oficial, comercial ou de licenciamento com a Canva Pty Ltd. As marcas registradas pertencem aos seus respectivos proprietários.
              </p>
@@ -1225,7 +1221,7 @@ const PlanosES = () => {
 
       {/* ─── FLOATING WHATSAPP ─── */}
       <a
-        href="https://wa.me/558586411294?text=Quero%20adquirir%20o%20Canva%20Viagem"
+        href="https://wa.me/5585986411294?text=Quero%20adquirir%20o%20Canva%20Viagem"
         target="_blank"
         rel="noreferrer"
         className="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-[9998] flex items-center justify-center w-14 h-14 bg-[#25D366] text-white rounded-full shadow-[0_8px_24px_rgba(37,211,102,0.4)] hover:scale-110 active:scale-90 transition-all duration-300"
