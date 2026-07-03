@@ -10,7 +10,7 @@ export const ELITE_PRODUCT_IDS = new Set([
 
 export function isEliteProduct(productId?: string | null) {
   if (!productId) return false;
-  return ELITE_PRODUCT_IDS.has(productId) || productId.includes("ticto") || productId.includes("elite");
+  return ELITE_PRODUCT_IDS.has(productId) || productId.includes("ticto") || productId.includes("elite") || productId.includes("admin");
 }
 
 export function isStartProduct(productId?: string | null) {

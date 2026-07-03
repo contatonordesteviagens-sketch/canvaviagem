@@ -112,9 +112,33 @@ const ColorInput = ({
 
 export const Phase6Forms = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { state, update } = useFabricaContext();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  if (!isAdmin) {
+    return (
+      <div className="mx-auto max-w-4xl py-16 text-center animate-in fade-in duration-300">
+        <div className="rounded-3xl border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-black/40 to-black/60 p-8 shadow-[0_0_30px_rgba(245,158,11,0.08)] backdrop-blur-xl">
+          <div className="w-14 h-14 rounded-2xl bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+            🔒
+          </div>
+          <h2 className="text-xl font-black text-white mb-2">Módulo Exclusivo para Administradores</h2>
+          <p className="text-sm text-white/60 max-w-md mx-auto mb-6">
+            A configuração avançada de formulários e geração de embeds externos está disponível exclusivamente para a administração do sistema.
+          </p>
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-sm transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" /> Voltar ao CRM
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const form = normalizeCrmFormConfig(state.crmForm);
   const embedKey = form.id || state.projectId || user?.id || "FORM_ID";

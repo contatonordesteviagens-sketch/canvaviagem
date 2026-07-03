@@ -5,13 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { buildLandingHTML } from "@/lib/fabrica-html-export";
 import { Loader2, Eye, X as CloseIcon } from "lucide-react";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import { useFabricaContext } from "@/hooks/useFabricaContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { buildLandingHTML } from "@/lib/fabrica-html-export";
-import { Loader2, Eye, X as CloseIcon } from "lucide-react";
 import { 
   TrendingUp, 
   Users, 

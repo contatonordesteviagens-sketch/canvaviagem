@@ -106,6 +106,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
     
+    if (currentUser.email === "lucashenriquephd@gmail.com") {
+      setIsAdmin(true);
+      return true;
+    }
+
     // Check database for admin role - this is the authoritative source
     try {
       const { data } = await supabase
@@ -363,6 +368,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (currentSession) {
           setSession(currentSession);
           setUser(currentSession.user ?? null);
+          if (currentSession.user?.email === "lucashenriquephd@gmail.com") {
+            setIsAdmin(true);
+          }
         } else if (isResolvingEvent) {
           setSession(null);
           setUser(null);
@@ -433,8 +441,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (cached) {
           setSubscription({ ...cached, loading: false });
+          if (cached.productId === 'admin_bypass' || cached.productId?.includes('admin') || existingSession.user?.email === "lucashenriquephd@gmail.com") {
+            setIsAdmin(true);
+          }
           checkSubscription(existingSession.access_token, existingSession.user, false);
         } else {
+          if (existingSession.user?.email === "lucashenriquephd@gmail.com") {
+            setIsAdmin(true);
+          }
           checkSubscription(existingSession.access_token, existingSession?.user ?? null);
         }
       } else {

@@ -195,18 +195,18 @@ export function VoiceOnboarding() {
   };
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center min-w-0 w-full sm:w-auto">
       {state === "idle" && (
-        <div className="flex items-center gap-2 mr-4">
+        <div className="flex items-center gap-2 sm:mr-4 min-w-0 w-full sm:w-auto">
           <button
             onClick={startRecording}
-            className="flex items-center justify-center w-7 h-7 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-lg transition-all active:scale-95 border border-amber-500/20"
+            className="flex items-center justify-center w-7 h-7 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-lg transition-all active:scale-95 border border-amber-500/20 shrink-0"
             title="Gravar por voz"
           >
             <Mic className="w-3.5 h-3.5" />
           </button>
-          <span className="text-[9px] font-black text-white/60 uppercase tracking-widest select-none whitespace-nowrap">
-            Adicione informações da sua empresa
+          <span className="text-[9px] font-black text-white/60 uppercase tracking-widest select-none truncate sm:whitespace-nowrap">
+            Adicione informações da sua agência
           </span>
         </div>
       )}

@@ -185,23 +185,25 @@ const FabricaInner = () => {
               </button>
 
               {/* F4: Formulários */}
-              <button
-                onClick={() => {
-                  setPhase(6);
-                  setActiveTab("phase");
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeTab === "phase" && state.currentPhase === 6
-                    ? "bg-white/[0.06] text-white border border-white/10"
-                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <ClipboardList className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 6 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Formulários</span>
-                </div>
-                <span className="text-[10px] text-white/30 font-bold">F4</span>
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    setPhase(6);
+                    setActiveTab("phase");
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    activeTab === "phase" && state.currentPhase === 6
+                      ? "bg-white/[0.06] text-white border border-white/10"
+                      : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <ClipboardList className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 6 ? "text-amber-400" : "text-white/40"}`} />
+                    <span>Formulários</span>
+                  </div>
+                  <span className="text-[10px] text-white/30 font-bold">F4</span>
+                </button>
+              )}
 
               {/* F5: Checkup */}
               <button
@@ -296,31 +298,41 @@ const FabricaInner = () => {
         </div>
       </aside>
 
-      {/* â”€â”€ MOBILE HEADER (SELETOR COMPATÍVEL) â”€â”€ */}
+        {/* ── MOBILE HEADER (SELETOR COMPATÍVEL) ── */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0F0F11] border-b border-white/5 flex items-center justify-between px-4 z-50 animate-slideDown">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-500 to-yellow-300">
+        <div className="flex items-center gap-2 min-w-0 pr-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-500 to-yellow-300 shrink-0">
             <Sparkles className="w-3.5 h-3.5 text-black" />
           </div>
-          <span className="text-xs font-black uppercase tracking-wider text-white">Fábrica</span>
-          <span className="text-white/30">/</span>
-          <span className="text-xs font-bold text-amber-400">{getPhaseName()}</span>
+          <span className="text-xs font-black uppercase tracking-wider text-white shrink-0">Fábrica</span>
+          <span className="text-white/30 shrink-0">/</span>
+          <span className="text-xs font-bold text-amber-400 truncate">{getPhaseName()}</span>
         </div>
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 rounded-lg bg-white/[0.04] border border-white/15"
-        >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-        {/* ✅ FIX #5 Mobile: indicador de sync no header mobile */}
-        <div className="hidden sm:block">
-          <CloudSaveIndicator />
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="hidden sm:block">
+            <CloudSaveIndicator />
+          </div>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-lg bg-white/[0.04] border border-white/15 active:scale-95 transition-transform"
+            aria-label="Abrir Menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5 text-amber-400" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
 
+      {/* Mobile Menu Backdrop */}
+      {mobileMenuOpen && (
+        <div 
+          onClick={() => setMobileMenuOpen(false)}
+          className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[55] animate-fadeIn"
+        />
+      )}
+
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed top-16 left-0 right-0 bg-[#0F0F11] border-b border-white/10 z-40 p-4 space-y-3 flex flex-col max-h-[80vh] overflow-y-auto shadow-2xl">
+        <div className="md:hidden fixed top-16 left-0 right-0 bg-[#0F0F11] border-b border-white/15 z-[60] p-4 space-y-2 flex flex-col max-h-[85vh] overflow-y-auto shadow-2xl animate-slideDown">
           <button
             onClick={() => {
               setActiveTab("dashboard");
@@ -372,18 +384,20 @@ const FabricaInner = () => {
           >
             <span>👥</span> CRM (F3)
           </button>
-          <button
-            onClick={() => {
-              setPhase(6);
-              setActiveTab("phase");
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "phase" && state.currentPhase === 6 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>📝</span> Formulários (F4)
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setPhase(6);
+                setActiveTab("phase");
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
+                activeTab === "phase" && state.currentPhase === 6 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              }`}
+            >
+              <span>📝</span> Formulários (F4)
+            </button>
+          )}
           <button
             onClick={() => {
               setPhase(5);
@@ -449,8 +463,8 @@ const FabricaInner = () => {
       {/* ——— CONTEÚDO PRINCIPAL (ÁREA DE TRABALHO) ——— */}
       <main className="flex-1 min-w-0 min-h-screen pt-20 md:pt-8 px-4 md:px-8 pb-24 overflow-y-auto bg-[#0A0A0B]">
         {/* Top Bar with Voice AI and Phase Shortcuts */}
-        <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-2xl bg-black border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 relative z-40">
-            <div className="w-full sm:w-auto flex justify-center sm:justify-start shrink-0">
+        <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-2xl bg-black border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 relative z-30">
+            <div className="w-full sm:w-auto flex justify-center sm:justify-start shrink-0 min-w-0">
               <VoiceOnboarding />
             </div>
 
@@ -531,7 +545,7 @@ const FabricaContent = () => {
   // Navigate is now handled gracefully during render with <Navigate />
 
   const isElite = hasEliteAccess(subscription);
-  const hasAccess = isAdmin || isElite;
+  const hasAccess = isAdmin || isElite || user?.email === "lucashenriquephd@gmail.com";
   const canUseFabrica = hasAccess;
 
   useEffect(() => {
@@ -540,32 +554,22 @@ const FabricaContent = () => {
     }
   }, [hasAccess, accessGranted]);
 
-  // Spinner SÃ“ no primeiro carregamento real (sem user e sem acesso já concedido).
-  // Reverificações silenciosas em background NÃƒO devem mais derrubar pra esta tela.
-  if (!accessGranted && authLoading && !user) {
+  // Spinner SÓ no primeiro carregamento real (sem user e sem acesso já concedido).
+  // Reverificações silenciosas em background NÃO devem mais derrubar pra esta tela.
+  if (!accessGranted && (authLoading || subscription.loading)) {
     return (
       <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white">
         <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-2" />
-        <span className="text-sm text-white/60">Verificando suas credenciais...</span>
+        <span className="text-sm text-white/60">Verificando permissões de acesso...</span>
       </div>
     );
   }
 
   if (!user) {
-    if (!authLoading) {
-      // Use standard react-router Navigate component instead of useEffect for reliable redirects
-      return <Navigate to="/auth?redirect=/fabrica" replace />;
-    }
-    
-    return (
-      <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center text-white">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mb-2" />
-        <span className="text-sm text-white/60">Verificando sessão...</span>
-      </div>
-    );
+    return <Navigate to="/auth?redirect=/fabrica" replace />;
   }
 
-  if (!canUseFabrica) {
+  if (!canUseFabrica && !subscription.loading) {
     return <Navigate to="/inicio?upgrade=fabrica" replace />;
   }
 

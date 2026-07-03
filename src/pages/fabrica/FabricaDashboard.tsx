@@ -737,7 +737,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Últimas imagens geradas</div>
                   <span className="text-[9px] text-white/30">{state.allGeneratedAdImages!.length} no total</span>
                 </div>
-                <div className="grid grid-cols-6 gap-1.5">
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                   {state.allGeneratedAdImages!.slice(-6).reverse().map((src, i) => (
                     <a
                       key={i}
