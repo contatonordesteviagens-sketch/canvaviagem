@@ -336,7 +336,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     }
                     window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
                     toast.success(`📂 Projeto "${targetName}" carregado!`);
-                    setTimeout(() => onNavigate?.("dashboard"), 100);
+                    setTimeout(() => onNavigate?.("phase", 2), 100);
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs"
                 >
@@ -383,6 +383,30 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   </>
                 )}
               </button>
+
+              {state.projectId && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const currentName = state.agencyName || 'Sem nome';
+                    if (!window.confirm(`⚠️ Deseja realmente excluir o projeto salvo "${currentName}"? Esta ação não pode ser desfeita.`)) return;
+                    try {
+                      const { error } = await supabase.from("fabrica_diagnosticos" as any).delete().eq("id", state.projectId);
+                      if (error) throw error;
+                      toast.success("🗑️ Projeto excluído com sucesso!");
+                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
+                      reset();
+                    } catch (err: any) {
+                      toast.error(err?.message || "Erro ao excluir projeto.");
+                    }
+                  }}
+                  className="px-3 py-2 rounded-lg text-red-400 text-xs font-bold transition-all border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
+                  title="Excluir o projeto atual"
+                >
+                  <span>🗑️</span>
+                  <span>Excluir Projeto</span>
+                </button>
+              )}
 
               <button
                 type="button"
@@ -733,11 +757,29 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
                             window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: snapshotToLoad }));
                             toast.success(`📂 Site "${targetName}" carregado no editor!`);
-                            setTimeout(() => onNavigate?.("phase", 4), 100);
+                            setTimeout(() => onNavigate?.("phase", 2), 100);
                           }}
                           className="px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 text-violet-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
                         >
                           <Pencil className="w-3.5 h-3.5" /> Editar Site
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!window.confirm(`⚠️ Deseja realmente excluir o site publicado "${displayUrl}"?`)) return;
+                            try {
+                              const { error } = await supabase.from("public_sites").delete().eq("id", site.id).eq("owner_id", user?.id);
+                              if (error) throw error;
+                              setPublishedSites(prev => prev.filter(s => s.id !== site.id));
+                              toast.success("🗑️ Site publicado excluído com sucesso!");
+                            } catch (err: any) {
+                              toast.error(err?.message || "Erro ao excluir site publicado");
+                            }
+                          }}
+                          className="px-3 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+                          title="Excluir site publicado"
+                        >
+                          🗑️ Excluir
                         </button>
                       </div>
                     );

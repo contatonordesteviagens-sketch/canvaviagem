@@ -236,6 +236,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                     }
                     window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
                     toast.success(`📂 ¡Proyecto "${targetName}" cargado!`);
+                    setTimeout(() => onNavigate?.("phase", 2), 100);
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
                 >
@@ -280,6 +281,48 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                     <span>Guardar Proyecto</span>
                   </>
                 )}
+              </button>
+
+              {state.projectId && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const currentName = state.agencyName || 'Sin nombre';
+                    if (!window.confirm(`⚠️ ¿Realmente deseas eliminar el proyecto "${currentName}"? Esta acción no se puede deshacer.`)) return;
+                    try {
+                      const { error } = await supabase.from("fabrica_diagnosticos" as any).delete().eq("id", state.projectId);
+                      if (error) throw error;
+                      toast.success("🗑️ ¡Proyecto eliminado con éxito!");
+                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
+                      reset();
+                    } catch (err: any) {
+                      toast.error(err?.message || "Error al eliminar proyecto.");
+                    }
+                  }}
+                  className="px-3 py-2 rounded-lg text-red-400 text-xs font-bold transition-all border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
+                  title="Eliminar el proyecto actual"
+                >
+                  <span>🗑️</span>
+                  <span>Eliminar Proyecto</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  const confirmed = window.confirm(
+                    `⚠️ Antes de crear un nuevo proyecto, asegúrate de haber guardado el proyecto actual ("${state.agencyName || 'Sin nombre'}").\n\n¿Deseas continuar y crear un proyecto en blanco?`
+                  );
+                  if (!confirmed) return;
+                  window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
+                  reset();
+                  toast.success("¡Nuevo proyecto iniciado! Puedes completar los datos iniciales aquí.");
+                  setProjectsPanelOpen(false);
+                }}
+                className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
+                style={{ borderColor: UI_ACCENT_BORDER_SOFT }}
+              >
+                <span>+ Nuevo Proyecto</span>
               </button>
             </div>
           )}
