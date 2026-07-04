@@ -1,4 +1,3 @@
-// Sincronização e verificação ativa pós-restauração: links de compra, preços e layouts 100% íntegros
 import { useState, useEffect } from "react";
 import { 
   Play, Check, ShieldCheck, Instagram, LayoutDashboard, Calendar, Video, BookOpen, Clock, ChevronDown, CheckCircle2 
@@ -110,36 +109,35 @@ export default function Inicio() {
         {/* 2. HERO */}
         <section id="hero" className="hero">
           <div className="inicio-container hero-inner">
-            <div className="hero-copy" style={{ maxWidth: '600px' }}>
-              <div className="hidden sm:flex flex-wrap gap-4 mb-6">
-                <div className="flex items-center gap-2 text-slate-300 text-sm font-semibold"><CheckCircle2 className="text-purple-400" size={16} /> Feito para turismo</div>
-                <div className="flex items-center gap-2 text-slate-300 text-sm font-semibold"><CheckCircle2 className="text-purple-400" size={16} /> Conteúdos + IA + Site + CRM</div>
+            <div className="hero-copy">
+              {/* Badge +500 agências */}
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '100px', padding: '6px 16px 6px 6px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', marginLeft: '4px' }}>
+                  <img src="https://i.pravatar.cc/100?img=12" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-4px', position: 'relative', zIndex: 4 }} />
+                  <img src="https://i.pravatar.cc/100?img=32" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-10px', position: 'relative', zIndex: 3 }} />
+                  <img src="https://i.pravatar.cc/100?img=45" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-10px', position: 'relative', zIndex: 2 }} />
+                  <img src="https://i.pravatar.cc/100?img=5" alt="User" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #0F172A', marginLeft: '-10px', position: 'relative', zIndex: 1 }} />
+                </div>
+                <span style={{ fontSize: '13px', fontWeight: '500', color: 'rgba(255,255,255,0.9)' }}>+500 agências aprovam</span>
               </div>
 
-              <h1 style={{ fontSize: '3rem', lineHeight: '1.1', marginBottom: '16px' }}>Venda mais viagens com IA</h1>
-              <p style={{ fontSize: '1.125rem', marginBottom: '24px' }}>
-                Receba um site pronto, gerador de ofertas, vídeos e artes prontos, agentes de IA. <strong>Teste grátis.</strong>
-              </p>
+              <h1>Você só foca na venda de viagens. O Canva Viagem cuida do resto.</h1>
+              <p>Site completo, CRM para organizar clientes, criador de anúncios automático e +400 mídias de viagens! Tudo rodando no piloto automático, no mesmo ecossistema para você atrair viajantes de alto padrão e fechar pacotes todos os dias.</p>
               
-              <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)', padding: '12px 16px', borderRadius: '12px', marginBottom: '32px' }}>
-                <p style={{ color: '#86efac', margin: 0, fontSize: '0.95rem' }}>
-                  Veja o vídeo como usar a ferramenta simples de marketing turístico que te dá tudo pronto para você focar no que importa: seus clientes.
-                </p>
-              </div>
+              <ul className="hero-bullets">
+                <li>400+ mídias prontas para turismo</li>
+                <li>Anúncios e legendas criados com IA</li>
+                <li>Sites e páginas para pacotes</li>
+                <li>CRM para organizar leads</li>
+                <li>Acesso imediato e garantia de 7 dias</li>
+              </ul>
               
-              <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
-                <a href="#planos" className="btn btn-white" style={{ padding: '12px 24px', fontSize: '1rem' }}>Quero testar agora</a>
-                <a href="#demo" className="hero-secondary" style={{ padding: '12px 24px', fontSize: '1rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Play size={18} fill="currentColor" /> Ver vídeo da IA
-                </a>
-              </div>
+              <a href="#planos" className="btn btn-white">Assinar a Plataforma Agora →</a>
+              <br />
+              <a href="#demo" className="hero-secondary">Ver a plataforma por dentro ↓</a>
               
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '0.75rem', fontWeight: 'bold', color: '#cbd5e1' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldCheck size={14} color="#4ade80" /> Acesso imediato</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldCheck size={14} color="#4ade80" /> Checkout seguro Stripe</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldCheck size={14} color="#4ade80" /> 3 dias grátis</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldCheck size={14} color="#4ade80" /> 7 dias de garantia</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><ShieldCheck size={14} color="#4ade80" /> Suporte por WhatsApp</div>
+              <div className="hero-proof">
+                <span>Pagamento seguro via Stripe</span>
               </div>
             </div>
             <div className="w-full max-w-[500px] md:max-w-[650px] mx-auto mt-8 md:mt-0 flex justify-center md:justify-end px-4 sm:px-0">
