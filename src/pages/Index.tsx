@@ -291,11 +291,28 @@ const Index = () => {
     return title.toLowerCase().includes(influencer.toLowerCase());
   };
 
+  const normalizeText = (text?: string | null) => {
+    return (text || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  };
+
   const filterTemplates = (items: any[] | undefined): any[] => {
     if (!items) return [];
-    let filtered = items.filter(item =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const query = normalizeText(searchQuery);
+
+    let filtered = items;
+    if (query) {
+      filtered = filtered.filter(item => {
+        const titleMatch = normalizeText(item.title).includes(query);
+        const descMatch = normalizeText(item.description).includes(query);
+        const catMatch = normalizeText(item.category).includes(query);
+        const tagsMatch = Array.isArray(item.tags) && item.tags.some((tag: string) => normalizeText(tag).includes(query));
+        return titleMatch || descMatch || catMatch || tagsMatch;
+      });
+    }
 
     // Aplicar filtro multi-select
     if (accessFilters.length > 0) {
@@ -323,9 +340,12 @@ const Index = () => {
 
   const filterCaptions = () => {
     if (!captionsData) return [];
+    const query = normalizeText(searchQuery);
+    if (!query) return captionsData;
     return captionsData.filter(caption =>
-      caption.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      caption.text.toLowerCase().includes(searchQuery.toLowerCase())
+      normalizeText(caption.destination).includes(query) ||
+      normalizeText(caption.text).includes(query) ||
+      normalizeText(caption.hashtags).includes(query)
     );
   };
 
@@ -382,8 +402,15 @@ const Index = () => {
     );
   };
 
+  const allVideoTemplates = useMemo(() => {
+    const fromDb = videoTemplates || [];
+    const dbTitles = new Set(fromDb.map(item => (item.title || "").toLowerCase().trim()));
+    const uniqueLocal = localTemplates.filter(item => !dbTitles.has((item.title || "").toLowerCase().trim()));
+    return [...fromDb, ...uniqueLocal];
+  }, [videoTemplates]);
+
   const filteredVideos = useMemo(() => {
-    return filterTemplates(videoTemplates).map(video => {
+    return filterTemplates(allVideoTemplates).map(video => {
       if (video.drive_url) return video;
       const matchingLink = downloadLinks.find(link => 
         link.title.toLowerCase().trim() === video.title.toLowerCase().trim() ||
@@ -395,8 +422,8 @@ const Index = () => {
       }
       return video;
     });
-  }, [videoTemplates, searchQuery, contentFilters, accessFilters]);
-  const displayedVideos = showAllVideos ? filteredVideos : filteredVideos.slice(0, 8);
+  }, [allVideoTemplates, searchQuery, contentFilters, accessFilters]);
+  const displayedVideos = (showAllVideos || searchQuery.trim() !== "") ? filteredVideos : filteredVideos.slice(0, 8);
 
   const filteredCaptions = useMemo(() => filterCaptions(), [captionsData, searchQuery]);
   const displayedCaptions = showAllCaptions ? filteredCaptions : filteredCaptions.slice(0, 8);
@@ -405,16 +432,18 @@ const Index = () => {
     return [...filteredVideos].sort((a, b) => {
       if (a.is_featured && !b.is_featured) return -1;
       if (!a.is_featured && b.is_featured) return 1;
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return bTime - aTime;
     });
   }, [filteredVideos]);
 
-  const displayedSortedVideos = showAllVideos ? sortedVideos : sortedVideos.slice(0, 20);
+  const displayedSortedVideos = (showAllVideos || searchQuery.trim() !== "") ? sortedVideos : sortedVideos.slice(0, 20);
 
   // Top-level preparation for LCP and Sections
   const coveredVideos = useMemo(() => {
-    let videos = sortedVideos.filter(v => v.image_url);
-    if (activeCategory === 'all') {
+    let videos = searchQuery.trim() !== "" ? sortedVideos : sortedVideos.filter(v => v.image_url);
+    if (activeCategory === 'all' && !searchQuery.trim()) {
       const crossedOutTitles = [
         'japão mel', 'japão - mel',
         'bia pacotes',
@@ -428,8 +457,8 @@ const Index = () => {
       );
     }
     return videos;
-  }, [sortedVideos, activeCategory]);
-  const uncoveredVideos = useMemo(() => sortedVideos.filter(v => !v.image_url), [sortedVideos]);
+  }, [sortedVideos, activeCategory, searchQuery]);
+  const uncoveredVideos = useMemo(() => searchQuery.trim() !== "" ? [] : sortedVideos.filter(v => !v.image_url), [sortedVideos, searchQuery]);
   const firstFourVideos = useMemo(() => coveredVideos.slice(0, 4), [coveredVideos]);
 
   // Performance: Get LCP image for preloading
@@ -821,8 +850,8 @@ const Index = () => {
       case 'videos':
         return (
           <section className="animate-fade-in">
-            {/* Highlights Section - Show at top if there are highlighted items */}
-            {featuredVideos && featuredVideos.length > 0 && (
+            {/* Highlights Section - Show at top if there are highlighted items and no search active */}
+            {featuredVideos && featuredVideos.length > 0 && !searchQuery.trim() && (
               <div className="mb-8">
                 <SectionHeader
                   title="Destaques da Semana"
@@ -927,8 +956,8 @@ const Index = () => {
             )}
 
             <SectionHeader
-              title="Vídeos Reels Editáveis"
-              subtitle="Templates prontos para editar no Canva e publicar"
+              title={searchQuery.trim() ? `Resultados para "${searchQuery}"` : "Vídeos Reels Editáveis"}
+              subtitle={searchQuery.trim() ? `${displayedSortedVideos.length} vídeo(s) encontrado(s)` : "Templates prontos para editar no Canva e publicar"}
             />
 
             <div className="flex items-center mb-6 gap-4">
@@ -953,31 +982,43 @@ const Index = () => {
               </div>
             ) : (
               <>
-                {/* Grid unificado: 5 colunas desktop, 2 mobile */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
-                  {displayedSortedVideos.map((template, index) => (
-                    <PremiumCard
-                      key={template.id}
-                      id={template.id}
-                      title={template.title}
-                      url={template.url} driveUrl={template.drive_url}
-                      isNew={newestIds.includes(template.id)}
-                      icon={getIcon(template.type, template.icon)}
-                      imageUrl={index < 6 && template.image_url ? template.image_url : undefined}
-                      aspectRatio="9/16"
-                      category={template.category}
-                      contentType={template.type}
-                      description={template.description}
-                      onClick={() => handleCardClick(template)}
-                      isFavorite={isFavorite("content_item", template.id)}
-                      onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                      onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
-                      isPremium={checkIfItemIsPremium(template.type, template.title)}
-                    />
-                  ))}
-                </div>
+                {displayedSortedVideos.length === 0 ? (
+                  <div className="text-center py-16 bg-muted/20 rounded-2xl border border-dashed border-border my-4">
+                    <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                    <h3 className="text-lg font-semibold text-foreground mb-1">Nenhum vídeo encontrado para "{searchQuery}"</h3>
+                    <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
+                      Tente pesquisar por outros termos como "Paris", "Maragogi", "Maldivas" ou limpe o filtro atual.
+                    </p>
+                    <Button variant="outline" onClick={() => setSearchQuery("")}>
+                      Limpar busca
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+                    {displayedSortedVideos.map((template, index) => (
+                      <PremiumCard
+                        key={template.id || `video-${index}`}
+                        id={template.id || `video-${index}`}
+                        title={template.title}
+                        url={template.url} driveUrl={template.drive_url}
+                        isNew={template.id ? newestIds.includes(template.id) : (template as any).is_new}
+                        icon={getIcon(template.type, template.icon)}
+                        imageUrl={template.image_url || undefined}
+                        aspectRatio="9/16"
+                        category={template.category}
+                        contentType={template.type}
+                        description={template.description}
+                        onClick={() => handleCardClick(template)}
+                        isFavorite={template.id ? isFavorite("content_item", template.id) : false}
+                        onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
+                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title, index)}
+                        isPremium={checkIfItemIsPremium(template.type, template.title, index)}
+                      />
+                    ))}
+                  </div>
+                )}
 
-                {sortedVideos.length > 10 && (
+                {!searchQuery.trim() && sortedVideos.length > 20 && (
                   <div className="flex justify-center mt-8">
                     <Button
                       variant="outline"
