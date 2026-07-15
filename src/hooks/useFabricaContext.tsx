@@ -3,6 +3,7 @@ import type { Context } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import {
   createDefaultCrmFormConfig,
   normalizeCrmFormConfig,
@@ -73,6 +74,7 @@ export interface SiteContent {
   pacotesTitle: string;
   depoimentosTitle: string;
   depoimentosEyebrow?: string;
+  depoVerifiedLabel?: string;
   faqTitle: string;
   faqEyebrow?: string;
   finalCtaTitle: string;
@@ -103,6 +105,11 @@ export interface SiteContent {
   orcamentoTitle?: string;
   orcamentoText?: string;
   atendimentoText?: string;
+  contactWhatsappLabel?: string;
+  contactEmailLabel?: string;
+  contactHoursLabel?: string;
+  contactLocationLabel?: string;
+  packageOverlayLabel?: string;
   equipeCtaLabel?: string;
   formSubmitLabel?: string;
   footerText?: string;
@@ -114,8 +121,11 @@ export interface SiteContent {
   footerTestimonialsLabel?: string;
   footerContactLabel?: string;
   footerHoursLabel?: string;
+  footerCopyrightText?: string;
+  footerCreditPrefix?: string;
   mapEyebrow?: string;
   mapTitle?: string;
+  sectionColors?: Record<string, string>;
   stats?: Array<{ num: string; label: string }>;
   hiddenElements?: string[];
 }
@@ -300,6 +310,7 @@ const defaultStateBR: FabricaState = {
     ],
     heroImageUrl: "",
     templateId: "standard",
+    sectionColors: {},
     galleryImages: [],
     vercelUrl: "",
     canvaViagemUrl: "",
@@ -485,6 +496,7 @@ const hasMeaningfulProgress = (snapshot?: Partial<FabricaState> | null): boolean
   if (!snapshot) return false;
   return Boolean(
     snapshot.agencyName ||
+      snapshot.lastEditedAt ||
       snapshot.logoBase64 ||
       snapshot.whatsapp ||
       snapshot.instagram ||
@@ -496,6 +508,8 @@ const hasMeaningfulProgress = (snapshot?: Partial<FabricaState> | null): boolean
       (snapshot.currentPhase ?? 1) > 1
   );
 };
+
+const LOCAL_PREVIEW_USER_ID = "__canva_viagem_local_preview__";
 
 const getStateTimestamp = (snapshot?: Partial<FabricaState> | null, fallback?: string | null): number => {
   const raw = snapshot?.lastEditedAt || fallback || 0;
@@ -652,7 +666,9 @@ const FabricaContext =
 
 export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
-  const [state, setState] = useState<FabricaState>(() => loadInitialState());
+  const [state, setState] = useState<FabricaState>(() =>
+    loadInitialState(isLocalPreviewEnabled() ? LOCAL_PREVIEW_USER_ID : undefined)
+  );
   const stateRef = useRef(state);
   const lastUserEditAtRef = useRef(0);
   const [hasLoadedFromDb, setHasLoadedFromDb] = useState(false);
@@ -705,7 +721,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
-    const userId = user?.id;
+    const userId = user?.id || (isLocalPreviewEnabled() ? LOCAL_PREVIEW_USER_ID : null);
     if (!userId) return;
     if (!hasLoadedFromDb) return;
 
@@ -724,6 +740,12 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     });
 
     if (!user?.id) {
+      if (isLocalPreviewEnabled()) {
+        activeUserIdRef.current = LOCAL_PREVIEW_USER_ID;
+        setState((prev) => hasMeaningfulProgress(prev) ? prev : loadInitialState(LOCAL_PREVIEW_USER_ID));
+        setHasLoadedFromDb(true);
+        return;
+      }
       activeUserIdRef.current = null;
       setState(getBaseState());
       setHasLoadedFromDb(false);
@@ -860,11 +882,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     
     const syncState = async () => {
       // 🛡️ SEGURANÇA DE HIDRATAÇÃO REFORÇADA: bloqueia sync de estado vazio ou de novo projeto sem nome
-      const hasContent = state.agencyName || state.digitalScore > 0 || state.selectedPackages.length > 0 || state.whatsapp || state.niche;
+      const hasContent = hasMeaningfulProgress(state);
       if (!hasContent) return;
-      // 🛡️ Se é um projeto NOVO (projectId gerado localmente começa com "proj_") e ainda não tem nome, não sobe
-      const isBlankNewProject = (state.projectId?.startsWith('proj_') && !state.agencyName);
-      if (isBlankNewProject) return;
 
       setSyncStatus("saving");
       try {
@@ -1013,6 +1032,9 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
           ...(markEdited ? { lastEditedAt: new Date().toISOString() } : {}),
         };
         stateRef.current = next;
+        if (activeUserIdRef.current) {
+          persistLocalState(next, activeUserIdRef.current);
+        }
         return next;
       });
     },

@@ -518,7 +518,7 @@ const FabricaContent = () => {
 
   // Spinner SÓ no primeiro carregamento real (sem user e sem acesso já concedido).
   // Reverificações silenciosas em background NÃO devem mais derrubar pra esta tela.
-  if (!accessGranted && (authLoading || subscription.loading)) {
+  if (!localPreview && !accessGranted && (authLoading || subscription.loading)) {
     return (
       <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white">
         <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-2" />

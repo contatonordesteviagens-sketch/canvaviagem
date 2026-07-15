@@ -123,6 +123,11 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const wpp = rawWpp ? (rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`) : "";
   const sc = state.siteContent;
   const templateId = sc.templateId || "standard";
+  const sectionBackgroundAttr = (key: string) => {
+    const value = sc.sectionColors?.[key];
+    const safeValue = value && /^#[0-9a-f]{6}$/i.test(value) ? value : "";
+    return `data-site-section="${key}"${safeValue ? ` style="--section-bg:${safeValue}"` : ""}`;
+  };
   const agencia = state.agencyName || "Agência de Viagens";
   const cidade = state.city || "Brasil";
   const wppDisplay = formatWhatsAppDisplay(state.whatsapp, state.whatsappDialCode);
@@ -1091,6 +1096,7 @@ ${templateVariantCss}
 *{margin:0;padding:0;box-sizing:border-box}:root{--brand:${color};--brand-dark:${colorDark};--brand-secondary:${secondaryColor};--brand-bg:${backgroundColor};--brand-contrast:${colorContrast};--secondary-contrast:${secondaryContrast};--brand-ink:${colorDark};--ink:#0a0a0b;--muted:#5a6470;--soft:${backgroundColor}}
 html{scroll-behavior:smooth}
 body{font-family:'Inter',sans-serif;color:var(--ink);background:var(--brand-bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+[data-site-section][style*="--section-bg"]{background:var(--section-bg)!important}
 h1,h2,h3,h4{font-family:'Playfair Display',serif;letter-spacing:-0.02em;line-height:1.15;color:var(--ink)}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
@@ -1323,7 +1329,7 @@ ${seasonalStyles}
 -->
 
 <!-- HEADER -->
-<header class="site-header">
+<header class="site-header" ${sectionBackgroundAttr("header")}>
   <div class="container nav-wrap">
     <a href="#" class="brand">
       ${state.logoBase64
@@ -1348,7 +1354,7 @@ ${sectionOrder
     if (secKey === "hero") {
       return sc.sections?.hero === false ? "" : `
 <!-- HERO -->
-<section id="inicio" class="hero">
+<section id="inicio" class="hero" ${sectionBackgroundAttr("hero")}>
   <div class="container">
     ${!sc.hiddenElements?.includes('hero-content') ? `
     <div class="hero-grid" data-visual-removable="hero-content">
@@ -1374,7 +1380,7 @@ ${sectionOrder
     if (secKey === "processo") {
       return sc.sections?.processo === false ? "" : `
 <!-- PROCESSO -->
-<section class="processo" id="processo">
+<section class="processo" id="processo" ${sectionBackgroundAttr("processo")}>
   <div class="container">
     ${!sc.hiddenElements?.includes('processo-eyebrow') ? `<div class="section-eyebrow eyebrow" data-visual-removable="processo-eyebrow">${esc(sc.processoEyebrow || "Processo")}</div>` : ''}
     ${!sc.hiddenElements?.includes('processo-title') ? `<h2 class="section-title" data-visual-removable="processo-title">${esc(sc.processoTitle || "Sua viagem dos sonhos em 3 passos")}</h2>` : ''}
@@ -1389,7 +1395,7 @@ ${sectionOrder
     if (secKey === "destinos") {
       return sc.sections?.destinos === false ? "" : `
 <!-- DESTINOS -->
-<section id="destinos">
+<section id="destinos" ${sectionBackgroundAttr("destinos")}>
   <div class="container">
     <div class="section-eyebrow eyebrow">${esc(sc.destinosEyebrow || "Destinos")}</div>
     <h2 class="section-title">${esc(sc.pacotesTitle || "Experiências que ficam na memória")}</h2>
@@ -1400,14 +1406,14 @@ ${sectionOrder
         <div class="dest-img-wrap">
           <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
-          <div class="dest-overlay">Ver pacote →</div>
+          <div class="dest-overlay" data-site-edit-key="packageOverlayLabel">${esc(sc.packageOverlayLabel || "Ver pacote →")}</div>
         </div>
         <div class="dest-body">
           <div class="dest-loc">${esc(cidade)}</div>
           <h3>${esc(p.title)}</h3>
           <p>${esc(p.description)}</p>
           <div class="dest-price">${parsePriceHTML(p.price)}</div>
-          <span class="dest-cta">Saiba mais →</span>
+          <span class="dest-cta">${esc(p.ctaLabel || "Saiba mais →")}</span>
         </div>
       </a>` : ''
         )
@@ -1419,7 +1425,7 @@ ${sectionOrder
     if (secKey === "porQue") {
       return sc.sections?.porQue === false ? "" : `
 <!-- POR QUE NÓS / EQUIPE -->
-<section id="por-que" class="equipe">
+<section id="por-que" class="equipe" ${sectionBackgroundAttr("porQue")}>
   <div class="container">
     <div class="equipe-grid" data-visual-removable="por-que-grid">
       <div class="equipe-left">
@@ -1443,7 +1449,7 @@ ${sectionOrder
       return sc.sections?.depoimentos !== false && state.depoimentos.length > 0
         ? `
 <!-- DEPOIMENTOS -->
-<section class="depo-bg">
+<section class="depo-bg" ${sectionBackgroundAttr("depoimentos")}>
   <div class="container">
     <div class="section-eyebrow eyebrow" data-site-edit-key="depoimentosEyebrow">${esc(sc.depoimentosEyebrow || "Depoimentos")}</div>
     <h2 class="section-title">${esc(sc.depoimentosTitle || "O que nossos viajantes dizem")}</h2>
@@ -1456,7 +1462,7 @@ ${sectionOrder
         <p class="depo-text">"${esc(d.text)}"</p>
         <div class="depo-author">
           <img src="${avatarSvg(d.name, color)}" class="depo-avatar" alt="${esc(d.name)}" data-ai-ignore="true" data-preserve-image="true">
-          <div><div class="depo-name">${esc(d.name)}</div><div class="depo-meta">Cliente verificado</div></div>
+          <div><div class="depo-name">${esc(d.name)}</div><div class="depo-meta" data-site-edit-key="depoVerifiedLabel">${esc(sc.depoVerifiedLabel || "Cliente verificado")}</div></div>
         </div>
       </div>` : ''
         )
@@ -1469,7 +1475,7 @@ ${sectionOrder
     if (secKey === "orcamento") {
       return sc.sections?.orcamento === false ? "" : `
 <!-- ORÇAMENTO -->
-<section id="orcamento">
+<section id="orcamento" ${sectionBackgroundAttr("orcamento")}>
   <div class="container">
     <div class="orc-grid">
       <div class="orc-info">
@@ -1477,10 +1483,10 @@ ${sectionOrder
         ${!sc.hiddenElements?.includes('orcamento-title') ? `<h2 style="margin-top:12px" data-visual-removable="orcamento-title">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>` : ''}
         ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>` : ''}
         <div class="contact-list">
-          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">📱</div><div><strong>WhatsApp</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉️</div><div><strong>E-mail</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">⏰</div><div><strong>Atendimento</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">📱</div><div><strong data-site-edit-key="contactWhatsappLabel">${esc(sc.contactWhatsappLabel || "WhatsApp")}</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉️</div><div><strong data-site-edit-key="contactEmailLabel">${esc(sc.contactEmailLabel || "E-mail")}</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">⏰</div><div><strong data-site-edit-key="contactHoursLabel">${esc(sc.contactHoursLabel || "Atendimento")}</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">📍</div><div><strong data-site-edit-key="contactLocationLabel">${esc(sc.contactLocationLabel || "Localização")}</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
         </div>
         ${socialIcons}
       </div>
@@ -1513,7 +1519,7 @@ ${sectionOrder
       return sc.sections?.faq !== false && sc.faq && sc.faq.length > 0
         ? `
 <!-- FAQ -->
-<section id="faq">
+<section id="faq" ${sectionBackgroundAttr("faq")}>
   <div class="container">
     ${!sc.hiddenElements?.includes('faq-eyebrow') ? `<div class="section-eyebrow eyebrow" data-visual-removable="faq-eyebrow" data-site-edit-key="faqEyebrow">${esc(sc.faqEyebrow || "Dúvidas Frequentes")}</div>` : ''}
     ${!sc.hiddenElements?.includes('faq-title') ? `<h2 class="section-title" data-visual-removable="faq-title">${esc(sc.faqTitle || "Tudo que você precisa saber")}</h2>` : ''}
@@ -1532,7 +1538,7 @@ ${sectionOrder
     if (secKey === "finalCta" || secKey === "ctaFinal") {
       return sc.sections?.finalCta === false ? "" : `
 <!-- CTA FINAL -->
-<section class="final-cta">
+<section class="final-cta" ${sectionBackgroundAttr("finalCta")}>
   <div class="container">
     <h2>${esc(sc.finalCtaTitle || "Pronto para sua próxima viagem?")}</h2>
     <a href="#" onclick="openLeadForm('CTA Final', 'https://wa.me/${wpp}');return false;" class="btn">${esc(sc.finalCtaLabel || "Chamar no WhatsApp")}</a>
@@ -1544,7 +1550,7 @@ ${sectionOrder
 
 ${state.address ? `
 <!-- MAPA -->
-<section id="mapa" class="mapa-section">
+<section id="mapa" class="mapa-section" ${sectionBackgroundAttr("mapa")}>
   <div class="container">
     <div class="section-eyebrow eyebrow" data-site-edit-key="mapEyebrow">${esc(sc.mapEyebrow || "Localização")}</div>
     <h2 class="section-title" data-site-edit-key="mapTitle">${esc(sc.mapTitle || "Onde nos encontrar")}</h2>
@@ -1563,7 +1569,7 @@ ${state.address ? `
 </section>` : ""}
 
 <!-- FOOTER -->
-<footer>
+<footer ${sectionBackgroundAttr("footer")}>
   <div class="container">
     <div class="foot-grid">
       <div>
@@ -1594,8 +1600,8 @@ ${state.address ? `
         </ul>
       </div>
     <div class="foot-bottom">
-      <div>© ${new Date().getFullYear()} ${esc(agencia)} · Todos os direitos reservados</div>
-      <div>Feito com ❤ com <a href="https://canvaviagem.com" target="_blank" style="text-decoration: underline; font-weight: 600; color: #fff;">Canva Viagem</a></div>
+      <div data-site-edit-key="footerCopyrightText">${esc(sc.footerCopyrightText || `© ${new Date().getFullYear()} ${agencia} · Todos os direitos reservados`)}</div>
+      <div><span data-site-edit-key="footerCreditPrefix">${esc(sc.footerCreditPrefix || "Feito com ❤ com")}</span> <a href="https://canvaviagem.com" target="_blank" data-protected-brand="true" style="text-decoration: underline; font-weight: 600; color: #fff;">Canva Viagem</a></div>
     </div>
   </div>
 </footer>
