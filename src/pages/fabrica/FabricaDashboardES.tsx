@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDiagnosticos, useSaveDiagnostico } from "@/hooks/useFabricaDiagnosticos";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Upload, 
   X, 
