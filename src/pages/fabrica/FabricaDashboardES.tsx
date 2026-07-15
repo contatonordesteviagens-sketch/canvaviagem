@@ -41,9 +41,10 @@ const AGENCY_TYPES = [
 ] as const;
 
 const UI_ACCENT = "#F5F906";
+const UI_ACCENT_BORDER_SOFT = "rgba(245, 249, 6, 0.35)";
 
 export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
-  const { state, update } = useFabricaContext();
+  const { state, update, reset } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const saveProject = useSaveDiagnostico();
