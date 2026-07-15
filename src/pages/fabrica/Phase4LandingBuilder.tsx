@@ -4,7 +4,7 @@ import { useFabricaContext, type Pacote, type Depoimento, type SocialLink, type 
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
-import { BrandPaletteEditor } from "@/components/fabrica/BrandPaletteEditor";
+import { BrandPaletteEditor, SectionBackgroundEditor } from "@/components/fabrica/BrandPaletteEditor";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import {
   Plus,
@@ -45,6 +45,19 @@ const TEMPLATE_OPTIONS = [
   { id: "standard", label: "Padrão", description: "O modelo atual, já estável e conhecido." },
   { id: "horizonte", label: "Horizonte", description: "Novo visual premium com layout mais editorial." },
 ] as const;
+const SITE_SECTION_LABELS: Record<string, string> = {
+  header: "Cabeçalho e menu",
+  hero: "Topo do site",
+  processo: "Como funciona",
+  destinos: "Destinos e pacotes",
+  porQue: "Equipe e agência",
+  depoimentos: "Depoimentos",
+  orcamento: "Orçamento",
+  faq: "Perguntas frequentes",
+  finalCta: "Chamada final",
+  mapa: "Mapa e endereço",
+  footer: "Rodapé",
+};
 
 const buildSiteSlug = (value: string) =>
   value
@@ -104,6 +117,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [globalPickingImage, setGlobalPickingImage] = useState(false);
   const [globalEditingPalette, setGlobalEditingPalette] = useState(false);
+  const [activeColorSection, setActiveColorSection] = useState<string | null>(null);
   const [activeImageEdit, setActiveImageEdit] = useState<{
     type: "logo" | "hero" | "package" | "about";
     packageId?: string;
@@ -236,17 +250,19 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       `;
       doc.head.appendChild(style);
 
-      // Fundos clicáveis: abre a paleta central sem interferir em links ou no formulário.
-      doc.querySelectorAll("section, footer").forEach((section) => {
+      // Fundos clicáveis: abre o editor da seção sem interferir em links ou no formulário.
+      doc.querySelectorAll("header.site-header, section, footer").forEach((section) => {
         section.setAttribute("data-fabrica-color-section", "true");
+        const sectionKey = section.getAttribute("data-site-section") || "site";
         const button = doc.createElement("button");
         button.type = "button";
         button.className = "fabrica-color-btn";
-        button.textContent = "Editar cores";
-        button.setAttribute("aria-label", "Editar as cores da marca e dos fundos");
+        button.textContent = "Editar fundo";
+        button.setAttribute("aria-label", `Editar o fundo de ${SITE_SECTION_LABELS[sectionKey] || "esta seção"}`);
         button.addEventListener("click", (event) => {
           event.preventDefault();
           event.stopPropagation();
+          setActiveColorSection(sectionKey);
           setGlobalEditingPalette(true);
         });
         section.appendChild(button);
@@ -284,6 +300,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         ".btn",
         ".dest-card h3",
         ".dest-card p",
+        ".dest-loc",
+        ".dest-cta",
         ".price-value",
         ".price-main",
         ".dest-tag",
@@ -412,6 +430,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               const pkgId = state.selectedPackages[idx].id;
               if (el.tagName === "H3") updPacote(pkgId, { title: textVal });
               else if (el.tagName === "P") updPacote(pkgId, { description: textVal });
+              else if (el.classList.contains("dest-loc")) update({ city: textVal });
+              else if (el.classList.contains("dest-cta")) updPacote(pkgId, { ctaLabel: textVal });
               else if (el.classList.contains("price-value") || el.classList.contains("price-main")) updPacote(pkgId, { price: textVal });
               else if (el.classList.contains("dest-tag")) updPacote(pkgId, { category: textVal } as any);
             }
@@ -1492,36 +1512,75 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
       {/* 🖼️ MODAL GLOBAL DE SELEÇÃO DE IMAGEM (DISPARADO AO CLICAR NA PRÉVIA) */}
       {globalEditingPalette && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
-          <div className="relative w-full max-w-3xl rounded-3xl border border-white/10 bg-zinc-900 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm">
+          <aside className="ml-auto h-full w-full max-w-md overflow-y-auto border-l border-white/10 bg-zinc-950 p-6 shadow-2xl">
             <button
               type="button"
-              onClick={() => setGlobalEditingPalette(false)}
+              onClick={() => {
+                setGlobalEditingPalette(false);
+                setActiveColorSection(null);
+              }}
               className="absolute right-4 top-4 rounded-lg bg-white/[0.04] p-1.5 text-white/50 transition-colors hover:bg-white/[0.1] hover:text-white"
               aria-label="Fechar editor de cores"
             >
               <X className="h-5 w-5" />
             </button>
-            <div className="mb-5 pr-10">
-              <h3 className="text-lg font-bold text-white">Cores e fundos da marca</h3>
+            <div className="mb-6 pr-10">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Edição visual</div>
+              <h3 className="mt-1 text-lg font-bold text-white">
+                Fundo: {SITE_SECTION_LABELS[activeColorSection || ""] || "Seção selecionada"}
+              </h3>
               <p className="mt-1 text-xs leading-relaxed text-white/50">
-                A alteração é aplicada ao site inteiro e também fica disponível na Fábrica e nos anúncios.
+                Esta cor será salva somente neste fundo. As outras partes do site não mudam.
               </p>
             </div>
-            <BrandPaletteEditor
-              primaryColor={state.primaryColor}
-              secondaryColor={state.secondaryColor}
-              backgroundColor={state.backgroundColor || "#F4F6F9"}
-              onChange={(patch) => update(patch)}
-            />
+
+            {activeColorSection && (
+              <SectionBackgroundEditor
+                label={`Cor de ${SITE_SECTION_LABELS[activeColorSection] || "fundo"}`}
+                value={state.siteContent.sectionColors?.[activeColorSection] || state.backgroundColor || "#F4F6F9"}
+                paletteColors={[state.primaryColor, state.secondaryColor, state.backgroundColor || "#F4F6F9", "#18181B"]}
+                onChange={(color) => updSite({
+                  sectionColors: {
+                    ...(state.siteContent.sectionColors || {}),
+                    [activeColorSection]: color,
+                  },
+                })}
+                onReset={() => {
+                  const sectionColors = { ...(state.siteContent.sectionColors || {}) };
+                  delete sectionColors[activeColorSection];
+                  updSite({ sectionColors });
+                }}
+              />
+            )}
+
+            <details className="mt-6 border-t border-white/10 pt-5">
+              <summary className="cursor-pointer text-xs font-bold text-white/65 hover:text-white">
+                Alterar a paleta global da marca
+              </summary>
+              <div className="mt-4">
+                <BrandPaletteEditor
+                  compact
+                  primaryColor={state.primaryColor}
+                  secondaryColor={state.secondaryColor}
+                  backgroundColor={state.backgroundColor || "#F4F6F9"}
+                  onChange={(patch) => update(patch)}
+                />
+              </div>
+            </details>
+
             <button
               type="button"
-              onClick={() => setGlobalEditingPalette(false)}
-              className="mt-5 w-full rounded-xl bg-white px-4 py-3 text-sm font-bold text-zinc-950 transition-transform hover:scale-[1.01]"
+              onClick={() => {
+                setGlobalEditingPalette(false);
+                setActiveColorSection(null);
+              }}
+              className="mt-6 w-full rounded-xl px-4 py-3 text-sm font-bold text-zinc-950 transition-transform hover:scale-[1.01]"
+              style={{ backgroundColor: UI_ACCENT }}
             >
-              Aplicar e voltar ao site
+              Concluir edição
             </button>
-          </div>
+          </aside>
         </div>
       )}
 

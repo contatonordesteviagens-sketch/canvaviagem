@@ -41,10 +41,12 @@ function ColorRoleField({
   role,
   value,
   onChange,
+  compact = false,
 }: {
   role: (typeof ROLES)[number];
   value: string;
   onChange: (value: string) => void;
+  compact?: boolean;
 }) {
   const [draft, setDraft] = useState(value);
 
@@ -61,14 +63,14 @@ function ColorRoleField({
   };
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
-      <div className="mb-2">
-        <div className="text-xs font-bold text-white">{role.label}</div>
-        <div className="mt-0.5 text-[10px] leading-relaxed text-white/40">{role.hint}</div>
+    <div className={`rounded-xl border border-white/10 bg-white/[0.035] ${compact ? "p-2.5" : "p-3"}`}>
+      <div className="mb-2 min-w-0">
+        <div className="truncate text-[11px] font-bold text-white">{role.label}</div>
+        {!compact && <div className="mt-0.5 text-[10px] leading-relaxed text-white/40">{role.hint}</div>}
       </div>
       <div className="flex items-center gap-2">
         <label
-          className="relative h-10 w-10 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-white/15"
+          className="relative h-9 w-9 shrink-0 cursor-pointer overflow-hidden rounded-full border border-white/20"
           style={{ backgroundColor: value }}
           aria-label={`Selecionar ${role.label.toLowerCase()}`}
         >
@@ -81,7 +83,12 @@ function ColorRoleField({
         </label>
         <input
           value={draft}
-          onChange={(event) => setDraft(event.target.value)}
+          onChange={(event) => {
+            const next = event.target.value.toUpperCase();
+            setDraft(next);
+            const normalized = normalizeHex(next);
+            if (normalized) onChange(normalized);
+          }}
           onBlur={commit}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
@@ -93,7 +100,7 @@ function ColorRoleField({
           maxLength={7}
           spellCheck={false}
           aria-label={`Código hexadecimal de ${role.label.toLowerCase()}`}
-          className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white outline-none transition-colors focus:border-white/35"
+          className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/20 px-2.5 py-2 text-[11px] font-semibold uppercase tracking-wide text-white outline-none transition-colors focus:border-white/35"
         />
       </div>
     </div>
@@ -111,13 +118,14 @@ export function BrandPaletteEditor({
 
   return (
     <div className="space-y-4">
-      <div className={`grid gap-3 ${compact ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-3"}`}>
+      <div className="grid grid-cols-1 gap-2.5 min-[430px]:grid-cols-3">
         {ROLES.map((role) => (
           <ColorRoleField
             key={role.key}
             role={role}
             value={current[role.key]}
             onChange={(value) => onChange({ [role.key]: value })}
+            compact={compact}
           />
         ))}
       </div>
@@ -133,7 +141,7 @@ export function BrandPaletteEditor({
             <RotateCcw className="h-3 w-3" /> Restaurar padrão
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid grid-cols-4 gap-2">
           {PALETTES.map((palette) => {
             const active = ROLES.every((role) => current[role.key].toUpperCase() === palette.colors[role.key].toUpperCase());
             return (
@@ -141,7 +149,7 @@ export function BrandPaletteEditor({
                 key={palette.name}
                 type="button"
                 onClick={() => onChange(palette.colors)}
-                className={`group rounded-xl border p-2 text-left transition-all ${
+                className={`group min-w-0 rounded-xl border p-2 text-left transition-all ${
                   active ? "border-white/45 bg-white/10" : "border-white/10 bg-white/[0.025] hover:border-white/25"
                 }`}
                 aria-pressed={active}
@@ -151,8 +159,8 @@ export function BrandPaletteEditor({
                     <span key={role.key} className="h-5 flex-1" style={{ backgroundColor: palette.colors[role.key] }} />
                   ))}
                 </div>
-                <div className="flex items-center justify-between gap-2 text-[10px] font-semibold text-white/65">
-                  <span>{palette.name}</span>
+                <div className="flex items-center justify-between gap-1 text-[9px] font-semibold text-white/65 min-[430px]:text-[10px]">
+                  <span className="truncate">{palette.name}</span>
                   {active && <Check className="h-3 w-3 text-emerald-400" />}
                 </div>
               </button>
@@ -162,8 +170,51 @@ export function BrandPaletteEditor({
       </div>
 
       <p className="text-[10px] leading-relaxed text-white/35">
-        Esta paleta é compartilhada entre a Fábrica, os anúncios e os dois modelos de site. Você pode alterar cada peça depois sem perder o padrão da marca.
+        Salvo automaticamente e compartilhado entre a Fábrica, os anúncios e os dois modelos de site.
       </p>
+    </div>
+  );
+}
+
+export function SectionBackgroundEditor({
+  label,
+  value,
+  paletteColors,
+  onChange,
+  onReset,
+}: {
+  label: string;
+  value: string;
+  paletteColors: string[];
+  onChange: (value: string) => void;
+  onReset: () => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <ColorRoleField
+        role={{ key: "backgroundColor", label, hint: "Esta mudança vale somente para o fundo selecionado." }}
+        value={value}
+        onChange={onChange}
+      />
+      <div className="flex flex-wrap items-center gap-2">
+        {paletteColors.map((color) => (
+          <button
+            key={color}
+            type="button"
+            onClick={() => onChange(color)}
+            className="h-9 w-9 rounded-full border border-white/20 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/60"
+            style={{ backgroundColor: color }}
+            aria-label={`Usar a cor ${color}`}
+          />
+        ))}
+        <button
+          type="button"
+          onClick={onReset}
+          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-[10px] font-semibold text-white/55 transition-colors hover:border-white/25 hover:text-white"
+        >
+          <RotateCcw className="h-3 w-3" /> Usar padrão do modelo
+        </button>
+      </div>
     </div>
   );
 }
