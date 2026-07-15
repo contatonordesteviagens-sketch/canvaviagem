@@ -60,12 +60,21 @@ export interface SectionVisibility {
 }
 
 export interface SiteContent {
+  templateId?: "standard" | "horizonte";
   heroHeadline: string;
   heroSubheadline: string;
   heroCtaLabel: string;
+  heroSecondaryCtaLabel?: string;
+  navHomeLabel?: string;
+  navDestinationsLabel?: string;
+  navAboutLabel?: string;
+  navBudgetLabel?: string;
+  navWhatsAppLabel?: string;
   pacotesTitle: string;
   depoimentosTitle: string;
+  depoimentosEyebrow?: string;
   faqTitle: string;
+  faqEyebrow?: string;
   finalCtaTitle: string;
   finalCtaLabel: string;
   faq: Array<{ q: string; a: string }>;
@@ -94,7 +103,19 @@ export interface SiteContent {
   orcamentoTitle?: string;
   orcamentoText?: string;
   atendimentoText?: string;
+  equipeCtaLabel?: string;
+  formSubmitLabel?: string;
   footerText?: string;
+  footerDestinationsTitle?: string;
+  footerCompanyTitle?: string;
+  footerContactTitle?: string;
+  footerAboutLabel?: string;
+  footerProcessLabel?: string;
+  footerTestimonialsLabel?: string;
+  footerContactLabel?: string;
+  footerHoursLabel?: string;
+  mapEyebrow?: string;
+  mapTitle?: string;
   stats?: Array<{ num: string; label: string }>;
   hiddenElements?: string[];
 }
@@ -254,7 +275,7 @@ const defaultStateBR: FabricaState = {
   primaryColor: "#F59E0B",
   secondaryColor: "#FCD34D",
   backgroundColor: "#F4F6F9",
-  sectionOrder: ["hero", "processo", "destinos", "porQue", "depoimentos", "orcamento", "faq"],
+  sectionOrder: ["hero", "processo", "destinos", "porQue", "depoimentos", "orcamento", "faq", "finalCta"],
   currentPhase: 1,
   checklist30days: {},
   diagnosticoCompleto: false,
@@ -265,6 +286,7 @@ const defaultStateBR: FabricaState = {
     heroHeadline: "",
     heroSubheadline: "",
     heroCtaLabel: "Falar no WhatsApp",
+    heroSecondaryCtaLabel: "Ver Destinos",
     pacotesTitle: "Nossos Pacotes",
     depoimentosTitle: "Quem viajou recomenda",
     faqTitle: "Perguntas Frequentes",
@@ -277,6 +299,7 @@ const defaultStateBR: FabricaState = {
       { q: "Como tira dúvidas?", a: "Atendimento direto pelo WhatsApp, com resposta em até 1h em horário comercial." },
     ],
     heroImageUrl: "",
+    templateId: "standard",
     galleryImages: [],
     vercelUrl: "",
     canvaViagemUrl: "",
@@ -319,7 +342,17 @@ const defaultStateBR: FabricaState = {
     orcamentoTitle: "Fale com um consultor agora",
     orcamentoText: "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.",
     atendimentoText: "Seg–Sex 8h–20h · Sáb 9h–15h",
+    equipeCtaLabel: "Falar com um especialista",
+    formSubmitLabel: "Enviar pelo WhatsApp",
     footerText: "Sua parceira ideal para viagens inesquecíveis. Cuidamos de cada detalhe para que você apenas aproveite o momento.",
+    footerDestinationsTitle: "Destinos",
+    footerCompanyTitle: "Empresa",
+    footerContactTitle: "Contato",
+    footerAboutLabel: "Sobre Nós",
+    footerProcessLabel: "Como Funciona",
+    footerTestimonialsLabel: "Depoimentos",
+    footerContactLabel: "Contato",
+    footerHoursLabel: "Seg–Sex 8h–20h",
     stats: [
       { num: "12+", label: "Anos de Experiência" },
       { num: "15k+", label: "Viajantes Felizes" },
@@ -367,6 +400,7 @@ const defaultStateES: FabricaState = {
     heroHeadline: "",
     heroSubheadline: "",
     heroCtaLabel: "Hablar por WhatsApp",
+    heroSecondaryCtaLabel: "Ver Destinos",
     pacotesTitle: "Nuestros Paquetes",
     depoimentosTitle: "Quienes viajaron recomiendan",
     faqTitle: "Preguntas Frecuentes",
@@ -401,6 +435,8 @@ const defaultStateES: FabricaState = {
     orcamentoTitle: "Habla con un consultor ahora",
     orcamentoText: "Completa el formulario y nuestro equipo te contactará en hasta 2 horas con una propuesta personalizada.",
     atendimentoText: "Lun–Vie 8h–20h · Sáb 9h–15h",
+    equipeCtaLabel: "Hablar con un especialista",
+    formSubmitLabel: "Enviar por WhatsApp",
     footerText: "Tu socio ideal para viajes inolvidables. Cuidamos cada detalle para que tú solo disfrutes el momento.",
     stats: [
       { num: "12+", label: "Años de Experiencia" },
