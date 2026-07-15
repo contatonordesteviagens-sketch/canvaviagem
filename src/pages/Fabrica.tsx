@@ -29,6 +29,7 @@ import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
 import { hasEliteAccess } from "@/lib/planAccess";
+import { isLocalPreviewEnabled } from "@/lib/localPreview";
 
 const FabricaInner = () => {
   const { state, setPhase, update } = useFabricaContext();
@@ -501,11 +502,12 @@ const FabricaContent = () => {
   const navigate = useNavigate();
   const { subscription, isAdmin, user, loading: authLoading } = useAuth();
   const [accessGranted, setAccessGranted] = useState(false);
+  const localPreview = isLocalPreviewEnabled();
 
   // Navigate is now handled gracefully during render with <Navigate />
 
   const isElite = hasEliteAccess(subscription);
-  const hasAccess = isAdmin || isElite || user?.email === "lucashenriquephd@gmail.com";
+  const hasAccess = isAdmin || isElite || user?.email === "lucashenriquephd@gmail.com" || localPreview;
   const canUseFabrica = hasAccess;
 
   useEffect(() => {
@@ -525,7 +527,7 @@ const FabricaContent = () => {
     );
   }
 
-  if (!user) {
+  if (!user && !localPreview) {
     return <Navigate to="/auth?redirect=/fabrica" replace />;
   }
 

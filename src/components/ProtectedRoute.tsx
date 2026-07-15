@@ -2,6 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { hasEliteAccess } from "@/lib/planAccess";
+import { isLocalPreviewEnabled } from "@/lib/localPreview";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -27,6 +28,7 @@ export const ProtectedRoute = ({
 
     const { user, loading, subscription, isAdmin } = useAuth();
     const isFromInternal = (location.state as any)?.fromInternal === true;
+    const localPreview = isLocalPreviewEnabled();
 
     const needsSubscriptionState = requireSubscription || requireElite;
 
@@ -45,25 +47,25 @@ export const ProtectedRoute = ({
     }
 
     // 1. Check Login
-    if (!user) {
+    if (!user && !localPreview) {
         // Redirect to auth, saving the location they tried to access
         return <Navigate to={`/auth?redirect=${encodeURIComponent(location.pathname)}`} replace />;
     }
 
     // 2. Check Admin (if required)
-    if (requireAdmin && !isAdmin) {
+    if (requireAdmin && !isAdmin && !localPreview) {
         return <Navigate to="/" replace />;
     }
 
     // 3. Check Subscription (if required)
     // Note: Admins bypass subscription checks ensuring they can access everything
-    if (requireSubscription && !subscription.subscribed && !isAdmin) {
+    if (requireSubscription && !subscription.subscribed && !isAdmin && !localPreview) {
         return <Navigate to="/inicio" replace />;
     }
 
     const isElite = hasEliteAccess(subscription);
 
-    if (requireElite && !isElite && !isAdmin) {
+    if (requireElite && !isElite && !isAdmin && !localPreview) {
         return <Navigate to="/fabrica" replace />;
     }
 

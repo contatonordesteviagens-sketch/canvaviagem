@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Lock, CreditCard, Loader2 } from "lucide-react";
+import { isLocalPreviewEnabled } from "@/lib/localPreview";
 
 interface SubscriptionGateProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface SubscriptionGateProps {
 export const SubscriptionGate = ({ children }: SubscriptionGateProps) => {
   const navigate = useNavigate();
   const { user, loading, subscription } = useAuth();
+  const localPreview = isLocalPreviewEnabled();
 
   // Show loading state
   if (loading || subscription.loading) {
@@ -22,7 +24,7 @@ export const SubscriptionGate = ({ children }: SubscriptionGateProps) => {
   }
 
   // If not logged in, show login prompt
-  if (!user) {
+  if (!user && !localPreview) {
     return (
       <Card className="max-w-md mx-auto my-8">
         <CardContent className="pt-6 text-center space-y-4">
@@ -42,7 +44,7 @@ export const SubscriptionGate = ({ children }: SubscriptionGateProps) => {
   }
 
   // If logged in but no subscription, show subscription prompt
-  if (!subscription.subscribed) {
+  if (!subscription.subscribed && !localPreview) {
     return (
       <Card className="max-w-md mx-auto my-8">
         <CardContent className="pt-6 text-center space-y-4">

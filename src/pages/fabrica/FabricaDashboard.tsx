@@ -4,6 +4,7 @@ import { useDiagnosticos, useSaveDiagnostico } from "@/hooks/useFabricaDiagnosti
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
+import { BrandPaletteEditor } from "@/components/fabrica/BrandPaletteEditor";
 
 import { 
   Upload, 
@@ -642,6 +643,22 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+                <div className="mb-3">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-white/55">Cores da marca</div>
+                  <p className="mt-1 text-[10px] leading-relaxed text-white/35">
+                    Defina uma vez e use automaticamente nos anúncios e nos sites.
+                  </p>
+                </div>
+                <BrandPaletteEditor
+                  compact
+                  primaryColor={state.primaryColor}
+                  secondaryColor={state.secondaryColor}
+                  backgroundColor={state.backgroundColor || "#F4F6F9"}
+                  onChange={(patch) => update(patch)}
+                />
               </div>
             </div>
           </div>

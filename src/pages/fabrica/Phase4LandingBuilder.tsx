@@ -4,6 +4,7 @@ import { useFabricaContext, type Pacote, type Depoimento, type SocialLink, type 
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
+import { BrandPaletteEditor } from "@/components/fabrica/BrandPaletteEditor";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import {
   Plus,
@@ -33,7 +34,6 @@ import { toast } from "sonner";
 import type { SectionVisibility } from "@/hooks/useFabricaContext";
 
 const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
-const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
 const CANVA_VIAGEM_DOMAIN = "canvaviagem.com";
 const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
 const CANVA_VIAGEM_SITE_BASE_URL = `https://${CANVA_VIAGEM_DOMAIN}/view`;
@@ -41,6 +41,10 @@ const UI_ACCENT = "#F5F906";
 const UI_ACCENT_SOFT = "rgba(245, 249, 6, 0.12)";
 const UI_ACCENT_BORDER = "rgba(245, 249, 6, 0.75)";
 const UI_ACCENT_SHADOW = "rgba(245, 249, 6, 0.24)";
+const TEMPLATE_OPTIONS = [
+  { id: "standard", label: "Padrão", description: "O modelo atual, já estável e conhecido." },
+  { id: "horizonte", label: "Horizonte", description: "Novo visual premium com layout mais editorial." },
+] as const;
 
 const buildSiteSlug = (value: string) =>
   value
@@ -99,6 +103,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   // ── ESTADOS E REF PARA EDIÇÃO VISUAL DIRETA E INTUITIVA NA PRÉVIA ──
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [globalPickingImage, setGlobalPickingImage] = useState(false);
+  const [globalEditingPalette, setGlobalEditingPalette] = useState(false);
   const [activeImageEdit, setActiveImageEdit] = useState<{
     type: "logo" | "hero" | "package" | "about";
     packageId?: string;
@@ -205,12 +210,52 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         img[data-visual-editable]:hover {
           filter: brightness(0.8) !important;
         }
+        [data-fabrica-color-section] { position: relative !important; }
+        .fabrica-color-btn {
+          position: absolute !important;
+          top: 12px !important;
+          right: 12px !important;
+          z-index: 10001 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          padding: 8px 11px !important;
+          border: 1px solid rgba(255,255,255,.45) !important;
+          border-radius: 999px !important;
+          background: rgba(10,10,11,.82) !important;
+          color: #fff !important;
+          font: 700 11px/1 Inter, sans-serif !important;
+          opacity: 0 !important;
+          transform: translateY(-3px) !important;
+          transition: opacity .18s ease, transform .18s ease !important;
+          cursor: pointer !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
+        }
+        [data-fabrica-color-section]:hover > .fabrica-color-btn,
+        .fabrica-color-btn:focus { opacity: 1 !important; transform: translateY(0) !important; }
       `;
       doc.head.appendChild(style);
+
+      // Fundos clicáveis: abre a paleta central sem interferir em links ou no formulário.
+      doc.querySelectorAll("section, footer").forEach((section) => {
+        section.setAttribute("data-fabrica-color-section", "true");
+        const button = doc.createElement("button");
+        button.type = "button";
+        button.className = "fabrica-color-btn";
+        button.textContent = "Editar cores";
+        button.setAttribute("aria-label", "Editar as cores da marca e dos fundos");
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setGlobalEditingPalette(true);
+        });
+        section.appendChild(button);
+      });
 
       // 1. Textos editáveis (contenteditable)
       const textSelectors = [
         ".brand-name",
+        "[data-site-edit-key]",
         ".hero h1",
         ".hero p.lead",
         ".hero .eyebrow",
@@ -233,6 +278,9 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         ".orc-info p",
         ".contact-item span",
         "footer .foot-desc",
+        "footer .foot-brand",
+        "footer [data-site-edit-key]",
+        "footer [data-site-contact]",
         ".btn",
         ".dest-card h3",
         ".dest-card p",
@@ -240,6 +288,10 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         ".price-main",
         ".dest-tag",
         ".depo-name",
+        ".depo-text",
+        ".depo-bg .section-title",
+        "#faq .section-title",
+        ".final-cta h2",
         ".stat-num",
         ".stat-label",
         "summary",
@@ -261,6 +313,9 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           
           // Hero
           if (el.classList.contains("brand-name")) update({ agencyName: textVal });
+          else if (el.getAttribute("data-site-edit-key")) {
+            updSite({ [el.getAttribute("data-site-edit-key") as string]: textVal } as any);
+          }
           else if (el.tagName === "H1" && el.closest(".hero")) updSite({ heroHeadline: textVal });
           else if (el.classList.contains("lead") && el.closest(".hero")) updSite({ heroSubheadline: textVal });
           else if (el.classList.contains("eyebrow") && el.closest(".hero")) updSite({ heroEyebrow: textVal });
@@ -321,6 +376,32 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           }
           // Footer
           else if (el.classList.contains("foot-desc")) updSite({ footerText: textVal });
+          else if (el.classList.contains("foot-brand")) update({ agencyName: textVal });
+          else if (el.closest("footer") && el.getAttribute("data-site-contact")) {
+            const contactType = el.getAttribute("data-site-contact");
+            if (contactType === "whatsapp") {
+              const digits = textVal.replace(/\D/g, "");
+              const dial = (state.whatsappDialCode || "55").replace(/\D/g, "");
+              update({ whatsapp: digits.startsWith(dial) ? digits.slice(dial.length) : digits });
+            } else if (contactType === "email") update({ agencyEmail: textVal });
+            else if (contactType === "address") update({ address: textVal });
+          }
+          else if (el.closest("footer") && el.getAttribute("data-site-edit-key")) {
+            updSite({ [el.getAttribute("data-site-edit-key") as string]: textVal } as any);
+          }
+          // Títulos, botões e chamadas
+          else if (el.classList.contains("section-title") && el.closest(".depo-bg")) updSite({ depoimentosTitle: textVal });
+          else if (el.classList.contains("section-title") && el.closest("#faq")) updSite({ faqTitle: textVal });
+          else if (el.tagName === "H2" && el.closest(".final-cta")) updSite({ finalCtaTitle: textVal });
+          else if (el.classList.contains("btn") && el.closest(".hero")) {
+            const heroButtons = Array.from(doc.querySelectorAll(".hero .btn"));
+            const index = heroButtons.indexOf(el);
+            if (index === 0) updSite({ heroCtaLabel: textVal });
+            else if (index === 1) updSite({ heroSecondaryCtaLabel: textVal });
+          }
+          else if (el.classList.contains("btn") && el.closest(".equipe")) updSite({ equipeCtaLabel: textVal });
+          else if (el.classList.contains("form-submit")) updSite({ formSubmitLabel: textVal });
+          else if (el.classList.contains("btn") && el.closest(".final-cta")) updSite({ finalCtaLabel: textVal });
           
           // Pacotes dinâmicos
           else if (el.closest(".dest-card")) {
@@ -343,6 +424,18 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             if (idx !== -1 && state.depoimentos[idx]) {
               if (el.classList.contains("depo-text")) updDepo(idx, { text: textVal });
               else if (el.classList.contains("depo-name")) updDepo(idx, { name: textVal });
+            }
+          }
+          // Perguntas frequentes
+          else if (el.closest(".faq-item")) {
+            const faqItem = el.closest(".faq-item");
+            const allFaq = Array.from(doc.querySelectorAll(".faq-item"));
+            const idx = allFaq.indexOf(faqItem as Element);
+            if (idx !== -1 && state.siteContent.faq[idx]) {
+              const faq = state.siteContent.faq.map((item) => ({ ...item }));
+              if (el.tagName === "SUMMARY") faq[idx].q = textVal;
+              else if (el.tagName === "P") faq[idx].a = textVal;
+              updSite({ faq });
             }
           }
           // Stats Banner
@@ -373,7 +466,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         ".brand-logo",
         ".dest-img-wrap img",
         ".equipe-img",
-        ".hero img"
+        ".hero img",
+        ".hero"
       ].join(",");
 
       const editableImgs = doc.querySelectorAll(imgSelectors);
@@ -806,6 +900,42 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             </h4>
           </div>
 
+          <FabricaCard title="🧩 Modelo do site">
+            <p className="text-xs text-white/55 mb-4">
+              Escolha qual template a Fábrica vai usar ao gerar e publicar o site. O formulário e os dados continuam sincronizados do mesmo jeito.
+            </p>
+            <div className="grid gap-3 md:grid-cols-2">
+              {TEMPLATE_OPTIONS.map((template) => {
+                const active = (state.siteContent.templateId || "standard") === template.id;
+                return (
+                  <button
+                    key={template.id}
+                    type="button"
+                    aria-pressed={active}
+                    data-testid={`site-template-${template.id}`}
+                    onClick={() => {
+                      updSite({ templateId: template.id });
+                      toast.success(`Modelo ${template.label} aplicado na prévia.`);
+                    }}
+                    className={`text-left rounded-2xl border p-4 transition-all ${
+                      active
+                        ? "border-amber-400 bg-amber-400/10 shadow-[0_0_0_1px_rgba(245,158,11,0.35)]"
+                        : "border-white/10 bg-white/[0.03] hover:border-white/25"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-bold text-white">{template.label}</div>
+                        <div className="text-[11px] text-white/55 mt-1">{template.description}</div>
+                      </div>
+                      <div className={`h-3 w-3 rounded-full ${active ? "bg-amber-400" : "bg-white/20"}`} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </FabricaCard>
+
             <FabricaCard title="📦 Pacotes oferecidos">
               <FieldText
                 label="Título da seção"
@@ -832,30 +962,13 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             </FabricaCard>
 
           <div className="space-y-6">
-            <FabricaCard title="🎨 Cor primária do site">
-              <div className="flex flex-wrap gap-3 items-center">
-                {PRESET_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => update({ primaryColor: c })}
-                    className={`w-10 h-10 rounded-xl border-2 transition-all ${
-                      state.primaryColor === c ? "border-white scale-110" : "border-white/20"
-                    }`}
-                    style={{ background: c }}
-                    aria-label={c}
-                  />
-                ))}
-                <div className="flex items-center gap-2 ml-2">
-                  <Palette className="w-4 h-4 text-white/50" />
-                  <input
-                    type="color"
-                    value={state.primaryColor}
-                    onChange={(e) => update({ primaryColor: e.target.value })}
-                    className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-white/10"
-                  />
-                </div>
-              </div>
-
+            <FabricaCard title="Paleta da marca">
+              <BrandPaletteEditor
+                primaryColor={state.primaryColor}
+                secondaryColor={state.secondaryColor}
+                backgroundColor={state.backgroundColor || "#F4F6F9"}
+                onChange={(patch) => update(patch)}
+              />
             </FabricaCard>
 
             <FabricaCard title="📍 Endereço e Mapa">
@@ -974,11 +1087,11 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                     depoimentos: "Depoimentos",
                     orcamento: "Formulário de orçamento",
                     faq: "Perguntas Frequentes",
-                    ctaFinal: "CTA Final"
+                    finalCta: "CTA Final"
                   };
                   const currentOrder = state.sectionOrder?.length 
-                    ? state.sectionOrder 
-                    : ["hero", "processo", "destinos", "porQue", "depoimentos", "orcamento", "faq", "ctaFinal"];
+                    ? state.sectionOrder.map((key) => key === "ctaFinal" ? "finalCta" : key)
+                    : ["hero", "processo", "destinos", "porQue", "depoimentos", "orcamento", "faq", "finalCta"];
                   
                   // Garantir que todas as seções mapeadas existam na ordem (caso estado antigo não as tenha)
                   Object.keys(sectionLabels).forEach(key => {
@@ -1335,6 +1448,17 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   </button>
                 </div>
 
+                <div
+                  className="px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-wider whitespace-nowrap"
+                  style={{
+                    borderColor: UI_ACCENT_BORDER,
+                    backgroundColor: UI_ACCENT_SOFT,
+                    color: UI_ACCENT,
+                  }}
+                >
+                  Modelo: {(state.siteContent.templateId || "standard") === "horizonte" ? "Horizonte" : "Padrão"}
+                </div>
+
                 <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                   Editor Visual
@@ -1367,6 +1491,40 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
 
       {/* 🖼️ MODAL GLOBAL DE SELEÇÃO DE IMAGEM (DISPARADO AO CLICAR NA PRÉVIA) */}
+      {globalEditingPalette && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
+          <div className="relative w-full max-w-3xl rounded-3xl border border-white/10 bg-zinc-900 p-6 shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setGlobalEditingPalette(false)}
+              className="absolute right-4 top-4 rounded-lg bg-white/[0.04] p-1.5 text-white/50 transition-colors hover:bg-white/[0.1] hover:text-white"
+              aria-label="Fechar editor de cores"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="mb-5 pr-10">
+              <h3 className="text-lg font-bold text-white">Cores e fundos da marca</h3>
+              <p className="mt-1 text-xs leading-relaxed text-white/50">
+                A alteração é aplicada ao site inteiro e também fica disponível na Fábrica e nos anúncios.
+              </p>
+            </div>
+            <BrandPaletteEditor
+              primaryColor={state.primaryColor}
+              secondaryColor={state.secondaryColor}
+              backgroundColor={state.backgroundColor || "#F4F6F9"}
+              onChange={(patch) => update(patch)}
+            />
+            <button
+              type="button"
+              onClick={() => setGlobalEditingPalette(false)}
+              className="mt-5 w-full rounded-xl bg-white px-4 py-3 text-sm font-bold text-zinc-950 transition-transform hover:scale-[1.01]"
+            >
+              Aplicar e voltar ao site
+            </button>
+          </div>
+        </div>
+      )}
+
       {globalPickingImage && activeImageEdit && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-zinc-900 border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-150 relative">
