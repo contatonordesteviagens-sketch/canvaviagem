@@ -10,6 +10,14 @@ const esc = (s: string) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
+const scriptJson = (value: unknown) =>
+  JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+
 // Imagens premium padrão por destino (fallback quando o usuário não enviou foto)
 const DEFAULT_DEST_IMG = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80";
 
@@ -239,17 +247,17 @@ body.template-horizonte .destinos-grid[data-package-count="1"] .dest-card:first-
 body.template-horizonte .destinos-grid[data-package-count="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
 body.template-horizonte .destinos-grid[data-package-count="2"] .dest-card:first-child{grid-row:auto}
 body.template-horizonte .dest-card:hover{transform:translateY(-4px);box-shadow:0 24px 46px rgba(32,37,31,.16)}
-body.template-horizonte .dest-img-wrap{position:absolute;inset:0;aspect-ratio:auto}
+body.template-horizonte .dest-img-wrap{position:absolute;inset:0;aspect-ratio:auto;z-index:0}
 body.template-horizonte .dest-img-wrap::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 25%,rgba(20,25,21,.86) 100%)}
-body.template-horizonte .dest-tag{border-radius:999px;background:var(--brand-secondary);color:var(--secondary-contrast)}
+body.template-horizonte .dest-tag{position:absolute!important;top:18px;left:18px;z-index:4;border-radius:999px;background:var(--brand-secondary);color:var(--secondary-contrast)}
 body.template-horizonte .dest-overlay{display:none}
-body.template-horizonte .dest-body{position:relative;z-index:1;justify-content:flex-end;min-height:inherit;padding:32px}
+body.template-horizonte .dest-body{position:relative;z-index:1;justify-content:flex-end;min-height:inherit;padding:92px 32px 32px;overflow:hidden}
 body.template-horizonte .dest-loc,
 body.template-horizonte .dest-body p,
 body.template-horizonte .price-row-top,
 body.template-horizonte .price-row-bottom{color:rgba(255,255,255,.72)}
-body.template-horizonte .dest-body h3{color:#fff;font-size:clamp(25px,3vw,38px)}
-body.template-horizonte .dest-body p{max-width:48ch;margin-bottom:14px}
+body.template-horizonte .dest-body h3{color:#fff;font-size:clamp(25px,3vw,38px);margin-top:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+body.template-horizonte .dest-body p{max-width:48ch;margin-bottom:14px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
 body.template-horizonte .price-symbol{color:#fff}
 body.template-horizonte .price-value,
 body.template-horizonte .price-main{color:#fff}
@@ -323,7 +331,7 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
   body.template-horizonte .stats-bar{padding:24px 10px}
   body.template-horizonte .stats-bar>div{padding-left:8px;padding-right:8px}
   body.template-horizonte .stat-num{font-size:32px}
-  body.template-horizonte .dest-body{padding:24px}
+  body.template-horizonte .dest-body{padding:84px 24px 24px}
 }
 ` : "";
 
@@ -1032,6 +1040,24 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
   const wppMsg = (titulo: string) =>
     wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}` : "#";
 
+  const packageDetailsJson = scriptJson(
+    pacotes.map((p, index) => ({
+      id: String(p.id || index + 1),
+      title: p.title || "Pacote de viagem",
+      description: p.description || "Entre em contato para conhecer todos os detalhes desta experiência.",
+      price: p.price || "Sob consulta",
+      imageUrl: p.imageUrl || DEFAULT_DEST_IMG,
+      city: "",
+      category: p.title?.split(" ")[0] || "Destino",
+      agencyName: agencia,
+      agencyEmail,
+      agencyPhone: wppDisplay,
+      agencyLocation: contactLocation,
+      whatsappUrl: wppMsg(p.title || "Pacote de viagem"),
+      faq: (sc.faq || []).slice(0, 4).map((item) => ({ question: item.q, answer: item.a })),
+    })),
+  );
+
   // Stats default ou personalizado
   const stats = state.siteContent.stats || [
     { num: "12+", label: "Anos de Experiência" },
@@ -1181,12 +1207,12 @@ section{padding:80px 0}
 
 /* DESTINOS */
 .destinos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
-.dest-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);transition:all .35s;cursor:pointer;display:flex;flex-direction:column}
+.dest-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);transition:transform .25s ease,box-shadow .25s ease;cursor:pointer;display:flex;flex-direction:column;isolation:isolate;text-decoration:none;text-align:left}
 .dest-card:hover{transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,.14)}
 .dest-img-wrap{position:relative;aspect-ratio:4/3;overflow:hidden;background:#eee}
 .dest-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .6s}
 .dest-card:hover .dest-img-wrap img{transform:scale(1.06)}
-.dest-tag{position:absolute;top:16px;left:16px;background:var(--brand-secondary);color:var(--secondary-contrast);padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.dest-tag{position:absolute;top:16px;left:16px;z-index:3;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--brand-secondary);color:var(--secondary-contrast);padding:7px 14px;border-radius:6px;font-size:11px;font-weight:700;line-height:1;text-transform:uppercase;letter-spacing:1px}
 .dest-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,.7));opacity:0;transition:opacity .3s;display:flex;align-items:flex-end;padding:20px;color:#fff;font-weight:600}
 .dest-card:hover .dest-overlay{opacity:1}
 .dest-body{padding:24px;display:flex;flex-direction:column;flex:1}
@@ -1303,6 +1329,49 @@ footer{background:var(--brand-dark);color:rgba(255,255,255,.68);padding:64px 0 2
 .modal-form input{border-color:rgba(0,0,0,.12)}
 .modal-submit{width:100%;justify-content:center;gap:10px;margin-top:8px}
 
+/* DETALHES DO PACOTE */
+body.package-modal-open{overflow:hidden}
+#package-modal{position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(12,17,14,.78);backdrop-filter:blur(10px)}
+#package-modal.active{display:flex}
+.package-sheet{position:relative;display:grid;grid-template-columns:minmax(300px,.9fr) minmax(360px,1.1fr);grid-template-rows:minmax(0,1fr);width:min(1060px,100%);height:min(720px,calc(100vh - 48px));max-height:calc(100vh - 48px);overflow:hidden;border-radius:28px;background:#fbfcfa;color:var(--ink);box-shadow:0 32px 90px rgba(10,18,13,.36)}
+.package-media{position:relative;min-height:0;height:100%;background:var(--soft);overflow:hidden}
+.package-media::after{content:"";position:absolute;inset:50% 0 0;background:linear-gradient(180deg,transparent,rgba(10,16,12,.64))}
+.package-media img{width:100%;height:100%;object-fit:cover}
+.package-category{position:absolute;top:24px;left:24px;z-index:1;max-width:calc(100% - 48px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:999px;background:var(--brand-secondary);color:var(--secondary-contrast);padding:9px 15px;font-size:11px;font-weight:800;line-height:1;text-transform:uppercase;letter-spacing:.12em}
+.package-agency-on-image{position:absolute;z-index:1;left:28px;right:28px;bottom:28px;color:#f8faf7}
+.package-agency-on-image strong{display:block;font-size:17px;margin-bottom:4px}
+.package-agency-on-image span{font-size:13px;color:rgba(248,250,247,.78)}
+.package-content{min-height:0;overflow-y:auto;padding:clamp(34px,5vw,58px)}
+.package-close{position:absolute;z-index:4;top:18px;right:18px;width:42px;height:42px;border:1px solid rgba(23,27,24,.12);border-radius:50%;background:#f7f9f6;color:#202620;font-size:25px;line-height:1;cursor:pointer;box-shadow:0 8px 22px rgba(12,17,14,.12)}
+.package-close:hover,.package-close:focus-visible{background:var(--brand);color:var(--contrast);outline:3px solid color-mix(in srgb,var(--brand) 26%,transparent)}
+.package-location{color:var(--brand);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px}
+.package-location:empty{display:none}
+.package-content h2{font-size:clamp(30px,4vw,48px);line-height:1.05;margin:0 48px 18px 0}
+.package-description{color:var(--muted);font-size:16px;line-height:1.75;margin-bottom:24px}
+.package-price-row{display:flex;align-items:baseline;justify-content:space-between;gap:20px;padding:20px 0;border-top:1px solid rgba(23,27,24,.12);border-bottom:1px solid rgba(23,27,24,.12)}
+.package-price-row span{color:var(--muted);font-size:13px}
+.package-price-row strong{font-size:22px;color:var(--ink);text-align:right}
+.package-contact{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:24px 0;border-bottom:1px solid rgba(23,27,24,.12)}
+.package-contact h3,.package-faq h3{font-family:'Inter',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.package-contact p{color:var(--muted);font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+.package-faq{padding:24px 0 8px}
+.package-faq details{border-bottom:1px solid rgba(23,27,24,.1);padding:12px 0}
+.package-faq summary{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;font-size:14px;font-weight:700;list-style:none}
+.package-faq summary::-webkit-details-marker{display:none}
+.package-faq summary::after{content:"+";font-size:20px;color:var(--brand)}
+.package-faq details[open] summary::after{content:"−"}
+.package-faq details p{padding:10px 30px 0 0;color:var(--muted);font-size:14px;line-height:1.6}
+.package-reserve{width:100%;justify-content:center;margin-top:24px}
+.package-note{text-align:center;color:var(--muted);font-size:12px;margin-top:10px}
+@media (max-width:800px){
+  #package-modal{padding:0;align-items:stretch}
+  .package-sheet{display:block;width:100%;height:100dvh;max-height:100dvh;border-radius:0;overflow-y:auto}
+  .package-media{min-height:42vh;height:42vh}
+  .package-content{overflow:visible;padding:32px 22px 40px}
+  .package-close{position:fixed;top:14px;right:14px}
+  .package-contact{grid-template-columns:1fr}
+}
+
 /* MAPA */
 .mapa-section{background:var(--brand-bg);padding:80px 0}
 .final-cta{background:linear-gradient(135deg,var(--brand-dark),color-mix(in srgb,var(--brand-dark) 72%,var(--brand-secondary) 28%));color:#fff;text-align:center;padding:76px 0}
@@ -1402,14 +1471,13 @@ ${sectionOrder
     <div class="destinos-grid" data-package-count="${visiblePackageCount}">
       ${pacotes
         .map(
-          (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<a href="#" onclick="openLeadForm('${esc(p.title)}', '${wppMsg(p.title)}');return false;" class="dest-card" data-visual-removable="dest-card-${i}">
+          (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<a href="#pacote-${esc(String(p.id || i + 1))}" onclick="openPackageDetails(${i}, this);return false;" class="dest-card" data-package-index="${i}" data-visual-removable="dest-card-${i}" aria-haspopup="dialog" aria-label="Ver detalhes de ${esc(p.title)}">
         <div class="dest-img-wrap">
           <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
           <div class="dest-overlay" data-site-edit-key="packageOverlayLabel">${esc(sc.packageOverlayLabel || "Ver pacote →")}</div>
         </div>
         <div class="dest-body">
-          <div class="dest-loc">${esc(cidade)}</div>
           <h3>${esc(p.title)}</h3>
           <p>${esc(p.description)}</p>
           <div class="dest-price">${parsePriceHTML(p.price)}</div>
@@ -1608,6 +1676,31 @@ ${state.address ? `
 
 ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp" data-visual-removable="contact-wpp-float">💬</a>` : ''}
 
+<!-- DETALHES DINÂMICOS DO PACOTE -->
+<div id="package-modal" aria-hidden="true" onclick="if(event.target===this)closePackageDetails()">
+  <div class="package-sheet" role="dialog" aria-modal="true" aria-labelledby="package-title">
+    <button type="button" class="package-close" aria-label="Fechar detalhes do pacote" onclick="closePackageDetails()">&times;</button>
+    <div class="package-media">
+      <img id="package-image" src="${DEFAULT_DEST_IMG}" alt="" data-ai-ignore="true" data-preserve-image="true">
+      <span class="package-category" id="package-category">Destino</span>
+      <div class="package-agency-on-image"><strong id="package-agency-image">${esc(agencia)}</strong><span id="package-location-image">${esc(contactLocation)}</span></div>
+    </div>
+    <div class="package-content">
+      <div class="package-location" id="package-location">${esc(cidade)}</div>
+      <h2 id="package-title">Detalhes do pacote</h2>
+      <p class="package-description" id="package-description"></p>
+      <div class="package-price-row"><span>Investimento</span><strong id="package-price">Sob consulta</strong></div>
+      <div class="package-contact">
+        <div><h3>Atendimento da agência</h3><p><strong id="package-agency">${esc(agencia)}</strong><br><span id="package-agency-location">${esc(contactLocation)}</span></p></div>
+        <div><h3>Fale com a gente</h3><p><span id="package-phone">${esc(wppDisplay)}</span><br><span id="package-email">${esc(agencyEmail)}</span></p></div>
+      </div>
+      <div class="package-faq" id="package-faq-section"><h3>Perguntas frequentes</h3><div id="package-faq-list"></div></div>
+      <button type="button" class="btn package-reserve" onclick="reserveCurrentPackage()">Reservar este pacote</button>
+      <p class="package-note">Você preencherá seus dados na próxima etapa.</p>
+    </div>
+  </div>
+</div>
+
 <!-- SMART LEAD CAPTURE MODAL -->
 <div id="lead-modal">
   <div class="modal-box">
@@ -1641,6 +1734,94 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
 
   let pendingUrl = "";
   let currentTarget = "";
+  const PACKAGE_DETAILS = ${packageDetailsJson};
+  let currentPackage = null;
+  let lastPackageTrigger = null;
+
+  function setPackageText(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value || "";
+  }
+
+  function renderPackageFaq(items) {
+    const section = document.getElementById("package-faq-section");
+    const list = document.getElementById("package-faq-list");
+    list.innerHTML = "";
+    if (!items || !items.length) {
+      section.hidden = true;
+      return;
+    }
+    section.hidden = false;
+    items.forEach((item) => {
+      const details = document.createElement("details");
+      const summary = document.createElement("summary");
+      const answer = document.createElement("p");
+      summary.textContent = item.question || "Dúvida frequente";
+      answer.textContent = item.answer || "Consulte nossa equipe para mais informações.";
+      details.append(summary, answer);
+      list.appendChild(details);
+    });
+  }
+
+  function openPackageDetails(index, trigger) {
+    const selected = PACKAGE_DETAILS[index];
+    const modal = document.getElementById("package-modal");
+    if (!selected || !modal) return;
+    currentPackage = selected;
+    lastPackageTrigger = trigger || document.activeElement;
+    const image = document.getElementById("package-image");
+    image.src = selected.imageUrl;
+    image.alt = selected.title;
+    setPackageText("package-category", selected.category);
+    setPackageText("package-agency-image", selected.agencyName);
+    setPackageText("package-location-image", selected.agencyLocation);
+    setPackageText("package-location", selected.city);
+    setPackageText("package-title", selected.title);
+    setPackageText("package-description", selected.description);
+    setPackageText("package-price", selected.price);
+    setPackageText("package-agency", selected.agencyName);
+    setPackageText("package-agency-location", selected.agencyLocation);
+    setPackageText("package-phone", selected.agencyPhone);
+    setPackageText("package-email", selected.agencyEmail);
+    renderPackageFaq(selected.faq);
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("package-modal-open");
+    modal.querySelector(".package-close").focus();
+    track("package_view", { target: selected.title, package_id: selected.id });
+  }
+
+  function closePackageDetails(restoreFocus = true) {
+    const modal = document.getElementById("package-modal");
+    if (!modal) return;
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("package-modal-open");
+    if (restoreFocus && lastPackageTrigger && typeof lastPackageTrigger.focus === "function") {
+      lastPackageTrigger.focus();
+    }
+  }
+
+  function reserveCurrentPackage() {
+    if (!currentPackage) return;
+    const selected = currentPackage;
+    closePackageDetails(false);
+    const quoteSection = document.getElementById("orcamento");
+    const destinationSelect = quoteSection && quoteSection.querySelector('select[name="destino"]');
+    if (!quoteSection || !destinationSelect) {
+      openLeadForm(selected.title, selected.whatsappUrl);
+      const leadModal = document.getElementById("lead-modal");
+      const leadName = document.getElementById("lead-name");
+      if (leadModal && leadModal.classList.contains("active") && leadName) leadName.focus();
+      return;
+    }
+    destinationSelect.value = selected.title;
+    destinationSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    destinationSelect.focus({ preventScroll: true });
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    quoteSection.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    track("package_cta", { target: selected.title, package_id: selected.id });
+  }
 
   function track(type, data) {
     if (!CONFIG.supabaseUrl || !CONFIG.supabaseKey) return Promise.resolve();
@@ -1701,6 +1882,28 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
   function closeModal() {
     document.getElementById("lead-modal").classList.remove("active");
   }
+
+  document.addEventListener("keydown", (event) => {
+    const packageModal = document.getElementById("package-modal");
+    if (!packageModal || !packageModal.classList.contains("active")) return;
+    if (event.key === "Escape") {
+      closePackageDetails();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(packageModal.querySelectorAll('a[href],button:not([disabled]),summary,input,select,textarea,[tabindex]:not([tabindex="-1"])'))
+      .filter((element) => element.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
 
   async function handleMainFormSubmit(e) {
     e.preventDefault();

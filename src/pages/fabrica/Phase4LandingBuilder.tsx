@@ -207,9 +207,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       const style = doc.createElement("style");
       style.innerHTML = `
         [data-visual-editable] {
-          position: relative !important;
           cursor: pointer !important;
-          transition: all 0.2s ease !important;
+          transition: outline-color 0.18s ease, background-color 0.18s ease !important;
         }
         [data-visual-editable]:hover {
           outline: 2px dashed #F59E0B !important;
