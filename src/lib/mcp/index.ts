@@ -1,4 +1,4 @@
-import { auth, defineMcp } from "@lovable.dev/mcp-js";
+import { auth, defineMcp, type McpDefinition } from "@lovable.dev/mcp-js";
 import getProfileTool from "./tools/get-profile";
 import listFavoritesTool from "./tools/list-favorites";
 import listGeneratedSitesTool from "./tools/list-generated-sites";
@@ -7,7 +7,7 @@ import listGeneratedSitesTool from "./tools/list-generated-sites";
 // Build it from VITE_SUPABASE_PROJECT_ID, which Vite inlines at build time.
 const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
 
-export default defineMcp({
+const mcp: McpDefinition = defineMcp({
   name: "canva-viagem-mcp",
   title: "Canva Viagem MCP",
   version: "0.1.0",
@@ -19,3 +19,5 @@ export default defineMcp({
   }),
   tools: [getProfileTool, listFavoritesTool, listGeneratedSitesTool],
 });
+
+export default mcp;

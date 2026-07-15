@@ -106,7 +106,7 @@ var list_generated_sites_default = defineTool3({
 
 // src/lib/mcp/index.ts
 var projectRef = "zdjtcwtakgizbsbbwtgc";
-var mcp_default = defineMcp({
+var mcp = defineMcp({
   name: "canva-viagem-mcp",
   title: "Canva Viagem MCP",
   version: "0.1.0",
@@ -117,6 +117,7 @@ var mcp_default = defineMcp({
   }),
   tools: [get_profile_default, list_favorites_default, list_generated_sites_default]
 });
+var mcp_default = mcp;
 
 // lovable-mcp-supabase-entry.ts
 import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.22.0/stacks/supabase";
