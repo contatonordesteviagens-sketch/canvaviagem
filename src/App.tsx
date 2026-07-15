@@ -28,6 +28,7 @@ const Obrigado = lazy(() => import("./pages/Obrigado"));
 const ObrigadoES = lazy(() => import("./pages/ObrigadoES"));
 const PosPagamento = lazy(() => import("./pages/PosPagamento"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const Gestao = lazy(() => import("./pages/Gestao"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
@@ -343,6 +344,7 @@ const App = () => {
 
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="/view/:id" element={<SiteViewer />} />
+                    <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   )}
