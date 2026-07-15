@@ -113,10 +113,10 @@ const FabricaInner = () => {
             </button>
           </div>
 
-          {/* GERAÃ‡ÃƒO */}
+          {/* GERAÇÃO */}
           <div>
             <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2">
-              GERAÃ‡ÃƒO
+              GERAÇÃO
             </div>
             <button
               onClick={() => {
