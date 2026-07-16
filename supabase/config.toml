@@ -60,3 +60,6 @@ verify_jwt = false
 [functions.fabrica-edit-photo]
 verify_jwt = false
 
+
+[functions.meta-capi-obrigado]
+verify_jwt = false
