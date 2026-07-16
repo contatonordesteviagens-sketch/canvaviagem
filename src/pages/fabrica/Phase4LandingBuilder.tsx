@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useFabricaContext, type Pacote, type Depoimento, type SocialLink, type SocialType } from "@/hooks/useFabricaContext";
+import { useFabricaContext, type AgencyType, type Pacote, type Depoimento, type SocialLink, type SocialType } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
-import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
+import { downloadLandingHTML, buildLandingHTML } from "@/lib/fabrica-html-export";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
 import { BrandPaletteEditor, SectionBackgroundEditor } from "@/components/fabrica/BrandPaletteEditor";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
@@ -14,7 +14,6 @@ import {
   EyeOff,
   Palette,
   Rocket,
-  Copy,
   ExternalLink,
   Sparkles,
   Image as ImageIcon,
@@ -32,11 +31,24 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { SectionVisibility } from "@/hooks/useFabricaContext";
+import {
+  PACKAGE_AVAILABILITY_OPTIONS,
+  PACKAGE_SEGMENT_OPTIONS,
+  buildPackageSlug,
+  createUniquePackageSlug,
+  getPackageGuidance,
+  linesToList,
+  suggestPackageSegment,
+} from "@/lib/package-details";
+import {
+  buildCanvaSiteSlug as buildSiteSlug,
+  extractCanvaSiteSlug,
+  getCanvaSiteUrl,
+  normalizeCanvaSiteUrl,
+  validateCanvaSiteSlug,
+} from "@/lib/canva-site-domain";
 
-const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
-const CANVA_VIAGEM_DOMAIN = "canvaviagem.com";
 const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
-const CANVA_VIAGEM_SITE_BASE_URL = `https://${CANVA_VIAGEM_DOMAIN}/view`;
 const UI_ACCENT = "#F5F906";
 const UI_ACCENT_SOFT = "rgba(245, 249, 6, 0.12)";
 const UI_ACCENT_BORDER = "rgba(245, 249, 6, 0.75)";
@@ -59,15 +71,41 @@ const SITE_SECTION_LABELS: Record<string, string> = {
   footer: "Rodapé",
 };
 
-const buildSiteSlug = (value: string) =>
-  value
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
+const optimizeImageBlobToWebp = async (blob: Blob, maxDimension = 1600) => {
+  const bitmap = await createImageBitmap(blob);
+  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    bitmap.close();
+    throw new Error("Não foi possível preparar a imagem.");
+  }
+  context.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+  const webpBlob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.82));
+  if (!webpBlob) throw new Error("Este navegador não conseguiu converter a imagem para WebP.");
+  return webpBlob;
+};
+
+const hashBlob = async (blob: Blob) => {
+  const digest = await crypto.subtle.digest("SHA-256", await blob.arrayBuffer());
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+};
+
+const normalizeExternalImageUrl = (value: string) => {
+  try {
+    const parsed = new URL(value.trim());
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : "";
+  } catch {
+    return "";
+  }
+};
 
 // Sugestões padrão de fotos para a seção "Equipe / Agência"
 const TEAM_PRESET_IMAGES = [
@@ -300,7 +338,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         ".dest-card h3",
         ".dest-card p",
         ".dest-loc",
-        ".dest-cta",
+        // O CTA do card continua clicável para abrir os detalhes também na prévia.
+        // O texto dele segue editável no campo "Botão" do pacote logo abaixo.
         ".price-value",
         ".price-main",
         ".dest-tag",
@@ -721,18 +760,31 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
   // Pacotes
   const addPacote = () => {
+    const packageId = String(Date.now());
     const novo: Pacote = {
-      id: String(Date.now()),
+      id: packageId,
       title: "Novo pacote",
       description: "Descreva o que está incluso",
       price: "R$ 0,00",
       imageUrl: "",
       ctaLabel: "Quero esse",
+      slug: buildPackageSlug(`novo-pacote-${packageId}`, packageId),
+      segment: suggestPackageSegment(state.agencyType),
     };
     update({ selectedPackages: [...state.selectedPackages, novo] });
   };
   const updPacote = (id: string, patch: Partial<Pacote>) => {
-    update({ selectedPackages: state.selectedPackages.map((p) => (p.id === id ? { ...p, ...patch } : p)) });
+    let normalizedPatch = patch;
+    if (typeof patch.slug === "string") {
+      const usedSlugs = state.selectedPackages
+        .filter((item) => item.id !== id)
+        .map((item) => item.slug || buildPackageSlug(item.title, item.id));
+      normalizedPatch = {
+        ...patch,
+        slug: createUniquePackageSlug(patch.slug, usedSlugs, id),
+      };
+    }
+    update({ selectedPackages: state.selectedPackages.map((p) => (p.id === id ? { ...p, ...normalizedPatch } : p)) });
   };
   const delPacote = (id: string) => {
     update({ selectedPackages: state.selectedPackages.filter((p) => p.id !== id) });
@@ -802,7 +854,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   const handleDownload = () => {
     setDownloadCount((c) => c + 1);
     downloadLandingHTML(state, downloadCount + 1, user?.id);
-    toast.success(`Versão ${downloadCount + 1} baixada! Suba pro Lovable, Vercel ou Netlify.`);
+    toast.success(`Versão ${downloadCount + 1} baixada! O arquivo HTML está pronto.`);
   };
 
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
@@ -836,7 +888,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           <p className="text-[10px] text-white/40 mb-1.5 font-semibold uppercase tracking-wider">
             Editando site: <span className="text-white/70 normal-case font-bold">{state.agencyName || "Sem nome"}</span>
             {state.siteContent?.canvaViagemUrl && (
-              <a href={`https://${state.siteContent.canvaViagemUrl}`} target="_blank" rel="noopener noreferrer"
+              <a href={normalizeCanvaSiteUrl(state.siteContent.canvaViagemUrl)} target="_blank" rel="noopener noreferrer"
                 className="ml-2 text-emerald-400 hover:text-emerald-300 transition-colors">
                 ↗ {state.siteContent.canvaViagemUrl}
               </a>
@@ -909,8 +961,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       <div className="flex flex-col-reverse gap-8 items-stretch">
         {/* Painel Esquerdo: Opções de Configuração (5 colunas em lg) */}
         <div className="w-full space-y-6">
-          {/* PUBLICAÇÃO DIRETA NO VERCEL (Movido para o topo) */}
-          <PublishOnLovableCard html={previewHTML} onBack={onBack} onNext={onNext} />
+          {/* Publicação oficial do site (movida para o topo) */}
+          <PublishSiteCard html={previewHTML} onBack={onBack} onNext={onNext} />
 
           <div className="border-b border-white/10 pb-4 pt-6">
             <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -966,6 +1018,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   <PacoteEditor
                     key={p.id}
                     pacote={p}
+                    agencyType={state.agencyType}
                     gallery={state.siteContent.galleryImages}
                     onChange={(patch) => updPacote(p.id, patch)}
                     onDelete={() => delPacote(p.id)}
@@ -1757,11 +1810,13 @@ const FieldTextarea = ({
 
 const PacoteEditor = ({
   pacote,
+  agencyType,
   gallery,
   onChange,
   onDelete,
 }: {
   pacote: Pacote;
+  agencyType: AgencyType;
   gallery: string[];
   onChange: (patch: Partial<Pacote>) => void;
   onDelete: () => void;
@@ -1770,6 +1825,34 @@ const PacoteEditor = ({
   const [photoQuery, setPhotoQuery] = useState("");
   const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [photos, setPhotos] = useState<Array<{ id: number; url: string; thumb: string; alt: string }>>([]);
+  const effectiveSegment = pacote.segment || suggestPackageSegment(agencyType);
+  const guidance = getPackageGuidance(effectiveSegment);
+  const hasAdvancedDetails = Boolean(
+    pacote.subtitle || pacote.longDescription || pacote.travelDates || pacote.duration || pacote.departureLocation ||
+    pacote.meetingPoint || pacote.accommodation || pacote.priceDetails || pacote.paymentTerms ||
+    pacote.availability || pacote.highlights?.length || pacote.included?.length ||
+    pacote.notIncluded?.length || pacote.itinerary?.length || pacote.requirements?.length ||
+    pacote.documents?.length || pacote.accessibility?.length || pacote.cancellationPolicy ||
+    pacote.importantNotes || pacote.galleryImages?.length || pacote.faq?.length,
+  );
+
+  const updateList = (
+    key: "highlights" | "included" | "notIncluded" | "itinerary" | "requirements" | "documents" | "accessibility",
+    value: string,
+  ) => onChange({ [key]: linesToList(value) } as Partial<Pacote>);
+
+  const toggleGalleryImage = (url: string) => {
+    const current = pacote.galleryImages || [];
+    if (current.includes(url)) {
+      onChange({ galleryImages: current.filter((item) => item !== url) });
+      return;
+    }
+    if (current.length >= 5) {
+      toast.error("Escolha no máximo 5 imagens por pacote.");
+      return;
+    }
+    onChange({ galleryImages: [...current, url] });
+  };
 
   const searchPhotos = async () => {
     const q = photoQuery.trim() || pacote.title.split(' ')[0] || ""; // default to first word of title
@@ -1827,6 +1910,11 @@ const PacoteEditor = ({
             <input
               value={pacote.title}
               onChange={(e) => onChange({ title: e.target.value })}
+              onBlur={(e) => {
+                if (!pacote.slug || pacote.slug.startsWith("novo-pacote-")) {
+                  onChange({ slug: buildPackageSlug(e.target.value, pacote.id) });
+                }
+              }}
               placeholder="Ex: Jericoacoara 5 dias"
               className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm font-bold text-white placeholder:text-white/30 outline-none focus:border-white/40"
             />
@@ -1865,6 +1953,219 @@ const PacoteEditor = ({
         <span className="text-[10px] text-white/40 italic">→ "Olá, tenho interesse em {pacote.title || "..."}"</span>
       </div>
 
+      <details className="group rounded-xl border border-white/10 bg-white/[0.025] open:bg-black/20">
+        <summary
+          data-testid={`package-advanced-toggle-${pacote.id}`}
+          className="flex min-h-11 w-full cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-2.5 text-left text-sm font-semibold text-white/80 transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 [&::-webkit-details-marker]:hidden"
+        >
+          <span>
+            {hasAdvancedDetails ? "Editar mais informações" : "Adicionar mais informações"}
+            <span className="mt-0.5 block text-[10px] font-normal text-white/40">Opcional · aparece somente no detalhe do pacote</span>
+          </span>
+          <ChevronDown className="h-4 w-4 flex-shrink-0 transition-transform group-open:rotate-180" />
+        </summary>
+
+        <div className="rounded-xl border border-white/10 bg-black/25 p-3 sm:p-4 space-y-5">
+          <div className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 py-2.5 text-[11px] leading-relaxed text-amber-100/75">
+            A Fábrica recomenda os campos conforme o tipo de pacote. Campos vazios não aparecem no site e não alteram o formulário nem o CRM.
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label className="block">
+              <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Tipo de experiência</span>
+              <select
+                value={effectiveSegment}
+                onChange={(event) => onChange({ segment: event.target.value as Pacote["segment"] })}
+                className="min-h-11 w-full rounded-lg border border-white/10 bg-zinc-900 px-3 py-2 text-base text-white outline-none focus:border-white/40 sm:text-sm"
+              >
+                {PACKAGE_SEGMENT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Disponibilidade</span>
+              <select
+                value={pacote.availability || ""}
+                onChange={(event) => onChange({ availability: (event.target.value || undefined) as Pacote["availability"] })}
+                className="min-h-11 w-full rounded-lg border border-white/10 bg-zinc-900 px-3 py-2 text-base text-white outline-none focus:border-white/40 sm:text-sm"
+              >
+                <option value="">Não informar</option>
+                {PACKAGE_AVAILABILITY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <label className="block">
+            <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Subtítulo</span>
+            <input
+              value={pacote.subtitle || ""}
+              onChange={(event) => onChange({ subtitle: event.target.value })}
+              placeholder="Ex.: A experiência mais completa para conhecer o destino"
+              className="min-h-11 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Descrição completa</span>
+            <textarea
+              value={pacote.longDescription || ""}
+              onChange={(event) => onChange({ longDescription: event.target.value })}
+              placeholder={guidance.description}
+              rows={5}
+              className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base leading-relaxed text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+            />
+          </label>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              ["Datas ou frequência", "travelDates", pacote.travelDates || "", guidance.dates],
+              ["Duração", "duration", pacote.duration || "", guidance.duration],
+              ["Origem / embarque", "departureLocation", pacote.departureLocation || "", guidance.departure],
+              ["Encontro / retirada", "meetingPoint", pacote.meetingPoint || "", guidance.meetingPoint],
+              ["Hospedagem / cabine", "accommodation", pacote.accommodation || "", guidance.accommodation],
+              ["Como o preço é calculado", "priceDetails", pacote.priceDetails || "", guidance.priceDetails],
+              ["Pagamento", "paymentTerms", pacote.paymentTerms || "", "Ex.: Entrada de 20% + 10 parcelas sem juros"],
+              ["Link compartilhável", "slug", pacote.slug || buildPackageSlug(pacote.title, pacote.id), "ex.: jericoacoara-5-dias"],
+            ].map(([label, key, value, placeholder]) => (
+              <label className="block" key={key}>
+                <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">{label}</span>
+                <input
+                  value={value}
+                  onChange={(event) => onChange({ [key]: key === "slug" ? buildPackageSlug(event.target.value, pacote.id) : event.target.value } as Partial<Pacote>)}
+                  maxLength={key === "slug" ? 120 : undefined}
+                  placeholder={placeholder}
+                  className="min-h-11 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+                />
+              </label>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {[
+              ["Destaques", "highlights", pacote.highlights || [], guidance.highlights],
+              ["O que inclui", "included", pacote.included || [], guidance.included],
+              ["O que não inclui", "notIncluded", pacote.notIncluded || [], "Um item por linha\nBebidas\nDespesas pessoais"],
+              ["Roteiro resumido", "itinerary", pacote.itinerary || [], guidance.itinerary],
+              ["Requisitos e o que levar", "requirements", pacote.requirements || [], guidance.requirements],
+              ["Documentos necessários", "documents", pacote.documents || [], guidance.documents],
+              ["Recursos de acessibilidade", "accessibility", pacote.accessibility || [], "Um recurso por linha\nTransporte adaptado: a confirmar\nAcesso sem degraus"],
+            ].map(([label, key, value, placeholder]) => (
+              <label className="block" key={key as string}>
+                <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">{label as string}</span>
+                <textarea
+                  value={(value as string[]).join("\n")}
+                  onChange={(event) => updateList(key as Parameters<typeof updateList>[0], event.target.value)}
+                  placeholder={placeholder as string}
+                  rows={4}
+                  className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base leading-relaxed text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+                />
+              </label>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <label className="block">
+              <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Política de cancelamento</span>
+              <textarea
+                value={pacote.cancellationPolicy || ""}
+                onChange={(event) => onChange({ cancellationPolicy: event.target.value })}
+                placeholder="Ex.: Cancelamento gratuito até 7 dias antes; após esse prazo, consulte as condições."
+                rows={4}
+                className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base leading-relaxed text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Importante saber</span>
+              <textarea
+                value={pacote.importantNotes || ""}
+                onChange={(event) => onChange({ importantNotes: event.target.value })}
+                placeholder="Ex.: Operação sujeita às condições climáticas; confirmação enviada por WhatsApp."
+                rows={4}
+                className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base leading-relaxed text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+              />
+            </label>
+          </div>
+
+          {gallery.length > 0 && (
+            <div>
+              <div className="mb-2 flex items-end justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-white/50">Galeria do pacote</div>
+                  <div className="mt-0.5 text-[10px] text-white/35">Reutiliza os links do banco; escolha até 5.</div>
+                </div>
+                <span className="text-[10px] text-white/45">{pacote.galleryImages?.length || 0}/5</span>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {gallery.map((url, index) => {
+                  const selected = pacote.galleryImages?.includes(url);
+                  return (
+                    <button
+                      key={url}
+                      type="button"
+                      aria-pressed={selected}
+                      aria-label={`${selected ? "Remover" : "Adicionar"} imagem ${index + 1} da galeria do pacote`}
+                      onClick={() => toggleGalleryImage(url)}
+                      className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-colors ${selected ? "border-amber-400" : "border-white/10 hover:border-white/35"}`}
+                    >
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                      {selected && <span className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-amber-400 text-black"><Check className="h-3 w-3" /></span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-white/50">Perguntas deste pacote</div>
+                <div className="mt-0.5 text-[10px] text-white/35">Se ficar vazio, o site usa as perguntas gerais.</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => onChange({ faq: [...(pacote.faq || []), { question: "", answer: "" }] })}
+                className="min-h-11 rounded-lg border border-white/10 px-3 text-xs font-semibold text-white/70 hover:bg-white/[0.05]"
+              >
+                + Adicionar pergunta
+              </button>
+            </div>
+            <div className="space-y-2">
+              {(pacote.faq || []).map((item, index) => (
+                <div key={`${pacote.id}-faq-${index}`} className="rounded-lg border border-white/10 bg-white/[0.025] p-3">
+                  <div className="flex gap-2">
+                    <input
+                      value={item.question}
+                      onChange={(event) => onChange({ faq: (pacote.faq || []).map((faq, faqIndex) => faqIndex === index ? { ...faq, question: event.target.value } : faq) })}
+                      placeholder="Ex.: Posso remarcar a data?"
+                      className="min-h-11 flex-1 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-base text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+                    />
+                    <button
+                      type="button"
+                      aria-label="Remover pergunta"
+                      onClick={() => onChange({ faq: (pacote.faq || []).filter((_, faqIndex) => faqIndex !== index) })}
+                      className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-lg bg-red-500/10 text-red-300 hover:bg-red-500/20"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <textarea
+                    value={item.answer}
+                    onChange={(event) => onChange({ faq: (pacote.faq || []).map((faq, faqIndex) => faqIndex === index ? { ...faq, answer: event.target.value } : faq) })}
+                    placeholder="Escreva a resposta de forma objetiva."
+                    rows={3}
+                    className="mt-2 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-base text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </details>
+
       {pickingImage && (
         <div className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-3">
           <div className="text-[11px] font-bold text-white/60 uppercase tracking-wider">Escolher imagem</div>
@@ -1890,9 +2191,10 @@ const PacoteEditor = ({
             </div>
             {photos.length > 0 && (
               <div className="grid grid-cols-4 gap-2 mt-2">
-                {photos.map((p) => (
+                {photos.map((p, index) => (
                   <button
                     key={p.id}
+                    aria-label={`Usar resultado ${index + 1}: ${p.alt || "imagem do destino"}`}
                     onClick={() => {
                       onChange({ imageUrl: p.url });
                       setPickingImage(false);
@@ -1913,9 +2215,10 @@ const PacoteEditor = ({
             <div>
               <div className="text-[10px] text-white/40 mb-2">Do seu banco:</div>
               <div className="grid grid-cols-4 gap-2">
-                {gallery.map((url) => (
+                {gallery.map((url, index) => (
                   <button
                     key={url}
+                    aria-label={`Usar imagem ${index + 1} do banco`}
                     onClick={() => {
                       onChange({ imageUrl: url });
                       setPickingImage(false);
@@ -1973,20 +2276,43 @@ const ImageGallery = ({
   onAdd: (url: string) => void;
   onRemove: (url: string) => void;
 }) => {
+  const { user } = useAuth();
   const [newUrl, setNewUrl] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = (file: File) => {
-    if (file.size > 3 * 1024 * 1024) {
-      toast.error("Imagem muito grande (máx 3MB).");
+  const handleFile = async (file: File) => {
+    if (!user?.id) {
+      toast.error("Faça login para enviar uma imagem do computador.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      onAdd(dataUrl);
-    };
-    reader.readAsDataURL(file);
+    if (file.size > 12 * 1024 * 1024) {
+      toast.error("Imagem muito grande. Escolha um arquivo de até 12 MB.");
+      return;
+    }
+    if (!/^image\/(?:jpeg|png|webp|gif|avif)$/i.test(file.type)) {
+      toast.error("Formato não suportado. Use JPG, PNG, WebP, GIF ou AVIF.");
+      return;
+    }
+    setUploadingImage(true);
+    const toastId = toast.loading("Otimizando imagem para o site...");
+    try {
+      const webp = await optimizeImageBlobToWebp(file);
+      const hash = await hashBlob(webp);
+      const filePath = `sites/${user.id}/assets/${hash}.webp`;
+      const { error } = await supabase.storage
+        .from("thumbnails")
+        .upload(filePath, webp, { contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE, upsert: true });
+      if (error) throw error;
+      const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(filePath).data.publicUrl;
+      onAdd(publicUrl);
+      toast.success("Imagem otimizada e adicionada sem duplicar o arquivo.", { id: toastId });
+    } catch (error) {
+      console.error("Falha ao otimizar imagem do site", error);
+      toast.error("Não foi possível enviar a imagem. Tente outro arquivo.", { id: toastId });
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   return (
@@ -2052,10 +2378,13 @@ const ImageGallery = ({
         </div>
         <button
           onClick={() => {
-            if (newUrl.trim()) {
-              onAdd(newUrl.trim());
-              setNewUrl("");
+            const safeUrl = normalizeExternalImageUrl(newUrl);
+            if (!safeUrl) {
+              toast.error("Cole um link de imagem válido começando com https:// ou http://.");
+              return;
             }
+            onAdd(safeUrl);
+            setNewUrl("");
           }}
           disabled={!newUrl.trim()}
           className="px-4 py-2 rounded-lg bg-white/[0.08] text-white text-sm font-semibold hover:bg-white/[0.12] disabled:opacity-40 disabled:cursor-not-allowed"
@@ -2067,9 +2396,10 @@ const ImageGallery = ({
       {/* Upload local */}
       <button
         onClick={() => fileRef.current?.click()}
-        className="w-full py-2.5 rounded-lg border border-dashed border-white/20 text-white/60 hover:text-white hover:border-white/40 text-xs font-semibold flex items-center justify-center gap-2"
+        disabled={uploadingImage}
+        className="min-h-11 w-full py-2.5 rounded-lg border border-dashed border-white/20 text-white/60 hover:text-white hover:border-white/40 text-xs font-semibold flex items-center justify-center gap-2 disabled:cursor-wait disabled:opacity-50"
       >
-        <Upload className="w-3.5 h-3.5" /> Ou faça upload do seu computador
+        <Upload className="w-3.5 h-3.5" /> {uploadingImage ? "Otimizando e enviando..." : "Ou faça upload do seu computador"}
       </button>
       <input
         ref={fileRef}
@@ -2086,7 +2416,7 @@ const ImageGallery = ({
   );
 };
 
-const PublishOnLovableCard = ({
+const PublishSiteCard = ({
   html,
   onBack,
   onNext,
@@ -2097,9 +2427,6 @@ const PublishOnLovableCard = ({
 }) => {
   const { state, update } = useFabricaContext();
   const { user } = useAuth();
-
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
 
   const handleDownload = () => {
     try {
@@ -2119,102 +2446,19 @@ const PublishOnLovableCard = ({
 
   const [canvaViagemSubdomain, setCanvaViagemSubdomain] = useState(() => {
     if (state.siteContent.canvaViagemUrl) {
-      const savedUrl = state.siteContent.canvaViagemUrl.replace(/\/$/, "");
-      if (savedUrl.includes(`/${CANVA_VIAGEM_DOMAIN}/view/`)) {
-        return savedUrl.split("/").pop() || "";
-      }
-      return savedUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
+      return extractCanvaSiteSlug(state.siteContent.canvaViagemUrl);
     }
     return buildSiteSlug(state.agencyName || "");
   });
   const [isCanvaViagemPublishing, setIsCanvaViagemPublishing] = useState(false);
 
-  // ── ESTADOS E FUNÇÕES PARA A PUBLICAÇÃO 1-CLIQUE NO VERCEL ──
-  const [vercelSubdomain, setVercelSubdomain] = useState(() => {
-    if (state.siteContent.vercelUrl) {
-      return state.siteContent.vercelUrl.replace("https://", "").replace(".vercel.app", "");
-    }
-    const rawAgency = state.agencyName || "";
-    return rawAgency
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // remove acentos
-      .replace(/[^a-z0-9]/g, "-") // apenas minusculas e hifens
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-  });
-
   useEffect(() => {
     if (state.siteContent.canvaViagemUrl) {
-      const savedUrl = state.siteContent.canvaViagemUrl.replace(/\/$/, "");
-      if (savedUrl.includes(`/${CANVA_VIAGEM_DOMAIN}/view/`)) {
-        setCanvaViagemSubdomain(savedUrl.split("/").pop() || "");
-      } else {
-        setCanvaViagemSubdomain(savedUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, ""));
-      }
+      setCanvaViagemSubdomain(extractCanvaSiteSlug(state.siteContent.canvaViagemUrl));
     } else {
       setCanvaViagemSubdomain(buildSiteSlug(state.agencyName || ""));
     }
-
-    if (state.siteContent.vercelUrl) {
-      setVercelSubdomain(state.siteContent.vercelUrl.replace("https://", "").replace(".vercel.app", ""));
-    } else {
-      const rawAgency = state.agencyName || "";
-      setVercelSubdomain(rawAgency
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, ""));
-    }
-  }, [state.projectId, state.siteContent.canvaViagemUrl, state.siteContent.vercelUrl, state.agencyName]);
-
-  const handleDirectPublish = async () => {
-    if (!user?.id) {
-      toast.error("Faça login para publicar.");
-      return;
-    }
-
-    setIsPublishing(true);
-    try {
-      let publishId = state.projectId;
-      if (!publishId) {
-        publishId = crypto.randomUUID();
-        update({ projectId: publishId });
-      }
-
-      // Bypass Supabase Storage RLS entirely by saving to public_sites table
-      const { error: dbError } = await supabase
-        .from("public_sites")
-        .upsert({
-          id: publishId,
-          owner_id: user.id,
-          project_id: publishId,
-          html: html,
-          locale: 'pt-BR'
-        });
-
-      if (dbError) {
-        throw dbError;
-      }
-
-
-      const internalUrl = `${window.location.origin}/view/${publishId}`;
-      setPublishedUrl(internalUrl);
-      toast.success("🚀 SITE PUBLICADO COM SUCESSO!");
-
-      if (typeof window !== "undefined" && (window as any).confetti) {
-        (window as any).confetti();
-      }
-
-    } catch (err: any) {
-      console.error("Publish error:", err);
-      toast.error(`Erro ao publicar: ${err.message || "Verifique sua conexão"}`);
-    } finally {
-      setIsPublishing(false);
-    }
-  };
+  }, [state.projectId, state.siteContent.canvaViagemUrl, state.agencyName]);
 
   const handleCanvaViagemPublish = async () => {
     if (!user?.id) {
@@ -2231,15 +2475,15 @@ const PublishOnLovableCard = ({
     }
 
     const cleanSlug = buildSiteSlug(canvaViagemSubdomain || state.agencyName || "");
-
-    if (cleanSlug.length < 3) {
-      toast.error("O nome da agência precisa ter pelo menos 3 caracteres válidos para criar o link do site.");
-      return;
-    }
-
-    const reserved = new Set(["www", "app", "admin", "api", "painel", "blog"]);
-    if (reserved.has(cleanSlug)) {
-      toast.error("Esse subdomínio é reservado. Escolha outro nome.");
+    const slugError = validateCanvaSiteSlug(cleanSlug);
+    if (slugError) {
+      const messages = {
+        too_short: "O nome da agência precisa ter pelo menos 3 caracteres válidos para criar o link do site.",
+        too_long: "O link deve ter no máximo 63 caracteres.",
+        invalid: "Use somente letras, números e hífens, sem hífen no início ou no final.",
+        reserved: "Esse subdomínio é reservado. Escolha outro nome.",
+      } as const;
+      toast.error(messages[slugError]);
       return;
     }
 
@@ -2255,67 +2499,29 @@ const PublishOnLovableCard = ({
     try {
       toast.loading("Otimizando imagens do site para o Canva Viagem (isso pode levar alguns segundos)...", { id: toastId });
       let finalHtml = html;
-      const base64Regex = /src="(data:image\/[^;]+;base64,[^"]+)"/g;
-      const matches = [...finalHtml.matchAll(base64Regex)];
-      
-      for (let i = 0; i < matches.length; i++) {
-        const fullMatch = matches[i][0];
-        const base64Data = matches[i][1];
-        
-        try {
-          const mimeType = base64Data.split(';')[0].split(':')[1];
-          const b64Data = base64Data.split(',')[1];
-          const byteCharacters = atob(b64Data);
-          const byteArrays = [];
-          for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-            const slice = byteCharacters.slice(offset, offset + 512);
-            const byteNumbers = new Array(slice.length);
-            for (let j = 0; j < slice.length; j++) {
-              byteNumbers[j] = slice.charCodeAt(j);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            byteArrays.push(byteArray);
-          }
-          const blob = new Blob(byteArrays, { type: mimeType });
-          
-          const ext = mimeType.split('/')[1] || 'webp';
-          const filename = `vercel_assets/${user?.id || 'anon'}_${Date.now()}_cv_${i}.${ext}`;
-          
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("thumbnails")
-            .upload(filename, blob, { contentType: mimeType, upsert: true });
-            
-          if (!uploadError && uploadData) {
-            const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(filename).data.publicUrl;
-            finalHtml = finalHtml.replace(fullMatch, `src="${publicUrl}"`);
-          }
-        } catch (e) {
-          console.warn("Falha ao fazer upload da imagem base64 no Canva Viagem", e);
-        }
+      const embeddedImages = Array.from(new Set(
+        finalHtml.match(/data:image\/[a-zA-Z0-9.+-]+;base64,[a-zA-Z0-9+/=]+/g) || [],
+      ));
+
+      for (const base64Data of embeddedImages) {
+        const sourceBlob = await (await fetch(base64Data)).blob();
+        const webpBlob = await optimizeImageBlobToWebp(sourceBlob);
+        const hash = await hashBlob(webpBlob);
+        const filename = `sites/${user.id}/assets/${hash}.webp`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("thumbnails")
+          .upload(filename, webpBlob, { contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE, upsert: true });
+        if (uploadError || !uploadData) throw uploadError || new Error("Upload não confirmado.");
+        const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(filename).data.publicUrl;
+        finalHtml = finalHtml.split(base64Data).join(publicUrl);
+      }
+      if (/data:image\/[a-zA-Z0-9.+-]+;base64,/i.test(finalHtml)) {
+        throw new Error("Não foi possível otimizar todas as imagens do site.");
       }
 
       toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
 
-      const liveUrl = `https://${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`;
-      const fileNameSlug = `vercel_assets/${cleanSlug}_site.webp`; // bypass RLS attempt
-      const fileNameId = `vercel_assets/${user.id}_site.webp`; // Upload Oficial (passa RLS)
-
-      if (state.siteContent.canvaViagemUrl && state.siteContent.canvaViagemUrl !== liveUrl) {
-        try {
-          const oldUrl = state.siteContent.canvaViagemUrl.replace(/\/$/, "");
-          let oldSlug = "";
-          if (oldUrl.includes(`/${CANVA_VIAGEM_DOMAIN}/view/`)) {
-            oldSlug = oldUrl.split("/").pop() || "";
-          } else {
-            oldSlug = oldUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
-          }
-          if (oldSlug && oldSlug !== cleanSlug) {
-            await supabase.storage.from("thumbnails").remove([`vercel_assets/${oldSlug}_site.html`, `vercel_assets/${oldSlug}_site.webp`]);
-          }
-        } catch (e) {
-          console.error("Erro ao deletar antigo Supabase:", e);
-        }
-      }
+      const liveUrl = getCanvaSiteUrl(cleanSlug);
 
       // Upload Oficial garantido de passar pelo RLS salvando direto na tabela public_sites
       const { error: dbError } = await supabase
@@ -2357,25 +2563,6 @@ const PublishOnLovableCard = ({
       toast.error(friendlyMsg, { id: toastId });
     } finally {
       setIsCanvaViagemPublishing(false);
-    }
-  };
-
-  const copyHtml = async () => {
-    try {
-      await navigator.clipboard.writeText(html);
-      toast.success("HTML copiado! Cole no Lovable para gerar o site.");
-    } catch {
-      toast.error("Não foi possível copiar. Use o botão Baixar HTML.");
-    }
-  };
-
-  const copyUpdatePrompt = async () => {
-    try {
-      const prompt = generateUpdatePackagesPrompt(state);
-      await navigator.clipboard.writeText(prompt);
-      toast.success("🚀 Prompt de atualização copiado! Agora cole no chat do seu Lovable.");
-    } catch {
-      toast.error("Erro ao copiar prompt.");
     }
   };
 
@@ -2422,22 +2609,22 @@ const PublishOnLovableCard = ({
             <LinkIcon className="w-5 h-5 text-white/40 flex-shrink-0" />
           </div>
 
-          {state.siteContent.canvaViagemUrl && (
+          {normalizeCanvaSiteUrl(state.siteContent.canvaViagemUrl || "") && (
             <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Link Canva Viagem publicado</div>
                 <a
-                  href={state.siteContent.canvaViagemUrl}
+                  href={normalizeCanvaSiteUrl(state.siteContent.canvaViagemUrl || "")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm font-bold text-white hover:underline flex items-center gap-1.5 mt-0.5 group"
                 >
-                  {state.siteContent.canvaViagemUrl}
+                  {normalizeCanvaSiteUrl(state.siteContent.canvaViagemUrl || "")}
                   <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition-colors" />
                 </a>
               </div>
               <a
-                href={state.siteContent.canvaViagemUrl}
+                href={normalizeCanvaSiteUrl(state.siteContent.canvaViagemUrl || "")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 rounded-lg bg-white hover:bg-gray-200 text-black font-bold text-xs transition-all text-center"
@@ -2458,6 +2645,7 @@ const PublishOnLovableCard = ({
               type="text"
               value={canvaViagemSubdomain}
               onChange={(e) => setCanvaViagemSubdomain(buildSiteSlug(e.target.value))}
+              maxLength={63}
               placeholder="nome-da-agencia"
               className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
             />
@@ -2508,138 +2696,9 @@ const PublishOnLovableCard = ({
           </div>
 
           <p className="text-[10px] text-white/45 mt-3 leading-relaxed">
-            Essa opção salva o HTML no Supabase e usa o SSL que já existe no domínio principal.
+            O HTML fica salvo no Supabase e o domínio é entregue pela camada Cloudflare do Canva Viagem.
           </p>
         </div>
-
-        {/* OUTRAS OPÇÕES - Temporariamente ocultas (voltar depois) */}
-        {false && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <details className="p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
-            <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
-              <span>Opção 2: Publicar Vercel</span>
-            </summary>
-            
-            <div className="mt-4">
-              {/* Form de Publicação */}
-              <div className="space-y-4">
-                {state.siteContent.vercelUrl && (
-                  <div className="p-3 rounded-lg bg-white/5 border border-white/10 flex flex-col gap-2">
-                    <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Site Online</div>
-                    <a 
-                      href={state.siteContent.vercelUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-xs font-bold text-white hover:underline truncate"
-                    >
-                      {state.siteContent.vercelUrl}
-                    </a>
-                  </div>
-                )}
-                <div>
-                  <label className="block text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2">
-                    Domínio:
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={vercelSubdomain}
-                      onChange={(e) => setVercelSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
-                      placeholder="nome-da-agencia"
-                      className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-xs text-white outline-none focus:border-white/30 rounded-l-lg border-r-0"
-                    />
-                    <span className="px-2 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-[10px] text-white/40 select-none">
-                      .vercel.app
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                  <button
-                    onClick={handleDownload}
-                    className="py-3 px-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all text-sm bg-emerald-500 hover:bg-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.3)]"
-                  >
-                    <Download className="w-4 h-4" /> 1. Baixar HTML
-                  </button>
-
-                  <a
-                    href="https://vercel.com/dashboard"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-3 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all text-sm hover:brightness-110"
-                    style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)` }}
-                  >
-                    🚀 2. Abrir Vercel (Upload)
-                  </a>
-                </div>
-
-                <div className="mt-6 pt-5 border-t border-white/10">
-                  <h4 className="text-xs font-bold text-white tracking-wide uppercase mb-3 flex items-center gap-2">
-                    <Rocket className="w-4 h-4 text-emerald-400" /> Como publicar grátis
-                  </h4>
-                  <div className="space-y-3 text-[11px] text-white/70 leading-relaxed mb-4">
-                    <div className="flex gap-2 items-start">
-                      <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">1</span>
-                      <p>
-                        Clique no botão verde <strong className="text-emerald-400">"Baixar HTML"</strong> logo acima para salvar o arquivo do site no seu computador.
-                      </p>
-                    </div>
-                    <div className="flex gap-2 items-start">
-                      <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">2</span>
-                      <p>
-                        Crie uma nova pasta no seu computador e coloque o arquivo baixado lá dentro. Renomeie o arquivo para <strong className="text-emerald-400">index.html</strong> se necessário.
-                      </p>
-                    </div>
-                    <div className="flex gap-2 items-start">
-                      <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">3</span>
-                      <p>
-                        Acesse o Vercel pelo botão amarelo, e arraste a pasta para dentro do painel para colocar o seu site no ar na mesma hora!
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </details>
-
-          <details className="p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
-            <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
-              <span>Opção 3: Lovable (IA)</span>
-            </summary>
-            <div className="mt-4 space-y-4">
-              <p className="text-[11px] text-white/60 leading-relaxed">
-                Quer customizar fontes ou layout avançado? Envie para o Lovable e peça edições por IA.
-              </p>
-              
-              <div className="space-y-1 mb-4">
-                <div className="text-[10px] text-white/50 bg-black/40 p-2 rounded border border-white/5">
-                  <strong className="text-white">1:</strong> Copie o prompt.
-                </div>
-                <div className="text-[10px] text-white/50 bg-black/40 p-2 rounded border border-white/5">
-                  <strong className="text-white">2:</strong> Cole no chat do Lovable.
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={copyUpdatePrompt}
-                  className="w-full py-2.5 px-3 rounded-lg border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.04] transition-all text-[11px] font-semibold flex items-center justify-center gap-1.5"
-                >
-                  <Copy className="w-3.5 h-3.5" /> 1. Copiar Prompt
-                </button>
-                <a
-                  href={LOVABLE_INVITE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2.5 px-3 rounded-lg bg-white/[0.06] border border-white/15 text-white text-[11px] font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-1.5"
-                >
-                  <Sparkles className="w-3.5 h-3.5" /> 2. Abrir Lovable
-                </a>
-              </div>
-            </div>
-          </details>
-        </div>
-        )}
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
           <button

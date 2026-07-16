@@ -26,6 +26,38 @@ export interface Gargalo {
   text: string;
 }
 
+export type PackageSegment =
+  | "passeio"
+  | "pacote"
+  | "sob-medida"
+  | "grupo"
+  | "cruzeiro"
+  | "aventura"
+  | "religioso"
+  | "corporativo"
+  | "outro";
+
+export type PackageAvailability =
+  | "disponivel"
+  | "ultimas-vagas"
+  | "saida-confirmada"
+  | "sob-consulta"
+  | "lista-de-espera"
+  | "esgotado";
+
+export interface PackageFaq {
+  question: string;
+  answer: string;
+}
+
+export interface PackageOption {
+  id: string;
+  label: string;
+  date?: string;
+  price?: string;
+  availability?: PackageAvailability;
+}
+
 export interface Pacote {
   id: string;
   title: string;
@@ -34,6 +66,30 @@ export interface Pacote {
   imageUrl?: string;
   ctaLabel?: string;
   isDraft?: boolean;
+  slug?: string;
+  segment?: PackageSegment;
+  subtitle?: string;
+  longDescription?: string;
+  travelDates?: string;
+  duration?: string;
+  departureLocation?: string;
+  meetingPoint?: string;
+  accommodation?: string;
+  priceDetails?: string;
+  paymentTerms?: string;
+  availability?: PackageAvailability;
+  highlights?: string[];
+  included?: string[];
+  notIncluded?: string[];
+  itinerary?: string[];
+  requirements?: string[];
+  documents?: string[];
+  accessibility?: string[];
+  cancellationPolicy?: string;
+  importantNotes?: string;
+  galleryImages?: string[];
+  faq?: PackageFaq[];
+  options?: PackageOption[];
 }
 
 export interface Depoimento {
@@ -82,7 +138,8 @@ export interface SiteContent {
   faq: Array<{ q: string; a: string }>;
   heroImageUrl?: string; // Imagem de fundo do banner principal do site
   galleryImages: string[]; // banco de imagens geradas pra reuso
-  vercelUrl?: string; // URL do site publicado no Vercel
+  /** @deprecated Compatibilidade de leitura com snapshots de publicação antigos. */
+  vercelUrl?: string;
   canvaViagemUrl?: string; // URL do site publicado no subdomínio Canva Viagem
   sections: SectionVisibility;
   animationEffect?: "none" | "neve" | "confete" | "junina_bandeiras" | "natal_luzes" | "eco_folhas" | "praia_bolhas" | "junina_baloes" | "junina_fagulhas" | "natal_estrela" | "reveillon_fogos" | "reveillon_poeira" | "carnaval_mascaras" | "pascoa_orelhas" | "pascoa_pegadas" | "praia_ondas" | "praia_sol" | "eco_borboletas" | "cruzeiro_navio" | "cruzeiro_gotas" | "internacional_aviao" | "internacional_bussola" | "luxo_aurora" | "luxo_reflexo";

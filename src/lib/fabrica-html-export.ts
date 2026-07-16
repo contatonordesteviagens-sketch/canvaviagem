@@ -1,4 +1,10 @@
 import type { FabricaState } from "@/hooks/useFabricaContext";
+import {
+  PACKAGE_AVAILABILITY_OPTIONS,
+  PACKAGE_SEGMENT_OPTIONS,
+  createUniquePackageSlug,
+  suggestPackageSegment,
+} from "@/lib/package-details";
 
 const SB_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SB_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
@@ -20,6 +26,20 @@ const scriptJson = (value: unknown) =>
 
 // Imagens premium padrão por destino (fallback quando o usuário não enviou foto)
 const DEFAULT_DEST_IMG = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80";
+
+const sanitizeImageUrl = (value: unknown, fallback = DEFAULT_DEST_IMG) => {
+  const raw = String(value || "").trim();
+  if (!raw) return fallback;
+  if (/^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[a-z0-9+/=\s]+$/i.test(raw)) {
+    return raw.replace(/\s/g, "");
+  }
+  try {
+    const parsed = new URL(raw);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : fallback;
+  } catch {
+    return fallback;
+  }
+};
 
 // Helpers de cor — gera tons mais escuros/claros pra header e gradientes
 function hexToRgb(hex: string) {
@@ -143,6 +163,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const agencyEmail = state.agencyEmail || `contato@${(agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, "")}.com.br`;
   const socialIcons = renderSocialIcons(state);
   const footerSocialIcons = renderSocialIcons(state, "footer-socials");
+  const logoUrl = sanitizeImageUrl(state.logoBase64, "");
   const templateVariantCss = templateId === "horizonte" ? `
 /* TEMPLATE HORIZONTE — editorial, acolhedor e visualmente distinto do modelo padrão */
 body.template-horizonte{
@@ -1040,22 +1061,65 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
   const wppMsg = (titulo: string) =>
     wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}` : "#";
 
+  const usedPackageSlugs = new Set<string>();
   const packageDetailsJson = scriptJson(
-    pacotes.map((p, index) => ({
-      id: String(p.id || index + 1),
-      title: p.title || "Pacote de viagem",
-      description: p.description || "Entre em contato para conhecer todos os detalhes desta experiência.",
-      price: p.price || "Sob consulta",
-      imageUrl: p.imageUrl || DEFAULT_DEST_IMG,
-      city: "",
-      category: p.title?.split(" ")[0] || "Destino",
-      agencyName: agencia,
-      agencyEmail,
-      agencyPhone: wppDisplay,
-      agencyLocation: contactLocation,
-      whatsappUrl: wppMsg(p.title || "Pacote de viagem"),
-      faq: (sc.faq || []).slice(0, 4).map((item) => ({ question: item.q, answer: item.a })),
-    })),
+    pacotes.map((p, index) => {
+      const segment = p.segment || suggestPackageSegment(state.agencyType);
+      const segmentLabel = PACKAGE_SEGMENT_OPTIONS.find((option) => option.value === segment)?.label || "Experiência";
+      const availabilityLabel = PACKAGE_AVAILABILITY_OPTIONS.find((option) => option.value === p.availability)?.label || "";
+      const slug = createUniquePackageSlug(
+        p.slug || p.title || "pacote",
+        usedPackageSlugs,
+        String(p.id || index + 1),
+      );
+      usedPackageSlugs.add(slug);
+
+      const packageFaq = (p.faq || [])
+        .filter((item) => item.question?.trim() && item.answer?.trim())
+        .map((item) => ({ question: item.question.trim(), answer: item.answer.trim() }));
+      const globalFaq = (sc.faq || []).slice(0, 4).map((item) => ({ question: item.q, answer: item.a }));
+      const galleryImages = Array.from(new Set(
+        [p.imageUrl, ...(p.galleryImages || [])]
+          .map((url) => sanitizeImageUrl(url, ""))
+          .filter(Boolean),
+      )).slice(0, 5);
+
+      return {
+        id: String(p.id || index + 1),
+        slug,
+        title: p.title || "Pacote de viagem",
+        subtitle: p.subtitle || "",
+        description: p.longDescription || p.description || "Entre em contato para conhecer todos os detalhes desta experiência.",
+        summary: p.description || "",
+        price: p.price || "Sob consulta",
+        priceDetails: p.priceDetails || "",
+        paymentTerms: p.paymentTerms || "",
+        imageUrl: sanitizeImageUrl(p.imageUrl),
+        galleryImages,
+        category: segmentLabel,
+        availability: availabilityLabel,
+        travelDates: p.travelDates || "",
+        duration: p.duration || "",
+        departureLocation: p.departureLocation || "",
+        meetingPoint: p.meetingPoint || "",
+        accommodation: p.accommodation || "",
+        highlights: p.highlights || [],
+        included: p.included || [],
+        notIncluded: p.notIncluded || [],
+        itinerary: p.itinerary || [],
+        requirements: p.requirements || [],
+        documents: p.documents || [],
+        accessibility: p.accessibility || [],
+        cancellationPolicy: p.cancellationPolicy || "",
+        importantNotes: p.importantNotes || "",
+        agencyName: agencia,
+        agencyEmail,
+        agencyPhone: wppDisplay,
+        agencyLocation: contactLocation,
+        whatsappUrl: wppMsg(p.title || "Pacote de viagem"),
+        faq: packageFaq.length ? packageFaq : globalFaq,
+      };
+    }),
   );
 
   // Stats default ou personalizado
@@ -1073,7 +1137,36 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   };
 
-  const heroImg = sc.heroImageUrl || sc.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80";
+  const heroImg = sanitizeImageUrl(
+    sc.heroImageUrl || sc.galleryImages?.[0],
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80",
+  );
+  const aboutImg = sanitizeImageUrl(
+    sc.aboutImageUrl,
+    "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80",
+  );
+
+  const quoteFormHtml = `<form class="orc-form" onsubmit="handleMainFormSubmit(event)">
+        <div class="form-row">
+          <div class="field"><label>Nome Completo</label><input name="nome" required placeholder="Ex: Maria Silva"></div>
+          <div class="field"><label>WhatsApp</label><input name="wpp" required placeholder="(00) 00000-0000"></div>
+        </div>
+        <div class="form-row single">
+          <div class="field"><label>E-mail</label><input type="email" name="email" required placeholder="seu@email.com"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Destino de Interesse</label><select name="destino"><option value="">Selecione…</option>${pacotes.map((p) => `<option>${esc(p.title)}</option>`).join("")}<option>Outro / sob medida</option></select></div>
+          <div class="field"><label>Nº de Viajantes</label><input type="number" name="viaj" min="1" value="2"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Data de Ida</label><input type="date" name="ida"></div>
+          <div class="field"><label>Data de Volta</label><input type="date" name="volta"></div>
+        </div>
+        <div class="form-row single">
+          <div class="field"><label>Observações (opcional)</label><textarea name="obs" placeholder="Preferências, ocasião especial, orçamento…"></textarea></div>
+        </div>
+        <button type="submit" class="btn form-submit">${esc(sc.formSubmitLabel || "Enviar pelo WhatsApp")}</button>
+      </form>`;
   
   const cleanPixelId = state.metaPixelId ? state.metaPixelId.replace(/\D/g, '') : '';
   const pixelCode = cleanPixelId ? `
@@ -1275,6 +1368,7 @@ section{padding:80px 0}
 .footer-socials{margin-top:18px}
 .footer-socials .social-icon{background:rgba(255,255,255,.08);color:#fff}
 .orc-form{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.04)}
+.package-reservation-only .orc-grid{grid-template-columns:minmax(0,720px);justify-content:center}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .form-row.single{grid-template-columns:1fr}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
@@ -1333,7 +1427,12 @@ footer{background:var(--brand-dark);color:rgba(255,255,255,.68);padding:64px 0 2
 body.package-modal-open{overflow:hidden}
 #package-modal{position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(12,17,14,.78);backdrop-filter:blur(10px)}
 #package-modal.active{display:flex}
-.package-sheet{position:relative;display:grid;grid-template-columns:minmax(300px,.9fr) minmax(360px,1.1fr);grid-template-rows:minmax(0,1fr);width:min(1060px,100%);height:min(720px,calc(100vh - 48px));max-height:calc(100vh - 48px);overflow:hidden;border-radius:28px;background:#fbfcfa;color:var(--ink);box-shadow:0 32px 90px rgba(10,18,13,.36)}
+.package-sheet{position:relative;display:grid;grid-template-columns:minmax(300px,.9fr) minmax(360px,1.1fr);grid-template-rows:minmax(0,1fr);width:min(1120px,100%);height:min(780px,calc(100vh - 48px));max-height:calc(100vh - 48px);overflow:hidden;border-radius:28px;background:#fbfcfa;color:var(--ink);box-shadow:0 32px 90px rgba(10,18,13,.36)}
+.package-not-found{grid-column:1/-1;display:grid;place-content:center;justify-items:center;min-height:100%;padding:clamp(44px,8vw,96px);text-align:center;background:linear-gradient(145deg,#fbfcfa,var(--soft))}
+.package-not-found[hidden]{display:none}
+.package-not-found-mark{display:grid;place-items:center;width:64px;height:64px;margin-bottom:22px;border-radius:20px;background:var(--brand);color:var(--contrast);font-size:28px;font-weight:900}
+.package-not-found h2{max-width:620px;margin:0 0 12px;font-size:clamp(30px,5vw,52px);line-height:1.05}
+.package-not-found p{max-width:560px;margin:0 0 26px;color:var(--muted);font-size:16px;line-height:1.65}
 .package-media{position:relative;min-height:0;height:100%;background:var(--soft);overflow:hidden}
 .package-media::after{content:"";position:absolute;inset:50% 0 0;background:linear-gradient(180deg,transparent,rgba(10,16,12,.64))}
 .package-media img{width:100%;height:100%;object-fit:cover}
@@ -1342,18 +1441,37 @@ body.package-modal-open{overflow:hidden}
 .package-agency-on-image strong{display:block;font-size:17px;margin-bottom:4px}
 .package-agency-on-image span{font-size:13px;color:rgba(248,250,247,.78)}
 .package-content{min-height:0;overflow-y:auto;padding:clamp(34px,5vw,58px)}
-.package-close{position:absolute;z-index:4;top:18px;right:18px;width:42px;height:42px;border:1px solid rgba(23,27,24,.12);border-radius:50%;background:#f7f9f6;color:#202620;font-size:25px;line-height:1;cursor:pointer;box-shadow:0 8px 22px rgba(12,17,14,.12)}
+.package-close{position:absolute;z-index:4;top:18px;right:18px;width:44px;height:44px;border:1px solid rgba(23,27,24,.12);border-radius:50%;background:#f7f9f6;color:#202620;font-size:25px;line-height:1;cursor:pointer;box-shadow:0 8px 22px rgba(12,17,14,.12)}
 .package-close:hover,.package-close:focus-visible{background:var(--brand);color:var(--contrast);outline:3px solid color-mix(in srgb,var(--brand) 26%,transparent)}
 .package-location{color:var(--brand);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px}
 .package-location:empty{display:none}
 .package-content h2{font-size:clamp(30px,4vw,48px);line-height:1.05;margin:0 48px 18px 0}
+.package-subtitle{font-size:17px;font-weight:700;line-height:1.5;margin:-7px 0 14px;color:var(--ink)}
+.package-subtitle:empty{display:none}
 .package-description{color:var(--muted);font-size:16px;line-height:1.75;margin-bottom:24px}
+.package-gallery{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:-8px 0 24px}
+.package-gallery button{min-width:44px;min-height:44px;aspect-ratio:1;border:2px solid transparent;border-radius:10px;overflow:hidden;padding:0;background:var(--soft);cursor:pointer}
+.package-gallery button.active{border-color:var(--brand)}
+.package-gallery img{width:100%;height:100%;object-fit:cover}
+.package-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:20px 0 24px}
+.package-fact{min-width:0;border:1px solid rgba(23,27,24,.1);border-radius:13px;background:var(--soft);padding:13px 14px}
+.package-fact span{display:block;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+.package-fact strong{display:block;font-family:'Inter',sans-serif;font-size:14px;line-height:1.45;overflow-wrap:anywhere}
 .package-price-row{display:flex;align-items:baseline;justify-content:space-between;gap:20px;padding:20px 0;border-top:1px solid rgba(23,27,24,.12);border-bottom:1px solid rgba(23,27,24,.12)}
 .package-price-row span{color:var(--muted);font-size:13px}
 .package-price-row strong{font-size:22px;color:var(--ink);text-align:right}
 .package-contact{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:24px 0;border-bottom:1px solid rgba(23,27,24,.12)}
-.package-contact h3,.package-faq h3{font-family:'Inter',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.package-contact h3,.package-faq h3,.package-detail-section h3{font-family:'Inter',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
 .package-contact p{color:var(--muted);font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+.package-detail-section{padding:22px 0;border-bottom:1px solid rgba(23,27,24,.1)}
+.package-detail-section p{color:var(--muted);font-size:14px;line-height:1.7;white-space:pre-line}
+.package-detail-list{display:grid;gap:9px;list-style:none;margin:0;padding:0}
+.package-detail-list li{position:relative;padding-left:22px;color:var(--muted);font-size:14px;line-height:1.55}
+.package-detail-list li::before{content:"✓";position:absolute;left:0;top:0;color:var(--brand);font-weight:900}
+.package-detail-section[data-list-style="minus"] .package-detail-list li::before{content:"–";color:#a33}
+.package-detail-section[data-list-style="number"]{counter-reset:package-step}
+.package-detail-section[data-list-style="number"] .package-detail-list li{counter-increment:package-step;padding-left:32px}
+.package-detail-section[data-list-style="number"] .package-detail-list li::before{content:counter(package-step);display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--brand);color:var(--contrast);font-size:11px;line-height:1}
 .package-faq{padding:24px 0 8px}
 .package-faq details{border-bottom:1px solid rgba(23,27,24,.1);padding:12px 0}
 .package-faq summary{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;font-size:14px;font-weight:700;list-style:none}
@@ -1366,10 +1484,12 @@ body.package-modal-open{overflow:hidden}
 @media (max-width:800px){
   #package-modal{padding:0;align-items:stretch}
   .package-sheet{display:block;width:100%;height:100dvh;max-height:100dvh;border-radius:0;overflow-y:auto}
-  .package-media{min-height:42vh;height:42vh}
-  .package-content{overflow:visible;padding:32px 22px 40px}
-  .package-close{position:fixed;top:14px;right:14px}
+  .package-media{min-height:34vh;height:34vh}
+  .package-content{overflow:visible;padding:30px 18px calc(36px + env(safe-area-inset-bottom))}
+  .package-close{position:fixed;top:max(12px,env(safe-area-inset-top));right:14px}
   .package-contact{grid-template-columns:1fr}
+  .package-facts{grid-template-columns:1fr}
+  .package-gallery{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 
 /* MAPA */
@@ -1401,8 +1521,8 @@ ${seasonalStyles}
 <header class="site-header" ${sectionBackgroundAttr("header")}>
   <div class="container nav-wrap">
     <a href="#" class="brand">
-      ${state.logoBase64
-        ? `<img src="${state.logoBase64}" alt="${esc(agencia)}" class="brand-logo" data-ai-ignore="true" data-preserve-image="true"><span class="brand-name">${esc(agencia)}</span>`
+      ${logoUrl
+        ? `<img src="${esc(logoUrl)}" alt="${esc(agencia)}" class="brand-logo" data-ai-ignore="true" data-preserve-image="true"><span class="brand-name">${esc(agencia)}</span>`
         : `<span class="brand-dot">${esc(agencia.charAt(0).toUpperCase())}</span><span class="brand-name">${esc(agencia)}</span>`}
     </a>
     <button class="nav-toggle" aria-label="Abrir menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
@@ -1473,7 +1593,7 @@ ${sectionOrder
         .map(
           (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<a href="#pacote-${esc(String(p.id || i + 1))}" onclick="openPackageDetails(${i}, this);return false;" class="dest-card" data-package-index="${i}" data-visual-removable="dest-card-${i}" aria-haspopup="dialog" aria-label="Ver detalhes de ${esc(p.title)}">
         <div class="dest-img-wrap">
-          <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
+          <img src="${esc(sanitizeImageUrl(p.imageUrl))}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
           <div class="dest-overlay" data-site-edit-key="packageOverlayLabel">${esc(sc.packageOverlayLabel || "Ver pacote →")}</div>
         </div>
@@ -1508,7 +1628,7 @@ ${sectionOrder
         </div>
         ${!sc.hiddenElements?.includes('equipe-cta') ? `<a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/${wpp}');return false;" class="btn" data-visual-removable="equipe-cta">${esc(sc.equipeCtaLabel || "Falar com um especialista")}</a>` : ''}
       </div>
-      <div class="equipe-img" style="background-image: url('${esc(sc.aboutImageUrl || "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80")}')"></div>
+      <div class="equipe-img" style="background-image: url('${esc(aboutImg)}')"></div>
     </div>
   </div>
 </section>`;
@@ -1558,27 +1678,7 @@ ${sectionOrder
         </div>
         ${socialIcons}
       </div>
-      <form class="orc-form" onsubmit="handleMainFormSubmit(event)">
-        <div class="form-row">
-          <div class="field"><label>Nome Completo</label><input name="nome" required placeholder="Ex: Maria Silva"></div>
-          <div class="field"><label>WhatsApp</label><input name="wpp" required placeholder="(00) 00000-0000"></div>
-        </div>
-        <div class="form-row single">
-          <div class="field"><label>E-mail</label><input type="email" name="email" required placeholder="seu@email.com"></div>
-        </div>
-        <div class="form-row">
-          <div class="field"><label>Destino de Interesse</label><select name="destino"><option value="">Selecione…</option>${pacotes.map((p) => `<option>${esc(p.title)}</option>`).join("")}<option>Outro / sob medida</option></select></div>
-          <div class="field"><label>Nº de Viajantes</label><input type="number" name="viaj" min="1" value="2"></div>
-        </div>
-        <div class="form-row">
-          <div class="field"><label>Data de Ida</label><input type="date" name="ida"></div>
-          <div class="field"><label>Data de Volta</label><input type="date" name="volta"></div>
-        </div>
-        <div class="form-row single">
-          <div class="field"><label>Observações (opcional)</label><textarea name="obs" placeholder="Preferências, ocasião especial, orçamento…"></textarea></div>
-        </div>
-        <button type="submit" class="btn form-submit">${esc(sc.formSubmitLabel || "Enviar pelo WhatsApp")}</button>
-      </form>
+      ${quoteFormHtml}
     </div>
   </div>
 </section>`;
@@ -1615,6 +1715,16 @@ ${sectionOrder
     }
     return "";
   }).join("\n")}
+
+${(sc.sections?.orcamento === false || !sectionOrder.includes("orcamento")) ? `
+<!-- FORMULÁRIO PRINCIPAL SOB DEMANDA: mantém o CRM disponível ao reservar um pacote -->
+<section id="orcamento" class="package-reservation-only" data-package-reservation-only hidden ${sectionBackgroundAttr("orcamento")}>
+  <div class="container">
+    <div class="section-eyebrow eyebrow">Reserva</div>
+    <h2 class="section-title">Conte seus planos para a agência</h2>
+    <div class="orc-grid">${quoteFormHtml}</div>
+  </div>
+</section>` : ""}
 
 ${state.address ? `
 <!-- MAPA -->
@@ -1680,16 +1790,56 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
 <div id="package-modal" aria-hidden="true" onclick="if(event.target===this)closePackageDetails()">
   <div class="package-sheet" role="dialog" aria-modal="true" aria-labelledby="package-title">
     <button type="button" class="package-close" aria-label="Fechar detalhes do pacote" onclick="closePackageDetails()">&times;</button>
-    <div class="package-media">
+    <div class="package-not-found" id="package-not-found" hidden>
+      <div class="package-not-found-mark" aria-hidden="true">!</div>
+      <h2>Pacote nÃ£o encontrado</h2>
+      <p>Este link pode ter mudado ou o pacote nÃ£o estÃ¡ mais disponÃ­vel. Veja as experiÃªncias atuais desta agÃªncia.</p>
+      <button type="button" class="btn" onclick="closePackageDetails()">Ver pacotes disponÃ­veis</button>
+    </div>
+    <div class="package-media" id="package-details-media">
       <img id="package-image" src="${DEFAULT_DEST_IMG}" alt="" data-ai-ignore="true" data-preserve-image="true">
       <span class="package-category" id="package-category">Destino</span>
       <div class="package-agency-on-image"><strong id="package-agency-image">${esc(agencia)}</strong><span id="package-location-image">${esc(contactLocation)}</span></div>
     </div>
-    <div class="package-content">
-      <div class="package-location" id="package-location">${esc(cidade)}</div>
+    <div class="package-content" id="package-details-content">
+      <div class="package-location" id="package-location"></div>
       <h2 id="package-title">Detalhes do pacote</h2>
+      <p class="package-subtitle" id="package-subtitle"></p>
       <p class="package-description" id="package-description"></p>
+      <div class="package-gallery" id="package-gallery" hidden></div>
+      <div class="package-facts" id="package-facts" hidden></div>
       <div class="package-price-row"><span>Investimento</span><strong id="package-price">Sob consulta</strong></div>
+      <div class="package-detail-section" id="package-commercial-section" hidden>
+        <h3>Condições da oferta</h3>
+        <p id="package-commercial"></p>
+      </div>
+      <div class="package-detail-section" id="package-highlights-section" hidden>
+        <h3>Destaques</h3><ul class="package-detail-list" id="package-highlights"></ul>
+      </div>
+      <div class="package-detail-section" id="package-included-section" hidden>
+        <h3>O que inclui</h3><ul class="package-detail-list" id="package-included"></ul>
+      </div>
+      <div class="package-detail-section" id="package-not-included-section" data-list-style="minus" hidden>
+        <h3>O que não inclui</h3><ul class="package-detail-list" id="package-not-included"></ul>
+      </div>
+      <div class="package-detail-section" id="package-itinerary-section" data-list-style="number" hidden>
+        <h3>Roteiro</h3><ol class="package-detail-list" id="package-itinerary"></ol>
+      </div>
+      <div class="package-detail-section" id="package-requirements-section" hidden>
+        <h3>Requisitos e o que levar</h3><ul class="package-detail-list" id="package-requirements"></ul>
+      </div>
+      <div class="package-detail-section" id="package-documents-section" hidden>
+        <h3>Documentos necessários</h3><ul class="package-detail-list" id="package-documents"></ul>
+      </div>
+      <div class="package-detail-section" id="package-accessibility-section" hidden>
+        <h3>Acessibilidade</h3><ul class="package-detail-list" id="package-accessibility"></ul>
+      </div>
+      <div class="package-detail-section" id="package-important-section" hidden>
+        <h3>Importante saber</h3><p id="package-important"></p>
+      </div>
+      <div class="package-detail-section" id="package-cancellation-section" hidden>
+        <h3>Cancelamento e alterações</h3><p id="package-cancellation"></p>
+      </div>
       <div class="package-contact">
         <div><h3>Atendimento da agência</h3><p><strong id="package-agency">${esc(agencia)}</strong><br><span id="package-agency-location">${esc(contactLocation)}</span></p></div>
         <div><h3>Fale com a gente</h3><p><span id="package-phone">${esc(wppDisplay)}</span><br><span id="package-email">${esc(agencyEmail)}</span></p></div>
@@ -1743,6 +1893,98 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     if (element) element.textContent = value || "";
   }
 
+  function renderPackageTextSection(sectionId, textId, value) {
+    const section = document.getElementById(sectionId);
+    const text = document.getElementById(textId);
+    if (!section || !text) return;
+    const content = String(value || "").trim();
+    section.hidden = !content;
+    text.textContent = content;
+  }
+
+  function renderPackageList(sectionId, listId, items) {
+    const section = document.getElementById(sectionId);
+    const list = document.getElementById(listId);
+    if (!section || !list) return;
+    const values = Array.isArray(items) ? items.map((item) => String(item || "").trim()).filter(Boolean) : [];
+    list.replaceChildren();
+    section.hidden = values.length === 0;
+    values.forEach((value) => {
+      const item = document.createElement("li");
+      item.textContent = value;
+      list.appendChild(item);
+    });
+  }
+
+  function renderPackageFacts(selected) {
+    const container = document.getElementById("package-facts");
+    if (!container) return;
+    const facts = [
+      ["Datas", selected.travelDates],
+      ["Duração", selected.duration],
+      ["Embarque / origem", selected.departureLocation],
+      ["Encontro / retirada", selected.meetingPoint],
+      ["Hospedagem / cabine", selected.accommodation],
+      ["Disponibilidade", selected.availability],
+    ].filter((entry) => String(entry[1] || "").trim());
+    container.replaceChildren();
+    container.hidden = facts.length === 0;
+    facts.forEach(([label, value]) => {
+      const fact = document.createElement("div");
+      const factLabel = document.createElement("span");
+      const factValue = document.createElement("strong");
+      fact.className = "package-fact";
+      factLabel.textContent = label;
+      factValue.textContent = value;
+      fact.append(factLabel, factValue);
+      container.appendChild(fact);
+    });
+  }
+
+  function renderPackageGallery(selected) {
+    const gallery = document.getElementById("package-gallery");
+    const mainImage = document.getElementById("package-image");
+    if (!gallery || !mainImage) return;
+    const images = Array.isArray(selected.galleryImages)
+      ? Array.from(new Set(selected.galleryImages.map((url) => String(url || "").trim()).filter(Boolean))).slice(0, 5)
+      : [];
+    gallery.replaceChildren();
+    gallery.hidden = images.length < 2;
+    images.forEach((url, index) => {
+      const button = document.createElement("button");
+      const image = document.createElement("img");
+      button.type = "button";
+      button.className = index === 0 ? "active" : "";
+      button.setAttribute("aria-label", "Ver imagem " + (index + 1) + " de " + selected.title);
+      image.src = url;
+      image.alt = "";
+      button.appendChild(image);
+      button.addEventListener("click", () => {
+        mainImage.src = url;
+        mainImage.alt = selected.title;
+        gallery.querySelectorAll("button").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+      });
+      gallery.appendChild(button);
+    });
+  }
+
+  function notifyPackageLocation(type, slug) {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type, slug: slug || "" }, "*");
+      return;
+    }
+    if (window.location.protocol === "file:") return;
+    const nextUrl = new URL(window.location.href);
+    if (type === "CV_PACKAGE_OPEN" && slug) {
+      nextUrl.pathname = "/pacote/" + encodeURIComponent(slug);
+      nextUrl.searchParams.delete("pacote");
+    } else if (type === "CV_PACKAGE_CLOSE" && /^\\/pacotes?\\//.test(nextUrl.pathname)) {
+      nextUrl.pathname = "/";
+    }
+    window.history.pushState({}, "", nextUrl.pathname + nextUrl.search + nextUrl.hash);
+  }
+
   function renderPackageFaq(items) {
     const section = document.getElementById("package-faq-section");
     const list = document.getElementById("package-faq-list");
@@ -1767,6 +2009,12 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     const selected = PACKAGE_DETAILS[index];
     const modal = document.getElementById("package-modal");
     if (!selected || !modal) return;
+    const notFound = document.getElementById("package-not-found");
+    const media = document.getElementById("package-details-media");
+    const content = document.getElementById("package-details-content");
+    if (notFound) notFound.hidden = true;
+    if (media) media.hidden = false;
+    if (content) content.hidden = false;
     currentPackage = selected;
     lastPackageTrigger = trigger || document.activeElement;
     const image = document.getElementById("package-image");
@@ -1775,32 +2023,90 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     setPackageText("package-category", selected.category);
     setPackageText("package-agency-image", selected.agencyName);
     setPackageText("package-location-image", selected.agencyLocation);
-    setPackageText("package-location", selected.city);
+    setPackageText("package-location", selected.availability || selected.travelDates);
     setPackageText("package-title", selected.title);
+    setPackageText("package-subtitle", selected.subtitle);
     setPackageText("package-description", selected.description);
     setPackageText("package-price", selected.price);
     setPackageText("package-agency", selected.agencyName);
     setPackageText("package-agency-location", selected.agencyLocation);
     setPackageText("package-phone", selected.agencyPhone);
     setPackageText("package-email", selected.agencyEmail);
+    renderPackageGallery(selected);
+    renderPackageFacts(selected);
+    renderPackageTextSection(
+      "package-commercial-section",
+      "package-commercial",
+      [selected.priceDetails, selected.paymentTerms].filter(Boolean).join("\\n"),
+    );
+    renderPackageList("package-highlights-section", "package-highlights", selected.highlights);
+    renderPackageList("package-included-section", "package-included", selected.included);
+    renderPackageList("package-not-included-section", "package-not-included", selected.notIncluded);
+    renderPackageList("package-itinerary-section", "package-itinerary", selected.itinerary);
+    renderPackageList("package-requirements-section", "package-requirements", selected.requirements);
+    renderPackageList("package-documents-section", "package-documents", selected.documents);
+    renderPackageList("package-accessibility-section", "package-accessibility", selected.accessibility);
+    renderPackageTextSection("package-important-section", "package-important", selected.importantNotes);
+    renderPackageTextSection("package-cancellation-section", "package-cancellation", selected.cancellationPolicy);
     renderPackageFaq(selected.faq);
     modal.classList.add("active");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("package-modal-open");
     modal.querySelector(".package-close").focus();
+    notifyPackageLocation("CV_PACKAGE_OPEN", selected.slug);
     track("package_view", { target: selected.title, package_id: selected.id });
   }
 
-  function closePackageDetails(restoreFocus = true) {
+  function showPackageNotFound(slug) {
+    const modal = document.getElementById("package-modal");
+    const notFound = document.getElementById("package-not-found");
+    const media = document.getElementById("package-details-media");
+    const content = document.getElementById("package-details-content");
+    if (!modal || !notFound) return;
+    currentPackage = null;
+    lastPackageTrigger = document.activeElement;
+    notFound.hidden = false;
+    if (media) media.hidden = true;
+    if (content) content.hidden = true;
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("package-modal-open");
+    modal.querySelector(".package-close").focus();
+    track("package_not_found", { package_slug: String(slug || "") });
+  }
+
+  function closePackageDetails(restoreFocus = true, syncLocation = true) {
     const modal = document.getElementById("package-modal");
     if (!modal) return;
     modal.classList.remove("active");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("package-modal-open");
+    if (syncLocation) notifyPackageLocation("CV_PACKAGE_CLOSE", currentPackage && currentPackage.slug);
     if (restoreFocus && lastPackageTrigger && typeof lastPackageTrigger.focus === "function") {
       lastPackageTrigger.focus();
     }
   }
+
+  function openPackageBySlug(slug) {
+    const normalized = String(slug || "").trim().toLowerCase();
+    if (!normalized) return false;
+    const index = PACKAGE_DETAILS.findIndex((item) => item.slug === normalized);
+    if (index < 0) {
+      showPackageNotFound(normalized);
+      return false;
+    }
+    const trigger = document.querySelector('[data-package-index="' + index + '"]');
+    openPackageDetails(index, trigger);
+    return true;
+  }
+
+  window.addEventListener("message", (event) => {
+    if (window.parent === window || event.source !== window.parent) return;
+    const message = event.data;
+    if (!message) return;
+    if (message.type === "CV_OPEN_PACKAGE") openPackageBySlug(message.slug);
+    if (message.type === "CV_CLOSE_PACKAGE") closePackageDetails(false, false);
+  });
 
   function reserveCurrentPackage() {
     if (!currentPackage) return;
@@ -1809,12 +2115,10 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     const quoteSection = document.getElementById("orcamento");
     const destinationSelect = quoteSection && quoteSection.querySelector('select[name="destino"]');
     if (!quoteSection || !destinationSelect) {
-      openLeadForm(selected.title, selected.whatsappUrl);
-      const leadModal = document.getElementById("lead-modal");
-      const leadName = document.getElementById("lead-name");
-      if (leadModal && leadModal.classList.contains("active") && leadName) leadName.focus();
+      track("package_cta_unavailable", { target: selected.title, package_id: selected.id });
       return;
     }
+    if (quoteSection.hidden) quoteSection.hidden = false;
     destinationSelect.value = selected.title;
     destinationSelect.dispatchEvent(new Event("change", { bubbles: true }));
     destinationSelect.focus({ preventScroll: true });
@@ -1854,13 +2158,36 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
       track("time_on_site", { duration, path: window.location.pathname });
     }
   });
+  function getPackageSlugFromLocation() {
+    if (window.parent !== window || window.location.protocol === "file:") return "";
+    const pathMatch = window.location.pathname.match(/^\\/pacotes?\\/([^/]+)/i);
+    if (pathMatch) {
+      try {
+        return decodeURIComponent(pathMatch[1]).toLowerCase();
+      } catch {
+        return "";
+      }
+    }
+    return (new URLSearchParams(window.location.search).get("pacote") || "").toLowerCase();
+  }
+  function syncPackageFromStandaloneLocation() {
+    const slug = getPackageSlugFromLocation();
+    const modal = document.getElementById("package-modal");
+    if (slug) {
+      openPackageBySlug(slug);
+    } else if (modal && modal.classList.contains("active")) {
+      closePackageDetails(false, false);
+    }
+  }
   window.onload = () => {
     const trackerKey = "cv_visit_" + CONFIG.agencyId;
     if (!sessionStorage.getItem(trackerKey)) {
       track("page_view", { path: window.location.pathname });
       sessionStorage.setItem(trackerKey, "true"); // Marca como já visitou!
     }
+    window.setTimeout(syncPackageFromStandaloneLocation, 0);
   };
+  window.addEventListener("popstate", syncPackageFromStandaloneLocation);
 
   function openLeadForm(targetName, finalUrl) {
     currentTarget = targetName;
@@ -2039,7 +2366,7 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
     .map((p) => 
 `<a href="${wppMsg(p.title)}" target="_blank" rel="noopener" class="dest-card">
   <div class="dest-img-wrap">
-    <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
+    <img src="${esc(sanitizeImageUrl(p.imageUrl))}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
     <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
     <div class="dest-overlay">Ver pacote →</div>
   </div>
