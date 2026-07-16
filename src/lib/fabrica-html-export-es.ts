@@ -13,6 +13,20 @@ const esc = (s: string) =>
 // Imagens premium padrão por destino (fallback quando o usuário não enviou foto)
 const DEFAULT_DEST_IMG = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80";
 
+const sanitizeImageUrl = (value: unknown, fallback = DEFAULT_DEST_IMG) => {
+  const raw = String(value || "").trim();
+  if (!raw) return fallback;
+  if (/^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[a-z0-9+/=\s]+$/i.test(raw)) {
+    return raw.replace(/\s/g, "");
+  }
+  try {
+    const parsed = new URL(raw);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
 // Helpers de cor — gera tons mais escuros/claros pra header e gradientes
 function hexToRgb(hex: string) {
   const h = hex.replace("#", "");
@@ -62,6 +76,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const cidade = state.city || "Brasil";
   const socialIcons = renderSocialIcons(state);
   const footerSocialIcons = renderSocialIcons(state, "footer-socials");
+  const logoUrl = sanitizeImageUrl(state.logoBase64, "");
 
   // ----- SISTEMA DE ANIMAÇÕES SAZONAIS E TEMÁTICAS -----
   let seasonalStyles = "";
@@ -774,7 +789,14 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   };
 
-  const heroImg = sc.heroImageUrl || sc.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80";
+  const heroImg = sanitizeImageUrl(
+    sc.heroImageUrl || sc.galleryImages?.[0],
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80",
+  );
+  const aboutImg = sanitizeImageUrl(
+    sc.aboutImageUrl,
+    "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80",
+  );
   
   const cleanPixelId = state.metaPixelId ? state.metaPixelId.replace(/\D/g, '') : '';
   const pixelCode = cleanPixelId ? `
@@ -1041,8 +1063,8 @@ ${seasonalStyles}
 <header class="site-header">
   <div class="container nav-wrap">
     <a href="#" class="brand">
-      ${state.logoBase64
-        ? `<img src="${state.logoBase64}" alt="${esc(agencia)}" class="brand-logo" data-ai-ignore="true" data-preserve-image="true">`
+      ${logoUrl
+        ? `<img src="${esc(logoUrl)}" alt="${esc(agencia)}" class="brand-logo" data-ai-ignore="true" data-preserve-image="true">`
         : `<span class="brand-dot">${esc(agencia.charAt(0).toUpperCase())}</span><span class="brand-name">${esc(agencia)}</span>`}
     </a>
     <button class="nav-toggle" aria-label="Abrir menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
@@ -1113,7 +1135,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         .map(
           (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<a href="#" onclick="openLeadForm('${esc(p.title)}', '${wppMsg(p.title)}');return false;" class="dest-card" data-visual-removable="dest-card-${i}">
         <div class="dest-img-wrap">
-          <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
+          <img src="${esc(sanitizeImageUrl(p.imageUrl))}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
           <div class="dest-overlay">Ver paquete →</div>
         </div>
@@ -1150,7 +1172,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         </div>
         ${!sc.hiddenElements?.includes('equipe-cta') ? `<a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/${wpp}');return false;" class="btn" data-visual-removable="equipe-cta">Hablar con un experto</a>` : ''}
       </div>
-      <div class="equipe-img" style="background-image: url('${esc(sc.aboutImageUrl || "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80")}')"></div>
+      <div class="equipe-img" style="background-image: url('${esc(aboutImg)}')"></div>
     </div>
   </div>
 </section>`;
@@ -1489,7 +1511,7 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
     .map((p) => 
 `<a href="${wppMsg(p.title)}" target="_blank" rel="noopener" class="dest-card">
   <div class="dest-img-wrap">
-    <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
+    <img src="${esc(sanitizeImageUrl(p.imageUrl))}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
     <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
     <div class="dest-overlay">Ver paquete →</div>
   </div>

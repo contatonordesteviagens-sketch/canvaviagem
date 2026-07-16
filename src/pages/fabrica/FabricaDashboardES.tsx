@@ -109,7 +109,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
   };
 
   const domainSlug = state.agencyName ? slugify(state.agencyName) : "su-agencia";
-  const mockUrl = `https://${domainSlug}.vercel.app`;
+  const mockUrl = state.siteContent?.canvaViagemUrl || `https://${domainSlug}.canvaviagem.com`;
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

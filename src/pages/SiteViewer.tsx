@@ -1,6 +1,17 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+
+const readPackageSlugFromLocation = () => {
+  const pathMatch = window.location.pathname.match(/^\/pacotes?\/([^/]+)/i);
+  const rawSlug = pathMatch?.[1] || new URLSearchParams(window.location.search).get("pacote") || "";
+  try {
+    const slug = decodeURIComponent(rawSlug).trim().toLowerCase();
+    return /^[a-z0-9-]{1,120}$/.test(slug) ? slug : "";
+  } catch {
+    return "";
+  }
+};
 
 export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
   const { id: paramId } = useParams();
@@ -8,6 +19,17 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const syncPackageToFrame = useCallback(() => {
+    const frameWindow = iframeRef.current?.contentWindow;
+    if (!frameWindow) return;
+    const slug = readPackageSlugFromLocation();
+    frameWindow.postMessage(
+      slug ? { type: "CV_OPEN_PACKAGE", slug } : { type: "CV_CLOSE_PACKAGE" },
+      "*",
+    );
+  }, []);
 
   useEffect(() => {
     let isSubscribed = true;
@@ -56,6 +78,42 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
     return () => { isSubscribed = false; };
   }, [id]);
 
+  useEffect(() => {
+    const handleFrameMessage = (event: MessageEvent) => {
+      if (event.source !== iframeRef.current?.contentWindow) return;
+      const message = event.data;
+      if (!message || (message.type !== "CV_PACKAGE_OPEN" && message.type !== "CV_PACKAGE_CLOSE")) return;
+
+      const nextUrl = new URL(window.location.href);
+      if (message.type === "CV_PACKAGE_OPEN") {
+        const slug = String(message.slug || "").trim().toLowerCase();
+        if (!/^[a-z0-9-]{1,120}$/.test(slug)) return;
+        if (forcedId) {
+          nextUrl.pathname = `/pacote/${encodeURIComponent(slug)}`;
+          nextUrl.searchParams.delete("pacote");
+        } else {
+          nextUrl.searchParams.set("pacote", slug);
+        }
+      } else if (forcedId) {
+        if (/^\/pacotes?\//i.test(nextUrl.pathname)) nextUrl.pathname = "/";
+        nextUrl.searchParams.delete("pacote");
+      } else {
+        nextUrl.searchParams.delete("pacote");
+      }
+
+      const nextLocation = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+      const currentLocation = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (nextLocation !== currentLocation) window.history.pushState({}, "", nextLocation);
+    };
+
+    window.addEventListener("message", handleFrameMessage);
+    window.addEventListener("popstate", syncPackageToFrame);
+    return () => {
+      window.removeEventListener("message", handleFrameMessage);
+      window.removeEventListener("popstate", syncPackageToFrame);
+    };
+  }, [forcedId, syncPackageToFrame]);
+
   if (error) {
     return (
       <div className="fixed inset-0 bg-zinc-950 flex items-center justify-center p-6 text-center font-sans">
@@ -65,7 +123,7 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
           </div>
           <h2 className="text-white font-black text-lg mb-2">Aguardando Ativação</h2>
           <p className="text-zinc-500 text-[11px] mb-6 leading-relaxed">Seu site está sendo preparado. Se já ativou, aguarde alguns segundos e atualize esta página.</p>
-          <a href="/fabrica" className="inline-block px-6 py-2 bg-white text-black font-extrabold text-xs rounded-lg hover:bg-zinc-200 transition-all">
+          <a href="https://canvaviagem.com/fabrica" className="inline-block px-6 py-2 bg-white text-black font-extrabold text-xs rounded-lg hover:bg-zinc-200 transition-all">
             Ir ao Painel
           </a>
         </div>
@@ -82,11 +140,13 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
          </div>
        ) : (
          <iframe 
+           ref={iframeRef}
            srcDoc={htmlContent} 
            title="Ambiente da Agência"
            className="w-full h-full border-0 m-0 p-0"
            style={{ width: '100vw', height: '100vh', border: 'none', display: 'block' }}
            sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+           onLoad={syncPackageToFrame}
          />
        )}
     </div>

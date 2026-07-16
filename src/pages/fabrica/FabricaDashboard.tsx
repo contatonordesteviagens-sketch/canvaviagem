@@ -181,7 +181,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   };
 
   const domainSlug = state.agencyName ? slugify(state.agencyName) : "sua-agencia";
-  const displayUrl = state.siteContent?.vercelUrl || `https://${domainSlug}.canvaviagem.com`;
+  const displayUrl = state.siteContent?.canvaViagemUrl || `https://${domainSlug}.canvaviagem.com`;
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -768,7 +768,6 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                               siteContent: {
                                 ...(state.siteContent || {}),
                                 canvaViagemUrl: `https://${site.id}.canvaviagem.com`,
-                                vercelUrl: `https://${site.id}.canvaviagem.com`,
                               }
                             };
 
@@ -829,7 +828,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               </div>
             )}
 
-            {(state.allGeneratedAdImages?.length || 0) === 0 && !state.siteContent?.vercelUrl && (
+            {(state.allGeneratedAdImages?.length || 0) === 0 && !state.siteContent?.canvaViagemUrl && !state.siteContent?.vercelUrl && (
               <p className="text-[11px] text-white/40 italic text-center py-2">
                 Seu histórico aparecerá aqui assim que você gerar suas primeiras imagens ou publicar seu primeiro site.
               </p>
@@ -1081,7 +1080,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               {/* Banner indicator */}
               {state.selectedPackages.length > 0 && (
                 <div className="text-center py-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-[9px] uppercase font-black tracking-widest text-white/30">
-                  ⚡ {state.selectedPackages.length} pacote{state.selectedPackages.length !== 1 ? "s" : ""} sincronizado{state.selectedPackages.length !== 1 ? "s" : ""} com seu site Vercel
+                  ⚡ {state.selectedPackages.length} pacote{state.selectedPackages.length !== 1 ? "s" : ""} sincronizado{state.selectedPackages.length !== 1 ? "s" : ""} com seu site Canva Viagem
                 </div>
               )}
             </div>

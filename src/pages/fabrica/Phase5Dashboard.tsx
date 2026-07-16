@@ -876,11 +876,11 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
                 <div className="space-y-3 text-sm text-white/70 leading-relaxed">
                    <p>
                      <strong className="text-white">1. É Automático?</strong><br/>
-                     Sim! O sistema apenas *reserva* o nome. Para ele funcionar na internet, você (o dono da plataforma) precisa apontar o seu domínio principal para o servidor (Vercel/Netlify) usando uma regra de DNS chamada "Wildcard" (*).
+                     Sim. O Cloudflare atende os subdomínios do Canva Viagem por uma regra DNS/rota "Wildcard" (*). A aplicação identifica a agência pelo endereço e carrega o site publicado, sem criar um domínio ou uma conta de hospedagem para cada agência.
                    </p>
                    <p>
                      <strong className="text-white">2. Tem custo ou limite de Tokens?</strong><br/>
-                     <span className="text-emerald-400 font-bold">ZERO CUSTO.</span> Não usa tokens de IA! O site gerado é estático (HTML/CSS), o que significa que 1.000 ou 10.000 pessoas acessando não custam absolutamente nada nos servidores gratuitos.
+                     <span className="text-emerald-400 font-bold">NÃO USA TOKENS DE IA POR VISITA.</span> O site publicado utiliza a infraestrutura compartilhada do Canva Viagem e segue os limites contratados no Cloudflare e no Supabase. Criar caminhos ou pacotes não cria novos domínios.
                    </p>
                    <p>
                      <strong className="text-white">3. Onde ficam os dados?</strong><br/>
