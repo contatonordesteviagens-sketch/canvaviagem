@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML } from "@/lib/fabrica-html-export";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
 import { BrandPaletteEditor, SectionBackgroundEditor } from "@/components/fabrica/BrandPaletteEditor";
+import { SiteTemplateSelector } from "@/components/fabrica/SiteTemplateSelector";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
+import { getSiteTemplateDefinition } from "@/lib/site-template-catalog";
 import {
   Plus,
   Trash2,
@@ -53,10 +55,6 @@ const UI_ACCENT = "#F5F906";
 const UI_ACCENT_SOFT = "rgba(245, 249, 6, 0.12)";
 const UI_ACCENT_BORDER = "rgba(245, 249, 6, 0.75)";
 const UI_ACCENT_SHADOW = "rgba(245, 249, 6, 0.24)";
-const TEMPLATE_OPTIONS = [
-  { id: "standard", label: "Padrão", description: "O modelo atual, já estável e conhecido." },
-  { id: "horizonte", label: "Horizonte", description: "Novo visual premium com layout mais editorial." },
-] as const;
 const SITE_SECTION_LABELS: Record<string, string> = {
   header: "Cabeçalho e menu",
   hero: "Topo do site",
@@ -850,6 +848,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   const isVisible = (key: keyof SectionVisibility) => state.siteContent.sections[key] !== false;
 
   const previewHTML = buildLandingHTML(state, user?.id);
+  const activeSiteTemplate = getSiteTemplateDefinition(state.siteContent.templateId);
 
   const handleDownload = () => {
     setDownloadCount((c) => c + 1);
@@ -939,6 +938,18 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         </button>
       </div>
 
+      <SiteTemplateSelector
+        selected={state.siteContent.templateId}
+        onSelect={(templateId) => {
+          updSite({ templateId });
+          toast.success(`Modelo ${getSiteTemplateDefinition(templateId).copy.pt.label} aplicado na prévia.`);
+        }}
+        primaryColor={state.primaryColor}
+        secondaryColor={state.secondaryColor}
+        backgroundColor={state.backgroundColor}
+        heroImageUrl={state.siteContent.heroImageUrl}
+      />
+
       {/* ── Banner de Auto-Sync (informativo, não bloqueia o seletor) ── */}
       {autoSyncDone && autoSyncFields.length > 0 && (
         <div className="rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/25 flex items-start gap-3 mb-4">
@@ -970,42 +981,6 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               ⚙️ Ajustes Finos e Configurações Avançadas do Site:
             </h4>
           </div>
-
-          <FabricaCard title="🧩 Modelo do site">
-            <p className="text-xs text-white/55 mb-4">
-              Escolha qual template a Fábrica vai usar ao gerar e publicar o site. O formulário e os dados continuam sincronizados do mesmo jeito.
-            </p>
-            <div className="grid gap-3 md:grid-cols-2">
-              {TEMPLATE_OPTIONS.map((template) => {
-                const active = (state.siteContent.templateId || "standard") === template.id;
-                return (
-                  <button
-                    key={template.id}
-                    type="button"
-                    aria-pressed={active}
-                    data-testid={`site-template-${template.id}`}
-                    onClick={() => {
-                      updSite({ templateId: template.id });
-                      toast.success(`Modelo ${template.label} aplicado na prévia.`);
-                    }}
-                    className={`text-left rounded-2xl border p-4 transition-all ${
-                      active
-                        ? "border-amber-400 bg-amber-400/10 shadow-[0_0_0_1px_rgba(245,158,11,0.35)]"
-                        : "border-white/10 bg-white/[0.03] hover:border-white/25"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-bold text-white">{template.label}</div>
-                        <div className="text-[11px] text-white/55 mt-1">{template.description}</div>
-                      </div>
-                      <div className={`h-3 w-3 rounded-full ${active ? "bg-amber-400" : "bg-white/20"}`} />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </FabricaCard>
 
             <FabricaCard title="📦 Pacotes oferecidos">
               <FieldText
@@ -1528,7 +1503,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                     color: UI_ACCENT,
                   }}
                 >
-                  Modelo: {(state.siteContent.templateId || "standard") === "horizonte" ? "Horizonte" : "Padrão"}
+                  Modelo: {activeSiteTemplate.copy.pt.label}
                 </div>
 
                 <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1">

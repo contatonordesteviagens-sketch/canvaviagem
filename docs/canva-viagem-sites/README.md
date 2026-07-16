@@ -37,6 +37,8 @@ Pontos que devem ser entendidos sem ambiguidade:
 4. [Guia de campos por tipo de agência e pacote](./GUIA-CAMPOS-POR-TIPO-DE-AGENCIA-E-PACOTE.md)
 5. [Estratégia de imagens e armazenamento](./ESTRATEGIA-IMAGENS-E-ARMAZENAMENTO.md)
 6. [Checklist para agentes](./CHECKLIST-PARA-AGENTES.md)
+7. [Catálogo dos seis modelos de site](./CATALOGO-MODELOS-DE-SITE.md)
+8. [Plano de carrossel de pacotes no F1](./PLANO-CARROSSEL-F1.md)
 
 ## Prioridades combinadas
 

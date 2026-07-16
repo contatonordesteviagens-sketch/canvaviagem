@@ -4,7 +4,9 @@ import { useFabricaContext, type Pacote, type Depoimento as Testimonio } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML } from "@/lib/fabrica-html-export-es";
 import { CloudSaveIndicatorES } from "@/components/fabrica/CloudSaveIndicatorES";
+import { SiteTemplateSelector } from "@/components/fabrica/SiteTemplateSelector";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
+import { getSiteTemplateDefinition } from "@/lib/site-template-catalog";
 import {
   Plus,
   Trash2,
@@ -658,6 +660,19 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           Crear Nuevo Sitio
         </button>
       </div>
+
+      <SiteTemplateSelector
+        locale="es"
+        selected={state.siteContent.templateId}
+        onSelect={(templateId) => {
+          updSite({ templateId });
+          toast.success(`Modelo ${getSiteTemplateDefinition(templateId).copy.es.label} aplicado en la vista previa.`);
+        }}
+        primaryColor={state.primaryColor}
+        secondaryColor={state.secondaryColor}
+        backgroundColor={state.backgroundColor}
+        heroImageUrl={state.siteContent.heroImageUrl}
+      />
 
       {/* ── Banner de Auto-Sync (informativo, no bloquea el selector) ── */}
       {autoSyncDone && autoSyncFields.length > 0 && (
@@ -1658,8 +1673,6 @@ const PublishSiteCardES = ({
           </div>,
           { duration: 6000 }
         );
-      } else {
-        toast.error(result.message || "Error al publicar. El nombre ya podría estar en uso.");
       }
     } catch (err: any) {
       toast.error("Error al publicar: " + err.message);

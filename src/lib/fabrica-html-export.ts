@@ -5,6 +5,8 @@ import {
   createUniquePackageSlug,
   suggestPackageSegment,
 } from "@/lib/package-details";
+import { normalizeSiteTemplateId } from "@/lib/site-template-catalog";
+import { getSiteTemplateCss } from "@/lib/site-template-css";
 
 const SB_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SB_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
@@ -43,20 +45,47 @@ const sanitizeImageUrl = (value: unknown, fallback = DEFAULT_DEST_IMG) => {
 
 // Helpers de cor — gera tons mais escuros/claros pra header e gradientes
 function hexToRgb(hex: string) {
+  const rgbMatch = hex.trim().match(/^rgba?\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)/i);
+  if (rgbMatch) {
+    return {
+      r: Math.max(0, Math.min(255, Number(rgbMatch[1]))),
+      g: Math.max(0, Math.min(255, Number(rgbMatch[2]))),
+      b: Math.max(0, Math.min(255, Number(rgbMatch[3]))),
+    };
+  }
   const h = hex.replace("#", "");
   const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
   const num = parseInt(v, 16);
   return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
 }
+function relativeLuminance({ r, g, b }: { r: number; g: number; b: number }) {
+  const linearize = (value: number) => {
+    const channel = value / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
+}
+function contrastRatio(first: number, second: number) {
+  const lighter = Math.max(first, second);
+  const darker = Math.min(first, second);
+  return (lighter + 0.05) / (darker + 0.05);
+}
 function darken(hex: string, amount = 0.7) {
   const { r, g, b } = hexToRgb(hex);
-  const f = 1 - amount;
-  return `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
+  let factor = 1 - amount;
+  let candidate = { r: Math.round(r * factor), g: Math.round(g * factor), b: Math.round(b * factor) };
+  while (contrastRatio(relativeLuminance(candidate), 1) < 4.5 && factor > 0.05) {
+    factor = Math.max(0.05, factor - 0.05);
+    candidate = { r: Math.round(r * factor), g: Math.round(g * factor), b: Math.round(b * factor) };
+  }
+  return `rgb(${candidate.r}, ${candidate.g}, ${candidate.b})`;
 }
 function contrastText(hex: string) {
-  const { r, g, b } = hexToRgb(hex);
-  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-  return luminance > 0.62 ? "#111827" : "#ffffff";
+  const backgroundLuminance = relativeLuminance(hexToRgb(hex));
+  const dark = "#111827";
+  const darkRatio = contrastRatio(backgroundLuminance, relativeLuminance(hexToRgb(dark)));
+  const lightRatio = contrastRatio(backgroundLuminance, 1);
+  return darkRatio >= lightRatio ? dark : "#ffffff";
 }
 
 // Helper para estruturar o preço visualmente (como E-commerce)
@@ -145,12 +174,14 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const colorDark = darken(color, 0.45);
   const colorContrast = contrastText(color);
   const secondaryContrast = contrastText(secondaryColor);
+  const backgroundContrast = contrastText(backgroundColor);
+  const darkContrast = contrastText(colorDark);
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
   // Usa o DDI salvo no estado (padrão Brasil +55)
   const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
   const wpp = rawWpp ? (rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`) : "";
   const sc = state.siteContent;
-  const templateId = sc.templateId || "standard";
+  const templateId = normalizeSiteTemplateId(sc.templateId);
   const sectionBackgroundAttr = (key: string) => {
     const value = sc.sectionColors?.[key];
     const safeValue = value && /^#[0-9a-f]{6}$/i.test(value) ? value : "";
@@ -169,7 +200,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
 body.template-horizonte{
   --h-paper:var(--brand-bg);
   --h-sand:color-mix(in srgb,var(--brand-bg) 82%,var(--brand-secondary) 18%);
-  --h-ink:var(--brand-ink);
+  --h-ink:var(--background-contrast);
   --h-green:var(--brand-dark);
   background:var(--h-paper);
   color:var(--h-ink);
@@ -241,7 +272,7 @@ body.template-horizonte .stats-bar{
 body.template-horizonte .stats-bar>div{max-width:none;padding:4px 20px;border-right:1px solid rgba(32,37,31,.16)}
 body.template-horizonte .stats-bar>div:last-child{border-right:0}
 body.template-horizonte .stat-num{font-family:'Bricolage Grotesque',sans-serif;color:var(--h-ink);font-size:42px}
-body.template-horizonte .stat-label{color:var(--h-ink);opacity:.62}
+body.template-horizonte .stat-label{color:var(--h-ink);opacity:1}
 
 body.template-horizonte section{padding:clamp(76px,9vw,132px) 0}
 body.template-horizonte .section-title{font-size:clamp(34px,5vw,62px);font-weight:600;line-height:1.02}
@@ -354,7 +385,7 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
   body.template-horizonte .stat-num{font-size:32px}
   body.template-horizonte .dest-body{padding:84px 24px 24px}
 }
-` : "";
+` : getSiteTemplateCss(templateId);
 
   // ----- SISTEMA DE ANIMAÇÕES SAZONAIS E TEMÁTICAS -----
   let seasonalStyles = "";
@@ -1212,7 +1243,7 @@ ${ga4Code}
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Inter:wght@400;500;600;700&family=Onest:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 ${templateVariantCss}
-*{margin:0;padding:0;box-sizing:border-box}:root{--brand:${color};--brand-dark:${colorDark};--brand-secondary:${secondaryColor};--brand-bg:${backgroundColor};--brand-contrast:${colorContrast};--secondary-contrast:${secondaryContrast};--brand-ink:${colorDark};--ink:#0a0a0b;--muted:#5a6470;--soft:${backgroundColor}}
+*{margin:0;padding:0;box-sizing:border-box}:root{--brand:${color};--brand-dark:${colorDark};--brand-secondary:${secondaryColor};--brand-bg:${backgroundColor};--brand-contrast:${colorContrast};--secondary-contrast:${secondaryContrast};--background-contrast:${backgroundContrast};--brand-dark-contrast:${darkContrast};--brand-ink:${backgroundContrast};--ink:#0a0a0b;--muted:#5a6470;--soft:${backgroundColor}}
 html{scroll-behavior:smooth}
 body{font-family:'Inter',sans-serif;color:var(--ink);background:var(--brand-bg);line-height:1.6;-webkit-font-smoothing:antialiased}
 [data-site-section][style*="--section-bg"]{background:var(--section-bg)!important}

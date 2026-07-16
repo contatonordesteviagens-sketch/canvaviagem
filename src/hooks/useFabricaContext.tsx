@@ -9,6 +9,7 @@ import {
   normalizeCrmFormConfig,
   type CrmFormConfig,
 } from "@/lib/crm-form-config";
+import type { SiteTemplateId } from "@/lib/site-template-catalog";
 
 export type Niche = "nordeste" | "sul" | "internacional" | "cruzeiro" | "aventura" | "luademel" | "";
 
@@ -117,7 +118,7 @@ export interface SectionVisibility {
 }
 
 export interface SiteContent {
-  templateId?: "standard" | "horizonte";
+  templateId?: SiteTemplateId;
   heroHeadline: string;
   heroSubheadline: string;
   heroCtaLabel: string;

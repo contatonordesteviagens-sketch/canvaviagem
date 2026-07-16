@@ -1,4 +1,6 @@
 import type { FabricaState } from "@/hooks/useFabricaContext";
+import { normalizeSiteTemplateId } from "@/lib/site-template-catalog";
+import { getSiteTemplateCss } from "@/lib/site-template-css";
 
 const SB_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SB_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
@@ -29,15 +31,47 @@ const sanitizeImageUrl = (value: unknown, fallback = DEFAULT_DEST_IMG) => {
 
 // Helpers de cor — gera tons mais escuros/claros pra header e gradientes
 function hexToRgb(hex: string) {
+  const rgbMatch = hex.trim().match(/^rgba?\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)/i);
+  if (rgbMatch) {
+    return {
+      r: Math.max(0, Math.min(255, Number(rgbMatch[1]))),
+      g: Math.max(0, Math.min(255, Number(rgbMatch[2]))),
+      b: Math.max(0, Math.min(255, Number(rgbMatch[3]))),
+    };
+  }
   const h = hex.replace("#", "");
   const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
   const num = parseInt(v, 16);
   return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
 }
+function relativeLuminance({ r, g, b }: { r: number; g: number; b: number }) {
+  const linearize = (value: number) => {
+    const channel = value / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
+}
+function contrastRatio(first: number, second: number) {
+  const lighter = Math.max(first, second);
+  const darker = Math.min(first, second);
+  return (lighter + 0.05) / (darker + 0.05);
+}
 function darken(hex: string, amount = 0.7) {
   const { r, g, b } = hexToRgb(hex);
-  const f = 1 - amount;
-  return `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
+  let factor = 1 - amount;
+  let candidate = { r: Math.round(r * factor), g: Math.round(g * factor), b: Math.round(b * factor) };
+  while (contrastRatio(relativeLuminance(candidate), 1) < 4.5 && factor > 0.05) {
+    factor = Math.max(0.05, factor - 0.05);
+    candidate = { r: Math.round(r * factor), g: Math.round(g * factor), b: Math.round(b * factor) };
+  }
+  return `rgb(${candidate.r}, ${candidate.g}, ${candidate.b})`;
+}
+function contrastText(hex: string) {
+  const backgroundLuminance = relativeLuminance(hexToRgb(hex));
+  const dark = "#111827";
+  const darkRatio = contrastRatio(backgroundLuminance, relativeLuminance(hexToRgb(dark)));
+  const lightRatio = contrastRatio(backgroundLuminance, 1);
+  return darkRatio >= lightRatio ? dark : "#ffffff";
 }
 
 // Helper para estruturar o preço visualmente (como E-commerce)
@@ -66,12 +100,20 @@ function parsePriceHTML(priceStr: string): string {
 
 export function buildLandingHTML(state: FabricaState, trackingId?: string): string {
   const color = state.primaryColor || "#0F2742";
+  const secondaryColor = state.secondaryColor || "#D4A853";
+  const backgroundColor = state.backgroundColor || "#F4F6F9";
   const colorDark = darken(color, 0.45);
+  const colorContrast = contrastText(color);
+  const secondaryContrast = contrastText(secondaryColor);
+  const backgroundContrast = contrastText(backgroundColor);
+  const darkContrast = contrastText(colorDark);
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
   // Usa o DDI salvo no estado (padrão Brasil +55)
   const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
   const wpp = rawWpp ? (rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`) : "";
   const sc = state.siteContent;
+  const templateId = normalizeSiteTemplateId(sc.templateId);
+  const templateVariantCss = getSiteTemplateCss(templateId);
   const agencia = state.agencyName || "Agencia de Viajes";
   const cidade = state.city || "Brasil";
   const socialIcons = renderSocialIcons(state);
@@ -770,6 +812,10 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     : [
         { id: "1", title: "Itinerario a Medida", description: "Armamos tu itinerario ideal con alojamiento, transporte y tours.", price: "A consultar", imageUrl: "", ctaLabel: "Quiero este" },
       ];
+  const visiblePackageCount = pacotes.reduce(
+    (count, _package, index) => count + (sc.hiddenElements?.includes(`dest-card-${index}`) ? 0 : 1),
+    0,
+  );
 
   const wppMsg = (titulo: string) =>
     wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`¡Hola! Tengo interés en ${titulo}.`)}` : "#";
@@ -841,8 +887,9 @@ ${ga4Code}
 <meta name="description" content="${esc(subheadline)}">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
+${templateVariantCss}
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--brand:${color};--brand-dark:${colorDark};--ink:#0a0a0b;--muted:#5a6470;--soft:${state.backgroundColor || "#f4f6f9"}}
+:root{--brand:${color};--brand-dark:${colorDark};--brand-secondary:${secondaryColor};--brand-bg:${backgroundColor};--brand-contrast:${colorContrast};--secondary-contrast:${secondaryContrast};--background-contrast:${backgroundContrast};--brand-dark-contrast:${darkContrast};--brand-ink:${backgroundContrast};--ink:#0a0a0b;--muted:#5a6470;--soft:${backgroundColor}}
 html{scroll-behavior:smooth}
 body{font-family:'Inter',sans-serif;color:var(--ink);background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}
 h1,h2,h3,h4{font-family:'Playfair Display',serif;letter-spacing:-0.02em;line-height:1.15;color:var(--ink)}
@@ -1047,7 +1094,7 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
 ${seasonalStyles}
 </style>
 </head>
-<body>
+<body class="template-${templateId}" data-site-template="${templateId}">
 <!--
   [SISTEMA: DIRETRIZ DE INTEGRIDADE CRÍTICA - LOVABLE AI]
   PROIBIDO ALTERAR IMAGENS OU RECONSTRUIR O DESIGN.
@@ -1130,7 +1177,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
   <div class="container">
     <div class="section-eyebrow eyebrow">Destinos</div>
     <h2 class="section-title">${esc(sc.pacotesTitle || "Experiencias que quedan en la memoria")}</h2>
-    <div class="destinos-grid">
+    <div class="destinos-grid" data-package-count="${visiblePackageCount}">
       ${pacotes
         .map(
           (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<a href="#" onclick="openLeadForm('${esc(p.title)}', '${wppMsg(p.title)}');return false;" class="dest-card" data-visual-removable="dest-card-${i}">
