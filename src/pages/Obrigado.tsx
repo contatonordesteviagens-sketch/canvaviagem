@@ -184,6 +184,28 @@ const Obrigado = () => {
         if (okP && okS) {
           sessionStorage.setItem(sessionKey, '1');
           setTracked(true);
+
+          // Server-side Conversions API for pixel 2120347238758199 (dedup via event_id)
+          try {
+            const fbp = document.cookie.match(/_fbp=([^;]+)/)?.[1];
+            const fbc = document.cookie.match(/_fbc=([^;]+)/)?.[1];
+            supabase.functions.invoke('meta-capi-obrigado', {
+              body: {
+                event_id: `${eventID}_p`,
+                event_source_url: window.location.href,
+                value: 29.0,
+                currency: 'BRL',
+                email: email || emailFromUrl || undefined,
+                fbp,
+                fbc,
+              },
+            }).then(({ error }) => {
+              if (error) console.warn('[Meta CAPI 2120347238758199] invoke error:', error);
+              else console.log('[Meta CAPI 2120347238758199] Purchase server-side OK');
+            });
+          } catch (e) {
+            console.warn('[Meta CAPI 2120347238758199] failed:', e);
+          }
           return;
         }
       }
