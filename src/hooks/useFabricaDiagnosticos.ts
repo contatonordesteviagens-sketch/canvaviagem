@@ -3,6 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { FabricaState } from "./useFabricaContext";
 import { toast } from "sonner";
+import { buildCanvaSiteSlug, extractCanvaSiteSlug, getCanvaSiteUrl } from "@/lib/canva-site-domain";
+import { recoverFabricaStateFromPublishedHtml } from "@/lib/fabrica-project-recovery";
+import { persistFabricaProject } from "@/lib/fabrica-project-persistence";
+
+export type DiagnosticoSource = "saved" | "published_recovery";
 
 export interface DiagnosticoSalvo {
   id: string;
@@ -15,20 +20,189 @@ export interface DiagnosticoSalvo {
   checklist_progress: Record<string, boolean>;
   created_at: string;
   updated_at: string;
+  published_site_id?: string | null;
+  published_site_url?: string | null;
+  source?: DiagnosticoSource;
 }
+
+interface PublishedSiteMetadata {
+  id: string;
+  project_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+const projectSlugs = (project: DiagnosticoSalvo) => {
+  const snapshot = project.state_snapshot as FabricaState | undefined;
+  const publishedUrl = snapshot?.siteContent?.canvaViagemUrl;
+  const urlSlug = publishedUrl ? extractCanvaSiteSlug(publishedUrl) : "";
+  const agencySlug = buildCanvaSiteSlug(project.agency_name || snapshot?.agencyName || "");
+  return { urlSlug, agencySlug };
+};
+
+const legacyProjectId = (siteId: string) => `proj_legacy_${siteId}`;
+
+const humanizeSiteId = (siteId: string) =>
+  siteId
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ") || "Site recuperado";
 
 export const useDiagnosticos = () => {
   const { user } = useAuth();
+  const locale = typeof window !== "undefined" && window.location.pathname.startsWith("/es") ? "es" : "pt-BR";
   return useQuery({
-    queryKey: ["fabrica-diagnosticos", user?.id],
+    queryKey: ["fabrica-diagnosticos", user?.id, locale],
     queryFn: async () => {
       if (!user) return [] as DiagnosticoSalvo[];
-      const { data, error } = await supabase
-        .from("fabrica_diagnosticos" as any)
-        .select("*")
-        .order("updated_at", { ascending: false });
-      if (error) throw error;
-      return (data as any[]) as DiagnosticoSalvo[];
+
+      const [projectsResult, sitesResult] = await Promise.all([
+        supabase
+          .from("fabrica_diagnosticos" as any)
+          .select("*")
+          .eq("user_id", user.id)
+          .order("updated_at", { ascending: false }),
+        supabase
+          .from("public_sites")
+          .select("id, project_id, created_at, updated_at")
+          .eq("owner_id", user.id)
+          .eq("locale", locale)
+          .order("updated_at", { ascending: false }),
+      ]);
+
+      if (projectsResult.error) throw projectsResult.error;
+      if (sitesResult.error) {
+        console.warn("[Fábrica] Sites publicados indisponíveis; exibindo os projetos salvos.", sitesResult.error);
+      }
+
+      const savedProjects = ((projectsResult.data || []) as any[]).map((project) => ({
+        ...(project as DiagnosticoSalvo),
+        source: "saved" as const,
+      }));
+      const publishedSites = (sitesResult.error ? [] : (sitesResult.data || [])) as PublishedSiteMetadata[];
+      const knownProjectIds = new Set(savedProjects.map((project) => project.id));
+      const usedSiteIds = new Set<string>();
+      const siteByProject = new Map<string, PublishedSiteMetadata>();
+
+      // Primeiro respeita vínculos explícitos já gravados no banco.
+      savedProjects.forEach((project) => {
+        const exactMatches = publishedSites.filter(
+          (site) => !usedSiteIds.has(site.id) && site.project_id === project.id,
+        );
+        if (!exactMatches.length) return;
+        const { urlSlug, agencySlug } = projectSlugs(project);
+        const chosen = exactMatches.find((site) => urlSlug && site.id === urlSlug)
+          || exactMatches.find((site) => agencySlug && site.id === agencySlug)
+          || exactMatches[0];
+        siteByProject.set(project.id, chosen);
+        usedSiteIds.add(chosen.id);
+      });
+
+      // Compatibilidade com publicações antigas sem project_id: a URL salva é a
+      // evidência mais forte e sempre tem prioridade sobre o nome da agência.
+      savedProjects.forEach((project) => {
+        if (siteByProject.has(project.id)) return;
+        const { urlSlug } = projectSlugs(project);
+        if (!urlSlug) return;
+        const chosen = publishedSites.find(
+          (site) =>
+            !usedSiteIds.has(site.id) &&
+            (!site.project_id || !knownProjectIds.has(site.project_id)) &&
+            site.id === urlSlug,
+        );
+        if (!chosen) return;
+        siteByProject.set(project.id, chosen);
+        usedSiteIds.add(chosen.id);
+      });
+
+      // O slug derivado do nome só é usado quando identifica um único projeto,
+      // evitando ligar duas agências homônimas à publicação errada.
+      const agencySlugCounts = new Map<string, number>();
+      savedProjects.forEach((project) => {
+        const { agencySlug } = projectSlugs(project);
+        if (agencySlug) agencySlugCounts.set(agencySlug, (agencySlugCounts.get(agencySlug) || 0) + 1);
+      });
+      savedProjects.forEach((project) => {
+        if (siteByProject.has(project.id)) return;
+        const { agencySlug } = projectSlugs(project);
+        if (!agencySlug || agencySlugCounts.get(agencySlug) !== 1) return;
+        const chosen = publishedSites.find(
+          (site) =>
+            !usedSiteIds.has(site.id) &&
+            (!site.project_id || !knownProjectIds.has(site.project_id)) &&
+            site.id === agencySlug,
+        );
+        if (!chosen) return;
+        siteByProject.set(project.id, chosen);
+        usedSiteIds.add(chosen.id);
+      });
+
+      const enrichedProjects: DiagnosticoSalvo[] = savedProjects.map((project) => {
+        const publishedSite = siteByProject.get(project.id);
+        return {
+          ...project,
+          published_site_id: publishedSite?.id || null,
+          published_site_url: publishedSite ? getCanvaSiteUrl(publishedSite.id) : null,
+          source: "saved",
+        };
+      });
+
+      const orphanSites = publishedSites.filter((site) => !usedSiteIds.has(site.id));
+      const htmlBySiteId = new Map<string, string>();
+      if (orphanSites.length) {
+        // HTML é buscado apenas para publicações sem snapshot, evitando carregar
+        // o documento completo de todos os sites em cada abertura do seletor.
+        const { data: htmlRows, error: htmlError } = await supabase
+          .from("public_sites")
+          .select("id, html")
+          .eq("owner_id", user.id)
+          .eq("locale", locale)
+          .in("id", orphanSites.map((site) => site.id));
+        if (!htmlError) {
+          (htmlRows || []).forEach((row) => htmlBySiteId.set(row.id, row.html));
+        }
+      }
+
+      const recoveredProjects: DiagnosticoSalvo[] = orphanSites.map((site) => {
+        const siteUrl = getCanvaSiteUrl(site.id);
+        const syntheticId = legacyProjectId(site.id);
+        const recovered = recoverFabricaStateFromPublishedHtml(htmlBySiteId.get(site.id) || "", {
+          siteId: site.id,
+          siteUrl,
+        });
+        const agencyName = recovered.agencyName || humanizeSiteId(site.id);
+        const recoveredSiteContent = recovered.siteContent || ({} as FabricaState["siteContent"]);
+        const stateSnapshot = {
+          ...recovered,
+          projectId: syntheticId,
+          agencyName,
+          siteContent: {
+            ...recoveredSiteContent,
+            canvaViagemUrl: siteUrl,
+          },
+        } as FabricaState;
+
+        return {
+          id: syntheticId,
+          user_id: user.id,
+          agency_name: agencyName,
+          digital_score: 0,
+          level: 1,
+          level_name: "Site publicado recuperado",
+          state_snapshot: stateSnapshot,
+          checklist_progress: {},
+          created_at: site.created_at,
+          updated_at: site.updated_at,
+          published_site_id: site.id,
+          published_site_url: siteUrl,
+          source: "published_recovery",
+        };
+      });
+
+      return [...enrichedProjects, ...recoveredProjects].sort(
+        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+      );
     },
     enabled: !!user,
   });
@@ -46,30 +220,19 @@ export const useSaveDiagnostico = () => {
       existingId?: string;
     }) => {
       if (!user) throw new Error("Faça login para salvar");
-      // Remove heavy base64 image history to prevent Supabase Payload Too Large / Row Size errors
-      const { allGeneratedAdImages, ...lightweightState } = params.state;
-
-      const payload: any = {
-        user_id: user.id,
-        agency_name: params.state.agencyName || "Sem nome",
-        digital_score: params.score,
-        level: params.level,
-        level_name: params.levelName,
-        state_snapshot: lightweightState as any,
-        checklist_progress: params.state.checklist30days as any,
-      };
-      let projectId = params.existingId || params.state.projectId;
-      // Remove temporary frontend-generated IDs from payload to allow Supabase to generate a valid UUID
-      if (projectId && !projectId.startsWith("proj_")) {
-        payload.id = projectId;
-      }
-      const { data, error } = await supabase
-        .from("fabrica_diagnosticos" as any)
-        .upsert(payload, { onConflict: "id" })
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
+      const state = params.existingId
+        ? { ...params.state, projectId: params.existingId }
+        : params.state;
+      const result = await persistFabricaProject({
+        state: {
+          ...state,
+          digitalScore: params.score,
+          level: params.level,
+        },
+        userId: user.id,
+        levelName: params.levelName,
+      });
+      return { id: result.id, state_snapshot: result.stateSnapshot };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
@@ -82,13 +245,16 @@ export const useSaveDiagnostico = () => {
 };
 
 export const useDeleteDiagnostico = () => {
+  const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      if (!user?.id) throw new Error("Faça login para excluir o projeto.");
       const { error } = await supabase
         .from("fabrica_diagnosticos" as any)
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("user_id", user.id);
       if (error) throw error;
     },
     onSuccess: () => {

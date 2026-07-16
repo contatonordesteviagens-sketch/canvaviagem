@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import type { Context } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -10,6 +11,12 @@ import {
   type CrmFormConfig,
 } from "@/lib/crm-form-config";
 import type { SiteTemplateId } from "@/lib/site-template-catalog";
+import {
+  createTemporaryProjectId,
+  isPersistedProjectId,
+  persistFabricaProject,
+  resolveFabricaProjectId,
+} from "@/lib/fabrica-project-persistence";
 
 export type Niche = "nordeste" | "sul" | "internacional" | "cruzeiro" | "aventura" | "luademel" | "";
 
@@ -530,13 +537,68 @@ const getBaseState = (): FabricaState => {
 
 const isEs = () => typeof window !== "undefined" && window.location.pathname.startsWith("/es");
 
+const cloneBaseState = (): FabricaState => {
+  const base = getBaseState();
+  if (typeof structuredClone === "function") return structuredClone(base);
+  return JSON.parse(JSON.stringify(base)) as FabricaState;
+};
+
+const createFreshState = (): FabricaState => ({
+  ...cloneBaseState(),
+  projectId: createTemporaryProjectId(),
+});
+
+const normalizeStateSnapshot = (
+  snapshot?: Partial<FabricaState> | null,
+  projectId?: string | null,
+): FabricaState => {
+  const base = cloneBaseState();
+  const resolvedProjectId = projectId || snapshot?.projectId || createTemporaryProjectId();
+  return {
+    ...base,
+    ...(snapshot || {}),
+    projectId: resolvedProjectId,
+    siteContent: {
+      ...base.siteContent,
+      ...(snapshot?.siteContent || {}),
+      sections: {
+        ...base.siteContent.sections,
+        ...(snapshot?.siteContent?.sections || {}),
+      },
+    },
+    crmForm: normalizeCrmFormConfig(snapshot?.crmForm, isEs() ? "es" : "pt-BR"),
+  };
+};
+
+// Chaves v1 são mantidas somente para migração de sessões já existentes.
 const getStorageKey = () => isEs() ? "fabrica-context-v1-es" : "fabrica-context-v1";
-// Campos pesados (base64) ficam em chaves separadas pra não estourar a quota do localStorage
 const HEAVY_KEYS = ["logoBase64", "generatedAdImage", "lastCleanPhoto"] as const;
 const getHeavyStoragePrefix = () => isEs() ? "fabrica-heavy-v1-es:" : "fabrica-heavy-v1:";
 const getGalleryKey = () => isEs() ? "fabrica-gallery-v1-es" : "fabrica-gallery-v1";
 const getGeneratedKey = () => isEs() ? "fabrica-generated-v1-es" : "fabrica-generated-v1";
 const LAST_ACTIVE_USER_KEY = "fabrica-last-user-id";
+
+const getLocaleStorageTag = () => isEs() ? "es" : "pt-BR";
+const getActiveProjectKey = (userId: string) =>
+  `fabrica-active-project-v2:${getLocaleStorageTag()}:${userId}`;
+const getProjectStorageKey = (userId: string, projectId: string) =>
+  `fabrica-context-v2:${getLocaleStorageTag()}:${userId}:${projectId}`;
+const getProjectGalleryKey = (userId: string, projectId: string) =>
+  `fabrica-gallery-v2:${getLocaleStorageTag()}:${userId}:${projectId}`;
+const getProjectHeavyPrefix = (userId: string, projectId: string) =>
+  `fabrica-heavy-v2:${getLocaleStorageTag()}:${userId}:${projectId}:`;
+const PROJECT_MEDIA_CACHE_KEY = "projectMedia";
+
+interface LocalProjectMediaCache {
+  heroImageUrl?: string;
+  aboutImageUrl?: string;
+  packages?: Array<{
+    id: string;
+    index: number;
+    imageUrl?: string;
+    galleryImages?: string[];
+  }>;
+}
 
 const scopedKey = (key: string, userId?: string | null) => (userId ? `${key}:${userId}` : key);
 const scopedHeavyPrefix = (userId?: string | null) => (userId ? `${getHeavyStoragePrefix()}${userId}:` : getHeavyStoragePrefix());
@@ -574,100 +636,215 @@ const getStateTimestamp = (snapshot?: Partial<FabricaState> | null, fallback?: s
   return new Date(raw).getTime() || 0;
 };
 
-const readPersistedState = (userId?: string | null): FabricaState => {
-  if (typeof window === "undefined") return getBaseState();
+const isRemoteMediaUrl = (value?: string | null) => Boolean(value && /^https?:\/\//i.test(value));
+const isInlineMediaUrl = (value?: string | null) => Boolean(value && /^data:/i.test(value));
+const hasInlineMedia = (values?: string[]) => Boolean(values?.some((value) => isInlineMediaUrl(value)));
 
+const mergeSameProjectMedia = (base: FabricaState, local: FabricaState): FabricaState => {
+  const localPackagesById = new Map(local.selectedPackages.map((pkg) => [pkg.id, pkg]));
+  const selectedPackages = base.selectedPackages.map((pkg, index) => {
+    const localPackage = localPackagesById.get(pkg.id) || local.selectedPackages[index];
+    if (!localPackage) return pkg;
+    return {
+      ...pkg,
+      imageUrl: pkg.imageUrl || localPackage.imageUrl,
+      galleryImages: hasInlineMedia(localPackage.galleryImages)
+        ? localPackage.galleryImages
+        : (pkg.galleryImages?.length ? pkg.galleryImages : localPackage.galleryImages),
+    };
+  });
+
+  return {
+    ...base,
+    logoBase64: base.logoBase64 || local.logoBase64 || "",
+    generatedAdImage: local.generatedAdImage || "",
+    lastCleanPhoto: local.lastCleanPhoto || "",
+    allGeneratedAdImages: local.allGeneratedAdImages || [],
+    selectedPackages,
+    siteContent: {
+      ...base.siteContent,
+      heroImageUrl: base.siteContent.heroImageUrl || local.siteContent.heroImageUrl,
+      aboutImageUrl: base.siteContent.aboutImageUrl || local.siteContent.aboutImageUrl,
+      galleryImages: base.siteContent.galleryImages?.length
+        ? base.siteContent.galleryImages
+        : (local.siteContent.galleryImages || []),
+    },
+  };
+};
+
+const readActiveProjectId = (userId?: string | null) => {
+  if (typeof window === "undefined" || !userId) return null;
+  return localStorage.getItem(getActiveProjectKey(userId));
+};
+
+const readProjectState = (userId: string, projectId: string): FabricaState | null => {
   try {
-    const stored = localStorage.getItem(scopedKey(getStorageKey(), userId));
-    const parsed = stored ? JSON.parse(stored) : {};
+    const stored = localStorage.getItem(getProjectStorageKey(userId, projectId));
+    if (!stored) return null;
+    const parsed = JSON.parse(stored) as Partial<FabricaState>;
     const heavy: Record<string, string> = {};
-    const heavyPrefix = scopedHeavyPrefix(userId);
+    const heavyPrefix = getProjectHeavyPrefix(userId, projectId);
 
     HEAVY_KEYS.forEach((k) => {
       const v = localStorage.getItem(heavyPrefix + k);
       if (v) heavy[k] = v;
     });
 
+    let projectMedia: LocalProjectMediaCache = {};
+    try {
+      const cachedMedia = localStorage.getItem(heavyPrefix + PROJECT_MEDIA_CACHE_KEY);
+      if (cachedMedia) projectMedia = JSON.parse(cachedMedia) as LocalProjectMediaCache;
+    } catch {}
+
+    const selectedPackages = (parsed.selectedPackages || []).map((pkg, index) => {
+      const media = projectMedia.packages?.find(
+        (entry) => entry.id === pkg.id && entry.index === index,
+      ) || projectMedia.packages?.find((entry) => entry.id === pkg.id);
+      if (!media) return pkg;
+      return {
+        ...pkg,
+        imageUrl: pkg.imageUrl || media.imageUrl,
+        galleryImages: media.galleryImages?.length ? media.galleryImages : pkg.galleryImages,
+      };
+    });
+
     let gallery: string[] = [];
     try {
-      const g = localStorage.getItem(scopedKey(getGalleryKey(), userId));
+      const g = localStorage.getItem(getProjectGalleryKey(userId, projectId));
       if (g) gallery = JSON.parse(g);
     } catch {}
 
-    let generated: string[] = [];
-    try {
-      const gen = localStorage.getItem(scopedKey(getGeneratedKey(), userId));
-      if (gen) generated = JSON.parse(gen);
-    } catch {}
-
-    const explicitAds = new Set(generated);
-    const legacyAds = gallery.filter((img) => typeof img === "string" && img.startsWith("data:image/png"));
-
-    if (legacyAds.length > 0) {
-      gallery = gallery.filter((img) => typeof img !== "string" || !img.startsWith("data:image/png"));
-      const newAds = legacyAds.filter((ad) => !explicitAds.has(ad));
-      generated = [...newAds, ...generated];
-
-      try {
-        localStorage.setItem(scopedKey(getGalleryKey(), userId), JSON.stringify(gallery));
-        localStorage.setItem(scopedKey(getGeneratedKey(), userId), JSON.stringify(generated));
-      } catch {}
-    }
-
-    return {
-      ...getBaseState(),
+    return normalizeStateSnapshot({
       ...parsed,
       ...heavy,
-      // Não recarregamos allGeneratedAdImages do localStorage — era a causa principal
-      // de travadas (20MB+ de base64 carregado na inicialização). As imagens vão
-      // para o Supabase/storage e o estado central do banco já traz o que é necessário.
+      selectedPackages,
       allGeneratedAdImages: parsed.allGeneratedAdImages || [],
       siteContent: {
-        ...getBaseState().siteContent,
         ...(parsed.siteContent || {}),
+        heroImageUrl: parsed.siteContent?.heroImageUrl || projectMedia.heroImageUrl,
+        aboutImageUrl: parsed.siteContent?.aboutImageUrl || projectMedia.aboutImageUrl,
         galleryImages: gallery.length ? gallery : (parsed.siteContent?.galleryImages || []),
-        sections: {
-          ...getBaseState().siteContent.sections,
-          ...((parsed.siteContent && parsed.siteContent.sections) || {}),
-        },
       },
-      crmForm: normalizeCrmFormConfig(parsed.crmForm, isEs() ? "es" : "pt-BR"),
-    };
+    } as Partial<FabricaState>, projectId);
   } catch {
-    return getBaseState();
+    return null;
   }
 };
 
+const readLegacyPersistedState = (userId?: string | null): FabricaState | null => {
+  try {
+    const stored = localStorage.getItem(scopedKey(getStorageKey(), userId));
+    if (!stored) return null;
+    const parsed = JSON.parse(stored) as Partial<FabricaState>;
+    const heavy: Record<string, string> = {};
+    const heavyPrefix = scopedHeavyPrefix(userId);
+    HEAVY_KEYS.forEach((key) => {
+      const value = localStorage.getItem(heavyPrefix + key);
+      if (value) heavy[key] = value;
+    });
+
+    let gallery: string[] = [];
+    try {
+      const storedGallery = localStorage.getItem(scopedKey(getGalleryKey(), userId));
+      if (storedGallery) gallery = JSON.parse(storedGallery);
+    } catch {}
+
+    return normalizeStateSnapshot({
+      ...parsed,
+      ...heavy,
+      siteContent: {
+        ...(parsed.siteContent || {}),
+        galleryImages: gallery.length ? gallery : (parsed.siteContent?.galleryImages || []),
+      },
+    } as Partial<FabricaState>, parsed.projectId || undefined);
+  } catch {
+    return null;
+  }
+};
+
+const readPersistedState = (userId?: string | null, projectId?: string | null): FabricaState => {
+  if (typeof window === "undefined") return createFreshState();
+  const activeProjectId = projectId || readActiveProjectId(userId);
+  if (userId && activeProjectId) {
+    const projectState = readProjectState(userId, activeProjectId);
+    if (projectState) return projectState;
+    if (projectId) return normalizeStateSnapshot(null, projectId);
+  }
+  return readLegacyPersistedState(userId) || createFreshState();
+};
+
 const loadInitialState = (userId?: string | null): FabricaState => {
-  if (typeof window === "undefined") return getBaseState();
+  if (typeof window === "undefined") return createFreshState();
 
   const rememberedUserId = userId ?? localStorage.getItem(LAST_ACTIVE_USER_KEY);
-  const scopedState = rememberedUserId ? readPersistedState(rememberedUserId) : getBaseState();
+  const scopedState = rememberedUserId ? readPersistedState(rememberedUserId) : createFreshState();
 
-  return hasMeaningfulProgress(scopedState) ? scopedState : getBaseState();
+  return hasMeaningfulProgress(scopedState) ? scopedState : normalizeStateSnapshot(scopedState, scopedState.projectId);
 };
 
 const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
   if (typeof window === "undefined") return;
 
   const resolvedUserId = userId ?? localStorage.getItem(LAST_ACTIVE_USER_KEY);
+  const projectId = nextState.projectId;
+  if (!resolvedUserId || !projectId) return;
 
-  if (resolvedUserId) {
-    safeSetItem(LAST_ACTIVE_USER_KEY, resolvedUserId);
-  }
+  safeSetItem(LAST_ACTIVE_USER_KEY, resolvedUserId);
+  safeSetItem(getActiveProjectKey(resolvedUserId), projectId);
 
-  const { logoBase64, generatedAdImage, lastCleanPhoto, allGeneratedAdImages, siteContent, ...rest } = nextState;
-  const { galleryImages, ...siteRest } = siteContent;
+  const {
+    logoBase64,
+    generatedAdImage,
+    lastCleanPhoto,
+    allGeneratedAdImages,
+    selectedPackages,
+    siteContent,
+    ...rest
+  } = nextState;
+  const { galleryImages, heroImageUrl, aboutImageUrl, ...siteRest } = siteContent;
+  const remoteGeneratedImages = (allGeneratedAdImages || []).filter((value) =>
+    isRemoteMediaUrl(value),
+  );
+  const packagesForMain = selectedPackages.map((pkg) => ({
+    ...pkg,
+    imageUrl: isInlineMediaUrl(pkg.imageUrl) ? undefined : pkg.imageUrl,
+    galleryImages: pkg.galleryImages?.filter((value) => !isInlineMediaUrl(value)),
+  }));
+  const projectMedia: LocalProjectMediaCache = {
+    heroImageUrl: isInlineMediaUrl(heroImageUrl) ? heroImageUrl : undefined,
+    aboutImageUrl: isInlineMediaUrl(aboutImageUrl) ? aboutImageUrl : undefined,
+    packages: selectedPackages
+      .map((pkg, index) => ({
+        id: pkg.id,
+        index,
+        imageUrl: isInlineMediaUrl(pkg.imageUrl) ? pkg.imageUrl : undefined,
+        galleryImages: hasInlineMedia(pkg.galleryImages) ? pkg.galleryImages : undefined,
+      }))
+      .filter((media) => media.imageUrl || media.galleryImages?.length),
+  };
+  const hasProjectMedia = Boolean(
+    projectMedia.heroImageUrl ||
+    projectMedia.aboutImageUrl ||
+    projectMedia.packages?.length,
+  );
+  const heavyPrefix = getProjectHeavyPrefix(resolvedUserId, projectId);
 
   const savedMain = safeSetItem(
-    scopedKey(getStorageKey(), resolvedUserId),
-    JSON.stringify({ ...rest, siteContent: siteRest })
+    getProjectStorageKey(resolvedUserId, projectId),
+    JSON.stringify({
+      ...rest,
+      selectedPackages: packagesForMain,
+      allGeneratedAdImages: remoteGeneratedImages,
+      siteContent: {
+        ...siteRest,
+        heroImageUrl: isInlineMediaUrl(heroImageUrl) ? undefined : heroImageUrl,
+        aboutImageUrl: isInlineMediaUrl(aboutImageUrl) ? undefined : aboutImageUrl,
+      },
+    })
   );
   if (!savedMain) {
     toast.error("Memória do navegador cheia! Suas edições podem não ser salvas offline. Limpe o cache ou imagens geradas.");
   }
-
-  const heavyPrefix = scopedHeavyPrefix(resolvedUserId);
 
   if (logoBase64) safeSetItem(heavyPrefix + "logoBase64", logoBase64);
   else localStorage.removeItem(heavyPrefix + "logoBase64");
@@ -678,10 +855,40 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
   if (lastCleanPhoto) safeSetItem(heavyPrefix + "lastCleanPhoto", lastCleanPhoto);
   else localStorage.removeItem(heavyPrefix + "lastCleanPhoto");
 
-  const savedGallery = safeSetItem(scopedKey(getGalleryKey(), resolvedUserId), JSON.stringify(galleryImages || []));
+  if (hasProjectMedia) {
+    const savedMedia = safeSetItem(
+      heavyPrefix + PROJECT_MEDIA_CACHE_KEY,
+      JSON.stringify(projectMedia),
+    );
+    if (!savedMedia) console.warn("Quota exceeded when saving project media locally.");
+  } else {
+    localStorage.removeItem(heavyPrefix + PROJECT_MEDIA_CACHE_KEY);
+  }
+
+  const savedGallery = safeSetItem(getProjectGalleryKey(resolvedUserId, projectId), JSON.stringify(galleryImages || []));
   
   if (!savedGallery) {
     console.warn("Quota exceeded when saving gallery to local storage.");
+  }
+};
+
+const removeLocalProjectState = (userId: string, projectId?: string | null) => {
+  if (!projectId) return;
+  localStorage.removeItem(getProjectStorageKey(userId, projectId));
+  localStorage.removeItem(getProjectGalleryKey(userId, projectId));
+  const heavyPrefix = getProjectHeavyPrefix(userId, projectId);
+  HEAVY_KEYS.forEach((key) => localStorage.removeItem(heavyPrefix + key));
+  localStorage.removeItem(heavyPrefix + PROJECT_MEDIA_CACHE_KEY);
+};
+
+const getSavedPublicSiteSlug = (snapshot: FabricaState) => {
+  const raw = snapshot.siteContent?.canvaViagemUrl?.trim();
+  if (!raw) return "";
+  try {
+    const normalized = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    return new URL(normalized).hostname.split(".")[0] || "";
+  } catch {
+    return "";
   }
 };
 
@@ -724,6 +931,7 @@ const FabricaContext =
 
 export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   const [state, setState] = useState<FabricaState>(() =>
     loadInitialState(isLocalPreviewEnabled() ? LOCAL_PREVIEW_USER_ID : undefined)
   );
@@ -733,10 +941,48 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const [syncStatus, setSyncStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const activeUserIdRef = useRef<string | null>(null);
+  const projectSaveQueueRef = useRef<Map<string, Promise<{ id: string; stateSnapshot: FabricaState }>>>(new Map());
+  const [historyCount, setHistoryCount] = useState(0);
+  const [redoCount, setRedoCount] = useState(0);
+  const historyRef = useRef<FabricaState[]>([]);
+  const redoStackRef = useRef<FabricaState[]>([]);
 
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
+
+  const enqueueProjectPersistence = useCallback((
+    snapshot: FabricaState,
+    userId: string,
+    levelName?: string,
+  ) => {
+    const originalProjectId = snapshot.projectId || createTemporaryProjectId();
+    const queueKey = resolveFabricaProjectId(originalProjectId);
+    const previous = projectSaveQueueRef.current.get(queueKey);
+    const runSave = () => persistFabricaProject({
+      state: { ...snapshot, projectId: queueKey },
+      userId,
+      levelName,
+    });
+    const task = previous
+      ? previous.then(runSave, runSave)
+      : runSave();
+
+    projectSaveQueueRef.current.set(queueKey, task);
+    void task.then(
+      () => {
+        if (projectSaveQueueRef.current.get(queueKey) === task) {
+          projectSaveQueueRef.current.delete(queueKey);
+        }
+      },
+      () => {
+        if (projectSaveQueueRef.current.get(queueKey) === task) {
+          projectSaveQueueRef.current.delete(queueKey);
+        }
+      },
+    );
+    return task;
+  }, []);
 
   useEffect(() => {
     const handlePrefillSnapshot = (event: Event) => {
@@ -744,27 +990,42 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       const snapshot = customEvent.detail;
       if (!snapshot) return;
 
+      const previousState = stateRef.current;
+      const currentUserId = activeUserIdRef.current;
+      if (
+        currentUserId &&
+        currentUserId !== LOCAL_PREVIEW_USER_ID &&
+        hasMeaningfulProgress(previousState)
+      ) {
+        void enqueueProjectPersistence(previousState, currentUserId).catch((error) => {
+          console.warn("[Supabase Sync] Não foi possível concluir o save do projeto anterior:", error);
+        });
+      }
+
+      historyRef.current = [];
+      redoStackRef.current = [];
+      setHistoryCount(0);
+      setRedoCount(0);
       setState((prev) => {
-        // 🔑 Se o snapshot não tem projectId (ex: novo projeto vazio), gera um novo
-        const resolvedProjectId = snapshot.projectId || `proj_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-        const merged = {
-          ...getBaseState(),
+        const resolvedProjectId = snapshot.projectId || createTemporaryProjectId();
+        const incoming = normalizeStateSnapshot({
           ...snapshot,
-          projectId: resolvedProjectId,
           // ✅ Restaura a fase do projeto carregado (não mantém a fase atual)
           currentPhase: snapshot.currentPhase ?? prev.currentPhase,
           diagnosticoCompleto: false,
           lastEditedAt: new Date().toISOString(),
-          siteContent: {
-            ...getBaseState().siteContent,
-            ...(snapshot.siteContent || {}),
-            sections: {
-              ...getBaseState().siteContent.sections,
-              ...(snapshot.siteContent?.sections || {}),
-            },
-          },
-          crmForm: normalizeCrmFormConfig(snapshot.crmForm, isEs() ? "es" : "pt-BR"),
-        } as FabricaState;
+        }, resolvedProjectId);
+        const cached = activeUserIdRef.current
+          ? readProjectState(activeUserIdRef.current, resolvedProjectId)
+          : null;
+        const cachedIsNewer = Boolean(
+          cached && getStateTimestamp(cached) > getStateTimestamp(snapshot),
+        );
+        const merged = cachedIsNewer && cached
+          ? { ...cached, currentPhase: incoming.currentPhase, diagnosticoCompleto: false }
+          : cached
+            ? mergeSameProjectMedia(incoming, cached)
+            : incoming;
 
         stateRef.current = merged;
         // ✅ Persiste no localStorage IMEDIATAMENTE para evitar restauração errada se a aba fechar
@@ -775,7 +1036,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
     window.addEventListener("fabrica-load-snapshot", handlePrefillSnapshot as EventListener);
     return () => window.removeEventListener("fabrica-load-snapshot", handlePrefillSnapshot as EventListener);
-  }, []);
+  }, [enqueueProjectPersistence]);
 
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
@@ -805,7 +1066,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       activeUserIdRef.current = null;
-      setState(getBaseState());
+      setState(createFreshState());
       setHasLoadedFromDb(false);
       return;
     }
@@ -819,23 +1080,51 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     setState((prev) => {
       const scopedLocal = loadInitialState(user.id);
       if (userChanged) {
-        return hasMeaningfulProgress(scopedLocal) ? scopedLocal : getBaseState();
+        return scopedLocal;
       }
       const hasScopedProgress = hasMeaningfulProgress(scopedLocal);
       const prevIsDefault = !hasMeaningfulProgress(prev);
       return hasScopedProgress && prevIsDefault ? scopedLocal : prev;
     });
 
+    const hydrationUserId = user.id;
+    const activeProjectIdAtStart = readActiveProjectId(hydrationUserId);
+    let cancelled = false;
+    const canApplyHydration = () =>
+      !cancelled &&
+      activeUserIdRef.current === hydrationUserId &&
+      readActiveProjectId(hydrationUserId) === activeProjectIdAtStart;
+
     const loadSavedState = async () => {
       try {
         console.log("[Supabase Load] Iniciando carregamento do banco de dados...");
-        const { data, error } = await supabase
-          .from("fabrica_diagnosticos")
-          .select("id, state_snapshot, updated_at")
-          .eq("user_id", user.id)
-          .order("updated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        const activeProjectId = activeProjectIdAtStart;
+        const localSnapshot = readPersistedState(hydrationUserId, activeProjectId || undefined);
+        const requestedCloudProjectId = activeProjectId
+          || (isPersistedProjectId(localSnapshot.projectId) ? localSnapshot.projectId : null);
+        const hasActiveProjectCache = Boolean(
+          activeProjectId && localStorage.getItem(getProjectStorageKey(hydrationUserId, activeProjectId)),
+        );
+        let data: any = null;
+        let error: any = null;
+
+        // Um projeto temporário ativo representa uma criação intencional ainda não enviada.
+        // Nesse caso não substituímos seu conteúdo pelo último projeto da nuvem.
+        if (!activeProjectId || isPersistedProjectId(requestedCloudProjectId) || !hasActiveProjectCache) {
+          let request: any = supabase
+            .from("fabrica_diagnosticos")
+            .select("id, state_snapshot, updated_at")
+            .eq("user_id", hydrationUserId);
+          request = isPersistedProjectId(requestedCloudProjectId)
+            ? request.eq("id", requestedCloudProjectId)
+            : request.order("updated_at", { ascending: false }).limit(1);
+          const result = await request.maybeSingle();
+          data = result.data;
+          error = result.error;
+        }
+
+        // Uma troca de projeto durante a consulta torna esta resposta obsoleta.
+        if (!canApplyHydration()) return;
 
         if (error) {
           console.warn("[Supabase Load] Falha ao carregar estado:", error.message);
@@ -843,95 +1132,50 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (data?.state_snapshot) {
-          const saved = data.state_snapshot as unknown as FabricaState;
-          setState((prev) => {
-            console.log("[Supabase Load] Comparando última edição local com a nuvem.");
-            const localSnapshot = readPersistedState(user.id);
-            const localTime = Math.max(getStateTimestamp(prev), getStateTimestamp(localSnapshot));
-            const dbTime = getStateTimestamp(saved, data.updated_at);
-            const useLocal = localTime > dbTime && hasMeaningfulProgress(localSnapshot);
-            const primary = useLocal ? localSnapshot : saved;
-            const fallback = useLocal ? saved : localSnapshot;
+          const cloudSnapshot = normalizeStateSnapshot(data.state_snapshot as Partial<FabricaState>, data.id);
+          const sameProject = localSnapshot.projectId === data.id;
+          const localIsNewer = sameProject
+            && hasMeaningfulProgress(localSnapshot)
+            && getStateTimestamp(localSnapshot) > getStateTimestamp(cloudSnapshot, data.updated_at);
+          const legacyLocalIsNewer = !activeProjectId
+            && !sameProject
+            && hasMeaningfulProgress(localSnapshot)
+            && getStateTimestamp(localSnapshot) > getStateTimestamp(cloudSnapshot, data.updated_at);
 
-            const merged = {
-              ...getBaseState(),
-              projectId: primary.projectId || fallback.projectId || data.id,
-              ...primary,
-              // Always preserve core data from DB if local is suspiciously empty or default
-              agencyName: primary.agencyName || fallback.agencyName || "",
-              whatsapp: primary.whatsapp || fallback.whatsapp || "",
-              instagram: primary.instagram || fallback.instagram || "",
-              agencyEmail: primary.agencyEmail || fallback.agencyEmail || "",
-              niche: primary.niche || fallback.niche || "",
-              address: primary.address || fallback.address || "",
-              city: primary.city || fallback.city || "",
-              digitalScore: primary.digitalScore || fallback.digitalScore || 0,
-              level: primary.level > 1 ? primary.level : (fallback.level > 1 ? fallback.level : 1),
-              selectedPackages: primary.selectedPackages?.length ? primary.selectedPackages : (fallback.selectedPackages || []),
-              leadStatuses: Object.keys(primary.leadStatuses || {}).length ? primary.leadStatuses : (fallback.leadStatuses || {}),
-              depoimentos: primary.depoimentos?.length ? primary.depoimentos : (fallback.depoimentos || []),
-              logoBase64: primary.logoBase64 || fallback.logoBase64 || "",
-              generatedAdImage: primary.generatedAdImage || fallback.generatedAdImage || "",
-              lastCleanPhoto: primary.lastCleanPhoto || fallback.lastCleanPhoto || "",
-              allGeneratedAdImages: primary.allGeneratedAdImages?.length
-                ? primary.allGeneratedAdImages
-                : (fallback.allGeneratedAdImages || []),
-              metaPixelId: primary.metaPixelId || fallback.metaPixelId || "",
-              ga4Id: primary.ga4Id || fallback.ga4Id || "",
-              socialLinks: primary.socialLinks?.length ? primary.socialLinks : (fallback.socialLinks || []),
-              crmForm: normalizeCrmFormConfig(primary.crmForm || fallback.crmForm, isEs() ? "es" : "pt-BR"),
-              siteContent: {
-                ...getBaseState().siteContent,
-                ...(fallback.siteContent || {}),
-                ...(primary.siteContent || {}),
-                hero: {
-                  ...(getBaseState().siteContent as any).hero,
-                  ...((fallback.siteContent as any)?.hero || {}),
-                  ...((primary.siteContent as any)?.hero?.headline ? (primary.siteContent as any).hero : {}),
-                },
-                about: {
-                  ...(getBaseState().siteContent as any).about,
-                  ...((fallback.siteContent as any)?.about || {}),
-                  ...((primary.siteContent as any)?.about?.content ? (primary.siteContent as any).about : {}),
-                },
-                features: (primary.siteContent as any)?.features?.length ? (primary.siteContent as any).features : ((fallback.siteContent as any)?.features || []),
-                footer: {
-                  ...(getBaseState().siteContent as any).footer,
-                  ...((fallback.siteContent as any)?.footer || {}),
-                  ...((primary.siteContent as any)?.footer?.text && (primary.siteContent as any).footer.text !== "© 2024 Todos os direitos reservados." ? (primary.siteContent as any).footer : {}),
-                },
-                galleryImages: primary.siteContent?.galleryImages?.length
-                  ? primary.siteContent.galleryImages
-                  : (fallback.siteContent?.galleryImages || []),
-                sections: {
-                  ...getBaseState().siteContent.sections,
-                  ...(fallback.siteContent?.sections || {}),
-                  ...(primary.siteContent?.sections || {}),
-                },
-                vercelUrl: primary.siteContent?.vercelUrl || fallback.siteContent?.vercelUrl || "",
-                canvaViagemUrl: primary.siteContent?.canvaViagemUrl || fallback.siteContent?.canvaViagemUrl || "",
-              },
-              lastEditedAt: useLocal
-                ? (localSnapshot.lastEditedAt || prev.lastEditedAt || "")
-                : (saved.lastEditedAt || data.updated_at || ""),
-            };
+          let selected = (localIsNewer || legacyLocalIsNewer) ? localSnapshot : cloudSnapshot;
+          if (sameProject && !localIsNewer) {
+            // A nuvem não leva base64 pesado; completamos a mídia somente com
+            // o cache local do MESMO projeto, inclusive hero e pacotes.
+            selected = mergeSameProjectMedia(cloudSnapshot, localSnapshot);
+          }
 
-            persistLocalState(merged as FabricaState, user.id);
-            clearLegacyState();
-            return merged as FabricaState;
-          });
-          console.log("[Supabase Load] Estado carregado e mesclado com sucesso!");
+          stateRef.current = selected;
+          setState(selected);
+          persistLocalState(selected, hydrationUserId);
+          clearLegacyState();
+          console.log("[Supabase Load] Projeto ativo carregado sem misturar snapshots.");
         } else {
-          console.log("[Supabase Load] Nenhum estado prévio encontrado para este usuário no banco.");
+          const selected = hasMeaningfulProgress(localSnapshot) ? localSnapshot : createFreshState();
+          stateRef.current = selected;
+          setState(selected);
+          persistLocalState(selected, hydrationUserId);
+          console.log("[Supabase Load] Mantendo projeto local ativo.");
         }
       } catch (err) {
-        console.error("[Supabase Load] Erro catastrófico ao carregar do Supabase:", err);
+        if (!cancelled && activeUserIdRef.current === hydrationUserId) {
+          console.error("[Supabase Load] Erro catastrófico ao carregar do Supabase:", err);
+        }
       } finally {
-        setHasLoadedFromDb(true);
+        if (!cancelled && activeUserIdRef.current === hydrationUserId) {
+          setHasLoadedFromDb(true);
+        }
       }
     };
 
-    loadSavedState();
+    void loadSavedState();
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id, authLoading]);
 
   // ☁️ PERSISTÊNCIA NUVEM: Sincroniza estado debounced com Supabase
@@ -945,72 +1189,58 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
       setSyncStatus("saving");
       try {
-        // ⚠️ Se logo muito grande, avisa o usuário em vez de falhar silenciosamente
         const logoIsTooBig = state.logoBase64 && state.logoBase64.length >= 400_000;
         if (logoIsTooBig) {
           console.warn("[Supabase Sync] Logo muito grande para nuvem (>400KB). Use uma imagem menor.");
-          // Aviso só aparece uma vez por sessão usando sessionStorage
           if (!sessionStorage.getItem('logo-size-warned')) {
             toast.warning("⚠️ Logo muito grande — ela fica salva neste dispositivo, mas não será sincronizada em outros. Use uma imagem abaixo de 300KB.", { duration: 8000 });
             sessionStorage.setItem('logo-size-warned', '1');
           }
         }
-        const logoForCloud = !logoIsTooBig ? state.logoBase64 : "";
-        const cleanState = {
-          ...state,
-          logoBase64: logoForCloud,
-          generatedAdImage: "",
-          lastCleanPhoto: "",
-          siteContent: {
-            ...state.siteContent,
-            galleryImages: [],
-          },
-          allGeneratedAdImages: []
-        };
 
-        const payloadToSave: any = {
-          user_id: user.id,
-          agency_name: state.agencyName || "Nova Agência",
-          state_snapshot: cleanState as any,
-          updated_at: new Date().toISOString()
-        };
-        
-        let request;
+        const originalProjectId = state.projectId || createTemporaryProjectId();
+        const persistence = enqueueProjectPersistence(
+          { ...state, projectId: originalProjectId },
+          user.id,
+        );
+        const { id } = await persistence;
+        const activeProjectId = stateRef.current.projectId;
+        const projectStillActive = activeProjectId === originalProjectId || activeProjectId === id;
 
-        if (state.projectId && !state.projectId.startsWith("proj_")) {
-          payloadToSave.id = state.projectId;
-          // Update existente
-          request = supabase
-            .from("fabrica_diagnosticos")
-            .update(payloadToSave)
-            .eq("id", state.projectId)
-            .select("id")
-            .maybeSingle();
-        } else {
-          // Novo projeto
-          request = supabase
-            .from("fabrica_diagnosticos")
-            .insert(payloadToSave)
-            .select("id")
-            .maybeSingle();
+        if (id !== originalProjectId) {
+          if (stateRef.current.projectId === originalProjectId) {
+            const resolved = { ...stateRef.current, projectId: id };
+            stateRef.current = resolved;
+            setState(resolved);
+            persistLocalState(resolved, user.id);
+            removeLocalProjectState(user.id, originalProjectId);
+          }
+
+          const publishedSlug = getSavedPublicSiteSlug(state);
+          if (publishedSlug) {
+            const { error: linkError } = await supabase
+              .from("public_sites")
+              .update({ project_id: id })
+              .eq("id", publishedSlug)
+              .eq("owner_id", user.id);
+            if (linkError) throw linkError;
+          }
+        } else if (projectStillActive) {
+          // Nunca regrave o ponteiro ativo usando o snapshot antigo da closure.
+          persistLocalState(stateRef.current, user.id);
         }
 
-        const { error, data } = await request;
-
-        if (error) {
-          console.warn("[Supabase Sync] Falha:", error.message);
-          setSyncStatus("error");
-        } else {
-          console.log("[Supabase Sync] ✓ Salvo na nuvem");
+        await queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
+        if (projectStillActive) {
+          console.log("[Supabase Sync] ✓ Projeto salvo na nuvem");
           setLastSyncedAt(new Date());
           setSyncStatus("saved");
-          if (data?.id && (state.projectId?.startsWith("proj_") || !state.projectId)) {
-            stateRef.current.projectId = data.id;
-            setState(prev => ({ ...prev, projectId: data.id }));
-          }
         }
       } catch (err) {
-        setSyncStatus("error");
+        console.warn("[Supabase Sync] Falha:", err);
+        if (stateRef.current.projectId === state.projectId) {
+          setSyncStatus("error");
+        }
       }
     };
 
@@ -1030,7 +1260,9 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       },
     }),
     user?.id,
-    hasLoadedFromDb
+    hasLoadedFromDb,
+    queryClient,
+    enqueueProjectPersistence
   ]);
 
   useEffect(() => {
@@ -1056,12 +1288,6 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [hasLoadedFromDb]);
-
-  // Histórico de alterações (Undo / Redo)
-  const [historyCount, setHistoryCount] = useState(0);
-  const [redoCount, setRedoCount] = useState(0);
-  const historyRef = useRef<FabricaState[]>([]);
-  const redoStackRef = useRef<FabricaState[]>([]);
 
   const applyPatch = useCallback(
     (
@@ -1140,19 +1366,52 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const reset = useCallback(() => {
+    const previousState = stateRef.current;
+    if (user?.id && hasMeaningfulProgress(previousState)) {
+      void enqueueProjectPersistence(previousState, user.id).catch((error) => {
+        console.warn("[Supabase Sync] Não foi possível concluir o save do projeto anterior:", error);
+      });
+    }
+
     historyRef.current = [];
     redoStackRef.current = [];
     setHistoryCount(0);
     setRedoCount(0);
-    // 🔑 Gera novo projectId ÚNICO para evitar que o auto-sync sobrescreva o projeto anterior
-    const freshState = { ...getBaseState(), projectId: `proj_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` };
+    const freshState = createFreshState();
+    const temporaryId = freshState.projectId!;
     stateRef.current = freshState;
     setState(freshState);
-    // Limpa o localStorage do projeto anterior para evitar restauração errada
     if (activeUserIdRef.current) {
       persistLocalState(freshState, activeUserIdRef.current);
     }
-  }, []);
+
+    if (user?.id) {
+      setSyncStatus("saving");
+      const persistence = enqueueProjectPersistence(freshState, user.id, "Novo projeto");
+
+      void persistence.then(async ({ id }) => {
+        const projectStillActive = stateRef.current.projectId === temporaryId || stateRef.current.projectId === id;
+        if (stateRef.current.projectId === temporaryId) {
+          const resolved = { ...stateRef.current, projectId: id };
+          stateRef.current = resolved;
+          setState(resolved);
+          persistLocalState(resolved, user.id);
+          removeLocalProjectState(user.id, temporaryId);
+        }
+        await queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
+        if (projectStillActive) {
+          setLastSyncedAt(new Date());
+          setSyncStatus("saved");
+        }
+      }).catch((error) => {
+        console.warn("[Supabase Sync] Falha ao criar projeto vazio:", error);
+        if (stateRef.current.projectId === temporaryId) {
+          setSyncStatus("error");
+          toast.error("Não foi possível salvar o novo projeto na nuvem. Suas edições continuam neste dispositivo.");
+        }
+      });
+    }
+  }, [enqueueProjectPersistence, queryClient, user?.id]);
 
   const setPhase = useCallback((phase: number) => {
     setState((prev) => ({ ...prev, currentPhase: phase }));

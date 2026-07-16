@@ -226,11 +226,14 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
                           onChange={(e) => {
                             const p = savedProjects.find(x => x.id === e.target.value);
                             if (p && p.state_snapshot) {
-                               update({ 
-                                 ...p.state_snapshot, 
-                                 currentPhase: state.currentPhase, 
-                                 diagnosticoCompleto: false 
-                               });
+                               window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", {
+                                 detail: {
+                                   ...p.state_snapshot,
+                                   projectId: p.id,
+                                   currentPhase: state.currentPhase,
+                                   diagnosticoCompleto: false,
+                                 },
+                               }));
                                toast.success(`¡Proyecto "${p.agency_name || 'Sin Nombre'}" cargado! Todas las configuraciones han sido restauradas.`);
                             }
                             e.target.value = "";

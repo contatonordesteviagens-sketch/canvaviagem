@@ -4,6 +4,9 @@ import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { buildLandingHTML } from "@/lib/fabrica-html-export";
+import { persistFabricaProject } from "@/lib/fabrica-project-persistence";
+import { getCanvaSiteUrl, validateCanvaSiteSlug } from "@/lib/canva-site-domain";
+import { checkCanvaSiteSlugAvailability, resolveFabricaSiteSlug } from "@/lib/fabrica-site-publication";
 import { Loader2, Eye, X as CloseIcon } from "lucide-react";
 import { 
   TrendingUp, 
@@ -77,20 +80,49 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
       toast.error("Faça login para publicar.");
       return;
     }
+    const slug = resolveFabricaSiteSlug(state.siteContent?.canvaViagemUrl, state.agencyName || "");
+    const slugError = validateCanvaSiteSlug(slug);
+    if (slugError) {
+      const messages = {
+        too_short: "Informe um nome de agência com pelo menos 3 caracteres para criar o endereço do site.",
+        too_long: "O endereço do site deve ter no máximo 63 caracteres.",
+        invalid: "Use somente letras, números e hífens no endereço do site.",
+        reserved: "Esse endereço é reservado. Escolha outro nome para a agência.",
+      } as const;
+      toast.error(messages[slugError]);
+      return;
+    }
     
     setIsPublishing(true);
     setIsPublishError(false); // Fix #8: reseta estado de falha
     const loadingToast = toast.loading("Publicando e ativando seu site...");
     
     try {
-      const html = buildLandingHTML(state, user.id);
+      const persistedProject = await persistFabricaProject({ state, userId: user.id });
+      const projectId = persistedProject.id;
+      const projectState = { ...state, projectId };
+      const availability = await checkCanvaSiteSlugAvailability({
+        slug,
+        ownerId: user.id,
+        projectId,
+        currentUrl: state.siteContent?.canvaViagemUrl,
+      });
+      if (!availability.allowed) {
+        toast.dismiss(loadingToast);
+        toast.error(availability.reason === "another_owner"
+          ? `O domínio "${slug}.canvaviagem.com" já está sendo usado por outra agência.`
+          : "Esse domínio já pertence a outro projeto da sua conta. Abra o projeto original ou escolha outro endereço.");
+        setIsPublishError(true);
+        return;
+      }
+      const html = buildLandingHTML(projectState, user.id);
       // Bypass Supabase Storage RLS entirely by saving to public_sites table
       const { error: dbError } = await supabase
         .from("public_sites")
         .upsert({
-          id: state.projectId || user.id,
+          id: slug,
           owner_id: user.id,
-          project_id: state.projectId || user.id,
+          project_id: projectId,
           html: html,
           locale: "pt-BR"
         });
@@ -98,6 +130,16 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
       if (dbError) {
         throw dbError;
       }
+
+      const publishedState = {
+        ...projectState,
+        siteContent: { ...state.siteContent, canvaViagemUrl: getCanvaSiteUrl(slug) },
+      };
+      await persistFabricaProject({ state: publishedState, userId: user.id });
+      update({
+        projectId,
+        siteContent: publishedState.siteContent,
+      });
 
       
       toast.dismiss(loadingToast);
@@ -129,7 +171,9 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
     const checkStatus = async () => {
       if (!user?.id) return;
       try {
-        const siteUrl = `${window.location.origin}/view/${state.projectId || user.id}`;
+        const slug = resolveFabricaSiteSlug(state.siteContent?.canvaViagemUrl, state.agencyName || "");
+        if (!slug) return;
+        const siteUrl = getCanvaSiteUrl(slug);
         const res = await fetch(siteUrl, { method: 'HEAD', cache: 'no-cache' });
         setSiteExists(res.ok);
       } catch {
@@ -137,7 +181,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
       }
     };
     checkStatus();
-  }, [user?.id, isPublishing]);
+  }, [user?.id, isPublishing, state.agencyName, state.siteContent?.canvaViagemUrl]);
 
 
 

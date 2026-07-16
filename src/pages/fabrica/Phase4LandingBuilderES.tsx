@@ -7,6 +7,8 @@ import { CloudSaveIndicatorES } from "@/components/fabrica/CloudSaveIndicatorES"
 import { SiteTemplateSelector } from "@/components/fabrica/SiteTemplateSelector";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { getSiteTemplateDefinition } from "@/lib/site-template-catalog";
+import { persistFabricaProject } from "@/lib/fabrica-project-persistence";
+import { checkCanvaSiteSlugAvailability } from "@/lib/fabrica-site-publication";
 import {
   Plus,
   Trash2,
@@ -83,7 +85,7 @@ const normalizeExternalImageUrl = (value: string) => {
 };
 export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { data: savedProjects } = useDiagnosticos();
-  const { state, update, systemUpdate, undo, redo, canUndo, canRedo, isHydrated } = useFabricaContext();
+  const { state, update, systemUpdate, reset, undo, redo, canUndo, canRedo, isHydrated } = useFabricaContext();
   const { user } = useAuth();
   const [previewing, setPreviewing] = useState(true);
   const [downloadCount, setDownloadCount] = useState(0);
@@ -490,23 +492,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   const resetSiteToBlank = () => {
     const SYNC_KEY = "fabrica-phase4-autosync-v1-es";
     localStorage.removeItem(SYNC_KEY);
-    const newProjectId = crypto.randomUUID();
-    update({
-      projectId: newProjectId,
-      agencyName: "",
-      selectedPackages: [],
-      siteContent: {
-        ...state.siteContent,
-        heroHeadline: "",
-        heroSubheadline: "",
-        heroCtaLabel: "Hablar por WhatsApp",
-        finalCtaTitle: "¿Listo para tu próximo viaje?",
-        finalCtaLabel: "Llamar por WhatsApp",
-        galleryImages: [],
-        canvaViagemUrl: "",
-        vercelUrl: "",
-      },
-    });
+    const currentPhase = state.currentPhase;
+    reset();
+    systemUpdate({ currentPhase });
     setAutoSyncDone(false);
     setAutoSyncFields([]);
     toast.success("¡Nuevo proyecto en blanco creado!");
@@ -625,6 +613,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 if (!val) return;
                 const p = savedProjects!.find(x => x.id === val);
                 if (!p || !p.state_snapshot) return;
+                const isRecovered = p.source === "published_recovery";
                 const targetName = p.agency_name || 'Sin Nombre';
                 const currentName = state.agencyName || 'Sin nombre';
                 if (state.agencyName && p.id !== state.projectId) {
@@ -632,7 +621,8 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                   if (!ok) { e.target.value = ""; return; }
                 }
                 window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                toast.success(`📂 ¡Proyecto "${targetName}" cargado!`);
+                if (isRecovered) toast.warning(`Sitio anterior "${targetName}" recuperado. Revisa los datos antes de volver a publicarlo.`);
+                else toast.success(`📂 ¡Proyecto "${targetName}" cargado!`);
               }}
               className="w-full max-w-md bg-white/[0.04] border border-white/15 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
             >
@@ -642,10 +632,11 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 const pkgCount = snap?.selectedPackages?.length || 0;
                 const url = snap?.siteContent?.canvaViagemUrl || "";
                 const isCurrent = p.id === state.projectId;
+                const isRecovered = p.source === "published_recovery";
                 const date = new Date(p.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
                 return (
                   <option key={p.id} value={p.id} className="bg-zinc-900 text-white">
-                    {isCurrent ? "● " : ""}{p.agency_name || "Sin Nombre"}{url ? ` — ${url}` : ""} • {pkgCount} paquete{pkgCount !== 1 ? "s" : ""} • {date}
+                    {isCurrent ? "● " : ""}{p.agency_name || "Sin Nombre"}{isRecovered ? " • Recuperado" : ""}{url ? ` — ${url}` : ""} • {pkgCount} paquete{pkgCount !== 1 ? "s" : ""} • {date}
                   </option>
                 );
               })}
@@ -1556,12 +1547,6 @@ const PublishSiteCardES = ({
   const publishToCanvaViagem = async (slug: string) => {
     const cleanSlug = buildSiteSlug(slug);
     const url = getCanvaSiteUrl(cleanSlug);
-    update({
-      siteContent: {
-        ...state.siteContent,
-        canvaViagemUrl: url,
-      },
-    });
     return { success: true, url };
   };
 
@@ -1611,22 +1596,23 @@ const PublishSiteCardES = ({
       return;
     }
 
-    const { data: existingDomain } = await supabase
-      .from("public_sites")
-      .select("owner_id")
-      .eq("id", cleanSlug)
-      .maybeSingle();
-    if (existingDomain && existingDomain.owner_id !== user.id) {
-      toast.error(`El dominio "${cleanSlug}.canvaviagem.com" ya pertenece a otra agencia.`);
-      return;
-    }
-
     setIsPublishing(true);
     try {
-      let publishId = state.projectId;
-      if (!publishId) {
-        publishId = crypto.randomUUID();
-        update({ projectId: publishId });
+      const persistedProject = await persistFabricaProject({ state, userId: user.id });
+      const publishId = persistedProject.id;
+      if (publishId !== state.projectId) update({ projectId: publishId });
+
+      const availability = await checkCanvaSiteSlugAvailability({
+        slug: cleanSlug,
+        ownerId: user.id,
+        projectId: publishId,
+        currentUrl: state.siteContent.canvaViagemUrl,
+      });
+      if (!availability.allowed) {
+        toast.error(availability.reason === "another_owner"
+          ? `El dominio "${cleanSlug}.canvaviagem.com" ya pertenece a otra agencia.`
+          : "Este dominio ya pertenece a otro proyecto de tu cuenta. Abre el proyecto original o elige otra dirección.");
+        return;
       }
 
       let finalHtml = html;
@@ -1665,6 +1651,16 @@ const PublishSiteCardES = ({
 
       const result = await publishToCanvaViagem(cleanSlug);
       if (result.success) {
+        const publishedState = {
+          ...state,
+          projectId: publishId,
+          siteContent: { ...state.siteContent, canvaViagemUrl: result.url },
+        };
+        await persistFabricaProject({ state: publishedState, userId: user.id });
+        update({
+          projectId: publishId,
+          siteContent: publishedState.siteContent,
+        });
         toast.success(
           <div>
             ¡Sitio publicado con éxito! 🎉

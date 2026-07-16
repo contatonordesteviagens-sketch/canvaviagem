@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { COUNTRIES_DIAL, type CountryDial } from "@/lib/countriesDial";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AGENCY_TYPES = [
   { v: "autonoma", l: "Agente autónomo / Freelancer" },
@@ -48,6 +49,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const saveProject = useSaveDiagnostico();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
@@ -214,10 +216,10 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
           <button
             type="button"
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
-            className="w-full flex items-center justify-between text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
+            className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
           >
             <span className="flex items-center gap-1.5">📂 EDITAR SITIOS (Proyectos Guardados) {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
-            <span className="text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ OCULTAR" : "▼ EXPANDIR / CARGAR"}</span>
+            <span className="self-end sm:self-auto text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ OCULTAR" : "▼ EXPANDIR / CARGAR"}</span>
           </button>
           
           {projectsPanelOpen && (
@@ -230,6 +232,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                     if (!val) return;
                     const p = savedProjects!.find(x => x.id === val);
                     if (!p || !p.state_snapshot) return;
+                    const isRecovered = p.source === "published_recovery";
                     const targetName = p.agency_name || 'Sin Nombre';
                     const currentName = state.agencyName || 'Sin nombre';
                     if (state.agencyName && p.id !== state.projectId) {
@@ -237,7 +240,8 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                       if (!ok) { e.target.value = ""; return; }
                     }
                     window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                    toast.success(`📂 ¡Proyecto "${targetName}" cargado!`);
+                    if (isRecovered) toast.warning(`Sitio anterior "${targetName}" recuperado. Revisa los datos antes de volver a publicarlo.`);
+                    else toast.success(`📂 ¡Proyecto "${targetName}" cargado!`);
                     setTimeout(() => onNavigate?.("phase", 2), 100);
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
@@ -249,9 +253,10 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                     const score = snap?.digitalScore || p.digital_score || 0;
                     const date = new Date(p.updated_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
                     const isCurrent = p.id === state.projectId;
+                    const isRecovered = p.source === "published_recovery";
                     return (
                       <option key={p.id} value={p.id} className="bg-zinc-900">
-                        {isCurrent ? '● ' : ''}{p.agency_name || "Sin Nombre"} — {pkgCount} paquete{pkgCount !== 1 ? 's' : ''} • Score {score}% • {date}
+                        {isCurrent ? '● ' : ''}{p.agency_name || "Sin Nombre"}{isRecovered ? " • Recuperado" : ""} — {pkgCount} paquete{pkgCount !== 1 ? 's' : ''} • Score {score}% • {date}
                       </option>
                     );
                   })}
@@ -292,10 +297,33 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                     const currentName = state.agencyName || 'Sin nombre';
                     if (!window.confirm(`⚠️ ¿Realmente deseas eliminar el proyecto "${currentName}"? Esta acción no se puede deshacer.`)) return;
                     try {
-                      const { error } = await supabase.from("fabrica_diagnosticos" as any).delete().eq("id", state.projectId);
-                      if (error) throw error;
+                      const projectId = state.projectId || "";
+                      const storedProject = savedProjects?.find((project) => project.id === projectId);
+                      const snapshot = storedProject?.state_snapshot || state;
+                      const linkedSlugs: string[] = [];
+                      for (const url of [snapshot.siteContent?.canvaViagemUrl, snapshot.siteContent?.vercelUrl]) {
+                        if (!url) continue;
+                        try { linkedSlugs.push(new URL(url).hostname.split(".")[0]); } catch { /* URL anterior inválida */ }
+                      }
+                      const uniqueSlugs = [...new Set(linkedSlugs.filter(Boolean))];
+                      const isStoredProjectId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
+                      if (isStoredProjectId) {
+                        const { error: sitesError } = await supabase.from("public_sites").delete().eq("owner_id", user!.id).eq("project_id", projectId);
+                        if (sitesError) throw sitesError;
+                      }
+                      if (uniqueSlugs.length > 0) {
+                        const { error: slugsError } = await supabase.from("public_sites").delete().eq("owner_id", user!.id).in("id", uniqueSlugs);
+                        if (slugsError) throw slugsError;
+                      }
+                      if (isStoredProjectId) {
+                        const { error } = await supabase.from("fabrica_diagnosticos" as any).delete().eq("id", projectId).eq("user_id", user!.id);
+                        if (error) throw error;
+                      }
+                      await Promise.all([
+                        queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
+                        queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
+                      ]);
                       toast.success("🗑️ ¡Proyecto eliminado con éxito!");
-                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
                       reset();
                     } catch (err: any) {
                       toast.error(err?.message || "Error al eliminar proyecto.");
@@ -314,12 +342,12 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                 onClick={() => {
                   const confirmed = window.confirm(
                     `⚠️ Antes de crear un nuevo proyecto, asegúrate de haber guardado el proyecto actual ("${state.agencyName || 'Sin nombre'}").\n\n¿Deseas continuar y crear un proyecto en blanco?`
-                  );
-                  if (!confirmed) return;
-                  window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
-                  reset();
-                  toast.success("¡Nuevo proyecto iniciado! Puedes completar los datos iniciales aquí.");
-                  setProjectsPanelOpen(false);
+                   );
+                   if (!confirmed) return;
+                   reset();
+                   toast.success("¡Nuevo proyecto iniciado! Puedes completar los datos iniciales aquí.");
+                   setProjectsPanelOpen(false);
+                   onNavigate?.("phase", 1);
                 }}
                 className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
                 style={{ borderColor: UI_ACCENT_BORDER_SOFT }}

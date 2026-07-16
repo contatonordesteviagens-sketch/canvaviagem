@@ -8,6 +8,8 @@ import { BrandPaletteEditor, SectionBackgroundEditor } from "@/components/fabric
 import { SiteTemplateSelector } from "@/components/fabrica/SiteTemplateSelector";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { getSiteTemplateDefinition } from "@/lib/site-template-catalog";
+import { persistFabricaProject } from "@/lib/fabrica-project-persistence";
+import { checkCanvaSiteSlugAvailability } from "@/lib/fabrica-site-publication";
 import {
   Plus,
   Trash2,
@@ -140,7 +142,7 @@ const normalizeSocialUrl = (type: SocialType, value: string) => {
 };
 
 export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
-  const { state, update, systemUpdate, undo, redo, canUndo, canRedo, isHydrated } = useFabricaContext();
+  const { state, update, systemUpdate, reset, undo, redo, canUndo, canRedo, isHydrated } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const [previewing, setPreviewing] = useState(true);
@@ -734,23 +736,9 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   const resetSiteToBlank = () => {
     const SYNC_KEY = "fabrica-phase4-autosync-v1";
     localStorage.removeItem(SYNC_KEY);
-    const newProjectId = crypto.randomUUID();
-    update({
-      projectId: newProjectId,
-      agencyName: "",
-      selectedPackages: [],
-      siteContent: {
-        ...state.siteContent,
-        heroHeadline: "",
-        heroSubheadline: "",
-        heroCtaLabel: "Falar no WhatsApp",
-        finalCtaTitle: "Pronto para sua próxima viagem?",
-        finalCtaLabel: "Chamar no WhatsApp",
-        galleryImages: [],
-        canvaViagemUrl: "",
-        vercelUrl: "",
-      },
-    });
+    const currentPhase = state.currentPhase;
+    reset();
+    systemUpdate({ currentPhase });
     setAutoSyncDone(false);
     setAutoSyncFields([]);
     toast.success("Novo projeto em branco criado!");
@@ -902,6 +890,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 if (!val) return;
                 const p = savedProjects!.find(x => x.id === val);
                 if (!p || !p.state_snapshot) return;
+                const isRecovered = p.source === "published_recovery";
                 const targetName = p.agency_name || 'Sem Nome';
                 const currentName = state.agencyName || 'Sem nome';
                 if (state.agencyName && p.id !== state.projectId) {
@@ -909,7 +898,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   if (!ok) { e.target.value = ""; return; }
                 }
                 window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                toast.success(`📂 Projeto "${targetName}" carregado!`);
+                if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
+                else toast.success(`📂 Projeto "${targetName}" carregado!`);
               }}
               className="w-full max-w-md bg-white/[0.04] border border-white/15 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
             >
@@ -919,10 +909,11 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 const pkgCount = snap?.selectedPackages?.length || 0;
                 const url = snap?.siteContent?.canvaViagemUrl || "";
                 const isCurrent = p.id === state.projectId;
+                const isRecovered = p.source === "published_recovery";
                 const date = new Date(p.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
                 return (
                   <option key={p.id} value={p.id} className="bg-zinc-900 text-white">
-                    {isCurrent ? "● " : ""}{p.agency_name || "Sem Nome"}{url ? ` — ${url}` : ""} • {pkgCount} pacote{pkgCount !== 1 ? "s" : ""} • {date}
+                    {isCurrent ? "● " : ""}{p.agency_name || "Sem Nome"}{isRecovered ? " • Recuperado" : ""}{url ? ` — ${url}` : ""} • {pkgCount} pacote{pkgCount !== 1 ? "s" : ""} • {date}
                   </option>
                 );
               })}
@@ -2462,16 +2453,28 @@ const PublishSiteCard = ({
       return;
     }
 
-    const { data: existingDomain } = await supabase.from("public_sites").select("owner_id").eq("id", cleanSlug).maybeSingle();
-    if (existingDomain && existingDomain.owner_id !== user.id) {
-      toast.error(`O domínio "${cleanSlug}.canvaviagem.com" já está sendo usado por outra agência. Por favor, escolha outro subdomínio.`);
-      return;
-    }
-
     setIsCanvaViagemPublishing(true);
     const toastId = toast.loading("Publicando no link Canva Viagem...");
 
     try {
+      const persistedProject = await persistFabricaProject({ state, userId: user.id });
+      const projectId = persistedProject.id;
+      if (projectId !== state.projectId) update({ projectId });
+
+      const availability = await checkCanvaSiteSlugAvailability({
+        slug: cleanSlug,
+        ownerId: user.id,
+        projectId,
+        currentUrl: state.siteContent.canvaViagemUrl,
+      });
+      if (!availability.allowed) {
+        const message = availability.reason === "another_owner"
+          ? `O domínio "${cleanSlug}.canvaviagem.com" já está sendo usado por outra agência.`
+          : `Esse domínio já pertence a outro projeto da sua conta. Abra o projeto original ou escolha outro endereço.`;
+        toast.error(message, { id: toastId });
+        return;
+      }
+
       toast.loading("Otimizando imagens do site para o Canva Viagem (isso pode levar alguns segundos)...", { id: toastId });
       let finalHtml = html;
       const embeddedImages = Array.from(new Set(
@@ -2504,7 +2507,7 @@ const PublishSiteCard = ({
         .upsert({
           id: cleanSlug,
           owner_id: user.id,
-          project_id: state.projectId || null,
+          project_id: projectId,
           html: finalHtml,
           locale: 'pt-BR'
         });
@@ -2514,8 +2517,18 @@ const PublishSiteCard = ({
       }
 
       const finalUrl = liveUrl;
+      const publishedState = {
+        ...state,
+        projectId,
+        siteContent: {
+          ...state.siteContent,
+          canvaViagemUrl: finalUrl,
+        },
+      };
+      await persistFabricaProject({ state: publishedState, userId: user.id });
 
       update({
+        projectId,
         siteContent: {
           ...state.siteContent,
           canvaViagemUrl: finalUrl,

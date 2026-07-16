@@ -4,6 +4,9 @@ import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { buildLandingHTML } from "@/lib/fabrica-html-export-es";
+import { persistFabricaProject } from "@/lib/fabrica-project-persistence";
+import { getCanvaSiteUrl, validateCanvaSiteSlug } from "@/lib/canva-site-domain";
+import { checkCanvaSiteSlugAvailability, resolveFabricaSiteSlug } from "@/lib/fabrica-site-publication";
 import { Loader2, Eye, X as CloseIcon } from "lucide-react";
 import { 
   TrendingUp, 
@@ -60,19 +63,47 @@ export const Phase5DashboardES = () => {
       toast.error("Inicie sesión para publicar.");
       return;
     }
+    const slug = resolveFabricaSiteSlug(state.siteContent?.canvaViagemUrl, state.agencyName || "");
+    const slugError = validateCanvaSiteSlug(slug);
+    if (slugError) {
+      const messages = {
+        too_short: "Indica un nombre de agencia con al menos 3 caracteres para crear la dirección.",
+        too_long: "La dirección del sitio debe tener como máximo 63 caracteres.",
+        invalid: "Usa solamente letras, números y guiones en la dirección.",
+        reserved: "Esta dirección está reservada. Elige otro nombre para la agencia.",
+      } as const;
+      toast.error(messages[slugError]);
+      return;
+    }
     
     setIsPublishing(true);
     const loadingToast = toast.loading("Publicando y activando su sitio...");
     
     try {
-      const html = buildLandingHTML(state, user.id);
+      const persistedProject = await persistFabricaProject({ state, userId: user.id });
+      const projectId = persistedProject.id;
+      const projectState = { ...state, projectId };
+      const availability = await checkCanvaSiteSlugAvailability({
+        slug,
+        ownerId: user.id,
+        projectId,
+        currentUrl: state.siteContent?.canvaViagemUrl,
+      });
+      if (!availability.allowed) {
+        toast.dismiss(loadingToast);
+        toast.error(availability.reason === "another_owner"
+          ? `El dominio "${slug}.canvaviagem.com" ya pertenece a otra agencia.`
+          : "Este dominio ya pertenece a otro proyecto de tu cuenta. Abre el proyecto original o elige otra dirección.");
+        return;
+      }
+      const html = buildLandingHTML(projectState, user.id);
       // Bypass Supabase Storage RLS entirely by saving to public_sites table
       const { error: dbError } = await supabase
         .from("public_sites")
         .upsert({
-          id: state.projectId || user.id,
+          id: slug,
           owner_id: user.id,
-          project_id: state.projectId || user.id,
+          project_id: projectId,
           html: html,
           locale: "es"
         });
@@ -80,6 +111,16 @@ export const Phase5DashboardES = () => {
       if (dbError) {
         throw dbError;
       }
+
+      const publishedState = {
+        ...projectState,
+        siteContent: { ...state.siteContent, canvaViagemUrl: getCanvaSiteUrl(slug) },
+      };
+      await persistFabricaProject({ state: publishedState, userId: user.id });
+      update({
+        projectId,
+        siteContent: publishedState.siteContent,
+      });
 
       
       toast.dismiss(loadingToast);
@@ -104,7 +145,9 @@ export const Phase5DashboardES = () => {
     const checkStatus = async () => {
       if (!user?.id) return;
       try {
-        const siteUrl = `${window.location.origin}/view/${state.projectId || user.id}`;
+        const slug = resolveFabricaSiteSlug(state.siteContent?.canvaViagemUrl, state.agencyName || "");
+        if (!slug) return;
+        const siteUrl = getCanvaSiteUrl(slug);
         const res = await fetch(siteUrl, { method: 'HEAD', cache: 'no-cache' });
         setSiteExists(res.ok);
       } catch {
@@ -112,7 +155,7 @@ export const Phase5DashboardES = () => {
       }
     };
     checkStatus();
-  }, [user?.id, isPublishing]);
+  }, [user?.id, isPublishing, state.agencyName, state.siteContent?.canvaViagemUrl]);
 
 
 
