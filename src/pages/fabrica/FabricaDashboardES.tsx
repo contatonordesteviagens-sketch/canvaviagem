@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDiagnosticos, useSaveDiagnostico } from "@/hooks/useFabricaDiagnosticos";
+import { useDiagnosticos, useSaveDiagnostico, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
+import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Upload, 
@@ -23,6 +24,7 @@ import {
 import { toast } from "sonner";
 import { COUNTRIES_DIAL, type CountryDial } from "@/lib/countriesDial";
 import { useQueryClient } from "@tanstack/react-query";
+import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
 
 const AGENCY_TYPES = [
   { v: "autonoma", l: "Agente autónomo / Freelancer" },
@@ -45,7 +47,7 @@ const UI_ACCENT = "#F5F906";
 const UI_ACCENT_BORDER_SOFT = "rgba(245, 249, 6, 0.35)";
 
 export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
-  const { state, update, reset } = useFabricaContext();
+  const { state, update, reset, deleteAndDiscardCurrentProject, switchProject } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const saveProject = useSaveDiagnostico();
@@ -54,6 +56,37 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
   
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingProjectSwitch, setPendingProjectSwitch] = useState<DiagnosticoSalvo | null>(null);
+  const [isSwitchingProject, setIsSwitchingProject] = useState(false);
+
+  const loadSavedProject = async (project: DiagnosticoSalvo) => {
+    const targetName = project.agency_name || "Sin nombre";
+    const isRecovered = project.source === "published_recovery";
+    setIsSwitchingProject(true);
+    try {
+      await switchProject({ ...project.state_snapshot, projectId: project.id });
+      setPendingProjectSwitch(null);
+      if (isRecovered) toast.warning(`Sitio anterior "${targetName}" recuperado. Revisa los datos antes de volver a publicarlo.`);
+      else toast.success(`Proyecto "${targetName}" cargado.`);
+      window.setTimeout(() => onNavigate?.("phase", 2), 100);
+    } catch {
+      toast.error("No se pudo guardar el proyecto actual. El cambio fue cancelado para proteger tus datos.");
+    } finally {
+      setIsSwitchingProject(false);
+    }
+  };
+
+  const requestProjectSwitch = (project: DiagnosticoSalvo) => {
+    if (project.id === state.projectId) {
+      toast.info("Este proyecto ya está abierto.");
+      return;
+    }
+    if (!state.agencyName) {
+      void loadSavedProject(project);
+      return;
+    }
+    setPendingProjectSwitch(project);
+  };
 
   const handleSaveProject = async () => {
     if (!user) { toast.error("Inicia sesión para guardar"); return; }
@@ -208,6 +241,15 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
 
   return (
     <div className="space-y-8 animate-fadeIn max-w-[1280px] mx-auto pb-12">
+      <ProjectSwitchDialog
+        open={Boolean(pendingProjectSwitch)}
+        currentName={state.agencyName || "Sin nombre"}
+        targetName={pendingProjectSwitch?.agency_name || "Sin nombre"}
+        locale="es"
+        busy={isSwitchingProject}
+        onCancel={() => !isSwitchingProject && setPendingProjectSwitch(null)}
+        onConfirm={() => pendingProjectSwitch && void loadSavedProject(pendingProjectSwitch)}
+      />
 
       {/* Projetos Salvos / Guardados */}
       {user && (
@@ -232,17 +274,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                     if (!val) return;
                     const p = savedProjects!.find(x => x.id === val);
                     if (!p || !p.state_snapshot) return;
-                    const isRecovered = p.source === "published_recovery";
-                    const targetName = p.agency_name || 'Sin Nombre';
-                    const currentName = state.agencyName || 'Sin nombre';
-                    if (state.agencyName && p.id !== state.projectId) {
-                      const ok = window.confirm(`⚠️ Estás editando "${currentName}".\n\n¿Deseas cargar "${targetName}"? Guarda antes si tienes cambios sin confirmar.`);
-                      if (!ok) { e.target.value = ""; return; }
-                    }
-                    window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                    if (isRecovered) toast.warning(`Sitio anterior "${targetName}" recuperado. Revisa los datos antes de volver a publicarlo.`);
-                    else toast.success(`📂 ¡Proyecto "${targetName}" cargado!`);
-                    setTimeout(() => onNavigate?.("phase", 2), 100);
+                    requestProjectSwitch(p);
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
                 >
@@ -306,25 +338,24 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                         try { linkedSlugs.push(new URL(url).hostname.split(".")[0]); } catch { /* URL anterior inválida */ }
                       }
                       const uniqueSlugs = [...new Set(linkedSlugs.filter(Boolean))];
-                      const isStoredProjectId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
-                      if (isStoredProjectId) {
-                        const { error: sitesError } = await supabase.from("public_sites").delete().eq("owner_id", user!.id).eq("project_id", projectId);
-                        if (sitesError) throw sitesError;
-                      }
-                      if (uniqueSlugs.length > 0) {
-                        const { error: slugsError } = await supabase.from("public_sites").delete().eq("owner_id", user!.id).in("id", uniqueSlugs);
-                        if (slugsError) throw slugsError;
-                      }
-                      if (isStoredProjectId) {
-                        const { error } = await supabase.from("fabrica_diagnosticos" as any).delete().eq("id", projectId).eq("user_id", user!.id);
-                        if (error) throw error;
-                      }
+                      await deleteAndDiscardCurrentProject(async (persistedProjectId) => {
+                        if (persistedProjectId) {
+                          await deleteFabricaProject({ projectId: persistedProjectId, userId: user!.id, legacySlugs: uniqueSlugs });
+                        } else if (uniqueSlugs.length > 0) {
+                          const { error: slugsError } = await supabase
+                            .from("public_sites")
+                            .delete()
+                            .eq("owner_id", user!.id)
+                            .is("project_id", null)
+                            .in("id", uniqueSlugs);
+                          if (slugsError) throw slugsError;
+                        }
+                      });
                       await Promise.all([
                         queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
                         queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
                       ]);
                       toast.success("🗑️ ¡Proyecto eliminado con éxito!");
-                      reset();
                     } catch (err: any) {
                       toast.error(err?.message || "Error al eliminar proyecto.");
                     }

@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import type { FabricaState } from "./useFabricaContext";
+import { purgeFabricaProjectLocalCache, type FabricaState } from "./useFabricaContext";
 import { toast } from "sonner";
 import { buildCanvaSiteSlug, extractCanvaSiteSlug, getCanvaSiteUrl } from "@/lib/canva-site-domain";
 import { recoverFabricaStateFromPublishedHtml } from "@/lib/fabrica-project-recovery";
-import { persistFabricaProject } from "@/lib/fabrica-project-persistence";
+import { isPersistedProjectId, persistFabricaProject } from "@/lib/fabrica-project-persistence";
+import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
 
 export type DiagnosticoSource = "saved" | "published_recovery";
 
@@ -22,6 +23,7 @@ export interface DiagnosticoSalvo {
   updated_at: string;
   published_site_id?: string | null;
   published_site_url?: string | null;
+  published_project_id?: string | null;
   source?: DiagnosticoSource;
 }
 
@@ -144,6 +146,7 @@ export const useDiagnosticos = () => {
           ...project,
           published_site_id: publishedSite?.id || null,
           published_site_url: publishedSite ? getCanvaSiteUrl(publishedSite.id) : null,
+          published_project_id: publishedSite?.project_id || null,
           source: "saved",
         };
       });
@@ -196,6 +199,7 @@ export const useDiagnosticos = () => {
           updated_at: site.updated_at,
           published_site_id: site.id,
           published_site_url: siteUrl,
+          published_project_id: site.project_id,
           source: "published_recovery",
         };
       });
@@ -248,18 +252,46 @@ export const useDeleteDiagnostico = () => {
   const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (input: DiagnosticoSalvo | string) => {
       if (!user?.id) throw new Error("Faça login para excluir o projeto.");
-      const { error } = await supabase
-        .from("fabrica_diagnosticos" as any)
+      const project = typeof input === "string" ? null : input;
+      const projectId = typeof input === "string" ? input : input.id;
+      const publishedSiteId = project?.published_site_id || null;
+
+      if (isPersistedProjectId(projectId)) {
+        await deleteFabricaProject({
+          projectId,
+          userId: user.id,
+          legacySlugs: publishedSiteId ? [publishedSiteId] : [],
+        });
+        return { projectId };
+      }
+
+      if (!publishedSiteId) {
+        throw new Error("Este projeto antigo precisa ser aberto na Fábrica antes de ser excluído.");
+      }
+
+      const { data: deletedSite, error } = await supabase
+        .from("public_sites")
         .delete()
-        .eq("id", id)
-        .eq("user_id", user.id);
+        .eq("id", publishedSiteId)
+        .eq("owner_id", user.id)
+        .select("id")
+        .maybeSingle();
       if (error) throw error;
+      if (!deletedSite) throw new Error("O site recuperado não foi encontrado ou não pôde ser excluído.");
+      return { projectId };
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
-      toast.success("Diagnóstico removido");
+    onSuccess: ({ projectId }) => {
+      if (user?.id) purgeFabricaProjectLocalCache(user.id, [projectId]);
+      void Promise.all([
+        qc.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
+        qc.invalidateQueries({ queryKey: ["public-sites"] }),
+      ]);
+      toast.success("Projeto removido");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Não foi possível excluir o projeto.");
     },
   });
 };

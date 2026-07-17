@@ -1,7 +1,7 @@
 # Plano de implementação — carrossel de pacotes no F1
 
-> **Status:** stand-by, pronto para delegação
-> **Prioridade atual:** concluir e validar os novos modelos de site
+> **Status:** aprovado para iniciar depois do fechamento desta versão dos sites
+> **Prioridade atual:** manter o carrossel isolado do motor atual de site, formulário e CRM
 > **Objetivo:** transformar pacotes e artes do F1 em carrosséis editáveis sem duplicar cadastro, inventar informações ou multiplicar arquivos.
 
 ## Resultado esperado
@@ -71,17 +71,18 @@ Preço, data, disponibilidade, inclusão, exclusão, logística e demais fatos e
 
 O objetivo `ultimas-vagas` só fica habilitado quando a disponibilidade cadastrada no pacote sustenta explicitamente essa afirmação.
 
-## Estrutura inicial de cinco slides
+## Estrutura inicial de seis slides
 
 | Slide | Função | Origem |
 |---|---|---|
 | 1. Capa | atenção | arte selecionada, imagem, título e subtítulo |
-| 2. Por que escolher | valor | descrição longa, descrição e destaques |
-| 3. O que inclui | concretude | inclusões, exclusões e destaques |
-| 4. Como será | entendimento | roteiro, duração, datas, saída e hospedagem |
-| 5. Oferta e CTA | conversão | preço, pagamento, disponibilidade e contato |
+| 2. Desejo e valor | contexto | descrição longa e principal diferencial |
+| 3. Destaques | descoberta | destaques e galeria |
+| 4. O que inclui | concretude | inclusões e exclusões cadastradas |
+| 5. Como será | entendimento | roteiro, duração, datas, saída e hospedagem |
+| 6. Oferta e CTA | conversão | preço, pagamento, disponibilidade e contato |
 
-O usuário pode trabalhar com 3 a 10 slides, adicionar um slide vazio, remover, duplicar, reordenar, trocar tipo, imagem, texto, cor, layout e CTA.
+No MVP, o usuário pode trabalhar com 3 a 7 slides, adicionar um slide vazio, remover, duplicar, reordenar, trocar tipo, imagem, texto, cor, layout e CTA. Limites maiores devem ser avaliados depois com testes reais de edição e exportação em celular.
 
 Se não houver conteúdo suficiente para três slides, o editor mostra quais campos completar, em vez de preencher com informação fictícia.
 
@@ -252,6 +253,26 @@ Formatos iniciais:
 
 Durante a edição, renderizar apenas o slide ativo e miniaturas leves. O motor deve detectar texto cortado, contraste insuficiente, imagem não carregada, fonte ausente e logo desproporcional.
 
+O MVP começa com duas famílias visuais validadas, sem multiplicar combinações antes dos testes:
+
+- **Oferta Direta:** preço, condição, benefícios e CTA em alta hierarquia;
+- **Experiência Editorial:** imagem, desejo, roteiro e diferenciais com tom mais premium.
+
+Criar `fabrica-carousel-render.ts` como motor isolado. Não ampliar o arquivo monolítico `fabrica-compose-art.ts`; ele continua responsável pelos anúncios atuais até uma refatoração própria e testada.
+
+## Auditoria do F1 antes da implementação
+
+O F1 atual precisa destas proteções antes de receber o carrossel:
+
+- a arte final ainda pode existir como PNG/data URL no estado do React;
+- o resultado gerado não possui vínculo obrigatório e estável com `projectId` e `packageId`;
+- a imagem gerada pode sobreviver visualmente a uma troca de projeto se o estado transitório não for limpo;
+- os formatos atuais são principalmente 1:1 e 9:16; o carrossel precisa de composição nativa 4:5, não de corte da arte de Stories;
+- textos automáticos existentes não podem ser reaproveitados quando inventarem “vagas limitadas”, “suporte 24h”, “pacote completo” ou qualquer promessa ausente no pacote;
+- o planejamento de slides deve ser determinístico a partir de `Pacote`; IA pode ajudar na redação, mas não é a fonte dos fatos.
+
+O carrossel deve sempre persistir `fabricaProjectId` e `sourcePackageId`. Associação aproximada por título só pode sugerir uma escolha ao usuário; nunca salva silenciosamente.
+
 ## Arquivos a inspecionar
 
 - `src/pages/Fabrica.tsx` e `FabricaES.tsx`;
@@ -277,10 +298,10 @@ Não alterar formulário, CRM, Worker, publicação ou domínio dos sites.
 
 1. **Proteção:** testes de regressão do F1, feature flag e limites.
 2. **Dados/assets:** tipos, migration/RLS, hook, dedupe e função pura de rascunho.
-3. **Editor MVP:** duas entradas, cinco slides, edição, reordenação e autosave.
+3. **Editor MVP:** duas entradas, seis slides sugeridos, duas famílias visuais, edição, reordenação e autosave.
 4. **Render/export:** 4:5, quadrado, alertas e exportação sequencial.
 5. **Biblioteca:** listar, reabrir, duplicar, atualizar origem e excluir.
-6. **ES/estabilização:** paridade, celular real, métricas e rollout gradual.
+6. **Rollout:** feature flag primeiro na experiência PT-BR, celular real, métricas e só então paridade ES.
 
 ## Critérios de aceite essenciais
 

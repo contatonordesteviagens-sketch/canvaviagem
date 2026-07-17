@@ -144,7 +144,7 @@ interface Props {
 }
 
 export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
-  const { state, update, reset } = useFabricaContext();
+  const { state, update, reset, switchProject } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const [loading, setLoading] = useState(false);
@@ -223,18 +223,20 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
                     <div className="mt-3 flex flex-col sm:flex-row gap-2 pt-2 border-t border-white/5">
                       {savedProjects && savedProjects.length > 0 ? (
                         <select
-                          onChange={(e) => {
+                          onChange={async (e) => {
                             const p = savedProjects.find(x => x.id === e.target.value);
                             if (p && p.state_snapshot) {
-                               window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", {
-                                 detail: {
+                              try {
+                                await switchProject({
                                    ...p.state_snapshot,
                                    projectId: p.id,
                                    currentPhase: state.currentPhase,
                                    diagnosticoCompleto: false,
-                                 },
-                               }));
-                               toast.success(`¡Proyecto "${p.agency_name || 'Sin Nombre'}" cargado! Todas las configuraciones han sido restauradas.`);
+                                }, { preserveCurrentPhase: true });
+                                toast.success(`¡Proyecto "${p.agency_name || 'Sin Nombre'}" cargado! Todas las configuraciones han sido restauradas.`);
+                              } catch {
+                                toast.error("No se pudo guardar el proyecto actual. El cambio fue cancelado.");
+                              }
                             }
                             e.target.value = "";
                           }}

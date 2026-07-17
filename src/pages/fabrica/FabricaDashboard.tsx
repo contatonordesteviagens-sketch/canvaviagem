@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
-import { useDiagnosticos, useSaveDiagnostico } from "@/hooks/useFabricaDiagnosticos";
+import { useDiagnosticos, useSaveDiagnostico, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
 import { BrandPaletteEditor } from "@/components/fabrica/BrandPaletteEditor";
+import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
 
 import { 
   Upload, 
@@ -27,6 +28,8 @@ import {
 import { toast } from "sonner";
 import { COUNTRIES_DIAL, type CountryDial } from "@/lib/countriesDial";
 import { useQueryClient } from "@tanstack/react-query";
+import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
+import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
 
 const AGENCY_TYPES = [
   { v: "autonoma", l: "Agente autônomo / Freelancer" },
@@ -49,14 +52,45 @@ const UI_ACCENT = "#F5F906";
 const UI_ACCENT_BORDER_SOFT = "rgba(245, 249, 6, 0.35)";
 
 export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
-  const { state, update, reset } = useFabricaContext();
+  const { state, update, reset, deleteAndDiscardCurrentProject, switchProject } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const saveProject = useSaveDiagnostico();
   const queryClient = useQueryClient();
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingProjectSwitch, setPendingProjectSwitch] = useState<DiagnosticoSalvo | null>(null);
+  const [isSwitchingProject, setIsSwitchingProject] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const loadSavedProject = async (project: DiagnosticoSalvo) => {
+    const targetName = project.agency_name || "Sem nome";
+    const isRecovered = project.source === "published_recovery";
+    setIsSwitchingProject(true);
+    try {
+      await switchProject({ ...project.state_snapshot, projectId: project.id });
+      setPendingProjectSwitch(null);
+      if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
+      else toast.success(`Projeto "${targetName}" carregado!`);
+      window.setTimeout(() => onNavigate?.("phase", 2), 100);
+    } catch {
+      toast.error("Não foi possível salvar o projeto atual. A troca foi cancelada para proteger suas alterações.");
+    } finally {
+      setIsSwitchingProject(false);
+    }
+  };
+
+  const requestProjectSwitch = (project: DiagnosticoSalvo) => {
+    if (project.id === state.projectId) {
+      toast.info("Este projeto já está aberto.");
+      return;
+    }
+    if (!state.agencyName) {
+      void loadSavedProject(project);
+      return;
+    }
+    setPendingProjectSwitch(project);
+  };
 
   const handleSaveProject = async () => {
     if (!user) { toast.error("Faça login para salvar"); return; }
@@ -84,7 +118,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
   // Sites publicados reais (canvaviagem.com) deste usuário
   const [publishedSites, setPublishedSites] = useState<{ id: string; updated_at: string; project_id?: string | null }[]>([]);
-  // Leads reais capturados (sincronizado com CRM Fase 5)
+  // Leads canônicos de toda a conta (mesma fonte do CRM, sem telemetria anônima)
   const [realLeadsCount, setRealLeadsCount] = useState<number>(0);
 
   useEffect(() => {
@@ -100,11 +134,10 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           .order("updated_at", { ascending: false });
         if (!cancelled && sites) setPublishedSites(sites);
 
-        const { count } = await supabase
-          .from("analytics_events")
+        const { count } = await (supabase as any)
+          .from("crm_form_submissions")
           .select("*", { count: "exact", head: true })
-          .eq("event_type", "lead_captured")
-          .contains("event_data", { agency_id: user.id });
+          .eq("owner_id", user.id);
         if (!cancelled) setRealLeadsCount(count || 0);
       } catch (e) {
         console.warn("[FabricaDashboard] Falha ao sincronizar sites/leads:", e);
@@ -234,10 +267,13 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   };
 
   const duplicatePackage = (original: any) => {
+    const id = `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const usedSlugs = state.selectedPackages.map((item) => item.slug || buildPackageSlug(item.title, item.id));
     const pkg = {
       ...original,
-      id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      id,
       title: `${original.title} (cópia)`,
+      slug: createUniquePackageSlug(`${original.slug || original.title}-copia`, usedSlugs, id),
     };
     update({ selectedPackages: [pkg, ...state.selectedPackages] });
     toast.success("Pacote duplicado!");
@@ -260,9 +296,12 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       toast.error("Adicione um título ao pacote");
       return;
     }
+    const id = `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const usedSlugs = state.selectedPackages.map((item) => item.slug || buildPackageSlug(item.title, item.id));
     const pkg = {
-      id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      id,
       title: newTitle.trim(),
+      slug: createUniquePackageSlug(newTitle.trim(), usedSlugs, id),
       description: newDesc.trim() || "Nova oferta especial.",
       price: newPrice.trim() || "Consulte",
       imageUrl: "",
@@ -283,14 +322,22 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     
     // Convert extracted array into proper package objects
     if (data.packages && Array.isArray(data.packages)) {
-      const newPackages = data.packages.map((pkg: any) => ({
-        id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        title: pkg.title || "Pacote IA",
-        description: pkg.description || "",
-        price: pkg.price || "Consulte",
-        imageUrl: "",
-        ctaLabel: "Reservar agora"
-      }));
+      const usedSlugs = new Set(state.selectedPackages.map((item) => item.slug || buildPackageSlug(item.title, item.id)));
+      const newPackages = data.packages.map((pkg: any, index: number) => {
+        const id = `pkg_${Date.now()}_${index}_${Math.random().toString(36).slice(2, 7)}`;
+        const title = pkg.title || "Pacote IA";
+        const slug = createUniquePackageSlug(title, usedSlugs, id);
+        usedSlugs.add(slug);
+        return {
+          id,
+          title,
+          slug,
+          description: pkg.description || "",
+          price: pkg.price || "Consulte",
+          imageUrl: "",
+          ctaLabel: "Reservar agora"
+        };
+      });
       newUpdates.selectedPackages = [...newPackages, ...state.selectedPackages];
     }
     
@@ -301,6 +348,14 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
   return (
     <div className="space-y-8 animate-fadeIn max-w-[1280px] mx-auto pb-12">
+      <ProjectSwitchDialog
+        open={Boolean(pendingProjectSwitch)}
+        currentName={state.agencyName || "Sem nome"}
+        targetName={pendingProjectSwitch?.agency_name || "Sem nome"}
+        busy={isSwitchingProject}
+        onCancel={() => !isSwitchingProject && setPendingProjectSwitch(null)}
+        onConfirm={() => pendingProjectSwitch && void loadSavedProject(pendingProjectSwitch)}
+      />
 
       {/* Projetos Salvos */}
       {user && (
@@ -325,21 +380,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     if (!val) return;
                     const p = savedProjects!.find(x => x.id === val);
                     if (!p || !p.state_snapshot) return;
-                    const isRecovered = p.source === "published_recovery";
-                    // ✅ FIX #7 e #14: Confirma antes de carregar se há edições não salvas
-                    const currentName = state.agencyName || 'Sem nome';
-                    const targetName = p.agency_name || 'Sem nome';
-                    if (state.agencyName && p.id !== state.projectId) {
-                      const ok = window.confirm(`⚠️ Você tem edições não salvas no projeto "${currentName}".\n\nSe continuar, essas edições serão perdidas.\n\nDeseja mesmo carregar "${targetName}"?`);
-                      if (!ok) {
-                        e.target.value = "";
-                        return;
-                      }
-                    }
-                    window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                    if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
-                    else toast.success(`📂 Projeto "${targetName}" carregado!`);
-                    setTimeout(() => onNavigate?.("phase", 2), 100);
+                    requestProjectSwitch(p);
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs"
                 >
@@ -404,26 +445,25 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                         try { linkedSlugs.push(new URL(url).hostname.split(".")[0]); } catch { /* URL legado inválido */ }
                       }
                       const uniqueSlugs = [...new Set(linkedSlugs.filter(Boolean))];
-                      const isStoredProjectId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
-                      if (isStoredProjectId) {
-                        const { error: sitesError } = await supabase.from("public_sites").delete().eq("owner_id", user!.id).eq("project_id", projectId);
-                        if (sitesError) throw sitesError;
-                      }
-                      if (uniqueSlugs.length > 0) {
-                        const { error: slugsError } = await supabase.from("public_sites").delete().eq("owner_id", user!.id).in("id", uniqueSlugs);
-                        if (slugsError) throw slugsError;
-                      }
-                      if (isStoredProjectId) {
-                        const { error } = await supabase.from("fabrica_diagnosticos" as any).delete().eq("id", projectId).eq("user_id", user!.id);
-                        if (error) throw error;
-                      }
+                      await deleteAndDiscardCurrentProject(async (persistedProjectId) => {
+                        if (persistedProjectId) {
+                          await deleteFabricaProject({ projectId: persistedProjectId, userId: user!.id, legacySlugs: uniqueSlugs });
+                        } else if (uniqueSlugs.length > 0) {
+                          const { error: slugsError } = await supabase
+                            .from("public_sites")
+                            .delete()
+                            .eq("owner_id", user!.id)
+                            .is("project_id", null)
+                            .in("id", uniqueSlugs);
+                          if (slugsError) throw slugsError;
+                        }
+                      });
                       setPublishedSites((sites) => sites.filter((site) => site.project_id !== projectId && !uniqueSlugs.includes(site.id)));
                       await Promise.all([
                         queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
                         queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
                       ]);
                       toast.success("🗑️ Projeto excluído com sucesso!");
-                      reset();
                     } catch (err: any) {
                       toast.error(err?.message || "Erro ao excluir projeto.");
                     }
@@ -780,25 +820,11 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                               });
                             }
 
-                            const currentName = state.agencyName || 'Sem nome';
-                            const targetName = p?.agency_name || site.id;
-
                             if (!p?.state_snapshot) {
                               toast.error(`O site "${site.id}" ainda não possui um projeto editável recuperado. Atualize a página e tente novamente.`);
                               return;
                             }
-
-                            if (state.agencyName && p.id !== state.projectId) {
-                              const ok = window.confirm(`⚠️ Você tem edições não salvas no projeto "${currentName}".\n\nSe continuar, essas edições serão perdidas.\n\nDeseja mesmo carregar "${targetName}" para editá-lo?`);
-                              if (!ok) return;
-                            }
-
-                            const snapshotToLoad = { ...p.state_snapshot, projectId: p.id };
-                            const isRecovered = p.source === "published_recovery";
-                            window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: snapshotToLoad }));
-                            if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
-                            else toast.success(`📂 Site "${targetName}" carregado no editor!`);
-                            setTimeout(() => onNavigate?.("phase", 2), 100);
+                            requestProjectSwitch(p);
                           }}
                           className="px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 text-violet-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
                         >

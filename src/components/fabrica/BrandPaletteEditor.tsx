@@ -10,6 +10,7 @@ type BrandPalette = {
 type BrandPaletteEditorProps = BrandPalette & {
   onChange: (patch: Partial<BrandPalette>) => void;
   compact?: boolean;
+  locale?: "pt" | "es";
 };
 
 const DEFAULT_PALETTE: BrandPalette = {
@@ -25,11 +26,42 @@ const PALETTES: Array<{ name: string; colors: BrandPalette }> = [
   { name: "Premium", colors: { primaryColor: "#1E293B", secondaryColor: "#D4A853", backgroundColor: "#F8F5EE" } },
 ];
 
-const ROLES: Array<{ key: keyof BrandPalette; label: string; hint: string }> = [
-  { key: "primaryColor", label: "Marca principal", hint: "Botões, links e ações principais" },
-  { key: "secondaryColor", label: "Marca secundária", hint: "Destaques, selos e detalhes" },
-  { key: "backgroundColor", label: "Fundo da marca", hint: "Seções claras e áreas de apoio" },
-];
+const COPY = {
+  pt: {
+    roles: [
+      { key: "primaryColor", label: "Marca principal", hint: "Botões, links e ações principais" },
+      { key: "secondaryColor", label: "Marca secundária", hint: "Destaques, selos e detalhes" },
+      { key: "backgroundColor", label: "Fundo da marca", hint: "Seções claras e áreas de apoio" },
+    ],
+    quick: "Paletas rápidas",
+    restore: "Restaurar padrão",
+    saved: "Salvo automaticamente e compartilhado entre a Fábrica, os anúncios e todos os modelos de site.",
+    select: "Selecionar",
+    hex: "Código hexadecimal de",
+    sectionHint: "Esta mudança vale somente para o fundo selecionado.",
+    useColor: "Usar a cor",
+    modelDefault: "Usar padrão do modelo",
+    paletteNames: { Solar: "Solar", Oceano: "Oceano", Floresta: "Floresta", Premium: "Premium" },
+  },
+  es: {
+    roles: [
+      { key: "primaryColor", label: "Marca principal", hint: "Botones, enlaces y acciones principales" },
+      { key: "secondaryColor", label: "Marca secundaria", hint: "Destacados, sellos y detalles" },
+      { key: "backgroundColor", label: "Fondo de la marca", hint: "Secciones claras y áreas de apoyo" },
+    ],
+    quick: "Paletas rápidas",
+    restore: "Restaurar predeterminado",
+    saved: "Guardado automáticamente y compartido entre la Fábrica, los anuncios y todos los modelos del sitio.",
+    select: "Seleccionar",
+    hex: "Código hexadecimal de",
+    sectionHint: "Este cambio se aplica solamente al fondo seleccionado.",
+    useColor: "Usar el color",
+    modelDefault: "Usar el valor del modelo",
+    paletteNames: { Solar: "Solar", Oceano: "Océano", Floresta: "Bosque", Premium: "Premium" },
+  },
+} as const;
+
+type ColorRole = { key: keyof BrandPalette; label: string; hint: string };
 
 const normalizeHex = (value: string) => {
   const clean = value.trim().toUpperCase();
@@ -42,11 +74,13 @@ function ColorRoleField({
   value,
   onChange,
   compact = false,
+  locale = "pt",
 }: {
-  role: (typeof ROLES)[number];
+  role: ColorRole;
   value: string;
   onChange: (value: string) => void;
   compact?: boolean;
+  locale?: "pt" | "es";
 }) {
   const [draft, setDraft] = useState(value);
 
@@ -72,12 +106,13 @@ function ColorRoleField({
         <label
           className="relative h-9 w-9 shrink-0 cursor-pointer overflow-hidden rounded-full border border-white/20"
           style={{ backgroundColor: value }}
-          aria-label={`Selecionar ${role.label.toLowerCase()}`}
+          aria-label={`${COPY[locale].select} ${role.label.toLowerCase()}`}
         >
           <input
             type="color"
             value={value}
             onChange={(event) => onChange(event.target.value.toUpperCase())}
+            aria-label={`${COPY[locale].select} ${role.label.toLowerCase()}`}
             className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           />
         </label>
@@ -99,7 +134,7 @@ function ColorRoleField({
           }}
           maxLength={7}
           spellCheck={false}
-          aria-label={`Código hexadecimal de ${role.label.toLowerCase()}`}
+          aria-label={`${COPY[locale].hex} ${role.label.toLowerCase()}`}
           className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/20 px-2.5 py-2 text-[11px] font-semibold uppercase tracking-wide text-white outline-none transition-colors focus:border-white/35"
         />
       </div>
@@ -113,37 +148,41 @@ export function BrandPaletteEditor({
   backgroundColor,
   onChange,
   compact = false,
+  locale = "pt",
 }: BrandPaletteEditorProps) {
   const current = { primaryColor, secondaryColor, backgroundColor };
+  const copy = COPY[locale];
+  const roles = copy.roles as readonly ColorRole[];
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-2.5 min-[430px]:grid-cols-3">
-        {ROLES.map((role) => (
+        {roles.map((role) => (
           <ColorRoleField
             key={role.key}
             role={role}
             value={current[role.key]}
             onChange={(value) => onChange({ [role.key]: value })}
             compact={compact}
+            locale={locale}
           />
         ))}
       </div>
 
       <div>
         <div className="mb-2 flex items-center justify-between gap-3">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Paletas rápidas</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">{copy.quick}</span>
           <button
             type="button"
             onClick={() => onChange(DEFAULT_PALETTE)}
             className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-white/45 transition-colors hover:text-white"
           >
-            <RotateCcw className="h-3 w-3" /> Restaurar padrão
+            <RotateCcw className="h-3 w-3" /> {copy.restore}
           </button>
         </div>
         <div className="grid grid-cols-4 gap-2">
           {PALETTES.map((palette) => {
-            const active = ROLES.every((role) => current[role.key].toUpperCase() === palette.colors[role.key].toUpperCase());
+            const active = roles.every((role) => current[role.key].toUpperCase() === palette.colors[role.key].toUpperCase());
             return (
               <button
                 key={palette.name}
@@ -155,12 +194,12 @@ export function BrandPaletteEditor({
                 aria-pressed={active}
               >
                 <div className="mb-2 flex overflow-hidden rounded-md border border-black/10">
-                  {ROLES.map((role) => (
+                  {roles.map((role) => (
                     <span key={role.key} className="h-5 flex-1" style={{ backgroundColor: palette.colors[role.key] }} />
                   ))}
                 </div>
                 <div className="flex items-center justify-between gap-1 text-[9px] font-semibold text-white/65 min-[430px]:text-[10px]">
-                  <span className="truncate">{palette.name}</span>
+                  <span className="truncate">{copy.paletteNames[palette.name as keyof typeof copy.paletteNames]}</span>
                   {active && <Check className="h-3 w-3 text-emerald-400" />}
                 </div>
               </button>
@@ -170,7 +209,7 @@ export function BrandPaletteEditor({
       </div>
 
       <p className="text-[10px] leading-relaxed text-white/35">
-        Salvo automaticamente e compartilhado entre a Fábrica, os anúncios e os dois modelos de site.
+        {copy.saved}
       </p>
     </div>
   );
@@ -182,19 +221,23 @@ export function SectionBackgroundEditor({
   paletteColors,
   onChange,
   onReset,
+  locale = "pt",
 }: {
   label: string;
   value: string;
   paletteColors: string[];
   onChange: (value: string) => void;
   onReset: () => void;
+  locale?: "pt" | "es";
 }) {
+  const copy = COPY[locale];
   return (
     <div className="space-y-3">
       <ColorRoleField
-        role={{ key: "backgroundColor", label, hint: "Esta mudança vale somente para o fundo selecionado." }}
+        role={{ key: "backgroundColor", label, hint: copy.sectionHint }}
         value={value}
         onChange={onChange}
+        locale={locale}
       />
       <div className="flex flex-wrap items-center gap-2">
         {paletteColors.map((color) => (
@@ -204,7 +247,7 @@ export function SectionBackgroundEditor({
             onClick={() => onChange(color)}
             className="h-9 w-9 rounded-full border border-white/20 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/60"
             style={{ backgroundColor: color }}
-            aria-label={`Usar a cor ${color}`}
+            aria-label={`${copy.useColor} ${color}`}
           />
         ))}
         <button
@@ -212,7 +255,7 @@ export function SectionBackgroundEditor({
           onClick={onReset}
           className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-[10px] font-semibold text-white/55 transition-colors hover:border-white/25 hover:text-white"
         >
-          <RotateCcw className="h-3 w-3" /> Usar padrão do modelo
+          <RotateCcw className="h-3 w-3" /> {copy.modelDefault}
         </button>
       </div>
     </div>

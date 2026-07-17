@@ -40,6 +40,7 @@ Pontos que devem ser entendidos sem ambiguidade:
 7. [Catálogo dos seis modelos de site](./CATALOGO-MODELOS-DE-SITE.md)
 8. [Plano de carrossel de pacotes no F1](./PLANO-CARROSSEL-F1.md)
 9. [Arquitetura de projetos e sites](./ARQUITETURA-PROJETOS-E-SITES.md)
+10. [Auditoria de lançamento dos sites — 16/07/2026](./AUDITORIA-LANCAMENTO-2026-07-16.md)
 
 ## Prioridades combinadas
 

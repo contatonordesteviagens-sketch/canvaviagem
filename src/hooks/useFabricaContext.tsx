@@ -17,6 +17,7 @@ import {
   persistFabricaProject,
   resolveFabricaProjectId,
 } from "@/lib/fabrica-project-persistence";
+import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
 
 export type Niche = "nordeste" | "sul" | "internacional" | "cruzeiro" | "aventura" | "luademel" | "";
 
@@ -75,6 +76,7 @@ export interface Pacote {
   ctaLabel?: string;
   isDraft?: boolean;
   slug?: string;
+  badge?: string;
   segment?: PackageSegment;
   subtitle?: string;
   longDescription?: string;
@@ -548,16 +550,37 @@ const createFreshState = (): FabricaState => ({
   projectId: createTemporaryProjectId(),
 });
 
+const ensureStablePackageSlugs = (packages: Pacote[]): Pacote[] => {
+  const usedSlugs = new Set<string>();
+
+  return packages.map((pkg) => {
+    const existingSlug = pkg.slug || "";
+    const existingSlugKey = existingSlug.trim()
+      ? buildPackageSlug(existingSlug, pkg.id)
+      : "";
+    const slug = existingSlugKey && !usedSlugs.has(existingSlugKey)
+      ? existingSlug
+      : createUniquePackageSlug(existingSlug || pkg.title, usedSlugs, pkg.id);
+
+    usedSlugs.add(buildPackageSlug(slug, pkg.id));
+    return slug === pkg.slug ? pkg : { ...pkg, slug };
+  });
+};
+
 const normalizeStateSnapshot = (
   snapshot?: Partial<FabricaState> | null,
   projectId?: string | null,
 ): FabricaState => {
   const base = cloneBaseState();
   const resolvedProjectId = projectId || snapshot?.projectId || createTemporaryProjectId();
+  const selectedPackages = ensureStablePackageSlugs(
+    snapshot?.selectedPackages || base.selectedPackages,
+  );
   return {
     ...base,
     ...(snapshot || {}),
     projectId: resolvedProjectId,
+    selectedPackages,
     siteContent: {
       ...base.siteContent,
       ...(snapshot?.siteContent || {}),
@@ -579,14 +602,22 @@ const getGeneratedKey = () => isEs() ? "fabrica-generated-v1-es" : "fabrica-gene
 const LAST_ACTIVE_USER_KEY = "fabrica-last-user-id";
 
 const getLocaleStorageTag = () => isEs() ? "es" : "pt-BR";
+const getActiveProjectKeyForLocale = (userId: string, locale: "pt-BR" | "es") =>
+  `fabrica-active-project-v2:${locale}:${userId}`;
 const getActiveProjectKey = (userId: string) =>
-  `fabrica-active-project-v2:${getLocaleStorageTag()}:${userId}`;
+  getActiveProjectKeyForLocale(userId, getLocaleStorageTag());
+const getProjectStorageKeyForLocale = (userId: string, projectId: string, locale: "pt-BR" | "es") =>
+  `fabrica-context-v2:${locale}:${userId}:${projectId}`;
 const getProjectStorageKey = (userId: string, projectId: string) =>
-  `fabrica-context-v2:${getLocaleStorageTag()}:${userId}:${projectId}`;
+  getProjectStorageKeyForLocale(userId, projectId, getLocaleStorageTag());
+const getProjectGalleryKeyForLocale = (userId: string, projectId: string, locale: "pt-BR" | "es") =>
+  `fabrica-gallery-v2:${locale}:${userId}:${projectId}`;
 const getProjectGalleryKey = (userId: string, projectId: string) =>
-  `fabrica-gallery-v2:${getLocaleStorageTag()}:${userId}:${projectId}`;
+  getProjectGalleryKeyForLocale(userId, projectId, getLocaleStorageTag());
+const getProjectHeavyPrefixForLocale = (userId: string, projectId: string, locale: "pt-BR" | "es") =>
+  `fabrica-heavy-v2:${locale}:${userId}:${projectId}:`;
 const getProjectHeavyPrefix = (userId: string, projectId: string) =>
-  `fabrica-heavy-v2:${getLocaleStorageTag()}:${userId}:${projectId}:`;
+  getProjectHeavyPrefixForLocale(userId, projectId, getLocaleStorageTag());
 const PROJECT_MEDIA_CACHE_KEY = "projectMedia";
 
 interface LocalProjectMediaCache {
@@ -640,34 +671,72 @@ const isRemoteMediaUrl = (value?: string | null) => Boolean(value && /^https?:\/
 const isInlineMediaUrl = (value?: string | null) => Boolean(value && /^data:/i.test(value));
 const hasInlineMedia = (values?: string[]) => Boolean(values?.some((value) => isInlineMediaUrl(value)));
 
+const mergeBaseMediaWithLocalInline = (baseValues?: string[], localValues?: string[]) => {
+  const merged: string[] = [];
+  const seen = new Set<string>();
+  const append = (value: string) => {
+    if (!value || seen.has(value)) return;
+    seen.add(value);
+    merged.push(value);
+  };
+
+  (baseValues || []).forEach(append);
+  (localValues || []).filter(isInlineMediaUrl).forEach(append);
+  return merged;
+};
+
 const mergeSameProjectMedia = (base: FabricaState, local: FabricaState): FabricaState => {
   const localPackagesById = new Map(local.selectedPackages.map((pkg) => [pkg.id, pkg]));
   const selectedPackages = base.selectedPackages.map((pkg, index) => {
-    const localPackage = localPackagesById.get(pkg.id) || local.selectedPackages[index];
+    const indexedPackage = local.selectedPackages[index];
+    const sameTitle = Boolean(
+      pkg.title.trim()
+      && indexedPackage?.title.trim()
+      && pkg.title.trim().toLocaleLowerCase() === indexedPackage.title.trim().toLocaleLowerCase(),
+    );
+    const sameSlug = Boolean(
+      pkg.slug
+      && indexedPackage?.slug
+      && buildPackageSlug(pkg.slug, pkg.id) === buildPackageSlug(indexedPackage.slug, indexedPackage.id),
+    );
+    const localPackage = localPackagesById.get(pkg.id)
+      || ((sameTitle || sameSlug) ? indexedPackage : undefined);
     if (!localPackage) return pkg;
     return {
       ...pkg,
-      imageUrl: pkg.imageUrl || localPackage.imageUrl,
-      galleryImages: hasInlineMedia(localPackage.galleryImages)
-        ? localPackage.galleryImages
-        : (pkg.galleryImages?.length ? pkg.galleryImages : localPackage.galleryImages),
+      imageUrl: isInlineMediaUrl(localPackage.imageUrl)
+        ? localPackage.imageUrl
+        : (pkg.imageUrl || localPackage.imageUrl),
+      galleryImages: mergeBaseMediaWithLocalInline(pkg.galleryImages, localPackage.galleryImages),
     };
   });
 
   return {
     ...base,
     logoBase64: base.logoBase64 || local.logoBase64 || "",
-    generatedAdImage: local.generatedAdImage || "",
-    lastCleanPhoto: local.lastCleanPhoto || "",
-    allGeneratedAdImages: local.allGeneratedAdImages || [],
+    generatedAdImage: isInlineMediaUrl(local.generatedAdImage)
+      ? local.generatedAdImage
+      : (base.generatedAdImage || local.generatedAdImage || ""),
+    lastCleanPhoto: isInlineMediaUrl(local.lastCleanPhoto)
+      ? local.lastCleanPhoto
+      : (base.lastCleanPhoto || local.lastCleanPhoto || ""),
+    allGeneratedAdImages: mergeBaseMediaWithLocalInline(
+      base.allGeneratedAdImages,
+      local.allGeneratedAdImages,
+    ),
     selectedPackages,
     siteContent: {
       ...base.siteContent,
-      heroImageUrl: base.siteContent.heroImageUrl || local.siteContent.heroImageUrl,
-      aboutImageUrl: base.siteContent.aboutImageUrl || local.siteContent.aboutImageUrl,
-      galleryImages: base.siteContent.galleryImages?.length
-        ? base.siteContent.galleryImages
-        : (local.siteContent.galleryImages || []),
+      heroImageUrl: isInlineMediaUrl(local.siteContent.heroImageUrl)
+        ? local.siteContent.heroImageUrl
+        : (base.siteContent.heroImageUrl || local.siteContent.heroImageUrl),
+      aboutImageUrl: isInlineMediaUrl(local.siteContent.aboutImageUrl)
+        ? local.siteContent.aboutImageUrl
+        : (base.siteContent.aboutImageUrl || local.siteContent.aboutImageUrl),
+      galleryImages: mergeBaseMediaWithLocalInline(
+        base.siteContent.galleryImages,
+        local.siteContent.galleryImages,
+      ),
     },
   };
 };
@@ -881,6 +950,136 @@ const removeLocalProjectState = (userId: string, projectId?: string | null) => {
   localStorage.removeItem(heavyPrefix + PROJECT_MEDIA_CACHE_KEY);
 };
 
+export const purgeFabricaProjectLocalCache = (userId: string, projectIds: Array<string | null | undefined>) => {
+  if (typeof window === "undefined") return;
+  const ids = new Set(projectIds.filter((id): id is string => Boolean(id)));
+  if (!ids.size) return;
+
+  let removedActivePointer = false;
+  for (const locale of ["pt-BR", "es"] as const) {
+    const activeKey = getActiveProjectKeyForLocale(userId, locale);
+    if (ids.has(localStorage.getItem(activeKey) || "")) {
+      localStorage.removeItem(activeKey);
+      removedActivePointer = true;
+    }
+
+    for (const projectId of ids) {
+      localStorage.removeItem(getProjectStorageKeyForLocale(userId, projectId, locale));
+      localStorage.removeItem(getProjectGalleryKeyForLocale(userId, projectId, locale));
+      const heavyPrefix = getProjectHeavyPrefixForLocale(userId, projectId, locale);
+      HEAVY_KEYS.forEach((key) => localStorage.removeItem(heavyPrefix + key));
+      localStorage.removeItem(heavyPrefix + PROJECT_MEDIA_CACHE_KEY);
+    }
+
+    const legacyStateKey = locale === "es" ? "fabrica-context-v1-es" : "fabrica-context-v1";
+    try {
+      const legacyState = JSON.parse(localStorage.getItem(legacyStateKey) || "null") as { projectId?: string } | null;
+      if (legacyState?.projectId && ids.has(legacyState.projectId)) {
+        localStorage.removeItem(legacyStateKey);
+        localStorage.removeItem(locale === "es" ? "fabrica-gallery-v1-es" : "fabrica-gallery-v1");
+        localStorage.removeItem(locale === "es" ? "fabrica-generated-v1-es" : "fabrica-generated-v1");
+        const legacyHeavyPrefix = locale === "es" ? "fabrica-heavy-v1-es:" : "fabrica-heavy-v1:";
+        HEAVY_KEYS.forEach((key) => localStorage.removeItem(legacyHeavyPrefix + key));
+      }
+    } catch {
+      // Cache legado inválido não deve impedir a exclusão remota já concluída.
+    }
+  }
+
+  if (removedActivePointer && localStorage.getItem(LAST_ACTIVE_USER_KEY) === userId) {
+    localStorage.removeItem(LAST_ACTIVE_USER_KEY);
+  }
+};
+
+const migrateLocalProjectCache = (userId: string, fromProjectId: string, toProjectId: string) => {
+  if (typeof window === "undefined" || fromProjectId === toProjectId) return true;
+
+  try {
+    const fromMainKey = getProjectStorageKey(userId, fromProjectId);
+    const toMainKey = getProjectStorageKey(userId, toProjectId);
+    const fromHeavyPrefix = getProjectHeavyPrefix(userId, fromProjectId);
+    const toHeavyPrefix = getProjectHeavyPrefix(userId, toProjectId);
+    const keyPairs: Array<[string, string]> = [
+      [fromMainKey, toMainKey],
+      [getProjectGalleryKey(userId, fromProjectId), getProjectGalleryKey(userId, toProjectId)],
+      ...HEAVY_KEYS.map((key) => [fromHeavyPrefix + key, toHeavyPrefix + key] as [string, string]),
+      [fromHeavyPrefix + PROJECT_MEDIA_CACHE_KEY, toHeavyPrefix + PROJECT_MEDIA_CACHE_KEY],
+    ];
+    const sourceEntries = keyPairs
+      .map(([fromKey, toKey]) => ({ fromKey, toKey, value: localStorage.getItem(fromKey) }))
+      .filter((entry): entry is { fromKey: string; toKey: string; value: string } => entry.value !== null);
+    const activeWasSource = readActiveProjectId(userId) === fromProjectId;
+
+    if (!sourceEntries.length) {
+      return !activeWasSource || safeSetItem(getActiveProjectKey(userId), toProjectId);
+    }
+
+    const sourceMain = sourceEntries.find(({ fromKey }) => fromKey === fromMainKey);
+    const targetMainValue = localStorage.getItem(toMainKey);
+    let sourceTimestamp = 0;
+    let targetTimestamp = 0;
+
+    if (sourceMain) {
+      const parsedSource = JSON.parse(sourceMain.value) as Partial<FabricaState>;
+      sourceTimestamp = getStateTimestamp(parsedSource);
+      sourceMain.value = JSON.stringify({ ...parsedSource, projectId: toProjectId });
+    }
+    if (targetMainValue) {
+      try {
+        targetTimestamp = getStateTimestamp(JSON.parse(targetMainValue) as Partial<FabricaState>);
+      } catch {
+        targetTimestamp = 0;
+      }
+    }
+    if (targetTimestamp > sourceTimestamp) {
+      console.warn("[Fábrica] Cache de destino mais recente; migração local preservada para revisão.");
+      return false;
+    }
+
+    const writes = sourceEntries.map((entry) => ({
+      ...entry,
+      value: entry.fromKey === fromMainKey ? sourceMain?.value || entry.value : entry.value,
+      previousValue: localStorage.getItem(entry.toKey),
+    }));
+    let activePointerUpdated = false;
+
+    try {
+      writes.forEach(({ toKey, value }) => localStorage.setItem(toKey, value));
+      const destinationWasVerified = writes.every(
+        ({ toKey, value }) => localStorage.getItem(toKey) === value,
+      );
+      if (!destinationWasVerified) throw new Error("Falha ao verificar o cache migrado.");
+
+      if (activeWasSource && readActiveProjectId(userId) === fromProjectId) {
+        localStorage.setItem(getActiveProjectKey(userId), toProjectId);
+        activePointerUpdated = true;
+      }
+    } catch (error) {
+      writes.forEach(({ toKey, previousValue }) => {
+        if (previousValue === null) localStorage.removeItem(toKey);
+        else safeSetItem(toKey, previousValue);
+      });
+      if (activePointerUpdated && readActiveProjectId(userId) === toProjectId) {
+        safeSetItem(getActiveProjectKey(userId), fromProjectId);
+      }
+      console.warn("[Fábrica] Não foi possível copiar o cache local do projeto:", error);
+      return false;
+    }
+
+    sourceEntries.forEach(({ fromKey }) => {
+      try {
+        localStorage.removeItem(fromKey);
+      } catch (error) {
+        console.warn("[Fábrica] Cache temporário mantido após migração confirmada:", error);
+      }
+    });
+    return true;
+  } catch (error) {
+    console.warn("[Fábrica] Não foi possível migrar o cache local do projeto:", error);
+    return false;
+  }
+};
+
 const getSavedPublicSiteSlug = (snapshot: FabricaState) => {
   const raw = snapshot.siteContent?.canvaViagemUrl?.trim();
   if (!raw) return "";
@@ -909,10 +1108,17 @@ interface FabricaContextType {
   update: (patch: Partial<FabricaState>) => void;
   systemUpdate: (patch: Partial<FabricaState>) => void;
   reset: () => void;
+  deleteAndDiscardCurrentProject: (
+    deleteRemoteProject: (persistedProjectId: string | null) => Promise<void>,
+  ) => Promise<void>;
   setPhase: (phase: number) => void;
   toggleChecklist: (key: string) => void;
   undo: () => void;
   redo: () => void;
+  switchProject: (
+    snapshot: Partial<FabricaState>,
+    options?: { preserveCurrentPhase?: boolean },
+  ) => Promise<void>;
   canUndo: boolean;
   canRedo: boolean;
   syncStatus: "idle" | "saving" | "saved" | "error";
@@ -942,6 +1148,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const activeUserIdRef = useRef<string | null>(null);
   const projectSaveQueueRef = useRef<Map<string, Promise<{ id: string; stateSnapshot: FabricaState }>>>(new Map());
+  const blockedProjectPersistenceRef = useRef<Set<string>>(new Set());
   const [historyCount, setHistoryCount] = useState(0);
   const [redoCount, setRedoCount] = useState(0);
   const historyRef = useRef<FabricaState[]>([]);
@@ -958,12 +1165,24 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     const originalProjectId = snapshot.projectId || createTemporaryProjectId();
     const queueKey = resolveFabricaProjectId(originalProjectId);
+    if (blockedProjectPersistenceRef.current.has(queueKey)) {
+      return Promise.reject(new Error("project_persistence_blocked"));
+    }
     const previous = projectSaveQueueRef.current.get(queueKey);
-    const runSave = () => persistFabricaProject({
-      state: { ...snapshot, projectId: queueKey },
-      userId,
-      levelName,
-    });
+    const runSave = async () => {
+      const result = await persistFabricaProject({
+        state: { ...snapshot, projectId: queueKey },
+        userId,
+        levelName,
+      });
+      if (result.id !== originalProjectId) {
+        const cacheMigrated = migrateLocalProjectCache(userId, originalProjectId, result.id);
+        if (!cacheMigrated) {
+          throw new Error("O projeto foi salvo na nuvem, mas o cache local não pôde ser migrado com segurança.");
+        }
+      }
+      return result;
+    };
     const task = previous
       ? previous.then(runSave, runSave)
       : runSave();
@@ -984,59 +1203,92 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     return task;
   }, []);
 
+  const applyProjectSnapshot = useCallback((
+    snapshot: Partial<FabricaState>,
+    preserveCurrentPhase = false,
+  ) => {
+    historyRef.current = [];
+    redoStackRef.current = [];
+    setHistoryCount(0);
+    setRedoCount(0);
+    setState((previous) => {
+      const resolvedProjectId = snapshot.projectId || createTemporaryProjectId();
+      const incoming = normalizeStateSnapshot({
+        ...snapshot,
+        currentPhase: preserveCurrentPhase
+          ? previous.currentPhase
+          : snapshot.currentPhase ?? previous.currentPhase,
+        diagnosticoCompleto: false,
+        lastEditedAt: new Date().toISOString(),
+      }, resolvedProjectId);
+      const cached = activeUserIdRef.current
+        ? readProjectState(activeUserIdRef.current, resolvedProjectId)
+        : null;
+      const cachedIsNewer = Boolean(
+        cached && getStateTimestamp(cached) > getStateTimestamp(snapshot),
+      );
+      const merged = cachedIsNewer && cached
+        ? { ...cached, currentPhase: incoming.currentPhase, diagnosticoCompleto: false }
+        : cached
+          ? mergeSameProjectMedia(incoming, cached)
+          : incoming;
+
+      stateRef.current = merged;
+      if (activeUserIdRef.current) persistLocalState(merged, activeUserIdRef.current);
+      return merged;
+    });
+  }, []);
+
+  const switchProject = useCallback(async (
+    snapshot: Partial<FabricaState>,
+    options?: { preserveCurrentPhase?: boolean },
+  ) => {
+    if (
+      snapshot.projectId
+      && blockedProjectPersistenceRef.current.has(resolveFabricaProjectId(snapshot.projectId))
+    ) {
+      throw new Error("project_unavailable");
+    }
+
+    const previousState = stateRef.current;
+    const currentUserId = activeUserIdRef.current;
+
+    // A cópia local é gravada primeiro. Em contas reais, o outro projeto só é
+    // carregado depois que a fila confirma o snapshot anterior na nuvem.
+    if (currentUserId) persistLocalState(previousState, currentUserId);
+    if (
+      currentUserId &&
+      currentUserId !== LOCAL_PREVIEW_USER_ID &&
+      hasMeaningfulProgress(previousState)
+    ) {
+      setSyncStatus("saving");
+      try {
+        await enqueueProjectPersistence(previousState, currentUserId);
+        await queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
+        setLastSyncedAt(new Date());
+        setSyncStatus("saved");
+      } catch (error) {
+        setSyncStatus("error");
+        console.warn("[Supabase Sync] Não foi possível salvar o projeto antes da troca:", error);
+        throw error;
+      }
+    }
+
+    applyProjectSnapshot(snapshot, Boolean(options?.preserveCurrentPhase));
+  }, [applyProjectSnapshot, enqueueProjectPersistence, queryClient]);
+
   useEffect(() => {
     const handlePrefillSnapshot = (event: Event) => {
-      const customEvent = event as CustomEvent<Partial<FabricaState>>;
-      const snapshot = customEvent.detail;
+      const snapshot = (event as CustomEvent<Partial<FabricaState>>).detail;
       if (!snapshot) return;
-
-      const previousState = stateRef.current;
-      const currentUserId = activeUserIdRef.current;
-      if (
-        currentUserId &&
-        currentUserId !== LOCAL_PREVIEW_USER_ID &&
-        hasMeaningfulProgress(previousState)
-      ) {
-        void enqueueProjectPersistence(previousState, currentUserId).catch((error) => {
-          console.warn("[Supabase Sync] Não foi possível concluir o save do projeto anterior:", error);
-        });
-      }
-
-      historyRef.current = [];
-      redoStackRef.current = [];
-      setHistoryCount(0);
-      setRedoCount(0);
-      setState((prev) => {
-        const resolvedProjectId = snapshot.projectId || createTemporaryProjectId();
-        const incoming = normalizeStateSnapshot({
-          ...snapshot,
-          // ✅ Restaura a fase do projeto carregado (não mantém a fase atual)
-          currentPhase: snapshot.currentPhase ?? prev.currentPhase,
-          diagnosticoCompleto: false,
-          lastEditedAt: new Date().toISOString(),
-        }, resolvedProjectId);
-        const cached = activeUserIdRef.current
-          ? readProjectState(activeUserIdRef.current, resolvedProjectId)
-          : null;
-        const cachedIsNewer = Boolean(
-          cached && getStateTimestamp(cached) > getStateTimestamp(snapshot),
-        );
-        const merged = cachedIsNewer && cached
-          ? { ...cached, currentPhase: incoming.currentPhase, diagnosticoCompleto: false }
-          : cached
-            ? mergeSameProjectMedia(incoming, cached)
-            : incoming;
-
-        stateRef.current = merged;
-        // ✅ Persiste no localStorage IMEDIATAMENTE para evitar restauração errada se a aba fechar
-        if (activeUserIdRef.current) persistLocalState(merged, activeUserIdRef.current);
-        return merged;
+      void switchProject(snapshot).catch(() => {
+        toast.error("Não foi possível salvar o projeto atual. A troca foi cancelada para proteger suas alterações.");
       });
     };
 
     window.addEventListener("fabrica-load-snapshot", handlePrefillSnapshot as EventListener);
     return () => window.removeEventListener("fabrica-load-snapshot", handlePrefillSnapshot as EventListener);
-  }, [enqueueProjectPersistence]);
+  }, [switchProject]);
 
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
@@ -1183,6 +1435,9 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     if (!user?.id || !hasLoadedFromDb) return; // 🛡️ Bloqueia sincronização antes da hidratação completa!
     
     const syncState = async () => {
+      const projectQueueKey = resolveFabricaProjectId(state.projectId);
+      if (blockedProjectPersistenceRef.current.has(projectQueueKey)) return;
+
       // 🛡️ SEGURANÇA DE HIDRATAÇÃO REFORÇADA: bloqueia sync de estado vazio ou de novo projeto sem nome
       const hasContent = hasMeaningfulProgress(state);
       if (!hasContent) return;
@@ -1367,6 +1622,14 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
   const reset = useCallback(() => {
     const previousState = stateRef.current;
+    if (
+      previousState.projectId
+      && blockedProjectPersistenceRef.current.has(resolveFabricaProjectId(previousState.projectId))
+    ) {
+      toast.info("Aguarde a exclusão do projeto terminar.");
+      return;
+    }
+
     if (user?.id && hasMeaningfulProgress(previousState)) {
       void enqueueProjectPersistence(previousState, user.id).catch((error) => {
         console.warn("[Supabase Sync] Não foi possível concluir o save do projeto anterior:", error);
@@ -1413,6 +1676,104 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [enqueueProjectPersistence, queryClient, user?.id]);
 
+  const deleteAndDiscardCurrentProject = useCallback(async (
+    deleteRemoteProject: (persistedProjectId: string | null) => Promise<void>,
+  ) => {
+    const discardedState = stateRef.current;
+    const discardedProjectId = discardedState.projectId;
+    const currentUserId = activeUserIdRef.current || user?.id;
+    if (!discardedProjectId) throw new Error("project_required");
+
+    const queueKey = resolveFabricaProjectId(discardedProjectId);
+    if (blockedProjectPersistenceRef.current.has(queueKey)) {
+      throw new Error("project_deletion_in_progress");
+    }
+
+    // O bloqueio acontece antes de qualquer await. Assim, o debounce e novas
+    // ações não conseguem enfileirar outro upsert enquanto a exclusão ocorre.
+    blockedProjectPersistenceRef.current.add(queueKey);
+
+    const queuedSave = projectSaveQueueRef.current.get(queueKey);
+    let persistedProjectId = isPersistedProjectId(discardedProjectId)
+      ? discardedProjectId
+      : null;
+
+    try {
+      if (queuedSave) {
+        try {
+          const queuedResult = await queuedSave;
+          persistedProjectId = queuedResult.id;
+        } catch {
+          // A fila terminou. A consulta abaixo diferencia uma falha anterior ao
+          // upsert de uma falha posterior, como migração de cache sem espaço.
+        }
+      }
+
+      if (
+        !persistedProjectId
+        && currentUserId
+        && currentUserId !== LOCAL_PREVIEW_USER_ID
+      ) {
+        const { data: persistedAfterFailure, error: lookupError } = await supabase
+          .from("fabrica_diagnosticos")
+          .select("id")
+          .eq("id", queueKey)
+          .eq("user_id", currentUserId)
+          .maybeSingle();
+        if (lookupError) throw lookupError;
+        persistedProjectId = persistedAfterFailure?.id || null;
+      }
+
+      await deleteRemoteProject(persistedProjectId);
+    } catch (error) {
+      blockedProjectPersistenceRef.current.delete(queueKey);
+
+      // A exclusão falhou e o estado não foi trocado: reativa a sincronização
+      // para não deixar uma edição feita durante o debounce apenas no navegador.
+      if (
+        currentUserId
+        && currentUserId !== LOCAL_PREVIEW_USER_ID
+        && stateRef.current.projectId === discardedProjectId
+        && hasMeaningfulProgress(stateRef.current)
+      ) {
+        void enqueueProjectPersistence(stateRef.current, currentUserId).catch((saveError) => {
+          console.warn("[Supabase Sync] Não foi possível retomar o save após falha na exclusão:", saveError);
+        });
+      }
+      throw error;
+    }
+
+    if (currentUserId) {
+      try {
+        removeLocalProjectState(currentUserId, discardedProjectId);
+        if (persistedProjectId && persistedProjectId !== discardedProjectId) {
+          removeLocalProjectState(currentUserId, persistedProjectId);
+        }
+      } catch (error) {
+        console.warn("[Fábrica] Projeto excluído, mas o cache local antigo não pôde ser removido:", error);
+      }
+    }
+
+    historyRef.current = [];
+    redoStackRef.current = [];
+    setHistoryCount(0);
+    setRedoCount(0);
+
+    const freshState = createFreshState();
+    stateRef.current = freshState;
+    setState(freshState);
+    setSyncStatus("idle");
+    setLastSyncedAt(null);
+
+    if (currentUserId) {
+      try {
+        persistLocalState(freshState, currentUserId);
+      } catch (error) {
+        console.warn("[Fábrica] Projeto excluído, mas o novo estado local não pôde ser gravado:", error);
+      }
+    }
+  }, [enqueueProjectPersistence, user?.id]);
+
   const setPhase = useCallback((phase: number) => {
     setState((prev) => ({ ...prev, currentPhase: phase }));
   }, []);
@@ -1431,10 +1792,12 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         update,
         systemUpdate,
         reset,
+        deleteAndDiscardCurrentProject,
         setPhase,
         toggleChecklist,
         undo,
         redo,
+        switchProject,
         canUndo: historyCount > 0,
         canRedo: redoCount > 0,
         syncStatus,

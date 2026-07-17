@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useId } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFabricaContext, type AgencyType, type Pacote, type Depoimento, type SocialLink, type SocialType } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,10 +6,10 @@ import { downloadLandingHTML, buildLandingHTML } from "@/lib/fabrica-html-export
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
 import { BrandPaletteEditor, SectionBackgroundEditor } from "@/components/fabrica/BrandPaletteEditor";
 import { SiteTemplateSelector } from "@/components/fabrica/SiteTemplateSelector";
-import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
+import { useDiagnosticos, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
+import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
 import { getSiteTemplateDefinition } from "@/lib/site-template-catalog";
-import { persistFabricaProject } from "@/lib/fabrica-project-persistence";
-import { checkCanvaSiteSlugAvailability } from "@/lib/fabrica-site-publication";
+import { publishFabricaSite } from "@/lib/fabrica-site-publisher";
 import {
   Plus,
   Trash2,
@@ -32,6 +32,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { SectionVisibility } from "@/hooks/useFabricaContext";
@@ -47,7 +48,6 @@ import {
 import {
   buildCanvaSiteSlug as buildSiteSlug,
   extractCanvaSiteSlug,
-  getCanvaSiteUrl,
   normalizeCanvaSiteUrl,
   validateCanvaSiteSlug,
 } from "@/lib/canva-site-domain";
@@ -142,7 +142,7 @@ const normalizeSocialUrl = (type: SocialType, value: string) => {
 };
 
 export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
-  const { state, update, systemUpdate, reset, undo, redo, canUndo, canRedo, isHydrated } = useFabricaContext();
+  const { state, update, systemUpdate, reset, undo, redo, switchProject, canUndo, canRedo, isHydrated } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const [previewing, setPreviewing] = useState(true);
@@ -150,16 +150,108 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   const [autoSyncDone, setAutoSyncDone] = useState(false);
   const [autoSyncFields, setAutoSyncFields] = useState<string[]>([]);
   const [pickingHeroImage, setPickingHeroImage] = useState(false);
+  const [pendingProjectSwitch, setPendingProjectSwitch] = useState<DiagnosticoSalvo | null>(null);
+  const [isSwitchingProject, setIsSwitchingProject] = useState(false);
+
+  const loadSavedProject = async (project: DiagnosticoSalvo) => {
+    const targetName = project.agency_name || "Sem nome";
+    const isRecovered = project.source === "published_recovery";
+    setIsSwitchingProject(true);
+    try {
+      await switchProject(
+        { ...project.state_snapshot, projectId: project.id },
+        { preserveCurrentPhase: true },
+      );
+      setPendingProjectSwitch(null);
+      if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
+      else toast.success(`Projeto "${targetName}" carregado.`);
+    } catch {
+      toast.error("Não foi possível salvar o projeto atual. A troca foi cancelada para proteger suas alterações.");
+    } finally {
+      setIsSwitchingProject(false);
+    }
+  };
+
+  const requestProjectSwitch = (project: DiagnosticoSalvo) => {
+    if (project.id === state.projectId) {
+      toast.info("Este projeto já está aberto.");
+      return;
+    }
+    if (!state.agencyName) {
+      void loadSavedProject(project);
+      return;
+    }
+    setPendingProjectSwitch(project);
+  };
 
   // ── ESTADOS E REF PARA EDIÇÃO VISUAL DIRETA E INTUITIVA NA PRÉVIA ──
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [globalPickingImage, setGlobalPickingImage] = useState(false);
   const [globalEditingPalette, setGlobalEditingPalette] = useState(false);
   const [activeColorSection, setActiveColorSection] = useState<string | null>(null);
+  const colorModalCloseRef = useRef<HTMLButtonElement>(null);
+  const imageModalCloseRef = useRef<HTMLButtonElement>(null);
+  const colorDialogRef = useRef<HTMLElement>(null);
+  const imageDialogRef = useRef<HTMLDivElement>(null);
+  const modalReturnFocusRef = useRef<HTMLElement | null>(null);
   const [activeImageEdit, setActiveImageEdit] = useState<{
     type: "logo" | "hero" | "package" | "about";
     packageId?: string;
   } | null>(null);
+
+  useEffect(() => {
+    if (!globalEditingPalette && !globalPickingImage) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    modalReturnFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    const animationFrame = window.requestAnimationFrame(() => {
+      if (globalPickingImage) imageModalCloseRef.current?.focus();
+      else colorModalCloseRef.current?.focus();
+    });
+
+    const handleModalKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (globalPickingImage) {
+          setGlobalPickingImage(false);
+          setActiveImageEdit(null);
+        } else {
+          setGlobalEditingPalette(false);
+          setActiveColorSection(null);
+        }
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const activeDialog = globalPickingImage ? imageDialogRef.current : colorDialogRef.current;
+      if (!activeDialog) return;
+      const focusable = Array.from(activeDialog.querySelectorAll<HTMLElement>(
+        'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])',
+      )).filter((element) => element.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleModalKeyDown);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      document.removeEventListener("keydown", handleModalKeyDown);
+      document.body.style.overflow = previousBodyOverflow;
+      window.requestAnimationFrame(() => modalReturnFocusRef.current?.focus());
+    };
+  }, [globalEditingPalette, globalPickingImage]);
 
   const applyGlobalImage = (url: string) => {
     if (!activeImageEdit) return;
@@ -194,20 +286,6 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
   const iframeScrollY = useRef(0);
 
-  useEffect(() => {
-    const handleMessage = (e: MessageEvent) => {
-      if (e.data?.type === "FABRICA_REMOVE" && e.data.elementId) {
-        const currentHidden = state.siteContent.hiddenElements || [];
-        if (!currentHidden.includes(e.data.elementId)) {
-          updSite({ hiddenElements: [...currentHidden, e.data.elementId] });
-          toast.success("Elemento removido do site!");
-        }
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [state.siteContent.hiddenElements]);
-
   // Bind dos eventos de clique no iframe para edição visual em tempo real
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -216,6 +294,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     const handleIframeLoad = () => {
       const doc = iframe.contentDocument || iframe.contentWindow?.document;
       if (!doc || !doc.head || !doc.body) return;
+      if (doc.documentElement.dataset.fabricaEditorInitialized === "true") return;
+      doc.documentElement.dataset.fabricaEditorInitialized = "true";
 
       // Restaura o scroll para evitar pulos
       if (iframe.contentWindow) {
@@ -284,6 +364,10 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         }
         [data-fabrica-color-section]:hover > .fabrica-color-btn,
         .fabrica-color-btn:focus { opacity: 1 !important; transform: translateY(0) !important; }
+        @media (hover: none) {
+          .fabrica-color-btn { opacity: 1 !important; transform: translateY(0) !important; }
+          .fabrica-remove-btn { display: flex !important; }
+        }
       `;
       doc.head.appendChild(style);
 
@@ -303,6 +387,17 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           setGlobalEditingPalette(true);
         });
         section.appendChild(button);
+
+        section.addEventListener("click", (event) => {
+          const target = event.target as Element | null;
+          if (!target || typeof target.closest !== "function") return;
+          const interactive = target.closest(
+            'a,button,input,select,textarea,summary,[contenteditable="true"],[data-visual-editable="true"]',
+          );
+          if (interactive) return;
+          setActiveColorSection(sectionKey);
+          setGlobalEditingPalette(true);
+        });
       });
 
       // 1. Textos editáveis (contenteditable)
@@ -462,24 +557,22 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           // Pacotes dinâmicos
           else if (el.closest(".dest-card")) {
             const destCard = el.closest(".dest-card");
-            const allCards = Array.from(doc.querySelectorAll(".dest-card"));
-            const idx = allCards.indexOf(destCard as Element);
-            if (idx !== -1 && state.selectedPackages[idx]) {
-              const pkgId = state.selectedPackages[idx].id;
+            const pkgId = destCard?.getAttribute("data-package-id") || "";
+            if (pkgId && state.selectedPackages.some((item) => item.id === pkgId)) {
               if (el.tagName === "H3") updPacote(pkgId, { title: textVal });
               else if (el.tagName === "P") updPacote(pkgId, { description: textVal });
               else if (el.classList.contains("dest-loc")) update({ city: textVal });
               else if (el.classList.contains("dest-cta")) updPacote(pkgId, { ctaLabel: textVal });
               else if (el.classList.contains("price-value") || el.classList.contains("price-main")) updPacote(pkgId, { price: textVal });
-              else if (el.classList.contains("dest-tag")) updPacote(pkgId, { category: textVal } as any);
+              else if (el.classList.contains("dest-tag")) updPacote(pkgId, { badge: textVal });
             }
           }
           // Depoimentos
           else if (el.closest(".depo-card")) {
             const depoCard = el.closest(".depo-card");
-            const allDepos = Array.from(doc.querySelectorAll(".depo-card"));
-            const idx = allDepos.indexOf(depoCard as Element);
-            if (idx !== -1 && state.depoimentos[idx]) {
+            const rawIndex = depoCard?.getAttribute("data-depo-index");
+            const idx = rawIndex === null || rawIndex === undefined ? -1 : Number(rawIndex);
+            if (Number.isInteger(idx) && idx >= 0 && state.depoimentos[idx]) {
               if (el.classList.contains("depo-text")) updDepo(idx, { text: textVal });
               else if (el.classList.contains("depo-name")) updDepo(idx, { name: textVal });
             }
@@ -487,9 +580,9 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           // Perguntas frequentes
           else if (el.closest(".faq-item")) {
             const faqItem = el.closest(".faq-item");
-            const allFaq = Array.from(doc.querySelectorAll(".faq-item"));
-            const idx = allFaq.indexOf(faqItem as Element);
-            if (idx !== -1 && state.siteContent.faq[idx]) {
+            const rawIndex = faqItem?.getAttribute("data-faq-index");
+            const idx = rawIndex === null || rawIndex === undefined ? -1 : Number(rawIndex);
+            if (Number.isInteger(idx) && idx >= 0 && state.siteContent.faq[idx]) {
               const faq = state.siteContent.faq.map((item) => ({ ...item }));
               if (el.tagName === "SUMMARY") faq[idx].q = textVal;
               else if (el.tagName === "P") faq[idx].a = textVal;
@@ -531,7 +624,14 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       const editableImgs = doc.querySelectorAll(imgSelectors);
       editableImgs.forEach((el) => {
         el.setAttribute("data-visual-editable", "true");
-        el.addEventListener("click", (e) => {
+        const isInsidePackageCard = Boolean(el.closest(".dest-card"));
+        if (!isInsidePackageCard) {
+          el.setAttribute("role", "button");
+          el.setAttribute("tabindex", "0");
+          el.setAttribute("aria-label", "Trocar esta imagem");
+        }
+
+        const openImageEditor = (e: Event) => {
           e.preventDefault();
           e.stopPropagation();
 
@@ -547,38 +647,49 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           } else {
             const destCard = el.closest(".dest-card");
             if (destCard) {
-              const allCards = Array.from(doc.querySelectorAll(".dest-card"));
-              const idx = allCards.indexOf(destCard);
-              if (idx !== -1 && state.selectedPackages[idx]) {
-                setActiveImageEdit({ type: "package", packageId: state.selectedPackages[idx].id });
+              const packageId = destCard.getAttribute("data-package-id") || "";
+              if (packageId && state.selectedPackages.some((item) => item.id === packageId)) {
+                setActiveImageEdit({ type: "package", packageId });
                 setGlobalPickingImage(true);
               }
             }
           }
-        });
+        };
+
+        el.addEventListener("click", openImageEditor);
+        if (!isInsidePackageCard) {
+          el.addEventListener("keydown", (event) => {
+            const keyboardEvent = event as KeyboardEvent;
+            if (keyboardEvent.key !== "Enter" && keyboardEvent.key !== " ") return;
+            openImageEditor(keyboardEvent);
+          });
+        }
       });
 
       // Lógica de elementos removíveis (X button)
       const removables = doc.querySelectorAll("[data-visual-removable]");
       removables.forEach(el => {
         const btn = doc.createElement("button");
+        btn.type = "button";
         btn.innerHTML = "×";
         btn.className = "fabrica-remove-btn";
         btn.title = "Ocultar este elemento";
-        btn.style.cssText = "position:absolute; top:-6px; right:-6px; background:rgba(239,68,68,0.9); color:white; border:1px solid #fff; border-radius:50%; width:16px; height:16px; cursor:pointer; font-size:10px; font-weight:bold; display:none; align-items:center; justify-content:center; z-index:10000; box-shadow:0 2px 4px rgba(0,0,0,0.15); line-height:1; font-family:sans-serif; padding-bottom:1px; transition:all 0.2s ease; backdrop-filter:blur(2px);";
+        btn.setAttribute("aria-label", "Ocultar este elemento do site");
+        btn.style.cssText = "position:absolute; top:6px; right:6px; background:rgba(239,68,68,0.94); color:white; border:1px solid #fff; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:18px; font-weight:bold; display:flex; align-items:center; justify-content:center; z-index:10000; box-shadow:0 2px 8px rgba(0,0,0,0.3); line-height:1; font-family:sans-serif; transition:all 0.2s ease; backdrop-filter:blur(2px);";
         
         (el as HTMLElement).style.position = "relative";
         el.appendChild(btn);
-        
-        el.addEventListener("mouseenter", () => btn.style.display = "flex");
-        el.addEventListener("mouseleave", () => btn.style.display = "none");
         
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           e.preventDefault();
           const id = el.getAttribute("data-visual-removable");
           if (id) {
-            window.postMessage({ type: "FABRICA_REMOVE", elementId: id }, "*");
+            const currentHidden = state.siteContent.hiddenElements || [];
+            if (!currentHidden.includes(id)) {
+              updSite({ hiddenElements: [...currentHidden, id] });
+              toast.success("Elemento ocultado do site!");
+            }
           }
         });
       });
@@ -598,7 +709,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   // apareçam pré-populadas no construtor do site.
   useEffect(() => {
     if (!isHydrated) return;
-    const SYNC_KEY = "fabrica-phase4-autosync-v1";
+    const SYNC_KEY = `fabrica-phase4-autosync-v2:${user?.id || "local"}:${state.projectId || "draft"}`;
     const lastSyncHash = localStorage.getItem(SYNC_KEY);
     const dest = (state.destinos?.[0] || "").trim();
     const currentHash = [dest, state.lastPrice, state.lastPaymentMode, state.agencyName, state.agencyType].join("|");
@@ -627,7 +738,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     if (!state.siteContent.heroSubheadline) {
       const ds = (state.destinos || []).filter(Boolean).slice(0, 4);
       if (ds.length > 0) {
-        patches["siteContent.heroSubheadline"] = `Roteiros para ${ds.join(", ")} e outros destinos incríveis. Atendimento personalizado e suporte 24h.`;
+        patches["siteContent.heroSubheadline"] = `Roteiros para ${ds.join(", ")} e outros destinos incríveis. Atendimento personalizado e acompanhamento em cada etapa.`;
         synced.push("Subtítulo do site");
       }
     }
@@ -703,10 +814,14 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
     // Aplica todos os patches de uma vez ao contexto compartilhado
     const sitePatches: Partial<typeof state.siteContent> = {};
+    const sectionPatches: Partial<SectionVisibility> = {};
     const rootPatches: any = {};
 
     for (const [k, v] of Object.entries(patches)) {
-      if (k.startsWith("siteContent.")) {
+      if (k.startsWith("siteContent.sections.")) {
+        const sectionKey = k.replace("siteContent.sections.", "") as keyof SectionVisibility;
+        sectionPatches[sectionKey] = Boolean(v);
+      } else if (k.startsWith("siteContent.")) {
         const field = k.replace("siteContent.", "") as any;
         sitePatches[field] = v;
       } else {
@@ -714,8 +829,15 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       }
     }
 
-    if (Object.keys(sitePatches).length > 0) {
-      rootPatches.siteContent = { ...state.siteContent, ...sitePatches };
+    if (Object.keys(sitePatches).length > 0 || Object.keys(sectionPatches).length > 0) {
+      rootPatches.siteContent = {
+        ...state.siteContent,
+        ...sitePatches,
+        sections: {
+          ...state.siteContent.sections,
+          ...sectionPatches,
+        },
+      };
     }
 
     // Handle gallery separately
@@ -731,10 +853,10 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     setAutoSyncDone(true);
     localStorage.setItem(SYNC_KEY, currentHash);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHydrated, state.agencyName, state.destinos, state.lastPaymentMode, state.lastPrice, state.level, state.siteContent, systemUpdate]);
+  }, [isHydrated, state.agencyName, state.destinos, state.lastPaymentMode, state.lastPrice, state.level, state.projectId, state.siteContent, systemUpdate, user?.id]);
 
   const resetSiteToBlank = () => {
-    const SYNC_KEY = "fabrica-phase4-autosync-v1";
+    const SYNC_KEY = `fabrica-phase4-autosync-v2:${user?.id || "local"}:${state.projectId || "draft"}`;
     localStorage.removeItem(SYNC_KEY);
     const currentPhase = state.currentPhase;
     reset();
@@ -864,19 +986,27 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
   return (
     <div className="max-w-3xl lg:max-w-[1550px] mx-auto transition-all duration-300">
+      <ProjectSwitchDialog
+        open={Boolean(pendingProjectSwitch)}
+        currentName={state.agencyName || "Sem nome"}
+        targetName={pendingProjectSwitch?.agency_name || "Sem nome"}
+        busy={isSwitchingProject}
+        onCancel={() => !isSwitchingProject && setPendingProjectSwitch(null)}
+        onConfirm={() => pendingProjectSwitch && void loadSavedProject(pendingProjectSwitch)}
+      />
       {/* ── Indicador de salvamento na nuvem ── */}
       <div className="flex justify-end mb-3">
         <CloudSaveIndicator />
       </div>
       {/* ── SELETOR DE PROJETO PERMANENTE — Sempre visível independente do estado ── */}
-      <div className="rounded-2xl p-3 border bg-white/[0.03] border-white/10 flex items-center gap-3 mb-4">
+      <div className="rounded-2xl p-3 border bg-white/[0.03] border-white/10 flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
         <span className="text-base flex-shrink-0">📂</span>
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] text-white/40 mb-1.5 font-semibold uppercase tracking-wider">
+        <div className="w-full flex-1 min-w-0">
+          <p className="text-[10px] text-white/40 mb-1.5 font-semibold uppercase tracking-wider break-words">
             Editando site: <span className="text-white/70 normal-case font-bold">{state.agencyName || "Sem nome"}</span>
             {state.siteContent?.canvaViagemUrl && (
               <a href={normalizeCanvaSiteUrl(state.siteContent.canvaViagemUrl)} target="_blank" rel="noopener noreferrer"
-                className="ml-2 text-emerald-400 hover:text-emerald-300 transition-colors">
+                className="block sm:inline sm:ml-2 break-all text-emerald-400 hover:text-emerald-300 transition-colors">
                 ↗ {state.siteContent.canvaViagemUrl}
               </a>
             )}
@@ -890,16 +1020,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 if (!val) return;
                 const p = savedProjects!.find(x => x.id === val);
                 if (!p || !p.state_snapshot) return;
-                const isRecovered = p.source === "published_recovery";
-                const targetName = p.agency_name || 'Sem Nome';
-                const currentName = state.agencyName || 'Sem nome';
-                if (state.agencyName && p.id !== state.projectId) {
-                  const ok = window.confirm(`⚠️ Você está editando "${currentName}".\n\nDeseja carregar "${targetName}"? Salve antes se houver mudanças não confirmadas.`);
-                  if (!ok) { e.target.value = ""; return; }
-                }
-                window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
-                else toast.success(`📂 Projeto "${targetName}" carregado!`);
+                requestProjectSwitch(p);
               }}
               className="w-full max-w-md bg-white/[0.04] border border-white/15 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
             >
@@ -922,7 +1043,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         </div>
         <button
           onClick={resetSiteToBlank}
-          className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
+          className="w-full sm:w-auto flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
           title="Limpar tudo e começar um novo site do zero"
         >
           Criar Novo Site
@@ -1136,6 +1257,14 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                     if (!currentOrder.includes(key)) currentOrder.push(key);
                   });
 
+                  const moveSection = (fromIndex: number, toIndex: number) => {
+                    if (toIndex < 0 || toIndex >= currentOrder.length || fromIndex === toIndex) return;
+                    const newOrder = [...currentOrder];
+                    const [movedItem] = newOrder.splice(fromIndex, 1);
+                    newOrder.splice(toIndex, 0, movedItem);
+                    update({ sectionOrder: newOrder });
+                  };
+
                   return currentOrder.filter(key => !!sectionLabels[key]).map((key, index) => {
                     const on = isVisible(key as keyof SectionVisibility);
                     return (
@@ -1175,15 +1304,43 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                         <span className={`flex-1 truncate text-left text-sm font-semibold ${on ? "text-white" : "text-white/40 line-through"}`}>
                           {sectionLabels[key]}
                         </span>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveSection(index, index - 1);
+                            }}
+                            disabled={index === 0}
+                            className="p-1.5 rounded-lg text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-25 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70"
+                            aria-label={`Mover ${sectionLabels[key]} para cima`}
+                          >
+                            <ChevronUp className="w-4 h-4" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveSection(index, index + 1);
+                            }}
+                            disabled={index === currentOrder.length - 1}
+                            className="p-1.5 rounded-lg text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-25 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70"
+                            aria-label={`Mover ${sectionLabels[key]} para baixo`}
+                          >
+                            <ChevronDown className="w-4 h-4" aria-hidden="true" />
+                          </button>
+                        </div>
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleSection(key as keyof SectionVisibility);
                           }}
-                          className={`p-1.5 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0 cursor-pointer ${on ? "text-white" : "text-white/40"}`}
+                          className={`p-1.5 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 ${on ? "text-white" : "text-white/40"}`}
+                          aria-label={`${on ? "Ocultar" : "Mostrar"} ${sectionLabels[key]}`}
+                          aria-pressed={on}
                         >
-                          {on ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                          {on ? <Eye className="w-4 h-4" aria-hidden="true" /> : <EyeOff className="w-4 h-4" aria-hidden="true" />}
                         </button>
                       </div>
                     );
@@ -1429,19 +1586,19 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         {/* Painel Direito: Preview do Site (7 colunas em lg, Sticky) */}
         <div className="w-full space-y-6">
           <div className="bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-            <div className="px-4 py-3 bg-zinc-950 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1.5">
+            <div className="px-4 py-3 bg-zinc-950 border-b border-white/10 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0 w-full xl:flex-1">
+                <div className="flex flex-shrink-0 gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
                   <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
                   <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
                 </div>
-                <div className="ml-3 px-3 py-1 rounded-lg bg-white/[0.04] text-[11px] font-mono text-white/50 w-44 sm:w-64 truncate border border-white/5">
+                <div className="ml-1 sm:ml-3 px-3 py-1 rounded-lg bg-white/[0.04] text-[11px] font-mono text-white/50 flex-1 min-w-0 max-w-full sm:max-w-64 truncate border border-white/5">
                   https://{(state.agencyName || "sua-agencia").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-")}.canvaviagem.com
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
                 {/* Histórico Desfazer/Refazer */}
                 <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
                   <button
@@ -1497,7 +1654,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   Modelo: {activeSiteTemplate.copy.pt.label}
                 </div>
 
-                <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1">
+                <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1 whitespace-nowrap">
                   <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                   Editor Visual
                 </span>
@@ -1516,7 +1673,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   srcDoc={previewHTML}
                   className={`bg-white transition-all duration-300 shadow-xl ${
                     previewMode === "mobile"
-                      ? "w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px]"
+                      ? "w-full max-w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px]"
                       : "w-full h-[1150px] border border-white/10 rounded-2xl"
                   }`}
                   title="Preview"
@@ -1531,8 +1688,16 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       {/* 🖼️ MODAL GLOBAL DE SELEÇÃO DE IMAGEM (DISPARADO AO CLICAR NA PRÉVIA) */}
       {globalEditingPalette && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm">
-          <aside className="ml-auto h-full w-full max-w-md overflow-y-auto border-l border-white/10 bg-zinc-950 p-6 shadow-2xl">
+          <aside
+            ref={colorDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fabrica-color-dialog-title"
+            aria-describedby="fabrica-color-dialog-description"
+            className="ml-auto h-full w-full max-w-md overflow-y-auto border-l border-white/10 bg-zinc-950 p-6 shadow-2xl"
+          >
             <button
+              ref={colorModalCloseRef}
               type="button"
               onClick={() => {
                 setGlobalEditingPalette(false);
@@ -1545,10 +1710,10 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             </button>
             <div className="mb-6 pr-10">
               <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Edição visual</div>
-              <h3 className="mt-1 text-lg font-bold text-white">
+              <h3 id="fabrica-color-dialog-title" className="mt-1 text-lg font-bold text-white">
                 Fundo: {SITE_SECTION_LABELS[activeColorSection || ""] || "Seção selecionada"}
               </h3>
-              <p className="mt-1 text-xs leading-relaxed text-white/50">
+              <p id="fabrica-color-dialog-description" className="mt-1 text-xs leading-relaxed text-white/50">
                 Esta cor será salva somente neste fundo. As outras partes do site não mudam.
               </p>
             </div>
@@ -1604,25 +1769,35 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
       {globalPickingImage && activeImageEdit && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-150 relative">
+          <div
+            ref={imageDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fabrica-image-dialog-title"
+            aria-describedby="fabrica-image-dialog-description"
+            className="bg-zinc-900 border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-150 relative"
+          >
             <button
+              ref={imageModalCloseRef}
+              type="button"
               onClick={() => {
                 setGlobalPickingImage(false);
                 setActiveImageEdit(null);
               }}
               className="absolute top-4 right-4 p-1.5 rounded-lg bg-white/[0.04] text-white/50 hover:bg-white/[0.1] hover:text-white"
+              aria-label="Fechar seletor de imagens"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-5 h-5 text-amber-400" />
-              <h3 className="text-lg font-bold text-white uppercase tracking-wider">
+              <h3 id="fabrica-image-dialog-title" className="text-lg font-bold text-white uppercase tracking-wider">
                 Trocar Foto {activeImageEdit.type === "logo" ? "da Logo" : activeImageEdit.type === "hero" ? "do Banner" : activeImageEdit.type === "about" ? "da Equipe / Agência" : "do Pacote"}
               </h3>
             </div>
 
-            <p className="text-xs text-white/60 mb-4">
+            <p id="fabrica-image-dialog-description" className="text-xs text-white/60 mb-4">
               {activeImageEdit.type === "about"
                 ? "Escolha uma das sugestões de equipe abaixo, reuse uma imagem do seu banco, ou envie a sua própria:"
                 : "Clique em uma das imagens do seu banco abaixo para aplicar ou envie uma nova do seu computador:"}
@@ -1895,6 +2070,13 @@ const PacoteEditor = ({
             value={pacote.price}
             onChange={(e) => onChange({ price: e.target.value })}
             placeholder="R$ 1.997 / pessoa"
+            className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
+          />
+          <input
+            value={pacote.badge || ""}
+            onChange={(e) => onChange({ badge: e.target.value })}
+            placeholder="Selo do card (ex.: Oferta, Grupo, Praia)"
+            maxLength={32}
             className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
           />
         </div>
@@ -2457,82 +2639,26 @@ const PublishSiteCard = ({
     const toastId = toast.loading("Publicando no link Canva Viagem...");
 
     try {
-      const persistedProject = await persistFabricaProject({ state, userId: user.id });
-      const projectId = persistedProject.id;
-      if (projectId !== state.projectId) update({ projectId });
-
-      const availability = await checkCanvaSiteSlugAvailability({
+      const result = await publishFabricaSite({
+        state,
+        userId: user.id,
         slug: cleanSlug,
-        ownerId: user.id,
-        projectId,
-        currentUrl: state.siteContent.canvaViagemUrl,
-      });
-      if (!availability.allowed) {
-        const message = availability.reason === "another_owner"
-          ? `O domínio "${cleanSlug}.canvaviagem.com" já está sendo usado por outra agência.`
-          : `Esse domínio já pertence a outro projeto da sua conta. Abra o projeto original ou escolha outro endereço.`;
-        toast.error(message, { id: toastId });
-        return;
-      }
-
-      toast.loading("Otimizando imagens do site para o Canva Viagem (isso pode levar alguns segundos)...", { id: toastId });
-      let finalHtml = html;
-      const embeddedImages = Array.from(new Set(
-        finalHtml.match(/data:image\/[a-zA-Z0-9.+-]+;base64,[a-zA-Z0-9+/=]+/g) || [],
-      ));
-
-      for (const base64Data of embeddedImages) {
-        const sourceBlob = await (await fetch(base64Data)).blob();
-        const webpBlob = await optimizeImageBlobToWebp(sourceBlob);
-        const hash = await hashBlob(webpBlob);
-        const filename = `sites/${user.id}/assets/${hash}.webp`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("thumbnails")
-          .upload(filename, webpBlob, { contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE, upsert: true });
-        if (uploadError || !uploadData) throw uploadError || new Error("Upload não confirmado.");
-        const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(filename).data.publicUrl;
-        finalHtml = finalHtml.split(base64Data).join(publicUrl);
-      }
-      if (/data:image\/[a-zA-Z0-9.+-]+;base64,/i.test(finalHtml)) {
-        throw new Error("Não foi possível otimizar todas as imagens do site.");
-      }
-
-      toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
-
-      const liveUrl = getCanvaSiteUrl(cleanSlug);
-
-      // Upload Oficial garantido de passar pelo RLS salvando direto na tabela public_sites
-      const { error: dbError } = await supabase
-        .from("public_sites")
-        .upsert({
-          id: cleanSlug,
-          owner_id: user.id,
-          project_id: projectId,
-          html: finalHtml,
-          locale: 'pt-BR'
-        });
-
-      if (dbError) {
-        throw new Error(dbError.message || "Erro desconhecido no banco de dados.");
-      }
-
-      const finalUrl = liveUrl;
-      const publishedState = {
-        ...state,
-        projectId,
-        siteContent: {
-          ...state.siteContent,
-          canvaViagemUrl: finalUrl,
+        locale: "pt-BR",
+        onProgress: (stage) => {
+          if (stage === "assets") {
+            toast.loading("Otimizando imagens do site...", { id: toastId });
+          } else if (stage === "site") {
+            toast.loading("Ativando o link no Canva Viagem...", { id: toastId });
+          }
         },
-      };
-      await persistFabricaProject({ state: publishedState, userId: user.id });
+      });
 
       update({
-        projectId,
-        siteContent: {
-          ...state.siteContent,
-          canvaViagemUrl: finalUrl,
-        },
+        projectId: result.projectId,
+        crmForm: result.state.crmForm,
+        logoBase64: result.state.logoBase64,
+        selectedPackages: result.state.selectedPackages,
+        siteContent: result.state.siteContent,
       });
 
       toast.success("Site publicado no link Canva Viagem!", { id: toastId });
@@ -2541,10 +2667,16 @@ const PublishSiteCard = ({
       console.error("Canva Viagem publish error:", err);
       const rawMsg = err?.message || "";
       let friendlyMsg = "Não foi possível publicar. Tente novamente em instantes.";
-      if (rawMsg.toLowerCase().includes("row-level") || rawMsg.toLowerCase().includes("rls") || rawMsg.toLowerCase().includes("policy")) {
+      if (rawMsg.includes("another_owner") || rawMsg.includes("site_slug_unavailable")) {
+        friendlyMsg = "Esse endereço já pertence a outra conta. Escolha outro subdomínio.";
+      } else if (rawMsg.includes("another_project") || rawMsg.includes("site_slug_belongs_to_another_project")) {
+        friendlyMsg = "Esse endereço já está ligado a outro projeto seu. Escolha outro subdomínio.";
+      } else if (rawMsg.toLowerCase().includes("row-level") || rawMsg.toLowerCase().includes("rls") || rawMsg.toLowerCase().includes("policy")) {
         friendlyMsg = "Sessão expirada. Faça logout e login novamente para publicar.";
       } else if (rawMsg.toLowerCase().includes("network") || rawMsg.toLowerCase().includes("fetch")) {
         friendlyMsg = "Sem conexão com a internet. Verifique sua rede e tente de novo.";
+      } else if (rawMsg.includes("site_publish_schema_sync_pending")) {
+        friendlyMsg = "A publicação está sendo atualizada. Aguarde alguns segundos e tente novamente; seu site anterior continua no ar.";
       } else if (rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("unique")) {
         friendlyMsg = "Já existe um site com esse endereço. Tente um subdomínio diferente.";
       }
@@ -2599,13 +2731,13 @@ const PublishSiteCard = ({
 
           {normalizeCanvaSiteUrl(state.siteContent.canvaViagemUrl || "") && (
             <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Link Canva Viagem publicado</div>
                 <a
                   href={normalizeCanvaSiteUrl(state.siteContent.canvaViagemUrl || "")}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-bold text-white hover:underline flex items-center gap-1.5 mt-0.5 group"
+                  className="min-w-0 break-all text-sm font-bold text-white hover:underline flex items-center gap-1.5 mt-0.5 group"
                 >
                   {normalizeCanvaSiteUrl(state.siteContent.canvaViagemUrl || "")}
                   <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition-colors" />
@@ -2625,8 +2757,8 @@ const PublishSiteCard = ({
           <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
             Link do cliente:
           </label>
-          <div className="flex items-center mb-3">
-            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)] sm:grid-cols-[auto_minmax(0,1fr)_auto] mb-3">
+            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-tl-lg sm:rounded-l-lg text-xs text-white/40 select-none">
               https://
             </span>
             <input
@@ -2635,9 +2767,9 @@ const PublishSiteCard = ({
               onChange={(e) => setCanvaViagemSubdomain(buildSiteSlug(e.target.value))}
               maxLength={63}
               placeholder="nome-da-agencia"
-              className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
+              className="min-w-0 w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30 rounded-tr-lg sm:rounded-none"
             />
-            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-xs text-white/40 select-none">
+            <span className="col-span-2 sm:col-span-1 px-3 py-2 bg-white/[0.04] border border-white/10 border-t-0 sm:border-t sm:border-l-0 rounded-b-lg sm:rounded-b-none sm:rounded-r-lg text-center sm:text-left text-xs text-white/40 select-none break-all">
               .canvaviagem.com
             </span>
           </div>
@@ -2727,6 +2859,8 @@ const PublishSiteCard = ({
 };
 const FabricaCard = ({ title, children }: { title: string; children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const contentId = useId();
+  const triggerId = `${contentId}-trigger`;
 
   return (
     <div
@@ -2738,8 +2872,12 @@ const FabricaCard = ({ title, children }: { title: string; children: React.React
     >
       {/* Header clicável para abrir/fechar */}
       <button
+        id={triggerId}
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-5 text-left focus:outline-none select-none group"
+        aria-expanded={isOpen}
+        aria-controls={contentId}
+        className="w-full flex items-center justify-between p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-300/70 select-none group"
       >
         <h3
           className="text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2"
@@ -2766,13 +2904,16 @@ const FabricaCard = ({ title, children }: { title: string; children: React.React
       </button>
 
       {/* Conteúdo animado/renderizado se aberto */}
-      <div
-        className={`transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-[4000px] opacity-100 p-6 pt-0 border-t border-white/[0.04]" : "max-h-0 opacity-0 pointer-events-none"
-        }`}
-      >
-        {children}
-      </div>
+      {isOpen && (
+        <div
+          id={contentId}
+          role="region"
+          aria-labelledby={triggerId}
+          className="animate-in fade-in duration-300 p-6 pt-0 border-t border-white/[0.04]"
+        >
+          {children}
+        </div>
+      )}
     </div>
   );
 };

@@ -14,6 +14,7 @@ import {
   Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2, Copy, ClipboardCheck, FileText, Key,
 } from "lucide-react";
 import { toast } from "sonner";
+import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
 
 type GenMode = "ai" | "photo" | "custom";
 type CustomSource = "upload" | "link";
@@ -1107,9 +1108,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     const period = travelPeriod ? `\n📅 ${travelPeriod}` : "";
     
     const cleanDest = destination.trim();
+    const packageId = `gen-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const usedPackageSlugs = (state.selectedPackages || []).map(
+      (item) => item.slug || buildPackageSlug(item.title, item.id),
+    );
     const newPkg = {
-      id: `gen-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: packageId,
       title: cleanDest,
+      slug: createUniquePackageSlug(cleanDest, usedPackageSlugs, packageId),
       description: descLines + period,
       price: priceLabel,
       imageUrl: imageToUse,
