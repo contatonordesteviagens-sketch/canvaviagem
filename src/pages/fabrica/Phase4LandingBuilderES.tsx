@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useId } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFabricaContext, type AgencyType, type Pacote, type Depoimento as Testimonio } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -187,6 +187,8 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   const [activePackagePreviewId, setActivePackagePreviewId] = useState<string | null>(null);
   const [globalPickingImage, setGlobalPickingImage] = useState(false);
   const [globalEditingPalette, setGlobalEditingPalette] = useState(false);
+  const [removeMode, setRemoveMode] = useState(false);
+  const removeModeRef = useRef(false);
   const [activeColorSection, setActiveColorSection] = useState<string | null>(null);
   const colorModalCloseRef = useRef<HTMLButtonElement>(null);
   const imageModalCloseRef = useRef<HTMLButtonElement>(null);
@@ -197,6 +199,22 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     type: "logo" | "hero" | "package" | "about";
     packageId?: string;
   } | null>(null);
+
+  useEffect(() => {
+    removeModeRef.current = removeMode;
+  }, [removeMode]);
+
+  useEffect(() => {
+    const handlePackagePreviewMessage = (event: MessageEvent) => {
+      const iframeWindow = iframeRef.current?.contentWindow;
+      if (!iframeWindow || event.source !== iframeWindow) return;
+      if (event.data?.type === "CV_PACKAGE_CLOSE") {
+        setActivePackagePreviewId(null);
+      }
+    };
+    window.addEventListener("message", handlePackagePreviewMessage);
+    return () => window.removeEventListener("message", handlePackagePreviewMessage);
+  }, []);
 
   useEffect(() => {
     if (!globalEditingPalette && !globalPickingImage) return;
@@ -255,33 +273,32 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
   const applyGlobalImage = (url: string) => {
     if (!activeImageEdit) return;
+    const galleryImages = state.siteContent.galleryImages.includes(url)
+      ? state.siteContent.galleryImages
+      : [...state.siteContent.galleryImages, url];
 
     if (activeImageEdit.type === "logo") {
-      update({ logoBase64: url });
+      update({ logoBase64: url, siteContent: { ...state.siteContent, galleryImages } });
       toast.success("¡Logotipo actualizado con éxito!");
     } else if (activeImageEdit.type === "hero") {
-      updSite({ heroImageUrl: url });
+      update({ siteContent: { ...state.siteContent, heroImageUrl: url, galleryImages } });
       toast.success("¡Banner principal actualizado con éxito!");
     } else if (activeImageEdit.type === "about") {
-      updSite({ aboutImageUrl: url });
+      update({ siteContent: { ...state.siteContent, aboutImageUrl: url, galleryImages } });
       toast.success("¡Foto del equipo/empresa actualizada!");
     } else if (activeImageEdit.type === "package" && activeImageEdit.packageId) {
-      updPacote(activeImageEdit.packageId, { imageUrl: url });
-      toast.success("¡Foto del paquete actualizada con éxito!");
-    }
-
-    // Agregar al banco de imágenes para reutilización si aún no está allí
-    if (!state.siteContent.galleryImages.includes(url)) {
       update({
-        siteContent: {
-          ...state.siteContent,
-          galleryImages: [...state.siteContent.galleryImages, url],
-        },
+        selectedPackages: state.selectedPackages.map((pacote) =>
+          pacote.id === activeImageEdit.packageId ? { ...pacote, imageUrl: url } : pacote,
+        ),
+        siteContent: { ...state.siteContent, galleryImages },
       });
+      toast.success("¡Foto del paquete actualizada con éxito!");
     }
 
     setGlobalPickingImage(false);
     setActiveImageEdit(null);
+    setActivePackagePreviewId(null);
   };
 
   const iframeScrollY = useRef(0);
@@ -296,6 +313,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       if (!doc || !doc.head || !doc.body) return;
       if (doc.body.dataset.fabricaEditorInitialized === "true") return;
       doc.body.dataset.fabricaEditorInitialized = "true";
+      doc.documentElement.classList.toggle("fabrica-remove-mode", removeModeRef.current);
 
       // Restaura o scroll para evitar pulos
       if (iframe.contentWindow) {
@@ -379,10 +397,11 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
         }
         .package-sheet > .fabrica-package-edit-btn {
-          position: sticky !important;
-          top: 12px !important;
-          float: left !important;
-          margin: 12px 0 -48px 12px !important;
+          position: absolute !important;
+          top: 18px !important;
+          right: 74px !important;
+          float: none !important;
+          margin: 0 !important;
           width: max-content !important;
         }
         .fabrica-package-preview-btn {
@@ -402,9 +421,22 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         }
         [data-fabrica-color-section]:hover > .fabrica-color-btn,
         .fabrica-color-btn:focus { opacity: 1 !important; transform: translateY(0) !important; }
+        .fabrica-remove-btn {
+          display: none !important;
+          top: 4px !important;
+          right: 4px !important;
+          width: 24px !important;
+          height: 24px !important;
+          border: 1px solid rgba(255,255,255,.7) !important;
+          font-size: 14px !important;
+          opacity: .88 !important;
+          box-shadow: 0 3px 10px rgba(0,0,0,.28) !important;
+        }
+        .fabrica-remove-mode .fabrica-remove-selected > .fabrica-remove-btn {
+          display: flex !important;
+        }
         @media (hover: none) {
           .fabrica-color-btn { opacity: 1 !important; transform: translateY(0) !important; }
-          .fabrica-remove-btn { display: flex !important; }
         }
       `;
       doc.head.appendChild(style);
@@ -440,15 +472,15 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
       const openPackageEditor = (packageId: string, afterSectionOpen = false) => {
         if (!packageId) return;
+        const packagesCard = window.document.querySelector('[data-fabrica-card="packages"]');
+        const packagesTrigger = packagesCard?.querySelector<HTMLButtonElement>(':scope > button[aria-expanded]');
+        if (!afterSectionOpen && packagesTrigger?.getAttribute("aria-expanded") === "false") {
+          packagesTrigger.click();
+          window.setTimeout(() => openPackageEditor(packageId, true), 80);
+          return;
+        }
         const editor = window.document.getElementById(`package-editor-${packageId}`);
         if (!editor) {
-          const packagesCard = window.document.querySelector('[data-fabrica-card="packages"]');
-          const packagesTrigger = packagesCard?.querySelector<HTMLButtonElement>(':scope > button[aria-expanded]');
-          if (!afterSectionOpen && packagesTrigger?.getAttribute("aria-expanded") === "false") {
-            packagesTrigger.click();
-            window.setTimeout(() => openPackageEditor(packageId, true), 80);
-            return;
-          }
           toast.error("No fue posible localizar este paquete en el editor.");
           return;
         }
@@ -519,6 +551,10 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           event.stopPropagation();
           const modal = doc.getElementById("package-modal");
           const packageId = modal?.getAttribute("data-editor-package-id") || modal?.getAttribute("data-current-package-id") || "";
+          const iframeWindow = doc.defaultView as (Window & {
+            closePackageDetails?: (restoreFocus?: boolean, syncLocation?: boolean) => void;
+          }) | null;
+          iframeWindow?.closePackageDetails?.(false, false);
           setActivePackagePreviewId(null);
           openPackageEditor(packageId);
         });
@@ -641,6 +677,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       const imgSelectors = [
         ".brand-logo",
         ".dest-img-wrap img",
+        "#package-image",
         ".equipe-img",
         ".hero img"
       ].join(",");
@@ -661,6 +698,16 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           } else if (el.closest(".hero") || el.classList.contains("hero")) {
             setActiveImageEdit({ type: "hero" });
             setGlobalPickingImage(true);
+          } else if (el.id === "package-image") {
+            const modal = doc.getElementById("package-modal");
+            const packageId =
+              modal?.getAttribute("data-editor-package-id") ||
+              modal?.getAttribute("data-current-package-id") ||
+              "";
+            if (packageId) {
+              setActiveImageEdit({ type: "package", packageId });
+              setGlobalPickingImage(true);
+            }
           } else {
             const destCard = el.closest(".dest-card");
             if (destCard) {
@@ -674,20 +721,37 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         });
       });
 
+      // En el modo de eliminación, captura el clic antes de los editores.
+      // Así se puede tocar directamente el contenido sin buscar un espacio vacío.
+      doc.addEventListener("click", (event) => {
+        if (!doc.documentElement.classList.contains("fabrica-remove-mode")) return;
+        const target = event.target as Element | null;
+        if (!target?.closest || target.closest(".fabrica-remove-btn")) return;
+        const removable = target.closest("[data-visual-removable]");
+        if (!removable) return;
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        doc.querySelectorAll(".fabrica-remove-selected").forEach((item) =>
+          item.classList.remove("fabrica-remove-selected"),
+        );
+        removable.classList.add("fabrica-remove-selected");
+      }, true);
+
       // Lógica de elementos removíveis (X button)
       const removables = doc.querySelectorAll("[data-visual-removable]");
       removables.forEach(el => {
         const btn = doc.createElement("button");
-        btn.innerHTML = "×";
+        btn.textContent = "×";
         btn.className = "fabrica-remove-btn";
         btn.title = "Ocultar este elemento";
         btn.type = "button";
         btn.setAttribute("aria-label", "Ocultar este elemento");
-        btn.style.cssText = "position:absolute; top:6px; right:6px; background:rgba(239,68,68,0.94); color:white; border:1px solid #fff; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:18px; font-weight:bold; display:flex; align-items:center; justify-content:center; z-index:10000; box-shadow:0 2px 8px rgba(0,0,0,0.3); line-height:1; font-family:sans-serif; transition:all 0.2s ease; backdrop-filter:blur(2px);";
+        btn.style.cssText = "position:absolute; top:4px; right:4px; background:rgba(220,38,38,0.94); color:white; border:1px solid rgba(255,255,255,.7); border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:14px; font-weight:bold; display:none; align-items:center; justify-content:center; z-index:10000; box-shadow:0 3px 10px rgba(0,0,0,0.28); line-height:1; font-family:sans-serif;";
         
         (el as HTMLElement).style.position = "relative";
         el.appendChild(btn);
-        
+
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -929,6 +993,17 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   const isVisible = (key: keyof SectionVisibility) => state.siteContent.sections[key] !== false;
 
   const previewHTML = buildLandingHTML(state, user?.id);
+
+  useEffect(() => {
+    const doc = iframeRef.current?.contentDocument;
+    if (!doc) return;
+    doc.documentElement.classList.toggle("fabrica-remove-mode", removeMode);
+    if (!removeMode) {
+      doc.querySelectorAll(".fabrica-remove-selected").forEach((element) =>
+        element.classList.remove("fabrica-remove-selected"),
+      );
+    }
+  }, [previewHTML, removeMode]);
 
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
 
@@ -1386,7 +1461,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2">
                 {/* Histórico Desfazer/Refazer */}
                 <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
                   <button
@@ -1435,6 +1510,28 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                   <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                   Editor Visual
                 </span>
+                <button
+                  type="button"
+                  aria-pressed={removeMode}
+                  onClick={() => setRemoveMode((current) => !current)}
+                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-2.5 text-[10px] font-bold ${
+                    removeMode
+                      ? "border-red-400/50 bg-red-500/15 text-red-200"
+                      : "border-white/10 text-white/45 hover:text-white"
+                  }`}
+                >
+                  <X className="h-3 w-3" />
+                  {removeMode ? "Toca el elemento" : "Quitar elemento"}
+                </button>
+                {(state.siteContent.hiddenElements?.length || 0) > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => updSite({ hiddenElements: [] })}
+                    className="min-h-9 rounded-lg border border-white/10 px-2.5 text-[10px] font-bold text-white/45 hover:text-white"
+                  >
+                    Restaurar ({state.siteContent.hiddenElements?.length})
+                  </button>
+                )}
               </div>
             </div>
 
@@ -2664,6 +2761,8 @@ const FabricaCard = ({
   sectionId?: string;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const contentId = useId();
+  const triggerId = `${contentId}-trigger`;
 
   return (
     <div
@@ -2676,8 +2775,12 @@ const FabricaCard = ({
     >
       {/* Header clicável para abrir/fechar */}
       <button
+        id={triggerId}
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-5 text-left focus:outline-none select-none group"
+        aria-expanded={isOpen}
+        aria-controls={contentId}
+        className="w-full flex items-center justify-between p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-300/70 select-none group"
       >
         <h3
           className="text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2"
@@ -2705,6 +2808,10 @@ const FabricaCard = ({
 
       {/* Conteúdo animado/renderizado se aberto */}
       <div
+        id={contentId}
+        role="region"
+        aria-labelledby={triggerId}
+        aria-hidden={!isOpen}
         className={`transition-all duration-300 ease-in-out ${
           isOpen ? "max-h-[4000px] opacity-100 p-6 pt-0 border-t border-white/[0.04]" : "max-h-0 opacity-0 pointer-events-none"
         }`}

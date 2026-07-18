@@ -1555,7 +1555,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
       <button type="button" class="btn" onclick="closePackageDetails()">Ver paquetes disponibles</button>
     </div>
     <div class="package-media" id="package-details-media">
-      <img id="package-image" src="${DEFAULT_DEST_IMG}" alt="" data-ai-ignore="true" data-preserve-image="true">
+      <img id="package-image" src="${DEFAULT_DEST_IMG}" alt="" loading="eager" decoding="async" data-ai-ignore="true" data-preserve-image="true">
       <span class="package-category" id="package-category">Destino</span>
       <div class="package-agency-on-image"><strong id="package-agency-image">${esc(agencia)}</strong><span id="package-location-image">${esc(state.address?.trim() || cidade)}</span></div>
     </div>
@@ -1723,6 +1723,17 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     });
   }
 
+  function setPackageMainImage(url, alt) {
+    const image = document.getElementById("package-image");
+    if (!image) return;
+    image.onerror = () => {
+      image.onerror = null;
+      image.src = "${DEFAULT_DEST_IMG}";
+    };
+    image.src = url || "${DEFAULT_DEST_IMG}";
+    image.alt = alt || "";
+  }
+
   function renderPackageGallery(selected) {
     const gallery = document.getElementById("package-gallery");
     const mainImage = document.getElementById("package-image");
@@ -1742,8 +1753,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
       image.alt = "";
       button.appendChild(image);
       button.addEventListener("click", () => {
-        mainImage.src = url;
-        mainImage.alt = selected.title;
+        setPackageMainImage(url, selected.title);
         gallery.querySelectorAll("button").forEach((item) => item.classList.remove("active"));
         button.classList.add("active");
       });
@@ -1782,7 +1792,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     if (type === "CV_PACKAGE_OPEN" && slug) {
       nextUrl.pathname = "/pacote/" + encodeURIComponent(slug);
       nextUrl.searchParams.delete("pacote");
-    } else if (type === "CV_PACKAGE_CLOSE" && /^\/pacotes?\//.test(nextUrl.pathname)) {
+    } else if (type === "CV_PACKAGE_CLOSE" && /^\\/pacotes?\\//.test(nextUrl.pathname)) {
       nextUrl.pathname = "/";
     }
     window.history.pushState({}, "", nextUrl.pathname + nextUrl.search + nextUrl.hash);
@@ -1803,9 +1813,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     currentPackage = selected;
     modal.setAttribute("data-current-package-id", String(selected.id || ""));
     lastPackageTrigger = trigger || document.activeElement;
-    const image = document.getElementById("package-image");
-    image.src = selected.imageUrl;
-    image.alt = selected.title;
+    setPackageMainImage(selected.imageUrl, selected.title);
     setPackageText("package-category", selected.category);
     setPackageText("package-agency-image", selected.agencyName);
     setPackageText("package-location-image", selected.agencyLocation);
@@ -1834,7 +1842,6 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     modal.classList.add("active");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("package-modal-open");
-    const sheet = modal.querySelector(".package-sheet");
     if (sheet) sheet.scrollTop = 0;
     if (content) content.scrollTop = 0;
     modal.querySelector(".package-close")?.focus();
@@ -1858,7 +1865,6 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     modal.classList.add("active");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("package-modal-open");
-    const sheet = modal.querySelector(".package-sheet");
     if (sheet) sheet.scrollTop = 0;
     modal.querySelector(".package-close")?.focus();
     track("package_not_found", { package_slug: String(slug || "") });
@@ -1976,7 +1982,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
 
   function getPackageSlugFromLocation() {
     if (window.parent !== window || window.location.protocol === "file:") return "";
-    const pathMatch = window.location.pathname.match(/^\/pacotes?\/([^/]+)/i);
+    const pathMatch = window.location.pathname.match(/^\\/pacotes?\\/([^/]+)/i);
     if (pathMatch) {
       try {
         return decodeURIComponent(pathMatch[1]).toLowerCase();

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
 
 const readPackageSlugFromLocation = () => {
   const pathMatch = window.location.pathname.match(/^\/pacotes?\/([^/]+)/i);
@@ -19,6 +19,7 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const syncPackageToFrame = useCallback(() => {
@@ -33,8 +34,12 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
 
   useEffect(() => {
     let isSubscribed = true;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 12_000);
     
     const loadSite = async () => {
+      setLoading(true);
+      setError(null);
       if (!id) {
         setError("ID Inválido.");
         setLoading(false);
@@ -49,6 +54,7 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
           .from('public_sites')
           .select('html')
           .eq('id', id)
+          .abortSignal(controller.signal)
           .single();
         
         if (error || !data) {
@@ -68,15 +74,25 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
       } catch (err: any) {
         if (isSubscribed) {
           console.error("Sync Error:", err);
-          setError(err.message || "Erro de conexão.");
+          setError(
+            controller.signal.aborted
+              ? "O carregamento demorou mais do que o esperado."
+              : err.message || "Erro de conexão.",
+          );
           setLoading(false);
         }
+      } finally {
+        window.clearTimeout(timeout);
       }
     };
 
     loadSite();
-    return () => { isSubscribed = false; };
-  }, [id]);
+    return () => {
+      isSubscribed = false;
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [id, retryKey]);
 
   useEffect(() => {
     const handleFrameMessage = (event: MessageEvent) => {
@@ -119,13 +135,23 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
       <div className="fixed inset-0 bg-zinc-950 flex items-center justify-center p-6 text-center font-sans">
         <div className="max-w-xs bg-zinc-900 border border-white/10 p-8 rounded-3xl shadow-2xl">
           <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-500">
-             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+             <AlertCircle className="h-6 w-6" />
           </div>
-          <h2 className="text-white font-black text-lg mb-2">Aguardando Ativação</h2>
-          <p className="text-zinc-500 text-[11px] mb-6 leading-relaxed">Seu site está sendo preparado. Se já ativou, aguarde alguns segundos e atualize esta página.</p>
-          <a href="https://canvaviagem.com/fabrica" className="inline-block px-6 py-2 bg-white text-black font-extrabold text-xs rounded-lg hover:bg-zinc-200 transition-all">
-            Ir ao Painel
-          </a>
+          <h2 className="text-white font-black text-lg mb-2">Não foi possível abrir agora</h2>
+          <p className="text-zinc-500 text-[11px] mb-6 leading-relaxed">{error}</p>
+          <div className="grid gap-2">
+            <button
+              type="button"
+              onClick={() => setRetryKey((current) => current + 1)}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white px-6 text-xs font-extrabold text-black transition-all hover:bg-zinc-200"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Tentar novamente
+            </button>
+            <a href="https://canvaviagem.com/fabrica" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/10 px-6 text-xs font-bold text-white/60 hover:text-white">
+              Ir ao Painel
+            </a>
+          </div>
         </div>
       </div>
     );
