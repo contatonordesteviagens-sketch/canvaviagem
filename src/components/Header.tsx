@@ -307,24 +307,28 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                 size="icon"
                 className="shadow-sm border border-input/20 bg-background/50 backdrop-blur-sm active:scale-95 transition-all"
               >
-                {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {isOpen ? <X className="h-5 w-5 text-amber-400" /> : <Menu className="h-5 w-5" />}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0">
-              <ScrollArea className="h-full px-6 py-6">
-                <nav className="flex flex-col gap-1 mt-8 pb-24">
+            <SheetContent side="right" className="w-[285px] sm:w-[320px] p-0 bg-[#0F0F11] border-l border-white/15 text-white shadow-2xl">
+              <ScrollArea className="h-full px-5 py-6">
+                <nav className="flex flex-col gap-1.5 mt-6 pb-24">
                   {/* Language Switcher - Mobile */}
-                  <LanguageSwitcher variant="mobile" />
+                  <div className="px-2">
+                    <LanguageSwitcher variant="mobile" />
+                  </div>
 
-                  <DropdownMenuSeparator className="my-3" />
+                  <div className="h-px bg-white/10 my-3.5 mx-2" />
 
                   {/* Theme Toggle - Mobile */}
-                  <ThemeToggleMobile />
+                  <div className="px-2">
+                    <ThemeToggleMobile />
+                  </div>
 
-                  <DropdownMenuSeparator className="my-3" />
+                  <div className="h-px bg-white/10 my-3.5 mx-2" />
 
                   {/* Navegação Principal */}
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+                  <p className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest px-3 mb-2">
                     Navegação
                   </p>
                   {mainNavItems.map((item) => {
@@ -336,9 +340,9 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                             item.action!();
                             setIsOpen(false);
                           }}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/10 w-full text-left"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/70 transition-all hover:bg-white/[0.06] hover:text-white w-full text-left"
                         >
-                          <item.icon className="h-5 w-5" />
+                          <item.icon className="h-4 w-4 text-white/40" />
                           {item.label}
                         </button>
                       );
@@ -349,10 +353,10 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                         to={item.to!}
                         state={'state' in item ? item.state : undefined}
                         onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
-                        activeClassName="bg-primary text-primary-foreground"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-white/70 hover:bg-white/[0.06] hover:text-white"
+                        activeClassName="bg-white/[0.08] text-amber-400 border border-white/10 shadow-sm"
                       >
-                        <item.icon className="h-5 w-5" />
+                        <item.icon className="h-4 w-4 text-amber-400" />
                         {item.label}
                       </NavLink>
                     );
@@ -363,10 +367,10 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                     <NavLink
                       to={proximoNivelItem.to}
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
-                      activeClassName="bg-primary text-primary-foreground"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-white/70 hover:bg-white/[0.06] hover:text-white"
+                      activeClassName="bg-white/[0.08] text-amber-400 border border-white/10 shadow-sm"
                     >
-                      <Star className="h-5 w-5 text-orange-500 fill-orange-500" />
+                      <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
                       {proximoNivelItem.label}
                     </NavLink>
                   )}
@@ -379,68 +383,67 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                         handleNavClick(item.to);
                         setIsOpen(false);
                       }}
-                      className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
+                      className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-white/70 transition-all hover:bg-white/[0.06] hover:text-white"
                     >
                       <div className="flex items-center gap-3">
-                        <item.icon className="h-5 w-5" />
+                        <item.icon className="h-4 w-4 text-white/40" />
                         <span>{item.label}</span>
                       </div>
                       {item.isNew && (
-                        <span className="bg-destructive text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                        <span className="bg-gradient-to-r from-amber-500 to-yellow-400 text-black text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow">
                           NOVO
                         </span>
                       )}
                     </button>
                   ))}
 
-                  <DropdownMenuSeparator className="my-3" />
+                  <div className="h-px bg-white/10 my-3.5 mx-2" />
 
                   {/* Conteúdos */}
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+                  <p className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest px-3 mb-2">
                     Conteúdos
                   </p>
                   {contentCategories.map((item) => (
                     <button
                       key={item.category}
                       onClick={() => handleCategoryClick(item.category)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 text-left w-full"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/70 transition-all hover:bg-white/[0.06] hover:text-white text-left w-full"
                     >
-                      <item.icon className="h-5 w-5" />
+                      <item.icon className="h-4 w-4 text-white/40" />
                       {item.label}
                     </button>
                   ))}
 
-                  <DropdownMenuSeparator className="my-3" />
+                  <div className="h-px bg-white/10 my-3.5 mx-2" />
 
                   {user ? (
                     <>
-                      <div className="px-3 py-2 text-sm font-medium text-foreground">
+                      <div className="px-3 py-2 text-xs font-bold text-amber-400/90 tracking-wide">
                         Olá, {userName || user.email?.split("@")[0]}! 👋
                       </div>
                       <Link to="/minha-conta" onClick={() => setIsOpen(false)}>
-                        <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 text-left w-full">
-                          <User className="h-5 w-5" />
+                        <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/70 transition-all hover:bg-white/[0.06] hover:text-white text-left w-full">
+                          <User className="h-4 w-4 text-white/40" />
                           Minha Conta
                         </button>
                       </Link>
-                      <Button
-                        variant="ghost"
+                      <button
                         onClick={() => {
                           signOut();
                           setIsOpen(false);
                         }}
-                        className="justify-start gap-3 px-3"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-500/10 transition-all text-left w-full mt-1"
                       >
-                        <LogOut className="h-5 w-5" />
+                        <LogOut className="h-4 w-4 text-red-400" />
                         {t('header.logout')}
-                      </Button>
+                      </button>
                     </>
                   ) : (
                     <Link to="/auth" onClick={() => setIsOpen(false)}>
-                      <Button variant="outline" className="w-full justify-start gap-3 px-3">
-                        <User className="h-5 w-5" />
+                      <button className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-all shadow-lg mt-2">
+                        <User className="h-4 w-4" />
                         {t('header.login')}
-                      </Button>
+                      </button>
                     </Link>
                   )}
                 </nav>

@@ -446,8 +446,8 @@ const IndexES = () => {
             {highlightedItems && highlightedItems.length > 0 && (
               <div className="mb-8">
                 <SectionHeader
-                  title="✨ Destacados de la Semana"
-                  subtitle="Contenidos destacados seleccionados para ti"
+                  title="✨ Destacados: Vacaciones y Temporada Alta ☀️"
+                  subtitle="Paquetes y destinos de verano de alta demanda seleccionados para ti"
                 />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {highlightedItems.map(item => (

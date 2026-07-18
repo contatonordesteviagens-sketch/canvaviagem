@@ -854,7 +854,7 @@ const Index = () => {
             {featuredVideos && featuredVideos.length > 0 && !searchQuery.trim() && (
               <div className="mb-8">
                 <SectionHeader
-                  title="Destaques da Semana"
+                  title="Destaques: Férias & Alta Temporada ☀️"
                 />
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {featuredVideos.map(item => (
