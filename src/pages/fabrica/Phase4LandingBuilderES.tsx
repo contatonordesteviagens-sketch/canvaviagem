@@ -183,6 +183,8 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
   // ── ESTADOS Y REF PARA EDICIÓN VISUAL DIRECTA E INTUITIVA EN LA VISTA PREVIA ──
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const packageEditorShortcutRef = useRef<(packageId: string) => void>(() => undefined);
+  const [activePackagePreviewId, setActivePackagePreviewId] = useState<string | null>(null);
   const [globalPickingImage, setGlobalPickingImage] = useState(false);
   const [globalEditingPalette, setGlobalEditingPalette] = useState(false);
   const [activeColorSection, setActiveColorSection] = useState<string | null>(null);
@@ -361,6 +363,43 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           cursor: pointer !important;
           box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
         }
+        .fabrica-package-edit-btn {
+          position: absolute !important;
+          top: 12px !important;
+          right: 52px !important;
+          z-index: 10002 !important;
+          min-height: 36px !important;
+          padding: 8px 11px !important;
+          border: 1px solid rgba(255,255,255,.55) !important;
+          border-radius: 999px !important;
+          background: rgba(10,10,11,.9) !important;
+          color: #fff !important;
+          font: 700 11px/1 Inter, sans-serif !important;
+          cursor: pointer !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
+        }
+        .package-sheet > .fabrica-package-edit-btn {
+          position: sticky !important;
+          top: 12px !important;
+          float: left !important;
+          margin: 12px 0 -48px 12px !important;
+          width: max-content !important;
+        }
+        .fabrica-package-preview-btn {
+          position: absolute !important;
+          top: 12px !important;
+          left: 12px !important;
+          z-index: 10002 !important;
+          min-height: 36px !important;
+          padding: 8px 11px !important;
+          border: 1px solid rgba(255,255,255,.55) !important;
+          border-radius: 999px !important;
+          background: rgba(10,10,11,.9) !important;
+          color: #fff !important;
+          font: 700 11px/1 Inter, sans-serif !important;
+          cursor: pointer !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
+        }
         [data-fabrica-color-section]:hover > .fabrica-color-btn,
         .fabrica-color-btn:focus { opacity: 1 !important; transform: translateY(0) !important; }
         @media (hover: none) {
@@ -399,11 +438,121 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         });
       });
 
+      const openPackageEditor = (packageId: string, afterSectionOpen = false) => {
+        if (!packageId) return;
+        const editor = window.document.getElementById(`package-editor-${packageId}`);
+        if (!editor) {
+          const packagesCard = window.document.querySelector('[data-fabrica-card="packages"]');
+          const packagesTrigger = packagesCard?.querySelector<HTMLButtonElement>(':scope > button[aria-expanded]');
+          if (!afterSectionOpen && packagesTrigger?.getAttribute("aria-expanded") === "false") {
+            packagesTrigger.click();
+            window.setTimeout(() => openPackageEditor(packageId, true), 80);
+            return;
+          }
+          toast.error("No fue posible localizar este paquete en el editor.");
+          return;
+        }
+        const advanced = editor.querySelector("details") as HTMLDetailsElement | null;
+        if (advanced) advanced.open = true;
+        editor.style.scrollMarginTop = "88px";
+        editor.scrollIntoView({ behavior: "smooth", block: "start" });
+        editor.animate(
+          [
+            { boxShadow: "0 0 0 0 rgba(245,158,11,0)" },
+            { boxShadow: "0 0 0 4px rgba(245,158,11,.7)" },
+            { boxShadow: "0 0 0 0 rgba(245,158,11,0)" },
+          ],
+          { duration: 1200, easing: "ease-out" },
+        );
+      };
+      packageEditorShortcutRef.current = (packageId: string) => openPackageEditor(packageId);
+
+      doc.querySelectorAll(".dest-card").forEach((card) => {
+        const packageId = card.getAttribute("data-package-id") || "";
+        const packageIndex = Number(card.getAttribute("data-package-index"));
+        const previewButton = doc.createElement("button");
+        previewButton.type = "button";
+        previewButton.className = "fabrica-package-preview-btn";
+        previewButton.textContent = "Ver detalles";
+        previewButton.setAttribute("aria-label", "Ver los detalles de este paquete");
+        previewButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          // En el editor móvil el modal vive dentro del iframe. Alinear la
+          // vista antes de abrirlo mantiene cerrar/editar siempre visibles.
+          iframeRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+          doc.getElementById("package-modal")?.setAttribute("data-editor-package-id", packageId);
+          const iframeWindow = doc.defaultView as (Window & {
+            openPackageDetails?: (index: number, trigger?: Element) => void;
+          }) | null;
+          iframeWindow?.openPackageDetails?.(packageIndex, card);
+          setActivePackagePreviewId(packageId);
+          window.setTimeout(() => {
+            iframeRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+          }, 0);
+        });
+        const editButton = doc.createElement("button");
+        editButton.type = "button";
+        editButton.className = "fabrica-package-edit-btn";
+        editButton.textContent = "Editar paquete";
+        editButton.setAttribute("aria-label", "Editar toda la información de este paquete");
+        editButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setActivePackagePreviewId(null);
+          openPackageEditor(packageId);
+        });
+        card.append(previewButton, editButton);
+        card.addEventListener("click", () => {
+          doc.getElementById("package-modal")?.setAttribute("data-editor-package-id", packageId);
+        });
+      });
+
+      const packageSheet = doc.querySelector(".package-sheet");
+      if (packageSheet) {
+        const editButton = doc.createElement("button");
+        editButton.type = "button";
+        editButton.className = "fabrica-package-edit-btn";
+        editButton.textContent = "Editar información";
+        editButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const modal = doc.getElementById("package-modal");
+          const packageId = modal?.getAttribute("data-editor-package-id") || modal?.getAttribute("data-current-package-id") || "";
+          setActivePackagePreviewId(null);
+          openPackageEditor(packageId);
+        });
+        packageSheet.prepend(editButton);
+      }
+
+      const packageModal = doc.getElementById("package-modal");
+      packageModal?.querySelector(".package-close")?.addEventListener("click", () => {
+        setActivePackagePreviewId(null);
+      });
+      packageModal?.addEventListener("click", (event) => {
+        if (event.target === packageModal) setActivePackagePreviewId(null);
+      });
+
+      doc.querySelectorAll(".btn,.nav-cta,.dest-cta,.wpp-float").forEach((button) => {
+        button.setAttribute("title", "Haz clic para editar el texto · doble clic para editar los colores");
+        button.addEventListener("dblclick", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setActiveColorSection(null);
+          setGlobalEditingPalette(true);
+        });
+      });
+
       // 1. Textos editables (contenteditable)
       const textSelectors = [
         ".brand-name",
+        "[data-site-edit-key]",
         ".hero h1",
         ".hero p.lead",
+        ".hero .eyebrow",
+        ".foot-brand",
+        "footer .foot-grid > div > p",
+        ".contact-item span",
         ".dest-card h3",
         ".dest-card p",
         ".price-value",
@@ -417,6 +566,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
       const editableTexts = doc.querySelectorAll(textSelectors);
       editableTexts.forEach((el) => {
+        if (el.closest("#lead-modal") || el.closest("#package-modal")) return;
         el.setAttribute("data-visual-editable", "true");
         el.setAttribute("contenteditable", "true");
         
@@ -430,10 +580,29 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           
           if (el.classList.contains("brand-name")) {
             update({ agencyName: textVal });
+          } else if (el.getAttribute("data-site-edit-key")) {
+            updSite({ [el.getAttribute("data-site-edit-key") as string]: textVal } as any);
           } else if (el.tagName === "H1" && el.closest(".hero")) {
             updSite({ heroHeadline: textVal });
           } else if (el.classList.contains("lead") && el.closest(".hero")) {
             updSite({ heroSubheadline: textVal });
+          } else if (el.classList.contains("eyebrow") && el.closest(".hero")) {
+            updSite({ heroEyebrow: textVal });
+          } else if (el.classList.contains("foot-brand")) {
+            update({ agencyName: textVal });
+          } else if (el.closest("footer") && el.tagName === "P") {
+            updSite({ footerText: textVal });
+          } else if (el.closest(".contact-item") && el.tagName === "SPAN") {
+            const label = el.closest(".contact-item")?.querySelector("strong")?.textContent?.toLowerCase() || "";
+            if (label.includes("whatsapp")) {
+              update({ whatsapp: textVal.replace(/\D/g, "") });
+            } else if (label.includes("mail")) {
+              update({ agencyEmail: textVal });
+            } else if (label.includes("ubic") || label.includes("local")) {
+              update({ city: textVal });
+            } else {
+              updSite({ atendimentoText: textVal });
+            }
           } else {
             // Si es dentro de un paquete (destination card)
             const destCard = el.closest(".dest-card");
@@ -447,7 +616,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 } else if (el.classList.contains("price-value") || el.classList.contains("price-main")) {
                   updPacote(pkgId, { price: textVal });
                 } else if (el.classList.contains("dest-tag")) {
-                  updPacote(pkgId, { category: textVal } as any);
+                  updPacote(pkgId, { badge: textVal });
                 }
               }
             }
@@ -893,7 +1062,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             </h4>
           </div>
 
-            <FabricaCard title="📦 Paquetes ofrecidos">
+            <FabricaCard title="📦 Paquetes ofrecidos" sectionId="packages">
               <FieldText
                 label="Título de la sección"
                 value={state.siteContent.pacotesTitle}
@@ -1272,7 +1441,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             <div className="p-5 bg-black/50 relative">
               <div className="mb-3 p-3 rounded-xl bg-amber-500/[0.06] border border-amber-500/10 text-center text-[11px] text-amber-300/80 font-semibold flex items-center justify-center gap-2">
                 <Pencil className="w-3.5 h-3.5 text-amber-400" />
-                💡 <strong>Haz clic en cualquier texto del sitio para escribir</strong> o <strong>toca una foto</strong> para cambiarla en vivo!
+                💡 <strong>Haz clic en textos, iconos, fotos o fondos para editar.</strong> En botones, usa doble clic para abrir los colores.
               </div>
 
               <div className="transition-all duration-300 ease-in-out">
@@ -1287,6 +1456,39 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                   title="Preview"
                 />
               </div>
+              {activePackagePreviewId && (
+                <div className="fixed inset-x-3 top-16 z-[80] flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-zinc-950/95 p-2 shadow-2xl backdrop-blur md:hidden">
+                  <button
+                    type="button"
+                    className="min-h-11 flex-1 rounded-xl bg-amber-400 px-4 text-sm font-black text-zinc-950"
+                    onClick={() => {
+                      const packageId = activePackagePreviewId;
+                      const iframeWindow = iframeRef.current?.contentWindow as (Window & {
+                        closePackageDetails?: () => void;
+                      }) | null;
+                      iframeWindow?.closePackageDetails?.();
+                      setActivePackagePreviewId(null);
+                      window.setTimeout(() => packageEditorShortcutRef.current(packageId), 0);
+                    }}
+                  >
+                    Editar información
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Cerrar detalles del paquete"
+                    className="grid min-h-11 min-w-11 place-items-center rounded-xl border border-white/15 text-xl text-white"
+                    onClick={() => {
+                      const iframeWindow = iframeRef.current?.contentWindow as (Window & {
+                        closePackageDetails?: () => void;
+                      }) | null;
+                      iframeWindow?.closePackageDetails?.();
+                      setActivePackagePreviewId(null);
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1620,7 +1822,7 @@ const PacoteEditor = ({
   };
 
   return (
-    <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-3">
+    <div id={`package-editor-${pacote.id}`} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-3 scroll-mt-24">
       <div className="flex gap-3">
         {/* Imagem do pacote */}
         <button
@@ -2452,11 +2654,20 @@ const PublishSiteCardES = ({
   );
 };
 
-const FabricaCard = ({ title, children }: { title: string; children: React.ReactNode }) => {
+const FabricaCard = ({
+  title,
+  children,
+  sectionId,
+}: {
+  title: string;
+  children: React.ReactNode;
+  sectionId?: string;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div
+      data-fabrica-card={sectionId}
       className="bg-white/[0.03] border rounded-2xl backdrop-blur-xl transition-all duration-300 overflow-hidden"
       style={{
         borderColor: isOpen ? UI_ACCENT_BORDER : "rgba(255, 255, 255, 0.06)",

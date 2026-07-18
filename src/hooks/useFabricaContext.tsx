@@ -176,6 +176,10 @@ export interface SiteContent {
   contactEmailLabel?: string;
   contactHoursLabel?: string;
   contactLocationLabel?: string;
+  contactWhatsappIcon?: string;
+  contactEmailIcon?: string;
+  contactHoursIcon?: string;
+  contactLocationIcon?: string;
   packageOverlayLabel?: string;
   equipeCtaLabel?: string;
   formSubmitLabel?: string;

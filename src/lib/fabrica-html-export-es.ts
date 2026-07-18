@@ -1459,10 +1459,10 @@ ${sectionOrder
         ${!sc.hiddenElements?.includes('orcamento-title') ? `<h2 style="margin-top:12px" data-visual-removable="orcamento-title">Habla con un consultor ahora</h2>` : ''}
         ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">Completa el formulario y nuestro equipo te contactará en menos de 2 horas con una propuesta.</p>` : ''}
         <div class="contact-list">
-          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">💬</div><div><strong>WhatsApp</strong><span>${esc(state.whatsapp || "—")}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉</div><div><strong>E-mail</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">🕐</div><div><strong>Atendimento</strong><span>Lun–Vie 8h–20h · Sáb 9h–15h</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(cidade)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon" data-site-edit-key="contactWhatsappIcon">${esc(sc.contactWhatsappIcon || "💬")}</div><div><strong data-site-edit-key="contactWhatsappLabel">${esc(sc.contactWhatsappLabel || "WhatsApp")}</strong><span>${esc(state.whatsapp || "—")}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon" data-site-edit-key="contactEmailIcon">${esc(sc.contactEmailIcon || "✉")}</div><div><strong data-site-edit-key="contactEmailLabel">${esc(sc.contactEmailLabel || "E-mail")}</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon" data-site-edit-key="contactHoursIcon">${esc(sc.contactHoursIcon || "🕐")}</div><div><strong data-site-edit-key="contactHoursLabel">${esc(sc.contactHoursLabel || "Atención")}</strong><span>${esc(sc.atendimentoText || "Lun–Vie 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon" data-site-edit-key="contactLocationIcon">${esc(sc.contactLocationIcon || "📍")}</div><div><strong data-site-edit-key="contactLocationLabel">${esc(sc.contactLocationLabel || "Ubicación")}</strong><span>${esc(cidade)}</span></div></div>` : ''}
         </div>
         ${socialIcons}
       </div>
@@ -1801,6 +1801,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     if (media) media.hidden = false;
     if (content) content.hidden = false;
     currentPackage = selected;
+    modal.setAttribute("data-current-package-id", String(selected.id || ""));
     lastPackageTrigger = trigger || document.activeElement;
     const image = document.getElementById("package-image");
     image.src = selected.imageUrl;
@@ -1833,6 +1834,9 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     modal.classList.add("active");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("package-modal-open");
+    const sheet = modal.querySelector(".package-sheet");
+    if (sheet) sheet.scrollTop = 0;
+    if (content) content.scrollTop = 0;
     modal.querySelector(".package-close")?.focus();
     notifyPackageLocation("CV_PACKAGE_OPEN", selected.slug);
     track("package_view", { target: selected.title, package_id: selected.id });
@@ -1854,6 +1858,8 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     modal.classList.add("active");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("package-modal-open");
+    const sheet = modal.querySelector(".package-sheet");
+    if (sheet) sheet.scrollTop = 0;
     modal.querySelector(".package-close")?.focus();
     track("package_not_found", { package_slug: String(slug || "") });
   }

@@ -1725,10 +1725,10 @@ ${sectionOrder
         ${!sc.hiddenElements?.includes('orcamento-title') ? `<h2 style="margin-top:12px" data-visual-removable="orcamento-title">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>` : ''}
         ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>` : ''}
         <div class="contact-list">
-          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">📱</div><div><strong data-site-edit-key="contactWhatsappLabel">${esc(sc.contactWhatsappLabel || "WhatsApp")}</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉️</div><div><strong data-site-edit-key="contactEmailLabel">${esc(sc.contactEmailLabel || "E-mail")}</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">⏰</div><div><strong data-site-edit-key="contactHoursLabel">${esc(sc.contactHoursLabel || "Atendimento")}</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">📍</div><div><strong data-site-edit-key="contactLocationLabel">${esc(sc.contactLocationLabel || "Localização")}</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon" data-site-edit-key="contactWhatsappIcon">${esc(sc.contactWhatsappIcon || "📱")}</div><div><strong data-site-edit-key="contactWhatsappLabel">${esc(sc.contactWhatsappLabel || "WhatsApp")}</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon" data-site-edit-key="contactEmailIcon">${esc(sc.contactEmailIcon || "✉️")}</div><div><strong data-site-edit-key="contactEmailLabel">${esc(sc.contactEmailLabel || "E-mail")}</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon" data-site-edit-key="contactHoursIcon">${esc(sc.contactHoursIcon || "⏰")}</div><div><strong data-site-edit-key="contactHoursLabel">${esc(sc.contactHoursLabel || "Atendimento")}</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon" data-site-edit-key="contactLocationIcon">${esc(sc.contactLocationIcon || "📍")}</div><div><strong data-site-edit-key="contactLocationLabel">${esc(sc.contactLocationLabel || "Localização")}</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
         </div>
         ${socialIcons}
       </div>
@@ -2095,6 +2095,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     if (media) media.hidden = false;
     if (content) content.hidden = false;
     currentPackage = selected;
+    modal.setAttribute("data-current-package-id", String(selected.id || ""));
     lastPackageTrigger = trigger || document.activeElement;
     const image = document.getElementById("package-image");
     image.src = selected.imageUrl;
@@ -2131,6 +2132,9 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     modal.classList.add("active");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("package-modal-open");
+    const sheet = modal.querySelector(".package-sheet");
+    if (sheet) sheet.scrollTop = 0;
+    if (content) content.scrollTop = 0;
     modal.querySelector(".package-close").focus();
     notifyPackageLocation("CV_PACKAGE_OPEN", selected.slug);
     track("package_view", { target: selected.title, package_id: selected.id });
@@ -2150,6 +2154,8 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     modal.classList.add("active");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("package-modal-open");
+    const sheet = modal.querySelector(".package-sheet");
+    if (sheet) sheet.scrollTop = 0;
     modal.querySelector(".package-close").focus();
     track("package_not_found", { package_slug: String(slug || "") });
   }

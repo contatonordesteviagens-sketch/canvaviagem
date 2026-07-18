@@ -186,6 +186,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
   // ── ESTADOS E REF PARA EDIÇÃO VISUAL DIRETA E INTUITIVA NA PRÉVIA ──
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const packageEditorShortcutRef = useRef<(packageId: string) => void>(() => undefined);
+  const [activePackagePreviewId, setActivePackagePreviewId] = useState<string | null>(null);
   const [globalPickingImage, setGlobalPickingImage] = useState(false);
   const [globalEditingPalette, setGlobalEditingPalette] = useState(false);
   const [activeColorSection, setActiveColorSection] = useState<string | null>(null);
@@ -362,6 +364,43 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           cursor: pointer !important;
           box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
         }
+        .fabrica-package-edit-btn {
+          position: absolute !important;
+          top: 12px !important;
+          right: 52px !important;
+          z-index: 10002 !important;
+          min-height: 36px !important;
+          padding: 8px 11px !important;
+          border: 1px solid rgba(255,255,255,.55) !important;
+          border-radius: 999px !important;
+          background: rgba(10,10,11,.9) !important;
+          color: #fff !important;
+          font: 700 11px/1 Inter, sans-serif !important;
+          cursor: pointer !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
+        }
+        .package-sheet > .fabrica-package-edit-btn {
+          position: sticky !important;
+          top: 12px !important;
+          float: left !important;
+          margin: 12px 0 -48px 12px !important;
+          width: max-content !important;
+        }
+        .fabrica-package-preview-btn {
+          position: absolute !important;
+          top: 12px !important;
+          left: 12px !important;
+          z-index: 10002 !important;
+          min-height: 36px !important;
+          padding: 8px 11px !important;
+          border: 1px solid rgba(255,255,255,.55) !important;
+          border-radius: 999px !important;
+          background: rgba(10,10,11,.9) !important;
+          color: #fff !important;
+          font: 700 11px/1 Inter, sans-serif !important;
+          cursor: pointer !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
+        }
         [data-fabrica-color-section]:hover > .fabrica-color-btn,
         .fabrica-color-btn:focus { opacity: 1 !important; transform: translateY(0) !important; }
         @media (hover: none) {
@@ -396,6 +435,113 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           );
           if (interactive) return;
           setActiveColorSection(sectionKey);
+          setGlobalEditingPalette(true);
+        });
+      });
+
+      const openPackageEditor = (packageId: string, afterSectionOpen = false) => {
+        if (!packageId) return;
+        const editor = window.document.getElementById(`package-editor-${packageId}`);
+        if (!editor) {
+          const packagesCard = window.document.querySelector('[data-fabrica-card="packages"]');
+          const packagesTrigger = packagesCard?.querySelector<HTMLButtonElement>(':scope > button[aria-expanded]');
+          if (!afterSectionOpen && packagesTrigger?.getAttribute("aria-expanded") === "false") {
+            packagesTrigger.click();
+            window.setTimeout(() => openPackageEditor(packageId, true), 80);
+            return;
+          }
+          toast.error("Não foi possível localizar este pacote no editor.");
+          return;
+        }
+        const advanced = editor.querySelector("details") as HTMLDetailsElement | null;
+        if (advanced) advanced.open = true;
+        editor.style.scrollMarginTop = "88px";
+        editor.scrollIntoView({ behavior: "smooth", block: "start" });
+        editor.animate(
+          [
+            { boxShadow: "0 0 0 0 rgba(245,158,11,0)" },
+            { boxShadow: "0 0 0 4px rgba(245,158,11,.7)" },
+            { boxShadow: "0 0 0 0 rgba(245,158,11,0)" },
+          ],
+          { duration: 1200, easing: "ease-out" },
+        );
+      };
+      packageEditorShortcutRef.current = (packageId: string) => openPackageEditor(packageId);
+
+      // No editor, cada card e o pop-up recebem um atalho para o mesmo pacote sincronizado.
+      doc.querySelectorAll(".dest-card").forEach((card) => {
+        const packageId = card.getAttribute("data-package-id") || "";
+        const packageIndex = Number(card.getAttribute("data-package-index"));
+        const previewButton = doc.createElement("button");
+        previewButton.type = "button";
+        previewButton.className = "fabrica-package-preview-btn";
+        previewButton.textContent = "Ver detalhes";
+        previewButton.setAttribute("aria-label", "Visualizar os detalhes deste pacote");
+        previewButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          // No editor mobile o modal vive dentro do iframe. Alinhar a prévia
+          // antes de abri-lo mantém fechar/editar sempre visíveis.
+          iframeRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+          doc.getElementById("package-modal")?.setAttribute("data-editor-package-id", packageId);
+          const iframeWindow = doc.defaultView as (Window & {
+            openPackageDetails?: (index: number, trigger?: Element) => void;
+          }) | null;
+          iframeWindow?.openPackageDetails?.(packageIndex, card);
+          setActivePackagePreviewId(packageId);
+          window.setTimeout(() => {
+            iframeRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+          }, 0);
+        });
+        const editButton = doc.createElement("button");
+        editButton.type = "button";
+        editButton.className = "fabrica-package-edit-btn";
+        editButton.textContent = "Editar pacote";
+        editButton.setAttribute("aria-label", "Editar todas as informações deste pacote");
+        editButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setActivePackagePreviewId(null);
+          openPackageEditor(packageId);
+        });
+        card.append(previewButton, editButton);
+        card.addEventListener("click", () => {
+          doc.getElementById("package-modal")?.setAttribute("data-editor-package-id", packageId);
+        });
+      });
+
+      const packageSheet = doc.querySelector(".package-sheet");
+      if (packageSheet) {
+        const editButton = doc.createElement("button");
+        editButton.type = "button";
+        editButton.className = "fabrica-package-edit-btn";
+        editButton.textContent = "Editar informações";
+        editButton.setAttribute("aria-label", "Editar as informações deste pacote");
+        editButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const modal = doc.getElementById("package-modal");
+          const packageId = modal?.getAttribute("data-editor-package-id") || modal?.getAttribute("data-current-package-id") || "";
+          setActivePackagePreviewId(null);
+          openPackageEditor(packageId);
+        });
+        packageSheet.prepend(editButton);
+      }
+
+      const packageModal = doc.getElementById("package-modal");
+      packageModal?.querySelector(".package-close")?.addEventListener("click", () => {
+        setActivePackagePreviewId(null);
+      });
+      packageModal?.addEventListener("click", (event) => {
+        if (event.target === packageModal) setActivePackagePreviewId(null);
+      });
+
+      doc.querySelectorAll(".btn,.nav-cta,.dest-cta,.wpp-float").forEach((button) => {
+        button.setAttribute("title", "Clique para editar o texto · duplo clique para editar as cores da marca");
+        button.addEventListener("dblclick", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setActiveColorSection(null);
           setGlobalEditingPalette(true);
         });
       });
@@ -451,6 +597,9 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
       const editableTexts = doc.querySelectorAll(textSelectors);
       editableTexts.forEach((el) => {
+        // O formulário/CRM e o conteúdo dinâmico do pop-up não são editados "por acidente".
+        // O atalho "Editar informações" do próprio pop-up leva ao pacote sincronizado.
+        if (el.closest("#lead-modal") || el.closest("#package-modal")) return;
         el.setAttribute("data-visual-editable", "true");
         el.setAttribute("contenteditable", "true");
         
@@ -560,8 +709,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             const pkgId = destCard?.getAttribute("data-package-id") || "";
             if (pkgId && state.selectedPackages.some((item) => item.id === pkgId)) {
               if (el.tagName === "H3") updPacote(pkgId, { title: textVal });
-              else if (el.tagName === "P") updPacote(pkgId, { description: textVal });
               else if (el.classList.contains("dest-loc")) update({ city: textVal });
+              else if (el.tagName === "P") updPacote(pkgId, { description: textVal });
               else if (el.classList.contains("dest-cta")) updPacote(pkgId, { ctaLabel: textVal });
               else if (el.classList.contains("price-value") || el.classList.contains("price-main")) updPacote(pkgId, { price: textVal });
               else if (el.classList.contains("dest-tag")) updPacote(pkgId, { badge: textVal });
@@ -1094,7 +1243,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             </h4>
           </div>
 
-            <FabricaCard title="📦 Pacotes oferecidos">
+            <FabricaCard title="📦 Pacotes oferecidos" sectionId="packages">
               <FieldText
                 label="Título da seção"
                 value={state.siteContent.pacotesTitle}
@@ -1664,7 +1813,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             <div className="p-4 bg-zinc-950/40 relative">
               <div className="mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center text-xs text-amber-300 font-semibold flex items-center justify-center gap-2">
                 <Pencil className="w-4 h-4 text-amber-400" />
-                💡 <strong>Clique em qualquer texto do site para digitar</strong> ou <strong>toque em uma foto</strong> para trocá-la ao vivo na tela!
+                💡 <strong>Clique em textos, ícones, fotos ou fundos para editar.</strong> Em botões, use duplo clique para abrir as cores da marca.
               </div>
 
               <div className="transition-all duration-300 ease-in-out">
@@ -1679,6 +1828,39 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   title="Preview"
                 />
               </div>
+              {activePackagePreviewId && (
+                <div className="fixed inset-x-3 top-16 z-[80] flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-zinc-950/95 p-2 shadow-2xl backdrop-blur md:hidden">
+                  <button
+                    type="button"
+                    className="min-h-11 flex-1 rounded-xl bg-amber-400 px-4 text-sm font-black text-zinc-950"
+                    onClick={() => {
+                      const packageId = activePackagePreviewId;
+                      const iframeWindow = iframeRef.current?.contentWindow as (Window & {
+                        closePackageDetails?: () => void;
+                      }) | null;
+                      iframeWindow?.closePackageDetails?.();
+                      setActivePackagePreviewId(null);
+                      window.setTimeout(() => packageEditorShortcutRef.current(packageId), 0);
+                    }}
+                  >
+                    Editar informações
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Fechar detalhes do pacote"
+                    className="grid min-h-11 min-w-11 place-items-center rounded-xl border border-white/15 text-xl text-white"
+                    onClick={() => {
+                      const iframeWindow = iframeRef.current?.contentWindow as (Window & {
+                        closePackageDetails?: () => void;
+                      }) | null;
+                      iframeWindow?.closePackageDetails?.();
+                      setActivePackagePreviewId(null);
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -2023,7 +2205,7 @@ const PacoteEditor = ({
   };
 
   return (
-    <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-3">
+    <div id={`package-editor-${pacote.id}`} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-3 scroll-mt-24">
       <div className="flex gap-3">
         {/* Imagem do pacote */}
         <button
@@ -2857,13 +3039,22 @@ const PublishSiteCard = ({
     </div>
   );
 };
-const FabricaCard = ({ title, children }: { title: string; children: React.ReactNode }) => {
+const FabricaCard = ({
+  title,
+  children,
+  sectionId,
+}: {
+  title: string;
+  children: React.ReactNode;
+  sectionId?: string;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const contentId = useId();
   const triggerId = `${contentId}-trigger`;
 
   return (
     <div
+      data-fabrica-card={sectionId}
       className="bg-white/[0.03] border rounded-2xl backdrop-blur-xl transition-all duration-300 overflow-hidden"
       style={{
         borderColor: isOpen ? UI_ACCENT_BORDER : "rgba(255, 255, 255, 0.06)",

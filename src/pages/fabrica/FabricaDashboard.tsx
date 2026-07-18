@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
 import { useDiagnosticos, useSaveDiagnostico, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
 import { BrandPaletteEditor } from "@/components/fabrica/BrandPaletteEditor";
 import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
+import { PackageAdvancedFields } from "@/components/fabrica/PackageAdvancedFields";
 
 import { 
   Upload, 
@@ -163,12 +164,14 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editPrice, setEditPrice] = useState("");
+  const [editDetails, setEditDetails] = useState<Partial<Pacote>>({});
 
   // Form de adição de pacotes
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  const [newDetails, setNewDetails] = useState<Partial<Pacote>>({});
 
   // Address Autocomplete
   const [addressQuery, setAddressQuery] = useState(state.address || "");
@@ -250,6 +253,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     setEditTitle(pkg.title);
     setEditDesc(pkg.description);
     setEditPrice(pkg.price);
+    setEditDetails(pkg);
     setShowAddForm(false);
   };
 
@@ -259,7 +263,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       return;
     }
     const updated = state.selectedPackages.map((p) =>
-      p.id === id ? { ...p, title: editTitle.trim(), description: editDesc.trim(), price: editPrice.trim() } : p
+      p.id === id ? { ...p, ...editDetails, title: editTitle.trim(), description: editDesc.trim(), price: editPrice.trim() } : p
     );
     update({ selectedPackages: updated });
     setEditingId(null);
@@ -299,18 +303,20 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     const id = `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     const usedSlugs = state.selectedPackages.map((item) => item.slug || buildPackageSlug(item.title, item.id));
     const pkg = {
+      imageUrl: "",
+      ctaLabel: "Reservar agora",
+      ...newDetails,
       id,
       title: newTitle.trim(),
-      slug: createUniquePackageSlug(newTitle.trim(), usedSlugs, id),
+      slug: newDetails.slug || createUniquePackageSlug(newTitle.trim(), usedSlugs, id),
       description: newDesc.trim() || "Nova oferta especial.",
       price: newPrice.trim() || "Consulte",
-      imageUrl: "",
-      ctaLabel: "Reservar agora"
     };
     update({ selectedPackages: [pkg, ...state.selectedPackages] });
     setNewTitle("");
     setNewDesc("");
     setNewPrice("");
+    setNewDetails({});
     setShowAddForm(false);
     toast.success("Novo pacote adicionado!");
   };
@@ -1001,6 +1007,19 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     </div>
                   </div>
 
+                  <PackageAdvancedFields
+                    pacote={{
+                      id: "novo-pacote",
+                      title: newTitle,
+                      description: newDesc,
+                      price: newPrice,
+                      ctaLabel: "Reservar agora",
+                      ...newDetails,
+                    }}
+                    agencyType={state.agencyType}
+                    onChange={(patch) => setNewDetails((current) => ({ ...current, ...patch }))}
+                  />
+
                   <div className="flex gap-2 pt-2 border-t border-white/5">
                     <button 
                       onClick={addPackage} 
@@ -1009,7 +1028,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                       <Check className="w-4 h-4" /> Adicionar e Sincronizar
                     </button>
                     <button 
-                      onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); }} 
+                      onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); setNewDetails({}); }}
                       className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 text-xs font-bold transition-all"
                     >
                       Cancelar
@@ -1055,6 +1074,17 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                             value={editPrice} 
                             onChange={(e) => setEditPrice(e.target.value)} 
                             className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500/50" 
+                          />
+                          <PackageAdvancedFields
+                            pacote={{
+                              id: pkg.id,
+                              title: editTitle,
+                              description: editDesc,
+                              price: editPrice,
+                              ...editDetails,
+                            }}
+                            agencyType={state.agencyType}
+                            onChange={(patch) => setEditDetails((current) => ({ ...current, ...patch }))}
                           />
                           <div className="flex gap-2 pt-2 border-t border-white/5">
                             <button 

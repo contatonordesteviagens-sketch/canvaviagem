@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Mic, Square, Loader2, Check, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
 import { useSaveDiagnostico } from "@/hooks/useFabricaDiagnosticos";
 import { toast } from "sonner";
+import { buildPackageSlug, createUniquePackageSlug, suggestPackageSegment } from "@/lib/package-details";
 
 type State = "idle" | "recording" | "uploading" | "transcribing" | "extracting" | "review" | "error";
 
@@ -11,7 +12,10 @@ interface ExtractedData {
   agencyName: string;
   niche: string;
   destinos: string[];
-  packages: Array<{ title: string; description: string; price: string }>;
+  packages: Array<
+    Pick<Pacote, "title" | "description" | "price"> &
+      Partial<Omit<Pacote, "id" | "title" | "description" | "price">>
+  >;
 }
 
 export function VoiceOnboarding() {
@@ -149,15 +153,26 @@ export function VoiceOnboarding() {
     if (!extractedData) return;
 
     // Constrói os pacotes
-    const newPackages = (extractedData.packages || []).map(p => ({
-      id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-      title: p.title,
-      description: p.description,
-      price: p.price,
-      imageUrl: "",
-      ctaLabel: "Reservar agora",
-      isDraft: true,
-    }));
+    const usedSlugs = fabricaState.selectedPackages.map(
+      (item) => item.slug || buildPackageSlug(item.title, item.id),
+    );
+    const newPackages = (extractedData.packages || []).map((p) => {
+      const id = `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      const slug = createUniquePackageSlug(p.slug || p.title, usedSlugs, id);
+      usedSlugs.push(slug);
+      return {
+        ...p,
+        id,
+        title: p.title,
+        slug,
+        description: p.description,
+        price: p.price || "Consulte",
+        imageUrl: p.imageUrl || "",
+        ctaLabel: p.ctaLabel || "Reservar agora",
+        segment: p.segment || suggestPackageSegment(fabricaState.agencyType),
+        isDraft: true,
+      } satisfies Pacote;
+    });
 
     const newStateUpdates = {
       agencyName: extractedData.agencyName || fabricaState.agencyName,

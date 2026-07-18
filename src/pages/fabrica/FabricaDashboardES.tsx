@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
-import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDiagnosticos, useSaveDiagnostico, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
 import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
+import { PackageAdvancedFields } from "@/components/fabrica/PackageAdvancedFields";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Upload, 
@@ -25,6 +26,7 @@ import { toast } from "sonner";
 import { COUNTRIES_DIAL, type CountryDial } from "@/lib/countriesDial";
 import { useQueryClient } from "@tanstack/react-query";
 import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
+import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
 
 const AGENCY_TYPES = [
   { v: "autonoma", l: "Agente autónomo / Freelancer" },
@@ -127,12 +129,14 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editPrice, setEditPrice] = useState("");
+  const [editDetails, setEditDetails] = useState<Partial<Pacote>>({});
 
   // Form de adición de paquetes
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  const [newDetails, setNewDetails] = useState<Partial<Pacote>>({});
 
   const slugify = (text: string) => {
     return text
@@ -180,6 +184,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
     setEditTitle(pkg.title);
     setEditDesc(pkg.description);
     setEditPrice(pkg.price);
+    setEditDetails(pkg);
     setShowAddForm(false);
   };
 
@@ -189,7 +194,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
       return;
     }
     const updated = state.selectedPackages.map((p) =>
-      p.id === id ? { ...p, title: editTitle.trim(), description: editDesc.trim(), price: editPrice.trim() } : p
+      p.id === id ? { ...p, ...editDetails, title: editTitle.trim(), description: editDesc.trim(), price: editPrice.trim() } : p
     );
     update({ selectedPackages: updated });
     setEditingId(null);
@@ -223,18 +228,23 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
       toast.error("Agrega un título al paquete");
       return;
     }
+    const id = `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const usedSlugs = state.selectedPackages.map((item) => item.slug || buildPackageSlug(item.title, item.id));
     const pkg = {
-      id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      imageUrl: "",
+      ctaLabel: "Reservar ahora",
+      ...newDetails,
+      id,
       title: newTitle.trim(),
+      slug: newDetails.slug || createUniquePackageSlug(newTitle.trim(), usedSlugs, id),
       description: newDesc.trim() || "Nueva oferta especial.",
       price: newPrice.trim() || "Consultar",
-      imageUrl: "",
-      ctaLabel: "Reservar ahora"
     };
     update({ selectedPackages: [pkg, ...state.selectedPackages] });
     setNewTitle("");
     setNewDesc("");
     setNewPrice("");
+    setNewDetails({});
     setShowAddForm(false);
     toast.success("¡Nuevo paquete agregado!");
   };
@@ -645,6 +655,20 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                     </div>
                   </div>
 
+                  <PackageAdvancedFields
+                    pacote={{
+                      id: "nuevo-paquete",
+                      title: newTitle,
+                      description: newDesc,
+                      price: newPrice,
+                      ctaLabel: "Reservar ahora",
+                      ...newDetails,
+                    }}
+                    agencyType={state.agencyType}
+                    locale="es"
+                    onChange={(patch) => setNewDetails((current) => ({ ...current, ...patch }))}
+                  />
+
                   <div className="flex gap-2 pt-2 border-t border-white/5">
                     <button 
                       onClick={addPackage} 
@@ -653,7 +677,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                       <Check className="w-4 h-4" /> Agregar y Sincronizar
                     </button>
                     <button 
-                      onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); }} 
+                      onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); setNewDetails({}); }}
                       className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 text-xs font-bold transition-all"
                     >
                       Cancelar
@@ -699,6 +723,18 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                             value={editPrice} 
                             onChange={(e) => setEditPrice(e.target.value)} 
                             className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500/50" 
+                          />
+                          <PackageAdvancedFields
+                            pacote={{
+                              id: pkg.id,
+                              title: editTitle,
+                              description: editDesc,
+                              price: editPrice,
+                              ...editDetails,
+                            }}
+                            agencyType={state.agencyType}
+                            locale="es"
+                            onChange={(patch) => setEditDetails((current) => ({ ...current, ...patch }))}
                           />
                           <div className="flex gap-2 pt-2 border-t border-white/5">
                             <button 

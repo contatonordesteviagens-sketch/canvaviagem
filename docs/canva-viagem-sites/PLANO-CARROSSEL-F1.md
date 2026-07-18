@@ -1,8 +1,32 @@
 # Plano de implementação — carrossel de pacotes no F1
 
-> **Status:** aprovado para iniciar depois do fechamento desta versão dos sites
-> **Prioridade atual:** manter o carrossel isolado do motor atual de site, formulário e CRM
+> **Status:** beta funcional implementado localmente em 18/07/2026
+> **Prioridade atual:** validar com usuários antes de adicionar publicação automática ou persistência remota
 > **Objetivo:** transformar pacotes e artes do F1 em carrosséis editáveis sem duplicar cadastro, inventar informações ou multiplicar arquivos.
+
+## O que já está implementado
+
+- entrada própria `Anúncio | Carrossel` no topo do F1;
+- atalho `Transformar em carrossel` depois da geração de uma arte;
+- fonte única nos pacotes já sincronizados com Painel, Plano e Site;
+- sequência dinâmica de 3 a 7 slides, omitindo campos vazios;
+- modelos visuais **Impacto**, **Roteiro** e **Editorial**;
+- formatos **Feed 4:5 (1080 × 1350)** e **Story 9:16 (1080 × 1920)**;
+- edição de selo, título, texto, itens, preço, CTA, imagem e enquadramento;
+- adicionar, duplicar, remover e reordenar até 10 slides;
+- cores conectadas à paleta principal, secundária e de fundo da Fábrica;
+- atualização manual a partir do pacote, sem inventar dados;
+- autosave local por projeto e pacote, sem guardar imagens base64;
+- exportação sequencial dos slides em PNG na resolução final;
+- telas em português e espanhol;
+- estado vazio explicando que o usuário deve cadastrar o pacote uma única vez.
+
+### Limites conscientes desta beta
+
+- o rascunho do carrossel fica no navegador atual; persistência entre dispositivos exige a tabela `fabrica_carousels` com RLS descrita abaixo;
+- imagens externas sem CORS podem impedir a renderização do PNG; banco oficial, Storage e uploads processados continuam sendo as fontes recomendadas;
+- publicação automática no Instagram/Meta não faz parte desta etapa;
+- o carrossel não altera o formulário nem o CRM.
 
 ## Resultado esperado
 
@@ -136,7 +160,7 @@ Regras:
 ## Modelo de dados sugerido
 
 ```ts
-type CarouselFormat = "portrait-4x5" | "square-1x1";
+type CarouselFormat = "portrait-4x5" | "story-9x16";
 type CarouselObjective = "oferta" | "inspiracao" | "informativo" | "ultimas-vagas";
 type CarouselSlideKind =
   | "cover"
@@ -248,15 +272,16 @@ Extrair o processamento hoje existente no F4 para um utilitário compartilhado, 
 
 Formatos iniciais:
 
-- vertical 4:5: `1080 × 1350`, padrão;
-- quadrado: `1080 × 1080`.
+- feed vertical 4:5: `1080 × 1350`, padrão;
+- story vertical 9:16: `1080 × 1920`.
 
 Durante a edição, renderizar apenas o slide ativo e miniaturas leves. O motor deve detectar texto cortado, contraste insuficiente, imagem não carregada, fonte ausente e logo desproporcional.
 
-O MVP começa com duas famílias visuais validadas, sem multiplicar combinações antes dos testes:
+A beta começa com três famílias visuais, sem multiplicar combinações antes dos testes:
 
-- **Oferta Direta:** preço, condição, benefícios e CTA em alta hierarquia;
-- **Experiência Editorial:** imagem, desejo, roteiro e diferenciais com tom mais premium.
+- **Impacto:** preço, condição, benefícios e CTA em alta hierarquia;
+- **Roteiro:** sequência informativa, logística e etapas da experiência;
+- **Editorial:** imagem, desejo, narrativa e diferenciais com tom mais premium.
 
 Criar `fabrica-carousel-render.ts` como motor isolado. Não ampliar o arquivo monolítico `fabrica-compose-art.ts`; ele continua responsável pelos anúncios atuais até uma refatoração própria e testada.
 
@@ -298,8 +323,8 @@ Não alterar formulário, CRM, Worker, publicação ou domínio dos sites.
 
 1. **Proteção:** testes de regressão do F1, feature flag e limites.
 2. **Dados/assets:** tipos, migration/RLS, hook, dedupe e função pura de rascunho.
-3. **Editor MVP:** duas entradas, seis slides sugeridos, duas famílias visuais, edição, reordenação e autosave.
-4. **Render/export:** 4:5, quadrado, alertas e exportação sequencial.
+3. **Editor MVP:** duas entradas, 3 a 7 slides sugeridos, três famílias visuais, edição, reordenação e autosave.
+4. **Render/export:** 4:5, 9:16, alertas e exportação sequencial.
 5. **Biblioteca:** listar, reabrir, duplicar, atualizar origem e excluir.
 6. **Rollout:** feature flag primeiro na experiência PT-BR, celular real, métricas e só então paridade ES.
 
@@ -327,3 +352,22 @@ Não alterar formulário, CRM, Worker, publicação ou domínio dos sites.
 - imagem inédita para cada slide;
 - armazenamento automático de PNG final;
 - página pública separada para carrossel.
+
+## Pesquisa de formato validada em 18/07/2026
+
+Referências oficiais consultadas:
+
+- [Meta — formato de anúncio em carrossel](https://www.facebook.com/business/ads/carousel-ad-format): permite desenvolver uma história, explicar um processo ou detalhar um único produto ao longo de até dez cards. Em narrativa sequencial, a ordem não deve ser otimizada automaticamente.
+- [Instagram/Meta — publicação com múltiplas mídias](https://www.facebook.com/help/269314186824048/): uma publicação aceita até dez fotos ou vídeos e toda a sequência compartilha a mesma orientação.
+- [Meta — boas práticas para anúncios com foto](https://www.facebook.com/business/ads/photo-ad-format): menos texto, um ponto focal por arte e consistência visual entre as peças.
+- [Meta — anúncios no Instagram](https://www.facebook.com/business/ads/instagram-ad): o carrossel é um formato nativo de profundidade e descoberta por gesto de deslizar.
+
+Decisões aplicadas ao Canva Viagem:
+
+- manter o MVP em seis slides, com limite técnico de dez;
+- uma única orientação por carrossel;
+- cada slide deve ter uma função e um foco visual;
+- a sequência deve permanecer ordenada quando formar uma narrativa;
+- capas, slides informativos e CTA compartilham logo, paleta e sistema tipográfico;
+- os dois modelos iniciais serão originais do Canva Viagem, inspirados em padrões de mercado e não em cópias de peças de CVC, Decolar ou outra marca;
+- o formato 4:5 continua como padrão orgânico mobile-first; 1:1 permanece disponível para compatibilidade e anúncios que exigirem essa proporção.
