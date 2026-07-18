@@ -5,6 +5,9 @@ import {
   createUniquePackageSlug,
   suggestPackageSegment,
 } from "@/lib/package-details";
+import { normalizeSiteTemplateId } from "@/lib/site-template-catalog";
+import { getSiteTemplateCss } from "@/lib/site-template-css";
+import { resolveFabricaCrmFormId } from "@/lib/fabrica-crm-publication";
 
 const SB_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SB_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
@@ -43,20 +46,47 @@ const sanitizeImageUrl = (value: unknown, fallback = DEFAULT_DEST_IMG) => {
 
 // Helpers de cor — gera tons mais escuros/claros pra header e gradientes
 function hexToRgb(hex: string) {
+  const rgbMatch = hex.trim().match(/^rgba?\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)/i);
+  if (rgbMatch) {
+    return {
+      r: Math.max(0, Math.min(255, Number(rgbMatch[1]))),
+      g: Math.max(0, Math.min(255, Number(rgbMatch[2]))),
+      b: Math.max(0, Math.min(255, Number(rgbMatch[3]))),
+    };
+  }
   const h = hex.replace("#", "");
   const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
   const num = parseInt(v, 16);
   return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
 }
+function relativeLuminance({ r, g, b }: { r: number; g: number; b: number }) {
+  const linearize = (value: number) => {
+    const channel = value / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
+}
+function contrastRatio(first: number, second: number) {
+  const lighter = Math.max(first, second);
+  const darker = Math.min(first, second);
+  return (lighter + 0.05) / (darker + 0.05);
+}
 function darken(hex: string, amount = 0.7) {
   const { r, g, b } = hexToRgb(hex);
-  const f = 1 - amount;
-  return `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
+  let factor = 1 - amount;
+  let candidate = { r: Math.round(r * factor), g: Math.round(g * factor), b: Math.round(b * factor) };
+  while (contrastRatio(relativeLuminance(candidate), 1) < 4.5 && factor > 0.05) {
+    factor = Math.max(0.05, factor - 0.05);
+    candidate = { r: Math.round(r * factor), g: Math.round(g * factor), b: Math.round(b * factor) };
+  }
+  return `rgb(${candidate.r}, ${candidate.g}, ${candidate.b})`;
 }
 function contrastText(hex: string) {
-  const { r, g, b } = hexToRgb(hex);
-  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-  return luminance > 0.62 ? "#111827" : "#ffffff";
+  const backgroundLuminance = relativeLuminance(hexToRgb(hex));
+  const dark = "#111827";
+  const darkRatio = contrastRatio(backgroundLuminance, relativeLuminance(hexToRgb(dark)));
+  const lightRatio = contrastRatio(backgroundLuminance, 1);
+  return darkRatio >= lightRatio ? dark : "#ffffff";
 }
 
 // Helper para estruturar o preço visualmente (como E-commerce)
@@ -139,28 +169,37 @@ const renderSocialIcons = (state: FabricaState, extraClass = "") => {
 
 
 export function buildLandingHTML(state: FabricaState, trackingId?: string): string {
+  const projectId = resolveFabricaCrmFormId(state.projectId);
+  const formId = projectId;
   const color = state.primaryColor || "#0F2742";
   const secondaryColor = state.secondaryColor || "#D4A853";
   const backgroundColor = state.backgroundColor || "#F4F6F9";
   const colorDark = darken(color, 0.45);
   const colorContrast = contrastText(color);
   const secondaryContrast = contrastText(secondaryColor);
+  const backgroundContrast = contrastText(backgroundColor);
+  const darkContrast = contrastText(colorDark);
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
   // Usa o DDI salvo no estado (padrão Brasil +55)
   const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
   const wpp = rawWpp ? (rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`) : "";
   const sc = state.siteContent;
-  const templateId = sc.templateId || "standard";
+  const templateId = normalizeSiteTemplateId(sc.templateId);
   const sectionBackgroundAttr = (key: string) => {
     const value = sc.sectionColors?.[key];
     const safeValue = value && /^#[0-9a-f]{6}$/i.test(value) ? value : "";
-    return `data-site-section="${key}"${safeValue ? ` style="--section-bg:${safeValue}"` : ""}`;
+    return `data-site-section="${key}"${safeValue ? ` style="--section-bg:${safeValue};--section-contrast:${contrastText(safeValue)}"` : ""}`;
   };
   const agencia = state.agencyName || "Agência de Viagens";
   const cidade = state.city || "Brasil";
   const wppDisplay = formatWhatsAppDisplay(state.whatsapp, state.whatsappDialCode);
   const contactLocation = state.address?.trim() || cidade;
-  const agencyEmail = state.agencyEmail || `contato@${(agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, "")}.com.br`;
+  const emailDomainLabel = (agencia || "agencia")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "") || "agencia";
+  const agencyEmail = state.agencyEmail || `contato@${emailDomainLabel}.com.br`;
   const socialIcons = renderSocialIcons(state);
   const footerSocialIcons = renderSocialIcons(state, "footer-socials");
   const logoUrl = sanitizeImageUrl(state.logoBase64, "");
@@ -169,7 +208,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
 body.template-horizonte{
   --h-paper:var(--brand-bg);
   --h-sand:color-mix(in srgb,var(--brand-bg) 82%,var(--brand-secondary) 18%);
-  --h-ink:var(--brand-ink);
+  --h-ink:var(--background-contrast);
   --h-green:var(--brand-dark);
   background:var(--h-paper);
   color:var(--h-ink);
@@ -199,7 +238,7 @@ body.template-horizonte .brand-logo{height:54px;max-width:190px;background:rgba(
 body.template-horizonte .nav-links a{color:rgba(255,255,255,.82)}
 body.template-horizonte .nav-links a:hover{color:#fff}
 body.template-horizonte .nav-cta{background:#fff;color:var(--h-ink)!important;border-radius:999px}
-body.template-horizonte .nav-cta:hover{background:var(--brand);color:#fff!important}
+body.template-horizonte .nav-cta:hover{background:var(--brand);color:var(--brand-contrast)!important}
 
 body.template-horizonte .hero{
   min-height:780px;
@@ -241,7 +280,7 @@ body.template-horizonte .stats-bar{
 body.template-horizonte .stats-bar>div{max-width:none;padding:4px 20px;border-right:1px solid rgba(32,37,31,.16)}
 body.template-horizonte .stats-bar>div:last-child{border-right:0}
 body.template-horizonte .stat-num{font-family:'Bricolage Grotesque',sans-serif;color:var(--h-ink);font-size:42px}
-body.template-horizonte .stat-label{color:var(--h-ink);opacity:.62}
+body.template-horizonte .stat-label{color:var(--h-ink);opacity:1}
 
 body.template-horizonte section{padding:clamp(76px,9vw,132px) 0}
 body.template-horizonte .section-title{font-size:clamp(34px,5vw,62px);font-weight:600;line-height:1.02}
@@ -354,7 +393,7 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
   body.template-horizonte .stat-num{font-size:32px}
   body.template-horizonte .dest-body{padding:84px 24px 24px}
 }
-` : "";
+` : getSiteTemplateCss(templateId);
 
   // ----- SISTEMA DE ANIMAÇÕES SAZONAIS E TEMÁTICAS -----
   let seasonalStyles = "";
@@ -1148,22 +1187,22 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
 
   const quoteFormHtml = `<form class="orc-form" onsubmit="handleMainFormSubmit(event)">
         <div class="form-row">
-          <div class="field"><label>Nome Completo</label><input name="nome" required placeholder="Ex: Maria Silva"></div>
-          <div class="field"><label>WhatsApp</label><input name="wpp" required placeholder="(00) 00000-0000"></div>
+          <div class="field"><label for="quote-name">Nome Completo</label><input id="quote-name" name="nome" autocomplete="name" required placeholder="Ex: Maria Silva"></div>
+          <div class="field"><label for="quote-phone">WhatsApp</label><input id="quote-phone" type="tel" name="wpp" autocomplete="tel" required placeholder="(00) 00000-0000"></div>
         </div>
         <div class="form-row single">
-          <div class="field"><label>E-mail</label><input type="email" name="email" required placeholder="seu@email.com"></div>
+          <div class="field"><label for="quote-email">E-mail</label><input id="quote-email" type="email" name="email" autocomplete="email" required placeholder="seu@email.com"></div>
         </div>
         <div class="form-row">
-          <div class="field"><label>Destino de Interesse</label><select name="destino"><option value="">Selecione…</option>${pacotes.map((p) => `<option>${esc(p.title)}</option>`).join("")}<option>Outro / sob medida</option></select></div>
-          <div class="field"><label>Nº de Viajantes</label><input type="number" name="viaj" min="1" value="2"></div>
+          <div class="field"><label for="quote-destination">Destino de Interesse</label><select id="quote-destination" name="destino"><option value="">Selecione…</option>${pacotes.map((p) => `<option>${esc(p.title)}</option>`).join("")}<option>Outro / sob medida</option></select></div>
+          <div class="field"><label for="quote-travelers">Nº de Viajantes</label><input id="quote-travelers" type="number" name="viaj" min="1" value="2"></div>
         </div>
         <div class="form-row">
-          <div class="field"><label>Data de Ida</label><input type="date" name="ida"></div>
-          <div class="field"><label>Data de Volta</label><input type="date" name="volta"></div>
+          <div class="field"><label for="quote-departure">Data de Ida</label><input id="quote-departure" type="date" name="ida"></div>
+          <div class="field"><label for="quote-return">Data de Volta</label><input id="quote-return" type="date" name="volta"></div>
         </div>
         <div class="form-row single">
-          <div class="field"><label>Observações (opcional)</label><textarea name="obs" placeholder="Preferências, ocasião especial, orçamento…"></textarea></div>
+          <div class="field"><label for="quote-notes">Observações (opcional)</label><textarea id="quote-notes" name="obs" placeholder="Preferências, ocasião especial, orçamento…"></textarea></div>
         </div>
         <button type="submit" class="btn form-submit">${esc(sc.formSubmitLabel || "Enviar pelo WhatsApp")}</button>
       </form>`;
@@ -1212,10 +1251,21 @@ ${ga4Code}
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Inter:wght@400;500;600;700&family=Onest:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 ${templateVariantCss}
-*{margin:0;padding:0;box-sizing:border-box}:root{--brand:${color};--brand-dark:${colorDark};--brand-secondary:${secondaryColor};--brand-bg:${backgroundColor};--brand-contrast:${colorContrast};--secondary-contrast:${secondaryContrast};--brand-ink:${colorDark};--ink:#0a0a0b;--muted:#5a6470;--soft:${backgroundColor}}
-html{scroll-behavior:smooth}
-body{font-family:'Inter',sans-serif;color:var(--ink);background:var(--brand-bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+*{margin:0;padding:0;box-sizing:border-box}:root{--brand:${color};--brand-dark:${colorDark};--brand-secondary:${secondaryColor};--brand-bg:${backgroundColor};--brand-contrast:${colorContrast};--secondary-contrast:${secondaryContrast};--background-contrast:${backgroundContrast};--brand-dark-contrast:${darkContrast};--brand-ink:${backgroundContrast};--ink:#0a0a0b;--muted:#5a6470;--soft:${backgroundColor}}
+html{scroll-behavior:smooth;overflow-x:clip}
+body{font-family:'Inter',sans-serif;color:var(--ink);background:var(--brand-bg);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.skip-link{position:fixed;left:16px;top:12px;z-index:10001;transform:translateY(-160%);border-radius:8px;background:#fff;color:#111827;padding:10px 14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.skip-link:focus{transform:translateY(0)}
 [data-site-section][style*="--section-bg"]{background:var(--section-bg)!important}
+[data-site-section][style*="--section-bg"]{color:var(--section-contrast)!important}
+[data-site-section][style*="--section-bg"]>.container>:is(.section-title,.section-eyebrow,.eyebrow,h1,h2,h3,p){color:var(--section-contrast)!important}
+.site-header[style*="--section-bg"] :is(.brand-name,.nav-links a:not(.nav-cta)){color:var(--section-contrast)!important}
+.site-header[style*="--section-bg"] .nav-toggle span{background:var(--section-contrast)!important}
+.hero[style*="--section-bg"] :is(.hero-content,.hero-content h1,.hero-content .lead,.hero-content .eyebrow,.stat-num,.stat-label){color:var(--section-contrast)!important}
+#por-que[style*="--section-bg"] :is(.equipe-left>h2,.equipe-left>.eyebrow,.equipe-left>.intro,.feat h4,.feat p){color:var(--section-contrast)!important}
+#orcamento[style*="--section-bg"] :is(.orc-info>h2,.orc-info>p,.orc-info>.eyebrow){color:var(--section-contrast)!important}
+.final-cta[style*="--section-bg"] h2{color:var(--section-contrast)!important}
+footer[style*="--section-bg"] :is(.foot-brand,.foot-desc,h4,li,li>a:not(.social-icon),.foot-bottom){color:var(--section-contrast)!important}
 h1,h2,h3,h4{font-family:'Playfair Display',serif;letter-spacing:-0.02em;line-height:1.15;color:var(--ink)}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
@@ -1233,13 +1283,13 @@ img{max-width:100%;display:block}
 .nav-wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:16px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;flex-shrink:0}
 .brand-logo{height:48px;width:auto;max-width:180px;object-fit:contain;border-radius:6px}
-.brand-dot{width:36px;height:36px;border-radius:8px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px}
+.brand-dot{width:36px;height:36px;border-radius:8px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:var(--brand-contrast);font-weight:800;font-size:16px}
 .brand-name{font-weight:700;font-size:16px}
 .nav-links{display:flex;gap:24px;align-items:center}
 .nav-links a{font-size:14px;color:var(--muted);font-weight:500;transition:color .2s}
 .nav-links a:hover{color:var(--ink)}
-.nav-cta{padding:10px 18px;background:var(--brand);color:#fff !important;border-radius:8px;font-weight:600}
-.nav-cta:hover{background:var(--brand-dark);color:#fff !important}
+.nav-cta{padding:10px 18px;background:var(--brand);color:var(--brand-contrast) !important;border-radius:8px;font-weight:600}
+.nav-cta:hover{background:var(--brand-dark);color:var(--brand-dark-contrast) !important}
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;width:40px;height:40px;flex-direction:column;justify-content:center;align-items:center;gap:5px;padding:0}
 .nav-toggle span{display:block;width:22px;height:2px;background:var(--ink);border-radius:2px;transition:all .2s}
 @media (max-width: 840px){
@@ -1293,13 +1343,15 @@ section{padding:80px 0}
 .proc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
 .proc-card{background:#fff;padding:36px 28px;border-radius:16px;border:1px solid rgba(0,0,0,.05);transition:all .3s;position:relative}
 .proc-card:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,.08);border-color:var(--brand)}
-.proc-num{width:52px;height:52px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:20px}
+.proc-num{width:52px;height:52px;border-radius:50%;background:var(--brand);color:var(--brand-contrast);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:20px}
 .proc-card h3{font-size:22px;margin-bottom:12px}
 .proc-card p{color:var(--muted);font-size:15px;line-height:1.7}
 @media (max-width: 840px){.proc-grid{grid-template-columns:1fr;gap:16px}.proc-card{padding:28px 22px}}
 
 /* DESTINOS */
 .destinos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.site-empty{grid-column:1/-1;border:1px dashed color-mix(in srgb,var(--brand) 35%,transparent);border-radius:18px;background:color-mix(in srgb,var(--brand-bg) 82%,#fff 18%);padding:38px 24px;text-align:center;color:var(--background-contrast)}
+.site-empty h3{margin-bottom:8px;color:inherit}.site-empty p{color:inherit;opacity:.72}
 .dest-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid rgba(0,0,0,.06);transition:transform .25s ease,box-shadow .25s ease;cursor:pointer;display:flex;flex-direction:column;isolation:isolate;text-decoration:none;text-align:left}
 .dest-card:hover{transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,.14)}
 .dest-img-wrap{position:relative;aspect-ratio:4/3;overflow:hidden;background:#eee}
@@ -1358,11 +1410,11 @@ section{padding:80px 0}
 .orc-info > p{color:var(--muted);font-size:15px;margin-bottom:32px;line-height:1.7}
 .contact-list{display:grid;gap:20px}
 .contact-item{display:flex;gap:14px;align-items:flex-start;padding:18px;background:var(--soft);border-radius:12px}
-.contact-icon{width:40px;height:40px;border-radius:10px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.contact-icon{width:40px;height:40px;border-radius:10px;background:var(--brand);color:var(--brand-contrast);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .contact-item strong{display:block;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:600}
 .contact-item span{font-size:15px;color:var(--ink);font-weight:500}
 .social-icons{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-.social-icon{width:40px;height:40px;border-radius:999px;background:var(--brand);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;transition:all .2s;border:1px solid rgba(255,255,255,.12)}
+.social-icon{width:40px;height:40px;border-radius:999px;background:var(--brand);color:var(--brand-contrast);display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;transition:all .2s;border:1px solid rgba(255,255,255,.12)}
 .social-icon:hover{background:var(--ink);transform:translateY(-2px)}
 .social-icon span{line-height:1;color:inherit;font-weight:inherit}
 .footer-socials{margin-top:18px}
@@ -1415,7 +1467,7 @@ footer{background:var(--brand-dark);color:rgba(255,255,255,.68);padding:64px 0 2
 .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%}
 .modal-close:hover{background:var(--soft);color:var(--ink)}
 .modal-header{text-align:center;margin-bottom:24px}
-.modal-icon{width:64px;height:64px;background:var(--brand);color:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;box-shadow:0 12px 24px rgba(0,0,0,.1)}
+.modal-icon{width:64px;height:64px;background:var(--brand);color:var(--brand-contrast);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;box-shadow:0 12px 24px rgba(0,0,0,.1)}
 .modal-header h3{font-size:24px;margin-bottom:8px;font-family:'Playfair Display',serif}
 .modal-header p{font-size:14px;color:var(--muted)}
 .modal-form{display:grid;gap:16px}
@@ -1430,7 +1482,7 @@ body.package-modal-open{overflow:hidden}
 .package-sheet{position:relative;display:grid;grid-template-columns:minmax(300px,.9fr) minmax(360px,1.1fr);grid-template-rows:minmax(0,1fr);width:min(1120px,100%);height:min(780px,calc(100vh - 48px));max-height:calc(100vh - 48px);overflow:hidden;border-radius:28px;background:#fbfcfa;color:var(--ink);box-shadow:0 32px 90px rgba(10,18,13,.36)}
 .package-not-found{grid-column:1/-1;display:grid;place-content:center;justify-items:center;min-height:100%;padding:clamp(44px,8vw,96px);text-align:center;background:linear-gradient(145deg,#fbfcfa,var(--soft))}
 .package-not-found[hidden]{display:none}
-.package-not-found-mark{display:grid;place-items:center;width:64px;height:64px;margin-bottom:22px;border-radius:20px;background:var(--brand);color:var(--contrast);font-size:28px;font-weight:900}
+.package-not-found-mark{display:grid;place-items:center;width:64px;height:64px;margin-bottom:22px;border-radius:20px;background:var(--brand);color:var(--brand-contrast);font-size:28px;font-weight:900}
 .package-not-found h2{max-width:620px;margin:0 0 12px;font-size:clamp(30px,5vw,52px);line-height:1.05}
 .package-not-found p{max-width:560px;margin:0 0 26px;color:var(--muted);font-size:16px;line-height:1.65}
 .package-media{position:relative;min-height:0;height:100%;background:var(--soft);overflow:hidden}
@@ -1442,7 +1494,7 @@ body.package-modal-open{overflow:hidden}
 .package-agency-on-image span{font-size:13px;color:rgba(248,250,247,.78)}
 .package-content{min-height:0;overflow-y:auto;padding:clamp(34px,5vw,58px)}
 .package-close{position:absolute;z-index:4;top:18px;right:18px;width:44px;height:44px;border:1px solid rgba(23,27,24,.12);border-radius:50%;background:#f7f9f6;color:#202620;font-size:25px;line-height:1;cursor:pointer;box-shadow:0 8px 22px rgba(12,17,14,.12)}
-.package-close:hover,.package-close:focus-visible{background:var(--brand);color:var(--contrast);outline:3px solid color-mix(in srgb,var(--brand) 26%,transparent)}
+.package-close:hover,.package-close:focus-visible{background:var(--brand);color:var(--brand-contrast);outline:3px solid color-mix(in srgb,var(--brand) 26%,transparent)}
 .package-location{color:var(--brand);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px}
 .package-location:empty{display:none}
 .package-content h2{font-size:clamp(30px,4vw,48px);line-height:1.05;margin:0 48px 18px 0}
@@ -1471,7 +1523,7 @@ body.package-modal-open{overflow:hidden}
 .package-detail-section[data-list-style="minus"] .package-detail-list li::before{content:"–";color:#a33}
 .package-detail-section[data-list-style="number"]{counter-reset:package-step}
 .package-detail-section[data-list-style="number"] .package-detail-list li{counter-increment:package-step;padding-left:32px}
-.package-detail-section[data-list-style="number"] .package-detail-list li::before{content:counter(package-step);display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--brand);color:var(--contrast);font-size:11px;line-height:1}
+.package-detail-section[data-list-style="number"] .package-detail-list li::before{content:counter(package-step);display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--brand);color:var(--brand-contrast);font-size:11px;line-height:1}
 .package-faq{padding:24px 0 8px}
 .package-faq details{border-bottom:1px solid rgba(23,27,24,.1);padding:12px 0}
 .package-faq summary{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;font-size:14px;font-weight:700;list-style:none}
@@ -1506,6 +1558,7 @@ ${seasonalStyles}
 </style>
 </head>
 <body class="template-${templateId}" data-site-template="${templateId}">
+<a class="skip-link" href="#main-content">Pular para o conteúdo</a>
 <!--
   [SISTEMA: DIRETRIZ DE INTEGRIDADE CRÍTICA - LOVABLE AI]
   PROIBIDO ALTERAR IMAGENS OU RECONSTRUIR O DESIGN.
@@ -1525,10 +1578,10 @@ ${seasonalStyles}
         ? `<img src="${esc(logoUrl)}" alt="${esc(agencia)}" class="brand-logo" data-ai-ignore="true" data-preserve-image="true"><span class="brand-name">${esc(agencia)}</span>`
         : `<span class="brand-dot">${esc(agencia.charAt(0).toUpperCase())}</span><span class="brand-name">${esc(agencia)}</span>`}
     </a>
-    <button class="nav-toggle" aria-label="Abrir menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+    <button class="nav-toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="site-nav-links" onclick="toggleMobileMenu(this)">
       <span></span><span></span><span></span>
     </button>
-    <nav class="nav-links">
+    <nav id="site-nav-links" class="nav-links">
       <a href="#inicio" data-site-edit-key="navHomeLabel">${esc(sc.navHomeLabel || "Início")}</a>
       <a href="#destinos" data-site-edit-key="navDestinationsLabel">${esc(sc.navDestinationsLabel || "Destinos")}</a>
       <a href="#por-que" data-site-edit-key="navAboutLabel">${esc(sc.navAboutLabel || "Por Que Nós")}</a>
@@ -1538,6 +1591,7 @@ ${seasonalStyles}
   </div>
 </header>
 
+<main id="main-content">
 ${sectionOrder
   .map((secKey) => {
     if (secKey === "hero") {
@@ -1589,12 +1643,12 @@ ${sectionOrder
     <div class="section-eyebrow eyebrow">${esc(sc.destinosEyebrow || "Destinos")}</div>
     <h2 class="section-title">${esc(sc.pacotesTitle || "Experiências que ficam na memória")}</h2>
     <div class="destinos-grid" data-package-count="${visiblePackageCount}">
-      ${pacotes
+      ${pacotes.length ? pacotes
         .map(
-          (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<a href="#pacote-${esc(String(p.id || i + 1))}" onclick="openPackageDetails(${i}, this);return false;" class="dest-card" data-package-index="${i}" data-visual-removable="dest-card-${i}" aria-haspopup="dialog" aria-label="Ver detalhes de ${esc(p.title)}">
+          (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<article role="button" tabindex="0" onclick="openPackageDetails(${i}, this)" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openPackageDetails(${i},this)}" class="dest-card" data-package-index="${i}" data-package-id="${esc(String(p.id || i + 1))}" data-visual-removable="dest-card-${i}" aria-haspopup="dialog" aria-label="Ver detalhes de ${esc(p.title)}">
         <div class="dest-img-wrap">
           <img src="${esc(sanitizeImageUrl(p.imageUrl))}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
-          <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
+          <span class="dest-tag">${esc(p.badge || p.title.split(" ")[0] || "Destino")}</span>
           <div class="dest-overlay" data-site-edit-key="packageOverlayLabel">${esc(sc.packageOverlayLabel || "Ver pacote →")}</div>
         </div>
         <div class="dest-body">
@@ -1603,9 +1657,9 @@ ${sectionOrder
           <div class="dest-price">${parsePriceHTML(p.price)}</div>
           <span class="dest-cta">${esc(p.ctaLabel || "Saiba mais →")}</span>
         </div>
-      </a>` : ''
+      </article>` : ''
         )
-        .join("")}
+        .join("") : `<div class="site-empty"><h3>Novas experiências em preparação</h3><p>Fale com a agência para receber uma sugestão personalizada.</p></div>`}
     </div>
   </div>
 </section>`;
@@ -1623,7 +1677,7 @@ ${sectionOrder
         ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">${esc(sc.equipeIntro || "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>` : ''}
         <div class="equipe-features">
           ${(sc.equipeFeatures || []).map((feat, i) => !sc.hiddenElements?.includes(`equipe-feat-${i}`) ? `
-          <div class="feat" data-visual-removable="equipe-feat-${i}"><div class="feat-icon">${feat.icon}</div><div><h4>${esc(feat.title)}</h4><p>${esc(feat.desc)}</p></div></div>
+          <div class="feat" data-visual-removable="equipe-feat-${i}"><div class="feat-icon">${esc(feat.icon)}</div><div><h4>${esc(feat.title)}</h4><p>${esc(feat.desc)}</p></div></div>
           ` : '').join("")}
         </div>
         ${!sc.hiddenElements?.includes('equipe-cta') ? `<a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/${wpp}');return false;" class="btn" data-visual-removable="equipe-cta">${esc(sc.equipeCtaLabel || "Falar com um especialista")}</a>` : ''}
@@ -1645,7 +1699,7 @@ ${sectionOrder
       ${state.depoimentos
         .slice(0, 3)
         .map(
-          (d, i) => !sc.hiddenElements?.includes(`depo-${i}`) ? `<div class="depo-card" data-visual-removable="depo-${i}">
+          (d, i) => !sc.hiddenElements?.includes(`depo-${i}`) ? `<div class="depo-card" data-depo-index="${i}" data-visual-removable="depo-${i}">
         <div class="stars">★★★★★</div>
         <p class="depo-text">"${esc(d.text)}"</p>
         <div class="depo-author">
@@ -1671,10 +1725,10 @@ ${sectionOrder
         ${!sc.hiddenElements?.includes('orcamento-title') ? `<h2 style="margin-top:12px" data-visual-removable="orcamento-title">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>` : ''}
         ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>` : ''}
         <div class="contact-list">
-          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">📱</div><div><strong data-site-edit-key="contactWhatsappLabel">${esc(sc.contactWhatsappLabel || "WhatsApp")}</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉️</div><div><strong data-site-edit-key="contactEmailLabel">${esc(sc.contactEmailLabel || "E-mail")}</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">⏰</div><div><strong data-site-edit-key="contactHoursLabel">${esc(sc.contactHoursLabel || "Atendimento")}</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">📍</div><div><strong data-site-edit-key="contactLocationLabel">${esc(sc.contactLocationLabel || "Localização")}</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon" data-site-edit-key="contactWhatsappIcon">${esc(sc.contactWhatsappIcon || "📱")}</div><div><strong data-site-edit-key="contactWhatsappLabel">${esc(sc.contactWhatsappLabel || "WhatsApp")}</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon" data-site-edit-key="contactEmailIcon">${esc(sc.contactEmailIcon || "✉️")}</div><div><strong data-site-edit-key="contactEmailLabel">${esc(sc.contactEmailLabel || "E-mail")}</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon" data-site-edit-key="contactHoursIcon">${esc(sc.contactHoursIcon || "⏰")}</div><div><strong data-site-edit-key="contactHoursLabel">${esc(sc.contactHoursLabel || "Atendimento")}</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon" data-site-edit-key="contactLocationIcon">${esc(sc.contactLocationIcon || "📍")}</div><div><strong data-site-edit-key="contactLocationLabel">${esc(sc.contactLocationLabel || "Localização")}</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
         </div>
         ${socialIcons}
       </div>
@@ -1693,7 +1747,7 @@ ${sectionOrder
     ${!sc.hiddenElements?.includes('faq-title') ? `<h2 class="section-title" data-visual-removable="faq-title">${esc(sc.faqTitle || "Tudo que você precisa saber")}</h2>` : ''}
     <div class="faq-list">
       ${sc.faq.map((f, i) => !sc.hiddenElements?.includes(`faq-${i}`) ? `
-      <details class="faq-item" data-visual-removable="faq-${i}">
+      <details class="faq-item" data-faq-index="${i}" data-visual-removable="faq-${i}">
         <summary>${esc(f.q)}</summary>
         <p>${esc(f.a)}</p>
       </details>
@@ -1734,6 +1788,7 @@ ${state.address ? `
     <h2 class="section-title" data-site-edit-key="mapTitle">${esc(sc.mapTitle || "Onde nos encontrar")}</h2>
     <div class="mapa-container">
       <iframe 
+        title="Mapa de ${esc(agencia)}"
         width="100%" 
         height="450" 
         style="border:0; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);" 
@@ -1745,6 +1800,8 @@ ${state.address ? `
     </div>
   </div>
 </section>` : ""}
+
+</main>
 
 <!-- FOOTER -->
 <footer ${sectionBackgroundAttr("footer")}>
@@ -1777,6 +1834,7 @@ ${state.address ? `
           <li data-site-edit-key="footerHoursLabel">${esc(sc.footerHoursLabel || "Seg–Sex 8h–20h")}</li>
         </ul>
       </div>
+    </div>
     <div class="foot-bottom">
       <div data-site-edit-key="footerCopyrightText">${esc(sc.footerCopyrightText || `© ${new Date().getFullYear()} ${agencia} · Todos os direitos reservados`)}</div>
       <div><span data-site-edit-key="footerCreditPrefix">${esc(sc.footerCreditPrefix || "Feito com ❤ com")}</span> <a href="https://canvaviagem.com" target="_blank" data-protected-brand="true" style="text-decoration: underline; font-weight: 600; color: #fff;">Canva Viagem</a></div>
@@ -1792,9 +1850,9 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     <button type="button" class="package-close" aria-label="Fechar detalhes do pacote" onclick="closePackageDetails()">&times;</button>
     <div class="package-not-found" id="package-not-found" hidden>
       <div class="package-not-found-mark" aria-hidden="true">!</div>
-      <h2>Pacote nÃ£o encontrado</h2>
-      <p>Este link pode ter mudado ou o pacote nÃ£o estÃ¡ mais disponÃ­vel. Veja as experiÃªncias atuais desta agÃªncia.</p>
-      <button type="button" class="btn" onclick="closePackageDetails()">Ver pacotes disponÃ­veis</button>
+      <h2>Pacote não encontrado</h2>
+      <p>Este link pode ter mudado ou o pacote não está mais disponível. Veja as experiências atuais desta agência.</p>
+      <button type="button" class="btn" onclick="closePackageDetails()">Ver pacotes disponíveis</button>
     </div>
     <div class="package-media" id="package-details-media">
       <img id="package-image" src="${DEFAULT_DEST_IMG}" alt="" data-ai-ignore="true" data-preserve-image="true">
@@ -1852,22 +1910,22 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
 </div>
 
 <!-- SMART LEAD CAPTURE MODAL -->
-<div id="lead-modal">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal()">&times;</button>
+<div id="lead-modal" aria-hidden="true" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="lead-modal-title" aria-describedby="modal-subtitle">
+    <button type="button" class="modal-close" aria-label="Fechar formulário" onclick="closeModal()">&times;</button>
     <div class="modal-header">
       <div class="modal-icon">🌍</div>
-      <h3>Falta pouco para sua viagem!</h3>
+      <h3 id="lead-modal-title">Falta pouco para sua viagem!</h3>
       <p id="modal-subtitle">Você tem interesse em: Geral</p>
     </div>
     <form class="modal-form" onsubmit="handleSubmitLead(event)">
       <div class="field">
-        <label>Seu Nome</label>
-        <input type="text" id="lead-name" required placeholder="Ex: Maria Silva">
+        <label for="lead-name">Seu Nome</label>
+        <input type="text" id="lead-name" autocomplete="name" required placeholder="Ex: Maria Silva">
       </div>
       <div class="field">
-        <label>Seu WhatsApp / Celular</label>
-        <input type="tel" id="lead-phone" required placeholder="(00) 90000-0000">
+        <label for="lead-phone">Seu WhatsApp / Celular</label>
+        <input type="tel" id="lead-phone" autocomplete="tel" required placeholder="(00) 90000-0000">
       </div>
       <button type="submit" class="btn modal-submit">🚀 Falar no WhatsApp</button>
     </form>
@@ -1878,12 +1936,33 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
 <script>
   const CONFIG = {
     agencyId: "${esc(trackingId || state.agencyName || 'agencia_desconhecida')}",
+    projectId: "${projectId}",
+    formId: "${formId}",
     supabaseUrl: "${SB_URL}",
     supabaseKey: "${SB_KEY}"
   };
 
+  function toggleMobileMenu(button) {
+    const menu = document.getElementById("site-nav-links");
+    if (!menu) return;
+    const isOpen = menu.classList.toggle("open");
+    button.setAttribute("aria-expanded", String(isOpen));
+    button.setAttribute("aria-label", isOpen ? "Fechar menu" : "Abrir menu");
+  }
+
+  document.querySelectorAll("#site-nav-links a").forEach((link) => {
+    link.addEventListener("click", () => {
+      const menu = document.getElementById("site-nav-links");
+      const button = document.querySelector(".nav-toggle");
+      menu?.classList.remove("open");
+      button?.setAttribute("aria-expanded", "false");
+      button?.setAttribute("aria-label", "Abrir menu");
+    });
+  });
+
   let pendingUrl = "";
   let currentTarget = "";
+  let lastLeadTrigger = null;
   const PACKAGE_DETAILS = ${packageDetailsJson};
   let currentPackage = null;
   let lastPackageTrigger = null;
@@ -2016,6 +2095,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     if (media) media.hidden = false;
     if (content) content.hidden = false;
     currentPackage = selected;
+    modal.setAttribute("data-current-package-id", String(selected.id || ""));
     lastPackageTrigger = trigger || document.activeElement;
     const image = document.getElementById("package-image");
     image.src = selected.imageUrl;
@@ -2052,6 +2132,9 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     modal.classList.add("active");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("package-modal-open");
+    const sheet = modal.querySelector(".package-sheet");
+    if (sheet) sheet.scrollTop = 0;
+    if (content) content.scrollTop = 0;
     modal.querySelector(".package-close").focus();
     notifyPackageLocation("CV_PACKAGE_OPEN", selected.slug);
     track("package_view", { target: selected.title, package_id: selected.id });
@@ -2071,6 +2154,8 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     modal.classList.add("active");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("package-modal-open");
+    const sheet = modal.querySelector(".package-sheet");
+    if (sheet) sheet.scrollTop = 0;
     modal.querySelector(".package-close").focus();
     track("package_not_found", { package_slug: String(slug || "") });
   }
@@ -2138,16 +2223,67 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
         "Prefer": "return=minimal"
       },
       body: JSON.stringify({
+        user_id: CONFIG.agencyId,
         event_type: type,
         session_id: 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now(),
         event_data: { 
           ...data, 
           agency_id: CONFIG.agencyId,
+          project_id: CONFIG.projectId,
           userAgent: navigator.userAgent
         },
         created_at: new Date().toISOString()
       })
     }).catch(err => console.warn("Tracking off", err));
+  }
+
+  async function submitCrmLead(payload, normalized) {
+    if (!CONFIG.supabaseUrl || !CONFIG.formId) return false;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 3500);
+    const query = new URLSearchParams(window.location.search);
+    try {
+      const response = await fetch(CONFIG.supabaseUrl + "/functions/v1/submit-crm-form", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          ...(CONFIG.supabaseKey ? { "apikey": CONFIG.supabaseKey } : {})
+        },
+        body: JSON.stringify({
+          form_id: CONFIG.formId,
+          embed_key: CONFIG.formId,
+          project_id: CONFIG.projectId,
+          payload,
+          normalized,
+          source_url: window.location.href,
+          source_domain: window.location.hostname,
+          user_agent: navigator.userAgent,
+          utm_source: query.get("utm_source") || "",
+          utm_medium: query.get("utm_medium") || "",
+          utm_campaign: query.get("utm_campaign") || ""
+        })
+      });
+      return response.ok;
+    } catch (error) {
+      console.warn("CRM submission off", error);
+      return false;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
+  async function captureLead(payload, normalized) {
+    const submitted = await submitCrmLead(payload, normalized);
+    if (!submitted) {
+      track("lead_captured", {
+        ...payload,
+        ...normalized,
+        crm_fallback: true,
+        status: "novo"
+      });
+    }
+    return submitted;
   }
 
   // Registra a visita ÚNICA no carregamento da página para métricas reais
@@ -2180,7 +2316,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     }
   }
   window.onload = () => {
-    const trackerKey = "cv_visit_" + CONFIG.agencyId;
+    const trackerKey = "cv_visit_" + CONFIG.projectId;
     if (!sessionStorage.getItem(trackerKey)) {
       track("page_view", { path: window.location.pathname });
       sessionStorage.setItem(trackerKey, "true"); // Marca como já visitou!
@@ -2202,23 +2338,37 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     }
 
     document.getElementById("modal-subtitle").innerText = "Interesse: " + targetName;
-    document.getElementById("lead-modal").classList.add("active");
+    const leadModal = document.getElementById("lead-modal");
+    lastLeadTrigger = document.activeElement;
+    leadModal.classList.add("active");
+    leadModal.setAttribute("aria-hidden", "false");
+    window.setTimeout(() => document.getElementById("lead-name")?.focus(), 0);
     track("click_intent", { target: targetName });
   }
 
   function closeModal() {
-    document.getElementById("lead-modal").classList.remove("active");
+    const leadModal = document.getElementById("lead-modal");
+    leadModal.classList.remove("active");
+    leadModal.setAttribute("aria-hidden", "true");
+    if (lastLeadTrigger && typeof lastLeadTrigger.focus === "function") lastLeadTrigger.focus();
   }
 
   document.addEventListener("keydown", (event) => {
     const packageModal = document.getElementById("package-modal");
-    if (!packageModal || !packageModal.classList.contains("active")) return;
+    const leadModal = document.getElementById("lead-modal");
+    const activeModal = packageModal?.classList.contains("active")
+      ? packageModal
+      : leadModal?.classList.contains("active")
+        ? leadModal
+        : null;
+    if (!activeModal) return;
     if (event.key === "Escape") {
-      closePackageDetails();
+      if (activeModal === packageModal) closePackageDetails();
+      else closeModal();
       return;
     }
     if (event.key !== "Tab") return;
-    const focusable = Array.from(packageModal.querySelectorAll('a[href],button:not([disabled]),summary,input,select,textarea,[tabindex]:not([tabindex="-1"])'))
+    const focusable = Array.from(activeModal.querySelectorAll('a[href],button:not([disabled]),summary,input,select,textarea,[tabindex]:not([tabindex="-1"])'))
       .filter((element) => element.offsetParent !== null);
     if (!focusable.length) return;
     const first = focusable[0];
@@ -2243,16 +2393,25 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     // Abrir a nova guia ANTES do await para evitar bloqueio de popup
     const newTab = window.open('about:blank', '_blank');
 
-    await track("lead_captured", { 
-      name: f.nome.value, 
-      phone: f.wpp.value, 
+    const payload = {
+      nome: f.nome.value,
+      wpp: f.wpp.value,
       email: f.email.value,
-      interest: f.destino.value,
-      viajantes: f.viaj.value,
+      destino: f.destino.value,
+      viaj: f.viaj.value,
       ida: f.ida.value,
       volta: f.volta.value,
-      obs: f.obs.value,
-      status: 'novo'
+      obs: f.obs.value
+    };
+    await captureLead(payload, {
+      name: payload.nome,
+      phone: payload.wpp,
+      email: payload.email,
+      interest: payload.destino,
+      viajantes: payload.viaj,
+      ida: payload.ida,
+      volta: payload.volta,
+      obs: payload.obs
     });
     
     const msg = encodeURIComponent('Olá! Quero um orçamento.\\n\\nNome: '+f.nome.value+'\\nWhatsApp: '+f.wpp.value+'\\nE-mail: '+f.email.value+'\\nDestino: '+f.destino.value+'\\nViajantes: '+f.viaj.value+'\\nIda: '+f.ida.value+'\\nVolta: '+f.volta.value+'\\nObs: '+f.obs.value);
@@ -2282,11 +2441,14 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     
     localStorage.setItem("cv_lead_name", name);
 
-    await track("lead_captured", {
-      name: name,
-      phone: phone,
-      interest: currentTarget,
-      status: 'novo'
+    await captureLead({
+      nome: name,
+      wpp: phone,
+      destino: currentTarget
+    }, {
+      name,
+      phone,
+      interest: currentTarget
     });
 
     closeModal();

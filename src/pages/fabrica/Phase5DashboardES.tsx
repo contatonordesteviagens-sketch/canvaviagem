@@ -3,7 +3,11 @@ import { toast } from "sonner";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { buildLandingHTML } from "@/lib/fabrica-html-export";
+import { buildLandingHTML } from "@/lib/fabrica-html-export-es";
+import { publishFabricaSite } from "@/lib/fabrica-site-publisher";
+import { resolveFabricaCrmFormId } from "@/lib/fabrica-crm-publication";
+import { getCanvaSiteUrl, validateCanvaSiteSlug } from "@/lib/canva-site-domain";
+import { resolveFabricaSiteSlug } from "@/lib/fabrica-site-publication";
 import { Loader2, Eye, X as CloseIcon } from "lucide-react";
 import { 
   TrendingUp, 
@@ -26,8 +30,6 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-
-const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
 
 export const Phase5DashboardES = () => {
   const { state, setPhase, update } = useFabricaContext();
@@ -60,26 +62,36 @@ export const Phase5DashboardES = () => {
       toast.error("Inicie sesión para publicar.");
       return;
     }
+    const slug = resolveFabricaSiteSlug(state.siteContent?.canvaViagemUrl, state.agencyName || "");
+    const slugError = validateCanvaSiteSlug(slug);
+    if (slugError) {
+      const messages = {
+        too_short: "Indica un nombre de agencia con al menos 3 caracteres para crear la dirección.",
+        too_long: "La dirección del sitio debe tener como máximo 63 caracteres.",
+        invalid: "Usa solamente letras, números y guiones en la dirección.",
+        reserved: "Esta dirección está reservada. Elige otro nombre para la agencia.",
+      } as const;
+      toast.error(messages[slugError]);
+      return;
+    }
     
     setIsPublishing(true);
     const loadingToast = toast.loading("Publicando y activando su sitio...");
     
     try {
-      const html = buildLandingHTML(state, user.id);
-      // Bypass Supabase Storage RLS entirely by saving to public_sites table
-      const { error: dbError } = await supabase
-        .from("public_sites")
-        .upsert({
-          id: state.projectId || user.id,
-          owner_id: user.id,
-          project_id: state.projectId || user.id,
-          html: html,
-          locale: "es"
-        });
-
-      if (dbError) {
-        throw dbError;
-      }
+      const result = await publishFabricaSite({
+        state,
+        userId: user.id,
+        slug,
+        locale: "es",
+      });
+      update({
+        projectId: result.projectId,
+        crmForm: result.state.crmForm,
+        logoBase64: result.state.logoBase64,
+        selectedPackages: result.state.selectedPackages,
+        siteContent: result.state.siteContent,
+      });
 
       
       toast.dismiss(loadingToast);
@@ -89,10 +101,21 @@ export const Phase5DashboardES = () => {
          (window as any).confetti();
       }
       
-    } catch (err) {
+    } catch (err: any) {
       console.error("Publish error:", err);
       toast.dismiss(loadingToast);
-      toast.error("Error al publicar el sitio.");
+      const raw = String(err?.message || "");
+      if (raw.includes("another_owner") || raw.includes("site_slug_unavailable")) {
+        toast.error("Esta dirección ya pertenece a otra cuenta. Elige otro subdominio.");
+      } else if (raw.includes("another_project") || raw.includes("site_slug_belongs_to_another_project")) {
+        toast.error("Esta dirección ya está vinculada a otro proyecto tuyo. Elige otro subdominio.");
+      } else if (/network|fetch/i.test(raw)) {
+        toast.error("Sin conexión con internet. Revisa tu red e inténtalo de nuevo.");
+      } else if (raw.includes("site_publish_schema_sync_pending")) {
+        toast.error("La publicación se está actualizando. Espera unos segundos e inténtalo de nuevo; tu sitio anterior sigue activo.");
+      } else {
+        toast.error("No fue posible publicar el sitio ahora. Inténtalo de nuevo en unos instantes.");
+      }
     } finally {
       setIsPublishing(false);
     }
@@ -104,7 +127,9 @@ export const Phase5DashboardES = () => {
     const checkStatus = async () => {
       if (!user?.id) return;
       try {
-        const siteUrl = `${window.location.origin}/view/${state.projectId || user.id}`;
+        const slug = resolveFabricaSiteSlug(state.siteContent?.canvaViagemUrl, state.agencyName || "");
+        if (!slug) return;
+        const siteUrl = getCanvaSiteUrl(slug);
         const res = await fetch(siteUrl, { method: 'HEAD', cache: 'no-cache' });
         setSiteExists(res.ok);
       } catch {
@@ -112,7 +137,7 @@ export const Phase5DashboardES = () => {
       }
     };
     checkStatus();
-  }, [user?.id, isPublishing]);
+  }, [user?.id, isPublishing, state.agencyName, state.siteContent?.canvaViagemUrl]);
 
 
 
@@ -130,6 +155,7 @@ export const Phase5DashboardES = () => {
   }, [showLivePreview, state, user]);
   
   const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0, avgTime: 0 });
+  const [legacyMetricsInfo, setLegacyMetricsInfo] = useState({ count: 0, included: false });
   const [leadsList, setLeadsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -174,6 +200,11 @@ export const Phase5DashboardES = () => {
 
     // 3. Tenta persistir no Supabase em background (RLS bypass fallback)
     try {
+      await (supabase as any)
+        .from("crm_form_submissions")
+        .update({ status: newStatus })
+        .eq("id", leadId);
+
       const { data, error } = await supabase
         .from("analytics_events")
         .select("event_data")
@@ -199,6 +230,8 @@ export const Phase5DashboardES = () => {
     const fetchRealMetrics = async () => {
       // USA O ID DO USUÁRIO (ÚNICO) PARA EVITAR COLISÃO DE DADOS ENTRE AGÊNCIAS DIFERENTES
       const agencyTrackingId = user?.id || state.agencyName || "Agência";
+      const projectTrackingId = resolveFabricaCrmFormId(state.projectId);
+      const projectEventFilter = { agency_id: agencyTrackingId, project_id: projectTrackingId };
       
       try {
         // 1. Contagem REAL de visualizações
@@ -206,72 +239,161 @@ export const Phase5DashboardES = () => {
           .from("analytics_events")
           .select("*", { count: "exact", head: true })
           .eq("event_type", "page_view")
-          .contains("event_data", { agency_id: agencyTrackingId });
+          .contains("event_data", projectEventFilter);
 
         // 2. Contagem REAL de Clics WhatsApp
         const { count: cCount } = await supabase
           .from("analytics_events")
           .select("*", { count: "exact", head: true })
           .eq("event_type", "click_whatsapp")
-          .contains("event_data", { agency_id: agencyTrackingId });
+          .contains("event_data", projectEventFilter);
 
-        // 3. Contagem REAL de Leads Capturados (Agora via analytics_events)
-        const { count: lCount } = await supabase
-          .from("analytics_events")
-          .select("*", { count: "exact", head: true })
-          .eq("event_type", "lead_captured")
-          .contains("event_data", { agency_id: agencyTrackingId });
-
-        // 4. Contagem REAL do tempo no site
+        // 3. Tiempo en el sitio. La telemetría anónima nunca alimenta los leads
+        // ni el total del CRM.
         const { data: timeData } = await supabase
           .from("analytics_events")
           .select("event_data")
           .eq("event_type", "time_on_site")
-          .contains("event_data", { agency_id: agencyTrackingId });
+          .contains("event_data", projectEventFilter);
         
-        let avgTime = 0;
-        if (timeData && timeData.length > 0) {
-            const total = timeData.reduce((acc, curr) => {
-              const payload = curr.event_data;
-              const duration = typeof payload === "object" && payload !== null && !Array.isArray(payload) && "duration" in payload
-                ? Number((payload as { duration?: unknown }).duration) || 0
-                : 0;
-              return acc + duration;
-            }, 0);
-            avgTime = Math.round(total / timeData.length);
+        const currentDurations = (timeData || []).map((curr) => {
+          const payload = curr.event_data;
+          return typeof payload === "object" && payload !== null && !Array.isArray(payload) && "duration" in payload
+            ? Number((payload as { duration?: unknown }).duration) || 0
+            : 0;
+        }).filter((duration) => duration > 0);
+        let avgTime = currentDurations.length
+          ? Math.round(currentDurations.reduce((total, duration) => total + duration, 0) / currentDurations.length)
+          : 0;
+        let legacyVisits = 0;
+        let legacyClicks = 0;
+
+        const [savedProjectsResult, publishedSitesResult, legacyMetricsResult] = await Promise.all([
+          (supabase as any)
+            .from("fabrica_diagnosticos")
+            .select("id")
+            .eq("user_id", agencyTrackingId),
+          supabase
+            .from("public_sites")
+            .select("id, project_id")
+            .eq("owner_id", agencyTrackingId),
+          supabase
+            .from("analytics_events")
+            .select("event_type, event_data")
+            .in("event_type", ["page_view", "click_whatsapp", "time_on_site"])
+            .contains("event_data", { agency_id: agencyTrackingId })
+            .limit(5000),
+        ]);
+
+        const legacyMetricRows = (legacyMetricsResult.data || []).filter((event: any) => {
+          const payload = event.event_data;
+          return payload && typeof payload === "object" && !Array.isArray(payload) && !payload.project_id;
+        });
+        const identifiableProjects = new Set<string>();
+        (savedProjectsResult.data || []).forEach((project: any) => {
+          if (project.id) identifiableProjects.add(`project:${project.id}`);
+        });
+        (publishedSitesResult.data || []).forEach((site: any) => {
+          if (site.project_id) identifiableProjects.add(`project:${site.project_id}`);
+          else if (site.id) identifiableProjects.add(`site:${site.id}`);
+        });
+        const canAttributeLegacyMetrics = !savedProjectsResult.error
+          && !publishedSitesResult.error
+          && identifiableProjects.size <= 1;
+        if (canAttributeLegacyMetrics) {
+          legacyVisits = legacyMetricRows.filter((event: any) => event.event_type === "page_view").length;
+          legacyClicks = legacyMetricRows.filter((event: any) => event.event_type === "click_whatsapp").length;
+          const legacyDurations = legacyMetricRows
+            .filter((event: any) => event.event_type === "time_on_site")
+            .map((event: any) => Number(event.event_data?.duration) || 0)
+            .filter((duration: number) => duration > 0);
+          const allDurations = [...currentDurations, ...legacyDurations];
+          avgTime = allDurations.length
+            ? Math.round(allDurations.reduce((total, duration) => total + duration, 0) / allDurations.length)
+            : 0;
+        }
+        setLegacyMetricsInfo({ count: legacyMetricRows.length, included: canAttributeLegacyMetrics && legacyMetricRows.length > 0 });
+
+        // Los leads reales vienen exclusivamente de los formularios canónicos.
+        let formLeads: any[] = [];
+        let formLeadCount = 0;
+        try {
+          const { count } = await (supabase as any)
+            .from("crm_form_submissions")
+            .select("*", { count: "exact", head: true })
+            .eq("owner_id", agencyTrackingId)
+            .eq("form_id", projectTrackingId);
+          const { data } = await (supabase as any)
+            .from("crm_form_submissions")
+            .select("*")
+            .eq("owner_id", agencyTrackingId)
+            .eq("form_id", projectTrackingId)
+            .order("created_at", { ascending: false })
+            .limit(100);
+          formLeadCount = count || 0;
+          formLeads = data || [];
+        } catch (formError) {
+          console.warn("CRM Forms no disponible:", formError);
         }
 
-        // 5. NOVA COLEÇÃO: BUSCA OS DADOS REAIS DOS ÚLTIMOS 100 LEADS (CRM!)
-        const { data: lData } = await supabase
+        const { data: legacyLeadEvents } = await supabase
           .from("analytics_events")
-          .select("*")
+          .select("id, event_data, created_at")
           .eq("event_type", "lead_captured")
           .contains("event_data", { agency_id: agencyTrackingId })
           .order("created_at", { ascending: false })
           .limit(100);
 
-        // Mapeia os dados do analytics_events para o formato de Lead esperado pela interface
-        const mappedLeads = (lData || []).map((e: any) => ({
-          id: e.id,
-          nome_completo: e.event_data?.name || "Sem Nome",
-          whatsapp: e.event_data?.phone || "",
-          email: e.event_data?.email || "",
-          destino_interesse: e.event_data?.interest || "Navegación General",
-          data_ida: e.event_data?.ida || null,
-          data_volta: e.event_data?.volta || null,
-          numero_viajantes: e.event_data?.viajantes ? parseInt(e.event_data.viajantes) : 1,
-          observacoes: e.event_data?.obs || "",
-          created_at: e.created_at,
-          status: state.leadStatuses?.[e.id] || e.event_data?.status || 'novo'
+        const mappedFormLeads = formLeads.map((lead: any) => ({
+          id: lead.id,
+          nome_completo: lead.normalized_name || lead.payload?.nome || lead.payload?.name || "Sin nombre",
+          whatsapp: lead.normalized_phone || lead.payload?.wpp || lead.payload?.whatsapp || "",
+          email: lead.normalized_email || lead.payload?.email || "",
+          destino_interesse: lead.normalized_interest || lead.payload?.destino || "Formulario del sitio",
+          data_ida: lead.payload?.ida || lead.payload?.data_ida || null,
+          data_volta: lead.payload?.volta || lead.payload?.data_volta || null,
+          numero_viajantes: lead.payload?.viaj ? parseInt(lead.payload.viaj) : 1,
+          observacoes: lead.payload?.obs || lead.payload?.observacoes || "",
+          created_at: lead.created_at,
+          status: state.leadStatuses?.[lead.id] || lead.status || "novo",
         }));
 
+        const mappedLegacyLeads = (legacyLeadEvents || [])
+          .filter((event: any) => {
+            const payload = event.event_data;
+            if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
+            if (payload.submission_id) return false;
+            return !payload.project_id || payload.project_id === projectTrackingId;
+          })
+          .map((event: any) => {
+            const payload = event.event_data || {};
+            return {
+              id: event.id,
+              nome_completo: payload.name || "Sin nombre",
+              whatsapp: payload.phone || "",
+              email: payload.email || "",
+              destino_interesse: payload.interest || "Navegación General",
+              data_ida: payload.ida || null,
+              data_volta: payload.volta || null,
+              numero_viajantes: payload.viajantes ? parseInt(payload.viajantes) : 1,
+              observacoes: payload.obs || "",
+              created_at: event.created_at,
+              status: state.leadStatuses?.[event.id] || payload.status || "novo",
+              legacy_unverified: true,
+              legacy_unassigned: !payload.project_id,
+            };
+          });
+        const allLeads = [...mappedFormLeads, ...mappedLegacyLeads]
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 100);
+
         setStats({
-          visits: vCount || 0,
-          clicks: cCount || 0,
-          leads: lCount || 0,
+          visits: (vCount || 0) + legacyVisits,
+          clicks: (cCount || 0) + legacyClicks,
+          leads: formLeadCount,
           avgTime
         });
-        setLeadsList(mappedLeads);
+        setLeadsList(allLeads);
       } catch (e) {
         console.warn("Fallo al cargar métricas reales:", e);
       } finally {
@@ -280,7 +402,7 @@ export const Phase5DashboardES = () => {
     };
 
     fetchRealMetrics();
-  }, [state.agencyName]);
+  }, [state.projectId, user?.id]);
 
   const currentDay = format(new Date(), "EEEE, d 'de' MMMM", { locale: es });
   const formatString = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -339,6 +461,7 @@ export const Phase5DashboardES = () => {
     }
     return true;
   });
+  const unverifiedLegacyLeadCount = leadsList.filter((lead) => lead.legacy_unverified).length;
 
   const getFaseColor = (status: string) => {
     switch (status) {
@@ -484,6 +607,15 @@ export const Phase5DashboardES = () => {
         </div>
       </div>
 
+      {legacyMetricsInfo.count > 0 && (
+        <div className="rounded-2xl border border-sky-400/15 bg-sky-400/[0.06] px-4 py-3 text-[11px] leading-5 text-sky-100/75">
+          {legacyMetricsInfo.included
+            ? `Las métricas incluyen ${legacyMetricsInfo.count} evento(s) histórico(s) de la cuenta porque solo hay un proyecto o sitio identificable.`
+            : `Hay ${legacyMetricsInfo.count} evento(s) histórico(s) sin proyecto definido. No se sumaron a este proyecto para evitar mezclar agencias.`}{" "}
+          Republica los sitios antiguos para activar métricas aisladas por proyecto.
+        </div>
+      )}
+
        {/* 🆕 CENTRO DE LEADS / CRM */}
       <div className="bg-white/[0.03] border border-white/10 rounded-3xl overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-6 duration-700 mt-6">
          <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-br from-violet-500/5 to-transparent">
@@ -556,6 +688,13 @@ export const Phase5DashboardES = () => {
             </div>
          </div>
 
+         {unverifiedLegacyLeadCount > 0 && (
+           <div className="border-y border-amber-400/15 bg-amber-400/[0.06] px-6 py-3 text-[11px] leading-5 text-amber-100/80">
+             <strong className="text-amber-300">{unverifiedLegacyLeadCount} registro(s) histórico(s) no verificado(s).</strong>{" "}
+             Provienen del rastreo antiguo o de contingencia, no cuentan en el total oficial del CRM y pueden no pertenecer a este proyecto. Republica el sitio para usar la captura canónica.
+           </div>
+         )}
+
          <div className="overflow-x-auto">
             {filteredLeads.length === 0 ? (
                  <div className="py-16 px-6 text-center flex flex-col items-center justify-center space-y-4">
@@ -600,6 +739,7 @@ export const Phase5DashboardES = () => {
                                     <div>
                                        <div className="font-bold text-white/90 group-hover:text-violet-300 transition-colors tracking-wide">{l.nome_completo || "No informado"}</div>
                                        <div className="text-[10px] text-white/40 tracking-wide mt-0.5">{l.email || "Sin e-mail"}</div>
+                                       {l.legacy_unverified && <div className="mt-1 text-[9px] font-bold uppercase tracking-wide text-amber-300">Histórico no verificado</div>}
                                     </div>
                                  </div>
                               </td>
@@ -696,6 +836,12 @@ export const Phase5DashboardES = () => {
                         </div>
                      </div>
                   </div>
+
+                  {selectedLead.legacy_unverified && (
+                    <div className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.08] p-4 text-xs leading-5 text-amber-100/80">
+                      Registro histórico no verificado. No cuenta en el total oficial del CRM y puede no estar atribuido a este proyecto.
+                    </div>
+                  )}
 
                   {/* Fase directamente en el modal */}
                   <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">

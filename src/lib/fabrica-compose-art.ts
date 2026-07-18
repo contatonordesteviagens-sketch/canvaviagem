@@ -4525,7 +4525,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "#ffffff";
 
-    const promo = (promoName || "EXPERIÃŠNCIA EXCLUSIVA").toUpperCase();
+    const promo = (promoName || "EXPERIÊNCIA EXCLUSIVA").toUpperCase();
     ctx.font = `800 ${isStory ? 44 : 36}px ${serif}`;
     const topAnchorY = isStory ? safeTop + 20 : 150;
     ctx.fillText(promo.split("").join("\u2009"), cx, topAnchorY);

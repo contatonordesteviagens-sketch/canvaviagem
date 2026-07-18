@@ -1,4 +1,8 @@
 import type { FabricaState } from "@/hooks/useFabricaContext";
+import { normalizeSiteTemplateId } from "@/lib/site-template-catalog";
+import { getSiteTemplateCss } from "@/lib/site-template-css";
+import { resolveFabricaCrmFormId } from "@/lib/fabrica-crm-publication";
+import { createUniquePackageSlug, suggestPackageSegment } from "@/lib/package-details";
 
 const SB_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SB_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
@@ -9,6 +13,14 @@ const esc = (s: string) =>
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+
+const scriptJson = (value: unknown) =>
+  JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
 
 // Imagens premium padrão por destino (fallback quando o usuário não enviou foto)
 const DEFAULT_DEST_IMG = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80";
@@ -29,15 +41,47 @@ const sanitizeImageUrl = (value: unknown, fallback = DEFAULT_DEST_IMG) => {
 
 // Helpers de cor — gera tons mais escuros/claros pra header e gradientes
 function hexToRgb(hex: string) {
+  const rgbMatch = hex.trim().match(/^rgba?\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)/i);
+  if (rgbMatch) {
+    return {
+      r: Math.max(0, Math.min(255, Number(rgbMatch[1]))),
+      g: Math.max(0, Math.min(255, Number(rgbMatch[2]))),
+      b: Math.max(0, Math.min(255, Number(rgbMatch[3]))),
+    };
+  }
   const h = hex.replace("#", "");
   const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
   const num = parseInt(v, 16);
   return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
 }
+function relativeLuminance({ r, g, b }: { r: number; g: number; b: number }) {
+  const linearize = (value: number) => {
+    const channel = value / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
+}
+function contrastRatio(first: number, second: number) {
+  const lighter = Math.max(first, second);
+  const darker = Math.min(first, second);
+  return (lighter + 0.05) / (darker + 0.05);
+}
 function darken(hex: string, amount = 0.7) {
   const { r, g, b } = hexToRgb(hex);
-  const f = 1 - amount;
-  return `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
+  let factor = 1 - amount;
+  let candidate = { r: Math.round(r * factor), g: Math.round(g * factor), b: Math.round(b * factor) };
+  while (contrastRatio(relativeLuminance(candidate), 1) < 4.5 && factor > 0.05) {
+    factor = Math.max(0.05, factor - 0.05);
+    candidate = { r: Math.round(r * factor), g: Math.round(g * factor), b: Math.round(b * factor) };
+  }
+  return `rgb(${candidate.r}, ${candidate.g}, ${candidate.b})`;
+}
+function contrastText(hex: string) {
+  const backgroundLuminance = relativeLuminance(hexToRgb(hex));
+  const dark = "#111827";
+  const darkRatio = contrastRatio(backgroundLuminance, relativeLuminance(hexToRgb(dark)));
+  const lightRatio = contrastRatio(backgroundLuminance, 1);
+  return darkRatio >= lightRatio ? dark : "#ffffff";
 }
 
 // Helper para estruturar o preço visualmente (como E-commerce)
@@ -65,15 +109,31 @@ function parsePriceHTML(priceStr: string): string {
 }
 
 export function buildLandingHTML(state: FabricaState, trackingId?: string): string {
+  const projectId = resolveFabricaCrmFormId(state.projectId);
+  const formId = projectId;
   const color = state.primaryColor || "#0F2742";
+  const secondaryColor = state.secondaryColor || "#D4A853";
+  const backgroundColor = state.backgroundColor || "#F4F6F9";
   const colorDark = darken(color, 0.45);
+  const colorContrast = contrastText(color);
+  const secondaryContrast = contrastText(secondaryColor);
+  const backgroundContrast = contrastText(backgroundColor);
+  const darkContrast = contrastText(colorDark);
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
   // Usa o DDI salvo no estado (padrão Brasil +55)
   const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
   const wpp = rawWpp ? (rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`) : "";
   const sc = state.siteContent;
+  const sectionBackgroundAttr = (key: string) => {
+    const value = sc.sectionColors?.[key];
+    const safeValue = value && /^#[0-9a-f]{6}$/i.test(value) ? value : "";
+    return `data-site-section="${key}"${safeValue ? ` style="--section-bg:${safeValue};--section-contrast:${contrastText(safeValue)}"` : ""}`;
+  };
+  const templateId = normalizeSiteTemplateId(sc.templateId);
+  const templateVariantCss = getSiteTemplateCss(templateId);
   const agencia = state.agencyName || "Agencia de Viajes";
   const cidade = state.city || "Brasil";
+  const agencyEmail = state.agencyEmail || `contacto@${(agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, "")}.com`;
   const socialIcons = renderSocialIcons(state);
   const footerSocialIcons = renderSocialIcons(state, "footer-socials");
   const logoUrl = sanitizeImageUrl(state.logoBase64, "");
@@ -770,9 +830,91 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     : [
         { id: "1", title: "Itinerario a Medida", description: "Armamos tu itinerario ideal con alojamiento, transporte y tours.", price: "A consultar", imageUrl: "", ctaLabel: "Quiero este" },
       ];
+  const visiblePackageCount = pacotes.reduce(
+    (count, _package, index) => count + (sc.hiddenElements?.includes(`dest-card-${index}`) ? 0 : 1),
+    0,
+  );
+  const sectionOrder = state.sectionOrder?.length
+    ? state.sectionOrder
+    : ["hero", "processo", "destinos", "porQue", "depoimentos", "orcamento", "faq"];
 
   const wppMsg = (titulo: string) =>
     wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`¡Hola! Tengo interés en ${titulo}.`)}` : "#";
+
+  const segmentLabels: Record<string, string> = {
+    passeio: "Excursión / receptivo",
+    pacote: "Paquete / emisivo",
+    "sob-medida": "Viaje a medida",
+    grupo: "Grupo / excursión",
+    cruzeiro: "Crucero",
+    aventura: "Aventura / ecoturismo",
+    religioso: "Turismo religioso",
+    corporativo: "Corporativo / evento",
+    outro: "Experiencia",
+  };
+  const availabilityLabels: Record<string, string> = {
+    disponivel: "Disponible",
+    "ultimas-vagas": "Últimos lugares",
+    "saida-confirmada": "Salida confirmada",
+    "sob-consulta": "A consultar",
+    "lista-de-espera": "Lista de espera",
+    esgotado: "Agotado",
+  };
+  const usedPackageSlugs = new Set<string>();
+  const packageDetailsJson = scriptJson(
+    pacotes.map((p, index) => {
+      const segment = p.segment || suggestPackageSegment(state.agencyType);
+      const slug = createUniquePackageSlug(
+        p.slug || p.title || "paquete",
+        usedPackageSlugs,
+        String(p.id || index + 1),
+      );
+      usedPackageSlugs.add(slug);
+      const packageFaq = (p.faq || [])
+        .filter((item) => item.question?.trim() && item.answer?.trim())
+        .map((item) => ({ question: item.question.trim(), answer: item.answer.trim() }));
+      const globalFaq = (sc.faq || []).slice(0, 4).map((item) => ({ question: item.q, answer: item.a }));
+      const galleryImages = Array.from(new Set(
+        [p.imageUrl, ...(p.galleryImages || [])]
+          .map((url) => sanitizeImageUrl(url, ""))
+          .filter(Boolean),
+      )).slice(0, 5);
+
+      return {
+        id: String(p.id || index + 1),
+        slug,
+        title: p.title || "Paquete de viaje",
+        subtitle: p.subtitle || "",
+        description: p.longDescription || p.description || "Habla con la agencia para conocer todos los detalles de esta experiencia.",
+        price: p.price || "A consultar",
+        priceDetails: p.priceDetails || "",
+        paymentTerms: p.paymentTerms || "",
+        imageUrl: sanitizeImageUrl(p.imageUrl),
+        galleryImages,
+        category: segmentLabels[segment] || "Experiencia",
+        availability: availabilityLabels[p.availability || ""] || "",
+        travelDates: p.travelDates || "",
+        duration: p.duration || "",
+        departureLocation: p.departureLocation || "",
+        meetingPoint: p.meetingPoint || "",
+        accommodation: p.accommodation || "",
+        highlights: p.highlights || [],
+        included: p.included || [],
+        notIncluded: p.notIncluded || [],
+        itinerary: p.itinerary || [],
+        requirements: p.requirements || [],
+        documents: p.documents || [],
+        accessibility: p.accessibility || [],
+        cancellationPolicy: p.cancellationPolicy || "",
+        importantNotes: p.importantNotes || "",
+        agencyName: agencia,
+        agencyEmail,
+        agencyPhone: state.whatsapp || "—",
+        agencyLocation: state.address?.trim() || cidade,
+        faq: packageFaq.length ? packageFaq : globalFaq,
+      };
+    }),
+  );
 
   // Stats default (a agência pode editar depois). Usamos números crescentes para autoridade.
   const stats = [
@@ -797,6 +939,28 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     sc.aboutImageUrl,
     "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80",
   );
+
+  const quoteFormHtml = `<form class="orc-form" onsubmit="handleMainFormSubmit(event)">
+        <div class="form-row">
+          <div class="field"><label for="quote-name">Nombre completo</label><input id="quote-name" name="nome" autocomplete="name" required placeholder="Ej: Maria Silva"></div>
+          <div class="field"><label for="quote-phone">WhatsApp</label><input id="quote-phone" type="tel" name="wpp" autocomplete="tel" required placeholder="(00) 00000-0000"></div>
+        </div>
+        <div class="form-row single">
+          <div class="field"><label for="quote-email">E-mail</label><input id="quote-email" type="email" name="email" autocomplete="email" required placeholder="tu@email.com"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label for="quote-destination">Destino de interés</label><select id="quote-destination" name="destino"><option value="">Seleccionar…</option>${pacotes.map((p) => `<option>${esc(p.title)}</option>`).join("")}<option>Otro / a medida</option></select></div>
+          <div class="field"><label for="quote-travelers">Nº de viajeros</label><input id="quote-travelers" type="number" name="viaj" min="1" value="2"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label for="quote-departure">Fecha de ida</label><input id="quote-departure" type="date" name="ida"></div>
+          <div class="field"><label for="quote-return">Fecha de regreso</label><input id="quote-return" type="date" name="volta"></div>
+        </div>
+        <div class="form-row single">
+          <div class="field"><label for="quote-notes">Observaciones (opcional)</label><textarea id="quote-notes" name="obs" placeholder="Preferencias, ocasión especial, presupuesto…"></textarea></div>
+        </div>
+        <button type="submit" class="btn form-submit">💬 Enviar por WhatsApp</button>
+      </form>`;
   
   const cleanPixelId = state.metaPixelId ? state.metaPixelId.replace(/\D/g, '') : '';
   const pixelCode = cleanPixelId ? `
@@ -841,16 +1005,25 @@ ${ga4Code}
 <meta name="description" content="${esc(subheadline)}">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
+${templateVariantCss}
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--brand:${color};--brand-dark:${colorDark};--ink:#0a0a0b;--muted:#5a6470;--soft:${state.backgroundColor || "#f4f6f9"}}
-html{scroll-behavior:smooth}
-body{font-family:'Inter',sans-serif;color:var(--ink);background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}
+:root{--brand:${color};--brand-dark:${colorDark};--brand-secondary:${secondaryColor};--brand-bg:${backgroundColor};--brand-contrast:${colorContrast};--secondary-contrast:${secondaryContrast};--background-contrast:${backgroundContrast};--brand-dark-contrast:${darkContrast};--brand-ink:${backgroundContrast};--ink:#0a0a0b;--muted:#5a6470;--soft:${backgroundColor}}
+html{scroll-behavior:smooth;overflow-x:clip}
+body{font-family:'Inter',sans-serif;color:var(--ink);background:var(--brand-bg);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+[data-site-section][style*="--section-bg"]{background:var(--section-bg)!important;color:var(--section-contrast)!important}
+[data-site-section][style*="--section-bg"]>.container>:is(.section-title,.section-eyebrow,.eyebrow,h1,h2,h3,p){color:var(--section-contrast)!important}
+.site-header[style*="--section-bg"] :is(.brand-name,.nav-links a:not(.nav-cta)){color:var(--section-contrast)!important}
+.site-header[style*="--section-bg"] .nav-toggle span{background:var(--section-contrast)!important}
+.hero[style*="--section-bg"] :is(.hero-content,.hero-content h1,.hero-content .lead,.hero-content .eyebrow,.stat-num,.stat-label){color:var(--section-contrast)!important}
+#por-que[style*="--section-bg"] :is(.equipe-left>h2,.equipe-left>.eyebrow,.equipe-left>.intro,.feat h4,.feat p){color:var(--section-contrast)!important}
+#orcamento[style*="--section-bg"] :is(.orc-info>h2,.orc-info>p,.orc-info>.eyebrow){color:var(--section-contrast)!important}
+footer[style*="--section-bg"] :is(.foot-brand,.foot-grid>div>p,h4,li,li>a:not(.social-icon),.foot-bottom){color:var(--section-contrast)!important}
 h1,h2,h3,h4{font-family:'Playfair Display',serif;letter-spacing:-0.02em;line-height:1.15;color:var(--ink)}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
 .container{max-width:1180px;margin:0 auto;padding:0 24px}
-.btn{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;transition:all .25s;border:none;cursor:pointer;font-family:'Inter',sans-serif}
-.btn:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:var(--brand-contrast);padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;transition:all .25s;border:none;cursor:pointer;font-family:'Inter',sans-serif}
+.btn:hover{background:var(--brand-dark);color:var(--brand-dark-contrast);transform:translateY(-1px);box-shadow:0 12px 30px rgba(0,0,0,.18)}
 .btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4)}
 .btn-outline:hover{background:#fff;color:var(--ink);border-color:#fff}
 .btn-dark{background:var(--ink);color:#fff}
@@ -862,13 +1035,13 @@ img{max-width:100%;display:block}
 .nav-wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:16px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;flex-shrink:0}
 .brand-logo{height:48px;width:auto;max-width:180px;object-fit:contain;border-radius:6px}
-.brand-dot{width:36px;height:36px;border-radius:8px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px}
+.brand-dot{width:36px;height:36px;border-radius:8px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:var(--brand-contrast);font-weight:800;font-size:16px}
 .brand-name{font-weight:700;font-size:16px}
 .nav-links{display:flex;gap:24px;align-items:center}
 .nav-links a{font-size:14px;color:var(--muted);font-weight:500;transition:color .2s}
 .nav-links a:hover{color:var(--ink)}
-.nav-cta{padding:10px 18px;background:var(--brand);color:#fff !important;border-radius:8px;font-weight:600}
-.nav-cta:hover{background:var(--brand-dark);color:#fff !important}
+.nav-cta{padding:10px 18px;background:var(--brand);color:var(--brand-contrast) !important;border-radius:8px;font-weight:600}
+.nav-cta:hover{background:var(--brand-dark);color:var(--brand-dark-contrast) !important}
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;width:40px;height:40px;flex-direction:column;justify-content:center;align-items:center;gap:5px;padding:0}
 .nav-toggle span{display:block;width:22px;height:2px;background:var(--ink);border-radius:2px;transition:all .2s}
 @media(max-width:840px){
@@ -922,7 +1095,7 @@ section{padding:80px 0}
 .proc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
 .proc-card{background:#fff;padding:36px 28px;border-radius:16px;border:1px solid rgba(0,0,0,.05);transition:all .3s;position:relative}
 .proc-card:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,.08);border-color:var(--brand)}
-.proc-num{width:52px;height:52px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:20px}
+.proc-num{width:52px;height:52px;border-radius:50%;background:var(--brand);color:var(--brand-contrast);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:20px}
 .proc-card h3{font-size:22px;margin-bottom:12px}
 .proc-card p{color:var(--muted);font-size:15px;line-height:1.7}
 @media(max-width:840px){.proc-grid{grid-template-columns:1fr;gap:16px}.proc-card{padding:28px 22px}}
@@ -957,7 +1130,7 @@ section{padding:80px 0}
 .equipe{background:var(--ink);color:#fff}
 .equipe h2,.equipe h3{color:#fff}
 .equipe-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
-.equipe-left .badge-counter{display:inline-block;background:var(--brand);color:#fff;padding:8px 18px;border-radius:50px;font-weight:700;font-size:14px;margin-bottom:24px}
+.equipe-left .badge-counter{display:inline-block;background:var(--brand);color:var(--brand-contrast);padding:8px 18px;border-radius:50px;font-weight:700;font-size:14px;margin-bottom:24px}
 .equipe-left h2{font-size:clamp(28px,3.8vw,44px);margin-bottom:24px;color:#fff}
 .equipe-left p.intro{font-size:16px;opacity:.75;line-height:1.8;margin-bottom:32px}
 .equipe-features{display:grid;gap:20px;margin-bottom:36px}
@@ -987,7 +1160,7 @@ section{padding:80px 0}
 .orc-info > p{color:var(--muted);font-size:15px;margin-bottom:32px;line-height:1.7}
 .contact-list{display:grid;gap:20px}
 .contact-item{display:flex;gap:14px;align-items:flex-start;padding:18px;background:var(--soft);border-radius:12px}
-.contact-icon{width:40px;height:40px;border-radius:10px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.contact-icon{width:40px;height:40px;border-radius:10px;background:var(--brand);color:var(--brand-contrast);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .contact-item strong{display:block;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:600}
 .contact-item span{font-size:15px;color:var(--ink);font-weight:500}
 .orc-form{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.04)}
@@ -1037,17 +1210,88 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
 .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%}
 .modal-close:hover{background:var(--soft);color:var(--ink)}
 .modal-header{text-align:center;margin-bottom:24px}
-.modal-icon{width:64px;height:64px;background:var(--brand);color:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;box-shadow:0 12px 24px rgba(0,0,0,.1)}
+.modal-icon{width:64px;height:64px;background:var(--brand);color:var(--brand-contrast);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;box-shadow:0 12px 24px rgba(0,0,0,.1)}
+body.lead-modal-open{overflow:hidden}
 .modal-header h3{font-size:24px;margin-bottom:8px;font-family:'Playfair Display',serif}
 .modal-header p{font-size:14px;color:var(--muted)}
 .modal-form{display:grid;gap:16px}
 .modal-form .field label{margin-bottom:6px}
 .modal-form input{border-color:rgba(0,0,0,.12)}
 .modal-submit{width:100%;justify-content:center;gap:10px;margin-top:8px}
+.package-reservation-only .orc-grid{grid-template-columns:minmax(0,720px);justify-content:center}
+
+/* DETALLES DEL PAQUETE */
+body.package-modal-open{overflow:hidden}
+#package-modal{position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(12,17,14,.78);backdrop-filter:blur(10px)}
+#package-modal.active{display:flex}
+.package-sheet{position:relative;display:grid;grid-template-columns:minmax(300px,.9fr) minmax(360px,1.1fr);grid-template-rows:minmax(0,1fr);width:min(1120px,100%);height:min(780px,calc(100vh - 48px));max-height:calc(100vh - 48px);overflow:hidden;border-radius:28px;background:#fbfcfa;color:var(--ink);box-shadow:0 32px 90px rgba(10,18,13,.36)}
+.package-not-found{grid-column:1/-1;display:grid;place-content:center;justify-items:center;min-height:100%;padding:clamp(44px,8vw,96px);text-align:center;background:linear-gradient(145deg,#fbfcfa,var(--soft))}
+.package-not-found[hidden]{display:none}
+.package-not-found-mark{display:grid;place-items:center;width:64px;height:64px;margin-bottom:22px;border-radius:20px;background:var(--brand);color:var(--brand-contrast);font-size:28px;font-weight:900}
+.package-not-found h2{max-width:620px;margin:0 0 12px;font-size:clamp(30px,5vw,52px);line-height:1.05}
+.package-not-found p{max-width:560px;margin:0 0 26px;color:var(--muted);font-size:16px;line-height:1.65}
+.package-media{position:relative;min-height:0;height:100%;background:var(--soft);overflow:hidden}
+.package-media::after{content:"";position:absolute;inset:50% 0 0;background:linear-gradient(180deg,transparent,rgba(10,16,12,.64))}
+.package-media img{width:100%;height:100%;object-fit:cover}
+.package-category{position:absolute;top:24px;left:24px;z-index:1;max-width:calc(100% - 48px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:999px;background:var(--brand-secondary);color:var(--secondary-contrast);padding:9px 15px;font-size:11px;font-weight:800;line-height:1;text-transform:uppercase;letter-spacing:.12em}
+.package-agency-on-image{position:absolute;z-index:1;left:28px;right:28px;bottom:28px;color:#f8faf7}
+.package-agency-on-image strong{display:block;font-size:17px;margin-bottom:4px}
+.package-agency-on-image span{font-size:13px;color:rgba(248,250,247,.78)}
+.package-content{min-height:0;overflow-y:auto;padding:clamp(34px,5vw,58px)}
+.package-close{position:absolute;z-index:4;top:18px;right:18px;width:44px;height:44px;border:1px solid rgba(23,27,24,.12);border-radius:50%;background:#f7f9f6;color:#202620;font-size:25px;line-height:1;cursor:pointer;box-shadow:0 8px 22px rgba(12,17,14,.12)}
+.package-close:hover,.package-close:focus-visible{background:var(--brand);color:var(--brand-contrast);outline:3px solid color-mix(in srgb,var(--brand) 26%,transparent)}
+.package-location{color:var(--brand);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px}
+.package-location:empty{display:none}
+.package-content h2{font-size:clamp(30px,4vw,48px);line-height:1.05;margin:0 48px 18px 0}
+.package-subtitle{font-size:17px;font-weight:700;line-height:1.5;margin:-7px 0 14px;color:var(--ink)}
+.package-subtitle:empty{display:none}
+.package-description{color:var(--muted);font-size:16px;line-height:1.75;margin-bottom:24px}
+.package-gallery{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:-8px 0 24px}
+.package-gallery button{min-width:44px;min-height:44px;aspect-ratio:1;border:2px solid transparent;border-radius:10px;overflow:hidden;padding:0;background:var(--soft);cursor:pointer}
+.package-gallery button.active{border-color:var(--brand)}
+.package-gallery img{width:100%;height:100%;object-fit:cover}
+.package-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:20px 0 24px}
+.package-fact{min-width:0;border:1px solid rgba(23,27,24,.1);border-radius:13px;background:var(--soft);padding:13px 14px}
+.package-fact span{display:block;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+.package-fact strong{display:block;font-family:'Inter',sans-serif;font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+.package-price-row{display:flex;align-items:baseline;justify-content:space-between;gap:20px;padding:20px 0;border-top:1px solid rgba(23,27,24,.12);border-bottom:1px solid rgba(23,27,24,.12)}
+.package-price-row span{color:var(--muted);font-size:13px}
+.package-price-row strong{font-size:22px;color:var(--ink);text-align:right}
+.package-contact{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:24px 0;border-bottom:1px solid rgba(23,27,24,.12)}
+.package-contact h3,.package-faq h3,.package-detail-section h3{font-family:'Inter',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.package-contact p{color:var(--muted);font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+.package-detail-section{padding:22px 0;border-bottom:1px solid rgba(23,27,24,.1)}
+.package-detail-section p{color:var(--muted);font-size:14px;line-height:1.7;white-space:pre-line}
+.package-detail-list{display:grid;gap:9px;list-style:none;margin:0;padding:0}
+.package-detail-list li{position:relative;padding-left:22px;color:var(--muted);font-size:14px;line-height:1.55}
+.package-detail-list li::before{content:"✓";position:absolute;left:0;top:0;color:var(--brand);font-weight:900}
+.package-detail-section[data-list-style="minus"] .package-detail-list li::before{content:"–";color:#a33}
+.package-detail-section[data-list-style="number"]{counter-reset:package-step}
+.package-detail-section[data-list-style="number"] .package-detail-list li{counter-increment:package-step;padding-left:32px}
+.package-detail-section[data-list-style="number"] .package-detail-list li::before{content:counter(package-step);display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--brand);color:var(--brand-contrast);font-size:11px;line-height:1}
+.package-faq{padding:24px 0 8px}
+.package-faq details{border-bottom:1px solid rgba(23,27,24,.1);padding:12px 0}
+.package-faq summary{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;font-size:14px;font-weight:700;list-style:none}
+.package-faq summary::-webkit-details-marker{display:none}
+.package-faq summary::after{content:"+";font-size:20px;color:var(--brand)}
+.package-faq details[open] summary::after{content:"−"}
+.package-faq details p{padding:10px 30px 0 0;color:var(--muted);font-size:14px;line-height:1.6}
+.package-reserve{width:100%;justify-content:center;margin-top:24px}
+.package-note{text-align:center;color:var(--muted);font-size:12px;margin-top:10px}
+@media(max-width:800px){
+  #package-modal{padding:0;align-items:stretch}
+  .package-sheet{display:block;width:100%;height:100dvh;max-height:100dvh;border-radius:0;overflow-y:auto}
+  .package-media{min-height:34vh;height:34vh}
+  .package-content{overflow:visible;padding:30px 18px calc(36px + env(safe-area-inset-bottom))}
+  .package-close{position:fixed;top:max(12px,env(safe-area-inset-top));right:14px}
+  .package-contact{grid-template-columns:1fr}
+  .package-facts{grid-template-columns:1fr}
+  .package-gallery{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
 ${seasonalStyles}
 </style>
 </head>
-<body>
+<body class="template-${templateId}" data-site-template="${templateId}">
 <!--
   [SISTEMA: DIRETRIZ DE INTEGRIDADE CRÍTICA - LOVABLE AI]
   PROIBIDO ALTERAR IMAGENS OU RECONSTRUIR O DESIGN.
@@ -1060,17 +1304,17 @@ ${seasonalStyles}
 -->
 
 <!-- HEADER -->
-<header class="site-header">
+<header class="site-header" ${sectionBackgroundAttr("header")}>
   <div class="container nav-wrap">
     <a href="#" class="brand">
       ${logoUrl
-        ? `<img src="${esc(logoUrl)}" alt="${esc(agencia)}" class="brand-logo" data-ai-ignore="true" data-preserve-image="true">`
+        ? `<img src="${esc(logoUrl)}" alt="${esc(agencia)}" class="brand-logo" data-ai-ignore="true" data-preserve-image="true"><span class="brand-name">${esc(agencia)}</span>`
         : `<span class="brand-dot">${esc(agencia.charAt(0).toUpperCase())}</span><span class="brand-name">${esc(agencia)}</span>`}
     </a>
-    <button class="nav-toggle" aria-label="Abrir menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+    <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="site-nav-links" onclick="toggleMobileMenu(this)">
       <span></span><span></span><span></span>
     </button>
-    <nav class="nav-links">
+    <nav id="site-nav-links" class="nav-links">
       <a href="#inicio">Inicio</a>
       <a href="#destinos">Destinos</a>
       <a href="#por-que">Por Qué Nosotros</a>
@@ -1080,12 +1324,12 @@ ${seasonalStyles}
   </div>
 </header>
 
-${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos", "orcamento", "faq"])
+${sectionOrder
   .map((secKey) => {
     if (secKey === "hero") {
       return sc.sections?.hero === false ? "" : `
 <!-- HERO -->
-<section id="inicio" class="hero" data-visual-removable="hero-section">
+<section id="inicio" class="hero" data-visual-removable="hero-section" ${sectionBackgroundAttr("hero")}>
   <div class="container">
     ${!sc.hiddenElements?.includes('hero-content') ? `
     <div class="hero-grid" data-visual-removable="hero-content">
@@ -1111,7 +1355,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     if (secKey === "processo") {
       return sc.sections?.processo === false ? "" : `
 <!-- PROCESSO -->
-<section class="processo" id="processo" data-visual-removable="processo-section">
+<section class="processo" id="processo" data-visual-removable="processo-section" ${sectionBackgroundAttr("processo")}>
   <div class="container">
     ${!sc.hiddenElements?.includes('processo-eyebrow') ? `<div class="section-eyebrow eyebrow" data-visual-removable="processo-eyebrow">Proceso</div>` : ''}
     ${!sc.hiddenElements?.includes('processo-title') ? `<h2 class="section-title" data-visual-removable="processo-title">Tu viaje de ensueño en 3 pasos</h2>` : ''}
@@ -1126,14 +1370,14 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     if (secKey === "destinos") {
       return sc.sections?.destinos === false ? "" : `
 <!-- DESTINOS -->
-<section id="destinos">
+<section id="destinos" ${sectionBackgroundAttr("destinos")}>
   <div class="container">
     <div class="section-eyebrow eyebrow">Destinos</div>
     <h2 class="section-title">${esc(sc.pacotesTitle || "Experiencias que quedan en la memoria")}</h2>
-    <div class="destinos-grid">
+    <div class="destinos-grid" data-package-count="${visiblePackageCount}">
       ${pacotes
         .map(
-          (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<a href="#" onclick="openLeadForm('${esc(p.title)}', '${wppMsg(p.title)}');return false;" class="dest-card" data-visual-removable="dest-card-${i}">
+          (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<a href="#paquete-${esc(String(p.id || i + 1))}" onclick="openPackageDetails(${i}, this);return false;" class="dest-card" data-package-index="${i}" data-package-id="${esc(String(p.id || i + 1))}" data-visual-removable="dest-card-${i}" aria-haspopup="dialog" aria-label="Ver detalles de ${esc(p.title)}">
         <div class="dest-img-wrap">
           <img src="${esc(sanitizeImageUrl(p.imageUrl))}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
@@ -1156,7 +1400,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     if (secKey === "porQue") {
       return sc.sections?.porQue === false ? "" : `
 <!-- POR QUE NÓS / EQUIPE -->
-<section id="por-que" class="equipe">
+<section id="por-que" class="equipe" ${sectionBackgroundAttr("porQue")}>
   <div class="container">
     <div class="equipe-grid" data-visual-removable="por-que-grid">
       <div class="equipe-left">
@@ -1181,7 +1425,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
       return sc.sections?.depoimentos !== false && state.depoimentos.length > 0
         ? `
 <!-- DEPOIMENTOS -->
-<section class="depo-bg">
+<section class="depo-bg" ${sectionBackgroundAttr("depoimentos")}>
   <div class="container">
     <div class="section-eyebrow eyebrow">Testimonios</div>
     <h2 class="section-title">${esc(sc.depoimentosTitle || "Lo que dicen nuestros viajeros")}</h2>
@@ -1207,7 +1451,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     if (secKey === "orcamento") {
       return sc.sections?.orcamento === false ? "" : `
 <!-- ORÇAMENTO -->
-<section id="orcamento">
+<section id="orcamento" ${sectionBackgroundAttr("orcamento")}>
   <div class="container">
     <div class="orc-grid">
       <div class="orc-info">
@@ -1215,34 +1459,14 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         ${!sc.hiddenElements?.includes('orcamento-title') ? `<h2 style="margin-top:12px" data-visual-removable="orcamento-title">Habla con un consultor ahora</h2>` : ''}
         ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">Completa el formulario y nuestro equipo te contactará en menos de 2 horas con una propuesta.</p>` : ''}
         <div class="contact-list">
-          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">💬</div><div><strong>WhatsApp</strong><span>${esc(state.whatsapp || "—")}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉</div><div><strong>E-mail</strong><span>contato@${esc((agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, ""))}.com.br</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">🕐</div><div><strong>Atendimento</strong><span>Lun–Vie 8h–20h · Sáb 9h–15h</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(cidade)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon" data-site-edit-key="contactWhatsappIcon">${esc(sc.contactWhatsappIcon || "💬")}</div><div><strong data-site-edit-key="contactWhatsappLabel">${esc(sc.contactWhatsappLabel || "WhatsApp")}</strong><span>${esc(state.whatsapp || "—")}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon" data-site-edit-key="contactEmailIcon">${esc(sc.contactEmailIcon || "✉")}</div><div><strong data-site-edit-key="contactEmailLabel">${esc(sc.contactEmailLabel || "E-mail")}</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon" data-site-edit-key="contactHoursIcon">${esc(sc.contactHoursIcon || "🕐")}</div><div><strong data-site-edit-key="contactHoursLabel">${esc(sc.contactHoursLabel || "Atención")}</strong><span>${esc(sc.atendimentoText || "Lun–Vie 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon" data-site-edit-key="contactLocationIcon">${esc(sc.contactLocationIcon || "📍")}</div><div><strong data-site-edit-key="contactLocationLabel">${esc(sc.contactLocationLabel || "Ubicación")}</strong><span>${esc(cidade)}</span></div></div>` : ''}
         </div>
         ${socialIcons}
       </div>
-      <form class="orc-form" onsubmit="handleMainFormSubmit(event)">
-        <div class="form-row">
-          <div class="field"><label>Nombre Completo</label><input name="nome" required placeholder="Ej: Maria Silva"></div>
-          <div class="field"><label>WhatsApp</label><input name="wpp" required placeholder="(00) 00000-0000"></div>
-        </div>
-        <div class="form-row single">
-          <div class="field"><label>E-mail</label><input type="email" name="email" required placeholder="su@email.com"></div>
-        </div>
-        <div class="form-row">
-          <div class="field"><label>Destino de Interés</label><select name="destino"><option value="">Seleccionar…</option>${pacotes.map((p) => `<option>${esc(p.title)}</option>`).join("")}<option>Otro / a medida</option></select></div>
-          <div class="field"><label>Nº de Viajeros</label><input type="number" name="viaj" min="1" value="2"></div>
-        </div>
-        <div class="form-row">
-          <div class="field"><label>Fecha de Ida</label><input type="date" name="ida"></div>
-          <div class="field"><label>Fecha de Regreso</label><input type="date" name="volta"></div>
-        </div>
-        <div class="form-row single">
-          <div class="field"><label>Observaciones (opcional)</label><textarea name="obs" placeholder="Preferencias, ocasión especial, presupuesto…"></textarea></div>
-        </div>
-        <button type="submit" class="btn form-submit">💬 Enviar por WhatsApp</button>
-      </form>
+      ${quoteFormHtml}
     </div>
   </div>
 </section>`;
@@ -1251,7 +1475,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
       return sc.sections?.faq !== false && sc.faq && sc.faq.length > 0
         ? `
 <!-- FAQ -->
-<section id="faq">
+<section id="faq" ${sectionBackgroundAttr("faq")}>
   <div class="container">
     ${!sc.hiddenElements?.includes('faq-eyebrow') ? `<div class="section-eyebrow eyebrow" data-visual-removable="faq-eyebrow">Dudas</div>` : ''}
     ${!sc.hiddenElements?.includes('faq-title') ? `<h2 class="section-title" data-visual-removable="faq-title">${esc(sc.faqTitle || "Preguntas Frecuentes")}</h2>` : ''}
@@ -1270,8 +1494,18 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     return "";
   }).join("\n")}
 
+${(sc.sections?.orcamento === false || !sectionOrder.includes("orcamento")) ? `
+<!-- FORMULARIO PRINCIPAL BAJO DEMANDA: mantiene el CRM disponible al reservar -->
+<section id="orcamento" class="package-reservation-only" data-package-reservation-only hidden ${sectionBackgroundAttr("orcamento")}>
+  <div class="container">
+    <div class="section-eyebrow eyebrow">Reserva</div>
+    <h2 class="section-title">Cuéntale tus planes a la agencia</h2>
+    <div class="orc-grid">${quoteFormHtml}</div>
+  </div>
+</section>` : ""}
+
 <!-- FOOTER -->
-<footer>
+<footer ${sectionBackgroundAttr("footer")}>
   <div class="container">
     <div class="foot-grid">
       <div>
@@ -1310,27 +1544,91 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
 
 ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp" data-visual-removable="contact-wpp-float">💬</a>` : ''}
 
+<!-- DETALLES DINÁMICOS DEL PAQUETE -->
+<div id="package-modal" aria-hidden="true" onclick="if(event.target===this)closePackageDetails()">
+  <div class="package-sheet" role="dialog" aria-modal="true" aria-labelledby="package-title">
+    <button type="button" class="package-close" aria-label="Cerrar detalles del paquete" onclick="closePackageDetails()">&times;</button>
+    <div class="package-not-found" id="package-not-found" hidden>
+      <div class="package-not-found-mark" aria-hidden="true">!</div>
+      <h2 id="package-not-found-title">Paquete no encontrado</h2>
+      <p>Este enlace puede haber cambiado o el paquete ya no está disponible. Consulta las experiencias actuales de esta agencia.</p>
+      <button type="button" class="btn" onclick="closePackageDetails()">Ver paquetes disponibles</button>
+    </div>
+    <div class="package-media" id="package-details-media">
+      <img id="package-image" src="${DEFAULT_DEST_IMG}" alt="" data-ai-ignore="true" data-preserve-image="true">
+      <span class="package-category" id="package-category">Destino</span>
+      <div class="package-agency-on-image"><strong id="package-agency-image">${esc(agencia)}</strong><span id="package-location-image">${esc(state.address?.trim() || cidade)}</span></div>
+    </div>
+    <div class="package-content" id="package-details-content">
+      <div class="package-location" id="package-location"></div>
+      <h2 id="package-title">Detalles del paquete</h2>
+      <p class="package-subtitle" id="package-subtitle"></p>
+      <p class="package-description" id="package-description"></p>
+      <div class="package-gallery" id="package-gallery" hidden></div>
+      <div class="package-facts" id="package-facts" hidden></div>
+      <div class="package-price-row"><span>Inversión</span><strong id="package-price">A consultar</strong></div>
+      <div class="package-detail-section" id="package-commercial-section" hidden>
+        <h3>Condiciones de la oferta</h3><p id="package-commercial"></p>
+      </div>
+      <div class="package-detail-section" id="package-highlights-section" hidden>
+        <h3>Destacados</h3><ul class="package-detail-list" id="package-highlights"></ul>
+      </div>
+      <div class="package-detail-section" id="package-included-section" hidden>
+        <h3>Qué incluye</h3><ul class="package-detail-list" id="package-included"></ul>
+      </div>
+      <div class="package-detail-section" id="package-not-included-section" data-list-style="minus" hidden>
+        <h3>Qué no incluye</h3><ul class="package-detail-list" id="package-not-included"></ul>
+      </div>
+      <div class="package-detail-section" id="package-itinerary-section" data-list-style="number" hidden>
+        <h3>Itinerario</h3><ol class="package-detail-list" id="package-itinerary"></ol>
+      </div>
+      <div class="package-detail-section" id="package-requirements-section" hidden>
+        <h3>Requisitos y qué llevar</h3><ul class="package-detail-list" id="package-requirements"></ul>
+      </div>
+      <div class="package-detail-section" id="package-documents-section" hidden>
+        <h3>Documentos necesarios</h3><ul class="package-detail-list" id="package-documents"></ul>
+      </div>
+      <div class="package-detail-section" id="package-accessibility-section" hidden>
+        <h3>Accesibilidad</h3><ul class="package-detail-list" id="package-accessibility"></ul>
+      </div>
+      <div class="package-detail-section" id="package-important-section" hidden>
+        <h3>Información importante</h3><p id="package-important"></p>
+      </div>
+      <div class="package-detail-section" id="package-cancellation-section" hidden>
+        <h3>Cancelación y cambios</h3><p id="package-cancellation"></p>
+      </div>
+      <div class="package-contact">
+        <div><h3>Atención de la agencia</h3><p><strong id="package-agency">${esc(agencia)}</strong><br><span id="package-agency-location">${esc(state.address?.trim() || cidade)}</span></p></div>
+        <div><h3>Habla con nosotros</h3><p><span id="package-phone">${esc(state.whatsapp || "—")}</span><br><span id="package-email">${esc(agencyEmail)}</span></p></div>
+      </div>
+      <div class="package-faq" id="package-faq-section"><h3>Preguntas frecuentes</h3><div id="package-faq-list"></div></div>
+      <button type="button" class="btn package-reserve" onclick="reserveCurrentPackage()">Reservar este paquete</button>
+      <p class="package-note">Completarás tus datos en el siguiente paso.</p>
+    </div>
+  </div>
+</div>
+
 <!-- SMART LEAD CAPTURE MODAL -->
-<div id="lead-modal">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal()">&times;</button>
+<div id="lead-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="lead-modal-title" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" role="document">
+    <button type="button" class="modal-close" aria-label="Cerrar formulario" onclick="closeModal()">&times;</button>
     <div class="modal-header">
       <div class="modal-icon">🌍</div>
-      <h3>¡Falta poco para tu viaje!</h3>
+      <h3 id="lead-modal-title">¡Falta poco para tu viaje!</h3>
       <p id="modal-subtitle">Tienes interés en: Geral</p>
     </div>
     <form class="modal-form" onsubmit="handleSubmitLead(event)">
       <div class="field">
-        <label>Tu Nombre</label>
-        <input type="text" id="lead-name" required placeholder="Ej: Maria Silva">
+        <label for="lead-name">Tu nombre</label>
+        <input type="text" id="lead-name" autocomplete="name" required placeholder="Ej: Maria Silva">
       </div>
       <div class="field">
-        <label>Tu E-mail</label>
-        <input type="email" id="lead-email" required placeholder="tu@email.com">
+        <label for="lead-email">Tu e-mail</label>
+        <input type="email" id="lead-email" autocomplete="email" required placeholder="tu@email.com">
       </div>
       <div class="field">
-        <label>Tu WhatsApp / Celular</label>
-        <input type="tel" id="lead-phone" required placeholder="Ej: +54 9 11 1234-5678">
+        <label for="lead-phone">Tu WhatsApp / celular</label>
+        <input type="tel" id="lead-phone" autocomplete="tel" required placeholder="Ej: +54 9 11 1234-5678">
       </div>
       <button type="submit" class="btn modal-submit">🚀 Hablar en WhatsApp</button>
     </form>
@@ -1341,12 +1639,272 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
 <script>
   const CONFIG = {
     agencyId: "${esc(trackingId || state.agencyName || 'agencia_desconhecida')}",
+    projectId: "${projectId}",
+    formId: "${formId}",
     supabaseUrl: "${SB_URL}",
     supabaseKey: "${SB_KEY}"
   };
 
+  function toggleMobileMenu(button) {
+    const menu = document.getElementById("site-nav-links");
+    if (!menu) return;
+    const isOpen = menu.classList.toggle("open");
+    button.setAttribute("aria-expanded", String(isOpen));
+    button.setAttribute("aria-label", isOpen ? "Cerrar menú" : "Abrir menú");
+  }
+
+  document.querySelectorAll("#site-nav-links a").forEach((link) => {
+    link.addEventListener("click", () => {
+      const menu = document.getElementById("site-nav-links");
+      const button = document.querySelector(".nav-toggle");
+      menu?.classList.remove("open");
+      button?.setAttribute("aria-expanded", "false");
+      button?.setAttribute("aria-label", "Abrir menú");
+    });
+  });
+
   let pendingUrl = "";
   let currentTarget = "";
+  let lastLeadTrigger = null;
+  const PACKAGE_DETAILS = ${packageDetailsJson};
+  let currentPackage = null;
+  let lastPackageTrigger = null;
+
+  function setPackageText(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value || "";
+  }
+
+  function renderPackageTextSection(sectionId, textId, value) {
+    const section = document.getElementById(sectionId);
+    const text = document.getElementById(textId);
+    if (!section || !text) return;
+    const content = String(value || "").trim();
+    section.hidden = !content;
+    text.textContent = content;
+  }
+
+  function renderPackageList(sectionId, listId, items) {
+    const section = document.getElementById(sectionId);
+    const list = document.getElementById(listId);
+    if (!section || !list) return;
+    const values = Array.isArray(items) ? items.map((item) => String(item || "").trim()).filter(Boolean) : [];
+    list.replaceChildren();
+    section.hidden = values.length === 0;
+    values.forEach((value) => {
+      const item = document.createElement("li");
+      item.textContent = value;
+      list.appendChild(item);
+    });
+  }
+
+  function renderPackageFacts(selected) {
+    const container = document.getElementById("package-facts");
+    if (!container) return;
+    const facts = [
+      ["Fechas", selected.travelDates],
+      ["Duración", selected.duration],
+      ["Salida / origen", selected.departureLocation],
+      ["Encuentro / recogida", selected.meetingPoint],
+      ["Alojamiento / cabina", selected.accommodation],
+      ["Disponibilidad", selected.availability],
+    ].filter((entry) => String(entry[1] || "").trim());
+    container.replaceChildren();
+    container.hidden = facts.length === 0;
+    facts.forEach(([label, value]) => {
+      const fact = document.createElement("div");
+      const factLabel = document.createElement("span");
+      const factValue = document.createElement("strong");
+      fact.className = "package-fact";
+      factLabel.textContent = label;
+      factValue.textContent = value;
+      fact.append(factLabel, factValue);
+      container.appendChild(fact);
+    });
+  }
+
+  function renderPackageGallery(selected) {
+    const gallery = document.getElementById("package-gallery");
+    const mainImage = document.getElementById("package-image");
+    if (!gallery || !mainImage) return;
+    const images = Array.isArray(selected.galleryImages)
+      ? Array.from(new Set(selected.galleryImages.map((url) => String(url || "").trim()).filter(Boolean))).slice(0, 5)
+      : [];
+    gallery.replaceChildren();
+    gallery.hidden = images.length < 2;
+    images.forEach((url, index) => {
+      const button = document.createElement("button");
+      const image = document.createElement("img");
+      button.type = "button";
+      button.className = index === 0 ? "active" : "";
+      button.setAttribute("aria-label", "Ver imagen " + (index + 1) + " de " + selected.title);
+      image.src = url;
+      image.alt = "";
+      button.appendChild(image);
+      button.addEventListener("click", () => {
+        mainImage.src = url;
+        mainImage.alt = selected.title;
+        gallery.querySelectorAll("button").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+      });
+      gallery.appendChild(button);
+    });
+  }
+
+  function renderPackageFaq(items) {
+    const section = document.getElementById("package-faq-section");
+    const list = document.getElementById("package-faq-list");
+    if (!section || !list) return;
+    list.replaceChildren();
+    if (!items || !items.length) {
+      section.hidden = true;
+      return;
+    }
+    section.hidden = false;
+    items.forEach((item) => {
+      const details = document.createElement("details");
+      const summary = document.createElement("summary");
+      const answer = document.createElement("p");
+      summary.textContent = item.question || "Pregunta frecuente";
+      answer.textContent = item.answer || "Consulta a nuestro equipo para obtener más información.";
+      details.append(summary, answer);
+      list.appendChild(details);
+    });
+  }
+
+  function notifyPackageLocation(type, slug) {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type, slug: slug || "" }, "*");
+      return;
+    }
+    if (window.location.protocol === "file:") return;
+    const nextUrl = new URL(window.location.href);
+    if (type === "CV_PACKAGE_OPEN" && slug) {
+      nextUrl.pathname = "/pacote/" + encodeURIComponent(slug);
+      nextUrl.searchParams.delete("pacote");
+    } else if (type === "CV_PACKAGE_CLOSE" && /^\/pacotes?\//.test(nextUrl.pathname)) {
+      nextUrl.pathname = "/";
+    }
+    window.history.pushState({}, "", nextUrl.pathname + nextUrl.search + nextUrl.hash);
+  }
+
+  function openPackageDetails(index, trigger) {
+    const selected = PACKAGE_DETAILS[index];
+    const modal = document.getElementById("package-modal");
+    if (!selected || !modal) return;
+    const sheet = modal.querySelector(".package-sheet");
+    const notFound = document.getElementById("package-not-found");
+    const media = document.getElementById("package-details-media");
+    const content = document.getElementById("package-details-content");
+    sheet?.setAttribute("aria-labelledby", "package-title");
+    if (notFound) notFound.hidden = true;
+    if (media) media.hidden = false;
+    if (content) content.hidden = false;
+    currentPackage = selected;
+    modal.setAttribute("data-current-package-id", String(selected.id || ""));
+    lastPackageTrigger = trigger || document.activeElement;
+    const image = document.getElementById("package-image");
+    image.src = selected.imageUrl;
+    image.alt = selected.title;
+    setPackageText("package-category", selected.category);
+    setPackageText("package-agency-image", selected.agencyName);
+    setPackageText("package-location-image", selected.agencyLocation);
+    setPackageText("package-location", selected.availability || selected.travelDates);
+    setPackageText("package-title", selected.title);
+    setPackageText("package-subtitle", selected.subtitle);
+    setPackageText("package-description", selected.description);
+    setPackageText("package-price", selected.price);
+    setPackageText("package-agency", selected.agencyName);
+    setPackageText("package-agency-location", selected.agencyLocation);
+    setPackageText("package-phone", selected.agencyPhone);
+    setPackageText("package-email", selected.agencyEmail);
+    renderPackageGallery(selected);
+    renderPackageFacts(selected);
+    renderPackageTextSection("package-commercial-section", "package-commercial", [selected.priceDetails, selected.paymentTerms].filter(Boolean).join("\\n"));
+    renderPackageList("package-highlights-section", "package-highlights", selected.highlights);
+    renderPackageList("package-included-section", "package-included", selected.included);
+    renderPackageList("package-not-included-section", "package-not-included", selected.notIncluded);
+    renderPackageList("package-itinerary-section", "package-itinerary", selected.itinerary);
+    renderPackageList("package-requirements-section", "package-requirements", selected.requirements);
+    renderPackageList("package-documents-section", "package-documents", selected.documents);
+    renderPackageList("package-accessibility-section", "package-accessibility", selected.accessibility);
+    renderPackageTextSection("package-important-section", "package-important", selected.importantNotes);
+    renderPackageTextSection("package-cancellation-section", "package-cancellation", selected.cancellationPolicy);
+    renderPackageFaq(selected.faq);
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("package-modal-open");
+    const sheet = modal.querySelector(".package-sheet");
+    if (sheet) sheet.scrollTop = 0;
+    if (content) content.scrollTop = 0;
+    modal.querySelector(".package-close")?.focus();
+    notifyPackageLocation("CV_PACKAGE_OPEN", selected.slug);
+    track("package_view", { target: selected.title, package_id: selected.id });
+  }
+
+  function showPackageNotFound(slug) {
+    const modal = document.getElementById("package-modal");
+    const sheet = modal?.querySelector(".package-sheet");
+    const notFound = document.getElementById("package-not-found");
+    const media = document.getElementById("package-details-media");
+    const content = document.getElementById("package-details-content");
+    if (!modal || !notFound) return;
+    currentPackage = null;
+    lastPackageTrigger = document.activeElement;
+    sheet?.setAttribute("aria-labelledby", "package-not-found-title");
+    notFound.hidden = false;
+    if (media) media.hidden = true;
+    if (content) content.hidden = true;
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("package-modal-open");
+    const sheet = modal.querySelector(".package-sheet");
+    if (sheet) sheet.scrollTop = 0;
+    modal.querySelector(".package-close")?.focus();
+    track("package_not_found", { package_slug: String(slug || "") });
+  }
+
+  function closePackageDetails(restoreFocus = true, syncLocation = true) {
+    const modal = document.getElementById("package-modal");
+    if (!modal) return;
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("package-modal-open");
+    if (syncLocation) notifyPackageLocation("CV_PACKAGE_CLOSE", currentPackage && currentPackage.slug);
+    if (restoreFocus && lastPackageTrigger && typeof lastPackageTrigger.focus === "function") lastPackageTrigger.focus();
+  }
+
+  function openPackageBySlug(slug) {
+    const normalized = String(slug || "").trim().toLowerCase();
+    if (!normalized) return false;
+    const index = PACKAGE_DETAILS.findIndex((item) => item.slug === normalized);
+    if (index < 0) {
+      showPackageNotFound(normalized);
+      return false;
+    }
+    const trigger = document.querySelector('[data-package-index="' + index + '"]');
+    openPackageDetails(index, trigger);
+    return true;
+  }
+
+  function reserveCurrentPackage() {
+    if (!currentPackage) return;
+    const selected = currentPackage;
+    closePackageDetails(false);
+    const quoteSection = document.getElementById("orcamento");
+    const destinationSelect = quoteSection && quoteSection.querySelector('select[name="destino"]');
+    if (!quoteSection || !destinationSelect) {
+      track("package_cta_unavailable", { target: selected.title, package_id: selected.id });
+      return;
+    }
+    if (quoteSection.hidden) quoteSection.hidden = false;
+    destinationSelect.value = selected.title;
+    destinationSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    destinationSelect.focus({ preventScroll: true });
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    quoteSection.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    track("package_cta", { target: selected.title, package_id: selected.id });
+  }
 
   function track(type, data) {
     if (!CONFIG.supabaseUrl || !CONFIG.supabaseKey) return Promise.resolve();
@@ -1359,10 +1917,13 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
         "Prefer": "return=minimal"
       },
       body: JSON.stringify({
+        user_id: CONFIG.agencyId,
         event_type: type,
+        session_id: 'sess_' + Math.random().toString(36).slice(2, 11) + Date.now(),
         event_data: { 
           ...data, 
           agency_id: CONFIG.agencyId,
+          project_id: CONFIG.projectId,
           userAgent: navigator.userAgent
         },
         created_at: new Date().toISOString()
@@ -1370,18 +1931,92 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     }).catch(err => console.warn("Tracking off", err));
   }
 
+  async function submitCrmLead(payload, normalized) {
+    if (!CONFIG.supabaseUrl || !CONFIG.formId) return false;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 3500);
+    const query = new URLSearchParams(window.location.search);
+    try {
+      const response = await fetch(CONFIG.supabaseUrl + "/functions/v1/submit-crm-form", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          ...(CONFIG.supabaseKey ? { "apikey": CONFIG.supabaseKey } : {})
+        },
+        body: JSON.stringify({
+          form_id: CONFIG.formId,
+          embed_key: CONFIG.formId,
+          payload,
+          normalized,
+          source_url: window.location.href,
+          source_domain: window.location.hostname,
+          user_agent: navigator.userAgent,
+          utm_source: query.get("utm_source") || "",
+          utm_medium: query.get("utm_medium") || "",
+          utm_campaign: query.get("utm_campaign") || ""
+        })
+      });
+      return response.ok;
+    } catch (error) {
+      console.warn("CRM submission off", error);
+      return false;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
+  async function captureLead(payload, normalized) {
+    const submitted = await submitCrmLead(payload, normalized);
+    if (!submitted) {
+      track("lead_captured", { ...payload, ...normalized, crm_fallback: true, status: "novo" });
+    }
+    return submitted;
+  }
+
+  function getPackageSlugFromLocation() {
+    if (window.parent !== window || window.location.protocol === "file:") return "";
+    const pathMatch = window.location.pathname.match(/^\/pacotes?\/([^/]+)/i);
+    if (pathMatch) {
+      try {
+        return decodeURIComponent(pathMatch[1]).toLowerCase();
+      } catch {
+        return "";
+      }
+    }
+    return (new URLSearchParams(window.location.search).get("pacote") || "").toLowerCase();
+  }
+
+  function syncPackageFromStandaloneLocation() {
+    const slug = getPackageSlugFromLocation();
+    const modal = document.getElementById("package-modal");
+    if (slug) openPackageBySlug(slug);
+    else if (modal?.classList.contains("active")) closePackageDetails(false, false);
+  }
+
+  window.addEventListener("message", (event) => {
+    if (window.parent === window || event.source !== window.parent) return;
+    const message = event.data;
+    if (!message) return;
+    if (message.type === "CV_OPEN_PACKAGE") openPackageBySlug(message.slug);
+    if (message.type === "CV_CLOSE_PACKAGE") closePackageDetails(false, false);
+  });
+
   // Registra a visita ÚNICA no carregamento da página para métricas reais
   window.onload = () => {
-    const trackerKey = "cv_visit_" + CONFIG.agencyId;
+    const trackerKey = "cv_visit_" + CONFIG.projectId;
     if (!sessionStorage.getItem(trackerKey)) {
       track("page_view", { path: window.location.pathname });
       sessionStorage.setItem(trackerKey, "true"); // Marca como já visitou!
     }
+    window.setTimeout(syncPackageFromStandaloneLocation, 0);
   };
+  window.addEventListener("popstate", syncPackageFromStandaloneLocation);
 
   function openLeadForm(targetName, finalUrl) {
     currentTarget = targetName;
     pendingUrl = finalUrl;
+    lastLeadTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     
     // Se já preencheu antes, não pergunta de novo, pula direto (experiência do usuário!)
     const savedName = localStorage.getItem("cv_lead_name");
@@ -1391,14 +2026,52 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
        return;
     }
 
-    document.getElementById("modal-subtitle").innerText = "Interesse: " + targetName;
-    document.getElementById("lead-modal").classList.add("active");
+    document.getElementById("modal-subtitle").innerText = "Interés: " + targetName;
+    const modal = document.getElementById("lead-modal");
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("lead-modal-open");
+    window.requestAnimationFrame(() => document.getElementById("lead-name")?.focus());
     track("click_intent", { target: targetName });
   }
 
   function closeModal() {
-    document.getElementById("lead-modal").classList.remove("active");
+    const modal = document.getElementById("lead-modal");
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("lead-modal-open");
+    lastLeadTrigger?.focus?.();
   }
+
+  document.addEventListener("keydown", (event) => {
+    const packageModal = document.getElementById("package-modal");
+    const leadModal = document.getElementById("lead-modal");
+    const activeModal = packageModal?.classList.contains("active")
+      ? packageModal
+      : leadModal?.classList.contains("active")
+        ? leadModal
+        : null;
+    if (!activeModal) return;
+    if (event.key === "Escape") {
+      if (activeModal === packageModal) closePackageDetails();
+      else closeModal();
+      return;
+    }
+    if (event.key === "Tab") {
+      const focusable = Array.from(activeModal.querySelectorAll('a[href],button:not([disabled]),summary,input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'))
+        .filter((element) => element.offsetParent !== null);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  });
 
   async function handleMainFormSubmit(e) {
     e.preventDefault();
@@ -1408,16 +2081,25 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     btn.innerHTML = 'Aguarde...';
     btn.disabled = true;
 
-    await track("lead_captured", { 
-      name: f.nome.value, 
-      phone: f.wpp.value, 
+    const payload = {
+      nome: f.nome.value,
+      wpp: f.wpp.value,
       email: f.email.value,
-      interest: f.destino.value,
-      viajantes: f.viaj.value,
+      destino: f.destino.value,
+      viaj: f.viaj.value,
       ida: f.ida.value,
       volta: f.volta.value,
-      obs: f.obs.value,
-      status: 'novo'
+      obs: f.obs.value
+    };
+    await captureLead(payload, {
+      name: payload.nome,
+      phone: payload.wpp,
+      email: payload.email,
+      interest: payload.destino,
+      travelers: payload.viaj,
+      departure_date: payload.ida,
+      return_date: payload.volta,
+      notes: payload.obs
     });
     
     const msg = encodeURIComponent('¡Hola! Quiero un presupuesto.\\n\\nNombre: '+f.nome.value+'\\nWhatsApp: '+f.wpp.value+'\\nE-mail: '+f.email.value+'\\nDestino: '+f.destino.value+'\\nViajeros: '+f.viaj.value+'\\nIda: '+f.ida.value+'\\nVuelta: '+f.volta.value+'\\nObs: '+f.obs.value);
@@ -1440,12 +2122,16 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     
     localStorage.setItem("cv_lead_name", name);
 
-    await track("lead_captured", {
-      name: name,
-      phone: phone,
-      email: email,
-      interest: currentTarget,
-      status: 'novo'
+    await captureLead({
+      nome: name,
+      wpp: phone,
+      email,
+      destino: currentTarget
+    }, {
+      name,
+      phone,
+      email,
+      interest: currentTarget
     });
 
     closeModal();

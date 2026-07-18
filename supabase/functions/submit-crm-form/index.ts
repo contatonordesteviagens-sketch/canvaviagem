@@ -24,6 +24,13 @@ const cleanText = (value: unknown, max = 500) =>
     .trim()
     .slice(0, max);
 
+const sha256 = async (value: string) => {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -45,8 +52,12 @@ Deno.serve(async (req) => {
       return json({ error: "Invalid form_id" }, 400);
     }
 
-    const payload = typeof body.payload === "object" && body.payload !== null ? body.payload : {};
-    const normalized = typeof body.normalized === "object" && body.normalized !== null ? body.normalized : {};
+    const payload = typeof body.payload === "object" && body.payload !== null && !Array.isArray(body.payload)
+      ? body.payload
+      : {};
+    const normalized = typeof body.normalized === "object" && body.normalized !== null && !Array.isArray(body.normalized)
+      ? body.normalized
+      : {};
 
     if (payload.website || payload.company_url || payload.fax_number) {
       return json({ ok: true, spam: true });
@@ -59,7 +70,7 @@ Deno.serve(async (req) => {
 
     const { data: form, error: formError } = await supabase
       .from("crm_forms")
-      .select("id, owner_id, fields, status")
+      .select("id, owner_id, project_id, fields, status")
       .or(`id.eq.${formId},embed_key.eq.${formId}`)
       .eq("status", "active")
       .maybeSingle();
@@ -67,19 +78,59 @@ Deno.serve(async (req) => {
     if (formError) throw formError;
     if (!form) return json({ error: "Form not found" }, 404);
 
+    // Limite por formulário + origem. A RPC é adicionada pela migration nova;
+    // durante um rollout gradual, a ausência temporária dela não derruba leads.
+    const forwardedIp = cleanText(
+      req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0],
+      80,
+    );
+    const fingerprint = await sha256(`${forwardedIp || "unknown"}|${cleanText(req.headers.get("user-agent"), 240)}`);
+    const { data: rateAllowed, error: rateError } = await supabase.rpc("check_crm_form_rate_limit", {
+      p_form_id: form.id,
+      p_fingerprint: fingerprint,
+      p_limit: 8,
+      p_window_seconds: 600,
+    });
+    if (rateError) {
+      console.warn("crm rate limit unavailable during rollout", rateError.message);
+    } else if (rateAllowed === false) {
+      return new Response(JSON.stringify({ error: "Too many requests" }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "600" },
+      });
+    }
+
     const fields = Array.isArray(form.fields) ? (form.fields as FormField[]) : [];
+    const payloadRecord = payload as Record<string, unknown>;
+    const submittedFieldIds = new Set(Object.keys(payloadRecord));
     const missing = fields
       .filter((field) => field.visible !== false && field.required)
-      .filter((field) => !cleanText((payload as Record<string, unknown>)[field.id], 1000))
+      // O site principal, o pop-up rápido e formulários incorporados podem
+      // exibir subconjuntos diferentes do mesmo formulário canônico. Campos
+      // enviados continuam validados; campos que essa variante não renderizou
+      // não transformam uma captura legítima em fallback invisível.
+      .filter((field) => submittedFieldIds.has(field.id))
+      .filter((field) => !cleanText(payloadRecord[field.id], 1000))
       .map((field) => field.label || field.id);
 
     if (missing.length) {
       return json({ error: "Missing required fields", missing }, 400);
     }
 
-    const normalizedName = cleanText((normalized as Record<string, unknown>).name, 180);
-    const normalizedEmail = cleanText((normalized as Record<string, unknown>).email, 180);
-    const normalizedPhone = cleanText((normalized as Record<string, unknown>).phone, 80);
+    if (!Object.values(payloadRecord).some((value) => cleanText(value, 1000))) {
+      return json({ error: "Empty submission" }, 400);
+    }
+
+    const payloadName = cleanText(payloadRecord.nome ?? payloadRecord.name, 180);
+    const payloadEmail = cleanText(payloadRecord.email, 180);
+    const payloadPhone = cleanText(payloadRecord.wpp ?? payloadRecord.phone, 80);
+    if (!payloadName || (!payloadEmail && !payloadPhone)) {
+      return json({ error: "Name and contact are required" }, 400);
+    }
+
+    const normalizedName = cleanText((normalized as Record<string, unknown>).name || payloadName, 180);
+    const normalizedEmail = cleanText((normalized as Record<string, unknown>).email || payloadEmail, 180);
+    const normalizedPhone = cleanText((normalized as Record<string, unknown>).phone || payloadPhone, 80);
     const normalizedInterest = cleanText((normalized as Record<string, unknown>).interest, 180);
 
     const { data: submission, error: insertError } = await supabase
@@ -112,6 +163,7 @@ Deno.serve(async (req) => {
       event_data: {
         ...normalized,
         agency_id: form.owner_id,
+        project_id: form.project_id || form.id,
         form_id: form.id,
         source_domain: cleanText(body.source_domain, 180),
         submission_id: submission.id,

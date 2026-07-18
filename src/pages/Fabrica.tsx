@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { FabricaProvider, useFabricaContext } from "@/hooks/useFabricaContext";
 import { Phase1Diagnostico } from "@/pages/fabrica/Phase1Diagnostico";
@@ -30,22 +30,33 @@ import SeoMetadata from "@/components/SeoMetadata";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
 import { hasEliteAccess } from "@/lib/planAccess";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
+import { toast } from "sonner";
 
 const FabricaInner = () => {
-  const { state, setPhase, update } = useFabricaContext();
+  const { state, setPhase, switchProject, isHydrated } = useFabricaContext();
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "phase" | "library">("dashboard");
   const [librarySubTab, setLibrarySubTab] = useState<"ofertas" | "galeria">("ofertas");
+  const prefillSwitchInProgressRef = useRef(false);
 
   useEffect(() => {
     const snapshot = (location.state as { prefillSnapshot?: any } | null)?.prefillSnapshot;
-    if (!snapshot) return;
-    update({ ...(snapshot as any), diagnosticoCompleto: false });
-    navigate(location.pathname, { replace: true, state: null });
-  }, [location.state, location.pathname, navigate, update]);
+    if (!snapshot || !isHydrated || prefillSwitchInProgressRef.current) return;
+
+    prefillSwitchInProgressRef.current = true;
+    void switchProject({ ...(snapshot as any), diagnosticoCompleto: false })
+      .catch((error) => {
+        console.warn("[Fábrica] Não foi possível abrir o projeto solicitado:", error);
+        toast.error("Não foi possível salvar o projeto atual. A troca foi cancelada para proteger suas alterações.");
+      })
+      .finally(() => {
+        navigate(location.pathname, { replace: true, state: null });
+        prefillSwitchInProgressRef.current = false;
+      });
+  }, [isHydrated, location.state, location.pathname, navigate, switchProject]);
 
   useEffect(() => {
     const color = state.primaryColor || "#F59E0B";
@@ -222,10 +233,10 @@ const FabricaInner = () => {
             </div>
           </div>
 
-          {/* CONTEÃšDO */}
+          {/* CONTEÚDO */}
           <div>
             <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2">
-              CONTEÃšDO
+              CONTEÚDO
             </div>
             <div className="space-y-1">
               <button

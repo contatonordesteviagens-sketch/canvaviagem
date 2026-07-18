@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { useFabricaContext } from "@/hooks/useFabricaContext";
-import { useDiagnosticos, useSaveDiagnostico } from "@/hooks/useFabricaDiagnosticos";
+import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
+import { useDiagnosticos, useSaveDiagnostico, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
 import { BrandPaletteEditor } from "@/components/fabrica/BrandPaletteEditor";
+import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
+import { PackageAdvancedFields } from "@/components/fabrica/PackageAdvancedFields";
 
 import { 
   Upload, 
@@ -26,6 +28,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { COUNTRIES_DIAL, type CountryDial } from "@/lib/countriesDial";
+import { useQueryClient } from "@tanstack/react-query";
+import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
+import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
 
 const AGENCY_TYPES = [
   { v: "autonoma", l: "Agente autônomo / Freelancer" },
@@ -48,13 +53,45 @@ const UI_ACCENT = "#F5F906";
 const UI_ACCENT_BORDER_SOFT = "rgba(245, 249, 6, 0.35)";
 
 export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
-  const { state, update, reset } = useFabricaContext();
+  const { state, update, reset, deleteAndDiscardCurrentProject, switchProject } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const saveProject = useSaveDiagnostico();
+  const queryClient = useQueryClient();
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingProjectSwitch, setPendingProjectSwitch] = useState<DiagnosticoSalvo | null>(null);
+  const [isSwitchingProject, setIsSwitchingProject] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const loadSavedProject = async (project: DiagnosticoSalvo) => {
+    const targetName = project.agency_name || "Sem nome";
+    const isRecovered = project.source === "published_recovery";
+    setIsSwitchingProject(true);
+    try {
+      await switchProject({ ...project.state_snapshot, projectId: project.id });
+      setPendingProjectSwitch(null);
+      if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
+      else toast.success(`Projeto "${targetName}" carregado!`);
+      window.setTimeout(() => onNavigate?.("phase", 2), 100);
+    } catch {
+      toast.error("Não foi possível salvar o projeto atual. A troca foi cancelada para proteger suas alterações.");
+    } finally {
+      setIsSwitchingProject(false);
+    }
+  };
+
+  const requestProjectSwitch = (project: DiagnosticoSalvo) => {
+    if (project.id === state.projectId) {
+      toast.info("Este projeto já está aberto.");
+      return;
+    }
+    if (!state.agencyName) {
+      void loadSavedProject(project);
+      return;
+    }
+    setPendingProjectSwitch(project);
+  };
 
   const handleSaveProject = async () => {
     if (!user) { toast.error("Faça login para salvar"); return; }
@@ -82,7 +119,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
   // Sites publicados reais (canvaviagem.com) deste usuário
   const [publishedSites, setPublishedSites] = useState<{ id: string; updated_at: string; project_id?: string | null }[]>([]);
-  // Leads reais capturados (sincronizado com CRM Fase 5)
+  // Leads canônicos de toda a conta (mesma fonte do CRM, sem telemetria anônima)
   const [realLeadsCount, setRealLeadsCount] = useState<number>(0);
 
   useEffect(() => {
@@ -98,11 +135,10 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           .order("updated_at", { ascending: false });
         if (!cancelled && sites) setPublishedSites(sites);
 
-        const { count } = await supabase
-          .from("analytics_events")
+        const { count } = await (supabase as any)
+          .from("crm_form_submissions")
           .select("*", { count: "exact", head: true })
-          .eq("event_type", "lead_captured")
-          .contains("event_data", { agency_id: user.id });
+          .eq("owner_id", user.id);
         if (!cancelled) setRealLeadsCount(count || 0);
       } catch (e) {
         console.warn("[FabricaDashboard] Falha ao sincronizar sites/leads:", e);
@@ -128,12 +164,14 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editPrice, setEditPrice] = useState("");
+  const [editDetails, setEditDetails] = useState<Partial<Pacote>>({});
 
   // Form de adição de pacotes
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  const [newDetails, setNewDetails] = useState<Partial<Pacote>>({});
 
   // Address Autocomplete
   const [addressQuery, setAddressQuery] = useState(state.address || "");
@@ -180,8 +218,6 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       .replace(/(^-|-$)+/g, "");
   };
 
-  const domainSlug = state.agencyName ? slugify(state.agencyName) : "sua-agencia";
-  const displayUrl = state.siteContent?.canvaViagemUrl || `https://${domainSlug}.canvaviagem.com`;
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -217,6 +253,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     setEditTitle(pkg.title);
     setEditDesc(pkg.description);
     setEditPrice(pkg.price);
+    setEditDetails(pkg);
     setShowAddForm(false);
   };
 
@@ -226,7 +263,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       return;
     }
     const updated = state.selectedPackages.map((p) =>
-      p.id === id ? { ...p, title: editTitle.trim(), description: editDesc.trim(), price: editPrice.trim() } : p
+      p.id === id ? { ...p, ...editDetails, title: editTitle.trim(), description: editDesc.trim(), price: editPrice.trim() } : p
     );
     update({ selectedPackages: updated });
     setEditingId(null);
@@ -234,10 +271,13 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   };
 
   const duplicatePackage = (original: any) => {
+    const id = `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const usedSlugs = state.selectedPackages.map((item) => item.slug || buildPackageSlug(item.title, item.id));
     const pkg = {
       ...original,
-      id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      id,
       title: `${original.title} (cópia)`,
+      slug: createUniquePackageSlug(`${original.slug || original.title}-copia`, usedSlugs, id),
     };
     update({ selectedPackages: [pkg, ...state.selectedPackages] });
     toast.success("Pacote duplicado!");
@@ -260,18 +300,23 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       toast.error("Adicione um título ao pacote");
       return;
     }
+    const id = `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const usedSlugs = state.selectedPackages.map((item) => item.slug || buildPackageSlug(item.title, item.id));
     const pkg = {
-      id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      imageUrl: "",
+      ctaLabel: "Reservar agora",
+      ...newDetails,
+      id,
       title: newTitle.trim(),
+      slug: newDetails.slug || createUniquePackageSlug(newTitle.trim(), usedSlugs, id),
       description: newDesc.trim() || "Nova oferta especial.",
       price: newPrice.trim() || "Consulte",
-      imageUrl: "",
-      ctaLabel: "Reservar agora"
     };
     update({ selectedPackages: [pkg, ...state.selectedPackages] });
     setNewTitle("");
     setNewDesc("");
     setNewPrice("");
+    setNewDetails({});
     setShowAddForm(false);
     toast.success("Novo pacote adicionado!");
   };
@@ -283,14 +328,22 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     
     // Convert extracted array into proper package objects
     if (data.packages && Array.isArray(data.packages)) {
-      const newPackages = data.packages.map((pkg: any) => ({
-        id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        title: pkg.title || "Pacote IA",
-        description: pkg.description || "",
-        price: pkg.price || "Consulte",
-        imageUrl: "",
-        ctaLabel: "Reservar agora"
-      }));
+      const usedSlugs = new Set(state.selectedPackages.map((item) => item.slug || buildPackageSlug(item.title, item.id)));
+      const newPackages = data.packages.map((pkg: any, index: number) => {
+        const id = `pkg_${Date.now()}_${index}_${Math.random().toString(36).slice(2, 7)}`;
+        const title = pkg.title || "Pacote IA";
+        const slug = createUniquePackageSlug(title, usedSlugs, id);
+        usedSlugs.add(slug);
+        return {
+          id,
+          title,
+          slug,
+          description: pkg.description || "",
+          price: pkg.price || "Consulte",
+          imageUrl: "",
+          ctaLabel: "Reservar agora"
+        };
+      });
       newUpdates.selectedPackages = [...newPackages, ...state.selectedPackages];
     }
     
@@ -301,6 +354,14 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
   return (
     <div className="space-y-8 animate-fadeIn max-w-[1280px] mx-auto pb-12">
+      <ProjectSwitchDialog
+        open={Boolean(pendingProjectSwitch)}
+        currentName={state.agencyName || "Sem nome"}
+        targetName={pendingProjectSwitch?.agency_name || "Sem nome"}
+        busy={isSwitchingProject}
+        onCancel={() => !isSwitchingProject && setPendingProjectSwitch(null)}
+        onConfirm={() => pendingProjectSwitch && void loadSavedProject(pendingProjectSwitch)}
+      />
 
       {/* Projetos Salvos */}
       {user && (
@@ -325,19 +386,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     if (!val) return;
                     const p = savedProjects!.find(x => x.id === val);
                     if (!p || !p.state_snapshot) return;
-                    // ✅ FIX #7 e #14: Confirma antes de carregar se há edições não salvas
-                    const currentName = state.agencyName || 'Sem nome';
-                    const targetName = p.agency_name || 'Sem nome';
-                    if (state.agencyName && p.id !== state.projectId) {
-                      const ok = window.confirm(`⚠️ Você tem edições não salvas no projeto "${currentName}".\n\nSe continuar, essas edições serão perdidas.\n\nDeseja mesmo carregar "${targetName}"?`);
-                      if (!ok) {
-                        e.target.value = "";
-                        return;
-                      }
-                    }
-                    window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                    toast.success(`📂 Projeto "${targetName}" carregado!`);
-                    setTimeout(() => onNavigate?.("phase", 2), 100);
+                    requestProjectSwitch(p);
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs"
                 >
@@ -349,9 +398,10 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     const score = snap?.digitalScore || p.digital_score || 0;
                     const date = new Date(p.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
                     const isCurrent = p.id === state.projectId;
+                    const isRecovered = p.source === "published_recovery";
                     return (
                       <option key={p.id} value={p.id} className="bg-zinc-900">
-                        {isCurrent ? '● ' : ''}{p.agency_name || "Sem Nome"} — {pkgCount} pacote{pkgCount !== 1 ? 's' : ''} • Score {score}% • {date}
+                        {isCurrent ? '● ' : ''}{p.agency_name || "Sem Nome"}{isRecovered ? " • Recuperado" : ""} — {pkgCount} pacote{pkgCount !== 1 ? 's' : ''} • Score {score}% • {date}
                       </option>
                     );
                   })}
@@ -392,11 +442,34 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     const currentName = state.agencyName || 'Sem nome';
                     if (!window.confirm(`⚠️ Deseja realmente excluir o projeto salvo "${currentName}"? Esta ação não pode ser desfeita.`)) return;
                     try {
-                      const { error } = await supabase.from("fabrica_diagnosticos" as any).delete().eq("id", state.projectId);
-                      if (error) throw error;
+                      const projectId = state.projectId || "";
+                      const storedProject = savedProjects?.find((project) => project.id === projectId);
+                      const snapshot = storedProject?.state_snapshot || state;
+                      const linkedSlugs = publishedSites.filter((site) => site.project_id === projectId).map((site) => site.id);
+                      for (const url of [snapshot.siteContent?.canvaViagemUrl, snapshot.siteContent?.vercelUrl]) {
+                        if (!url) continue;
+                        try { linkedSlugs.push(new URL(url).hostname.split(".")[0]); } catch { /* URL legado inválido */ }
+                      }
+                      const uniqueSlugs = [...new Set(linkedSlugs.filter(Boolean))];
+                      await deleteAndDiscardCurrentProject(async (persistedProjectId) => {
+                        if (persistedProjectId) {
+                          await deleteFabricaProject({ projectId: persistedProjectId, userId: user!.id, legacySlugs: uniqueSlugs });
+                        } else if (uniqueSlugs.length > 0) {
+                          const { error: slugsError } = await supabase
+                            .from("public_sites")
+                            .delete()
+                            .eq("owner_id", user!.id)
+                            .is("project_id", null)
+                            .in("id", uniqueSlugs);
+                          if (slugsError) throw slugsError;
+                        }
+                      });
+                      setPublishedSites((sites) => sites.filter((site) => site.project_id !== projectId && !uniqueSlugs.includes(site.id)));
+                      await Promise.all([
+                        queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
+                        queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
+                      ]);
                       toast.success("🗑️ Projeto excluído com sucesso!");
-                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
-                      reset();
                     } catch (err: any) {
                       toast.error(err?.message || "Erro ao excluir projeto.");
                     }
@@ -414,12 +487,12 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 onClick={() => {
                   const confirmed = window.confirm(
                     `⚠️ Antes de criar um novo projeto, certifique-se de ter salvo o projeto atual ("${state.agencyName || 'Sem nome'}").\n\nDeseja continuar e criar um novo projeto em branco?`
-                  );
-                  if (!confirmed) return;
-                  window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
-                  reset();
-                  toast.success("Novo projeto iniciado! Você pode preencher os dados iniciais aqui.");
-                  setProjectsPanelOpen(false);
+                   );
+                   if (!confirmed) return;
+                   reset();
+                   toast.success("Novo projeto iniciado! Você pode preencher os dados iniciais aqui.");
+                   setProjectsPanelOpen(false);
+                   onNavigate?.("phase", 1);
                 }}
                 className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
                 style={{ borderColor: UI_ACCENT_BORDER_SOFT }}
@@ -753,27 +826,11 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                               });
                             }
 
-                            const currentName = state.agencyName || 'Sem nome';
-                            const targetName = p?.agency_name || site.id;
-
-                            if (state.agencyName && p?.id && p.id !== state.projectId) {
-                              const ok = window.confirm(`⚠️ Você tem edições não salvas no projeto "${currentName}".\n\nSe continuar, essas edições serão perdidas.\n\nDeseja mesmo carregar "${targetName}" para editá-lo?`);
-                              if (!ok) return;
+                            if (!p?.state_snapshot) {
+                              toast.error(`O site "${site.id}" ainda não possui um projeto editável recuperado. Atualize a página e tente novamente.`);
+                              return;
                             }
-
-                            const snapshotToLoad = (p && p.state_snapshot) ? { ...p.state_snapshot, projectId: p.id } : {
-                              ...state,
-                              projectId: (site.project_id && site.project_id !== user?.id) ? site.project_id : undefined,
-                              agencyName: site.id,
-                              siteContent: {
-                                ...(state.siteContent || {}),
-                                canvaViagemUrl: `https://${site.id}.canvaviagem.com`,
-                              }
-                            };
-
-                            window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: snapshotToLoad }));
-                            toast.success(`📂 Site "${targetName}" carregado no editor!`);
-                            setTimeout(() => onNavigate?.("phase", 2), 100);
+                            requestProjectSwitch(p);
                           }}
                           className="px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 text-violet-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
                         >
@@ -782,20 +839,42 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                         <button
                           type="button"
                           onClick={async () => {
-                            if (!window.confirm(`⚠️ Deseja realmente excluir o site publicado "${displayUrl}"?`)) return;
+                            if (!window.confirm(`⚠️ Deseja realmente despublicar o site "${url}"? O projeto continuará salvo para edição.`)) return;
                             try {
-                              const { error } = await supabase.from("public_sites").delete().eq("id", site.id);
+                              const project = savedProjects?.find((candidate) => candidate.id === site.project_id) || savedProjects?.find((candidate) => {
+                                const snapshot = candidate.state_snapshot as any;
+                                const savedSlug = snapshot?.siteContent?.canvaViagemUrl?.replace(/^https?:\/\//, "")?.split(".")[0];
+                                return savedSlug === site.id;
+                              });
+                              const { error } = await supabase.from("public_sites").delete().eq("id", site.id).eq("owner_id", user!.id);
                               if (error) throw error;
+                              if (project?.state_snapshot) {
+                                const nextSnapshot = {
+                                  ...project.state_snapshot,
+                                  siteContent: { ...project.state_snapshot.siteContent, canvaViagemUrl: "", vercelUrl: "" },
+                                };
+                                if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(project.id)) {
+                                  const { error: projectError } = await supabase.from("fabrica_diagnosticos" as any).update({ state_snapshot: nextSnapshot }).eq("id", project.id).eq("user_id", user!.id);
+                                  if (projectError) throw projectError;
+                                }
+                                if (project.id === state.projectId) {
+                                  update({ siteContent: { ...state.siteContent, canvaViagemUrl: "", vercelUrl: "" } });
+                                }
+                              }
                               setPublishedSites(prev => prev.filter(s => s.id !== site.id));
-                              toast.success("🗑️ Site publicado excluído com sucesso!");
+                              await Promise.all([
+                                queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
+                                queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
+                              ]);
+                              toast.success("Site despublicado. O projeto continua disponível para edição.");
                             } catch (err: any) {
                               toast.error(err?.message || "Erro ao excluir site publicado");
                             }
                           }}
                           className="px-3 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-                          title="Excluir site publicado"
+                          title="Tirar o site do ar sem apagar o projeto"
                         >
-                          🗑️ Excluir
+                          📴 Despublicar
                         </button>
                       </div>
                     );
@@ -837,7 +916,14 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             {/* Call to action de Avançar para Fase 1 */}
             <div className="pt-2 border-t border-white/5">
               <button
-                onClick={() => onNavigate?.("phase", 1)}
+                onClick={() => {
+                  const confirmed = window.confirm(
+                    `Deseja começar um novo projeto em branco? O projeto atual ("${state.agencyName || "Sem nome"}") continuará salvo.`
+                  );
+                  if (!confirmed) return;
+                  reset();
+                  onNavigate?.("phase", 1);
+                }}
                 className="w-full py-3 rounded-xl bg-white/[0.03] hover:bg-violet-500/10 border border-white/5 hover:border-violet-500/30 text-white/60 hover:text-violet-400 text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
               >
                 <Plus className="w-3.5 h-3.5" /> Começar Novo Projeto (Fase 1)
@@ -921,6 +1007,19 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     </div>
                   </div>
 
+                  <PackageAdvancedFields
+                    pacote={{
+                      id: "novo-pacote",
+                      title: newTitle,
+                      description: newDesc,
+                      price: newPrice,
+                      ctaLabel: "Reservar agora",
+                      ...newDetails,
+                    }}
+                    agencyType={state.agencyType}
+                    onChange={(patch) => setNewDetails((current) => ({ ...current, ...patch }))}
+                  />
+
                   <div className="flex gap-2 pt-2 border-t border-white/5">
                     <button 
                       onClick={addPackage} 
@@ -929,7 +1028,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                       <Check className="w-4 h-4" /> Adicionar e Sincronizar
                     </button>
                     <button 
-                      onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); }} 
+                      onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); setNewDetails({}); }}
                       className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 text-xs font-bold transition-all"
                     >
                       Cancelar
@@ -975,6 +1074,17 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                             value={editPrice} 
                             onChange={(e) => setEditPrice(e.target.value)} 
                             className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500/50" 
+                          />
+                          <PackageAdvancedFields
+                            pacote={{
+                              id: pkg.id,
+                              title: editTitle,
+                              description: editDesc,
+                              price: editPrice,
+                              ...editDetails,
+                            }}
+                            agencyType={state.agencyType}
+                            onChange={(patch) => setEditDetails((current) => ({ ...current, ...patch }))}
                           />
                           <div className="flex gap-2 pt-2 border-t border-white/5">
                             <button 

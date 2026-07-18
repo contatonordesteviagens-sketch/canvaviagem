@@ -20,13 +20,13 @@ export const ProtectedRoute = ({
     allowExternalBlog = false
 }: ProtectedRouteProps) => {
     const location = useLocation();
+    const { user, loading, subscription, isAdmin } = useAuth();
 
     // Liberar acesso público irrestrito ao Blog (/blog) e postagens para indexação e SEO do Google
     if (location.pathname.startsWith("/blog")) {
         return <>{children}</>;
     }
 
-    const { user, loading, subscription, isAdmin } = useAuth();
     const isFromInternal = (location.state as any)?.fromInternal === true;
     const localPreview = isLocalPreviewEnabled();
 

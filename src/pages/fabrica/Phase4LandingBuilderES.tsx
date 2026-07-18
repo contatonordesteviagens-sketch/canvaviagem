@@ -1,10 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useFabricaContext, type Pacote, type Depoimento as Testimonio } from "@/hooks/useFabricaContext";
+import { useFabricaContext, type AgencyType, type Pacote, type Depoimento as Testimonio } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML } from "@/lib/fabrica-html-export-es";
 import { CloudSaveIndicatorES } from "@/components/fabrica/CloudSaveIndicatorES";
-import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
+import { BrandPaletteEditor, SectionBackgroundEditor } from "@/components/fabrica/BrandPaletteEditor";
+import { SiteTemplateSelector } from "@/components/fabrica/SiteTemplateSelector";
+import { useDiagnosticos, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
+import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
+import { getSiteTemplateDefinition } from "@/lib/site-template-catalog";
+import { publishFabricaSite } from "@/lib/fabrica-site-publisher";
 import {
   Plus,
   Trash2,
@@ -30,19 +35,73 @@ import {
 import { toast } from "sonner";
 import type { SectionVisibility } from "@/hooks/useFabricaContext";
 import {
+  PACKAGE_AVAILABILITY_OPTIONS,
+  PACKAGE_SEGMENT_OPTIONS,
+  buildPackageSlug,
+  linesToList,
+  suggestPackageSegment,
+} from "@/lib/package-details";
+import {
   buildCanvaSiteSlug as buildSiteSlug,
   extractCanvaSiteSlug,
-  getCanvaSiteUrl,
   normalizeCanvaSiteUrl,
   validateCanvaSiteSlug,
 } from "@/lib/canva-site-domain";
 
-const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
 const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
 const UI_ACCENT = "#F5F906";
 const UI_ACCENT_SOFT = "rgba(245, 249, 6, 0.12)";
 const UI_ACCENT_BORDER = "rgba(245, 249, 6, 0.75)";
 const UI_ACCENT_SHADOW = "rgba(245, 249, 6, 0.24)";
+const SITE_SECTION_LABELS_ES: Record<string, string> = {
+  header: "Encabezado y menú",
+  hero: "Portada del sitio",
+  processo: "Cómo funciona",
+  destinos: "Destinos y paquetes",
+  porQue: "Equipo y agencia",
+  depoimentos: "Testimonios",
+  orcamento: "Presupuesto",
+  faq: "Preguntas frecuentes",
+  finalCta: "Llamada final",
+  mapa: "Mapa y dirección",
+  footer: "Pie de página",
+};
+
+const PACKAGE_SEGMENT_LABELS_ES: Record<string, string> = {
+  passeio: "Paseo / receptivo",
+  pacote: "Paquete / emisivo",
+  "sob-medida": "Viaje a medida / lujo",
+  grupo: "Grupo / excursión",
+  cruzeiro: "Crucero",
+  aventura: "Aventura / ecoturismo",
+  religioso: "Turismo religioso",
+  corporativo: "Corporativo / evento",
+  outro: "Otro",
+};
+
+const PACKAGE_AVAILABILITY_LABELS_ES: Record<string, string> = {
+  disponivel: "Disponible",
+  "ultimas-vagas": "Últimas plazas",
+  "saida-confirmada": "Salida confirmada",
+  "sob-consulta": "Bajo consulta",
+  "lista-de-espera": "Lista de espera",
+  esgotado: "Agotado",
+};
+
+const PACKAGE_GUIDANCE_ES = {
+  description: "Explica cómo será la experiencia, para quién está indicada y cuál es su principal diferencial.",
+  dates: "Ej.: del 15 al 20/11/2026 o salidas diarias",
+  duration: "Ej.: 6 días y 5 noches",
+  departure: "Ej.: salida desde Fortaleza",
+  meetingPoint: "Ej.: recepción del hotel a las 07:30",
+  accommodation: "Ej.: hotel 4 estrellas, habitación doble y desayuno",
+  priceDetails: "Ej.: valor por persona en habitación doble; tasas incluidas",
+  highlights: "Una información por línea\nAtardecer en las dunas\nGuía local especializado",
+  included: "Un ítem por línea\nAlojamiento\nTraslados\nDesayuno",
+  itinerary: "Una etapa por línea\nDía 1: llegada y recepción\nDía 2: paseo principal",
+  requirements: "Un ítem por línea\nEdad mínima de 12 años\nLlevar calzado cerrado",
+  documents: "Un ítem por línea\nDocumento oficial con foto\nPasaporte vigente",
+};
 
 const optimizeImageBlobToWebp = async (blob: Blob, maxDimension = 1600) => {
   const bitmap = await createImageBitmap(blob);
@@ -81,21 +140,118 @@ const normalizeExternalImageUrl = (value: string) => {
 };
 export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { data: savedProjects } = useDiagnosticos();
-  const { state, update, systemUpdate, undo, redo, canUndo, canRedo, isHydrated } = useFabricaContext();
+  const { state, update, systemUpdate, reset, undo, redo, switchProject, canUndo, canRedo, isHydrated } = useFabricaContext();
   const { user } = useAuth();
   const [previewing, setPreviewing] = useState(true);
   const [downloadCount, setDownloadCount] = useState(0);
   const [autoSyncDone, setAutoSyncDone] = useState(false);
   const [autoSyncFields, setAutoSyncFields] = useState<string[]>([]);
   const [pickingHeroImage, setPickingHeroImage] = useState(false);
+  const [pendingProjectSwitch, setPendingProjectSwitch] = useState<DiagnosticoSalvo | null>(null);
+  const [isSwitchingProject, setIsSwitchingProject] = useState(false);
+
+  const loadSavedProject = async (project: DiagnosticoSalvo) => {
+    const targetName = project.agency_name || "Sin nombre";
+    const isRecovered = project.source === "published_recovery";
+    setIsSwitchingProject(true);
+    try {
+      await switchProject(
+        { ...project.state_snapshot, projectId: project.id },
+        { preserveCurrentPhase: true },
+      );
+      setPendingProjectSwitch(null);
+      if (isRecovered) toast.warning(`Sitio anterior "${targetName}" recuperado. Revisa los datos antes de volver a publicarlo.`);
+      else toast.success(`Proyecto "${targetName}" cargado.`);
+    } catch {
+      toast.error("No se pudo guardar el proyecto actual. El cambio fue cancelado para proteger tus datos.");
+    } finally {
+      setIsSwitchingProject(false);
+    }
+  };
+
+  const requestProjectSwitch = (project: DiagnosticoSalvo) => {
+    if (project.id === state.projectId) {
+      toast.info("Este proyecto ya está abierto.");
+      return;
+    }
+    if (!state.agencyName) {
+      void loadSavedProject(project);
+      return;
+    }
+    setPendingProjectSwitch(project);
+  };
 
   // ── ESTADOS Y REF PARA EDICIÓN VISUAL DIRECTA E INTUITIVA EN LA VISTA PREVIA ──
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const packageEditorShortcutRef = useRef<(packageId: string) => void>(() => undefined);
+  const [activePackagePreviewId, setActivePackagePreviewId] = useState<string | null>(null);
   const [globalPickingImage, setGlobalPickingImage] = useState(false);
+  const [globalEditingPalette, setGlobalEditingPalette] = useState(false);
+  const [activeColorSection, setActiveColorSection] = useState<string | null>(null);
+  const colorModalCloseRef = useRef<HTMLButtonElement>(null);
+  const imageModalCloseRef = useRef<HTMLButtonElement>(null);
+  const colorDialogRef = useRef<HTMLElement>(null);
+  const imageDialogRef = useRef<HTMLDivElement>(null);
+  const modalReturnFocusRef = useRef<HTMLElement | null>(null);
   const [activeImageEdit, setActiveImageEdit] = useState<{
     type: "logo" | "hero" | "package" | "about";
     packageId?: string;
   } | null>(null);
+
+  useEffect(() => {
+    if (!globalEditingPalette && !globalPickingImage) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    modalReturnFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    const frame = window.requestAnimationFrame(() => {
+      if (globalPickingImage) imageModalCloseRef.current?.focus();
+      else colorModalCloseRef.current?.focus();
+    });
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (globalPickingImage) {
+          setGlobalPickingImage(false);
+          setActiveImageEdit(null);
+        } else {
+          setGlobalEditingPalette(false);
+          setActiveColorSection(null);
+        }
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const activeDialog = globalPickingImage ? imageDialogRef.current : colorDialogRef.current;
+      if (!activeDialog) return;
+      const focusable = Array.from(activeDialog.querySelectorAll<HTMLElement>(
+        'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])',
+      )).filter((element) => element.offsetParent !== null);
+      if (!focusable.length) {
+        event.preventDefault();
+        activeDialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !activeDialog.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !activeDialog.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      window.requestAnimationFrame(() => modalReturnFocusRef.current?.focus());
+    };
+  }, [globalEditingPalette, globalPickingImage]);
 
   const applyGlobalImage = (url: string) => {
     if (!activeImageEdit) return;
@@ -130,20 +286,6 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
   const iframeScrollY = useRef(0);
 
-  useEffect(() => {
-    const handleMessage = (e: MessageEvent) => {
-      if (e.data?.type === "FABRICA_REMOVE" && e.data.elementId) {
-        const currentHidden = state.siteContent.hiddenElements || [];
-        if (!currentHidden.includes(e.data.elementId)) {
-          updSite({ hiddenElements: [...currentHidden, e.data.elementId] });
-          toast.success("¡Elemento eliminado del sitio!");
-        }
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [state.siteContent.hiddenElements]);
-
   // Enlace de los eventos de clic en el iframe para edición visual en tiempo real
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -152,6 +294,8 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     const handleIframeLoad = () => {
       const doc = iframe.contentDocument || iframe.contentWindow?.document;
       if (!doc || !doc.head || !doc.body) return;
+      if (doc.body.dataset.fabricaEditorInitialized === "true") return;
+      doc.body.dataset.fabricaEditorInitialized = "true";
 
       // Restaura o scroll para evitar pulos
       if (iframe.contentWindow) {
@@ -198,14 +342,217 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         img[data-visual-editable]:hover {
           filter: brightness(0.8) !important;
         }
+        [data-fabrica-color-section] { position: relative !important; }
+        .fabrica-color-btn {
+          position: absolute !important;
+          top: 12px !important;
+          right: 12px !important;
+          z-index: 10001 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          padding: 8px 11px !important;
+          border: 1px solid rgba(255,255,255,.45) !important;
+          border-radius: 999px !important;
+          background: rgba(10,10,11,.82) !important;
+          color: #fff !important;
+          font: 700 11px/1 Inter, sans-serif !important;
+          opacity: 0 !important;
+          transform: translateY(-3px) !important;
+          transition: opacity .18s ease, transform .18s ease !important;
+          cursor: pointer !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
+        }
+        .fabrica-package-edit-btn {
+          position: absolute !important;
+          top: 12px !important;
+          right: 52px !important;
+          z-index: 10002 !important;
+          min-height: 36px !important;
+          padding: 8px 11px !important;
+          border: 1px solid rgba(255,255,255,.55) !important;
+          border-radius: 999px !important;
+          background: rgba(10,10,11,.9) !important;
+          color: #fff !important;
+          font: 700 11px/1 Inter, sans-serif !important;
+          cursor: pointer !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
+        }
+        .package-sheet > .fabrica-package-edit-btn {
+          position: sticky !important;
+          top: 12px !important;
+          float: left !important;
+          margin: 12px 0 -48px 12px !important;
+          width: max-content !important;
+        }
+        .fabrica-package-preview-btn {
+          position: absolute !important;
+          top: 12px !important;
+          left: 12px !important;
+          z-index: 10002 !important;
+          min-height: 36px !important;
+          padding: 8px 11px !important;
+          border: 1px solid rgba(255,255,255,.55) !important;
+          border-radius: 999px !important;
+          background: rgba(10,10,11,.9) !important;
+          color: #fff !important;
+          font: 700 11px/1 Inter, sans-serif !important;
+          cursor: pointer !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
+        }
+        [data-fabrica-color-section]:hover > .fabrica-color-btn,
+        .fabrica-color-btn:focus { opacity: 1 !important; transform: translateY(0) !important; }
+        @media (hover: none) {
+          .fabrica-color-btn { opacity: 1 !important; transform: translateY(0) !important; }
+          .fabrica-remove-btn { display: flex !important; }
+        }
       `;
       doc.head.appendChild(style);
+
+      // Fondos editables por sección sin interferir con enlaces ni formularios.
+      doc.querySelectorAll("header.site-header, section, footer").forEach((section) => {
+        section.setAttribute("data-fabrica-color-section", "true");
+        const sectionKey = section.getAttribute("data-site-section") || "site";
+        const button = doc.createElement("button");
+        button.type = "button";
+        button.className = "fabrica-color-btn";
+        button.textContent = "Editar fondo";
+        button.setAttribute("aria-label", `Editar el fondo de ${SITE_SECTION_LABELS_ES[sectionKey] || "esta sección"}`);
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setActiveColorSection(sectionKey);
+          setGlobalEditingPalette(true);
+        });
+        section.appendChild(button);
+
+        section.addEventListener("click", (event) => {
+          const target = event.target as Element | null;
+          if (!target || typeof target.closest !== "function") return;
+          const interactive = target.closest(
+            'a,button,input,select,textarea,summary,[contenteditable="true"],[data-visual-editable="true"]',
+          );
+          if (interactive) return;
+          setActiveColorSection(sectionKey);
+          setGlobalEditingPalette(true);
+        });
+      });
+
+      const openPackageEditor = (packageId: string, afterSectionOpen = false) => {
+        if (!packageId) return;
+        const editor = window.document.getElementById(`package-editor-${packageId}`);
+        if (!editor) {
+          const packagesCard = window.document.querySelector('[data-fabrica-card="packages"]');
+          const packagesTrigger = packagesCard?.querySelector<HTMLButtonElement>(':scope > button[aria-expanded]');
+          if (!afterSectionOpen && packagesTrigger?.getAttribute("aria-expanded") === "false") {
+            packagesTrigger.click();
+            window.setTimeout(() => openPackageEditor(packageId, true), 80);
+            return;
+          }
+          toast.error("No fue posible localizar este paquete en el editor.");
+          return;
+        }
+        const advanced = editor.querySelector("details") as HTMLDetailsElement | null;
+        if (advanced) advanced.open = true;
+        editor.style.scrollMarginTop = "88px";
+        editor.scrollIntoView({ behavior: "smooth", block: "start" });
+        editor.animate(
+          [
+            { boxShadow: "0 0 0 0 rgba(245,158,11,0)" },
+            { boxShadow: "0 0 0 4px rgba(245,158,11,.7)" },
+            { boxShadow: "0 0 0 0 rgba(245,158,11,0)" },
+          ],
+          { duration: 1200, easing: "ease-out" },
+        );
+      };
+      packageEditorShortcutRef.current = (packageId: string) => openPackageEditor(packageId);
+
+      doc.querySelectorAll(".dest-card").forEach((card) => {
+        const packageId = card.getAttribute("data-package-id") || "";
+        const packageIndex = Number(card.getAttribute("data-package-index"));
+        const previewButton = doc.createElement("button");
+        previewButton.type = "button";
+        previewButton.className = "fabrica-package-preview-btn";
+        previewButton.textContent = "Ver detalles";
+        previewButton.setAttribute("aria-label", "Ver los detalles de este paquete");
+        previewButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          // En el editor móvil el modal vive dentro del iframe. Alinear la
+          // vista antes de abrirlo mantiene cerrar/editar siempre visibles.
+          iframeRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+          doc.getElementById("package-modal")?.setAttribute("data-editor-package-id", packageId);
+          const iframeWindow = doc.defaultView as (Window & {
+            openPackageDetails?: (index: number, trigger?: Element) => void;
+          }) | null;
+          iframeWindow?.openPackageDetails?.(packageIndex, card);
+          setActivePackagePreviewId(packageId);
+          window.setTimeout(() => {
+            iframeRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+          }, 0);
+        });
+        const editButton = doc.createElement("button");
+        editButton.type = "button";
+        editButton.className = "fabrica-package-edit-btn";
+        editButton.textContent = "Editar paquete";
+        editButton.setAttribute("aria-label", "Editar toda la información de este paquete");
+        editButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setActivePackagePreviewId(null);
+          openPackageEditor(packageId);
+        });
+        card.append(previewButton, editButton);
+        card.addEventListener("click", () => {
+          doc.getElementById("package-modal")?.setAttribute("data-editor-package-id", packageId);
+        });
+      });
+
+      const packageSheet = doc.querySelector(".package-sheet");
+      if (packageSheet) {
+        const editButton = doc.createElement("button");
+        editButton.type = "button";
+        editButton.className = "fabrica-package-edit-btn";
+        editButton.textContent = "Editar información";
+        editButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const modal = doc.getElementById("package-modal");
+          const packageId = modal?.getAttribute("data-editor-package-id") || modal?.getAttribute("data-current-package-id") || "";
+          setActivePackagePreviewId(null);
+          openPackageEditor(packageId);
+        });
+        packageSheet.prepend(editButton);
+      }
+
+      const packageModal = doc.getElementById("package-modal");
+      packageModal?.querySelector(".package-close")?.addEventListener("click", () => {
+        setActivePackagePreviewId(null);
+      });
+      packageModal?.addEventListener("click", (event) => {
+        if (event.target === packageModal) setActivePackagePreviewId(null);
+      });
+
+      doc.querySelectorAll(".btn,.nav-cta,.dest-cta,.wpp-float").forEach((button) => {
+        button.setAttribute("title", "Haz clic para editar el texto · doble clic para editar los colores");
+        button.addEventListener("dblclick", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setActiveColorSection(null);
+          setGlobalEditingPalette(true);
+        });
+      });
 
       // 1. Textos editables (contenteditable)
       const textSelectors = [
         ".brand-name",
+        "[data-site-edit-key]",
         ".hero h1",
         ".hero p.lead",
+        ".hero .eyebrow",
+        ".foot-brand",
+        "footer .foot-grid > div > p",
+        ".contact-item span",
         ".dest-card h3",
         ".dest-card p",
         ".price-value",
@@ -219,6 +566,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
       const editableTexts = doc.querySelectorAll(textSelectors);
       editableTexts.forEach((el) => {
+        if (el.closest("#lead-modal") || el.closest("#package-modal")) return;
         el.setAttribute("data-visual-editable", "true");
         el.setAttribute("contenteditable", "true");
         
@@ -232,18 +580,35 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           
           if (el.classList.contains("brand-name")) {
             update({ agencyName: textVal });
+          } else if (el.getAttribute("data-site-edit-key")) {
+            updSite({ [el.getAttribute("data-site-edit-key") as string]: textVal } as any);
           } else if (el.tagName === "H1" && el.closest(".hero")) {
             updSite({ heroHeadline: textVal });
           } else if (el.classList.contains("lead") && el.closest(".hero")) {
             updSite({ heroSubheadline: textVal });
+          } else if (el.classList.contains("eyebrow") && el.closest(".hero")) {
+            updSite({ heroEyebrow: textVal });
+          } else if (el.classList.contains("foot-brand")) {
+            update({ agencyName: textVal });
+          } else if (el.closest("footer") && el.tagName === "P") {
+            updSite({ footerText: textVal });
+          } else if (el.closest(".contact-item") && el.tagName === "SPAN") {
+            const label = el.closest(".contact-item")?.querySelector("strong")?.textContent?.toLowerCase() || "";
+            if (label.includes("whatsapp")) {
+              update({ whatsapp: textVal.replace(/\D/g, "") });
+            } else if (label.includes("mail")) {
+              update({ agencyEmail: textVal });
+            } else if (label.includes("ubic") || label.includes("local")) {
+              update({ city: textVal });
+            } else {
+              updSite({ atendimentoText: textVal });
+            }
           } else {
             // Si es dentro de un paquete (destination card)
             const destCard = el.closest(".dest-card");
             if (destCard) {
-              const allCards = Array.from(doc.querySelectorAll(".dest-card"));
-              const idx = allCards.indexOf(destCard);
-              if (idx !== -1 && state.selectedPackages[idx]) {
-                const pkgId = state.selectedPackages[idx].id;
+              const pkgId = destCard.getAttribute("data-package-id");
+              if (pkgId && state.selectedPackages.some((pkg) => String(pkg.id) === pkgId)) {
                 if (el.tagName === "H3") {
                   updPacote(pkgId, { title: textVal });
                 } else if (el.tagName === "P") {
@@ -251,7 +616,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 } else if (el.classList.contains("price-value") || el.classList.contains("price-main")) {
                   updPacote(pkgId, { price: textVal });
                 } else if (el.classList.contains("dest-tag")) {
-                  updPacote(pkgId, { category: textVal } as any);
+                  updPacote(pkgId, { badge: textVal });
                 }
               }
             }
@@ -259,8 +624,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             // Si es dentro de un testimonio
             const depoCard = el.closest(".depo-card");
             if (depoCard) {
-              const allDepos = Array.from(doc.querySelectorAll(".depo-card"));
-              const idx = allDepos.indexOf(depoCard);
+              const idx = Number(depoCard.getAttribute("data-depo-index"));
               if (idx !== -1 && state.depoimentos[idx]) {
                 if (el.classList.contains("depo-text")) {
                   updDepo(idx, { text: textVal });
@@ -300,10 +664,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           } else {
             const destCard = el.closest(".dest-card");
             if (destCard) {
-              const allCards = Array.from(doc.querySelectorAll(".dest-card"));
-              const idx = allCards.indexOf(destCard);
-              if (idx !== -1 && state.selectedPackages[idx]) {
-                setActiveImageEdit({ type: "package", packageId: state.selectedPackages[idx].id });
+              const packageId = destCard.getAttribute("data-package-id");
+              if (packageId && state.selectedPackages.some((pkg) => String(pkg.id) === packageId)) {
+                setActiveImageEdit({ type: "package", packageId });
                 setGlobalPickingImage(true);
               }
             }
@@ -318,20 +681,23 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         btn.innerHTML = "×";
         btn.className = "fabrica-remove-btn";
         btn.title = "Ocultar este elemento";
-        btn.style.cssText = "position:absolute; top:-6px; right:-6px; background:rgba(239,68,68,0.9); color:white; border:1px solid #fff; border-radius:50%; width:16px; height:16px; cursor:pointer; font-size:10px; font-weight:bold; display:none; align-items:center; justify-content:center; z-index:10000; box-shadow:0 2px 4px rgba(0,0,0,0.15); line-height:1; font-family:sans-serif; padding-bottom:1px; transition:all 0.2s ease; backdrop-filter:blur(2px);";
+        btn.type = "button";
+        btn.setAttribute("aria-label", "Ocultar este elemento");
+        btn.style.cssText = "position:absolute; top:6px; right:6px; background:rgba(239,68,68,0.94); color:white; border:1px solid #fff; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:18px; font-weight:bold; display:flex; align-items:center; justify-content:center; z-index:10000; box-shadow:0 2px 8px rgba(0,0,0,0.3); line-height:1; font-family:sans-serif; transition:all 0.2s ease; backdrop-filter:blur(2px);";
         
         (el as HTMLElement).style.position = "relative";
         el.appendChild(btn);
-        
-        el.addEventListener("mouseenter", () => btn.style.display = "flex");
-        el.addEventListener("mouseleave", () => btn.style.display = "none");
         
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           e.preventDefault();
           const id = el.getAttribute("data-visual-removable");
           if (id) {
-            window.postMessage({ type: "FABRICA_REMOVE", elementId: id }, "*");
+            const currentHidden = state.siteContent.hiddenElements || [];
+            if (!currentHidden.includes(id)) {
+              updSite({ hiddenElements: [...currentHidden, id] });
+              toast.success("¡Elemento ocultado del sitio!");
+            }
           }
         });
       });
@@ -350,7 +716,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   // apareçam pré-populadas no construtor do site.
   useEffect(() => {
     if (!isHydrated) return;
-    const SYNC_KEY = "fabrica-phase4-autosync-v1-es";
+    const SYNC_KEY = `fabrica-phase4-autosync-v2-es:${user?.id || "local"}:${state.projectId || "draft"}`;
     const lastSyncHash = localStorage.getItem(SYNC_KEY);
     const dest = (state.destinos?.[0] || "").trim();
     const currentHash = [dest, state.lastPrice, state.lastPaymentMode, state.agencyName, state.agencyType].join("|");
@@ -483,28 +849,14 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     setAutoSyncDone(true);
     localStorage.setItem(SYNC_KEY, currentHash);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHydrated, state.agencyName, state.destinos, state.lastPaymentMode, state.lastPrice, state.level, state.siteContent, systemUpdate]);
+  }, [isHydrated, state.agencyName, state.destinos, state.lastPaymentMode, state.lastPrice, state.level, state.projectId, state.siteContent, systemUpdate, user?.id]);
 
   const resetSiteToBlank = () => {
-    const SYNC_KEY = "fabrica-phase4-autosync-v1-es";
+    const SYNC_KEY = `fabrica-phase4-autosync-v2-es:${user?.id || "local"}:${state.projectId || "draft"}`;
     localStorage.removeItem(SYNC_KEY);
-    const newProjectId = crypto.randomUUID();
-    update({
-      projectId: newProjectId,
-      agencyName: "",
-      selectedPackages: [],
-      siteContent: {
-        ...state.siteContent,
-        heroHeadline: "",
-        heroSubheadline: "",
-        heroCtaLabel: "Hablar por WhatsApp",
-        finalCtaTitle: "¿Listo para tu próximo viaje?",
-        finalCtaLabel: "Llamar por WhatsApp",
-        galleryImages: [],
-        canvaViagemUrl: "",
-        vercelUrl: "",
-      },
-    });
+    const currentPhase = state.currentPhase;
+    reset();
+    systemUpdate({ currentPhase });
     setAutoSyncDone(false);
     setAutoSyncFields([]);
     toast.success("¡Nuevo proyecto en blanco creado!");
@@ -512,13 +864,16 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
   // Pacotes
   const addPacote = () => {
+    const packageId = String(Date.now());
     const novo: Pacote = {
-      id: String(Date.now()),
+      id: packageId,
       title: "Nuevo paquete",
       description: "Describe lo que está incluido",
       price: "$ 0,00",
       imageUrl: "",
       ctaLabel: "Quiero este",
+      slug: buildPackageSlug(`nuevo-paquete-${packageId}`, packageId),
+      segment: suggestPackageSegment(state.agencyType),
     };
     update({ selectedPackages: [...state.selectedPackages, novo] });
   };
@@ -601,6 +956,15 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
   return (
     <div className="max-w-3xl lg:max-w-[1550px] mx-auto transition-all duration-300">
+      <ProjectSwitchDialog
+        open={Boolean(pendingProjectSwitch)}
+        currentName={state.agencyName || "Sin nombre"}
+        targetName={pendingProjectSwitch?.agency_name || "Sin nombre"}
+        locale="es"
+        busy={isSwitchingProject}
+        onCancel={() => !isSwitchingProject && setPendingProjectSwitch(null)}
+        onConfirm={() => pendingProjectSwitch && void loadSavedProject(pendingProjectSwitch)}
+      />
       {/* ── SELETOR DE PROJETO PERMANENTE — Siempre visible sin importar el estado ── */}
       <div className="rounded-2xl p-3 border bg-white/[0.03] border-white/10 flex items-center gap-3 mb-4">
         <span className="text-base flex-shrink-0">📂</span>
@@ -623,14 +987,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 if (!val) return;
                 const p = savedProjects!.find(x => x.id === val);
                 if (!p || !p.state_snapshot) return;
-                const targetName = p.agency_name || 'Sin Nombre';
-                const currentName = state.agencyName || 'Sin nombre';
-                if (state.agencyName && p.id !== state.projectId) {
-                  const ok = window.confirm(`⚠️ Estás editando "${currentName}".\n\n¿Deseas cargar "${targetName}"? Guarda antes si tienes cambios sin confirmar.`);
-                  if (!ok) { e.target.value = ""; return; }
-                }
-                window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                toast.success(`📂 ¡Proyecto "${targetName}" cargado!`);
+                requestProjectSwitch(p);
               }}
               className="w-full max-w-md bg-white/[0.04] border border-white/15 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
             >
@@ -640,10 +997,11 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 const pkgCount = snap?.selectedPackages?.length || 0;
                 const url = snap?.siteContent?.canvaViagemUrl || "";
                 const isCurrent = p.id === state.projectId;
+                const isRecovered = p.source === "published_recovery";
                 const date = new Date(p.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
                 return (
                   <option key={p.id} value={p.id} className="bg-zinc-900 text-white">
-                    {isCurrent ? "● " : ""}{p.agency_name || "Sin Nombre"}{url ? ` — ${url}` : ""} • {pkgCount} paquete{pkgCount !== 1 ? "s" : ""} • {date}
+                    {isCurrent ? "● " : ""}{p.agency_name || "Sin Nombre"}{isRecovered ? " • Recuperado" : ""}{url ? ` — ${url}` : ""} • {pkgCount} paquete{pkgCount !== 1 ? "s" : ""} • {date}
                   </option>
                 );
               })}
@@ -658,6 +1016,19 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           Crear Nuevo Sitio
         </button>
       </div>
+
+      <SiteTemplateSelector
+        locale="es"
+        selected={state.siteContent.templateId}
+        onSelect={(templateId) => {
+          updSite({ templateId });
+          toast.success(`Modelo ${getSiteTemplateDefinition(templateId).copy.es.label} aplicado en la vista previa.`);
+        }}
+        primaryColor={state.primaryColor}
+        secondaryColor={state.secondaryColor}
+        backgroundColor={state.backgroundColor}
+        heroImageUrl={state.siteContent.heroImageUrl}
+      />
 
       {/* ── Banner de Auto-Sync (informativo, no bloquea el selector) ── */}
       {autoSyncDone && autoSyncFields.length > 0 && (
@@ -691,7 +1062,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             </h4>
           </div>
 
-            <FabricaCard title="📦 Paquetes ofrecidos">
+            <FabricaCard title="📦 Paquetes ofrecidos" sectionId="packages">
               <FieldText
                 label="Título de la sección"
                 value={state.siteContent.pacotesTitle}
@@ -702,6 +1073,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                   <PacoteEditor
                      key={p.id}
                      pacote={p}
+                     agencyType={state.agencyType}
                      gallery={state.siteContent.galleryImages}
                      onChange={(patch) => updPacote(p.id, patch)}
                      onDelete={() => delPacote(p.id)}
@@ -717,30 +1089,14 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             </FabricaCard>
 
           <div className="space-y-6">
-            <FabricaCard title="🎨 Color primario del sitio">
-              <div className="flex flex-wrap gap-3 items-center">
-                {PRESET_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => update({ primaryColor: c })}
-                    className={`w-10 h-10 rounded-xl border-2 transition-all ${
-                      state.primaryColor === c ? "border-white scale-110" : "border-white/20"
-                    }`}
-                    style={{ background: c }}
-                    aria-label={c}
-                  />
-                ))}
-                <div className="flex items-center gap-2 ml-2">
-                  <Palette className="w-4 h-4 text-white/50" />
-                  <input
-                    type="color"
-                    value={state.primaryColor}
-                    onChange={(e) => update({ primaryColor: e.target.value })}
-                    className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-white/10"
-                  />
-                </div>
-              </div>
-
+            <FabricaCard title="Paleta de la marca">
+              <BrandPaletteEditor
+                locale="es"
+                primaryColor={state.primaryColor}
+                secondaryColor={state.secondaryColor}
+                backgroundColor={state.backgroundColor || "#F4F6F9"}
+                onChange={(patch) => update(patch)}
+              />
             </FabricaCard>
 
             <FabricaCard title="👁️ Secciones del sitio">
@@ -1085,7 +1441,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             <div className="p-5 bg-black/50 relative">
               <div className="mb-3 p-3 rounded-xl bg-amber-500/[0.06] border border-amber-500/10 text-center text-[11px] text-amber-300/80 font-semibold flex items-center justify-center gap-2">
                 <Pencil className="w-3.5 h-3.5 text-amber-400" />
-                💡 <strong>Haz clic en cualquier texto del sitio para escribir</strong> o <strong>toca una foto</strong> para cambiarla en vivo!
+                💡 <strong>Haz clic en textos, iconos, fotos o fondos para editar.</strong> En botones, usa doble clic para abrir los colores.
               </div>
 
               <div className="transition-all duration-300 ease-in-out">
@@ -1094,17 +1450,249 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                   srcDoc={previewHTML}
                   className={`bg-white transition-all duration-500 ${
                     previewMode === "mobile"
-                      ? "w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px] shadow-[0_20px_60px_rgba(0,0,0,0.7)]"
+                      ? "w-full max-w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px] shadow-[0_20px_60px_rgba(0,0,0,0.7)]"
                       : "w-full h-[1150px] border border-white/[0.05] rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
                   }`}
                   title="Preview"
                 />
               </div>
+              {activePackagePreviewId && (
+                <div className="fixed inset-x-3 top-16 z-[80] flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-zinc-950/95 p-2 shadow-2xl backdrop-blur md:hidden">
+                  <button
+                    type="button"
+                    className="min-h-11 flex-1 rounded-xl bg-amber-400 px-4 text-sm font-black text-zinc-950"
+                    onClick={() => {
+                      const packageId = activePackagePreviewId;
+                      const iframeWindow = iframeRef.current?.contentWindow as (Window & {
+                        closePackageDetails?: () => void;
+                      }) | null;
+                      iframeWindow?.closePackageDetails?.();
+                      setActivePackagePreviewId(null);
+                      window.setTimeout(() => packageEditorShortcutRef.current(packageId), 0);
+                    }}
+                  >
+                    Editar información
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Cerrar detalles del paquete"
+                    className="grid min-h-11 min-w-11 place-items-center rounded-xl border border-white/15 text-xl text-white"
+                    onClick={() => {
+                      const iframeWindow = iframeRef.current?.contentWindow as (Window & {
+                        closePackageDetails?: () => void;
+                      }) | null;
+                      iframeWindow?.closePackageDetails?.();
+                      setActivePackagePreviewId(null);
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
+      {globalEditingPalette && (
+        <div className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm">
+          <aside
+            ref={colorDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fabrica-color-dialog-title-es"
+            aria-describedby="fabrica-color-dialog-description-es"
+            tabIndex={-1}
+            className="ml-auto h-full w-full max-w-md overflow-y-auto border-l border-white/10 bg-zinc-950 p-6 shadow-2xl"
+          >
+            <button
+              ref={colorModalCloseRef}
+              type="button"
+              onClick={() => {
+                setGlobalEditingPalette(false);
+                setActiveColorSection(null);
+              }}
+              className="absolute right-4 top-4 rounded-lg bg-white/[0.04] p-1.5 text-white/50 transition-colors hover:bg-white/[0.1] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+              aria-label="Cerrar editor de colores"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="mb-6 pr-10">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">Edición visual</div>
+              <h3 id="fabrica-color-dialog-title-es" className="mt-1 text-lg font-bold text-white">
+                Fondo: {SITE_SECTION_LABELS_ES[activeColorSection || ""] || "Sección seleccionada"}
+              </h3>
+              <p id="fabrica-color-dialog-description-es" className="mt-1 text-xs leading-relaxed text-white/50">
+                Este color se guardará solamente en este fondo. Las otras partes del sitio no cambiarán.
+              </p>
+            </div>
+
+            {activeColorSection && (
+              <SectionBackgroundEditor
+                locale="es"
+                label={`Color de ${SITE_SECTION_LABELS_ES[activeColorSection] || "fondo"}`}
+                value={state.siteContent.sectionColors?.[activeColorSection] || state.backgroundColor || "#F4F6F9"}
+                paletteColors={[state.primaryColor, state.secondaryColor, state.backgroundColor || "#F4F6F9", "#18181B"]}
+                onChange={(color) => updSite({
+                  sectionColors: {
+                    ...(state.siteContent.sectionColors || {}),
+                    [activeColorSection]: color,
+                  },
+                })}
+                onReset={() => {
+                  const sectionColors = { ...(state.siteContent.sectionColors || {}) };
+                  delete sectionColors[activeColorSection];
+                  updSite({ sectionColors });
+                }}
+              />
+            )}
+
+            <details className="mt-6 border-t border-white/10 pt-5">
+              <summary className="cursor-pointer text-xs font-bold text-white/65 hover:text-white">
+                Cambiar la paleta global de la marca
+              </summary>
+              <div className="mt-4">
+                <BrandPaletteEditor
+                  compact
+                  locale="es"
+                  primaryColor={state.primaryColor}
+                  secondaryColor={state.secondaryColor}
+                  backgroundColor={state.backgroundColor || "#F4F6F9"}
+                  onChange={(patch) => update(patch)}
+                />
+              </div>
+            </details>
+
+            <button
+              type="button"
+              onClick={() => {
+                setGlobalEditingPalette(false);
+                setActiveColorSection(null);
+              }}
+              className="mt-6 w-full rounded-xl px-4 py-3 text-sm font-bold text-zinc-950 transition-transform hover:scale-[1.01]"
+              style={{ backgroundColor: UI_ACCENT }}
+            >
+              Finalizar edición
+            </button>
+          </aside>
+        </div>
+      )}
+
+      {globalPickingImage && activeImageEdit && (
+        <div
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setGlobalPickingImage(false);
+              setActiveImageEdit(null);
+            }
+          }}
+        >
+          <div
+            ref={imageDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fabrica-image-dialog-title-es"
+            aria-describedby="fabrica-image-dialog-description-es"
+            tabIndex={-1}
+            className="relative w-full max-w-lg rounded-3xl border border-white/10 bg-zinc-900 p-5 shadow-2xl sm:p-6"
+          >
+            <button
+              ref={imageModalCloseRef}
+              type="button"
+              onClick={() => {
+                setGlobalPickingImage(false);
+                setActiveImageEdit(null);
+              }}
+              className="absolute right-4 top-4 rounded-lg bg-white/[0.04] p-1.5 text-white/50 hover:bg-white/[0.1] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+              aria-label="Cerrar selector de imágenes"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="mb-4 flex items-center gap-2 pr-10">
+              <Sparkles className="h-5 w-5 text-amber-400" aria-hidden="true" />
+              <h3 id="fabrica-image-dialog-title-es" className="text-lg font-bold text-white">
+                Cambiar {activeImageEdit.type === "logo" ? "logotipo" : activeImageEdit.type === "hero" ? "imagen principal" : activeImageEdit.type === "about" ? "foto del equipo" : "foto del paquete"}
+              </h3>
+            </div>
+            <p id="fabrica-image-dialog-description-es" className="mb-4 text-xs leading-5 text-white/60">
+              Reutiliza una imagen de tu banco, pega un enlace o selecciona una foto de tu dispositivo.
+            </p>
+
+            {state.siteContent.galleryImages.length > 0 ? (
+              <div className="mb-4 grid max-h-56 grid-cols-3 gap-2 overflow-y-auto rounded-xl border border-white/5 bg-black/20 p-2 sm:grid-cols-4">
+                {state.siteContent.galleryImages.map((url, index) => (
+                  <button
+                    key={`${url}-${index}`}
+                    type="button"
+                    onClick={() => applyGlobalImage(url)}
+                    className="aspect-square overflow-hidden rounded-lg border-2 border-white/10 transition-all hover:border-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                    aria-label={`Usar imagen ${index + 1} del banco`}
+                  >
+                    <img src={url} alt="" className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="mb-4 rounded-xl border border-dashed border-white/10 bg-black/10 py-6 text-center text-xs italic text-white/40">
+                Tu banco todavía no tiene imágenes. Puedes pegar un enlace o subir una foto.
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  type="url"
+                  aria-label="Enlace de la imagen"
+                  placeholder="https://ejemplo.com/foto.jpg"
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter") return;
+                    const url = normalizeExternalImageUrl(event.currentTarget.value);
+                    if (!url) {
+                      toast.error("Ingresa un enlace de imagen válido.");
+                      return;
+                    }
+                    applyGlobalImage(url);
+                  }}
+                  className="min-h-11 flex-1 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-amber-400/60"
+                />
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    const input = event.currentTarget.previousElementSibling as HTMLInputElement | null;
+                    const url = normalizeExternalImageUrl(input?.value || "");
+                    if (!url) {
+                      toast.error("Ingresa un enlace de imagen válido.");
+                      return;
+                    }
+                    applyGlobalImage(url);
+                  }}
+                  className="min-h-11 rounded-lg bg-white/[0.08] px-4 text-sm font-semibold text-white hover:bg-white/[0.15]"
+                >
+                  Aplicar
+                </button>
+              </div>
+
+              <label className="block min-h-11 cursor-pointer rounded-lg border border-dashed border-white/20 bg-white/[0.02] py-3 text-center text-xs font-semibold text-white/60 transition-colors hover:border-white/40 hover:text-white">
+                <Upload className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> Seleccionar del dispositivo
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => applyGlobalImage(String(reader.result || ""));
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
@@ -1163,11 +1751,13 @@ const FieldTextarea = ({
 
 const PacoteEditor = ({
   pacote,
+  agencyType,
   gallery,
   onChange,
   onDelete,
 }: {
   pacote: Pacote;
+  agencyType: AgencyType;
   gallery: string[];
   onChange: (patch: Partial<Pacote>) => void;
   onDelete: () => void;
@@ -1176,6 +1766,33 @@ const PacoteEditor = ({
   const [photoQuery, setPhotoQuery] = useState("");
   const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [photos, setPhotos] = useState<Array<{ id: number; url: string; thumb: string; alt: string }>>([]);
+  const effectiveSegment = pacote.segment || suggestPackageSegment(agencyType);
+  const hasAdvancedDetails = Boolean(
+    pacote.subtitle || pacote.longDescription || pacote.travelDates || pacote.duration || pacote.departureLocation ||
+    pacote.meetingPoint || pacote.accommodation || pacote.priceDetails || pacote.paymentTerms ||
+    pacote.availability || pacote.highlights?.length || pacote.included?.length ||
+    pacote.notIncluded?.length || pacote.itinerary?.length || pacote.requirements?.length ||
+    pacote.documents?.length || pacote.accessibility?.length || pacote.cancellationPolicy ||
+    pacote.importantNotes || pacote.galleryImages?.length || pacote.faq?.length,
+  );
+
+  const updateList = (
+    key: "highlights" | "included" | "notIncluded" | "itinerary" | "requirements" | "documents" | "accessibility",
+    value: string,
+  ) => onChange({ [key]: linesToList(value) } as Partial<Pacote>);
+
+  const toggleGalleryImage = (url: string) => {
+    const current = pacote.galleryImages || [];
+    if (current.includes(url)) {
+      onChange({ galleryImages: current.filter((item) => item !== url) });
+      return;
+    }
+    if (current.length >= 5) {
+      toast.error("Elige como máximo 5 imágenes por paquete.");
+      return;
+    }
+    onChange({ galleryImages: [...current, url] });
+  };
 
   const searchPhotos = async () => {
     const q = photoQuery.trim() || pacote.title.split(' ')[0] || ""; // default to first word of title
@@ -1205,7 +1822,7 @@ const PacoteEditor = ({
   };
 
   return (
-    <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-3">
+    <div id={`package-editor-${pacote.id}`} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-3 scroll-mt-24">
       <div className="flex gap-3">
         {/* Imagem do pacote */}
         <button
@@ -1223,7 +1840,7 @@ const PacoteEditor = ({
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-white/40 gap-1">
               <ImagePlus className="w-5 h-5" />
-              <span className="text-[10px] font-semibold">Imagem</span>
+              <span className="text-[10px] font-semibold">Imagen</span>
             </div>
           )}
         </button>
@@ -1233,6 +1850,11 @@ const PacoteEditor = ({
             <input
               value={pacote.title}
               onChange={(e) => onChange({ title: e.target.value })}
+              onBlur={(e) => {
+                if (!pacote.slug || pacote.slug.startsWith("nuevo-paquete-")) {
+                  onChange({ slug: buildPackageSlug(e.target.value, pacote.id) });
+                }
+              }}
               placeholder="Ej: Cancún 5 días"
               className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm font-bold text-white placeholder:text-white/30 outline-none focus:border-white/40"
             />
@@ -1246,7 +1868,14 @@ const PacoteEditor = ({
           <input
             value={pacote.price}
             onChange={(e) => onChange({ price: e.target.value })}
-            placeholder="$ 1.997 / pessoa"
+            placeholder="$ 1.997 / persona"
+            className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
+          />
+          <input
+            value={pacote.badge || ""}
+            onChange={(e) => onChange({ badge: e.target.value })}
+            placeholder="Sello de la tarjeta (ej.: Oferta, Grupo, Playa)"
+            maxLength={32}
             className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
           />
         </div>
@@ -1270,6 +1899,219 @@ const PacoteEditor = ({
         />
         <span className="text-[10px] text-white/40 italic">→ "Hola, tengo interés en {pacote.title || "..."}"</span>
       </div>
+
+      <details className="group rounded-xl border border-white/10 bg-white/[0.025] open:bg-black/20">
+        <summary
+          data-testid={`package-advanced-toggle-${pacote.id}`}
+          className="flex min-h-11 w-full cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-2.5 text-left text-sm font-semibold text-white/80 transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 [&::-webkit-details-marker]:hidden"
+        >
+          <span>
+            {hasAdvancedDetails ? "Editar más información" : "Añadir más información"}
+            <span className="mt-0.5 block text-[10px] font-normal text-white/40">Opcional · aparece solamente en el detalle del paquete</span>
+          </span>
+          <ChevronDown className="h-4 w-4 flex-shrink-0 transition-transform group-open:rotate-180" />
+        </summary>
+
+        <div className="space-y-5 rounded-xl border border-white/10 bg-black/25 p-3 sm:p-4">
+          <div className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 py-2.5 text-[11px] leading-relaxed text-amber-100/75">
+            La Fábrica recomienda los campos según el tipo de paquete. Los campos vacíos no aparecen en el sitio ni cambian el formulario o el CRM.
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Tipo de experiencia</span>
+              <select
+                value={effectiveSegment}
+                onChange={(event) => onChange({ segment: event.target.value as Pacote["segment"] })}
+                className="min-h-11 w-full rounded-lg border border-white/10 bg-zinc-900 px-3 py-2 text-base text-white outline-none focus:border-white/40 sm:text-sm"
+              >
+                {PACKAGE_SEGMENT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{PACKAGE_SEGMENT_LABELS_ES[option.value] || option.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Disponibilidad</span>
+              <select
+                value={pacote.availability || ""}
+                onChange={(event) => onChange({ availability: (event.target.value || undefined) as Pacote["availability"] })}
+                className="min-h-11 w-full rounded-lg border border-white/10 bg-zinc-900 px-3 py-2 text-base text-white outline-none focus:border-white/40 sm:text-sm"
+              >
+                <option value="">No informar</option>
+                {PACKAGE_AVAILABILITY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{PACKAGE_AVAILABILITY_LABELS_ES[option.value] || option.label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <label className="block">
+            <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Subtítulo</span>
+            <input
+              value={pacote.subtitle || ""}
+              onChange={(event) => onChange({ subtitle: event.target.value })}
+              placeholder="Ej.: la experiencia más completa para conocer el destino"
+              className="min-h-11 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Descripción completa</span>
+            <textarea
+              value={pacote.longDescription || ""}
+              onChange={(event) => onChange({ longDescription: event.target.value })}
+              placeholder={PACKAGE_GUIDANCE_ES.description}
+              rows={5}
+              className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base leading-relaxed text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+            />
+          </label>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {[
+              ["Fechas o frecuencia", "travelDates", pacote.travelDates || "", PACKAGE_GUIDANCE_ES.dates],
+              ["Duración", "duration", pacote.duration || "", PACKAGE_GUIDANCE_ES.duration],
+              ["Origen / embarque", "departureLocation", pacote.departureLocation || "", PACKAGE_GUIDANCE_ES.departure],
+              ["Encuentro / recogida", "meetingPoint", pacote.meetingPoint || "", PACKAGE_GUIDANCE_ES.meetingPoint],
+              ["Alojamiento / cabina", "accommodation", pacote.accommodation || "", PACKAGE_GUIDANCE_ES.accommodation],
+              ["Cómo se calcula el precio", "priceDetails", pacote.priceDetails || "", PACKAGE_GUIDANCE_ES.priceDetails],
+              ["Pago", "paymentTerms", pacote.paymentTerms || "", "Ej.: entrada del 20% + 10 cuotas sin interés"],
+              ["Enlace compartible", "slug", pacote.slug || buildPackageSlug(pacote.title, pacote.id), "ej.: jericoacoara-5-dias"],
+            ].map(([label, key, value, placeholder]) => (
+              <label className="block" key={key}>
+                <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">{label}</span>
+                <input
+                  value={value}
+                  onChange={(event) => onChange({ [key]: key === "slug" ? buildPackageSlug(event.target.value, pacote.id) : event.target.value } as Partial<Pacote>)}
+                  maxLength={key === "slug" ? 120 : undefined}
+                  placeholder={placeholder}
+                  className="min-h-11 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+                />
+              </label>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+            {[
+              ["Destacados", "highlights", pacote.highlights || [], PACKAGE_GUIDANCE_ES.highlights],
+              ["Qué incluye", "included", pacote.included || [], PACKAGE_GUIDANCE_ES.included],
+              ["Qué no incluye", "notIncluded", pacote.notIncluded || [], "Un ítem por línea\nBebidas\nGastos personales"],
+              ["Itinerario resumido", "itinerary", pacote.itinerary || [], PACKAGE_GUIDANCE_ES.itinerary],
+              ["Requisitos y qué llevar", "requirements", pacote.requirements || [], PACKAGE_GUIDANCE_ES.requirements],
+              ["Documentos necesarios", "documents", pacote.documents || [], PACKAGE_GUIDANCE_ES.documents],
+              ["Recursos de accesibilidad", "accessibility", pacote.accessibility || [], "Un recurso por línea\nTransporte adaptado: por confirmar\nAcceso sin escalones"],
+            ].map(([label, key, value, placeholder]) => (
+              <label className="block" key={key as string}>
+                <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">{label as string}</span>
+                <textarea
+                  value={(value as string[]).join("\n")}
+                  onChange={(event) => updateList(key as Parameters<typeof updateList>[0], event.target.value)}
+                  placeholder={placeholder as string}
+                  rows={4}
+                  className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base leading-relaxed text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+                />
+              </label>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+            <label className="block">
+              <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Política de cancelación</span>
+              <textarea
+                value={pacote.cancellationPolicy || ""}
+                onChange={(event) => onChange({ cancellationPolicy: event.target.value })}
+                placeholder="Ej.: cancelación gratuita hasta 7 días antes; después, consulta las condiciones."
+                rows={4}
+                className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base leading-relaxed text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/50">Información importante</span>
+              <textarea
+                value={pacote.importantNotes || ""}
+                onChange={(event) => onChange({ importantNotes: event.target.value })}
+                placeholder="Ej.: operación sujeta al clima; confirmación enviada por WhatsApp."
+                rows={4}
+                className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-base leading-relaxed text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+              />
+            </label>
+          </div>
+
+          {gallery.length > 0 && (
+            <div>
+              <div className="mb-2 flex items-end justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-white/50">Galería del paquete</div>
+                  <div className="mt-0.5 text-[10px] text-white/35">Reutiliza los enlaces del banco; elige hasta 5.</div>
+                </div>
+                <span className="text-[10px] text-white/45">{pacote.galleryImages?.length || 0}/5</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                {gallery.map((url, index) => {
+                  const selected = pacote.galleryImages?.includes(url);
+                  return (
+                    <button
+                      key={url}
+                      type="button"
+                      aria-pressed={selected}
+                      aria-label={`${selected ? "Quitar" : "Añadir"} imagen ${index + 1} de la galería del paquete`}
+                      onClick={() => toggleGalleryImage(url)}
+                      className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-colors ${selected ? "border-amber-400" : "border-white/10 hover:border-white/35"}`}
+                    >
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                      {selected && <span className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-amber-400 text-black"><Check className="h-3 w-3" /></span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-white/50">Preguntas de este paquete</div>
+                <div className="mt-0.5 text-[10px] text-white/35">Si queda vacío, el sitio usa las preguntas generales.</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => onChange({ faq: [...(pacote.faq || []), { question: "", answer: "" }] })}
+                className="min-h-11 rounded-lg border border-white/10 px-3 text-xs font-semibold text-white/70 hover:bg-white/[0.05]"
+              >
+                + Añadir pregunta
+              </button>
+            </div>
+            <div className="space-y-2">
+              {(pacote.faq || []).map((item, index) => (
+                <div key={`${pacote.id}-faq-${index}`} className="rounded-lg border border-white/10 bg-white/[0.025] p-3">
+                  <div className="flex gap-2">
+                    <input
+                      value={item.question}
+                      onChange={(event) => onChange({ faq: (pacote.faq || []).map((faq, faqIndex) => faqIndex === index ? { ...faq, question: event.target.value } : faq) })}
+                      placeholder="Ej.: ¿Puedo cambiar la fecha?"
+                      className="min-h-11 flex-1 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-base text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+                    />
+                    <button
+                      type="button"
+                      aria-label="Quitar pregunta"
+                      onClick={() => onChange({ faq: (pacote.faq || []).filter((_, faqIndex) => faqIndex !== index) })}
+                      className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-lg bg-red-500/10 text-red-300 hover:bg-red-500/20"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <textarea
+                    value={item.answer}
+                    onChange={(event) => onChange({ faq: (pacote.faq || []).map((faq, faqIndex) => faqIndex === index ? { ...faq, answer: event.target.value } : faq) })}
+                    placeholder="Escribe una respuesta objetiva."
+                    rows={3}
+                    className="mt-2 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-base text-white placeholder:text-white/30 outline-none focus:border-white/40 sm:text-sm"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </details>
 
       {pickingImage && (
         <div className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-3">
@@ -1538,18 +2380,6 @@ const PublishSiteCardES = ({
   const setSubdomain = setCanvaViagemSubdomain;
   const finalSubdomain = buildSiteSlug(canvaViagemSubdomain || state.agencyName || "");
 
-  const publishToCanvaViagem = async (slug: string) => {
-    const cleanSlug = buildSiteSlug(slug);
-    const url = getCanvaSiteUrl(cleanSlug);
-    update({
-      siteContent: {
-        ...state.siteContent,
-        canvaViagemUrl: url,
-      },
-    });
-    return { success: true, url };
-  };
-
   useEffect(() => {
     if (state.siteContent.canvaViagemUrl) {
       setCanvaViagemSubdomain(extractCanvaSiteSlug(state.siteContent.canvaViagemUrl));
@@ -1596,73 +2426,42 @@ const PublishSiteCardES = ({
       return;
     }
 
-    const { data: existingDomain } = await supabase
-      .from("public_sites")
-      .select("owner_id")
-      .eq("id", cleanSlug)
-      .maybeSingle();
-    if (existingDomain && existingDomain.owner_id !== user.id) {
-      toast.error(`El dominio "${cleanSlug}.canvaviagem.com" ya pertenece a otra agencia.`);
-      return;
-    }
-
     setIsPublishing(true);
     try {
-      let publishId = state.projectId;
-      if (!publishId) {
-        publishId = crypto.randomUUID();
-        update({ projectId: publishId });
-      }
-
-      let finalHtml = html;
-      const embeddedImages = Array.from(new Set(
-        finalHtml.match(/data:image\/[a-zA-Z0-9.+-]+;base64,[a-zA-Z0-9+/=]+/g) || [],
-      ));
-      for (const base64Data of embeddedImages) {
-        const sourceBlob = await (await fetch(base64Data)).blob();
-        const webpBlob = await optimizeImageBlobToWebp(sourceBlob);
-        const hash = await hashBlob(webpBlob);
-        const filename = `sites/${user.id}/assets/${hash}.webp`;
-        const { error: uploadError } = await supabase.storage
-          .from("thumbnails")
-          .upload(filename, webpBlob, { contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE, upsert: true });
-        if (uploadError) throw uploadError;
-        const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(filename).data.publicUrl;
-        finalHtml = finalHtml.split(base64Data).join(publicUrl);
-      }
-      if (/data:image\/[a-zA-Z0-9.+-]+;base64,/i.test(finalHtml)) {
-        throw new Error("No se pudieron optimizar todas las imágenes del sitio.");
-      }
-
-      // El slug público identifica el sitio; project_id conserva el vínculo con el proyecto.
-      const { error: dbError } = await supabase
-        .from("public_sites")
-        .upsert({
-          id: cleanSlug,
-          owner_id: user.id,
-          project_id: publishId,
-          html: finalHtml,
-          locale: 'es'
-        });
-      if (dbError) {
-        throw new Error(dbError.message || "Error al guardar sitio en la base de datos.");
-      }
-
-      const result = await publishToCanvaViagem(cleanSlug);
-      if (result.success) {
-        toast.success(
-          <div>
-            ¡Sitio publicado con éxito! 🎉
-            <br />
-            Tu enlace es: <b>{result.url}</b>
-          </div>,
-          { duration: 6000 }
-        );
-      } else {
-        toast.error(result.message || "Error al publicar. El nombre ya podría estar en uso.");
-      }
+      const result = await publishFabricaSite({
+        state,
+        userId: user.id,
+        slug: cleanSlug,
+        locale: "es",
+      });
+      update({
+        projectId: result.projectId,
+        crmForm: result.state.crmForm,
+        logoBase64: result.state.logoBase64,
+        selectedPackages: result.state.selectedPackages,
+        siteContent: result.state.siteContent,
+      });
+      toast.success(
+        <div>
+          ¡Sitio publicado con éxito! 🎉
+          <br />
+          Tu enlace es: <b>{result.liveUrl}</b>
+        </div>,
+        { duration: 6000 }
+      );
     } catch (err: any) {
-      toast.error("Error al publicar: " + err.message);
+      const raw = String(err?.message || "");
+      if (raw.includes("another_owner") || raw.includes("site_slug_unavailable")) {
+        toast.error("Esta dirección ya pertenece a otra cuenta. Elige otro subdominio.");
+      } else if (raw.includes("another_project") || raw.includes("site_slug_belongs_to_another_project")) {
+        toast.error("Esta dirección ya está vinculada a otro proyecto tuyo. Elige otro subdominio.");
+      } else if (/network|fetch/i.test(raw)) {
+        toast.error("Sin conexión con internet. Revisa tu red e inténtalo de nuevo.");
+      } else if (raw.includes("site_publish_schema_sync_pending")) {
+        toast.error("La publicación se está actualizando. Espera unos segundos e inténtalo de nuevo; tu sitio anterior sigue activo.");
+      } else {
+        toast.error("No fue posible publicar el sitio ahora. Inténtalo de nuevo en unos instantes.");
+      }
     } finally {
       setIsPublishing(false);
     }
@@ -1855,11 +2654,20 @@ const PublishSiteCardES = ({
   );
 };
 
-const FabricaCard = ({ title, children }: { title: string; children: React.ReactNode }) => {
+const FabricaCard = ({
+  title,
+  children,
+  sectionId,
+}: {
+  title: string;
+  children: React.ReactNode;
+  sectionId?: string;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div
+      data-fabrica-card={sectionId}
       className="bg-white/[0.03] border rounded-2xl backdrop-blur-xl transition-all duration-300 overflow-hidden"
       style={{
         borderColor: isOpen ? UI_ACCENT_BORDER : "rgba(255, 255, 255, 0.06)",

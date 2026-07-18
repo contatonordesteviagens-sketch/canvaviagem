@@ -14,8 +14,12 @@ export default function PainelMarketing() {
   const { data: diagnosticos = [], isLoading } = useDiagnosticos();
   const deleteDiag = useDeleteDiagnostico();
 
-  const continueWith = (snapshot: unknown) => {
-    navigate("/fabrica", { state: { prefillSnapshot: snapshot } });
+  const continueWith = (project: (typeof diagnosticos)[number]) => {
+    navigate("/fabrica", {
+      state: {
+        prefillSnapshot: { ...project.state_snapshot, projectId: project.id },
+      },
+    });
   };
 
   return (
@@ -89,7 +93,7 @@ export default function PainelMarketing() {
                   </p>
                 </div>
                 <div className="flex gap-1">
-                  <Button size="sm" variant="ghost" onClick={() => continueWith(d.state_snapshot)} title="Continuar editando">
+                  <Button size="sm" variant="ghost" onClick={() => continueWith(d)} title="Continuar editando">
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => generateDiagnosticoPDF(d.state_snapshot as any)} title="Baixar PDF">
@@ -99,7 +103,7 @@ export default function PainelMarketing() {
                     size="sm"
                     variant="ghost"
                     onClick={() => {
-                      if (confirm(`Remover diagnóstico de ${d.agency_name}?`)) deleteDiag.mutate(d.id);
+                      if (confirm(`Remover projeto de ${d.agency_name}? O site publicado também será removido.`)) deleteDiag.mutate(d);
                     }}
                     className="text-destructive hover:text-destructive"
                     title="Remover"

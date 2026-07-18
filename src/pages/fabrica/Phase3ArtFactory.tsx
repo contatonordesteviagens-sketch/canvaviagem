@@ -14,6 +14,8 @@ import {
   Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2, Copy, ClipboardCheck, FileText, Key,
 } from "lucide-react";
 import { toast } from "sonner";
+import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
+import { F1CarouselBuilder } from "@/components/fabrica/F1CarouselBuilder";
 
 type GenMode = "ai" | "photo" | "custom";
 type CustomSource = "upload" | "link";
@@ -458,6 +460,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update, systemUpdate, reset } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
+  const [creativeMode, setCreativeMode] = useState<"ad" | "carousel">("ad");
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
   
 
@@ -1107,9 +1110,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     const period = travelPeriod ? `\n📅 ${travelPeriod}` : "";
     
     const cleanDest = destination.trim();
+    const packageId = `gen-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const usedPackageSlugs = (state.selectedPackages || []).map(
+      (item) => item.slug || buildPackageSlug(item.title, item.id),
+    );
     const newPkg = {
-      id: `gen-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: packageId,
       title: cleanDest,
+      slug: createUniquePackageSlug(cleanDest, usedPackageSlugs, packageId),
       description: descLines + period,
       price: priceLabel,
       imageUrl: imageToUse,
@@ -1664,6 +1672,44 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-1.5">
+        <div className="grid grid-cols-2 gap-1.5" role="tablist" aria-label="Tipo de criação">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={creativeMode === "ad"}
+            onClick={() => setCreativeMode("ad")}
+            className={`min-h-11 rounded-xl px-4 text-sm font-extrabold transition-colors ${
+              creativeMode === "ad"
+                ? "bg-[#F5F906] text-zinc-950"
+                : "text-white/55 hover:bg-white/[0.05] hover:text-white"
+            }`}
+          >
+            Anúncio
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={creativeMode === "carousel"}
+            onClick={() => setCreativeMode("carousel")}
+            className={`min-h-11 rounded-xl px-4 text-sm font-extrabold transition-colors ${
+              creativeMode === "carousel"
+                ? "bg-[#F5F906] text-zinc-950"
+                : "text-white/55 hover:bg-white/[0.05] hover:text-white"
+            }`}
+          >
+            Carrossel
+          </button>
+        </div>
+      </div>
+
+      {creativeMode === "carousel" ? (
+        <F1CarouselBuilder
+          sourceImage={generatedImage || selectedPhotoUrl || customImageData || customLink}
+          locale="pt"
+        />
+      ) : (
+        <>
 
       {/* Grid de Perfil e Contatos */}
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 bg-white/[0.02] border border-white/[0.08] p-6 rounded-2xl">
@@ -2678,6 +2724,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   </div>
                   <button
                     type="button"
+                    onClick={() => setCreativeMode("carousel")}
+                    disabled={!generatedImage}
+                    className="shrink-0 rounded-xl bg-[#F5F906] px-3 py-2 text-xs font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Transformar em carrossel
+                  </button>
+                  <button
+                    type="button"
                     onClick={downloadPNG}
                     disabled={!generatedImage}
                     className="shrink-0 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-bold text-white hover:bg-white/[0.12] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
@@ -2782,6 +2836,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </p>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };

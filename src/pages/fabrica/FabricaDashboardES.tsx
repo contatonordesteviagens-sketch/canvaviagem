@@ -1,7 +1,9 @@
 import { useState, useRef } from "react";
-import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDiagnosticos, useSaveDiagnostico } from "@/hooks/useFabricaDiagnosticos";
+import { useDiagnosticos, useSaveDiagnostico, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
+import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
+import { PackageAdvancedFields } from "@/components/fabrica/PackageAdvancedFields";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Upload, 
@@ -22,6 +24,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { COUNTRIES_DIAL, type CountryDial } from "@/lib/countriesDial";
+import { useQueryClient } from "@tanstack/react-query";
+import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
+import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
 
 const AGENCY_TYPES = [
   { v: "autonoma", l: "Agente autónomo / Freelancer" },
@@ -44,14 +49,46 @@ const UI_ACCENT = "#F5F906";
 const UI_ACCENT_BORDER_SOFT = "rgba(245, 249, 6, 0.35)";
 
 export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
-  const { state, update, reset } = useFabricaContext();
+  const { state, update, reset, deleteAndDiscardCurrentProject, switchProject } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const saveProject = useSaveDiagnostico();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingProjectSwitch, setPendingProjectSwitch] = useState<DiagnosticoSalvo | null>(null);
+  const [isSwitchingProject, setIsSwitchingProject] = useState(false);
+
+  const loadSavedProject = async (project: DiagnosticoSalvo) => {
+    const targetName = project.agency_name || "Sin nombre";
+    const isRecovered = project.source === "published_recovery";
+    setIsSwitchingProject(true);
+    try {
+      await switchProject({ ...project.state_snapshot, projectId: project.id });
+      setPendingProjectSwitch(null);
+      if (isRecovered) toast.warning(`Sitio anterior "${targetName}" recuperado. Revisa los datos antes de volver a publicarlo.`);
+      else toast.success(`Proyecto "${targetName}" cargado.`);
+      window.setTimeout(() => onNavigate?.("phase", 2), 100);
+    } catch {
+      toast.error("No se pudo guardar el proyecto actual. El cambio fue cancelado para proteger tus datos.");
+    } finally {
+      setIsSwitchingProject(false);
+    }
+  };
+
+  const requestProjectSwitch = (project: DiagnosticoSalvo) => {
+    if (project.id === state.projectId) {
+      toast.info("Este proyecto ya está abierto.");
+      return;
+    }
+    if (!state.agencyName) {
+      void loadSavedProject(project);
+      return;
+    }
+    setPendingProjectSwitch(project);
+  };
 
   const handleSaveProject = async () => {
     if (!user) { toast.error("Inicia sesión para guardar"); return; }
@@ -92,12 +129,14 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editPrice, setEditPrice] = useState("");
+  const [editDetails, setEditDetails] = useState<Partial<Pacote>>({});
 
   // Form de adición de paquetes
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  const [newDetails, setNewDetails] = useState<Partial<Pacote>>({});
 
   const slugify = (text: string) => {
     return text
@@ -145,6 +184,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
     setEditTitle(pkg.title);
     setEditDesc(pkg.description);
     setEditPrice(pkg.price);
+    setEditDetails(pkg);
     setShowAddForm(false);
   };
 
@@ -154,7 +194,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
       return;
     }
     const updated = state.selectedPackages.map((p) =>
-      p.id === id ? { ...p, title: editTitle.trim(), description: editDesc.trim(), price: editPrice.trim() } : p
+      p.id === id ? { ...p, ...editDetails, title: editTitle.trim(), description: editDesc.trim(), price: editPrice.trim() } : p
     );
     update({ selectedPackages: updated });
     setEditingId(null);
@@ -188,24 +228,38 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
       toast.error("Agrega un título al paquete");
       return;
     }
+    const id = `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const usedSlugs = state.selectedPackages.map((item) => item.slug || buildPackageSlug(item.title, item.id));
     const pkg = {
-      id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      imageUrl: "",
+      ctaLabel: "Reservar ahora",
+      ...newDetails,
+      id,
       title: newTitle.trim(),
+      slug: newDetails.slug || createUniquePackageSlug(newTitle.trim(), usedSlugs, id),
       description: newDesc.trim() || "Nueva oferta especial.",
       price: newPrice.trim() || "Consultar",
-      imageUrl: "",
-      ctaLabel: "Reservar ahora"
     };
     update({ selectedPackages: [pkg, ...state.selectedPackages] });
     setNewTitle("");
     setNewDesc("");
     setNewPrice("");
+    setNewDetails({});
     setShowAddForm(false);
     toast.success("¡Nuevo paquete agregado!");
   };
 
   return (
     <div className="space-y-8 animate-fadeIn max-w-[1280px] mx-auto pb-12">
+      <ProjectSwitchDialog
+        open={Boolean(pendingProjectSwitch)}
+        currentName={state.agencyName || "Sin nombre"}
+        targetName={pendingProjectSwitch?.agency_name || "Sin nombre"}
+        locale="es"
+        busy={isSwitchingProject}
+        onCancel={() => !isSwitchingProject && setPendingProjectSwitch(null)}
+        onConfirm={() => pendingProjectSwitch && void loadSavedProject(pendingProjectSwitch)}
+      />
 
       {/* Projetos Salvos / Guardados */}
       {user && (
@@ -214,10 +268,10 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
           <button
             type="button"
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
-            className="w-full flex items-center justify-between text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
+            className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
           >
             <span className="flex items-center gap-1.5">📂 EDITAR SITIOS (Proyectos Guardados) {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
-            <span className="text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ OCULTAR" : "▼ EXPANDIR / CARGAR"}</span>
+            <span className="self-end sm:self-auto text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ OCULTAR" : "▼ EXPANDIR / CARGAR"}</span>
           </button>
           
           {projectsPanelOpen && (
@@ -230,15 +284,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                     if (!val) return;
                     const p = savedProjects!.find(x => x.id === val);
                     if (!p || !p.state_snapshot) return;
-                    const targetName = p.agency_name || 'Sin Nombre';
-                    const currentName = state.agencyName || 'Sin nombre';
-                    if (state.agencyName && p.id !== state.projectId) {
-                      const ok = window.confirm(`⚠️ Estás editando "${currentName}".\n\n¿Deseas cargar "${targetName}"? Guarda antes si tienes cambios sin confirmar.`);
-                      if (!ok) { e.target.value = ""; return; }
-                    }
-                    window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                    toast.success(`📂 ¡Proyecto "${targetName}" cargado!`);
-                    setTimeout(() => onNavigate?.("phase", 2), 100);
+                    requestProjectSwitch(p);
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
                 >
@@ -249,9 +295,10 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                     const score = snap?.digitalScore || p.digital_score || 0;
                     const date = new Date(p.updated_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
                     const isCurrent = p.id === state.projectId;
+                    const isRecovered = p.source === "published_recovery";
                     return (
                       <option key={p.id} value={p.id} className="bg-zinc-900">
-                        {isCurrent ? '● ' : ''}{p.agency_name || "Sin Nombre"} — {pkgCount} paquete{pkgCount !== 1 ? 's' : ''} • Score {score}% • {date}
+                        {isCurrent ? '● ' : ''}{p.agency_name || "Sin Nombre"}{isRecovered ? " • Recuperado" : ""} — {pkgCount} paquete{pkgCount !== 1 ? 's' : ''} • Score {score}% • {date}
                       </option>
                     );
                   })}
@@ -292,11 +339,33 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                     const currentName = state.agencyName || 'Sin nombre';
                     if (!window.confirm(`⚠️ ¿Realmente deseas eliminar el proyecto "${currentName}"? Esta acción no se puede deshacer.`)) return;
                     try {
-                      const { error } = await supabase.from("fabrica_diagnosticos" as any).delete().eq("id", state.projectId);
-                      if (error) throw error;
+                      const projectId = state.projectId || "";
+                      const storedProject = savedProjects?.find((project) => project.id === projectId);
+                      const snapshot = storedProject?.state_snapshot || state;
+                      const linkedSlugs: string[] = [];
+                      for (const url of [snapshot.siteContent?.canvaViagemUrl, snapshot.siteContent?.vercelUrl]) {
+                        if (!url) continue;
+                        try { linkedSlugs.push(new URL(url).hostname.split(".")[0]); } catch { /* URL anterior inválida */ }
+                      }
+                      const uniqueSlugs = [...new Set(linkedSlugs.filter(Boolean))];
+                      await deleteAndDiscardCurrentProject(async (persistedProjectId) => {
+                        if (persistedProjectId) {
+                          await deleteFabricaProject({ projectId: persistedProjectId, userId: user!.id, legacySlugs: uniqueSlugs });
+                        } else if (uniqueSlugs.length > 0) {
+                          const { error: slugsError } = await supabase
+                            .from("public_sites")
+                            .delete()
+                            .eq("owner_id", user!.id)
+                            .is("project_id", null)
+                            .in("id", uniqueSlugs);
+                          if (slugsError) throw slugsError;
+                        }
+                      });
+                      await Promise.all([
+                        queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
+                        queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
+                      ]);
                       toast.success("🗑️ ¡Proyecto eliminado con éxito!");
-                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
-                      reset();
                     } catch (err: any) {
                       toast.error(err?.message || "Error al eliminar proyecto.");
                     }
@@ -314,12 +383,12 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                 onClick={() => {
                   const confirmed = window.confirm(
                     `⚠️ Antes de crear un nuevo proyecto, asegúrate de haber guardado el proyecto actual ("${state.agencyName || 'Sin nombre'}").\n\n¿Deseas continuar y crear un proyecto en blanco?`
-                  );
-                  if (!confirmed) return;
-                  window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
-                  reset();
-                  toast.success("¡Nuevo proyecto iniciado! Puedes completar los datos iniciales aquí.");
-                  setProjectsPanelOpen(false);
+                   );
+                   if (!confirmed) return;
+                   reset();
+                   toast.success("¡Nuevo proyecto iniciado! Puedes completar los datos iniciales aquí.");
+                   setProjectsPanelOpen(false);
+                   onNavigate?.("phase", 1);
                 }}
                 className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
                 style={{ borderColor: UI_ACCENT_BORDER_SOFT }}
@@ -586,6 +655,20 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                     </div>
                   </div>
 
+                  <PackageAdvancedFields
+                    pacote={{
+                      id: "nuevo-paquete",
+                      title: newTitle,
+                      description: newDesc,
+                      price: newPrice,
+                      ctaLabel: "Reservar ahora",
+                      ...newDetails,
+                    }}
+                    agencyType={state.agencyType}
+                    locale="es"
+                    onChange={(patch) => setNewDetails((current) => ({ ...current, ...patch }))}
+                  />
+
                   <div className="flex gap-2 pt-2 border-t border-white/5">
                     <button 
                       onClick={addPackage} 
@@ -594,7 +677,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                       <Check className="w-4 h-4" /> Agregar y Sincronizar
                     </button>
                     <button 
-                      onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); }} 
+                      onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); setNewDetails({}); }}
                       className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 text-xs font-bold transition-all"
                     >
                       Cancelar
@@ -640,6 +723,18 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                             value={editPrice} 
                             onChange={(e) => setEditPrice(e.target.value)} 
                             className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500/50" 
+                          />
+                          <PackageAdvancedFields
+                            pacote={{
+                              id: pkg.id,
+                              title: editTitle,
+                              description: editDesc,
+                              price: editPrice,
+                              ...editDetails,
+                            }}
+                            agencyType={state.agencyType}
+                            locale="es"
+                            onChange={(patch) => setEditDetails((current) => ({ ...current, ...patch }))}
                           />
                           <div className="flex gap-2 pt-2 border-t border-white/5">
                             <button 

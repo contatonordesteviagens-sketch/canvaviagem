@@ -60,3 +60,12 @@ verify_jwt = false
 [functions.fabrica-edit-photo]
 verify_jwt = false
 
+[functions.submit-crm-form]
+verify_jwt = false
+
+[functions.get-crm-form]
+verify_jwt = false
+
+
+[functions.meta-capi-obrigado]
+verify_jwt = false

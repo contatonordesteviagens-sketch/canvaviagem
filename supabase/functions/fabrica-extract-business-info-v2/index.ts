@@ -16,7 +16,33 @@ Receberá um texto (geralmente transcrição de áudio falado pelo dono da agên
   "estiloMarca": "string",
   "destinos": ["string"],
   "packages": [
-    { "title": "string", "description": "string", "price": "string" }
+    {
+      "title": "string",
+      "description": "string",
+      "price": "string",
+      "badge": "string",
+      "segment": "passeio|pacote|sob-medida|grupo|cruzeiro|aventura|religioso|corporativo|outro",
+      "subtitle": "string",
+      "longDescription": "string",
+      "travelDates": "string",
+      "duration": "string",
+      "departureLocation": "string",
+      "meetingPoint": "string",
+      "accommodation": "string",
+      "priceDetails": "string",
+      "paymentTerms": "string",
+      "availability": "disponivel|ultimas-vagas|saida-confirmada|sob-consulta|lista-de-espera|esgotado",
+      "highlights": ["string"],
+      "included": ["string"],
+      "notIncluded": ["string"],
+      "itinerary": ["string"],
+      "requirements": ["string"],
+      "documents": ["string"],
+      "accessibility": ["string"],
+      "cancellationPolicy": "string",
+      "importantNotes": "string",
+      "faq": [{ "question": "string", "answer": "string" }]
+    }
   ],
   "diferenciais": ["string"]
 }
@@ -25,6 +51,9 @@ Regras:
 - Use português brasileiro natural.
 - Se faltar informação, retorne string vazia ou array vazio — NUNCA invente um nome de agência.
 - "price" pode ser estimativa formatada (ex: "R$ 1.890,00") ou "Consulte".
+- Extraia detalhes somente quando forem ditos ou claramente implicados no texto. NÃO invente datas, inclusões, hotel, documentos, políticas ou condições.
+- Separe listas faladas nos arrays corretos. Preserve valores, datas e condições exatamente como o usuário informou.
+- Campos detalhados são opcionais; use string vazia ou array vazio quando ausentes.
 - NÃO use blocos de markdown. Retorne JSON puro.`;
 
 function tryParseJson(text: string): any | null {
@@ -34,6 +63,24 @@ function tryParseJson(text: string): any | null {
   const match = cleaned.match(/\{[\s\S]*\}/);
   if (match) { try { return JSON.parse(match[0]); } catch {} }
   return null;
+}
+
+const PACKAGE_SEGMENTS = new Set([
+  "passeio", "pacote", "sob-medida", "grupo", "cruzeiro",
+  "aventura", "religioso", "corporativo", "outro",
+]);
+const PACKAGE_AVAILABILITY = new Set([
+  "disponivel", "ultimas-vagas", "saida-confirmada",
+  "sob-consulta", "lista-de-espera", "esgotado",
+]);
+
+function stringList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item || "").trim()).filter(Boolean);
+}
+
+function optionalString(value: unknown): string {
+  return String(value || "").trim();
 }
 
 Deno.serve(async (req) => {
@@ -124,9 +171,38 @@ Deno.serve(async (req) => {
       estiloMarca: String(parsed.estiloMarca || ""),
       destinos: Array.isArray(parsed.destinos) ? parsed.destinos.map(String) : [],
       packages: Array.isArray(parsed.packages) ? parsed.packages.map((p: any) => ({
-        title: String(p?.title || ""),
-        description: String(p?.description || ""),
-        price: String(p?.price || "Consulte"),
+        title: optionalString(p?.title),
+        description: optionalString(p?.description),
+        price: optionalString(p?.price) || "Consulte",
+        badge: optionalString(p?.badge),
+        segment: PACKAGE_SEGMENTS.has(p?.segment) ? p.segment : "",
+        subtitle: optionalString(p?.subtitle),
+        longDescription: optionalString(p?.longDescription),
+        travelDates: optionalString(p?.travelDates),
+        duration: optionalString(p?.duration),
+        departureLocation: optionalString(p?.departureLocation),
+        meetingPoint: optionalString(p?.meetingPoint),
+        accommodation: optionalString(p?.accommodation),
+        priceDetails: optionalString(p?.priceDetails),
+        paymentTerms: optionalString(p?.paymentTerms),
+        availability: PACKAGE_AVAILABILITY.has(p?.availability) ? p.availability : "",
+        highlights: stringList(p?.highlights),
+        included: stringList(p?.included),
+        notIncluded: stringList(p?.notIncluded),
+        itinerary: stringList(p?.itinerary),
+        requirements: stringList(p?.requirements),
+        documents: stringList(p?.documents),
+        accessibility: stringList(p?.accessibility),
+        cancellationPolicy: optionalString(p?.cancellationPolicy),
+        importantNotes: optionalString(p?.importantNotes),
+        faq: Array.isArray(p?.faq)
+          ? p.faq
+              .map((item: any) => ({
+                question: optionalString(item?.question),
+                answer: optionalString(item?.answer),
+              }))
+              .filter((item: { question: string; answer: string }) => item.question || item.answer)
+          : [],
       })) : [],
       diferenciais: Array.isArray(parsed.diferenciais) ? parsed.diferenciais.map(String) : [],
     };

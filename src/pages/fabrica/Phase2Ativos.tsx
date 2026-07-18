@@ -1,9 +1,11 @@
-import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
+import { PackageAdvancedFields } from "@/components/fabrica/PackageAdvancedFields";
 import { useContentItems, useCaptions, useMarketingTools } from "@/hooks/useContent";
 import { getOfertasByNiche, type OfertaTemplate } from "@/data/fabrica-ofertas";
 import { Copy, ExternalLink, ArrowRight, CheckCircle2, Plus, Trash2, Pencil, X, Check, Package, Sparkles, Layout, Video, Film } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
+import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
 
 interface Props {
   onNext: () => void;
@@ -94,24 +96,27 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editPrice, setEditPrice] = useState("");
+  const [editDetails, setEditDetails] = useState<Partial<Pacote>>({});
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  const [newDetails, setNewDetails] = useState<Partial<Pacote>>({});
 
   const startEdit = (pkg: any) => {
     setEditingId(pkg.id);
     setEditTitle(pkg.title);
     setEditDesc(pkg.description);
     setEditPrice(pkg.price);
+    setEditDetails(pkg);
     setShowAddForm(false);
   };
 
   const saveEdit = (id: string) => {
     if (!editTitle.trim()) return;
     const updated = packages.map((p) => 
-      p.id === id ? { ...p, title: editTitle.trim(), description: editDesc.trim(), price: editPrice.trim() } : p
+      p.id === id ? { ...p, ...editDetails, title: editTitle.trim(), description: editDesc.trim(), price: editPrice.trim() } : p
     );
     update({ selectedPackages: updated });
     setEditingId(null);
@@ -132,18 +137,23 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
 
   const addPackage = () => {
     if (!newTitle.trim()) { toast.error("Adicione um título ao pacote"); return; }
+    const id = generateId();
+    const usedSlugs = packages.map((item) => item.slug || buildPackageSlug(item.title, item.id));
     const pkg = {
-      id: generateId(),
+      imageUrl: "",
+      ctaLabel: "Reservar agora",
+      ...newDetails,
+      id,
       title: newTitle.trim(),
+      slug: newDetails.slug || createUniquePackageSlug(newTitle.trim(), usedSlugs, id),
       description: newDesc.trim() || "Nova oferta especial.",
       price: newPrice.trim() || "Consulte",
-      imageUrl: "",
-      ctaLabel: "Reservar agora"
     };
     update({ selectedPackages: [pkg, ...packages] });
     setNewTitle("");
     setNewDesc("");
     setNewPrice("");
+    setNewDetails({});
     setShowAddForm(false);
     toast.success("Novo pacote adicionado e já visível no Site!");
   };
@@ -262,9 +272,21 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
                 placeholder="Preço (ex: 10x de R$ 149,90)"
                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
               />
+              <PackageAdvancedFields
+                pacote={{
+                  id: "novo-pacote-f2",
+                  title: newTitle,
+                  description: newDesc,
+                  price: newPrice,
+                  ctaLabel: "Reservar agora",
+                  ...newDetails,
+                }}
+                agencyType={state.agencyType}
+                onChange={(patch) => setNewDetails((current) => ({ ...current, ...patch }))}
+              />
               <div className="flex gap-2 pt-1">
                 <button onClick={addPackage} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold text-black" style={{ background: UI_ACCENT }}><Check className="w-4 h-4" /> Adicionar ao Site</button>
-                <button onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); }} className="px-4 py-2.5 rounded-lg bg-white/[0.06] border border-white/10 text-white/60 hover:text-white"><X className="w-4 h-4" /></button>
+                <button onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); setNewDetails({}); }} className="px-4 py-2.5 rounded-lg bg-white/[0.06] border border-white/10 text-white/60 hover:text-white"><X className="w-4 h-4" /></button>
               </div>
             </div>
           )}
@@ -284,6 +306,17 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
                     <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm font-bold text-white focus:outline-none" />
                     <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={2} className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none resize-none" />
                     <input value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm font-semibold text-emerald-400 focus:outline-none" />
+                    <PackageAdvancedFields
+                      pacote={{
+                        id: pkg.id,
+                        title: editTitle,
+                        description: editDesc,
+                        price: editPrice,
+                        ...editDetails,
+                      }}
+                      agencyType={state.agencyType}
+                      onChange={(patch) => setEditDetails((current) => ({ ...current, ...patch }))}
+                    />
                     <div className="flex gap-2 pt-1">
                       <button onClick={() => saveEdit(pkg.id)} className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold text-black" style={{ background: UI_ACCENT }}><Check className="w-4 h-4" /> Salvar no Site</button>
                       <button onClick={() => setEditingId(null)} className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/10 text-white/60"><X className="w-4 h-4" /></button>

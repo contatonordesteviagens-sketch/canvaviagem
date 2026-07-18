@@ -222,14 +222,21 @@ export default function MinhaConta() {
                   <Button size="sm" variant="ghost" onClick={() => generateDiagnosticoPDF(d.state_snapshot as any)} title="Baixar PDF">
                     <FileDown className="h-4 w-4" />
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => navigate("/fabrica")} title="Continuar">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => navigate("/fabrica", {
+                      state: { prefillSnapshot: { ...d.state_snapshot, projectId: d.id } },
+                    })}
+                    title="Continuar"
+                  >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => {
-                      if (confirm(`Remover diagnóstico de ${d.agency_name}?`)) deleteDiag.mutate(d.id);
+                      if (confirm(`Remover projeto de ${d.agency_name}? O site publicado também será removido.`)) deleteDiag.mutate(d);
                     }}
                     className="text-destructive hover:text-destructive"
                     title="Remover"
