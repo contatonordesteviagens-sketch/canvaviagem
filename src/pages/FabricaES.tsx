@@ -24,7 +24,7 @@ import {
   Menu,
   X
 } from "lucide-react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate, useLocation, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 import { CloudSaveIndicatorES } from "@/components/fabrica/CloudSaveIndicatorES";
 import { hasEliteAccess } from "@/lib/planAccess";
@@ -33,9 +33,36 @@ const FabricaInnerES = () => {
   const { state, setPhase } = useFabricaContext();
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "phase" | "library">("dashboard");
   const [librarySubTab, setLibrarySubTab] = useState<"ofertas" | "galeria">("ofertas");
+
+  useEffect(() => {
+    const path = location.pathname.toLowerCase();
+    if (path.includes("/anuncio") || path.includes("/anuncios")) {
+      setActiveTab("phase");
+      setPhase(1);
+    } else if (path.includes("/site") || path.includes("/sites") || path.includes("/sitio")) {
+      setActiveTab("phase");
+      setPhase(2);
+    } else if (path.includes("/crm")) {
+      setActiveTab("phase");
+      setPhase(3);
+    } else if (path.includes("/checkup")) {
+      setActiveTab("phase");
+      setPhase(5);
+    } else if (path.includes("/plano") || path.includes("/plan") || path.includes("/planos") || path.includes("/projeto") || path.includes("/projetos")) {
+      setActiveTab("phase");
+      setPhase(4);
+    } else if (path.includes("/ofertas") || path.includes("/oferta")) {
+      setActiveTab("library");
+      setLibrarySubTab("ofertas");
+    } else if (path.includes("/galeria") || path.includes("/biblioteca") || path.includes("/artes") || path.includes("/arte")) {
+      setActiveTab("library");
+      setLibrarySubTab("galeria");
+    }
+  }, [location.pathname, setPhase]);
 
   useEffect(() => {
     const color = state.primaryColor || "#F59E0B";

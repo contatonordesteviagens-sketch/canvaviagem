@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Search, Sparkles, ArrowRight, Wand2 } from "lucide-react";
+import { Search, Sparkles, ArrowRight, Wand2, FileText, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,49 @@ interface HeroBannerProps {
 const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+
+  const fabricaCapas = [
+    {
+      id: "painel",
+      title: "Painel Fábrica de Destinos",
+      subtitle: "Acesse todas as ferramentas de criação IA",
+      src: "/capa-fabrica.webp",
+      route: "/fabrica",
+      badge: "Painel Fábrica",
+      icon: Wand2,
+      badgeColor: "border-blue-500/40 text-blue-400 group-hover:bg-blue-600 group-hover:text-white"
+    },
+    {
+      id: "anuncio",
+      title: "Anúncios Prontos & IA (F1)",
+      subtitle: "Gere copys e anúncios validados em segundos",
+      src: "/capa-2.webp",
+      route: "/fabrica/anuncio",
+      badge: "Anúncio (F1)",
+      icon: Sparkles,
+      badgeColor: "border-amber-500/40 text-amber-400 group-hover:bg-amber-600 group-hover:text-white"
+    },
+    {
+      id: "site",
+      title: "Sites & Landings (F2)",
+      subtitle: "Crie páginas completas de alta conversão",
+      src: "/capa-3.webp",
+      route: "/fabrica/site",
+      badge: "Site (F2)",
+      icon: FileText,
+      badgeColor: "border-emerald-500/40 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white"
+    },
+    {
+      id: "crm",
+      title: "CRM & Funil de Vendas (F3)",
+      subtitle: "Gerencie leads e feche mais viagens",
+      src: "/capa-4.webp",
+      route: "/fabrica/crm",
+      badge: "CRM (F3)",
+      icon: Users,
+      badgeColor: "border-purple-500/40 text-purple-400 group-hover:bg-purple-600 group-hover:text-white"
+    }
+  ];
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pt-4 pb-8 md:pb-12">
@@ -50,25 +93,33 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
         </div>
       </div>
 
-      {/* 2. Imagem da Fábrica Abaixo (~70% da tela, 100% visível e Sem Cortes) */}
-      <div 
-        onClick={() => navigate('/fabrica')}
-        className="w-full max-w-[92%] sm:max-w-[82%] md:max-w-[70%] mx-auto relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.008] hover:border-blue-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.2)] group bg-slate-950/5 dark:bg-[#0F0F11]"
-      >
-        <img 
-          src="/capa-fabrica.webp" 
-          alt="Acesse a Fábrica de Destinos pra Vender Mais" 
-          className="w-full h-auto object-contain block mx-auto transition-transform duration-500 group-hover:scale-[1.01]"
-        />
-        
-        {/* Indicador de clique rápido / Ação Hover no Banner */}
-        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-20">
-          <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-black/80 backdrop-blur-md border border-blue-500/40 text-blue-400 text-[11px] sm:text-xs font-bold shadow-lg group-hover:bg-blue-600 group-hover:text-white transition-all">
-            <Wand2 className="w-3.5 h-3.5 shrink-0" />
-            <span>Abrir Fábrica de Destinos</span>
-            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-          </div>
-        </div>
+      {/* 2. Grid 2x2 das Capas da Fábrica (2 fileiras x 2 colunas) com Links Direcionados */}
+      <div className="w-full max-w-[96%] sm:max-w-[90%] md:max-w-[84%] mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        {fabricaCapas.map((capa) => {
+          const IconComponent = capa.icon;
+          return (
+            <div 
+              key={capa.id}
+              onClick={() => navigate(capa.route)}
+              className="w-full relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.015] hover:border-amber-500/40 hover:shadow-[0_0_35px_rgba(245,158,11,0.18)] group bg-slate-950/5 dark:bg-[#0F0F11]"
+            >
+              <img 
+                src={capa.src} 
+                alt={capa.title} 
+                className="w-full h-auto object-contain block mx-auto transition-transform duration-500 group-hover:scale-[1.025]"
+              />
+              
+              {/* Badge Rápido no topo/direita */}
+              <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-20">
+                <div className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-black/80 backdrop-blur-md border text-[11px] sm:text-xs font-bold shadow-lg transition-all ${capa.badgeColor}`}>
+                  <IconComponent className="w-3.5 h-3.5 shrink-0" />
+                  <span>{capa.badge}</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

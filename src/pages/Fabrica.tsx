@@ -59,6 +59,32 @@ const FabricaInner = () => {
   }, [isHydrated, location.state, location.pathname, navigate, switchProject]);
 
   useEffect(() => {
+    const path = location.pathname.toLowerCase();
+    if (path.includes("/anuncio") || path.includes("/anuncios")) {
+      setActiveTab("phase");
+      setPhase(1);
+    } else if (path.includes("/site") || path.includes("/sites")) {
+      setActiveTab("phase");
+      setPhase(2);
+    } else if (path.includes("/crm")) {
+      setActiveTab("phase");
+      setPhase(3);
+    } else if (path.includes("/checkup")) {
+      setActiveTab("phase");
+      setPhase(5);
+    } else if (path.includes("/plano") || path.includes("/planos") || path.includes("/projeto") || path.includes("/projetos")) {
+      setActiveTab("phase");
+      setPhase(4);
+    } else if (path.includes("/ofertas") || path.includes("/oferta")) {
+      setActiveTab("library");
+      setLibrarySubTab("ofertas");
+    } else if (path.includes("/galeria") || path.includes("/biblioteca") || path.includes("/artes") || path.includes("/arte")) {
+      setActiveTab("library");
+      setLibrarySubTab("galeria");
+    }
+  }, [location.pathname, setPhase]);
+
+  useEffect(() => {
     const color = state.primaryColor || "#F59E0B";
     document.documentElement.style.setProperty("--fabrica-primary", color);
 
@@ -113,7 +139,10 @@ const FabricaInner = () => {
           {/* Dashboard Geral */}
           <div>
             <button
-              onClick={() => setActiveTab("dashboard")}
+              onClick={() => {
+                setActiveTab("dashboard");
+                navigate(location.pathname.startsWith("/es") ? "/es/fabrica" : "/fabrica");
+              }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                 activeTab === "dashboard"
                   ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
@@ -134,6 +163,7 @@ const FabricaInner = () => {
               onClick={() => {
                 setPhase(1);
                 setActiveTab("phase");
+                navigate(location.pathname.startsWith("/es") ? "/es/fabrica/anuncio" : "/fabrica/anuncio");
               }}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                 activeTab === "phase" && state.currentPhase === 1
@@ -160,6 +190,7 @@ const FabricaInner = () => {
                 onClick={() => {
                   setPhase(2);
                   setActiveTab("phase");
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/site" : "/fabrica/site");
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                   activeTab === "phase" && state.currentPhase === 2
@@ -179,6 +210,7 @@ const FabricaInner = () => {
                 onClick={() => {
                   setPhase(3);
                   setActiveTab("phase");
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/crm" : "/fabrica/crm");
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                   activeTab === "phase" && state.currentPhase === 3
@@ -198,6 +230,7 @@ const FabricaInner = () => {
                 onClick={() => {
                   setPhase(5);
                   setActiveTab("phase");
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/checkup" : "/fabrica/checkup");
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                   activeTab === "phase" && state.currentPhase === 5
@@ -217,6 +250,7 @@ const FabricaInner = () => {
                 onClick={() => {
                   setPhase(4);
                   setActiveTab("phase");
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/plano" : "/fabrica/plano");
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                   activeTab === "phase" && state.currentPhase === 4
@@ -243,6 +277,7 @@ const FabricaInner = () => {
                 onClick={() => {
                   setActiveTab("library");
                   setLibrarySubTab("ofertas");
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/ofertas" : "/fabrica/ofertas");
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left ${
                   activeTab === "library" && librarySubTab === "ofertas"
@@ -257,6 +292,7 @@ const FabricaInner = () => {
                 onClick={() => {
                   setActiveTab("library");
                   setLibrarySubTab("galeria");
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/artes" : "/fabrica/artes");
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left ${
                   activeTab === "library" && librarySubTab === "galeria"
@@ -325,6 +361,7 @@ const FabricaInner = () => {
             onClick={() => {
               setActiveTab("dashboard");
               setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica" : "/fabrica");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "dashboard" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
@@ -339,6 +376,7 @@ const FabricaInner = () => {
               setPhase(1);
               setActiveTab("phase");
               setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/anuncio" : "/fabrica/anuncio");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
@@ -353,6 +391,7 @@ const FabricaInner = () => {
               setPhase(2);
               setActiveTab("phase");
               setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/site" : "/fabrica/site");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
@@ -365,6 +404,7 @@ const FabricaInner = () => {
               setPhase(3);
               setActiveTab("phase");
               setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/crm" : "/fabrica/crm");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
@@ -377,6 +417,7 @@ const FabricaInner = () => {
               setPhase(5);
               setActiveTab("phase");
               setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/checkup" : "/fabrica/checkup");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
@@ -389,6 +430,7 @@ const FabricaInner = () => {
               setPhase(4);
               setActiveTab("phase");
               setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/plano" : "/fabrica/plano");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
@@ -403,6 +445,7 @@ const FabricaInner = () => {
               setActiveTab("library");
               setLibrarySubTab("ofertas");
               setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/ofertas" : "/fabrica/ofertas");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "library" && librarySubTab === "ofertas" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
@@ -415,6 +458,7 @@ const FabricaInner = () => {
               setActiveTab("library");
               setLibrarySubTab("galeria");
               setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/artes" : "/fabrica/artes");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "library" && librarySubTab === "galeria" ? "bg-white/[0.06] text-amber-400" : "text-white/70"

@@ -201,6 +201,7 @@ const App = () => {
                     <Route path="/diferencas" element={<Diferencas />} />
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />
                     <Route path="/fabrica" element={<Fabrica />} />
+                    <Route path="/fabrica/*" element={<Fabrica />} />
                     <Route path="/vendedor-ia" element={
                       <ProtectedRoute requireSubscription>
                         <VendedorIA />
@@ -224,6 +225,7 @@ const App = () => {
                     <Route path="/es/planos" element={<SalesPageES />} />
                     <Route path="/es/obrigado" element={<ObrigadoES />} />
                     <Route path="/es/fabrica" element={<FabricaES />} />
+                    <Route path="/es/fabrica/*" element={<FabricaES />} />
                     {/* Canonical Spanish landing page route. */}
                     <Route path="/es/inicio" caseSensitive={false} element={<InicioES />} />
 
