@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Prévia do template Horizonte Boutique para sites gerados pela Fábrica." />
+    <title>Horizonte Boutique · Prévia de template</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="template-entry.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+
+    <aside class="preview-toolbar" aria-label="Controles da prévia">
+      <div class="preview-toolbar__identity">
+        <span class="preview-status" aria-hidden="true"></span>
+        <span><strong>Horizonte</strong> · prévia isolada</span>
+      </div>
+      <div class="preview-toolbar__actions">
+        <button type="button" class="tool-button" data-action="toggle-edit" aria-pressed="false">
+          Editar conteúdo
+        </button>
+        <button type="button" class="tool-button" data-action="simulate-sync">
+          Simular outra agência
+        </button>
+        <button type="button" class="tool-button" data-action="edit-logo">
+          Trocar logo
+        </button>
+        <label class="color-control">
+          <span>Cor principal</span>
+          <input id="primary-color" type="color" data-color-key="primaryColor" aria-label="Alterar cor principal" />
+        </label>
+        <label class="color-control">
+          <span>Cor de apoio</span>
+          <input id="secondary-color" type="color" data-color-key="secondaryColor" aria-label="Alterar cor de apoio" />
+        </label>
+        <label class="color-control">
+          <span>Fundo</span>
+          <input id="background-color" type="color" data-color-key="backgroundColor" aria-label="Alterar cor de fundo" />
+        </label>
+        <button type="button" class="tool-button tool-button--quiet" data-action="reset">Restaurar</button>
+      </div>
+      <output class="preview-toolbar__message" id="editor-status" aria-live="polite">Dados carregados da Fábrica</output>
+    </aside>
+
+    <div class="site-shell" id="site-shell">
+      <header class="site-header" id="site-header">
+        <a class="brand" href="#inicio" aria-label="Ir para o início">
+          <span class="brand__mark" id="brand-mark" aria-hidden="true"></span>
+          <img class="brand__logo" id="brand-logo" alt="" hidden />
+          <span class="brand__name" data-bind="agencyName" data-edit-key="agencyName"></span>
+        </a>
+
+        <nav class="site-nav" aria-label="Navegação principal">
+          <a href="#viagens">Viagens</a>
+          <a href="#sobre">A agência</a>
+          <a href="#historias">Histórias</a>
+        </nav>
+
+        <a class="header-contact" id="header-contact" href="#contato" data-bind="siteContent.headerCtaLabel" data-edit-key="siteContent.headerCtaLabel"></a>
+      </header>
+
+      <main id="main-content">
+        <section class="hero" id="inicio" aria-labelledby="hero-title">
+          <div class="hero__media editable-image" data-image-key="siteContent.heroImageUrl">
+            <img id="hero-image" alt="Paisagem inspiradora para a próxima viagem" />
+            <div class="hero__veil"></div>
+            <button class="image-edit-button" type="button" data-edit-image="siteContent.heroImageUrl" hidden>
+              Trocar foto principal
+            </button>
+          </div>
+
+          <div class="hero__content">
+            <p class="eyebrow" data-bind="siteContent.heroEyebrow" data-edit-key="siteContent.heroEyebrow"></p>
+            <h1 id="hero-title" data-bind="siteContent.heroHeadline" data-edit-key="siteContent.heroHeadline"></h1>
+            <p class="hero__lead" data-bind="siteContent.heroSubheadline" data-edit-key="siteContent.heroSubheadline"></p>
+            <div class="hero__actions">
+              <a class="button button--primary" href="#viagens" data-bind="siteContent.heroCtaLabel" data-edit-key="siteContent.heroCtaLabel"></a>
+              <a class="text-link" href="#contato"><span data-bind="siteContent.secondaryCtaLabel" data-edit-key="siteContent.secondaryCtaLabel"></span> <span aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+
+          <div class="hero__signature" aria-label="Identificação da agência">
+            <span>Uma curadoria de</span>
+            <strong data-bind="agencyName"></strong>
+            <small data-bind="city" data-edit-key="city"></small>
+          </div>
+
+          <div class="hero__index" aria-hidden="true">
+            <span>H</span><span>01</span>
+          </div>
+        </section>
+
+        <section class="trust-strip" aria-label="Diferenciais da agência">
+          <p data-bind="siteContent.equipeBadge" data-edit-key="siteContent.equipeBadge"></p>
+          <div class="trust-strip__stats" id="stats-list"></div>
+        </section>
+
+        <section class="journeys section" id="viagens" aria-labelledby="journeys-title">
+          <div class="section-heading section-heading--split">
+            <div>
+              <p class="eyebrow" data-bind="siteContent.destinosEyebrow" data-edit-key="siteContent.destinosEyebrow"></p>
+              <h2 id="journeys-title" data-bind="siteContent.pacotesTitle" data-edit-key="siteContent.pacotesTitle"></h2>
+            </div>
+            <p class="section-note" data-bind="siteContent.pacotesNote" data-edit-key="siteContent.pacotesNote"></p>
+          </div>
+          <div class="journeys-grid" id="packages-list"></div>
+          <div class="empty-state" id="packages-empty" hidden>
+            <strong>Nenhum pacote selecionado.</strong>
+            <span>Quando o usuário escolher os pacotes na Fábrica, eles aparecerão aqui automaticamente.</span>
+          </div>
+        </section>
+
+        <section class="process section" id="como-funciona" aria-labelledby="process-title">
+          <div class="process__heading">
+            <p class="eyebrow" data-bind="siteContent.processoEyebrow" data-edit-key="siteContent.processoEyebrow"></p>
+            <h2 id="process-title" data-bind="siteContent.processoTitle" data-edit-key="siteContent.processoTitle"></h2>
+          </div>
+          <ol class="process-list" id="process-list"></ol>
+        </section>
+
+        <section class="about section" id="sobre" aria-labelledby="about-title">
+          <div class="about__media editable-image" data-image-key="siteContent.aboutImageUrl">
+            <img id="about-image" alt="Equipe da agência reunida" />
+            <button class="image-edit-button" type="button" data-edit-image="siteContent.aboutImageUrl" hidden>
+              Trocar foto da agência
+            </button>
+            <span class="about__caption" data-bind="siteContent.aboutCaption" data-edit-key="siteContent.aboutCaption"></span>
+          </div>
+          <div class="about__content">
+            <p class="eyebrow" data-bind="siteContent.equipeEyebrow" data-edit-key="siteContent.equipeEyebrow"></p>
+            <h2 id="about-title" data-bind="siteContent.equipeTitle" data-edit-key="siteContent.equipeTitle"></h2>
+            <p class="about__intro" data-bind="siteContent.equipeIntro" data-edit-key="siteContent.equipeIntro"></p>
+            <div class="feature-lines" id="feature-list"></div>
+            <address class="contact-card">
+              <span>Onde estamos</span>
+              <strong data-bind="address" data-edit-key="address"></strong>
+              <a id="about-email" href="#" data-bind="agencyEmail" data-edit-key="agencyEmail"></a>
+            </address>
+          </div>
+        </section>
+
+        <section class="gallery section" aria-labelledby="gallery-title">
+          <div class="gallery__intro">
+            <p class="eyebrow" data-bind="siteContent.galleryEyebrow" data-edit-key="siteContent.galleryEyebrow"></p>
+            <h2 id="gallery-title" data-bind="siteContent.galleryTitle" data-edit-key="siteContent.galleryTitle"></h2>
+          </div>
+          <div class="gallery-grid" id="gallery-list"></div>
+        </section>
+
+        <section class="stories section" id="historias" aria-labelledby="stories-title">
+          <div class="stories__title">
+            <p class="eyebrow" data-bind="siteContent.depoimentosEyebrow" data-edit-key="siteContent.depoimentosEyebrow"></p>
+            <h2 id="stories-title" data-bind="siteContent.depoimentosTitle" data-edit-key="siteContent.depoimentosTitle"></h2>
+          </div>
+          <div class="stories-list" id="testimonials-list"></div>
+        </section>
+
+        <section class="contact" id="contato" aria-labelledby="contact-title">
+          <div class="contact__intro">
+            <p class="eyebrow" data-bind="siteContent.orcamentoEyebrow" data-edit-key="siteContent.orcamentoEyebrow"></p>
+            <h2 id="contact-title" data-bind="siteContent.orcamentoTitle" data-edit-key="siteContent.orcamentoTitle"></h2>
+            <p data-bind="siteContent.orcamentoText" data-edit-key="siteContent.orcamentoText"></p>
+            <div class="contact__details">
+              <a id="contact-phone" href="#" data-edit-key="whatsapp"></a>
+              <a id="contact-email" href="#" data-bind="agencyEmail"></a>
+              <span data-bind="address"></span>
+            </div>
+            <small data-bind="siteContent.atendimentoText" data-edit-key="siteContent.atendimentoText"></small>
+          </div>
+
+          <form class="lead-form" id="lead-form" novalidate>
+            <div class="lead-form__heading">
+              <span>Formulário integrado</span>
+              <strong id="form-title"></strong>
+              <p id="form-description"></p>
+            </div>
+            <div class="form-grid" id="form-fields"></div>
+            <button class="button button--form" id="form-submit" type="submit"></button>
+            <p class="form-disclaimer">Prévia segura: este formulário valida e monta o payload, mas não envia dados para o CRM.</p>
+            <div class="form-success" id="form-success" role="status" aria-live="polite" hidden></div>
+          </form>
+        </section>
+
+        <section class="faq section" aria-labelledby="faq-title">
+          <div class="faq__title">
+            <p class="eyebrow" data-bind="siteContent.faqEyebrow" data-edit-key="siteContent.faqEyebrow"></p>
+            <h2 id="faq-title" data-bind="siteContent.faqTitle" data-edit-key="siteContent.faqTitle"></h2>
+          </div>
+          <div class="faq-list" id="faq-list"></div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="site-footer__brand">
+          <span class="footer-mark" id="footer-mark" aria-hidden="true"></span>
+          <strong data-bind="agencyName"></strong>
+        </div>
+        <p data-bind="siteContent.footerText" data-edit-key="siteContent.footerText"></p>
+        <div class="site-footer__contact">
+          <a id="footer-email" href="#" data-bind="agencyEmail"></a>
+          <span data-bind="address"></span>
+        </div>
+        <div class="site-footer__bottom">
+          <span>Modelo Horizonte · Canva Viagem</span>
+          <span id="footer-year"></span>
+        </div>
+      </footer>
+    </div>
+
+    <aside class="payload-drawer" id="payload-drawer" aria-labelledby="payload-title" hidden>
+      <button type="button" class="payload-drawer__close" data-action="close-payload" aria-label="Fechar payload">×</button>
+      <span>Teste local, sem envio</span>
+      <h2 id="payload-title">Lead que chegaria ao CRM</h2>
+      <pre id="payload-output"></pre>
+    </aside>
+
+    <input id="image-file-input" type="file" accept="image/*" hidden />
+  </body>
+</html>

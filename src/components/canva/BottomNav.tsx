@@ -89,7 +89,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
 
   return (
     <>
-      <div className="fixed bottom-4 left-0 right-0 z-[60] flex justify-center pointer-events-none">
+      <div className="fixed bottom-4 left-0 right-0 z-[60] flex justify-center pointer-events-none md:hidden">
         <div className="pointer-events-auto w-full max-w-lg px-4">
           <Dock items={navItems} className="h-auto" />
         </div>

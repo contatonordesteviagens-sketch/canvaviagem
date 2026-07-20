@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
+import { SidebarNav } from "@/components/SidebarNav";
 import { Footer } from "@/components/Footer";
 import { PremiumGateModal } from "@/components/PremiumGateModal";
 import { ResourceSection } from "@/components/ResourceSection";
@@ -1148,13 +1149,16 @@ const IndexES = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <SeoMetadata title="Videos para Agencias de Viajes" description="Videos y diseños listos para agencias de viajes. Contenido para Instagram editable en Canva." url="https://canvaviagem.com/es" />
       <SpanishPixel />
+      <SidebarNav activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
       <Header />
 
-      <main className="container mx-auto px-4 py-4 md:py-6 max-w-7xl">
-        {mainContent}
-      </main>
+      <div className="md:pl-64 flex flex-col min-h-screen">
+        <main className="container mx-auto px-4 py-4 md:py-6 max-w-7xl flex-1">
+          {mainContent}
+        </main>
 
-      <Footer />
+        <Footer />
+      </div>
 
       {/* Bottom Navigation - Mobile only */}
       <BottomNav

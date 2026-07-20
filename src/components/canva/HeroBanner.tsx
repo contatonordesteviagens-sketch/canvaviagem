@@ -13,17 +13,7 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
   const { t } = useLanguage();
   const navigate = useNavigate();
 
-  const fabricaCapas = [
-    {
-      id: "painel",
-      title: "Painel Fábrica de Destinos",
-      subtitle: "Acesse todas as ferramentas de criação IA",
-      src: "/capa-fabrica.webp",
-      route: "/fabrica",
-      badge: "Painel Fábrica",
-      icon: Wand2,
-      badgeColor: "border-blue-500/40 text-blue-400 group-hover:bg-blue-600 group-hover:text-white"
-    },
+  const fabricaCapasGrid = [
     {
       id: "anuncio",
       title: "Anúncios Prontos & IA (F1)",
@@ -53,6 +43,16 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
       badge: "CRM (F3)",
       icon: Users,
       badgeColor: "border-purple-500/40 text-purple-400 group-hover:bg-purple-600 group-hover:text-white"
+    },
+    {
+      id: "checkup",
+      title: "Checkup & Planos (F4/F5)",
+      subtitle: "Estratégia e diagnóstico de vendas",
+      src: "/capa-5.webp",
+      route: "/fabrica/checkup",
+      badge: "Checkup & Planos",
+      icon: Wand2,
+      badgeColor: "border-blue-500/40 text-blue-400 group-hover:bg-blue-600 group-hover:text-white"
     }
   ];
 
@@ -93,9 +93,30 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
         </div>
       </div>
 
-      {/* 2. Grid 2x2 das Capas da Fábrica (2 fileiras x 2 colunas) com Links Direcionados */}
-      <div className="w-full max-w-[96%] sm:max-w-[90%] md:max-w-[84%] mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        {fabricaCapas.map((capa) => {
+      {/* 2. Imagem Principal no Topo (~70% da tela, sozinha em 1 fileira) */}
+      <div 
+        onClick={() => navigate('/fabrica')}
+        className="w-full max-w-[92%] sm:max-w-[82%] md:max-w-[70%] mx-auto relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.008] hover:border-blue-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.2)] group bg-slate-950/5 dark:bg-[#0F0F11]"
+      >
+        <img 
+          src="/capa-fabrica.webp" 
+          alt="Acesse a Fábrica de Destinos pra Vender Mais" 
+          className="w-full h-auto object-contain block mx-auto transition-transform duration-500 group-hover:scale-[1.01]"
+        />
+        
+        {/* Indicador de clique rápido */}
+        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-20">
+          <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-black/80 backdrop-blur-md border border-blue-500/40 text-blue-400 text-[11px] sm:text-xs font-bold shadow-lg group-hover:bg-blue-600 group-hover:text-white transition-all">
+            <Wand2 className="w-3.5 h-3.5 shrink-0" />
+            <span>Abrir Painel Principal</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Grid 2x2 das 4 Outras Capas da Fábrica (2 fileiras x 2 colunas) com Links Direcionados */}
+      <div className="w-full max-w-[96%] sm:max-w-[90%] md:max-w-[84%] mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-5 sm:mt-6">
+        {fabricaCapasGrid.map((capa) => {
           const IconComponent = capa.icon;
           return (
             <div 

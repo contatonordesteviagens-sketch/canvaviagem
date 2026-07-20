@@ -170,7 +170,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full md:pl-64 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
           <Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-3 hover:opacity-80 transition-opacity shrink-0 min-w-0">
             <img
@@ -193,40 +193,8 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
             </div>
           )}
 
-          {/* Desktop Navigation - Redesenhada para menor bagunça */}
-          <nav className="hidden md:flex items-center gap-1">
-            {/* Links Principais Inline para limpar o dropdown */}
-            <div className="flex items-center gap-1 mr-4 border-r pr-4 border-border/40">
-              {mainNavItems.map((item) => {
-                if ('action' in item) {
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={item.action}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-accent/10 hover:text-primary"
-                    >
-                      <item.icon className="w-4 h-4" />
-                      {item.label}
-                    </button>
-                  );
-                }
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to!}
-                    state={'state' in item ? item.state : undefined}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all hover:bg-accent/10 hover:text-primary",
-                      location.pathname === item.to ? "bg-primary/10 text-primary" : "text-muted-foreground"
-                    )}
-                  >
-                    <item.icon className="w-4 h-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-
+          {/* Desktop Navigation - Simplificado e Despoluído (Menu Principal transferido para o Menu Lateral) */}
+          <nav className="hidden md:flex items-center gap-2">
             {/* Progress Bar - Desktop */}
             {user && <div className="mr-2"><ProgressBar /></div>}
 

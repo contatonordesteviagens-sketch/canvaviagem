@@ -13,11 +13,16 @@ import {
   ChevronRight,
   Download,
   ImagePlus,
+  LayoutGrid,
   Lock,
+  Maximize2,
   RefreshCw,
+  Rows,
   Search,
   Upload,
   X,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
@@ -673,6 +678,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
   const selectedPackageIdRef = useRef(selectedPackage?.id || "");
   const skipNextPersistRef = useRef("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [viewMode, setViewMode] = useState<"ribbon" | "stack" | "focus">("ribbon");
+  const [zoomScale, setZoomScale] = useState<number>(1);
   const [coverRatio, setCoverRatio] = useState(DEFAULT_COVER_RATIO);
   const [photoQuery, setPhotoQuery] = useState("");
   const [photoResults, setPhotoResults] = useState<PhotoResult[]>([]);
@@ -682,6 +689,10 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadRequestRef = useRef(new Map<string, symbol>());
   const activeSlide = slides[activeIndex];
+
+  const zoomIn = () => setZoomScale((curr) => Math.min(1.6, Number((curr + 0.15).toFixed(2))));
+  const zoomOut = () => setZoomScale((curr) => Math.max(0.5, Number((curr - 0.15).toFixed(2))));
+  const zoomReset = () => setZoomScale(1);
 
   useEffect(() => {
     slideCountRef.current = slideCount;
