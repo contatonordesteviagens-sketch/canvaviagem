@@ -18,6 +18,7 @@ import { FabricaUpgradeModalES } from "@/components/fabrica/FabricaUpgradeModalE
 import { useLanguage } from "@/contexts/LanguageContext";
 import { CategoryType } from "@/components/canva/CategoryNav";
 import { useFabricaMetrics } from "@/hooks/useFabricaMetrics";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface SidebarNavProps {
   activeCategory?: CategoryType;
@@ -31,6 +32,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
   const { t, language } = useLanguage();
   const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
   const { newLeadsCount } = useFabricaMetrics();
+  const { isCollapsed, setIsCollapsed } = useSidebar();
 
   // Controle de seções recolhíveis (acordeão) para manter o menu limpo e organizado
   const [openSections, setOpenSections] = useState({
@@ -57,9 +59,11 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
       }
     }
 
-    if (category && onCategoryChange) {
-      onCategoryChange(category);
-      if (location.pathname !== homeRoute) {
+    if (category) {
+      if (onCategoryChange) {
+        onCategoryChange(category);
+      }
+      if (location.pathname !== homeRoute || !onCategoryChange) {
         navigate(homeRoute, { state: { category } });
       }
     } else if (path) {
@@ -67,12 +71,32 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
     }
   };
 
+  if (isCollapsed) {
+    return (
+      <>
+        <button
+          onClick={() => setIsCollapsed(false)}
+          title="Abrir Menu Lateral"
+          className="hidden md:flex fixed left-4 top-20 md:top-6 z-[80] bg-blue-600 hover:bg-blue-700 text-white shadow-xl rounded-xl px-3.5 py-2 items-center gap-2 font-black text-xs transition-all hover:scale-105 cursor-pointer border border-white/20 select-none"
+        >
+          <LayoutGrid className="w-4 h-4" />
+          <span>Abrir Menu</span>
+        </button>
+        {language === "es" ? (
+          <FabricaUpgradeModalES open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
+        ) : (
+          <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
+        )}
+      </>
+    );
+  }
+
   return (
     <>
       <aside className="hidden md:flex flex-col w-64 fixed left-0 top-0 bottom-0 bg-white dark:bg-[#08090C] backdrop-blur-3xl border-r border-slate-200 dark:border-white/[0.08] text-slate-800 dark:text-white z-50 select-none shadow-2xl">
-        {/* Logo Topo */}
-        <div className="p-4 border-b border-slate-200 dark:border-white/10 flex items-center gap-3 shrink-0">
-          <Link to={homeRoute} className="flex items-center gap-3 group">
+        {/* Logo Topo e Botão Minimizar */}
+        <div className="p-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between gap-3 shrink-0">
+          <Link to={homeRoute} className="flex items-center gap-3 group min-w-0">
             <img
               src={logoImage}
               alt="Canva Viagem"
@@ -87,6 +111,15 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
               </span>
             </div>
           </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsCollapsed(true)}
+            title="Minimizar Menu Lateral"
+            className="h-8 w-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 shrink-0 text-slate-500 dark:text-slate-400 ml-auto"
+          >
+            <ChevronDown className="h-4 w-4 rotate-90" />
+          </Button>
         </div>
 
         {/* Itens de Navegação com Scrollbar invisível */}
@@ -156,26 +189,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                     }`} />
                     <span>Ferramentas de IA</span>
                   </div>
-                </button>
-
-                {/* Recursos IA & Downloads Diretos */}
-                <button
-                  onClick={() => handleNavClick(undefined, isESRoute ? "/es/downloads" : "/downloads")}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
-                    location.pathname.includes('/downloads')
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Download className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/downloads') ? "text-blue-600 dark:text-blue-400" : "text-emerald-500 dark:text-emerald-400 group-hover:text-blue-600"
-                    }`} />
-                    <span className="leading-snug">Recursos IA (Vídeos Prontos)</span>
-                  </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-extrabold shrink-0">
-                    Direto
-                  </span>
                 </button>
 
                 {/* Datas & Calendário */}
@@ -310,9 +323,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                     }`} />
                     <span>{isESRoute ? "Central de Descargas Diretas" : "Central de Downloads Diretos"}</span>
                   </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-extrabold shrink-0">
-                    40+
-                  </span>
                 </button>
 
                 {/* Contratos Prontos */}
@@ -513,6 +523,15 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
               {t('header.login') || "Fazer Login"}
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCollapsed(true)}
+            className="w-full mt-2 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-xs py-2 flex items-center justify-center gap-2"
+          >
+            <ChevronDown className="h-4 w-4 rotate-90" />
+            Minimizar Menu
+          </Button>
         </div>
       </aside>
 

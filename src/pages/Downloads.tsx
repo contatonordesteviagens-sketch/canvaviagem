@@ -24,11 +24,21 @@ const Downloads = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const nacionais = filteredLinks.filter(l => l.category === 'nacionais');
+  const sortAlterFirst = (list: DownloadItem[]) => {
+    return [...list].sort((a, b) => {
+      const aAlter = a.title.toLowerCase().includes('alter do');
+      const bAlter = b.title.toLowerCase().includes('alter do');
+      if (aAlter && !bAlter) return -1;
+      if (!aAlter && bAlter) return 1;
+      return a.title.localeCompare(b.title);
+    });
+  };
+
+  const nacionais = sortAlterFirst(filteredLinks.filter(l => l.category === 'nacionais'));
   const internacionais = filteredLinks.filter(l => l.category === 'internacionais');
   const extras = filteredLinks.filter(l => l.category === 'extras');
 
-  const renderSection = (title: string, items: DownloadItem[], icon: string, badgeColor: string) => {
+  const renderSection = (title: string, items: DownloadItem[], icon: string) => {
     if (items.length === 0) return null;
     return (
       <div className="mb-12 animate-fade-in">
@@ -36,9 +46,6 @@ const Downloads = () => {
           <h2 className="text-xl md:text-2xl font-black flex items-center gap-2.5 text-foreground">
             <span className="text-2xl">{icon}</span> {title}
           </h2>
-          <Badge variant="outline" className={`font-extrabold px-3 py-1 ${badgeColor}`}>
-            {items.length} vídeo{items.length > 1 ? 's' : ''} prontos
-          </Badge>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {items.map((item, idx) => (
@@ -125,9 +132,9 @@ const Downloads = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {renderSection("Destinos Nacionais", nacionais, "🇧🇷", "bg-emerald-500/10 text-emerald-600 border-emerald-500/20")}
-            {renderSection("Destinos Internacionais", internacionais, "✈️", "bg-blue-500/10 text-blue-600 border-blue-500/20")}
-            {renderSection("Extras & Dicas", extras, "💡", "bg-amber-500/10 text-amber-600 border-amber-500/20")}
+            {renderSection("Destinos Nacionais", nacionais, "🇧🇷")}
+            {renderSection("Destinos Internacionais", internacionais, "✈️")}
+            {renderSection("Extras & Dicas", extras, "💡")}
           </div>
         )}
       </main>

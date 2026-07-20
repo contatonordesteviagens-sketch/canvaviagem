@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu, X, LogOut, User, Home, Calendar, CreditCard,
   Video, Image, LayoutGrid, FileText, Download, Bot,
-  GraduationCap, Heart, ChevronDown, Sun, Moon, Star, TrendingUp, MessageSquare, MoreHorizontal, Wand2
+  GraduationCap, Heart, ChevronDown, Sun, Moon, Star, TrendingUp, MessageSquare, MoreHorizontal, Wand2, PanelLeft
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { cn } from "@/lib/utils";
 import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
 import { hasEliteAccess } from "@/lib/planAccess";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
@@ -45,6 +46,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   const { user, signOut, subscription, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { t, language } = useLanguage();
+  const { isCollapsed, toggleSidebar } = useSidebar();
 
   // Detect if we're on ES routes to generate correct navigation links
   const isESRoute = location.pathname.startsWith('/es');
@@ -169,8 +171,17 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full md:pl-64 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
+          <div className="flex items-center gap-2">
+            {/* Sidebar Toggle - Desktop only */}
+            <button
+              onClick={toggleSidebar}
+              className="hidden md:flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+              title={isCollapsed ? 'Abrir menu' : 'Fechar menu'}
+            >
+              <PanelLeft className="h-5 w-5" />
+            </button>
           <Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-3 hover:opacity-80 transition-opacity shrink-0 min-w-0">
             <img
               src={logoImage}
@@ -184,6 +195,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
               <p className="hidden xl:block text-[10px] text-muted-foreground font-medium -mt-0.5 uppercase tracking-wider whitespace-nowrap">Estratégias para Agentes</p>
             </div>
           </Link>
+          </div>
 
           {/* Mobile Progress Bar - Compact next to logo */}
           {user && (

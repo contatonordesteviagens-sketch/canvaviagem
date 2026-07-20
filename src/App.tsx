@@ -11,6 +11,40 @@ import { Suspense, lazy } from "react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { HelmetProvider } from "react-helmet-async";
 import { Loader2 } from "lucide-react";
+import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
+import { SidebarNav } from "@/components/SidebarNav";
+import { useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+
+const PlatformLayoutController = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const { isCollapsed } = useSidebar();
+
+  const hideSidebarPaths = [
+    '/planos', '/pt/planos', '/es/planos', '/auth', '/auth/verify', '/sucesso', '/obrigado', '/es/obrigado',
+    '/pos-pagamento', '/canva', '/termos', '/privacidade', '/exclusao-de-dados',
+    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/inicio2', '/es/inicio', '/.lovable/oauth/consent'
+  ];
+
+  const shouldHideSidebar = hideSidebarPaths.some(path => 
+    location.pathname === path || 
+    location.pathname.startsWith('/auth/') || 
+    location.pathname.startsWith('/view/')
+  );
+
+  if (shouldHideSidebar) {
+    return <>{children}</>;
+  }
+
+  return (
+    <div className="flex min-h-screen w-full relative">
+      <SidebarNav />
+      <div className={cn("flex-1 flex flex-col min-h-screen transition-all duration-300 w-full min-w-0", !isCollapsed ? "md:pl-64" : "md:pl-0")}>
+        {children}
+      </div>
+    </div>
+  );
+};
 
 // Lazy-loaded components for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -169,16 +203,18 @@ const App = () => {
         <TooltipProvider>
           <AuthProvider>
             <LanguageProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <UtmTracker />
+              <SidebarProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <UtmTracker />
 
-                <Suspense fallback={<PageLoader />}>
-                  {canvaViagemSiteSlug ? (
-                    <SiteViewer forcedId={canvaViagemSiteSlug} />
-                  ) : (
-                  <Routes>
+                  <Suspense fallback={<PageLoader />}>
+                    {canvaViagemSiteSlug ? (
+                      <SiteViewer forcedId={canvaViagemSiteSlug} />
+                    ) : (
+                    <PlatformLayoutController>
+                      <Routes>
                     {/* ROTAS PORTUGUÊS */}
                     <Route path="/" element={<Index />} />
                     <Route path="/pt" element={<Index />} />
@@ -348,9 +384,11 @@ const App = () => {
                     <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </PlatformLayoutController>
                   )}
                 </Suspense>
               </BrowserRouter>
+              </SidebarProvider>
             </LanguageProvider>
           </AuthProvider>
         </TooltipProvider>

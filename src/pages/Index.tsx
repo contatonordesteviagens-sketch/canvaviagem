@@ -1772,10 +1772,9 @@ const Index = () => {
         description="Crie anúncios com IA, páginas de venda, vídeos, artes, legendas e organize leads em uma plataforma feita para agências de viagens venderem mais."
         keywords="marketing para agência de viagens, IA para agência de viagens, conteúdo para Instagram turismo, CRM para agência de viagens, páginas de venda turismo"
       />
-      <SidebarNav activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
       <Header onCategoryChange={setActiveCategory} />
 
-      <div className="md:pl-64 flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen w-full">
         <main className="container mx-auto px-4 py-4 md:py-6 max-w-7xl flex-1">
           {mainContent}
         </main>
