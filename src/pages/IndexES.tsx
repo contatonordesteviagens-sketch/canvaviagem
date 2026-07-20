@@ -835,20 +835,29 @@ const IndexES = () => {
 
       case 'downloads':
         return (
-          <section className="animate-fade-in">
+          <section className="animate-fade-in space-y-8 pt-2">
             <SectionHeader
-              title="Descargas de Videos"
-              subtitle="Accede a videos listos para usar"
+              title="Paquetes de Videos & Recursos en Drive"
+              subtitle="Descarga secuencias completas de videos listos y materiales exclusivos en Google Drive"
             />
 
-            <div className="max-w-2xl mx-auto bg-card rounded-3xl shadow-canva p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
               <ResourceSection
-                title="📥 Biblioteca de Videos"
+                title="🎬 Secuencia de Videos para Descargar (Drive)"
                 resources={videoDownloads.map(r => ({
                   ...r,
                   onPremiumRequired: getPremiumCallback('downloads', true, 'resource')
                 }))}
-                description="Videos listos organizados por categoría"
+                description="Accede a las carpetas de Google Drive con cientos de videos en alta calidad listos para publicar."
+              />
+
+              <ResourceSection
+                title="📦 Recursos, Plantillas & Materiales"
+                resources={resources.map(r => ({
+                  ...r,
+                  onPremiumRequired: getPremiumCallback('downloads', true, 'resource')
+                }))}
+                description="PDFs de productos, calendarios, acceso a grupos VIP y comunidad."
               />
             </div>
           </section>

@@ -269,7 +269,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                     <Download className={`w-4 h-4 shrink-0 transition-colors ${
                       activeCategory === 'downloads' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
-                    <span>Downloads</span>
+                    <span>{isESRoute ? "Paquetes de Videos & Drive" : "Pacotes de Vídeos & Drive"}</span>
                   </div>
                 </button>
 

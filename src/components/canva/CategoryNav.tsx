@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect, useCallback, memo } from "react";
-import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight, Megaphone, Wand2 } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight, Megaphone, Wand2, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-export type CategoryType = 'all' | 'fabrica' | 'videos' | 'feed' | 'stories' | 'offers' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'contracts' | 'favorites';
+export type CategoryType = 'all' | 'fabrica' | 'calendar' | 'videos' | 'feed' | 'stories' | 'offers' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'contracts' | 'favorites';
 
 interface CategoryNavProps {
   activeCategory: CategoryType;
@@ -13,6 +14,8 @@ interface CategoryNavProps {
 
 const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites = true }: CategoryNavProps) => {
   const { t } = useLanguage();
+  const location = useLocation();
+  const isESRoute = location.pathname.startsWith('/es');
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -20,12 +23,13 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
 
   const categories: { id: CategoryType; label: string; icon: React.ReactNode; isNew?: boolean }[] = [
     { id: 'all', label: 'Tudo', icon: <LayoutGrid className="w-6 h-6" /> },
-    { id: 'fabrica', label: 'Fábrica', icon: <Wand2 className="w-6 h-6" />, isNew: true }, // 'Novo' added
+    { id: 'fabrica', label: 'Fábrica', icon: <Wand2 className="w-6 h-6" />, isNew: true },
+    { id: 'calendar', label: isESRoute ? 'Calendario' : 'Calendário', icon: <Calendar className="w-6 h-6" /> },
     // Recursos PRO
     { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6" /> },
     { id: 'feed', label: "Artes para Feed e Stories", icon: <Image className="w-6 h-6" /> },
-    { id: 'offers', label: "Ofertas e Legendas", icon: <Megaphone className="w-6 h-6" /> }, // 'Novo' removed
-    { id: 'downloads', label: t('category.downloads'), icon: <Download className="w-6 h-6" /> },
+    { id: 'offers', label: "Ofertas e Legendas", icon: <Megaphone className="w-6 h-6" /> },
+    { id: 'downloads', label: isESRoute ? "Paquetes de Videos (Drive)" : "Pacotes de Vídeos (Drive)", icon: <Download className="w-6 h-6" /> },
 
     // Ferramentas Gratuitas
     { id: 'tools', label: t('category.tools'), icon: <Bot className="w-6 h-6" /> },
