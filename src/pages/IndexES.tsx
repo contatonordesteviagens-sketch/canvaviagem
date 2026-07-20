@@ -1117,15 +1117,14 @@ const IndexES = () => {
   const mainContent = (
     <>
       {/* Hero Banner with Search */}
-      <HeroBanner
-        searchValue={searchQuery}
-        onSearchChange={(val) => {
-          setSearchQuery(val);
-          if (val.trim() !== '' && activeCategory === 'all') {
-            setActiveCategory('videos');
-          }
-        }}
-      />
+      {activeCategory === 'all' && (
+        <HeroBanner
+          searchValue={searchQuery}
+          onSearchChange={(val) => {
+            setSearchQuery(val);
+          }}
+        />
+      )}
 
       {/* Category Navigation - Horizontal scroll with icons */}
       <CategoryNav

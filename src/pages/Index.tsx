@@ -1683,15 +1683,14 @@ const Index = () => {
 
   const mainContent = (
     <>
-      <HeroBanner
-        searchValue={searchQuery}
-        onSearchChange={(val) => {
-          setSearchQuery(val);
-          if (val.trim() !== '' && activeCategory === 'all') {
-            setActiveCategory('videos');
-          }
-        }}
-      />
+      {activeCategory === 'all' && (
+        <HeroBanner
+          searchValue={searchQuery}
+          onSearchChange={(val) => {
+            setSearchQuery(val);
+          }}
+        />
+      )}
 
       <CategoryNav
         activeCategory={activeCategory}
