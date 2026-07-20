@@ -31,6 +31,20 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type CarouselSize = 3 | 4 | 5;
 type CarouselSlideKind = "cover" | "content" | "closing";
+type CarouselSlideVariant = "impact" | "itinerary" | "editorial";
+
+const BULLET_ICONS: Record<string, string> = {
+  check:    "✓",
+  star:     "★",
+  plane:    "✈",
+  hotel:    "🏨",
+  map:      "📍",
+  calendar: "📅",
+  sun:      "☀",
+  coffee:   "☕",
+  camera:   "📷",
+  heart:    "♥",
+};
 
 interface CarouselSlide {
   id: string;
@@ -43,6 +57,8 @@ interface CarouselSlide {
   textColor: string;
   cta: string;
   phone: string;
+  slideVariant: CarouselSlideVariant;
+  bulletIcon: string;
 }
 
 interface PhotoResult {
@@ -155,6 +171,8 @@ function createSlides(
       textColor: "#FFFFFF",
       cta: "",
       phone: "",
+      slideVariant: "impact",
+      bulletIcon: "check",
     },
   ];
 
@@ -167,6 +185,8 @@ function createSlides(
       textColor: "#FFFFFF",
       cta: "",
       phone: "",
+      slideVariant: "impact",
+      bulletIcon: "check",
     });
   });
 
@@ -181,6 +201,8 @@ function createSlides(
     textColor: "#FFFFFF",
     cta: pacote.ctaLabel || (isEs ? "Reserva tu viaje por WhatsApp" : "Reserve sua viagem pelo WhatsApp"),
     phone,
+    slideVariant: "impact",
+    bulletIcon: "check",
   });
 
   return slides;
@@ -488,143 +510,162 @@ function CarouselCanvas({
           )}
         </div>
       ) : (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            padding: "8%",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            {logo ? (
-              <img
-                src={logo}
-                alt=""
-                crossOrigin={
-                  logo.startsWith("data:") || logo.startsWith("blob:")
-                    ? undefined
-                    : "anonymous"
-                }
-                style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 12,
-                  objectFit: "contain",
-                  background: "rgba(255,255,255,.94)",
-                  padding: 5,
-                  boxShadow: "0 8px 24px rgba(0,0,0,.24)",
-                }}
-              />
-            ) : (
-              <span />
-            )}
-            <span
+        /* ── CONTENT SLIDES — 3 visual variants ── */
+        <>
+          {/* ─── VARIANT: IMPACT (default) — full-bleed photo, content at bottom ─── */}
+          {(slide.slideVariant === "impact" || !slide.slideVariant) && (
+            <div
               style={{
-                color: "#F8FAFC",
-                fontSize: 11,
-                fontWeight: 850,
-                textShadow: "0 2px 10px rgba(0,0,0,.7)",
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                padding: "8%",
               }}
             >
-              {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
-            </span>
-          </div>
-
-          <div>
-            {slide.label && (
-              <div
-                style={{
-                  display: "inline-flex",
-                  maxWidth: "100%",
-                  marginBottom: 13,
-                  borderRadius: 999,
-                  background: secondary,
-                  color: onSecondary,
-                  padding: "7px 12px",
-                  fontSize: 10,
-                  lineHeight: 1.15,
-                  fontWeight: 900,
-                  letterSpacing: ".12em",
-                  textTransform: "uppercase",
-                }}
-              >
-                {slide.label}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                {logo ? (
+                  <img
+                    src={logo}
+                    alt=""
+                    crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                    style={{ width: 42, height: 42, borderRadius: 12, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 5, boxShadow: "0 8px 24px rgba(0,0,0,.24)" }}
+                  />
+                ) : <span />}
+                <span style={{ color: "#F8FAFC", fontSize: 11, fontWeight: 850, textShadow: "0 2px 10px rgba(0,0,0,.7)" }}>
+                  {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
+                </span>
               </div>
-            )}
-            {slide.title && (
-              <h3
-                style={{
-                  maxWidth: "96%",
-                  margin: 0,
-                  color: slide.textColor,
-                  fontSize: ratio < 0.68 ? 31 : 35,
-                  lineHeight: 1.02,
-                  fontWeight: 900,
-                  letterSpacing: "-.045em",
-                  overflowWrap: "anywhere",
-                  textShadow: "0 3px 18px rgba(0,0,0,.72)",
-                }}
-              >
-                {slide.title}
-              </h3>
-            )}
-            {slide.body && (
-              <p
-                style={{
-                  maxWidth: "94%",
-                  margin: "13px 0 0",
-                  color: slide.textColor,
-                  fontSize: ratio < 0.68 ? 13 : 14,
-                  lineHeight: 1.45,
-                  fontWeight: 600,
-                  opacity: 0.94,
-                  textShadow: "0 2px 12px rgba(0,0,0,.82)",
-                }}
-              >
-                {slide.body}
-              </p>
-            )}
-            {slide.bullets.length > 0 && (
-              <ul
-                style={{
-                  display: "grid",
-                  gap: 7,
-                  maxWidth: "96%",
-                  margin: "15px 0 0",
-                  padding: 0,
-                  listStyle: "none",
-                }}
-              >
-                {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
-                  <li
-                    key={`${slide.id}-bullet-${bulletIndex}`}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "18px 1fr",
-                      gap: 8,
-                      alignItems: "start",
-                      color: slide.textColor,
-                      fontSize: 13,
-                      lineHeight: 1.35,
-                      fontWeight: 650,
-                      textShadow: "0 2px 10px rgba(0,0,0,.88)",
-                    }}
-                  >
-                    <span style={{ color: secondary, fontWeight: 950 }}>✓</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
+              <div>
+                {slide.label && (
+                  <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, background: secondary, color: onSecondary, padding: "7px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
+                    {slide.label}
+                  </div>
+                )}
+                {slide.title && (
+                  <h3 style={{ maxWidth: "96%", margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 31 : 35, lineHeight: 1.02, fontWeight: 900, letterSpacing: "-.045em", overflowWrap: "anywhere", textShadow: "0 3px 18px rgba(0,0,0,.72)" }}>
+                    {slide.title}
+                  </h3>
+                )}
+                {slide.body && (
+                  <p style={{ maxWidth: "94%", margin: "13px 0 0", color: slide.textColor, fontSize: ratio < 0.68 ? 13 : 14, lineHeight: 1.45, fontWeight: 600, opacity: 0.94, textShadow: "0 2px 12px rgba(0,0,0,.82)" }}>
+                    {slide.body}
+                  </p>
+                )}
+                {slide.bullets.length > 0 && (
+                  <ul style={{ display: "grid", gap: 7, maxWidth: "96%", margin: "15px 0 0", padding: 0, listStyle: "none" }}>
+                    {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
+                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "18px 1fr", gap: 8, alignItems: "start", color: slide.textColor, fontSize: 13, lineHeight: 1.35, fontWeight: 650, textShadow: "0 2px 10px rgba(0,0,0,.88)" }}>
+                        <span style={{ color: secondary, fontWeight: 950 }}>{BULLET_ICONS[slide.bulletIcon] ?? "✓"}</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ─── VARIANT: ITINERARY — photo top ~45%, colored block bottom ─── */}
+          {slide.slideVariant === "itinerary" && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
+              {/* Photo zone top */}
+              <div style={{ flex: "0 0 45%", position: "relative", overflow: "hidden" }}>
+                {slide.imageUrl && (
+                  <img src={slide.imageUrl} alt="" crossOrigin={slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:") ? undefined : "anonymous"}
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                )}
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.52))" }} />
+                {/* counter top right */}
+                <span style={{ position: "absolute", top: "8%", right: "8%", color: "#F8FAFC", fontSize: 11, fontWeight: 850, textShadow: "0 2px 8px rgba(0,0,0,.7)" }}>
+                  {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
+                </span>
+                {/* logo top left */}
+                {logo && (
+                  <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                    style={{ position: "absolute", top: "8%", left: "8%", width: 34, height: 34, borderRadius: 10, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 4, boxShadow: "0 4px 16px rgba(0,0,0,.22)" }} />
+                )}
+              </div>
+              {/* Content block bottom */}
+              <div style={{ flex: 1, background: primary, padding: "7% 8%", display: "flex", flexDirection: "column", justifyContent: "center", gap: 10 }}>
+                {slide.label && (
+                  <div style={{ display: "inline-flex", alignSelf: "flex-start", borderRadius: 999, background: secondary, color: onSecondary, padding: "5px 10px", fontSize: 9, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
+                    {slide.label}
+                  </div>
+                )}
+                {slide.title && (
+                  <h3 style={{ margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 22 : 26, lineHeight: 1.1, fontWeight: 900, letterSpacing: "-.035em", overflowWrap: "anywhere" }}>
+                    {slide.title}
+                  </h3>
+                )}
+                {slide.body && (
+                  <p style={{ margin: 0, color: slide.textColor, fontSize: 12, lineHeight: 1.4, fontWeight: 600, opacity: 0.85 }}>
+                    {slide.body}
+                  </p>
+                )}
+                {slide.bullets.length > 0 && (
+                  <ul style={{ display: "grid", gap: 6, padding: 0, margin: 0, listStyle: "none" }}>
+                    {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
+                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "16px 1fr", gap: 7, alignItems: "start", color: slide.textColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650 }}>
+                        <span style={{ color: secondary, fontWeight: 950 }}>{BULLET_ICONS[slide.bulletIcon] ?? "✓"}</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ─── VARIANT: EDITORIAL — photo full-bleed + floating card center ─── */}
+          {slide.slideVariant === "editorial" && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "8%" }}>
+              {/* Counter */}
+              <span style={{ position: "absolute", top: "7%", right: "7%", color: "#F8FAFC", fontSize: 11, fontWeight: 850, textShadow: "0 2px 8px rgba(0,0,0,.7)" }}>
+                {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
+              </span>
+              {/* Logo */}
+              {logo && (
+                <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                  style={{ position: "absolute", top: "7%", left: "7%", width: 34, height: 34, borderRadius: 10, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 4, boxShadow: "0 4px 16px rgba(0,0,0,.22)" }} />
+              )}
+              {/* Floating card */}
+              <div style={{ width: "100%", borderRadius: 18, background: `rgba(${parseInt(primary.slice(1,3),16)},${parseInt(primary.slice(3,5),16)},${parseInt(primary.slice(5,7),16)},0.93)`, backdropFilter: "blur(8px)", border: `2px solid ${secondary}`, padding: "8% 9%", display: "flex", flexDirection: "column", gap: 10 }}>
+                {slide.label && (
+                  <div style={{ display: "inline-flex", alignSelf: "flex-start", borderRadius: 999, background: secondary, color: onSecondary, padding: "5px 11px", fontSize: 9, fontWeight: 900, letterSpacing: ".14em", textTransform: "uppercase" }}>
+                    {slide.label}
+                  </div>
+                )}
+                {slide.title && (
+                  <h3 style={{ margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 24 : 28, lineHeight: 1.05, fontWeight: 900, letterSpacing: "-.04em", overflowWrap: "anywhere" }}>
+                    {slide.title}
+                  </h3>
+                )}
+                {slide.body && (
+                  <p style={{ margin: 0, color: slide.textColor, fontSize: 12, lineHeight: 1.42, fontWeight: 600, opacity: 0.88 }}>
+                    {slide.body}
+                  </p>
+                )}
+                {slide.bullets.length > 0 && (
+                  <ul style={{ display: "grid", gap: 7, padding: 0, margin: 0, listStyle: "none" }}>
+                    {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
+                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "16px 1fr", gap: 7, alignItems: "start", color: slide.textColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650 }}>
+                        <span style={{ color: secondary, fontWeight: 950 }}>{BULLET_ICONS[slide.bulletIcon] ?? "✓"}</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
 }
+
 
 function CarouselField({
   label,
@@ -793,9 +834,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         const restoredArchive = mergeSlidesForSize(
           parsed.allSlides || parsed.slides || [],
           generatedArchive,
-        ).map((slide) =>
-          slide.kind === "cover" ? { ...slide, imageUrl: coverImage } : slide,
-        );
+        ).map((slide) => {
+          const withCover = slide.kind === "cover" ? { ...slide, imageUrl: coverImage } : slide;
+          // backward compat: add new fields if missing from old localStorage saves
+          return {
+            ...withCover,
+            slideVariant: withCover.slideVariant ?? "impact",
+            bulletIcon: withCover.bulletIcon ?? "check",
+          } as CarouselSlide;
+        });
         const restoredBase = createSlides(
           selectedPackage,
           restoredCount,
@@ -1736,6 +1783,59 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         className="f1-carousel-input resize-y"
                       />
                     </CarouselField>
+
+                    {/* ── Seletor de Estilo Visual (Variante) ── */}
+                    <CarouselField label={isEs ? "Estilo visual" : "Estilo visual"}>
+                      <div className="grid grid-cols-3 gap-2">
+                        {([
+                          ["impact",    isEs ? "Impacto"    : "Impacto",    "Foto cheia + texto em baixo"],
+                          ["itinerary", isEs ? "Roteiro"    : "Roteiro",    "Foto no topo + bloco colorido"],
+                          ["editorial", isEs ? "Editorial"  : "Editorial",  "Card flutuante central"],
+                        ] as const).map(([variant, labelText, hint]) => (
+                          <button
+                            key={variant}
+                            type="button"
+                            aria-pressed={activeSlide.slideVariant === variant}
+                            title={hint}
+                            onClick={() => patchActive({ slideVariant: variant })}
+                            className={`flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-[9px] font-bold transition-colors ${
+                              activeSlide.slideVariant === variant
+                                ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
+                                : "border-white/10 text-white/50 hover:bg-white/[0.04] hover:text-white"
+                            }`}
+                          >
+                            <span className="text-[15px] leading-none">
+                              {variant === "impact" ? "🖼" : variant === "itinerary" ? "📋" : "🪟"}
+                            </span>
+                            {labelText}
+                          </button>
+                        ))}
+                      </div>
+                    </CarouselField>
+
+                    {/* ── Seletor de Ícone dos Bullets ── */}
+                    {activeSlide.bullets.length > 0 && (
+                      <CarouselField label={isEs ? "Ícono de los ítems" : "Ícone dos itens"}>
+                        <div className="flex flex-wrap gap-2">
+                          {(Object.entries(BULLET_ICONS) as [string, string][]).map(([key, glyph]) => (
+                            <button
+                              key={key}
+                              type="button"
+                              aria-pressed={activeSlide.bulletIcon === key}
+                              title={key}
+                              onClick={() => patchActive({ bulletIcon: key })}
+                              className={`grid h-9 w-9 place-items-center rounded-lg border text-base transition-colors ${
+                                activeSlide.bulletIcon === key
+                                  ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
+                                  : "border-white/10 text-white/60 hover:bg-white/[0.05] hover:text-white"
+                              }`}
+                            >
+                              {glyph}
+                            </button>
+                          ))}
+                        </div>
+                      </CarouselField>
+                    )}
                   </>
                 ) : (
                   <>
