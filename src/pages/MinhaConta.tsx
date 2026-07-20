@@ -212,7 +212,7 @@ export default function MinhaConta() {
             </p>
             <Button
               className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold"
-              onClick={() => window.open("https://api.whatsapp.com/send/?phone=5585998458995&text=Canva+Viagem", "_blank")}
+              onClick={() => window.open("https://api.whatsapp.com/send/?phone=5585998458995&text=Ol%C3%A1%2C+quero+suporte+do+Canva+Viagem", "_blank")}
             >
               <MessageCircle className="h-4 w-4 mr-2" />
               Falar com Suporte (WhatsApp) →

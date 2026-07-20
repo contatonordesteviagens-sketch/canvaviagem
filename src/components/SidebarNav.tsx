@@ -158,6 +158,26 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   </div>
                 </button>
 
+                {/* Recursos IA & Downloads Diretos */}
+                <button
+                  onClick={() => handleNavClick(undefined, isESRoute ? "/es/downloads" : "/downloads")}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                    location.pathname.includes('/downloads')
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Download className={`w-4 h-4 shrink-0 transition-colors ${
+                      location.pathname.includes('/downloads') ? "text-blue-600 dark:text-blue-400" : "text-emerald-500 dark:text-emerald-400 group-hover:text-blue-600"
+                    }`} />
+                    <span className="leading-snug">Recursos IA (Vídeos Prontos)</span>
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-extrabold shrink-0">
+                    Direto
+                  </span>
+                </button>
+
                 {/* Datas & Calendário */}
                 <button
                   onClick={() => handleNavClick(undefined, isESRoute ? "/es/calendar" : "/calendar")}
@@ -273,6 +293,26 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                     }`} />
                     <span>{isESRoute ? "Paquetes de Videos & Drive" : "Pacotes de Vídeos & Drive"}</span>
                   </div>
+                </button>
+
+                {/* Central de Downloads Diretos */}
+                <button
+                  onClick={() => handleNavClick(undefined, isESRoute ? "/es/downloads" : "/downloads")}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                    location.pathname.includes('/downloads')
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Download className={`w-4 h-4 shrink-0 transition-colors ${
+                      location.pathname.includes('/downloads') ? "text-blue-600 dark:text-blue-400" : "text-emerald-500 dark:text-emerald-400 group-hover:text-blue-600"
+                    }`} />
+                    <span>{isESRoute ? "Central de Descargas Diretas" : "Central de Downloads Diretos"}</span>
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-extrabold shrink-0">
+                    40+
+                  </span>
                 </button>
 
                 {/* Contratos Prontos */}
@@ -406,7 +446,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
 
                 {/* Suporte WhatsApp */}
                 <button
-                  onClick={() => window.open("https://api.whatsapp.com/send/?phone=5585998458995&text=Canva+Viagem", "_blank")}
+                  onClick={() => window.open("https://api.whatsapp.com/send/?phone=5585998458995&text=Ol%C3%A1%2C+quero+suporte+do+Canva+Viagem", "_blank")}
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                 >
                   <div className="flex items-center gap-3">

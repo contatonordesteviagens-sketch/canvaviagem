@@ -228,6 +228,11 @@ const App = () => {
                         <Downloads />
                       </ProtectedRoute>
                     } />
+                    <Route path="/es/downloads" element={
+                      <ProtectedRoute requireSubscription>
+                        <Downloads />
+                      </ProtectedRoute>
+                    } />
 
                     {/* Auth e outras rotas compartilhadas */}
                     <Route path="/auth" element={<Auth />} />
