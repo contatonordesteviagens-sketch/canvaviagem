@@ -95,6 +95,18 @@ const readableText = (hex: string) => {
   return (red * 299 + green * 587 + blue * 114) / 1000 > 150 ? "#111318" : "#F8FAFC";
 };
 
+const safeHexToRgba = (hex: string, alpha: number) => {
+  let normalized = (hex || "").replace("#", "").trim();
+  if (/^[0-9a-f]{3}$/i.test(normalized)) {
+    normalized = normalized.split("").map((c) => c + c).join("");
+  }
+  if (!/^[0-9a-f]{6}$/i.test(normalized)) return `rgba(15,15,17,${alpha})`;
+  const [red, green, blue] = [0, 2, 4].map((index) =>
+    Number.parseInt(normalized.slice(index, index + 2), 16),
+  );
+  return `rgba(${red},${green},${blue},${alpha})`;
+};
+
 const phoneLabel = (dialCode: string, phone: string) => {
   const dial = dialCode.replace(/\D/g, "");
   const number = phone.replace(/\D/g, "");
@@ -544,19 +556,19 @@ function CarouselCanvas({
                   </div>
                 )}
                 {slide.title && (
-                  <h3 style={{ maxWidth: "96%", margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 31 : 35, lineHeight: 1.02, fontWeight: 900, letterSpacing: "-.045em", overflowWrap: "anywhere", textShadow: "0 3px 18px rgba(0,0,0,.72)" }}>
+                  <h3 style={{ maxWidth: "96%", margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 31 : 35, lineHeight: 1.02, fontWeight: 900, letterSpacing: "-.045em", overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0 3px 18px rgba(0,0,0,.72)" }}>
                     {slide.title}
                   </h3>
                 )}
                 {slide.body && (
-                  <p style={{ maxWidth: "94%", margin: "13px 0 0", color: slide.textColor, fontSize: ratio < 0.68 ? 13 : 14, lineHeight: 1.45, fontWeight: 600, opacity: 0.94, textShadow: "0 2px 12px rgba(0,0,0,.82)" }}>
+                  <p style={{ maxWidth: "94%", margin: "13px 0 0", color: slide.textColor, fontSize: ratio < 0.68 ? 13 : 14, lineHeight: 1.45, fontWeight: 600, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0 2px 12px rgba(0,0,0,.82)" }}>
                     {slide.body}
                   </p>
                 )}
                 {slide.bullets.length > 0 && (
                   <ul style={{ display: "grid", gap: 7, maxWidth: "96%", margin: "15px 0 0", padding: 0, listStyle: "none" }}>
                     {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
-                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "18px 1fr", gap: 8, alignItems: "start", color: slide.textColor, fontSize: 13, lineHeight: 1.35, fontWeight: 650, textShadow: "0 2px 10px rgba(0,0,0,.88)" }}>
+                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "18px 1fr", gap: 8, alignItems: "start", color: slide.textColor, fontSize: 13, lineHeight: 1.35, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0 2px 10px rgba(0,0,0,.88)" }}>
                         <span style={{ color: secondary, fontWeight: 950 }}>{BULLET_ICONS[slide.bulletIcon] ?? "✓"}</span>
                         <span>{item}</span>
                       </li>
@@ -588,26 +600,26 @@ function CarouselCanvas({
                 )}
               </div>
               {/* Content block bottom */}
-              <div style={{ flex: 1, background: primary, padding: "7% 8%", display: "flex", flexDirection: "column", justifyContent: "center", gap: 10 }}>
+              <div style={{ flex: 1, background: primary, padding: "7% 8%", display: "flex", flexDirection: "column", justifyContent: "center", gap: 10, overflow: "hidden" }}>
                 {slide.label && (
                   <div style={{ display: "inline-flex", alignSelf: "flex-start", borderRadius: 999, background: secondary, color: onSecondary, padding: "5px 10px", fontSize: 9, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
                     {slide.label}
                   </div>
                 )}
                 {slide.title && (
-                  <h3 style={{ margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 22 : 26, lineHeight: 1.1, fontWeight: 900, letterSpacing: "-.035em", overflowWrap: "anywhere" }}>
+                  <h3 style={{ margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 22 : 26, lineHeight: 1.1, fontWeight: 900, letterSpacing: "-.035em", overflowWrap: "anywhere", wordBreak: "break-word" }}>
                     {slide.title}
                   </h3>
                 )}
                 {slide.body && (
-                  <p style={{ margin: 0, color: slide.textColor, fontSize: 12, lineHeight: 1.4, fontWeight: 600, opacity: 0.85 }}>
+                  <p style={{ margin: 0, color: slide.textColor, fontSize: 12, lineHeight: 1.4, fontWeight: 600, opacity: 0.85, overflowWrap: "anywhere", wordBreak: "break-word" }}>
                     {slide.body}
                   </p>
                 )}
                 {slide.bullets.length > 0 && (
                   <ul style={{ display: "grid", gap: 6, padding: 0, margin: 0, listStyle: "none" }}>
                     {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
-                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "16px 1fr", gap: 7, alignItems: "start", color: slide.textColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650 }}>
+                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "16px 1fr", gap: 7, alignItems: "start", color: slide.textColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word" }}>
                         <span style={{ color: secondary, fontWeight: 950 }}>{BULLET_ICONS[slide.bulletIcon] ?? "✓"}</span>
                         <span>{item}</span>
                       </li>
@@ -631,26 +643,26 @@ function CarouselCanvas({
                   style={{ position: "absolute", top: "7%", left: "7%", width: 34, height: 34, borderRadius: 10, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 4, boxShadow: "0 4px 16px rgba(0,0,0,.22)" }} />
               )}
               {/* Floating card */}
-              <div style={{ width: "100%", borderRadius: 18, background: `rgba(${parseInt(primary.slice(1,3),16)},${parseInt(primary.slice(3,5),16)},${parseInt(primary.slice(5,7),16)},0.93)`, backdropFilter: "blur(8px)", border: `2px solid ${secondary}`, padding: "8% 9%", display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ width: "100%", borderRadius: 18, background: safeHexToRgba(primary, 0.93), backdropFilter: "blur(8px)", border: `2px solid ${secondary}`, padding: "8% 9%", display: "flex", flexDirection: "column", gap: 10, overflow: "hidden" }}>
                 {slide.label && (
                   <div style={{ display: "inline-flex", alignSelf: "flex-start", borderRadius: 999, background: secondary, color: onSecondary, padding: "5px 11px", fontSize: 9, fontWeight: 900, letterSpacing: ".14em", textTransform: "uppercase" }}>
                     {slide.label}
                   </div>
                 )}
                 {slide.title && (
-                  <h3 style={{ margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 24 : 28, lineHeight: 1.05, fontWeight: 900, letterSpacing: "-.04em", overflowWrap: "anywhere" }}>
+                  <h3 style={{ margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 24 : 28, lineHeight: 1.05, fontWeight: 900, letterSpacing: "-.04em", overflowWrap: "anywhere", wordBreak: "break-word" }}>
                     {slide.title}
                   </h3>
                 )}
                 {slide.body && (
-                  <p style={{ margin: 0, color: slide.textColor, fontSize: 12, lineHeight: 1.42, fontWeight: 600, opacity: 0.88 }}>
+                  <p style={{ margin: 0, color: slide.textColor, fontSize: 12, lineHeight: 1.42, fontWeight: 600, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word" }}>
                     {slide.body}
                   </p>
                 )}
                 {slide.bullets.length > 0 && (
                   <ul style={{ display: "grid", gap: 7, padding: 0, margin: 0, listStyle: "none" }}>
                     {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
-                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "16px 1fr", gap: 7, alignItems: "start", color: slide.textColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650 }}>
+                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "16px 1fr", gap: 7, alignItems: "start", color: slide.textColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word" }}>
                         <span style={{ color: secondary, fontWeight: 950 }}>{BULLET_ICONS[slide.bulletIcon] ?? "✓"}</span>
                         <span>{item}</span>
                       </li>
@@ -661,6 +673,7 @@ function CarouselCanvas({
             </div>
           )}
         </>
+
       )}
     </div>
   );
