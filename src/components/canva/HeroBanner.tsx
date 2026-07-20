@@ -103,21 +103,11 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
           alt="Acesse a Fábrica de Destinos pra Vender Mais" 
           className="w-full h-auto object-contain block mx-auto transition-transform duration-500 group-hover:scale-[1.01]"
         />
-        
-        {/* Indicador de clique rápido */}
-        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-20">
-          <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-black/80 backdrop-blur-md border border-blue-500/40 text-blue-400 text-[11px] sm:text-xs font-bold shadow-lg group-hover:bg-blue-600 group-hover:text-white transition-all">
-            <Wand2 className="w-3.5 h-3.5 shrink-0" />
-            <span>Abrir Painel Principal</span>
-            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-          </div>
-        </div>
       </div>
 
-      {/* 3. Grid 2x2 das 4 Outras Capas da Fábrica (2 fileiras x 2 colunas) com Links Direcionados */}
-      <div className="w-full max-w-[96%] sm:max-w-[90%] md:max-w-[84%] mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-5 sm:mt-6">
+      {/* 3. Grid 2x2 das 4 Outras Capas da Fábrica (15% menor) */}
+      <div className="w-full max-w-[85%] sm:max-w-[76%] md:max-w-[70%] mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-5 sm:mt-6">
         {fabricaCapasGrid.map((capa) => {
-          const IconComponent = capa.icon;
           return (
             <div 
               key={capa.id}
@@ -129,15 +119,6 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
                 alt={capa.title} 
                 className="w-full h-auto object-contain block mx-auto transition-transform duration-500 group-hover:scale-[1.025]"
               />
-              
-              {/* Badge Rápido no topo/direita */}
-              <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-20">
-                <div className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-black/80 backdrop-blur-md border text-[11px] sm:text-xs font-bold shadow-lg transition-all ${capa.badgeColor}`}>
-                  <IconComponent className="w-3.5 h-3.5 shrink-0" />
-                  <span>{capa.badge}</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                </div>
-              </div>
             </div>
           );
         })}
