@@ -29,7 +29,9 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
   const shouldHideSidebar = hideSidebarPaths.some(path => 
     location.pathname === path || 
     location.pathname.startsWith('/auth/') || 
-    location.pathname.startsWith('/view/')
+    location.pathname.startsWith('/view/') ||
+    location.pathname.startsWith('/fabrica') ||
+    location.pathname.startsWith('/es/fabrica')
   );
 
   if (shouldHideSidebar) {

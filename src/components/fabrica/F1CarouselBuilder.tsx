@@ -34,6 +34,7 @@ type CarouselSlideKind = "cover" | "content" | "closing";
 type CarouselSlideVariant = "impact" | "itinerary" | "editorial";
 
 const BULLET_ICONS: Record<string, string> = {
+  none:     "",
   check:    "✓",
   star:     "★",
   plane:    "✈",
@@ -184,7 +185,7 @@ function createSlides(
       cta: "",
       phone: "",
       slideVariant: "impact",
-      bulletIcon: "check",
+      bulletIcon: "none",
     },
   ];
 
@@ -198,7 +199,7 @@ function createSlides(
       cta: "",
       phone: "",
       slideVariant: "impact",
-      bulletIcon: "check",
+      bulletIcon: "none",
     });
   });
 
@@ -214,7 +215,7 @@ function createSlides(
     cta: pacote.ctaLabel || (isEs ? "Reserva tu viaje por WhatsApp" : "Reserve sua viagem pelo WhatsApp"),
     phone,
     slideVariant: "impact",
-    bulletIcon: "check",
+    bulletIcon: "none",
   });
 
   return slides;
@@ -568,8 +569,10 @@ function CarouselCanvas({
                 {slide.bullets.length > 0 && (
                   <ul style={{ display: "grid", gap: 7, maxWidth: "96%", margin: "15px 0 0", padding: 0, listStyle: "none" }}>
                     {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
-                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "18px 1fr", gap: 8, alignItems: "start", color: slide.textColor, fontSize: 13, lineHeight: 1.35, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0 2px 10px rgba(0,0,0,.88)" }}>
-                        <span style={{ color: secondary, fontWeight: 950 }}>{BULLET_ICONS[slide.bulletIcon] ?? "✓"}</span>
+                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 8, alignItems: "flex-start", color: slide.textColor, fontSize: 13, lineHeight: 1.35, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0 2px 10px rgba(0,0,0,.88)" }}>
+                        {slide.bulletIcon && slide.bulletIcon !== "none" && BULLET_ICONS[slide.bulletIcon] ? (
+                          <span style={{ color: secondary, fontWeight: 950, flexShrink: 0, marginTop: 1 }}>{BULLET_ICONS[slide.bulletIcon]}</span>
+                        ) : null}
                         <span>{item}</span>
                       </li>
                     ))}
@@ -580,98 +583,112 @@ function CarouselCanvas({
           )}
 
           {/* ─── VARIANT: ITINERARY — photo top ~45%, colored block bottom ─── */}
-          {slide.slideVariant === "itinerary" && (
-            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
-              {/* Photo zone top */}
-              <div style={{ flex: "0 0 45%", position: "relative", overflow: "hidden" }}>
-                {slide.imageUrl && (
-                  <img src={slide.imageUrl} alt="" crossOrigin={slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:") ? undefined : "anonymous"}
-                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-                )}
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.52))" }} />
-                {/* counter top right */}
-                <span style={{ position: "absolute", top: "8%", right: "8%", color: "#F8FAFC", fontSize: 11, fontWeight: 850, textShadow: "0 2px 8px rgba(0,0,0,.7)" }}>
-                  {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
-                </span>
-                {/* logo top left */}
-                {logo && (
-                  <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                    style={{ position: "absolute", top: "8%", left: "8%", width: 34, height: 34, borderRadius: 10, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 4, boxShadow: "0 4px 16px rgba(0,0,0,.22)" }} />
-                )}
+          {slide.slideVariant === "itinerary" && (() => {
+            const isBgDark = getContrastText(primary) === "#fff";
+            const isTextDark = getContrastText(slide.textColor) === "#fff";
+            const boxTextColor = isBgDark && isTextDark ? onPrimaryText : slide.textColor;
+            return (
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
+                {/* Photo zone top */}
+                <div style={{ flex: "0 0 45%", position: "relative", overflow: "hidden" }}>
+                  {slide.imageUrl && (
+                    <img src={slide.imageUrl} alt="" crossOrigin={slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:") ? undefined : "anonymous"}
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                  )}
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.52))" }} />
+                  {/* counter top right */}
+                  <span style={{ position: "absolute", top: "8%", right: "8%", color: "#F8FAFC", fontSize: 11, fontWeight: 850, textShadow: "0 2px 8px rgba(0,0,0,.7)" }}>
+                    {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
+                  </span>
+                  {/* logo top left */}
+                  {logo && (
+                    <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                      style={{ position: "absolute", top: "8%", left: "8%", width: 34, height: 34, borderRadius: 10, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 4, boxShadow: "0 4px 16px rgba(0,0,0,.22)" }} />
+                  )}
+                </div>
+                {/* Content block bottom */}
+                <div style={{ flex: 1, background: primary, padding: "7% 8%", display: "flex", flexDirection: "column", justifyContent: "center", gap: 10, overflow: "hidden" }}>
+                  {slide.label && (
+                    <div style={{ display: "inline-flex", alignSelf: "flex-start", borderRadius: 999, background: secondary, color: onSecondary, padding: "5px 10px", fontSize: 9, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
+                      {slide.label}
+                    </div>
+                  )}
+                  {slide.title && (
+                    <h3 style={{ margin: 0, color: boxTextColor, fontSize: ratio < 0.68 ? 22 : 26, lineHeight: 1.1, fontWeight: 900, letterSpacing: "-.035em", overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                      {slide.title}
+                    </h3>
+                  )}
+                  {slide.body && (
+                    <p style={{ margin: 0, color: boxTextColor, fontSize: 12, lineHeight: 1.4, fontWeight: 600, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                      {slide.body}
+                    </p>
+                  )}
+                  {slide.bullets.length > 0 && (
+                    <ul style={{ display: "grid", gap: 6, padding: 0, margin: 0, listStyle: "none" }}>
+                      {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
+                        <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 7, alignItems: "flex-start", color: boxTextColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                          {slide.bulletIcon && slide.bulletIcon !== "none" && BULLET_ICONS[slide.bulletIcon] ? (
+                            <span style={{ color: secondary, fontWeight: 950, flexShrink: 0, marginTop: 1 }}>{BULLET_ICONS[slide.bulletIcon]}</span>
+                          ) : null}
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
-              {/* Content block bottom */}
-              <div style={{ flex: 1, background: primary, padding: "7% 8%", display: "flex", flexDirection: "column", justifyContent: "center", gap: 10, overflow: "hidden" }}>
-                {slide.label && (
-                  <div style={{ display: "inline-flex", alignSelf: "flex-start", borderRadius: 999, background: secondary, color: onSecondary, padding: "5px 10px", fontSize: 9, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
-                    {slide.label}
-                  </div>
-                )}
-                {slide.title && (
-                  <h3 style={{ margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 22 : 26, lineHeight: 1.1, fontWeight: 900, letterSpacing: "-.035em", overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                    {slide.title}
-                  </h3>
-                )}
-                {slide.body && (
-                  <p style={{ margin: 0, color: slide.textColor, fontSize: 12, lineHeight: 1.4, fontWeight: 600, opacity: 0.85, overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                    {slide.body}
-                  </p>
-                )}
-                {slide.bullets.length > 0 && (
-                  <ul style={{ display: "grid", gap: 6, padding: 0, margin: 0, listStyle: "none" }}>
-                    {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
-                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "16px 1fr", gap: 7, alignItems: "start", color: slide.textColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                        <span style={{ color: secondary, fontWeight: 950 }}>{BULLET_ICONS[slide.bulletIcon] ?? "✓"}</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ─── VARIANT: EDITORIAL — photo full-bleed + floating card center ─── */}
-          {slide.slideVariant === "editorial" && (
-            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "8%" }}>
-              {/* Counter */}
-              <span style={{ position: "absolute", top: "7%", right: "7%", color: "#F8FAFC", fontSize: 11, fontWeight: 850, textShadow: "0 2px 8px rgba(0,0,0,.7)" }}>
-                {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
-              </span>
-              {/* Logo */}
-              {logo && (
-                <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                  style={{ position: "absolute", top: "7%", left: "7%", width: 34, height: 34, borderRadius: 10, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 4, boxShadow: "0 4px 16px rgba(0,0,0,.22)" }} />
-              )}
-              {/* Floating card */}
-              <div style={{ width: "100%", borderRadius: 18, background: safeHexToRgba(primary, 0.93), backdropFilter: "blur(8px)", border: `2px solid ${secondary}`, padding: "8% 9%", display: "flex", flexDirection: "column", gap: 10, overflow: "hidden" }}>
-                {slide.label && (
-                  <div style={{ display: "inline-flex", alignSelf: "flex-start", borderRadius: 999, background: secondary, color: onSecondary, padding: "5px 11px", fontSize: 9, fontWeight: 900, letterSpacing: ".14em", textTransform: "uppercase" }}>
-                    {slide.label}
-                  </div>
+          {slide.slideVariant === "editorial" && (() => {
+            const isBgDark = getContrastText(primary) === "#fff";
+            const isTextDark = getContrastText(slide.textColor) === "#fff";
+            const boxTextColor = isBgDark && isTextDark ? onPrimaryText : slide.textColor;
+            return (
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "8%" }}>
+                {/* Counter */}
+                <span style={{ position: "absolute", top: "7%", right: "7%", color: "#F8FAFC", fontSize: 11, fontWeight: 850, textShadow: "0 2px 8px rgba(0,0,0,.7)" }}>
+                  {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
+                </span>
+                {/* Logo */}
+                {logo && (
+                  <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                    style={{ position: "absolute", top: "7%", left: "7%", width: 34, height: 34, borderRadius: 10, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 4, boxShadow: "0 4px 16px rgba(0,0,0,.22)" }} />
                 )}
-                {slide.title && (
-                  <h3 style={{ margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 24 : 28, lineHeight: 1.05, fontWeight: 900, letterSpacing: "-.04em", overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                    {slide.title}
-                  </h3>
-                )}
-                {slide.body && (
-                  <p style={{ margin: 0, color: slide.textColor, fontSize: 12, lineHeight: 1.42, fontWeight: 600, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                    {slide.body}
-                  </p>
-                )}
-                {slide.bullets.length > 0 && (
-                  <ul style={{ display: "grid", gap: 7, padding: 0, margin: 0, listStyle: "none" }}>
-                    {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
-                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "grid", gridTemplateColumns: "16px 1fr", gap: 7, alignItems: "start", color: slide.textColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                        <span style={{ color: secondary, fontWeight: 950 }}>{BULLET_ICONS[slide.bulletIcon] ?? "✓"}</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                {/* Floating card */}
+                <div style={{ width: "100%", borderRadius: 18, background: safeHexToRgba(primary, 0.93), backdropFilter: "blur(8px)", border: `2px solid ${secondary}`, padding: "8% 9%", display: "flex", flexDirection: "column", gap: 10, overflow: "hidden" }}>
+                  {slide.label && (
+                    <div style={{ display: "inline-flex", alignSelf: "flex-start", borderRadius: 999, background: secondary, color: onSecondary, padding: "5px 11px", fontSize: 9, fontWeight: 900, letterSpacing: ".14em", textTransform: "uppercase" }}>
+                      {slide.label}
+                    </div>
+                  )}
+                  {slide.title && (
+                    <h3 style={{ margin: 0, color: boxTextColor, fontSize: ratio < 0.68 ? 24 : 28, lineHeight: 1.05, fontWeight: 900, letterSpacing: "-.04em", overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                      {slide.title}
+                    </h3>
+                  )}
+                  {slide.body && (
+                    <p style={{ margin: 0, color: boxTextColor, fontSize: 12, lineHeight: 1.42, fontWeight: 600, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                      {slide.body}
+                    </p>
+                  )}
+                  {slide.bullets.length > 0 && (
+                    <ul style={{ display: "grid", gap: 7, padding: 0, margin: 0, listStyle: "none" }}>
+                      {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
+                        <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 7, alignItems: "flex-start", color: boxTextColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                          {slide.bulletIcon && slide.bulletIcon !== "none" && BULLET_ICONS[slide.bulletIcon] ? (
+                            <span style={{ color: secondary, fontWeight: 950, flexShrink: 0, marginTop: 1 }}>{BULLET_ICONS[slide.bulletIcon]}</span>
+                          ) : null}
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </>
 
       )}
@@ -853,7 +870,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           return {
             ...withCover,
             slideVariant: withCover.slideVariant ?? "impact",
-            bulletIcon: withCover.bulletIcon ?? "check",
+            bulletIcon: withCover.bulletIcon ?? "none",
           } as CarouselSlide;
         });
         const restoredBase = createSlides(
@@ -1834,16 +1851,16 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             <button
                               key={key}
                               type="button"
-                              aria-pressed={activeSlide.bulletIcon === key}
-                              title={key}
+                              aria-pressed={(activeSlide.bulletIcon || "none") === key}
+                              title={key === "none" ? (isEs ? "Sin icono (solo texto)" : "Sem ícone (apenas texto)") : key}
                               onClick={() => patchActive({ bulletIcon: key })}
                               className={`grid h-9 w-9 place-items-center rounded-lg border text-base transition-colors ${
-                                activeSlide.bulletIcon === key
+                                (activeSlide.bulletIcon || "none") === key
                                   ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
                                   : "border-white/10 text-white/60 hover:bg-white/[0.05] hover:text-white"
                               }`}
                             >
-                              {glyph}
+                              {key === "none" ? "🚫" : glyph}
                             </button>
                           ))}
                         </div>
