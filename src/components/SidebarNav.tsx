@@ -67,7 +67,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
 
   return (
     <>
-      <aside className="hidden md:flex flex-col w-64 fixed left-0 top-0 bottom-0 bg-white dark:bg-[#08090C]/98 backdrop-blur-3xl border-r border-slate-200 dark:border-white/[0.08] text-slate-800 dark:text-white z-50 select-none shadow-2xl">
+      <aside className="hidden md:flex flex-col w-64 fixed left-0 top-0 bottom-0 bg-white dark:bg-[#08090C] backdrop-blur-3xl border-r border-slate-200 dark:border-white/[0.08] text-slate-800 dark:text-white z-50 select-none shadow-2xl">
         {/* Logo Topo */}
         <div className="p-4 border-b border-slate-200 dark:border-white/10 flex items-center gap-3 shrink-0">
           <Link to={homeRoute} className="flex items-center gap-3 group">
