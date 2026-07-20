@@ -766,8 +766,10 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [loading, setLoading] = useState(false);
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false); // Nova feature: Lote A/B (3 variações)
-  const [generatedImage, setGeneratedImage] = useState<string>("");
-  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [generatedImage, setGeneratedImage] = useState<string>(state.generatedAdImage || "");
+  const [generatedImages, setGeneratedImages] = useState<string[]>(
+    state.generatedAdImage ? [state.generatedAdImage] : [],
+  );
   const [variationCounter, setVariationCounter] = useState(0);
   const [forcedVariant, setForcedVariant] = useState<number | null>(null);
   // Legendas/Copy geradas automaticamente junto com as imagens
@@ -1667,7 +1669,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const inputCls = "w-full bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05] focus:border-amber-400/60 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(251,191,36,0.15)] rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all duration-300";
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className={`${creativeMode === "carousel" ? "max-w-6xl" : "max-w-3xl"} mx-auto space-y-6`}>
       <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-1.5">
         <div className="grid grid-cols-2 gap-1.5" role="tablist" aria-label="Tipo de creación">
           <button
@@ -1701,7 +1703,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
       {creativeMode === "carousel" ? (
         <F1CarouselBuilder
-          sourceImage={generatedImage || selectedPhotoUrl || customImageData || customLink}
+          sourceImage={generatedImage}
           locale="es"
         />
       ) : (

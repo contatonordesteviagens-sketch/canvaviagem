@@ -1,28 +1,58 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  ImagePlus,
+  Lock,
+  RefreshCw,
+  Search,
+  Upload,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
-type CarouselFormat = "portrait" | "story";
-type CarouselTemplate = "impact" | "itinerary" | "editorial";
-type CarouselSlideKind = "cover" | "value" | "list" | "logistics" | "cta" | "custom";
+type CarouselSize = 3 | 4 | 5;
+type CarouselSlideKind = "cover" | "content" | "closing";
 
 interface CarouselSlide {
   id: string;
   kind: CarouselSlideKind;
-  eyebrow: string;
+  label: string;
   title: string;
   body: string;
   bullets: string[];
-  price: string;
-  cta: string;
   imageUrl: string;
-  focalY: number;
+  textColor: string;
+  cta: string;
+  phone: string;
+}
+
+interface PhotoResult {
+  id: string | number;
+  url: string;
+  thumb: string;
+  alt: string;
 }
 
 interface F1CarouselBuilderProps {
   sourceImage?: string;
   locale?: "pt" | "es";
 }
+
+const DEFAULT_COVER_RATIO = 4 / 5;
 
 const createId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -32,199 +62,314 @@ const createId = () =>
 const compact = (values: Array<string | undefined>) =>
   values.map((value) => (value || "").trim()).filter(Boolean);
 
-const packageImage = (pacote?: Pacote, sourceImage?: string) =>
-  sourceImage ||
-  pacote?.imageUrl ||
-  pacote?.galleryImages?.find(Boolean) ||
-  "";
+const uniqueImages = (values: Array<string | undefined>) =>
+  Array.from(new Set(values.map((value) => (value || "").trim()).filter(Boolean)));
 
-function createSlides(pacote: Pacote, imageUrl: string, isEs: boolean): CarouselSlide[] {
-  const slides: CarouselSlide[] = [];
-  const add = (slide: Omit<CarouselSlide, "id" | "focalY">) =>
-    slides.push({ ...slide, id: createId(), focalY: 50 });
+const readableText = (hex: string) => {
+  const normalized = hex.replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(normalized)) return "#F8FAFC";
+  const [red, green, blue] = [0, 2, 4].map((index) =>
+    Number.parseInt(normalized.slice(index, index + 2), 16),
+  );
+  return (red * 299 + green * 587 + blue * 114) / 1000 > 150 ? "#111318" : "#F8FAFC";
+};
 
-  add({
-    kind: "cover",
-    eyebrow: pacote.badge || (isEs ? "Viaje con planificación" : "Viaje com planejamento"),
-    title: pacote.title,
-    body: pacote.subtitle || pacote.description,
-    bullets: [],
-    price: pacote.price,
-    cta: pacote.ctaLabel || (isEs ? "Solicitar detalles" : "Solicitar detalhes"),
-    imageUrl,
-  });
+const phoneLabel = (dialCode: string, phone: string) => {
+  const dial = dialCode.replace(/\D/g, "");
+  const number = phone.replace(/\D/g, "");
+  if (!number) return "";
+  return `+${dial || "55"} ${number}`;
+};
 
-  const valueBody = pacote.longDescription || pacote.description;
-  if (valueBody) {
-    add({
-      kind: "value",
-      eyebrow: isEs ? "La experiencia" : "A experiência",
-      title: isEs ? `Por qué elegir ${pacote.title}` : `Por que escolher ${pacote.title}`,
-      body: valueBody,
-      bullets: [],
-      price: "",
-      cta: "",
-      imageUrl: pacote.galleryImages?.[1] || imageUrl,
-    });
-  }
-
-  if (pacote.highlights?.length) {
-    add({
-      kind: "list",
-      eyebrow: isEs ? "Lo mejor del viaje" : "O melhor da viagem",
-      title: isEs ? "Puntos destacados" : "Destaques da experiência",
-      body: "",
-      bullets: pacote.highlights.slice(0, 6),
-      price: "",
-      cta: "",
-      imageUrl: pacote.galleryImages?.[2] || imageUrl,
-    });
-  }
-
-  if (pacote.included?.length) {
-    add({
-      kind: "list",
-      eyebrow: isEs ? "Todo más claro" : "Tudo mais claro",
-      title: isEs ? "Qué incluye" : "O que está incluído",
-      body: pacote.notIncluded?.length
-        ? isEs
-          ? "Consulta también lo que no está incluido antes de reservar."
-          : "Consulte também o que não está incluído antes de reservar."
-        : "",
-      bullets: pacote.included.slice(0, 6),
-      price: "",
-      cta: "",
-      imageUrl: pacote.galleryImages?.[3] || imageUrl,
-    });
-  }
-
-  if (pacote.itinerary?.length) {
-    add({
-      kind: "list",
-      eyebrow: isEs ? "Paso a paso" : "Passo a passo",
-      title: isEs ? "Cómo será el viaje" : "Como será a viagem",
-      body: "",
-      bullets: pacote.itinerary.slice(0, 6),
-      price: "",
-      cta: "",
-      imageUrl: pacote.galleryImages?.[4] || imageUrl,
-    });
-  }
-
-  const logistics = compact([
+function contentPresets(pacote: Pacote, isEs: boolean) {
+  const highlights = compact(pacote.highlights || []);
+  const included = compact(pacote.included || []);
+  const itinerary = compact(pacote.itinerary || []);
+  const planning = compact([
     pacote.travelDates && `${isEs ? "Fechas" : "Datas"}: ${pacote.travelDates}`,
     pacote.duration && `${isEs ? "Duración" : "Duração"}: ${pacote.duration}`,
     pacote.departureLocation && `${isEs ? "Salida" : "Saída"}: ${pacote.departureLocation}`,
-    pacote.meetingPoint && `${isEs ? "Encuentro" : "Encontro"}: ${pacote.meetingPoint}`,
     pacote.accommodation && `${isEs ? "Alojamiento" : "Hospedagem"}: ${pacote.accommodation}`,
+    pacote.price && `${isEs ? "Valor" : "Valor"}: ${pacote.price}`,
+    pacote.paymentTerms && `${isEs ? "Pago" : "Pagamento"}: ${pacote.paymentTerms}`,
   ]);
-  if (logistics.length) {
-    add({
-      kind: "logistics",
-      eyebrow: isEs ? "Información práctica" : "Informações práticas",
-      title: isEs ? "Planifica con tranquilidad" : "Planeje com tranquilidade",
+
+  return [
+    {
+      label: isEs ? "La experiencia" : "A experiência",
+      title: pacote.subtitle || pacote.title,
+      body: pacote.longDescription || pacote.description,
+      bullets: highlights.slice(0, 4),
+    },
+    {
+      label: isEs ? "Incluido" : "O que inclui",
+      title: isEs ? "Todo lo que forma parte de tu viaje" : "Tudo que faz parte da sua viagem",
+      body: included.length ? "" : pacote.description,
+      bullets: (included.length ? included : highlights).slice(0, 4),
+    },
+    {
+      label: isEs ? "Planifica" : "Planeje",
+      title: isEs ? "Información para organizarte" : "Informações para se organizar",
       body: pacote.importantNotes || "",
-      bullets: logistics.slice(0, 6),
-      price: "",
-      cta: "",
-      imageUrl: pacote.galleryImages?.[5] || imageUrl,
-    });
-  }
+      bullets: (planning.length ? planning : itinerary).slice(0, 4),
+    },
+  ];
+}
 
-  const middle = slides.slice(1, 6);
-  const finalSlides = [slides[0], ...middle];
-  if (finalSlides.length < 2) {
-    finalSlides.push({
+function createSlides(
+  pacote: Pacote,
+  total: CarouselSize,
+  coverImage: string,
+  phone: string,
+  isEs: boolean,
+): CarouselSlide[] {
+  const images = uniqueImages([pacote.imageUrl, ...(pacote.galleryImages || [])]);
+  const presets = contentPresets(pacote, isEs);
+  const contentCount = total - 2;
+  const selectedPresets =
+    contentCount === 1
+      ? [
+          {
+            ...presets[0],
+            bullets: compact([...(pacote.included || []), ...(pacote.highlights || [])]).slice(0, 4),
+          },
+        ]
+      : contentCount === 2
+        ? [presets[0], (pacote.included?.length || pacote.highlights?.length) ? presets[1] : presets[2]]
+        : presets;
+
+  const slides: CarouselSlide[] = [
+    {
       id: createId(),
-      kind: "value",
-      eyebrow: isEs ? "Conoce el paquete" : "Conheça o pacote",
+      kind: "cover",
+      label: "",
       title: pacote.title,
-      body: pacote.description,
+      body: "",
       bullets: [],
-      price: "",
+      imageUrl: coverImage,
+      textColor: "#FFFFFF",
       cta: "",
-      imageUrl,
-      focalY: 50,
-    });
-  }
+      phone: "",
+    },
+  ];
 
-  finalSlides.push({
-    id: createId(),
-    kind: "cta",
-    eyebrow: pacote.availability
-      ? (isEs ? "Disponibilidad informada" : "Disponibilidade informada")
-      : (isEs ? "Habla con la agencia" : "Fale com a agência"),
-    title: isEs ? "¿Listo para recibir todos los detalles?" : "Pronto para receber todos os detalhes?",
-    body: compact([pacote.priceDetails, pacote.paymentTerms]).join("\n"),
-    bullets: [],
-    price: pacote.price,
-    cta: pacote.ctaLabel || (isEs ? "Reservar este paquete" : "Reservar este pacote"),
-    imageUrl,
-    focalY: 50,
+  selectedPresets.forEach((preset, index) => {
+    slides.push({
+      id: createId(),
+      kind: "content",
+      ...preset,
+      imageUrl: images[index] || "",
+      textColor: "#FFFFFF",
+      cta: "",
+      phone: "",
+    });
   });
 
-  return finalSlides.slice(0, 7);
+  slides.push({
+    id: createId(),
+    kind: "closing",
+    label: "",
+    title: "",
+    body: "",
+    bullets: [],
+    imageUrl: images[contentCount] || "",
+    textColor: "#FFFFFF",
+    cta: pacote.ctaLabel || (isEs ? "Reserva tu viaje por WhatsApp" : "Reserve sua viagem pelo WhatsApp"),
+    phone,
+  });
+
+  return slides;
 }
 
-function readableText(hex: string) {
-  const normalized = hex.replace("#", "");
-  if (!/^[0-9a-f]{6}$/i.test(normalized)) return "#F8FAFC";
-  const [r, g, b] = [0, 2, 4].map((index) => parseInt(normalized.slice(index, index + 2), 16));
-  return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? "#111318" : "#F8FAFC";
+function mergeSlidesForSize(
+  current: CarouselSlide[],
+  generated: CarouselSlide[],
+): CarouselSlide[] {
+  const currentContent = current.filter((slide) => slide.kind === "content");
+  const currentClosing = current.find((slide) => slide.kind === "closing");
+
+  return generated.map((slide, index) => {
+    if (slide.kind === "cover") return slide;
+    if (slide.kind === "closing" && currentClosing) {
+      const merged = { ...slide, ...currentClosing, id: currentClosing.id };
+      return { ...merged, imageUrl: merged.imageUrl || slide.imageUrl };
+    }
+    const contentIndex = generated.slice(0, index).filter((item) => item.kind === "content").length;
+    const existing = currentContent[contentIndex];
+    if (!existing) return slide;
+    const merged = { ...slide, ...existing, id: existing.id };
+    return { ...merged, imageUrl: merged.imageUrl || slide.imageUrl };
+  });
 }
 
-function slideHasOverflowRisk(slide: CarouselSlide) {
-  return slide.title.length > 74 || slide.body.length > 240 || slide.bullets.some((item) => item.length > 72);
+function mergeActiveIntoArchive(
+  active: CarouselSlide[],
+  archive: CarouselSlide[],
+): CarouselSlide[] {
+  const activeCover = active.find((slide) => slide.kind === "cover");
+  const activeClosing = active.find((slide) => slide.kind === "closing");
+  const activeContent = active.filter((slide) => slide.kind === "content");
+  let contentIndex = 0;
+
+  return archive.map((slide) => {
+    if (slide.kind === "cover") return activeCover || slide;
+    if (slide.kind === "closing") return activeClosing || slide;
+    const replacement = activeContent[contentIndex];
+    contentIndex += 1;
+    return replacement || slide;
+  });
+}
+
+async function optimizeUpload(file: File) {
+  const bitmap = await createImageBitmap(file);
+  try {
+    const scale = Math.min(1, 1800 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("canvas");
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/webp", 0.84),
+    );
+    if (!blob) throw new Error("image-optimization");
+    return blob;
+  } finally {
+    bitmap.close();
+  }
+}
+
+async function hashBlob(blob: Blob) {
+  const bytes = await blob.arrayBuffer();
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function blobToDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function downloadOriginalImage(source: string, filename: string) {
+  if (source.startsWith("data:") || source.startsWith("blob:")) {
+    const link = document.createElement("a");
+    link.href = source;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return;
+  }
+
+  const response = await fetch(source);
+  if (!response.ok) throw new Error("cover-download");
+  const objectUrl = URL.createObjectURL(await response.blob());
+  try {
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } finally {
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1_000);
+  }
+}
+
+async function assertExportImageReadable(source: string) {
+  if (!source || source.startsWith("data:") || source.startsWith("blob:")) return;
+  await new Promise<void>((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error("image-cors"));
+    image.src = source;
+  });
 }
 
 function CarouselCanvas({
   slide,
   index,
   total,
-  format,
-  template,
-  agencyName,
+  ratio,
   logo,
   primary,
   secondary,
-  background,
   canvasRef,
   exportMode = false,
 }: {
   slide: CarouselSlide;
   index: number;
   total: number;
-  format: CarouselFormat;
-  template: CarouselTemplate;
-  agencyName: string;
+  ratio: number;
   logo: string;
   primary: string;
   secondary: string;
-  background: string;
   canvasRef?: (node: HTMLDivElement | null) => void;
   exportMode?: boolean;
 }) {
-  const dimensions = format === "story"
-    ? { width: exportMode ? 360 : "100%", aspectRatio: "9 / 16" }
-    : { width: exportMode ? 432 : "100%", aspectRatio: "4 / 5" };
-  const onPrimary = readableText(primary);
-  const onBackground = readableText(background);
-  const fullImage = template === "impact";
-  const contentColor = template === "editorial" ? onBackground : onPrimary;
-  const safePadding = format === "story" ? "13% 8% 18%" : "8%";
+  const dimensions: CSSProperties = {
+    width: exportMode ? 432 : "100%",
+    aspectRatio: `${ratio}`,
+  };
+
+  if (slide.kind === "cover") {
+    return (
+      <div
+        ref={canvasRef}
+        data-carousel-canvas
+        style={{
+          ...dimensions,
+          position: "relative",
+          overflow: "hidden",
+          background: "#08090B",
+        }}
+      >
+        {slide.imageUrl ? (
+          <img
+            src={slide.imageUrl}
+            alt=""
+            style={{ width: "100%", height: "100%", display: "block", objectFit: "contain" }}
+          />
+        ) : (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "grid",
+              placeItems: "center",
+              padding: "12%",
+              color: "#F8FAFC",
+              textAlign: "center",
+              font: "800 18px/1.35 Inter, sans-serif",
+            }}
+          >
+            Gere a arte de capa na aba Anúncio
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const isClosing = slide.kind === "closing";
+  const onSecondary = readableText(secondary);
 
   return (
     <div
       ref={canvasRef}
       data-carousel-canvas
       style={{
-        width: dimensions.width,
-        aspectRatio: dimensions.aspectRatio,
+        ...dimensions,
         position: "relative",
         overflow: "hidden",
         isolation: "isolate",
-        background: template === "editorial" ? background : primary,
-        color: contentColor,
+        background: `linear-gradient(145deg, ${primary}, ${secondary})`,
+        color: slide.textColor,
         fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
       }}
     >
@@ -232,382 +377,812 @@ function CarouselCanvas({
         <img
           src={slide.imageUrl}
           alt=""
-          crossOrigin="anonymous"
-          style={{
-            position: "absolute",
-            inset: template === "editorial" ? "5% 5% auto" : 0,
-            width: template === "editorial" ? "90%" : "100%",
-            height: template === "editorial" ? "42%" : "100%",
-            objectFit: "cover",
-            objectPosition: `center ${slide.focalY}%`,
-            borderRadius: template === "editorial" ? "18px" : 0,
-            zIndex: -2,
-          }}
-        />
-      )}
-      {fullImage && (
-        <div
+          crossOrigin={
+            slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:")
+              ? undefined
+              : "anonymous"
+          }
           style={{
             position: "absolute",
             inset: 0,
-            zIndex: -1,
-            background: slide.imageUrl ? "rgba(8,10,14,.58)" : primary,
+            zIndex: -3,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
           }}
         />
       )}
-      {template === "itinerary" && (
-        <div
-          style={{
-            position: "absolute",
-            right: "-18%",
-            top: "-8%",
-            width: "62%",
-            aspectRatio: "1",
-            borderRadius: "999px",
-            background: secondary,
-            opacity: 0.24,
-            zIndex: -1,
-          }}
-        />
-      )}
-
       <div
         style={{
           position: "absolute",
           inset: 0,
-          padding: safePadding,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: template === "editorial" ? "flex-end" : "space-between",
-          gap: "5%",
+          zIndex: -2,
+          background: isClosing
+            ? "linear-gradient(180deg,rgba(5,7,10,.58),rgba(5,7,10,.82))"
+            : "linear-gradient(180deg,rgba(5,7,10,.22) 0%,rgba(5,7,10,.08) 30%,rgba(5,7,10,.78) 68%,rgba(5,7,10,.94) 100%)",
         }}
-      >
+      />
+
+      {isClosing ? (
         <div
           style={{
+            position: "absolute",
+            inset: 0,
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-            marginBottom: template === "editorial" ? "2%" : 0,
+            justifyContent: "center",
+            padding: "11% 9%",
+            textAlign: "center",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-            {logo && (
+          {logo ? (
+            <img
+              src={logo}
+              alt=""
+              crossOrigin={
+                logo.startsWith("data:") || logo.startsWith("blob:")
+                  ? undefined
+                  : "anonymous"
+              }
+              style={{
+                width: "34%",
+                maxHeight: "28%",
+                objectFit: "contain",
+                filter: "drop-shadow(0 12px 30px rgba(0,0,0,.35))",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                placeItems: "center",
+                width: "36%",
+                aspectRatio: "1",
+                border: "2px dashed rgba(255,255,255,.58)",
+                borderRadius: 24,
+                color: "rgba(255,255,255,.82)",
+                fontSize: 13,
+                fontWeight: 800,
+              }}
+            >
+              Sua logo
+            </div>
+          )}
+          {slide.cta && (
+            <div
+              style={{
+                maxWidth: "92%",
+                marginTop: "9%",
+                padding: "12px 18px",
+                borderRadius: 999,
+                background: secondary,
+                color: onSecondary,
+                fontSize: 18,
+                lineHeight: 1.18,
+                fontWeight: 900,
+                letterSpacing: "-.025em",
+              }}
+            >
+              {slide.cta}
+            </div>
+          )}
+          {slide.phone && (
+            <div
+              style={{
+                marginTop: 15,
+                color: "#F8FAFC",
+                fontSize: 15,
+                lineHeight: 1.2,
+                fontWeight: 750,
+                textShadow: "0 2px 12px rgba(0,0,0,.72)",
+              }}
+            >
+              {slide.phone}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            padding: "8%",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            {logo ? (
               <img
                 src={logo}
                 alt=""
+                crossOrigin={
+                  logo.startsWith("data:") || logo.startsWith("blob:")
+                    ? undefined
+                    : "anonymous"
+                }
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 10,
+                  width: 42,
+                  height: 42,
+                  borderRadius: 12,
                   objectFit: "contain",
-                  background: "rgba(248,250,252,.92)",
-                  padding: 3,
+                  background: "rgba(255,255,255,.94)",
+                  padding: 5,
+                  boxShadow: "0 8px 24px rgba(0,0,0,.24)",
                 }}
               />
+            ) : (
+              <span />
             )}
-            <strong
+            <span
               style={{
-                fontSize: 12,
-                letterSpacing: ".02em",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                maxWidth: "70%",
+                color: "#F8FAFC",
+                fontSize: 11,
+                fontWeight: 850,
+                textShadow: "0 2px 10px rgba(0,0,0,.7)",
               }}
             >
-              {agencyName || "Agência de Viagens"}
-            </strong>
+              {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
+            </span>
           </div>
-          <span style={{ fontSize: 11, fontWeight: 800, opacity: 0.72 }}>
-            {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
-          </span>
-        </div>
 
-        <div style={{ marginTop: template === "editorial" ? "48%" : "auto" }}>
-          {slide.eyebrow && (
-            <div
-              style={{
-                display: "inline-flex",
-                maxWidth: "100%",
-                padding: "6px 10px",
-                borderRadius: 999,
-                background: secondary,
-                color: readableText(secondary),
-                fontSize: 10,
-                lineHeight: 1.2,
-                fontWeight: 900,
-                letterSpacing: ".12em",
-                textTransform: "uppercase",
-                marginBottom: 14,
-              }}
-            >
-              {slide.eyebrow}
-            </div>
-          )}
-          <h3
-            style={{
-              margin: 0,
-              maxWidth: "96%",
-              fontSize: format === "story" ? 30 : 34,
-              lineHeight: 1.02,
-              letterSpacing: "-.045em",
-              fontWeight: 900,
-              overflowWrap: "anywhere",
-            }}
-          >
-            {slide.title}
-          </h3>
-          {slide.body && (
-            <p
-              style={{
-                margin: "14px 0 0",
-                whiteSpace: "pre-line",
-                fontSize: format === "story" ? 14 : 15,
-                lineHeight: 1.45,
-                fontWeight: 550,
-                opacity: 0.86,
-              }}
-            >
-              {slide.body}
-            </p>
-          )}
-          {slide.bullets.length > 0 && (
-            <ul
-              style={{
-                listStyle: "none",
-                padding: 0,
-                margin: "16px 0 0",
-                display: "grid",
-                gap: 8,
-              }}
-            >
-              {slide.bullets.slice(0, 6).map((item, bulletIndex) => (
-                <li
-                  key={`${slide.id}-bullet-${bulletIndex}`}
-                  style={{ display: "grid", gridTemplateColumns: "20px 1fr", gap: 8, fontSize: 13, lineHeight: 1.3 }}
-                >
-                  <span
+          <div>
+            {slide.label && (
+              <div
+                style={{
+                  display: "inline-flex",
+                  maxWidth: "100%",
+                  marginBottom: 13,
+                  borderRadius: 999,
+                  background: secondary,
+                  color: onSecondary,
+                  padding: "7px 12px",
+                  fontSize: 10,
+                  lineHeight: 1.15,
+                  fontWeight: 900,
+                  letterSpacing: ".12em",
+                  textTransform: "uppercase",
+                }}
+              >
+                {slide.label}
+              </div>
+            )}
+            {slide.title && (
+              <h3
+                style={{
+                  maxWidth: "96%",
+                  margin: 0,
+                  color: slide.textColor,
+                  fontSize: ratio < 0.68 ? 31 : 35,
+                  lineHeight: 1.02,
+                  fontWeight: 900,
+                  letterSpacing: "-.045em",
+                  overflowWrap: "anywhere",
+                  textShadow: "0 3px 18px rgba(0,0,0,.72)",
+                }}
+              >
+                {slide.title}
+              </h3>
+            )}
+            {slide.body && (
+              <p
+                style={{
+                  maxWidth: "94%",
+                  margin: "13px 0 0",
+                  color: slide.textColor,
+                  fontSize: ratio < 0.68 ? 13 : 14,
+                  lineHeight: 1.45,
+                  fontWeight: 600,
+                  opacity: 0.94,
+                  textShadow: "0 2px 12px rgba(0,0,0,.82)",
+                }}
+              >
+                {slide.body}
+              </p>
+            )}
+            {slide.bullets.length > 0 && (
+              <ul
+                style={{
+                  display: "grid",
+                  gap: 7,
+                  maxWidth: "96%",
+                  margin: "15px 0 0",
+                  padding: 0,
+                  listStyle: "none",
+                }}
+              >
+                {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
+                  <li
+                    key={`${slide.id}-bullet-${bulletIndex}`}
                     style={{
-                      width: 20,
-                      height: 20,
                       display: "grid",
-                      placeItems: "center",
-                      borderRadius: 999,
-                      background: secondary,
-                      color: readableText(secondary),
-                      fontSize: 10,
-                      fontWeight: 900,
+                      gridTemplateColumns: "18px 1fr",
+                      gap: 8,
+                      alignItems: "start",
+                      color: slide.textColor,
+                      fontSize: 13,
+                      lineHeight: 1.35,
+                      fontWeight: 650,
+                      textShadow: "0 2px 10px rgba(0,0,0,.88)",
                     }}
                   >
-                    {bulletIndex + 1}
-                  </span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {(slide.price || slide.cta) && (
-            <div style={{ marginTop: 18, display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
-              {slide.price && (
-                <div>
-                  <span style={{ display: "block", fontSize: 9, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", opacity: 0.68 }}>
-                    Investimento
-                  </span>
-                  <strong style={{ display: "block", marginTop: 3, fontSize: 22, lineHeight: 1.1 }}>{slide.price}</strong>
-                </div>
-              )}
-              {slide.cta && (
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    minHeight: 40,
-                    padding: "9px 13px",
-                    borderRadius: 12,
-                    background: secondary,
-                    color: readableText(secondary),
-                    fontSize: 11,
-                    fontWeight: 900,
-                    textAlign: "center",
-                  }}
-                >
-                  {slide.cta}
-                </span>
-              )}
-            </div>
-          )}
+                    <span style={{ color: secondary, fontWeight: 950 }}>✓</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
+function CarouselField({
+  label,
+  optionalAction,
+  children,
+}: {
+  label: string;
+  optionalAction?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 flex min-h-5 items-center justify-between gap-3 text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">
+        <span>{label}</span>
+        {optionalAction}
+      </span>
+      {children}
+    </label>
+  );
+}
+
 export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1CarouselBuilderProps) {
-  const { state, update } = useFabricaContext();
+  const { state } = useFabricaContext();
+  const { user } = useAuth();
   const isEs = locale === "es";
   const packages = state.selectedPackages.filter((pacote) => !pacote.isDraft);
   const [selectedPackageId, setSelectedPackageId] = useState(packages[0]?.id || "");
   const selectedPackage = packages.find((pacote) => pacote.id === selectedPackageId) || packages[0];
-  const [format, setFormat] = useState<CarouselFormat>("portrait");
-  const [template, setTemplate] = useState<CarouselTemplate>("impact");
+  const coverImage = sourceImage || state.generatedAdImage || "";
+  const carouselContact =
+    [
+      { icon: state.footerContact1Icon, value: state.footerContact1Value },
+      { icon: state.footerContact2Icon, value: state.footerContact2Value },
+    ].find((contact) => contact.icon?.startsWith("whatsapp") && contact.value?.trim())?.value?.trim() ||
+    "";
+  const agencyPhone =
+    carouselContact || phoneLabel(state.whatsappDialCode || "55", state.whatsapp || "");
+  const [slideCount, setSlideCount] = useState<CarouselSize>(5);
+  const slideCountRef = useRef<CarouselSize>(5);
   const [slides, setSlides] = useState<CarouselSlide[]>(() =>
-    selectedPackage ? createSlides(selectedPackage, packageImage(selectedPackage, sourceImage), isEs) : [],
+    selectedPackage
+      ? createSlides(selectedPackage, 5, coverImage, agencyPhone, isEs)
+      : [],
   );
-  const [activeSlideId, setActiveSlideId] = useState(slides[0]?.id || "");
+  const slideArchiveRef = useRef<CarouselSlide[]>(
+    selectedPackage
+      ? createSlides(selectedPackage, 5, coverImage, agencyPhone, isEs)
+      : [],
+  );
+  const slidesRef = useRef(slides);
+  const selectedPackageIdRef = useRef(selectedPackage?.id || "");
+  const skipNextPersistRef = useRef("");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [coverRatio, setCoverRatio] = useState(DEFAULT_COVER_RATIO);
+  const [photoQuery, setPhotoQuery] = useState("");
+  const [photoResults, setPhotoResults] = useState<PhotoResult[]>([]);
+  const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const exportRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const activeIndex = Math.max(0, slides.findIndex((slide) => slide.id === activeSlideId));
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadRequestRef = useRef(new Map<string, symbol>());
   const activeSlide = slides[activeIndex];
 
+  useEffect(() => {
+    slideCountRef.current = slideCount;
+  }, [slideCount]);
+
+  useEffect(() => {
+    slidesRef.current = slides;
+  }, [slides]);
+
+  useEffect(() => {
+    selectedPackageIdRef.current = selectedPackage?.id || "";
+  }, [selectedPackage?.id]);
+
+  useEffect(
+    () => () => {
+      uploadRequestRef.current.clear();
+    },
+    [],
+  );
+
+  const availableImages = useMemo(
+    () =>
+      uniqueImages([
+        selectedPackage?.imageUrl,
+        ...(selectedPackage?.galleryImages || []),
+        ...(state.siteContent.galleryImages || []),
+        state.lastCleanPhoto,
+      ]).slice(0, 16),
+    [
+      selectedPackage?.galleryImages,
+      selectedPackage?.imageUrl,
+      state.lastCleanPhoto,
+      state.siteContent.galleryImages,
+    ],
+  );
+
   const storageKey = useMemo(
-    () => `fabrica-carousel-beta:${locale}:${state.projectId || "local"}:${selectedPackageId || "none"}`,
-    [locale, selectedPackageId, state.projectId],
+    () => `fabrica-carousel-v2:${locale}:${state.projectId || "local"}:${selectedPackage?.id || "none"}`,
+    [locale, selectedPackage?.id, state.projectId],
   );
 
   useEffect(() => {
-    if (!selectedPackage) {
-      setSlides([]);
-      setActiveSlideId("");
+    if (selectedPackageId && packages.some((pacote) => pacote.id === selectedPackageId)) return;
+    setSelectedPackageId(packages[0]?.id || "");
+  }, [packages, selectedPackageId]);
+
+  useEffect(() => {
+    if (!coverImage) {
+      setCoverRatio(DEFAULT_COVER_RATIO);
       return;
     }
+    const image = new Image();
+    image.onload = () => {
+      if (image.naturalWidth && image.naturalHeight) {
+        setCoverRatio(image.naturalWidth / image.naturalHeight);
+      }
+    };
+    image.src = coverImage;
+  }, [coverImage]);
+
+  useEffect(() => {
+    skipNextPersistRef.current = storageKey;
+    if (!selectedPackage) {
+      slideArchiveRef.current = [];
+      setSlides([]);
+      setActiveIndex(0);
+      return;
+    }
+
+    const preferredCount = slideCountRef.current;
+    const generated = createSlides(
+      selectedPackage,
+      preferredCount,
+      coverImage,
+      agencyPhone,
+      isEs,
+    );
+    const generatedArchive = createSlides(
+      selectedPackage,
+      5,
+      coverImage,
+      agencyPhone,
+      isEs,
+    );
+
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed = JSON.parse(stored) as {
-          format?: CarouselFormat;
-          template?: CarouselTemplate;
+          slideCount?: CarouselSize;
           slides?: CarouselSlide[];
+          allSlides?: CarouselSlide[];
         };
-        const restoredSlides = (parsed.slides || []).map((slide) => ({
-          ...slide,
-          imageUrl: slide.imageUrl || packageImage(selectedPackage, sourceImage),
-        }));
-        if (restoredSlides.length) {
-          setFormat(parsed.format || "portrait");
-          setTemplate(parsed.template || "impact");
-          setSlides(restoredSlides);
-          setActiveSlideId(restoredSlides[0].id);
-          return;
-        }
+        const restoredCount =
+          parsed.slideCount === 3 || parsed.slideCount === 4 || parsed.slideCount === 5
+            ? parsed.slideCount
+            : preferredCount;
+        const restoredArchive = mergeSlidesForSize(
+          parsed.allSlides || parsed.slides || [],
+          generatedArchive,
+        ).map((slide) =>
+          slide.kind === "cover" ? { ...slide, imageUrl: coverImage } : slide,
+        );
+        const restoredBase = createSlides(
+          selectedPackage,
+          restoredCount,
+          coverImage,
+          agencyPhone,
+          isEs,
+        );
+        const restored = mergeSlidesForSize(restoredArchive, restoredBase).map((slide) =>
+          slide.kind === "cover" ? { ...slide, imageUrl: coverImage } : slide,
+        );
+        slideArchiveRef.current = restoredArchive;
+        setSlideCount(restoredCount);
+        setSlides(restored);
+        setActiveIndex(0);
+        return;
       }
     } catch {
       localStorage.removeItem(storageKey);
     }
-    const nextSlides = createSlides(selectedPackage, packageImage(selectedPackage, sourceImage), isEs);
-    setSlides(nextSlides);
-    setActiveSlideId(nextSlides[0]?.id || "");
-  }, [isEs, selectedPackage, sourceImage, storageKey]);
+
+    slideArchiveRef.current = generatedArchive;
+    setSlides(generated);
+    setActiveIndex(0);
+  }, [agencyPhone, coverImage, isEs, selectedPackage, storageKey]);
 
   useEffect(() => {
     if (!slides.length) return;
-    const safeSlides = slides.map((slide) => ({
-      ...slide,
-      imageUrl: slide.imageUrl.startsWith("data:") ? "" : slide.imageUrl,
-    }));
-    const timer = window.setTimeout(() => {
+    if (skipNextPersistRef.current === storageKey) {
+      skipNextPersistRef.current = "";
+      return;
+    }
+    const persistDraft = (notifyError = true) => {
       try {
-        localStorage.setItem(storageKey, JSON.stringify({ format, template, slides: safeSlides }));
+        const generatedArchive = selectedPackage
+          ? createSlides(selectedPackage, 5, coverImage, agencyPhone, isEs)
+          : [];
+        const archiveBase = mergeSlidesForSize(
+          slideArchiveRef.current,
+          generatedArchive,
+        );
+        const allSlides = mergeActiveIntoArchive(slides, archiveBase);
+        slideArchiveRef.current = allSlides;
+        const safeSlide = (slide: CarouselSlide) => ({
+          ...slide,
+          imageUrl:
+            slide.kind === "cover" || slide.imageUrl.startsWith("data:")
+              ? ""
+              : slide.imageUrl,
+        });
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            slideCount,
+            slides: slides.map(safeSlide),
+            allSlides: allSlides.map(safeSlide),
+          }),
+        );
       } catch {
-        toast.error(isEs ? "No fue posible guardar el borrador en este navegador." : "Não foi possível salvar o rascunho neste navegador.");
+        if (notifyError) {
+          toast.error(
+            isEs
+              ? "No fue posible guardar el borrador en este navegador."
+              : "Não foi possível salvar o rascunho neste navegador.",
+          );
+        }
       }
-    }, 250);
-    return () => window.clearTimeout(timer);
-  }, [format, isEs, slides, storageKey, template]);
+    };
+    const persistBeforeLeaving = () => persistDraft(false);
+    const timer = window.setTimeout(() => persistDraft(true), 300);
+    window.addEventListener("pagehide", persistBeforeLeaving);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("pagehide", persistBeforeLeaving);
+      persistDraft(false);
+    };
+  }, [agencyPhone, coverImage, isEs, selectedPackage, slideCount, slides, storageKey]);
 
-  const patchSlide = (patch: Partial<CarouselSlide>) => {
-    if (!activeSlide) return;
-    setSlides((current) => current.map((slide) => (slide.id === activeSlide.id ? { ...slide, ...patch } : slide)));
+  const patchActive = (patch: Partial<CarouselSlide>) => {
+    if (!activeSlide || activeSlide.kind === "cover") return;
+    setSlides((current) =>
+      current.map((slide, index) => (index === activeIndex ? { ...slide, ...patch } : slide)),
+    );
+  };
+
+  const changeSlideCount = (nextCount: CarouselSize) => {
+    if (!selectedPackage) return;
+    const generated = createSlides(
+      selectedPackage,
+      nextCount,
+      coverImage,
+      agencyPhone,
+      isEs,
+    );
+    const generatedArchive = createSlides(
+      selectedPackage,
+      5,
+      coverImage,
+      agencyPhone,
+      isEs,
+    );
+    setSlides((current) => {
+      const archiveBase = mergeSlidesForSize(
+        slideArchiveRef.current,
+        generatedArchive,
+      );
+      const archive = mergeActiveIntoArchive(current, archiveBase);
+      slideArchiveRef.current = archive;
+      return mergeSlidesForSize(archive, generated);
+    });
+    setSlideCount(nextCount);
+    setActiveIndex((current) => Math.min(current, nextCount - 1));
   };
 
   const regenerate = () => {
     if (!selectedPackage) return;
-    const nextSlides = createSlides(selectedPackage, packageImage(selectedPackage, sourceImage), isEs);
-    setSlides(nextSlides);
-    setActiveSlideId(nextSlides[0]?.id || "");
-    toast.success(isEs ? "Carrusel actualizado con los datos del paquete." : "Carrossel atualizado com os dados do pacote.");
+    uploadRequestRef.current.clear();
+    const generatedArchive = createSlides(
+      selectedPackage,
+      5,
+      coverImage,
+      agencyPhone,
+      isEs,
+    );
+    const generated = mergeSlidesForSize(
+      generatedArchive,
+      createSlides(
+        selectedPackage,
+        slideCount,
+        coverImage,
+        agencyPhone,
+        isEs,
+      ),
+    );
+    slideArchiveRef.current = generatedArchive;
+    setSlides(generated);
+    setActiveIndex(0);
+    toast.success(
+      isEs
+        ? "Contenido actualizado con los datos reales del paquete."
+        : "Conteúdo atualizado com os dados reais do pacote.",
+    );
   };
 
-  const addSlide = () => {
-    const slide: CarouselSlide = {
-      id: createId(),
-      kind: "custom",
-      eyebrow: isEs ? "Nuevo contenido" : "Novo conteúdo",
-      title: isEs ? "Escribe el título" : "Escreva o título",
-      body: "",
-      bullets: [],
-      price: "",
-      cta: "",
-      imageUrl: packageImage(selectedPackage, sourceImage),
-      focalY: 50,
-    };
-    setSlides((current) => [...current, slide].slice(0, 10));
-    setActiveSlideId(slide.id);
-  };
-
-  const duplicateSlide = () => {
-    if (!activeSlide || slides.length >= 10) return;
-    const copy = { ...activeSlide, id: createId() };
-    setSlides((current) => {
-      const index = current.findIndex((slide) => slide.id === activeSlide.id);
-      return [...current.slice(0, index + 1), copy, ...current.slice(index + 1)];
-    });
-    setActiveSlideId(copy.id);
-  };
-
-  const removeSlide = () => {
-    if (!activeSlide || slides.length <= 3) {
-      toast.error(isEs ? "Mantén al menos 3 diapositivas." : "Mantenha pelo menos 3 slides.");
+  const searchPhotos = async () => {
+    const query =
+      photoQuery.trim() ||
+      selectedPackage?.title.trim() ||
+      state.destinos.find(Boolean) ||
+      "";
+    if (!query) {
+      toast.error(isEs ? "Escribe un destino para buscar." : "Digite um destino para buscar.");
       return;
     }
-    const next = slides.filter((slide) => slide.id !== activeSlide.id);
-    setSlides(next);
-    setActiveSlideId(next[Math.min(activeIndex, next.length - 1)]?.id || "");
+
+    setPhotoQuery(query);
+    setSearchingPhotos(true);
+    setPhotoResults([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
+        body: {
+          query,
+          perPage: 8,
+          engine: "pexels",
+          orientation: coverRatio > 0.92 ? "square" : "portrait",
+          fallback: false,
+        },
+      });
+      if (error) throw error;
+      const safePhotos = (Array.isArray(data?.photos) ? data.photos : []).filter(
+        (photo: PhotoResult) => /^https:\/\/images\.pexels\.com\//i.test(photo.url || ""),
+      );
+      setPhotoResults(safePhotos);
+      if (!safePhotos.length) {
+        toast.info(isEs ? "No encontramos fotos para esta búsqueda." : "Nenhuma foto encontrada para esta busca.");
+      }
+    } catch (error) {
+      console.error("Erro ao buscar fotos para o carrossel:", error);
+      toast.error(isEs ? "No fue posible buscar fotos ahora." : "Não foi possível buscar fotos agora.");
+    } finally {
+      setSearchingPhotos(false);
+    }
   };
 
-  const moveSlide = (direction: -1 | 1) => {
-    const target = activeIndex + direction;
-    if (target < 0 || target >= slides.length) return;
-    setSlides((current) => {
-      const next = [...current];
-      [next[activeIndex], next[target]] = [next[target], next[activeIndex]];
-      return next;
-    });
+  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const targetSlideId = activeSlide?.kind === "cover" ? "" : activeSlide?.id || "";
+    const targetPackageId = selectedPackage?.id || "";
+    if (!targetSlideId || !targetPackageId) return;
+    const requestKey = `${targetPackageId}:${targetSlideId}`;
+    const requestToken = Symbol(requestKey);
+    uploadRequestRef.current.set(requestKey, requestToken);
+    if (!file.type.startsWith("image/")) {
+      uploadRequestRef.current.delete(requestKey);
+      toast.error(isEs ? "Selecciona un archivo de imagen." : "Selecione um arquivo de imagem.");
+      return;
+    }
+
+    try {
+      const optimized = await optimizeUpload(file);
+      if (uploadRequestRef.current.get(requestKey) !== requestToken) return;
+      const applyToOriginalSlide = (imageUrl: string) => {
+        if (uploadRequestRef.current.get(requestKey) !== requestToken) return false;
+        if (selectedPackageIdRef.current !== targetPackageId) {
+          toast.info(
+            isEs
+              ? "Cambiaste de paquete. Vuelve a elegir el slide para aplicar la foto."
+              : "Você mudou de pacote. Selecione o slide novamente para aplicar a foto.",
+          );
+          return false;
+        }
+        slideArchiveRef.current = slideArchiveRef.current.map((slide) =>
+          slide.id === targetSlideId ? { ...slide, imageUrl } : slide,
+        );
+        setSlides((current) =>
+          current.map((slide) =>
+            slide.id === targetSlideId ? { ...slide, imageUrl } : slide,
+          ),
+        );
+        return true;
+      };
+
+      if (user?.id) {
+        const hash = await hashBlob(optimized);
+        const path = `sites/${user.id}/assets/${hash}.webp`;
+        const { error } = await supabase.storage
+          .from("thumbnails")
+          .upload(path, optimized, {
+            contentType: "image/webp",
+            upsert: true,
+        });
+        if (error) throw error;
+        const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(path).data.publicUrl;
+        if (uploadRequestRef.current.get(requestKey) !== requestToken) return;
+        if (!applyToOriginalSlide(publicUrl)) return;
+        toast.success(
+          isEs
+            ? "Foto optimizada, guardada y aplicada."
+            : "Foto otimizada, salva e aplicada.",
+        );
+      } else {
+        if (!applyToOriginalSlide(await blobToDataUrl(optimized))) return;
+        toast.success(
+          isEs
+            ? "Foto aplicada temporalmente. Inicia sesión para conservarla al volver."
+          : "Foto aplicada temporariamente. Entre na conta para mantê-la ao voltar.",
+        );
+      }
+    } catch {
+      if (uploadRequestRef.current.get(requestKey) === requestToken) {
+        toast.error(isEs ? "No fue posible preparar esta imagen." : "Não foi possível preparar esta imagem.");
+      }
+    } finally {
+      if (uploadRequestRef.current.get(requestKey) === requestToken) {
+        uploadRequestRef.current.delete(requestKey);
+      }
+    }
   };
 
   const downloadAll = async () => {
-    if (!slides.length) return;
-    setDownloading(true);
+    if (!selectedPackage || !slides.length) return;
+    if (!coverImage) {
+      setActiveIndex(0);
+      toast.error(
+        isEs
+          ? "Genera primero la portada en la pestaña Anuncio."
+          : "Gere primeiro a arte de capa na aba Anúncio.",
+      );
+      return;
+    }
+
+    const closingSlide = slides.find((slide) => slide.kind === "closing");
+    if (!state.logoBase64) {
+      setActiveIndex(slides.length - 1);
+      toast.error(
+        isEs
+          ? "Agrega la logo de la empresa antes de descargar."
+          : "Adicione a logo da empresa antes de baixar.",
+      );
+      return;
+    }
+    if (!closingSlide?.phone.trim()) {
+      setActiveIndex(slides.length - 1);
+      toast.error(
+        isEs
+          ? "Agrega el teléfono o WhatsApp en la imagen final."
+          : "Adicione o telefone ou WhatsApp na imagem final.",
+      );
+      return;
+    }
+    if (!closingSlide.cta.trim()) {
+      setActiveIndex(slides.length - 1);
+      toast.error(
+        isEs
+          ? "Agrega una llamada a la acción en la imagen final."
+          : "Adicione uma chamada para ação na imagem final.",
+      );
+      return;
+    }
+
+    const emptyPhotoIndex = slides.findIndex(
+      (slide) => slide.kind === "content" && !slide.imageUrl,
+    );
+    if (emptyPhotoIndex >= 0) {
+      setActiveIndex(emptyPhotoIndex);
+      toast.error(
+        isEs
+          ? `Selecciona la foto de la imagen ${emptyPhotoIndex + 1}.`
+          : `Selecione a foto da imagem ${emptyPhotoIndex + 1}.`,
+      );
+      return;
+    }
+
+    const seenPhotos = new Map<string, number>();
+    for (let index = 1; index < slides.length; index += 1) {
+      const imageUrl = slides[index].imageUrl.trim();
+      if (!imageUrl) continue;
+      const firstIndex = seenPhotos.get(imageUrl);
+      if (firstIndex !== undefined) {
+        setActiveIndex(index);
+        toast.error(
+          isEs
+            ? `La imagen ${index + 1} repite la foto de la imagen ${firstIndex + 1}. Elige otra foto.`
+            : `A imagem ${index + 1} repete a foto da imagem ${firstIndex + 1}. Escolha outra foto.`,
+        );
+        return;
+      }
+      seenPhotos.set(imageUrl, index);
+    }
+
+    for (let index = 1; index < slides.length; index += 1) {
+      try {
+        await assertExportImageReadable(slides[index].imageUrl);
+      } catch {
+        setActiveIndex(index);
+        toast.error(
+          isEs
+            ? `La foto de la imagen ${index + 1} no permite exportación. Usa otra foto del banco o envía un archivo.`
+            : `A foto da imagem ${index + 1} não permite exportação. Use outra foto do banco ou envie um arquivo.`,
+        );
+        return;
+      }
+    }
     try {
+      await assertExportImageReadable(state.logoBase64);
+    } catch {
+      setActiveIndex(slides.length - 1);
+      toast.error(
+        isEs
+          ? "La logo actual no permite exportación. Vuelve a enviarla en el Panel."
+          : "A logo atual não permite exportação. Envie-a novamente no Painel.",
+      );
+      return;
+    }
+
+    setDownloading(true);
+    const slug = (selectedPackage.slug || selectedPackage.title || "pacote")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    try {
+      await downloadOriginalImage(coverImage, `carrossel-${slug}-01-capa.png`);
       const { default: html2canvas } = await import("html2canvas");
-      for (let index = 0; index < slides.length; index += 1) {
+
+      for (let index = 1; index < slides.length; index += 1) {
         const node = exportRefs.current[index];
-        if (!node) continue;
-        const scale = format === "story" ? 3 : 2.5;
+        if (!node) throw new Error("missing-export-node");
         const canvas = await html2canvas(node, {
           backgroundColor: null,
           useCORS: true,
           allowTaint: false,
-          scale,
+          scale: 2.5,
           logging: false,
         });
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png", 1);
-        link.download = `carrossel-${(selectedPackage?.slug || selectedPackage?.title || "pacote")
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")}-${String(index + 1).padStart(2, "0")}.png`;
+        link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
         document.body.appendChild(link);
         link.click();
         link.remove();
-        await new Promise((resolve) => window.setTimeout(resolve, 120));
+        await new Promise((resolve) => window.setTimeout(resolve, 160));
       }
-      toast.success(isEs ? "Carrusel exportado en PNG." : "Carrossel exportado em PNG.");
-    } catch {
+
+      toast.success(
+        isEs
+          ? `${slides.length} imágenes listas. La portada original fue preservada.`
+          : `${slides.length} imagens prontas. A capa original foi preservada.`,
+      );
+    } catch (error) {
+      console.error("Falha ao exportar carrossel:", error);
       toast.error(
         isEs
-          ? "No fue posible exportar. Usa una imagen del banco o una imagen cargada."
-          : "Não foi possível exportar. Use uma imagem do banco ou uma imagem enviada.",
+          ? "No fue posible exportar. Prueba otra foto del banco o un archivo enviado."
+          : "Não foi possível exportar. Tente outra foto do banco ou um arquivo enviado.",
       );
     } finally {
       setDownloading(false);
@@ -618,61 +1193,65 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
     return (
       <section className="rounded-2xl border border-white/10 bg-[#0F0F11] p-5 sm:p-6">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#F5F906]">
-          {isEs ? "Carrusel F1" : "Carrossel F1"}
+          {isEs ? "Carrusel" : "Carrossel"}
         </p>
         <h2 className="mt-3 text-xl font-bold text-white">
           {isEs ? "Primero agrega un paquete" : "Primeiro adicione um pacote"}
         </h2>
         <p className="mt-2 max-w-[65ch] text-sm leading-relaxed text-white/55">
           {isEs
-            ? "El carrusel usa el mismo paquete del Panel, Plan y Sitio. Así, precio, fechas e inclusiones no quedan duplicados."
-            : "O carrossel usa o mesmo pacote do Painel, Plano e Site. Assim, preço, datas e inclusões não ficam duplicados."}
+            ? "El carrusel usa el mismo paquete sincronizado en el Panel, Plan y Sitio."
+            : "O carrossel usa o mesmo pacote sincronizado no Painel, Plano e Site."}
         </p>
       </section>
     );
   }
 
   return (
-    <section className="space-y-5" data-testid="f1-carousel-builder">
+    <section className="space-y-4" data-testid="f1-carousel-builder">
       <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#F5F906]">
-              {isEs ? "Fuente única: paquete" : "Fonte única: pacote"}
+              {isEs ? "Carrusel listo en 4 pasos" : "Carrossel pronto em 4 passos"}
             </p>
             <h2 className="mt-2 text-lg font-bold text-white">
-              {isEs ? "Crea una secuencia lista para publicar" : "Crie uma sequência pronta para publicar"}
+              {isEs ? "Portada intacta. Las demás imágenes, a tu manera." : "Capa intacta. As outras imagens, do seu jeito."}
             </h2>
-            <p className="mt-1 max-w-[65ch] text-xs leading-relaxed text-white/50">
+            <p className="mt-1 max-w-[68ch] text-xs leading-relaxed text-white/50">
               {isEs
-                ? "Los campos vacíos se omiten. Ningún precio, fecha, inclusión o disponibilidad se inventa."
-                : "Campos vazios são omitidos. Nenhum preço, data, inclusão ou disponibilidade é inventado."}
+                ? "Elige la cantidad, selecciona las fotos, revisa los textos ya completados y descarga."
+                : "Escolha a quantidade, selecione as fotos, revise os textos já preenchidos e baixe."}
             </p>
           </div>
           <button
             type="button"
             onClick={downloadAll}
             disabled={downloading}
-            className="min-h-11 rounded-xl bg-[#F5F906] px-4 text-sm font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-wait disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-4 text-sm font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-wait disabled:opacity-50"
           >
+            <Download className="h-4 w-4" />
             {downloading
-              ? (isEs ? "Exportando..." : "Exportando...")
-              : (isEs ? `Descargar ${slides.length} PNG` : `Baixar ${slides.length} PNG`)}
+              ? (isEs ? "Preparando..." : "Preparando...")
+              : (isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`)}
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.72fr)]">
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4">
-            <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
-              {isEs ? "Paquete sincronizado" : "Pacote sincronizado"}
-            </label>
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+      <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,.7fr)]">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">1</span>
+              <h3 className="text-sm font-bold text-white">
+                {isEs ? "Elige el paquete y la cantidad" : "Escolha o pacote e a quantidade"}
+              </h3>
+            </div>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
               <select
                 value={selectedPackage.id}
                 onChange={(event) => setSelectedPackageId(event.target.value)}
-                className="min-h-11 flex-1 rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white outline-none focus:border-[#F5F906]"
+                className="min-h-11 rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white outline-none focus:border-[#F5F906]"
               >
                 {packages.map((pacote) => (
                   <option key={pacote.id} value={pacote.id}>{pacote.title}</option>
@@ -681,197 +1260,400 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
               <button
                 type="button"
                 onClick={regenerate}
-                className="min-h-11 rounded-xl border border-white/15 px-4 text-xs font-bold text-white/75 hover:bg-white/[0.05] active:scale-[0.98]"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 px-3 text-xs font-bold text-white/70 hover:bg-white/[0.05]"
               >
-                {isEs ? "Actualizar contenido" : "Atualizar conteúdo"}
+                <RefreshCw className="h-3.5 w-3.5" />
+                {isEs ? "Actualizar datos" : "Atualizar dados"}
               </button>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <fieldset>
-                <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
-                  {isEs ? "Formato" : "Formato"}
-                </legend>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  {([
-                    ["portrait", isEs ? "Feed 4:5" : "Feed 4:5"],
-                    ["story", isEs ? "Historia 9:16" : "Story 9:16"],
-                  ] as const).map(([value, label]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={format === value}
-                      onClick={() => setFormat(value)}
-                      className={`min-h-11 rounded-xl border px-3 text-xs font-bold ${
-                        format === value
-                          ? "border-[#F5F906] bg-[#F5F906] text-zinc-950"
-                          : "border-white/10 text-white/60 hover:bg-white/[0.05]"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-              <fieldset>
-                <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
-                  {isEs ? "Modelo visual" : "Modelo visual"}
-                </legend>
-                <div className="mt-2 grid grid-cols-3 gap-2">
-                  {([
-                    ["impact", isEs ? "Impacto" : "Impacto"],
-                    ["itinerary", isEs ? "Ruta" : "Roteiro"],
-                    ["editorial", isEs ? "Editorial" : "Editorial"],
-                  ] as const).map(([value, label]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={template === value}
-                      onClick={() => setTemplate(value)}
-                      className={`min-h-11 rounded-xl border px-2 text-[11px] font-bold ${
-                        template === value
-                          ? "border-[#F5F906] text-[#F5F906]"
-                          : "border-white/10 text-white/55 hover:bg-white/[0.05]"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-            </div>
-
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              {([
-                ["primaryColor", isEs ? "Principal" : "Principal", state.primaryColor],
-                ["secondaryColor", isEs ? "Secundaria" : "Secundária", state.secondaryColor],
-                ["backgroundColor", isEs ? "Fondo" : "Fundo", state.backgroundColor || "#F4F6F9"],
-              ] as const).map(([key, label, value]) => (
-                <label key={key} className="rounded-xl border border-white/10 bg-white/[0.025] p-2">
-                  <span className="block text-[9px] font-bold uppercase tracking-wide text-white/40">{label}</span>
-                  <span className="mt-2 flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={value}
-                      onChange={(event) => update({ [key]: event.target.value })}
-                      className="h-9 w-9 cursor-pointer rounded-lg border-0 bg-transparent"
-                    />
-                    <span className="truncate text-[10px] font-mono text-white/55">{value.toUpperCase()}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-bold text-white">{isEs ? "Secuencia" : "Sequência"}</h3>
-                <p className="mt-0.5 text-[10px] text-white/40">
-                  {isEs ? "Selecciona, ordena o agrega hasta 10." : "Selecione, ordene ou adicione até 10."}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={addSlide}
-                disabled={slides.length >= 10}
-                className="min-h-11 rounded-xl border border-white/15 px-3 text-xs font-bold text-white/70 hover:bg-white/[0.05] disabled:opacity-40"
-              >
-                {isEs ? "Agregar" : "Adicionar"}
-              </button>
-            </div>
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
-              {slides.map((slide, index) => (
+          <fieldset>
+            <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+              {isEs ? "Total de imágenes" : "Total de imagens"}
+            </legend>
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {([3, 4, 5] as CarouselSize[]).map((count) => (
                 <button
-                  key={slide.id}
+                  key={count}
                   type="button"
-                  onClick={() => setActiveSlideId(slide.id)}
-                  aria-pressed={slide.id === activeSlide?.id}
-                  className={`min-h-11 min-w-[132px] rounded-xl border px-3 py-2 text-left ${
-                    slide.id === activeSlide?.id
-                      ? "border-[#F5F906] bg-[#F5F906]/10"
-                      : "border-white/10 hover:bg-white/[0.04]"
+                  aria-pressed={slideCount === count}
+                  onClick={() => changeSlideCount(count)}
+                  className={`min-h-11 rounded-xl border px-3 text-sm font-extrabold ${
+                    slideCount === count
+                      ? "border-[#F5F906] bg-[#F5F906] text-zinc-950"
+                      : "border-white/10 text-white/60 hover:bg-white/[0.05]"
                   }`}
                 >
-                  <span className="block text-[9px] font-bold uppercase tracking-wide text-white/35">
-                    {isEs ? "Diapositiva" : "Slide"} {index + 1}
-                  </span>
-                  <span className="mt-1 block truncate text-xs font-semibold text-white/75">{slide.title}</span>
+                  {count}
                 </button>
               ))}
             </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-3 sm:p-4">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">2</span>
+            <div>
+              <h3 className="text-sm font-bold text-white">{isEs ? "Revisa la secuencia" : "Revise a sequência"}</h3>
+              <p className="text-[10px] text-white/40">
+                {isEs ? "Toca una imagen para abrirla." : "Toque em uma imagem para abri-la."}
+              </p>
+            </div>
+          </div>
+          <span className="rounded-lg border border-white/10 px-2 py-1 text-[10px] font-bold text-white/45">
+            {isEs ? "Imagen" : "Imagem"} {activeIndex + 1} / {slides.length}
+          </span>
+        </div>
+
+        <div className="f1-carousel-scroll flex snap-x gap-3 overflow-x-auto pb-2">
+          {slides.map((slide, index) => (
+            <button
+              key={slide.id}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              aria-label={`${isEs ? "Abrir imagen" : "Abrir imagem"} ${index + 1}`}
+              aria-pressed={activeIndex === index}
+              className={`min-w-[118px] snap-start overflow-hidden rounded-xl border-2 bg-black/30 text-left transition-colors sm:min-w-[138px] ${
+                activeIndex === index
+                  ? "border-[#F5F906]"
+                  : "border-white/10 hover:border-white/30"
+              }`}
+            >
+              <CarouselCanvas
+                slide={slide}
+                index={index}
+                total={slides.length}
+                ratio={coverRatio}
+                logo={state.logoBase64}
+                primary={state.primaryColor}
+                secondary={state.secondaryColor}
+              />
+              <span className="flex min-h-10 items-center justify-between gap-2 px-2.5 py-2">
+                <span className="truncate text-[10px] font-bold text-white/68">
+                  {slide.kind === "cover"
+                    ? (isEs ? "Portada original" : "Capa original")
+                    : slide.kind === "closing"
+                      ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
+                      : `${isEs ? "Contenido" : "Conteúdo"} ${index}`}
+                </span>
+                {slide.kind === "cover" && <Lock className="h-3 w-3 shrink-0 text-[#F5F906]" />}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
+        <div className="order-2 space-y-4 xl:order-1">
+          <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">3</span>
+                <h3 className="text-sm font-bold text-white">
+                  {activeSlide?.kind === "cover"
+                    ? (isEs ? "Portada protegida" : "Capa protegida")
+                    : activeSlide?.kind === "closing"
+                      ? (isEs ? "Edita el cierre" : "Edite o fechamento")
+                      : (isEs ? "Foto y texto de esta imagen" : "Foto e texto desta imagem")}
+                </h3>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wide text-white/35">
+                {activeIndex + 1}/{slides.length}
+              </span>
+            </div>
+
+            {activeSlide?.kind === "cover" && (
+              <div className="mt-4 rounded-xl border border-[#F5F906]/25 bg-[#F5F906]/[0.06] p-4">
+                <div className="flex gap-3">
+                  <Lock className="mt-0.5 h-5 w-5 shrink-0 text-[#F5F906]" />
+                  <div>
+                    <p className="text-sm font-bold text-white">
+                      {isEs ? "Esta imagen no se modifica." : "Esta imagem não será modificada."}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-white/55">
+                      {isEs
+                        ? "Es exactamente la pieza generada en Anuncio. También se descarga desde el archivo original, sin recomposición."
+                        : "É exatamente a arte gerada em Anúncio. Ela também é baixada pelo arquivo original, sem recomposição."}
+                    </p>
+                    {!coverImage && (
+                      <p className="mt-3 rounded-lg bg-amber-300/10 px-3 py-2 text-xs font-semibold text-amber-100">
+                        {isEs
+                          ? "Vuelve a Anuncio, genera la portada y usa “Transformar en carrusel”."
+                          : "Volte para Anúncio, gere a capa e use “Transformar em carrossel”."}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeSlide && activeSlide.kind !== "cover" && (
+              <div className="mt-4 space-y-4">
+                {activeSlide.kind === "content" ? (
+                  <>
+                    <CarouselField label={isEs ? "Etiqueta corta" : "Selo curto"}>
+                      <input
+                        value={activeSlide.label}
+                        maxLength={28}
+                        onChange={(event) => patchActive({ label: event.target.value })}
+                        className="f1-carousel-input"
+                      />
+                    </CarouselField>
+                    <CarouselField label={isEs ? "Título" : "Título"}>
+                      <textarea
+                        value={activeSlide.title}
+                        maxLength={72}
+                        rows={2}
+                        onChange={(event) => patchActive({ title: event.target.value })}
+                        className="f1-carousel-input resize-none"
+                      />
+                    </CarouselField>
+                    <CarouselField
+                      label={isEs ? "Descripción corta" : "Descrição curta"}
+                      optionalAction={
+                        activeSlide.body ? (
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              patchActive({ body: "" });
+                            }}
+                            className="inline-flex min-h-7 items-center gap-1 rounded-md px-2 text-[9px] text-white/45 hover:bg-white/[0.05] hover:text-white"
+                          >
+                            <X className="h-3 w-3" /> {isEs ? "Quitar" : "Remover"}
+                          </button>
+                        ) : null
+                      }
+                    >
+                      <textarea
+                        value={activeSlide.body}
+                        maxLength={220}
+                        rows={4}
+                        onChange={(event) => patchActive({ body: event.target.value })}
+                        className="f1-carousel-input resize-y"
+                      />
+                    </CarouselField>
+                    <CarouselField
+                      label={isEs ? "Elementos, uno por línea" : "Itens, um por linha"}
+                      optionalAction={
+                        activeSlide.bullets.length ? (
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              patchActive({ bullets: [] });
+                            }}
+                            className="inline-flex min-h-7 items-center gap-1 rounded-md px-2 text-[9px] text-white/45 hover:bg-white/[0.05] hover:text-white"
+                          >
+                            <X className="h-3 w-3" /> {isEs ? "Quitar" : "Remover"}
+                          </button>
+                        ) : null
+                      }
+                    >
+                      <textarea
+                        value={activeSlide.bullets.join("\n")}
+                        rows={4}
+                        onChange={(event) =>
+                          patchActive({
+                            bullets: event.target.value
+                              .split(/\r?\n/)
+                              .map((item) => item.trim().slice(0, 72))
+                              .filter(Boolean)
+                              .slice(0, 4),
+                          })
+                        }
+                        className="f1-carousel-input resize-y"
+                      />
+                    </CarouselField>
+                  </>
+                ) : (
+                  <>
+                    <CarouselField label={isEs ? "Llamada principal" : "Chamada principal"}>
+                      <input
+                        value={activeSlide.cta}
+                        maxLength={62}
+                        onChange={(event) => patchActive({ cta: event.target.value })}
+                        className="f1-carousel-input"
+                      />
+                    </CarouselField>
+                    <CarouselField label={isEs ? "Teléfono o WhatsApp" : "Telefone ou WhatsApp"}>
+                      <input
+                        value={activeSlide.phone}
+                        maxLength={32}
+                        onChange={(event) => patchActive({ phone: event.target.value })}
+                        className="f1-carousel-input"
+                      />
+                    </CarouselField>
+                    {!state.logoBase64 && (
+                      <p className="rounded-xl border border-amber-300/20 bg-amber-300/[0.06] px-3 py-2 text-xs text-amber-100/80">
+                        {isEs
+                          ? "Agrega la logo en el Panel de la Fábrica para completar el cierre."
+                          : "Adicione a logo no Painel da Fábrica para completar o fechamento."}
+                      </p>
+                    )}
+                  </>
+                )}
+
+                <CarouselField label={isEs ? "Color del texto" : "Cor do texto"}>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      ["#FFFFFF", isEs ? "Claro" : "Claro"],
+                      [state.primaryColor, isEs ? "Principal" : "Primária"],
+                      [state.secondaryColor, isEs ? "Secundario" : "Secundária"],
+                    ].map(([color, label]) => (
+                      <button
+                        key={`${color}-${label}`}
+                        type="button"
+                        aria-pressed={activeSlide.textColor.toUpperCase() === color.toUpperCase()}
+                        onClick={() => patchActive({ textColor: color })}
+                        className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-2 text-[10px] font-bold ${
+                          activeSlide.textColor.toUpperCase() === color.toUpperCase()
+                            ? "border-[#F5F906] text-white"
+                            : "border-white/10 text-white/55 hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        <span className="h-3.5 w-3.5 rounded-full border border-white/20" style={{ background: color }} />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </CarouselField>
+              </div>
+            )}
           </div>
 
-          {activeSlide && (
+          {activeSlide && activeSlide.kind !== "cover" && (
             <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <ImagePlus className="h-4 w-4 text-[#F5F906]" />
                 <h3 className="text-sm font-bold text-white">
-                  {isEs ? `Editar diapositiva ${activeIndex + 1}` : `Editar slide ${activeIndex + 1}`}
+                  {activeSlide.kind === "closing"
+                    ? (isEs ? "Fondo del cierre" : "Fundo do fechamento")
+                    : (isEs ? "Foto de esta imagen" : "Foto desta imagem")}
                 </h3>
-                <div className="flex flex-wrap gap-1.5">
-                  <button type="button" onClick={() => moveSlide(-1)} disabled={activeIndex === 0} className="min-h-11 rounded-lg border border-white/10 px-3 text-xs text-white/65 disabled:opacity-30">
-                    {isEs ? "Anterior" : "Anterior"}
-                  </button>
-                  <button type="button" onClick={() => moveSlide(1)} disabled={activeIndex === slides.length - 1} className="min-h-11 rounded-lg border border-white/10 px-3 text-xs text-white/65 disabled:opacity-30">
-                    {isEs ? "Siguiente" : "Próximo"}
-                  </button>
-                  <button type="button" onClick={duplicateSlide} disabled={slides.length >= 10} className="min-h-11 rounded-lg border border-white/10 px-3 text-xs text-white/65 disabled:opacity-30">
-                    {isEs ? "Duplicar" : "Duplicar"}
-                  </button>
-                  <button type="button" onClick={removeSlide} className="min-h-11 rounded-lg border border-red-400/25 px-3 text-xs text-red-200">
-                    {isEs ? "Eliminar" : "Remover"}
-                  </button>
-                </div>
               </div>
 
-              {slideHasOverflowRisk(activeSlide) && (
-                <p className="mt-3 rounded-lg border border-amber-300/25 bg-amber-300/[0.08] px-3 py-2 text-[11px] text-amber-100/80">
-                  {isEs
-                    ? "Este texto puede quedar pequeño. Reduce el título, el texto o los elementos."
-                    : "Este texto pode ficar pequeno. Reduza o título, o texto ou os itens."}
-                </p>
+              <div className="mt-3 flex gap-2">
+                <input
+                  value={photoQuery}
+                  onChange={(event) => setPhotoQuery(event.target.value)}
+                  onKeyDown={(event) => event.key === "Enter" && searchPhotos()}
+                  placeholder={selectedPackage.title || (isEs ? "Destino" : "Destino")}
+                  className="f1-carousel-input min-w-0 flex-1"
+                />
+                <button
+                  type="button"
+                  onClick={searchPhotos}
+                  disabled={searchingPhotos}
+                  aria-label={isEs ? "Buscar fotos" : "Buscar fotos"}
+                  className="grid min-h-11 min-w-11 place-items-center rounded-xl bg-[#F5F906] text-zinc-950 disabled:opacity-50"
+                >
+                  {searchingPhotos ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  aria-label={isEs ? "Enviar imagen" : "Enviar imagem"}
+                  className="grid min-h-11 min-w-11 place-items-center rounded-xl border border-white/15 text-white/70 hover:bg-white/[0.05]"
+                >
+                  <Upload className="h-4 w-4" />
+                </button>
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+              </div>
+
+              {state.destinos.length > 0 && (
+                <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+                  {state.destinos.filter(Boolean).slice(0, 6).map((destination) => (
+                    <button
+                      key={destination}
+                      type="button"
+                      onClick={() => setPhotoQuery(destination)}
+                      className="min-h-9 shrink-0 rounded-full border border-white/10 px-3 text-[10px] font-bold text-white/55 hover:border-white/25 hover:text-white"
+                    >
+                      {destination}
+                    </button>
+                  ))}
+                </div>
               )}
 
-              <div className="mt-4 grid grid-cols-1 gap-3">
-                <CarouselField label={isEs ? "Etiqueta" : "Selo"}>
-                  <input value={activeSlide.eyebrow} maxLength={42} onChange={(event) => patchSlide({ eyebrow: event.target.value })} className="f1-carousel-input" />
-                </CarouselField>
-                <CarouselField label={isEs ? "Título" : "Título"}>
-                  <textarea value={activeSlide.title} maxLength={92} rows={2} onChange={(event) => patchSlide({ title: event.target.value })} className="f1-carousel-input resize-none" />
-                </CarouselField>
-                <CarouselField label={isEs ? "Texto" : "Texto"}>
-                  <textarea value={activeSlide.body} maxLength={320} rows={4} onChange={(event) => patchSlide({ body: event.target.value })} className="f1-carousel-input resize-y" />
-                </CarouselField>
-                <CarouselField label={isEs ? "Elementos, uno por línea" : "Itens, um por linha"}>
-                  <textarea
-                    value={activeSlide.bullets.join("\n")}
-                    rows={5}
-                    onChange={(event) => patchSlide({ bullets: event.target.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean).slice(0, 6) })}
-                    className="f1-carousel-input resize-y"
-                  />
-                </CarouselField>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <CarouselField label={isEs ? "Precio" : "Preço"}>
-                    <input value={activeSlide.price} maxLength={48} onChange={(event) => patchSlide({ price: event.target.value })} className="f1-carousel-input" />
-                  </CarouselField>
-                  <CarouselField label={isEs ? "Llamada a la acción" : "Chamada para ação"}>
-                    <input value={activeSlide.cta} maxLength={52} onChange={(event) => patchSlide({ cta: event.target.value })} className="f1-carousel-input" />
-                  </CarouselField>
+              {(photoResults.length > 0 || availableImages.length > 0) && (
+                <div className="mt-4">
+                  <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.13em] text-white/35">
+                    {photoResults.length
+                      ? (isEs ? "Resultados de la búsqueda" : "Resultados da busca")
+                      : (isEs ? "Banco de imágenes" : "Banco de imagens")}
+                  </p>
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                    {(photoResults.length
+                      ? photoResults.map((photo) => ({
+                          url: photo.url,
+                          thumb: photo.thumb || photo.url,
+                          alt: photo.alt,
+                        }))
+                      : availableImages.map((url) => ({ url, thumb: url, alt: "" }))
+                    ).slice(0, 8).map((photo, index) => {
+                      const selected = activeSlide.imageUrl === photo.url;
+                      const usedByOtherSlide = slides.some(
+                        (slide, slideIndex) =>
+                          slideIndex !== activeIndex &&
+                          slide.kind !== "cover" &&
+                          slide.imageUrl === photo.url,
+                      );
+                      return (
+                        <button
+                          key={`${photo.url}-${index}`}
+                          type="button"
+                          disabled={usedByOtherSlide}
+                          onClick={() => patchActive({ imageUrl: photo.url })}
+                          aria-label={`${isEs ? "Usar foto" : "Usar foto"} ${index + 1}`}
+                          className={`relative aspect-square overflow-hidden rounded-xl border-2 ${
+                            selected
+                              ? "border-[#F5F906]"
+                              : usedByOtherSlide
+                                ? "cursor-not-allowed border-white/5 opacity-35"
+                                : "border-white/10 hover:border-white/30"
+                          }`}
+                        >
+                          <img
+                            src={photo.thumb}
+                            alt={photo.alt || ""}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                          {selected && (
+                            <span className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-zinc-950">
+                              <Check className="h-3.5 w-3.5" />
+                            </span>
+                          )}
+                          {usedByOtherSlide && !selected && (
+                            <span className="absolute inset-x-1.5 bottom-1.5 rounded-md bg-black/75 px-1 py-0.5 text-[8px] font-bold uppercase text-white/80">
+                              {isEs ? "En uso" : "Em uso"}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <CarouselField label={isEs ? "Enlace de la imagen" : "Link da imagem"}>
-                  <input value={activeSlide.imageUrl} onChange={(event) => patchSlide({ imageUrl: event.target.value })} placeholder="https://..." className="f1-carousel-input" />
-                </CarouselField>
-                <CarouselField label={isEs ? "Posición vertical de la foto" : "Posição vertical da foto"}>
-                  <input type="range" min="0" max="100" value={activeSlide.focalY} onChange={(event) => patchSlide({ focalY: Number(event.target.value) })} className="w-full accent-[#F5F906]" />
-                </CarouselField>
-              </div>
+              )}
+
+              <CarouselField label={isEs ? "O pega un enlace de imagen" : "Ou cole um link de imagem"}>
+                <input
+                  value={activeSlide.imageUrl.startsWith("data:") ? "" : activeSlide.imageUrl}
+                  onChange={(event) => patchActive({ imageUrl: event.target.value })}
+                  placeholder="https://..."
+                  className="f1-carousel-input"
+                />
+              </CarouselField>
             </div>
           )}
         </div>
 
-        <aside className="xl:sticky xl:top-5 xl:self-start">
+        <aside className="order-1 xl:order-2 xl:sticky xl:top-5 xl:self-start">
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-3 sm:p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
@@ -879,36 +1661,75 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   {isEs ? "Vista previa" : "Prévia"}
                 </p>
                 <p className="mt-1 text-xs text-white/55">
-                  {format === "story" ? "1080 × 1920" : "1080 × 1350"}
+                  {isEs ? "Formato heredado de la portada" : "Formato herdado da capa"}
                 </p>
               </div>
-              <span className="rounded-lg border border-white/10 px-2 py-1 text-[10px] font-bold text-white/45">
-                {activeIndex + 1}/{slides.length}
-              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveIndex((current) => Math.max(0, current - 1))}
+                  disabled={activeIndex === 0}
+                  aria-label={isEs ? "Imagen anterior" : "Imagem anterior"}
+                  className="grid min-h-11 min-w-11 place-items-center rounded-xl border border-white/10 text-white/70 disabled:opacity-25"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveIndex((current) => Math.min(slides.length - 1, current + 1))}
+                  disabled={activeIndex === slides.length - 1}
+                  aria-label={isEs ? "Siguiente imagen" : "Próxima imagem"}
+                  className="grid min-h-11 min-w-11 place-items-center rounded-xl border border-white/10 text-white/70 disabled:opacity-25"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-            <div className="mx-auto w-full max-w-[420px] overflow-hidden rounded-2xl border border-white/10 bg-zinc-950">
+            <div className="mx-auto w-full max-w-[470px] overflow-hidden rounded-2xl border border-white/10 bg-zinc-950">
               {activeSlide && (
                 <CarouselCanvas
                   slide={activeSlide}
                   index={activeIndex}
                   total={slides.length}
-                  format={format}
-                  template={template}
-                  agencyName={state.agencyName}
+                  ratio={coverRatio}
                   logo={state.logoBase64}
                   primary={state.primaryColor}
                   secondary={state.secondaryColor}
-                  background={state.backgroundColor || "#F4F6F9"}
                 />
               )}
             </div>
             <p className="mt-3 text-center text-[10px] leading-relaxed text-white/35">
-              {isEs
-                ? "Borrador guardado en este navegador. Las imágenes se renderizan solo al exportar."
-                : "Rascunho salvo neste navegador. As imagens só são renderizadas na exportação."}
+              {activeSlide?.kind === "cover"
+                ? (isEs ? "Portada original bloqueada." : "Capa original bloqueada.")
+                : (isEs ? "Los cambios aparecen aquí al instante." : "As alterações aparecem aqui na hora.")}
             </p>
           </div>
         </aside>
+      </div>
+
+      <div className="rounded-2xl border border-[#F5F906]/25 bg-[#F5F906]/[0.05] p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">4</span>
+            <div>
+              <p className="text-sm font-bold text-white">
+                {isEs ? "Todo listo para publicar" : "Tudo pronto para publicar"}
+              </p>
+              <p className="text-[10px] text-white/45">
+                {isEs ? "La portada no se procesa nuevamente." : "A capa não é processada novamente."}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={downloadAll}
+            disabled={downloading}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-4 text-sm font-extrabold text-zinc-950 disabled:opacity-50"
+          >
+            <Download className="h-4 w-4" />
+            {isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}
+          </button>
+        </div>
       </div>
 
       <div
@@ -921,14 +1742,13 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
             slide={slide}
             index={index}
             total={slides.length}
-            format={format}
-            template={template}
-            agencyName={state.agencyName}
+            ratio={coverRatio}
             logo={state.logoBase64}
             primary={state.primaryColor}
             secondary={state.secondaryColor}
-            background={state.backgroundColor || "#F4F6F9"}
-            canvasRef={(node) => { exportRefs.current[index] = node; }}
+            canvasRef={(node) => {
+              exportRefs.current[index] = node;
+            }}
             exportMode
           />
         ))}
@@ -950,16 +1770,11 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           border-color: #F5F906;
           box-shadow: 0 0 0 2px rgba(245,249,6,.12);
         }
+        .f1-carousel-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,.2) transparent;
+        }
       `}</style>
     </section>
-  );
-}
-
-function CarouselField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">{label}</span>
-      {children}
-    </label>
   );
 }

@@ -17,14 +17,20 @@ interface PhotoOut {
   alt: string;
 }
 
-async function searchPexels(query: string, perPage: number): Promise<PhotoOut[]> {
+type PhotoOrientation = "landscape" | "portrait" | "square";
+
+async function searchPexels(
+  query: string,
+  perPage: number,
+  orientation: PhotoOrientation,
+): Promise<PhotoOut[]> {
   const key = Deno.env.get("PEXELS_API_KEY");
   if (!key) {
     console.error("PEXELS_API_KEY missing");
     return [];
   }
   try {
-    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query + " travel")}&per_page=${perPage}&orientation=landscape`;
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query + " travel")}&per_page=${perPage}&orientation=${orientation}`;
     const resp = await fetch(url, { headers: { Authorization: key } });
     if (!resp.ok) {
       console.error("Pexels HTTP", resp.status, await resp.text());
@@ -85,6 +91,11 @@ serve(async (req) => {
     const body = await req.json();
     const query = (body.query || "").trim();
     const engine = (body.engine || "pexels").toLowerCase();
+    const allowFallback = body.fallback !== false;
+    const orientation: PhotoOrientation =
+      body.orientation === "portrait" || body.orientation === "square"
+        ? body.orientation
+        : "landscape";
 
     if (query.length < 2) {
       return new Response(JSON.stringify({ error: "Query é necessária" }), {
@@ -98,10 +109,14 @@ serve(async (req) => {
     let photos: PhotoOut[] = [];
     if (engine === "google") {
       photos = await searchGoogle(query, perPage);
-      if (photos.length === 0) photos = await searchPexels(query, perPage);
+      if (allowFallback && photos.length === 0) {
+        photos = await searchPexels(query, perPage, orientation);
+      }
     } else {
-      photos = await searchPexels(query, perPage);
-      if (photos.length === 0) photos = await searchGoogle(query, perPage);
+      photos = await searchPexels(query, perPage, orientation);
+      if (allowFallback && photos.length === 0) {
+        photos = await searchGoogle(query, perPage);
+      }
     }
 
     return new Response(JSON.stringify({ photos }), {
