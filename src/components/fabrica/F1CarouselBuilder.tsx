@@ -1305,7 +1305,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-3 sm:p-4">
-        <div className="mb-3 flex items-center justify-between gap-3">
+        {/* Header: título + contador + controles de modo e zoom */}
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">2</span>
             <div>
@@ -1315,48 +1316,263 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
               </p>
             </div>
           </div>
-          <span className="rounded-lg border border-white/10 px-2 py-1 text-[10px] font-bold text-white/45">
-            {isEs ? "Imagen" : "Imagem"} {activeIndex + 1} / {slides.length}
-          </span>
+
+          <div className="flex items-center gap-2">
+            {/* Contador */}
+            <span className="rounded-lg border border-white/10 px-2 py-1 text-[10px] font-bold text-white/45">
+              {isEs ? "Imagen" : "Imagem"} {activeIndex + 1} / {slides.length}
+            </span>
+
+            {/* Botões de modo de visualização */}
+            <div className="flex items-center gap-1 rounded-xl border border-white/10 p-1">
+              <button
+                type="button"
+                onClick={() => setViewMode("ribbon")}
+                aria-pressed={viewMode === "ribbon"}
+                aria-label={isEs ? "Vista horizontal" : "Visualização horizontal"}
+                title={isEs ? "Fila horizontal" : "Faixa horizontal"}
+                className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
+                  viewMode === "ribbon"
+                    ? "bg-[#F5F906] text-zinc-950"
+                    : "text-white/50 hover:bg-white/[0.07] hover:text-white"
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("stack")}
+                aria-pressed={viewMode === "stack"}
+                aria-label={isEs ? "Vista vertical" : "Visualização vertical"}
+                title={isEs ? "Grade vertical" : "Grade vertical (uma abaixo da outra)"}
+                className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
+                  viewMode === "stack"
+                    ? "bg-[#F5F906] text-zinc-950"
+                    : "text-white/50 hover:bg-white/[0.07] hover:text-white"
+                }`}
+              >
+                <Rows className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("focus")}
+                aria-pressed={viewMode === "focus"}
+                aria-label={isEs ? "Vista en foco" : "Modo foco"}
+                title={isEs ? "Una imagen a la vez" : "Uma imagem por vez (foco)"}
+                className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
+                  viewMode === "focus"
+                    ? "bg-[#F5F906] text-zinc-950"
+                    : "text-white/50 hover:bg-white/[0.07] hover:text-white"
+                }`}
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Controles de Zoom (ocultos no modo focus pois já tem escala grande) */}
+            {viewMode !== "focus" && (
+              <div className="flex items-center gap-1 rounded-xl border border-white/10 p-1">
+                <button
+                  type="button"
+                  onClick={zoomOut}
+                  disabled={zoomScale <= 0.5}
+                  aria-label={isEs ? "Reducir zoom" : "Reduzir zoom"}
+                  title={isEs ? "Reducir" : "Diminuir"}
+                  className="grid h-8 w-8 place-items-center rounded-lg text-white/50 hover:bg-white/[0.07] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <ZoomOut className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={zoomReset}
+                  aria-label={isEs ? "Ajustar zoom" : "Ajustar zoom"}
+                  title={`${Math.round(zoomScale * 100)}% — ${isEs ? "clic para resetear" : "clique para redefinir"}`}
+                  className="min-w-[34px] rounded-lg px-1 py-1 text-[9px] font-bold text-white/40 hover:bg-white/[0.07] hover:text-white"
+                >
+                  {Math.round(zoomScale * 100)}%
+                </button>
+                <button
+                  type="button"
+                  onClick={zoomIn}
+                  disabled={zoomScale >= 1.6}
+                  aria-label={isEs ? "Aumentar zoom" : "Aumentar zoom"}
+                  title={isEs ? "Ampliar" : "Ampliar"}
+                  className="grid h-8 w-8 place-items-center rounded-lg text-white/50 hover:bg-white/[0.07] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <ZoomIn className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="f1-carousel-scroll flex snap-x gap-3 overflow-x-auto pb-2">
-          {slides.map((slide, index) => (
-            <button
-              key={slide.id}
-              type="button"
-              onClick={() => setActiveIndex(index)}
-              aria-label={`${isEs ? "Abrir imagen" : "Abrir imagem"} ${index + 1}`}
-              aria-pressed={activeIndex === index}
-              className={`min-w-[118px] snap-start overflow-hidden rounded-xl border-2 bg-black/30 text-left transition-colors sm:min-w-[138px] ${
-                activeIndex === index
-                  ? "border-[#F5F906]"
-                  : "border-white/10 hover:border-white/30"
-              }`}
-            >
-              <CarouselCanvas
-                slide={slide}
-                index={index}
-                total={slides.length}
-                ratio={coverRatio}
-                logo={state.logoBase64}
-                primary={state.primaryColor}
-                secondary={state.secondaryColor}
-              />
-              <span className="flex min-h-10 items-center justify-between gap-2 px-2.5 py-2">
-                <span className="truncate text-[10px] font-bold text-white/68">
-                  {slide.kind === "cover"
-                    ? (isEs ? "Portada original" : "Capa original")
-                    : slide.kind === "closing"
-                      ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
-                      : `${isEs ? "Contenido" : "Conteúdo"} ${index}`}
+        {/* ── MODO: FAIXA HORIZONTAL (ribbon) ── */}
+        {viewMode === "ribbon" && (
+          <div
+            className="f1-carousel-scroll flex snap-x gap-3 overflow-x-auto pb-2"
+            style={{ transformOrigin: "top left" }}
+          >
+            {slides.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                aria-label={`${isEs ? "Abrir imagen" : "Abrir imagem"} ${index + 1}`}
+                aria-pressed={activeIndex === index}
+                style={{
+                  minWidth: `${Math.round(118 * zoomScale)}px`,
+                  transition: "min-width 0.2s ease",
+                }}
+                className={`snap-start overflow-hidden rounded-xl border-2 bg-black/30 text-left transition-colors ${
+                  activeIndex === index
+                    ? "border-[#F5F906]"
+                    : "border-white/10 hover:border-white/30"
+                }`}
+              >
+                <CarouselCanvas
+                  slide={slide}
+                  index={index}
+                  total={slides.length}
+                  ratio={coverRatio}
+                  logo={state.logoBase64}
+                  primary={state.primaryColor}
+                  secondary={state.secondaryColor}
+                />
+                <span className="flex min-h-10 items-center justify-between gap-2 px-2.5 py-2">
+                  <span className="truncate text-[10px] font-bold text-white/68">
+                    {slide.kind === "cover"
+                      ? (isEs ? "Portada original" : "Capa original")
+                      : slide.kind === "closing"
+                        ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
+                        : `${isEs ? "Contenido" : "Conteúdo"} ${index}`}
+                  </span>
+                  {slide.kind === "cover" && <Lock className="h-3 w-3 shrink-0 text-[#F5F906]" />}
                 </span>
-                {slide.kind === "cover" && <Lock className="h-3 w-3 shrink-0 text-[#F5F906]" />}
-              </span>
-            </button>
-          ))}
-        </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* ── MODO: GRADE VERTICAL (stack) — uma embaixo da outra ── */}
+        {viewMode === "stack" && (
+          <div className="flex flex-col gap-3">
+            {slides.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                aria-label={`${isEs ? "Abrir imagen" : "Abrir imagem"} ${index + 1}`}
+                aria-pressed={activeIndex === index}
+                className={`overflow-hidden rounded-xl border-2 bg-black/30 text-left transition-colors ${
+                  activeIndex === index
+                    ? "border-[#F5F906]"
+                    : "border-white/10 hover:border-white/30"
+                }`}
+              >
+                <div
+                  style={{
+                    transformOrigin: "top left",
+                    transform: `scale(${zoomScale})`,
+                    transition: "transform 0.2s ease",
+                    width: `${Math.round(100 / zoomScale)}%`,
+                  }}
+                >
+                  <CarouselCanvas
+                    slide={slide}
+                    index={index}
+                    total={slides.length}
+                    ratio={coverRatio}
+                    logo={state.logoBase64}
+                    primary={state.primaryColor}
+                    secondary={state.secondaryColor}
+                  />
+                </div>
+                <span className="flex min-h-10 items-center justify-between gap-2 px-3 py-2">
+                  <span className="flex items-center gap-2 text-[10px] font-bold text-white/68">
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-white/10 text-[9px] font-black text-white/60">
+                      {index + 1}
+                    </span>
+                    {slide.kind === "cover"
+                      ? (isEs ? "Portada original" : "Capa original")
+                      : slide.kind === "closing"
+                        ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
+                        : `${isEs ? "Contenido" : "Conteúdo"} ${index}`}
+                  </span>
+                  {slide.kind === "cover" && <Lock className="h-3 w-3 shrink-0 text-[#F5F906]" />}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* ── MODO: FOCO — uma imagem grande por vez com setas ── */}
+        {viewMode === "focus" && (
+          <div className="flex flex-col items-center gap-3">
+            {/* Setas de navegação + indicador */}
+            <div className="flex w-full items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveIndex((c) => Math.max(0, c - 1))}
+                disabled={activeIndex === 0}
+                aria-label={isEs ? "Imagen anterior" : "Imagem anterior"}
+                className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 text-white/70 hover:bg-white/[0.06] disabled:opacity-25"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              <div className="flex gap-1.5">
+                {slides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveIndex(idx)}
+                    aria-label={`${isEs ? "Ir a imagen" : "Ir para imagem"} ${idx + 1}`}
+                    className={`h-1.5 rounded-full transition-all ${
+                      activeIndex === idx
+                        ? "w-5 bg-[#F5F906]"
+                        : "w-1.5 bg-white/20 hover:bg-white/40"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setActiveIndex((c) => Math.min(slides.length - 1, c + 1))}
+                disabled={activeIndex === slides.length - 1}
+                aria-label={isEs ? "Siguiente imagen" : "Próxima imagem"}
+                className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 text-white/70 hover:bg-white/[0.06] disabled:opacity-25"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Canvas do slide ativo em destaque */}
+            <div className="w-full max-w-sm overflow-hidden rounded-2xl border-2 border-[#F5F906] shadow-[0_0_32px_rgba(245,249,6,0.15)]">
+              {activeSlide && (
+                <CarouselCanvas
+                  slide={activeSlide}
+                  index={activeIndex}
+                  total={slides.length}
+                  ratio={coverRatio}
+                  logo={state.logoBase64}
+                  primary={state.primaryColor}
+                  secondary={state.secondaryColor}
+                />
+              )}
+            </div>
+
+            <p className="text-[10px] text-white/40">
+              {activeSlide?.kind === "cover"
+                ? (isEs ? "Portada original — bloqueada." : "Capa original — bloqueada.")
+                : activeSlide?.kind === "closing"
+                  ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
+                  : `${isEs ? "Contenido" : "Conteúdo"} ${activeIndex} — ${isEs ? "toca para editar abajo" : "toque para editar abaixo"}`}
+            </p>
+          </div>
+        )}
       </div>
+
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
         <div className="order-2 space-y-4 xl:order-1">
@@ -1364,17 +1580,57 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">3</span>
-                <h3 className="text-sm font-bold text-white">
-                  {activeSlide?.kind === "cover"
-                    ? (isEs ? "Portada protegida" : "Capa protegida")
-                    : activeSlide?.kind === "closing"
-                      ? (isEs ? "Edita el cierre" : "Edite o fechamento")
-                      : (isEs ? "Foto y texto de esta imagen" : "Foto e texto desta imagem")}
-                </h3>
+                <div>
+                  <h3 className="text-sm font-bold text-white">
+                    {activeSlide?.kind === "cover"
+                      ? (isEs ? "Portada protegida" : "Capa protegida")
+                      : activeSlide?.kind === "closing"
+                        ? (isEs ? "Edita el cierre" : "Edite o fechamento")
+                        : (isEs ? "Foto y texto de esta imagen" : "Foto e texto desta imagem")}
+                  </h3>
+                  {/* Badge indicador do tipo de slide */}
+                  <span className={`inline-block mt-0.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                    activeSlide?.kind === "cover"
+                      ? "bg-[#F5F906]/15 text-[#F5F906]"
+                      : activeSlide?.kind === "closing"
+                        ? "bg-white/10 text-white/60"
+                        : "bg-white/[0.06] text-white/45"
+                  }`}>
+                    {activeSlide?.kind === "cover"
+                      ? (isEs ? "Portada" : "Capa")
+                      : activeSlide?.kind === "closing"
+                        ? (isEs ? "Cierre" : "Fechamento")
+                        : `${isEs ? "Slide" : "Slide"} ${activeIndex + 1} / ${slides.length}`}
+                  </span>
+                </div>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wide text-white/35">
-                {activeIndex + 1}/{slides.length}
-              </span>
+
+              {/* Navegação rápida prev/next diretamente no painel de edição */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveIndex((c) => Math.max(0, c - 1))}
+                  disabled={activeIndex === 0}
+                  aria-label={isEs ? "Imagen anterior" : "Imagem anterior"}
+                  title={isEs ? "Anterior" : "Anterior"}
+                  className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-white/60 hover:bg-white/[0.06] hover:text-white disabled:opacity-25"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+                <span className="min-w-[28px] text-center text-[10px] font-bold text-white/35">
+                  {activeIndex + 1}/{slides.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setActiveIndex((c) => Math.min(slides.length - 1, c + 1))}
+                  disabled={activeIndex === slides.length - 1}
+                  aria-label={isEs ? "Siguiente imagen" : "Próxima imagem"}
+                  title={isEs ? "Siguiente" : "Próxima"}
+                  className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-white/60 hover:bg-white/[0.06] hover:text-white disabled:opacity-25"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
 
             {activeSlide?.kind === "cover" && (
