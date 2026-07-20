@@ -121,7 +121,6 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   const userNavItems = user ? [
     { to: "/downloads", label: "Downloads", icon: Download },
     { to: "/fabrica", label: "Fábrica", icon: Wand2, isNew: true },
-    { to: "/painel-marketing", label: "Painel de Marketing", icon: Bot },
     { to: isESRoute ? "/es/progresso" : "/progresso", label: "Progresso", icon: TrendingUp },
     { to: isESRoute ? "/es/sugestoes" : "/sugestoes", label: "Sugestões", icon: MessageSquare },
     { to: "/minha-conta", label: "Minha Conta", icon: User },

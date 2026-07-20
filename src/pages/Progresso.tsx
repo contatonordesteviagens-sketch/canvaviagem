@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGamification } from '@/hooks/useGamification';
+import { useFabricaMetrics } from '@/hooks/useFabricaMetrics';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,13 +9,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Trophy, Target, CheckCircle2, Lock, Sparkles, TrendingUp,
-    Video, Image as ImageIcon, Calendar as CalendarIcon, Wand2, Star
+    Video, Image as ImageIcon, Calendar as CalendarIcon, Wand2, Star,
+    Users, Globe, Factory
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getLevelInfo } from '@/lib/gamification';
 
 export default function Progresso() {
     const { progress, level, levelName, progressPercent, pointsToNext, loading } = useGamification();
+    const { totalLeads, newLeadsCount, totalSites, totalArtes } = useFabricaMetrics();
 
     // Missions/Tips for users
     const missions = [
@@ -166,6 +169,74 @@ export default function Progresso() {
                                 <p className="text-xl md:text-2xl font-bold">{progress?.tools_used || 0}</p>
                                 <p className="text-[10px] md:text-xs text-muted-foreground">Ferramentas Usadas</p>
                             </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Fábrica Production & CRM Leads Card */}
+                <Card className="mb-8 border-2 border-purple-500/30 shadow-xl bg-gradient-to-br from-purple-950/20 via-background to-slate-950/30">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
+                                    <Factory className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-lg md:text-xl flex items-center gap-2">
+                                        Desempenho & CRM da Fábrica 🏭
+                                    </CardTitle>
+                                    <CardDescription className="text-xs md:text-sm">
+                                        Monitoramento de conversão em tempo real do seu negócio
+                                    </CardDescription>
+                                </div>
+                            </div>
+                            {newLeadsCount > 0 ? (
+                                <Badge className="bg-red-500 text-white font-extrabold px-3 py-1 animate-pulse shadow-md">
+                                    {newLeadsCount} Novo{newLeadsCount > 1 ? 's' : ''} Lead{newLeadsCount > 1 ? 's' : ''}!
+                                </Badge>
+                            ) : (
+                                <Badge variant="outline" className="text-xs px-2.5 py-0.5 border-purple-500/40 text-purple-400">
+                                    CRM Ativo
+                                </Badge>
+                            )}
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="p-5 rounded-2xl bg-gradient-to-br from-red-500/10 to-red-950/20 border border-red-500/25 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                                {newLeadsCount > 0 && (
+                                    <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-bounce">
+                                        +{newLeadsCount} novos
+                                    </span>
+                                )}
+                                <Users className="h-7 w-7 text-red-500 mb-2" />
+                                <p className="text-3xl md:text-4xl font-black text-red-500">{totalLeads}</p>
+                                <p className="text-xs md:text-sm font-bold text-foreground mt-1">Leads Recebidos</p>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">Capturados nos seus formulários e sites</p>
+                            </div>
+
+                            <div className="p-5 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-cyan-950/20 border border-cyan-500/25 flex flex-col items-center justify-center text-center">
+                                <Globe className="h-7 w-7 text-cyan-500 mb-2" />
+                                <p className="text-3xl md:text-4xl font-black text-cyan-500">{totalSites}</p>
+                                <p className="text-xs md:text-sm font-bold text-foreground mt-1">Sites Gerados / Ativos</p>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">Páginas de alta conversão criadas</p>
+                            </div>
+
+                            <div className="p-5 rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-950/20 border border-purple-500/25 flex flex-col items-center justify-center text-center">
+                                <Sparkles className="h-7 w-7 text-purple-500 mb-2" />
+                                <p className="text-3xl md:text-4xl font-black text-purple-500">{totalArtes}</p>
+                                <p className="text-xs md:text-sm font-bold text-foreground mt-1">Artes & Pacotes Gerados</p>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">Anúncios, carrosséis e artes produzidos</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-5 flex justify-end">
+                            <Button 
+                                onClick={() => window.location.href = '/fabrica'} 
+                                className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-md transition-all"
+                            >
+                                Acessar CRM & Gerenciar Leads na Fábrica →
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>

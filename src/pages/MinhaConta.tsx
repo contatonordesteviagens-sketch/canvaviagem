@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Crown, Calendar, LogOut, ExternalLink, Loader2, Factory, Trash2, FileDown } from "lucide-react";
+import { User, Crown, Calendar, LogOut, ExternalLink, Loader2, Factory, Trash2, FileDown, MessageCircle } from "lucide-react";
 import { useDiagnosticos, useDeleteDiagnostico } from "@/hooks/useFabricaDiagnosticos";
 import { generateDiagnosticoPDF } from "@/lib/fabrica-pdf";
 import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
@@ -198,56 +198,27 @@ export default function MinhaConta() {
           </CardContent>
         </Card>
 
-        {/* Diagnósticos da Fábrica */}
-        {diagnosticos.length > 0 && (
-          <Card className="mb-4">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Factory className="h-4 w-4 text-primary" />
-                Meus Diagnósticos da Fábrica
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {diagnosticos.map((d) => (
-                <div key={d.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-foreground truncate">{d.agency_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Score {d.digital_score}/100 · Nível {d.level} {d.level_name ? `— ${d.level_name}` : ""}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {new Date(d.updated_at).toLocaleDateString("pt-BR")}
-                    </p>
-                  </div>
-                  <Button size="sm" variant="ghost" onClick={() => generateDiagnosticoPDF(d.state_snapshot as any)} title="Baixar PDF">
-                    <FileDown className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => navigate("/fabrica", {
-                      state: { prefillSnapshot: { ...d.state_snapshot, projectId: d.id } },
-                    })}
-                    title="Continuar"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      if (confirm(`Remover projeto de ${d.agency_name}? O site publicado também será removido.`)) deleteDiag.mutate(d);
-                    }}
-                    className="text-destructive hover:text-destructive"
-                    title="Remover"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+        {/* Suporte & Ajuda WhatsApp */}
+        <Card className="mb-4 border-green-500/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 text-green-500" />
+              Suporte Exclusivo via WhatsApp
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Precisa de ajuda ou tem alguma dúvida? Fale diretamente com nossa equipe de suporte no WhatsApp.
+            </p>
+            <Button
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold"
+              onClick={() => window.open("https://api.whatsapp.com/send/?phone=5585998458995&text=Canva+Viagem", "_blank")}
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Falar com Suporte (WhatsApp) →
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Sair */}
         <Card>

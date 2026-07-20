@@ -4,7 +4,7 @@ import {
   Home, Bot, Wand2, Calendar, Image, GraduationCap, Heart, 
   FileText, CreditCard, User, LogOut, Video, Megaphone,
   Download, ChevronDown, ChevronRight, BookmarkCheck, LayoutGrid,
-  TrendingUp, Crown
+  TrendingUp, Crown, MessageCircle
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
 import { FabricaUpgradeModalES } from "@/components/fabrica/FabricaUpgradeModalES";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { CategoryType } from "@/components/canva/CategoryNav";
+import { useFabricaMetrics } from "@/hooks/useFabricaMetrics";
 
 interface SidebarNavProps {
   activeCategory?: CategoryType;
@@ -29,6 +30,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
   const { user, signOut, subscription, isAdmin } = useAuth();
   const { t, language } = useLanguage();
   const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
+  const { newLeadsCount } = useFabricaMetrics();
 
   // Controle de seções recolhíveis (acordeão) para manter o menu limpo e organizado
   const [openSections, setOpenSections] = useState({
@@ -339,19 +341,17 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   </div>
                 </button>
 
-                {/* Planos & Upgrade */}
+                {/* Planos & Upgrade - Direciona para /inicio */}
                 <button
-                  onClick={() => handleNavClick(undefined, isESRoute ? "/es/planos" : "/planos")}
+                  onClick={() => handleNavClick(undefined, isESRoute ? "/es/inicio" : "/inicio")}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
-                    location.pathname.includes('/planos')
+                    location.pathname === (isESRoute ? "/es/inicio" : "/inicio")
                       ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
                       : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <CreditCard className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/planos') ? "text-blue-600 dark:text-blue-400" : "text-amber-500 dark:text-amber-400"
-                    }`} />
+                    <CreditCard className={`w-4 h-4 shrink-0 transition-colors text-amber-500 dark:text-amber-400`} />
                     <span className="leading-snug">Planos & Upgrade</span>
                   </div>
                   <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-500 text-black font-extrabold shrink-0 shadow-sm">
@@ -359,24 +359,31 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   </span>
                 </button>
 
-                {/* Painel de Marketing (Apenas se logado) */}
-                {user && (
-                  <button
-                    onClick={() => handleNavClick(undefined, "/painel-marketing")}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
-                      location.pathname.includes('/painel-marketing')
-                        ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <TrendingUp className={`w-4 h-4 shrink-0 transition-colors ${
-                        location.pathname.includes('/painel-marketing') ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                      }`} />
-                      <span>Painel Marketing</span>
-                    </div>
-                  </button>
-                )}
+                {/* Categoria somente da Fábrica / CRM Leads */}
+                <button
+                  onClick={() => handleNavClick(undefined, "/fabrica", true)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                    location.pathname.includes('/fabrica')
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Wand2 className={`w-4 h-4 shrink-0 transition-colors ${
+                      location.pathname.includes('/fabrica') ? "text-blue-600 dark:text-blue-400" : "text-purple-500 dark:text-purple-400 group-hover:text-blue-600"
+                    }`} />
+                    <span>Fábrica & CRM Leads</span>
+                  </div>
+                  {newLeadsCount > 0 ? (
+                    <span className="bg-red-500 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full animate-pulse shadow-md">
+                      {newLeadsCount}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-500 dark:text-purple-400 font-extrabold shrink-0">
+                      CRM
+                    </span>
+                  )}
+                </button>
 
                 {/* Progresso & Aulas */}
                 {user && (
@@ -389,13 +396,27 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Crown className={`w-4 h-4 shrink-0 transition-colors ${
+                      <TrendingUp className={`w-4 h-4 shrink-0 transition-colors ${
                         location.pathname.includes('/progresso') ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                       }`} />
                       <span>Meu Progresso</span>
                     </div>
                   </button>
                 )}
+
+                {/* Suporte WhatsApp */}
+                <button
+                  onClick={() => window.open("https://api.whatsapp.com/send/?phone=5585998458995&text=Canva+Viagem", "_blank")}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
+                >
+                  <div className="flex items-center gap-3">
+                    <MessageCircle className="w-4 h-4 shrink-0 text-green-500 dark:text-green-400" />
+                    <span>Suporte WhatsApp</span>
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-green-500/20 text-green-600 dark:text-green-400 font-extrabold shrink-0">
+                    Online
+                  </span>
+                </button>
 
                 {/* Minha Conta */}
                 <button

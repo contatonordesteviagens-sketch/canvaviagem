@@ -107,7 +107,6 @@ const MinhaConta = lazy(() => import("./pages/MinhaConta"));
 const Downloads = lazy(() => import("./pages/Downloads"));
 const Fabrica = lazy(() => import("./pages/Fabrica"));
 const FabricaES = lazy(() => import("./pages/FabricaES"));
-const PainelMarketing = lazy(() => import("./pages/PainelMarketing"));
 const SiteViewer = lazy(() => import("./pages/SiteViewer"));
 const VendedorIA = lazy(() => import("./pages/vendedor-ia/VendedorIA"));
 const Tutorial = lazy(() => import("./pages/Tutorial"));
@@ -208,11 +207,6 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     <Route path="/live-aovivo" element={<LiveStream />} />
-                    <Route path="/painel-marketing" element={
-                      <ProtectedRoute requireElite>
-                        <PainelMarketing />
-                      </ProtectedRoute>
-                    } />
                     <Route path="/aula-secreta" element={<Navigate to="/imersao-ao-vivo" replace />} />
 
                     {/* ROTAS ESPANHOL - PÁGINAS INDEPENDENTES */}
