@@ -67,9 +67,9 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
 
   return (
     <>
-      <aside className="hidden md:flex flex-col w-64 fixed left-0 top-0 bottom-0 bg-slate-950/98 dark:bg-[#08090C]/98 backdrop-blur-3xl border-r border-slate-800/80 dark:border-white/[0.08] text-white z-50 select-none shadow-2xl">
+      <aside className="hidden md:flex flex-col w-64 fixed left-0 top-0 bottom-0 bg-white dark:bg-[#08090C]/98 backdrop-blur-3xl border-r border-slate-200 dark:border-white/[0.08] text-slate-800 dark:text-white z-50 select-none shadow-2xl">
         {/* Logo Topo */}
-        <div className="p-4 border-b border-white/10 flex items-center gap-3 shrink-0">
+        <div className="p-4 border-b border-slate-200 dark:border-white/10 flex items-center gap-3 shrink-0">
           <Link to={homeRoute} className="flex items-center gap-3 group">
             <img
               src={logoImage}
@@ -77,10 +77,10 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
               className="h-10 w-10 rounded-xl shadow-lg group-hover:scale-105 transition-transform object-cover shrink-0"
             />
             <div className="flex flex-col min-w-0">
-              <span className="text-[17px] font-black text-white tracking-tight whitespace-nowrap leading-tight">
+              <span className="text-[17px] font-black text-slate-900 dark:text-white tracking-tight whitespace-nowrap leading-tight">
                 Canva Viagem
               </span>
-              <span className="text-[10px] text-amber-400 font-extrabold tracking-widest uppercase -mt-0.5">
+              <span className="text-[10px] text-blue-600 dark:text-amber-400 font-extrabold tracking-widest uppercase -mt-0.5">
                 Portal Principal
               </span>
             </div>
@@ -94,7 +94,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
           <div className="space-y-1">
             <button
               onClick={() => toggleSection('principal')}
-              className="w-full flex items-center justify-between text-[10px] font-black text-white/50 tracking-wider uppercase px-2.5 py-1.5 hover:text-white/80 transition-colors"
+              className="w-full flex items-center justify-between text-[10px] font-black text-slate-500 dark:text-white/50 tracking-wider uppercase px-2.5 py-1.5 hover:text-slate-900 dark:hover:text-white/80 transition-colors"
             >
               <span>PRINCIPAL & IA</span>
               {openSections.principal ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
@@ -107,13 +107,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick('all')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     (activeCategory === 'all' || (!activeCategory && location.pathname === homeRoute))
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <LayoutGrid className={`w-4 h-4 shrink-0 transition-colors ${
-                      (activeCategory === 'all' || (!activeCategory && location.pathname === homeRoute)) ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      (activeCategory === 'all' || (!activeCategory && location.pathname === homeRoute)) ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Início (Tudo)</span>
                   </div>
@@ -124,13 +124,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick(undefined, isESRoute ? "/es/fabrica" : "/fabrica", true)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     location.pathname.includes('/fabrica')
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Wand2 className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/fabrica') ? "text-blue-400" : "text-amber-400"
+                      location.pathname.includes('/fabrica') ? "text-blue-600 dark:text-blue-400" : "text-amber-500 dark:text-amber-400"
                     }`} />
                     <span className="leading-snug">Fábrica de Destinos</span>
                   </div>
@@ -144,13 +144,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick('tools')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     activeCategory === 'tools' && location.pathname === homeRoute
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Bot className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'tools' ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      activeCategory === 'tools' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Ferramentas de IA</span>
                   </div>
@@ -161,13 +161,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick(undefined, isESRoute ? "/es/calendar" : "/calendar")}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     location.pathname.includes('/calendar')
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Calendar className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/calendar') ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      location.pathname.includes('/calendar') ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Datas & Calendário</span>
                   </div>
@@ -180,7 +180,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
           <div className="space-y-1">
             <button
               onClick={() => toggleSection('conteudos')}
-              className="w-full flex items-center justify-between text-[10px] font-black text-white/50 tracking-wider uppercase px-2.5 py-1.5 hover:text-white/80 transition-colors"
+              className="w-full flex items-center justify-between text-[10px] font-black text-slate-500 dark:text-white/50 tracking-wider uppercase px-2.5 py-1.5 hover:text-slate-900 dark:hover:text-white/80 transition-colors"
             >
               <span>CONTEÚDOS & MATERIAIS</span>
               {openSections.conteudos ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
@@ -193,13 +193,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick('videos')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     activeCategory === 'videos' && location.pathname === homeRoute
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Video className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'videos' ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      activeCategory === 'videos' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Vídeos Reels</span>
                   </div>
@@ -210,13 +210,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick('feed')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     activeCategory === 'feed' && location.pathname === homeRoute
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Image className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'feed' ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      activeCategory === 'feed' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Feed & Stories</span>
                   </div>
@@ -227,13 +227,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick('offers')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     activeCategory === 'offers' && location.pathname === homeRoute
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Megaphone className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'offers' ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      activeCategory === 'offers' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Ofertas & Legendas</span>
                   </div>
@@ -244,13 +244,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick('videoaula')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     activeCategory === 'videoaula' && location.pathname === homeRoute
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <GraduationCap className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'videoaula' ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      activeCategory === 'videoaula' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Aulas & Tutoriais</span>
                   </div>
@@ -261,13 +261,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick('downloads')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     activeCategory === 'downloads' && location.pathname === homeRoute
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Download className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'downloads' ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      activeCategory === 'downloads' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Downloads</span>
                   </div>
@@ -278,13 +278,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick('contracts')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     activeCategory === 'contracts' && location.pathname === homeRoute
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <FileText className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'contracts' ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      activeCategory === 'contracts' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Contratos Prontos</span>
                   </div>
@@ -295,13 +295,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick('favorites')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     activeCategory === 'favorites' && location.pathname === homeRoute
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Heart className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'favorites' ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      activeCategory === 'favorites' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Meus Favoritos</span>
                   </div>
@@ -314,7 +314,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
           <div className="space-y-1">
             <button
               onClick={() => toggleSection('gestao')}
-              className="w-full flex items-center justify-between text-[10px] font-black text-white/50 tracking-wider uppercase px-2.5 py-1.5 hover:text-white/80 transition-colors"
+              className="w-full flex items-center justify-between text-[10px] font-black text-slate-500 dark:text-white/50 tracking-wider uppercase px-2.5 py-1.5 hover:text-slate-900 dark:hover:text-white/80 transition-colors"
             >
               <span>GESTÃO & ESTRATÉGIA</span>
               {openSections.gestao ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
@@ -327,13 +327,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick(undefined, "/blog")}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     location.pathname.includes('/blog')
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <BookmarkCheck className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/blog') ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      location.pathname.includes('/blog') ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Blog de Estratégias</span>
                   </div>
@@ -344,13 +344,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick(undefined, isESRoute ? "/es/planos" : "/planos")}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     location.pathname.includes('/planos')
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <CreditCard className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/planos') ? "text-blue-400" : "text-amber-400"
+                      location.pathname.includes('/planos') ? "text-blue-600 dark:text-blue-400" : "text-amber-500 dark:text-amber-400"
                     }`} />
                     <span className="leading-snug">Planos & Upgrade</span>
                   </div>
@@ -365,13 +365,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                     onClick={() => handleNavClick(undefined, "/painel-marketing")}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                       location.pathname.includes('/painel-marketing')
-                        ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                        : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                        ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <TrendingUp className={`w-4 h-4 shrink-0 transition-colors ${
-                        location.pathname.includes('/painel-marketing') ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                        location.pathname.includes('/painel-marketing') ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                       }`} />
                       <span>Painel Marketing</span>
                     </div>
@@ -384,13 +384,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                     onClick={() => handleNavClick(undefined, isESRoute ? "/es/progresso" : "/progresso")}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                       location.pathname.includes('/progresso')
-                        ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                        : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                        ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <Crown className={`w-4 h-4 shrink-0 transition-colors ${
-                        location.pathname.includes('/progresso') ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                        location.pathname.includes('/progresso') ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                       }`} />
                       <span>Meu Progresso</span>
                     </div>
@@ -402,13 +402,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   onClick={() => handleNavClick(undefined, !user ? "/auth" : "/minha-conta")}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
                     location.pathname.includes('/minha-conta') || location.pathname.includes('/auth')
-                      ? "bg-gradient-to-r from-blue-600/25 to-indigo-600/25 text-white border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-white/70 hover:text-white hover:bg-white/[0.06]"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <User className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/minha-conta') ? "text-blue-400" : "text-white/45 group-hover:text-amber-400"
+                      location.pathname.includes('/minha-conta') ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
                     }`} />
                     <span>Minha Conta</span>
                   </div>
@@ -419,7 +419,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
         </div>
 
         {/* Rodapé do Menu Lateral */}
-        <div className="p-3.5 border-t border-white/10 bg-black/40 space-y-2.5 shrink-0">
+        <div className="p-3.5 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 space-y-2.5 shrink-0">
           {user && (
             <div className="px-1">
               <ProgressBar compact />
@@ -436,7 +436,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
               variant="ghost"
               size="sm"
               onClick={signOut}
-              className="w-full justify-start text-white/70 hover:text-red-400 hover:bg-red-500/10 rounded-xl text-xs py-2"
+              className="w-full justify-start text-slate-600 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-red-400 dark:hover:bg-red-500/10 rounded-xl text-xs py-2"
             >
               <LogOut className="h-3.5 w-3.5 mr-2 shrink-0" />
               {t('header.logout') || "Sair da Conta"}
