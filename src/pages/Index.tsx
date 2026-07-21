@@ -707,7 +707,7 @@ const Index = () => {
                 </Suspense>
 
                 {/* Artes para Agência de Viagens (Feed) — 2 cols mobile, 4 cols desktop */}
-                {!feedLoading && feedTemplates.length > 0 && (
+                {!feedLoading && (feedTemplates?.length ?? 0) > 0 && (
                   <div className="space-y-3">
                     <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground pt-2">Artes para Agência de Viagens</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">

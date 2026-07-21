@@ -155,7 +155,8 @@ export const publishFabricaSite = async ({
     currentUrl: state.siteContent?.canvaViagemUrl,
   });
   if (!availability.allowed) {
-    const error = new Error(availability.reason || "site_slug_unavailable");
+    const reason = (availability as { allowed: false; reason: string }).reason;
+    const error = new Error(reason || "site_slug_unavailable");
     error.name = "FabricaSiteSlugError";
     throw error;
   }
