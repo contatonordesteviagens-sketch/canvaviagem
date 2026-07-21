@@ -585,8 +585,8 @@ function CarouselCanvas({
           {/* ─── VARIANT: ITINERARY — photo top ~45%, colored block bottom ─── */}
           {slide.slideVariant === "itinerary" && (() => {
             const onPrimary = readableText(primary);
-            const isBgDark = onPrimary === "#fff";
-            const isTextDark = readableText(slide.textColor) === "#fff";
+            const isBgDark = onPrimary === "#F8FAFC";
+            const isTextDark = readableText(slide.textColor) === "#F8FAFC";
             const boxTextColor = isBgDark && isTextDark ? onPrimary : slide.textColor;
             return (
               <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
