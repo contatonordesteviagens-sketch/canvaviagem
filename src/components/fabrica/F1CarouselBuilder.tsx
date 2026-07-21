@@ -584,9 +584,10 @@ function CarouselCanvas({
 
           {/* ─── VARIANT: ITINERARY — photo top ~45%, colored block bottom ─── */}
           {slide.slideVariant === "itinerary" && (() => {
-            const isBgDark = getContrastText(primary) === "#fff";
-            const isTextDark = getContrastText(slide.textColor) === "#fff";
-            const boxTextColor = isBgDark && isTextDark ? onPrimaryText : slide.textColor;
+            const onPrimary = readableText(primary);
+            const isBgDark = onPrimary === "#F8FAFC";
+            const isTextDark = readableText(slide.textColor) === "#F8FAFC";
+            const boxTextColor = isBgDark && isTextDark ? onPrimary : slide.textColor;
             return (
               <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
                 {/* Photo zone top */}
@@ -642,9 +643,10 @@ function CarouselCanvas({
 
           {/* ─── VARIANT: EDITORIAL — photo full-bleed + floating card center ─── */}
           {slide.slideVariant === "editorial" && (() => {
-            const isBgDark = getContrastText(primary) === "#fff";
-            const isTextDark = getContrastText(slide.textColor) === "#fff";
-            const boxTextColor = isBgDark && isTextDark ? onPrimaryText : slide.textColor;
+            const onPrimary = readableText(primary);
+            const isBgDark = onPrimary === "#F8FAFC";
+            const isTextDark = readableText(slide.textColor) === "#F8FAFC";
+            const boxTextColor = isBgDark && isTextDark ? onPrimary : slide.textColor;
             return (
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "8%" }}>
                 {/* Counter */}
