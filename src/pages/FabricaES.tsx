@@ -424,7 +424,7 @@ const FabricaInnerES = () => {
       )}
 
       {/* ── CONTEÚDO PRINCIPAL (ÁREA DE TRABALHO) ── */}
-      <main className="flex-1 min-w-0 min-h-screen pt-20 md:pt-8 px-4 md:px-8 pb-24 overflow-y-auto bg-[#0A0A0B]">
+      <main className="flex-1 min-w-0 pt-20 md:pt-8 px-4 md:px-8 pb-24 bg-[#0A0A0B]">
         {/* Admin Quick Phase Selector */}
         {isAdmin && (
           <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center gap-2 overflow-x-auto font-sans">

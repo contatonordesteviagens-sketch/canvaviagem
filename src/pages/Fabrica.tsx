@@ -479,7 +479,7 @@ const FabricaInner = () => {
       )}
 
       {/* ——— CONTEÚDO PRINCIPAL (ÁREA DE TRABALHO) ——— */}
-      <main className="flex-1 min-w-0 min-h-screen pt-20 md:pt-8 px-4 md:px-8 pb-24 overflow-y-auto bg-[#0A0A0B]">
+      <main className="flex-1 min-w-0 pt-20 md:pt-8 px-4 md:px-8 pb-24 bg-[#0A0A0B]">
         {/* Top Bar with Voice AI and Phase Shortcuts */}
         <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-2xl bg-black border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 relative z-30">
             <div className="w-full sm:w-auto flex justify-center sm:justify-start shrink-0 min-w-0">
