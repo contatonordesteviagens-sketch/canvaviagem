@@ -1087,7 +1087,6 @@ function ScaledSlidePreview({
           logo={logo}
           primary={primary}
           secondary={secondary}
-          exportMode
         />
       </div>
     </div>
