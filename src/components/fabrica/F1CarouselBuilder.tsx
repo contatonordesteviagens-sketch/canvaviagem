@@ -1122,6 +1122,8 @@ function MiniTypographyBar({
   onChange,
   onSelectTextColor,
   isEs = false,
+  compact = false,
+  vertical = false,
 }: {
   style?: FieldTypography;
   fallbackBold?: boolean;
@@ -1131,6 +1133,8 @@ function MiniTypographyBar({
   onChange: (updated: FieldTypography) => void;
   onSelectTextColor?: (color: string) => void;
   isEs?: boolean;
+  compact?: boolean;
+  vertical?: boolean;
 }) {
   const [showHexInput, setShowHexInput] = useState(false);
   const [hexInput, setHexInput] = useState("");
@@ -1151,8 +1155,50 @@ function MiniTypographyBar({
     { hex: secondaryColor || "#00F0FF", label: isEs ? "Secundario" : "Secundária" },
   ];
 
+  if (vertical) {
+    return (
+      <div className="flex flex-col items-center gap-1 rounded-lg border border-white/10 bg-white/[0.03] px-1.5 py-2">
+        {/* B / I / U vertical */}
+        {[
+          { key: "bold", label: "B", active: isBold, cls: "font-black", action: () => onChange({ ...style, bold: !isBold }) },
+          { key: "italic", label: "I", active: isItalic, cls: "italic font-bold", action: () => onChange({ ...style, italic: !isItalic }) },
+          { key: "underline", label: "U", active: isUnderline, cls: "underline font-bold", action: () => onChange({ ...style, underline: !isUnderline }) },
+        ].map(({ key, label, active, cls, action }) => (
+          <button key={key} type="button" onClick={(e) => { e.preventDefault(); action(); }}
+            className={`grid h-6 w-6 place-items-center rounded text-xs transition-colors ${cls} ${
+              active ? "bg-[#F5F906] text-zinc-950" : "text-white/70 hover:bg-white/10 hover:text-white"
+            }`}>{label}</button>
+        ))}
+        <div className="my-0.5 w-3 border-t border-white/15" />
+        {/* Cores verticais */}
+        {brandColors.map(({ hex, label }) => (
+          <button key={hex} type="button" onClick={(e) => { e.preventDefault(); handleColorClick(hex); }}
+            title={`${label} (${hex})`}
+            className={`h-5 w-5 rounded-full border-2 transition-all hover:scale-110 ${
+              currentColor.toUpperCase() === hex.toUpperCase()
+                ? "scale-110 border-white ring-2 ring-[#F5F906] ring-offset-1 ring-offset-zinc-900"
+                : "border-white/30"
+            }`} style={{ backgroundColor: hex }} />
+        ))}
+        {/* Arco-íris */}
+        <div className="relative cursor-pointer transition-transform hover:scale-110"
+          style={{ width: 20, height: 20, borderRadius: "50%", padding: 2,
+            background: "conic-gradient(from 0deg, #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
+          title={isEs ? "Elegir color" : "Qualquer cor"}
+        >
+          <div style={{ width: "100%", height: "100%", borderRadius: "50%", backgroundColor: currentColor, border: "1px solid rgba(0,0,0,0.35)" }} />
+          <input type="color" value={currentColor.startsWith("#") ? currentColor : "#FFFFFF"}
+            onChange={(e) => handleColorClick(e.target.value)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0" style={{ borderRadius: "50%" }} />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="mb-1 flex flex-wrap items-center justify-between gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-1">
+    <div className={`flex flex-wrap items-center justify-between gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-1 ${
+      compact ? "" : "mb-1"
+    }`}>
       {/* B / I / U (Lado esquerdo) */}
       <div className="flex items-center gap-1">
         <button
@@ -2454,7 +2500,10 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
 
         {/* ── MODO: FAIXA HORIZONTAL (ribbon) ── */}
         {viewMode === "ribbon" && (() => {
-          const thumbWidth = Math.round(155 * zoomScale);
+          // Redimensionamento dinâmico: quanto mais slides, menor cada thumb
+          // 3 slides → ~220px | 4 → ~185px | 5 → ~155px | 6 → ~135px | 7+ → ~115px
+          const baseWidth = Math.round(Math.max(110, 290 - slides.length * 22));
+          const thumbWidth = Math.round(baseWidth * zoomScale);
           const thumbHeight = Math.round(thumbWidth / coverRatio);
           return (
             <div className="f1-carousel-scroll flex snap-x gap-4 overflow-x-auto pb-3 pt-1">
@@ -2543,9 +2592,14 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
 
         {/* ── MODO: GRADE VERTICAL (stack) — uma embaixo da outra ── */}
         {viewMode === "stack" && (() => {
-          const thumbWidth = Math.round(280 * zoomScale);
+          // Redimensionamento dinâmico na grade
+          // 3 slides → 2 colunas grandes | 4 → 2 cols | 5-6 → 3 cols | 7+ → 4 cols
+          const cols = slides.length <= 4 ? 2 : slides.length <= 6 ? 3 : 4;
+          const baseWidth = Math.round(Math.max(140, 340 - slides.length * 20));
+          const thumbWidth = Math.round(baseWidth * zoomScale);
+          const gridClass = cols === 2 ? "grid-cols-2" : cols === 3 ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 md:grid-cols-4";
           return (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+            <div className={`grid ${gridClass} gap-4`}>
               {slides.map((slide, index) => {
                 const isActive = activeIndex === index;
                 return (
@@ -2875,102 +2929,130 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
 
                 {activeSlide.kind === "content" ? (
                   <>
-                    <CarouselField label={isEs ? "Título" : "Título principal"}>
-                      <MiniTypographyBar
-                        style={activeSlide.titleStyle}
-                        fallbackBold={activeSlide.fontWeight !== "normal"}
-                        fallbackColor={activeSlide.textColor || "#FFFFFF"}
-                        primaryColor={state.primaryColor}
-                        secondaryColor={state.secondaryColor}
-                        onChange={(updated) => patchActive({ titleStyle: updated })}
-                        onSelectTextColor={(color) => patchActive({ textColor: color })}
-                        isEs={isEs}
-                      />
-                      <textarea
-                        value={activeSlide.title}
-                        maxLength={80}
-                        rows={1}
-                        onChange={(event) => patchActive({ title: event.target.value })}
-                        className="f1-carousel-input !min-h-[36px] !py-1.5 text-xs resize-none"
-                      />
-                    </CarouselField>
-                    <CarouselField
-                      label={isEs ? "Descripción corta" : "Descrição curta / Subtítulo"}
-                      optionalAction={
-                        activeSlide.body ? (
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.preventDefault();
-                              patchActive({ body: "" });
-                            }}
-                            className="inline-flex min-h-6 items-center gap-1 rounded px-1.5 text-[9px] text-white/45 hover:bg-white/[0.05] hover:text-white"
-                          >
-                            <X className="h-3 w-3" /> {isEs ? "Quitar" : "Remover"}
-                          </button>
-                        ) : null
-                      }
-                    >
-                      <MiniTypographyBar
-                        style={activeSlide.bodyStyle}
-                        fallbackBold={activeSlide.fontWeight === "bold"}
-                        fallbackColor={activeSlide.textColor || "#FFFFFF"}
-                        primaryColor={state.primaryColor}
-                        secondaryColor={state.secondaryColor}
-                        onChange={(updated) => patchActive({ bodyStyle: updated })}
-                        onSelectTextColor={(color) => patchActive({ textColor: color })}
-                        isEs={isEs}
-                      />
-                      <textarea
-                        value={activeSlide.body}
-                        maxLength={260}
-                        rows={2}
-                        onChange={(event) => patchActive({ body: event.target.value })}
-                        className="f1-carousel-input !min-h-[46px] !py-1.5 text-xs resize-y"
-                      />
-                    </CarouselField>
-                    <CarouselField
-                      label={isEs ? "Párrafos o líneas (uno por línea)" : "Topo do parágrafo ou linha (um por linha)"}
-                      optionalAction={
-                        activeSlide.bullets.length ? (
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.preventDefault();
-                              patchActive({ bullets: [] });
-                            }}
-                            className="inline-flex min-h-6 items-center gap-1 rounded px-1.5 text-[9px] text-white/45 hover:bg-white/[0.05] hover:text-white"
-                          >
-                            <X className="h-3 w-3" /> {isEs ? "Quitar" : "Remover"}
-                          </button>
-                        ) : null
-                      }
-                    >
-                      <MiniTypographyBar
-                        style={activeSlide.bulletStyle}
-                        fallbackBold={activeSlide.fontWeight === "bold"}
-                        fallbackColor={activeSlide.textColor || "#FFFFFF"}
-                        primaryColor={state.primaryColor}
-                        secondaryColor={state.secondaryColor}
-                        onChange={(updated) => patchActive({ bulletStyle: updated })}
-                        onSelectTextColor={(color) => patchActive({ textColor: color })}
-                        isEs={isEs}
-                      />
-                      <textarea
-                        value={activeSlide.bullets.join("\n")}
-                        rows={3}
-                        placeholder={isEs ? "Escribe un tópico por línea...\nDeja una línea en blanco para espaciar" : "Digite um tópico por linha...\nDeixe uma linha em branco para espaçar parágrafos"}
-                        onChange={(event) =>
-                          patchActive({
-                            bullets: event.target.value
-                              .split(/\r?\n/)
-                              .map((item) => item.slice(0, 100))
-                              .slice(0, 8),
-                          })
-                        }
-                        className="f1-carousel-input !min-h-[64px] !py-1.5 text-xs resize-y"
-                      />
-                    </CarouselField>
+                    {/* ── Linha 1: Título + Descrição Curta lado a lado ── */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {/* Título Principal */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/40">
+                            {isEs ? "Título" : "Título principal"}
+                          </span>
+                          <MiniTypographyBar
+                            style={activeSlide.titleStyle}
+                            fallbackBold={activeSlide.fontWeight !== "normal"}
+                            fallbackColor={activeSlide.textColor || "#FFFFFF"}
+                            primaryColor={state.primaryColor}
+                            secondaryColor={state.secondaryColor}
+                            onChange={(updated) => patchActive({ titleStyle: updated })}
+                            onSelectTextColor={(color) => patchActive({ textColor: color })}
+                            isEs={isEs}
+                            compact
+                          />
+                        </div>
+                        <textarea
+                          value={activeSlide.title}
+                          maxLength={80}
+                          rows={2}
+                          placeholder={isEs ? "Ex: Descubra este destino" : "Ex: Descubra este destino"}
+                          onChange={(event) => patchActive({ title: event.target.value })}
+                          className="f1-carousel-input !min-h-[52px] !py-1.5 text-xs resize-none w-full"
+                        />
+                      </div>
+
+                      {/* Descrição Curta / Subtítulo */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/40">
+                            {isEs ? "Descripción corta" : "Descrição curta"}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <MiniTypographyBar
+                              style={activeSlide.bodyStyle}
+                              fallbackBold={activeSlide.fontWeight === "bold"}
+                              fallbackColor={activeSlide.textColor || "#FFFFFF"}
+                              primaryColor={state.primaryColor}
+                              secondaryColor={state.secondaryColor}
+                              onChange={(updated) => patchActive({ bodyStyle: updated })}
+                              onSelectTextColor={(color) => patchActive({ textColor: color })}
+                              isEs={isEs}
+                              compact
+                            />
+                            {activeSlide.body && (
+                              <button
+                                type="button"
+                                onClick={(e) => { e.preventDefault(); patchActive({ body: "" }); }}
+                                className="grid h-5 w-5 place-items-center rounded text-white/30 hover:bg-white/10 hover:text-white"
+                                title="Remover"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <textarea
+                          value={activeSlide.body}
+                          maxLength={260}
+                          rows={2}
+                          placeholder={isEs ? "Ex: Inclui transfer, guia e hotel..." : "Ex: Inclui transfer, guia e hotel..."}
+                          onChange={(event) => patchActive({ body: event.target.value })}
+                          className="f1-carousel-input !min-h-[52px] !py-1.5 text-xs resize-none w-full"
+                        />
+                      </div>
+                    </div>
+
+                    {/* ── Linha 2: Descrição Inferior + Tipografia compacta lado a lado ── */}
+                    <div className="grid grid-cols-[1fr_auto] gap-2 items-start">
+                      {/* Descrição Inferior (bullets) */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/40">
+                            {isEs ? "Descripción inferior" : "Descrição inferior"}
+                          </span>
+                          {activeSlide.bullets.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); patchActive({ bullets: [] }); }}
+                              className="grid h-5 w-5 place-items-center rounded text-white/30 hover:bg-white/10 hover:text-white"
+                              title="Remover"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                        <textarea
+                          value={activeSlide.bullets.join("\n")}
+                          rows={3}
+                          placeholder={isEs
+                            ? "Ex: ✈ Transfer incluso\n🏨 Hotel 4 estrelas\n🍽 Café da manhã"
+                            : "Ex: ✈ Transfer incluso\n🏨 Hotel 4 estrelas\n🍽 Café da manhã"}
+                          onChange={(event) =>
+                            patchActive({
+                              bullets: event.target.value
+                                .split(/\r?\n/)
+                                .map((item) => item.slice(0, 100))
+                                .slice(0, 8),
+                            })
+                          }
+                          className="f1-carousel-input !min-h-[72px] !py-1.5 text-xs resize-y w-full"
+                        />
+                      </div>
+
+                      {/* Tipografia dos bullets — vertical compacta */}
+                      <div className="pt-5">
+                        <MiniTypographyBar
+                          style={activeSlide.bulletStyle}
+                          fallbackBold={activeSlide.fontWeight === "bold"}
+                          fallbackColor={activeSlide.textColor || "#FFFFFF"}
+                          primaryColor={state.primaryColor}
+                          secondaryColor={state.secondaryColor}
+                          onChange={(updated) => patchActive({ bulletStyle: updated })}
+                          onSelectTextColor={(color) => patchActive({ textColor: color })}
+                          isEs={isEs}
+                          compact
+                          vertical
+                        />
+                      </div>
+                    </div>
                   </>
                 ) : (
                   <>
