@@ -33,19 +33,6 @@ type CarouselSize = 3 | 4 | 5;
 type CarouselSlideKind = "cover" | "content" | "closing";
 type CarouselSlideVariant = "impact" | "itinerary" | "editorial";
 
-const BULLET_ICONS: Record<string, string> = {
-  none:     "",
-  check:    "✓",
-  star:     "★",
-  plane:    "✈",
-  hotel:    "🏨",
-  map:      "📍",
-  calendar: "📅",
-  sun:      "☀",
-  coffee:   "☕",
-  camera:   "📷",
-  heart:    "♥",
-};
 
 interface CarouselSlide {
   id: string;
@@ -570,9 +557,6 @@ function CarouselCanvas({
                   <ul style={{ display: "grid", gap: 7, maxWidth: "96%", margin: "15px 0 0", padding: 0, listStyle: "none" }}>
                     {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
                       <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 8, alignItems: "flex-start", color: slide.textColor, fontSize: 13, lineHeight: 1.35, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0 2px 10px rgba(0,0,0,.88)" }}>
-                        {slide.bulletIcon && slide.bulletIcon !== "none" && BULLET_ICONS[slide.bulletIcon] ? (
-                          <span style={{ color: secondary, fontWeight: 950, flexShrink: 0, marginTop: 1 }}>{BULLET_ICONS[slide.bulletIcon]}</span>
-                        ) : null}
                         <span>{item}</span>
                       </li>
                     ))}
@@ -628,9 +612,6 @@ function CarouselCanvas({
                     <ul style={{ display: "grid", gap: 6, padding: 0, margin: 0, listStyle: "none" }}>
                       {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
                         <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 7, alignItems: "flex-start", color: boxTextColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                          {slide.bulletIcon && slide.bulletIcon !== "none" && BULLET_ICONS[slide.bulletIcon] ? (
-                            <span style={{ color: secondary, fontWeight: 950, flexShrink: 0, marginTop: 1 }}>{BULLET_ICONS[slide.bulletIcon]}</span>
-                          ) : null}
                           <span>{item}</span>
                         </li>
                       ))}
@@ -679,9 +660,6 @@ function CarouselCanvas({
                     <ul style={{ display: "grid", gap: 7, padding: 0, margin: 0, listStyle: "none" }}>
                       {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
                         <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 7, alignItems: "flex-start", color: boxTextColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                          {slide.bulletIcon && slide.bulletIcon !== "none" && BULLET_ICONS[slide.bulletIcon] ? (
-                            <span style={{ color: secondary, fontWeight: 950, flexShrink: 0, marginTop: 1 }}>{BULLET_ICONS[slide.bulletIcon]}</span>
-                          ) : null}
                           <span>{item}</span>
                         </li>
                       ))}
@@ -1910,29 +1888,6 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                       </div>
                     </CarouselField>
 
-                    {/* ── Seletor de Ícone dos Bullets ── */}
-                    {activeSlide.bullets.length > 0 && (
-                      <CarouselField label={isEs ? "Ícono de los ítems" : "Ícone dos itens"}>
-                        <div className="flex flex-wrap gap-2">
-                          {(Object.entries(BULLET_ICONS) as [string, string][]).map(([key, glyph]) => (
-                            <button
-                              key={key}
-                              type="button"
-                              aria-pressed={(activeSlide.bulletIcon || "none") === key}
-                              title={key === "none" ? (isEs ? "Sin icono (solo texto)" : "Sem ícone (apenas texto)") : key}
-                              onClick={() => patchActive({ bulletIcon: key })}
-                              className={`grid h-9 w-9 place-items-center rounded-lg border text-base transition-colors ${
-                                (activeSlide.bulletIcon || "none") === key
-                                  ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
-                                  : "border-white/10 text-white/60 hover:bg-white/[0.05] hover:text-white"
-                              }`}
-                            >
-                              {key === "none" ? "🚫" : glyph}
-                            </button>
-                          ))}
-                        </div>
-                      </CarouselField>
-                    )}
                   </>
                 ) : (
                   <>
