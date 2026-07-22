@@ -385,6 +385,47 @@ async function blobToDataUrl(blob: Blob) {
   });
 }
 
+async function prepareImageForCanvas(source: string): Promise<string> {
+  if (!source || source.startsWith("data:") || source.startsWith("blob:")) return source;
+  try {
+    const response = await fetch(source, { mode: "cors", cache: "no-cache" });
+    if (response.ok) {
+      const blob = await response.blob();
+      return await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || source));
+        reader.onerror = () => resolve(source);
+        reader.readAsDataURL(blob);
+      });
+    }
+  } catch {
+    // Ignore fetch error, try Image fallback
+  }
+  try {
+    return await new Promise<string>((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth || 800;
+          canvas.height = img.naturalHeight || 800;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+        } catch {
+          resolve(source);
+        }
+      };
+      img.onerror = () => resolve(source);
+      const sep = source.includes("?") ? "&" : "?";
+      img.src = `${source}${sep}_cb=${Date.now()}`;
+    });
+  } catch {
+    return source;
+  }
+}
+
 async function downloadOriginalImage(source: string, filename: string) {
   if (source.startsWith("data:") || source.startsWith("blob:")) {
     const link = document.createElement("a");
@@ -396,30 +437,32 @@ async function downloadOriginalImage(source: string, filename: string) {
     return;
   }
 
-  const response = await fetch(source);
-  if (!response.ok) throw new Error("cover-download");
-  const objectUrl = URL.createObjectURL(await response.blob());
   try {
+    const response = await fetch(source, { mode: "cors", cache: "no-cache" });
+    if (!response.ok) throw new Error("cover-download");
+    const objectUrl = URL.createObjectURL(await response.blob());
     const link = document.createElement("a");
     link.href = objectUrl;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
     link.remove();
-  } finally {
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1_000);
+  } catch {
+    const link = document.createElement("a");
+    link.href = source;
+    link.download = filename;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   }
 }
 
 async function assertExportImageReadable(source: string) {
   if (!source || source.startsWith("data:") || source.startsWith("blob:")) return;
-  await new Promise<void>((resolve, reject) => {
-    const image = new Image();
-    image.crossOrigin = "anonymous";
-    image.onload = () => resolve();
-    image.onerror = () => reject(new Error("image-cors"));
-    image.src = source;
-  });
+  await prepareImageForCanvas(source);
 }
 
 function CarouselCanvas({
@@ -1819,20 +1862,44 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
       for (let index = 1; index < slides.length; index += 1) {
         const node = exportRefs.current[index];
         if (!node) throw new Error("missing-export-node");
-        const canvas = await html2canvas(node, {
+
+        const clone = node.cloneNode(true) as HTMLDivElement;
+        const imgs = clone.querySelectorAll("img");
+        for (let i = 0; i < imgs.length; i += 1) {
+          const img = imgs[i];
+          const src = img.getAttribute("src");
+          if (src && !src.startsWith("data:") && !src.startsWith("blob:")) {
+            const cleanSrc = await prepareImageForCanvas(src);
+            img.setAttribute("src", cleanSrc);
+            img.removeAttribute("crossorigin");
+          }
+        }
+
+        clone.style.position = "fixed";
+        clone.style.left = "-15000px";
+        clone.style.top = "0";
+        clone.style.zIndex = "999999";
+        document.body.appendChild(clone);
+
+        await new Promise((resolve) => window.setTimeout(resolve, 80));
+
+        const canvas = await html2canvas(clone, {
           backgroundColor: "#08090B",
           useCORS: true,
-          allowTaint: false,
-          scale: 2.5,
+          allowTaint: true,
+          scale: 2,
           logging: false,
         });
+
+        document.body.removeChild(clone);
+
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png", 1);
         link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
         document.body.appendChild(link);
         link.click();
         link.remove();
-        await new Promise((resolve) => window.setTimeout(resolve, 160));
+        await new Promise((resolve) => window.setTimeout(resolve, 180));
       }
 
       toast.success(
