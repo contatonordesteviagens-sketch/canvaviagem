@@ -34,7 +34,7 @@ import { useAuth } from "@/contexts/AuthContext";
 type CarouselSize = 3 | 4 | 5 | 6;
 type CarouselSlideKind = "cover" | "content" | "closing";
 type CarouselSlideVariant = "impact" | "itinerary" | "editorial";
-type LabelStyle = "filled" | "outline-thin" | "outline-thick" | "stripe-left";
+type LabelStyle = "filled" | "outline-thin" | "outline-thick" | "stripe-left" | "rectangle" | "translucent" | "gradient";
 
 const FONT_PRESETS = [
   "Inter",
@@ -71,6 +71,8 @@ interface CarouselSlide {
   fontWeight?: "normal" | "bold";
   fontStyle?: "normal" | "italic";
   textDecoration?: "none" | "underline";
+  instagram?: string;
+  website?: string;
 }
 
 interface PhotoResult {
@@ -198,15 +200,15 @@ function createSlides(
   extraImages: string[] = [],
 ): CarouselSlide[] {
   const allDestImages = uniqueImages([
-    coverImage,
     pacote.imageUrl,
     ...(pacote.galleryImages || []),
     ...extraImages,
-  ]);
+  ]).filter((img) => img !== coverImage);
+
   const getImg = (idx: number) => {
     const valid = allDestImages.filter(Boolean);
-    if (!valid.length) return coverImage || pacote.imageUrl || "";
-    return valid[idx % valid.length] || coverImage || "";
+    if (!valid.length) return ""; // fallback to empty instead of coverImage
+    return valid[idx % valid.length] || "";
   };
   const presets = contentPresets(pacote, isEs);
   const contentCount = total - 2;
@@ -485,7 +487,7 @@ function CarouselCanvas({
   const renderLabel = (label: string) => {
     if (!label) return null;
     const rawBg = slide.labelColor || secondary;
-    const bg = rawBg.toUpperCase() === "#F5F906" ? "#F59E0B" : rawBg;
+    const bg = rawBg.toUpperCase() === "#F5F906" ? "#F5F906" : rawBg;
     const fg = readableText(bg);
     const style = slide.labelStyle || "filled";
 
@@ -506,6 +508,27 @@ function CarouselCanvas({
     if (style === "stripe-left") {
       return (
         <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, background: "transparent", borderLeft: `4px solid ${bg}`, borderRadius: 0, padding: "2px 0 2px 10px", color: bg, fontSize: 11, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
+          {label}
+        </div>
+      );
+    }
+    if (style === "rectangle") {
+      return (
+        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 0, background: bg, color: fg, padding: "7px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", boxShadow: slide.showShadow === false ? "none" : "0 4px 14px rgba(0,0,0,.35)" }}>
+          {label}
+        </div>
+      );
+    }
+    if (style === "translucent") {
+      return (
+        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, background: `${bg}80`, color: fg, padding: "7px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
+          {label}
+        </div>
+      );
+    }
+    if (style === "gradient") {
+      return (
+        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, background: `linear-gradient(90deg, ${bg}, rgba(255,255,255,0.8))`, color: fg, padding: "7px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", boxShadow: slide.showShadow === false ? "none" : "0 4px 14px rgba(0,0,0,.35)" }}>
           {label}
         </div>
       );
@@ -580,14 +603,14 @@ function CarouselCanvas({
             <div
               style={{
                 background: "rgba(255,255,255,.96)",
-                padding: "14px 22px",
-                borderRadius: 22,
+                padding: "16px 28px",
+                borderRadius: 26,
                 boxShadow: "0 12px 32px rgba(0,0,0,.45)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                maxWidth: "60%",
-                maxHeight: "32%",
+                maxWidth: "65%",
+                maxHeight: "35%",
               }}
             >
               <img
@@ -600,7 +623,7 @@ function CarouselCanvas({
                 }
                 style={{
                   width: "100%",
-                  maxHeight: 110,
+                  maxHeight: 120,
                   objectFit: "contain",
                 }}
               />
@@ -610,12 +633,12 @@ function CarouselCanvas({
               style={{
                 display: "grid",
                 placeItems: "center",
-                width: "36%",
+                width: "40%",
                 aspectRatio: "1",
                 border: "2px dashed rgba(255,255,255,.58)",
                 borderRadius: 24,
                 color: "rgba(255,255,255,.82)",
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 800,
               }}
             >
@@ -626,47 +649,87 @@ function CarouselCanvas({
             <div
               style={{
                 maxWidth: "92%",
-                marginTop: "9%",
-                padding: "13px 22px",
+                marginTop: "10%",
+                padding: "14px 28px",
                 borderRadius: 999,
                 background: secondary,
                 color: onSecondary,
-                fontSize: 18,
+                fontSize: 19,
                 lineHeight: 1.18,
                 fontWeight: 900,
                 letterSpacing: "-.025em",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 9,
                 boxShadow: "0 8px 24px rgba(0,0,0,.35)",
               }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-                <path d="M11.999 0C5.373 0 0 5.373 0 12c0 2.126.556 4.196 1.614 6.012L.053 23.947l6.096-1.597C7.935 23.411 9.948 24 11.999 24 18.626 24 24 18.627 24 12S18.626 0 11.999 0zm6.166 17.067c-.259.73-1.512 1.405-2.09 1.463-.559.055-1.079.255-3.468-.682-2.885-1.132-4.757-4.088-4.901-4.281-.143-.193-1.173-1.564-1.173-2.984 0-1.42.744-2.122 1.009-2.414.259-.285.566-.356.755-.356.188 0 .376.002.541.011.174.009.407-.066.638.489.236.568.804 1.956.874 2.101.07.145.117.315.022.507-.095.193-.143.315-.284.482-.143.167-.301.374-.429.501-.143.143-.292.298-.125.586.167.288.742 1.228 1.596 1.986 1.101.977 2.031 1.281 2.319 1.424.288.143.456.12.625-.072.167-.193.717-.837.908-1.124.193-.288.384-.24.649-.143.264.098 1.68 0.793 1.968.937.288.143.479.215.549.335.071.12.071.698-.188 1.428z" />
-              </svg>
               <span>{slide.cta}</span>
             </div>
           )}
           {slide.phone && (
             <div
               style={{
-                marginTop: 15,
+                marginTop: 18,
                 color: "#F8FAFC",
-                fontSize: 16,
+                fontSize: 17,
                 lineHeight: 1.2,
                 fontWeight: 800,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 7,
+                gap: 8,
                 textShadow: slide.showShadow === false ? "none" : "0 2px 12px rgba(0,0,0,.82)",
               }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366" style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,.5))" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#25D366" style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,.5))" }}>
                 <path d="M11.999 0C5.373 0 0 5.373 0 12c0 2.126.556 4.196 1.614 6.012L.053 23.947l6.096-1.597C7.935 23.411 9.948 24 11.999 24 18.626 24 24 18.627 24 12S18.626 0 11.999 0zm6.166 17.067c-.259.73-1.512 1.405-2.09 1.463-.559.055-1.079.255-3.468-.682-2.885-1.132-4.757-4.088-4.901-4.281-.143-.193-1.173-1.564-1.173-2.984 0-1.42.744-2.122 1.009-2.414.259-.285.566-.356.755-.356.188 0 .376.002.541.011.174.009.407-.066.638.489.236.568.804 1.956.874 2.101.07.145.117.315.022.507-.095.193-.143.315-.284.482-.143.167-.301.374-.429.501-.143.143-.292.298-.125.586.167.288.742 1.228 1.596 1.986 1.101.977 2.031 1.281 2.319 1.424.288.143.456.12.625-.072.167-.193.717-.837.908-1.124.193-.288.384-.24.649-.143.264.098 1.68 0.793 1.968.937.288.143.479.215.549.335.071.12.071.698-.188 1.428z" />
               </svg>
               <span>{slide.phone}</span>
+            </div>
+          )}
+          {slide.instagram && (
+            <div
+              style={{
+                marginTop: 10,
+                color: "#F8FAFC",
+                fontSize: 15,
+                lineHeight: 1.2,
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                textShadow: slide.showShadow === false ? "none" : "0 2px 12px rgba(0,0,0,.82)",
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,.5))" }}>
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+              </svg>
+              <span>{slide.instagram}</span>
+            </div>
+          )}
+          {slide.website && (
+            <div
+              style={{
+                marginTop: 8,
+                color: "#F8FAFC",
+                fontSize: 15,
+                lineHeight: 1.2,
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                textShadow: slide.showShadow === false ? "none" : "0 2px 12px rgba(0,0,0,.82)",
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,.5))" }}>
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+              <span>{slide.website}</span>
             </div>
           )}
         </div>
@@ -1596,7 +1659,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
   if (!selectedPackage) {
     return (
       <section className="rounded-2xl border border-white/10 bg-[#0F0F11] p-5 sm:p-6">
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#F59E0B]">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#F5F906]">
           {isEs ? "Carrusel" : "Carrossel"}
         </p>
         <h2 className="mt-3 text-xl font-bold text-white">
@@ -1616,7 +1679,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
       <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#F59E0B]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#F5F906]">
               {isEs ? "Carrusel listo en 4 pasos" : "Carrossel pronto em 4 passos"}
             </p>
             <h2 className="mt-2 text-lg font-bold text-white">
@@ -1632,7 +1695,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
             type="button"
             onClick={downloadAll}
             disabled={downloading}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F59E0B] px-4 text-sm font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-wait disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-4 text-sm font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-wait disabled:opacity-50"
           >
             <Download className="h-4 w-4" />
             {downloading
@@ -1646,7 +1709,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,.7fr)]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F59E0B] text-[11px] font-black text-zinc-950">1</span>
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">1</span>
               <h3 className="text-sm font-bold text-white">
                 {isEs ? "Elige el paquete y la cantidad" : "Escolha o pacote e a quantidade"}
               </h3>
@@ -1656,7 +1719,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 <select
                   value={selectedPackage.id}
                   onChange={(event) => setSelectedPackageId(event.target.value)}
-                  className="min-h-11 flex-1 rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white outline-none focus:border-[#F59E0B]"
+                  className="min-h-11 flex-1 rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white outline-none focus:border-[#F5F906]"
                 >
                   {packages.map((pacote) => (
                     <option key={pacote.id} value={pacote.id}>{pacote.title}</option>
@@ -1669,10 +1732,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     if (chosen) generateNewCoverAd(chosen);
                   }}
                   disabled={generatingCoverAd}
-                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[#F59E0B]/35 bg-[#F59E0B]/10 px-3 text-xs font-extrabold text-[#F59E0B] hover:bg-[#F59E0B]/20 transition-colors"
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[#F5F906]/35 bg-[#F5F906]/10 px-3 text-xs font-extrabold text-[#F5F906] hover:bg-[#F5F906]/20 transition-colors"
                   title={isEs ? "Generar portada con el paquete seleccionado" : "Gerar capa com o pacote selecionado sem alterar os outros slides"}
                 >
-                  <Sparkles className="h-3.5 w-3.5" />
                   {isEs ? "Gerar Capa deste Pacote" : "Gerar Capa deste Pacote"}
                 </button>
                 <button
@@ -1690,7 +1752,6 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/10 px-3 text-xs font-extrabold text-red-400 hover:bg-red-500/20 transition-colors"
                   title={isEs ? "Generar un nuevo carrusel desde cero" : "Gerar um novo carrossel do zero"}
                 >
-                  <Sparkles className="h-3.5 w-3.5" />
                   {isEs ? "+ Novo Carrusel" : "+ Gerar Novo Carrossel"}
                 </button>
               </div>
@@ -1699,10 +1760,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   type="button"
                   onClick={() => generateNewCoverAd(selectedPackage)}
                   disabled={generatingCoverAd}
-                  className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-[#F59E0B]/50 bg-[#F59E0B]/15 px-3 text-xs font-extrabold text-[#F59E0B] hover:bg-[#F59E0B]/25 transition-colors disabled:opacity-50"
+                  className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-[#F5F906]/50 bg-[#F5F906]/15 px-3 text-xs font-extrabold text-[#F5F906] hover:bg-[#F5F906]/25 transition-colors disabled:opacity-50"
                   title={isEs ? "Genera arte publicitario completo en la portada" : "Gera arte de anúncio completa na capa"}
                 >
-                  <Sparkles className="h-3.5 w-3.5 animate-pulse" />
                   {generatingCoverAd ? (isEs ? "Generando..." : "Gerando...") : (isEs ? "Gerar Capa (Arte F1)" : "Gerar Capa (Arte F1)")}
                 </button>
                 <button
@@ -1740,7 +1800,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   onClick={() => changeSlideCount(count)}
                   className={`min-h-11 rounded-xl border px-3 text-sm font-extrabold ${
                     slideCount === count
-                      ? "border-[#F59E0B] bg-[#F59E0B] text-zinc-950"
+                      ? "border-[#F5F906] bg-[#F5F906] text-zinc-950"
                       : "border-white/10 text-white/60 hover:bg-white/[0.05]"
                   }`}
                 >
@@ -1756,7 +1816,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         {/* Header: título + contador + controles de modo e zoom */}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F59E0B] text-[11px] font-black text-zinc-950">2</span>
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">2</span>
             <div>
               <h3 className="text-sm font-bold text-white">{isEs ? "Revisa la secuencia" : "Revise a sequência"}</h3>
               <p className="text-[10px] text-white/40">
@@ -1781,7 +1841,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 title={isEs ? "Fila horizontal" : "Faixa horizontal"}
                 className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
                   viewMode === "ribbon"
-                    ? "bg-[#F59E0B] text-zinc-950"
+                    ? "bg-[#F5F906] text-zinc-950"
                     : "text-white/50 hover:bg-white/[0.07] hover:text-white"
                 }`}
               >
@@ -1795,7 +1855,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 title={isEs ? "Grade vertical" : "Grade vertical (uma abaixo da outra)"}
                 className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
                   viewMode === "stack"
-                    ? "bg-[#F59E0B] text-zinc-950"
+                    ? "bg-[#F5F906] text-zinc-950"
                     : "text-white/50 hover:bg-white/[0.07] hover:text-white"
                 }`}
               >
@@ -1809,7 +1869,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 title={isEs ? "Una imagen a la vez" : "Uma imagem por vez (foco)"}
                 className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
                   viewMode === "focus"
-                    ? "bg-[#F59E0B] text-zinc-950"
+                    ? "bg-[#F5F906] text-zinc-950"
                     : "text-white/50 hover:bg-white/[0.07] hover:text-white"
                 }`}
               >
@@ -1875,7 +1935,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     }}
                     className={`snap-start group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-[#121316] text-left transition-all ${
                       isActive
-                        ? "border-[#F59E0B] shadow-[0_0_24px_rgba(245,158,11,0.22)] ring-1 ring-[#F59E0B]/40"
+                        ? "border-[#F5F906] shadow-[0_0_24px_rgba(245,249,6,0.22)] ring-1 ring-[#F5F906]/40"
                         : "border-white/12 hover:border-white/30 hover:-translate-y-0.5"
                     }`}
                   >
@@ -1897,7 +1957,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             ? `${slides.length}. ${isEs ? "Cierre" : "Fechamento"}`
                             : `${index + 1}. ${isEs ? "Contenido" : "Slide"}`}
                       </span>
-                      {slide.kind === "cover" && <Lock className="h-3 w-3 shrink-0 text-[#F59E0B]" />}
+                      {slide.kind === "cover" && <Lock className="h-3 w-3 shrink-0 text-[#F5F906]" />}
                     </div>
                   </button>
                 );
@@ -1923,7 +1983,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     style={{ width: "100%", maxWidth: `${thumbWidth}px` }}
                     className={`group relative mx-auto flex flex-col overflow-hidden rounded-2xl border-2 bg-[#121316] text-left transition-all ${
                       isActive
-                        ? "border-[#F59E0B] shadow-[0_0_24px_rgba(245,158,11,0.22)] ring-1 ring-[#F59E0B]/40"
+                        ? "border-[#F5F906] shadow-[0_0_24px_rgba(245,249,6,0.22)] ring-1 ring-[#F5F906]/40"
                         : "border-white/12 hover:border-white/30 hover:-translate-y-0.5"
                     }`}
                   >
@@ -1948,7 +2008,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
                             : `${isEs ? "Contenido" : "Conteúdo"} ${index}`}
                       </span>
-                      {slide.kind === "cover" && <Lock className="h-3.5 w-3.5 shrink-0 text-[#F59E0B]" />}
+                      {slide.kind === "cover" && <Lock className="h-3.5 w-3.5 shrink-0 text-[#F5F906]" />}
                     </div>
                   </button>
                 );
@@ -1983,7 +2043,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                       aria-label={`${isEs ? "Ir a imagen" : "Ir para imagem"} ${idx + 1}`}
                       className={`h-1.5 rounded-full transition-all ${
                         activeIndex === idx
-                          ? "w-5 bg-[#F59E0B]"
+                          ? "w-5 bg-[#F5F906]"
                           : "w-1.5 bg-white/20 hover:bg-white/40"
                       }`}
                     />
@@ -2002,7 +2062,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
               </div>
 
               {/* Canvas do slide ativo em destaque */}
-              <div className="mx-auto overflow-hidden rounded-2xl border-2 border-[#F59E0B] shadow-[0_0_32px_rgba(245,158,11,0.15)]">
+              <div className="mx-auto overflow-hidden rounded-2xl border-2 border-[#F5F906] shadow-[0_0_32px_rgba(245,249,6,0.15)]">
                 {activeSlide && (
                   <ScaledSlidePreview
                     slide={activeSlide}
@@ -2035,7 +2095,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F59E0B] text-[11px] font-black text-zinc-950">3</span>
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">3</span>
                 <div>
                   <h3 className="text-sm font-bold text-white">
                     {activeSlide?.kind === "cover"
@@ -2047,7 +2107,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   {/* Badge indicador do tipo de slide */}
                   <span className={`inline-block mt-0.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
                     activeSlide?.kind === "cover"
-                      ? "bg-[#F59E0B]/15 text-[#F59E0B]"
+                      ? "bg-[#F5F906]/15 text-[#F5F906]"
                       : activeSlide?.kind === "closing"
                         ? "bg-white/10 text-white/60"
                         : "bg-white/[0.06] text-white/45"
@@ -2090,9 +2150,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
             </div>
 
             {activeSlide?.kind === "cover" && (
-              <div className="mt-4 rounded-xl border border-[#F59E0B]/25 bg-[#F59E0B]/[0.06] p-4">
+              <div className="mt-4 rounded-xl border border-[#F5F906]/25 bg-[#F5F906]/[0.06] p-4">
                 <div className="flex gap-3">
-                  <Lock className="mt-0.5 h-5 w-5 shrink-0 text-[#F59E0B]" />
+                  <Lock className="mt-0.5 h-5 w-5 shrink-0 text-[#F5F906]" />
                   <div>
                     <p className="text-sm font-bold text-white">
                       {isEs ? "Esta imagen no se modifica." : "Esta imagem não será modificada."}
@@ -2119,7 +2179,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 {/* ── Barra de Formatação (Fonte, Peso e Estilo) ── */}
                 <div className="rounded-xl border border-white/10 bg-zinc-900/80 p-3 space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F59E0B]">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F5F906]">
                       {isEs ? "Estilo y Tipografía" : "Estilo e Tipografia"}
                     </span>
                     <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-white/80">
@@ -2127,7 +2187,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         type="checkbox"
                         checked={activeSlide.showShadow !== false}
                         onChange={(event) => patchActive({ showShadow: event.target.checked })}
-                        className="rounded border-white/20 bg-black text-[#F59E0B] focus:ring-[#F59E0B]"
+                        className="rounded border-white/20 bg-black text-[#F5F906] focus:ring-[#F5F906]"
                       />
                       <span>{isEs ? "Sombra en textos" : "Sombra nos textos"}</span>
                     </label>
@@ -2137,7 +2197,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                       value={activeSlide.fontFamily || "Inter"}
                       onChange={(event) => patchActive({ fontFamily: event.target.value })}
                       aria-label={isEs ? "Tipo de letra" : "Família da fonte"}
-                      className="min-h-9 rounded-lg border border-white/10 bg-black/60 px-2.5 text-xs font-bold text-white outline-none focus:border-[#F59E0B]"
+                      className="min-h-9 rounded-lg border border-white/10 bg-black/60 px-2.5 text-xs font-bold text-white outline-none focus:border-[#F5F906]"
                     >
                       <option value="Inter">Inter (Padrão Moderno)</option>
                       <option value="Montserrat">Montserrat (Elegante)</option>
@@ -2149,20 +2209,20 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     <div className="grid grid-cols-3 gap-1">
                       <button
                         type="button"
-                        onClick={() => patchActive({ fontWeight: activeSlide.fontWeight === "bold" ? "black" : activeSlide.fontWeight === "normal" ? "bold" : "normal" })}
-                        title="Peso da Fonte (Normal / Negrito / Black)"
-                        className={`rounded-lg border px-2 py-1.5 text-xs font-extrabold transition-colors ${
-                          activeSlide.fontWeight === "bold" ? "border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
+                        onClick={() => patchActive({ fontWeight: activeSlide.fontWeight === "bold" ? "normal" : "bold" })}
+                        title="Negrito"
+                        className={`rounded-lg border px-2 py-1.5 text-xs font-bold transition-colors ${
+                          activeSlide.fontWeight === "bold" ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
                         }`}
                       >
-                        {activeSlide.fontWeight === "bold" ? "Negrito" : activeSlide.fontWeight === "normal" ? "Normal" : "Black"}
+                        B
                       </button>
                       <button
                         type="button"
                         onClick={() => patchActive({ fontStyle: activeSlide.fontStyle === "italic" ? "normal" : "italic" })}
                         title="Itálico"
                         className={`rounded-lg border px-2 py-1.5 text-xs font-serif italic transition-colors ${
-                          activeSlide.fontStyle === "italic" ? "border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
+                          activeSlide.fontStyle === "italic" ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
                         }`}
                       >
                         I
@@ -2172,7 +2232,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         onClick={() => patchActive({ textDecoration: activeSlide.textDecoration === "underline" ? "none" : "underline" })}
                         title="Sublinhado"
                         className={`rounded-lg border px-2 py-1.5 text-xs underline transition-colors ${
-                          activeSlide.textDecoration === "underline" ? "border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
+                          activeSlide.textDecoration === "underline" ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
                         }`}
                       >
                         U
@@ -2208,12 +2268,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     </CarouselField>
 
                     <CarouselField label={isEs ? "Estilo del selo" : "Estilo do selo"}>
-                      <div className="grid grid-cols-4 gap-1.5">
+                      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-3">
                         {([
                           ["filled", isEs ? "Sólido" : "Sólido"],
                           ["outline-thin", isEs ? "Borda fina" : "Borda fina"],
                           ["outline-thick", isEs ? "Borda forte" : "Borda forte"],
                           ["stripe-left", isEs ? "Tarja" : "Tarja"],
+                          ["rectangle", "Retângulo"],
+                          ["translucent", "Translúcido 50%"],
+                          ["gradient", "Degradê"],
                         ] as const).map(([styleKey, styleTitle]) => (
                           <button
                             key={styleKey}
@@ -2221,7 +2284,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             onClick={() => patchActive({ labelStyle: styleKey })}
                             className={`rounded-lg border px-2 py-1.5 text-[10px] font-bold transition-colors ${
                               (activeSlide.labelStyle || "filled") === styleKey
-                                ? "border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]"
+                                ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]"
                                 : "border-white/10 text-white/60 hover:bg-white/[0.05]"
                             }`}
                           >
@@ -2314,7 +2377,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             onClick={() => patchActive({ slideVariant: variant })}
                             className={`flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-[9px] font-bold transition-colors ${
                               activeSlide.slideVariant === variant
-                                ? "border-[#F59E0B] bg-[#F59E0B]/10 text-[#F59E0B]"
+                                ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
                                 : "border-white/10 text-white/50 hover:bg-white/[0.04] hover:text-white"
                             }`}
                           >
@@ -2335,15 +2398,46 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         value={activeSlide.cta}
                         maxLength={62}
                         onChange={(event) => patchActive({ cta: event.target.value })}
-                        className="f1-carousel-input"
+                        className="f1-carousel-input mb-2"
                       />
+                      <div className="flex flex-wrap gap-1">
+                        {["RESERVE SUA VAGA", "FALE CONOSCO", "SAIBA MAIS", "ENTRE EM CONTATO", "GARANTA SEU LUGAR"].map(suggestion => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            onClick={() => patchActive({ cta: suggestion })}
+                            className="rounded bg-white/[0.04] px-2 py-1 text-[9px] font-bold text-white/60 hover:bg-white/[0.08] hover:text-white"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
                     </CarouselField>
                     <CarouselField label={isEs ? "Teléfono o WhatsApp" : "Telefone ou WhatsApp"}>
                       <input
-                        value={activeSlide.phone}
+                        value={activeSlide.phone || ""}
                         maxLength={32}
                         onChange={(event) => patchActive({ phone: event.target.value })}
                         className="f1-carousel-input"
+                        placeholder="(00) 00000-0000"
+                      />
+                    </CarouselField>
+                    <CarouselField label="Instagram (Opcional)">
+                      <input
+                        value={activeSlide.instagram || ""}
+                        maxLength={32}
+                        onChange={(event) => patchActive({ instagram: event.target.value })}
+                        className="f1-carousel-input"
+                        placeholder="@seuinstrumento"
+                      />
+                    </CarouselField>
+                    <CarouselField label={isEs ? "Sitio Web (Opcional)" : "Site (Opcional)"}>
+                      <input
+                        value={activeSlide.website || ""}
+                        maxLength={40}
+                        onChange={(event) => patchActive({ website: event.target.value })}
+                        className="f1-carousel-input"
+                        placeholder="www.seusite.com.br"
                       />
                     </CarouselField>
                     {!state.logoBase64 && (
@@ -2370,7 +2464,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         onClick={() => patchActive({ textColor: color })}
                         className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-2 text-[10px] font-bold ${
                           activeSlide.textColor.toUpperCase() === color.toUpperCase()
-                            ? "border-[#F59E0B] text-white"
+                            ? "border-[#F5F906] text-white"
                             : "border-white/10 text-white/55 hover:bg-white/[0.04]"
                         }`}
                       >
@@ -2387,7 +2481,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           {activeSlide && activeSlide.kind !== "cover" && (
             <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
               <div className="flex items-center gap-2">
-                <ImagePlus className="h-4 w-4 text-[#F59E0B]" />
+                <ImagePlus className="h-4 w-4 text-[#F5F906]" />
                 <h3 className="text-sm font-bold text-white">
                   {activeSlide.kind === "closing"
                     ? (isEs ? "Fondo del cierre" : "Fundo do fechamento")
@@ -2408,7 +2502,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   onClick={searchPhotos}
                   disabled={searchingPhotos}
                   aria-label={isEs ? "Buscar fotos" : "Buscar fotos"}
-                  className="grid min-h-11 min-w-11 place-items-center rounded-xl bg-[#F59E0B] text-zinc-950 disabled:opacity-50"
+                  className="grid min-h-11 min-w-11 place-items-center rounded-xl bg-[#F5F906] text-zinc-950 disabled:opacity-50"
                 >
                   {searchingPhotos ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                 </button>
@@ -2470,7 +2564,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                           aria-label={`${isEs ? "Usar foto" : "Usar foto"} ${index + 1}`}
                           className={`relative aspect-square overflow-hidden rounded-xl border-2 ${
                             selected
-                              ? "border-[#F59E0B]"
+                              ? "border-[#F5F906]"
                               : usedByOtherSlide
                                 ? "cursor-not-allowed border-white/5 opacity-35"
                                 : "border-white/10 hover:border-white/30"
@@ -2483,7 +2577,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             loading="lazy"
                           />
                           {selected && (
-                            <span className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-[#F59E0B] text-zinc-950">
+                            <span className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-zinc-950">
                               <Check className="h-3.5 w-3.5" />
                             </span>
                           )}
@@ -2566,10 +2660,10 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         </aside>
       </div>
 
-      <div className="rounded-2xl border border-[#F59E0B]/25 bg-[#F59E0B]/[0.05] p-4">
+      <div className="rounded-2xl border border-[#F5F906]/25 bg-[#F5F906]/[0.05] p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F59E0B] text-[11px] font-black text-zinc-950">4</span>
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">4</span>
             <div>
               <p className="text-sm font-bold text-white">
                 {isEs ? "Todo listo para publicar" : "Tudo pronto para publicar"}
@@ -2585,14 +2679,13 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
               onClick={() => setShowNewCarouselModal(true)}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-500/40 bg-red-500/15 px-4 text-sm font-extrabold text-red-400 hover:bg-red-500/25 transition-colors"
             >
-              <Sparkles className="h-4 w-4" />
               {isEs ? "+ Nuevo Carrusel" : "+ Gerar Novo Carrossel"}
             </button>
             <button
               type="button"
               onClick={downloadAll}
               disabled={downloading}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F59E0B] px-4 text-sm font-extrabold text-zinc-950 disabled:opacity-50"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-4 text-sm font-extrabold text-zinc-950 disabled:opacity-50"
             >
               <Download className="h-4 w-4" />
               {isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}
@@ -2604,8 +2697,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
       {showNewCarouselModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 shadow-2xl space-y-5">
-            <div className="flex items-center gap-3 text-[#F59E0B]">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#F59E0B]/15 text-[#F59E0B]">
+            <div className="flex items-center gap-3 text-[#F5F906]">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#F5F906]/15 text-[#F5F906]">
                 <Sparkles className="h-5 w-5" />
               </div>
               <h3 className="text-lg font-black text-white">
@@ -2624,7 +2717,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   setShowNewCarouselModal(false);
                   downloadAll();
                 }}
-                className="w-full min-h-11 rounded-xl bg-[#F59E0B] font-extrabold text-zinc-950 hover:bg-[#F59E0B]/90 transition-colors flex items-center justify-center gap-2"
+                className="w-full min-h-11 rounded-xl bg-[#F5F906] font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 transition-colors flex items-center justify-center gap-2"
               >
                 <Download className="h-4 w-4" />
                 {isEs ? "Descargar imágenes del carrusel" : "Baixar Imagens do Carrossel"}
@@ -2684,8 +2777,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           outline: none;
         }
         .f1-carousel-input:focus {
-          border-color: #F59E0B;
-          box-shadow: 0 0 0 2px rgba(245,158,11,.12);
+          border-color: #F5F906;
+          box-shadow: 0 0 0 2px rgba(245,249,6,.12);
         }
         .f1-carousel-scroll {
           scrollbar-width: thin;
