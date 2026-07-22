@@ -1450,44 +1450,6 @@ const Index = () => {
         );
       }
 
-      case 'downloads':
-        return (
-          <section className="animate-fade-in space-y-8 pt-2">
-            <SectionHeader
-              title="Pacotes de Vídeos & Recursos no Drive"
-              subtitle="Baixe sequências completas de vídeos prontos e materiais exclusivos diretamente no Google Drive"
-            />
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
-              <Suspense fallback={<div className="h-48 bg-muted/10 animate-pulse rounded-2xl" />}>
-                <ResourceSection
-                  title="🎬 Sequência de Vídeos para Download (Drive)"
-                  description="Acesse as pastas do Google Drive com centenas de vídeos organizados em alta qualidade para baixar e postar."
-                  resources={videoDownloads.map(r => ({
-                    ...r,
-                    onPremiumRequired: getPremiumCallback('downloads', true, 'resource', r.name)
-                  }))}
-                  locked={!isSubscribed}
-                  onLockedClick={() => setShowPremiumGate(true)}
-                />
-              </Suspense>
-
-              <Suspense fallback={<div className="h-48 bg-muted/10 animate-pulse rounded-2xl" />}>
-                <ResourceSection
-                  title="📦 Recursos, Planilhas & Materiais"
-                  description="PDFs de produtos, calendários, acesso aos grupos VIP e comunidade."
-                  resources={resources.map(r => ({
-                    ...r,
-                    onPremiumRequired: getPremiumCallback('downloads', true, 'resource', r.name)
-                  }))}
-                  locked={!isSubscribed}
-                  onLockedClick={() => setShowPremiumGate(true)}
-                />
-              </Suspense>
-            </div>
-          </section>
-        );
-
       case 'contracts':
         return (
           <section className="animate-fade-in text-center py-12">

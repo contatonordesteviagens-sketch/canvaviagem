@@ -19,6 +19,7 @@ import {
   RefreshCw,
   Rows,
   Search,
+  Sparkles,
   Upload,
   X,
   ZoomIn,
@@ -26,13 +27,29 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
+import { composeTravelAd } from "@/lib/fabrica-compose-art";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-type CarouselSize = 3 | 4 | 5;
+type CarouselSize = 3 | 4 | 5 | 6;
 type CarouselSlideKind = "cover" | "content" | "closing";
 type CarouselSlideVariant = "impact" | "itinerary" | "editorial";
+type LabelStyle = "filled" | "outline-thin" | "outline-thick" | "stripe-left";
 
+const FONT_PRESETS = [
+  "Inter",
+  "Poppins",
+  "Montserrat",
+  "Roboto",
+  "Oswald",
+  "Bebas Neue",
+  "Playfair Display",
+  "Lora",
+  "Raleway",
+  "Nunito",
+  "Work Sans",
+  "DM Sans",
+];
 
 interface CarouselSlide {
   id: string;
@@ -47,6 +64,13 @@ interface CarouselSlide {
   phone: string;
   slideVariant: CarouselSlideVariant;
   bulletIcon: string;
+  showShadow?: boolean;
+  labelStyle?: LabelStyle;
+  labelColor?: string;
+  fontFamily?: string;
+  fontWeight?: "normal" | "bold";
+  fontStyle?: "normal" | "italic";
+  textDecoration?: "none" | "underline";
 }
 
 interface PhotoResult {
@@ -120,19 +144,29 @@ function contentPresets(pacote: Pacote, isEs: boolean) {
       label: isEs ? "La experiencia" : "A experiência",
       title: pacote.subtitle || pacote.title,
       body: pacote.longDescription || pacote.description,
-      bullets: highlights.slice(0, 4),
+      bullets: highlights.slice(0, 8),
     },
     {
       label: isEs ? "Incluido" : "O que inclui",
       title: isEs ? "Todo lo que forma parte de tu viaje" : "Tudo que faz parte da sua viagem",
       body: included.length ? "" : pacote.description,
-      bullets: (included.length ? included : highlights).slice(0, 4),
+      bullets: (included.length ? included : highlights).slice(0, 8),
     },
     {
       label: isEs ? "Planifica" : "Planeje",
       title: isEs ? "Información para organizarte" : "Informações para se organizar",
       body: pacote.importantNotes || "",
-      bullets: (planning.length ? planning : itinerary).slice(0, 4),
+      bullets: (planning.length ? planning : itinerary).slice(0, 8),
+    },
+    {
+      label: isEs ? "Condiciones" : "Condições especiais",
+      title: isEs ? "Reserva tu cupo con beneficios" : "Garanta sua vaga com facilidades",
+      body: isEs ? "Oportunidad exclusiva para nuestros viajeros:" : "Oportunidade imperdível para nossos viajantes:",
+      bullets: compact([
+        isEs ? "Atención personalizada por WhatsApp" : "Atendimento exclusivo no WhatsApp",
+        isEs ? "Opciones de pago flexibles" : "Opções flexíveis de parcelamento",
+        isEs ? "Soporte durante todo el viaje" : "Suporte completo durante toda a viagem",
+      ]),
     },
   ];
 }
@@ -143,8 +177,19 @@ function createSlides(
   coverImage: string,
   phone: string,
   isEs: boolean,
+  extraImages: string[] = [],
 ): CarouselSlide[] {
-  const images = uniqueImages([pacote.imageUrl, ...(pacote.galleryImages || [])]);
+  const allDestImages = uniqueImages([
+    coverImage,
+    pacote.imageUrl,
+    ...(pacote.galleryImages || []),
+    ...extraImages,
+  ]);
+  const getImg = (idx: number) => {
+    const valid = allDestImages.filter(Boolean);
+    if (!valid.length) return coverImage || pacote.imageUrl || "";
+    return valid[idx % valid.length] || coverImage || "";
+  };
   const presets = contentPresets(pacote, isEs);
   const contentCount = total - 2;
   const selectedPresets =
@@ -152,12 +197,14 @@ function createSlides(
       ? [
           {
             ...presets[0],
-            bullets: compact([...(pacote.included || []), ...(pacote.highlights || [])]).slice(0, 4),
+            bullets: compact([...(pacote.included || []), ...(pacote.highlights || [])]).slice(0, 8),
           },
         ]
       : contentCount === 2
         ? [presets[0], (pacote.included?.length || pacote.highlights?.length) ? presets[1] : presets[2]]
-        : presets;
+        : contentCount === 3
+          ? presets.slice(0, 3)
+          : presets.slice(0, 4);
 
   const slides: CarouselSlide[] = [
     {
@@ -173,6 +220,12 @@ function createSlides(
       phone: "",
       slideVariant: "impact",
       bulletIcon: "none",
+      showShadow: true,
+      labelStyle: "filled",
+      fontFamily: "Inter",
+      fontWeight: "normal",
+      fontStyle: "normal",
+      textDecoration: "none",
     },
   ];
 
@@ -181,12 +234,18 @@ function createSlides(
       id: createId(),
       kind: "content",
       ...preset,
-      imageUrl: images[index] || "",
+      imageUrl: getImg(index + 1),
       textColor: "#FFFFFF",
       cta: "",
       phone: "",
       slideVariant: "impact",
       bulletIcon: "none",
+      showShadow: true,
+      labelStyle: "filled",
+      fontFamily: "Inter",
+      fontWeight: "normal",
+      fontStyle: "normal",
+      textDecoration: "none",
     });
   });
 
@@ -197,14 +256,19 @@ function createSlides(
     title: "",
     body: "",
     bullets: [],
-    imageUrl: images[contentCount] || "",
+    imageUrl: getImg(contentCount + 1),
     textColor: "#FFFFFF",
     cta: pacote.ctaLabel || (isEs ? "Reserva tu viaje por WhatsApp" : "Reserve sua viagem pelo WhatsApp"),
     phone,
     slideVariant: "impact",
     bulletIcon: "none",
+    showShadow: true,
+    labelStyle: "filled",
+    fontFamily: "Inter",
+    fontWeight: "normal",
+    fontStyle: "normal",
+    textDecoration: "none",
   });
-
   return slides;
 }
 
@@ -340,10 +404,10 @@ function CarouselCanvas({
   canvasRef?: (node: HTMLDivElement | null) => void;
   exportMode?: boolean;
 }) {
-  const dimensions: CSSProperties = {
-    width: exportMode ? 432 : "100%",
-    aspectRatio: `${ratio}`,
-  };
+  const computedHeight = Math.round(432 / (ratio || 0.8));
+  const dimensions: CSSProperties = exportMode
+    ? { width: 432, height: computedHeight }
+    : { width: "100%", aspectRatio: `${ratio}` };
 
   if (slide.kind === "cover") {
     return (
@@ -361,7 +425,12 @@ function CarouselCanvas({
           <img
             src={slide.imageUrl}
             alt=""
-            style={{ width: "100%", height: "100%", display: "block", objectFit: "contain" }}
+            crossOrigin={
+              slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:")
+                ? undefined
+                : "anonymous"
+            }
+            style={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }}
           />
         ) : (
           <div
@@ -385,6 +454,49 @@ function CarouselCanvas({
 
   const isClosing = slide.kind === "closing";
   const onSecondary = readableText(secondary);
+  const ff = slide.fontFamily || "Inter, ui-sans-serif, system-ui, sans-serif";
+  const titleWeight = slide.fontWeight === "bold" ? 950 : slide.fontWeight === "normal" ? 700 : 900;
+  const bodyWeight = slide.fontWeight === "bold" ? 700 : slide.fontWeight === "normal" ? 450 : 600;
+  const bulletWeight = slide.fontWeight === "bold" ? 650 : slide.fontWeight === "normal" ? 400 : 500;
+  const fontStyle = slide.fontStyle || "normal";
+  const textDecoration = slide.textDecoration || "none";
+  const textShadow = slide.showShadow === false ? "none" : "0 3px 18px rgba(0,0,0,.72)";
+  const bodyShadow = slide.showShadow === false ? "none" : "0 2px 12px rgba(0,0,0,.82)";
+  const bulletShadow = slide.showShadow === false ? "none" : "0 2px 10px rgba(0,0,0,.88)";
+
+  const renderLabel = (label: string) => {
+    if (!label) return null;
+    const bg = slide.labelColor || secondary;
+    const fg = readableText(bg);
+    const style = slide.labelStyle || "filled";
+
+    if (style === "outline-thin") {
+      return (
+        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, background: "transparent", border: `1px solid ${bg}`, color: bg, padding: "6px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
+          {label}
+        </div>
+      );
+    }
+    if (style === "outline-thick") {
+      return (
+        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, background: "transparent", border: `2.5px solid ${bg}`, color: bg, padding: "6px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
+          {label}
+        </div>
+      );
+    }
+    if (style === "stripe-left") {
+      return (
+        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, background: "transparent", borderLeft: `4px solid ${bg}`, borderRadius: 0, padding: "2px 0 2px 10px", color: bg, fontSize: 11, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
+          {label}
+        </div>
+      );
+    }
+    return (
+      <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, background: bg, color: fg, padding: "7px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", boxShadow: slide.showShadow === false ? "none" : "0 4px 14px rgba(0,0,0,.35)" }}>
+        {label}
+      </div>
+    );
+  };
 
   return (
     <div
@@ -397,7 +509,7 @@ function CarouselCanvas({
         isolation: "isolate",
         background: `linear-gradient(145deg, ${primary}, ${secondary})`,
         color: slide.textColor,
-        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+        fontFamily: ff,
       }}
     >
       {slide.imageUrl && (
@@ -424,9 +536,11 @@ function CarouselCanvas({
           position: "absolute",
           inset: 0,
           zIndex: -2,
-          background: isClosing
-            ? "linear-gradient(180deg,rgba(5,7,10,.58),rgba(5,7,10,.82))"
-            : "linear-gradient(180deg,rgba(5,7,10,.22) 0%,rgba(5,7,10,.08) 30%,rgba(5,7,10,.78) 68%,rgba(5,7,10,.94) 100%)",
+          background: slide.showShadow === false
+            ? "transparent"
+            : isClosing
+              ? "linear-gradient(180deg,rgba(5,7,10,.58),rgba(5,7,10,.82))"
+              : "linear-gradient(180deg,rgba(5,7,10,.22) 0%,rgba(5,7,10,.08) 30%,rgba(5,7,10,.78) 68%,rgba(5,7,10,.94) 100%)",
         }}
       />
 
@@ -444,21 +558,34 @@ function CarouselCanvas({
           }}
         >
           {logo ? (
-            <img
-              src={logo}
-              alt=""
-              crossOrigin={
-                logo.startsWith("data:") || logo.startsWith("blob:")
-                  ? undefined
-                  : "anonymous"
-              }
+            <div
               style={{
-                width: "34%",
-                maxHeight: "28%",
-                objectFit: "contain",
-                filter: "drop-shadow(0 12px 30px rgba(0,0,0,.35))",
+                background: "rgba(255,255,255,.96)",
+                padding: "14px 22px",
+                borderRadius: 22,
+                boxShadow: "0 12px 32px rgba(0,0,0,.45)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                maxWidth: "60%",
+                maxHeight: "32%",
               }}
-            />
+            >
+              <img
+                src={logo}
+                alt=""
+                crossOrigin={
+                  logo.startsWith("data:") || logo.startsWith("blob:")
+                    ? undefined
+                    : "anonymous"
+                }
+                style={{
+                  width: "100%",
+                  maxHeight: 110,
+                  objectFit: "contain",
+                }}
+              />
+            </div>
           ) : (
             <div
               style={{
@@ -481,7 +608,7 @@ function CarouselCanvas({
               style={{
                 maxWidth: "92%",
                 marginTop: "9%",
-                padding: "12px 18px",
+                padding: "13px 22px",
                 borderRadius: 999,
                 background: secondary,
                 color: onSecondary,
@@ -489,9 +616,17 @@ function CarouselCanvas({
                 lineHeight: 1.18,
                 fontWeight: 900,
                 letterSpacing: "-.025em",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 9,
+                boxShadow: "0 8px 24px rgba(0,0,0,.35)",
               }}
             >
-              {slide.cta}
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+                <path d="M11.999 0C5.373 0 0 5.373 0 12c0 2.126.556 4.196 1.614 6.012L.053 23.947l6.096-1.597C7.935 23.411 9.948 24 11.999 24 18.626 24 24 18.627 24 12S18.626 0 11.999 0zm6.166 17.067c-.259.73-1.512 1.405-2.09 1.463-.559.055-1.079.255-3.468-.682-2.885-1.132-4.757-4.088-4.901-4.281-.143-.193-1.173-1.564-1.173-2.984 0-1.42.744-2.122 1.009-2.414.259-.285.566-.356.755-.356.188 0 .376.002.541.011.174.009.407-.066.638.489.236.568.804 1.956.874 2.101.07.145.117.315.022.507-.095.193-.143.315-.284.482-.143.167-.301.374-.429.501-.143.143-.292.298-.125.586.167.288.742 1.228 1.596 1.986 1.101.977 2.031 1.281 2.319 1.424.288.143.456.12.625-.072.167-.193.717-.837.908-1.124.193-.288.384-.24.649-.143.264.098 1.68 0.793 1.968.937.288.143.479.215.549.335.071.12.071.698-.188 1.428z" />
+              </svg>
+              <span>{slide.cta}</span>
             </div>
           )}
           {slide.phone && (
@@ -499,13 +634,20 @@ function CarouselCanvas({
               style={{
                 marginTop: 15,
                 color: "#F8FAFC",
-                fontSize: 15,
+                fontSize: 16,
                 lineHeight: 1.2,
-                fontWeight: 750,
-                textShadow: "0 2px 12px rgba(0,0,0,.72)",
+                fontWeight: 800,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 7,
+                textShadow: slide.showShadow === false ? "none" : "0 2px 12px rgba(0,0,0,.82)",
               }}
             >
-              {slide.phone}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366" style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,.5))" }}>
+                <path d="M11.999 0C5.373 0 0 5.373 0 12c0 2.126.556 4.196 1.614 6.012L.053 23.947l6.096-1.597C7.935 23.411 9.948 24 11.999 24 18.626 24 24 18.627 24 12S18.626 0 11.999 0zm6.166 17.067c-.259.73-1.512 1.405-2.09 1.463-.559.055-1.079.255-3.468-.682-2.885-1.132-4.757-4.088-4.901-4.281-.143-.193-1.173-1.564-1.173-2.984 0-1.42.744-2.122 1.009-2.414.259-.285.566-.356.755-.356.188 0 .376.002.541.011.174.009.407-.066.638.489.236.568.804 1.956.874 2.101.07.145.117.315.022.507-.095.193-.143.315-.284.482-.143.167-.301.374-.429.501-.143.143-.292.298-.125.586.167.288.742 1.228 1.596 1.986 1.101.977 2.031 1.281 2.319 1.424.288.143.456.12.625-.072.167-.193.717-.837.908-1.124.193-.288.384-.24.649-.143.264.098 1.68 0.793 1.968.937.288.143.479.215.549.335.071.12.071.698-.188 1.428z" />
+              </svg>
+              <span>{slide.phone}</span>
             </div>
           )}
         </div>
@@ -533,33 +675,29 @@ function CarouselCanvas({
                     style={{ width: 42, height: 42, borderRadius: 12, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 5, boxShadow: "0 8px 24px rgba(0,0,0,.24)" }}
                   />
                 ) : <span />}
-                <span style={{ color: "#F8FAFC", fontSize: 11, fontWeight: 850, textShadow: "0 2px 10px rgba(0,0,0,.7)" }}>
-                  {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
-                </span>
               </div>
               <div>
-                {slide.label && (
-                  <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, background: secondary, color: onSecondary, padding: "7px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
-                    {slide.label}
-                  </div>
-                )}
+                {renderLabel(slide.label)}
                 {slide.title && (
-                  <h3 style={{ maxWidth: "96%", margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 31 : 35, lineHeight: 1.02, fontWeight: 900, letterSpacing: "-.045em", overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0 3px 18px rgba(0,0,0,.72)" }}>
+                  <h3 style={{ maxWidth: "96%", margin: 0, color: slide.textColor, fontSize: ratio < 0.68 ? 31 : 35, lineHeight: 1.02, fontFamily: ff, fontWeight: titleWeight, fontStyle, textDecoration, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
                     {slide.title}
                   </h3>
                 )}
                 {slide.body && (
-                  <p style={{ maxWidth: "94%", margin: "13px 0 0", color: slide.textColor, fontSize: ratio < 0.68 ? 13 : 14, lineHeight: 1.45, fontWeight: 600, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0 2px 12px rgba(0,0,0,.82)" }}>
+                  <p style={{ maxWidth: "94%", margin: "13px 0 0", color: slide.textColor, fontSize: ratio < 0.68 ? 13 : 14, lineHeight: 1.45, fontFamily: ff, fontWeight: bodyWeight, fontStyle, textDecoration, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
                     {slide.body}
                   </p>
                 )}
                 {slide.bullets.length > 0 && (
                   <ul style={{ display: "grid", gap: 7, maxWidth: "96%", margin: "15px 0 0", padding: 0, listStyle: "none" }}>
-                    {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
-                      <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 8, alignItems: "flex-start", color: slide.textColor, fontSize: 13, lineHeight: 1.35, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0 2px 10px rgba(0,0,0,.88)" }}>
-                        <span>{item}</span>
-                      </li>
-                    ))}
+                    {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
+                      if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: 10 }} />;
+                      return (
+                        <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 8, alignItems: "flex-start", color: slide.textColor, fontSize: 13, lineHeight: 1.35, fontFamily: ff, fontWeight: bulletWeight, fontStyle, textDecoration, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: bulletShadow }}>
+                          <span>{item}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -581,10 +719,6 @@ function CarouselCanvas({
                       style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                   )}
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.52))" }} />
-                  {/* counter top right */}
-                  <span style={{ position: "absolute", top: "8%", right: "8%", color: "#F8FAFC", fontSize: 11, fontWeight: 850, textShadow: "0 2px 8px rgba(0,0,0,.7)" }}>
-                    {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
-                  </span>
                   {/* logo top left */}
                   {logo && (
                     <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
@@ -593,28 +727,27 @@ function CarouselCanvas({
                 </div>
                 {/* Content block bottom */}
                 <div style={{ flex: 1, background: primary, padding: "7% 8%", display: "flex", flexDirection: "column", justifyContent: "center", gap: 10, overflow: "hidden" }}>
-                  {slide.label && (
-                    <div style={{ display: "inline-flex", alignSelf: "flex-start", borderRadius: 999, background: secondary, color: onSecondary, padding: "5px 10px", fontSize: 9, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
-                      {slide.label}
-                    </div>
-                  )}
+                  {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: boxTextColor, fontSize: ratio < 0.68 ? 22 : 26, lineHeight: 1.1, fontWeight: 900, letterSpacing: "-.035em", overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                    <h3 style={{ margin: 0, color: boxTextColor, fontSize: ratio < 0.68 ? 22 : 26, lineHeight: 1.1, fontFamily: ff, fontWeight: titleWeight, fontStyle, textDecoration, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ margin: 0, color: boxTextColor, fontSize: 12, lineHeight: 1.4, fontWeight: 600, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                    <p style={{ margin: 0, color: boxTextColor, fontSize: 12, lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle, textDecoration, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
                       {slide.body}
                     </p>
                   )}
                   {slide.bullets.length > 0 && (
                     <ul style={{ display: "grid", gap: 6, padding: 0, margin: 0, listStyle: "none" }}>
-                      {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
-                        <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 7, alignItems: "flex-start", color: boxTextColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                          <span>{item}</span>
-                        </li>
-                      ))}
+                      {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
+                        if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: 8 }} />;
+                        return (
+                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 7, alignItems: "flex-start", color: boxTextColor, fontSize: 12, lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle, textDecoration, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                            <span>{item}</span>
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                 </div>
@@ -630,10 +763,6 @@ function CarouselCanvas({
             const boxTextColor = isBgDark && isTextDark ? onPrimary : slide.textColor;
             return (
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "8%" }}>
-                {/* Counter */}
-                <span style={{ position: "absolute", top: "7%", right: "7%", color: "#F8FAFC", fontSize: 11, fontWeight: 850, textShadow: "0 2px 8px rgba(0,0,0,.7)" }}>
-                  {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
-                </span>
                 {/* Logo */}
                 {logo && (
                   <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
@@ -641,28 +770,27 @@ function CarouselCanvas({
                 )}
                 {/* Floating card */}
                 <div style={{ width: "100%", borderRadius: 18, background: safeHexToRgba(primary, 0.93), backdropFilter: "blur(8px)", border: `2px solid ${secondary}`, padding: "8% 9%", display: "flex", flexDirection: "column", gap: 10, overflow: "hidden" }}>
-                  {slide.label && (
-                    <div style={{ display: "inline-flex", alignSelf: "flex-start", borderRadius: 999, background: secondary, color: onSecondary, padding: "5px 11px", fontSize: 9, fontWeight: 900, letterSpacing: ".14em", textTransform: "uppercase" }}>
-                      {slide.label}
-                    </div>
-                  )}
+                  {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: boxTextColor, fontSize: ratio < 0.68 ? 24 : 28, lineHeight: 1.05, fontWeight: 900, letterSpacing: "-.04em", overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                    <h3 style={{ margin: 0, color: boxTextColor, fontSize: ratio < 0.68 ? 24 : 28, lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle, textDecoration, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ margin: 0, color: boxTextColor, fontSize: 12, lineHeight: 1.42, fontWeight: 600, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                    <p style={{ margin: 0, color: boxTextColor, fontSize: 12, lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle, textDecoration, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
                       {slide.body}
                     </p>
                   )}
                   {slide.bullets.length > 0 && (
                     <ul style={{ display: "grid", gap: 7, padding: 0, margin: 0, listStyle: "none" }}>
-                      {slide.bullets.slice(0, 4).map((item, bulletIndex) => (
-                        <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 7, alignItems: "flex-start", color: boxTextColor, fontSize: 12, lineHeight: 1.3, fontWeight: 650, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                          <span>{item}</span>
-                        </li>
-                      ))}
+                      {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
+                        if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: 8 }} />;
+                        return (
+                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 7, alignItems: "flex-start", color: boxTextColor, fontSize: 12, lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle, textDecoration, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                            <span>{item}</span>
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                 </div>
@@ -770,16 +898,16 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
     "";
   const agencyPhone =
     carouselContact || phoneLabel(state.whatsappDialCode || "55", state.whatsapp || "");
-  const [slideCount, setSlideCount] = useState<CarouselSize>(5);
-  const slideCountRef = useRef<CarouselSize>(5);
+  const [slideCount, setSlideCount] = useState<CarouselSize>(6);
+  const slideCountRef = useRef<CarouselSize>(6);
   const [slides, setSlides] = useState<CarouselSlide[]>(() =>
     selectedPackage
-      ? createSlides(selectedPackage, 5, coverImage, agencyPhone, isEs)
+      ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, uniqueImages([...(state.siteContent.galleryImages || [])]))
       : [],
   );
   const slideArchiveRef = useRef<CarouselSlide[]>(
     selectedPackage
-      ? createSlides(selectedPackage, 5, coverImage, agencyPhone, isEs)
+      ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, uniqueImages([...(state.siteContent.galleryImages || [])]))
       : [],
   );
   const slidesRef = useRef(slides);
@@ -871,19 +999,22 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
     }
 
     const preferredCount = slideCountRef.current;
+    const destImages = uniqueImages([...(state.siteContent.galleryImages || []), ...photoResults.map((p) => p.url)]);
     const generated = createSlides(
       selectedPackage,
       preferredCount,
       coverImage,
       agencyPhone,
       isEs,
+      destImages,
     );
     const generatedArchive = createSlides(
       selectedPackage,
-      5,
+      6,
       coverImage,
       agencyPhone,
       isEs,
+      destImages,
     );
 
     try {
@@ -895,7 +1026,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           allSlides?: CarouselSlide[];
         };
         const restoredCount =
-          parsed.slideCount === 3 || parsed.slideCount === 4 || parsed.slideCount === 5
+          parsed.slideCount === 3 || parsed.slideCount === 4 || parsed.slideCount === 5 || parsed.slideCount === 6
             ? parsed.slideCount
             : preferredCount;
         const restoredArchive = mergeSlidesForSize(
@@ -916,6 +1047,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           coverImage,
           agencyPhone,
           isEs,
+          destImages,
         );
         const restored = mergeSlidesForSize(restoredArchive, restoredBase).map((slide) =>
           slide.kind === "cover" ? { ...slide, imageUrl: coverImage } : slide,
@@ -933,7 +1065,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
     slideArchiveRef.current = generatedArchive;
     setSlides(generated);
     setActiveIndex(0);
-  }, [agencyPhone, coverImage, isEs, selectedPackage, storageKey]);
+  }, [agencyPhone, coverImage, isEs, selectedPackage, storageKey, state.siteContent.galleryImages, photoResults]);
 
   useEffect(() => {
     if (!slides.length) return;
@@ -943,8 +1075,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
     }
     const persistDraft = (notifyError = true) => {
       try {
+        const destImages = uniqueImages([...(state.siteContent.galleryImages || []), ...photoResults.map((p) => p.url)]);
         const generatedArchive = selectedPackage
-          ? createSlides(selectedPackage, 5, coverImage, agencyPhone, isEs)
+          ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, destImages)
           : [];
         const archiveBase = mergeSlidesForSize(
           slideArchiveRef.current,
@@ -985,7 +1118,20 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
       window.removeEventListener("pagehide", persistBeforeLeaving);
       persistDraft(false);
     };
-  }, [agencyPhone, coverImage, isEs, selectedPackage, slideCount, slides, storageKey]);
+  }, [slideCount, slides, storageKey, selectedPackage, coverImage, agencyPhone, isEs]);
+
+  useEffect(() => {
+    const ff = activeSlide?.fontFamily || "Inter";
+    if (!ff || ff === "Inter") return;
+    const id = `gf-${ff.replace(/\s+/g, "-").toLowerCase()}`;
+    if (!document.getElementById(id)) {
+      const link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(ff)}:wght@400;500;600;700;800;900&display=swap`;
+      document.head.appendChild(link);
+    }
+  }, [activeSlide?.fontFamily]);
 
   const patchActive = (patch: Partial<CarouselSlide>) => {
     if (!activeSlide || activeSlide.kind === "cover") return;
@@ -996,19 +1142,22 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
 
   const changeSlideCount = (nextCount: CarouselSize) => {
     if (!selectedPackage) return;
+    const destImages = uniqueImages([...(state.siteContent.galleryImages || []), ...photoResults.map((p) => p.url)]);
     const generated = createSlides(
       selectedPackage,
       nextCount,
       coverImage,
       agencyPhone,
       isEs,
+      destImages,
     );
     const generatedArchive = createSlides(
       selectedPackage,
-      5,
+      6,
       coverImage,
       agencyPhone,
       isEs,
+      destImages,
     );
     setSlides((current) => {
       const archiveBase = mergeSlidesForSize(
@@ -1026,12 +1175,14 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
   const regenerate = () => {
     if (!selectedPackage) return;
     uploadRequestRef.current.clear();
+    const destImages = uniqueImages([...(state.siteContent.galleryImages || []), ...photoResults.map((p) => p.url)]);
     const generatedArchive = createSlides(
       selectedPackage,
-      5,
+      6,
       coverImage,
       agencyPhone,
       isEs,
+      destImages,
     );
     const generated = mergeSlidesForSize(
       generatedArchive,
@@ -1041,6 +1192,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         coverImage,
         agencyPhone,
         isEs,
+        destImages,
       ),
     );
     slideArchiveRef.current = generatedArchive;
@@ -1051,6 +1203,97 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         ? "Contenido actualizado con los datos reales del paquete."
         : "Conteúdo atualizado com os dados reais do pacote.",
     );
+  };
+
+  const [generatingCoverAd, setGeneratingCoverAd] = useState(false);
+
+  const generateNewCoverAd = async (targetPackage?: Pacote) => {
+    const pkg = targetPackage || selectedPackage;
+    if (!pkg) return;
+    setGeneratingCoverAd(true);
+    try {
+      const dest = pkg.title || state.destinos[0] || "Viagem Incrível";
+      const available = uniqueImages([
+        pkg.imageUrl,
+        ...(pkg.galleryImages || []),
+        ...(state.siteContent.galleryImages || []),
+        ...photoResults.map((p) => p.url),
+        coverImage,
+      ]);
+      const currentCover = slides[0]?.imageUrl || coverImage;
+      const nextIdx = (available.indexOf(currentCover) + 1) % available.length;
+      const nextPhoto = available[nextIdx] || available[0] || coverImage || "";
+      
+      const format = coverRatio > 0.92 ? "feed" : "story";
+      const composed = await composeTravelAd({
+        imageUrl: nextPhoto,
+        imageLuminance: state.autoLuminance ?? true,
+        format,
+        destination: dest,
+        city: state.city,
+        primaryColor: state.primaryColor,
+        secondaryColor: state.secondaryColor,
+        price: pkg.price || state.price || "Consulte",
+        currencySymbol: state.currencySymbol || "R$",
+        hideCents: state.hideCents ?? false,
+        installments: state.installments || "",
+        promoName: state.promoName || "OFERTA EXCLUSIVA",
+        highlights: [...(pkg.highlights || []), ...(pkg.included || [])].filter(Boolean).slice(0, 3),
+        hasLogo: !!state.logoBase64,
+        logoDataUrl: state.logoBase64,
+        logoFormat: state.logoFormat || "circle",
+        footerContact1Icon: state.footerContact1Icon || "phone",
+        footerContact1Value: pkg.agencyPhone || state.footerContact1Value || "",
+        whatsapp: state.whatsapp || pkg.agencyPhone || "",
+        instagram: state.instagram || "",
+        paymentMode: state.paymentMode || "pix_card",
+        paymentSuffix: state.paymentSuffix || "",
+        pricePrefix: state.pricePrefix || "a partir de",
+        strategy: "impacto_duplo",
+        variation: Math.floor(Math.random() * 9),
+        showPixBanner: state.showPixBanner ?? true,
+        showTotal: state.showTotal ?? true,
+        fontFamily: state.fontFamily || "Inter",
+      });
+      
+      setSlides((curr) =>
+        curr.map((slide, idx) =>
+          idx === 0 ? { ...slide, imageUrl: composed } : slide
+        )
+      );
+      toast.success(isEs ? "¡Nueva portada generada con arte publicitario!" : "Nova capa no estilo Anúncio F1 gerada com sucesso!");
+    } catch (err) {
+      console.error("Falha ao gerar capa F1:", err);
+      toast.error(isEs ? "Error al generar portada." : "Erro ao gerar capa com arte F1.");
+    } finally {
+      setGeneratingCoverAd(false);
+    }
+  };
+
+  const generateNewCover = () => {
+    if (!availableImages.length) return;
+    const currentCover = slides[0]?.imageUrl || coverImage;
+    const nextIdx = (availableImages.indexOf(currentCover) + 1) % availableImages.length;
+    const nextImage = availableImages[nextIdx] || availableImages[0] || coverImage;
+    setSlides((curr) =>
+      curr.map((slide, idx) =>
+        idx === 0 ? { ...slide, imageUrl: nextImage } : slide
+      )
+    );
+    toast.success(isEs ? "¡Nueva portada aplicada!" : "Nova foto de capa aplicada com sucesso!");
+  };
+
+  const generateNewSlidePhoto = () => {
+    if (!activeSlide || !availableImages.length) return;
+    const currentImg = activeSlide.imageUrl;
+    const nextIdx = (availableImages.indexOf(currentImg) + 1) % availableImages.length;
+    const nextImage = availableImages[nextIdx] || availableImages[0] || currentImg;
+    setSlides((curr) =>
+      curr.map((slide, idx) =>
+        idx === activeIndex ? { ...slide, imageUrl: nextImage } : slide
+      )
+    );
+    toast.success(isEs ? "¡Foto del slide cambiada!" : "Foto do slide atualizada com sucesso!");
   };
 
   const searchPhotos = async () => {
@@ -1275,14 +1518,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
       .replace(/^-|-$/g, "");
 
     try {
-      await downloadOriginalImage(coverImage, `carrossel-${slug}-01-capa.png`);
+      const coverToDownload = slides[0]?.imageUrl || coverImage;
+      await downloadOriginalImage(coverToDownload, `carrossel-${slug}-01-capa.png`);
       const { default: html2canvas } = await import("html2canvas");
 
       for (let index = 1; index < slides.length; index += 1) {
         const node = exportRefs.current[index];
         if (!node) throw new Error("missing-export-node");
         const canvas = await html2canvas(node, {
-          backgroundColor: null,
+          backgroundColor: "#08090B",
           useCORS: true,
           allowTaint: false,
           scale: 2.5,
@@ -1372,24 +1616,70 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 {isEs ? "Elige el paquete y la cantidad" : "Escolha o pacote e a quantidade"}
               </h3>
             </div>
-            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-              <select
-                value={selectedPackage.id}
-                onChange={(event) => setSelectedPackageId(event.target.value)}
-                className="min-h-11 rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white outline-none focus:border-[#F5F906]"
-              >
-                {packages.map((pacote) => (
-                  <option key={pacote.id} value={pacote.id}>{pacote.title}</option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={regenerate}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 px-3 text-xs font-bold text-white/70 hover:bg-white/[0.05]"
-              >
-                <RefreshCw className="h-3.5 w-3.5" />
-                {isEs ? "Actualizar datos" : "Atualizar dados"}
-              </button>
+            <div className="mt-3 space-y-2.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  value={selectedPackage.id}
+                  onChange={(event) => setSelectedPackageId(event.target.value)}
+                  className="min-h-11 flex-1 rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white outline-none focus:border-[#F5F906]"
+                >
+                  {packages.map((pacote) => (
+                    <option key={pacote.id} value={pacote.id}>{pacote.title}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const chosen = packages.find(p => p.id === selectedPackage.id);
+                    if (chosen) generateNewCoverAd(chosen);
+                  }}
+                  disabled={generatingCoverAd}
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[#F5F906]/35 bg-[#F5F906]/10 px-3 text-xs font-extrabold text-[#F5F906] hover:bg-[#F5F906]/20 transition-colors"
+                  title={isEs ? "Generar portada con el paquete seleccionado" : "Gerar capa com o pacote selecionado sem alterar os outros slides"}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {isEs ? "Gerar Capa deste Pacote" : "Gerar Capa deste Pacote"}
+                </button>
+                <button
+                  type="button"
+                  onClick={regenerate}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 px-3 text-xs font-bold text-white/70 hover:bg-white/[0.05]"
+                  title={isEs ? "Actualizar todo el carrusel com este paquete" : "Atualizar todo o carrossel com este pacote"}
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  {isEs ? "Atualizar Tudo" : "Atualizar Tudo"}
+                </button>
+              </div>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() => generateNewCoverAd(selectedPackage)}
+                  disabled={generatingCoverAd}
+                  className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-[#F5F906]/50 bg-[#F5F906]/15 px-3 text-xs font-extrabold text-[#F5F906] hover:bg-[#F5F906]/25 transition-colors disabled:opacity-50"
+                  title={isEs ? "Genera arte publicitario completo en la portada" : "Gera arte de anúncio completa na capa"}
+                >
+                  <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+                  {generatingCoverAd ? (isEs ? "Generando..." : "Gerando...") : (isEs ? "Gerar Capa (Arte F1)" : "Gerar Capa (Arte F1)")}
+                </button>
+                <button
+                  type="button"
+                  onClick={generateNewCover}
+                  className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/[0.06] px-3 text-xs font-extrabold text-white/90 hover:bg-white/15 transition-colors"
+                  title={isEs ? "Alternar solo foto en la portada" : "Alterna apenas a foto de capa"}
+                >
+                  <ImagePlus className="h-3.5 w-3.5" />
+                  {isEs ? "Trocar Foto da Capa" : "Trocar Foto da Capa"}
+                </button>
+                <button
+                  type="button"
+                  onClick={generateNewSlidePhoto}
+                  disabled={!activeSlide || activeSlide.kind === "cover"}
+                  className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.04] px-3 text-xs font-extrabold text-white/80 hover:bg-white/10 disabled:opacity-30 transition-colors"
+                >
+                  <ImagePlus className="h-3.5 w-3.5" />
+                  {isEs ? "Outra foto neste slide" : "Outra foto neste slide"}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1397,8 +1687,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
             <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
               {isEs ? "Total de imágenes" : "Total de imagens"}
             </legend>
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {([3, 4, 5] as CarouselSize[]).map((count) => (
+            <div className="mt-2 grid grid-cols-4 gap-2">
+              {([3, 4, 5, 6] as CarouselSize[]).map((count) => (
                 <button
                   key={count}
                   type="button"
@@ -1782,27 +2072,132 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
 
             {activeSlide && activeSlide.kind !== "cover" && (
               <div className="mt-4 space-y-4">
+                {/* ── Barra de Formatação (Fonte, Peso e Estilo) ── */}
+                <div className="rounded-xl border border-white/10 bg-zinc-900/80 p-3 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F5F906]">
+                      {isEs ? "Estilo y Tipografía" : "Estilo e Tipografia"}
+                    </span>
+                    <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-white/80">
+                      <input
+                        type="checkbox"
+                        checked={activeSlide.showShadow !== false}
+                        onChange={(event) => patchActive({ showShadow: event.target.checked })}
+                        className="rounded border-white/20 bg-black text-[#F5F906] focus:ring-[#F5F906]"
+                      />
+                      <span>{isEs ? "Sombra en textos" : "Sombra nos textos"}</span>
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <select
+                      value={activeSlide.fontFamily || "Inter"}
+                      onChange={(event) => patchActive({ fontFamily: event.target.value })}
+                      aria-label={isEs ? "Tipo de letra" : "Família da fonte"}
+                      className="min-h-9 rounded-lg border border-white/10 bg-black/60 px-2.5 text-xs font-bold text-white outline-none focus:border-[#F5F906]"
+                    >
+                      <option value="Inter">Inter (Padrão Moderno)</option>
+                      <option value="Montserrat">Montserrat (Elegante)</option>
+                      <option value="Poppins">Poppins (Geométrica)</option>
+                      <option value="Outfit">Outfit (Vibrante)</option>
+                      <option value="Playfair Display">Playfair Display (Editorial/Luxo)</option>
+                      <option value="Roboto">Roboto (Clássica)</option>
+                    </select>
+                    <div className="grid grid-cols-3 gap-1">
+                      <button
+                        type="button"
+                        onClick={() => patchActive({ fontWeight: activeSlide.fontWeight === "bold" ? "black" : activeSlide.fontWeight === "normal" ? "bold" : "normal" })}
+                        title="Peso da Fonte (Normal / Negrito / Black)"
+                        className={`rounded-lg border px-2 py-1.5 text-xs font-extrabold transition-colors ${
+                          activeSlide.fontWeight === "bold" ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
+                        }`}
+                      >
+                        {activeSlide.fontWeight === "bold" ? "Negrito" : activeSlide.fontWeight === "normal" ? "Normal" : "Black"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => patchActive({ fontStyle: activeSlide.fontStyle === "italic" ? "normal" : "italic" })}
+                        title="Itálico"
+                        className={`rounded-lg border px-2 py-1.5 text-xs font-serif italic transition-colors ${
+                          activeSlide.fontStyle === "italic" ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
+                        }`}
+                      >
+                        I
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => patchActive({ textDecoration: activeSlide.textDecoration === "underline" ? "none" : "underline" })}
+                        title="Sublinhado"
+                        className={`rounded-lg border px-2 py-1.5 text-xs underline transition-colors ${
+                          activeSlide.textDecoration === "underline" ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
+                        }`}
+                      >
+                        U
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 {activeSlide.kind === "content" ? (
                   <>
-                    <CarouselField label={isEs ? "Etiqueta corta" : "Selo curto"}>
-                      <input
-                        value={activeSlide.label}
-                        maxLength={28}
-                        onChange={(event) => patchActive({ label: event.target.value })}
-                        className="f1-carousel-input"
-                      />
+                    <CarouselField label={isEs ? "Etiqueta corta (Selo)" : "Selo curto (Destaque superior)"}>
+                      <div className="space-y-2">
+                        <input
+                          value={activeSlide.label || ""}
+                          maxLength={32}
+                          placeholder={isEs ? "Ej: DESLIZA O RUTA 01" : "Ex: ROTEIRO OU DESLIZE"}
+                          onChange={(event) => patchActive({ label: event.target.value })}
+                          className="f1-carousel-input"
+                        />
+                        <div className="flex flex-wrap gap-1.5">
+                          {["ROTEIRO COMPLETO", "O QUE INCLUI", "DESTINO INCRÍVEL", "GARANTIDO", "FAIXA PIX"].map((pill) => (
+                            <button
+                              key={pill}
+                              type="button"
+                              onClick={() => patchActive({ label: pill })}
+                              className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-1 text-[9px] font-bold text-white/60 hover:border-white/25 hover:text-white"
+                            >
+                              + {pill}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </CarouselField>
-                    <CarouselField label={isEs ? "Título" : "Título"}>
+
+                    <CarouselField label={isEs ? "Estilo del selo" : "Estilo do selo"}>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {([
+                          ["filled", isEs ? "Sólido" : "Sólido"],
+                          ["outline-thin", isEs ? "Borda fina" : "Borda fina"],
+                          ["outline-thick", isEs ? "Borda forte" : "Borda forte"],
+                          ["stripe-left", isEs ? "Tarja" : "Tarja"],
+                        ] as const).map(([styleKey, styleTitle]) => (
+                          <button
+                            key={styleKey}
+                            type="button"
+                            onClick={() => patchActive({ labelStyle: styleKey })}
+                            className={`rounded-lg border px-2 py-1.5 text-[10px] font-bold transition-colors ${
+                              (activeSlide.labelStyle || "filled") === styleKey
+                                ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]"
+                                : "border-white/10 text-white/60 hover:bg-white/[0.05]"
+                            }`}
+                          >
+                            {styleTitle}
+                          </button>
+                        ))}
+                      </div>
+                    </CarouselField>
+
+                    <CarouselField label={isEs ? "Título" : "Título principal"}>
                       <textarea
                         value={activeSlide.title}
-                        maxLength={72}
+                        maxLength={80}
                         rows={2}
                         onChange={(event) => patchActive({ title: event.target.value })}
                         className="f1-carousel-input resize-none"
                       />
                     </CarouselField>
                     <CarouselField
-                      label={isEs ? "Descripción corta" : "Descrição curta"}
+                      label={isEs ? "Descripción corta" : "Descrição curta / Subtítulo"}
                       optionalAction={
                         activeSlide.body ? (
                           <button
@@ -1820,14 +2215,14 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     >
                       <textarea
                         value={activeSlide.body}
-                        maxLength={220}
-                        rows={4}
+                        maxLength={260}
+                        rows={3}
                         onChange={(event) => patchActive({ body: event.target.value })}
                         className="f1-carousel-input resize-y"
                       />
                     </CarouselField>
                     <CarouselField
-                      label={isEs ? "Elementos, uno por línea" : "Itens, um por linha"}
+                      label={isEs ? "Tópicos ou parágrafos (um por linha)" : "Tópicos ou parágrafos (um por linha)"}
                       optionalAction={
                         activeSlide.bullets.length ? (
                           <button
@@ -1845,14 +2240,14 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     >
                       <textarea
                         value={activeSlide.bullets.join("\n")}
-                        rows={4}
+                        rows={5}
+                        placeholder={isEs ? "Escribe un tópico por línea...\nDeja una línea en blanco para espaciar" : "Digite um tópico por linha...\nDeixe uma linha em branco para espaçar parágrafos"}
                         onChange={(event) =>
                           patchActive({
                             bullets: event.target.value
                               .split(/\r?\n/)
-                              .map((item) => item.trim().slice(0, 72))
-                              .filter(Boolean)
-                              .slice(0, 4),
+                              .map((item) => item.slice(0, 100))
+                              .slice(0, 8),
                           })
                         }
                         className="f1-carousel-input resize-y"
@@ -1860,7 +2255,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     </CarouselField>
 
                     {/* ── Seletor de Estilo Visual (Variante) ── */}
-                    <CarouselField label={isEs ? "Estilo visual" : "Estilo visual"}>
+                    <CarouselField label={isEs ? "Estilo visual do slide" : "Estilo visual do slide"}>
                       <div className="grid grid-cols-3 gap-2">
                         {([
                           ["impact",    isEs ? "Impacto"    : "Impacto",    "Foto cheia + texto em baixo"],
