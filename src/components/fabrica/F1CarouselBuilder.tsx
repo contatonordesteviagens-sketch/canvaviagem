@@ -1117,24 +1117,43 @@ function MiniTypographyBar({
   style = {},
   fallbackBold = false,
   fallbackColor = "#FFFFFF",
+  primaryColor = "#F5F906",
+  secondaryColor = "#00F0FF",
   onChange,
+  onSelectTextColor,
   isEs = false,
 }: {
   style?: FieldTypography;
   fallbackBold?: boolean;
   fallbackColor?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
   onChange: (updated: FieldTypography) => void;
+  onSelectTextColor?: (color: string) => void;
   isEs?: boolean;
 }) {
+  const [showHexInput, setShowHexInput] = useState(false);
+  const [hexInput, setHexInput] = useState("");
+
   const isBold = style.bold !== undefined ? style.bold : fallbackBold;
   const isItalic = style.italic !== undefined ? style.italic : false;
   const isUnderline = style.underline !== undefined ? style.underline : false;
   const currentColor = style.color || fallbackColor;
 
-  const presetColors = ["#FFFFFF", "#F5F906", "#00F0FF", "#10B981", "#F97316", "#18181B"];
+  const handleColorClick = (hex: string) => {
+    onChange({ ...style, color: hex });
+    if (onSelectTextColor) onSelectTextColor(hex);
+  };
+
+  const brandColors = [
+    { hex: "#FFFFFF", label: isEs ? "Claro" : "Claro" },
+    { hex: primaryColor || "#F5F906", label: isEs ? "Principal" : "Primária" },
+    { hex: secondaryColor || "#00F0FF", label: isEs ? "Secundario" : "Secundária" },
+  ];
 
   return (
-    <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-1.5">
+    <div className="mb-1 flex flex-wrap items-center justify-between gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-1">
+      {/* B / I / U (Lado esquerdo) */}
       <div className="flex items-center gap-1">
         <button
           type="button"
@@ -1183,32 +1202,98 @@ function MiniTypographyBar({
         </button>
       </div>
 
-      <div className="flex items-center gap-1.5">
-        {presetColors.map((hex) => (
+      {/* Bolinhas das cores e Hex code (Lado direito) */}
+      <div className="flex items-center gap-2">
+        {brandColors.map(({ hex, label }) => (
           <button
-            key={hex}
+            key={`${hex}-${label}`}
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              onChange({ ...style, color: hex === fallbackColor && !style.color ? undefined : hex });
+              handleColorClick(hex);
             }}
-            title={hex}
-            className={`h-4 w-4 rounded-full border transition-transform hover:scale-110 ${
-              currentColor.toUpperCase() === hex
-                ? "scale-110 border-white ring-2 ring-[#F5F906]/60 ring-offset-1 ring-offset-zinc-900"
-                : "border-white/20"
+            title={`${label} (${hex})`}
+            className={`h-6 w-6 rounded-full border-2 transition-all hover:scale-110 ${
+              currentColor.toUpperCase() === hex.toUpperCase()
+                ? "scale-110 border-white ring-2 ring-[#F5F906] ring-offset-1 ring-offset-zinc-900"
+                : "border-white/30"
             }`}
             style={{ backgroundColor: hex }}
           />
         ))}
-        <div className="relative flex items-center">
-          <input
-            type="color"
-            value={currentColor.startsWith("#") ? currentColor : "#FFFFFF"}
-            onChange={(e) => onChange({ ...style, color: e.target.value })}
-            title={isEs ? "Color personalizado" : "Cor personalizada"}
-            className="h-5 w-5 cursor-pointer rounded-full border border-white/30 bg-transparent p-0 outline-none hover:scale-110"
-          />
+
+        {/* Círculo colorido (arco-íris) com seletor nativo para qualquer cor */}
+        <div
+          className="relative grid h-6 w-6 cursor-pointer place-items-center rounded-full p-[2px] transition-transform hover:scale-110 shadow-sm"
+          style={{
+            background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)",
+          }}
+          title={isEs ? "Elegir cualquier color" : "Escolher qualquer outra cor"}
+        >
+          <div className="h-full w-full rounded-full border border-black/40 overflow-hidden relative">
+            <input
+              type="color"
+              value={currentColor.startsWith("#") ? currentColor : "#FFFFFF"}
+              onChange={(e) => handleColorClick(e.target.value)}
+              className="absolute -inset-1 h-8 w-8 cursor-pointer opacity-0"
+            />
+            <div
+              className="h-full w-full rounded-full"
+              style={{ backgroundColor: currentColor }}
+            />
+          </div>
+        </div>
+
+        {/* Botão para código HEX (por último, separado e discreto) */}
+        <div className="flex items-center border-l border-white/15 pl-2">
+          {!showHexInput ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowHexInput(true);
+                setHexInput(currentColor);
+              }}
+              title={isEs ? "Adicionar código HEX" : "Adicionar código da cor (HEX)"}
+              className="rounded border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-mono font-bold text-white/60 hover:border-white/25 hover:bg-white/10 hover:text-white transition-all"
+            >
+              HEX #
+            </button>
+          ) : (
+            <div className="flex items-center gap-1">
+              <input
+                type="text"
+                value={hexInput}
+                onChange={(e) => setHexInput(e.target.value)}
+                placeholder="#RRGGBB"
+                className="w-16 rounded bg-zinc-900 border border-white/20 px-1 py-0.5 text-[9px] font-mono text-white outline-none focus:border-[#F5F906]"
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (hexInput.startsWith("#") || hexInput.length === 6) {
+                    const formatted = hexInput.startsWith("#") ? hexInput : `#${hexInput}`;
+                    handleColorClick(formatted);
+                  }
+                  setShowHexInput(false);
+                }}
+                className="rounded bg-[#F5F906] px-1 py-0.5 text-[9px] font-bold text-zinc-950"
+              >
+                OK
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowHexInput(false);
+                }}
+                className="text-[9px] text-white/50 hover:text-white px-0.5"
+              >
+                ×
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -1968,6 +2053,173 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
     );
   }
 
+  const renderPhotoSelectionBox = () => {
+    if (!activeSlide || activeSlide.kind === "cover") return null;
+    return (
+      <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5 shadow-lg">
+        <div className="flex items-center gap-2">
+          <ImagePlus className="h-4 w-4 text-[#F5F906]" />
+          <h3 className="text-sm font-bold text-white">
+            {activeSlide.kind === "closing"
+              ? (isEs ? "Fondo del cierre" : "Fundo do fechamento")
+              : (isEs ? "Foto de esta imagen" : "Foto desta imagem")}
+          </h3>
+        </div>
+
+        <div className="mt-3 flex gap-2">
+          <input
+            value={photoQuery}
+            onChange={(event) => setPhotoQuery(event.target.value)}
+            onKeyDown={(event) => event.key === "Enter" && searchPhotos()}
+            placeholder={selectedPackage.title || (isEs ? "Destino" : "Destino")}
+            className="f1-carousel-input min-w-0 flex-1"
+          />
+          <button
+            type="button"
+            onClick={searchPhotos}
+            disabled={searchingPhotos}
+            aria-label={isEs ? "Buscar fotos" : "Buscar fotos"}
+            className="grid min-h-11 min-w-11 place-items-center rounded-xl bg-[#F5F906] text-zinc-950 disabled:opacity-50 hover:bg-[#F5F906]/90 transition-colors"
+          >
+            {searchingPhotos ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            aria-label={isEs ? "Enviar imagen" : "Enviar imagem"}
+            className="grid min-h-11 min-w-11 place-items-center rounded-xl border border-white/15 text-white/70 hover:bg-white/[0.05]"
+          >
+            <Upload className="h-4 w-4" />
+          </button>
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+        </div>
+
+        {state.destinos.length > 0 && (
+          <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+            {state.destinos.filter(Boolean).slice(0, 6).map((destination) => (
+              <button
+                key={destination}
+                type="button"
+                onClick={() => setPhotoQuery(destination)}
+                className="min-h-8 shrink-0 rounded-full border border-white/10 px-3 text-[10px] font-bold text-white/55 hover:border-white/25 hover:text-white transition-colors"
+              >
+                {destination}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {(photoResults.length > 0 || availableImages.length > 0) && (
+          <div className="mt-4">
+            <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.13em] text-white/35">
+              {photoResults.length
+                ? (isEs ? "Resultados de la búsqueda" : "Resultados da busca")
+                : (isEs ? "Banco de imágenes" : "Banco de imagens")}
+            </p>
+            <div className="grid grid-cols-4 gap-2">
+              {(photoResults.length
+                ? photoResults.map((photo) => ({
+                    url: photo.url,
+                    thumb: photo.thumb || photo.url,
+                    alt: photo.alt,
+                  }))
+                : availableImages.map((url) => ({ url, thumb: url, alt: "" }))
+              ).slice(0, 8).map((photo, index) => {
+                const selected = activeSlide.imageUrl === photo.url;
+                const usedByOtherSlide = slides.some(
+                  (slide, slideIndex) =>
+                    slideIndex !== activeIndex &&
+                    slide.kind !== "cover" &&
+                    slide.imageUrl === photo.url,
+                );
+                return (
+                  <button
+                    key={`${photo.url}-${index}`}
+                    type="button"
+                    disabled={usedByOtherSlide}
+                    onClick={() => patchActive({ imageUrl: photo.url })}
+                    aria-label={`${isEs ? "Usar foto" : "Usar foto"} ${index + 1}`}
+                    className={`relative aspect-square overflow-hidden rounded-xl border-2 transition-all ${
+                      selected
+                        ? "border-[#F5F906] scale-95 ring-2 ring-[#F5F906]/50"
+                        : usedByOtherSlide
+                          ? "cursor-not-allowed border-white/5 opacity-35"
+                          : "border-white/10 hover:border-white/30 hover:scale-105"
+                    }`}
+                  >
+                    <img
+                      src={photo.thumb}
+                      alt={photo.alt || ""}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                    {selected && (
+                      <span className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-[#F5F906] text-zinc-950">
+                        <Check className="h-3 w-3" />
+                      </span>
+                    )}
+                    {usedByOtherSlide && !selected && (
+                      <span className="absolute inset-x-1 bottom-1 rounded bg-black/75 px-1 py-0.5 text-[7px] font-bold uppercase text-white/80">
+                        {isEs ? "En uso" : "Em uso"}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-3">
+          <CarouselField label={isEs ? "O pega un enlace de imagen" : "Ou cole um link de imagem"}>
+            <input
+              value={activeSlide.imageUrl.startsWith("data:") ? "" : activeSlide.imageUrl}
+              onChange={(event) => patchActive({ imageUrl: event.target.value })}
+              placeholder="https://..."
+              className="f1-carousel-input text-xs"
+            />
+          </CarouselField>
+        </div>
+      </div>
+    );
+  };
+
+  const renderPublishFooterBox = () => {
+    return (
+      <div className="rounded-2xl border border-[#F5F906]/30 bg-[#F5F906]/[0.06] p-4 sm:p-5 shadow-xl space-y-3.5">
+        <div className="flex items-center gap-3">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-xs font-black text-zinc-950">4</span>
+          <div>
+            <p className="text-sm font-bold text-white">
+              {isEs ? "Todo listo para publicar" : "Tudo pronto para publicar"}
+            </p>
+            <p className="text-[10px] text-white/55">
+              {isEs ? "La portada no se procesa nuevamente." : "A capa não é processada novamente."}
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          <button
+            type="button"
+            onClick={() => setShowNewCarouselModal(true)}
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/15 px-3 text-xs font-extrabold text-red-300 hover:bg-red-500/25 transition-colors"
+          >
+            {isEs ? "+ Nuevo Carrusel" : "+ Gerar Novo Carrossel"}
+          </button>
+          <button
+            type="button"
+            onClick={downloadAll}
+            disabled={downloading}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:opacity-50 transition-colors shadow-lg shadow-[#F5F906]/10"
+          >
+            <Download className="h-4 w-4 shrink-0" />
+            <span className="truncate">{isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}</span>
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <section className="space-y-4" data-testid="f1-carousel-builder">
       <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
@@ -2429,8 +2681,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
       </div>
 
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
-        <div className="order-2 space-y-4 xl:order-1">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
+        <div className="order-2 space-y-4 lg:order-1">
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -2514,9 +2766,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
             )}
 
             {activeSlide && activeSlide.kind !== "cover" && (
-              <div className="mt-4 space-y-4">
+              <div className="mt-3 space-y-3">
                 {/* ── Barra de Formatação (Fonte, Peso e Estilo) ── */}
-                <div className="rounded-xl border border-white/10 bg-zinc-900/80 p-3 space-y-2.5">
+                <div className="rounded-xl border border-white/10 bg-zinc-900/80 p-2.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F5F906]">
                       {isEs ? "Estilo y Tipografía" : "Estilo e Tipografia"}
@@ -2536,7 +2788,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                       value={activeSlide.fontFamily || "Inter"}
                       onChange={(event) => patchActive({ fontFamily: event.target.value })}
                       aria-label={isEs ? "Tipo de letra" : "Família da fonte"}
-                      className="min-h-9 w-full rounded-lg border border-white/10 bg-black/60 px-2.5 text-xs font-bold text-white outline-none focus:border-[#F5F906]"
+                      className="min-h-8 w-full rounded-lg border border-white/10 bg-black/60 px-2.5 text-xs font-bold text-white outline-none focus:border-[#F5F906]"
                     >
                       <option value="Inter">Inter (Padrão Moderno)</option>
                       <option value="Montserrat">Montserrat (Elegante)</option>
@@ -2551,21 +2803,21 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 {activeSlide.kind === "content" ? (
                   <>
                     <CarouselField label={isEs ? "Etiqueta corta (Selo)" : "Selo curto (Destaque superior)"}>
-                      <div className="space-y-2">
+                      <div className="space-y-1.5">
                         <input
                           value={activeSlide.label || ""}
                           maxLength={32}
                           placeholder={isEs ? "Ej: DESLIZA O RUTA 01" : "Ex: ROTEIRO OU DESLIZE"}
                           onChange={(event) => patchActive({ label: event.target.value })}
-                          className="f1-carousel-input"
+                          className="f1-carousel-input !min-h-[34px] !py-1.5 text-xs"
                         />
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1">
                           {["ROTEIRO COMPLETO", "O QUE INCLUI", "DESTINO INCRÍVEL", "GARANTIDO", "FAIXA PIX"].map((pill) => (
                             <button
                               key={pill}
                               type="button"
                               onClick={() => patchActive({ label: pill })}
-                              className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-1 text-[9px] font-bold text-white/60 hover:border-white/25 hover:text-white"
+                              className="rounded border border-white/10 bg-white/[0.03] px-1.5 py-0.5 text-[8.5px] font-bold text-white/60 hover:border-white/25 hover:text-white"
                             >
                               + {pill}
                             </button>
@@ -2575,7 +2827,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     </CarouselField>
 
                     <CarouselField label={isEs ? "Estilo del selo" : "Estilo do selo"}>
-                      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-3">
+                      <div className="flex flex-wrap gap-1">
                         {([
                           ["filled", isEs ? "Sólido" : "Sólido"],
                           ["outline-thin", isEs ? "Borda fina" : "Borda fina"],
@@ -2589,7 +2841,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             key={styleKey}
                             type="button"
                             onClick={() => patchActive({ labelStyle: styleKey })}
-                            className={`rounded-lg border px-2 py-1.5 text-[10px] font-bold transition-colors ${
+                            className={`rounded border px-2 py-0.5 text-[8.5px] font-bold leading-tight transition-colors min-h-[22px] ${
                               (activeSlide.labelStyle || "filled") === styleKey
                                 ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]"
                                 : "border-white/10 text-white/60 hover:bg-white/[0.05]"
@@ -2606,15 +2858,18 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         style={activeSlide.titleStyle}
                         fallbackBold={activeSlide.fontWeight !== "normal"}
                         fallbackColor={activeSlide.textColor || "#FFFFFF"}
+                        primaryColor={state.primaryColor}
+                        secondaryColor={state.secondaryColor}
                         onChange={(updated) => patchActive({ titleStyle: updated })}
+                        onSelectTextColor={(color) => patchActive({ textColor: color })}
                         isEs={isEs}
                       />
                       <textarea
                         value={activeSlide.title}
                         maxLength={80}
-                        rows={2}
+                        rows={1}
                         onChange={(event) => patchActive({ title: event.target.value })}
-                        className="f1-carousel-input resize-none"
+                        className="f1-carousel-input !min-h-[36px] !py-1.5 text-xs resize-none"
                       />
                     </CarouselField>
                     <CarouselField
@@ -2627,7 +2882,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                               event.preventDefault();
                               patchActive({ body: "" });
                             }}
-                            className="inline-flex min-h-7 items-center gap-1 rounded-md px-2 text-[9px] text-white/45 hover:bg-white/[0.05] hover:text-white"
+                            className="inline-flex min-h-6 items-center gap-1 rounded px-1.5 text-[9px] text-white/45 hover:bg-white/[0.05] hover:text-white"
                           >
                             <X className="h-3 w-3" /> {isEs ? "Quitar" : "Remover"}
                           </button>
@@ -2638,15 +2893,18 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         style={activeSlide.bodyStyle}
                         fallbackBold={activeSlide.fontWeight === "bold"}
                         fallbackColor={activeSlide.textColor || "#FFFFFF"}
+                        primaryColor={state.primaryColor}
+                        secondaryColor={state.secondaryColor}
                         onChange={(updated) => patchActive({ bodyStyle: updated })}
+                        onSelectTextColor={(color) => patchActive({ textColor: color })}
                         isEs={isEs}
                       />
                       <textarea
                         value={activeSlide.body}
                         maxLength={260}
-                        rows={3}
+                        rows={2}
                         onChange={(event) => patchActive({ body: event.target.value })}
-                        className="f1-carousel-input resize-y"
+                        className="f1-carousel-input !min-h-[46px] !py-1.5 text-xs resize-y"
                       />
                     </CarouselField>
                     <CarouselField
@@ -2659,7 +2917,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                               event.preventDefault();
                               patchActive({ bullets: [] });
                             }}
-                            className="inline-flex min-h-7 items-center gap-1 rounded-md px-2 text-[9px] text-white/45 hover:bg-white/[0.05] hover:text-white"
+                            className="inline-flex min-h-6 items-center gap-1 rounded px-1.5 text-[9px] text-white/45 hover:bg-white/[0.05] hover:text-white"
                           >
                             <X className="h-3 w-3" /> {isEs ? "Quitar" : "Remover"}
                           </button>
@@ -2670,12 +2928,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         style={activeSlide.bulletStyle}
                         fallbackBold={activeSlide.fontWeight === "bold"}
                         fallbackColor={activeSlide.textColor || "#FFFFFF"}
+                        primaryColor={state.primaryColor}
+                        secondaryColor={state.secondaryColor}
                         onChange={(updated) => patchActive({ bulletStyle: updated })}
+                        onSelectTextColor={(color) => patchActive({ textColor: color })}
                         isEs={isEs}
                       />
                       <textarea
                         value={activeSlide.bullets.join("\n")}
-                        rows={5}
+                        rows={3}
                         placeholder={isEs ? "Escribe un tópico por línea...\nDeja una línea en blanco para espaciar" : "Digite um tópico por linha...\nDeixe uma linha em branco para espaçar parágrafos"}
                         onChange={(event) =>
                           patchActive({
@@ -2685,7 +2946,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                               .slice(0, 8),
                           })
                         }
-                        className="f1-carousel-input resize-y"
+                        className="f1-carousel-input !min-h-[64px] !py-1.5 text-xs resize-y"
                       />
                     </CarouselField>
                   </>
@@ -2704,9 +2965,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             key={suggestion}
                             type="button"
                             onClick={() => patchActive({ cta: suggestion })}
-                            className="rounded bg-white/[0.04] px-2 py-1 text-[9px] font-bold text-white/60 hover:bg-white/[0.08] hover:text-white"
+                            className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-1 text-[9px] font-bold text-white/60 hover:border-white/25 hover:text-white"
                           >
-                            {suggestion}
+                            + {suggestion}
                           </button>
                         ))}
                       </div>
@@ -2747,163 +3008,19 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     )}
                   </>
                 )}
-
-                <CarouselField label={isEs ? "Color del texto" : "Cor do texto"}>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      ["#FFFFFF", isEs ? "Claro" : "Claro"],
-                      [state.primaryColor, isEs ? "Principal" : "Primária"],
-                      [state.secondaryColor, isEs ? "Secundario" : "Secundária"],
-                    ].map(([color, label]) => (
-                      <button
-                        key={`${color}-${label}`}
-                        type="button"
-                        aria-pressed={activeSlide.textColor.toUpperCase() === color.toUpperCase()}
-                        onClick={() => patchActive({ textColor: color })}
-                        className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-2 text-[10px] font-bold ${
-                          activeSlide.textColor.toUpperCase() === color.toUpperCase()
-                            ? "border-[#F5F906] text-white"
-                            : "border-white/10 text-white/55 hover:bg-white/[0.04]"
-                        }`}
-                      >
-                        <span className="h-3.5 w-3.5 rounded-full border border-white/20" style={{ background: color }} />
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </CarouselField>
               </div>
             )}
           </div>
 
           {activeSlide && activeSlide.kind !== "cover" && (
-            <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
-              <div className="flex items-center gap-2">
-                <ImagePlus className="h-4 w-4 text-[#F5F906]" />
-                <h3 className="text-sm font-bold text-white">
-                  {activeSlide.kind === "closing"
-                    ? (isEs ? "Fondo del cierre" : "Fundo do fechamento")
-                    : (isEs ? "Foto de esta imagen" : "Foto desta imagem")}
-                </h3>
-              </div>
-
-              <div className="mt-3 flex gap-2">
-                <input
-                  value={photoQuery}
-                  onChange={(event) => setPhotoQuery(event.target.value)}
-                  onKeyDown={(event) => event.key === "Enter" && searchPhotos()}
-                  placeholder={selectedPackage.title || (isEs ? "Destino" : "Destino")}
-                  className="f1-carousel-input min-w-0 flex-1"
-                />
-                <button
-                  type="button"
-                  onClick={searchPhotos}
-                  disabled={searchingPhotos}
-                  aria-label={isEs ? "Buscar fotos" : "Buscar fotos"}
-                  className="grid min-h-11 min-w-11 place-items-center rounded-xl bg-[#F5F906] text-zinc-950 disabled:opacity-50"
-                >
-                  {searchingPhotos ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  aria-label={isEs ? "Enviar imagen" : "Enviar imagem"}
-                  className="grid min-h-11 min-w-11 place-items-center rounded-xl border border-white/15 text-white/70 hover:bg-white/[0.05]"
-                >
-                  <Upload className="h-4 w-4" />
-                </button>
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
-              </div>
-
-              {state.destinos.length > 0 && (
-                <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-                  {state.destinos.filter(Boolean).slice(0, 6).map((destination) => (
-                    <button
-                      key={destination}
-                      type="button"
-                      onClick={() => setPhotoQuery(destination)}
-                      className="min-h-9 shrink-0 rounded-full border border-white/10 px-3 text-[10px] font-bold text-white/55 hover:border-white/25 hover:text-white"
-                    >
-                      {destination}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {(photoResults.length > 0 || availableImages.length > 0) && (
-                <div className="mt-4">
-                  <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.13em] text-white/35">
-                    {photoResults.length
-                      ? (isEs ? "Resultados de la búsqueda" : "Resultados da busca")
-                      : (isEs ? "Banco de imágenes" : "Banco de imagens")}
-                  </p>
-                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                    {(photoResults.length
-                      ? photoResults.map((photo) => ({
-                          url: photo.url,
-                          thumb: photo.thumb || photo.url,
-                          alt: photo.alt,
-                        }))
-                      : availableImages.map((url) => ({ url, thumb: url, alt: "" }))
-                    ).slice(0, 8).map((photo, index) => {
-                      const selected = activeSlide.imageUrl === photo.url;
-                      const usedByOtherSlide = slides.some(
-                        (slide, slideIndex) =>
-                          slideIndex !== activeIndex &&
-                          slide.kind !== "cover" &&
-                          slide.imageUrl === photo.url,
-                      );
-                      return (
-                        <button
-                          key={`${photo.url}-${index}`}
-                          type="button"
-                          disabled={usedByOtherSlide}
-                          onClick={() => patchActive({ imageUrl: photo.url })}
-                          aria-label={`${isEs ? "Usar foto" : "Usar foto"} ${index + 1}`}
-                          className={`relative aspect-square overflow-hidden rounded-xl border-2 ${
-                            selected
-                              ? "border-[#F5F906]"
-                              : usedByOtherSlide
-                                ? "cursor-not-allowed border-white/5 opacity-35"
-                                : "border-white/10 hover:border-white/30"
-                          }`}
-                        >
-                          <img
-                            src={photo.thumb}
-                            alt={photo.alt || ""}
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                          />
-                          {selected && (
-                            <span className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-zinc-950">
-                              <Check className="h-3.5 w-3.5" />
-                            </span>
-                          )}
-                          {usedByOtherSlide && !selected && (
-                            <span className="absolute inset-x-1.5 bottom-1.5 rounded-md bg-black/75 px-1 py-0.5 text-[8px] font-bold uppercase text-white/80">
-                              {isEs ? "En uso" : "Em uso"}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <CarouselField label={isEs ? "O pega un enlace de imagen" : "Ou cole um link de imagem"}>
-                <input
-                  value={activeSlide.imageUrl.startsWith("data:") ? "" : activeSlide.imageUrl}
-                  onChange={(event) => patchActive({ imageUrl: event.target.value })}
-                  placeholder="https://..."
-                  className="f1-carousel-input"
-                />
-              </CarouselField>
+            <div className="block lg:hidden space-y-4">
+              {renderPhotoSelectionBox()}
+              {renderPublishFooterBox()}
             </div>
           )}
         </div>
 
-        <aside className="order-1 xl:order-2 xl:sticky xl:top-5 xl:self-start">
+        <aside className="order-1 lg:order-2 lg:sticky lg:top-5 lg:self-start max-h-[calc(100vh-1.5rem)] overflow-y-auto scrollbar-thin pr-1 space-y-4">
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-3 sm:p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
@@ -2945,7 +3062,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   logo={state.logoBase64}
                   primary={state.primaryColor}
                   secondary={state.secondaryColor}
-                  width={410}
+                  width={360}
                 />
               )}
             </div>
@@ -2955,41 +3072,12 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 : (isEs ? "Los cambios aparecen aquí al instante." : "As alterações aparecem aqui na hora.")}
             </p>
           </div>
-        </aside>
-      </div>
 
-      <div className="rounded-2xl border border-[#F5F906]/25 bg-[#F5F906]/[0.05] p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">4</span>
-            <div>
-              <p className="text-sm font-bold text-white">
-                {isEs ? "Todo listo para publicar" : "Tudo pronto para publicar"}
-              </p>
-              <p className="text-[10px] text-white/45">
-                {isEs ? "La portada no se procesa nuevamente." : "A capa não é processada novamente."}
-              </p>
-            </div>
+          <div className="hidden lg:block space-y-4">
+            {renderPhotoSelectionBox()}
+            {renderPublishFooterBox()}
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setShowNewCarouselModal(true)}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-500/40 bg-red-500/15 px-4 text-sm font-extrabold text-red-400 hover:bg-red-500/25 transition-colors"
-            >
-              {isEs ? "+ Nuevo Carrusel" : "+ Gerar Novo Carrossel"}
-            </button>
-            <button
-              type="button"
-              onClick={downloadAll}
-              disabled={downloading}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-4 text-sm font-extrabold text-zinc-950 disabled:opacity-50"
-            >
-              <Download className="h-4 w-4" />
-              {isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}
-            </button>
-          </div>
-        </div>
+        </aside>
       </div>
 
       {showNewCarouselModal && (
