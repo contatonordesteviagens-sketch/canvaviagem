@@ -2917,8 +2917,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   {!coverImage && (
                     <p className="mt-3 rounded-lg bg-amber-300/10 px-3 py-2 text-xs font-semibold text-amber-100">
                       {isEs
-                        ? "Vuelve a Anuncio, genera la portada y usa "Transformar en carrusel"."
-                        : "Volte para Anúncio, gere a capa e use "Transformar em carrossel"."}
+                        ? 'Vuelve a Anuncio, genera la portada y usa "Transformar en carrusel".'
+                        : 'Volte para Anúncio, gere a capa e use "Transformar em carrossel".'}
                     </p>
                   )}
                 </div>
