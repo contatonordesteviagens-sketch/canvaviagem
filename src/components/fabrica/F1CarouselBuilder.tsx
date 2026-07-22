@@ -647,311 +647,261 @@ function CarouselCanvas({
         boxSizing: "border-box",
       }}
     >
-      {slide.imageUrl && (
-        <img
-          src={slide.imageUrl}
-          alt=""
-          crossOrigin={
-            slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:")
-              ? undefined
-              : "anonymous"
-          }
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: -3,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
-      )}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: -2,
-          background: slide.showShadow === false
-            ? "transparent"
-            : isClosing
-              ? "linear-gradient(180deg, rgba(5, 7, 10, 0.58) 0%, rgba(5, 7, 10, 0.82) 100%)"
-              : "linear-gradient(180deg, rgba(5, 7, 10, 0.22) 0%, rgba(5, 7, 10, 0.08) 30%, rgba(5, 7, 10, 0.78) 68%, rgba(5, 7, 10, 0.94) 100%)",
-        }}
-      />
-
-      {isClosing ? (
+      {/* ── Background Photo & Gradient Overlay (zIndex: 0) ── */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}>
+        {slide.imageUrl && (
+          <img
+            src={slide.imageUrl}
+            alt=""
+            crossOrigin={
+              slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:")
+                ? undefined
+                : "anonymous"
+            }
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        )}
         <div
           style={{
             position: "absolute",
             inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "11% 9%",
-            textAlign: "center",
-            boxSizing: "border-box",
+            background: slide.showShadow === false
+              ? "transparent"
+              : isClosing
+                ? "linear-gradient(180deg, rgba(5, 7, 10, 0.58) 0%, rgba(5, 7, 10, 0.82) 100%)"
+                : "linear-gradient(180deg, rgba(5, 7, 10, 0.22) 0%, rgba(5, 7, 10, 0.08) 30%, rgba(5, 7, 10, 0.78) 68%, rgba(5, 7, 10, 0.94) 100%)",
           }}
-        >
+        />
+      </div>
+
+      {/* ── Content & Text Boxes (zIndex: 10) ── */}
+      <div style={{ position: "relative", zIndex: 10, width: "100%", height: "100%" }}>
+        {isClosing ? (
           <div
             style={{
-              background: "rgba(255, 255, 255, 0.96)",
-              padding: `${Math.round(16 * Z)}px ${Math.round(28 * Z)}px`,
-              borderRadius: Math.round(24 * Z),
-              boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0, 0, 0, 0.35)`,
-              marginBottom: Math.round(16 * Z),
+              position: "absolute",
+              inset: 0,
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
+              padding: "11% 9%",
+              textAlign: "center",
+              boxSizing: "border-box",
             }}
           >
-            {logo ? (
-              <img
-                src={logo}
-                alt=""
-                crossOrigin={
-                  logo.startsWith("data:") || logo.startsWith("blob:")
-                    ? undefined
-                    : "anonymous"
-                }
-                style={{
-                  maxHeight: Math.round((ratio < 0.68 ? 58 : 66) * Z),
-                  maxWidth: Math.round(210 * Z),
-                  objectFit: "contain",
-                }}
-              />
-            ) : (
+            <div
+              style={{
+                background: "rgba(255, 255, 255, 0.96)",
+                padding: `${Math.round(16 * Z)}px ${Math.round(28 * Z)}px`,
+                borderRadius: Math.round(24 * Z),
+                boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0, 0, 0, 0.35)`,
+                marginBottom: Math.round(16 * Z),
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {logo ? (
+                <img
+                  src={logo}
+                  alt=""
+                  crossOrigin={
+                    logo.startsWith("data:") || logo.startsWith("blob:")
+                      ? undefined
+                      : "anonymous"
+                  }
+                  style={{
+                    maxHeight: Math.round((ratio < 0.68 ? 58 : 66) * Z),
+                    maxWidth: Math.round(210 * Z),
+                    objectFit: "contain",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    color: "#111318",
+                    fontSize: Math.round(14 * Z),
+                    fontWeight: 800,
+                    letterSpacing: ".06em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Sua logo
+                </div>
+              )}
+            </div>
+
+            <h3
+              style={{
+                maxWidth: "94%",
+                margin: `0 0 ${Math.round(8 * Z)}px`,
+                color: titleColor,
+                fontSize: Math.round((ratio < 0.68 ? 24 : 28) * Z),
+                lineHeight: 1.08,
+                fontFamily: ff,
+                fontWeight: titleWeight,
+                fontStyle: titleStyleAttr,
+                textDecoration: titleDecAttr,
+                textShadow,
+              }}
+            >
+              {slide.title || "Agende agora e garanta sua viagem perfeita"}
+            </h3>
+            <p
+              style={{
+                maxWidth: "88%",
+                margin: `0 0 ${Math.round(20 * Z)}px`,
+                color: bodyColor,
+                fontSize: Math.round((ratio < 0.68 ? 13 : 14) * Z),
+                lineHeight: 1.45,
+                fontFamily: ff,
+                fontWeight: bodyWeight,
+                fontStyle: bodyStyleAttr,
+                textDecoration: bodyDecAttr,
+                opacity: 0.92,
+                textShadow: bodyShadow,
+              }}
+            >
+              {slide.body || "Atendimento humanizado, parcelamento facilitado e suporte do início ao fim do seu roteiro."}
+            </p>
+
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: Math.round(52 * Z),
+                padding: `0 ${Math.round(28 * Z)}px`,
+                borderRadius: Math.round(999 * Z),
+                background: "#F5F906",
+                color: "#111318",
+                fontSize: Math.round(15 * Z),
+                fontWeight: 900,
+                letterSpacing: ".04em",
+                textTransform: "uppercase",
+                boxShadow: slide.showShadow === false ? "none" : `0px ${Math.round(8 * Z)}px ${Math.round(26 * Z)}px rgba(245, 249, 6, 0.28)`,
+              }}
+            >
+              {slide.cta}
+            </div>
+
+            {slide.phone && (
               <div
                 style={{
-                  color: "#111318",
-                  fontSize: Math.round(14 * Z),
+                  marginTop: Math.round(18 * Z),
+                  color: "#F8FAFC",
+                  fontSize: Math.round((ratio < 0.68 ? 18 : 20) * Z),
+                  lineHeight: 1.2,
                   fontWeight: 800,
-                  letterSpacing: ".06em",
-                  textTransform: "uppercase",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: Math.round(8 * Z),
+                  textShadow: slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`,
                 }}
               >
-                Sua logo
+                <svg width={Math.round(20 * Z)} height={Math.round(20 * Z)} viewBox="0 0 24 24" fill="#25D366" style={{ filter: "drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.5))" }}>
+                  <path d="M11.999 0C5.373 0 0 5.373 0 12c0 2.126.556 4.196 1.614 6.012L.053 23.947l6.096-1.597C7.935 23.411 9.948 24 11.999 24 18.626 24 24 18.627 24 12S18.626 0 11.999 0zm6.166 17.067c-.259.73-1.512 1.405-2.09 1.463-.559.055-1.079.255-3.468-.682-2.885-1.132-4.757-4.088-4.901-4.281-.143-.193-1.173-1.564-1.173-2.984 0-1.42.744-2.122 1.009-2.414.259-.285.566-.356.755-.356.188 0 .376.002.541.011.174.009.407-.066.638.489.236.568.804 1.956.874 2.101.07.145.117.315.022.507-.095.193-.143.315-.284.482-.143.167-.301.374-.429.501-.143.143-.292.298-.125.586.167.288.742 1.228 1.596 1.986 1.101.977 2.031 1.281 2.319 1.424.288.143.456.12.625-.072.167-.193.717-.837.908-1.124.193-.288.384-.24.649-.143.264.098 1.68 0.793 1.968.937.288.143.479.215.549.335.071.12.071.698-.188 1.428z" />
+                </svg>
+                <span>{slide.phone}</span>
+              </div>
+            )}
+            {slide.instagram && (
+              <div
+                style={{
+                  marginTop: Math.round(10 * Z),
+                  color: "#F8FAFC",
+                  fontSize: Math.round(15 * Z),
+                  lineHeight: 1.2,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: Math.round(8 * Z),
+                  textShadow: slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`,
+                }}
+              >
+                <svg width={Math.round(18 * Z)} height={Math.round(18 * Z)} viewBox="0 0 24 24" fill="currentColor" style={{ filter: "drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.5))" }}>
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                </svg>
+                <span>{slide.instagram}</span>
+              </div>
+            )}
+            {slide.website && (
+              <div
+                style={{
+                  marginTop: Math.round(8 * Z),
+                  color: "#F8FAFC",
+                  fontSize: Math.round(15 * Z),
+                  lineHeight: 1.2,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: Math.round(8 * Z),
+                  textShadow: slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`,
+                }}
+              >
+                <svg width={Math.round(18 * Z)} height={Math.round(18 * Z)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ filter: "drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.5))" }}>
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                <span>{slide.website}</span>
               </div>
             )}
           </div>
-
-          <h3
-            style={{
-              maxWidth: "94%",
-              margin: `0 0 ${Math.round(8 * Z)}px`,
-              color: titleColor,
-              fontSize: Math.round((ratio < 0.68 ? 24 : 28) * Z),
-              lineHeight: 1.08,
-              fontFamily: ff,
-              fontWeight: titleWeight,
-              fontStyle: titleStyleAttr,
-              textDecoration: titleDecAttr,
-              textShadow,
-            }}
-          >
-            {slide.title || "Agende agora e garanta sua viagem perfeita"}
-          </h3>
-          <p
-            style={{
-              maxWidth: "88%",
-              margin: `0 0 ${Math.round(20 * Z)}px`,
-              color: bodyColor,
-              fontSize: Math.round((ratio < 0.68 ? 13 : 14) * Z),
-              lineHeight: 1.45,
-              fontFamily: ff,
-              fontWeight: bodyWeight,
-              fontStyle: bodyStyleAttr,
-              textDecoration: bodyDecAttr,
-              opacity: 0.92,
-              textShadow: bodyShadow,
-            }}
-          >
-            {slide.body || "Atendimento humanizado, parcelamento facilitado e suporte do início ao fim do seu roteiro."}
-          </p>
-
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: Math.round(52 * Z),
-              padding: `0 ${Math.round(28 * Z)}px`,
-              borderRadius: Math.round(999 * Z),
-              background: "#F5F906",
-              color: "#111318",
-              fontSize: Math.round(15 * Z),
-              fontWeight: 900,
-              letterSpacing: ".04em",
-              textTransform: "uppercase",
-              boxShadow: slide.showShadow === false ? "none" : `0px ${Math.round(8 * Z)}px ${Math.round(26 * Z)}px rgba(245, 249, 6, 0.28)`,
-            }}
-          >
-            {slide.cta}
-          </div>
-
-          {slide.phone && (
-            <div
-              style={{
-                marginTop: Math.round(18 * Z),
-                color: "#F8FAFC",
-                fontSize: Math.round((ratio < 0.68 ? 18 : 20) * Z),
-                lineHeight: 1.2,
-                fontWeight: 800,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: Math.round(8 * Z),
-                textShadow: slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`,
-              }}
-            >
-              <svg width={Math.round(20 * Z)} height={Math.round(20 * Z)} viewBox="0 0 24 24" fill="#25D366" style={{ filter: "drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.5))" }}>
-                <path d="M11.999 0C5.373 0 0 5.373 0 12c0 2.126.556 4.196 1.614 6.012L.053 23.947l6.096-1.597C7.935 23.411 9.948 24 11.999 24 18.626 24 24 18.627 24 12S18.626 0 11.999 0zm6.166 17.067c-.259.73-1.512 1.405-2.09 1.463-.559.055-1.079.255-3.468-.682-2.885-1.132-4.757-4.088-4.901-4.281-.143-.193-1.173-1.564-1.173-2.984 0-1.42.744-2.122 1.009-2.414.259-.285.566-.356.755-.356.188 0 .376.002.541.011.174.009.407-.066.638.489.236.568.804 1.956.874 2.101.07.145.117.315.022.507-.095.193-.143.315-.284.482-.143.167-.301.374-.429.501-.143.143-.292.298-.125.586.167.288.742 1.228 1.596 1.986 1.101.977 2.031 1.281 2.319 1.424.288.143.456.12.625-.072.167-.193.717-.837.908-1.124.193-.288.384-.24.649-.143.264.098 1.68 0.793 1.968.937.288.143.479.215.549.335.071.12.071.698-.188 1.428z" />
-              </svg>
-              <span>{slide.phone}</span>
-            </div>
-          )}
-          {slide.instagram && (
-            <div
-              style={{
-                marginTop: Math.round(10 * Z),
-                color: "#F8FAFC",
-                fontSize: Math.round(15 * Z),
-                lineHeight: 1.2,
-                fontWeight: 700,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: Math.round(8 * Z),
-                textShadow: slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`,
-              }}
-            >
-              <svg width={Math.round(18 * Z)} height={Math.round(18 * Z)} viewBox="0 0 24 24" fill="currentColor" style={{ filter: "drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.5))" }}>
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-              </svg>
-              <span>{slide.instagram}</span>
-            </div>
-          )}
-          {slide.website && (
-            <div
-              style={{
-                marginTop: Math.round(8 * Z),
-                color: "#F8FAFC",
-                fontSize: Math.round(15 * Z),
-                lineHeight: 1.2,
-                fontWeight: 700,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: Math.round(8 * Z),
-                textShadow: slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`,
-              }}
-            >
-              <svg width={Math.round(18 * Z)} height={Math.round(18 * Z)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ filter: "drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.5))" }}>
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
-              <span>{slide.website}</span>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* ── CONTENT SLIDES — 3 visual variants ── */
-        <>
-          {/* ─── VARIANT: IMPACT (default) — full-bleed photo, content at bottom ─── */}
-          {(slide.slideVariant === "impact" || !slide.slideVariant) && (
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                padding: "8%",
-                boxSizing: "border-box",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: Math.round(12 * Z) }}>
-                {logo ? (
-                  <img
-                    src={logo}
-                    alt=""
-                    crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                    style={{ width: Math.round(42 * Z), height: Math.round(42 * Z), borderRadius: Math.round(12 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(5 * Z), boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0, 0, 0, 0.24)` }}
-                  />
-                ) : <span />}
-              </div>
-              <div>
-                {renderLabel(slide.label)}
-                {slide.title && (
-                  <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 31 : 35) * Z), lineHeight: 1.02, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
-                    {slide.title}
-                  </h3>
-                )}
-                {slide.body && (
-                  <p style={{ maxWidth: "94%", margin: `${Math.round(13 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round((ratio < 0.68 ? 13 : 14) * Z), lineHeight: 1.45, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
-                    {slide.body}
-                  </p>
-                )}
-                {slide.bullets.length > 0 && (
-                  <ul style={{ display: "grid", gap: Math.round(7 * Z), maxWidth: "96%", margin: `${Math.round(15 * Z)}px 0 0`, padding: 0, listStyle: "none" }}>
-                    {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                      if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(10 * Z) }} />;
-                      return (
-                        <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "flex-start", color: bulletColor, fontSize: Math.round(13 * Z), lineHeight: 1.35, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: bulletShadow }}>
-                          <span>{item}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ─── VARIANT: ITINERARY — photo top ~45%, colored block bottom ─── */}
-          {slide.slideVariant === "itinerary" && (() => {
-            const onPrimary = readableText(primary);
-            const isBgDark = onPrimary === "#F8FAFC";
-            const isTextDark = readableText(slide.textColor) === "#F8FAFC";
-            const boxTextColor = isBgDark && isTextDark ? onPrimary : slide.textColor;
-            const boxTitleColor = slide.titleStyle?.color || boxTextColor;
-            const boxBodyColor = slide.bodyStyle?.color || boxTextColor;
-            const boxBulletColor = slide.bulletStyle?.color || boxTextColor;
-            return (
-              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-                {/* Photo zone top */}
-                <div style={{ flex: "0 0 45%", position: "relative", overflow: "hidden" }}>
-                  {slide.imageUrl && (
-                    <img src={slide.imageUrl} alt="" crossOrigin={slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:") ? undefined : "anonymous"}
-                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-                  )}
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.52) 100%)" }} />
-                  {/* logo top left */}
-                  {logo && (
-                    <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                      style={{ position: "absolute", top: "8%", left: "8%", width: Math.round(34 * Z), height: Math.round(34 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }} />
-                  )}
+        ) : (
+          /* ── CONTENT SLIDES — 3 visual variants ── */
+          <>
+            {/* ─── VARIANT: IMPACT (default) — full-bleed photo, content at bottom ─── */}
+            {(slide.slideVariant === "impact" || !slide.slideVariant) && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  padding: "8%",
+                  boxSizing: "border-box",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: Math.round(12 * Z) }}>
+                  {logo ? (
+                    <img
+                      src={logo}
+                      alt=""
+                      crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                      style={{ width: Math.round(42 * Z), height: Math.round(42 * Z), borderRadius: Math.round(12 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(5 * Z), boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0, 0, 0, 0.24)` }}
+                    />
+                  ) : <span />}
                 </div>
-                {/* Content block bottom */}
-                <div style={{ flex: 1, background: primary, padding: "7% 8%", display: "flex", flexDirection: "column", justifyContent: "center", gap: Math.round(10 * Z), overflow: "hidden", boxSizing: "border-box" }}>
+                <div>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 22 : 26) * Z), lineHeight: 1.1, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                    <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 31 : 35) * Z), lineHeight: 1.02, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ margin: 0, color: boxBodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
+                    <p style={{ maxWidth: "94%", margin: `${Math.round(13 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round((ratio < 0.68 ? 13 : 14) * Z), lineHeight: 1.45, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
                       {slide.body}
                     </p>
                   )}
                   {slide.bullets.length > 0 && (
-                    <ul style={{ display: "grid", gap: Math.round(6 * Z), padding: 0, margin: 0, listStyle: "none" }}>
+                    <ul style={{ display: "grid", gap: Math.round(7 * Z), maxWidth: "96%", margin: `${Math.round(15 * Z)}px 0 0`, padding: 0, listStyle: "none" }}>
                       {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                        if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
+                        if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(10 * Z) }} />;
                         return (
-                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: boxBulletColor, fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "flex-start", color: bulletColor, fontSize: Math.round(13 * Z), lineHeight: 1.35, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: bulletShadow }}>
                             <span>{item}</span>
                           </li>
                         );
@@ -960,57 +910,153 @@ function CarouselCanvas({
                   )}
                 </div>
               </div>
-            );
-          })()}
+            )}
 
-          {/* ─── VARIANT: EDITORIAL — photo full-bleed + floating card center ─── */}
-          {slide.slideVariant === "editorial" && (() => {
-            const onPrimary = readableText(primary);
-            const isBgDark = onPrimary === "#F8FAFC";
-            const isTextDark = readableText(slide.textColor) === "#F8FAFC";
-            const boxTextColor = isBgDark && isTextDark ? onPrimary : slide.textColor;
-            const boxTitleColor = slide.titleStyle?.color || boxTextColor;
-            const boxBodyColor = slide.bodyStyle?.color || boxTextColor;
-            const boxBulletColor = slide.bulletStyle?.color || boxTextColor;
-            return (
-              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "8%", boxSizing: "border-box" }}>
-                {/* Logo */}
-                {logo && (
-                  <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                    style={{ position: "absolute", top: "7%", left: "7%", width: Math.round(34 * Z), height: Math.round(34 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }} />
-                )}
-                {/* Floating card */}
-                <div style={{ width: "100%", borderRadius: Math.round(18 * Z), background: safeHexToRgba(primary, 0.93), backdropFilter: "blur(8px)", border: `${Math.round(2 * Z)}px solid ${secondary}`, padding: "8% 9%", display: "flex", flexDirection: "column", gap: Math.round(10 * Z), overflow: "hidden", boxSizing: "border-box" }}>
-                  {renderLabel(slide.label)}
-                  {slide.title && (
-                    <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 24 : 28) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                      {slide.title}
-                    </h3>
-                  )}
-                  {slide.body && (
-                    <p style={{ margin: 0, color: boxBodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
-                      {slide.body}
-                    </p>
-                  )}
-                  {slide.bullets.length > 0 && (
-                    <ul style={{ display: "grid", gap: Math.round(7 * Z), padding: 0, margin: 0, listStyle: "none" }}>
-                      {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                        if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
-                        return (
-                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: boxBulletColor, fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                            <span>{item}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
+            {/* ─── VARIANT: ITINERARY — photo top ~45%, colored block bottom ─── */}
+            {slide.slideVariant === "itinerary" && (() => {
+              const onPrimary = readableText(primary);
+              const isBgDark = onPrimary === "#F8FAFC";
+              const isTextDark = readableText(slide.textColor) === "#F8FAFC";
+              const boxTextColor = isBgDark && isTextDark ? onPrimary : slide.textColor;
+              const boxTitleColor = slide.titleStyle?.color || boxTextColor;
+              const boxBodyColor = slide.bodyStyle?.color || boxTextColor;
+              const boxBulletColor = slide.bulletStyle?.color || boxTextColor;
+              return (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div style={{ position: "relative", height: "45%", width: "100%", flexShrink: 0, overflow: "hidden" }}>
+                    {logo && (
+                      <img
+                        src={logo}
+                        alt=""
+                        crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                        style={{ position: "absolute", top: "12%", left: "7%", width: Math.round(36 * Z), height: Math.round(36 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), zIndex: 5, boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }}
+                      />
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      flex: 1,
+                      background: primary,
+                      color: boxTextColor,
+                      padding: "7% 8% 8%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      boxSizing: "border-box",
+                      borderTop: `${Math.round(3 * Z)}px solid ${secondary}`,
+                    }}
+                  >
+                    <div>
+                      {renderLabel(slide.label)}
+                      {slide.title && (
+                        <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 26 : 30) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                          {slide.title}
+                        </h3>
+                      )}
+                      {slide.body && (
+                        <p style={{ margin: `${Math.round(10 * Z)}px 0 0`, color: boxBodyColor, fontSize: Math.round(13 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
+                          {slide.body}
+                        </p>
+                      )}
+                    </div>
+                    {slide.bullets.length > 0 && (
+                      <ul style={{ display: "grid", gap: Math.round(6 * Z), padding: 0, margin: `${Math.round(12 * Z)}px 0 0`, listStyle: "none" }}>
+                        {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
+                          if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
+                          return (
+                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: boxBulletColor, fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                              <span>{item}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })()}
-        </>
+              );
+            })()}
 
-      )}
+            {/* ─── VARIANT: EDITORIAL — photo full background, floating glass card at bottom ─── */}
+            {slide.slideVariant === "editorial" && (() => {
+              const boxTextColor = readableText(primary);
+              const boxTitleColor = slide.titleStyle?.color || boxTextColor;
+              const boxBodyColor = slide.bodyStyle?.color || boxTextColor;
+              const boxBulletColor = slide.bulletStyle?.color || boxTextColor;
+              return (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    padding: "7%",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
+                    {logo ? (
+                      <img
+                        src={logo}
+                        alt=""
+                        crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                        style={{ width: Math.round(38 * Z), height: Math.round(38 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }}
+                      />
+                    ) : <span />}
+                  </div>
+                  <div
+                    style={{
+                      width: "100%",
+                      borderRadius: Math.round(18 * Z),
+                      background: safeHexToRgba(primary, 0.93),
+                      backdropFilter: "blur(8px)",
+                      border: `${Math.round(2 * Z)}px solid ${secondary}`,
+                      padding: "8% 9%",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: Math.round(10 * Z),
+                      overflow: "hidden",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    {renderLabel(slide.label)}
+                    {slide.title && (
+                      <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 24 : 28) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                        {slide.title}
+                      </h3>
+                    )}
+                    {slide.body && (
+                      <p style={{ margin: 0, color: boxBodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
+                        {slide.body}
+                      </p>
+                    )}
+                    {slide.bullets.length > 0 && (
+                      <ul style={{ display: "grid", gap: Math.round(7 * Z), padding: 0, margin: 0, listStyle: "none" }}>
+                        {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
+                          if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
+                          return (
+                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: boxBulletColor, fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                              <span>{item}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -2506,86 +2552,120 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           const thumbWidth = Math.round(baseWidth * zoomScale);
           const thumbHeight = Math.round(thumbWidth / coverRatio);
           return (
-            <div className="f1-carousel-scroll flex snap-x gap-4 overflow-x-auto pb-3 pt-1">
-              {slides.map((slide, index) => {
-                const isActive = activeIndex === index;
-                return (
-                  <button
-                    key={slide.id}
-                    type="button"
-                    onClick={() => setActiveIndex(index)}
-                    aria-label={`${isEs ? "Abrir imagen" : "Abrir imagem"} ${index + 1}`}
-                    aria-pressed={isActive}
-                    style={{
-                      flex: "0 0 auto",
-                      width: `${thumbWidth}px`,
-                    }}
-                    className={`snap-start group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-[#121316] text-left transition-all ${
-                      isActive
-                        ? "border-[#F5F906] shadow-[0_0_24px_rgba(245,249,6,0.22)] ring-1 ring-[#F5F906]/40"
-                        : "border-white/12 hover:border-white/30 hover:-translate-y-0.5"
-                    }`}
-                  >
-                    <ScaledSlidePreview
-                      slide={slide}
-                      index={index}
-                      total={slides.length}
-                      ratio={coverRatio}
-                      logo={state.logoBase64}
-                      primary={state.primaryColor}
-                      secondary={state.secondaryColor}
-                      width={thumbWidth}
-                    />
-                    <div
-                      className={`flex w-full items-center justify-between gap-1 border-t px-2.5 py-2 transition-colors ${
+            <div className="relative flex items-center group/ribbon">
+              {/* Seta esquerda */}
+              <button
+                type="button"
+                onClick={() => {
+                  const container = document.getElementById("f1-ribbon-scroll");
+                  if (container) container.scrollBy({ left: -thumbWidth - 16, behavior: "smooth" });
+                  setActiveIndex((c) => Math.max(0, c - 1));
+                }}
+                disabled={activeIndex === 0}
+                aria-label={isEs ? "Anterior" : "Anterior"}
+                title={isEs ? "Rolagem e slide anterior" : "Rolagem e slide anterior"}
+                className="absolute left-1 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/80 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black hover:scale-105 disabled:pointer-events-none disabled:opacity-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              <div id="f1-ribbon-scroll" className="f1-carousel-scroll flex snap-x gap-4 overflow-x-auto pb-3 pt-1 px-2 w-full">
+                {slides.map((slide, index) => {
+                  const isActive = activeIndex === index;
+                  return (
+                    <button
+                      key={slide.id}
+                      type="button"
+                      onClick={() => setActiveIndex(index)}
+                      aria-label={`${isEs ? "Abrir imagen" : "Abrir imagem"} ${index + 1}`}
+                      aria-pressed={isActive}
+                      style={{
+                        flex: "0 0 auto",
+                        width: `${thumbWidth}px`,
+                      }}
+                      className={`snap-center group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-[#121316] text-left transition-all ${
                         isActive
-                          ? "border-[#F5F906]/30 bg-[#F5F906]/15"
-                          : slide.kind === "cover"
-                            ? "border-[#F5F906]/20 bg-[#F5F906]/[0.05]"
-                            : slide.kind === "closing"
-                              ? "border-[#00F0FF]/20 bg-[#00F0FF]/[0.05]"
-                              : "border-white/10 bg-[#0E0F12]"
+                          ? "border-[#F5F906] shadow-[0_0_24px_rgba(245,249,6,0.22)] ring-1 ring-[#F5F906]/40"
+                          : "border-white/12 hover:border-white/30 hover:-translate-y-0.5"
                       }`}
                     >
-                      <div className="flex items-center gap-1.5 truncate">
-                        <span
-                          className={`rounded px-1.5 py-0.5 text-[9px] font-black tracking-wider uppercase ${
-                            slide.kind === "cover"
-                              ? "bg-[#F5F906] text-zinc-950"
+                      <ScaledSlidePreview
+                        slide={slide}
+                        index={index}
+                        total={slides.length}
+                        ratio={coverRatio}
+                        logo={state.logoBase64}
+                        primary={state.primaryColor}
+                        secondary={state.secondaryColor}
+                        width={thumbWidth}
+                      />
+                      <div
+                        className={`flex w-full items-center justify-between gap-1 border-t px-2.5 py-2 transition-colors ${
+                          isActive
+                            ? "border-[#F5F906]/30 bg-[#F5F906]/15"
+                            : slide.kind === "cover"
+                              ? "border-[#F5F906]/20 bg-[#F5F906]/[0.05]"
                               : slide.kind === "closing"
-                                ? "bg-[#00F0FF] text-zinc-950"
-                                : "bg-white/15 text-white"
-                          }`}
-                        >
-                          {slide.kind === "cover"
-                            ? (isEs ? "PORTADA" : "CAPA")
-                            : slide.kind === "closing"
-                              ? (isEs ? "CIERRE" : "FIM")
-                              : `#${index + 1}`}
-                        </span>
-                        <span
-                          className={`truncate text-[10px] font-bold ${
-                            isActive
-                              ? "text-[#F5F906]"
-                              : slide.kind === "cover"
-                                ? "text-[#F5F906]"
+                                ? "border-[#00F0FF]/20 bg-[#00F0FF]/[0.05]"
+                                : "border-white/10 bg-[#0E0F12]"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span
+                            className={`rounded px-1.5 py-0.5 text-[9px] font-black tracking-wider uppercase ${
+                              slide.kind === "cover"
+                                ? "bg-[#F5F906] text-zinc-950"
                                 : slide.kind === "closing"
-                                  ? "text-[#00F0FF]"
-                                  : "text-white/80"
-                          }`}
-                        >
-                          {slide.kind === "cover"
-                            ? (isEs ? "Original" : "Original")
-                            : slide.kind === "closing"
-                              ? (isEs ? "Contacto" : "Fechamento")
-                              : `${isEs ? "Diapositiva" : "Slide"} ${index + 1}`}
-                        </span>
+                                  ? "bg-[#00F0FF] text-zinc-950"
+                                  : "bg-white/15 text-white"
+                            }`}
+                          >
+                            {slide.kind === "cover"
+                              ? (isEs ? "PORTADA" : "CAPA")
+                              : slide.kind === "closing"
+                                ? (isEs ? "CIERRE" : "FIM")
+                                : `#${index + 1}`}
+                          </span>
+                          <span
+                            className={`truncate text-[10px] font-bold ${
+                              isActive
+                                ? "text-[#F5F906]"
+                                : slide.kind === "cover"
+                                  ? "text-[#F5F906]"
+                                  : slide.kind === "closing"
+                                    ? "text-[#00F0FF]"
+                                    : "text-white/80"
+                            }`}
+                          >
+                            {slide.kind === "cover"
+                              ? (isEs ? "Original" : "Original")
+                              : slide.kind === "closing"
+                                ? (isEs ? "Contacto" : "Fechamento")
+                                : `${isEs ? "Diapositiva" : "Slide"} ${index + 1}`}
+                          </span>
+                        </div>
+                        {slide.kind === "cover" && <Lock className="h-3 w-3 shrink-0 text-[#F5F906]" />}
                       </div>
-                      {slide.kind === "cover" && <Lock className="h-3 w-3 shrink-0 text-[#F5F906]" />}
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Seta direita */}
+              <button
+                type="button"
+                onClick={() => {
+                  const container = document.getElementById("f1-ribbon-scroll");
+                  if (container) container.scrollBy({ left: thumbWidth + 16, behavior: "smooth" });
+                  setActiveIndex((c) => Math.min(slides.length - 1, c + 1));
+                }}
+                disabled={activeIndex === slides.length - 1}
+                aria-label={isEs ? "Próxima" : "Próxima"}
+                title={isEs ? "Rolagem e próximo slide" : "Rolagem e próximo slide"}
+                className="absolute right-1 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/80 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black hover:scale-105 disabled:pointer-events-none disabled:opacity-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
           );
         })()}
