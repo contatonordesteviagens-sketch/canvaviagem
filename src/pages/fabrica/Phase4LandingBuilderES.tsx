@@ -49,10 +49,10 @@ import {
 } from "@/lib/canva-site-domain";
 
 const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
-const UI_ACCENT = "#F5F906";
-const UI_ACCENT_SOFT = "rgba(245, 249, 6, 0.12)";
-const UI_ACCENT_BORDER = "rgba(245, 249, 6, 0.75)";
-const UI_ACCENT_SHADOW = "rgba(245, 249, 6, 0.24)";
+const UI_ACCENT = "#F59E0B";
+const UI_ACCENT_SOFT = "rgba(245, 158, 11, 0.12)";
+const UI_ACCENT_BORDER = "rgba(245, 158, 11, 0.75)";
+const UI_ACCENT_SHADOW = "rgba(245, 158, 11, 0.24)";
 const SITE_SECTION_LABELS_ES: Record<string, string> = {
   header: "Encabezado y menú",
   hero: "Portada del sitio",

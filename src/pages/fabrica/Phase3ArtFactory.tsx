@@ -74,11 +74,11 @@ const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
 // um visual coerente com o "tom" daquela categoria (oferta = âmbar/quente,
 // experiência = navy/dourado luxo). O usuário pode customizar livremente depois;
 // só são re-aplicadas se ele ainda estiver usando os defaults da OUTRA categoria.
-const DEFAULT_COLORS_OFERTA = { primary: "#080808", secondary: "#F5F906" };
-const DEFAULT_COLORS_EXPERIENCIA = { primary: "#080808", secondary: "#F5F906" };
-const UI_ACCENT = "#F5F906";
-const UI_ACCENT_SOFT = "rgba(245, 249, 6, 0.12)";
-const UI_ACCENT_BORDER = "rgba(245, 249, 6, 0.75)";
+const DEFAULT_COLORS_OFERTA = { primary: "#080808", secondary: "#F59E0B" };
+const DEFAULT_COLORS_EXPERIENCIA = { primary: "#080808", secondary: "#F59E0B" };
+const UI_ACCENT = "#F59E0B";
+const UI_ACCENT_SOFT = "rgba(245, 158, 11, 0.12)";
+const UI_ACCENT_BORDER = "rgba(245, 158, 11, 0.75)";
 
 const isSameHex = (a: string, b: string) =>
   (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();

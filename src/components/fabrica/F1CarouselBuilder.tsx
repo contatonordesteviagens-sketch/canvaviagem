@@ -139,24 +139,42 @@ function contentPresets(pacote: Pacote, isEs: boolean) {
     pacote.paymentTerms && `${isEs ? "Pago" : "Pagamento"}: ${pacote.paymentTerms}`,
   ]);
 
+  const stripStars = (s: string) =>
+    s
+      .replace(/⭐|✨|\b⭐\b/gu, "")
+      .replace(/^[-\*\s•]+/, "")
+      .trim();
+
+  const cleanBody = (s: string | undefined, maxLen = 140) => {
+    if (!s) return "";
+    const cleaned = stripStars(s);
+    if (cleaned.length <= maxLen) return cleaned;
+    return cleaned.slice(0, maxLen).replace(/\s+\S*$/, "") + "...";
+  };
+
+  const cleanHighlights = highlights.map(stripStars).filter(Boolean);
+  const cleanIncluded = included.map(stripStars).filter(Boolean);
+  const cleanPlanning = planning.map(stripStars).filter(Boolean);
+  const cleanItinerary = itinerary.map(stripStars).filter(Boolean);
+
   return [
     {
       label: isEs ? "La experiencia" : "A experiência",
-      title: pacote.subtitle || pacote.title,
-      body: pacote.longDescription || pacote.description,
-      bullets: highlights.slice(0, 8),
+      title: stripStars(pacote.subtitle || pacote.title || ""),
+      body: cleanBody(pacote.longDescription || pacote.description, 160),
+      bullets: cleanHighlights.slice(0, 8),
     },
     {
       label: isEs ? "Incluido" : "O que inclui",
       title: isEs ? "Todo lo que forma parte de tu viaje" : "Tudo que faz parte da sua viagem",
-      body: included.length ? "" : pacote.description,
-      bullets: (included.length ? included : highlights).slice(0, 8),
+      body: cleanIncluded.length ? "" : cleanBody(pacote.description, 120),
+      bullets: (cleanIncluded.length ? cleanIncluded : cleanHighlights).slice(0, 8),
     },
     {
       label: isEs ? "Planifica" : "Planeje",
       title: isEs ? "Información para organizarte" : "Informações para se organizar",
-      body: pacote.importantNotes || "",
-      bullets: (planning.length ? planning : itinerary).slice(0, 8),
+      body: cleanBody(pacote.importantNotes, 110),
+      bullets: (cleanPlanning.length ? cleanPlanning : cleanItinerary).slice(0, 4),
     },
     {
       label: isEs ? "Condiciones" : "Condições especiais",
@@ -466,7 +484,8 @@ function CarouselCanvas({
 
   const renderLabel = (label: string) => {
     if (!label) return null;
-    const bg = slide.labelColor || secondary;
+    const rawBg = slide.labelColor || secondary;
+    const bg = rawBg.toUpperCase() === "#F5F906" ? "#F59E0B" : rawBg;
     const fg = readableText(bg);
     const style = slide.labelStyle || "filled";
 
@@ -913,7 +932,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
   const slidesRef = useRef(slides);
   const selectedPackageIdRef = useRef(selectedPackage?.id || "");
   const skipNextPersistRef = useRef("");
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(() => (slides.length > 1 ? 1 : 0));
   const [viewMode, setViewMode] = useState<"ribbon" | "stack" | "focus">("ribbon");
   const [zoomScale, setZoomScale] = useState<number>(1);
   const [coverRatio, setCoverRatio] = useState(DEFAULT_COVER_RATIO);
@@ -1056,7 +1075,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         slideArchiveRef.current = restoredArchive;
         setSlideCount(restoredCount);
         setSlides(restored);
-        setActiveIndex(0);
+        setActiveIndex(restored.length > 1 ? 1 : 0);
         return;
       }
     } catch {
@@ -1065,7 +1084,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
 
     slideArchiveRef.current = generatedArchive;
     setSlides(generated);
-    setActiveIndex(0);
+    setActiveIndex(generated.length > 1 ? 1 : 0);
   }, [agencyPhone, coverImage, isEs, selectedPackage, storageKey, state.siteContent.galleryImages, photoResults]);
 
   useEffect(() => {
@@ -1198,7 +1217,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
     );
     slideArchiveRef.current = generatedArchive;
     setSlides(generated);
-    setActiveIndex(0);
+    setActiveIndex(generated.length > 1 ? 1 : 0);
     toast.success(
       isEs
         ? "Contenido actualizado con los datos reales del paquete."
@@ -1577,7 +1596,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
   if (!selectedPackage) {
     return (
       <section className="rounded-2xl border border-white/10 bg-[#0F0F11] p-5 sm:p-6">
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#F5F906]">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#F59E0B]">
           {isEs ? "Carrusel" : "Carrossel"}
         </p>
         <h2 className="mt-3 text-xl font-bold text-white">
@@ -1597,7 +1616,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
       <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#F5F906]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#F59E0B]">
               {isEs ? "Carrusel listo en 4 pasos" : "Carrossel pronto em 4 passos"}
             </p>
             <h2 className="mt-2 text-lg font-bold text-white">
@@ -1613,7 +1632,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
             type="button"
             onClick={downloadAll}
             disabled={downloading}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-4 text-sm font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-wait disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F59E0B] px-4 text-sm font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-wait disabled:opacity-50"
           >
             <Download className="h-4 w-4" />
             {downloading
@@ -1627,7 +1646,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,.7fr)]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">1</span>
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F59E0B] text-[11px] font-black text-zinc-950">1</span>
               <h3 className="text-sm font-bold text-white">
                 {isEs ? "Elige el paquete y la cantidad" : "Escolha o pacote e a quantidade"}
               </h3>
@@ -1637,7 +1656,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 <select
                   value={selectedPackage.id}
                   onChange={(event) => setSelectedPackageId(event.target.value)}
-                  className="min-h-11 flex-1 rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white outline-none focus:border-[#F5F906]"
+                  className="min-h-11 flex-1 rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white outline-none focus:border-[#F59E0B]"
                 >
                   {packages.map((pacote) => (
                     <option key={pacote.id} value={pacote.id}>{pacote.title}</option>
@@ -1650,7 +1669,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     if (chosen) generateNewCoverAd(chosen);
                   }}
                   disabled={generatingCoverAd}
-                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[#F5F906]/35 bg-[#F5F906]/10 px-3 text-xs font-extrabold text-[#F5F906] hover:bg-[#F5F906]/20 transition-colors"
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[#F59E0B]/35 bg-[#F59E0B]/10 px-3 text-xs font-extrabold text-[#F59E0B] hover:bg-[#F59E0B]/20 transition-colors"
                   title={isEs ? "Generar portada con el paquete seleccionado" : "Gerar capa com o pacote selecionado sem alterar os outros slides"}
                 >
                   <Sparkles className="h-3.5 w-3.5" />
@@ -1680,7 +1699,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   type="button"
                   onClick={() => generateNewCoverAd(selectedPackage)}
                   disabled={generatingCoverAd}
-                  className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-[#F5F906]/50 bg-[#F5F906]/15 px-3 text-xs font-extrabold text-[#F5F906] hover:bg-[#F5F906]/25 transition-colors disabled:opacity-50"
+                  className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-[#F59E0B]/50 bg-[#F59E0B]/15 px-3 text-xs font-extrabold text-[#F59E0B] hover:bg-[#F59E0B]/25 transition-colors disabled:opacity-50"
                   title={isEs ? "Genera arte publicitario completo en la portada" : "Gera arte de anúncio completa na capa"}
                 >
                   <Sparkles className="h-3.5 w-3.5 animate-pulse" />
@@ -1721,7 +1740,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   onClick={() => changeSlideCount(count)}
                   className={`min-h-11 rounded-xl border px-3 text-sm font-extrabold ${
                     slideCount === count
-                      ? "border-[#F5F906] bg-[#F5F906] text-zinc-950"
+                      ? "border-[#F59E0B] bg-[#F59E0B] text-zinc-950"
                       : "border-white/10 text-white/60 hover:bg-white/[0.05]"
                   }`}
                 >
@@ -1737,7 +1756,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         {/* Header: título + contador + controles de modo e zoom */}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">2</span>
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F59E0B] text-[11px] font-black text-zinc-950">2</span>
             <div>
               <h3 className="text-sm font-bold text-white">{isEs ? "Revisa la secuencia" : "Revise a sequência"}</h3>
               <p className="text-[10px] text-white/40">
@@ -1762,7 +1781,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 title={isEs ? "Fila horizontal" : "Faixa horizontal"}
                 className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
                   viewMode === "ribbon"
-                    ? "bg-[#F5F906] text-zinc-950"
+                    ? "bg-[#F59E0B] text-zinc-950"
                     : "text-white/50 hover:bg-white/[0.07] hover:text-white"
                 }`}
               >
@@ -1776,7 +1795,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 title={isEs ? "Grade vertical" : "Grade vertical (uma abaixo da outra)"}
                 className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
                   viewMode === "stack"
-                    ? "bg-[#F5F906] text-zinc-950"
+                    ? "bg-[#F59E0B] text-zinc-950"
                     : "text-white/50 hover:bg-white/[0.07] hover:text-white"
                 }`}
               >
@@ -1790,7 +1809,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 title={isEs ? "Una imagen a la vez" : "Uma imagem por vez (foco)"}
                 className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
                   viewMode === "focus"
-                    ? "bg-[#F5F906] text-zinc-950"
+                    ? "bg-[#F59E0B] text-zinc-950"
                     : "text-white/50 hover:bg-white/[0.07] hover:text-white"
                 }`}
               >
@@ -1856,7 +1875,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     }}
                     className={`snap-start group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-[#121316] text-left transition-all ${
                       isActive
-                        ? "border-[#F5F906] shadow-[0_0_24px_rgba(245,249,6,0.22)] ring-1 ring-[#F5F906]/40"
+                        ? "border-[#F59E0B] shadow-[0_0_24px_rgba(245,158,11,0.22)] ring-1 ring-[#F59E0B]/40"
                         : "border-white/12 hover:border-white/30 hover:-translate-y-0.5"
                     }`}
                   >
@@ -1878,7 +1897,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             ? `${slides.length}. ${isEs ? "Cierre" : "Fechamento"}`
                             : `${index + 1}. ${isEs ? "Contenido" : "Slide"}`}
                       </span>
-                      {slide.kind === "cover" && <Lock className="h-3 w-3 shrink-0 text-[#F5F906]" />}
+                      {slide.kind === "cover" && <Lock className="h-3 w-3 shrink-0 text-[#F59E0B]" />}
                     </div>
                   </button>
                 );
@@ -1904,7 +1923,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                     style={{ width: "100%", maxWidth: `${thumbWidth}px` }}
                     className={`group relative mx-auto flex flex-col overflow-hidden rounded-2xl border-2 bg-[#121316] text-left transition-all ${
                       isActive
-                        ? "border-[#F5F906] shadow-[0_0_24px_rgba(245,249,6,0.22)] ring-1 ring-[#F5F906]/40"
+                        ? "border-[#F59E0B] shadow-[0_0_24px_rgba(245,158,11,0.22)] ring-1 ring-[#F59E0B]/40"
                         : "border-white/12 hover:border-white/30 hover:-translate-y-0.5"
                     }`}
                   >
@@ -1929,7 +1948,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
                             : `${isEs ? "Contenido" : "Conteúdo"} ${index}`}
                       </span>
-                      {slide.kind === "cover" && <Lock className="h-3.5 w-3.5 shrink-0 text-[#F5F906]" />}
+                      {slide.kind === "cover" && <Lock className="h-3.5 w-3.5 shrink-0 text-[#F59E0B]" />}
                     </div>
                   </button>
                 );
@@ -1964,7 +1983,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                       aria-label={`${isEs ? "Ir a imagen" : "Ir para imagem"} ${idx + 1}`}
                       className={`h-1.5 rounded-full transition-all ${
                         activeIndex === idx
-                          ? "w-5 bg-[#F5F906]"
+                          ? "w-5 bg-[#F59E0B]"
                           : "w-1.5 bg-white/20 hover:bg-white/40"
                       }`}
                     />
@@ -1983,7 +2002,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
               </div>
 
               {/* Canvas do slide ativo em destaque */}
-              <div className="mx-auto overflow-hidden rounded-2xl border-2 border-[#F5F906] shadow-[0_0_32px_rgba(245,249,6,0.15)]">
+              <div className="mx-auto overflow-hidden rounded-2xl border-2 border-[#F59E0B] shadow-[0_0_32px_rgba(245,158,11,0.15)]">
                 {activeSlide && (
                   <ScaledSlidePreview
                     slide={activeSlide}
@@ -2016,7 +2035,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">3</span>
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F59E0B] text-[11px] font-black text-zinc-950">3</span>
                 <div>
                   <h3 className="text-sm font-bold text-white">
                     {activeSlide?.kind === "cover"
@@ -2028,7 +2047,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   {/* Badge indicador do tipo de slide */}
                   <span className={`inline-block mt-0.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
                     activeSlide?.kind === "cover"
-                      ? "bg-[#F5F906]/15 text-[#F5F906]"
+                      ? "bg-[#F59E0B]/15 text-[#F59E0B]"
                       : activeSlide?.kind === "closing"
                         ? "bg-white/10 text-white/60"
                         : "bg-white/[0.06] text-white/45"
@@ -2071,9 +2090,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
             </div>
 
             {activeSlide?.kind === "cover" && (
-              <div className="mt-4 rounded-xl border border-[#F5F906]/25 bg-[#F5F906]/[0.06] p-4">
+              <div className="mt-4 rounded-xl border border-[#F59E0B]/25 bg-[#F59E0B]/[0.06] p-4">
                 <div className="flex gap-3">
-                  <Lock className="mt-0.5 h-5 w-5 shrink-0 text-[#F5F906]" />
+                  <Lock className="mt-0.5 h-5 w-5 shrink-0 text-[#F59E0B]" />
                   <div>
                     <p className="text-sm font-bold text-white">
                       {isEs ? "Esta imagen no se modifica." : "Esta imagem não será modificada."}
@@ -2100,7 +2119,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 {/* ── Barra de Formatação (Fonte, Peso e Estilo) ── */}
                 <div className="rounded-xl border border-white/10 bg-zinc-900/80 p-3 space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F5F906]">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F59E0B]">
                       {isEs ? "Estilo y Tipografía" : "Estilo e Tipografia"}
                     </span>
                     <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-white/80">
@@ -2108,7 +2127,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         type="checkbox"
                         checked={activeSlide.showShadow !== false}
                         onChange={(event) => patchActive({ showShadow: event.target.checked })}
-                        className="rounded border-white/20 bg-black text-[#F5F906] focus:ring-[#F5F906]"
+                        className="rounded border-white/20 bg-black text-[#F59E0B] focus:ring-[#F59E0B]"
                       />
                       <span>{isEs ? "Sombra en textos" : "Sombra nos textos"}</span>
                     </label>
@@ -2118,7 +2137,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                       value={activeSlide.fontFamily || "Inter"}
                       onChange={(event) => patchActive({ fontFamily: event.target.value })}
                       aria-label={isEs ? "Tipo de letra" : "Família da fonte"}
-                      className="min-h-9 rounded-lg border border-white/10 bg-black/60 px-2.5 text-xs font-bold text-white outline-none focus:border-[#F5F906]"
+                      className="min-h-9 rounded-lg border border-white/10 bg-black/60 px-2.5 text-xs font-bold text-white outline-none focus:border-[#F59E0B]"
                     >
                       <option value="Inter">Inter (Padrão Moderno)</option>
                       <option value="Montserrat">Montserrat (Elegante)</option>
@@ -2133,7 +2152,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         onClick={() => patchActive({ fontWeight: activeSlide.fontWeight === "bold" ? "black" : activeSlide.fontWeight === "normal" ? "bold" : "normal" })}
                         title="Peso da Fonte (Normal / Negrito / Black)"
                         className={`rounded-lg border px-2 py-1.5 text-xs font-extrabold transition-colors ${
-                          activeSlide.fontWeight === "bold" ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
+                          activeSlide.fontWeight === "bold" ? "border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
                         }`}
                       >
                         {activeSlide.fontWeight === "bold" ? "Negrito" : activeSlide.fontWeight === "normal" ? "Normal" : "Black"}
@@ -2143,7 +2162,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         onClick={() => patchActive({ fontStyle: activeSlide.fontStyle === "italic" ? "normal" : "italic" })}
                         title="Itálico"
                         className={`rounded-lg border px-2 py-1.5 text-xs font-serif italic transition-colors ${
-                          activeSlide.fontStyle === "italic" ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
+                          activeSlide.fontStyle === "italic" ? "border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
                         }`}
                       >
                         I
@@ -2153,7 +2172,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         onClick={() => patchActive({ textDecoration: activeSlide.textDecoration === "underline" ? "none" : "underline" })}
                         title="Sublinhado"
                         className={`rounded-lg border px-2 py-1.5 text-xs underline transition-colors ${
-                          activeSlide.textDecoration === "underline" ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
+                          activeSlide.textDecoration === "underline" ? "border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]" : "border-white/10 text-white/70 hover:bg-white/[0.06]"
                         }`}
                       >
                         U
@@ -2202,7 +2221,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             onClick={() => patchActive({ labelStyle: styleKey })}
                             className={`rounded-lg border px-2 py-1.5 text-[10px] font-bold transition-colors ${
                               (activeSlide.labelStyle || "filled") === styleKey
-                                ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]"
+                                ? "border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]"
                                 : "border-white/10 text-white/60 hover:bg-white/[0.05]"
                             }`}
                           >
@@ -2295,7 +2314,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             onClick={() => patchActive({ slideVariant: variant })}
                             className={`flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-[9px] font-bold transition-colors ${
                               activeSlide.slideVariant === variant
-                                ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
+                                ? "border-[#F59E0B] bg-[#F59E0B]/10 text-[#F59E0B]"
                                 : "border-white/10 text-white/50 hover:bg-white/[0.04] hover:text-white"
                             }`}
                           >
@@ -2351,7 +2370,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         onClick={() => patchActive({ textColor: color })}
                         className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-2 text-[10px] font-bold ${
                           activeSlide.textColor.toUpperCase() === color.toUpperCase()
-                            ? "border-[#F5F906] text-white"
+                            ? "border-[#F59E0B] text-white"
                             : "border-white/10 text-white/55 hover:bg-white/[0.04]"
                         }`}
                       >
@@ -2368,7 +2387,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           {activeSlide && activeSlide.kind !== "cover" && (
             <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
               <div className="flex items-center gap-2">
-                <ImagePlus className="h-4 w-4 text-[#F5F906]" />
+                <ImagePlus className="h-4 w-4 text-[#F59E0B]" />
                 <h3 className="text-sm font-bold text-white">
                   {activeSlide.kind === "closing"
                     ? (isEs ? "Fondo del cierre" : "Fundo do fechamento")
@@ -2389,7 +2408,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   onClick={searchPhotos}
                   disabled={searchingPhotos}
                   aria-label={isEs ? "Buscar fotos" : "Buscar fotos"}
-                  className="grid min-h-11 min-w-11 place-items-center rounded-xl bg-[#F5F906] text-zinc-950 disabled:opacity-50"
+                  className="grid min-h-11 min-w-11 place-items-center rounded-xl bg-[#F59E0B] text-zinc-950 disabled:opacity-50"
                 >
                   {searchingPhotos ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                 </button>
@@ -2451,7 +2470,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                           aria-label={`${isEs ? "Usar foto" : "Usar foto"} ${index + 1}`}
                           className={`relative aspect-square overflow-hidden rounded-xl border-2 ${
                             selected
-                              ? "border-[#F5F906]"
+                              ? "border-[#F59E0B]"
                               : usedByOtherSlide
                                 ? "cursor-not-allowed border-white/5 opacity-35"
                                 : "border-white/10 hover:border-white/30"
@@ -2464,7 +2483,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                             loading="lazy"
                           />
                           {selected && (
-                            <span className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-zinc-950">
+                            <span className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-[#F59E0B] text-zinc-950">
                               <Check className="h-3.5 w-3.5" />
                             </span>
                           )}
@@ -2547,10 +2566,10 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         </aside>
       </div>
 
-      <div className="rounded-2xl border border-[#F5F906]/25 bg-[#F5F906]/[0.05] p-4">
+      <div className="rounded-2xl border border-[#F59E0B]/25 bg-[#F59E0B]/[0.05] p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">4</span>
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F59E0B] text-[11px] font-black text-zinc-950">4</span>
             <div>
               <p className="text-sm font-bold text-white">
                 {isEs ? "Todo listo para publicar" : "Tudo pronto para publicar"}
@@ -2573,7 +2592,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
               type="button"
               onClick={downloadAll}
               disabled={downloading}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-4 text-sm font-extrabold text-zinc-950 disabled:opacity-50"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F59E0B] px-4 text-sm font-extrabold text-zinc-950 disabled:opacity-50"
             >
               <Download className="h-4 w-4" />
               {isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}
@@ -2585,8 +2604,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
       {showNewCarouselModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 shadow-2xl space-y-5">
-            <div className="flex items-center gap-3 text-[#F5F906]">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#F5F906]/15 text-[#F5F906]">
+            <div className="flex items-center gap-3 text-[#F59E0B]">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#F59E0B]/15 text-[#F59E0B]">
                 <Sparkles className="h-5 w-5" />
               </div>
               <h3 className="text-lg font-black text-white">
@@ -2605,7 +2624,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   setShowNewCarouselModal(false);
                   downloadAll();
                 }}
-                className="w-full min-h-11 rounded-xl bg-[#F5F906] font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 transition-colors flex items-center justify-center gap-2"
+                className="w-full min-h-11 rounded-xl bg-[#F59E0B] font-extrabold text-zinc-950 hover:bg-[#F59E0B]/90 transition-colors flex items-center justify-center gap-2"
               >
                 <Download className="h-4 w-4" />
                 {isEs ? "Descargar imágenes del carrusel" : "Baixar Imagens do Carrossel"}
@@ -2665,8 +2684,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           outline: none;
         }
         .f1-carousel-input:focus {
-          border-color: #F5F906;
-          box-shadow: 0 0 0 2px rgba(245,249,6,.12);
+          border-color: #F59E0B;
+          box-shadow: 0 0 0 2px rgba(245,158,11,.12);
         }
         .f1-carousel-scroll {
           scrollbar-width: thin;
