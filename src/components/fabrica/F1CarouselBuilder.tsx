@@ -2839,7 +2839,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 {activeSlide?.kind === "cover"
                   ? (isEs ? "Portada original — bloqueada." : "Capa original — bloqueada.")
                   : activeSlide?.kind === "closing"
-                    ? (isEs ? "Cierre + contac      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
+                    ? (isEs ? "Cierre + contacto — bloqueado." : "Fechamento + contato — bloqueado.")
+                    : (isEs ? "Edita esta imagen abajo." : "Edite esta imagem abaixo.")}
+              </p>
+            </div>
+          );
+        })()}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
         {/* ══ LEFT: Slide Editor ══ */}
         <div className="order-2 space-y-3 lg:order-1">
           {/* ── Card: Slide being edited ── */}
@@ -2909,8 +2917,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   {!coverImage && (
                     <p className="mt-3 rounded-lg bg-amber-300/10 px-3 py-2 text-xs font-semibold text-amber-100">
                       {isEs
-                        ? "Vuelve a Anuncio, genera la portada y usa "Transformar en carrusel"."
-                        : "Volte para Anúncio, gere a capa e use "Transformar em carrossel"."}
+                        ? 'Vuelve a Anuncio, genera la portada y usa "Transformar en carrusel".'
+                        : 'Volte para Anúncio, gere a capa e use "Transformar em carrossel".'}
                     </p>
                   )}
                 </div>
@@ -3008,11 +3016,14 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                       ["gradient", "Degradê"],
                     ] as const).map(([styleKey, styleTitle]) => (
                       <button
-{
-                      (activeSlide.labelStyle || "filled") === styleKey
-                        ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906] shadow-[0_0_10px_rgba(245,249,6,0.2)]"
-                        : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
-                    }`}
+                        key={styleKey}
+                        type="button"
+                        onClick={() => patchActive({ labelStyle: styleKey })}
+                        className={`rounded-lg border px-2.5 py-1 text-[10px] font-bold transition-all ${
+                          (activeSlide.labelStyle || "filled") === styleKey
+                            ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906] shadow-[0_0_10px_rgba(245,249,6,0.2)]"
+                            : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
+                        }`}
                   >
                     {styleTitle}
                   </button>
@@ -3229,21 +3240,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
             </div>
           )}
         </div>
-               )}
-                  </>
-                )}
-              </div>
-            )}
 
-          </div>
 
-          {activeSlide && activeSlide.kind !== "cover" && (
-            <div className="block lg:hidden space-y-4">
-              {renderPhotoSelectionBox()}
-              {renderPublishFooterBox()}
-            </div>
-          )}
-        </div>
 
         <aside className="order-1 lg:order-2 lg:sticky lg:top-5 lg:self-start max-h-[calc(100vh-1.5rem)] overflow-y-auto scrollbar-thin pr-1 space-y-4">
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-3 sm:p-4">
