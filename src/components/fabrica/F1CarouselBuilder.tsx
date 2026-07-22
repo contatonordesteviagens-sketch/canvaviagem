@@ -124,11 +124,11 @@ const safeHexToRgba = (hex: string, alpha: number) => {
   if (/^[0-9a-f]{3}$/i.test(normalized)) {
     normalized = normalized.split("").map((c) => c + c).join("");
   }
-  if (!/^[0-9a-f]{6}$/i.test(normalized)) return `rgba(15,15,17,${alpha})`;
+  if (!/^[0-9a-f]{6}$/i.test(normalized)) return `rgba(15, 15, 17, ${alpha})`;
   const [red, green, blue] = [0, 2, 4].map((index) =>
     Number.parseInt(normalized.slice(index, index + 2), 16),
   );
-  return `rgba(${red},${green},${blue},${alpha})`;
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 };
 
 const phoneLabel = (dialCode: string, phone: string) => {
@@ -215,10 +215,10 @@ function createSlides(
     ...extraImages,
   ]).filter((img) => img !== coverImage);
 
+  const validImages = allDestImages.filter(Boolean);
   const getImg = (idx: number) => {
-    const valid = allDestImages.filter(Boolean);
-    if (!valid.length) return ""; // fallback to empty instead of coverImage
-    return valid[idx % valid.length] || "";
+    if (!validImages.length) return ""; // fallback to empty instead of coverImage
+    return validImages[idx % validImages.length] || "";
   };
   const presets = contentPresets(pacote, isEs);
   const contentCount = total - 2;
@@ -267,7 +267,7 @@ function createSlides(
       id: createId(),
       kind: "content",
       ...preset,
-      imageUrl: getImg(index + 1),
+      imageUrl: getImg(index),
       textColor: "#FFFFFF",
       cta: "",
       phone: "",
@@ -292,7 +292,7 @@ function createSlides(
     title: "",
     body: "",
     bullets: [],
-    imageUrl: getImg(contentCount + 1),
+    imageUrl: getImg(selectedPresets.length),
     textColor: "#FFFFFF",
     cta: pacote.ctaLabel || (isEs ? "Reserva tu viaje por WhatsApp" : "Reserve sua viagem pelo WhatsApp"),
     phone,
@@ -486,9 +486,11 @@ function CarouselCanvas({
   canvasRef?: (node: HTMLDivElement | null) => void;
   exportMode?: boolean;
 }) {
-  const computedHeight = Math.round(432 / (ratio || 0.8));
+  const Z = exportMode ? 2.5 : 1;
+  const baseWidth = Math.round(432 * Z);
+  const computedHeight = Math.round((432 / (ratio || 0.8)) * Z);
   const dimensions: CSSProperties = exportMode
-    ? { width: 432, height: computedHeight }
+    ? { width: baseWidth, height: computedHeight }
     : { width: "100%", aspectRatio: `${ratio}` };
 
   if (slide.kind === "cover") {
@@ -501,6 +503,7 @@ function CarouselCanvas({
           position: "relative",
           overflow: "hidden",
           background: "#08090B",
+          boxSizing: "border-box",
         }}
       >
         {slide.imageUrl ? (
@@ -524,7 +527,7 @@ function CarouselCanvas({
               padding: "12%",
               color: "#F8FAFC",
               textAlign: "center",
-              font: "800 18px/1.35 Inter, sans-serif",
+              font: `${Math.round(800 * Z)} ${Math.round(18 * Z)}px/1.35 Inter, sans-serif`,
             }}
           >
             Gere a arte de capa na aba Anúncio
@@ -556,9 +559,9 @@ function CarouselCanvas({
   const bulletDecAttr = (slide.bulletStyle?.underline !== undefined ? slide.bulletStyle.underline : slide.textDecoration === "underline") ? "underline" : "none";
   const bulletColor = slide.bulletStyle?.color || slide.textColor;
 
-  const textShadow = slide.showShadow === false ? "none" : "0 3px 18px rgba(0,0,0,.72)";
-  const bodyShadow = slide.showShadow === false ? "none" : "0 2px 12px rgba(0,0,0,.82)";
-  const bulletShadow = slide.showShadow === false ? "none" : "0 2px 10px rgba(0,0,0,.88)";
+  const textShadow = slide.showShadow === false ? "none" : `0px ${Math.round(3 * Z)}px ${Math.round(18 * Z)}px rgba(0, 0, 0, 0.75)`;
+  const bodyShadow = slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`;
+  const bulletShadow = slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(10 * Z)}px rgba(0, 0, 0, 0.88)`;
 
   const renderLabel = (label: string) => {
     if (!label) return null;
@@ -567,50 +570,63 @@ function CarouselCanvas({
     const fg = readableText(bg);
 
     const style = slide.labelStyle || "filled";
+    const commonStyle: CSSProperties = {
+      display: "inline-flex",
+      maxWidth: "100%",
+      marginBottom: Math.round(13 * Z),
+      padding: `${Math.round(7 * Z)}px ${Math.round(12 * Z)}px`,
+      fontSize: Math.round(10 * Z),
+      lineHeight: 1.15,
+      fontWeight: 900,
+      letterSpacing: ".12em",
+      textTransform: "uppercase",
+      boxSizing: "border-box",
+    };
+
     if (style === "outline-thin") {
       return (
-        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, border: `1px solid ${bg}`, background: "rgba(0,0,0,.45)", color: "#F8FAFC", padding: "6px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase" }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.round(1 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.45)", color: "#F8FAFC", padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
     }
     if (style === "outline-thick") {
       return (
-        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, border: `2.5px solid ${bg}`, background: "rgba(0,0,0,.6)", color: "#F8FAFC", padding: "6px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.round(2.5 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.60)", color: "#F8FAFC", padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px` }}>
           {label}
         </div>
       );
     }
     if (style === "stripe-left") {
       return (
-        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderLeft: `4px solid ${bg}`, background: "rgba(0,0,0,.55)", color: "#F8FAFC", padding: "6px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase" }}>
+        <div style={{ ...commonStyle, borderLeft: `${Math.round(4 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.55)", color: "#F8FAFC", padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
     }
     if (style === "rectangle") {
       return (
-        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 0, background: bg, color: fg, padding: "7px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", boxShadow: slide.showShadow === false ? "none" : "0 4px 14px rgba(0,0,0,.35)" }}>
+        <div style={{ ...commonStyle, borderRadius: 0, background: bg, color: fg, boxShadow: slide.showShadow === false ? "none" : `0px ${Math.round(4 * Z)}px ${Math.round(14 * Z)}px rgba(0, 0, 0, 0.35)` }}>
           {label}
         </div>
       );
     }
     if (style === "translucent") {
       return (
-        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, background: `${bg}80`, color: fg, padding: "7px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), background: safeHexToRgba(bg, 0.5), color: fg }}>
           {label}
         </div>
       );
     }
     if (style === "gradient") {
       return (
-        <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, background: `linear-gradient(90deg, ${bg}, rgba(255,255,255,0.8))`, color: fg, padding: "7px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", boxShadow: slide.showShadow === false ? "none" : "0 4px 14px rgba(0,0,0,.35)" }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), background: `linear-gradient(90deg, ${bg} 0%, rgba(255, 255, 255, 0.80) 100%)`, color: fg, boxShadow: slide.showShadow === false ? "none" : `0px ${Math.round(4 * Z)}px ${Math.round(14 * Z)}px rgba(0, 0, 0, 0.35)` }}>
           {label}
         </div>
       );
     }
     return (
-      <div style={{ display: "inline-flex", maxWidth: "100%", marginBottom: 13, borderRadius: 999, background: bg, color: fg, padding: "7px 12px", fontSize: 10, lineHeight: 1.15, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase", boxShadow: slide.showShadow === false ? "none" : "0 4px 14px rgba(0,0,0,.35)" }}>
+      <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), background: bg, color: fg, boxShadow: slide.showShadow === false ? "none" : `0px ${Math.round(4 * Z)}px ${Math.round(14 * Z)}px rgba(0, 0, 0, 0.35)` }}>
         {label}
       </div>
     );
@@ -625,9 +641,10 @@ function CarouselCanvas({
         position: "relative",
         overflow: "hidden",
         isolation: "isolate",
-        background: `linear-gradient(145deg, ${primary}, ${secondary})`,
+        background: `linear-gradient(145deg, ${primary} 0%, ${secondary} 100%)`,
         color: slide.textColor,
         fontFamily: ff,
+        boxSizing: "border-box",
       }}
     >
       {slide.imageUrl && (
@@ -657,8 +674,8 @@ function CarouselCanvas({
           background: slide.showShadow === false
             ? "transparent"
             : isClosing
-              ? "linear-gradient(180deg,rgba(5,7,10,.58),rgba(5,7,10,.82))"
-              : "linear-gradient(180deg,rgba(5,7,10,.22) 0%,rgba(5,7,10,.08) 30%,rgba(5,7,10,.78) 68%,rgba(5,7,10,.94) 100%)",
+              ? "linear-gradient(180deg, rgba(5, 7, 10, 0.58) 0%, rgba(5, 7, 10, 0.82) 100%)"
+              : "linear-gradient(180deg, rgba(5, 7, 10, 0.22) 0%, rgba(5, 7, 10, 0.08) 30%, rgba(5, 7, 10, 0.78) 68%, rgba(5, 7, 10, 0.94) 100%)",
         }}
       />
 
@@ -673,15 +690,16 @@ function CarouselCanvas({
             justifyContent: "center",
             padding: "11% 9%",
             textAlign: "center",
+            boxSizing: "border-box",
           }}
         >
           <div
             style={{
-              background: "rgba(255,255,255,.96)",
-              padding: "16px 28px",
-              borderRadius: 24,
-              boxShadow: "0 8px 24px rgba(0,0,0,.35)",
-              marginBottom: 16,
+              background: "rgba(255, 255, 255, 0.96)",
+              padding: `${Math.round(16 * Z)}px ${Math.round(28 * Z)}px`,
+              borderRadius: Math.round(24 * Z),
+              boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0, 0, 0, 0.35)`,
+              marginBottom: Math.round(16 * Z),
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -697,8 +715,8 @@ function CarouselCanvas({
                     : "anonymous"
                 }
                 style={{
-                  maxHeight: ratio < 0.68 ? 58 : 66,
-                  maxWidth: 210,
+                  maxHeight: Math.round((ratio < 0.68 ? 58 : 66) * Z),
+                  maxWidth: Math.round(210 * Z),
                   objectFit: "contain",
                 }}
               />
@@ -706,7 +724,7 @@ function CarouselCanvas({
               <div
                 style={{
                   color: "#111318",
-                  fontSize: 14,
+                  fontSize: Math.round(14 * Z),
                   fontWeight: 800,
                   letterSpacing: ".06em",
                   textTransform: "uppercase",
@@ -720,9 +738,9 @@ function CarouselCanvas({
           <h3
             style={{
               maxWidth: "94%",
-              margin: "0 0 8px",
+              margin: `0 0 ${Math.round(8 * Z)}px`,
               color: titleColor,
-              fontSize: ratio < 0.68 ? 24 : 28,
+              fontSize: Math.round((ratio < 0.68 ? 24 : 28) * Z),
               lineHeight: 1.08,
               fontFamily: ff,
               fontWeight: titleWeight,
@@ -736,9 +754,9 @@ function CarouselCanvas({
           <p
             style={{
               maxWidth: "88%",
-              margin: "0 0 20px",
+              margin: `0 0 ${Math.round(20 * Z)}px`,
               color: bodyColor,
-              fontSize: ratio < 0.68 ? 13 : 14,
+              fontSize: Math.round((ratio < 0.68 ? 13 : 14) * Z),
               lineHeight: 1.45,
               fontFamily: ff,
               fontWeight: bodyWeight,
@@ -756,16 +774,16 @@ function CarouselCanvas({
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              minHeight: 52,
-              padding: "0 28px",
-              borderRadius: 999,
+              minHeight: Math.round(52 * Z),
+              padding: `0 ${Math.round(28 * Z)}px`,
+              borderRadius: Math.round(999 * Z),
               background: "#F5F906",
               color: "#111318",
-              fontSize: 15,
+              fontSize: Math.round(15 * Z),
               fontWeight: 900,
               letterSpacing: ".04em",
               textTransform: "uppercase",
-              boxShadow: slide.showShadow === false ? "none" : "0 8px 26px rgba(245,249,6,.28)",
+              boxShadow: slide.showShadow === false ? "none" : `0px ${Math.round(8 * Z)}px ${Math.round(26 * Z)}px rgba(245, 249, 6, 0.28)`,
             }}
           >
             {slide.cta}
@@ -774,19 +792,19 @@ function CarouselCanvas({
           {slide.phone && (
             <div
               style={{
-                marginTop: 18,
+                marginTop: Math.round(18 * Z),
                 color: "#F8FAFC",
-                fontSize: ratio < 0.68 ? 18 : 20,
+                fontSize: Math.round((ratio < 0.68 ? 18 : 20) * Z),
                 lineHeight: 1.2,
                 fontWeight: 800,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 8,
-                textShadow: slide.showShadow === false ? "none" : "0 2px 12px rgba(0,0,0,.82)",
+                gap: Math.round(8 * Z),
+                textShadow: slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`,
               }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#25D366" style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,.5))" }}>
+              <svg width={Math.round(20 * Z)} height={Math.round(20 * Z)} viewBox="0 0 24 24" fill="#25D366" style={{ filter: "drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.5))" }}>
                 <path d="M11.999 0C5.373 0 0 5.373 0 12c0 2.126.556 4.196 1.614 6.012L.053 23.947l6.096-1.597C7.935 23.411 9.948 24 11.999 24 18.626 24 24 18.627 24 12S18.626 0 11.999 0zm6.166 17.067c-.259.73-1.512 1.405-2.09 1.463-.559.055-1.079.255-3.468-.682-2.885-1.132-4.757-4.088-4.901-4.281-.143-.193-1.173-1.564-1.173-2.984 0-1.42.744-2.122 1.009-2.414.259-.285.566-.356.755-.356.188 0 .376.002.541.011.174.009.407-.066.638.489.236.568.804 1.956.874 2.101.07.145.117.315.022.507-.095.193-.143.315-.284.482-.143.167-.301.374-.429.501-.143.143-.292.298-.125.586.167.288.742 1.228 1.596 1.986 1.101.977 2.031 1.281 2.319 1.424.288.143.456.12.625-.072.167-.193.717-.837.908-1.124.193-.288.384-.24.649-.143.264.098 1.68 0.793 1.968.937.288.143.479.215.549.335.071.12.071.698-.188 1.428z" />
               </svg>
               <span>{slide.phone}</span>
@@ -795,19 +813,19 @@ function CarouselCanvas({
           {slide.instagram && (
             <div
               style={{
-                marginTop: 10,
+                marginTop: Math.round(10 * Z),
                 color: "#F8FAFC",
-                fontSize: 15,
+                fontSize: Math.round(15 * Z),
                 lineHeight: 1.2,
                 fontWeight: 700,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 8,
-                textShadow: slide.showShadow === false ? "none" : "0 2px 12px rgba(0,0,0,.82)",
+                gap: Math.round(8 * Z),
+                textShadow: slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`,
               }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,.5))" }}>
+              <svg width={Math.round(18 * Z)} height={Math.round(18 * Z)} viewBox="0 0 24 24" fill="currentColor" style={{ filter: "drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.5))" }}>
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
               </svg>
               <span>{slide.instagram}</span>
@@ -816,19 +834,19 @@ function CarouselCanvas({
           {slide.website && (
             <div
               style={{
-                marginTop: 8,
+                marginTop: Math.round(8 * Z),
                 color: "#F8FAFC",
-                fontSize: 15,
+                fontSize: Math.round(15 * Z),
                 lineHeight: 1.2,
                 fontWeight: 700,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 8,
-                textShadow: slide.showShadow === false ? "none" : "0 2px 12px rgba(0,0,0,.82)",
+                gap: Math.round(8 * Z),
+                textShadow: slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`,
               }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ filter: "drop-shadow(0 2px 6px rgba(0,0,0,.5))" }}>
+              <svg width={Math.round(18 * Z)} height={Math.round(18 * Z)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ filter: "drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.5))" }}>
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="2" y1="12" x2="22" y2="12"/>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
@@ -850,36 +868,37 @@ function CarouselCanvas({
                 flexDirection: "column",
                 justifyContent: "space-between",
                 padding: "8%",
+                boxSizing: "border-box",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: Math.round(12 * Z) }}>
                 {logo ? (
                   <img
                     src={logo}
                     alt=""
                     crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                    style={{ width: 42, height: 42, borderRadius: 12, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 5, boxShadow: "0 8px 24px rgba(0,0,0,.24)" }}
+                    style={{ width: Math.round(42 * Z), height: Math.round(42 * Z), borderRadius: Math.round(12 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(5 * Z), boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0, 0, 0, 0.24)` }}
                   />
                 ) : <span />}
               </div>
               <div>
                 {renderLabel(slide.label)}
                 {slide.title && (
-                  <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: ratio < 0.68 ? 31 : 35, lineHeight: 1.02, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
+                  <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 31 : 35) * Z), lineHeight: 1.02, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
                     {slide.title}
                   </h3>
                 )}
                 {slide.body && (
-                  <p style={{ maxWidth: "94%", margin: "13px 0 0", color: bodyColor, fontSize: ratio < 0.68 ? 13 : 14, lineHeight: 1.45, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
+                  <p style={{ maxWidth: "94%", margin: `${Math.round(13 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round((ratio < 0.68 ? 13 : 14) * Z), lineHeight: 1.45, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
                     {slide.body}
                   </p>
                 )}
                 {slide.bullets.length > 0 && (
-                  <ul style={{ display: "grid", gap: 7, maxWidth: "96%", margin: "15px 0 0", padding: 0, listStyle: "none" }}>
+                  <ul style={{ display: "grid", gap: Math.round(7 * Z), maxWidth: "96%", margin: `${Math.round(15 * Z)}px 0 0`, padding: 0, listStyle: "none" }}>
                     {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                      if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: 10 }} />;
+                      if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(10 * Z) }} />;
                       return (
-                        <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 8, alignItems: "flex-start", color: bulletColor, fontSize: 13, lineHeight: 1.35, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: bulletShadow }}>
+                        <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "flex-start", color: bulletColor, fontSize: Math.round(13 * Z), lineHeight: 1.35, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: bulletShadow }}>
                           <span>{item}</span>
                         </li>
                       );
@@ -900,39 +919,39 @@ function CarouselCanvas({
             const boxBodyColor = slide.bodyStyle?.color || boxTextColor;
             const boxBulletColor = slide.bulletStyle?.color || boxTextColor;
             return (
-              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
                 {/* Photo zone top */}
                 <div style={{ flex: "0 0 45%", position: "relative", overflow: "hidden" }}>
                   {slide.imageUrl && (
                     <img src={slide.imageUrl} alt="" crossOrigin={slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:") ? undefined : "anonymous"}
                       style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                   )}
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.52))" }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.52) 100%)" }} />
                   {/* logo top left */}
                   {logo && (
                     <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                      style={{ position: "absolute", top: "8%", left: "8%", width: 34, height: 34, borderRadius: 10, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 4, boxShadow: "0 4px 16px rgba(0,0,0,.22)" }} />
+                      style={{ position: "absolute", top: "8%", left: "8%", width: Math.round(34 * Z), height: Math.round(34 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }} />
                   )}
                 </div>
                 {/* Content block bottom */}
-                <div style={{ flex: 1, background: primary, padding: "7% 8%", display: "flex", flexDirection: "column", justifyContent: "center", gap: 10, overflow: "hidden" }}>
+                <div style={{ flex: 1, background: primary, padding: "7% 8%", display: "flex", flexDirection: "column", justifyContent: "center", gap: Math.round(10 * Z), overflow: "hidden", boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: boxTitleColor, fontSize: ratio < 0.68 ? 22 : 26, lineHeight: 1.1, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                    <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 22 : 26) * Z), lineHeight: 1.1, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ margin: 0, color: boxBodyColor, fontSize: 12, lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
+                    <p style={{ margin: 0, color: boxBodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
                       {slide.body}
                     </p>
                   )}
                   {slide.bullets.length > 0 && (
-                    <ul style={{ display: "grid", gap: 6, padding: 0, margin: 0, listStyle: "none" }}>
+                    <ul style={{ display: "grid", gap: Math.round(6 * Z), padding: 0, margin: 0, listStyle: "none" }}>
                       {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                        if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: 8 }} />;
+                        if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
                         return (
-                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 7, alignItems: "flex-start", color: boxBulletColor, fontSize: 12, lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: boxBulletColor, fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
                             <span>{item}</span>
                           </li>
                         );
@@ -954,31 +973,31 @@ function CarouselCanvas({
             const boxBodyColor = slide.bodyStyle?.color || boxTextColor;
             const boxBulletColor = slide.bulletStyle?.color || boxTextColor;
             return (
-              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "8%" }}>
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "8%", boxSizing: "border-box" }}>
                 {/* Logo */}
                 {logo && (
                   <img src={logo} alt="" crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                    style={{ position: "absolute", top: "7%", left: "7%", width: 34, height: 34, borderRadius: 10, objectFit: "contain", background: "rgba(255,255,255,.94)", padding: 4, boxShadow: "0 4px 16px rgba(0,0,0,.22)" }} />
+                    style={{ position: "absolute", top: "7%", left: "7%", width: Math.round(34 * Z), height: Math.round(34 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }} />
                 )}
                 {/* Floating card */}
-                <div style={{ width: "100%", borderRadius: 18, background: safeHexToRgba(primary, 0.93), backdropFilter: "blur(8px)", border: `2px solid ${secondary}`, padding: "8% 9%", display: "flex", flexDirection: "column", gap: 10, overflow: "hidden" }}>
+                <div style={{ width: "100%", borderRadius: Math.round(18 * Z), background: safeHexToRgba(primary, 0.93), backdropFilter: "blur(8px)", border: `${Math.round(2 * Z)}px solid ${secondary}`, padding: "8% 9%", display: "flex", flexDirection: "column", gap: Math.round(10 * Z), overflow: "hidden", boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: boxTitleColor, fontSize: ratio < 0.68 ? 24 : 28, lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                    <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 24 : 28) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ margin: 0, color: boxBodyColor, fontSize: 12, lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
+                    <p style={{ margin: 0, color: boxBodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
                       {slide.body}
                     </p>
                   )}
                   {slide.bullets.length > 0 && (
-                    <ul style={{ display: "grid", gap: 7, padding: 0, margin: 0, listStyle: "none" }}>
+                    <ul style={{ display: "grid", gap: Math.round(7 * Z), padding: 0, margin: 0, listStyle: "none" }}>
                       {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                        if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: 8 }} />;
+                        if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
                         return (
-                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: 7, alignItems: "flex-start", color: boxBulletColor, fontSize: 12, lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: boxBulletColor, fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
                             <span>{item}</span>
                           </li>
                         );
@@ -1804,26 +1823,35 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
       return;
     }
 
-    const seenPhotos = new Map<string, number>();
-    for (let index = 1; index < slides.length; index += 1) {
-      const imageUrl = slides[index].imageUrl.trim();
-      if (!imageUrl) continue;
-      const firstIndex = seenPhotos.get(imageUrl);
-      if (firstIndex !== undefined) {
-        setActiveIndex(index);
-        toast.error(
-          isEs
-            ? `La imagen ${index + 1} repite la foto de la imagen ${firstIndex + 1}. Elige otra foto.`
-            : `A imagem ${index + 1} repete a foto da imagem ${firstIndex + 1}. Escolha outra foto.`,
-        );
-        return;
-      }
-      seenPhotos.set(imageUrl, index);
-    }
+    const availablePool = uniqueImages([
+      ...(selectedPackage.galleryImages || []),
+      ...(selectedPackage.imageUrl ? [selectedPackage.imageUrl] : []),
+      ...(state.siteContent.galleryImages || []),
+      ...photoResults.map((p) => p.url),
+      ...slides.map((s) => s.imageUrl),
+    ]).filter(Boolean);
 
-    for (let index = 1; index < slides.length; index += 1) {
+    const used = new Set<string>();
+    const resolvedSlides = slides.map((slide, idx) => {
+      if (idx === 0) {
+        used.add(slide.imageUrl);
+        return slide;
+      }
+      let img = slide.imageUrl.trim();
+      if (!img || used.has(img)) {
+        const replacement = availablePool.find((candidate) => !used.has(candidate));
+        if (replacement) {
+          img = replacement;
+        }
+      }
+      used.add(img);
+      return { ...slide, imageUrl: img };
+    });
+    setSlides(resolvedSlides);
+
+    for (let index = 1; index < resolvedSlides.length; index += 1) {
       try {
-        await assertExportImageReadable(slides[index].imageUrl);
+        await assertExportImageReadable(resolvedSlides[index].imageUrl);
       } catch {
         setActiveIndex(index);
         toast.error(
@@ -1837,7 +1865,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
     try {
       await assertExportImageReadable(state.logoBase64);
     } catch {
-      setActiveIndex(slides.length - 1);
+      setActiveIndex(resolvedSlides.length - 1);
       toast.error(
         isEs
           ? "La logo actual no permite exportación. Vuelve a enviarla en el Panel."
@@ -1855,11 +1883,11 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
       .replace(/^-|-$/g, "");
 
     try {
-      const coverToDownload = slides[0]?.imageUrl || coverImage;
+      const coverToDownload = resolvedSlides[0]?.imageUrl || coverImage;
       await downloadOriginalImage(coverToDownload, `carrossel-${slug}-01-capa.png`);
       const { default: html2canvas } = await import("html2canvas");
 
-      for (let index = 1; index < slides.length; index += 1) {
+      for (let index = 1; index < resolvedSlides.length; index += 1) {
         const node = exportRefs.current[index];
         if (!node) throw new Error("missing-export-node");
 
@@ -1876,9 +1904,13 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         }
 
         clone.style.position = "fixed";
-        clone.style.left = "-15000px";
-        clone.style.top = "0";
-        clone.style.zIndex = "999999";
+        clone.style.left = "0px";
+        clone.style.top = "0px";
+        clone.style.width = `${node.offsetWidth}px`;
+        clone.style.height = `${node.offsetHeight}px`;
+        clone.style.opacity = "0.01";
+        clone.style.pointerEvents = "none";
+        clone.style.zIndex = "-9999";
         document.body.appendChild(clone);
 
         await new Promise((resolve) => window.setTimeout(resolve, 80));
@@ -1887,7 +1919,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           backgroundColor: "#08090B",
           useCORS: true,
           allowTaint: true,
-          scale: 2,
+          scale: 1,
           logging: false,
         });
 
