@@ -921,6 +921,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
   const [photoResults, setPhotoResults] = useState<PhotoResult[]>([]);
   const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [showNewCarouselModal, setShowNewCarouselModal] = useState(false);
   const exportRefs = useRef<Array<HTMLDivElement | null>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadRequestRef = useRef(new Map<string, symbol>());
@@ -1203,6 +1204,21 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         ? "Contenido actualizado con los datos reales del paquete."
         : "Conteúdo atualizado com os dados reais do pacote.",
     );
+  };
+
+  const discardAndCreateNew = () => {
+    try {
+      localStorage.removeItem(storageKey);
+    } catch {}
+    const currentIdx = packages.findIndex((p) => p.id === selectedPackage?.id);
+    const nextPkg = packages[(currentIdx + 1) % packages.length] || selectedPackage;
+    if (nextPkg && nextPkg.id !== selectedPackage?.id) {
+      setSelectedPackageId(nextPkg.id);
+    } else {
+      regenerate();
+    }
+    setShowNewCarouselModal(false);
+    toast.success(isEs ? "¡Nuevo carrusel generado!" : "Novo carrossel gerado com sucesso!");
   };
 
   const [generatingCoverAd, setGeneratingCoverAd] = useState(false);
@@ -1648,6 +1664,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                   {isEs ? "Atualizar Tudo" : "Atualizar Tudo"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNewCarouselModal(true)}
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/10 px-3 text-xs font-extrabold text-red-400 hover:bg-red-500/20 transition-colors"
+                  title={isEs ? "Generar un nuevo carrusel desde cero" : "Gerar um novo carrossel do zero"}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {isEs ? "+ Novo Carrusel" : "+ Gerar Novo Carrossel"}
                 </button>
               </div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -2535,17 +2560,75 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={downloadAll}
-            disabled={downloading}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-4 text-sm font-extrabold text-zinc-950 disabled:opacity-50"
-          >
-            <Download className="h-4 w-4" />
-            {isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowNewCarouselModal(true)}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-500/40 bg-red-500/15 px-4 text-sm font-extrabold text-red-400 hover:bg-red-500/25 transition-colors"
+            >
+              <Sparkles className="h-4 w-4" />
+              {isEs ? "+ Nuevo Carrusel" : "+ Gerar Novo Carrossel"}
+            </button>
+            <button
+              type="button"
+              onClick={downloadAll}
+              disabled={downloading}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-4 text-sm font-extrabold text-zinc-950 disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" />
+              {isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}
+            </button>
+          </div>
         </div>
       </div>
+
+      {showNewCarouselModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 shadow-2xl space-y-5">
+            <div className="flex items-center gap-3 text-[#F5F906]">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#F5F906]/15 text-[#F5F906]">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <h3 className="text-lg font-black text-white">
+                {isEs ? "¿Ya descargaste las imágenes de este carrusel?" : "Já baixou as imagens desse carrossel?"}
+              </h3>
+            </div>
+            <p className="text-xs leading-relaxed text-white/70">
+              {isEs
+                ? "Atención: Al generar un nuevo carrusel o descartar el actual, los cambios y fotos personalizadas se perderán."
+                : "Atenção: Ao gerar um novo carrossel, as fotos e edições do carrossel atual serão descartadas. Certifique-se de baixar as imagens antes se quiser mantê-las."}
+            </p>
+            <div className="flex flex-col gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNewCarouselModal(false);
+                  downloadAll();
+                }}
+                className="w-full min-h-11 rounded-xl bg-[#F5F906] font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 transition-colors flex items-center justify-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                {isEs ? "Descargar imágenes del carrusel" : "Baixar Imagens do Carrossel"}
+              </button>
+              <button
+                type="button"
+                onClick={discardAndCreateNew}
+                className="w-full min-h-11 rounded-xl border border-red-500/40 bg-red-500/15 font-extrabold text-red-400 hover:bg-red-500/25 transition-colors flex items-center justify-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                {isEs ? "Descartar actual y generar nuevo" : "Excluir Carrossel, Descartar e Gerar Novo"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowNewCarouselModal(false)}
+                className="w-full min-h-10 rounded-xl font-bold text-white/50 hover:text-white transition-colors text-xs"
+              >
+                {isEs ? "Cancelar y volver" : "Cancelar e voltar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div
         aria-hidden="true"
