@@ -1975,18 +1975,24 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         const node = exportRefs.current[index];
         if (!node) throw new Error("missing-export-node");
 
-        const clone = node.cloneNode(true) as HTMLDivElement;
-        const imgs = clone.querySelectorAll("img");
-        for (let i = 0; i < imgs.length; i += 1) {
-          const img = imgs[i];
-          const src = img.getAttribute("src");
-          if (src && !src.startsWith("data:") && !src.startsWith("blob:")) {
-            const cleanSrc = await prepareImageForCanvas(src);
-            img.setAttribute("src", cleanSrc);
-            img.removeAttribute("crossorigin");
-          }
-        }
+        // ── 1. Pré-carrega TODAS as imagens como data: URL antes de clonar ──
+        const imgNodes = node.querySelectorAll("img");
+        await Promise.all(
+          Array.from(imgNodes).map(async (img) => {
+            const src = img.getAttribute("src");
+            if (src && !src.startsWith("data:") && !src.startsWith("blob:")) {
+              const dataUrl = await prepareImageForCanvas(src);
+              img.setAttribute("src", dataUrl);
+              img.removeAttribute("crossorigin");
+            }
+          })
+        );
 
+        // ── 2. Aguarda o browser re-renderizar com as data:URLs ──
+        await new Promise((resolve) => window.setTimeout(resolve, 350));
+
+        // ── 3. Agora clona o nó já com imagens embutidas ──
+        const clone = node.cloneNode(true) as HTMLDivElement;
         clone.style.position = "fixed";
         clone.style.left = "0px";
         clone.style.top = "0px";
@@ -1997,14 +2003,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         clone.style.zIndex = "-9999";
         document.body.appendChild(clone);
 
-        await new Promise((resolve) => window.setTimeout(resolve, 80));
+        await new Promise((resolve) => window.setTimeout(resolve, 120));
 
         const canvas = await html2canvas(clone, {
           backgroundColor: "#08090B",
           useCORS: true,
-          allowTaint: true,
+          allowTaint: false,
           scale: 1,
           logging: false,
+          imageTimeout: 0,
         });
 
         document.body.removeChild(clone);
@@ -2015,7 +2022,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         document.body.appendChild(link);
         link.click();
         link.remove();
-        await new Promise((resolve) => window.setTimeout(resolve, 180));
+        await new Promise((resolve) => window.setTimeout(resolve, 200));
       }
 
       toast.success(
