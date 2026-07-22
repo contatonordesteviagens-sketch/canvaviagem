@@ -2078,7 +2078,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         const node = exportRefs.current[index];
         if (!node) throw new Error("missing-export-node");
 
-        // ── 1. Pré-carrega TODAS as imagens como data: URL antes de clonar ──
+        // ── 1. Pré-carrega TODAS as imagens como data: URL no nó original ──
         const imgNodes = node.querySelectorAll("img");
         await Promise.all(
           Array.from(imgNodes).map(async (img) => {
@@ -2092,33 +2092,48 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         );
 
         // ── 2. Aguarda o browser re-renderizar com as data:URLs ──
-        await new Promise((resolve) => window.setTimeout(resolve, 350));
+        await new Promise((resolve) => window.setTimeout(resolve, 400));
 
-        // ── 3. Agora clona o nó já com imagens embutidas ──
-        const clone = node.cloneNode(true) as HTMLDivElement;
-        clone.style.position = "fixed";
-        clone.style.left = "0px";
-        clone.style.top = "0px";
-        clone.style.width = `${node.offsetWidth}px`;
-        clone.style.height = `${node.offsetHeight}px`;
-        clone.style.opacity = "0.01";
-        clone.style.pointerEvents = "none";
-        clone.style.zIndex = "-9999";
-        document.body.appendChild(clone);
+        // ── 3. Traz o nó pro viewport (necessário para html2canvas ver os pixels) ──
+        const prevPosition = node.style.position;
+        const prevLeft = node.style.left;
+        const prevTop = node.style.top;
+        const prevOpacity = node.style.opacity;
+        const prevPointerEvents = node.style.pointerEvents;
+        const prevZIndex = node.style.zIndex;
+
+        node.style.position = "fixed";
+        node.style.left = "0px";
+        node.style.top = "0px";
+        node.style.opacity = "0.001";
+        node.style.pointerEvents = "none";
+        node.style.zIndex = "99999";
 
         await new Promise((resolve) => window.setTimeout(resolve, 120));
 
-        const canvas = await html2canvas(clone, {
+        // ── 4. Captura com html2canvas ──
+        const canvas = await html2canvas(node, {
           backgroundColor: "#08090B",
           useCORS: true,
-          allowTaint: false,
-          scale: 1,
+          allowTaint: true,
+          scale: 2,
           logging: false,
-          imageTimeout: 0,
+          imageTimeout: 15000,
+          width: node.offsetWidth,
+          height: node.offsetHeight,
+          windowWidth: node.offsetWidth,
+          windowHeight: node.offsetHeight,
         });
 
-        document.body.removeChild(clone);
+        // ── 5. Restaura posição original ──
+        node.style.position = prevPosition;
+        node.style.left = prevLeft;
+        node.style.top = prevTop;
+        node.style.opacity = prevOpacity;
+        node.style.pointerEvents = prevPointerEvents;
+        node.style.zIndex = prevZIndex;
 
+        // ── 6. Baixa a imagem ──
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png", 1);
         link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
@@ -3340,7 +3355,17 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
 
       <div
         aria-hidden="true"
-        style={{ position: "fixed", left: "-12000px", top: 0, pointerEvents: "none" }}
+        style={{
+          position: "fixed",
+          left: 0,
+          top: 0,
+          width: "1px",
+          height: "1px",
+          opacity: 0,
+          pointerEvents: "none",
+          overflow: "visible",
+          zIndex: -1,
+        }}
       >
         {slides.map((slide, index) => (
           <CarouselCanvas
