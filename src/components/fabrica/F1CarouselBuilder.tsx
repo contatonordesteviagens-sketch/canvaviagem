@@ -2839,7 +2839,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 {activeSlide?.kind === "cover"
                   ? (isEs ? "Portada original — bloqueada." : "Capa original — bloqueada.")
                   : activeSlide?.kind === "closing"
-                    ? (isEs ? "Cierre + contac      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
+                    ? (isEs ? "Cierre + contacto — bloqueado." : "Fechamento + contato — bloqueado.")
+                    : (isEs ? "Edita esta imagen abajo." : "Edite esta imagem abaixo.")}
+              </p>
+            </div>
+          );
+        })()}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
         {/* ══ LEFT: Slide Editor ══ */}
         <div className="order-2 space-y-3 lg:order-1">
           {/* ── Card: Slide being edited ── */}
