@@ -49,7 +49,7 @@ import {
 } from "@/lib/canva-site-domain";
 
 const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
-const UI_ACCENT = "#F59E0B";
+const UI_ACCENT = "#F5F906";
 const UI_ACCENT_SOFT = "rgba(245, 158, 11, 0.12)";
 const UI_ACCENT_BORDER = "rgba(245, 158, 11, 0.75)";
 const UI_ACCENT_SHADOW = "rgba(245, 158, 11, 0.24)";
@@ -348,7 +348,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           transition: all 0.2s ease !important;
         }
         [data-visual-editable]:hover {
-          outline: 2px dashed #F59E0B !important;
+          outline: 2px dashed #F5F906 !important;
           outline-offset: 4px !important;
           background-color: rgba(245, 158, 11, 0.08) !important;
         }

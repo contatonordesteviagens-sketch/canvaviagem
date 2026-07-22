@@ -74,9 +74,9 @@ const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
 // um visual coerente com o "tom" daquela categoria (oferta = âmbar/quente,
 // experiência = navy/dourado luxo). O usuário pode customizar livremente depois;
 // só são re-aplicadas se ele ainda estiver usando os defaults da OUTRA categoria.
-const DEFAULT_COLORS_OFERTA = { primary: "#080808", secondary: "#F59E0B" };
-const DEFAULT_COLORS_EXPERIENCIA = { primary: "#080808", secondary: "#F59E0B" };
-const UI_ACCENT = "#F59E0B";
+const DEFAULT_COLORS_OFERTA = { primary: "#080808", secondary: "#F5F906" };
+const DEFAULT_COLORS_EXPERIENCIA = { primary: "#080808", secondary: "#F5F906" };
+const UI_ACCENT = "#F5F906";
 const UI_ACCENT_SOFT = "rgba(245, 158, 11, 0.12)";
 const UI_ACCENT_BORDER = "rgba(245, 158, 11, 0.75)";
 
@@ -2826,7 +2826,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             onClick={onNext}
             className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
             style={{
-              background: "linear-gradient(135deg, #F59E0B, #FCD34D)",
+              background: "linear-gradient(135deg, #F5F906, #FCD34D)",
               color: "#0A0A0A",
             }}
           >
