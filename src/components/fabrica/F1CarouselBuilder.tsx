@@ -1222,26 +1222,37 @@ function MiniTypographyBar({
           />
         ))}
 
-        {/* Círculo colorido (arco-íris) com seletor nativo para qualquer cor */}
+        {/* Círculo arco-íris: anel externo colorido + cor atual no centro */}
         <div
-          className="relative grid h-6 w-6 cursor-pointer place-items-center rounded-full p-[2px] transition-transform hover:scale-110 shadow-sm"
+          className="relative cursor-pointer transition-transform hover:scale-110"
           style={{
-            background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)",
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            padding: 2.5,
+            background: "conic-gradient(from 0deg, #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)",
+            boxShadow: "0 0 6px 1px rgba(255,255,255,0.18)",
           }}
-          title={isEs ? "Elegir cualquier color" : "Escolher qualquer outra cor"}
+          title={isEs ? "Elegir cualquier color" : "Clique para escolher qualquer cor"}
         >
-          <div className="h-full w-full rounded-full border border-black/40 overflow-hidden relative">
-            <input
-              type="color"
-              value={currentColor.startsWith("#") ? currentColor : "#FFFFFF"}
-              onChange={(e) => handleColorClick(e.target.value)}
-              className="absolute -inset-1 h-8 w-8 cursor-pointer opacity-0"
-            />
-            <div
-              className="h-full w-full rounded-full"
-              style={{ backgroundColor: currentColor }}
-            />
-          </div>
+          {/* Centro: mostra a cor selecionada atualmente */}
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
+              backgroundColor: currentColor,
+              border: "1.5px solid rgba(0,0,0,0.35)",
+            }}
+          />
+          {/* Input color nativo invisível sobreposto */}
+          <input
+            type="color"
+            value={currentColor.startsWith("#") ? currentColor : "#FFFFFF"}
+            onChange={(e) => handleColorClick(e.target.value)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            style={{ borderRadius: "50%" }}
+          />
         </div>
 
         {/* Botão para código HEX (por último, separado e discreto) */}
@@ -2774,92 +2785,96 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
 
             {activeSlide && activeSlide.kind !== "cover" && (
               <div className="mt-3 space-y-3">
-                {/* ── Barra de Formatação (Fonte, Peso e Estilo) ── */}
-                <div className="rounded-xl border border-white/10 bg-zinc-900/80 p-2.5 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F5F906]">
-                      {isEs ? "Estilo y Tipografía" : "Estilo e Tipografia"}
-                    </span>
-                    <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-white/80">
-                      <input
-                        type="checkbox"
-                        checked={activeSlide.showShadow !== false}
-                        onChange={(event) => patchActive({ showShadow: event.target.checked })}
-                        className="rounded border-white/20 bg-black text-[#F5F906] focus:ring-[#F5F906]"
-                      />
-                      <span>{isEs ? "Sombra en textos" : "Sombra nos textos"}</span>
-                    </label>
-                  </div>
-                  <div>
+                {/* ── Tipografia + Selo Curto em 2 colunas ── */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  {/* Coluna esquerda: Fonte + Sombra */}
+                  <div className="rounded-xl border border-white/10 bg-zinc-900/80 p-2.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#F5F906]">
+                        {isEs ? "Estilo y Tipografía" : "Estilo e Tipografia"}
+                      </span>
+                      <label className="flex items-center gap-1 cursor-pointer text-[9.5px] font-bold text-white/70">
+                        <input
+                          type="checkbox"
+                          checked={activeSlide.showShadow !== false}
+                          onChange={(event) => patchActive({ showShadow: event.target.checked })}
+                          className="rounded border-white/20 bg-black text-[#F5F906] focus:ring-[#F5F906]"
+                        />
+                        <span>{isEs ? "Sombra" : "Sombra"}</span>
+                      </label>
+                    </div>
                     <select
                       value={activeSlide.fontFamily || "Inter"}
                       onChange={(event) => patchActive({ fontFamily: event.target.value })}
                       aria-label={isEs ? "Tipo de letra" : "Família da fonte"}
-                      className="min-h-8 w-full rounded-lg border border-white/10 bg-black/60 px-2.5 text-xs font-bold text-white outline-none focus:border-[#F5F906]"
+                      className="min-h-8 w-full rounded-lg border border-white/10 bg-black/60 px-2 text-[10px] font-bold text-white outline-none focus:border-[#F5F906]"
                     >
-                      <option value="Inter">Inter (Padrão Moderno)</option>
+                      <option value="Inter">Inter (Moderno)</option>
                       <option value="Montserrat">Montserrat (Elegante)</option>
                       <option value="Poppins">Poppins (Geométrica)</option>
                       <option value="Outfit">Outfit (Vibrante)</option>
-                      <option value="Playfair Display">Playfair Display (Editorial/Luxo)</option>
+                      <option value="Playfair Display">Playfair (Luxo)</option>
                       <option value="Roboto">Roboto (Clássica)</option>
                     </select>
                   </div>
+
+                  {/* Coluna direita: Selo Curto */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/45 block">
+                      {isEs ? "Etiqueta corta (Selo)" : "Selo curto (Destaque)"}
+                    </span>
+                    <input
+                      value={activeSlide.label || ""}
+                      maxLength={32}
+                      placeholder={isEs ? "Ej: ROTA 01" : "Ex: DESLIZE"}
+                      onChange={(event) => patchActive({ label: event.target.value })}
+                      className="f1-carousel-input !min-h-[32px] !py-1 text-xs"
+                    />
+                    <div className="flex flex-wrap gap-1">
+                      {["ROTEIRO", "INCLUI", "DESTINO", "PIX"].map((pill) => (
+                        <button
+                          key={pill}
+                          type="button"
+                          onClick={() => patchActive({ label: pill })}
+                          className="rounded border border-white/10 bg-white/[0.03] px-1.5 py-0.5 text-[8px] font-bold text-white/55 hover:border-white/25 hover:text-white"
+                        >
+                          +{pill}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+
+                {/* ── Estilo do Selo ── */}
+                <CarouselField label={isEs ? "Estilo del selo" : "Estilo do selo"}>
+                  <div className="flex flex-wrap gap-1">
+                    {([
+                      ["filled", "Sólido"],
+                      ["outline-thin", "Borda fina"],
+                      ["outline-thick", "Borda forte"],
+                      ["stripe-left", "Tarja"],
+                      ["rectangle", "Retângulo"],
+                      ["translucent", "Translúcido"],
+                      ["gradient", "Degradê"],
+                    ] as const).map(([styleKey, styleTitle]) => (
+                      <button
+                        key={styleKey}
+                        type="button"
+                        onClick={() => patchActive({ labelStyle: styleKey })}
+                        className={`rounded border px-2 py-0.5 text-[8.5px] font-bold leading-tight transition-colors min-h-[22px] ${
+                          (activeSlide.labelStyle || "filled") === styleKey
+                            ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]"
+                            : "border-white/10 text-white/60 hover:bg-white/[0.05]"
+                        }`}
+                      >
+                        {styleTitle}
+                      </button>
+                    ))}
+                  </div>
+                </CarouselField>
 
                 {activeSlide.kind === "content" ? (
                   <>
-                    <CarouselField label={isEs ? "Etiqueta corta (Selo)" : "Selo curto (Destaque superior)"}>
-                      <div className="space-y-1.5">
-                        <input
-                          value={activeSlide.label || ""}
-                          maxLength={32}
-                          placeholder={isEs ? "Ej: DESLIZA O RUTA 01" : "Ex: ROTEIRO OU DESLIZE"}
-                          onChange={(event) => patchActive({ label: event.target.value })}
-                          className="f1-carousel-input !min-h-[34px] !py-1.5 text-xs"
-                        />
-                        <div className="flex flex-wrap gap-1">
-                          {["ROTEIRO COMPLETO", "O QUE INCLUI", "DESTINO INCRÍVEL", "GARANTIDO", "FAIXA PIX"].map((pill) => (
-                            <button
-                              key={pill}
-                              type="button"
-                              onClick={() => patchActive({ label: pill })}
-                              className="rounded border border-white/10 bg-white/[0.03] px-1.5 py-0.5 text-[8.5px] font-bold text-white/60 hover:border-white/25 hover:text-white"
-                            >
-                              + {pill}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </CarouselField>
-
-                    <CarouselField label={isEs ? "Estilo del selo" : "Estilo do selo"}>
-                      <div className="flex flex-wrap gap-1">
-                        {([
-                          ["filled", isEs ? "Sólido" : "Sólido"],
-                          ["outline-thin", isEs ? "Borda fina" : "Borda fina"],
-                          ["outline-thick", isEs ? "Borda forte" : "Borda forte"],
-                          ["stripe-left", isEs ? "Tarja" : "Tarja"],
-                          ["rectangle", "Retângulo"],
-                          ["translucent", "Translúcido 50%"],
-                          ["gradient", "Degradê"],
-                        ] as const).map(([styleKey, styleTitle]) => (
-                          <button
-                            key={styleKey}
-                            type="button"
-                            onClick={() => patchActive({ labelStyle: styleKey })}
-                            className={`rounded border px-2 py-0.5 text-[8.5px] font-bold leading-tight transition-colors min-h-[22px] ${
-                              (activeSlide.labelStyle || "filled") === styleKey
-                                ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]"
-                                : "border-white/10 text-white/60 hover:bg-white/[0.05]"
-                            }`}
-                          >
-                            {styleTitle}
-                          </button>
-                        ))}
-                      </div>
-                    </CarouselField>
-
                     <CarouselField label={isEs ? "Título" : "Título principal"}>
                       <MiniTypographyBar
                         style={activeSlide.titleStyle}
@@ -3017,6 +3032,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 )}
               </div>
             )}
+
           </div>
 
           {activeSlide && activeSlide.kind !== "cover" && (
