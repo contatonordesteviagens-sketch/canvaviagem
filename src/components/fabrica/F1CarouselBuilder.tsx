@@ -3016,11 +3016,14 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                       ["gradient", "Degradê"],
                     ] as const).map(([styleKey, styleTitle]) => (
                       <button
-{
-                      (activeSlide.labelStyle || "filled") === styleKey
-                        ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906] shadow-[0_0_10px_rgba(245,249,6,0.2)]"
-                        : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
-                    }`}
+                        key={styleKey}
+                        type="button"
+                        onClick={() => patchActive({ labelStyle: styleKey })}
+                        className={`rounded-lg border px-2.5 py-1 text-[10px] font-bold transition-all ${
+                          (activeSlide.labelStyle || "filled") === styleKey
+                            ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906] shadow-[0_0_10px_rgba(245,249,6,0.2)]"
+                            : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
+                        }`}
                   >
                     {styleTitle}
                   </button>
