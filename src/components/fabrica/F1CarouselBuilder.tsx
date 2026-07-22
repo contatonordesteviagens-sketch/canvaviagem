@@ -3240,21 +3240,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
             </div>
           )}
         </div>
-               )}
-                  </>
-                )}
-              </div>
-            )}
 
-          </div>
 
-          {activeSlide && activeSlide.kind !== "cover" && (
-            <div className="block lg:hidden space-y-4">
-              {renderPhotoSelectionBox()}
-              {renderPublishFooterBox()}
-            </div>
-          )}
-        </div>
 
         <aside className="order-1 lg:order-2 lg:sticky lg:top-5 lg:self-start max-h-[calc(100vh-1.5rem)] overflow-y-auto scrollbar-thin pr-1 space-y-4">
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-3 sm:p-4">
