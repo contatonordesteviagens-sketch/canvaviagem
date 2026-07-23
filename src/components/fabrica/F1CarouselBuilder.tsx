@@ -2839,7 +2839,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 {activeSlide?.kind === "cover"
                   ? (isEs ? "Portada original — bloqueada." : "Capa original — bloqueada.")
                   : activeSlide?.kind === "closing"
-                    ? (isEs ? "Cierre + contac      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
+                    ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
+                    : `${isEs ? "Edita la imagen" : "Edite a imagem"} ${activeIndex + 1}`}
+              </p>
+            </div>
+          );
+        })()}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
         {/* ══ LEFT: Slide Editor ══ */}
         <div className="order-2 space-y-3 lg:order-1">
           {/* ── Card: Slide being edited ── */}
@@ -3245,38 +3253,17 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
           )}
         </div>
 
-        <aside className="order-1 lg:order-2 lg:sticky lg:top-5 lg:self-start max-h-[calc(100vh-1.5rem)] overflow-y-auto scrollbar-thin pr-1 space-y-4">
+        <aside className="order-1 lg:order-2 lg:sticky lg:top-5 lg:self-start pr-1 space-y-4">
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-3 sm:p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/35">
-                  {isEs ? "Vista previa" : "Prévia"}
-                </p>
-                <p className="mt-1 text-xs text-white/55">
-                  {isEs ? "Formato heredado de la portada" : "Formato herdado da capa"}
-                </p>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setActiveIndex((current) => Math.max(0, current - 1))}
-                  disabled={activeIndex === 0}
-                  aria-label={isEs ? "Imagen anterior" : "Imagem anterior"}
-                  className="grid min-h-11 min-w-11 place-items-center rounded-xl border border-white/10 text-white/70 disabled:opacity-25"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveIndex((current) => Math.min(slides.length - 1, current + 1))}
-                  disabled={activeIndex === slides.length - 1}
-                  aria-label={isEs ? "Siguiente imagen" : "Próxima imagem"}
-                  className="grid min-h-11 min-w-11 place-items-center rounded-xl border border-white/10 text-white/70 disabled:opacity-25"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
+            <div className="mb-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/35">
+                {isEs ? "Vista previa" : "Prévia"}
+              </p>
+              <p className="mt-1 text-xs text-white/55">
+                {isEs ? "Formato heredado de la portada" : "Formato herdado da capa"}
+              </p>
             </div>
+            
             <div className="mx-auto flex justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
               {activeSlide && (
                 <ScaledSlidePreview
@@ -3291,7 +3278,33 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 />
               )}
             </div>
-            <p className="mt-3 text-center text-[10px] leading-relaxed text-white/35">
+
+            {/* Setas de navegação abaixo do preview */}
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveIndex((current) => Math.max(0, current - 1))}
+                disabled={activeIndex === 0}
+                aria-label={isEs ? "Imagen anterior" : "Imagem anterior"}
+                className="flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.08] hover:text-white transition-all disabled:pointer-events-none disabled:opacity-25"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="text-xs font-bold text-white/50 w-24 text-center">
+                {activeIndex + 1} / {slides.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => setActiveIndex((current) => Math.min(slides.length - 1, current + 1))}
+                disabled={activeIndex === slides.length - 1}
+                aria-label={isEs ? "Siguiente imagen" : "Próxima imagem"}
+                className="flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.08] hover:text-white transition-all disabled:pointer-events-none disabled:opacity-25"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="mt-4 text-center text-[10px] leading-relaxed text-white/35">
               {activeSlide?.kind === "cover"
                 ? (isEs ? "Portada original bloqueada." : "Capa original bloqueada.")
                 : (isEs ? "Los cambios aparecen aquí al instante." : "As alterações aparecem aqui na hora.")}
