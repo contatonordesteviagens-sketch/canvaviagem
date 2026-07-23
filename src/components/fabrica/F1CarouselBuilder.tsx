@@ -2096,16 +2096,11 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
 
         // ── 3. Traz o nó pro viewport (necessário para html2canvas ver os pixels) ──
         const prevPosition = node.style.position;
-        const prevLeft = node.style.left;
-        const prevTop = node.style.top;
-        const prevOpacity = node.style.opacity;
         const prevPointerEvents = node.style.pointerEvents;
         const prevZIndex = node.style.zIndex;
 
+        // Bring it into viewport just in case (the wrapper is offscreen so it's fine)
         node.style.position = "fixed";
-        node.style.left = "0px";
-        node.style.top = "0px";
-        node.style.opacity = "0.001";
         node.style.pointerEvents = "none";
         node.style.zIndex = "99999";
 
@@ -2127,9 +2122,6 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
 
         // ── 5. Restaura posição original ──
         node.style.position = prevPosition;
-        node.style.left = prevLeft;
-        node.style.top = prevTop;
-        node.style.opacity = prevOpacity;
         node.style.pointerEvents = prevPointerEvents;
         node.style.zIndex = prevZIndex;
 
@@ -3027,48 +3019,58 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                       >
                         {styleTitle}
                       </button>
-                ))}
-              </div>
-            </div>
+                    ))}
+                  </div>
+                </div>
 
-            {activeSlide.kind === "content" ? (
-              <>
-                {/* ── SECTIONS 3 & 4: Título e Descrição Curta (Lado a Lado) ── */}
-                <div className="grid grid-cols-2 gap-3 px-4 py-3.5">
-                  {/* SECTION 3: Título */}
-                  <div className="space-y-1.5">
+                {activeSlide.kind === "content" ? (
+                  <>
+                    {/* ── SECTION 3: Título ── */}
+                    <div className="px-4 py-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
                       {isEs ? "Título principal" : "Título principal"}
                     </p>
-                    <div className="flex items-start gap-2">
-                      <textarea
-                        value={activeSlide.title}
-                        maxLength={80}
-                        rows={3}
-                        placeholder={isEs ? "Ex: Descubra este destino" : "Ex: Porto de Galinhas"}
-                        onChange={(event) => patchActive({ title: event.target.value })}
-                        className="f1-carousel-input !py-2.5 text-sm resize-none flex-1 leading-snug"
-                      />
+                    <MiniTypographyBar
+                      style={activeSlide.titleStyle}
+                      fallbackBold={activeSlide.fontWeight !== "normal"}
+                      fallbackColor={activeSlide.textColor || "#FFFFFF"}
+                      primaryColor={state.primaryColor}
+                      secondaryColor={state.secondaryColor}
+                      onChange={(updated) => patchActive({ titleStyle: updated })}
+                      onSelectTextColor={(color) => patchActive({ textColor: color })}
+                      isEs={isEs}
+                      compact
+                    />
+                  </div>
+                  <textarea
+                    value={activeSlide.title}
+                    maxLength={80}
+                    rows={3}
+                    placeholder={isEs ? "Ex: Descubra este destino" : "Ex: Porto de Galinhas"}
+                    onChange={(event) => patchActive({ title: event.target.value })}
+                    className="f1-carousel-input !py-2.5 text-sm resize-none w-full leading-snug"
+                  />
+                </div>
+
+                {/* ── SECTION 4: Descrição Curta ── */}
+                <div className="px-4 pb-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
+                      {isEs ? "Descripción corta" : "Descrição curta"}
+                    </p>
+                    <div className="flex items-center gap-1.5">
                       <MiniTypographyBar
-                        style={activeSlide.titleStyle}
-                        fallbackBold={activeSlide.fontWeight !== "normal"}
+                        style={activeSlide.bodyStyle}
+                        fallbackBold={activeSlide.fontWeight === "bold"}
                         fallbackColor={activeSlide.textColor || "#FFFFFF"}
                         primaryColor={state.primaryColor}
                         secondaryColor={state.secondaryColor}
-                        onChange={(updated) => patchActive({ titleStyle: updated })}
+                        onChange={(updated) => patchActive({ bodyStyle: updated })}
                         onSelectTextColor={(color) => patchActive({ textColor: color })}
                         isEs={isEs}
-                        vertical
+                        compact
                       />
-                    </div>
-                  </div>
-
-                  {/* SECTION 4: Descrição Curta */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                        {isEs ? "Descripción corta" : "Descrição curta"}
-                      </p>
                       {activeSlide.body && (
                         <button
                           type="button"
@@ -3080,76 +3082,63 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                         </button>
                       )}
                     </div>
-                    <div className="flex items-start gap-2">
-                      <textarea
-                        value={activeSlide.body}
-                        maxLength={260}
-                        rows={3}
-                        placeholder={isEs ? "Ex: Incluye..." : "Ex: Inclui transfer, guia..."}
-                        onChange={(event) => patchActive({ body: event.target.value })}
-                        className="f1-carousel-input !py-2.5 text-sm resize-none flex-1 leading-snug"
-                      />
-                      <MiniTypographyBar
-                        style={activeSlide.bodyStyle}
-                        fallbackBold={activeSlide.fontWeight === "bold"}
-                        fallbackColor={activeSlide.textColor || "#FFFFFF"}
-                        primaryColor={state.primaryColor}
-                        secondaryColor={state.secondaryColor}
-                        onChange={(updated) => patchActive({ bodyStyle: updated })}
-                        onSelectTextColor={(color) => patchActive({ textColor: color })}
-                        isEs={isEs}
-                        vertical
-                      />
-                    </div>
                   </div>
+                  <textarea
+                    value={activeSlide.body}
+                    maxLength={260}
+                    rows={3}
+                    placeholder={isEs ? "Ex: Incluye..." : "Ex: Inclui transfer, guia..."}
+                    onChange={(event) => patchActive({ body: event.target.value })}
+                    className="f1-carousel-input !py-2.5 text-sm resize-none w-full leading-snug"
+                  />
                 </div>
 
                 {/* ── SECTION 5: Descrição Inferior (bullets) ── */}
-                <div className="px-4 pb-3.5 space-y-1.5">
+                <div className="px-4 pb-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
                       {isEs ? "Descripción inferior" : "Descrição inferior"}
                     </p>
-                    {activeSlide.bullets.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.preventDefault(); patchActive({ bullets: [] }); }}
-                        className="grid h-4 w-4 place-items-center rounded-full text-white/30 hover:bg-white/10 hover:text-white transition-all"
-                        title="Remover"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      <MiniTypographyBar
+                        style={activeSlide.bulletStyle}
+                        fallbackBold={activeSlide.fontWeight === "bold"}
+                        fallbackColor={activeSlide.textColor || "#FFFFFF"}
+                        primaryColor={state.primaryColor}
+                        secondaryColor={state.secondaryColor}
+                        onChange={(updated) => patchActive({ bulletStyle: updated })}
+                        onSelectTextColor={(color) => patchActive({ textColor: color })}
+                        isEs={isEs}
+                        compact
+                      />
+                      {activeSlide.bullets.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); patchActive({ bullets: [] }); }}
+                          className="grid h-4 w-4 place-items-center rounded-full text-white/30 hover:bg-white/10 hover:text-white transition-all"
+                          title="Remover"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <textarea
-                      value={activeSlide.bullets.join("\n")}
-                      rows={4}
-                      placeholder={isEs
-                        ? "Ej: Sugerencia:\nTransporte\nGuía local\nSeguro"
-                        : "Sugestão:\nTransporte\nGuia local\nSeguro"}
-                      onChange={(event) =>
-                        patchActive({
-                          bullets: event.target.value
-                            .split(/\r?\n/)
-                            .map((item) => item.slice(0, 100))
-                            .slice(0, 8),
-                        })
-                      }
-                      className="f1-carousel-input !min-h-[90px] !py-2.5 text-sm resize-none flex-1 leading-snug"
-                    />
-                    <MiniTypographyBar
-                      style={activeSlide.bulletStyle}
-                      fallbackBold={activeSlide.fontWeight === "bold"}
-                      fallbackColor={activeSlide.textColor || "#FFFFFF"}
-                      primaryColor={state.primaryColor}
-                      secondaryColor={state.secondaryColor}
-                      onChange={(updated) => patchActive({ bulletStyle: updated })}
-                      onSelectTextColor={(color) => patchActive({ textColor: color })}
-                      isEs={isEs}
-                      vertical
-                    />
-                  </div>
+                  <textarea
+                    value={activeSlide.bullets.join("\n")}
+                    rows={4}
+                    placeholder={isEs
+                      ? "Ej: Sugerencia:\nTransporte\nGuía local\nSeguro"
+                      : "Sugestão:\nTransporte\nGuia local\nSeguro"}
+                    onChange={(event) =>
+                      patchActive({
+                        bullets: event.target.value
+                          .split(/\r?\n/)
+                          .map((item) => item.slice(0, 100))
+                          .slice(0, 8),
+                      })
+                    }
+                    className="f1-carousel-input !min-h-[90px] !py-2.5 text-sm resize-none w-full leading-snug"
+                  />
                   <p className="text-[9px] text-white/25">{isEs ? "Una línea = un ítem. Máx 8 ítems." : "Uma linha = um item. Máx 8 itens."}</p>
                 </div>
               </>
@@ -3358,11 +3347,10 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
         aria-hidden="true"
         style={{
           position: "fixed",
-          left: 0,
-          top: 0,
+          left: "-9999px",
+          top: "-9999px",
           width: "1px",
           height: "1px",
-          opacity: 0,
           pointerEvents: "none",
           overflow: "visible",
           zIndex: -1,
