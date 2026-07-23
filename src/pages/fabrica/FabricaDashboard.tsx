@@ -293,6 +293,30 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       .replace(/(^-|-$)+/g, "");
   };
 
+  const getProjectSiteSlug = (project: DiagnosticoSalvo) => {
+    const snap = project.state_snapshot as any;
+    const urls = [
+      snap?.siteContent?.canvaViagemUrl,
+      snap?.siteContent?.vercelUrl,
+      project.published_site_url,
+    ].filter(Boolean) as string[];
+
+    for (const value of urls) {
+      const slug = value.replace(/^https?:\/\//, "").split(".")[0];
+      if (slug) return slug;
+    }
+    return "";
+  };
+
+  const projectMatchesSite = (project: DiagnosticoSalvo, site: { id: string; project_id?: string | null }) => {
+    const urlSlug = getProjectSiteSlug(project);
+    const agencySlug = project.agency_name ? slugify(project.agency_name) : "";
+    return project.published_site_id === site.id
+      || urlSlug === site.id
+      || agencySlug === site.id
+      || project.id === site.id;
+  };
+
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -888,18 +912,16 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                           type="button"
                           onClick={async () => {
                             // 1. Tenta encontrar por ID exato do projeto (ignorando user.id se foi salvo com UUID do usuário)
-                            let p = (site.project_id && site.project_id !== user?.id)
-                              ? savedProjects?.find(x => x.id === site.project_id)
+                            const exactProject = (site.project_id && site.project_id !== user?.id)
+                              ? savedProjects?.find((x) => x.id === site.project_id)
+                              : undefined;
+                            let p = exactProject && projectMatchesSite(exactProject, site)
+                              ? exactProject
                               : undefined;
 
                             // 2. Se não encontrou por ID, procura pelo slug da URL ou nome da agência ou ID do site
                             if (!p) {
-                              p = savedProjects?.find(x => {
-                                const snap = x.state_snapshot as any;
-                                const urlSlug = snap?.siteContent?.canvaViagemUrl?.replace('https://', '')?.split('.')[0] || snap?.siteContent?.vercelUrl?.replace('https://', '')?.split('.')[0];
-                                const agencySlug = x.agency_name ? slugify(x.agency_name) : null;
-                                return x.published_site_id === site.id || urlSlug === site.id || agencySlug === site.id || x.id === site.id || x.id === site.project_id;
-                              });
+                              p = savedProjects?.find((x) => projectMatchesSite(x, site));
                             }
 
                             if (!p?.state_snapshot) {

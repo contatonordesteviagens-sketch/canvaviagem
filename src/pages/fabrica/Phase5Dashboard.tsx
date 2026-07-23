@@ -259,12 +259,14 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
       await (supabase as any)
         .from("crm_form_submissions")
         .update({ status: newStatus })
-        .eq("id", leadId);
+        .eq("id", leadId)
+        .eq("owner_id", user?.id || "");
 
       const { data, error } = await supabase
         .from("analytics_events")
         .select("event_data")
         .eq("id", leadId)
+        .eq("user_id", user?.id || "")
         .single();
       
       if (!error && data && typeof data.event_data === "object" && data.event_data !== null && !Array.isArray(data.event_data)) {
@@ -275,7 +277,8 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         await supabase
           .from("analytics_events")
           .update({ event_data: updatedData })
-          .eq("id", leadId);
+          .eq("id", leadId)
+          .eq("user_id", user?.id || "");
       }
     } catch (e) {
       console.warn("Silent background update of event status skipped due to RLS policies:", e);
@@ -308,6 +311,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           .from("crm_form_submissions")
           .select("*")
           .eq("owner_id", agencyTrackingId)
+          .eq("form_id", projectTrackingId)
           .order("created_at", { ascending: false })
           .limit(200);
 
@@ -355,7 +359,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
             const payload = event.event_data;
             if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
             if (payload.submission_id) return false;
-            return !payload.project_id || payload.project_id === projectTrackingId;
+            return payload.project_id === projectTrackingId || payload.form_id === projectTrackingId;
           })
           .map((event: any) => {
             const payload = event.event_data || {};
@@ -373,7 +377,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
               status: state.leadStatuses?.[event.id] || payload.status || "novo",
               origem: payload.project_id ? "Fallback do site" : "Histórico da conta (sem projeto)",
               legacy_unverified: true,
-              legacy_unassigned: !payload.project_id,
+              legacy_unassigned: false,
             };
           });
 
@@ -435,7 +439,10 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
 
           const legacyMetricRows = (legacyMetricsResult.data || []).filter((event: any) => {
             const payload = event.event_data;
-            return payload && typeof payload === "object" && !Array.isArray(payload) && !payload.project_id;
+            return payload
+              && typeof payload === "object"
+              && !Array.isArray(payload)
+              && (payload.project_id === projectTrackingId || payload.form_id === projectTrackingId);
           });
           // [build-force] Sempre inclui eventos legados da agência — o usuário tem apenas 1 conta
           const legacyVisits = legacyMetricRows.filter((event: any) => event.event_type === "page_view").length;
@@ -458,7 +465,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         setStats({
           visits,
           clicks,
-          leads: formLeadCount,
+          leads: allLeads.length || formLeadCount,
           avgTime
         });
         // ⛔ DADOS PROTEGIDOS — allLeads vem exclusivamente do Supabase.
@@ -482,7 +489,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
     if (!user?.id) return;
     setLoading(true);
     fetchRealMetrics();
-  }, [user?.id, session?.access_token, reloadKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.id, session?.access_token, state.projectId, reloadKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentDay = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR });
   const formatString = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
