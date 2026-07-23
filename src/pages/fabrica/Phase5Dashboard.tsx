@@ -337,24 +337,25 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         setLegacyMetricsInfo({ count: 0, included: false });
 
         // Leads reais vêm exclusivamente das submissões canônicas do formulário.
+        // ⛔ DADOS PROTEGIDOS — busca TODOS os leads do owner, com ou sem projectId
         let formLeads: any[] = [];
         let formLeadCount = 0;
         try {
-          const { count: publicFormCount } = await (supabase as any)
-            .from("crm_form_submissions")
-            .select("*", { count: "exact", head: true })
-            .eq("owner_id", agencyTrackingId)
-            .eq("form_id", projectTrackingId);
-
-          const { data: publicFormData } = await (supabase as any)
+          // Busca por owner_id primeiro (todos os leads da agência)
+          let query = (supabase as any)
             .from("crm_form_submissions")
             .select("*")
             .eq("owner_id", agencyTrackingId)
-            .eq("form_id", projectTrackingId)
             .order("created_at", { ascending: false })
-            .limit(100);
+            .limit(200);
 
-          formLeadCount = publicFormCount || 0;
+          // Filtra por form_id apenas se existir um projectId válido
+          if (projectTrackingId && projectTrackingId !== "undefined" && projectTrackingId !== "null") {
+            query = query.eq("form_id", projectTrackingId);
+          }
+
+          const { data: publicFormData, count: publicFormCount } = await query;
+          formLeadCount = publicFormCount || (publicFormData?.length ?? 0);
           formLeads = publicFormData || [];
         } catch (crmFormError) {
           console.warn("CRM Forms ainda nao disponivel neste ambiente:", crmFormError);
@@ -440,8 +441,11 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
       }
     };
 
+    // ⛔ Depende apenas de user?.id — não depende de state.projectId
+    // Isso evita que o fetch seja disparado toda vez que o estado da agência muda (salvar, etc.)
+    if (!user?.id) return;
     fetchRealMetrics();
-  }, [state.projectId, user?.id]);
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentDay = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR });
   const formatString = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
