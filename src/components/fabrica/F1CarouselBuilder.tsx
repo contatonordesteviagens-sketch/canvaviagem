@@ -2917,8 +2917,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                   {!coverImage && (
                     <p className="mt-3 rounded-lg bg-amber-300/10 px-3 py-2 text-xs font-semibold text-amber-100">
                       {isEs
-                        ? "Vuelve a Anuncio, genera la portada y usa "Transformar en carrusel"."
-                        : "Volte para Anúncio, gere a capa e use "Transformar em carrossel"."}
+                        ? 'Vuelve a Anuncio, genera la portada y usa "Transformar en carrusel".'
+                        : 'Volte para Anúncio, gere a capa e use "Transformar em carrossel".'}
                     </p>
                   )}
                 </div>
@@ -3016,14 +3016,17 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                       ["gradient", "Degradê"],
                     ] as const).map(([styleKey, styleTitle]) => (
                       <button
-{
-                      (activeSlide.labelStyle || "filled") === styleKey
-                        ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906] shadow-[0_0_10px_rgba(245,249,6,0.2)]"
-                        : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
-                    }`}
-                  >
-                    {styleTitle}
-                  </button>
+                        key={styleKey}
+                        type="button"
+                        onClick={() => patchActive({ labelStyle: styleKey })}
+                        className={`rounded-full border px-2.5 py-1 text-[9px] font-bold leading-tight transition-all ${
+                          (activeSlide.labelStyle || "filled") === styleKey
+                            ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906] shadow-[0_0_10px_rgba(245,249,6,0.2)]"
+                            : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
+                        }`}
+                      >
+                        {styleTitle}
+                      </button>
                 ))}
               </div>
             </div>
@@ -3228,21 +3231,6 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
                 )}
               </div>
             )}
-          </div>
-
-          {activeSlide && activeSlide.kind !== "cover" && (
-            <div className="block lg:hidden space-y-4">
-              {renderPhotoSelectionBox()}
-              {renderPublishFooterBox()}
-            </div>
-          )}
-        </div>
-               )}
-                  </>
-                )}
-              </div>
-            )}
-
           </div>
 
           {activeSlide && activeSlide.kind !== "cover" && (
