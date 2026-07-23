@@ -579,82 +579,32 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         </div>
       )}
 
-      {/* MÓDULO F5: OS DADOS VITAIS (MUITO VISUAL!) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card Visitas */}
-        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
-          <div className="flex items-start justify-between mb-4">
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
-              <Users className="w-5 h-5" />
-            </div>
-            <div className="text-[10px] font-bold px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/20 flex items-center gap-0.5">
-              AO VIVO
-            </div>
+      {/* MÉTRICAS — MINIMALISTAS */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
+          <div className="text-2xl font-black text-white mb-1">
+            {loading ? <Loader2 className="w-5 h-5 animate-spin text-white/30" /> : stats.visits}
           </div>
-          <div className="text-3xl font-black text-white mb-0.5">
-            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.visits}
-          </div>
-          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Visitas Únicas</div>
-          <div className="mt-3 flex items-center gap-2 text-[10px] font-medium text-white/50 bg-white/5 px-2 py-1.5 rounded-lg w-max">
-            <Clock className="w-3.5 h-3.5 text-white/40" /> Tempo Médio: <strong className="text-white">{stats.avgTime > 0 ? `${stats.avgTime}s` : '--'}</strong>
-          </div>
+          <div className="text-[11px] text-white/35 font-medium">Visitas</div>
+          {stats.avgTime > 0 && <div className="text-[10px] text-white/25 mt-1">{stats.avgTime}s médio</div>}
         </div>
-
-        {/* Card Cliques */}
-        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
-          <div className="flex items-start justify-between mb-4">
-            <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400">
-              <MousePointerClick className="w-5 h-5" />
-            </div>
-            <div className="text-[10px] font-bold px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/20 flex items-center gap-0.5">
-              INTERAÇÃO
-            </div>
+        <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
+          <div className="text-2xl font-black text-white mb-1">
+            {loading ? <Loader2 className="w-5 h-5 animate-spin text-white/30" /> : stats.clicks}
           </div>
-          <div className="text-3xl font-black text-white mb-0.5">
-            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.clicks}
-          </div>
-          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Cliques WhatsApp</div>
-          <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
-            <div className="h-full bg-blue-500 rounded-full w-[40%] animate-in slide-in-from-left duration-1000 delay-100" />
-          </div>
+          <div className="text-[11px] text-white/35 font-medium">Cliques WhatsApp</div>
         </div>
-
-        {/* Card Leads */}
-        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
-          <div className="flex items-start justify-between mb-4">
-            <div className="p-2.5 rounded-xl bg-violet-500/10 text-violet-400">
-              <MessageSquare className="w-5 h-5" />
-            </div>
-            <div className="text-[10px] font-bold px-2 py-0.5 bg-violet-500/20 text-violet-300 rounded-full border border-violet-500/20">
-              {stats.leads > 0 ? "RECEBIDOS" : "AGUARDANDO"}
-            </div>
+        <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
+          <div className="text-2xl font-black text-white mb-1">
+            {loading ? <Loader2 className="w-5 h-5 animate-spin text-white/30" /> : leadsList.length}
           </div>
-          <div className="text-3xl font-black text-white mb-0.5">
-            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.leads}
-          </div>
-          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Formulários (Leads)</div>
-          <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
-            <div className="h-full bg-violet-500 rounded-full w-[25%] animate-in slide-in-from-left duration-1000 delay-200" />
-          </div>
+          <div className="text-[11px] text-white/35 font-medium">Leads totais</div>
         </div>
-
-        {/* Card Conversão */}
-        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
-          <div className="flex items-start justify-between mb-4">
-            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400">
-              <Target className="w-5 h-5" />
-            </div>
-            <div className="text-[10px] font-bold px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-full border border-amber-500/20 flex items-center gap-0.5">
-              RESULTADO
-            </div>
+        <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
+          <div className="text-2xl font-black text-white mb-1">
+            {loading ? <Loader2 className="w-5 h-5 animate-spin text-white/30" /> : `${leadsList.length > 0 && stats.visits > 0 ? Math.min(100, Math.round((leadsList.length / stats.visits) * 100)) : 0}%`}
           </div>
-          <div className="text-3xl font-black text-white mb-0.5">
-            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : `${stats.visits > 0 ? Math.min(100, Math.round((stats.leads / stats.visits) * 100)) : 0}%`}
-          </div>
-          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Taxa de Conversão</div>
-          <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
-            <div className="h-full bg-amber-500 rounded-full w-[50%] animate-in slide-in-from-left duration-1000 delay-300" />
-          </div>
+          <div className="text-[11px] text-white/35 font-medium">Taxa de conversão</div>
         </div>
       </div>
 
@@ -662,191 +612,139 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         <div className="rounded-2xl border border-sky-400/15 bg-sky-400/[0.06] px-4 py-3 text-[11px] leading-5 text-sky-100/75">
           {legacyMetricsInfo.included
             ? `As métricas incluem ${legacyMetricsInfo.count} evento(s) histórico(s) da conta, pois há somente um projeto ou site identificável.`
-            : `Existem ${legacyMetricsInfo.count} evento(s) histórico(s) sem projeto definido. Eles não foram somados a este projeto para evitar mistura entre agências.`}{" "}
-          Republique os sites antigos para ativar métricas isoladas por projeto.
+            : `Existem ${legacyMetricsInfo.count} evento(s) histórico(s) sem projeto definido. Eles não foram somados para evitar mistura entre agências.`}
         </div>
       )}
 
-      {/* 🆕 NOVO MÓDULO: CENTRO DE LEADS / CRM INTEGRADO */}
-      <div className="bg-white/[0.03] border border-white/10 rounded-3xl overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-6 duration-700 mt-6">
-         <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-br from-violet-500/5 to-transparent">
-            <div className="flex items-center gap-3">
-               <div className="p-2.5 rounded-xl bg-violet-500/20 text-violet-400 shadow-inner">
-                  <Users className="w-5 h-5" />
-               </div>
-               <div>
-                  <h3 className="font-black text-white text-base tracking-tight flex items-center gap-2">
-                     Carteira de Clientes
-                     {filteredLeads.length > 0 && (
-                       <span className="text-[10px] font-extrabold bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">
-                         {filteredLeads.length} {filteredLeads.length === 1 ? 'lead' : 'leads'}
-                         {hasActiveFilters && ` filtrado${filteredLeads.length !== 1 ? 's' : ''}`}
-                       </span>
-                     )}
-                  </h3>
-                  <p className="text-[11px] text-white/50">Gerencie e filtre seus potenciais clientes.</p>
-               </div>
-            </div>
-            
-            {/* Toolbar de Filtros */}
-            <div className="flex flex-wrap items-center gap-2">
-               <div className="flex items-center gap-2 bg-black/40 border border-white/10 px-3 py-1.5 rounded-xl">
-                 <Filter className="w-3.5 h-3.5 text-white/40" />
-                 
-                 <select 
-                   value={filterData}
-                   onChange={(e) => setFilterData(e.target.value)}
-                   className="bg-transparent text-xs text-white/70 outline-none cursor-pointer border-r border-white/10 pr-2"
-                 >
-                   <option value="Todas" className="bg-zinc-900 text-white">Qualquer Data</option>
-                   <option value="Hoje" className="bg-zinc-900 text-white">Hoje</option>
-                   <option value="7 dias" className="bg-zinc-900 text-white">Últimos 7 dias</option>
-                   <option value="30 dias" className="bg-zinc-900 text-white">Últimos 30 dias</option>
-                 </select>
-
-                 <select 
-                   value={filterFase}
-                   onChange={(e) => setFilterFase(e.target.value)}
-                   className="bg-transparent text-xs text-white/70 outline-none cursor-pointer border-r border-white/10 pr-2 ml-2"
-                 >
-                   <option value="Todas" className="bg-zinc-900 text-white">Todas as Fases</option>
-                   <option value="novo" className="bg-zinc-900 text-white">Novo</option>
-                   <option value="contato" className="bg-zinc-900 text-white">Em Contato</option>
-                   <option value="proposta" className="bg-zinc-900 text-white">Proposta</option>
-                   <option value="venda" className="bg-zinc-900 text-white">Venda</option>
-                   <option value="perda" className="bg-zinc-900 text-white">Perda</option>
-                 </select>
-
-                 <select 
-                   value={filterRoteiro}
-                   onChange={(e) => setFilterRoteiro(e.target.value)}
-                   className="bg-transparent text-xs text-white/70 outline-none cursor-pointer ml-2 max-w-[100px] sm:max-w-[150px]"
-                 >
-                   {getRoteirosUnicos().map(r => (
-                     <option key={r} value={r} className="bg-zinc-900 text-white">{r}</option>
-                   ))}
-                 </select>
-               </div>
-
-               {hasActiveFilters && (
-                 <button
-                   onClick={clearFilters}
-                   className="text-[10px] font-bold text-white/50 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1"
-                 >
-                   <CloseIcon className="w-3 h-3" /> Limpar
-                 </button>
-               )}
-            </div>
-         </div>
-
-         {unverifiedLegacyLeadCount > 0 && (
-           <div className="border-y border-amber-400/15 bg-amber-400/[0.06] px-6 py-3 text-[11px] leading-5 text-amber-100/80">
-             <strong className="text-amber-300">{unverifiedLegacyLeadCount} registro(s) histórico(s) não verificado(s).</strong>{" "}
-             Eles vieram do rastreamento antigo ou de contingência, ficam fora do total oficial do CRM e podem não estar ligados a este projeto. Republique o site para usar a captura canônica.
-           </div>
-         )}
-
-         <div className="overflow-x-auto">
-            {filteredLeads.length === 0 ? (
-                 <div className="py-16 px-6 text-center flex flex-col items-center justify-center space-y-4">
-                    <div className="p-4 rounded-full bg-amber-500/10 text-amber-400/80 mb-2 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
-                       <MousePointerClick className="w-8 h-8" />
-                    </div>
-                    <h4 className="text-sm font-bold text-white">Nenhum lead encontrado</h4>
-                    <p className="text-[11px] text-white/50 max-w-md text-center">
-                       {leadsList.length === 0 ? "Você ainda não tem leads na sua carteira." : "Nenhum lead corresponde aos filtros selecionados."}
-                    </p>
-                 </div>
-            ) : (
-               <table className="w-full text-left text-sm border-collapse">
-                  <thead>
-                     <tr className="bg-white/[0.02] border-b border-white/5">
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Data/Hora</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Nome do Cliente</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Destino</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Fase do Lead</th>
-                        <th className="px-6 py-4 text-right text-[10px] font-bold text-white/40 uppercase tracking-wider">Ações</th>
-                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                     {filteredLeads.map((l: any) => {
-                        const rawDate = new Date(l.created_at);
-                        const cleanPhone = String(l.whatsapp || "").replace(/\D/g, "");
-                        const currentStatus = l.status || 'novo';
-                        
-                        return (
-                           <tr key={l.id} className="hover:bg-white/[0.02] transition-colors group">
-                              <td className="px-6 py-4 whitespace-nowrap text-xs text-white/50">
-                                 <div>{rawDate.toLocaleDateString('pt-BR')} <span className="opacity-50 text-[10px] ml-1">{rawDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span></div>
-                                 {/* Badge NOVO para leads das últimas 24h */}
-                                 {(Date.now() - rawDate.getTime()) < 86400000 && (
-                                   <span className="inline-block mt-0.5 text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-full animate-pulse">NOVO</span>
-                                 )}
-                              </td>
-                              <td className="px-6 py-4">
-                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-black text-white shadow-lg group-hover:scale-110 transition-transform">
-                                       {String(l.nome_completo || "L").charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                       <div className="font-bold text-white group-hover:text-violet-300 transition-colors">{l.nome_completo || "Não informado"}</div>
-                                       <div className="text-[10px] text-white/40">{l.email || "Sem e-mail"}</div>
-                                       {l.legacy_unverified && <div className="mt-1 text-[9px] font-bold uppercase tracking-wide text-amber-300">Histórico não verificado</div>}
-                                    </div>
-                                 </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                 <span className="inline-flex px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-medium text-white/70 max-w-[180px] truncate">
-                                    {l.destino_interesse || "Navegação Geral"}
-                                 </span>
-                              </td>
-                              <td className="px-6 py-4">
-                                 <div className="relative inline-block">
-                                    <select
-                                       value={currentStatus}
-                                       onChange={(e) => handleStatusChange(l.id, e.target.value)}
-                                       className={`appearance-none cursor-pointer pl-3 pr-8 py-1 rounded-full text-[10px] font-bold border transition-colors outline-none ${getFaseColor(currentStatus)}`}
-                                    >
-                                       <option value="novo" className="bg-zinc-900 text-amber-400">🟡 Novo</option>
-                                       <option value="contato" className="bg-zinc-900 text-blue-400">🔵 Em Contato</option>
-                                       <option value="proposta" className="bg-zinc-900 text-purple-400">🟣 Proposta</option>
-                                       <option value="venda" className="bg-zinc-900 text-green-400">🟢 Venda</option>
-                                       <option value="perda" className="bg-zinc-900 text-zinc-400">⚪ Perda</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-2.5 top-1.5 w-3 h-3 pointer-events-none opacity-50" />
-                                 </div>
-                              </td>
-                              <td className="px-6 py-4 text-right">
-                                 <div className="flex items-center justify-end gap-2">
-                                    <button 
-                                       onClick={() => setSelectedLead(l)}
-                                       className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
-                                       title="Ver Detalhes"
-                                    >
-                                       <Maximize2 className="w-4 h-4" />
-                                    </button>
-                                    
-                                    {cleanPhone ? (
-                                       <a 
-                                          href={`https://wa.me/${cleanPhone.startsWith('55') ? '' : '55'}${cleanPhone}?text=${encodeURIComponent(`Olá ${l.nome_completo || 'viajante'}! Vi seu interesse no destino ${l.destino_interesse || 'Geral'}. Como podemos ajudar com sua viagem?`)}`} 
-                                          target="_blank" 
-                                          rel="noreferrer"
-                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-[11px] font-black rounded-lg transition-all active:scale-95 shadow-lg shadow-green-900/20"
-                                       >
-                                          <MessageSquare className="w-3.5 h-3.5" /> Whats
-                                       </a>
-                                    ) : (
-                                       <span className="text-[10px] text-white/30 px-2">S/ Whats</span>
-                                    )}
-                                 </div>
-                              </td>
-                           </tr>
-                        );
-                     })}
-                  </tbody>
-               </table>
+      {/* CARTEIRA DE CLIENTES */}
+      <div className="border border-white/8 rounded-2xl overflow-hidden mt-2">
+        {/* Header simples */}
+        <div className="px-5 py-4 border-b border-white/8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold text-white">Carteira de Clientes</h3>
+            {leadsList.length > 0 && (
+              <span className="text-[10px] text-white/40 font-medium">{filteredLeads.length} lead{filteredLeads.length !== 1 ? 's' : ''}{hasActiveFilters ? ' filtrado' + (filteredLeads.length !== 1 ? 's' : '') : ''}</span>
             )}
-         </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={filterData}
+              onChange={(e) => setFilterData(e.target.value)}
+              className="bg-white/5 border border-white/10 text-[11px] text-white/60 rounded-lg px-2.5 py-1.5 outline-none"
+            >
+              <option value="Todas">Qualquer Data</option>
+              <option value="Hoje">Hoje</option>
+              <option value="7 dias">7 dias</option>
+              <option value="30 dias">30 dias</option>
+            </select>
+            <select
+              value={filterFase}
+              onChange={(e) => setFilterFase(e.target.value)}
+              className="bg-white/5 border border-white/10 text-[11px] text-white/60 rounded-lg px-2.5 py-1.5 outline-none"
+            >
+              <option value="Todas">Todas as fases</option>
+              <option value="novo">Novo</option>
+              <option value="contato">Em Contato</option>
+              <option value="proposta">Proposta</option>
+              <option value="venda">Venda</option>
+              <option value="perda">Perda</option>
+            </select>
+            <select
+              value={filterRoteiro}
+              onChange={(e) => setFilterRoteiro(e.target.value)}
+              className="bg-white/5 border border-white/10 text-[11px] text-white/60 rounded-lg px-2.5 py-1.5 outline-none max-w-[140px] truncate"
+            >
+              {getRoteirosUnicos().map(r => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+            {hasActiveFilters && (
+              <button onClick={clearFilters} className="text-[10px] text-white/40 hover:text-white transition-colors underline">
+                Limpar
+              </button>
+            )}
+          </div>
+        </div>
+
+        {filteredLeads.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-sm text-white/30">{leadsList.length === 0 ? "Nenhum lead ainda." : "Nenhum lead corresponde aos filtros."}</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-white/5">
+                  <th className="px-5 py-3 text-[10px] text-white/30 font-semibold uppercase tracking-wider">Data</th>
+                  <th className="px-5 py-3 text-[10px] text-white/30 font-semibold uppercase tracking-wider">Nome</th>
+                  <th className="px-5 py-3 text-[10px] text-white/30 font-semibold uppercase tracking-wider">Destino</th>
+                  <th className="px-5 py-3 text-[10px] text-white/30 font-semibold uppercase tracking-wider">Fase</th>
+                  <th className="px-5 py-3 text-right text-[10px] text-white/30 font-semibold uppercase tracking-wider">Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredLeads.map((l: any) => {
+                  const rawDate = new Date(l.created_at);
+                  const cleanPhone = String(l.whatsapp || "").replace(/\D/g, "");
+                  const currentStatus = l.status || 'novo';
+                  return (
+                    <tr key={l.id} className="border-b border-white/[0.04] hover:bg-white/[0.015] transition-colors">
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <div className="text-xs text-white/50">{rawDate.toLocaleDateString('pt-BR')}</div>
+                        <div className="text-[10px] text-white/25">{rawDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="text-sm font-medium text-white/80">{l.nome_completo || "Sem nome"}</div>
+                        <div className="text-[10px] text-white/30 truncate max-w-[160px]">{l.email || l.whatsapp || "—"}</div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="text-xs text-white/50">{l.destino_interesse || "Geral"}</span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="relative inline-block">
+                          <select
+                            value={currentStatus}
+                            onChange={(e) => handleStatusChange(l.id, e.target.value)}
+                            className={`appearance-none cursor-pointer pl-3 pr-7 py-1 rounded-full text-[10px] font-semibold border outline-none transition-colors ${getFaseColor(currentStatus)}`}
+                          >
+                            <option value="novo">Novo</option>
+                            <option value="contato">Em Contato</option>
+                            <option value="proposta">Proposta</option>
+                            <option value="venda">Venda</option>
+                            <option value="perda">Perda</option>
+                          </select>
+                          <ChevronDown className="absolute right-1.5 top-1.5 w-3 h-3 pointer-events-none opacity-40" />
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => setSelectedLead(l)}
+                            className="p-1.5 rounded-lg text-white/30 hover:text-white hover:bg-white/5 transition-colors"
+                            title="Ver detalhes"
+                          >
+                            <Maximize2 className="w-3.5 h-3.5" />
+                          </button>
+                          {cleanPhone ? (
+                            <a
+                              href={`https://wa.me/${cleanPhone.startsWith('55') ? '' : '55'}${cleanPhone}?text=${encodeURIComponent(`Olá ${l.nome_completo || 'viajante'}! Vi seu interesse no destino ${l.destino_interesse || 'Geral'}. Como podemos ajudar com sua viagem?`)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] text-[10px] font-bold rounded-lg border border-[#25D366]/20 transition-colors"
+                            >
+                              Whats
+                            </a>
+                          ) : (
+                            <span className="text-[10px] text-white/20">—</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
       </div>
 
       {/* Modal: Maximizar Detalhes do Lead */}
