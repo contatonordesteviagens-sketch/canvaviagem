@@ -745,6 +745,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
               </tbody>
             </table>
           </div>
+        )}
       </div>
 
       {/* Modal: Maximizar Detalhes do Lead */}
