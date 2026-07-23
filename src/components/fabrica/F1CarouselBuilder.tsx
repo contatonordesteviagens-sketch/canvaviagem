@@ -1211,16 +1211,16 @@ function MiniTypographyBar({
           { key: "underline", label: "U", active: isUnderline, cls: "underline font-bold", action: () => onChange({ ...style, underline: !isUnderline }) },
         ].map(({ key, label, active, cls, action }) => (
           <button key={key} type="button" onClick={(e) => { e.preventDefault(); action(); }}
-            className={`grid h-6 w-6 place-items-center rounded text-xs transition-colors ${cls} ${
+            className={`grid h-8 w-8 place-items-center rounded text-sm transition-colors ${cls} ${
               active ? "bg-[#F5F906] text-zinc-950" : "text-white/70 hover:bg-white/10 hover:text-white"
             }`}>{label}</button>
         ))}
-        <div className="my-0.5 w-3 border-t border-white/15" />
+        <div className="my-1 w-4 border-t border-white/15" />
         {/* Cores verticais */}
         {brandColors.map(({ hex, label }) => (
           <button key={hex} type="button" onClick={(e) => { e.preventDefault(); handleColorClick(hex); }}
             title={`${label} (${hex})`}
-            className={`h-5 w-5 rounded-full border-2 transition-all hover:scale-110 ${
+            className={`h-7 w-7 rounded-full border-2 transition-all hover:scale-110 ${
               currentColor.toUpperCase() === hex.toUpperCase()
                 ? "scale-110 border-white ring-2 ring-[#F5F906] ring-offset-1 ring-offset-zinc-900"
                 : "border-white/30"
@@ -1228,7 +1228,7 @@ function MiniTypographyBar({
         ))}
         {/* Arco-íris */}
         <div className="relative cursor-pointer transition-transform hover:scale-110"
-          style={{ width: 20, height: 20, borderRadius: "50%", padding: 2,
+          style={{ width: 28, height: 28, borderRadius: "50%", padding: 2,
             background: "conic-gradient(from 0deg, #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
           title={isEs ? "Elegir color" : "Qualquer cor"}
         >
@@ -1254,7 +1254,7 @@ function MiniTypographyBar({
             onChange({ ...style, bold: !isBold });
           }}
           title={isEs ? "Negrita (B)" : "Negrito (B)"}
-          className={`grid h-6 w-6 place-items-center rounded text-xs font-black transition-colors ${
+          className={`grid h-8 w-8 place-items-center rounded text-sm font-black transition-colors ${
             isBold
               ? "bg-[#F5F906] text-zinc-950 shadow-sm"
               : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -1269,7 +1269,7 @@ function MiniTypographyBar({
             onChange({ ...style, italic: !isItalic });
           }}
           title={isEs ? "Cursiva (I)" : "Itálico (I)"}
-          className={`grid h-6 w-6 place-items-center rounded text-xs font-bold italic transition-colors ${
+          className={`grid h-8 w-8 place-items-center rounded text-sm font-bold italic transition-colors ${
             isItalic
               ? "bg-[#F5F906] text-zinc-950 shadow-sm"
               : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -1284,7 +1284,7 @@ function MiniTypographyBar({
             onChange({ ...style, underline: !isUnderline });
           }}
           title={isEs ? "Subrayado (U)" : "Sublinhado (U)"}
-          className={`grid h-6 w-6 place-items-center rounded text-xs font-bold underline transition-colors ${
+          className={`grid h-8 w-8 place-items-center rounded text-sm font-bold underline transition-colors ${
             isUnderline
               ? "bg-[#F5F906] text-zinc-950 shadow-sm"
               : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -1305,7 +1305,7 @@ function MiniTypographyBar({
               handleColorClick(hex);
             }}
             title={`${label} (${hex})`}
-            className={`h-6 w-6 rounded-full border-2 transition-all hover:scale-110 ${
+            className={`h-7 w-7 rounded-full border-2 transition-all hover:scale-110 ${
               currentColor.toUpperCase() === hex.toUpperCase()
                 ? "scale-110 border-white ring-2 ring-[#F5F906] ring-offset-1 ring-offset-zinc-900"
                 : "border-white/30"
