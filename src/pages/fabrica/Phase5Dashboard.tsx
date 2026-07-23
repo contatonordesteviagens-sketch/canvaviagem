@@ -176,8 +176,14 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
   
   const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0, avgTime: 0 });
   const [legacyMetricsInfo, setLegacyMetricsInfo] = useState({ count: 0, included: false });
+  // ⛔ BLOQUEIO DE SEGURANÇA — leadsList armazena os leads reais do Supabase.
+  // NUNCA substitua por [] sem confirmar que o banco realmente retornou vazio.
+  // NUNCA remova o setLeadsList(allLeads) no fetch abaixo.
   const [leadsList, setLeadsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  // fetchError = true indica falha de rede/RLS, NÃO ausência de leads.
+  // Quando fetchError=true, a UI exibe aviso de erro — nunca "sem leads".
+  const [fetchError, setFetchError] = useState(false);
 
   // Filtros
   const [filterRoteiro, setFilterRoteiro] = useState("Todos");
@@ -422,9 +428,17 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           leads: formLeadCount,
           avgTime
         });
+        // ⛔ DADOS PROTEGIDOS — allLeads vem exclusivamente do Supabase.
+        // NUNCA remova este setLeadsList. NUNCA adicione lógica de delete aqui.
+        // Cada lead pertence somente à agência identificada por owner_id = user.id.
         setLeadsList(allLeads);
+        setFetchError(false);
       } catch (e) {
+        // ⛔ FALHA DE FETCH — NÃO limpa leadsList para não apagar dados já carregados.
+        // Ativa fetchError para exibir aviso ao usuário em vez de tela vazia.
         console.warn("Falha ao carregar métricas reais:", e);
+        setFetchError(true);
+        // leadsList permanece inalterado — nunca substituir por []
       } finally {
         setLoading(false);
       }
@@ -666,7 +680,24 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           </div>
         </div>
 
-        {filteredLeads.length === 0 ? (
+        {/* ⛔ AVISO DE ERRO DE FETCH — aparece apenas quando há falha de conexão/RLS */}
+        {fetchError && (
+          <div className="mx-5 mt-4 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+            <div className="mt-0.5 text-red-400 text-sm">⚠️</div>
+            <div>
+              <div className="text-xs font-bold text-red-300">Não foi possível carregar os leads agora</div>
+              <p className="text-[11px] text-red-200/60 mt-0.5">Verifique sua conexão e recarregue a página. Seus dados estão salvos e protegidos no servidor.</p>
+              <button
+                onClick={() => { setFetchError(false); setLoading(true); }}
+                className="mt-2 text-[10px] font-bold text-red-300 hover:text-white underline transition-colors"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          </div>
+        )}
+
+        {filteredLeads.length === 0 && !loading && !fetchError ? (
           <div className="py-12 text-center">
             <p className="text-sm text-white/30">{leadsList.length === 0 ? "Nenhum lead ainda." : "Nenhum lead corresponde aos filtros."}</p>
           </div>
