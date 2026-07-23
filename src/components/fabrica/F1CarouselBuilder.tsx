@@ -2613,15 +2613,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
               <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
                 {isEs ? "Estilo visual del slide" : "Estilo visual do slide"}
               </legend>
-              <div className="mt-1.5 grid grid-cols-3 gap-2">
+              <div className="mt-1.5 grid grid-cols-3 gap-1.5">
                 {([
-                  ["impact",    isEs ? "Impacto"    : "Impacto",    "Foto cheia + texto em baixo"],
-                  ["itinerary", isEs ? "Roteiro"    : "Roteiro",    "Foto no topo + bloco colorido"],
-                  ["editorial", isEs ? "Editorial"  : "Editorial",  "Card flutuante central"],
-                  ["oferta",    isEs ? "Oferta"     : "Oferta",     "Estilo Clube Turismo"],
-                  ["minimalist",isEs ? "Minimal"    : "Minimalista","Tipografia limpa e elegante"],
-                  ["vibrant",   isEs ? "Vibrante"   : "Vibrante",   "Gradientes modernos"],
-                ] as const).map(([variant, labelText, hint]) => {
+                  ["impact",    isEs ? "Impacto"    : "Impacto"],
+                  ["itinerary", isEs ? "Roteiro"    : "Roteiro"],
+                  ["editorial", isEs ? "Editorial"  : "Editorial"],
+                  ["oferta",    isEs ? "Oferta"     : "Oferta"],
+                  ["minimalist",isEs ? "Minimal"    : "Minimalista"],
+                  ["vibrant",   isEs ? "Vibrante"   : "Vibrante"],
+                ] as const).map(([variant, labelText]) => {
                   const currentContentSlide = slides.find(s => s.kind === "content");
                   const isActiveVariant = currentContentSlide ? (currentContentSlide.slideVariant || "impact") === variant : variant === "impact";
                   return (
@@ -2629,17 +2629,13 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       key={variant}
                       type="button"
                       aria-pressed={isActiveVariant}
-                      title={hint}
                       onClick={() => patchAllContentSlides({ slideVariant: variant as CarouselSlideVariant })}
-                      className={`flex min-h-10 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-1.5 text-[10px] font-bold transition-colors ${
+                      className={`min-h-9 rounded-xl border px-2 py-1.5 text-[10px] font-bold transition-colors ${
                         isActiveVariant
-                          ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]"
-                          : "border-white/10 bg-white/[0.02] text-white/60 hover:bg-white/[0.06] hover:text-white"
+                          ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
+                          : "border-white/10 bg-transparent text-white/50 hover:border-white/20 hover:text-white/80"
                       }`}
                     >
-                      <span className="text-sm leading-none">
-                        {variant === "impact" ? "🖼" : variant === "itinerary" ? "📋" : variant === "editorial" ? "🪟" : variant === "oferta" ? "🏷️" : variant === "minimalist" ? "✨" : "🔥"}
-                      </span>
                       {labelText}
                     </button>
                   );

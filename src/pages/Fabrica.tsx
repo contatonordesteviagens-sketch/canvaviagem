@@ -179,63 +179,87 @@ const FabricaInner = () => {
             <div className="space-y-1">
               {/* F2: Carrossel */}
               <button
-            onClick={() => {
-              setPhase(2);
-              setActiveTab("phase");
-              setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/carrossel" : "/fabrica/carrossel");
-            }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>🖼️</span> Carrossel (F2)
-          </button>
+                onClick={() => {
+                  setPhase(2);
+                  setActiveTab("phase");
+                  setMobileMenuOpen(false);
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/carrossel" : "/fabrica/carrossel");
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  activeTab === "phase" && state.currentPhase === 2
+                    ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Layout className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Carrossel</span>
+                </div>
+                <span className="text-[10px] text-white/30 font-bold">F2</span>
+              </button>
 
               {/* F3: Site */}
               <button
-            onClick={() => {
-              setPhase(3);
-              setActiveTab("phase");
-              setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/site" : "/fabrica/site");
-            }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>📄</span> Site (F3)
-          </button>
+                onClick={() => {
+                  setPhase(3);
+                  setActiveTab("phase");
+                  setMobileMenuOpen(false);
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/site" : "/fabrica/site");
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  activeTab === "phase" && state.currentPhase === 3
+                    ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Site</span>
+                </div>
+                <span className="text-[10px] text-white/30 font-bold">F3</span>
+              </button>
 
               {/* F4: CRM */}
               <button
-            onClick={() => {
-              setPhase(4);
-              setActiveTab("phase");
-              setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/crm" : "/fabrica/crm");
-            }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>👥</span> CRM (F4)
-          </button>
+                onClick={() => {
+                  setPhase(4);
+                  setActiveTab("phase");
+                  setMobileMenuOpen(false);
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/crm" : "/fabrica/crm");
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  activeTab === "phase" && state.currentPhase === 4
+                    ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>CRM</span>
+                </div>
+                <span className="text-[10px] text-white/30 font-bold">F4</span>
+              </button>
 
               {/* F5: Planos */}
               <button
-            onClick={() => {
-              setPhase(5);
-              setActiveTab("phase");
-              setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/planos" : "/fabrica/planos");
-            }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>⚙️</span> Planos (F5)
-          </button>
+                onClick={() => {
+                  setPhase(5);
+                  setActiveTab("phase");
+                  setMobileMenuOpen(false);
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/planos" : "/fabrica/planos");
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  activeTab === "phase" && state.currentPhase === 5
+                    ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Sliders className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Planos</span>
+                </div>
+                <span className="text-[10px] text-white/30 font-bold">F5</span>
+              </button>
             </div>
           </div>
         </div>
