@@ -6,7 +6,7 @@ import { downloadLandingHTML, buildLandingHTML } from "@/lib/fabrica-html-export
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
 import { BrandPaletteEditor, SectionBackgroundEditor } from "@/components/fabrica/BrandPaletteEditor";
 import { SiteTemplateSelector } from "@/components/fabrica/SiteTemplateSelector";
-import { useDiagnosticos, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
+import { materializeRecoveredProject, useDiagnosticos, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
 import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
 import { getSiteTemplateDefinition } from "@/lib/site-template-catalog";
 import { publishFabricaSite } from "@/lib/fabrica-site-publisher";
@@ -158,8 +158,11 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     const isRecovered = project.source === "published_recovery";
     setIsSwitchingProject(true);
     try {
+      const editableProject = user?.id
+        ? await materializeRecoveredProject(project, user.id)
+        : project;
       await switchProject(
-        { ...project.state_snapshot, projectId: project.id },
+        { ...editableProject.state_snapshot, projectId: editableProject.id },
         { preserveCurrentPhase: true },
       );
       setPendingProjectSwitch(null);
@@ -1287,7 +1290,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       />
 
       {/* ── Banner de Auto-Sync (informativo, não bloqueia o seletor) ── */}
-      {autoSyncDone && autoSyncFields.length > 0 && (
+      {false && autoSyncDone && autoSyncFields.length > 0 && (
         <div className="rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/25 flex items-start gap-3 mb-4">
           <div className="text-2xl flex-shrink-0">✅</div>
           <div className="flex-1 min-w-0">

@@ -116,7 +116,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
     { to: isESRoute ? "/es/calendar" : "/calendar", label: t('header.calendar'), icon: Calendar },
     { to: "/blog", label: "Blog", icon: FileText, state: { fromInternal: true } },
     { to: isESRoute ? "/es/inicio" : "/inicio", label: t('header.plans'), icon: CreditCard },
-    { id: "aulas", label: "Aulas", icon: GraduationCap, action: () => handleCategoryClick('videoaula') }
+    { id: "aulas", label: "Aulas", icon: GraduationCap, action: () => { navigate("/tutorial"); setIsOpen(false); } }
   ];
 
   // Additional nav items for logged-in users

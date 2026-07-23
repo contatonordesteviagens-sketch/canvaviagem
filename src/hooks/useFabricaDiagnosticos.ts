@@ -27,6 +27,44 @@ export interface DiagnosticoSalvo {
   source?: DiagnosticoSource;
 }
 
+export const materializeRecoveredProject = async (
+  project: DiagnosticoSalvo,
+  userId: string,
+): Promise<DiagnosticoSalvo> => {
+  if (project.source !== "published_recovery" || isPersistedProjectId(project.id)) {
+    return project;
+  }
+
+  const persisted = await persistFabricaProject({
+    state: project.state_snapshot,
+    userId,
+    levelName: "Site publicado recuperado",
+  });
+  const stateSnapshot = {
+    ...persisted.stateSnapshot,
+    projectId: persisted.id,
+  };
+
+  if (project.published_site_id) {
+    const { error } = await supabase
+      .from("public_sites")
+      .update({ project_id: persisted.id })
+      .eq("id", project.published_site_id)
+      .eq("owner_id", userId);
+    if (error) {
+      console.warn("[Fabrica] Site recuperado salvo, mas o vinculo sera sincronizado depois.", error);
+    }
+  }
+
+  return {
+    ...project,
+    id: persisted.id,
+    state_snapshot: stateSnapshot,
+    published_project_id: persisted.id,
+    source: "saved",
+  };
+};
+
 interface PublishedSiteMetadata {
   id: string;
   project_id: string | null;

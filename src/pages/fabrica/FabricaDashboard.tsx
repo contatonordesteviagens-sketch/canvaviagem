@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
-import { useDiagnosticos, useSaveDiagnostico, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
+import { materializeRecoveredProject, useDiagnosticos, useSaveDiagnostico, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
@@ -31,6 +31,9 @@ import { COUNTRIES_DIAL, type CountryDial } from "@/lib/countriesDial";
 import { useQueryClient } from "@tanstack/react-query";
 import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
 import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
+import { getCanvaSiteUrl } from "@/lib/canva-site-domain";
+import { recoverFabricaStateFromPublishedHtml } from "@/lib/fabrica-project-recovery";
+import { persistFabricaProject } from "@/lib/fabrica-project-persistence";
 
 const AGENCY_TYPES = [
   { v: "autonoma", l: "Agente autônomo / Freelancer" },
@@ -69,7 +72,10 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     const isRecovered = project.source === "published_recovery";
     setIsSwitchingProject(true);
     try {
-      await switchProject({ ...project.state_snapshot, projectId: project.id });
+      const editableProject = user?.id
+        ? await materializeRecoveredProject(project, user.id)
+        : project;
+      await switchProject({ ...editableProject.state_snapshot, projectId: editableProject.id });
       setPendingProjectSwitch(null);
       if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
       else toast.success(`Projeto "${targetName}" carregado!`);
@@ -91,6 +97,75 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       return;
     }
     setPendingProjectSwitch(project);
+  };
+
+  const humanizeSiteId = (siteId: string) =>
+    siteId
+      .split("-")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ") || "Site recuperado";
+
+  const recoverPublishedSiteForEditing = async (site: { id: string; updated_at: string; project_id?: string | null }) => {
+    if (!user?.id) {
+      toast.error("Faça login para editar este site.");
+      return;
+    }
+
+    setIsSwitchingProject(true);
+    try {
+      const { data, error } = await supabase
+        .from("public_sites")
+        .select("id, project_id, html, created_at, updated_at")
+        .eq("id", site.id)
+        .eq("owner_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("site_not_found");
+
+      const siteUrl = getCanvaSiteUrl(site.id);
+      const recovered = recoverFabricaStateFromPublishedHtml(data.html || "", {
+        siteId: site.id,
+        siteUrl,
+      });
+      const agencyName = recovered.agencyName || humanizeSiteId(site.id);
+      const stateSnapshot = {
+        ...recovered,
+        projectId: `proj_legacy_${site.id}`,
+        agencyName,
+        siteContent: {
+          ...(recovered.siteContent || state.siteContent),
+          canvaViagemUrl: siteUrl,
+        },
+      };
+      const persisted = await persistFabricaProject({
+        state: stateSnapshot as any,
+        userId: user.id,
+        levelName: "Site publicado recuperado",
+      });
+
+      await supabase
+        .from("public_sites")
+        .update({ project_id: persisted.id })
+        .eq("id", site.id)
+        .eq("owner_id", user.id);
+
+      await switchProject(
+        { ...persisted.stateSnapshot, projectId: persisted.id },
+        { preserveCurrentPhase: true },
+      );
+      await queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
+      setPublishedSites((current) =>
+        current.map((item) => item.id === site.id ? { ...item, project_id: persisted.id } : item),
+      );
+      toast.success(`Site "${agencyName}" recuperado e carregado para edição.`);
+      window.setTimeout(() => onNavigate?.("phase", 4), 100);
+    } catch (error: any) {
+      console.error("[FabricaDashboard] Falha ao recuperar site publicado:", error);
+      toast.error("Não foi possível recuperar este site agora. Atualize a página e tente novamente.");
+    } finally {
+      setIsSwitchingProject(false);
+    }
   };
 
   const handleSaveProject = async () => {
@@ -793,11 +868,12 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 </div>
                 <div className="space-y-1.5">
                   {publishedSites.map((site) => {
+                    const publicUrl = `/view/${site.id}`;
                     const url = `https://${site.id}.canvaviagem.com`;
                     return (
                       <div key={site.id} className="flex flex-col sm:flex-row gap-2">
                         <a
-                          href={url}
+                          href={publicUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 flex items-center justify-between gap-2 min-w-0 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
@@ -810,7 +886,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                         </a>
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={async () => {
                             // 1. Tenta encontrar por ID exato do projeto (ignorando user.id se foi salvo com UUID do usuário)
                             let p = (site.project_id && site.project_id !== user?.id)
                               ? savedProjects?.find(x => x.id === site.project_id)
@@ -822,15 +898,17 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                                 const snap = x.state_snapshot as any;
                                 const urlSlug = snap?.siteContent?.canvaViagemUrl?.replace('https://', '')?.split('.')[0] || snap?.siteContent?.vercelUrl?.replace('https://', '')?.split('.')[0];
                                 const agencySlug = x.agency_name ? slugify(x.agency_name) : null;
-                                return urlSlug === site.id || agencySlug === site.id || x.id === site.id || x.id === site.project_id;
+                                return x.published_site_id === site.id || urlSlug === site.id || agencySlug === site.id || x.id === site.id || x.id === site.project_id;
                               });
                             }
 
                             if (!p?.state_snapshot) {
-                              toast.error(`O site "${site.id}" ainda não possui um projeto editável recuperado. Atualize a página e tente novamente.`);
+                              await recoverPublishedSiteForEditing(site);
                               return;
                             }
-                            requestProjectSwitch(p);
+
+                            await loadSavedProject(p);
+                            window.setTimeout(() => onNavigate?.("phase", 4), 100);
                           }}
                           className="px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 text-violet-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
                         >

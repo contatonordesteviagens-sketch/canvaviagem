@@ -3453,6 +3453,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                         maxLength={32}
                         onChange={(event) => patchActive({ instagram: event.target.value })}
                         className="f1-carousel-input !min-h-[40px] !py-2 !text-[13px]"
+                      />
                     </div>
                     {!state.logoBase64 && (
                       <div className="px-4 py-3">

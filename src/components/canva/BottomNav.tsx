@@ -20,7 +20,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
   const { user, subscription, isAdmin } = useAuth();
   const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
 
-  const handleTabClick = (category: CategoryType | "home" | "calendar" | "fabrica") => {
+  const handleTabClick = (category: CategoryType | "home" | "calendar" | "fabrica" | "tutorial") => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (category === "home") {
@@ -28,6 +28,8 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
       navigate("/");
     } else if (category === "calendar") {
       navigate("/calendar");
+    } else if (category === "tutorial") {
+      navigate("/tutorial");
     } else if (category === "fabrica") {
       if (!user) {
         navigate("/auth");
@@ -78,7 +80,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
     {
       icon: GraduationCap,
       label: t('nav.class'),
-      onClick: () => handleTabClick("videoaula")
+      onClick: () => handleTabClick("tutorial")
     },
     {
       icon: Heart,
