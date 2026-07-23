@@ -23,7 +23,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  Users
+  Users,
+  Layout
 } from "lucide-react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
