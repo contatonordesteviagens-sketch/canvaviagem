@@ -386,6 +386,7 @@ const FabricaInnerES = () => {
           {activeTab === "dashboard" && (
             <FabricaDashboardES 
               onNavigate={(tab, phase) => {
+                if (tab === "library") return;
                 setActiveTab(tab);
                 if (phase) setPhase(phase);
               }} 
