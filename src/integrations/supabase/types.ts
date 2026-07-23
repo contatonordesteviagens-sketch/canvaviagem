@@ -314,6 +314,121 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_form_submissions: {
+        Row: {
+          created_at: string
+          form_id: string
+          id: string
+          normalized_email: string | null
+          normalized_interest: string | null
+          normalized_name: string | null
+          normalized_phone: string | null
+          owner_id: string
+          payload: Json
+          source_domain: string | null
+          source_url: string | null
+          status: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          form_id: string
+          id?: string
+          normalized_email?: string | null
+          normalized_interest?: string | null
+          normalized_name?: string | null
+          normalized_phone?: string | null
+          owner_id: string
+          payload?: Json
+          source_domain?: string | null
+          source_url?: string | null
+          status?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          form_id?: string
+          id?: string
+          normalized_email?: string | null
+          normalized_interest?: string | null
+          normalized_name?: string | null
+          normalized_phone?: string | null
+          owner_id?: string
+          payload?: Json
+          source_domain?: string | null
+          source_url?: string | null
+          status?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_form_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "crm_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_forms: {
+        Row: {
+          created_at: string
+          description: string | null
+          embed_key: string
+          fields: Json
+          id: string
+          name: string
+          owner_id: string
+          project_id: string | null
+          settings: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          embed_key: string
+          fields?: Json
+          id: string
+          name?: string
+          owner_id: string
+          project_id?: string | null
+          settings?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          embed_key?: string
+          fields?: Json
+          id?: string
+          name?: string
+          owner_id?: string
+          project_id?: string | null
+          settings?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_forms_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "fabrica_diagnosticos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_events: {
         Row: {
           created_at: string
@@ -1041,6 +1156,34 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      publish_fabrica_crm_form: {
+        Args: {
+          p_description: string
+          p_fields: Json
+          p_name: string
+          p_project_id: string
+          p_settings: Json
+        }
+        Returns: {
+          created_at: string
+          description: string | null
+          embed_key: string
+          fields: Json
+          id: string
+          name: string
+          owner_id: string
+          project_id: string | null
+          settings: Json
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "crm_forms"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_webinar_lead_session: {
         Args: {
           p_clicked_offer?: boolean
