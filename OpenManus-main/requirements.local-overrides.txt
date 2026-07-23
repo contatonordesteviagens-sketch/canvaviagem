@@ -1,0 +1,2 @@
+# Compatibility override: crawl4ai 0.6.3 requires Pillow < 11.
+pillow==10.4.0

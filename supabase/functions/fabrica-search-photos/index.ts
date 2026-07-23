@@ -23,6 +23,7 @@ async function searchPexels(
   query: string,
   perPage: number,
   orientation: PhotoOrientation,
+  page: number = 1,
 ): Promise<PhotoOut[]> {
   const key = Deno.env.get("PEXELS_API_KEY");
   if (!key) {
@@ -30,7 +31,7 @@ async function searchPexels(
     return [];
   }
   try {
-    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query + " travel")}&per_page=${perPage}&orientation=${orientation}`;
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query + " travel")}&per_page=${perPage}&page=${page}&orientation=${orientation}`;
     const resp = await fetch(url, { headers: { Authorization: key } });
     if (!resp.ok) {
       console.error("Pexels HTTP", resp.status, await resp.text());
@@ -96,6 +97,7 @@ serve(async (req) => {
       body.orientation === "portrait" || body.orientation === "square"
         ? body.orientation
         : "landscape";
+    const page = Math.max(1, Number(body.page || 1));
 
     if (query.length < 2) {
       return new Response(JSON.stringify({ error: "Query é necessária" }), {
@@ -104,16 +106,16 @@ serve(async (req) => {
       });
     }
 
-    const perPage = Math.min(body.perPage || 12, 24);
+    const perPage = Math.min(body.perPage || 16, 40);
 
     let photos: PhotoOut[] = [];
     if (engine === "google") {
       photos = await searchGoogle(query, perPage);
       if (allowFallback && photos.length === 0) {
-        photos = await searchPexels(query, perPage, orientation);
+        photos = await searchPexels(query, perPage, orientation, page);
       }
     } else {
-      photos = await searchPexels(query, perPage, orientation);
+      photos = await searchPexels(query, perPage, orientation, page);
       if (allowFallback && photos.length === 0) {
         photos = await searchGoogle(query, perPage);
       }
