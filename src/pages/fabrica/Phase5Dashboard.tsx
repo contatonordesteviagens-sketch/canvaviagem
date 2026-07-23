@@ -565,7 +565,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         </div>
       </div>
 
-      {/* aviso de métricas legadas removido — sempre incluímos todos os eventos da agência */
+      {/* aviso de métricas legadas removido — sempre incluímos todos os eventos da agência */}
 
       {/* CARTEIRA DE CLIENTES */}
       <div className="border border-white/8 rounded-2xl overflow-hidden mt-2">
