@@ -34,7 +34,7 @@ import { ptBR } from "date-fns/locale";
 
 export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBack?: () => void } = {}) => {
   const { state, setPhase, update } = useFabricaContext();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [showUrlHelp, setShowUrlHelp] = useState(false);
   const [showLivePreview, setShowLivePreview] = useState(false);
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
@@ -184,6 +184,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
   // fetchError = true indica falha de rede/RLS, NÃO ausência de leads.
   // Quando fetchError=true, a UI exibe aviso de erro — nunca "sem leads".
   const [fetchError, setFetchError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   // Filtros
   const [filterRoteiro, setFilterRoteiro] = useState("Todos");
@@ -260,27 +261,39 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
       const projectEventFilter = { agency_id: agencyTrackingId, project_id: projectTrackingId };
       
       try {
+        const authSession = session ?? (await supabase.auth.getSession()).data.session;
+        const expiresAt = authSession?.expires_at ? authSession.expires_at * 1000 : 0;
+        if (!authSession?.access_token || expiresAt <= Date.now() + 30_000) {
+          const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError || !refreshed.session?.access_token) {
+            throw new Error("Sessão expirada. Faça login novamente para carregar o CRM.");
+          }
+        }
+
         // 1. Contagem REAL de visualizações
-        const { count: vCount } = await supabase
+        const { count: vCount, error: visitsError } = await supabase
           .from("analytics_events")
           .select("*", { count: "exact", head: true })
           .eq("event_type", "page_view")
           .contains("event_data", projectEventFilter);
+        if (visitsError) throw visitsError;
 
         // 2. Contagem REAL de Cliques WhatsApp
-        const { count: cCount } = await supabase
+        const { count: cCount, error: clicksError } = await supabase
           .from("analytics_events")
           .select("*", { count: "exact", head: true })
           .eq("event_type", "click_whatsapp")
           .contains("event_data", projectEventFilter);
+        if (clicksError) throw clicksError;
 
         // 3. Tempo no site. Eventos anônimos são telemetria aproximada e nunca
         // entram na lista nem na contagem de leads do CRM.
-        const { data: timeData } = await supabase
+        const { data: timeData, error: timeError } = await supabase
           .from("analytics_events")
           .select("event_data")
           .eq("event_type", "time_on_site")
           .contains("event_data", projectEventFilter);
+        if (timeError) throw timeError;
         
         const currentDurations = (timeData || []).map((curr) => {
           const payload = curr.event_data;
@@ -311,6 +324,10 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
             .limit(5000),
         ]);
 
+        if (savedProjectsResult.error) throw savedProjectsResult.error;
+        if (publishedSitesResult.error) throw publishedSitesResult.error;
+        if (legacyMetricsResult.error) throw legacyMetricsResult.error;
+
         const legacyMetricRows = (legacyMetricsResult.data || []).filter((event: any) => {
           const payload = event.event_data;
           return payload && typeof payload === "object" && !Array.isArray(payload) && !payload.project_id;
@@ -340,37 +357,31 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         // ⛔ DADOS PROTEGIDOS — busca TODOS os leads do owner, com ou sem projectId
         let formLeads: any[] = [];
         let formLeadCount = 0;
-        try {
-          // Busca por owner_id primeiro (todos os leads da agência)
-          let query = (supabase as any)
-            .from("crm_form_submissions")
-            .select("*")
-            .eq("owner_id", agencyTrackingId)
-            .order("created_at", { ascending: false })
-            .limit(200);
+        // Busca por owner_id primeiro (todos os leads da agência). Não filtra por
+        // form_id aqui: leads históricos/backfill usam form_id legado e também
+        // pertencem à carteira permanente do mesmo owner.
+        const { data: publicFormData, error: publicFormError } = await (supabase as any)
+          .from("crm_form_submissions")
+          .select("*")
+          .eq("owner_id", agencyTrackingId)
+          .order("created_at", { ascending: false })
+          .limit(200);
 
-          // Filtra por form_id apenas se existir um projectId válido
-          if (projectTrackingId && projectTrackingId !== "undefined" && projectTrackingId !== "null") {
-            query = query.eq("form_id", projectTrackingId);
-          }
-
-          const { data: publicFormData, count: publicFormCount } = await query;
-          formLeadCount = publicFormCount || (publicFormData?.length ?? 0);
-          formLeads = publicFormData || [];
-        } catch (crmFormError) {
-          console.warn("CRM Forms ainda nao disponivel neste ambiente:", crmFormError);
-        }
+        if (publicFormError) throw publicFormError;
+        formLeadCount = publicFormData?.length ?? 0;
+        formLeads = publicFormData || [];
 
         // Compatibilidade: sites antigos e falhas do endpoint gravavam apenas em
         // analytics_events. Eles continuam visíveis, mas são marcados como
         // históricos não verificados e não entram no total oficial do CRM.
-        const { data: legacyLeadEvents } = await supabase
+        const { data: legacyLeadEvents, error: legacyLeadError } = await supabase
           .from("analytics_events")
           .select("id, event_data, created_at")
           .eq("event_type", "lead_captured")
           .contains("event_data", { agency_id: agencyTrackingId })
           .order("created_at", { ascending: false })
           .limit(100);
+        if (legacyLeadError) throw legacyLeadError;
 
         const mappedFormLeads = formLeads.map((lead: any) => ({
           id: lead.id,
@@ -444,8 +455,9 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
     // ⛔ Depende apenas de user?.id — não depende de state.projectId
     // Isso evita que o fetch seja disparado toda vez que o estado da agência muda (salvar, etc.)
     if (!user?.id) return;
+    setLoading(true);
     fetchRealMetrics();
-  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.id, session?.access_token, reloadKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentDay = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR });
   const formatString = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -625,7 +637,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
               <div className="text-xs font-bold text-red-300">Não foi possível carregar os leads agora</div>
               <p className="text-[11px] text-red-200/60 mt-0.5">Verifique sua conexão e recarregue a página. Seus dados estão salvos e protegidos no servidor.</p>
               <button
-                onClick={() => { setFetchError(false); setLoading(true); }}
+                onClick={() => { setFetchError(false); setLoading(true); setReloadKey((key) => key + 1); }}
                 className="mt-2 text-[10px] font-bold text-red-300 hover:text-white underline transition-colors"
               >
                 Tentar novamente
