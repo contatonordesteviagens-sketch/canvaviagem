@@ -16,6 +16,8 @@ import {
   useIsAdmin,
 } from "@/hooks/useContent";
 import { toast } from "sonner";
+import { useEffect } from "react";
+import { insertMissingCaptions } from "@/utils/insertMissing";
 
 // Components
 import { ContentSection } from "@/components/gestao/ContentSection";
@@ -50,6 +52,10 @@ const Gestao = () => {
   const { user, loading: authLoading } = useAuth();
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
   
+  useEffect(() => {
+    insertMissingCaptions();
+  }, []);
+
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [captionModalOpen, setCaptionModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
