@@ -66,6 +66,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   const [pendingProjectSwitch, setPendingProjectSwitch] = useState<DiagnosticoSalvo | null>(null);
   const [isSwitchingProject, setIsSwitchingProject] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const autoRecoveredProjectIdsRef = useRef<Set<string>>(new Set());
 
   const loadSavedProject = async (project: DiagnosticoSalvo) => {
     const targetName = project.agency_name || "Sem nome";
@@ -221,6 +222,40 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     })();
     return () => { cancelled = true; };
   }, [user?.id, state.siteContent?.canvaViagemUrl, state.siteContent?.vercelUrl]);
+
+  useEffect(() => {
+    if (!user?.id || !savedProjects?.length) return;
+    const recoverableProjects = savedProjects.filter((project) =>
+      project.source === "published_recovery"
+      && project.published_site_id
+      && !autoRecoveredProjectIdsRef.current.has(project.id)
+    );
+    if (!recoverableProjects.length) return;
+
+    recoverableProjects.forEach((project) => autoRecoveredProjectIdsRef.current.add(project.id));
+    let cancelled = false;
+
+    (async () => {
+      let recoveredCount = 0;
+      for (const project of recoverableProjects) {
+        try {
+          await materializeRecoveredProject(project, user.id);
+          recoveredCount += 1;
+        } catch (error) {
+          console.warn("[FabricaDashboard] Falha ao materializar site recuperado:", project.published_site_id, error);
+        }
+      }
+
+      if (cancelled || recoveredCount === 0) return;
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
+        queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
+      ]);
+      toast.success(`${recoveredCount} site${recoveredCount > 1 ? "s" : ""} antigo${recoveredCount > 1 ? "s" : ""} recuperado${recoveredCount > 1 ? "s" : ""} como projeto salvo.`);
+    })();
+
+    return () => { cancelled = true; };
+  }, [user?.id, savedProjects, queryClient]);
 
 
   const [phoneDropOpen, setPhoneDropOpen] = useState(false);

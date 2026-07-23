@@ -291,6 +291,38 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
       const agencyTrackingId = user?.id || state.agencyName || "Agência";
       const projectTrackingId = resolveFabricaCrmFormId(state.projectId);
       const projectEventFilter = { agency_id: agencyTrackingId, project_id: projectTrackingId };
+      const currentSiteSlug = resolveFabricaSiteSlug(state.siteContent?.canvaViagemUrl, state.agencyName || "") || "";
+      const projectAliases = new Set(
+        [
+          state.projectId,
+          projectTrackingId,
+          state.crmForm?.id,
+          currentSiteSlug,
+          currentSiteSlug ? `proj_legacy_${currentSiteSlug}` : "",
+        ]
+          .filter(Boolean)
+          .map((value) => String(value).trim().toLowerCase())
+      );
+      const matchesCurrentProject = (payload: any) => {
+        if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
+        const identifiers = [
+          payload.project_id,
+          payload.form_id,
+          payload.site_id,
+          payload.site_slug,
+          payload.embed_key,
+        ]
+          .filter(Boolean)
+          .map((value) => String(value).trim().toLowerCase());
+        if (identifiers.some((value) => projectAliases.has(value))) return true;
+
+        const source = String(payload.source_domain || payload.domain || "").trim().toLowerCase();
+        return Boolean(currentSiteSlug && (
+          source === `${currentSiteSlug}.canvaviagem.com`
+          || source.startsWith(`${currentSiteSlug}.`)
+          || source.includes(`//${currentSiteSlug}.`)
+        ));
+      };
       
       try {
         await ensureFreshCrmSession();
@@ -312,11 +344,17 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           .select("*")
           .eq("owner_id", agencyTrackingId)
           .order("created_at", { ascending: false })
-          .limit(200);
+          .limit(500);
 
         if (publicFormError) throw publicFormError;
-        formLeadCount = publicFormData?.length ?? 0;
-        formLeads = publicFormData || [];
+        formLeads = (publicFormData || []).filter((lead: any) => matchesCurrentProject({
+          form_id: lead.form_id,
+          project_id: lead.payload?.project_id,
+          site_id: lead.payload?.site_id,
+          site_slug: lead.payload?.site_slug,
+          source_domain: lead.source_domain || lead.payload?.source_domain,
+        }));
+        formLeadCount = formLeads.length;
 
         // Compatibilidade: sites antigos e falhas do endpoint gravavam apenas em
         // analytics_events. Eles continuam visíveis, mas são marcados como
@@ -358,7 +396,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
             const payload = event.event_data;
             if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
             if (payload.submission_id) return false;
-            return payload.project_id === projectTrackingId || payload.form_id === projectTrackingId;
+            return matchesCurrentProject(payload);
           })
           .map((event: any) => {
             const payload = event.event_data || {};
@@ -376,7 +414,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
               status: state.leadStatuses?.[event.id] || payload.status || "novo",
               origem: payload.project_id ? "Fallback do site" : "Histórico da conta (sem projeto)",
               legacy_unverified: true,
-              legacy_unassigned: false,
+              legacy_unassigned: !payload.project_id && !payload.form_id,
             };
           });
 
@@ -438,12 +476,10 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
 
           const legacyMetricRows = (legacyMetricsResult.data || []).filter((event: any) => {
             const payload = event.event_data;
-            return payload
-              && typeof payload === "object"
-              && !Array.isArray(payload)
-              && (payload.project_id === projectTrackingId || payload.form_id === projectTrackingId);
+            if (payload?.project_id === projectTrackingId) return false;
+            return matchesCurrentProject(payload);
           });
-          // [build-force] Sempre inclui eventos legados da agência — o usuário tem apenas 1 conta
+          // Inclui apenas métricas legadas que ainda comprovam pertencer ao projeto aberto.
           const legacyVisits = legacyMetricRows.filter((event: any) => event.event_type === "page_view").length;
           const legacyClicks = legacyMetricRows.filter((event: any) => event.event_type === "click_whatsapp").length;
           const legacyDurations = legacyMetricRows
