@@ -297,6 +297,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           state.projectId,
           projectTrackingId,
           state.crmForm?.id,
+          `legacy-${agencyTrackingId}`,
           currentSiteSlug,
           currentSiteSlug ? `proj_legacy_${currentSiteSlug}` : "",
         ]
@@ -375,7 +376,9 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           console.warn("Leads legados indisponíveis; exibindo carteira canônica:", legacyLeadError);
         }
 
-        const mappedFormLeads = formLeads.map((lead: any) => ({
+        const mappedFormLeads = formLeads.map((lead: any) => {
+          const isAccountLegacyLead = String(lead.form_id || "").toLowerCase() === `legacy-${agencyTrackingId}`.toLowerCase();
+          return {
           id: lead.id,
           nome_completo: lead.normalized_name || lead.payload?.nome || lead.payload?.name || "Sem Nome",
           whatsapp: lead.normalized_phone || lead.payload?.wpp || lead.payload?.whatsapp || "",
@@ -387,9 +390,11 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           observacoes: lead.payload?.obs || lead.payload?.observacoes || "",
           created_at: lead.created_at,
           status: state.leadStatuses?.[lead.id] || lead.status || "novo",
-          origem: lead.source_domain || "Formulario externo",
+          origem: isAccountLegacyLead ? "Historico recuperado da conta" : (lead.source_domain || "Formulario externo"),
+          legacy_unassigned: isAccountLegacyLead,
           raw_payload: lead.payload || {},
-        }));
+          };
+        });
 
         const mappedLegacyLeads = (legacyLeadEvents || [])
           .filter((event: any) => {
