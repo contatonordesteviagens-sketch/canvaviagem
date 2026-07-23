@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { executeIdempotentWriteWithFreshSupabaseSession } from "@/lib/supabase-session";
 
 const SITE_ASSET_BUCKET = "thumbnails";
 const SITE_ASSET_CONTENT_TYPE = "image/webp";
@@ -48,12 +49,15 @@ export const publishInlineSiteAssets = async (
     const optimizedBlob = await optimizeImageBlobToWebp(await sourceResponse.blob());
     const hash = await hashBlob(optimizedBlob);
     const filename = `sites/${userId}/assets/${hash}.webp`;
-    const { error: uploadError } = await supabase.storage
-      .from(SITE_ASSET_BUCKET)
-      .upload(filename, optimizedBlob, {
-        contentType: SITE_ASSET_CONTENT_TYPE,
-        upsert: true,
-      });
+    const { error: uploadError } = await executeIdempotentWriteWithFreshSupabaseSession(
+      () => supabase.storage
+        .from(SITE_ASSET_BUCKET)
+        .upload(filename, optimizedBlob, {
+          contentType: SITE_ASSET_CONTENT_TYPE,
+          upsert: true,
+        }),
+      userId,
+    );
     if (uploadError) throw uploadError;
     const publicUrl = supabase.storage.from(SITE_ASSET_BUCKET).getPublicUrl(filename).data.publicUrl;
     replacements.set(base64Data, publicUrl);

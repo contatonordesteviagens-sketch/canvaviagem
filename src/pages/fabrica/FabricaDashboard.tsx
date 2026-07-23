@@ -34,6 +34,10 @@ import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
 import { getCanvaSiteUrl } from "@/lib/canva-site-domain";
 import { recoverFabricaStateFromPublishedHtml } from "@/lib/fabrica-project-recovery";
 import { persistFabricaProject } from "@/lib/fabrica-project-persistence";
+import {
+  executeIdempotentWriteWithFreshSupabaseSession,
+  executeReadWithFreshSupabaseSession,
+} from "@/lib/supabase-session";
 
 const AGENCY_TYPES = [
   { v: "autonoma", l: "Agente autônomo / Freelancer" },
@@ -58,7 +62,13 @@ const UI_ACCENT_BORDER_SOFT = "rgba(245, 249, 6, 0.35)";
 export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update, reset, deleteAndDiscardCurrentProject, switchProject } = useFabricaContext();
   const { user } = useAuth();
-  const { data: savedProjects } = useDiagnosticos();
+  const {
+    data: savedProjects,
+    isPending: projectsLoading,
+    isError: projectsError,
+    isFetching: projectsFetching,
+    refetch: refetchProjects,
+  } = useDiagnosticos();
   const saveProject = useSaveDiagnostico();
   const queryClient = useQueryClient();
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
@@ -115,12 +125,15 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
     setIsSwitchingProject(true);
     try {
-      const { data, error } = await supabase
-        .from("public_sites")
-        .select("id, project_id, html, created_at, updated_at")
-        .eq("id", site.id)
-        .eq("owner_id", user.id)
-        .maybeSingle();
+      const { data, error } = await executeReadWithFreshSupabaseSession(
+        () => supabase
+          .from("public_sites")
+          .select("id, project_id, html, created_at, updated_at")
+          .eq("id", site.id)
+          .eq("owner_id", user.id)
+          .maybeSingle(),
+        user.id,
+      );
       if (error) throw error;
       if (!data) throw new Error("site_not_found");
 
@@ -145,11 +158,15 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
         levelName: "Site publicado recuperado",
       });
 
-      await supabase
-        .from("public_sites")
-        .update({ project_id: persisted.id })
-        .eq("id", site.id)
-        .eq("owner_id", user.id);
+      const { error: linkError } = await executeIdempotentWriteWithFreshSupabaseSession(
+        () => supabase
+          .from("public_sites")
+          .update({ project_id: persisted.id })
+          .eq("id", site.id)
+          .eq("owner_id", user.id),
+        user.id,
+      );
+      if (linkError) throw linkError;
 
       await switchProject(
         { ...persisted.stateSnapshot, projectId: persisted.id },
@@ -203,18 +220,26 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     let cancelled = false;
     (async () => {
       try {
-        const { data: sites } = await supabase
-          .from("public_sites")
-          .select("id, updated_at, project_id")
-          .eq("owner_id", user.id)
-          .eq("locale", "pt-BR")
-          .order("updated_at", { ascending: false });
+        const { data: sites, error: sitesError } = await executeReadWithFreshSupabaseSession(
+          () => supabase
+            .from("public_sites")
+            .select("id, updated_at, project_id")
+            .eq("owner_id", user.id)
+            .eq("locale", "pt-BR")
+            .order("updated_at", { ascending: false }),
+          user.id,
+        );
+        if (sitesError) throw sitesError;
         if (!cancelled && sites) setPublishedSites(sites);
 
-        const { count } = await (supabase as any)
-          .from("crm_form_submissions")
-          .select("*", { count: "exact", head: true })
-          .eq("owner_id", user.id);
+        const { count, error: leadsError } = await executeReadWithFreshSupabaseSession(
+          () => (supabase as any)
+            .from("crm_form_submissions")
+            .select("*", { count: "exact", head: true })
+            .eq("owner_id", user.id),
+          user.id,
+        );
+        if (leadsError) throw leadsError;
         if (!cancelled) setRealLeadsCount(count || 0);
       } catch (e) {
         console.warn("[FabricaDashboard] Falha ao sincronizar sites/leads:", e);
@@ -242,6 +267,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           await materializeRecoveredProject(project, user.id);
           recoveredCount += 1;
         } catch (error) {
+          autoRecoveredProjectIdsRef.current.delete(project.id);
           console.warn("[FabricaDashboard] Falha ao materializar site recuperado:", project.published_site_id, error);
         }
       }
@@ -512,7 +538,23 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           
           {projectsPanelOpen && (
             <div className="mt-3 flex flex-col sm:flex-row gap-2 pt-2 border-t border-white/5">
-              {savedProjects && savedProjects.length > 0 ? (
+              {projectsLoading ? (
+                <div className="flex-1 bg-white/[0.01] border border-white/5 rounded-lg px-3 py-2 text-white/50 text-xs flex items-center">
+                  Carregando projetos e sites publicados...
+                </div>
+              ) : projectsError ? (
+                <div className="flex-1 bg-red-500/5 border border-red-500/20 rounded-lg px-3 py-2 text-red-200 text-xs flex items-center justify-between gap-3">
+                  <span>Não foi possível carregar agora. Seus dados continuam salvos.</span>
+                  <button
+                    type="button"
+                    onClick={() => void refetchProjects()}
+                    disabled={projectsFetching}
+                    className="shrink-0 font-bold underline hover:text-white disabled:opacity-50"
+                  >
+                    {projectsFetching ? "Carregando..." : "Tentar novamente"}
+                  </button>
+                </div>
+              ) : savedProjects && savedProjects.length > 0 ? (
                 <select
                   value=""
                   onChange={(e) => {

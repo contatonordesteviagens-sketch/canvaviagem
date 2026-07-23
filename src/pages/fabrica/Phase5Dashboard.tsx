@@ -8,6 +8,7 @@ import { publishFabricaSite } from "@/lib/fabrica-site-publisher";
 import { resolveFabricaCrmFormId } from "@/lib/fabrica-crm-publication";
 import { getCanvaSiteUrl, validateCanvaSiteSlug } from "@/lib/canva-site-domain";
 import { resolveFabricaSiteSlug } from "@/lib/fabrica-site-publication";
+import { ensureFreshSupabaseSession, executeReadWithFreshSupabaseSession } from "@/lib/supabase-session";
 import { Loader2, Eye, X as CloseIcon } from "lucide-react";
 import { 
   TrendingUp, 
@@ -186,35 +187,6 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
   const [fetchError, setFetchError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
-  const decodeJwtExp = (token?: string | null) => {
-    if (!token) return null;
-    try {
-      const [, payload] = token.split(".");
-      if (!payload) return null;
-      const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-      const decoded = JSON.parse(atob(normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), "=")));
-      return typeof decoded.exp === "number" ? decoded.exp * 1000 : null;
-    } catch {
-      return null;
-    }
-  };
-
-  const ensureFreshCrmSession = async () => {
-    const currentSession = (await supabase.auth.getSession()).data.session ?? session;
-    const expiresAt = decodeJwtExp(currentSession?.access_token) ?? (currentSession?.expires_at ? currentSession.expires_at * 1000 : 0);
-    const shouldRefresh = !currentSession?.access_token || expiresAt <= Date.now() + 120_000;
-
-    if (!shouldRefresh) return currentSession;
-
-    const { data, error } = await supabase.auth.refreshSession(
-      currentSession?.refresh_token ? { refresh_token: currentSession.refresh_token } : undefined
-    );
-    if (error || !data.session?.access_token) {
-      throw new Error("Sessão expirada. Faça login novamente para carregar o CRM.");
-    }
-    return data.session;
-  };
-
   // Filtros
   const [filterRoteiro, setFilterRoteiro] = useState("Todos");
   const [filterData, setFilterData] = useState("Todas");
@@ -326,7 +298,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
       };
       
       try {
-        await ensureFreshCrmSession();
+        await ensureFreshSupabaseSession({ expectedUserId: user?.id });
         let visits = 0;
         let clicks = 0;
         let avgTime = 0;
@@ -340,12 +312,15 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         // Busca por owner_id primeiro (todos os leads da agência). Não filtra por
         // form_id aqui: leads históricos/backfill usam form_id legado e também
         // pertencem à carteira permanente do mesmo owner.
-        const { data: publicFormData, error: publicFormError } = await (supabase as any)
-          .from("crm_form_submissions")
-          .select("*")
-          .eq("owner_id", agencyTrackingId)
-          .order("created_at", { ascending: false })
-          .limit(500);
+        const { data: publicFormData, error: publicFormError } = await executeReadWithFreshSupabaseSession(
+          () => (supabase as any)
+            .from("crm_form_submissions")
+            .select("*")
+            .eq("owner_id", agencyTrackingId)
+            .order("created_at", { ascending: false })
+            .limit(500),
+          user?.id,
+        );
 
         if (publicFormError) throw publicFormError;
         formLeads = (publicFormData || []).filter((lead: any) => matchesCurrentProject({
@@ -748,7 +723,11 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
                       <td className="px-5 py-3.5">
                         <div className="text-sm font-medium text-white/80">{l.nome_completo || "Sem nome"}</div>
                         <div className="text-[10px] text-white/30 truncate max-w-[160px]">{l.email || l.whatsapp || "—"}</div>
-                        {/* legacy_unverified label removido — desnecessário para o usuário */}
+                        {l.legacy_unassigned && (
+                          <div className="mt-1 text-[9px] font-semibold text-amber-300/70">
+                            Histórico da conta · projeto não identificado
+                          </div>
+                        )}
                       </td>
                       <td className="px-5 py-3.5">
                         <span className="text-xs text-white/50">{l.destino_interesse || "Geral"}</span>
@@ -831,6 +810,11 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
                   {selectedLead.legacy_unverified && (
                     <div className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.08] p-4 text-xs leading-5 text-amber-100/80">
                       Registro histórico não verificado. Ele não entra no total oficial do CRM e pode não estar atribuído a este projeto.
+                    </div>
+                  )}
+                  {selectedLead.legacy_unassigned && !selectedLead.legacy_unverified && (
+                    <div className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.08] p-4 text-xs leading-5 text-amber-100/80">
+                      Lead histórico recuperado da conta. O site antigo não registrava a qual projeto ele pertencia.
                     </div>
                   )}
 

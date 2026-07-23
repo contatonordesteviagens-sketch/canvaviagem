@@ -7,6 +7,10 @@ import { buildCanvaSiteSlug, extractCanvaSiteSlug, getCanvaSiteUrl } from "@/lib
 import { recoverFabricaStateFromPublishedHtml } from "@/lib/fabrica-project-recovery";
 import { isPersistedProjectId, persistFabricaProject } from "@/lib/fabrica-project-persistence";
 import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
+import {
+  executeIdempotentWriteWithFreshSupabaseSession,
+  executeReadWithFreshSupabaseSession,
+} from "@/lib/supabase-session";
 
 export type DiagnosticoSource = "saved" | "published_recovery";
 
@@ -46,11 +50,14 @@ export const materializeRecoveredProject = async (
   };
 
   if (project.published_site_id) {
-    const { error } = await supabase
-      .from("public_sites")
-      .update({ project_id: persisted.id })
-      .eq("id", project.published_site_id)
-      .eq("owner_id", userId);
+    const { error } = await executeIdempotentWriteWithFreshSupabaseSession(
+      () => supabase
+        .from("public_sites")
+        .update({ project_id: persisted.id })
+        .eq("id", project.published_site_id)
+        .eq("owner_id", userId),
+      userId,
+    );
     if (error) {
       console.warn("[Fabrica] Site recuperado salvo, mas o vinculo sera sincronizado depois.", error);
     }
@@ -89,55 +96,32 @@ const humanizeSiteId = (siteId: string) =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ") || "Site recuperado";
 
-const decodeJwtExpMs = (token?: string | null): number | null => {
-  if (!token) return null;
-  try {
-    const payload = token.split(".")[1];
-    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const decoded = JSON.parse(atob(normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), "=")));
-    return typeof decoded.exp === "number" ? decoded.exp * 1000 : null;
-  } catch {
-    return null;
-  }
-};
-
-const ensureFreshFabricaSession = async () => {
-  const current = (await supabase.auth.getSession()).data.session;
-  if (!current?.access_token) return;
-  const expMs = decodeJwtExpMs(current.access_token) ?? (current.expires_at ? current.expires_at * 1000 : 0);
-  if (expMs > Date.now() + 120_000) return;
-  try {
-    await supabase.auth.refreshSession(
-      current.refresh_token ? { refresh_token: current.refresh_token } : undefined,
-    );
-  } catch (err) {
-    console.warn("[Fabrica] Falha ao renovar sessao antes de carregar projetos:", err);
-  }
-};
-
 export const useDiagnosticos = () => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const locale = typeof window !== "undefined" && window.location.pathname.startsWith("/es") ? "es" : "pt-BR";
   return useQuery({
-    queryKey: ["fabrica-diagnosticos", user?.id, locale],
+    queryKey: ["fabrica-diagnosticos", user?.id, session?.expires_at, locale],
     queryFn: async () => {
       if (!user) return [] as DiagnosticoSalvo[];
-      await ensureFreshFabricaSession();
-
-
 
       const [projectsResult, sitesResult] = await Promise.all([
-        supabase
-          .from("fabrica_diagnosticos" as any)
-          .select("*")
-          .eq("user_id", user.id)
-          .order("updated_at", { ascending: false }),
-        supabase
-          .from("public_sites")
-          .select("id, project_id, created_at, updated_at")
-          .eq("owner_id", user.id)
-          .eq("locale", locale)
-          .order("updated_at", { ascending: false }),
+        executeReadWithFreshSupabaseSession(
+          () => supabase
+            .from("fabrica_diagnosticos" as any)
+            .select("*")
+            .eq("user_id", user.id)
+            .order("updated_at", { ascending: false }),
+          user.id,
+        ),
+        executeReadWithFreshSupabaseSession(
+          () => supabase
+            .from("public_sites")
+            .select("id, project_id, created_at, updated_at")
+            .eq("owner_id", user.id)
+            .eq("locale", locale)
+            .order("updated_at", { ascending: false }),
+          user.id,
+        ),
       ]);
 
       if (projectsResult.error) throw projectsResult.error;
@@ -154,33 +138,39 @@ export const useDiagnosticos = () => {
       const usedSiteIds = new Set<string>();
       const siteByProject = new Map<string, PublishedSiteMetadata>();
 
-      // Primeiro respeita vínculos explícitos já gravados no banco.
+      // A URL salva no snapshot identifica o site com mais seguranca do que
+      // vinculos antigos de project_id, que podem ter sido reutilizados.
       savedProjects.forEach((project) => {
-        const exactMatches = publishedSites.filter(
-          (site) => !usedSiteIds.has(site.id) && site.project_id === project.id,
-        );
-        if (!exactMatches.length) return;
-        const { urlSlug, agencySlug } = projectSlugs(project);
-        const chosen = exactMatches.find((site) => urlSlug && site.id === urlSlug)
-          || exactMatches.find((site) => agencySlug && site.id === agencySlug)
-          || exactMatches[0];
-        siteByProject.set(project.id, chosen);
-        usedSiteIds.add(chosen.id);
-      });
-
-      // Compatibilidade com publicações antigas sem project_id: a URL salva é a
-      // evidência mais forte e sempre tem prioridade sobre o nome da agência.
-      savedProjects.forEach((project) => {
-        if (siteByProject.has(project.id)) return;
         const { urlSlug } = projectSlugs(project);
         if (!urlSlug) return;
         const chosen = publishedSites.find(
           (site) =>
-            !usedSiteIds.has(site.id) &&
-            (!site.project_id || !knownProjectIds.has(site.project_id)) &&
-            site.id === urlSlug,
+            !usedSiteIds.has(site.id)
+            && site.id === urlSlug
+            && (
+              !site.project_id
+              || site.project_id === project.id
+              || !knownProjectIds.has(site.project_id)
+            ),
         );
         if (!chosen) return;
+        siteByProject.set(project.id, chosen);
+        usedSiteIds.add(chosen.id);
+      });
+
+      // Usa o vinculo explicito apenas quando o snapshot nao aponta para outro
+      // site. Isso preserva compatibilidade sem voltar a misturar projetos.
+      savedProjects.forEach((project) => {
+        if (siteByProject.has(project.id)) return;
+        const { urlSlug, agencySlug } = projectSlugs(project);
+        if (urlSlug) return;
+        const exactMatches = publishedSites.filter(
+          (site) => !usedSiteIds.has(site.id) && site.project_id === project.id,
+        );
+        if (!exactMatches.length) return;
+        const agencyMatch = exactMatches.find((site) => agencySlug && site.id === agencySlug);
+        if (agencySlug && !agencyMatch) return;
+        const chosen = agencyMatch || exactMatches[0];
         siteByProject.set(project.id, chosen);
         usedSiteIds.add(chosen.id);
       });
@@ -223,12 +213,15 @@ export const useDiagnosticos = () => {
       if (orphanSites.length) {
         // HTML é buscado apenas para publicações sem snapshot, evitando carregar
         // o documento completo de todos os sites em cada abertura do seletor.
-        const { data: htmlRows, error: htmlError } = await supabase
-          .from("public_sites")
-          .select("id, html")
-          .eq("owner_id", user.id)
-          .eq("locale", locale)
-          .in("id", orphanSites.map((site) => site.id));
+        const { data: htmlRows, error: htmlError } = await executeReadWithFreshSupabaseSession(
+          () => supabase
+            .from("public_sites")
+            .select("id, html")
+            .eq("owner_id", user.id)
+            .eq("locale", locale)
+            .in("id", orphanSites.map((site) => site.id)),
+          user.id,
+        );
         if (!htmlError) {
           (htmlRows || []).forEach((row) => htmlBySiteId.set(row.id, row.html));
         }
@@ -276,6 +269,9 @@ export const useDiagnosticos = () => {
       );
     },
     enabled: !!user,
+    refetchOnMount: "always",
+    refetchOnReconnect: "always",
+    refetchOnWindowFocus: true,
   });
 };
 

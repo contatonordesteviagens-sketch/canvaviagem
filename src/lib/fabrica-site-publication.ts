@@ -5,6 +5,7 @@ import {
   extractCanvaSiteSlug,
   normalizeCanvaSiteUrl,
 } from "@/lib/canva-site-domain";
+import { executeReadWithFreshSupabaseSession } from "@/lib/supabase-session";
 
 export type CanvaSiteSlugConflict = "another_owner" | "another_project";
 
@@ -31,11 +32,14 @@ export const checkCanvaSiteSlugAvailability = async ({
   projectId: string;
   currentUrl?: string;
 }): Promise<{ allowed: true } | { allowed: false; reason: CanvaSiteSlugConflict }> => {
-  const { data, error } = await supabase
-    .from("public_sites")
-    .select("owner_id, project_id")
-    .eq("id", slug)
-    .maybeSingle();
+  const { data, error } = await executeReadWithFreshSupabaseSession(
+    () => supabase
+      .from("public_sites")
+      .select("owner_id, project_id")
+      .eq("id", slug)
+      .maybeSingle(),
+    ownerId,
+  );
 
   if (error) throw error;
   if (!data) return { allowed: true };

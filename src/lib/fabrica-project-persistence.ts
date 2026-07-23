@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { FabricaState } from "@/hooks/useFabricaContext";
+import { executeIdempotentWriteWithFreshSupabaseSession } from "@/lib/supabase-session";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -96,11 +97,14 @@ export const persistFabricaProject = async ({
     updated_at: new Date().toISOString(),
   };
 
-  const { data, error } = await supabase
-    .from("fabrica_diagnosticos")
-    .upsert(payload, { onConflict: "id" })
-    .select("id")
-    .single();
+  const { data, error } = await executeIdempotentWriteWithFreshSupabaseSession(
+    () => supabase
+      .from("fabrica_diagnosticos")
+      .upsert(payload, { onConflict: "id" })
+      .select("id")
+      .single(),
+    userId,
+  );
 
   if (error) throw error;
   return { id: (data as any).id as string, stateSnapshot };

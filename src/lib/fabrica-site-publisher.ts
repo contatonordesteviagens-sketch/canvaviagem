@@ -7,6 +7,7 @@ import { persistFabricaProject } from "@/lib/fabrica-project-persistence";
 import { checkCanvaSiteSlugAvailability } from "@/lib/fabrica-site-publication";
 import { publishInlineSiteAssets } from "@/lib/fabrica-site-assets";
 import { getCanvaSiteUrl } from "@/lib/canva-site-domain";
+import { executeIdempotentWriteWithFreshSupabaseSession } from "@/lib/supabase-session";
 
 export type FabricaSiteLocale = "pt-BR" | "es";
 
@@ -29,20 +30,25 @@ const wait = (milliseconds: number) => new Promise((resolve) => window.setTimeou
 
 const callPublishSiteRpc = async ({
   slug,
+  userId,
   projectId,
   html,
   locale,
 }: {
   slug: string;
+  userId: string;
   projectId: string;
   html: string;
   locale: FabricaSiteLocale;
-}) => (supabase as any).rpc("publish_fabrica_site", {
-  p_slug: slug,
-  p_project_id: projectId,
-  p_html: html,
-  p_locale: locale,
-});
+}) => executeIdempotentWriteWithFreshSupabaseSession(
+  () => (supabase as any).rpc("publish_fabrica_site", {
+    p_slug: slug,
+    p_project_id: projectId,
+    p_html: html,
+    p_locale: locale,
+  }),
+  userId,
+);
 
 const publishSiteRecord = async ({
   slug,
@@ -57,7 +63,7 @@ const publishSiteRecord = async ({
   html: string;
   locale: FabricaSiteLocale;
 }) => {
-  let { error: rpcError } = await callPublishSiteRpc({ slug, projectId, html, locale });
+  let { error: rpcError } = await callPublishSiteRpc({ slug, userId, projectId, html, locale });
 
   if (!rpcError) return;
   if (!isMissingPublishRpc(rpcError)) throw rpcError;
@@ -67,7 +73,7 @@ const publishSiteRecord = async ({
   // durante essa janela sem atrasar instalações que ainda não possuem a RPC.
   for (const delay of [180, 420]) {
     await wait(delay);
-    const retry = await callPublishSiteRpc({ slug, projectId, html, locale });
+    const retry = await callPublishSiteRpc({ slug, userId, projectId, html, locale });
     rpcError = retry.error;
     if (!rpcError) return;
     if (!isMissingPublishRpc(rpcError)) throw rpcError;
@@ -75,17 +81,20 @@ const publishSiteRecord = async ({
 
   // Compatibilidade durante o rollout da migration: mantém o fluxo atual e
   // remove somente publicações antigas do mesmo projeto e proprietário.
-  const { error: upsertError } = await supabase.from("public_sites").upsert({
-    id: slug,
-    owner_id: userId,
-    project_id: projectId,
-    html,
-    locale,
-  });
+  const { error: upsertError } = await executeIdempotentWriteWithFreshSupabaseSession(
+    () => supabase.from("public_sites").upsert({
+      id: slug,
+      owner_id: userId,
+      project_id: projectId,
+      html,
+      locale,
+    }),
+    userId,
+  );
   // Se o índice atômico já estiver ativo, mas a RPC ainda não tiver chegado
   // ao cache, preservamos o site antigo em vez de apagá-lo para tentar de novo.
   if (upsertError?.code === "23505") {
-    const finalRetry = await callPublishSiteRpc({ slug, projectId, html, locale });
+    const finalRetry = await callPublishSiteRpc({ slug, userId, projectId, html, locale });
     if (!finalRetry.error) return;
     if (isMissingPublishRpc(finalRetry.error)) {
       throw new Error("site_publish_schema_sync_pending");
@@ -94,12 +103,15 @@ const publishSiteRecord = async ({
   }
   if (upsertError) throw upsertError;
 
-  const { error: cleanupError } = await supabase
-    .from("public_sites")
-    .delete()
-    .eq("owner_id", userId)
-    .eq("project_id", projectId)
-    .neq("id", slug);
+  const { error: cleanupError } = await executeIdempotentWriteWithFreshSupabaseSession(
+    () => supabase
+      .from("public_sites")
+      .delete()
+      .eq("owner_id", userId)
+      .eq("project_id", projectId)
+      .neq("id", slug),
+    userId,
+  );
   if (cleanupError) throw cleanupError;
 };
 

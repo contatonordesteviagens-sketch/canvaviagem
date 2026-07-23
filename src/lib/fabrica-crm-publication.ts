@@ -2,6 +2,7 @@ import type { FabricaState } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeCrmFormConfig, type CrmFormConfig } from "@/lib/crm-form-config";
 import { resolveFabricaProjectId } from "@/lib/fabrica-project-persistence";
+import { executeIdempotentWriteWithFreshSupabaseSession } from "@/lib/supabase-session";
 
 type FabricaCrmLocale = "pt-BR" | "es";
 
@@ -54,29 +55,35 @@ export const publishFabricaCrmForm = async ({
     projectId: canonicalProjectId,
   };
 
-  const { error: rpcError } = await (supabase as any).rpc("publish_fabrica_crm_form", {
-    p_project_id: canonicalProjectId,
-    p_name: form.name,
-    p_description: form.description || null,
-    p_fields: form.fields,
-    p_settings: settings,
-  });
+  const { error: rpcError } = await executeIdempotentWriteWithFreshSupabaseSession(
+    () => (supabase as any).rpc("publish_fabrica_crm_form", {
+      p_project_id: canonicalProjectId,
+      p_name: form.name,
+      p_description: form.description || null,
+      p_fields: form.fields,
+      p_settings: settings,
+    }),
+    userId,
+  );
 
   if (rpcError && !isMissingCrmPublishRpc(rpcError)) throw rpcError;
 
   if (rpcError) {
     // Compatibilidade até a RPC segura ser aplicada no projeto oficial.
-    const { error } = await (supabase as any).from("crm_forms").upsert({
-      id: formId,
-      owner_id: userId,
-      name: form.name,
-      description: form.description || null,
-      fields: form.fields,
-      settings,
-      embed_key: formId,
-      status: "active",
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "id" });
+    const { error } = await executeIdempotentWriteWithFreshSupabaseSession(
+      () => (supabase as any).from("crm_forms").upsert({
+        id: formId,
+        owner_id: userId,
+        name: form.name,
+        description: form.description || null,
+        fields: form.fields,
+        settings,
+        embed_key: formId,
+        status: "active",
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "id" }),
+      userId,
+    );
 
     if (error) throw error;
   }
