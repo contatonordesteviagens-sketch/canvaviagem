@@ -323,22 +323,18 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           if (site.project_id) identifiableProjects.add(`project:${site.project_id}`);
           else if (site.id) identifiableProjects.add(`site:${site.id}`);
         });
-        const canAttributeLegacyMetrics = !savedProjectsResult.error
-          && !publishedSitesResult.error
-          && identifiableProjects.size <= 1;
-        if (canAttributeLegacyMetrics) {
-          legacyVisits = legacyMetricRows.filter((event: any) => event.event_type === "page_view").length;
-          legacyClicks = legacyMetricRows.filter((event: any) => event.event_type === "click_whatsapp").length;
-          const legacyDurations = legacyMetricRows
-            .filter((event: any) => event.event_type === "time_on_site")
-            .map((event: any) => Number(event.event_data?.duration) || 0)
-            .filter((duration: number) => duration > 0);
-          const allDurations = [...currentDurations, ...legacyDurations];
-          avgTime = allDurations.length
-            ? Math.round(allDurations.reduce((total, duration) => total + duration, 0) / allDurations.length)
-            : 0;
-        }
-        setLegacyMetricsInfo({ count: legacyMetricRows.length, included: canAttributeLegacyMetrics && legacyMetricRows.length > 0 });
+        // Sempre inclui eventos legados da agência — o usuário tem apenas 1 conta
+        legacyVisits = legacyMetricRows.filter((event: any) => event.event_type === "page_view").length;
+        legacyClicks = legacyMetricRows.filter((event: any) => event.event_type === "click_whatsapp").length;
+        const legacyDurations = legacyMetricRows
+          .filter((event: any) => event.event_type === "time_on_site")
+          .map((event: any) => Number(event.event_data?.duration) || 0)
+          .filter((duration: number) => duration > 0);
+        const allDurations = [...currentDurations, ...legacyDurations];
+        avgTime = allDurations.length
+          ? Math.round(allDurations.reduce((total, duration) => total + duration, 0) / allDurations.length)
+          : 0;
+        setLegacyMetricsInfo({ count: 0, included: false });
 
         // Leads reais vêm exclusivamente das submissões canônicas do formulário.
         let formLeads: any[] = [];
@@ -517,76 +513,19 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
-      {/* Boas Vindas Super Premium */}
-      <div className="relative p-6 rounded-3xl overflow-hidden border border-white/10 group bg-black/20">
-        <div 
-          className="absolute top-0 right-0 w-64 h-64 blur-[100px] rounded-full opacity-20 -mr-10 -mt-10 transition-all group-hover:opacity-30"
-          style={{ background: UI_ACCENT }}
-        />
-        <div className="relative z-10 flex flex-col sm:flex-row gap-5 items-center">
-          {state.logoBase64 && (
-            <div className="w-16 h-16 rounded-2xl bg-white/10 p-2 border border-white/20 flex items-center justify-center flex-shrink-0 shadow-2xl">
-              <img src={state.logoBase64} className="w-full h-full object-contain" alt="Logo" />
-            </div>
-          )}
-          <div className="text-center sm:text-left flex-1">
-            <div className="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">{formatString(currentDay)}</div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
-              Olá, {state.agencyName || "Agência"}! 👋
-            </h2>
-            <p className="text-sm text-white/60 max-w-md leading-relaxed">
-              Diagnóstico: <span className="font-bold text-emerald-400">Nível {state.level || 1}</span> • {state.selectedPackages.length} Pacotes Ativos no Site.
-            </p>
-          </div>
-          <button 
-            onClick={() => window.dispatchEvent(new CustomEvent("nav-to-dashboard"))}
-            className="text-[10px] font-bold bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-full text-white/60 transition-all hover:text-white"
-          >
-            ✏️ Editar Dados
-          </button>
-        </div>
-      </div>
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
-      {/* BARRA DE GAMIFICAÇÃO GLOBAL */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 flex items-center justify-between gap-4 group hover:border-white/20 transition-all shadow-lg">
-        <div className="flex items-center gap-3 flex-1">
-           <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-             {progress.badge.e}
-           </div>
-           <div className="flex-1">
-             <div className="flex items-center justify-between mb-1.5">
-               <span className={`text-xs font-extrabold uppercase tracking-wider ${progress.badge.c}`}>{progress.badge.n}</span>
-               <span className="text-[10px] font-bold text-white/40">{progress.points}% Concluído</span>
-             </div>
-             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-               <div className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-1000" style={{ width: `${progress.points}%` }} />
-             </div>
-           </div>
-        </div>
-        <div className="text-right hidden sm:block pl-4 border-l border-white/10">
-           <div className="text-[10px] font-bold text-white/40 uppercase">Passos Ativos</div>
-           <div className="text-sm font-black text-white">{progress.count}/4</div>
-        </div>
-      </div>
-
-      {/* Fix #8: Banner de erro de publicação com botão de retry */}
+      {/* Banner de erro de publicação */}
       {isPublishError && (
-        <div className="flex items-center gap-4 p-4 rounded-2xl border border-red-500/40 bg-red-500/10 animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="p-2 rounded-xl bg-red-500/20 text-red-400 flex-shrink-0">
-            <span className="text-xl">⚠️</span>
-          </div>
+        <div className="flex items-center gap-3 p-4 rounded-xl border border-red-500/30 bg-red-500/10">
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold text-red-300">Publicação falhou</div>
-            <p className="text-xs text-red-300/70 leading-relaxed">
-              Não foi possível ativar seu site. Isso não apagou seus dados.
-            </p>
+            <div className="text-sm font-bold text-red-300">Falha ao publicar o site</div>
+            <p className="text-xs text-red-300/60">Seus dados não foram apagados.</p>
           </div>
           <button
             onClick={handleDashboardPublish}
             disabled={isPublishing}
-            className="flex-shrink-0 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-xs font-black rounded-xl transition-colors"
+            className="flex-shrink-0 px-3 py-1.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition-colors"
           >
             {isPublishing ? "Tentando..." : "Tentar novamente"}
           </button>
@@ -622,13 +561,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         </div>
       </div>
 
-      {legacyMetricsInfo.count > 0 && (
-        <div className="rounded-2xl border border-sky-400/15 bg-sky-400/[0.06] px-4 py-3 text-[11px] leading-5 text-sky-100/75">
-          {legacyMetricsInfo.included
-            ? `As métricas incluem ${legacyMetricsInfo.count} evento(s) histórico(s) da conta, pois há somente um projeto ou site identificável.`
-            : `Existem ${legacyMetricsInfo.count} evento(s) histórico(s) sem projeto definido. Eles não foram somados para evitar mistura entre agências.`}
-        </div>
-      )}
+      {/* aviso de métricas legadas removido — sempre incluímos todos os eventos da agência */
 
       {/* CARTEIRA DE CLIENTES */}
       <div className="border border-white/8 rounded-2xl overflow-hidden mt-2">
@@ -727,6 +660,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
                       <td className="px-5 py-3.5">
                         <div className="text-sm font-medium text-white/80">{l.nome_completo || "Sem nome"}</div>
                         <div className="text-[10px] text-white/30 truncate max-w-[160px]">{l.email || l.whatsapp || "—"}</div>
+                        {/* legacy_unverified label removido — desnecessário para o usuário */}
                       </td>
                       <td className="px-5 py-3.5">
                         <span className="text-xs text-white/50">{l.destino_interesse || "Geral"}</span>
@@ -763,7 +697,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
                               rel="noreferrer"
                               className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] text-[10px] font-bold rounded-lg border border-[#25D366]/20 transition-colors"
                             >
-                              Whats
+                              WhatsApp
                             </a>
                           ) : (
                             <span className="text-[10px] text-white/20">—</span>
