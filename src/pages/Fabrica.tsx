@@ -62,18 +62,18 @@ const FabricaInner = () => {
     if (path.includes("/anuncio") || path.includes("/anuncios")) {
       setActiveTab("phase");
       setPhase(1);
-    } else if (path.includes("/site") || path.includes("/sites")) {
+    } else if (path.includes("/carrossel")) {
       setActiveTab("phase");
       setPhase(2);
-    } else if (path.includes("/crm")) {
+    } else if (path.includes("/site") || path.includes("/sites")) {
       setActiveTab("phase");
       setPhase(3);
-    } else if (path.includes("/checkup")) {
-      setActiveTab("phase");
-      setPhase(5);
-    } else if (path.includes("/plano") || path.includes("/planos") || path.includes("/projeto") || path.includes("/projetos")) {
+    } else if (path.includes("/crm")) {
       setActiveTab("phase");
       setPhase(4);
+    } else if (path.includes("/checkup") || path.includes("/plano") || path.includes("/planos") || path.includes("/projeto") || path.includes("/projetos")) {
+      setActiveTab("phase");
+      setPhase(5);
     }
   }, [location.pathname, setPhase]);
 
@@ -210,16 +210,16 @@ const FabricaInner = () => {
               {/* F4: CRM */}
               <button
             onClick={() => {
-              setPhase(5);
+              setPhase(4);
               setActiveTab("phase");
               setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/planos" : "/fabrica/planos");
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/crm" : "/fabrica/crm");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            <span>⚙️</span> Planos (F5)
+            <span>👥</span> CRM (F4)
           </button>
 
               {/* F5: Planos */}
@@ -347,16 +347,16 @@ const FabricaInner = () => {
           </button>
           <button
             onClick={() => {
-              setPhase(5);
+              setPhase(4);
               setActiveTab("phase");
               setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/planos" : "/fabrica/planos");
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/crm" : "/fabrica/crm");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            <span>⚙️</span> Planos (F5)
+            <span>👥</span> CRM (F4)
           </button>
           <button
             onClick={() => {
@@ -407,10 +407,10 @@ const FabricaInner = () => {
 
               {[
                 { name: 'Anúncio', phase: 1 },
-                { name: 'Site', phase: 2 },
-                { name: 'CRM', phase: 3 },
-                { name: 'Checkup', phase: 5 },
-                { name: 'Plano', phase: 4 },
+                { name: 'Carrossel', phase: 2 },
+                { name: 'Site', phase: 3 },
+                { name: 'CRM', phase: 4 },
+                { name: 'Planos', phase: 5 },
               ].map(({ name, phase }) => {
                 return (
                 <button

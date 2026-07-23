@@ -42,18 +42,18 @@ const FabricaInnerES = () => {
     if (path.includes("/anuncio") || path.includes("/anuncios")) {
       setActiveTab("phase");
       setPhase(1);
-    } else if (path.includes("/site") || path.includes("/sites") || path.includes("/sitio")) {
+    } else if (path.includes("/carrossel") || path.includes("/carrusel")) {
       setActiveTab("phase");
       setPhase(2);
-    } else if (path.includes("/crm")) {
+    } else if (path.includes("/site") || path.includes("/sites") || path.includes("/sitio")) {
       setActiveTab("phase");
       setPhase(3);
-    } else if (path.includes("/checkup")) {
-      setActiveTab("phase");
-      setPhase(5);
-    } else if (path.includes("/plano") || path.includes("/plan") || path.includes("/planos") || path.includes("/projeto") || path.includes("/projetos")) {
+    } else if (path.includes("/crm")) {
       setActiveTab("phase");
       setPhase(4);
+    } else if (path.includes("/checkup") || path.includes("/plano") || path.includes("/plan") || path.includes("/planos") || path.includes("/projeto") || path.includes("/projetos")) {
+      setActiveTab("phase");
+      setPhase(5);
     }
   }, [location.pathname, setPhase]);
 
@@ -306,7 +306,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            📄 Sitio (F2)
+            🖼️ Carrusel (F2)
           </button>
           <button
             onClick={() => {
@@ -318,7 +318,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            👥 CRM (F3)
+            📄 Sitio (F3)
           </button>
           <button
             onClick={() => {
@@ -330,7 +330,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚙️ Plan (F4)
+            👥 CRM (F4)
           </button>
           <button
             onClick={() => {
@@ -342,7 +342,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚡ Checkup (F5)
+            ⚙️ Planos (F5)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Contenido</div>
@@ -388,7 +388,7 @@ const FabricaInnerES = () => {
         {isAdmin && (
           <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center gap-2 overflow-x-auto font-sans">
             <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest mr-2 select-none">Atajos Admin:</span>
-            {['Anuncio', 'Sitio', 'CRM', 'Plan', 'Checkup'].map((name, idx) => {
+            {['Anuncio', 'Carrusel', 'Sitio', 'CRM', 'Planos'].map((name, idx) => {
               const num = idx + 1;
               return (
               <button

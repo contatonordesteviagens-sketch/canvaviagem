@@ -33,7 +33,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type CarouselSize = 3 | 4 | 5 | 6;
 type CarouselSlideKind = "cover" | "content" | "closing";
-type CarouselSlideVariant = "impact" | "itinerary" | "editorial";
+type CarouselSlideVariant = "impact" | "itinerary" | "editorial" | "oferta" | "minimalist" | "vibrant";
 type LabelStyle = "filled" | "outline-thin" | "outline-thick" | "stripe-left" | "rectangle" | "translucent" | "gradient";
 
 const FONT_PRESETS = [
@@ -1056,6 +1056,157 @@ function CarouselCanvas({
                 </div>
               );
             })()}
+
+            {/* ─── VARIANT: OFERTA — blue rounded box, modern layout ─── */}
+            {slide.slideVariant === "oferta" && (() => {
+              const boxBg = "#0047FF";
+              const boxTextColor = "#FFFFFF";
+              return (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "flex-end",
+                    padding: "8%",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div style={{ position: "absolute", top: "8%", left: "8%" }}>
+                    {logo ? (
+                      <img
+                        src={logo}
+                        alt=""
+                        crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                        style={{ width: Math.round(42 * Z), height: Math.round(42 * Z), borderRadius: Math.round(12 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(5 * Z), boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0, 0, 0, 0.24)` }}
+                      />
+                    ) : <span />}
+                  </div>
+                  <div
+                    style={{
+                      background: boxBg,
+                      color: boxTextColor,
+                      borderRadius: Math.round(24 * Z),
+                      padding: "10%",
+                      boxShadow: `0px ${Math.round(12 * Z)}px ${Math.round(32 * Z)}px rgba(0, 71, 255, 0.35)`,
+                      position: "relative",
+                      zIndex: 10,
+                    }}
+                  >
+                    <div style={{ display: "inline-block", background: "#F5F906", color: "#111318", padding: `${Math.round(4 * Z)}px ${Math.round(12 * Z)}px`, borderRadius: Math.round(99 * Z), fontSize: Math.round(10 * Z), fontWeight: 900, marginBottom: Math.round(12 * Z), textTransform: "uppercase" }}>
+                      {slide.label || "OFERTA"}
+                    </div>
+                    {slide.title && (
+                      <h3 style={{ margin: 0, fontSize: Math.round((ratio < 0.68 ? 28 : 32) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr }}>
+                        {slide.title}
+                      </h3>
+                    )}
+                    {slide.body && (
+                      <p style={{ margin: `${Math.round(10 * Z)}px 0 0`, fontSize: Math.round(14 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.95, whiteSpace: "pre-wrap" }}>
+                        {slide.body}
+                      </p>
+                    )}
+                    {slide.bullets.length > 0 && (
+                      <ul style={{ display: "grid", gap: Math.round(8 * Z), padding: 0, margin: `${Math.round(16 * Z)}px 0 0`, listStyle: "none" }}>
+                        {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
+                          if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(10 * Z) }} />;
+                          return (
+                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "center", fontSize: Math.round(13 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr }}>
+                              <span style={{ color: "#F5F906" }}>✔</span>
+                              <span>{item}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ─── VARIANT: MINIMALIST — clean typography, no boxes ─── */}
+            {slide.slideVariant === "minimalist" && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  textAlign: "center",
+                  padding: "10%",
+                  boxSizing: "border-box",
+                  background: "rgba(0,0,0,0.4)",
+                  backdropFilter: "blur(2px)",
+                }}
+              >
+                {renderLabel(slide.label)}
+                {slide.title && (
+                  <h3 style={{ margin: `${Math.round(20 * Z)}px 0 0`, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 36 : 42) * Z), lineHeight: 1, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow: `0px ${Math.round(4 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.4)` }}>
+                    {slide.title}
+                  </h3>
+                )}
+                {slide.body && (
+                  <div style={{ width: Math.round(40 * Z), height: Math.round(4 * Z), background: primary, margin: `${Math.round(24 * Z)}px auto` }} />
+                )}
+                {slide.body && (
+                  <p style={{ margin: 0, color: bodyColor, fontSize: Math.round(15 * Z), lineHeight: 1.5, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, textShadow: `0px ${Math.round(2 * Z)}px ${Math.round(8 * Z)}px rgba(0, 0, 0, 0.4)`, opacity: 0.95 }}>
+                    {slide.body}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* ─── VARIANT: VIBRANT — bright gradients ─── */}
+            {slide.slideVariant === "vibrant" && (() => {
+              return (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    padding: "8%",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    {logo && (
+                      <img
+                        src={logo}
+                        alt=""
+                        crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                        style={{ width: Math.round(46 * Z), height: Math.round(46 * Z), borderRadius: Math.round(99 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(6 * Z), boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }}
+                      />
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      background: `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`,
+                      color: readableText(primary),
+                      padding: "8%",
+                      borderRadius: Math.round(24 * Z),
+                      boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0,0,0,0.3)`,
+                    }}
+                  >
+                    {renderLabel(slide.label)}
+                    {slide.title && (
+                      <h3 style={{ margin: `${Math.round(12 * Z)}px 0 0`, fontSize: Math.round((ratio < 0.68 ? 26 : 30) * Z), lineHeight: 1.1, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr }}>
+                        {slide.title}
+                      </h3>
+                    )}
+                    {slide.body && (
+                      <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, fontSize: Math.round(13 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9 }}>
+                        {slide.body}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </>
         )}
       </div>
@@ -1445,10 +1596,36 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [showNewCarouselModal, setShowNewCarouselModal] = useState(false);
+  const [captionText, setCaptionText] = useState("");
+  const [generatingCaption, setGeneratingCaption] = useState(false);
   const exportRefs = useRef<Array<HTMLDivElement | null>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadRequestRef = useRef(new Map<string, symbol>());
   const activeSlide = slides[activeIndex];
+
+  const generateCaption = async () => {
+    if (!selectedPackage) return;
+    setGeneratingCaption(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("fabrica-generate-ad-copy", {
+        body: {
+          destination: selectedPackage.title,
+          highlights: selectedPackage.highlights,
+          price: selectedPackage.price,
+          brand: state.agencyName || "Agência de Viagens",
+          type: "carousel"
+        },
+      });
+      if (error) throw error;
+      setCaptionText(data.copy || data.text || data);
+      toast.success(isEs ? "¡Leyenda generada!" : "Legenda gerada com sucesso!");
+    } catch (err) {
+      console.error(err);
+      toast.error(isEs ? "Error al generar leyenda." : "Erro ao gerar legenda.");
+    } finally {
+      setGeneratingCaption(false);
+    }
+  };
 
   const zoomIn = () => setZoomScale((curr) => Math.min(1.6, Number((curr + 0.15).toFixed(2))));
   const zoomOut = () => setZoomScale((curr) => Math.max(0.5, Number((curr - 0.15).toFixed(2))));
@@ -2305,44 +2482,76 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
 
   const renderPublishFooterBox = () => {
     return (
-      <div className="rounded-2xl border border-[#F5F906]/30 bg-[#F5F906]/[0.06] p-4 sm:p-5 shadow-xl space-y-3.5">
-        <div className="flex items-center gap-3">
-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-xs font-black text-zinc-950">4</span>
-          <div>
-            <p className="text-sm font-bold text-white">
-              {isEs ? "Todo listo para publicar" : "Tudo pronto para publicar"}
-            </p>
-            <p className="text-[10px] text-white/55">
-              {isEs ? "La portada no se procesa nuevamente." : "A capa não é processada novamente."}
-            </p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-          <button
-            type="button"
-            onClick={() => setShowNewCarouselModal(true)}
-            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/15 px-3 text-xs font-extrabold text-red-300 hover:bg-red-500/25 transition-colors"
-          >
-            {isEs ? "+ Nuevo Carrusel" : "+ Gerar Novo Carrossel"}
-          </button>
-          <button
-            type="button"
-            onClick={downloadAll}
-            disabled={downloading}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:opacity-50 transition-colors shadow-lg shadow-[#F5F906]/10"
-          >
-            <Download className="h-4 w-4 shrink-0" />
-            <span className="truncate">{isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}</span>
-          </button>
-          {onNext && (
+      <div className="space-y-4">
+        {/* ── AI Caption Textarea Box ── */}
+        <div className="rounded-2xl border border-[#F5F906]/20 bg-[#0F0F11] overflow-hidden shadow-lg">
+          <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06]">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="h-4 w-4 text-[#F5F906]" />
+              <h3 className="text-sm font-bold text-white">
+                {isEs ? "Leyenda del Post (IA)" : "Legenda do Post (IA)"}
+              </h3>
+            </div>
             <button
               type="button"
-              onClick={onNext}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-500/20 px-3 text-xs font-extrabold text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-colors shadow-lg"
+              onClick={generateCaption}
+              disabled={generatingCaption}
+              className="rounded-lg bg-[#F5F906] px-3 py-1.5 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:opacity-50 transition-colors shadow-md flex items-center gap-1.5"
             >
-              <span className="truncate">{isEs ? "Avanzar al Sitio (F3)" : "Avançar para o Site (F3)"}</span>
+              {generatingCaption ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+              {isEs ? "Generar con IA" : "Gerar com IA"}
             </button>
-          )}
+          </div>
+          <div className="p-4 bg-black/40">
+            <textarea
+              value={captionText}
+              onChange={(e) => setCaptionText(e.target.value)}
+              placeholder={isEs ? "Tu leyenda aparecerá aquí..." : "Sua legenda com hashtags aparecerá aqui..."}
+              rows={5}
+              className="w-full rounded-xl border border-white/10 bg-[#121316] px-3 py-2.5 text-xs text-white outline-none focus:border-[#F5F906] focus:ring-1 focus:ring-[#F5F906]/30 transition-all resize-y"
+            />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[#F5F906]/30 bg-[#F5F906]/[0.06] p-4 sm:p-5 shadow-xl space-y-3.5">
+          <div className="flex items-center gap-3">
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-xs font-black text-zinc-950">4</span>
+            <div>
+              <p className="text-sm font-bold text-white">
+                {isEs ? "Todo listo para publicar" : "Tudo pronto para publicar"}
+              </p>
+              <p className="text-[10px] text-white/55">
+                {isEs ? "La portada no se procesa nuevamente." : "A capa não é processada novamente."}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <button
+              type="button"
+              onClick={() => setShowNewCarouselModal(true)}
+              className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/15 px-3 text-xs font-extrabold text-red-300 hover:bg-red-500/25 transition-colors"
+            >
+              {isEs ? "+ Nuevo Carrusel" : "+ Gerar Novo Carrossel"}
+            </button>
+            <button
+              type="button"
+              onClick={downloadAll}
+              disabled={downloading}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:opacity-50 transition-colors shadow-lg shadow-[#F5F906]/10"
+            >
+              <Download className="h-4 w-4 shrink-0" />
+              <span className="truncate">{isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}</span>
+            </button>
+            {onNext && (
+              <button
+                type="button"
+                onClick={onNext}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-500/20 px-3 text-xs font-extrabold text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-colors shadow-lg"
+              >
+                <span className="truncate">{isEs ? "Avanzar al Sitio (F3)" : "Avançar para o Site (F3)"}</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -2409,6 +2618,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                   ["impact",    isEs ? "Impacto"    : "Impacto",    "Foto cheia + texto em baixo"],
                   ["itinerary", isEs ? "Roteiro"    : "Roteiro",    "Foto no topo + bloco colorido"],
                   ["editorial", isEs ? "Editorial"  : "Editorial",  "Card flutuante central"],
+                  ["oferta",    isEs ? "Oferta"     : "Oferta",     "Estilo Clube Turismo"],
+                  ["minimalist",isEs ? "Minimal"    : "Minimalista","Tipografia limpa e elegante"],
+                  ["vibrant",   isEs ? "Vibrante"   : "Vibrante",   "Gradientes modernos"],
                 ] as const).map(([variant, labelText, hint]) => {
                   const currentContentSlide = slides.find(s => s.kind === "content");
                   const isActiveVariant = currentContentSlide ? (currentContentSlide.slideVariant || "impact") === variant : variant === "impact";
@@ -2418,7 +2630,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       type="button"
                       aria-pressed={isActiveVariant}
                       title={hint}
-                      onClick={() => patchAllContentSlides({ slideVariant: variant })}
+                      onClick={() => patchAllContentSlides({ slideVariant: variant as CarouselSlideVariant })}
                       className={`flex min-h-10 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-1.5 text-[10px] font-bold transition-colors ${
                         isActiveVariant
                           ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]"
@@ -2426,7 +2638,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       }`}
                     >
                       <span className="text-sm leading-none">
-                        {variant === "impact" ? "🖼" : variant === "itinerary" ? "📋" : "🪟"}
+                        {variant === "impact" ? "🖼" : variant === "itinerary" ? "📋" : variant === "editorial" ? "🪟" : variant === "oferta" ? "🏷️" : variant === "minimalist" ? "✨" : "🔥"}
                       </span>
                       {labelText}
                     </button>
@@ -2913,13 +3125,36 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
             {activeSlide?.kind === "cover" && (
               <div className="m-4 rounded-xl border border-[#F5F906]/20 bg-[#F5F906]/[0.05] p-4 flex gap-3">
                 <Lock className="mt-0.5 h-5 w-5 shrink-0 text-[#F5F906]" />
-                <div>
-                  <p className="text-sm font-bold text-white">{isEs ? "Esta imagen no se modifica." : "Esta imagem não será modificada."}</p>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-white">{isEs ? "Esta imagen no se modifica." : "Capa protegida. Esta imagem original não pode ser modificada diretamente."}</p>
                   <p className="mt-1 text-xs leading-relaxed text-white/50">
                     {isEs
                       ? "Es exactamente la pieza generada en Anuncio."
                       : "É exatamente a arte gerada em Anúncio. Ela é baixada pelo arquivo original."}
                   </p>
+                  
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <p className="mb-2 text-xs font-bold text-white">{isEs ? "¿Desea generar una nueva portada?" : "Deseja gerar uma nova capa?"}</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        patchActive({
+                          imageUrl: selectedPackage?.imageUrl || "",
+                          slideVariant: "oferta",
+                          label: "OFERTA",
+                          title: selectedPackage?.title || "Pacote Especial",
+                          body: selectedPackage?.price ? `A partir de ${selectedPackage.price}` : "",
+                          bullets: (selectedPackage?.highlights || []).slice(0, 3),
+                          showShadow: true,
+                        });
+                        toast.success(isEs ? "¡Portada actualizada!" : "Capa atualizada com layout do Carrossel!");
+                      }}
+                      className="rounded-lg bg-[#F5F906] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#F5F906]/90 transition-colors shadow-md"
+                    >
+                      {isEs ? "Generar con el diseño del carrusel" : "Gerar Nova Capa (Design do Carrossel)"}
+                    </button>
+                  </div>
+
                   {!coverImage && (
                     <p className="mt-3 rounded-lg bg-amber-300/10 px-3 py-2 text-xs font-semibold text-amber-100">
                       {isEs
@@ -3209,17 +3444,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                         />
                       </div>
                     </div>
-                    <div className="px-4 py-3.5 space-y-1.5">
+                    <div className="px-4 py-3.5 space-y-1.5 border-t border-white/10">
                       <label className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35 block">
-                        {isEs ? "Sitio Web" : "Site (opcional)"}
+                        {isEs ? "Instagram / Red social" : "Instagram / Rede social"}
                       </label>
                       <input
-                        value={activeSlide.website || ""}
-                        maxLength={40}
-                        onChange={(event) => patchActive({ website: event.target.value })}
+                        value={activeSlide.instagram || ""}
+                        maxLength={32}
+                        onChange={(event) => patchActive({ instagram: event.target.value })}
                         className="f1-carousel-input !min-h-[40px] !py-2 !text-[13px]"
-                        placeholder="www.seusite.com.br"
-                      />
                     </div>
                     {!state.logoBase64 && (
                       <div className="px-4 py-3">
