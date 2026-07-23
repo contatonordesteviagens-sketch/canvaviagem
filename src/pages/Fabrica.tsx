@@ -127,7 +127,7 @@ const FabricaInner = () => {
         </div>
 
         {/* Menu Items */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {/* Dashboard Geral */}
           <div>
             <button
