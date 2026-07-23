@@ -19,7 +19,13 @@ import { F1CarouselBuilder } from "@/components/fabrica/F1CarouselBuilder";
 type GenMode = "ai" | "photo" | "custom";
 type CustomSource = "upload" | "link";
 
-interface Props { onNext: () => void; onBack: () => void; }
+interface Props { 
+  onNext: () => void; 
+  onBack: () => void;
+  initialMode?: "ad" | "carousel";
+  lockMode?: boolean;
+  onSkipToSite?: () => void;
+}
 
 const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-v3-premium";
 
@@ -464,11 +470,11 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   return caps;
 };
 
-export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
+export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMode = false, onSkipToSite }: Props) => {
   const { state, update, systemUpdate, reset } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
-  const [creativeMode, setCreativeMode] = useState<"ad" | "carousel">("ad");
+  const [creativeMode, setCreativeMode] = useState<"ad" | "carousel">(initialMode);
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
   
 
@@ -1670,41 +1676,44 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
   return (
     <div className={`${creativeMode === "carousel" ? "w-full max-w-[1440px]" : "max-w-3xl"} mx-auto space-y-6`}>
-      <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-1.5">
-        <div className="grid grid-cols-2 gap-1.5" role="tablist" aria-label="Tipo de creación">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={creativeMode === "ad"}
-            onClick={() => setCreativeMode("ad")}
-            className={`min-h-11 rounded-xl px-4 text-sm font-extrabold transition-colors ${
-              creativeMode === "ad"
-                ? "bg-[#F5F906] text-zinc-950"
-                : "text-white/55 hover:bg-white/[0.05] hover:text-white"
-            }`}
-          >
-            Anuncio
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={creativeMode === "carousel"}
-            onClick={() => setCreativeMode("carousel")}
-            className={`min-h-11 rounded-xl px-4 text-sm font-extrabold transition-colors ${
-              creativeMode === "carousel"
-                ? "bg-[#F5F906] text-zinc-950"
-                : "text-white/55 hover:bg-white/[0.05] hover:text-white"
-            }`}
-          >
-            Carrusel
-          </button>
+      {!lockMode && (
+        <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-1.5">
+          <div className="grid grid-cols-2 gap-1.5" role="tablist" aria-label="Tipo de creación">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={creativeMode === "ad"}
+              onClick={() => setCreativeMode("ad")}
+              className={`min-h-11 rounded-xl px-4 text-sm font-extrabold transition-colors ${
+                creativeMode === "ad"
+                  ? "bg-[#F5F906] text-zinc-950"
+                  : "text-white/55 hover:bg-white/[0.05] hover:text-white"
+              }`}
+            >
+              Anuncio
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={creativeMode === "carousel"}
+              onClick={() => setCreativeMode("carousel")}
+              className={`min-h-11 rounded-xl px-4 text-sm font-extrabold transition-colors ${
+                creativeMode === "carousel"
+                  ? "bg-[#F5F906] text-zinc-950"
+                  : "text-white/55 hover:bg-white/[0.05] hover:text-white"
+              }`}
+            >
+              Carrusel
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {creativeMode === "carousel" ? (
         <F1CarouselBuilder
           sourceImage={generatedImage}
           locale="es"
+          onNext={onSkipToSite || onNext}
         />
       ) : (
         <>
@@ -2736,14 +2745,37 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                     <h3 className="text-sm font-bold text-white">Imagem gerada</h3>
                     <p className="text-[11px] text-white/50">A última arte aparece abaixo e já está pronta para baixar.</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setCreativeMode("carousel")}
-                    disabled={!generatedImage}
-                    className="shrink-0 rounded-xl bg-[#F5F906] px-3 py-2 text-xs font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    Transformar en carrusel
-                  </button>
+                  {lockMode ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={onNext}
+                        disabled={!generatedImage}
+                        className="shrink-0 rounded-xl bg-[#F5F906] px-3 py-2 text-xs font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        Avanzar al Carrusel (F2)
+                      </button>
+                      {onSkipToSite && (
+                        <button
+                          type="button"
+                          onClick={onSkipToSite}
+                          disabled={!generatedImage}
+                          className="shrink-0 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-2 text-xs font-extrabold transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 hover:bg-blue-500/30"
+                        >
+                          Avanzar al Sitio (F3)
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setCreativeMode("carousel")}
+                      disabled={!generatedImage}
+                      className="shrink-0 rounded-xl bg-[#F5F906] px-3 py-2 text-xs font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Transformar en carrusel
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={downloadPNG}

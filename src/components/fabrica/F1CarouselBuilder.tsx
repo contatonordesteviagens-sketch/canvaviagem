@@ -95,6 +95,7 @@ interface PhotoResult {
 interface F1CarouselBuilderProps {
   sourceImage?: string;
   locale?: "pt" | "es";
+  onNext?: () => void;
 }
 
 const DEFAULT_COVER_RATIO = 4 / 5;
@@ -1403,7 +1404,7 @@ function MiniTypographyBar({
   );
 }
 
-export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1CarouselBuilderProps) {
+export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F1CarouselBuilderProps) {
   const { state } = useFabricaContext();
   const { user } = useAuth();
   const isEs = locale === "es";
@@ -2332,6 +2333,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt" }: F1Carouse
             <Download className="h-4 w-4 shrink-0" />
             <span className="truncate">{isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}</span>
           </button>
+          {onNext && (
+            <button
+              type="button"
+              onClick={onNext}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-500/20 px-3 text-xs font-extrabold text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-colors shadow-lg"
+            >
+              <span className="truncate">{isEs ? "Avanzar al Sitio (F3)" : "Avançar para o Site (F3)"}</span>
+            </button>
+          )}
         </div>
       </div>
     );

@@ -38,9 +38,8 @@ const FabricaInner = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"dashboard" | "phase" | "library">("dashboard");
-  const [librarySubTab, setLibrarySubTab] = useState<"ofertas" | "galeria">("ofertas");
-  const prefillSwitchInProgressRef = useRef(false);
+  const [activeTab, setActiveTab] = useState<"dashboard" | "phase">("dashboard");
+    const prefillSwitchInProgressRef = useRef(false);
 
   useEffect(() => {
     const snapshot = (location.state as { prefillSnapshot?: any } | null)?.prefillSnapshot;
@@ -75,12 +74,6 @@ const FabricaInner = () => {
     } else if (path.includes("/plano") || path.includes("/planos") || path.includes("/projeto") || path.includes("/projetos")) {
       setActiveTab("phase");
       setPhase(4);
-    } else if (path.includes("/ofertas") || path.includes("/oferta")) {
-      setActiveTab("library");
-      setLibrarySubTab("ofertas");
-    } else if (path.includes("/galeria") || path.includes("/biblioteca") || path.includes("/artes") || path.includes("/arte")) {
-      setActiveTab("library");
-      setLibrarySubTab("galeria");
     }
   }, [location.pathname, setPhase]);
 
@@ -106,14 +99,13 @@ const FabricaInner = () => {
 
   const getPhaseName = () => {
     if (activeTab === "dashboard") return "Painel Inicial";
-    if (activeTab === "library") {
-      return librarySubTab === "ofertas" ? "Minhas Ofertas" : "Minha Biblioteca";
-    }
+    
     if (state.currentPhase === 1) return "Anúncio (F1)";
-    if (state.currentPhase === 2) return "Site (F2)";
-    if (state.currentPhase === 3) return "CRM (F3)";
-    if (state.currentPhase === 5) return "Checkup (F4)";
-    if (state.currentPhase === 4) return "Plano (F5)";
+    if (state.currentPhase === 2) return "Carrossel (F2)";
+    if (state.currentPhase === 3) return "Site (F3)";
+    
+    if (state.currentPhase === 4) return "CRM (F4)";
+    if (state.currentPhase === 5) return "Planos (F5)";
     return "";
   };
 
@@ -185,124 +177,65 @@ const FabricaInner = () => {
               FERRAMENTAS
             </div>
             <div className="space-y-1">
-              {/* F2: Site */}
+              {/* F2: Carrossel */}
               <button
-                onClick={() => {
-                  setPhase(2);
-                  setActiveTab("phase");
-                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/site" : "/fabrica/site");
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeTab === "phase" && state.currentPhase === 2
-                    ? "bg-white/[0.06] text-white border border-white/10"
-                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <FileText className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Site</span>
-                </div>
-                <span className="text-[10px] text-white/30 font-bold">F2</span>
-              </button>
+            onClick={() => {
+              setPhase(2);
+              setActiveTab("phase");
+              setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/carrossel" : "/fabrica/carrossel");
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
+              activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            <span>🖼️</span> Carrossel (F2)
+          </button>
 
-              {/* F3: CRM */}
+              {/* F3: Site */}
               <button
-                onClick={() => {
-                  setPhase(3);
-                  setActiveTab("phase");
-                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/crm" : "/fabrica/crm");
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeTab === "phase" && state.currentPhase === 3
-                    ? "bg-white/[0.06] text-white border border-white/10"
-                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>CRM</span>
-                </div>
-                <span className="text-[10px] text-white/30 font-bold">F3</span>
-              </button>
+            onClick={() => {
+              setPhase(3);
+              setActiveTab("phase");
+              setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/site" : "/fabrica/site");
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
+              activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            <span>📄</span> Site (F3)
+          </button>
 
-              {/* F4: Checkup */}
+              {/* F4: CRM */}
               <button
-                onClick={() => {
-                  setPhase(5);
-                  setActiveTab("phase");
-                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/checkup" : "/fabrica/checkup");
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeTab === "phase" && state.currentPhase === 5
-                    ? "bg-[#D97706]/15 text-[#F59E0B] border border-[#D97706]/35 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
-                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Checkup</span>
-                </div>
-                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/30"}`}>F4</span>
-              </button>
+            onClick={() => {
+              setPhase(5);
+              setActiveTab("phase");
+              setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/planos" : "/fabrica/planos");
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
+              activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            <span>⚙️</span> Planos (F5)
+          </button>
 
-              {/* F5: Plano */}
+              {/* F5: Planos */}
               <button
-                onClick={() => {
-                  setPhase(4);
-                  setActiveTab("phase");
-                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/plano" : "/fabrica/plano");
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeTab === "phase" && state.currentPhase === 4
-                    ? "bg-white/[0.06] text-white border border-white/10"
-                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Sliders className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Plano</span>
-                </div>
-                <span className="text-[10px] text-white/30 font-bold">F5</span>
-              </button>
-            </div>
-          </div>
-
-          {/* CONTEÚDO */}
-          <div>
-            <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2">
-              CONTEÚDO
-            </div>
-            <div className="space-y-1">
-              <button
-                onClick={() => {
-                  setActiveTab("library");
-                  setLibrarySubTab("ofertas");
-                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/ofertas" : "/fabrica/ofertas");
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left ${
-                  activeTab === "library" && librarySubTab === "ofertas"
-                    ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
-                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
-              >
-                <FolderOpen className={`w-4 h-4 ${activeTab === "library" && librarySubTab === "ofertas" ? "text-amber-400" : "text-white/40"}`} />
-                <span>Minhas Ofertas</span>
-              </button>
-              <button
-                onClick={() => {
-                  setActiveTab("library");
-                  setLibrarySubTab("galeria");
-                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica/artes" : "/fabrica/artes");
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left ${
-                  activeTab === "library" && librarySubTab === "galeria"
-                    ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
-                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
-              >
-                <Library className={`w-4 h-4 ${activeTab === "library" && librarySubTab === "galeria" ? "text-amber-400" : "text-white/40"}`} />
-                <span>Minha Biblioteca</span>
-              </button>
+            onClick={() => {
+              setPhase(5);
+              setActiveTab("phase");
+              setMobileMenuOpen(false);
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/planos" : "/fabrica/planos");
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
+              activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            <span>⚙️</span> Planos (F5)
+          </button>
             </div>
           </div>
         </div>
@@ -391,80 +324,52 @@ const FabricaInner = () => {
               setPhase(2);
               setActiveTab("phase");
               setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/site" : "/fabrica/site");
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/carrossel" : "/fabrica/carrossel");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            <span>📄</span> Site (F2)
+            <span>🖼️</span> Carrossel (F2)
           </button>
           <button
             onClick={() => {
               setPhase(3);
               setActiveTab("phase");
               setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/crm" : "/fabrica/crm");
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/site" : "/fabrica/site");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            <span>👥</span> CRM (F3)
+            <span>📄</span> Site (F3)
           </button>
           <button
             onClick={() => {
               setPhase(5);
               setActiveTab("phase");
               setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/checkup" : "/fabrica/checkup");
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/planos" : "/fabrica/planos");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
               activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            <span>⚡</span> Checkup (F4)
+            <span>⚙️</span> Planos (F5)
           </button>
           <button
             onClick={() => {
-              setPhase(4);
+              setPhase(5);
               setActiveTab("phase");
               setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/plano" : "/fabrica/plano");
+              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/planos" : "/fabrica/planos");
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            <span>⚙️</span> Plano (F5)
-          </button>
-
-          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Conteúdo</div>
-          <button
-            onClick={() => {
-              setActiveTab("library");
-              setLibrarySubTab("ofertas");
-              setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/ofertas" : "/fabrica/ofertas");
-            }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "library" && librarySubTab === "ofertas" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>📂</span> Minhas Ofertas
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("library");
-              setLibrarySubTab("galeria");
-              setMobileMenuOpen(false);
-              navigate(location.pathname.startsWith("/es") ? "/es/fabrica/artes" : "/fabrica/artes");
-            }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activeTab === "library" && librarySubTab === "galeria" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>📚</span> Minha Biblioteca
+            <span>⚙️</span> Planos (F5)
           </button>
 
           <div className="border-t border-white/5 pt-3">
@@ -535,16 +440,18 @@ const FabricaInner = () => {
               }} 
             />
           )}
-          {activeTab === "library" && (
-            <FabricaLibrary subTab={librarySubTab} setSubTab={setLibrarySubTab} />
-          )}
           {activeTab === "phase" && (
             <>
-              {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} />}
-              {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
-              {state.currentPhase === 3 && <Phase5Dashboard onNext={() => setPhase(5)} onBack={() => setPhase(2)} />}
-              {state.currentPhase === 5 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(3)} />}
-              {state.currentPhase === 4 && <Phase2Ativos onNext={() => {}} onBack={() => setPhase(5)} />}
+              {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => setPhase(3)} />}
+              {state.currentPhase === 2 && <Phase3ArtFactory onNext={() => setPhase(3)} onBack={() => setPhase(1)} lockMode={true} initialMode="carousel" />}
+              {state.currentPhase === 3 && <Phase4LandingBuilder onNext={() => setPhase(4)} onBack={() => setPhase(2)} />}
+              {state.currentPhase === 4 && <Phase5Dashboard onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
+              {state.currentPhase === 5 && (
+                <div className="space-y-8 pb-12">
+                  <Phase2Ativos onNext={() => {}} onBack={() => setPhase(4)} />
+                  <Phase1Diagnostico onComplete={() => {}} onBack={() => {}} />
+                </div>
+              )}
             </>
           )}
         </div>
