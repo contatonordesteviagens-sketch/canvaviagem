@@ -186,6 +186,35 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
   const [fetchError, setFetchError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
+  const decodeJwtExp = (token?: string | null) => {
+    if (!token) return null;
+    try {
+      const [, payload] = token.split(".");
+      if (!payload) return null;
+      const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+      const decoded = JSON.parse(atob(normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), "=")));
+      return typeof decoded.exp === "number" ? decoded.exp * 1000 : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const ensureFreshCrmSession = async () => {
+    const currentSession = (await supabase.auth.getSession()).data.session ?? session;
+    const expiresAt = decodeJwtExp(currentSession?.access_token) ?? (currentSession?.expires_at ? currentSession.expires_at * 1000 : 0);
+    const shouldRefresh = !currentSession?.access_token || expiresAt <= Date.now() + 120_000;
+
+    if (!shouldRefresh) return currentSession;
+
+    const { data, error } = await supabase.auth.refreshSession(
+      currentSession?.refresh_token ? { refresh_token: currentSession.refresh_token } : undefined
+    );
+    if (error || !data.session?.access_token) {
+      throw new Error("Sessão expirada. Faça login novamente para carregar o CRM.");
+    }
+    return data.session;
+  };
+
   // Filtros
   const [filterRoteiro, setFilterRoteiro] = useState("Todos");
   const [filterData, setFilterData] = useState("Todas");
@@ -261,96 +290,11 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
       const projectEventFilter = { agency_id: agencyTrackingId, project_id: projectTrackingId };
       
       try {
-        const authSession = session ?? (await supabase.auth.getSession()).data.session;
-        const expiresAt = authSession?.expires_at ? authSession.expires_at * 1000 : 0;
-        if (!authSession?.access_token || expiresAt <= Date.now() + 30_000) {
-          const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError || !refreshed.session?.access_token) {
-            throw new Error("Sessão expirada. Faça login novamente para carregar o CRM.");
-          }
-        }
-
-        // 1. Contagem REAL de visualizações
-        const { count: vCount, error: visitsError } = await supabase
-          .from("analytics_events")
-          .select("*", { count: "exact", head: true })
-          .eq("event_type", "page_view")
-          .contains("event_data", projectEventFilter);
-        if (visitsError) throw visitsError;
-
-        // 2. Contagem REAL de Cliques WhatsApp
-        const { count: cCount, error: clicksError } = await supabase
-          .from("analytics_events")
-          .select("*", { count: "exact", head: true })
-          .eq("event_type", "click_whatsapp")
-          .contains("event_data", projectEventFilter);
-        if (clicksError) throw clicksError;
-
-        // 3. Tempo no site. Eventos anônimos são telemetria aproximada e nunca
-        // entram na lista nem na contagem de leads do CRM.
-        const { data: timeData, error: timeError } = await supabase
-          .from("analytics_events")
-          .select("event_data")
-          .eq("event_type", "time_on_site")
-          .contains("event_data", projectEventFilter);
-        if (timeError) throw timeError;
-        
-        const currentDurations = (timeData || []).map((curr) => {
-          const payload = curr.event_data;
-          return typeof payload === "object" && payload !== null && !Array.isArray(payload) && "duration" in payload
-            ? Number((payload as { duration?: unknown }).duration) || 0
-            : 0;
-        }).filter((duration) => duration > 0);
-        let avgTime = currentDurations.length
-          ? Math.round(currentDurations.reduce((total, duration) => total + duration, 0) / currentDurations.length)
-          : 0;
-        let legacyVisits = 0;
-        let legacyClicks = 0;
-
-        const [savedProjectsResult, publishedSitesResult, legacyMetricsResult] = await Promise.all([
-          (supabase as any)
-            .from("fabrica_diagnosticos")
-            .select("id")
-            .eq("user_id", agencyTrackingId),
-          supabase
-            .from("public_sites")
-            .select("id, project_id")
-            .eq("owner_id", agencyTrackingId),
-          supabase
-            .from("analytics_events")
-            .select("event_type, event_data")
-            .in("event_type", ["page_view", "click_whatsapp", "time_on_site"])
-            .contains("event_data", { agency_id: agencyTrackingId })
-            .limit(5000),
-        ]);
-
-        if (savedProjectsResult.error) throw savedProjectsResult.error;
-        if (publishedSitesResult.error) throw publishedSitesResult.error;
-        if (legacyMetricsResult.error) throw legacyMetricsResult.error;
-
-        const legacyMetricRows = (legacyMetricsResult.data || []).filter((event: any) => {
-          const payload = event.event_data;
-          return payload && typeof payload === "object" && !Array.isArray(payload) && !payload.project_id;
-        });
-        const identifiableProjects = new Set<string>();
-        (savedProjectsResult.data || []).forEach((project: any) => {
-          if (project.id) identifiableProjects.add(`project:${project.id}`);
-        });
-        (publishedSitesResult.data || []).forEach((site: any) => {
-          if (site.project_id) identifiableProjects.add(`project:${site.project_id}`);
-          else if (site.id) identifiableProjects.add(`site:${site.id}`);
-        });
-        // [build-force] Sempre inclui eventos legados da agência — o usuário tem apenas 1 conta
-        legacyVisits = legacyMetricRows.filter((event: any) => event.event_type === "page_view").length;
-        legacyClicks = legacyMetricRows.filter((event: any) => event.event_type === "click_whatsapp").length;
-        const legacyDurations = legacyMetricRows
-          .filter((event: any) => event.event_type === "time_on_site")
-          .map((event: any) => Number(event.event_data?.duration) || 0)
-          .filter((duration: number) => duration > 0);
-        const allDurations = [...currentDurations, ...legacyDurations];
-        avgTime = allDurations.length
-          ? Math.round(allDurations.reduce((total, duration) => total + duration, 0) / allDurations.length)
-          : 0;
+        await ensureFreshCrmSession();
+        let visits = 0;
+        let clicks = 0;
+        let avgTime = 0;
+        let metricsFailed = false;
         setLegacyMetricsInfo({ count: 0, included: false });
 
         // Leads reais vêm exclusivamente das submissões canônicas do formulário.
@@ -374,14 +318,21 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         // Compatibilidade: sites antigos e falhas do endpoint gravavam apenas em
         // analytics_events. Eles continuam visíveis, mas são marcados como
         // históricos não verificados e não entram no total oficial do CRM.
-        const { data: legacyLeadEvents, error: legacyLeadError } = await supabase
-          .from("analytics_events")
-          .select("id, event_data, created_at")
-          .eq("event_type", "lead_captured")
-          .contains("event_data", { agency_id: agencyTrackingId })
-          .order("created_at", { ascending: false })
-          .limit(100);
-        if (legacyLeadError) throw legacyLeadError;
+        let legacyLeadEvents: any[] = [];
+        try {
+          const { data, error } = await supabase
+            .from("analytics_events")
+            .select("id, event_data, created_at")
+            .eq("event_type", "lead_captured")
+            .contains("event_data", { agency_id: agencyTrackingId })
+            .order("created_at", { ascending: false })
+            .limit(100);
+          if (error) throw error;
+          legacyLeadEvents = data || [];
+        } catch (legacyLeadError) {
+          metricsFailed = true;
+          console.warn("Leads legados indisponíveis; exibindo carteira canônica:", legacyLeadError);
+        }
 
         const mappedFormLeads = formLeads.map((lead: any) => ({
           id: lead.id,
@@ -426,13 +377,87 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
             };
           });
 
-        const allLeads = [...mappedFormLeads, ...mappedLegacyLeads].sort(
+        const leadIdentity = (lead: any) => [
+          lead.email,
+          String(lead.whatsapp || "").replace(/\D/g, ""),
+          lead.nome_completo,
+          lead.destino_interesse,
+          lead.created_at ? new Date(lead.created_at).toISOString().slice(0, 16) : "",
+        ].map((value) => String(value || "").trim().toLowerCase()).join("|");
+        const canonicalKeys = new Set(mappedFormLeads.map(leadIdentity));
+        const dedupedLegacyLeads = mappedLegacyLeads.filter((lead: any) => !canonicalKeys.has(leadIdentity(lead)));
+
+        const allLeads = [...mappedFormLeads, ...dedupedLegacyLeads].sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         ).slice(0, 100);
 
+        try {
+          // 1. Contagem REAL de visualizações
+          const { count: vCount, error: visitsError } = await supabase
+            .from("analytics_events")
+            .select("*", { count: "exact", head: true })
+            .eq("event_type", "page_view")
+            .contains("event_data", projectEventFilter);
+          if (visitsError) throw visitsError;
+
+          // 2. Contagem REAL de Cliques WhatsApp
+          const { count: cCount, error: clicksError } = await supabase
+            .from("analytics_events")
+            .select("*", { count: "exact", head: true })
+            .eq("event_type", "click_whatsapp")
+            .contains("event_data", projectEventFilter);
+          if (clicksError) throw clicksError;
+
+          // 3. Tempo no site. Eventos anônimos são telemetria aproximada e nunca
+          // entram na lista nem na contagem de leads do CRM.
+          const { data: timeData, error: timeError } = await supabase
+            .from("analytics_events")
+            .select("event_data")
+            .eq("event_type", "time_on_site")
+            .contains("event_data", projectEventFilter);
+          if (timeError) throw timeError;
+          
+          const currentDurations = (timeData || []).map((curr) => {
+            const payload = curr.event_data;
+            return typeof payload === "object" && payload !== null && !Array.isArray(payload) && "duration" in payload
+              ? Number((payload as { duration?: unknown }).duration) || 0
+              : 0;
+          }).filter((duration) => duration > 0);
+
+          const legacyMetricsResult = await supabase
+            .from("analytics_events")
+            .select("event_type, event_data")
+            .in("event_type", ["page_view", "click_whatsapp", "time_on_site"])
+            .contains("event_data", { agency_id: agencyTrackingId })
+            .limit(5000);
+
+          if (legacyMetricsResult.error) throw legacyMetricsResult.error;
+
+          const legacyMetricRows = (legacyMetricsResult.data || []).filter((event: any) => {
+            const payload = event.event_data;
+            return payload && typeof payload === "object" && !Array.isArray(payload) && !payload.project_id;
+          });
+          // [build-force] Sempre inclui eventos legados da agência — o usuário tem apenas 1 conta
+          const legacyVisits = legacyMetricRows.filter((event: any) => event.event_type === "page_view").length;
+          const legacyClicks = legacyMetricRows.filter((event: any) => event.event_type === "click_whatsapp").length;
+          const legacyDurations = legacyMetricRows
+            .filter((event: any) => event.event_type === "time_on_site")
+            .map((event: any) => Number(event.event_data?.duration) || 0)
+            .filter((duration: number) => duration > 0);
+          const allDurations = [...currentDurations, ...legacyDurations];
+          visits = (vCount || 0) + legacyVisits;
+          clicks = (cCount || 0) + legacyClicks;
+          avgTime = allDurations.length
+            ? Math.round(allDurations.reduce((total, duration) => total + duration, 0) / allDurations.length)
+            : 0;
+        } catch (metricsError) {
+          metricsFailed = true;
+          console.warn("Métricas indisponíveis; exibindo leads preservados:", metricsError);
+        }
+
         setStats({
-          visits: (vCount || 0) + legacyVisits,
-          clicks: (cCount || 0) + legacyClicks,
+          visits,
+          clicks,
           leads: formLeadCount,
           avgTime
         });
@@ -440,7 +465,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         // NUNCA remova este setLeadsList. NUNCA adicione lógica de delete aqui.
         // Cada lead pertence somente à agência identificada por owner_id = user.id.
         setLeadsList(allLeads);
-        setFetchError(false);
+        setFetchError(metricsFailed && allLeads.length === 0);
       } catch (e) {
         // ⛔ FALHA DE FETCH — NÃO limpa leadsList para não apagar dados já carregados.
         // Ativa fetchError para exibir aviso ao usuário em vez de tela vazia.
