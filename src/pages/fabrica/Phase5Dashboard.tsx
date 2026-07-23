@@ -311,7 +311,6 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           .from("crm_form_submissions")
           .select("*")
           .eq("owner_id", agencyTrackingId)
-          .eq("form_id", projectTrackingId)
           .order("created_at", { ascending: false })
           .limit(200);
 
