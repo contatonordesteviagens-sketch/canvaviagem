@@ -323,7 +323,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           if (site.project_id) identifiableProjects.add(`project:${site.project_id}`);
           else if (site.id) identifiableProjects.add(`site:${site.id}`);
         });
-        // Sempre inclui eventos legados da agência — o usuário tem apenas 1 conta
+        // [build-force] Sempre inclui eventos legados da agência — o usuário tem apenas 1 conta
         legacyVisits = legacyMetricRows.filter((event: any) => event.event_type === "page_view").length;
         legacyClicks = legacyMetricRows.filter((event: any) => event.event_type === "click_whatsapp").length;
         const legacyDurations = legacyMetricRows
@@ -969,3 +969,4 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
     </div>
   );
 };
+
