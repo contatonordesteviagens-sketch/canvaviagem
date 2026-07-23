@@ -166,7 +166,7 @@ const FabricaInnerES = () => {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Image className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
+                  <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Carrusel</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold font-sans">F2</span>
@@ -345,31 +345,6 @@ const FabricaInnerES = () => {
             ⚙️ Planos (F5)
           </button>
 
-          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Contenido</div>
-          <button
-            onClick={() => {
-              setActiveTab("library");
-              setLibrarySubTab("ofertas");
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
-              activeTab === "library" && librarySubTab === "ofertas" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            📂 Mis Ofertas
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("library");
-              setLibrarySubTab("galeria");
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
-              activeTab === "library" && librarySubTab === "galeria" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            📚 Mi Biblioteca
-          </button>
 
           <div className="border-t border-white/5 pt-3">
             <button
@@ -411,6 +386,7 @@ const FabricaInnerES = () => {
           {activeTab === "dashboard" && (
             <FabricaDashboardES 
               onNavigate={(tab, phase) => {
+                if (tab === "library") return;
                 setActiveTab(tab);
                 if (phase) setPhase(phase);
               }} 

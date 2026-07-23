@@ -1946,32 +1946,34 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       const nextIdx = (available.indexOf(currentCover) + 1) % available.length;
       const nextPhoto = available[nextIdx] || available[0] || coverImage || "";
       
-      const format = coverRatio > 0.92 ? "feed" : "story";
+      const format: "square" | "story" = coverRatio > 0.92 ? "square" : "story";
       const composed = await composeTravelAd({
         imageUrl: nextPhoto,
-        imageLuminance: state.autoLuminance ?? true,
         format,
         destination: dest,
         city: state.city,
         primaryColor: state.primaryColor,
         secondaryColor: state.secondaryColor,
-        price: pkg.price || state.price || "Consulte",
-        currencySymbol: state.currencySymbol || "R$",
+        price: pkg.price || state.lastPrice || "Consulte",
+        currencySymbol: state.lastCurrency || "R$",
         hideCents: state.hideCents ?? false,
-        installments: state.installments || "",
-        promoName: state.promoName || "OFERTA EXCLUSIVA",
-        highlights: [...(pkg.highlights || []), ...(pkg.included || [])].filter(Boolean).slice(0, 3),
+        installments: state.lastInstallments || "",
+        promoName: state.lastPromoName || "OFERTA EXCLUSIVA",
+        highlights: [...(pkg.highlights || []), ...(pkg.included || [])]
+          .filter(Boolean)
+          .slice(0, 3)
+          .map((text) => ({ text })),
         hasLogo: !!state.logoBase64,
         logoDataUrl: state.logoBase64,
         logoFormat: state.logoFormat || "circle",
-        footerContact1Icon: state.footerContact1Icon || "phone",
-        footerContact1Value: pkg.agencyPhone || state.footerContact1Value || "",
-        whatsapp: state.whatsapp || pkg.agencyPhone || "",
+        footerContact1Icon: state.footerContact1Icon || undefined,
+        footerContact1Value: state.footerContact1Value || "",
+        whatsapp: state.whatsapp || "",
         instagram: state.instagram || "",
-        paymentMode: state.paymentMode || "pix_card",
-        paymentSuffix: state.paymentSuffix || "",
-        pricePrefix: state.pricePrefix || "a partir de",
-        strategy: "impacto_duplo",
+        paymentMode: state.lastPaymentMode || "pix_card",
+        paymentSuffix: state.lastPaymentSuffix || "",
+        pricePrefix: "a partir de",
+        strategy: "ancora",
         variation: Math.floor(Math.random() * 9),
         showPixBanner: state.showPixBanner ?? true,
         showTotal: state.showTotal ?? true,

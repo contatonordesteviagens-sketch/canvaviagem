@@ -23,7 +23,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  Users
+  Users,
+  Layout
 } from "lucide-react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
@@ -459,6 +460,7 @@ const FabricaInner = () => {
           {activeTab === "dashboard" && (
             <FabricaDashboard 
               onNavigate={(tab, phase) => {
+                if (tab === "library") return;
                 setActiveTab(tab);
                 if (phase) setPhase(phase);
               }} 
