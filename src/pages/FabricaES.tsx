@@ -166,7 +166,7 @@ const FabricaInnerES = () => {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Image className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
+                  <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Carrusel</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold font-sans">F2</span>
