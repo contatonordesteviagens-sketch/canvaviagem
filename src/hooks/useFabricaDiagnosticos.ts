@@ -89,6 +89,32 @@ const humanizeSiteId = (siteId: string) =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ") || "Site recuperado";
 
+const decodeJwtExpMs = (token?: string | null): number | null => {
+  if (!token) return null;
+  try {
+    const payload = token.split(".")[1];
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = JSON.parse(atob(normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), "=")));
+    return typeof decoded.exp === "number" ? decoded.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+};
+
+const ensureFreshFabricaSession = async () => {
+  const current = (await supabase.auth.getSession()).data.session;
+  if (!current?.access_token) return;
+  const expMs = decodeJwtExpMs(current.access_token) ?? (current.expires_at ? current.expires_at * 1000 : 0);
+  if (expMs > Date.now() + 120_000) return;
+  try {
+    await supabase.auth.refreshSession(
+      current.refresh_token ? { refresh_token: current.refresh_token } : undefined,
+    );
+  } catch (err) {
+    console.warn("[Fabrica] Falha ao renovar sessao antes de carregar projetos:", err);
+  }
+};
+
 export const useDiagnosticos = () => {
   const { user } = useAuth();
   const locale = typeof window !== "undefined" && window.location.pathname.startsWith("/es") ? "es" : "pt-BR";
@@ -96,6 +122,9 @@ export const useDiagnosticos = () => {
     queryKey: ["fabrica-diagnosticos", user?.id, locale],
     queryFn: async () => {
       if (!user) return [] as DiagnosticoSalvo[];
+      await ensureFreshFabricaSession();
+
+
 
       const [projectsResult, sitesResult] = await Promise.all([
         supabase
