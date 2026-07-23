@@ -572,7 +572,7 @@ function CarouselCanvas({
 
     const style = slide.labelStyle || "filled";
     const commonStyle: CSSProperties = {
-      display: "inline-flex",
+      display: "inline-block",
       maxWidth: "100%",
       marginBottom: Math.round(13 * Z),
       padding: `${Math.round(7 * Z)}px ${Math.round(12 * Z)}px`,
@@ -582,6 +582,7 @@ function CarouselCanvas({
       letterSpacing: ".12em",
       textTransform: "uppercase",
       boxSizing: "border-box",
+      verticalAlign: "middle",
     };
 
     if (style === "outline-thin") {
@@ -2564,8 +2565,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
         {/* ── MODO: FAIXA HORIZONTAL (ribbon) ── */}
         {viewMode === "ribbon" && (() => {
           // Redimensionamento dinâmico: quanto mais slides, menor cada thumb
-          // 3 slides → ~220px | 4 → ~185px | 5 → ~155px | 6 → ~135px | 7+ → ~115px
-          const baseWidth = Math.round(Math.max(110, 290 - slides.length * 22));
+          const isMobile = typeof window !== "undefined" && window.innerWidth < 420;
+          const baseWidth = isMobile ? Math.max(120, 200 - slides.length * 10) : Math.round(Math.max(110, 290 - slides.length * 22));
           const thumbWidth = Math.round(baseWidth * zoomScale);
           const thumbHeight = Math.round(thumbWidth / coverRatio);
           return (
@@ -2692,7 +2693,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
           // Redimensionamento dinâmico na grade
           // 3 slides → 2 colunas grandes | 4 → 2 cols | 5-6 → 3 cols | 7+ → 4 cols
           const cols = slides.length <= 4 ? 2 : slides.length <= 6 ? 3 : 4;
-          const baseWidth = Math.round(Math.max(140, 340 - slides.length * 20));
+          const isMobile = typeof window !== "undefined" && window.innerWidth < 420;
+          const baseWidth = isMobile ? Math.max(120, 160 - slides.length * 5) : Math.round(Math.max(140, 340 - slides.length * 20));
           const thumbWidth = Math.round(baseWidth * zoomScale);
           const gridClass = cols === 2 ? "grid-cols-2" : cols === 3 ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 md:grid-cols-4";
           return (
@@ -2779,7 +2781,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
 
         {/* ── MODO: FOCO — uma imagem grande por vez com setas ── */}
         {viewMode === "focus" && (() => {
-          const thumbWidth = Math.round(380 * zoomScale);
+          const isMobile = typeof window !== "undefined" && window.innerWidth < 420;
+          const baseFocusW = isMobile ? window.innerWidth - 64 : 380;
+          const thumbWidth = Math.round(baseFocusW * zoomScale);
           return (
             <div className="flex flex-col items-center gap-3">
               {/* Setas de navegação + indicador */}
