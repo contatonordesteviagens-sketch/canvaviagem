@@ -34,7 +34,11 @@ import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details
 import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
 import { getCanvaSiteUrl } from "@/lib/canva-site-domain";
 import { recoverFabricaStateFromPublishedHtml } from "@/lib/fabrica-project-recovery";
-import { persistFabricaProject, resolveFabricaProjectId } from "@/lib/fabrica-project-persistence";
+import {
+  isPersistedProjectId,
+  persistFabricaProject,
+  resolveFabricaProjectId,
+} from "@/lib/fabrica-project-persistence";
 import {
   executeIdempotentWriteWithFreshSupabaseSession,
   executeReadWithFreshSupabaseSession,
@@ -561,9 +565,19 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
       const uniqueSlugs = [...new Set(linkedSlugs.filter(Boolean))];
       await deleteAndDiscardCurrentProject(async (persistedProjectId) => {
-        if (persistedProjectId) {
+        const linkedProjectIds = [
+          persistedProjectId,
+          storedProject?.id,
+          storedProject?.published_project_id,
+          ...publishedSites
+            .filter((site) => uniqueSlugs.includes(site.id))
+            .map((site) => site.project_id),
+        ].filter((id): id is string => Boolean(id && isPersistedProjectId(id)));
+
+        if (linkedProjectIds.length > 0) {
           await deleteFabricaProject({
-            projectId: persistedProjectId,
+            projectId: linkedProjectIds[0],
+            linkedProjectIds: linkedProjectIds.slice(1),
             userId: user.id,
             legacySlugs: uniqueSlugs,
           });
@@ -586,7 +600,8 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       const matchesDeletedProject = (project: DiagnosticoSalvo) =>
         project.id === projectId
         || resolveFabricaProjectId(project.id) === projectId
-        || Boolean(project.published_site_id && uniqueSlugs.includes(project.published_site_id));
+        || Boolean(project.published_site_id && uniqueSlugs.includes(project.published_site_id))
+        || Boolean(storedProject?.published_project_id && project.id === storedProject.published_project_id);
 
       setPublishedSites((sites) => sites.filter((site) =>
         site.project_id !== projectId && !uniqueSlugs.includes(site.id)

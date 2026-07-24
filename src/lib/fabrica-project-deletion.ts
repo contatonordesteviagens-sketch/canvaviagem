@@ -6,16 +6,19 @@ import {
 
 interface DeleteFabricaProjectParams {
   projectId: string;
+  linkedProjectIds?: string[];
   userId: string;
   legacySlugs?: string[];
 }
 
 export const deleteFabricaProject = async ({
   projectId,
+  linkedProjectIds = [],
   userId,
   legacySlugs = [],
 }: DeleteFabricaProjectParams) => {
   const uniqueSlugs = [...new Set(legacySlugs.filter(Boolean))];
+  const uniqueProjectIds = [...new Set([projectId, ...linkedProjectIds].filter(Boolean))];
 
   // Detach forms first so an older ON DELETE CASCADE constraint can never
   // remove customer submissions together with the project.
@@ -24,7 +27,11 @@ export const deleteFabricaProject = async ({
       .from("crm_forms")
       .update({ project_id: null, status: "archived" })
       .eq("owner_id", userId)
-      .or(`project_id.eq.${projectId},id.eq.${projectId},embed_key.eq.${projectId}`),
+      .or(uniqueProjectIds.flatMap((id) => [
+        `project_id.eq.${id}`,
+        `id.eq.${id}`,
+        `embed_key.eq.${id}`,
+      ]).join(",")),
     userId,
   );
   if (formError) throw formError;
@@ -34,7 +41,7 @@ export const deleteFabricaProject = async ({
       .from("crm_forms")
       .select("id")
       .eq("owner_id", userId)
-      .eq("project_id", projectId)
+      .in("project_id", uniqueProjectIds)
       .limit(1),
     userId,
   );
@@ -48,7 +55,7 @@ export const deleteFabricaProject = async ({
       .from("public_sites")
       .delete()
       .eq("owner_id", userId)
-      .eq("project_id", projectId),
+      .in("project_id", uniqueProjectIds),
     userId,
   );
   if (sitesError) throw sitesError;
@@ -70,8 +77,8 @@ export const deleteFabricaProject = async ({
     () => (supabase as any)
       .from("fabrica_diagnosticos")
       .delete()
-      .eq("id", projectId)
-      .eq("user_id", userId),
+      .eq("user_id", userId)
+      .in("id", uniqueProjectIds),
     userId,
   );
   if (projectError) throw projectError;
@@ -84,9 +91,9 @@ export const deleteFabricaProject = async ({
       () => (supabase as any)
         .from("fabrica_diagnosticos")
         .select("id")
-        .eq("id", projectId)
         .eq("user_id", userId)
-        .maybeSingle(),
+        .in("id", uniqueProjectIds)
+        .limit(1),
       userId,
     ),
     executeReadWithFreshSupabaseSession(
@@ -94,7 +101,7 @@ export const deleteFabricaProject = async ({
         .from("public_sites")
         .select("id")
         .eq("owner_id", userId)
-        .eq("project_id", projectId)
+        .in("project_id", uniqueProjectIds)
         .limit(1),
       userId,
     ),
@@ -117,7 +124,7 @@ export const deleteFabricaProject = async ({
     remainingLegacySites = data || [];
   }
 
-  if (remainingProject || remainingSites?.length || remainingLegacySites.length) {
+  if (remainingProject?.length || remainingSites?.length || remainingLegacySites.length) {
     throw new Error("O projeto ainda aparece no banco. Atualize a página e tente excluir novamente.");
   }
 };

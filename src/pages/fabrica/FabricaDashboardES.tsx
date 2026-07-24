@@ -33,7 +33,7 @@ import { COUNTRIES_DIAL, type CountryDial } from "@/lib/countriesDial";
 import { useQueryClient } from "@tanstack/react-query";
 import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
 import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
-import { resolveFabricaProjectId } from "@/lib/fabrica-project-persistence";
+import { isPersistedProjectId, resolveFabricaProjectId } from "@/lib/fabrica-project-persistence";
 import { executeIdempotentWriteWithFreshSupabaseSession } from "@/lib/supabase-session";
 
 const AGENCY_TYPES = [
@@ -290,9 +290,16 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
 
       const uniqueSlugs = [...new Set(linkedSlugs.filter(Boolean))];
       await deleteAndDiscardCurrentProject(async (persistedProjectId) => {
-        if (persistedProjectId) {
+        const linkedProjectIds = [
+          persistedProjectId,
+          storedProject?.id,
+          storedProject?.published_project_id,
+        ].filter((id): id is string => Boolean(id && isPersistedProjectId(id)));
+
+        if (linkedProjectIds.length > 0) {
           await deleteFabricaProject({
-            projectId: persistedProjectId,
+            projectId: linkedProjectIds[0],
+            linkedProjectIds: linkedProjectIds.slice(1),
             userId: user.id,
             legacySlugs: uniqueSlugs,
           });
@@ -315,7 +322,8 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
       const matchesDeletedProject = (project: DiagnosticoSalvo) =>
         project.id === projectId
         || resolveFabricaProjectId(project.id) === projectId
-        || Boolean(project.published_site_id && uniqueSlugs.includes(project.published_site_id));
+        || Boolean(project.published_site_id && uniqueSlugs.includes(project.published_site_id))
+        || Boolean(storedProject?.published_project_id && project.id === storedProject.published_project_id);
 
       queryClient.setQueriesData<DiagnosticoSalvo[]>(
         { queryKey: ["fabrica-diagnosticos"] },
