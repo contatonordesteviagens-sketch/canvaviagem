@@ -3133,24 +3133,35 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                   
                   <div className="mt-4 pt-4 border-t border-white/10">
                     <p className="mb-2 text-xs font-bold text-white">{isEs ? "¿Desea generar una nueva portada?" : "Deseja gerar uma nova capa?"}</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        patchActive({
-                          imageUrl: selectedPackage?.imageUrl || "",
-                          slideVariant: "oferta",
-                          label: "OFERTA",
-                          title: selectedPackage?.title || "Pacote Especial",
-                          body: selectedPackage?.price ? `A partir de ${selectedPackage.price}` : "",
-                          bullets: (selectedPackage?.highlights || []).slice(0, 3),
-                          showShadow: true,
-                        });
-                        toast.success(isEs ? "¡Portada actualizada!" : "Capa atualizada com layout do Carrossel!");
-                      }}
-                      className="rounded-lg bg-[#F5F906] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#F5F906]/90 transition-colors shadow-md"
-                    >
-                      {isEs ? "Generar con el diseño del carrusel" : "Gerar Nova Capa (Design do Carrossel)"}
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <button
+                        type="button"
+                        onClick={() => generateNewCoverAd()}
+                        disabled={generatingCoverAd}
+                        className="flex-1 rounded-lg bg-[#00F0FF] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#00F0FF]/90 transition-colors shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
+                      >
+                        {generatingCoverAd && <RefreshCw className="h-4 w-4 animate-spin" />}
+                        {isEs ? "Generar Arte F1 (Anuncio)" : "Gerar Arte F1 (Anúncio)"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          patchActive({
+                            imageUrl: selectedPackage?.imageUrl || "",
+                            slideVariant: "oferta",
+                            label: "OFERTA",
+                            title: selectedPackage?.title || "Pacote Especial",
+                            body: selectedPackage?.price ? `A partir de ${selectedPackage.price}` : "",
+                            bullets: (selectedPackage?.highlights || []).slice(0, 3),
+                            showShadow: true,
+                          });
+                          toast.success(isEs ? "¡Portada actualizada!" : "Capa atualizada com layout do Carrossel!");
+                        }}
+                        className="flex-1 rounded-lg bg-[#F5F906] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#F5F906]/90 transition-colors shadow-md"
+                      >
+                        {isEs ? "Diseño de carrusel" : "Design do Carrossel"}
+                      </button>
+                    </div>
                   </div>
 
                   {!coverImage && (
