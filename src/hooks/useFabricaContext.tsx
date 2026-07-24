@@ -856,14 +856,14 @@ const loadInitialState = (userId?: string | null): FabricaState => {
 };
 
 const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") return false;
 
   const resolvedUserId = userId ?? localStorage.getItem(LAST_ACTIVE_USER_KEY);
   const projectId = nextState.projectId;
-  if (!resolvedUserId || !projectId) return;
+  if (!resolvedUserId || !projectId) return false;
 
-  safeSetItem(LAST_ACTIVE_USER_KEY, resolvedUserId);
-  safeSetItem(getActiveProjectKey(resolvedUserId), projectId);
+  const savedUserPointer = safeSetItem(LAST_ACTIVE_USER_KEY, resolvedUserId);
+  const savedProjectPointer = safeSetItem(getActiveProjectKey(resolvedUserId), projectId);
 
   const {
     logoBase64,
@@ -919,17 +919,25 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
     toast.error("Memória do navegador cheia! Suas edições podem não ser salvas offline. Limpe o cache ou imagens geradas.");
   }
 
-  if (logoBase64) safeSetItem(heavyPrefix + "logoBase64", logoBase64);
+  let savedHeavyContent = true;
+  if (logoBase64) savedHeavyContent = safeSetItem(heavyPrefix + "logoBase64", logoBase64);
   else localStorage.removeItem(heavyPrefix + "logoBase64");
 
-  if (generatedAdImage) safeSetItem(heavyPrefix + "generatedAdImage", generatedAdImage);
+  if (generatedAdImage) {
+    savedHeavyContent = safeSetItem(heavyPrefix + "generatedAdImage", generatedAdImage)
+      && savedHeavyContent;
+  }
   else localStorage.removeItem(heavyPrefix + "generatedAdImage");
 
-  if (lastCleanPhoto) safeSetItem(heavyPrefix + "lastCleanPhoto", lastCleanPhoto);
+  if (lastCleanPhoto) {
+    savedHeavyContent = safeSetItem(heavyPrefix + "lastCleanPhoto", lastCleanPhoto)
+      && savedHeavyContent;
+  }
   else localStorage.removeItem(heavyPrefix + "lastCleanPhoto");
 
+  let savedMedia = true;
   if (hasProjectMedia) {
-    const savedMedia = safeSetItem(
+    savedMedia = safeSetItem(
       heavyPrefix + PROJECT_MEDIA_CACHE_KEY,
       JSON.stringify(projectMedia),
     );
@@ -943,6 +951,13 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
   if (!savedGallery) {
     console.warn("Quota exceeded when saving gallery to local storage.");
   }
+
+  return savedUserPointer
+    && savedProjectPointer
+    && savedMain
+    && savedHeavyContent
+    && savedMedia
+    && savedGallery;
 };
 
 const removeLocalProjectState = (userId: string, projectId?: string | null) => {
@@ -1121,7 +1136,7 @@ interface FabricaContextType {
   redo: () => void;
   switchProject: (
     snapshot: Partial<FabricaState>,
-    options?: { preserveCurrentPhase?: boolean },
+    options?: { preserveCurrentPhase?: boolean; expectedUserId?: string },
   ) => Promise<void>;
   canUndo: boolean;
   canRedo: boolean;
@@ -1153,6 +1168,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const activeUserIdRef = useRef<string | null>(null);
   const projectSaveQueueRef = useRef<Map<string, Promise<{ id: string; stateSnapshot: FabricaState }>>>(new Map());
   const blockedProjectPersistenceRef = useRef<Set<string>>(new Set());
+  const projectSwitchSequenceRef = useRef(0);
   const [historyCount, setHistoryCount] = useState(0);
   const [redoCount, setRedoCount] = useState(0);
   const historyRef = useRef<FabricaState[]>([]);
@@ -1215,38 +1231,46 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     redoStackRef.current = [];
     setHistoryCount(0);
     setRedoCount(0);
-    setState((previous) => {
-      const resolvedProjectId = snapshot.projectId || createTemporaryProjectId();
-      const incoming = normalizeStateSnapshot({
-        ...snapshot,
-        currentPhase: preserveCurrentPhase
-          ? previous.currentPhase
-          : snapshot.currentPhase ?? previous.currentPhase,
-        diagnosticoCompleto: false,
-        lastEditedAt: new Date().toISOString(),
-      }, resolvedProjectId);
-      const cached = activeUserIdRef.current
-        ? readProjectState(activeUserIdRef.current, resolvedProjectId)
-        : null;
-      const cachedIsNewer = Boolean(
-        cached && getStateTimestamp(cached) > getStateTimestamp(snapshot),
-      );
-      const merged = cachedIsNewer && cached
-        ? { ...cached, currentPhase: incoming.currentPhase, diagnosticoCompleto: false }
-        : cached
-          ? mergeSameProjectMedia(incoming, cached)
-          : incoming;
+    const previous = stateRef.current;
+    const resolvedProjectId = snapshot.projectId || createTemporaryProjectId();
+    const incoming = normalizeStateSnapshot({
+      ...snapshot,
+      currentPhase: preserveCurrentPhase
+        ? previous.currentPhase
+        : snapshot.currentPhase ?? previous.currentPhase,
+      diagnosticoCompleto: false,
+      lastEditedAt: new Date().toISOString(),
+    }, resolvedProjectId);
+    const cached = activeUserIdRef.current
+      ? readProjectState(activeUserIdRef.current, resolvedProjectId)
+      : null;
+    const cachedIsNewer = Boolean(
+      cached && getStateTimestamp(cached) > getStateTimestamp(snapshot),
+    );
+    const merged = cachedIsNewer && cached
+      ? { ...cached, currentPhase: incoming.currentPhase, diagnosticoCompleto: false }
+      : cached
+        ? mergeSameProjectMedia(incoming, cached)
+        : incoming;
 
-      stateRef.current = merged;
-      if (activeUserIdRef.current) persistLocalState(merged, activeUserIdRef.current);
-      return merged;
-    });
+    // Atualiza a referência antes de resolver a Promise da troca. Assim, a tela
+    // seguinte nunca monta lendo por um instante os dados do projeto anterior.
+    stateRef.current = merged;
+    if (activeUserIdRef.current) persistLocalState(merged, activeUserIdRef.current);
+    setState(merged);
   }, []);
 
   const switchProject = useCallback(async (
     snapshot: Partial<FabricaState>,
-    options?: { preserveCurrentPhase?: boolean },
+    options?: { preserveCurrentPhase?: boolean; expectedUserId?: string },
   ) => {
+    const switchSequence = ++projectSwitchSequenceRef.current;
+    if (
+      options?.expectedUserId
+      && activeUserIdRef.current !== options.expectedUserId
+    ) {
+      throw new Error("project_switch_user_changed");
+    }
     if (
       snapshot.projectId
       && blockedProjectPersistenceRef.current.has(resolveFabricaProjectId(snapshot.projectId))
@@ -1256,10 +1280,25 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
     const previousState = stateRef.current;
     const currentUserId = activeUserIdRef.current;
+    const assertSwitchScope = () => {
+      if (switchSequence !== projectSwitchSequenceRef.current) {
+        throw new Error("project_switch_superseded");
+      }
+      if (activeUserIdRef.current !== currentUserId) {
+        throw new Error("project_switch_user_changed");
+      }
+    };
 
-    // A cópia local é gravada primeiro. Em contas reais, o outro projeto só é
-    // carregado depois que a fila confirma o snapshot anterior na nuvem.
-    if (currentUserId) persistLocalState(previousState, currentUserId);
+    // A cópia local é gravada antes da troca. Se a nuvem estiver temporariamente
+    // indisponível, ela vira a garantia para liberar a navegação sem perder dados.
+    const savedLocally = currentUserId
+      ? persistLocalState(previousState, currentUserId)
+      : true;
+    if (!savedLocally) {
+      throw new Error("local_project_backup_failed");
+    }
+
+    let pendingCloudSnapshot: FabricaState | null = null;
     if (
       currentUserId &&
       currentUserId !== LOCAL_PREVIEW_USER_ID &&
@@ -1268,17 +1307,83 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       setSyncStatus("saving");
       try {
         await enqueueProjectPersistence(previousState, currentUserId);
+        assertSwitchScope();
         await queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
+        assertSwitchScope();
         setLastSyncedAt(new Date());
         setSyncStatus("saved");
       } catch (error) {
+        assertSwitchScope();
         setSyncStatus("error");
         console.warn("[Supabase Sync] Não foi possível salvar o projeto antes da troca:", error);
-        throw error;
+        pendingCloudSnapshot = previousState;
       }
     }
 
+    const latestCurrentState = stateRef.current;
+    if (
+      latestCurrentState !== previousState
+      && latestCurrentState.projectId === previousState.projectId
+    ) {
+      if (currentUserId && !persistLocalState(latestCurrentState, currentUserId)) {
+        throw new Error("local_project_backup_failed");
+      }
+
+      if (
+        !pendingCloudSnapshot
+        && currentUserId
+        && currentUserId !== LOCAL_PREVIEW_USER_ID
+        && hasMeaningfulProgress(latestCurrentState)
+      ) {
+        try {
+          await enqueueProjectPersistence(latestCurrentState, currentUserId);
+          assertSwitchScope();
+          await queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
+          assertSwitchScope();
+          setLastSyncedAt(new Date());
+          setSyncStatus("saved");
+        } catch (error) {
+          assertSwitchScope();
+          console.warn("[Supabase Sync] A edição mais recente ficou pendente na nuvem:", error);
+          pendingCloudSnapshot = latestCurrentState;
+        }
+      } else if (pendingCloudSnapshot) {
+        pendingCloudSnapshot = latestCurrentState;
+      }
+    }
+
+    assertSwitchScope();
+    const finalCurrentState = stateRef.current;
+    if (finalCurrentState.projectId !== previousState.projectId) {
+      throw new Error("project_switch_state_changed");
+    }
+    if (
+      finalCurrentState !== latestCurrentState
+    ) {
+      if (currentUserId && !persistLocalState(finalCurrentState, currentUserId)) {
+        throw new Error("local_project_backup_failed");
+      }
+      pendingCloudSnapshot = finalCurrentState;
+    }
+
+    assertSwitchScope();
     applyProjectSnapshot(snapshot, Boolean(options?.preserveCurrentPhase));
+
+    if (pendingCloudSnapshot && currentUserId) {
+      const retrySnapshot = pendingCloudSnapshot;
+      window.setTimeout(() => {
+        if (activeUserIdRef.current !== currentUserId) return;
+        void enqueueProjectPersistence(retrySnapshot, currentUserId)
+          .then(() => queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }))
+          .catch((error) => {
+            console.warn("[Supabase Sync] O projeto anterior ficou pendente na nuvem:", error);
+            toast.warning(
+              "O projeto anterior está preservado neste dispositivo, mas a sincronização na nuvem ainda está pendente.",
+              { duration: 8000 },
+            );
+          });
+      }, 1500);
+    }
   }, [applyProjectSnapshot, enqueueProjectPersistence, queryClient]);
 
   useEffect(() => {

@@ -163,7 +163,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         : project;
       await switchProject(
         { ...editableProject.state_snapshot, projectId: editableProject.id },
-        { preserveCurrentPhase: true },
+        { preserveCurrentPhase: true, expectedUserId: user?.id },
       );
       setPendingProjectSwitch(null);
       if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);

@@ -35,7 +35,7 @@ import { toast } from "sonner";
 
 const FabricaInner = () => {
   const { state, setPhase, switchProject, isHydrated } = useFabricaContext();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -47,7 +47,10 @@ const FabricaInner = () => {
     if (!snapshot || !isHydrated || prefillSwitchInProgressRef.current) return;
 
     prefillSwitchInProgressRef.current = true;
-    void switchProject({ ...(snapshot as any), diagnosticoCompleto: false })
+    void switchProject(
+      { ...(snapshot as any), diagnosticoCompleto: false },
+      { expectedUserId: user?.id },
+    )
       .catch((error) => {
         console.warn("[Fábrica] Não foi possível abrir o projeto solicitado:", error);
         toast.error("Não foi possível salvar o projeto atual. A troca foi cancelada para proteger suas alterações.");
@@ -56,7 +59,7 @@ const FabricaInner = () => {
         navigate(location.pathname, { replace: true, state: null });
         prefillSwitchInProgressRef.current = false;
       });
-  }, [isHydrated, location.state, location.pathname, navigate, switchProject]);
+  }, [isHydrated, location.state, location.pathname, navigate, switchProject, user?.id]);
 
   useEffect(() => {
     const path = location.pathname.toLowerCase();

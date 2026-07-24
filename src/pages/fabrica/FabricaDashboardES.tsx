@@ -1,7 +1,12 @@
 import { useState, useRef } from "react";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDiagnosticos, useSaveDiagnostico, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
+import {
+  materializeRecoveredProject,
+  useDiagnosticos,
+  useSaveDiagnostico,
+  type DiagnosticoSalvo,
+} from "@/hooks/useFabricaDiagnosticos";
 import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
 import { PackageAdvancedFields } from "@/components/fabrica/PackageAdvancedFields";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,12 +71,19 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
     const isRecovered = project.source === "published_recovery";
     setIsSwitchingProject(true);
     try {
-      await switchProject({ ...project.state_snapshot, projectId: project.id });
+      const editableProject = user?.id
+        ? await materializeRecoveredProject(project, user.id)
+        : project;
+      await switchProject(
+        { ...editableProject.state_snapshot, projectId: editableProject.id },
+        { expectedUserId: user?.id },
+      );
       setPendingProjectSwitch(null);
       if (isRecovered) toast.warning(`Sitio anterior "${targetName}" recuperado. Revisa los datos antes de volver a publicarlo.`);
       else toast.success(`Proyecto "${targetName}" cargado.`);
       window.setTimeout(() => onNavigate?.("phase", 2), 100);
-    } catch {
+    } catch (error) {
+      console.error("[FabricaDashboardES] No se pudo cambiar el proyecto:", error);
       toast.error("No se pudo guardar el proyecto actual. El cambio fue cancelado para proteger tus datos.");
     } finally {
       setIsSwitchingProject(false);

@@ -51,6 +51,32 @@ export const isSupabaseAuthError = (error: unknown) => {
     || text.includes("auth session missing");
 };
 
+const isTransientSupabaseError = (error: unknown) => {
+  if (!error || typeof error !== "object") return false;
+  const value = error as {
+    code?: unknown;
+    status?: unknown;
+    name?: unknown;
+    message?: unknown;
+    details?: unknown;
+  };
+  const status = Number(value.status || 0);
+  const code = String(value.code || "").toUpperCase();
+  const text = [value.name, value.message, value.details]
+    .map((part) => String(part || "").toLowerCase())
+    .join(" ");
+
+  return status === 408
+    || status === 425
+    || status === 429
+    || status >= 500
+    || code === "PGRST000"
+    || text.includes("failed to fetch")
+    || text.includes("network")
+    || text.includes("timeout")
+    || text.includes("connection");
+};
+
 export const ensureFreshSupabaseSession = async ({
   expectedUserId,
   forceRefresh = false,
@@ -131,5 +157,17 @@ const executeRetryableWithFreshSupabaseSession = async <T extends SupabaseResult
 export const executeReadWithFreshSupabaseSession = executeRetryableWithFreshSupabaseSession;
 
 // Use only for writes whose stable key makes repeating the same payload safe.
-export const executeIdempotentWriteWithFreshSupabaseSession =
-  executeRetryableWithFreshSupabaseSession;
+export const executeIdempotentWriteWithFreshSupabaseSession = async <T extends SupabaseResult>(
+  request: () => PromiseLike<T>,
+  expectedUserId?: string,
+): Promise<T> => {
+  try {
+    const result = await executeRetryableWithFreshSupabaseSession(request, expectedUserId);
+    if (!isTransientSupabaseError(result.error)) return result;
+  } catch (error) {
+    if (!isTransientSupabaseError(error)) throw error;
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 350));
+  return executeRetryableWithFreshSupabaseSession(request, expectedUserId);
+};

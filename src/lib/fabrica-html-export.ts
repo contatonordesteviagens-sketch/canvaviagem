@@ -2220,27 +2220,40 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     track("package_cta", { target: selected.title, package_id: selected.id });
   }
 
+  function getTrackingSessionId() {
+    const storageKey = "cv_tracking_session_" + CONFIG.projectId;
+    try {
+      const existing = sessionStorage.getItem(storageKey);
+      if (existing && /^sess_[a-z0-9_-]{10,100}$/i.test(existing)) return existing;
+      const randomPart = window.crypto && typeof window.crypto.randomUUID === "function"
+        ? window.crypto.randomUUID().replace(/-/g, "")
+        : Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+      const created = "sess_" + randomPart + "_" + Date.now().toString(36);
+      sessionStorage.setItem(storageKey, created);
+      return created;
+    } catch {
+      return "sess_" + Math.random().toString(36).slice(2) + "_" + Date.now().toString(36);
+    }
+  }
+  const CV_TRACKING_SESSION_ID = getTrackingSessionId();
+
   function track(type, data) {
     if (!CONFIG.supabaseUrl || !CONFIG.supabaseKey) return Promise.resolve();
-    return fetch(\`\${CONFIG.supabaseUrl}/rest/v1/analytics_events\`, {
+    const siteId = (window.location.hostname.split(".")[0] || "").toLowerCase();
+    return fetch(\`\${CONFIG.supabaseUrl}/functions/v1/track-fabrica-event\`, {
       method: "POST",
+      keepalive: true,
       headers: {
         "apikey": CONFIG.supabaseKey,
-        "Authorization": "Bearer " + CONFIG.supabaseKey,
         "Content-Type": "application/json",
-        "Prefer": "return=minimal"
       },
       body: JSON.stringify({
-        user_id: CONFIG.agencyId,
+        site_id: siteId,
+        project_id: CONFIG.projectId,
         event_type: type,
-        session_id: 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now(),
-        event_data: { 
-          ...data, 
-          agency_id: CONFIG.agencyId,
-          project_id: CONFIG.projectId,
-          userAgent: navigator.userAgent
-        },
-        created_at: new Date().toISOString()
+        session_id: CV_TRACKING_SESSION_ID,
+        url_path: window.location.pathname,
+        event_data: data
       })
     }).catch(err => console.warn("Tracking off", err));
   }
@@ -2421,6 +2434,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
       volta: payload.volta,
       obs: payload.obs
     });
+    track("click_whatsapp", { target: payload.destino, lead_submitted: true });
     
     const msg = encodeURIComponent('Olá! Quero um orçamento.\\n\\nNome: '+f.nome.value+'\\nWhatsApp: '+f.wpp.value+'\\nE-mail: '+f.email.value+'\\nDestino: '+f.destino.value+'\\nViajantes: '+f.viaj.value+'\\nIda: '+f.ida.value+'\\nVolta: '+f.volta.value+'\\nObs: '+f.obs.value);
     
@@ -2458,6 +2472,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
       phone,
       interest: currentTarget
     });
+    track("click_whatsapp", { target: currentTarget, lead_submitted: true });
 
     closeModal();
     btn.innerHTML = originalText;

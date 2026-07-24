@@ -1,14 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { buildLandingHTML } from "@/lib/fabrica-html-export";
 import { publishFabricaSite } from "@/lib/fabrica-site-publisher";
-import { resolveFabricaCrmFormId } from "@/lib/fabrica-crm-publication";
 import { getCanvaSiteUrl, validateCanvaSiteSlug } from "@/lib/canva-site-domain";
 import { resolveFabricaSiteSlug } from "@/lib/fabrica-site-publication";
-import { ensureFreshSupabaseSession, executeReadWithFreshSupabaseSession } from "@/lib/supabase-session";
+import {
+  getFabricaConversionRate,
+  loadFabricaCrmMetrics,
+  persistFabricaLeadStatus,
+  type FabricaCrmLead,
+  type FabricaMetricSummary,
+} from "@/lib/fabrica-crm-metrics";
 import { Loader2, Eye, X as CloseIcon } from "lucide-react";
 import { 
   TrendingUp, 
@@ -26,12 +30,15 @@ import {
   MousePointerClick,
   MessageSquare,
   Clock,
+  History,
   Filter,
   Maximize2,
   ChevronDown
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+const EMPTY_METRICS: FabricaMetricSummary = { visits: 0, clicks: 0, leads: 0, avgTime: 0 };
 
 export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBack?: () => void } = {}) => {
   const { state, setPhase, update } = useFabricaContext();
@@ -175,17 +182,23 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
     }
   }, [showLivePreview, state, user]);
   
-  const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0, avgTime: 0 });
-  const [legacyMetricsInfo, setLegacyMetricsInfo] = useState({ count: 0, included: false });
-  // ⛔ BLOQUEIO DE SEGURANÇA — leadsList armazena os leads reais do Supabase.
-  // NUNCA substitua por [] sem confirmar que o banco realmente retornou vazio.
-  // NUNCA remova o setLeadsList(allLeads) no fetch abaixo.
+  const [stats, setStats] = useState<FabricaMetricSummary>(EMPTY_METRICS);
+  const [accountHistoryStats, setAccountHistoryStats] = useState<FabricaMetricSummary>(EMPTY_METRICS);
+  // As duas listas são apenas projeções da leitura do Supabase. Elas são limpas
+  // ao trocar de projeto para uma resposta antiga nunca aparecer no projeto novo.
   const [leadsList, setLeadsList] = useState<any[]>([]);
+  const [accountHistoryLeads, setAccountHistoryLeads] = useState<any[]>([]);
+  const [leadView, setLeadView] = useState<"project" | "account-history">("project");
   const [loading, setLoading] = useState(true);
+  const [metricsAvailable, setMetricsAvailable] = useState(false);
   // fetchError = true indica falha de rede/RLS, NÃO ausência de leads.
   // Quando fetchError=true, a UI exibe aviso de erro — nunca "sem leads".
   const [fetchError, setFetchError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const loadedMetricsScopeRef = useRef<string | null>(null);
+  const statusSaveInFlightRef = useRef(new Set<string>());
+  const activeCrmScopeRef = useRef("");
+  activeCrmScopeRef.current = `${user?.id || ""}:${state.projectId || ""}`;
 
   // Filtros
   const [filterRoteiro, setFilterRoteiro] = useState("Todos");
@@ -195,8 +208,10 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
   // Modal
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
 
+  const activeLeadList = leadView === "project" ? leadsList : accountHistoryLeads;
+
   const getRoteirosUnicos = () => {
-    const roteiros = leadsList.map(l => l.destino_interesse || "Navegação Geral");
+    const roteiros = activeLeadList.map(l => l.destino_interesse || "Navegação Geral");
     return ["Todos", ...Array.from(new Set(roteiros))];
   };
 
@@ -206,6 +221,11 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
     setFilterRoteiro("Todos");
     setFilterData("Todas");
     setFilterFase("Todas");
+  };
+
+  const changeLeadView = (view: "project" | "account-history") => {
+    setLeadView(view);
+    clearFilters();
   };
 
   // Fechar modal com Escape
@@ -218,293 +238,101 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
   }, []);
 
   const handleStatusChange = async (leadId: string, newStatus: string) => {
-    // 1. Salva localmente no estado global (persistido via owner snapshot)
-    const updatedStatuses = { ...(state.leadStatuses || {}), [leadId]: newStatus };
-    update({ leadStatuses: updatedStatuses });
+    if (!user?.id || statusSaveInFlightRef.current.has(leadId)) return;
+    const lead = activeLeadList.find((item) => item.id === leadId) as FabricaCrmLead | undefined;
+    if (!lead) return;
 
-    // 2. Atualiza a lista local na UI imediatamente
-    setLeadsList(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
-    toast.success("Fase atualizada!");
+    const previousStatus = lead.status;
+    const optimisticLead = { ...lead, status: newStatus };
+    const operationScope = activeCrmScopeRef.current;
+    statusSaveInFlightRef.current.add(leadId);
+    setLeadsList(prev => prev.map(item => item.id === leadId ? optimisticLead : item));
+    setAccountHistoryLeads(prev => prev.map(item => item.id === leadId ? optimisticLead : item));
+    setSelectedLead(prev => prev?.id === leadId ? optimisticLead : prev);
 
-    // 3. Tenta persistir no Supabase em background (RLS bypass fallback)
     try {
-      await (supabase as any)
-        .from("crm_form_submissions")
-        .update({ status: newStatus })
-        .eq("id", leadId)
-        .eq("owner_id", user?.id || "");
-
-      const { data, error } = await supabase
-        .from("analytics_events")
-        .select("event_data")
-        .eq("id", leadId)
-        .eq("user_id", user?.id || "")
-        .single();
-      
-      if (!error && data && typeof data.event_data === "object" && data.event_data !== null && !Array.isArray(data.event_data)) {
-        const updatedData = {
-          ...data.event_data,
-          status: newStatus
-        };
-        await supabase
-          .from("analytics_events")
-          .update({ event_data: updatedData })
-          .eq("id", leadId)
-          .eq("user_id", user?.id || "");
+      await persistFabricaLeadStatus({ lead, ownerId: user.id, status: newStatus });
+      if (activeCrmScopeRef.current !== operationScope) return;
+      if (lead.storage_source === "analytics") {
+        setLeadsList(prev => prev.map(item => item.id === leadId ? { ...item, storage_source: "crm" } : item));
+        setAccountHistoryLeads(prev => prev.map(item => item.id === leadId ? { ...item, storage_source: "crm" } : item));
       }
-    } catch (e) {
-      console.warn("Silent background update of event status skipped due to RLS policies:", e);
+      toast.success("Fase atualizada e salva!");
+    } catch (error) {
+      if (activeCrmScopeRef.current !== operationScope) return;
+      const restoredLead = { ...lead, status: previousStatus };
+      setLeadsList(prev => prev.map(item => item.id === leadId ? restoredLead : item));
+      setAccountHistoryLeads(prev => prev.map(item => item.id === leadId ? restoredLead : item));
+      setSelectedLead(prev => prev?.id === leadId ? restoredLead : prev);
+      console.warn("Não foi possível salvar a fase do lead:", error);
+      toast.error("Não foi possível salvar a nova fase. O valor anterior foi restaurado.");
+    } finally {
+      statusSaveInFlightRef.current.delete(leadId);
     }
   };
 
   useEffect(() => {
+    let cancelled = false;
     const fetchRealMetrics = async () => {
-      // USA O ID DO USUÁRIO (ÚNICO) PARA EVITAR COLISÃO DE DADOS ENTRE AGÊNCIAS DIFERENTES
-      const agencyTrackingId = user?.id || state.agencyName || "Agência";
-      const projectTrackingId = resolveFabricaCrmFormId(state.projectId);
-      const projectEventFilter = { agency_id: agencyTrackingId, project_id: projectTrackingId };
-      const currentSiteSlug = resolveFabricaSiteSlug(state.siteContent?.canvaViagemUrl, state.agencyName || "") || "";
-      const projectAliases = new Set(
-        [
-          state.projectId,
-          projectTrackingId,
-          state.crmForm?.id,
-          `legacy-${agencyTrackingId}`,
-          currentSiteSlug,
-          currentSiteSlug ? `proj_legacy_${currentSiteSlug}` : "",
-        ]
-          .filter(Boolean)
-          .map((value) => String(value).trim().toLowerCase())
-      );
-      const matchesCurrentProject = (payload: any) => {
-        if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
-        const identifiers = [
-          payload.project_id,
-          payload.form_id,
-          payload.site_id,
-          payload.site_slug,
-          payload.embed_key,
-        ]
-          .filter(Boolean)
-          .map((value) => String(value).trim().toLowerCase());
-        if (identifiers.some((value) => projectAliases.has(value))) return true;
-
-        const source = String(payload.source_domain || payload.domain || "").trim().toLowerCase();
-        return Boolean(currentSiteSlug && (
-          source === `${currentSiteSlug}.canvaviagem.com`
-          || source.startsWith(`${currentSiteSlug}.`)
-          || source.includes(`//${currentSiteSlug}.`)
-        ));
-      };
-      
+      if (!user?.id) return;
       try {
-        await ensureFreshSupabaseSession({ expectedUserId: user?.id });
-        let visits = 0;
-        let clicks = 0;
-        let avgTime = 0;
-        let metricsFailed = false;
-        setLegacyMetricsInfo({ count: 0, included: false });
-
-        // Leads reais vêm exclusivamente das submissões canônicas do formulário.
-        // ⛔ DADOS PROTEGIDOS — busca TODOS os leads do owner, com ou sem projectId
-        let formLeads: any[] = [];
-        let formLeadCount = 0;
-        // Busca por owner_id primeiro (todos os leads da agência). Não filtra por
-        // form_id aqui: leads históricos/backfill usam form_id legado e também
-        // pertencem à carteira permanente do mesmo owner.
-        const { data: publicFormData, error: publicFormError } = await executeReadWithFreshSupabaseSession(
-          () => (supabase as any)
-            .from("crm_form_submissions")
-            .select("*")
-            .eq("owner_id", agencyTrackingId)
-            .order("created_at", { ascending: false })
-            .limit(500),
-          user?.id,
-        );
-
-        if (publicFormError) throw publicFormError;
-        formLeads = (publicFormData || []).filter((lead: any) => matchesCurrentProject({
-          form_id: lead.form_id,
-          project_id: lead.payload?.project_id,
-          site_id: lead.payload?.site_id,
-          site_slug: lead.payload?.site_slug,
-          source_domain: lead.source_domain || lead.payload?.source_domain,
-        }));
-        formLeadCount = formLeads.length;
-
-        // Compatibilidade: sites antigos e falhas do endpoint gravavam apenas em
-        // analytics_events. Eles continuam visíveis, mas são marcados como
-        // históricos não verificados e não entram no total oficial do CRM.
-        let legacyLeadEvents: any[] = [];
-        try {
-          const { data, error } = await supabase
-            .from("analytics_events")
-            .select("id, event_data, created_at")
-            .eq("event_type", "lead_captured")
-            .contains("event_data", { agency_id: agencyTrackingId })
-            .order("created_at", { ascending: false })
-            .limit(100);
-          if (error) throw error;
-          legacyLeadEvents = data || [];
-        } catch (legacyLeadError) {
-          metricsFailed = true;
-          console.warn("Leads legados indisponíveis; exibindo carteira canônica:", legacyLeadError);
-        }
-
-        const mappedFormLeads = formLeads.map((lead: any) => {
-          const isAccountLegacyLead = String(lead.form_id || "").toLowerCase() === `legacy-${agencyTrackingId}`.toLowerCase();
-          return {
-          id: lead.id,
-          nome_completo: lead.normalized_name || lead.payload?.nome || lead.payload?.name || "Sem Nome",
-          whatsapp: lead.normalized_phone || lead.payload?.wpp || lead.payload?.whatsapp || "",
-          email: lead.normalized_email || lead.payload?.email || "",
-          destino_interesse: lead.normalized_interest || lead.payload?.destino || "Formulario externo",
-          data_ida: lead.payload?.ida || lead.payload?.data_ida || null,
-          data_volta: lead.payload?.volta || lead.payload?.data_volta || null,
-          numero_viajantes: lead.payload?.viaj ? parseInt(lead.payload.viaj) : 1,
-          observacoes: lead.payload?.obs || lead.payload?.observacoes || "",
-          created_at: lead.created_at,
-          status: state.leadStatuses?.[lead.id] || lead.status || "novo",
-          origem: isAccountLegacyLead ? "Historico recuperado da conta" : (lead.source_domain || "Formulario externo"),
-          legacy_unassigned: isAccountLegacyLead,
-          raw_payload: lead.payload || {},
-          };
+        const result = await loadFabricaCrmMetrics({
+          ownerId: user.id,
+          projectId: state.projectId,
+          crmFormId: state.crmForm?.id,
+          siteSlug: resolveFabricaSiteSlug(
+            state.siteContent?.canvaViagemUrl,
+            state.agencyName || "",
+          ),
         });
 
-        const mappedLegacyLeads = (legacyLeadEvents || [])
-          .filter((event: any) => {
-            const payload = event.event_data;
-            if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
-            if (payload.submission_id) return false;
-            return matchesCurrentProject(payload);
-          })
-          .map((event: any) => {
-            const payload = event.event_data || {};
-            return {
-              id: event.id,
-              nome_completo: payload.name || "Sem Nome",
-              whatsapp: payload.phone || "",
-              email: payload.email || "",
-              destino_interesse: payload.interest || "Navegação Geral",
-              data_ida: payload.ida || null,
-              data_volta: payload.volta || null,
-              numero_viajantes: payload.viajantes ? parseInt(payload.viajantes) : 1,
-              observacoes: payload.obs || "",
-              created_at: event.created_at,
-              status: state.leadStatuses?.[event.id] || payload.status || "novo",
-              origem: payload.project_id ? "Fallback do site" : "Histórico da conta (sem projeto)",
-              legacy_unverified: true,
-              legacy_unassigned: !payload.project_id && !payload.form_id,
-            };
-          });
-
-        const leadIdentity = (lead: any) => [
-          lead.email,
-          String(lead.whatsapp || "").replace(/\D/g, ""),
-          lead.nome_completo,
-          lead.destino_interesse,
-          lead.created_at ? new Date(lead.created_at).toISOString().slice(0, 16) : "",
-        ].map((value) => String(value || "").trim().toLowerCase()).join("|");
-        const canonicalKeys = new Set(mappedFormLeads.map(leadIdentity));
-        const dedupedLegacyLeads = mappedLegacyLeads.filter((lead: any) => !canonicalKeys.has(leadIdentity(lead)));
-
-        const allLeads = [...mappedFormLeads, ...dedupedLegacyLeads].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        ).slice(0, 100);
-
-        try {
-          // 1. Contagem REAL de visualizações
-          const { count: vCount, error: visitsError } = await supabase
-            .from("analytics_events")
-            .select("*", { count: "exact", head: true })
-            .eq("event_type", "page_view")
-            .contains("event_data", projectEventFilter);
-          if (visitsError) throw visitsError;
-
-          // 2. Contagem REAL de Cliques WhatsApp
-          const { count: cCount, error: clicksError } = await supabase
-            .from("analytics_events")
-            .select("*", { count: "exact", head: true })
-            .eq("event_type", "click_whatsapp")
-            .contains("event_data", projectEventFilter);
-          if (clicksError) throw clicksError;
-
-          // 3. Tempo no site. Eventos anônimos são telemetria aproximada e nunca
-          // entram na lista nem na contagem de leads do CRM.
-          const { data: timeData, error: timeError } = await supabase
-            .from("analytics_events")
-            .select("event_data")
-            .eq("event_type", "time_on_site")
-            .contains("event_data", projectEventFilter);
-          if (timeError) throw timeError;
-          
-          const currentDurations = (timeData || []).map((curr) => {
-            const payload = curr.event_data;
-            return typeof payload === "object" && payload !== null && !Array.isArray(payload) && "duration" in payload
-              ? Number((payload as { duration?: unknown }).duration) || 0
-              : 0;
-          }).filter((duration) => duration > 0);
-
-          const legacyMetricsResult = await supabase
-            .from("analytics_events")
-            .select("event_type, event_data")
-            .in("event_type", ["page_view", "click_whatsapp", "time_on_site"])
-            .contains("event_data", { agency_id: agencyTrackingId })
-            .limit(5000);
-
-          if (legacyMetricsResult.error) throw legacyMetricsResult.error;
-
-          const legacyMetricRows = (legacyMetricsResult.data || []).filter((event: any) => {
-            const payload = event.event_data;
-            if (payload?.project_id === projectTrackingId) return false;
-            return matchesCurrentProject(payload);
-          });
-          // Inclui apenas métricas legadas que ainda comprovam pertencer ao projeto aberto.
-          const legacyVisits = legacyMetricRows.filter((event: any) => event.event_type === "page_view").length;
-          const legacyClicks = legacyMetricRows.filter((event: any) => event.event_type === "click_whatsapp").length;
-          const legacyDurations = legacyMetricRows
-            .filter((event: any) => event.event_type === "time_on_site")
-            .map((event: any) => Number(event.event_data?.duration) || 0)
-            .filter((duration: number) => duration > 0);
-          const allDurations = [...currentDurations, ...legacyDurations];
-          visits = (vCount || 0) + legacyVisits;
-          clicks = (cCount || 0) + legacyClicks;
-          avgTime = allDurations.length
-            ? Math.round(allDurations.reduce((total, duration) => total + duration, 0) / allDurations.length)
-            : 0;
-        } catch (metricsError) {
-          metricsFailed = true;
-          console.warn("Métricas indisponíveis; exibindo leads preservados:", metricsError);
-        }
-
-        setStats({
-          visits,
-          clicks,
-          leads: allLeads.length || formLeadCount,
-          avgTime
-        });
-        // ⛔ DADOS PROTEGIDOS — allLeads vem exclusivamente do Supabase.
-        // NUNCA remova este setLeadsList. NUNCA adicione lógica de delete aqui.
-        // Cada lead pertence somente à agência identificada por owner_id = user.id.
-        setLeadsList(allLeads);
-        setFetchError(metricsFailed && allLeads.length === 0);
+        if (cancelled) return;
+        setStats(result.project);
+        setAccountHistoryStats(result.accountHistory);
+        setLeadsList(result.projectLeads);
+        setAccountHistoryLeads(result.accountHistoryLeads);
+        setMetricsAvailable(!result.metricsFailed);
+        setFetchError(false);
       } catch (e) {
-        // ⛔ FALHA DE FETCH — NÃO limpa leadsList para não apagar dados já carregados.
-        // Ativa fetchError para exibir aviso ao usuário em vez de tela vazia.
+        if (cancelled) return;
         console.warn("Falha ao carregar métricas reais:", e);
+        setMetricsAvailable(false);
         setFetchError(true);
-        // leadsList permanece inalterado — nunca substituir por []
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
-    // ⛔ Depende apenas de user?.id — não depende de state.projectId
-    // Isso evita que o fetch seja disparado toda vez que o estado da agência muda (salvar, etc.)
     if (!user?.id) return;
+    const scopeKey = `${user.id}:${state.projectId || ""}`;
+    if (loadedMetricsScopeRef.current !== scopeKey) {
+      loadedMetricsScopeRef.current = scopeKey;
+      setStats(EMPTY_METRICS);
+      setAccountHistoryStats(EMPTY_METRICS);
+      setLeadsList([]);
+      setAccountHistoryLeads([]);
+      setSelectedLead(null);
+      setFilterRoteiro("Todos");
+      setFilterData("Todas");
+      setFilterFase("Todas");
+    }
     setLoading(true);
-    fetchRealMetrics();
-  }, [user?.id, session?.access_token, state.projectId, reloadKey]); // eslint-disable-line react-hooks/exhaustive-deps
+    setMetricsAvailable(false);
+    setFetchError(false);
+    setLeadView("project");
+    void fetchRealMetrics();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    user?.id,
+    session?.access_token,
+    state.projectId,
+    state.crmForm?.id,
+    state.siteContent?.canvaViagemUrl,
+    state.agencyName,
+    reloadKey,
+  ]);
 
   const currentDay = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR });
   const formatString = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -546,7 +374,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
   };
   const progress = getAppProgress();
 
-  const filteredLeads = leadsList.filter((l) => {
+  const filteredLeads = activeLeadList.filter((l) => {
     if (filterRoteiro !== "Todos") {
       const destino = l.destino_interesse || "Navegação Geral";
       if (destino !== filterRoteiro) return false;
@@ -563,7 +391,10 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
     }
     return true;
   });
-  const unverifiedLegacyLeadCount = leadsList.filter((lead) => lead.legacy_unverified).length;
+  const conversionRate = metricsAvailable ? getFabricaConversionRate(stats) : null;
+  const hasAccountHistory = accountHistoryStats.visits > 0
+    || accountHistoryStats.clicks > 0
+    || accountHistoryLeads.length > 0;
 
   const getFaseColor = (status: string) => {
     switch (status) {
@@ -599,42 +430,132 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
           <div className="text-2xl font-black text-white mb-1">
-            {loading ? <Loader2 className="w-5 h-5 animate-spin text-white/30" /> : stats.visits}
+            {loading
+              ? <Loader2 className="w-5 h-5 animate-spin text-white/30" />
+              : metricsAvailable ? stats.visits : "—"}
           </div>
           <div className="text-[11px] text-white/35 font-medium">Visitas</div>
-          {stats.avgTime > 0 && <div className="text-[10px] text-white/25 mt-1">{stats.avgTime}s médio</div>}
+          {metricsAvailable && stats.avgTime > 0 && <div className="text-[10px] text-white/25 mt-1">{stats.avgTime}s médio</div>}
         </div>
         <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
           <div className="text-2xl font-black text-white mb-1">
-            {loading ? <Loader2 className="w-5 h-5 animate-spin text-white/30" /> : stats.clicks}
+            {loading
+              ? <Loader2 className="w-5 h-5 animate-spin text-white/30" />
+              : metricsAvailable ? stats.clicks : "—"}
           </div>
           <div className="text-[11px] text-white/35 font-medium">Cliques WhatsApp</div>
         </div>
         <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
           <div className="text-2xl font-black text-white mb-1">
-            {loading ? <Loader2 className="w-5 h-5 animate-spin text-white/30" /> : leadsList.length}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin text-white/30" /> : stats.leads}
           </div>
-          <div className="text-[11px] text-white/35 font-medium">Leads totais</div>
+          <div className="text-[11px] text-white/35 font-medium">Leads do projeto</div>
         </div>
         <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
           <div className="text-2xl font-black text-white mb-1">
-            {loading ? <Loader2 className="w-5 h-5 animate-spin text-white/30" /> : `${leadsList.length > 0 && stats.visits > 0 ? Math.min(100, Math.round((leadsList.length / stats.visits) * 100)) : 0}%`}
+            {loading
+              ? <Loader2 className="w-5 h-5 animate-spin text-white/30" />
+              : conversionRate === null ? "—" : `${conversionRate}%`}
           </div>
           <div className="text-[11px] text-white/35 font-medium">Taxa de conversão</div>
+          {!loading && conversionRate === null && (
+            <div className="text-[10px] text-amber-300/60 mt-1">
+              {metricsAvailable ? "Histórico de visitas incompleto" : "Métricas indisponíveis"}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* aviso de métricas legadas removido — sempre incluímos todos os eventos da agência */}
+      {!loading && !metricsAvailable && !fetchError && (
+        <div className="flex items-center justify-between gap-4 border-y border-amber-300/20 bg-amber-300/[0.04] px-4 py-3">
+          <p className="text-[11px] leading-5 text-amber-100/70">
+            Visitas e cliques estão temporariamente indisponíveis. Os leads continuam carregados e não foram alterados.
+          </p>
+          <button
+            type="button"
+            onClick={() => setReloadKey((key) => key + 1)}
+            className="shrink-0 text-[10px] font-bold text-amber-200 underline hover:text-white"
+          >
+            Recarregar métricas
+          </button>
+        </div>
+      )}
+
+      {hasAccountHistory && (
+        <div className="flex flex-col gap-4 border-y border-amber-300/15 bg-amber-300/[0.035] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <History className="mt-0.5 h-4 w-4 shrink-0 text-amber-300/80" aria-hidden="true" />
+            <div>
+              <div className="text-xs font-bold text-amber-100">Histórico recuperado da conta</div>
+              <p className="mt-1 max-w-2xl text-[11px] leading-5 text-white/45">
+                Estes dados foram preservados, mas os sites antigos não registravam o projeto de origem.
+                Por isso, eles ficam separados e não alteram os números do projeto aberto.
+              </p>
+            </div>
+          </div>
+          <div className="grid shrink-0 grid-cols-3 gap-x-6 text-center sm:text-left">
+            <div>
+              <div className="text-sm font-black text-white/80">{metricsAvailable ? accountHistoryStats.visits : "—"}</div>
+              <div className="text-[9px] uppercase text-white/30">Visitas</div>
+            </div>
+            <div>
+              <div className="text-sm font-black text-white/80">{metricsAvailable ? accountHistoryStats.clicks : "—"}</div>
+              <div className="text-[9px] uppercase text-white/30">Cliques</div>
+            </div>
+            <div>
+              <div className="text-sm font-black text-white/80">{accountHistoryStats.leads}</div>
+              <div className="text-[9px] uppercase text-white/30">Leads</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CARTEIRA DE CLIENTES */}
       <div className="border border-white/8 rounded-2xl overflow-hidden mt-2">
         {/* Header simples */}
         <div className="px-5 py-4 border-b border-white/8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-white">Carteira de Clientes</h3>
-            {leadsList.length > 0 && (
-              <span className="text-[10px] text-white/40 font-medium">{filteredLeads.length} lead{filteredLeads.length !== 1 ? 's' : ''}{hasActiveFilters ? ' filtrado' + (filteredLeads.length !== 1 ? 's' : '') : ''}</span>
-            )}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-white">
+                {leadView === "project" ? "Leads do projeto" : "Histórico da conta"}
+              </h3>
+              {activeLeadList.length > 0 && (
+                <span className="text-[10px] text-white/40 font-medium">
+                  {filteredLeads.length} lead{filteredLeads.length !== 1 ? "s" : ""}
+                  {hasActiveFilters ? ` filtrado${filteredLeads.length !== 1 ? "s" : ""}` : ""}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1" role="tablist" aria-label="Origem dos leads">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={leadView === "project"}
+                onClick={() => changeLeadView("project")}
+                className={`border-b-2 px-1.5 py-1 text-[10px] font-bold transition-colors ${
+                  leadView === "project"
+                    ? "border-[#F5F906] text-white"
+                    : "border-transparent text-white/35 hover:text-white/60"
+                }`}
+              >
+                Projeto atual ({leadsList.length})
+              </button>
+              {accountHistoryLeads.length > 0 && (
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={leadView === "account-history"}
+                  onClick={() => changeLeadView("account-history")}
+                  className={`border-b-2 px-1.5 py-1 text-[10px] font-bold transition-colors ${
+                    leadView === "account-history"
+                      ? "border-amber-300 text-white"
+                      : "border-transparent text-white/35 hover:text-white/60"
+                  }`}
+                >
+                  Histórico sem projeto ({accountHistoryLeads.length})
+                </button>
+              )}
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <select
@@ -695,7 +616,13 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
 
         {filteredLeads.length === 0 && !loading && !fetchError ? (
           <div className="py-12 text-center">
-            <p className="text-sm text-white/30">{leadsList.length === 0 ? "Nenhum lead ainda." : "Nenhum lead corresponde aos filtros."}</p>
+            <p className="text-sm text-white/30">
+              {activeLeadList.length === 0
+                ? leadView === "project"
+                  ? "Nenhum lead atribuído a este projeto ainda."
+                  : "Nenhum lead histórico sem projeto."
+                : "Nenhum lead corresponde aos filtros."}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">

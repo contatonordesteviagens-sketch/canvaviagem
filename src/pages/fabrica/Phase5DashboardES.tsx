@@ -1,13 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { buildLandingHTML } from "@/lib/fabrica-html-export-es";
 import { publishFabricaSite } from "@/lib/fabrica-site-publisher";
-import { resolveFabricaCrmFormId } from "@/lib/fabrica-crm-publication";
 import { getCanvaSiteUrl, validateCanvaSiteSlug } from "@/lib/canva-site-domain";
 import { resolveFabricaSiteSlug } from "@/lib/fabrica-site-publication";
+import {
+  getFabricaConversionRate,
+  loadFabricaCrmMetrics,
+  persistFabricaLeadStatus,
+  type FabricaCrmLead,
+  type FabricaMetricSummary,
+} from "@/lib/fabrica-crm-metrics";
 import { Loader2, Eye, X as CloseIcon } from "lucide-react";
 import { 
   TrendingUp, 
@@ -24,12 +29,15 @@ import {
   MousePointerClick,
   MessageSquare,
   Clock,
+  History,
   Filter,
   Maximize2,
   ChevronDown
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+
+const EMPTY_METRICS: FabricaMetricSummary = { visits: 0, clicks: 0, leads: 0, avgTime: 0 };
 
 export const Phase5DashboardES = () => {
   const { state, setPhase, update } = useFabricaContext();
@@ -154,10 +162,19 @@ export const Phase5DashboardES = () => {
     }
   }, [showLivePreview, state, user]);
   
-  const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0, avgTime: 0 });
-  const [legacyMetricsInfo, setLegacyMetricsInfo] = useState({ count: 0, included: false });
+  const [stats, setStats] = useState<FabricaMetricSummary>(EMPTY_METRICS);
+  const [accountHistoryStats, setAccountHistoryStats] = useState<FabricaMetricSummary>(EMPTY_METRICS);
   const [leadsList, setLeadsList] = useState<any[]>([]);
+  const [accountHistoryLeads, setAccountHistoryLeads] = useState<any[]>([]);
+  const [leadView, setLeadView] = useState<"project" | "account-history">("project");
   const [loading, setLoading] = useState(true);
+  const [metricsAvailable, setMetricsAvailable] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const loadedMetricsScopeRef = useRef<string | null>(null);
+  const statusSaveInFlightRef = useRef(new Set<string>());
+  const activeCrmScopeRef = useRef("");
+  activeCrmScopeRef.current = `${user?.id || ""}:${state.projectId || ""}`;
 
   // Filtros
   const [filterRoteiro, setFilterRoteiro] = useState("Todos");
@@ -167,8 +184,10 @@ export const Phase5DashboardES = () => {
   // Modal
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
 
+  const activeLeadList = leadView === "project" ? leadsList : accountHistoryLeads;
+
   const getRoteirosUnicos = () => {
-    const roteiros = leadsList.map(l => l.destino_interesse || "Navegación General");
+    const roteiros = activeLeadList.map(l => l.destino_interesse || "Navegación General");
     return ["Todos", ...Array.from(new Set(roteiros))];
   };
 
@@ -178,6 +197,11 @@ export const Phase5DashboardES = () => {
     setFilterRoteiro("Todos");
     setFilterData("Todas");
     setFilterFase("Todas");
+  };
+
+  const changeLeadView = (view: "project" | "account-history") => {
+    setLeadView(view);
+    clearFilters();
   };
 
   // Cerrar modal con Escape
@@ -190,219 +214,101 @@ export const Phase5DashboardES = () => {
   }, []);
 
   const handleStatusChange = async (leadId: string, newStatus: string) => {
-    // 1. Salva localmente no estado global (persistido via owner snapshot)
-    const updatedStatuses = { ...(state.leadStatuses || {}), [leadId]: newStatus };
-    update({ leadStatuses: updatedStatuses });
+    if (!user?.id || statusSaveInFlightRef.current.has(leadId)) return;
+    const lead = activeLeadList.find((item) => item.id === leadId) as FabricaCrmLead | undefined;
+    if (!lead) return;
 
-    // 2. Atualiza a lista local na UI imediatamente
-    setLeadsList(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
-    toast.success("¡Fase actualizada!");
+    const previousStatus = lead.status;
+    const optimisticLead = { ...lead, status: newStatus };
+    const operationScope = activeCrmScopeRef.current;
+    statusSaveInFlightRef.current.add(leadId);
+    setLeadsList(prev => prev.map(item => item.id === leadId ? optimisticLead : item));
+    setAccountHistoryLeads(prev => prev.map(item => item.id === leadId ? optimisticLead : item));
+    setSelectedLead(prev => prev?.id === leadId ? optimisticLead : prev);
 
-    // 3. Tenta persistir no Supabase em background (RLS bypass fallback)
     try {
-      await (supabase as any)
-        .from("crm_form_submissions")
-        .update({ status: newStatus })
-        .eq("id", leadId);
-
-      const { data, error } = await supabase
-        .from("analytics_events")
-        .select("event_data")
-        .eq("id", leadId)
-        .single();
-      
-      if (!error && data && typeof data.event_data === "object" && data.event_data !== null && !Array.isArray(data.event_data)) {
-        const updatedData = {
-          ...data.event_data,
-          status: newStatus
-        };
-        await supabase
-          .from("analytics_events")
-          .update({ event_data: updatedData })
-          .eq("id", leadId);
+      await persistFabricaLeadStatus({ lead, ownerId: user.id, status: newStatus });
+      if (activeCrmScopeRef.current !== operationScope) return;
+      if (lead.storage_source === "analytics") {
+        setLeadsList(prev => prev.map(item => item.id === leadId ? { ...item, storage_source: "crm" } : item));
+        setAccountHistoryLeads(prev => prev.map(item => item.id === leadId ? { ...item, storage_source: "crm" } : item));
       }
-    } catch (e) {
-      console.warn("Silent background update of event status skipped due to RLS policies:", e);
+      toast.success("¡Fase actualizada y guardada!");
+    } catch (error) {
+      if (activeCrmScopeRef.current !== operationScope) return;
+      const restoredLead = { ...lead, status: previousStatus };
+      setLeadsList(prev => prev.map(item => item.id === leadId ? restoredLead : item));
+      setAccountHistoryLeads(prev => prev.map(item => item.id === leadId ? restoredLead : item));
+      setSelectedLead(prev => prev?.id === leadId ? restoredLead : prev);
+      console.warn("No se pudo guardar la fase del lead:", error);
+      toast.error("No se pudo guardar la nueva fase. Se restauró el valor anterior.");
+    } finally {
+      statusSaveInFlightRef.current.delete(leadId);
     }
   };
 
   useEffect(() => {
+    let cancelled = false;
     const fetchRealMetrics = async () => {
-      // USA O ID DO USUÁRIO (ÚNICO) PARA EVITAR COLISÃO DE DADOS ENTRE AGÊNCIAS DIFERENTES
-      const agencyTrackingId = user?.id || state.agencyName || "Agência";
-      const projectTrackingId = resolveFabricaCrmFormId(state.projectId);
-      const projectEventFilter = { agency_id: agencyTrackingId, project_id: projectTrackingId };
-      
+      if (!user?.id) return;
       try {
-        // 1. Contagem REAL de visualizações
-        const { count: vCount } = await supabase
-          .from("analytics_events")
-          .select("*", { count: "exact", head: true })
-          .eq("event_type", "page_view")
-          .contains("event_data", projectEventFilter);
-
-        // 2. Contagem REAL de Clics WhatsApp
-        const { count: cCount } = await supabase
-          .from("analytics_events")
-          .select("*", { count: "exact", head: true })
-          .eq("event_type", "click_whatsapp")
-          .contains("event_data", projectEventFilter);
-
-        // 3. Tiempo en el sitio. La telemetría anónima nunca alimenta los leads
-        // ni el total del CRM.
-        const { data: timeData } = await supabase
-          .from("analytics_events")
-          .select("event_data")
-          .eq("event_type", "time_on_site")
-          .contains("event_data", projectEventFilter);
-        
-        const currentDurations = (timeData || []).map((curr) => {
-          const payload = curr.event_data;
-          return typeof payload === "object" && payload !== null && !Array.isArray(payload) && "duration" in payload
-            ? Number((payload as { duration?: unknown }).duration) || 0
-            : 0;
-        }).filter((duration) => duration > 0);
-        let avgTime = currentDurations.length
-          ? Math.round(currentDurations.reduce((total, duration) => total + duration, 0) / currentDurations.length)
-          : 0;
-        let legacyVisits = 0;
-        let legacyClicks = 0;
-
-        const [savedProjectsResult, publishedSitesResult, legacyMetricsResult] = await Promise.all([
-          (supabase as any)
-            .from("fabrica_diagnosticos")
-            .select("id")
-            .eq("user_id", agencyTrackingId),
-          supabase
-            .from("public_sites")
-            .select("id, project_id")
-            .eq("owner_id", agencyTrackingId),
-          supabase
-            .from("analytics_events")
-            .select("event_type, event_data")
-            .in("event_type", ["page_view", "click_whatsapp", "time_on_site"])
-            .contains("event_data", { agency_id: agencyTrackingId })
-            .limit(5000),
-        ]);
-
-        const legacyMetricRows = (legacyMetricsResult.data || []).filter((event: any) => {
-          const payload = event.event_data;
-          return payload && typeof payload === "object" && !Array.isArray(payload) && !payload.project_id;
+        const result = await loadFabricaCrmMetrics({
+          ownerId: user.id,
+          projectId: state.projectId,
+          crmFormId: state.crmForm?.id,
+          siteSlug: resolveFabricaSiteSlug(
+            state.siteContent?.canvaViagemUrl,
+            state.agencyName || "",
+          ),
+          locale: "es",
         });
-        const identifiableProjects = new Set<string>();
-        (savedProjectsResult.data || []).forEach((project: any) => {
-          if (project.id) identifiableProjects.add(`project:${project.id}`);
-        });
-        (publishedSitesResult.data || []).forEach((site: any) => {
-          if (site.project_id) identifiableProjects.add(`project:${site.project_id}`);
-          else if (site.id) identifiableProjects.add(`site:${site.id}`);
-        });
-        const canAttributeLegacyMetrics = !savedProjectsResult.error
-          && !publishedSitesResult.error
-          && identifiableProjects.size <= 1;
-        if (canAttributeLegacyMetrics) {
-          legacyVisits = legacyMetricRows.filter((event: any) => event.event_type === "page_view").length;
-          legacyClicks = legacyMetricRows.filter((event: any) => event.event_type === "click_whatsapp").length;
-          const legacyDurations = legacyMetricRows
-            .filter((event: any) => event.event_type === "time_on_site")
-            .map((event: any) => Number(event.event_data?.duration) || 0)
-            .filter((duration: number) => duration > 0);
-          const allDurations = [...currentDurations, ...legacyDurations];
-          avgTime = allDurations.length
-            ? Math.round(allDurations.reduce((total, duration) => total + duration, 0) / allDurations.length)
-            : 0;
-        }
-        setLegacyMetricsInfo({ count: legacyMetricRows.length, included: canAttributeLegacyMetrics && legacyMetricRows.length > 0 });
 
-        // Los leads reales vienen exclusivamente de los formularios canónicos.
-        let formLeads: any[] = [];
-        let formLeadCount = 0;
-        try {
-          const { count } = await (supabase as any)
-            .from("crm_form_submissions")
-            .select("*", { count: "exact", head: true })
-            .eq("owner_id", agencyTrackingId)
-            .eq("form_id", projectTrackingId);
-          const { data } = await (supabase as any)
-            .from("crm_form_submissions")
-            .select("*")
-            .eq("owner_id", agencyTrackingId)
-            .eq("form_id", projectTrackingId)
-            .order("created_at", { ascending: false })
-            .limit(100);
-          formLeadCount = count || 0;
-          formLeads = data || [];
-        } catch (formError) {
-          console.warn("CRM Forms no disponible:", formError);
-        }
-
-        const { data: legacyLeadEvents } = await supabase
-          .from("analytics_events")
-          .select("id, event_data, created_at")
-          .eq("event_type", "lead_captured")
-          .contains("event_data", { agency_id: agencyTrackingId })
-          .order("created_at", { ascending: false })
-          .limit(100);
-
-        const mappedFormLeads = formLeads.map((lead: any) => ({
-          id: lead.id,
-          nome_completo: lead.normalized_name || lead.payload?.nome || lead.payload?.name || "Sin nombre",
-          whatsapp: lead.normalized_phone || lead.payload?.wpp || lead.payload?.whatsapp || "",
-          email: lead.normalized_email || lead.payload?.email || "",
-          destino_interesse: lead.normalized_interest || lead.payload?.destino || "Formulario del sitio",
-          data_ida: lead.payload?.ida || lead.payload?.data_ida || null,
-          data_volta: lead.payload?.volta || lead.payload?.data_volta || null,
-          numero_viajantes: lead.payload?.viaj ? parseInt(lead.payload.viaj) : 1,
-          observacoes: lead.payload?.obs || lead.payload?.observacoes || "",
-          created_at: lead.created_at,
-          status: state.leadStatuses?.[lead.id] || lead.status || "novo",
-        }));
-
-        const mappedLegacyLeads = (legacyLeadEvents || [])
-          .filter((event: any) => {
-            const payload = event.event_data;
-            if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
-            if (payload.submission_id) return false;
-            return !payload.project_id || payload.project_id === projectTrackingId;
-          })
-          .map((event: any) => {
-            const payload = event.event_data || {};
-            return {
-              id: event.id,
-              nome_completo: payload.name || "Sin nombre",
-              whatsapp: payload.phone || "",
-              email: payload.email || "",
-              destino_interesse: payload.interest || "Navegación General",
-              data_ida: payload.ida || null,
-              data_volta: payload.volta || null,
-              numero_viajantes: payload.viajantes ? parseInt(payload.viajantes) : 1,
-              observacoes: payload.obs || "",
-              created_at: event.created_at,
-              status: state.leadStatuses?.[event.id] || payload.status || "novo",
-              legacy_unverified: true,
-              legacy_unassigned: !payload.project_id,
-            };
-          });
-        const allLeads = [...mappedFormLeads, ...mappedLegacyLeads]
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 100);
-
-        setStats({
-          visits: (vCount || 0) + legacyVisits,
-          clicks: (cCount || 0) + legacyClicks,
-          leads: formLeadCount,
-          avgTime
-        });
-        setLeadsList(allLeads);
+        if (cancelled) return;
+        setStats(result.project);
+        setAccountHistoryStats(result.accountHistory);
+        setLeadsList(result.projectLeads);
+        setAccountHistoryLeads(result.accountHistoryLeads);
+        setMetricsAvailable(!result.metricsFailed);
+        setFetchError(false);
       } catch (e) {
+        if (cancelled) return;
         console.warn("Fallo al cargar métricas reales:", e);
+        setMetricsAvailable(false);
+        setFetchError(true);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
-    fetchRealMetrics();
-  }, [state.projectId, user?.id]);
+    if (!user?.id) return;
+    const scopeKey = `${user.id}:${state.projectId || ""}`;
+    if (loadedMetricsScopeRef.current !== scopeKey) {
+      loadedMetricsScopeRef.current = scopeKey;
+      setStats(EMPTY_METRICS);
+      setAccountHistoryStats(EMPTY_METRICS);
+      setLeadsList([]);
+      setAccountHistoryLeads([]);
+      setSelectedLead(null);
+      setFilterRoteiro("Todos");
+      setFilterData("Todas");
+      setFilterFase("Todas");
+    }
+    setLeadView("project");
+    setLoading(true);
+    setMetricsAvailable(false);
+    setFetchError(false);
+    void fetchRealMetrics();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    state.projectId,
+    state.crmForm?.id,
+    state.siteContent?.canvaViagemUrl,
+    state.agencyName,
+    user?.id,
+    reloadKey,
+  ]);
 
   const currentDay = format(new Date(), "EEEE, d 'de' MMMM", { locale: es });
   const formatString = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -444,7 +350,7 @@ export const Phase5DashboardES = () => {
   };
   const progress = getAppProgress();
 
-  const filteredLeads = leadsList.filter((l) => {
+  const filteredLeads = activeLeadList.filter((l) => {
     if (filterRoteiro !== "Todos") {
       const destino = l.destino_interesse || "Navegación General";
       if (destino !== filterRoteiro) return false;
@@ -461,7 +367,10 @@ export const Phase5DashboardES = () => {
     }
     return true;
   });
-  const unverifiedLegacyLeadCount = leadsList.filter((lead) => lead.legacy_unverified).length;
+  const conversionRate = metricsAvailable ? getFabricaConversionRate(stats) : null;
+  const hasAccountHistory = accountHistoryStats.visits > 0
+    || accountHistoryStats.clicks > 0
+    || accountHistoryLeads.length > 0;
 
   const getFaseColor = (status: string) => {
     switch (status) {
@@ -541,11 +450,13 @@ export const Phase5DashboardES = () => {
             </div>
           </div>
           <div className="text-3xl font-black text-white mb-0.5">
-            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.visits}
+            {loading
+              ? <Loader2 className="w-6 h-6 animate-spin text-white/40" />
+              : metricsAvailable ? stats.visits : "—"}
           </div>
           <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Visitas Únicas</div>
           <div className="mt-3 flex items-center gap-2 text-[10px] font-medium text-white/50 bg-white/5 px-2 py-1.5 rounded-lg w-max">
-            <Clock className="w-3.5 h-3.5 text-white/40" /> Tiempo Promedio: <strong className="text-white">{stats.avgTime > 0 ? `${stats.avgTime}s` : '--'}</strong>
+            <Clock className="w-3.5 h-3.5 text-white/40" /> Tiempo Promedio: <strong className="text-white">{metricsAvailable && stats.avgTime > 0 ? `${stats.avgTime}s` : '--'}</strong>
           </div>
         </div>
 
@@ -560,7 +471,9 @@ export const Phase5DashboardES = () => {
             </div>
           </div>
           <div className="text-3xl font-black text-white mb-0.5">
-            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.clicks}
+            {loading
+              ? <Loader2 className="w-6 h-6 animate-spin text-white/40" />
+              : metricsAvailable ? stats.clicks : "—"}
           </div>
           <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Clics WhatsApp</div>
           <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
@@ -598,21 +511,63 @@ export const Phase5DashboardES = () => {
             </div>
           </div>
           <div className="text-3xl font-black text-white mb-0.5">
-            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : `${stats.visits > 0 ? Math.min(100, Math.round((stats.leads / stats.visits) * 100)) : 0}%`}
+            {loading
+              ? <Loader2 className="w-6 h-6 animate-spin text-white/40" />
+              : conversionRate === null ? "—" : `${conversionRate}%`}
           </div>
           <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Tasa de Conversión</div>
+          {!loading && conversionRate === null && (
+            <div className="mt-2 text-[10px] text-amber-300/60">
+              {metricsAvailable ? "Historial de visitas incompleto" : "Métricas no disponibles"}
+            </div>
+          )}
           <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
             <div className="h-full bg-amber-500 rounded-full w-[50%] animate-in slide-in-from-left duration-1000 delay-300" />
           </div>
         </div>
       </div>
 
-      {legacyMetricsInfo.count > 0 && (
-        <div className="rounded-2xl border border-sky-400/15 bg-sky-400/[0.06] px-4 py-3 text-[11px] leading-5 text-sky-100/75">
-          {legacyMetricsInfo.included
-            ? `Las métricas incluyen ${legacyMetricsInfo.count} evento(s) histórico(s) de la cuenta porque solo hay un proyecto o sitio identificable.`
-            : `Hay ${legacyMetricsInfo.count} evento(s) histórico(s) sin proyecto definido. No se sumaron a este proyecto para evitar mezclar agencias.`}{" "}
-          Republica los sitios antiguos para activar métricas aisladas por proyecto.
+      {!loading && !metricsAvailable && !fetchError && (
+        <div className="flex items-center justify-between gap-4 border-y border-amber-300/20 bg-amber-300/[0.04] px-4 py-3">
+          <p className="text-[11px] leading-5 text-amber-100/70">
+            Las visitas y los clics no están disponibles temporalmente. Los leads siguen cargados y no fueron modificados.
+          </p>
+          <button
+            type="button"
+            onClick={() => setReloadKey((key) => key + 1)}
+            className="shrink-0 text-[10px] font-bold text-amber-200 underline hover:text-white"
+          >
+            Recargar métricas
+          </button>
+        </div>
+      )}
+
+      {hasAccountHistory && (
+        <div className="flex flex-col gap-4 border-y border-amber-300/15 bg-amber-300/[0.035] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <History className="mt-0.5 h-4 w-4 shrink-0 text-amber-300/80" aria-hidden="true" />
+            <div>
+              <div className="text-xs font-bold text-amber-100">Historial recuperado de la cuenta</div>
+              <p className="mt-1 max-w-2xl text-[11px] leading-5 text-white/45">
+                Los sitios antiguos no registraban el proyecto de origen. Estos datos siguen guardados,
+                pero no alteran las métricas del proyecto abierto.
+              </p>
+            </div>
+          </div>
+          <div className="grid shrink-0 grid-cols-3 gap-x-6 text-center sm:text-left">
+            <div>
+              <div className="text-sm font-black text-white/80">{metricsAvailable ? accountHistoryStats.visits : "—"}</div>
+              <div className="text-[9px] uppercase text-white/30">Visitas</div>
+            </div>
+            <div>
+              <div className="text-sm font-black text-white/80">{metricsAvailable ? accountHistoryStats.clicks : "—"}</div>
+              <div className="text-[9px] uppercase text-white/30">Clics</div>
+            </div>
+            <div>
+              <div className="text-sm font-black text-white/80">{accountHistoryStats.leads}</div>
+              <div className="text-[9px] uppercase text-white/30">Leads</div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -625,7 +580,7 @@ export const Phase5DashboardES = () => {
                </div>
                <div>
                   <h3 className="font-black text-white text-base tracking-tight flex items-center gap-2">
-                     Cartera de Clientes
+                     {leadView === "project" ? "Leads del proyecto" : "Historial de la cuenta"}
                      {filteredLeads.length > 0 && (
                        <span className="text-[10px] font-extrabold bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">
                          {filteredLeads.length} {filteredLeads.length === 1 ? 'lead' : 'leads'}
@@ -633,7 +588,36 @@ export const Phase5DashboardES = () => {
                        </span>
                      )}
                   </h3>
-                  <p className="text-[11px] text-white/50">Gestiona y filtra tus clientes potenciales.</p>
+                  <div className="mt-1.5 flex items-center gap-1" role="tablist" aria-label="Origen de los leads">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={leadView === "project"}
+                      onClick={() => changeLeadView("project")}
+                      className={`border-b-2 px-1.5 py-1 text-[10px] font-bold transition-colors ${
+                        leadView === "project"
+                          ? "border-[#F5F906] text-white"
+                          : "border-transparent text-white/35 hover:text-white/60"
+                      }`}
+                    >
+                      Proyecto actual ({leadsList.length})
+                    </button>
+                    {accountHistoryLeads.length > 0 && (
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={leadView === "account-history"}
+                        onClick={() => changeLeadView("account-history")}
+                        className={`border-b-2 px-1.5 py-1 text-[10px] font-bold transition-colors ${
+                          leadView === "account-history"
+                            ? "border-amber-300 text-white"
+                            : "border-transparent text-white/35 hover:text-white/60"
+                        }`}
+                      >
+                        Historial sin proyecto ({accountHistoryLeads.length})
+                      </button>
+                    )}
+                  </div>
                </div>
             </div>
             
@@ -688,25 +672,40 @@ export const Phase5DashboardES = () => {
             </div>
          </div>
 
-         {unverifiedLegacyLeadCount > 0 && (
-           <div className="border-y border-amber-400/15 bg-amber-400/[0.06] px-6 py-3 text-[11px] leading-5 text-amber-100/80">
-             <strong className="text-amber-300">{unverifiedLegacyLeadCount} registro(s) histórico(s) no verificado(s).</strong>{" "}
-             Provienen del rastreo antiguo o de contingencia, no cuentan en el total oficial del CRM y pueden no pertenecer a este proyecto. Republica el sitio para usar la captura canónica.
+         {fetchError && (
+           <div className="mx-5 mt-4 flex items-start justify-between gap-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+             <div>
+               <div className="text-xs font-bold text-red-300">No fue posible cargar los leads ahora</div>
+               <p className="mt-0.5 text-[11px] text-red-200/60">
+                 Tus datos siguen guardados en el servidor. Revisa la conexión e inténtalo de nuevo.
+               </p>
+             </div>
+             <button
+               type="button"
+               onClick={() => setReloadKey((key) => key + 1)}
+               className="shrink-0 text-[10px] font-bold text-red-300 underline hover:text-white"
+             >
+               Reintentar
+             </button>
            </div>
          )}
 
          <div className="overflow-x-auto">
-            {filteredLeads.length === 0 ? (
+            {filteredLeads.length === 0 && !loading && !fetchError ? (
                  <div className="py-16 px-6 text-center flex flex-col items-center justify-center space-y-4">
                     <div className="p-4 rounded-full bg-amber-500/10 text-amber-400/80 mb-2 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
                        <MousePointerClick className="w-8 h-8" />
                     </div>
                     <h4 className="text-sm font-bold text-white">Ningún lead encontrado</h4>
                     <p className="text-[11px] text-white/50 max-w-md text-center">
-                       {leadsList.length === 0 ? "Aún no tienes leads en tu cartera." : "Ningún lead coincide con los filtros seleccionados."}
+                       {activeLeadList.length === 0
+                         ? leadView === "project"
+                           ? "Este proyecto todavía no tiene leads atribuidos."
+                           : "No hay leads históricos sin proyecto."
+                         : "Ningún lead coincide con los filtros seleccionados."}
                     </p>
                  </div>
-            ) : (
+            ) : filteredLeads.length > 0 ? (
                <table className="w-full text-left text-sm border-collapse">
                   <thead>
                      <tr className="bg-white/[0.02] border-b border-white/5">
@@ -806,7 +805,7 @@ export const Phase5DashboardES = () => {
                      })}
                   </tbody>
                </table>
-            )}
+            ) : null}
          </div>
       </div>
 

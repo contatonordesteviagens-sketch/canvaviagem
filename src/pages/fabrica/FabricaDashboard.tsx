@@ -59,6 +59,38 @@ const AGENCY_TYPES = [
 const UI_ACCENT = "#F5F906";
 const UI_ACCENT_BORDER_SOFT = "rgba(245, 249, 6, 0.35)";
 
+const projectSwitchErrorMessage = (
+  error: unknown,
+  stage: "prepare" | "save-current",
+) => {
+  const value = error as { code?: unknown; message?: unknown; details?: unknown };
+  const code = String(value?.code || "").toUpperCase();
+  const message = [value?.message, value?.details].map((part) => String(part || "")).join(" ").toLowerCase();
+
+  if (message.includes("local_project_backup_failed")) {
+    return "O navegador está sem espaço para confirmar a cópia local. Libere espaço e tente novamente; o projeto atual continua aberto.";
+  }
+  if (message.includes("project_switch_superseded")) {
+    return "Uma troca de projeto mais recente já está em andamento.";
+  }
+  if (
+    code === "23505"
+    && (
+      message.includes("fabrica_diagnosticos_user_id_key")
+      || message.includes("user_id")
+    )
+  ) {
+    return "A atualização que libera vários projetos ainda está sendo aplicada. Seus dados continuam salvos; aguarde alguns segundos e tente novamente.";
+  }
+  if (message.includes("jwt") || message.includes("session") || code === "PGRST303") {
+    return "Sua sessão foi renovada, mas a troca não terminou. Atualize a página e tente novamente.";
+  }
+  if (stage === "prepare") {
+    return "Não foi possível preparar este site antigo para edição agora. O site original continua salvo.";
+  }
+  return "Não foi possível sincronizar o projeto atual. Ele continua salvo neste dispositivo e a troca foi cancelada por segurança.";
+};
+
 export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update, reset, deleteAndDiscardCurrentProject, switchProject } = useFabricaContext();
   const { user } = useAuth();
@@ -82,17 +114,30 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     const targetName = project.agency_name || "Sem nome";
     const isRecovered = project.source === "published_recovery";
     setIsSwitchingProject(true);
+    let editableProject = project;
     try {
-      const editableProject = user?.id
+      editableProject = user?.id
         ? await materializeRecoveredProject(project, user.id)
         : project;
-      await switchProject({ ...editableProject.state_snapshot, projectId: editableProject.id });
+    } catch (error) {
+      console.error("[FabricaDashboard] Falha ao preparar projeto recuperado:", error);
+      toast.error(projectSwitchErrorMessage(error, "prepare"));
+      setIsSwitchingProject(false);
+      return;
+    }
+
+    try {
+      await switchProject(
+        { ...editableProject.state_snapshot, projectId: editableProject.id },
+        { expectedUserId: user?.id },
+      );
       setPendingProjectSwitch(null);
       if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
       else toast.success(`Projeto "${targetName}" carregado!`);
       window.setTimeout(() => onNavigate?.("phase", 2), 100);
-    } catch {
-      toast.error("Não foi possível salvar o projeto atual. A troca foi cancelada para proteger suas alterações.");
+    } catch (error) {
+      console.error("[FabricaDashboard] Falha ao salvar o projeto atual antes da troca:", error);
+      toast.error(projectSwitchErrorMessage(error, "save-current"));
     } finally {
       setIsSwitchingProject(false);
     }
@@ -170,7 +215,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
       await switchProject(
         { ...persisted.stateSnapshot, projectId: persisted.id },
-        { preserveCurrentPhase: true },
+        { preserveCurrentPhase: true, expectedUserId: user.id },
       );
       await queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
       setPublishedSites((current) =>

@@ -2,7 +2,11 @@ import { useState } from "react";
 import { useFabricaContext, type Niche, type AgencyType } from "@/hooks/useFabricaContext";
 import { calculateScore, getChecklistByLevel } from "@/lib/fabrica-scoring-es";
 import { generateDiagnosticoPDF, openWhatsappWithResumo } from "@/lib/fabrica-pdf";
-import { useSaveDiagnostico, useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
+import {
+  materializeRecoveredProject,
+  useSaveDiagnostico,
+  useDiagnosticos,
+} from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Download, MessageCircle, ArrowRight, Upload, Check, Save, Plus, X, Sparkles, ExternalLink } from "lucide-react";
@@ -147,7 +151,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
   const { state, update, reset, switchProject } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
-  const [loading, setLoading] = useState(false);
+  const [switchingProject, setSwitchingProject] = useState(false);
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -223,24 +227,34 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
                     <div className="mt-3 flex flex-col sm:flex-row gap-2 pt-2 border-t border-white/5">
                       {savedProjects && savedProjects.length > 0 ? (
                         <select
+                          disabled={switchingProject}
                           onChange={async (e) => {
                             const p = savedProjects.find(x => x.id === e.target.value);
                             if (p && p.state_snapshot) {
+                              setSwitchingProject(true);
                               try {
+                                const editableProject = user?.id
+                                  ? await materializeRecoveredProject(p, user.id)
+                                  : p;
                                 await switchProject({
-                                   ...p.state_snapshot,
-                                   projectId: p.id,
+                                   ...editableProject.state_snapshot,
+                                   projectId: editableProject.id,
                                    currentPhase: state.currentPhase,
                                    diagnosticoCompleto: false,
-                                }, { preserveCurrentPhase: true });
+                                }, {
+                                  preserveCurrentPhase: true,
+                                  expectedUserId: user?.id,
+                                });
                                 toast.success(`¡Proyecto "${p.agency_name || 'Sin Nombre'}" cargado! Todas las configuraciones han sido restauradas.`);
                               } catch {
                                 toast.error("No se pudo guardar el proyecto actual. El cambio fue cancelado.");
+                              } finally {
+                                setSwitchingProject(false);
                               }
                             }
                             e.target.value = "";
                           }}
-                          className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs"
+                          className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs disabled:cursor-wait disabled:opacity-50"
                         >
                           <option value="" className="bg-zinc-900">Seleccionar un proyecto...</option>
                           {savedProjects.map((p) => (
@@ -255,6 +269,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
                       
                       <button
                         type="button"
+                        disabled={switchingProject}
                         onClick={() => {
                           const currentPhase = state.currentPhase;
                           reset();
@@ -263,7 +278,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
                           }, 50);
                           toast.success("¡Nuevo proyecto iniciado! Las informaciones han sido reiniciadas.");
                         }}
-                        className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
+                        className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5 disabled:cursor-wait disabled:opacity-50"
                         style={{ borderColor: UI_ACCENT_BORDER }}
                       >
                         <span>+ Nuevo</span>

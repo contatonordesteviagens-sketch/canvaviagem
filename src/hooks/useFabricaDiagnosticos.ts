@@ -5,7 +5,11 @@ import { purgeFabricaProjectLocalCache, type FabricaState } from "./useFabricaCo
 import { toast } from "sonner";
 import { buildCanvaSiteSlug, extractCanvaSiteSlug, getCanvaSiteUrl } from "@/lib/canva-site-domain";
 import { recoverFabricaStateFromPublishedHtml } from "@/lib/fabrica-project-recovery";
-import { isPersistedProjectId, persistFabricaProject } from "@/lib/fabrica-project-persistence";
+import {
+  isPersistedProjectId,
+  persistFabricaProject,
+  resolveFabricaProjectId,
+} from "@/lib/fabrica-project-persistence";
 import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
 import {
   executeIdempotentWriteWithFreshSupabaseSession,
@@ -39,11 +43,31 @@ export const materializeRecoveredProject = async (
     return project;
   }
 
-  const persisted = await persistFabricaProject({
-    state: project.state_snapshot,
-    userId,
-    levelName: "Site publicado recuperado",
-  });
+  let persisted: Awaited<ReturnType<typeof persistFabricaProject>>;
+  try {
+    persisted = await persistFabricaProject({
+      state: project.state_snapshot,
+      userId,
+      levelName: "Site publicado recuperado",
+    });
+  } catch (error) {
+    const fallbackId = resolveFabricaProjectId(
+      project.state_snapshot.projectId || project.id,
+    );
+    console.warn(
+      "[Fabrica] Site recuperado aberto localmente; a nuvem sera sincronizada depois.",
+      error,
+    );
+    return {
+      ...project,
+      id: fallbackId,
+      state_snapshot: {
+        ...project.state_snapshot,
+        projectId: fallbackId,
+      },
+      published_project_id: fallbackId,
+    };
+  }
   const stateSnapshot = {
     ...persisted.stateSnapshot,
     projectId: persisted.id,

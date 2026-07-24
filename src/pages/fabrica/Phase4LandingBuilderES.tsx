@@ -6,7 +6,11 @@ import { downloadLandingHTML, buildLandingHTML } from "@/lib/fabrica-html-export
 import { CloudSaveIndicatorES } from "@/components/fabrica/CloudSaveIndicatorES";
 import { BrandPaletteEditor, SectionBackgroundEditor } from "@/components/fabrica/BrandPaletteEditor";
 import { SiteTemplateSelector } from "@/components/fabrica/SiteTemplateSelector";
-import { useDiagnosticos, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
+import {
+  materializeRecoveredProject,
+  useDiagnosticos,
+  type DiagnosticoSalvo,
+} from "@/hooks/useFabricaDiagnosticos";
 import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
 import { getSiteTemplateDefinition } from "@/lib/site-template-catalog";
 import { publishFabricaSite } from "@/lib/fabrica-site-publisher";
@@ -155,9 +159,12 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     const isRecovered = project.source === "published_recovery";
     setIsSwitchingProject(true);
     try {
+      const editableProject = user?.id
+        ? await materializeRecoveredProject(project, user.id)
+        : project;
       await switchProject(
-        { ...project.state_snapshot, projectId: project.id },
-        { preserveCurrentPhase: true },
+        { ...editableProject.state_snapshot, projectId: editableProject.id },
+        { preserveCurrentPhase: true, expectedUserId: user?.id },
       );
       setPendingProjectSwitch(null);
       if (isRecovered) toast.warning(`Sitio anterior "${targetName}" recuperado. Revisa los datos antes de volver a publicarlo.`);

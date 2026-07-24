@@ -168,6 +168,7 @@ Deno.serve(async (req) => {
         source_domain: cleanText(body.source_domain, 180),
         submission_id: submission.id,
         status: "novo",
+        ingestion: "validated_v1",
       },
     });
 

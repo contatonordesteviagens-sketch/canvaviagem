@@ -45,9 +45,11 @@ export const deleteFabricaProject = async ({
     if (slugsError) throw slugsError;
   }
 
+  // Preserve customer submissions even when the project itself is removed.
+  // Detaching the form prevents the project FK cascade from deleting leads.
   const { error: formError } = await (supabase as any)
     .from("crm_forms")
-    .delete()
+    .update({ project_id: null, status: "archived" })
     .eq("owner_id", userId)
     .or(`id.eq.${projectId},embed_key.eq.${projectId}`);
   if (formError) throw formError;
