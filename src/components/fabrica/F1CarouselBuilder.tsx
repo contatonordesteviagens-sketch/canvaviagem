@@ -1982,7 +1982,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       
       setSlides((curr) =>
         curr.map((slide, idx) =>
-          idx === 0 ? { ...slide, imageUrl: composed } : slide
+          idx === 0 ? { ...slide, kind: "cover", imageUrl: composed } : slide
         )
       );
       toast.success(isEs ? "¡Nueva portada generada con arte publicitario!" : "Nova capa no estilo Anúncio F1 gerada com sucesso!");
@@ -2251,11 +2251,15 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       .replace(/^-|-$/g, "");
 
     try {
-      const coverToDownload = resolvedSlides[0]?.imageUrl || coverImage;
-      await downloadOriginalImage(coverToDownload, `carrossel-${slug}-01-capa.png`);
       const { default: html2canvas } = await import("html2canvas");
 
-      for (let index = 1; index < resolvedSlides.length; index += 1) {
+      if (resolvedSlides[0]?.kind === "cover") {
+        const coverToDownload = resolvedSlides[0]?.imageUrl || coverImage;
+        await downloadOriginalImage(coverToDownload, `carrossel-${slug}-01-capa.png`);
+      }
+
+      const startIndex = resolvedSlides[0]?.kind === "cover" ? 1 : 0;
+      for (let index = startIndex; index < resolvedSlides.length; index += 1) {
         const node = exportRefs.current[index];
         if (!node) throw new Error("missing-export-node");
 
@@ -3146,7 +3150,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       <button
                         type="button"
                         onClick={() => {
-                          patchActive({
+                          setSlides((curr) => curr.map((slide, idx) => idx === 0 ? {
+                            ...slide,
+                            kind: "content",
                             imageUrl: selectedPackage?.imageUrl || "",
                             slideVariant: "oferta",
                             label: "OFERTA",
@@ -3154,7 +3160,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                             body: selectedPackage?.price ? `A partir de ${selectedPackage.price}` : "",
                             bullets: (selectedPackage?.highlights || []).slice(0, 3),
                             showShadow: true,
-                          });
+                          } : slide));
                           toast.success(isEs ? "¡Portada actualizada!" : "Capa atualizada com layout do Carrossel!");
                         }}
                         className="flex-1 rounded-lg bg-[#F5F906] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#F5F906]/90 transition-colors shadow-md"
@@ -3178,6 +3184,20 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
             {/* Content & Closing slide editor */}
             {activeSlide && activeSlide.kind !== "cover" && (
               <div className="divide-y divide-white/[0.06]">
+                {activeIndex === 0 && (
+                  <div className="p-4 bg-[#F5F906]/[0.05]">
+                    <p className="mb-2 text-xs font-bold text-white">{isEs ? "¿Volver a la portada de anuncio?" : "Quer voltar para a Arte de Anúncio?"}</p>
+                    <button
+                      type="button"
+                      onClick={() => generateNewCoverAd()}
+                      disabled={generatingCoverAd}
+                      className="w-full rounded-lg bg-[#00F0FF] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#00F0FF]/90 transition-colors shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
+                    >
+                      {generatingCoverAd && <RefreshCw className="h-4 w-4 animate-spin" />}
+                      {isEs ? "Generar Arte F1 (Anuncio)" : "Gerar Arte F1 (Anúncio)"}
+                    </button>
+                  </div>
+                )}
 
                 {/* ── SECTION 1: Estilo & Fonte ── */}
                 <div className="px-4 py-3.5 space-y-3">
