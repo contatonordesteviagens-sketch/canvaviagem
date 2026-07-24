@@ -56,7 +56,7 @@ const UI_ACCENT_BORDER_SOFT = "rgba(245, 249, 6, 0.35)";
 export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update, reset, deleteAndDiscardCurrentProject, switchProject } = useFabricaContext();
   const { user } = useAuth();
-  const { data: savedProjects } = useDiagnosticos();
+  const { data: savedProjects, refetch: refetchProjects } = useDiagnosticos();
   const saveProject = useSaveDiagnostico();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -76,12 +76,11 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
         : project;
       await switchProject(
         { ...editableProject.state_snapshot, projectId: editableProject.id },
-        { expectedUserId: user?.id },
+        { preserveCurrentPhase: true, expectedUserId: user?.id },
       );
       setPendingProjectSwitch(null);
       if (isRecovered) toast.warning(`Sitio anterior "${targetName}" recuperado. Revisa los datos antes de volver a publicarlo.`);
       else toast.success(`Proyecto "${targetName}" cargado.`);
-      window.setTimeout(() => onNavigate?.("phase", 2), 100);
     } catch (error) {
       console.error("[FabricaDashboardES] No se pudo cambiar el proyecto:", error);
       toast.error("No se pudo guardar el proyecto actual. El cambio fue cancelado para proteger tus datos.");
@@ -282,7 +281,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
             className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
           >
-            <span className="flex items-center gap-1.5">📂 EDITAR SITIOS (Proyectos Guardados) {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
+            <span className="flex items-center gap-1.5">📂 EDITAR PROYECTOS (Proyectos Guardados) {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
             <span className="self-end sm:self-auto text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ OCULTAR" : "▼ EXPANDIR / CARGAR"}</span>
           </button>
           
@@ -300,7 +299,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
                 >
-                  <option value="" disabled className="bg-zinc-900">Seleccionar proyecto guardado...</option>
+                  <option value="" disabled className="bg-zinc-900">Selecciona el proyecto que deseas editar...</option>
                   {savedProjects.map((p) => {
                     const snap = p.state_snapshot as any;
                     const pkgCount = snap?.selectedPackages?.length || 0;
@@ -373,10 +372,26 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                           if (slugsError) throw slugsError;
                         }
                       });
+                      queryClient.setQueriesData<DiagnosticoSalvo[]>(
+                        { queryKey: ["fabrica-diagnosticos"] },
+                        (projects) => projects?.filter((project) =>
+                          project.id !== projectId
+                          && !Boolean(project.published_site_id && uniqueSlugs.includes(project.published_site_id))
+                        ),
+                      );
                       await Promise.all([
                         queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
                         queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
                       ]);
+                      const refreshed = await refetchProjects();
+                      if (refreshed.error) throw refreshed.error;
+                      const stillListed = refreshed.data?.some((project) =>
+                        project.id === projectId
+                        || Boolean(project.published_site_id && uniqueSlugs.includes(project.published_site_id))
+                      );
+                      if (stillListed) {
+                        throw new Error("El proyecto todavía aparece en tu cuenta. No se confirmó la eliminación.");
+                      }
                       toast.success("🗑️ ¡Proyecto eliminado con éxito!");
                     } catch (err: any) {
                       toast.error(err?.message || "Error al eliminar proyecto.");

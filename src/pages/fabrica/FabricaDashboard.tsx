@@ -129,12 +129,11 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     try {
       await switchProject(
         { ...editableProject.state_snapshot, projectId: editableProject.id },
-        { expectedUserId: user?.id },
+        { preserveCurrentPhase: true, expectedUserId: user?.id },
       );
       setPendingProjectSwitch(null);
       if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
       else toast.success(`Projeto "${targetName}" carregado!`);
-      window.setTimeout(() => onNavigate?.("phase", 2), 100);
     } catch (error) {
       console.error("[FabricaDashboard] Falha ao salvar o projeto atual antes da troca:", error);
       toast.error(projectSwitchErrorMessage(error, "save-current"));
@@ -577,7 +576,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
             className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
           >
-            <span className="flex items-center gap-1.5">📂 EDITAR SITES (Projetos Salvos) {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
+            <span className="flex items-center gap-1.5">📂 EDITAR PROJETOS (Projetos Salvos) {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
             <span className="text-[10px] text-white/30 font-medium self-end sm:self-auto">{projectsPanelOpen ? "▲ RECOLHER" : "▼ EXPANDIR / CARREGAR"}</span>
           </button>
           
@@ -611,7 +610,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs"
                 >
-                  <option value="" className="bg-zinc-900">Selecione o site que deseja editar...</option>
+                  <option value="" className="bg-zinc-900">Selecione o projeto que deseja editar...</option>
                   {savedProjects!.map((p) => {
                     // ✅ FIX #8: Labels com informações úteis para distinguir projetos
                     const snap = p.state_snapshot as any;
@@ -686,10 +685,26 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                         }
                       });
                       setPublishedSites((sites) => sites.filter((site) => site.project_id !== projectId && !uniqueSlugs.includes(site.id)));
+                      queryClient.setQueriesData<DiagnosticoSalvo[]>(
+                        { queryKey: ["fabrica-diagnosticos"] },
+                        (projects) => projects?.filter((project) =>
+                          project.id !== projectId
+                          && !Boolean(project.published_site_id && uniqueSlugs.includes(project.published_site_id))
+                        ),
+                      );
                       await Promise.all([
                         queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
                         queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
                       ]);
+                      const refreshed = await refetchProjects();
+                      if (refreshed.error) throw refreshed.error;
+                      const stillListed = refreshed.data?.some((project) =>
+                        project.id === projectId
+                        || Boolean(project.published_site_id && uniqueSlugs.includes(project.published_site_id))
+                      );
+                      if (stillListed) {
+                        throw new Error("O projeto ainda aparece na sua conta. A exclusão não foi confirmada.");
+                      }
                       toast.success("🗑️ Projeto excluído com sucesso!");
                     } catch (err: any) {
                       toast.error(err?.message || "Erro ao excluir projeto.");
@@ -990,7 +1005,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Sites publicados</div>
                 {publishedSites.length > 0 && (
                    <div className="text-[9px] text-zinc-500/80 mb-2 leading-tight">
-                     Dica: Para editar um destes sites, selecione-o na lista <b>"EDITAR SITE"</b> no topo da página.
+                     Dica: Para editar um projeto, selecione-o na lista <b>"EDITAR PROJETOS"</b> no topo da página.
                    </div>
                 )}
               </div>

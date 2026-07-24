@@ -1,4 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
+import {
+  executeIdempotentWriteWithFreshSupabaseSession,
+  executeReadWithFreshSupabaseSession,
+} from "@/lib/supabase-session";
 
 interface DeleteFabricaProjectParams {
   projectId: string;
@@ -6,58 +10,99 @@ interface DeleteFabricaProjectParams {
   legacySlugs?: string[];
 }
 
-const isMissingDeleteRpc = (error: { code?: string; message?: string } | null) => {
-  const message = error?.message?.toLowerCase() || "";
-  return error?.code === "PGRST202"
-    || error?.code === "42883"
-    || message.includes("delete_fabrica_project") && message.includes("not found");
-};
-
 export const deleteFabricaProject = async ({
   projectId,
   userId,
   legacySlugs = [],
 }: DeleteFabricaProjectParams) => {
   const uniqueSlugs = [...new Set(legacySlugs.filter(Boolean))];
-  const { error: rpcError } = await (supabase as any).rpc("delete_fabrica_project", {
-    p_project_id: projectId,
-    p_legacy_slugs: uniqueSlugs,
-  });
 
-  if (!rpcError) return;
-  if (!isMissingDeleteRpc(rpcError)) throw rpcError;
+  // Detach forms first so an older ON DELETE CASCADE constraint can never
+  // remove customer submissions together with the project.
+  const { error: formError } = await executeIdempotentWriteWithFreshSupabaseSession(
+    () => (supabase as any)
+      .from("crm_forms")
+      .update({ project_id: null, status: "archived" })
+      .eq("owner_id", userId)
+      .or(`project_id.eq.${projectId},id.eq.${projectId},embed_key.eq.${projectId}`),
+    userId,
+  );
+  if (formError) throw formError;
 
-  // Compatibilidade até a RPC transacional chegar ao projeto oficial.
-  const { error: sitesError } = await supabase
-    .from("public_sites")
-    .delete()
-    .eq("owner_id", userId)
-    .eq("project_id", projectId);
-  if (sitesError) throw sitesError;
+  const { data: linkedForms, error: linkedFormsError } = await executeReadWithFreshSupabaseSession(
+    () => (supabase as any)
+      .from("crm_forms")
+      .select("id")
+      .eq("owner_id", userId)
+      .eq("project_id", projectId)
+      .limit(1),
+    userId,
+  );
+  if (linkedFormsError) throw linkedFormsError;
+  if (linkedForms?.length) {
+    throw new Error("Não foi possível preservar os leads deste projeto. A exclusão foi cancelada.");
+  }
 
-  if (uniqueSlugs.length > 0) {
-    const { error: slugsError } = await supabase
+  const { error: sitesError } = await executeIdempotentWriteWithFreshSupabaseSession(
+    () => supabase
       .from("public_sites")
       .delete()
       .eq("owner_id", userId)
-      .is("project_id", null)
-      .in("id", uniqueSlugs);
+      .eq("project_id", projectId),
+    userId,
+  );
+  if (sitesError) throw sitesError;
+
+  if (uniqueSlugs.length > 0) {
+    const { error: slugsError } = await executeIdempotentWriteWithFreshSupabaseSession(
+      () => supabase
+        .from("public_sites")
+        .delete()
+        .eq("owner_id", userId)
+        .is("project_id", null)
+        .in("id", uniqueSlugs),
+      userId,
+    );
     if (slugsError) throw slugsError;
   }
 
-  // Preserve customer submissions even when the project itself is removed.
-  // Detaching the form prevents the project FK cascade from deleting leads.
-  const { error: formError } = await (supabase as any)
-    .from("crm_forms")
-    .update({ project_id: null, status: "archived" })
-    .eq("owner_id", userId)
-    .or(`id.eq.${projectId},embed_key.eq.${projectId}`);
-  if (formError) throw formError;
-
-  const { error: projectError } = await (supabase as any)
-    .from("fabrica_diagnosticos")
-    .delete()
-    .eq("id", projectId)
-    .eq("user_id", userId);
+  const { error: projectError } = await executeIdempotentWriteWithFreshSupabaseSession(
+    () => (supabase as any)
+      .from("fabrica_diagnosticos")
+      .delete()
+      .eq("id", projectId)
+      .eq("user_id", userId),
+    userId,
+  );
   if (projectError) throw projectError;
+
+  const [
+    { data: remainingProject, error: projectCheckError },
+    { data: remainingSites, error: sitesCheckError },
+  ] = await Promise.all([
+    executeReadWithFreshSupabaseSession(
+      () => (supabase as any)
+        .from("fabrica_diagnosticos")
+        .select("id")
+        .eq("id", projectId)
+        .eq("user_id", userId)
+        .maybeSingle(),
+      userId,
+    ),
+    executeReadWithFreshSupabaseSession(
+      () => supabase
+        .from("public_sites")
+        .select("id")
+        .eq("owner_id", userId)
+        .eq("project_id", projectId)
+        .limit(1),
+      userId,
+    ),
+  ]);
+
+  if (projectCheckError) throw projectCheckError;
+  if (sitesCheckError) throw sitesCheckError;
+  if (remainingProject || remainingSites?.length) {
+    throw new Error("O projeto ainda aparece no banco. Atualize a página e tente excluir novamente.");
+  }
 };
