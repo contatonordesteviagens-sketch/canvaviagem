@@ -688,7 +688,10 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
             className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
           >
-            <span className="flex items-center gap-1.5">📂 EDITAR PROJETOS (Projetos Salvos) {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
+            <span className="flex items-center gap-1.5">
+              📂 EDITANDO: {state.agencyName?.trim() || "Projeto sem nome"}
+              {savedProjects && savedProjects.length > 0 && ` • ${savedProjects.length} salvo${savedProjects.length !== 1 ? "s" : ""}`}
+            </span>
             <span className="text-[10px] text-white/30 font-medium self-end sm:self-auto">{projectsPanelOpen ? "▲ RECOLHER" : "▼ EXPANDIR / CARREGAR"}</span>
           </button>
           

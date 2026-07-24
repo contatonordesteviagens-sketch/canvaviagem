@@ -378,7 +378,10 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
             className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
           >
-            <span className="flex items-center gap-1.5">📂 EDITAR PROYECTOS (Proyectos Guardados) {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
+            <span className="flex items-center gap-1.5">
+              📂 EDITANDO: {state.agencyName?.trim() || "Proyecto sin nombre"}
+              {savedProjects && savedProjects.length > 0 && ` • ${savedProjects.length} guardado${savedProjects.length !== 1 ? "s" : ""}`}
+            </span>
             <span className="self-end sm:self-auto text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ OCULTAR" : "▼ EXPANDIR / CARGAR"}</span>
           </button>
           
