@@ -8,6 +8,7 @@ import {
   type DiagnosticoSalvo,
 } from "@/hooks/useFabricaDiagnosticos";
 import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
+import { ProjectDeleteDialog } from "@/components/fabrica/ProjectDeleteDialog";
 import { PackageAdvancedFields } from "@/components/fabrica/PackageAdvancedFields";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -32,6 +33,8 @@ import { COUNTRIES_DIAL, type CountryDial } from "@/lib/countriesDial";
 import { useQueryClient } from "@tanstack/react-query";
 import { deleteFabricaProject } from "@/lib/fabrica-project-deletion";
 import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
+import { resolveFabricaProjectId } from "@/lib/fabrica-project-persistence";
+import { executeIdempotentWriteWithFreshSupabaseSession } from "@/lib/supabase-session";
 
 const AGENCY_TYPES = [
   { v: "autonoma", l: "Agente autónomo / Freelancer" },
@@ -65,6 +68,8 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
   const [isSaving, setIsSaving] = useState(false);
   const [pendingProjectSwitch, setPendingProjectSwitch] = useState<DiagnosticoSalvo | null>(null);
   const [isSwitchingProject, setIsSwitchingProject] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
 
   const loadSavedProject = async (project: DiagnosticoSalvo) => {
     const targetName = project.agency_name || "Sin nombre";
@@ -260,6 +265,82 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
     toast.success("¡Nuevo paquete agregado!");
   };
 
+  const handleDeleteCurrentProject = async () => {
+    if (!user?.id || !state.projectId || isDeletingProject) return;
+
+    setIsDeletingProject(true);
+    try {
+      const projectId = state.projectId;
+      const storedProject = savedProjects?.find((project) =>
+        project.id === projectId
+        || resolveFabricaProjectId(project.id) === projectId
+        || project.published_project_id === projectId
+      );
+      const snapshot = storedProject?.state_snapshot || state;
+      const linkedSlugs = [storedProject?.published_site_id || ""];
+
+      for (const url of [snapshot.siteContent?.canvaViagemUrl, snapshot.siteContent?.vercelUrl]) {
+        if (!url) continue;
+        try {
+          linkedSlugs.push(new URL(url).hostname.split(".")[0]);
+        } catch {
+          // Legacy snapshots can contain incomplete URLs.
+        }
+      }
+
+      const uniqueSlugs = [...new Set(linkedSlugs.filter(Boolean))];
+      await deleteAndDiscardCurrentProject(async (persistedProjectId) => {
+        if (persistedProjectId) {
+          await deleteFabricaProject({
+            projectId: persistedProjectId,
+            userId: user.id,
+            legacySlugs: uniqueSlugs,
+          });
+          return;
+        }
+
+        if (uniqueSlugs.length > 0) {
+          const { error } = await executeIdempotentWriteWithFreshSupabaseSession(
+            () => supabase
+              .from("public_sites")
+              .delete()
+              .eq("owner_id", user.id)
+              .in("id", uniqueSlugs),
+            user.id,
+          );
+          if (error) throw error;
+        }
+      });
+
+      const matchesDeletedProject = (project: DiagnosticoSalvo) =>
+        project.id === projectId
+        || resolveFabricaProjectId(project.id) === projectId
+        || Boolean(project.published_site_id && uniqueSlugs.includes(project.published_site_id));
+
+      queryClient.setQueriesData<DiagnosticoSalvo[]>(
+        { queryKey: ["fabrica-diagnosticos"] },
+        (projects) => projects?.filter((project) => !matchesDeletedProject(project)),
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
+        queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
+      ]);
+
+      const refreshed = await refetchProjects();
+      if (refreshed.error) throw refreshed.error;
+      if (refreshed.data?.some(matchesDeletedProject)) {
+        throw new Error("El proyecto todavía aparece en tu cuenta. No se confirmó la eliminación.");
+      }
+
+      setDeleteDialogOpen(false);
+      toast.success("Proyecto y sitio vinculado eliminados con éxito.");
+    } catch (error: any) {
+      toast.error(error?.message || "No se pudo eliminar el proyecto.");
+    } finally {
+      setIsDeletingProject(false);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-fadeIn max-w-[1280px] mx-auto pb-12">
       <ProjectSwitchDialog
@@ -270,6 +351,14 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
         busy={isSwitchingProject}
         onCancel={() => !isSwitchingProject && setPendingProjectSwitch(null)}
         onConfirm={() => pendingProjectSwitch && void loadSavedProject(pendingProjectSwitch)}
+      />
+      <ProjectDeleteDialog
+        open={deleteDialogOpen}
+        projectName={state.agencyName || "Sin nombre"}
+        locale="es"
+        busy={isDeletingProject}
+        onCancel={() => !isDeletingProject && setDeleteDialogOpen(false)}
+        onConfirm={() => void handleDeleteCurrentProject()}
       />
 
       {/* Projetos Salvos / Guardados */}
@@ -346,57 +435,8 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
               {state.projectId && (
                 <button
                   type="button"
-                  onClick={async () => {
-                    const currentName = state.agencyName || 'Sin nombre';
-                    if (!window.confirm(`⚠️ ¿Realmente deseas eliminar el proyecto "${currentName}"? Esta acción no se puede deshacer.`)) return;
-                    try {
-                      const projectId = state.projectId || "";
-                      const storedProject = savedProjects?.find((project) => project.id === projectId);
-                      const snapshot = storedProject?.state_snapshot || state;
-                      const linkedSlugs: string[] = [];
-                      for (const url of [snapshot.siteContent?.canvaViagemUrl, snapshot.siteContent?.vercelUrl]) {
-                        if (!url) continue;
-                        try { linkedSlugs.push(new URL(url).hostname.split(".")[0]); } catch { /* URL anterior inválida */ }
-                      }
-                      const uniqueSlugs = [...new Set(linkedSlugs.filter(Boolean))];
-                      await deleteAndDiscardCurrentProject(async (persistedProjectId) => {
-                        if (persistedProjectId) {
-                          await deleteFabricaProject({ projectId: persistedProjectId, userId: user!.id, legacySlugs: uniqueSlugs });
-                        } else if (uniqueSlugs.length > 0) {
-                          const { error: slugsError } = await supabase
-                            .from("public_sites")
-                            .delete()
-                            .eq("owner_id", user!.id)
-                            .is("project_id", null)
-                            .in("id", uniqueSlugs);
-                          if (slugsError) throw slugsError;
-                        }
-                      });
-                      queryClient.setQueriesData<DiagnosticoSalvo[]>(
-                        { queryKey: ["fabrica-diagnosticos"] },
-                        (projects) => projects?.filter((project) =>
-                          project.id !== projectId
-                          && !Boolean(project.published_site_id && uniqueSlugs.includes(project.published_site_id))
-                        ),
-                      );
-                      await Promise.all([
-                        queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
-                        queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
-                      ]);
-                      const refreshed = await refetchProjects();
-                      if (refreshed.error) throw refreshed.error;
-                      const stillListed = refreshed.data?.some((project) =>
-                        project.id === projectId
-                        || Boolean(project.published_site_id && uniqueSlugs.includes(project.published_site_id))
-                      );
-                      if (stillListed) {
-                        throw new Error("El proyecto todavía aparece en tu cuenta. No se confirmó la eliminación.");
-                      }
-                      toast.success("🗑️ ¡Proyecto eliminado con éxito!");
-                    } catch (err: any) {
-                      toast.error(err?.message || "Error al eliminar proyecto.");
-                    }
-                  }}
+                  onClick={() => setDeleteDialogOpen(true)}
+                  disabled={isDeletingProject}
                   className="px-3 py-2 rounded-lg text-red-400 text-xs font-bold transition-all border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
                   title="Eliminar el proyecto actual"
                 >

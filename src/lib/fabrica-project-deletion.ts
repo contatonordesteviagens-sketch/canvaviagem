@@ -102,7 +102,22 @@ export const deleteFabricaProject = async ({
 
   if (projectCheckError) throw projectCheckError;
   if (sitesCheckError) throw sitesCheckError;
-  if (remainingProject || remainingSites?.length) {
+  let remainingLegacySites: { id: string }[] = [];
+  if (uniqueSlugs.length > 0) {
+    const { data, error } = await executeReadWithFreshSupabaseSession(
+      () => supabase
+        .from("public_sites")
+        .select("id")
+        .eq("owner_id", userId)
+        .in("id", uniqueSlugs)
+        .limit(1),
+      userId,
+    );
+    if (error) throw error;
+    remainingLegacySites = data || [];
+  }
+
+  if (remainingProject || remainingSites?.length || remainingLegacySites.length) {
     throw new Error("O projeto ainda aparece no banco. Atualize a página e tente excluir novamente.");
   }
 };
