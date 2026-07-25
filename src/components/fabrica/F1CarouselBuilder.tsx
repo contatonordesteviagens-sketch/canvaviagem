@@ -242,7 +242,7 @@ function createSlides(
   const slides: CarouselSlide[] = [
     {
       id: createId(),
-      kind: "content",
+      kind: "cover",
       label: "",
       title: pacote.title,
       body: "",
@@ -3151,23 +3151,47 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext, onR
               </div>
             </div>
 
-            {/* Content & Closing slide editor */}
-            {activeSlide && (
-              <div className="divide-y divide-white/[0.06]">
-                {activeIndex === 0 && (
-                  <div className="p-4 bg-[#F5F906]/[0.05]">
-                    <p className="mb-2 text-xs font-bold text-white">{isEs ? "¿Volver a la portada de anuncio?" : "Quer voltar para a Arte de Anúncio?"}</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (onRequestAdMode) onRequestAdMode();
-                      }}
-                      className="w-full rounded-lg bg-[#00F0FF] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#00F0FF]/90 transition-colors shadow-md flex items-center justify-center gap-2"
-                    >
-                      {isEs ? "Ir a la pestaña Anuncio" : "Ir para aba Anúncio"}
-                    </button>
+            {/* Capa estática */}
+            {activeSlide?.kind === "cover" && (
+              <div className="m-4 rounded-xl border border-[#F5F906]/20 bg-[#F5F906]/[0.05] p-4 flex gap-3">
+                <Lock className="mt-0.5 h-5 w-5 shrink-0 text-[#F5F906]" />
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-white">{isEs ? "Esta imagen no se modifica aquí." : "Capa do Carrossel."}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-white/50">
+                    {isEs
+                      ? "Esta es la pieza generada en Anuncio. Es una imagen estática."
+                      : "Esta é a arte gerada na aba Anúncio. Ela funciona como uma capa estática e não recebe os textos e blocos dos outros slides."}
+                  </p>
+                  
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <p className="mb-2 text-xs font-bold text-white">{isEs ? "¿Desea cambiar la portada?" : "Deseja alterar a arte da capa?"}</p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onRequestAdMode) onRequestAdMode();
+                        }}
+                        className="flex-1 rounded-lg bg-[#00F0FF] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#00F0FF]/90 transition-colors shadow-md flex items-center justify-center gap-2"
+                      >
+                        {isEs ? "Ir a la pestaña Anuncio" : "Voltar para aba Anúncio"}
+                      </button>
+                    </div>
                   </div>
-                )}
+
+                  {!coverImage && (
+                    <p className="mt-3 rounded-lg bg-amber-300/10 px-3 py-2 text-xs font-semibold text-amber-100">
+                      {isEs
+                        ? 'Vuelve a Anuncio para generar tu portada.'
+                        : 'Volte para a aba Anúncio para gerar sua capa.'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Content & Closing slide editor */}
+            {activeSlide && activeSlide.kind !== "cover" && (
+              <div className="divide-y divide-white/[0.06]">
                 
                 {/* ── SECTION 0: Design da Arte ── */}
                 {activeSlide.kind === "content" && (
