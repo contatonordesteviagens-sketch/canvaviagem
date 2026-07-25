@@ -1718,6 +1718,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           sourceImage={generatedImage}
           locale="pt"
           onNext={onSkipToSite || onNext}
+          onRequestAdMode={() => setCreativeMode("ad")}
         />
       ) : (
         <>

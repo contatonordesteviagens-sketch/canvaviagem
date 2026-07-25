@@ -96,6 +96,7 @@ interface F1CarouselBuilderProps {
   sourceImage?: string;
   locale?: "pt" | "es";
   onNext?: () => void;
+  onRequestAdMode?: () => void;
 }
 
 const DEFAULT_COVER_RATIO = 4 / 5;
@@ -1556,7 +1557,7 @@ function MiniTypographyBar({
   );
 }
 
-export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F1CarouselBuilderProps) {
+export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext, onRequestAdMode }: F1CarouselBuilderProps) {
   const { state } = useFabricaContext();
   const { user } = useAuth();
   const isEs = locale === "es";
@@ -3140,33 +3141,49 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                     <div className="flex flex-col sm:flex-row gap-2">
                       <button
                         type="button"
-                        onClick={() => generateNewCoverAd()}
-                        disabled={generatingCoverAd}
-                        className="flex-1 rounded-lg bg-[#00F0FF] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#00F0FF]/90 transition-colors shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
-                      >
-                        {generatingCoverAd && <RefreshCw className="h-4 w-4 animate-spin" />}
-                        {isEs ? "Generar Arte F1 (Anuncio)" : "Gerar Arte F1 (Anúncio)"}
-                      </button>
-                      <button
-                        type="button"
                         onClick={() => {
-                          setSlides((curr) => curr.map((slide, idx) => idx === 0 ? {
-                            ...slide,
-                            kind: "content",
-                            imageUrl: selectedPackage?.imageUrl || "",
-                            slideVariant: "oferta",
-                            label: "OFERTA",
-                            title: selectedPackage?.title || "Pacote Especial",
-                            body: selectedPackage?.price ? `A partir de ${selectedPackage.price}` : "",
-                            bullets: (selectedPackage?.highlights || []).slice(0, 3),
-                            showShadow: true,
-                          } : slide));
-                          toast.success(isEs ? "¡Portada actualizada!" : "Capa atualizada com layout do Carrossel!");
+                          if (onRequestAdMode) onRequestAdMode();
                         }}
-                        className="flex-1 rounded-lg bg-[#F5F906] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#F5F906]/90 transition-colors shadow-md"
+                        className="flex-1 rounded-lg bg-[#00F0FF] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#00F0FF]/90 transition-colors shadow-md flex items-center justify-center gap-2"
                       >
-                        {isEs ? "Diseño de carrusel" : "Design do Carrossel"}
+                        {isEs ? "Ir a la pestaña Anuncio" : "Ir para aba Anúncio"}
                       </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <p className="mb-3 text-xs font-bold text-white">{isEs ? "¿Convertir al diseño del carrusel?" : "Converter para Design do Carrossel?"}</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { id: "oferta", label: "Oferta", variant: "oferta", tag: "OFERTA", color: "#F5F906" },
+                        { id: "impact", label: "Impacto", variant: "impact", tag: "DESTAQUE", color: "#00F0FF" },
+                        { id: "editorial", label: "Editorial", variant: "editorial", tag: "IMPERDÍVEL", color: "#FF0055" },
+                        { id: "vibrant", label: "Vibrante", variant: "vibrant", tag: "ÚLTIMAS VAGAS", color: "#FF5500" }
+                      ].map(opt => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            setSlides((curr) => curr.map((slide, idx) => idx === 0 ? {
+                              ...slide,
+                              kind: "content",
+                              imageUrl: selectedPackage?.imageUrl || "",
+                              slideVariant: opt.variant as CarouselSlideVariant,
+                              label: opt.tag,
+                              labelColor: opt.color,
+                              title: selectedPackage?.title || "Pacote Especial",
+                              body: selectedPackage?.price ? `A partir de ${selectedPackage.price}` : "",
+                              bullets: (selectedPackage?.highlights || []).slice(0, 3),
+                              showShadow: true,
+                            } : slide));
+                            toast.success(isEs ? "¡Portada actualizada!" : "Capa atualizada com layout do Carrossel!");
+                          }}
+                          className="flex flex-col items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] p-2 hover:bg-white/[0.08] hover:border-white/20 transition-all"
+                        >
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-white/80">{opt.label}</span>
+                          <div className="mt-1.5 h-1.5 w-8 rounded-full" style={{ backgroundColor: opt.color }} />
+                        </button>
+                      ))}
                     </div>
                   </div>
 
@@ -3189,12 +3206,12 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                     <p className="mb-2 text-xs font-bold text-white">{isEs ? "¿Volver a la portada de anuncio?" : "Quer voltar para a Arte de Anúncio?"}</p>
                     <button
                       type="button"
-                      onClick={() => generateNewCoverAd()}
-                      disabled={generatingCoverAd}
-                      className="w-full rounded-lg bg-[#00F0FF] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#00F0FF]/90 transition-colors shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
+                      onClick={() => {
+                        if (onRequestAdMode) onRequestAdMode();
+                      }}
+                      className="w-full rounded-lg bg-[#00F0FF] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#00F0FF]/90 transition-colors shadow-md flex items-center justify-center gap-2"
                     >
-                      {generatingCoverAd && <RefreshCw className="h-4 w-4 animate-spin" />}
-                      {isEs ? "Generar Arte F1 (Anuncio)" : "Gerar Arte F1 (Anúncio)"}
+                      {isEs ? "Ir a la pestaña Anuncio" : "Ir para aba Anúncio"}
                     </button>
                   </div>
                 )}
