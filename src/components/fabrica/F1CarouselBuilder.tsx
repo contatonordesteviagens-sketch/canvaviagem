@@ -865,7 +865,7 @@ function CarouselCanvas({
         ) : (
           /* ── CONTENT SLIDES — 3 visual variants ── */
           <>
-            {/* ─── VARIANT: IMPACT (default) — full-bleed photo, content at bottom ─── */}
+            {/* ─── VARIANT: IMPACT — elegant gradient overlay, no box ─── */}
             {(slide.slideVariant === "impact" || !slide.slideVariant) && (
               <div
                 style={{
@@ -874,11 +874,13 @@ function CarouselCanvas({
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
-                  padding: "8%",
                   boxSizing: "border-box",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: Math.round(12 * Z) }}>
+                {/* Gradient para dar leitura ao texto */}
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0) 70%)", zIndex: 1 }} />
+                
+                <div style={{ padding: "8%", position: "relative", zIndex: 2 }}>
                   {logo ? (
                     <img
                       src={logo}
@@ -888,15 +890,16 @@ function CarouselCanvas({
                     />
                   ) : <span />}
                 </div>
-                <div>
+                
+                <div style={{ padding: "8%", position: "relative", zIndex: 2 }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 31 : 35) * Z), lineHeight: 1.02, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
+                    <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 31 : 35) * Z), lineHeight: 1.02, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0px 2px 8px rgba(0,0,0,0.5)" }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ maxWidth: "94%", margin: `${Math.round(13 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round((ratio < 0.68 ? 13 : 14) * Z), lineHeight: 1.45, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
+                    <p style={{ maxWidth: "94%", margin: `${Math.round(10 * Z)}px 0 0`, color: "rgba(255,255,255,0.9)", fontSize: Math.round((ratio < 0.68 ? 13 : 14) * Z), lineHeight: 1.45, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "0px 1px 4px rgba(0,0,0,0.5)" }}>
                       {slide.body}
                     </p>
                   )}
@@ -905,7 +908,8 @@ function CarouselCanvas({
                       {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
                         if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(10 * Z) }} />;
                         return (
-                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "flex-start", color: bulletColor, fontSize: Math.round(13 * Z), lineHeight: 1.35, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: bulletShadow }}>
+                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "flex-start", color: "rgba(255,255,255,0.95)", fontSize: Math.round(13 * Z), lineHeight: 1.35, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0px 1px 4px rgba(0,0,0,0.5)" }}>
+                            <span style={{ color: slide.boxColor || primary }}>✔</span>
                             <span>{item}</span>
                           </li>
                         );
@@ -916,81 +920,10 @@ function CarouselCanvas({
               </div>
             )}
 
-            {/* ─── VARIANT: ITINERARY — photo top ~45%, colored block bottom ─── */}
+            {/* ─── VARIANT: ITINERARY — modern glassmorphism card ─── */}
             {slide.slideVariant === "itinerary" && (() => {
-              const onPrimary = readableText(primary);
-              const isBgDark = onPrimary === "#F8FAFC";
-              const isTextDark = readableText(slide.textColor) === "#F8FAFC";
-              const boxTextColor = isBgDark && isTextDark ? onPrimary : slide.textColor;
-              const boxTitleColor = slide.titleStyle?.color || boxTextColor;
-              const boxBodyColor = slide.bodyStyle?.color || boxTextColor;
-              const boxBulletColor = slide.bulletStyle?.color || boxTextColor;
-              return (
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <div style={{ position: "relative", height: "45%", width: "100%", flexShrink: 0, overflow: "hidden" }}>
-                    {logo && (
-                      <img
-                        src={logo}
-                        alt=""
-                        crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                        style={{ position: "absolute", top: "12%", left: "7%", width: Math.round(36 * Z), height: Math.round(36 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), zIndex: 5, boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }}
-                      />
-                    )}
-                  </div>
-                  <div
-                    style={{
-                      flex: 1,
-                      background: slide.boxColor || primary,
-                      color: boxTextColor,
-                      padding: "7% 8% 8%",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      boxSizing: "border-box",
-                      borderTop: `${Math.round(3 * Z)}px solid ${secondary}`,
-                    }}
-                  >
-                    <div>
-                      {renderLabel(slide.label)}
-                      {slide.title && (
-                        <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 26 : 30) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                          {slide.title}
-                        </h3>
-                      )}
-                      {slide.body && (
-                        <p style={{ margin: `${Math.round(10 * Z)}px 0 0`, color: boxBodyColor, fontSize: Math.round(13 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
-                          {slide.body}
-                        </p>
-                      )}
-                    </div>
-                    {slide.bullets.length > 0 && (
-                      <ul style={{ display: "grid", gap: Math.round(6 * Z), padding: 0, margin: `${Math.round(12 * Z)}px 0 0`, listStyle: "none" }}>
-                        {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                          if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
-                          return (
-                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: boxBulletColor, fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                              <span>{item}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* ─── VARIANT: EDITORIAL — photo full background, floating glass card at bottom ─── */}
-            {slide.slideVariant === "editorial" && (() => {
-              const boxTextColor = readableText(primary);
+              const boxBg = slide.boxColor ? safeHexToRgba(slide.boxColor, 0.7) : "rgba(0,0,0,0.6)";
+              const boxTextColor = readableText(slide.boxColor || "#000000");
               const boxTitleColor = slide.titleStyle?.color || boxTextColor;
               const boxBodyColor = slide.bodyStyle?.color || boxTextColor;
               const boxBulletColor = slide.bulletStyle?.color || boxTextColor;
@@ -1002,11 +935,84 @@ function CarouselCanvas({
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
-                    padding: "7%",
+                    padding: "6%",
                     boxSizing: "border-box",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
+                  <div style={{ position: "relative", zIndex: 5 }}>
+                    {logo && (
+                      <img
+                        src={logo}
+                        alt=""
+                        crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                        style={{ width: Math.round(36 * Z), height: Math.round(36 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }}
+                      />
+                    )}
+                  </div>
+                  
+                  <div
+                    style={{
+                      background: boxBg,
+                      backdropFilter: "blur(12px)",
+                      WebkitBackdropFilter: "blur(12px)",
+                      color: boxTextColor,
+                      padding: "8%",
+                      borderRadius: Math.round(24 * Z),
+                      border: `1px solid rgba(255,255,255,0.15)`,
+                      boxShadow: `0px ${Math.round(10 * Z)}px ${Math.round(30 * Z)}px rgba(0,0,0,0.3)`,
+                      display: "flex",
+                      flexDirection: "column",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    {renderLabel(slide.label)}
+                    {slide.title && (
+                      <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 26 : 30) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                        {slide.title}
+                      </h3>
+                    )}
+                    {slide.body && (
+                      <p style={{ margin: `${Math.round(10 * Z)}px 0 0`, color: boxBodyColor, fontSize: Math.round(13 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
+                        {slide.body}
+                      </p>
+                    )}
+                    {slide.bullets.length > 0 && (
+                      <ul style={{ display: "grid", gap: Math.round(6 * Z), padding: 0, margin: `${Math.round(12 * Z)}px 0 0`, listStyle: "none" }}>
+                        {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
+                          if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
+                          return (
+                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: boxBulletColor, fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                              <span style={{ opacity: 0.8 }}>•</span>
+                              <span>{item}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ─── VARIANT: EDITORIAL — elegant magazine style frame ─── */}
+            {slide.slideVariant === "editorial" && (() => {
+              const frameColor = slide.boxColor || "rgba(255,255,255,0.8)";
+              return (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    padding: "8%",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div style={{ position: "absolute", inset: "5%", border: `${Math.round(1.5 * Z)}px solid ${frameColor}`, pointerEvents: "none", zIndex: 1 }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0) 60%)", zIndex: 0 }} />
+
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", zIndex: 2 }}>
                     {logo ? (
                       <img
                         src={logo}
@@ -1016,38 +1022,26 @@ function CarouselCanvas({
                       />
                     ) : <span />}
                   </div>
-                  <div
-                    style={{
-                      width: "100%",
-                      borderRadius: Math.round(18 * Z),
-                      background: slide.boxColor ? safeHexToRgba(slide.boxColor, 0.93) : safeHexToRgba(primary, 0.93),
-                      backdropFilter: "blur(8px)",
-                      border: `${Math.round(2 * Z)}px solid ${secondary}`,
-                      padding: "8% 9%",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: Math.round(10 * Z),
-                      overflow: "hidden",
-                      boxSizing: "border-box",
-                    }}
-                  >
+                  
+                  <div style={{ zIndex: 2, padding: "0 2%" }}>
                     {renderLabel(slide.label)}
                     {slide.title && (
-                      <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 24 : 28) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                      <h3 style={{ margin: 0, color: "#FFFFFF", fontSize: Math.round((ratio < 0.68 ? 24 : 28) * Z), lineHeight: 1.15, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, letterSpacing: "0.02em", overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0px 2px 6px rgba(0,0,0,0.5)" }}>
                         {slide.title}
                       </h3>
                     )}
                     {slide.body && (
-                      <p style={{ margin: 0, color: boxBodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
+                      <p style={{ margin: `${Math.round(8 * Z)}px 0 0`, color: "rgba(255,255,255,0.85)", fontSize: Math.round(12 * Z), lineHeight: 1.5, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "0px 1px 4px rgba(0,0,0,0.5)" }}>
                         {slide.body}
                       </p>
                     )}
                     {slide.bullets.length > 0 && (
-                      <ul style={{ display: "grid", gap: Math.round(7 * Z), padding: 0, margin: 0, listStyle: "none" }}>
+                      <ul style={{ display: "grid", gap: Math.round(7 * Z), padding: 0, margin: `${Math.round(12 * Z)}px 0 0`, listStyle: "none" }}>
                         {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
                           if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
                           return (
-                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: boxBulletColor, fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: "rgba(255,255,255,0.9)", fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "0px 1px 4px rgba(0,0,0,0.5)" }}>
+                              <span style={{ color: frameColor }}>—</span>
                               <span>{item}</span>
                             </li>
                           );
@@ -1059,10 +1053,9 @@ function CarouselCanvas({
               );
             })()}
 
-            {/* ─── VARIANT: OFERTA — blue rounded box, modern layout ─── */}
+            {/* ─── VARIANT: OFERTA — sleek dark modern tag ─── */}
             {slide.slideVariant === "oferta" && (() => {
-              const boxBg = slide.boxColor || "#0047FF";
-              const boxTextColor = readableText(boxBg);
+              const highlightColor = slide.boxColor || "#00F0FF";
               return (
                 <div
                   style={{
@@ -1071,11 +1064,13 @@ function CarouselCanvas({
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "flex-end",
-                    padding: "8%",
+                    padding: "6%",
                     boxSizing: "border-box",
                   }}
                 >
-                  <div style={{ position: "absolute", top: "8%", left: "8%" }}>
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0) 70%)", zIndex: 1 }} />
+                  
+                  <div style={{ position: "absolute", top: "6%", left: "6%", zIndex: 2 }}>
                     {logo ? (
                       <img
                         src={logo}
@@ -1085,27 +1080,31 @@ function CarouselCanvas({
                       />
                     ) : <span />}
                   </div>
+                  
                   <div
                     style={{
-                      background: boxBg,
-                      color: boxTextColor,
-                      borderRadius: Math.round(24 * Z),
-                      padding: "10%",
-                      boxShadow: `0px ${Math.round(12 * Z)}px ${Math.round(32 * Z)}px rgba(0, 71, 255, 0.35)`,
+                      background: "rgba(10, 10, 12, 0.85)",
+                      backdropFilter: "blur(12px)",
+                      WebkitBackdropFilter: "blur(12px)",
+                      color: "#FFFFFF",
+                      borderRadius: Math.round(20 * Z),
+                      padding: "8%",
+                      boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,0.4)`,
+                      borderTop: `${Math.round(4 * Z)}px solid ${highlightColor}`,
                       position: "relative",
-                      zIndex: 10,
+                      zIndex: 2,
                     }}
                   >
-                    <div style={{ display: "inline-block", background: "#F5F906", color: "#111318", padding: `${Math.round(4 * Z)}px ${Math.round(12 * Z)}px`, borderRadius: Math.round(99 * Z), fontSize: Math.round(10 * Z), fontWeight: 900, marginBottom: Math.round(12 * Z), textTransform: "uppercase" }}>
+                    <div style={{ display: "inline-block", background: highlightColor, color: readableText(highlightColor), padding: `${Math.round(4 * Z)}px ${Math.round(12 * Z)}px`, borderRadius: Math.round(8 * Z), fontSize: Math.round(10 * Z), fontWeight: 900, marginBottom: Math.round(12 * Z), textTransform: "uppercase" }}>
                       {slide.label || "OFERTA"}
                     </div>
                     {slide.title && (
-                      <h3 style={{ margin: 0, fontSize: Math.round((ratio < 0.68 ? 28 : 32) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr }}>
+                      <h3 style={{ margin: 0, fontSize: Math.round((ratio < 0.68 ? 26 : 30) * Z), lineHeight: 1.1, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr }}>
                         {slide.title}
                       </h3>
                     )}
                     {slide.body && (
-                      <p style={{ margin: `${Math.round(10 * Z)}px 0 0`, fontSize: Math.round(14 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.95, whiteSpace: "pre-wrap" }}>
+                      <p style={{ margin: `${Math.round(10 * Z)}px 0 0`, fontSize: Math.round(14 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9, whiteSpace: "pre-wrap" }}>
                         {slide.body}
                       </p>
                     )}
@@ -1115,7 +1114,7 @@ function CarouselCanvas({
                           if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(10 * Z) }} />;
                           return (
                             <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "center", fontSize: Math.round(13 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr }}>
-                              <span style={{ color: "#F5F906" }}>✔</span>
+                              <span style={{ color: highlightColor }}>✔</span>
                               <span>{item}</span>
                             </li>
                           );
@@ -1127,7 +1126,7 @@ function CarouselCanvas({
               );
             })()}
 
-            {/* ─── VARIANT: MINIMALIST — clean typography, no boxes ─── */}
+            {/* ─── VARIANT: MINIMALIST — clean typography, simple shadow ─── */}
             {slide.slideVariant === "minimalist" && (
               <div
                 style={{
@@ -1135,47 +1134,56 @@ function CarouselCanvas({
                   inset: 0,
                   display: "flex",
                   flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  textAlign: "center",
-                  padding: "10%",
+                  justifyContent: "flex-end",
+                  padding: "8%",
                   boxSizing: "border-box",
-                  background: "rgba(0,0,0,0.4)",
-                  backdropFilter: "blur(2px)",
                 }}
               >
-                {renderLabel(slide.label)}
-                {slide.title && (
-                  <h3 style={{ margin: `${Math.round(20 * Z)}px 0 0`, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 36 : 42) * Z), lineHeight: 1, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow: `0px ${Math.round(4 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.4)` }}>
-                    {slide.title}
-                  </h3>
-                )}
-                {slide.body && (
-                  <div style={{ width: Math.round(40 * Z), height: Math.round(4 * Z), background: primary, margin: `${Math.round(24 * Z)}px auto` }} />
-                )}
-                {slide.body && (
-                  <p style={{ margin: 0, color: bodyColor, fontSize: Math.round(15 * Z), lineHeight: 1.5, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, textShadow: `0px ${Math.round(2 * Z)}px ${Math.round(8 * Z)}px rgba(0, 0, 0, 0.4)`, opacity: 0.95 }}>
-                    {slide.body}
-                  </p>
-                )}
-                {slide.bullets.length > 0 && (
-                  <ul style={{ display: "grid", gap: Math.round(8 * Z), margin: `${Math.round(20 * Z)}px 0 0`, padding: 0, listStyle: "none" }}>
-                    {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                      if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(10 * Z) }} />;
-                      return (
-                        <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "center", color: bulletColor, fontSize: Math.round(13 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, textShadow: bulletShadow }}>
-                          <span style={{ color: slide.boxColor || primary }}>✔</span>
-                          <span>{item}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 60%)", zIndex: 1 }} />
+                
+                <div style={{ position: "absolute", top: "8%", right: "8%", zIndex: 2 }}>
+                  {logo ? (
+                    <img
+                      src={logo}
+                      alt=""
+                      crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                      style={{ width: Math.round(36 * Z), height: Math.round(36 * Z), borderRadius: Math.round(8 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.15)` }}
+                    />
+                  ) : <span />}
+                </div>
+
+                <div style={{ zIndex: 2, paddingLeft: "4%", borderLeft: `${Math.round(3 * Z)}px solid ${slide.boxColor || "#FFFFFF"}` }}>
+                  {renderLabel(slide.label)}
+                  {slide.title && (
+                    <h3 style={{ margin: `${Math.round(8 * Z)}px 0 0`, color: "#FFFFFF", fontSize: Math.round((ratio < 0.68 ? 26 : 32) * Z), lineHeight: 1.1, fontFamily: ff, fontWeight: 300, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow: `0px ${Math.round(2 * Z)}px ${Math.round(8 * Z)}px rgba(0,0,0,0.6)` }}>
+                      {slide.title}
+                    </h3>
+                  )}
+                  {slide.body && (
+                    <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, color: "rgba(255,255,255,0.9)", fontSize: Math.round(13 * Z), lineHeight: 1.5, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, textShadow: `0px ${Math.round(1 * Z)}px ${Math.round(4 * Z)}px rgba(0,0,0,0.5)` }}>
+                      {slide.body}
+                    </p>
+                  )}
+                  {slide.bullets.length > 0 && (
+                    <ul style={{ display: "grid", gap: Math.round(8 * Z), margin: `${Math.round(16 * Z)}px 0 0`, padding: 0, listStyle: "none" }}>
+                      {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
+                        if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
+                        return (
+                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "center", color: "rgba(255,255,255,0.95)", fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, textShadow: `0px ${Math.round(1 * Z)}px ${Math.round(4 * Z)}px rgba(0,0,0,0.5)` }}>
+                            <span style={{ opacity: 0.5 }}>/</span>
+                            <span>{item}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* ─── VARIANT: VIBRANT — bright gradients ─── */}
+            {/* ─── VARIANT: VIBRANT — bright accent color overlay ─── */}
             {slide.slideVariant === "vibrant" && (() => {
+              const accentColor = slide.boxColor || "#F5F906";
               return (
                 <div
                   style={{
@@ -1188,7 +1196,9 @@ function CarouselCanvas({
                     boxSizing: "border-box",
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 80%)`, zIndex: 1 }} />
+                  
+                  <div style={{ display: "flex", justifyContent: "flex-end", zIndex: 2 }}>
                     {logo && (
                       <img
                         src={logo}
@@ -1198,23 +1208,20 @@ function CarouselCanvas({
                       />
                     )}
                   </div>
-                  <div
-                    style={{
-                      background: slide.boxColor || `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`,
-                      color: slide.boxColor ? readableText(slide.boxColor) : readableText(primary),
-                      padding: "8%",
-                      borderRadius: Math.round(24 * Z),
-                      boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0,0,0,0.3)`,
-                    }}
-                  >
-                    {renderLabel(slide.label)}
+                  
+                  <div style={{ zIndex: 2 }}>
+                    {slide.label && (
+                      <div style={{ display: "inline-block", background: accentColor, color: readableText(accentColor), padding: `${Math.round(4 * Z)}px ${Math.round(10 * Z)}px`, borderRadius: Math.round(6 * Z), fontSize: Math.round(10 * Z), fontWeight: 800, marginBottom: Math.round(12 * Z), textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                        {slide.label}
+                      </div>
+                    )}
                     {slide.title && (
-                      <h3 style={{ margin: `${Math.round(12 * Z)}px 0 0`, fontSize: Math.round((ratio < 0.68 ? 26 : 30) * Z), lineHeight: 1.1, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr }}>
+                      <h3 style={{ margin: 0, color: "#FFFFFF", fontSize: Math.round((ratio < 0.68 ? 28 : 32) * Z), lineHeight: 1.1, fontFamily: ff, fontWeight: 900, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow: "0px 2px 8px rgba(0,0,0,0.5)" }}>
                         {slide.title}
                       </h3>
                     )}
                     {slide.body && (
-                      <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, fontSize: Math.round(13 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9 }}>
+                      <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, color: "rgba(255,255,255,0.9)", fontSize: Math.round(13 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, textShadow: "0px 1px 4px rgba(0,0,0,0.5)" }}>
                         {slide.body}
                       </p>
                     )}
@@ -1223,8 +1230,8 @@ function CarouselCanvas({
                         {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
                           if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(10 * Z) }} />;
                           return (
-                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "center", fontSize: Math.round(13 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr }}>
-                              <span style={{ color: "#F5F906" }}>✔</span>
+                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "center", color: "#FFFFFF", fontSize: Math.round(13 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, textShadow: "0px 1px 4px rgba(0,0,0,0.5)" }}>
+                              <span style={{ color: accentColor }}>✦</span>
                               <span>{item}</span>
                             </li>
                           );
