@@ -27,14 +27,21 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
-import { composeTravelAd } from "@/lib/fabrica-compose-art";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 
 type CarouselSize = 3 | 4 | 5 | 6;
 type CarouselSlideKind = "cover" | "content" | "closing";
 type CarouselSlideVariant = "impact" | "itinerary" | "editorial" | "oferta" | "minimalist" | "vibrant";
 type LabelStyle = "filled" | "outline-thin" | "outline-thick" | "stripe-left" | "rectangle" | "translucent" | "gradient";
+
+const CAROUSEL_VARIANTS: CarouselSlideVariant[] = [
+  "impact",
+  "itinerary",
+  "editorial",
+  "oferta",
+  "minimalist",
+  "vibrant",
+];
 
 const FONT_PRESETS = [
   "Inter",
@@ -118,6 +125,36 @@ const readableText = (hex: string) => {
     Number.parseInt(normalized.slice(index, index + 2), 16),
   );
   return (red * 299 + green * 587 + blue * 114) / 1000 > 150 ? "#111318" : "#F8FAFC";
+};
+
+const normalizeName = (value = "") =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+
+const carouselCaption = (pacote: Pacote, brand: string, phone: string, isEs: boolean) => {
+  const details = compact([...(pacote.highlights || []), ...(pacote.included || [])]).slice(0, 5);
+  const destinationTag = normalizeName(pacote.title).replace(/[^a-z0-9]+/g, "");
+  const lines = isEs
+    ? [
+        `¿Listo para vivir ${pacote.title}?`,
+        pacote.description || "Preparamos una experiencia completa para que disfrutes cada momento.",
+        ...details.map((item) => `• ${item}`),
+        pacote.price ? `Inversión: ${pacote.price}` : "",
+        phone ? `Habla con ${brand} por WhatsApp: ${phone}` : `Habla con ${brand} y reserva tu viaje.`,
+        `#viajes #${destinationTag} #turismo #vacaciones`,
+      ]
+    : [
+        `Pronto para viver ${pacote.title}?`,
+        pacote.description || "Preparamos uma experiência completa para você aproveitar cada momento.",
+        ...details.map((item) => `• ${item}`),
+        pacote.price ? `Investimento: ${pacote.price}` : "",
+        phone ? `Fale com a ${brand} pelo WhatsApp: ${phone}` : `Fale com a ${brand} e reserve sua viagem.`,
+        `#viagem #${destinationTag} #turismo #ferias`,
+      ];
+  return lines.filter(Boolean).join("\n\n");
 };
 
 const safeHexToRgba = (hex: string, alpha: number) => {
@@ -1125,7 +1162,7 @@ function CarouselCanvas({
               );
             })()}
 
-            {/* ─── VARIANT: MINIMALIST — clean typography, no boxes ─── */}
+            {/* ─── VARIANT: MINIMALIST — editorial light panel with guaranteed contrast ─── */}
             {slide.slideVariant === "minimalist" && (
               <div
                 style={{
@@ -1133,29 +1170,29 @@ function CarouselCanvas({
                   inset: 0,
                   display: "flex",
                   flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  textAlign: "center",
-                  padding: "10%",
+                  justifyContent: "flex-end",
+                  padding: "7%",
                   boxSizing: "border-box",
-                  background: "rgba(0,0,0,0.4)",
-                  backdropFilter: "blur(2px)",
                 }}
               >
-                {renderLabel(slide.label)}
-                {slide.title && (
-                  <h3 style={{ margin: `${Math.round(20 * Z)}px 0 0`, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 36 : 42) * Z), lineHeight: 1, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow: `0px ${Math.round(4 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.4)` }}>
-                    {slide.title}
-                  </h3>
-                )}
-                {slide.body && (
-                  <div style={{ width: Math.round(40 * Z), height: Math.round(4 * Z), background: primary, margin: `${Math.round(24 * Z)}px auto` }} />
-                )}
-                {slide.body && (
-                  <p style={{ margin: 0, color: bodyColor, fontSize: Math.round(15 * Z), lineHeight: 1.5, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, textShadow: `0px ${Math.round(2 * Z)}px ${Math.round(8 * Z)}px rgba(0, 0, 0, 0.4)`, opacity: 0.95 }}>
-                    {slide.body}
-                  </p>
-                )}
+                <div style={{ background: "rgba(255,255,255,0.96)", color: "#111318", padding: "8%", borderRadius: Math.round(4 * Z), borderTop: `${Math.round(5 * Z)}px solid ${secondary}`, boxShadow: `0 ${Math.round(12 * Z)}px ${Math.round(38 * Z)}px rgba(0,0,0,.32)` }}>
+                  {renderLabel(slide.label)}
+                  {slide.title && (
+                    <h3 style={{ margin: `${Math.round(8 * Z)}px 0 0`, color: "#111318", fontSize: Math.round((ratio < 0.68 ? 30 : 34) * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                      {slide.title}
+                    </h3>
+                  )}
+                  {slide.body && (
+                    <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, color: "#303238", fontSize: Math.round(13 * Z), lineHeight: 1.45, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
+                      {slide.body}
+                    </p>
+                  )}
+                  {slide.bullets.length > 0 && (
+                    <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, color: "#4B4E55", fontSize: Math.round(11 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bulletWeight }}>
+                      {slide.bullets.filter(Boolean).slice(0, 4).join(" • ")}
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1201,6 +1238,11 @@ function CarouselCanvas({
                     {slide.body && (
                       <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, fontSize: Math.round(13 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9 }}>
                         {slide.body}
+                      </p>
+                    )}
+                    {slide.bullets.length > 0 && (
+                      <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, color: readableText(primary), fontSize: Math.round(11 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bulletWeight }}>
+                        {slide.bullets.filter(Boolean).slice(0, 4).join(" • ")}
                       </p>
                     )}
                   </div>
@@ -1373,7 +1415,7 @@ function MiniTypographyBar({
         {brandColors.map(({ hex, label }) => (
           <button key={hex} type="button" onClick={(e) => { e.preventDefault(); handleColorClick(hex); }}
             title={`${label} (${hex})`}
-            className={`h-7 w-7 rounded-full border-2 transition-all hover:scale-110 ${
+            className={`${compact ? "h-5 w-5" : "h-7 w-7"} rounded-full border-2 transition-all hover:scale-110 ${
               currentColor.toUpperCase() === hex.toUpperCase()
                 ? "scale-110 border-white ring-2 ring-[#F5F906] ring-offset-1 ring-offset-zinc-900"
                 : "border-white/30"
@@ -1471,10 +1513,10 @@ function MiniTypographyBar({
         <div
           className="relative cursor-pointer transition-transform hover:scale-110"
           style={{
-            width: 28,
-            height: 28,
+            width: compact ? 20 : 28,
+            height: compact ? 20 : 28,
             borderRadius: "50%",
-            padding: 2.5,
+            padding: compact ? 1.5 : 2.5,
             background: "conic-gradient(from 0deg, #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)",
             boxShadow: "0 0 6px 1px rgba(255,255,255,0.18)",
           }}
@@ -1558,12 +1600,26 @@ function MiniTypographyBar({
 
 export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F1CarouselBuilderProps) {
   const { state } = useFabricaContext();
-  const { user } = useAuth();
   const isEs = locale === "es";
-  const packages = state.selectedPackages.filter((pacote) => !pacote.isDraft);
+  const currentDestination = state.destinos.find((destination) => destination?.trim()) || "";
+  const packages = useMemo(() => {
+    const valid = state.selectedPackages.filter((pacote) => pacote.title?.trim());
+    const currentName = normalizeName(currentDestination);
+    return [...valid].sort((a, b) => {
+      const aCurrent = normalizeName(a.title) === currentName ? 1 : 0;
+      const bCurrent = normalizeName(b.title) === currentName ? 1 : 0;
+      if (aCurrent !== bCurrent) return bCurrent - aCurrent;
+      if (Boolean(a.isDraft) !== Boolean(b.isDraft)) return a.isDraft ? 1 : -1;
+      return 0;
+    });
+  }, [currentDestination, state.selectedPackages]);
   const [selectedPackageId, setSelectedPackageId] = useState(packages[0]?.id || "");
   const selectedPackage = packages.find((pacote) => pacote.id === selectedPackageId) || packages[0];
-  const coverImage = sourceImage || state.generatedAdImage || "";
+  const selectedIsCurrent =
+    Boolean(currentDestination) && normalizeName(selectedPackage?.title) === normalizeName(currentDestination);
+  const coverImage = selectedIsCurrent
+    ? sourceImage || state.generatedAdImage || selectedPackage?.imageUrl || ""
+    : selectedPackage?.imageUrl || "";
   const carouselContact =
     [
       { icon: state.footerContact1Icon, value: state.footerContact1Value },
@@ -1598,6 +1654,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   const [showNewCarouselModal, setShowNewCarouselModal] = useState(false);
   const [captionText, setCaptionText] = useState("");
   const [generatingCaption, setGeneratingCaption] = useState(false);
+  const [photoPanelOpen, setPhotoPanelOpen] = useState(false);
   const exportRefs = useRef<Array<HTMLDivElement | null>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadRequestRef = useRef(new Map<string, symbol>());
@@ -1607,21 +1664,16 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     if (!selectedPackage) return;
     setGeneratingCaption(true);
     try {
-      const { data, error } = await supabase.functions.invoke("fabrica-generate-ad-copy", {
-        body: {
-          destination: selectedPackage.title,
-          highlights: selectedPackage.highlights,
-          price: selectedPackage.price,
-          brand: state.agencyName || "Agência de Viagens",
-          type: "carousel"
-        },
-      });
-      if (error) throw error;
-      setCaptionText(data.copy || data.text || data);
+      await Promise.resolve();
+      setCaptionText(
+        carouselCaption(
+          selectedPackage,
+          state.agencyName || (isEs ? "Agencia de Viajes" : "Agência de Viagens"),
+          agencyPhone,
+          isEs,
+        ),
+      );
       toast.success(isEs ? "¡Leyenda generada!" : "Legenda gerada com sucesso!");
-    } catch (err) {
-      console.error(err);
-      toast.error(isEs ? "Error al generar leyenda." : "Erro ao gerar legenda.");
     } finally {
       setGeneratingCaption(false);
     }
@@ -1655,14 +1707,14 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       uniqueImages([
         selectedPackage?.imageUrl,
         ...(selectedPackage?.galleryImages || []),
-        ...(state.siteContent.galleryImages || []),
-        state.lastCleanPhoto,
+        ...(selectedIsCurrent ? [state.lastCleanPhoto, ...(state.siteContent.galleryImages || [])] : []),
       ]).slice(0, 16),
     [
       selectedPackage?.galleryImages,
       selectedPackage?.imageUrl,
       state.lastCleanPhoto,
       state.siteContent.galleryImages,
+      selectedIsCurrent,
     ],
   );
 
@@ -1675,6 +1727,21 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     if (selectedPackageId && packages.some((pacote) => pacote.id === selectedPackageId)) return;
     setSelectedPackageId(packages[0]?.id || "");
   }, [packages, selectedPackageId]);
+
+  useEffect(() => {
+    const currentPackage = packages.find(
+      (pacote) => normalizeName(pacote.title) === normalizeName(currentDestination),
+    );
+    if (currentPackage && currentPackage.id !== selectedPackageIdRef.current) {
+      setSelectedPackageId(currentPackage.id);
+    }
+  }, [currentDestination, packages]);
+
+  useEffect(() => {
+    setPhotoQuery(selectedPackage?.title || "");
+    setPhotoResults([]);
+    setCaptionText("");
+  }, [selectedPackage?.id, selectedPackage?.title]);
 
   useEffect(() => {
     if (!coverImage) {
@@ -1700,7 +1767,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     }
 
     const preferredCount = slideCountRef.current;
-    const destImages = uniqueImages([...(state.siteContent.galleryImages || []), ...photoResults.map((p) => p.url)]);
+    const destImages = availableImages;
     const generated = createSlides(
       selectedPackage,
       preferredCount,
@@ -1766,7 +1833,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     slideArchiveRef.current = generatedArchive;
     setSlides(generated);
     setActiveIndex(generated.length > 1 ? 1 : 0);
-  }, [agencyPhone, coverImage, isEs, selectedPackage, storageKey, state.siteContent.galleryImages, photoResults]);
+  }, [agencyPhone, availableImages, coverImage, isEs, selectedPackage, storageKey]);
 
   useEffect(() => {
     if (!slides.length) return;
@@ -1776,7 +1843,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     }
     const persistDraft = (notifyError = true) => {
       try {
-        const destImages = uniqueImages([...(state.siteContent.galleryImages || []), ...photoResults.map((p) => p.url)]);
+        const destImages = uniqueImages([...availableImages, ...photoResults.map((p) => p.url)]);
         const generatedArchive = selectedPackage
           ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, destImages)
           : [];
@@ -1819,7 +1886,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       window.removeEventListener("pagehide", persistBeforeLeaving);
       persistDraft(false);
     };
-  }, [slideCount, slides, storageKey, selectedPackage, coverImage, agencyPhone, isEs]);
+  }, [agencyPhone, availableImages, coverImage, isEs, photoResults, selectedPackage, slideCount, slides, storageKey]);
 
   useEffect(() => {
     const ff = activeSlide?.fontFamily || "Inter";
@@ -1849,7 +1916,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
 
   const changeSlideCount = (nextCount: CarouselSize) => {
     if (!selectedPackage) return;
-    const destImages = uniqueImages([...(state.siteContent.galleryImages || []), ...photoResults.map((p) => p.url)]);
+    const destImages = uniqueImages([...availableImages, ...photoResults.map((p) => p.url)]);
     const generated = createSlides(
       selectedPackage,
       nextCount,
@@ -1882,7 +1949,13 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   const regenerate = () => {
     if (!selectedPackage) return;
     uploadRequestRef.current.clear();
-    const destImages = uniqueImages([...(state.siteContent.galleryImages || []), ...photoResults.map((p) => p.url)]);
+    const destImages = uniqueImages([...availableImages, ...photoResults.map((p) => p.url)]);
+    const currentVariant =
+      slides.find((slide) => slide.kind === "content")?.slideVariant || "impact";
+    const nextVariant =
+      CAROUSEL_VARIANTS[
+        (CAROUSEL_VARIANTS.indexOf(currentVariant) + 1) % CAROUSEL_VARIANTS.length
+      ];
     const generatedArchive = createSlides(
       selectedPackage,
       6,
@@ -1901,8 +1974,12 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
         isEs,
         destImages,
       ),
+    ).map((slide) =>
+      slide.kind === "content" ? { ...slide, slideVariant: nextVariant } : slide,
     );
-    slideArchiveRef.current = generatedArchive;
+    slideArchiveRef.current = generatedArchive.map((slide) =>
+      slide.kind === "content" ? { ...slide, slideVariant: nextVariant } : slide,
+    );
     setSlides(generated);
     setActiveIndex(generated.length > 1 ? 1 : 0);
     toast.success(
@@ -1916,95 +1993,13 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     try {
       localStorage.removeItem(storageKey);
     } catch {}
-    const currentIdx = packages.findIndex((p) => p.id === selectedPackage?.id);
-    const nextPkg = packages[(currentIdx + 1) % packages.length] || selectedPackage;
-    if (nextPkg && nextPkg.id !== selectedPackage?.id) {
-      setSelectedPackageId(nextPkg.id);
-    } else {
-      regenerate();
-    }
+    regenerate();
     setShowNewCarouselModal(false);
-    toast.success(isEs ? "¡Nuevo carrusel generado!" : "Novo carrossel gerado com sucesso!");
-  };
-
-  const [generatingCoverAd, setGeneratingCoverAd] = useState(false);
-
-  const generateNewCoverAd = async (targetPackage?: Pacote) => {
-    const pkg = targetPackage || selectedPackage;
-    if (!pkg) return;
-    setGeneratingCoverAd(true);
-    try {
-      const dest = pkg.title || state.destinos[0] || "Viagem Incrível";
-      const available = uniqueImages([
-        pkg.imageUrl,
-        ...(pkg.galleryImages || []),
-        ...(state.siteContent.galleryImages || []),
-        ...photoResults.map((p) => p.url),
-        coverImage,
-      ]);
-      const currentCover = slides[0]?.imageUrl || coverImage;
-      const nextIdx = (available.indexOf(currentCover) + 1) % available.length;
-      const nextPhoto = available[nextIdx] || available[0] || coverImage || "";
-      
-      const format: "square" | "story" = coverRatio > 0.92 ? "square" : "story";
-      const composed = await composeTravelAd({
-        imageUrl: nextPhoto,
-        format,
-        destination: dest,
-        city: state.city,
-        primaryColor: state.primaryColor,
-        secondaryColor: state.secondaryColor,
-        price: pkg.price || state.lastPrice || "Consulte",
-        currencySymbol: state.lastCurrency || "R$",
-        hideCents: state.hideCents ?? false,
-        installments: state.lastInstallments || "",
-        promoName: state.lastPromoName || "OFERTA EXCLUSIVA",
-        highlights: [...(pkg.highlights || []), ...(pkg.included || [])]
-          .filter(Boolean)
-          .slice(0, 3)
-          .map((text) => ({ text })),
-        hasLogo: !!state.logoBase64,
-        logoDataUrl: state.logoBase64,
-        logoFormat: state.logoFormat || "circle",
-        footerContact1Icon: state.footerContact1Icon || undefined,
-        footerContact1Value: state.footerContact1Value || "",
-        whatsapp: state.whatsapp || "",
-        instagram: state.instagram || "",
-        paymentMode: state.lastPaymentMode || "pix_card",
-        paymentSuffix: state.lastPaymentSuffix || "",
-        pricePrefix: "a partir de",
-        strategy: "ancora",
-        variation: Math.floor(Math.random() * 9),
-        showPixBanner: state.showPixBanner ?? true,
-        showTotal: state.showTotal ?? true,
-        fontFamily: state.fontFamily || "Inter",
-      });
-      
-      setSlides((curr) =>
-        curr.map((slide, idx) =>
-          idx === 0 ? { ...slide, imageUrl: composed } : slide
-        )
-      );
-      toast.success(isEs ? "¡Nueva portada generada con arte publicitario!" : "Nova capa no estilo Anúncio F1 gerada com sucesso!");
-    } catch (err) {
-      console.error("Falha ao gerar capa F1:", err);
-      toast.error(isEs ? "Error al generar portada." : "Erro ao gerar capa com arte F1.");
-    } finally {
-      setGeneratingCoverAd(false);
-    }
-  };
-
-  const generateNewCover = () => {
-    if (!availableImages.length) return;
-    const currentCover = slides[0]?.imageUrl || coverImage;
-    const nextIdx = (availableImages.indexOf(currentCover) + 1) % availableImages.length;
-    const nextImage = availableImages[nextIdx] || availableImages[0] || coverImage;
-    setSlides((curr) =>
-      curr.map((slide, idx) =>
-        idx === 0 ? { ...slide, imageUrl: nextImage } : slide
-      )
+    toast.success(
+      isEs
+        ? `Nuevo carrusel de ${selectedPackage?.title || "este destino"} generado.`
+        : `Novo carrossel de ${selectedPackage?.title || "este destino"} gerado.`,
     );
-    toast.success(isEs ? "¡Nueva portada aplicada!" : "Nova foto de capa aplicada com sucesso!");
   };
 
   const generateNewSlidePhoto = () => {
@@ -2354,15 +2349,24 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   const renderPhotoSelectionBox = () => {
     if (!activeSlide || activeSlide.kind === "cover") return null;
     return (
-      <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5 shadow-lg">
-        <div className="flex items-center gap-2">
-          <ImagePlus className="h-4 w-4 text-[#F5F906]" />
-          <h3 className="text-sm font-bold text-white">
+      <details
+        open={photoPanelOpen}
+        onToggle={(event) => setPhotoPanelOpen(event.currentTarget.open)}
+        className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 shadow-lg"
+      >
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+          <span className="flex items-center gap-2">
+            <ImagePlus className="h-4 w-4 text-[#F5F906]" />
+            <span className="text-sm font-bold text-white">
             {activeSlide.kind === "closing"
               ? (isEs ? "Fondo del cierre" : "Fundo do fechamento")
               : (isEs ? "Foto de esta imagen" : "Foto desta imagem")}
-          </h3>
-        </div>
+            </span>
+          </span>
+          <span className="text-[10px] font-bold text-white/45">
+            {photoPanelOpen ? (isEs ? "Cerrar" : "Recolher") : (isEs ? "Cambiar" : "Trocar foto")}
+          </span>
+        </summary>
 
         <div className="mt-3 flex gap-2">
           <input
@@ -2478,7 +2482,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
             />
           </CarouselField>
         </div>
-      </div>
+      </details>
     );
   };
 
@@ -2515,49 +2519,36 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[#F5F906]/30 bg-[#F5F906]/[0.06] p-4 sm:p-5 shadow-xl space-y-3.5">
-          <div className="flex items-center gap-3">
-            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-xs font-black text-zinc-950">4</span>
-            <div>
-              <p className="text-sm font-bold text-white">
-                {isEs ? "Todo listo para publicar" : "Tudo pronto para publicar"}
-              </p>
-              <p className="text-[10px] text-white/55">
-                {isEs ? "La portada no se procesa nuevamente." : "A capa não é processada novamente."}
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-            <button
-              type="button"
-              onClick={() => setShowNewCarouselModal(true)}
-              className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/15 px-3 text-xs font-extrabold text-red-300 hover:bg-red-500/25 transition-colors"
-            >
-              {isEs ? "+ Nuevo Carrusel" : "+ Gerar Novo Carrossel"}
-            </button>
-            <button
-              type="button"
-              onClick={downloadAll}
-              disabled={downloading}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:opacity-50 transition-colors shadow-lg shadow-[#F5F906]/10"
-            >
-              <Download className="h-4 w-4 shrink-0" />
-              <span className="truncate">{isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}</span>
-            </button>
-            {onNext && (
-              <button
-                type="button"
-                onClick={onNext}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-500/20 px-3 text-xs font-extrabold text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-colors shadow-lg"
-              >
-                <span className="truncate">{isEs ? "Avanzar al Sitio (F3)" : "Avançar para o Site (F3)"}</span>
-              </button>
-            )}
-          </div>
-        </div>
       </div>
     );
   };
+
+  const renderActionBar = () => (
+    <div className="rounded-2xl border border-[#F5F906]/25 bg-[#0F0F11] p-4 sm:p-5">
+      <div className="mb-3 flex items-center gap-3">
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-xs font-black text-zinc-950">4</span>
+        <div>
+          <p className="text-sm font-bold text-white">{isEs ? "Todo listo para publicar" : "Tudo pronto para publicar"}</p>
+          <p className="text-[10px] text-white/50">{selectedPackage?.title}</p>
+        </div>
+      </div>
+      <div className="grid gap-2.5 sm:grid-cols-3">
+        <button type="button" onClick={() => setShowNewCarouselModal(true)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-3 text-xs font-extrabold text-white/80 hover:bg-white/[0.08]">
+          <RefreshCw className="h-4 w-4" />
+          {isEs ? "Nueva variación" : "Nova variação"}
+        </button>
+        <button type="button" onClick={downloadAll} disabled={downloading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:opacity-50">
+          <Download className="h-4 w-4" />
+          {isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}
+        </button>
+        {onNext && (
+          <button type="button" onClick={onNext} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 text-xs font-extrabold text-cyan-300 hover:bg-cyan-400/15">
+            {isEs ? "Avanzar al Sitio (F3)" : "Avançar para o Site (F3)"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <section className="space-y-4" data-testid="f1-carousel-builder">
@@ -3130,29 +3121,6 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       ? "Es exactamente la pieza generada en Anuncio."
                       : "É exatamente a arte gerada em Anúncio. Ela é baixada pelo arquivo original."}
                   </p>
-                  
-                  <div className="mt-4 pt-4 border-t border-white/10">
-                    <p className="mb-2 text-xs font-bold text-white">{isEs ? "¿Desea generar una nueva portada?" : "Deseja gerar uma nova capa?"}</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        patchActive({
-                          imageUrl: selectedPackage?.imageUrl || "",
-                          slideVariant: "oferta",
-                          label: "OFERTA",
-                          title: selectedPackage?.title || "Pacote Especial",
-                          body: selectedPackage?.price ? `A partir de ${selectedPackage.price}` : "",
-                          bullets: (selectedPackage?.highlights || []).slice(0, 3),
-                          showShadow: true,
-                        });
-                        toast.success(isEs ? "¡Portada actualizada!" : "Capa atualizada com layout do Carrossel!");
-                      }}
-                      className="rounded-lg bg-[#F5F906] px-4 py-2 text-xs font-bold text-zinc-950 hover:bg-[#F5F906]/90 transition-colors shadow-md"
-                    >
-                      {isEs ? "Generar con el diseño del carrusel" : "Gerar Nova Capa (Design do Carrossel)"}
-                    </button>
-                  </div>
-
                   {!coverImage && (
                     <p className="mt-3 rounded-lg bg-amber-300/10 px-3 py-2 text-xs font-semibold text-amber-100">
                       {isEs
@@ -3541,6 +3509,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
         </aside>
       </div>
 
+      {slides.length > 0 && renderActionBar()}
+
       {showNewCarouselModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 shadow-2xl space-y-5">
@@ -3554,8 +3524,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
             </div>
             <p className="text-xs leading-relaxed text-white/70">
               {isEs
-                ? "Atención: Al generar un nuevo carrusel o descartar el actual, los cambios y fotos personalizadas se perderán."
-                : "Atenção: Ao gerar um novo carrossel, as fotos e edições do carrossel atual serão descartadas. Certifique-se de baixar as imagens antes se quiser mantê-las."}
+                ? "Se creará una nueva composición para el mismo destino. Puedes descargar la versión actual antes de continuar."
+                : "Será criada uma nova composição para o mesmo destino. Você pode baixar a versão atual antes de continuar."}
             </p>
             <div className="flex flex-col gap-2.5 pt-2">
               <button
@@ -3572,10 +3542,10 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
               <button
                 type="button"
                 onClick={discardAndCreateNew}
-                className="w-full min-h-11 rounded-xl border border-red-500/40 bg-red-500/15 font-extrabold text-red-400 hover:bg-red-500/25 transition-colors flex items-center justify-center gap-2"
+                className="w-full min-h-11 rounded-xl border border-white/15 bg-white/[0.05] font-extrabold text-white/80 hover:bg-white/[0.09] transition-colors flex items-center justify-center gap-2"
               >
                 <RefreshCw className="h-4 w-4" />
-                {isEs ? "Descartar actual y generar nuevo" : "Excluir Carrossel, Descartar e Gerar Novo"}
+                {isEs ? "Generar otra variación" : "Gerar outra variação"}
               </button>
               <button
                 type="button"
