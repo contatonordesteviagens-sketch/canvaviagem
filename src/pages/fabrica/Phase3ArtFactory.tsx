@@ -83,8 +83,8 @@ const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
 const DEFAULT_COLORS_OFERTA = { primary: "#080808", secondary: "#F5F906" };
 const DEFAULT_COLORS_EXPERIENCIA = { primary: "#080808", secondary: "#F5F906" };
 const UI_ACCENT = "#F5F906";
-const UI_ACCENT_SOFT = "rgba(245, 249, 6, 0.12)";
-const UI_ACCENT_BORDER = "rgba(245, 249, 6, 0.75)";
+const UI_ACCENT_SOFT = "rgba(245, 158, 11, 0.12)";
+const UI_ACCENT_BORDER = "rgba(245, 158, 11, 0.75)";
 
 const isSameHex = (a: string, b: string) =>
   (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
@@ -1289,7 +1289,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
 
         // Rotacao deterministica entre variantes do compositor (V0..V8, V2 desativada)
         const TOTAL_VARIANTS_PHOTO = 9;
-        const DISABLED_VARIANTS_PHOTO = [0, 1, 5, 6, 7];
+        const DISABLED_VARIANTS_PHOTO = [2];
         const recentPhoto = variantHistoryRef.current.slice(-2);
         let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i)
           .filter((v) => !DISABLED_VARIANTS_PHOTO.includes(v))
@@ -1553,7 +1553,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
 
       // Rotacao deterministica entre variantes do compositor (V0..V8, V2 desativada)
       const TOTAL_VARIANTS = 9;
-      const DISABLED_VARIANTS = [0, 1, 5, 6, 7];
+      const DISABLED_VARIANTS = [2];
       const recent = variantHistoryRef.current.slice(-2);
       let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i)
         .filter((v) => !DISABLED_VARIANTS.includes(v))
