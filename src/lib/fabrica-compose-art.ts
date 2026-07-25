@@ -3058,9 +3058,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       })().toString().toUpperCase();
       ctx.fillText(topLabelRenderV1, px + pw / 2, priceBlockY + 36);
       
-      // Valor formatado (sem quebrar centavos)
+      // Valor formatado: a parte inteira permanece em destaque e os centavos
+      // usam a mesma escala do texto de parcelas para não vazar do card.
       let priceStrV1 = mainPrice || `${curSym} ${price}`.trim();
       if (hideCents) priceStrV1 = priceStrV1.replace(/[.,]\d{2}\s*$/, "");
+      const centsMatchV1 = priceStrV1.match(/^(.*?)([,.]\d{1,2})$/);
+      const priceMainV1 = centsMatchV1 ? centsMatchV1[1] : priceStrV1;
+      const priceCentsV1 = centsMatchV1 ? centsMatchV1[2] : "";
       
       const instTextV1 = installments && (paymentMode === "installments" || paymentMode === "down_plus") 
         ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`) 
@@ -3070,11 +3074,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const instFsV1 = 28;
       
       ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
-      const pMainWV1 = ctx.measureText(priceStrV1).width;
+      const pMainWV1 = ctx.measureText(priceMainV1).width;
       ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
       const instWV1 = instTextV1 ? ctx.measureText(instTextV1).width + 12 : 0;
+      const pCentsWV1 = priceCentsV1 ? ctx.measureText(priceCentsV1).width + 2 : 0;
       
-      const totalWV1 = instWV1 + pMainWV1;
+      const totalWV1 = instWV1 + pMainWV1 + pCentsWV1;
       let startXV1 = (px + pw / 2) - totalWV1 / 2;
       
       if (totalWV1 > pw - 20) {
@@ -3090,7 +3095,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillText(instTextV1, startXV1, pyV1);
       }
       ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
-      ctx.fillText(priceStrV1, startXV1 + instWV1, pyV1);
+      const priceMainXV1 = startXV1 + instWV1;
+      ctx.fillText(priceMainV1, priceMainXV1, pyV1);
+      if (priceCentsV1) {
+        ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
+        ctx.fillText(
+          priceCentsV1,
+          priceMainXV1 + pMainWV1 + 2,
+          pyV1 - priceFsV1 + instFsV1 + 8,
+        );
+      }
       
       // Sufixo
       ctx.textAlign = "center";
