@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  AlertTriangle,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -41,21 +42,6 @@ const CAROUSEL_VARIANTS: CarouselSlideVariant[] = [
   "oferta",
   "minimalist",
   "vibrant",
-];
-
-const FONT_PRESETS = [
-  "Inter",
-  "Poppins",
-  "Montserrat",
-  "Roboto",
-  "Oswald",
-  "Bebas Neue",
-  "Playfair Display",
-  "Lora",
-  "Raleway",
-  "Nunito",
-  "Work Sans",
-  "DM Sans",
 ];
 
 interface FieldTypography {
@@ -118,6 +104,12 @@ const compact = (values: Array<string | undefined>) =>
 const uniqueImages = (values: Array<string | undefined>) =>
   Array.from(new Set(values.map((value) => (value || "").trim()).filter(Boolean)));
 
+const cleanCarouselText = (value = "") =>
+  value
+    .replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s•✓✔☑▪▫■□➜→\-*]+/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
 const readableText = (hex: string) => {
   const normalized = hex.replace("#", "");
   if (!/^[0-9a-f]{6}$/i.test(normalized)) return "#F8FAFC";
@@ -125,6 +117,27 @@ const readableText = (hex: string) => {
     Number.parseInt(normalized.slice(index, index + 2), 16),
   );
   return (red * 299 + green * 587 + blue * 114) / 1000 > 150 ? "#111318" : "#F8FAFC";
+};
+
+const relativeLuminance = (hex: string) => {
+  const normalized = hex.replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(normalized)) return 0;
+  const channels = [0, 2, 4].map((index) => {
+    const channel = Number.parseInt(normalized.slice(index, index + 2), 16) / 255;
+    return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+};
+
+const contrastRatio = (foreground: string, background: string) => {
+  const lighter = Math.max(relativeLuminance(foreground), relativeLuminance(background));
+  const darker = Math.min(relativeLuminance(foreground), relativeLuminance(background));
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+const contrastSafeColor = (preferred: string | undefined, background: string) => {
+  const candidate = preferred && /^#[0-9a-f]{6}$/i.test(preferred) ? preferred : readableText(background);
+  return contrastRatio(candidate, background) >= 4.5 ? candidate : readableText(background);
 };
 
 const normalizeName = (value = "") =>
@@ -135,7 +148,10 @@ const normalizeName = (value = "") =>
     .toLowerCase();
 
 const carouselCaption = (pacote: Pacote, brand: string, phone: string, isEs: boolean) => {
-  const details = compact([...(pacote.highlights || []), ...(pacote.included || [])]).slice(0, 5);
+  const details = compact([...(pacote.highlights || []), ...(pacote.included || [])])
+    .map(cleanCarouselText)
+    .filter(Boolean)
+    .slice(0, 5);
   const destinationTag = normalizeName(pacote.title).replace(/[^a-z0-9]+/g, "");
   const lines = isEs
     ? [
@@ -176,10 +192,15 @@ const phoneLabel = (dialCode: string, phone: string) => {
   return `+${dial || "55"} ${number}`;
 };
 
-function contentPresets(pacote: Pacote, isEs: boolean) {
-  const highlights = compact(pacote.highlights || []);
-  const included = compact(pacote.included || []);
-  const itinerary = compact(pacote.itinerary || []);
+function contentPresets(
+  pacote: Pacote,
+  isEs: boolean,
+  strategy: CarouselSlideVariant = "impact",
+) {
+  const destination = cleanCarouselText(pacote.title);
+  const highlights = compact(pacote.highlights || []).map(cleanCarouselText).filter(Boolean);
+  const included = compact(pacote.included || []).map(cleanCarouselText).filter(Boolean);
+  const itinerary = compact(pacote.itinerary || []).map(cleanCarouselText).filter(Boolean);
   const planning = compact([
     pacote.travelDates && `${isEs ? "Fechas" : "Datas"}: ${pacote.travelDates}`,
     pacote.duration && `${isEs ? "Duración" : "Duração"}: ${pacote.duration}`,
@@ -189,54 +210,202 @@ function contentPresets(pacote: Pacote, isEs: boolean) {
     pacote.paymentTerms && `${isEs ? "Pago" : "Pagamento"}: ${pacote.paymentTerms}`,
   ]);
 
-  const stripStars = (s: string) =>
-    s
-      .replace(/⭐|✨|\b⭐\b/gu, "")
-      .replace(/^[-\*\s•]+/, "")
-      .trim();
-
   const cleanBody = (s: string | undefined, maxLen = 140) => {
     if (!s) return "";
-    const cleaned = stripStars(s);
+    const cleaned = cleanCarouselText(s);
     if (cleaned.length <= maxLen) return cleaned;
     return cleaned.slice(0, maxLen).replace(/\s+\S*$/, "") + "...";
   };
 
-  const cleanHighlights = highlights.map(stripStars).filter(Boolean);
-  const cleanIncluded = included.map(stripStars).filter(Boolean);
-  const cleanPlanning = planning.map(stripStars).filter(Boolean);
-  const cleanItinerary = itinerary.map(stripStars).filter(Boolean);
+  const hasIncludedItems = included.length > 0;
+  const packageFacts = (hasIncludedItems ? included : highlights).slice(0, 5);
+  const logistics = planning.map(cleanCarouselText).filter(Boolean).slice(0, 5);
+  const route = (itinerary.length ? itinerary : highlights).slice(0, 5);
+  const description = cleanBody(pacote.longDescription || pacote.description, 150);
+  const shortDescription = cleanBody(pacote.description || pacote.subtitle, 110);
+  const priceAndTerms = compact([pacote.price, pacote.paymentTerms]).map(cleanCarouselText);
 
-  return [
-    {
-      label: isEs ? "La experiencia" : "A experiência",
-      title: stripStars(pacote.subtitle || pacote.title || ""),
-      body: cleanBody(pacote.longDescription || pacote.description, 160),
-      bullets: cleanHighlights.slice(0, 8),
-    },
-    {
-      label: isEs ? "Incluido" : "O que inclui",
-      title: isEs ? "Todo lo que forma parte de tu viaje" : "Tudo que faz parte da sua viagem",
-      body: cleanIncluded.length ? "" : cleanBody(pacote.description, 120),
-      bullets: (cleanIncluded.length ? cleanIncluded : cleanHighlights).slice(0, 8),
-    },
-    {
-      label: isEs ? "Planifica" : "Planeje",
-      title: isEs ? "Información para organizarte" : "Informações para se organizar",
-      body: cleanBody(pacote.importantNotes, 110),
-      bullets: (cleanPlanning.length ? cleanPlanning : cleanItinerary).slice(0, 4),
-    },
-    {
-      label: isEs ? "Condiciones" : "Condições especiais",
-      title: isEs ? "Reserva tu cupo con beneficios" : "Garanta sua vaga com facilidades",
-      body: isEs ? "Oportunidad exclusiva para nuestros viajeros:" : "Oportunidade imperdível para nossos viajantes:",
-      bullets: compact([
-        isEs ? "Atención personalizada por WhatsApp" : "Atendimento exclusivo no WhatsApp",
-        isEs ? "Opciones de pago flexibles" : "Opções flexíveis de parcelamento",
-        isEs ? "Soporte durante todo el viaje" : "Suporte completo durante toda a viagem",
-      ]),
-    },
-  ];
+  const strategies: Record<CarouselSlideVariant, Array<{
+    label: string;
+    title: string;
+    body: string;
+    bullets: string[];
+  }>> = {
+    impact: [
+      {
+        label: isEs ? "Inspírate" : "Imagine-se aqui",
+        title: destination,
+        body: description || (isEs ? "Un viaje para salir de la rutina y coleccionar buenos recuerdos." : "Uma viagem para sair da rotina e colecionar boas memórias."),
+        bullets: highlights.slice(0, 3),
+      },
+      {
+        label: isEs ? "La experiencia" : "O que você vai viver",
+        title: pacote.subtitle ? cleanCarouselText(pacote.subtitle) : (isEs ? "Días para recordar" : "Dias para lembrar"),
+        body: shortDescription,
+        bullets: route.slice(0, 4),
+      },
+      {
+        label: hasIncludedItems
+          ? (isEs ? "Todo organizado" : "Tudo organizado")
+          : (isEs ? "Destacados del viaje" : "Destaques da viagem"),
+        title: hasIncludedItems
+          ? (isEs ? "Viaja con más tranquilidad" : "Viaje com mais tranquilidade")
+          : (isEs ? "Qué hace especial este viaje" : "O que torna esta viagem especial"),
+        body: cleanBody(pacote.importantNotes, 100),
+        bullets: packageFacts,
+      },
+      {
+        label: isEs ? "Tu próxima historia" : "Sua próxima história",
+        title: isEs ? `¿Nos vemos en ${destination}?` : `Nos vemos em ${destination}?`,
+        body: isEs ? "Guarda este post y habla con nuestro equipo cuando quieras planificar." : "Salve este post e fale com nossa equipe quando quiser planejar.",
+        bullets: priceAndTerms,
+      },
+    ],
+    itinerary: [
+      {
+        label: isEs ? "Ruta resumida" : "Roteiro resumido",
+        title: isEs ? `Así será ${destination}` : `Assim será ${destination}`,
+        body: shortDescription,
+        bullets: route,
+      },
+      {
+        label: hasIncludedItems
+          ? (isEs ? "Incluido" : "O que está incluído")
+          : (isEs ? "Destacados" : "Destaques"),
+        title: hasIncludedItems
+          ? (isEs ? "Lo esencial ya está previsto" : "O essencial já está previsto")
+          : (isEs ? "Qué vale la pena conocer" : "O que vale a pena conhecer"),
+        body: "",
+        bullets: packageFacts,
+      },
+      {
+        label: isEs ? "Organízate" : "Para se organizar",
+        title: isEs ? "Fechas y logística" : "Datas e logística",
+        body: cleanBody(pacote.importantNotes, 100),
+        bullets: logistics,
+      },
+      {
+        label: isEs ? "Próximo paso" : "Próximo passo",
+        title: isEs ? "Solicita el itinerario completo" : "Peça o roteiro completo",
+        body: isEs ? "Habla con la agencia y confirma todos los detalles antes de reservar." : "Fale com a agência e confirme todos os detalhes antes de reservar.",
+        bullets: priceAndTerms,
+      },
+    ],
+    editorial: [
+      {
+        label: isEs ? "Guía rápida" : "Guia rápido",
+        title: isEs ? `Lo mejor de ${destination}` : `O melhor de ${destination}`,
+        body: description,
+        bullets: highlights.slice(0, 3),
+      },
+      {
+        label: isEs ? "Experiencias" : "Experiências",
+        title: isEs ? "Qué vale la pena vivir" : "O que vale a pena viver",
+        body: "",
+        bullets: route,
+      },
+      {
+        label: isEs ? "Consejo para planificar" : "Dica para planejar",
+        title: isEs ? "Planifica sin improvisar" : "Planeje sem improviso",
+        body: cleanBody(pacote.importantNotes, 120) || (isEs ? "Confirma fechas, disponibilidad y condiciones con el equipo antes de reservar." : "Confirme datas, disponibilidade e condições com a equipe antes de reservar."),
+        bullets: logistics.slice(0, 3),
+      },
+      {
+        label: isEs ? "Guárdalo" : "Salve para consultar",
+        title: isEs ? "Tu guía empieza aquí" : "Seu planejamento começa aqui",
+        body: isEs ? "Comparte con quien viajaría contigo." : "Compartilhe com quem viajaria com você.",
+        bullets: packageFacts.slice(0, 3),
+      },
+    ],
+    oferta: [
+      {
+        label: isEs ? "Oferta del viaje" : "Oferta da viagem",
+        title: destination,
+        body: pacote.price ? `${isEs ? "Desde" : "A partir de"} ${cleanCarouselText(pacote.price)}` : shortDescription,
+        bullets: packageFacts.slice(0, 4),
+      },
+      {
+        label: hasIncludedItems
+          ? (isEs ? "Tu paquete" : "Seu pacote")
+          : (isEs ? "Destacados" : "Destaques"),
+        title: hasIncludedItems
+          ? (isEs ? "Qué recibes al reservar" : "O que você recebe ao reservar")
+          : (isEs ? "Qué hace especial este viaje" : "O que torna esta viagem especial"),
+        body: "",
+        bullets: packageFacts,
+      },
+      {
+        label: isEs ? "Condiciones" : "Condições",
+        title: isEs ? "Planifica tu inversión" : "Planeje seu investimento",
+        body: cleanBody(pacote.paymentTerms, 110),
+        bullets: logistics,
+      },
+      {
+        label: isEs ? "Cotiza ahora" : "Solicite sua cotação",
+        title: isEs ? "Confirma valor y disponibilidad" : "Confirme valor e disponibilidade",
+        body: isEs ? "Habla por WhatsApp y recibe la información actualizada." : "Fale pelo WhatsApp e receba as informações atualizadas.",
+        bullets: priceAndTerms,
+      },
+    ],
+    minimalist: [
+      {
+        label: isEs ? "Viaja tranquilo" : "Viaje tranquilo",
+        title: isEs ? "Menos preocupación. Más viaje." : "Menos preocupação. Mais viagem.",
+        body: description,
+        bullets: packageFacts.slice(0, 3),
+      },
+      {
+        label: isEs ? "Conveniencia" : "Praticidade",
+        title: isEs ? "Lo importante ya organizado" : "O importante já organizado",
+        body: "",
+        bullets: logistics.length ? logistics : packageFacts,
+      },
+      {
+        label: isEs ? "Soporte" : "Apoio",
+        title: isEs ? "Información antes de decidir" : "Informação antes de decidir",
+        body: cleanBody(pacote.importantNotes, 120),
+        bullets: route.slice(0, 3),
+      },
+      {
+        label: isEs ? "Habla con la agencia" : "Fale com a agência",
+        title: isEs ? "Aclara tus dudas antes de decidir" : "Tire suas dúvidas antes de decidir",
+        body: isEs ? "Solicita valores, disponibilidad y condiciones actualizadas." : "Solicite valores, disponibilidade e condições atualizadas.",
+        bullets: priceAndTerms,
+      },
+    ],
+    vibrant: [
+      {
+        label: isEs ? "Antes de reservar" : "Antes de reservar",
+        title: isEs ? `Lo que debes saber sobre ${destination}` : `O que saber sobre ${destination}`,
+        body: shortDescription,
+        bullets: logistics.slice(0, 3),
+      },
+      {
+        label: hasIncludedItems
+          ? (isEs ? "¿Qué incluye?" : "O que inclui?")
+          : (isEs ? "Destacados" : "Destaques"),
+        title: hasIncludedItems
+          ? (isEs ? "Revisa los elementos del paquete" : "Confira os itens do pacote")
+          : (isEs ? "Conoce los destacados del viaje" : "Conheça os destaques da viagem"),
+        body: "",
+        bullets: packageFacts,
+      },
+      {
+        label: isEs ? "Pago y fechas" : "Pagamento e datas",
+        title: isEs ? "Confirma antes de decidir" : "Confirme antes de decidir",
+        body: cleanBody(pacote.paymentTerms, 100),
+        bullets: logistics,
+      },
+      {
+        label: isEs ? "¿Tienes dudas?" : "Ficou com dúvidas?",
+        title: isEs ? "Habla con nuestro equipo" : "Fale com nossa equipe",
+        body: isEs ? "Recibe valores, disponibilidad y condiciones actualizadas por WhatsApp." : "Receba valores, disponibilidade e condições atualizadas pelo WhatsApp.",
+        bullets: priceAndTerms,
+      },
+    ],
+  };
+
+  return strategies[strategy];
 }
 
 function createSlides(
@@ -246,6 +415,7 @@ function createSlides(
   phone: string,
   isEs: boolean,
   extraImages: string[] = [],
+  strategy: CarouselSlideVariant = "impact",
 ): CarouselSlide[] {
   const allDestImages = uniqueImages([
     pacote.imageUrl,
@@ -258,14 +428,17 @@ function createSlides(
     if (!validImages.length) return ""; // fallback to empty instead of coverImage
     return validImages[idx % validImages.length] || "";
   };
-  const presets = contentPresets(pacote, isEs);
+  const presets = contentPresets(pacote, isEs, strategy);
   const contentCount = total - 2;
   const selectedPresets =
     contentCount === 1
       ? [
           {
             ...presets[0],
-            bullets: compact([...(pacote.included || []), ...(pacote.highlights || [])]).slice(0, 8),
+            bullets: compact([...(pacote.included || []), ...(pacote.highlights || [])])
+              .map(cleanCarouselText)
+              .filter(Boolean)
+              .slice(0, 5),
           },
         ]
       : contentCount === 2
@@ -309,7 +482,7 @@ function createSlides(
       textColor: "#FFFFFF",
       cta: "",
       phone: "",
-      slideVariant: "impact",
+      slideVariant: strategy,
       bulletIcon: "none",
       showShadow: true,
       labelStyle: "filled",
@@ -386,6 +559,35 @@ function mergeActiveIntoArchive(
     contentIndex += 1;
     return replacement || slide;
   });
+}
+
+function carrySlidePresentation(next: CarouselSlide, current?: CarouselSlide): CarouselSlide {
+  if (!current || current.kind !== next.kind || next.kind === "cover") return next;
+  if (next.kind === "closing") {
+    return {
+      ...next,
+      ...current,
+      id: current.id,
+      imageUrl: current.imageUrl || next.imageUrl,
+    };
+  }
+  return {
+    ...next,
+    id: current.id,
+    imageUrl: current.imageUrl || next.imageUrl,
+    textColor: current.textColor,
+    bulletIcon: current.bulletIcon,
+    showShadow: current.showShadow,
+    labelStyle: current.labelStyle,
+    labelColor: current.labelColor,
+    fontFamily: current.fontFamily,
+    fontWeight: current.fontWeight,
+    fontStyle: current.fontStyle,
+    textDecoration: current.textDecoration,
+    titleStyle: current.titleStyle,
+    bodyStyle: current.bodyStyle,
+    bulletStyle: current.bulletStyle,
+  };
 }
 
 async function optimizeUpload(file: File) {
@@ -505,8 +707,8 @@ async function assertExportImageReadable(source: string) {
 
 function CarouselCanvas({
   slide,
-  index,
-  total,
+  index: _index,
+  total: _total,
   ratio,
   logo,
   primary,
@@ -576,7 +778,6 @@ function CarouselCanvas({
   }
 
   const isClosing = slide.kind === "closing";
-  const onSecondary = readableText(secondary);
   const ff = slide.fontFamily || "Inter, ui-sans-serif, system-ui, sans-serif";
   
   const titleBold = slide.titleStyle?.bold !== undefined ? slide.titleStyle.bold : (slide.fontWeight === "normal" ? false : true);
@@ -596,6 +797,11 @@ function CarouselCanvas({
   const bulletStyleAttr = (slide.bulletStyle?.italic !== undefined ? slide.bulletStyle.italic : slide.fontStyle === "italic") ? "italic" : "normal";
   const bulletDecAttr = (slide.bulletStyle?.underline !== undefined ? slide.bulletStyle.underline : slide.textDecoration === "underline") ? "underline" : "none";
   const bulletColor = slide.bulletStyle?.color || slide.textColor;
+  const imageTitleColor = contrastSafeColor(titleColor, "#111318");
+  const imageBodyColor = contrastSafeColor(bodyColor, "#111318");
+  const imageBulletColor = contrastSafeColor(bulletColor, "#111318");
+  const titleLength = cleanCarouselText(slide.title).length;
+  const titleScale = titleLength > 70 ? 0.76 : titleLength > 52 ? 0.84 : titleLength > 38 ? 0.92 : 1;
 
   const textShadow = slide.showShadow === false ? "none" : `0px ${Math.round(3 * Z)}px ${Math.round(18 * Z)}px rgba(0, 0, 0, 0.75)`;
   const bodyShadow = slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`;
@@ -610,16 +816,21 @@ function CarouselCanvas({
     const style = slide.labelStyle || "filled";
     const commonStyle: CSSProperties = {
       display: "inline-block",
-      maxWidth: "100%",
-      marginBottom: Math.round(13 * Z),
-      padding: `${Math.round(7 * Z)}px ${Math.round(12 * Z)}px`,
-      fontSize: Math.round(10 * Z),
+      alignSelf: "flex-start",
+      width: "fit-content",
+      maxWidth: "88%",
+      marginBottom: Math.round(10 * Z),
+      padding: `${Math.round(5 * Z)}px ${Math.round(9 * Z)}px`,
+      fontSize: Math.round(8 * Z),
       lineHeight: 1.15,
       fontWeight: 900,
-      letterSpacing: ".12em",
+      letterSpacing: ".08em",
       textTransform: "uppercase",
       boxSizing: "border-box",
       verticalAlign: "middle",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
     };
 
     if (style === "outline-thin") {
@@ -668,6 +879,75 @@ function CarouselCanvas({
       <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), background: bg, color: fg, boxShadow: slide.showShadow === false ? "none" : `0px ${Math.round(4 * Z)}px ${Math.round(14 * Z)}px rgba(0, 0, 0, 0.35)` }}>
         {label}
       </div>
+    );
+  };
+
+  const renderBullets = ({
+    color,
+    max = 5,
+    numbered = false,
+    columns = 1,
+    textShadow: customTextShadow = "none",
+  }: {
+    color: string;
+    max?: number;
+    numbered?: boolean;
+    columns?: 1 | 2;
+    textShadow?: string;
+  }) => {
+    const items = slide.bullets.map(cleanCarouselText).filter(Boolean).slice(0, max);
+    if (!items.length) return null;
+    const dense = items.join("").length > 105 || items.some((item) => item.length > 34);
+    return (
+      <ul
+        style={{
+          display: "grid",
+          gridTemplateColumns: columns === 2 ? "repeat(2, minmax(0, 1fr))" : "1fr",
+          gap: `${Math.round((dense ? 5 : 7) * Z)}px ${Math.round(12 * Z)}px`,
+          padding: 0,
+          margin: `${Math.round(14 * Z)}px 0 0`,
+          listStyle: "none",
+        }}
+      >
+        {items.map((item, bulletIndex) => (
+          <li
+            key={`${slide.id}-b-${bulletIndex}`}
+            style={{
+              display: "flex",
+              gap: Math.round(8 * Z),
+              alignItems: "flex-start",
+              minWidth: 0,
+              color,
+              fontSize: Math.round((dense ? 10.25 : 11.5) * Z),
+              lineHeight: dense ? 1.24 : 1.32,
+              fontFamily: ff,
+              fontWeight: bulletWeight,
+              fontStyle: bulletStyleAttr,
+              textDecoration: bulletDecAttr,
+              overflowWrap: "anywhere",
+              textShadow: customTextShadow,
+            }}
+          >
+            <span
+              style={{
+                flex: "0 0 auto",
+                minWidth: numbered ? Math.round(20 * Z) : Math.round(5 * Z),
+                height: numbered ? "auto" : Math.round(5 * Z),
+                marginTop: numbered ? 0 : Math.round(5 * Z),
+                borderRadius: numbered ? 0 : Math.round(99 * Z),
+                background: numbered ? "transparent" : secondary,
+                color: numbered ? secondary : "transparent",
+                fontSize: Math.round(9 * Z),
+                lineHeight: 1.45,
+                fontWeight: 900,
+              }}
+            >
+              {numbered ? String(bulletIndex + 1).padStart(2, "0") : ""}
+            </span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
     );
   };
 
@@ -926,40 +1206,25 @@ function CarouselCanvas({
                 <div>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 31 : 35) * Z), lineHeight: 1.02, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: imageTitleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ maxWidth: "94%", margin: `${Math.round(13 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round((ratio < 0.68 ? 13 : 14) * Z), lineHeight: 1.45, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
+                    <p style={{ maxWidth: "88%", margin: `${Math.round(11 * Z)}px 0 0`, color: imageBodyColor, fontSize: Math.round((ratio < 0.68 ? 12 : 13) * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
                       {slide.body}
                     </p>
                   )}
-                  {slide.bullets.length > 0 && (
-                    <ul style={{ display: "grid", gap: Math.round(7 * Z), maxWidth: "96%", margin: `${Math.round(15 * Z)}px 0 0`, padding: 0, listStyle: "none" }}>
-                      {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                        if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(10 * Z) }} />;
-                        return (
-                          <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "flex-start", color: bulletColor, fontSize: Math.round(13 * Z), lineHeight: 1.35, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: bulletShadow }}>
-                            <span>{item}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
+                  {renderBullets({ color: imageBulletColor, max: 4, columns: 2, textShadow: bulletShadow })}
                 </div>
               </div>
             )}
 
             {/* ─── VARIANT: ITINERARY — photo top ~45%, colored block bottom ─── */}
             {slide.slideVariant === "itinerary" && (() => {
-              const onPrimary = readableText(primary);
-              const isBgDark = onPrimary === "#F8FAFC";
-              const isTextDark = readableText(slide.textColor) === "#F8FAFC";
-              const boxTextColor = isBgDark && isTextDark ? onPrimary : slide.textColor;
-              const boxTitleColor = slide.titleStyle?.color || boxTextColor;
-              const boxBodyColor = slide.bodyStyle?.color || boxTextColor;
-              const boxBulletColor = slide.bulletStyle?.color || boxTextColor;
+              const boxTitleColor = contrastSafeColor(slide.titleStyle?.color, primary);
+              const boxBodyColor = contrastSafeColor(slide.bodyStyle?.color, primary);
+              const boxBulletColor = contrastSafeColor(slide.bulletStyle?.color, primary);
               return (
                 <div
                   style={{
@@ -970,7 +1235,7 @@ function CarouselCanvas({
                     boxSizing: "border-box",
                   }}
                 >
-                  <div style={{ position: "relative", height: "45%", width: "100%", flexShrink: 0, overflow: "hidden" }}>
+                  <div style={{ position: "relative", height: "38%", width: "100%", flexShrink: 0, overflow: "hidden" }}>
                     {logo && (
                       <img
                         src={logo}
@@ -984,11 +1249,11 @@ function CarouselCanvas({
                     style={{
                       flex: 1,
                       background: primary,
-                      color: boxTextColor,
-                      padding: "7% 8% 8%",
+                      color: boxBodyColor,
+                      padding: "6.5% 8% 7%",
                       display: "flex",
                       flexDirection: "column",
-                      justifyContent: "space-between",
+                      justifyContent: "flex-start",
                       boxSizing: "border-box",
                       borderTop: `${Math.round(3 * Z)}px solid ${secondary}`,
                     }}
@@ -996,108 +1261,69 @@ function CarouselCanvas({
                     <div>
                       {renderLabel(slide.label)}
                       {slide.title && (
-                        <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 26 : 30) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
+                        <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 24 : 28) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
                           {slide.title}
                         </h3>
                       )}
                       {slide.body && (
-                        <p style={{ margin: `${Math.round(10 * Z)}px 0 0`, color: boxBodyColor, fontSize: Math.round(13 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
+                        <p style={{ margin: `${Math.round(9 * Z)}px 0 0`, color: boxBodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.38, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
                           {slide.body}
                         </p>
                       )}
                     </div>
-                    {slide.bullets.length > 0 && (
-                      <ul style={{ display: "grid", gap: Math.round(6 * Z), padding: 0, margin: `${Math.round(12 * Z)}px 0 0`, listStyle: "none" }}>
-                        {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                          if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
-                          return (
-                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: boxBulletColor, fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                              <span>{item}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
+                    {renderBullets({ color: boxBulletColor, max: 4, numbered: true })}
                   </div>
                 </div>
               );
             })()}
 
-            {/* ─── VARIANT: EDITORIAL — photo full background, floating glass card at bottom ─── */}
-            {slide.slideVariant === "editorial" && (() => {
-              const boxTextColor = readableText(primary);
-              const boxTitleColor = slide.titleStyle?.color || boxTextColor;
-              const boxBodyColor = slide.bodyStyle?.color || boxTextColor;
-              const boxBulletColor = slide.bulletStyle?.color || boxTextColor;
-              return (
+            {/* ─── VARIANT: EDITORIAL — useful guide with photo-forward split layout ─── */}
+            {slide.slideVariant === "editorial" && (
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "stretch" }}>
                 <div
                   style={{
-                    position: "absolute",
-                    inset: 0,
+                    width: "64%",
+                    minWidth: 0,
+                    background: "#F3F2EE",
+                    padding: "9% 7.5%",
+                    boxSizing: "border-box",
                     display: "flex",
                     flexDirection: "column",
-                    justifyContent: "space-between",
-                    padding: "7%",
-                    boxSizing: "border-box",
+                    justifyContent: "center",
+                    borderRight: `${Math.round(5 * Z)}px solid ${secondary}`,
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
-                    {logo ? (
-                      <img
-                        src={logo}
-                        alt=""
-                        crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                        style={{ width: Math.round(38 * Z), height: Math.round(38 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }}
-                      />
-                    ) : <span />}
-                  </div>
-                  <div
-                    style={{
-                      width: "100%",
-                      borderRadius: Math.round(18 * Z),
-                      background: safeHexToRgba(primary, 0.93),
-                      backdropFilter: "blur(8px)",
-                      border: `${Math.round(2 * Z)}px solid ${secondary}`,
-                      padding: "8% 9%",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: Math.round(10 * Z),
-                      overflow: "hidden",
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    {renderLabel(slide.label)}
-                    {slide.title && (
-                      <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 24 : 28) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                        {slide.title}
-                      </h3>
-                    )}
-                    {slide.body && (
-                      <p style={{ margin: 0, color: boxBodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.88, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
-                        {slide.body}
-                      </p>
-                    )}
-                    {slide.bullets.length > 0 && (
-                      <ul style={{ display: "grid", gap: Math.round(7 * Z), padding: 0, margin: 0, listStyle: "none" }}>
-                        {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                          if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(8 * Z) }} />;
-                          return (
-                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(7 * Z), alignItems: "flex-start", color: boxBulletColor, fontSize: Math.round(12 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                              <span>{item}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </div>
+                  {renderLabel(slide.label)}
+                  {slide.title && (
+                    <h3 style={{ margin: 0, color: "#17191D", fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                      {slide.title}
+                    </h3>
+                  )}
+                  {slide.body && (
+                    <p style={{ margin: `${Math.round(11 * Z)}px 0 0`, color: "#42454C", fontSize: Math.round(11.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
+                      {slide.body}
+                    </p>
+                  )}
+                  {renderBullets({ color: "#303238", max: 4 })}
                 </div>
-              );
-            })()}
+                <div style={{ position: "relative", flex: 1 }}>
+                  {logo && (
+                    <img
+                      src={logo}
+                      alt=""
+                      crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                      style={{ position: "absolute", right: "12%", top: "8%", width: Math.round(36 * Z), height: Math.round(36 * Z), borderRadius: Math.round(9 * Z), objectFit: "contain", background: "rgba(255,255,255,.94)", padding: Math.round(4 * Z) }}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
 
-            {/* ─── VARIANT: OFERTA — blue rounded box, modern layout ─── */}
+            {/* ─── VARIANT: OFERTA — conversion panel using the agency palette ─── */}
             {slide.slideVariant === "oferta" && (() => {
-              const boxBg = "#0047FF";
-              const boxTextColor = "#FFFFFF";
+              const panelText = contrastSafeColor(slide.textColor || readableText(primary), primary);
+              const panelBody = contrastSafeColor(slide.bodyStyle?.color || panelText, primary);
+              const panelBullet = contrastSafeColor(slide.bulletStyle?.color || panelText, primary);
               return (
                 <div
                   style={{
@@ -1106,63 +1332,53 @@ function CarouselCanvas({
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "flex-end",
-                    padding: "8%",
                     boxSizing: "border-box",
                   }}
                 >
-                  <div style={{ position: "absolute", top: "8%", left: "8%" }}>
+                  <div style={{ position: "absolute", top: "7%", right: "7%", zIndex: 12 }}>
                     {logo ? (
                       <img
                         src={logo}
                         alt=""
                         crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                        style={{ width: Math.round(42 * Z), height: Math.round(42 * Z), borderRadius: Math.round(12 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(5 * Z), boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0, 0, 0, 0.24)` }}
+                        style={{ width: Math.round(40 * Z), height: Math.round(40 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(5 * Z), boxShadow: `0px ${Math.round(6 * Z)}px ${Math.round(20 * Z)}px rgba(0, 0, 0, 0.24)` }}
                       />
                     ) : <span />}
                   </div>
                   <div
                     style={{
-                      background: boxBg,
-                      color: boxTextColor,
-                      borderRadius: Math.round(24 * Z),
-                      padding: "10%",
-                      boxShadow: `0px ${Math.round(12 * Z)}px ${Math.round(32 * Z)}px rgba(0, 71, 255, 0.35)`,
+                      width: "78%",
+                      minHeight: "53%",
+                      background: primary,
+                      color: panelText,
+                      padding: "7.5% 8%",
+                      borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${secondary}`,
+                      borderRight: `${Math.max(1, Math.round(2 * Z))}px solid ${secondary}`,
+                      borderTopRightRadius: Math.round(18 * Z),
+                      boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(34 * Z)}px rgba(0, 0, 0, 0.2)`,
                       position: "relative",
                       zIndex: 10,
+                      boxSizing: "border-box",
                     }}
                   >
-                    <div style={{ display: "inline-block", background: "#F5F906", color: "#111318", padding: `${Math.round(4 * Z)}px ${Math.round(12 * Z)}px`, borderRadius: Math.round(99 * Z), fontSize: Math.round(10 * Z), fontWeight: 900, marginBottom: Math.round(12 * Z), textTransform: "uppercase" }}>
-                      {slide.label || "OFERTA"}
-                    </div>
+                    {renderLabel(slide.label)}
                     {slide.title && (
-                      <h3 style={{ margin: 0, fontSize: Math.round((ratio < 0.68 ? 28 : 32) * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr }}>
+                      <h3 style={{ maxWidth: "92%", margin: 0, color: panelText, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
                         {slide.title}
                       </h3>
                     )}
                     {slide.body && (
-                      <p style={{ margin: `${Math.round(10 * Z)}px 0 0`, fontSize: Math.round(14 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.95, whiteSpace: "pre-wrap" }}>
+                      <p style={{ maxWidth: "92%", margin: `${Math.round(10 * Z)}px 0 0`, color: panelBody, fontSize: Math.round(12.5 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.92, whiteSpace: "pre-wrap" }}>
                         {slide.body}
                       </p>
                     )}
-                    {slide.bullets.length > 0 && (
-                      <ul style={{ display: "grid", gap: Math.round(8 * Z), padding: 0, margin: `${Math.round(16 * Z)}px 0 0`, listStyle: "none" }}>
-                        {slide.bullets.slice(0, 8).map((item, bulletIndex) => {
-                          if (!item.trim()) return <li key={`${slide.id}-b-${bulletIndex}`} style={{ height: Math.round(10 * Z) }} />;
-                          return (
-                            <li key={`${slide.id}-b-${bulletIndex}`} style={{ display: "flex", gap: Math.round(8 * Z), alignItems: "center", fontSize: Math.round(13 * Z), lineHeight: 1.3, fontFamily: ff, fontWeight: bulletWeight, fontStyle: bulletStyleAttr, textDecoration: bulletDecAttr }}>
-                              <span style={{ color: "#F5F906" }}>✔</span>
-                              <span>{item}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
+                    {renderBullets({ color: panelBullet, max: 4, columns: 2 })}
                   </div>
                 </div>
               );
             })()}
 
-            {/* ─── VARIANT: MINIMALIST — editorial light panel with guaranteed contrast ─── */}
+            {/* ─── VARIANT: MINIMALIST — quiet service-led composition ─── */}
             {slide.slideVariant === "minimalist" && (
               <div
                 style={{
@@ -1171,79 +1387,85 @@ function CarouselCanvas({
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "flex-end",
-                  padding: "7%",
                   boxSizing: "border-box",
                 }}
               >
-                <div style={{ background: "rgba(255,255,255,0.96)", color: "#111318", padding: "8%", borderRadius: Math.round(4 * Z), borderTop: `${Math.round(5 * Z)}px solid ${secondary}`, boxShadow: `0 ${Math.round(12 * Z)}px ${Math.round(38 * Z)}px rgba(0,0,0,.32)` }}>
+                {logo && (
+                  <img
+                    src={logo}
+                    alt=""
+                    crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                    style={{ position: "absolute", right: "7%", top: "7%", width: Math.round(38 * Z), height: Math.round(38 * Z), borderRadius: Math.round(9 * Z), objectFit: "contain", background: "rgba(255,255,255,.94)", padding: Math.round(4 * Z), boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.22)` }}
+                  />
+                )}
+                <div style={{ minHeight: "48%", background: "rgba(248,248,246,0.98)", color: "#15171A", padding: "6.5% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ margin: `${Math.round(8 * Z)}px 0 0`, color: "#111318", fontSize: Math.round((ratio < 0.68 ? 30 : 34) * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: "#15171A", fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, color: "#303238", fontSize: Math.round(13 * Z), lineHeight: 1.45, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
+                    <p style={{ maxWidth: "92%", margin: `${Math.round(10 * Z)}px 0 0`, color: "#41444A", fontSize: Math.round(12.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
                       {slide.body}
                     </p>
                   )}
-                  {slide.bullets.length > 0 && (
-                    <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, color: "#4B4E55", fontSize: Math.round(11 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bulletWeight }}>
-                      {slide.bullets.filter(Boolean).slice(0, 4).join(" • ")}
-                    </p>
-                  )}
+                  {renderBullets({ color: "#34373C", max: 3, columns: 2 })}
                 </div>
               </div>
             )}
 
-            {/* ─── VARIANT: VIBRANT — bright gradients ─── */}
+            {/* ─── VARIANT: VIBRANT — FAQ split layout without decorative gradients ─── */}
             {slide.slideVariant === "vibrant" && (() => {
+              const panelText = contrastSafeColor(slide.textColor || readableText(primary), primary);
+              const panelBody = contrastSafeColor(slide.bodyStyle?.color || panelText, primary);
+              const panelBullet = contrastSafeColor(slide.bulletStyle?.color || panelText, primary);
               return (
                 <div
                   style={{
                     position: "absolute",
                     inset: 0,
                     display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    padding: "8%",
+                    alignItems: "stretch",
                     boxSizing: "border-box",
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <div
+                    style={{
+                      width: "62%",
+                      minWidth: 0,
+                      background: primary,
+                      color: panelText,
+                      padding: "9% 7.5%",
+                      borderTop: `${Math.max(4, Math.round(7 * Z))}px solid ${secondary}`,
+                      boxSizing: "border-box",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      boxShadow: `${Math.round(10 * Z)}px 0 ${Math.round(32 * Z)}px rgba(0,0,0,.2)`,
+                    }}
+                  >
+                    {renderLabel(slide.label)}
+                    {slide.title && (
+                      <h3 style={{ maxWidth: "94%", margin: 0, color: panelText, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                        {slide.title}
+                      </h3>
+                    )}
+                    {slide.body && (
+                      <p style={{ maxWidth: "94%", margin: `${Math.round(10 * Z)}px 0 0`, color: panelBody, fontSize: Math.round(12 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9 }}>
+                        {slide.body}
+                      </p>
+                    )}
+                    {renderBullets({ color: panelBullet, max: 4, numbered: true })}
+                  </div>
+                  <div style={{ position: "relative", flex: 1 }}>
                     {logo && (
                       <img
                         src={logo}
                         alt=""
                         crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                        style={{ width: Math.round(46 * Z), height: Math.round(46 * Z), borderRadius: Math.round(99 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(6 * Z), boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }}
+                        style={{ position: "absolute", right: "13%", top: "8%", width: Math.round(38 * Z), height: Math.round(38 * Z), borderRadius: Math.round(9 * Z), objectFit: "contain", background: "rgba(255,255,255,.94)", padding: Math.round(4 * Z), boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.22)` }}
                       />
-                    )}
-                  </div>
-                  <div
-                    style={{
-                      background: `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`,
-                      color: readableText(primary),
-                      padding: "8%",
-                      borderRadius: Math.round(24 * Z),
-                      boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0,0,0,0.3)`,
-                    }}
-                  >
-                    {renderLabel(slide.label)}
-                    {slide.title && (
-                      <h3 style={{ margin: `${Math.round(12 * Z)}px 0 0`, fontSize: Math.round((ratio < 0.68 ? 26 : 30) * Z), lineHeight: 1.1, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr }}>
-                        {slide.title}
-                      </h3>
-                    )}
-                    {slide.body && (
-                      <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, fontSize: Math.round(13 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9 }}>
-                        {slide.body}
-                      </p>
-                    )}
-                    {slide.bullets.length > 0 && (
-                      <p style={{ margin: `${Math.round(12 * Z)}px 0 0`, color: readableText(primary), fontSize: Math.round(11 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bulletWeight }}>
-                        {slide.bullets.filter(Boolean).slice(0, 4).join(" • ")}
-                      </p>
                     )}
                   </div>
                 </div>
@@ -1659,6 +1881,34 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadRequestRef = useRef(new Map<string, symbol>());
   const activeSlide = slides[activeIndex];
+  const qualityIssues = useMemo(() => {
+    const issues: string[] = [];
+    const contentSlides = slides.filter((slide) => slide.kind === "content");
+    const closingSlide = slides.find((slide) => slide.kind === "closing");
+    if (!selectedPackage?.title?.trim()) {
+      issues.push(isEs ? "Selecciona un paquete" : "Selecione um pacote");
+    }
+    if (!slides.find((slide) => slide.kind === "cover")?.imageUrl?.trim()) {
+      issues.push(isEs ? "Genera la portada en Anuncio" : "Gere a capa no Anúncio");
+    }
+    if (!state.logoBase64?.trim()) {
+      issues.push(isEs ? "Agrega el logo en el Panel" : "Adicione a logo no Painel");
+    }
+    if (!contentSlides.length || contentSlides.some((slide) => !cleanCarouselText(slide.title))) {
+      issues.push(isEs ? "Completa los títulos" : "Complete os títulos");
+    }
+    if (slides.some((slide) => slide.kind !== "cover" && !slide.imageUrl?.trim())) {
+      issues.push(isEs ? "Elige las fotos" : "Escolha as fotos");
+    }
+    if (!closingSlide?.cta?.trim()) {
+      issues.push(isEs ? "Define la llamada final" : "Defina a chamada final");
+    }
+    if (!closingSlide?.phone?.trim()) {
+      issues.push(isEs ? "Agrega el WhatsApp" : "Adicione o WhatsApp");
+    }
+    return issues;
+  }, [isEs, selectedPackage?.title, slides, state.logoBase64]);
+  const qualityReady = qualityIssues.length === 0;
 
   const generateCaption = async () => {
     if (!selectedPackage) return;
@@ -1740,8 +1990,17 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   useEffect(() => {
     setPhotoQuery(selectedPackage?.title || "");
     setPhotoResults([]);
-    setCaptionText("");
-  }, [selectedPackage?.id, selectedPackage?.title]);
+    setCaptionText(
+      selectedPackage
+        ? carouselCaption(
+            selectedPackage,
+            state.agencyName || (isEs ? "Agencia de Viajes" : "Agência de Viagens"),
+            agencyPhone,
+            isEs,
+          )
+        : "",
+    );
+  }, [agencyPhone, isEs, selectedPackage, state.agencyName]);
 
   useEffect(() => {
     if (!coverImage) {
@@ -1908,9 +2167,48 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     );
   };
 
-  const patchAllContentSlides = (patch: Partial<CarouselSlide>) => {
-    setSlides((current) =>
-      current.map((slide) => (slide.kind === "content" ? { ...slide, ...patch } : slide)),
+  const currentStrategy =
+    slides.find((slide) => slide.kind === "content")?.slideVariant || "impact";
+
+  const applyCarouselStrategy = (strategy: CarouselSlideVariant) => {
+    if (!selectedPackage) return;
+    const destImages = uniqueImages([...availableImages, ...photoResults.map((p) => p.url)]);
+    const currentArchive = mergeActiveIntoArchive(slides, slideArchiveRef.current);
+    const currentContent = currentArchive.filter((slide) => slide.kind === "content");
+    const currentClosing = currentArchive.find((slide) => slide.kind === "closing");
+    let contentIndex = 0;
+    const generatedArchive = createSlides(
+      selectedPackage,
+      6,
+      coverImage,
+      agencyPhone,
+      isEs,
+      destImages,
+      strategy,
+    ).map((slide) => {
+      if (slide.kind === "cover") return slide;
+      if (slide.kind === "closing") return carrySlidePresentation(slide, currentClosing);
+      const current = currentContent[contentIndex];
+      contentIndex += 1;
+      return carrySlidePresentation(slide, current);
+    });
+    const generated = mergeSlidesForSize(
+      generatedArchive,
+      createSlides(
+        selectedPackage,
+        slideCount,
+        coverImage,
+        agencyPhone,
+        isEs,
+        destImages,
+        strategy,
+      ),
+    );
+    slideArchiveRef.current = generatedArchive;
+    setSlides(generated);
+    setActiveIndex(generated.length > 1 ? 1 : 0);
+    toast.success(
+      isEs ? "Estrategia aplicada al carrusel." : "Estratégia aplicada ao carrossel.",
     );
   };
 
@@ -1924,6 +2222,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       agencyPhone,
       isEs,
       destImages,
+      currentStrategy,
     );
     const generatedArchive = createSlides(
       selectedPackage,
@@ -1932,6 +2231,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       agencyPhone,
       isEs,
       destImages,
+      currentStrategy,
     );
     setSlides((current) => {
       const archiveBase = mergeSlidesForSize(
@@ -1963,6 +2263,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       agencyPhone,
       isEs,
       destImages,
+      nextVariant,
     );
     const generated = mergeSlidesForSize(
       generatedArchive,
@@ -1973,13 +2274,10 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
         agencyPhone,
         isEs,
         destImages,
+        nextVariant,
       ),
-    ).map((slide) =>
-      slide.kind === "content" ? { ...slide, slideVariant: nextVariant } : slide,
     );
-    slideArchiveRef.current = generatedArchive.map((slide) =>
-      slide.kind === "content" ? { ...slide, slideVariant: nextVariant } : slide,
-    );
+    slideArchiveRef.current = generatedArchive;
     setSlides(generated);
     setActiveIndex(generated.length > 1 ? 1 : 0);
     toast.success(
@@ -2000,19 +2298,6 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
         ? `Nuevo carrusel de ${selectedPackage?.title || "este destino"} generado.`
         : `Novo carrossel de ${selectedPackage?.title || "este destino"} gerado.`,
     );
-  };
-
-  const generateNewSlidePhoto = () => {
-    if (!activeSlide || !availableImages.length) return;
-    const currentImg = activeSlide.imageUrl;
-    const nextIdx = (availableImages.indexOf(currentImg) + 1) % availableImages.length;
-    const nextImage = availableImages[nextIdx] || availableImages[0] || currentImg;
-    setSlides((curr) =>
-      curr.map((slide, idx) =>
-        idx === activeIndex ? { ...slide, imageUrl: nextImage } : slide
-      )
-    );
-    toast.success(isEs ? "¡Foto del slide cambiada!" : "Foto do slide atualizada com sucesso!");
   };
 
   const searchPhotos = async () => {
@@ -2134,6 +2419,14 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
 
   const downloadAll = async () => {
     if (!selectedPackage || !slides.length) return;
+    if (!qualityReady) {
+      toast.error(
+        isEs
+          ? `Revisa antes de descargar: ${qualityIssues[0] || "faltan datos"}.`
+          : `Revise antes de baixar: ${qualityIssues[0] || "faltam dados"}.`,
+      );
+      return;
+    }
     if (!coverImage) {
       setActiveIndex(0);
       toast.error(
@@ -2489,13 +2782,13 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   const renderPublishFooterBox = () => {
     return (
       <div className="space-y-4">
-        {/* ── AI Caption Textarea Box ── */}
+        {/* ── Ready-to-publish caption ── */}
         <div className="rounded-2xl border border-[#F5F906]/20 bg-[#0F0F11] overflow-hidden shadow-lg">
           <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06]">
             <div className="flex items-center gap-2.5">
               <Sparkles className="h-4 w-4 text-[#F5F906]" />
               <h3 className="text-sm font-bold text-white">
-                {isEs ? "Leyenda del Post (IA)" : "Legenda do Post (IA)"}
+                {isEs ? "Texto listo para publicar" : "Legenda pronta"}
               </h3>
             </div>
             <button
@@ -2505,14 +2798,14 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
               className="rounded-lg bg-[#F5F906] px-3 py-1.5 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:opacity-50 transition-colors shadow-md flex items-center gap-1.5"
             >
               {generatingCaption ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-              {isEs ? "Generar con IA" : "Gerar com IA"}
+              {isEs ? "Reescribir" : "Reescrever"}
             </button>
           </div>
           <div className="p-4 bg-black/40">
             <textarea
               value={captionText}
               onChange={(e) => setCaptionText(e.target.value)}
-              placeholder={isEs ? "Tu leyenda aparecerá aquí..." : "Sua legenda com hashtags aparecerá aqui..."}
+              placeholder={isEs ? "Tu texto aparecerá aquí..." : "Sua legenda aparecerá aqui..."}
               rows={5}
               className="w-full rounded-xl border border-white/10 bg-[#121316] px-3 py-2.5 text-xs text-white outline-none focus:border-[#F5F906] focus:ring-1 focus:ring-[#F5F906]/30 transition-all resize-y"
             />
@@ -2524,20 +2817,35 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   };
 
   const renderActionBar = () => (
-    <div className="rounded-2xl border border-[#F5F906]/25 bg-[#0F0F11] p-4 sm:p-5">
+    <div className={`rounded-2xl border bg-[#0F0F11] p-4 sm:p-5 ${qualityReady ? "border-emerald-400/25" : "border-amber-300/25"}`}>
       <div className="mb-3 flex items-center gap-3">
-        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-xs font-black text-zinc-950">4</span>
-        <div>
-          <p className="text-sm font-bold text-white">{isEs ? "Todo listo para publicar" : "Tudo pronto para publicar"}</p>
+        <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-black ${qualityReady ? "bg-emerald-400 text-emerald-950" : "bg-amber-300 text-amber-950"}`}>
+          {qualityReady ? <Check className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-white">
+            {qualityReady
+              ? (isEs ? "Listo para publicar" : "Pronto para publicar")
+              : (isEs ? "Revisa antes de publicar" : "Revise antes de publicar")}
+          </p>
           <p className="text-[10px] text-white/50">{selectedPackage?.title}</p>
         </div>
       </div>
+      {!qualityReady && (
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          {qualityIssues.map((issue) => (
+            <span key={issue} className="rounded-full border border-amber-300/20 bg-amber-300/[0.06] px-2.5 py-1 text-[10px] font-semibold text-amber-100/80">
+              {issue}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="grid gap-2.5 sm:grid-cols-3">
         <button type="button" onClick={() => setShowNewCarouselModal(true)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-3 text-xs font-extrabold text-white/80 hover:bg-white/[0.08]">
           <RefreshCw className="h-4 w-4" />
           {isEs ? "Nueva variación" : "Nova variação"}
         </button>
-        <button type="button" onClick={downloadAll} disabled={downloading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:opacity-50">
+        <button type="button" onClick={downloadAll} disabled={downloading || !qualityReady} title={!qualityReady ? qualityIssues.join(" • ") : undefined} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:cursor-not-allowed disabled:opacity-40">
           <Download className="h-4 w-4" />
           {isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}
         </button>
@@ -2556,7 +2864,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
         <div className="flex items-center gap-2 mb-4">
           <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">1</span>
           <h3 className="text-sm font-bold text-white">
-            {isEs ? "Elige el paquete, cantidad y estilo" : "Escolha o pacote, quantidade e estilo"}
+            {isEs ? "Elige el paquete, cantidad y objetivo" : "Escolha o pacote, quantidade e objetivo"}
           </h3>
         </div>
 
@@ -2604,32 +2912,36 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
 
             <fieldset>
               <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
-                {isEs ? "Estilo visual del slide" : "Estilo visual do slide"}
+                {isEs ? "Objetivo del carrusel" : "Objetivo do carrossel"}
               </legend>
-              <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+              <div className="mt-1.5 grid grid-cols-2 gap-1.5 sm:grid-cols-3">
                 {([
-                  ["impact",    isEs ? "Impacto"    : "Impacto"],
-                  ["itinerary", isEs ? "Roteiro"    : "Roteiro"],
-                  ["editorial", isEs ? "Editorial"  : "Editorial"],
-                  ["oferta",    isEs ? "Oferta"     : "Oferta"],
-                  ["minimalist",isEs ? "Minimal"    : "Minimalista"],
-                  ["vibrant",   isEs ? "Vibrante"   : "Vibrante"],
-                ] as const).map(([variant, labelText]) => {
-                  const currentContentSlide = slides.find(s => s.kind === "content");
-                  const isActiveVariant = currentContentSlide ? (currentContentSlide.slideVariant || "impact") === variant : variant === "impact";
+                  ["impact", isEs ? "Inspirar" : "Inspirar", isEs ? "Deseo y experiencia" : "Desejo e experiência"],
+                  ["itinerary", isEs ? "Itinerario" : "Roteiro", isEs ? "Ruta y logística" : "Percurso e logística"],
+                  ["editorial", isEs ? "Guía" : "Guia", isEs ? "Útil para guardar" : "Útil para salvar"],
+                  ["oferta", isEs ? "Oferta" : "Oferta", isEs ? "Valor y conversión" : "Valor e conversão"],
+                  ["minimalist", isEs ? "Confianza" : "Confiança", isEs ? "Claridad y atención" : "Clareza e atendimento"],
+                  ["vibrant", "FAQ", isEs ? "Resuelve objeciones" : "Resolve objeções"],
+                ] as const).map(([variant, labelText, description]) => {
+                  const isActiveVariant = currentStrategy === variant;
                   return (
                     <button
                       key={variant}
                       type="button"
                       aria-pressed={isActiveVariant}
-                      onClick={() => patchAllContentSlides({ slideVariant: variant as CarouselSlideVariant })}
-                      className={`min-h-9 rounded-xl border px-2 py-1.5 text-[10px] font-bold transition-colors ${
+                      onClick={() => applyCarouselStrategy(variant)}
+                      className={`min-h-12 rounded-xl border px-2.5 py-2 text-left transition-colors ${
                         isActiveVariant
-                          ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
-                          : "border-white/10 bg-transparent text-white/50 hover:border-white/20 hover:text-white/80"
+                          ? "border-[#F5F906] bg-[#F5F906]/10"
+                          : "border-white/10 bg-transparent hover:border-white/20 hover:bg-white/[0.03]"
                       }`}
                     >
-                      {labelText}
+                      <span className={`block text-[10px] font-extrabold ${isActiveVariant ? "text-[#F5F906]" : "text-white/75"}`}>
+                        {labelText}
+                      </span>
+                      <span className="mt-0.5 block text-[8px] leading-tight text-white/35">
+                        {description}
+                      </span>
                     </button>
                   );
                 })}
@@ -2765,11 +3077,12 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
 
         {/* ── MODO: FAIXA HORIZONTAL (ribbon) ── */}
         {viewMode === "ribbon" && (() => {
-          // Redimensionamento dinâmico: quanto mais slides, menor cada thumb
           const isMobile = typeof window !== "undefined" && window.innerWidth < 420;
-          const baseWidth = isMobile ? Math.max(120, 200 - slides.length * 10) : Math.round(Math.max(110, 290 - slides.length * 22));
+          const widthsByCount: Record<CarouselSize, number> = isMobile
+            ? { 3: 210, 4: 190, 5: 172, 6: 156 }
+            : { 3: 300, 4: 250, 5: 205, 6: 170 };
+          const baseWidth = widthsByCount[slideCount];
           const thumbWidth = Math.round(baseWidth * zoomScale);
-          const thumbHeight = Math.round(thumbWidth / coverRatio);
           return (
             <div className="relative flex items-center group/ribbon">
               {/* Seta esquerda */}
@@ -2788,8 +3101,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                 <ChevronLeft className="h-4 w-4" />
               </button>
 
-              <div id="f1-ribbon-scroll" className="f1-carousel-scroll flex snap-x gap-4 overflow-x-auto pb-3 pt-1 px-2 w-full">
-                {slides.map((slide, index) => {
+              <div id="f1-ribbon-scroll" className="f1-carousel-scroll w-full snap-x overflow-x-auto pb-3 pt-1">
+                <div className="mx-auto flex w-max min-w-full justify-center gap-4 px-2">
+                  {slides.map((slide, index) => {
                   const isActive = activeIndex === index;
                   return (
                     <button
@@ -2867,7 +3181,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       </div>
                     </button>
                   );
-                })}
+                  })}
+                </div>
               </div>
 
               {/* Seta direita */}
@@ -3189,18 +3504,18 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                 {/* ── SECTION 2: Selo / Etiqueta ── */}
                 <div className="px-4 py-3.5 space-y-3">
                   <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                    {isEs ? "Etiqueta (Sello)" : "Selo (Destaque)"}
+                    {isEs ? "Etiqueta opcional" : "Selo opcional"}
                   </p>
                   <input
                     value={activeSlide.label || ""}
                     maxLength={32}
-                    placeholder={isEs ? "Ej: ROTA 01" : "Ex: DESTINO INCRÍVEL"}
+                    placeholder={isEs ? "Ej: GUÍA RÁPIDA" : "Ex: GUIA RÁPIDO"}
                     onChange={(event) => patchActive({ label: event.target.value })}
                     className="f1-carousel-input !min-h-[38px] !py-2 !text-[13px]"
                   />
                   {/* Pill suggestions */}
                   <div className="flex flex-wrap gap-1.5">
-                    {["ROTEIRO", "INCLUI", "DESTINO", "PIX", "OFERTA"].map((pill) => (
+                    {["EXPERIÊNCIA", "ROTEIRO", "GUIA", "INCLUI", "DICA"].map((pill) => (
                       <button
                         key={pill}
                         type="button"
@@ -3215,12 +3530,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                   <div className="flex flex-wrap gap-1">
                     {([
                       ["filled", "Sólido"],
-                      ["outline-thin", "Borda fina"],
-                      ["outline-thick", "Borda forte"],
-                      ["stripe-left", "Tarja"],
-                      ["rectangle", "Retângulo"],
-                      ["translucent", "Translúcido"],
-                      ["gradient", "Degradê"],
+                      ["outline-thin", "Contorno"],
+                      ["translucent", "Suave"],
                     ] as const).map(([styleKey, styleTitle]) => (
                       <button
                         key={styleKey}
@@ -3244,7 +3555,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                     <div className="px-4 py-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                      {isEs ? "Título principal" : "Título principal"}
+                      {isEs ? "Título" : "Título"}
                     </p>
                     <MiniTypographyBar
                       style={activeSlide.titleStyle}
@@ -3272,7 +3583,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                 <div className="px-4 pb-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                      {isEs ? "Descripción corta" : "Descrição curta"}
+                      {isEs ? "Descripción" : "Descrição"}
                     </p>
                     <div className="flex items-center gap-1.5">
                       <MiniTypographyBar
@@ -3312,7 +3623,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                 <div className="px-4 pb-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                      {isEs ? "Descripción inferior" : "Descrição inferior"}
+                      {isEs ? "Información complementaria (opcional)" : "Informações complementares (opcional)"}
                     </p>
                     <div className="flex items-center gap-1.5">
                       <MiniTypographyBar
@@ -3340,21 +3651,21 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                   </div>
                   <textarea
                     value={activeSlide.bullets.join("\n")}
-                    rows={4}
+                    rows={3}
                     placeholder={isEs
-                      ? "Ej: Sugerencia:\nTransporte\nGuía local\nSeguro"
-                      : "Sugestão:\nTransporte\nGuia local\nSeguro"}
+                      ? "Transporte incluido\nGuía local\nSeguro de viaje"
+                      : "Transporte incluso\nGuia local\nSeguro viagem"}
                     onChange={(event) =>
                       patchActive({
                         bullets: event.target.value
                           .split(/\r?\n/)
-                          .map((item) => item.slice(0, 100))
-                          .slice(0, 8),
+                          .map((item) => cleanCarouselText(item).slice(0, 100))
+                          .slice(0, 4),
                       })
                     }
-                    className="f1-carousel-input !min-h-[90px] !py-2.5 text-sm resize-none w-full leading-snug"
+                    className="f1-carousel-input !min-h-[76px] !py-2.5 text-sm resize-none w-full leading-snug"
                   />
-                  <p className="text-[9px] text-white/25">{isEs ? "Una línea = un ítem. Máx 8 ítems." : "Uma linha = um item. Máx 8 itens."}</p>
+                  <p className="text-[9px] text-white/25">{isEs ? "Una línea por información. Máximo 4." : "Uma linha por informação. Máximo 4."}</p>
                 </div>
               </>
                 ) : (
@@ -3410,17 +3721,6 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                         />
                       </div>
                     </div>
-                    <div className="px-4 py-3.5 space-y-1.5 border-t border-white/10">
-                      <label className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35 block">
-                        {isEs ? "Instagram / Red social" : "Instagram / Rede social"}
-                      </label>
-                      <input
-                        value={activeSlide.instagram || ""}
-                        maxLength={32}
-                        onChange={(event) => patchActive({ instagram: event.target.value })}
-                        className="f1-carousel-input !min-h-[40px] !py-2 !text-[13px]"
-                      />
-                    </div>
                     {!state.logoBase64 && (
                       <div className="px-4 py-3">
                         <p className="rounded-xl border border-amber-300/20 bg-amber-300/[0.06] px-3 py-2 text-xs text-amber-100/80">
@@ -3455,7 +3755,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
               </p>
             </div>
             
-            <div className="mx-auto flex justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
+            <div className="mx-auto flex w-full max-w-[520px] justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
               {activeSlide && (
                 <ScaledSlidePreview
                   slide={activeSlide}
@@ -3465,7 +3765,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                   logo={state.logoBase64}
                   primary={state.primaryColor}
                   secondary={state.secondaryColor}
-                  width={360}
+                  width={500}
                 />
               )}
             </div>
