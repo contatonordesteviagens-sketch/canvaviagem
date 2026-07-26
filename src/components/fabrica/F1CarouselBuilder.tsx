@@ -747,16 +747,48 @@ function CarouselCanvas({
         }}
       >
         {slide.imageUrl ? (
-          <img
-            src={slide.imageUrl}
-            alt=""
-            crossOrigin={
-              slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:")
-                ? undefined
-                : "anonymous"
-            }
-            style={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }}
-          />
+          <>
+            <img
+              src={slide.imageUrl}
+              alt=""
+              aria-hidden="true"
+              crossOrigin={
+                slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:")
+                  ? undefined
+                  : "anonymous"
+              }
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                display: "block",
+                objectFit: "cover",
+                opacity: 0.3,
+              }}
+            />
+            <div
+              aria-hidden="true"
+              style={{ position: "absolute", inset: 0, background: "rgba(8,9,11,.58)" }}
+            />
+            <img
+              src={slide.imageUrl}
+              alt=""
+              crossOrigin={
+                slide.imageUrl.startsWith("data:") || slide.imageUrl.startsWith("blob:")
+                  ? undefined
+                  : "anonymous"
+              }
+              style={{
+                position: "relative",
+                zIndex: 1,
+                width: "100%",
+                height: "100%",
+                display: "block",
+                objectFit: "contain",
+              }}
+            />
+          </>
         ) : (
           <div
             style={{
@@ -1868,7 +1900,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   const [activeIndex, setActiveIndex] = useState(() => (slides.length > 1 ? 1 : 0));
   const [viewMode, setViewMode] = useState<"ribbon" | "stack" | "focus">("ribbon");
   const [zoomScale, setZoomScale] = useState<number>(1);
-  const [coverRatio, setCoverRatio] = useState(DEFAULT_COVER_RATIO);
+  const carouselRatio = DEFAULT_COVER_RATIO;
   const [photoQuery, setPhotoQuery] = useState("");
   const [photoResults, setPhotoResults] = useState<PhotoResult[]>([]);
   const [searchingPhotos, setSearchingPhotos] = useState(false);
@@ -2001,20 +2033,6 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
         : "",
     );
   }, [agencyPhone, isEs, selectedPackage, state.agencyName]);
-
-  useEffect(() => {
-    if (!coverImage) {
-      setCoverRatio(DEFAULT_COVER_RATIO);
-      return;
-    }
-    const image = new Image();
-    image.onload = () => {
-      if (image.naturalWidth && image.naturalHeight) {
-        setCoverRatio(image.naturalWidth / image.naturalHeight);
-      }
-    };
-    image.src = coverImage;
-  }, [coverImage]);
 
   useEffect(() => {
     skipNextPersistRef.current = storageKey;
@@ -2320,7 +2338,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
           query,
           perPage: 8,
           engine: "pexels",
-          orientation: coverRatio > 0.92 ? "square" : "portrait",
+          orientation: "portrait",
           fallback: false,
         },
       });
@@ -3126,7 +3144,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                         slide={slide}
                         index={index}
                         total={slides.length}
-                        ratio={coverRatio}
+                        ratio={carouselRatio}
                         logo={state.logoBase64}
                         primary={state.primaryColor}
                         secondary={state.secondaryColor}
@@ -3235,7 +3253,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       slide={slide}
                       index={index}
                       total={slides.length}
-                      ratio={coverRatio}
+                      ratio={carouselRatio}
                       logo={state.logoBase64}
                       primary={state.primaryColor}
                       secondary={state.secondaryColor}
@@ -3348,7 +3366,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                     slide={activeSlide}
                     index={activeIndex}
                     total={slides.length}
-                    ratio={coverRatio}
+                    ratio={carouselRatio}
                     logo={state.logoBase64}
                     primary={state.primaryColor}
                     secondary={state.secondaryColor}
@@ -3751,21 +3769,21 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                 {isEs ? "Vista previa" : "Prévia"}
               </p>
               <p className="mt-1 text-xs text-white/55">
-                {isEs ? "Formato heredado de la portada" : "Formato herdado da capa"}
+                {isEs ? "Formato Instagram 4:5" : "Formato Instagram 4:5"}
               </p>
             </div>
             
-            <div className="mx-auto flex w-full max-w-[520px] justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
+            <div className="mx-auto flex w-full max-w-[420px] justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
               {activeSlide && (
                 <ScaledSlidePreview
                   slide={activeSlide}
                   index={activeIndex}
                   total={slides.length}
-                  ratio={coverRatio}
+                  ratio={carouselRatio}
                   logo={state.logoBase64}
                   primary={state.primaryColor}
                   secondary={state.secondaryColor}
-                  width={500}
+                  width={400}
                 />
               )}
             </div>
@@ -3878,7 +3896,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
             slide={slide}
             index={index}
             total={slides.length}
-            ratio={coverRatio}
+            ratio={carouselRatio}
             logo={state.logoBase64}
             primary={state.primaryColor}
             secondary={state.secondaryColor}
