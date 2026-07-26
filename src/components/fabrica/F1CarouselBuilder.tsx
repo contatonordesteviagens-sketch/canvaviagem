@@ -215,6 +215,31 @@ const phoneLabel = (dialCode: string, phone: string) => {
   return `+${dial || "55"} ${number}`;
 };
 
+function coverTitleSuggestions(pacote: Pacote, isEs: boolean): string[] {
+  const destination =
+    cleanCarouselText(pacote.title).replace(/^(pacote|paquete)\s+/i, "") ||
+    (isEs ? "tu próximo destino" : "seu próximo destino");
+  const suggestions = isEs
+    ? [
+        `Descubre ${destination}`,
+        `${destination}: el viaje que mereces`,
+        `Tu próxima historia comienza en ${destination}`,
+        `Vive días inolvidables en ${destination}`,
+        `${destination} como siempre lo soñaste`,
+      ]
+    : [
+        `Descubra ${destination}`,
+        `${destination}: a viagem que você merece`,
+        `Sua próxima história começa em ${destination}`,
+        `Viva dias inesquecíveis em ${destination}`,
+        `${destination} do jeito que você sempre sonhou`,
+      ];
+
+  return suggestions.map((title) =>
+    title.length > 80 ? `${title.slice(0, 77).replace(/\s+\S*$/, "")}...` : title,
+  );
+}
+
 function contentPresets(
   pacote: Pacote,
   isEs: boolean,
@@ -1173,19 +1198,19 @@ function CarouselCanvas({
               boxSizing: "border-box",
             }}
           >
-            <div
-              style={{
-                background: "rgba(255, 255, 255, 0.96)",
-                padding: `${Math.round(16 * Z)}px ${Math.round(28 * Z)}px`,
-                borderRadius: Math.round(24 * Z),
-                boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0, 0, 0, 0.35)`,
-                marginBottom: Math.round(16 * Z),
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {logo ? (
+            {logo && (
+              <div
+                style={{
+                  background: "rgba(255, 255, 255, 0.96)",
+                  padding: `${Math.round(16 * Z)}px ${Math.round(28 * Z)}px`,
+                  borderRadius: Math.round(24 * Z),
+                  boxShadow: `0px ${Math.round(8 * Z)}px ${Math.round(24 * Z)}px rgba(0, 0, 0, 0.35)`,
+                  marginBottom: Math.round(16 * Z),
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <img
                   src={logo}
                   alt=""
@@ -1200,20 +1225,8 @@ function CarouselCanvas({
                     objectFit: "contain",
                   }}
                 />
-              ) : (
-                <div
-                  style={{
-                    color: "#111318",
-                    fontSize: Math.round(14 * Z),
-                    fontWeight: 800,
-                    letterSpacing: ".06em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Sua logo
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
             <h3
               style={{
@@ -1358,6 +1371,22 @@ function CarouselCanvas({
                   ) : <span />}
                 </div>
                 <div style={{ position: "absolute", left: "8%", right: "8%", bottom: "14%" }}>
+                  {slide.kind === "cover" && (
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        width: Math.round(58 * Z),
+                        height: Math.max(3, Math.round(4 * Z)),
+                        marginBottom: Math.round(14 * Z),
+                        borderRadius: Math.round(999 * Z),
+                        background: secondary,
+                        boxShadow:
+                          slide.showShadow === false
+                            ? "none"
+                            : `0 ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px ${safeHexToRgba(secondary, 0.45)}`,
+                      }}
+                    />
+                  )}
                   {renderLabel(slide.label)}
                   {slide.title && (
                     <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
@@ -1703,7 +1732,7 @@ function CarouselCanvas({
                           {slide.body}
                         </p>
                       )}
-                      {renderBullets({ color: bulletColor, max: 4, columns: 2, textShadow: bulletShadow, align: alignRight ? "right" : "left" })}
+                      {renderBullets({ color: bulletColor, max: 4, columns: 1, textShadow: bulletShadow, align: alignRight ? "right" : "left" })}
                     </div>
                   </div>
                 </div>
@@ -4020,6 +4049,29 @@ export function F1CarouselBuilder({
                     onChange={(event) => patchActive({ title: event.target.value })}
                     className="f1-carousel-input !py-2.5 text-sm resize-none w-full leading-snug"
                   />
+                  {activeSlide.kind === "cover" && selectedPackage && (
+                    <div className="space-y-1.5">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/30">
+                        {isEs ? "Títulos sugeridos" : "Títulos sugeridos"}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {coverTitleSuggestions(selectedPackage, isEs).map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            onClick={() => patchActive({ title: suggestion })}
+                            className={`rounded-full border px-2.5 py-1.5 text-left text-[9px] font-semibold leading-tight transition-colors ${
+                              activeSlide.title === suggestion
+                                ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906]"
+                                : "border-white/10 bg-white/[0.03] text-white/55 hover:border-[#F5F906]/35 hover:text-white"
+                            }`}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* ── SECTION 4: Descrição Curta ── */}

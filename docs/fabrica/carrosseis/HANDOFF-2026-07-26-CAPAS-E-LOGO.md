@@ -91,3 +91,16 @@ validar:
 - nenhuma tabela ou politica RLS foi alterada;
 - nenhum arquivo do motor `src/lib/fabrica-compose-art.ts` foi alterado;
 - nenhum codigo de outros agentes deve ser incluido no commit desta entrega.
+
+## Ajustes complementares
+
+Depois da primeira validacao visual:
+
+- o fechamento deixou de renderizar o texto substituto "SUA LOGO" quando a
+  exibicao da logo esta desativada;
+- a capa nativa passou a oferecer cinco titulos persuasivos selecionaveis,
+  gerados a partir do destino do pacote;
+- o layout Inspirar recebeu uma linha curta de destaque na capa nativa;
+- os complementos do layout Transparente passaram a usar uma unica coluna,
+  mantendo selo, titulo, descricao e informacoes no mesmo alinhamento em slides
+  pares e impares.
