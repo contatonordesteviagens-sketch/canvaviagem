@@ -772,10 +772,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
   const [loading, setLoading] = useState(false);
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false); // Nova feature: Lote A/B (3 variações)
-  const [generatedImage, setGeneratedImage] = useState<string>(state.generatedAdImage || "");
-  const [generatedImages, setGeneratedImages] = useState<string[]>(
-    state.generatedAdImage ? [state.generatedAdImage] : [],
-  );
+  const [generatedImage, setGeneratedImage] = useState<string>("");
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [variationCounter, setVariationCounter] = useState(0);
   const [forcedVariant, setForcedVariant] = useState<number | null>(null);
   // Legendas/Copy geradas automaticamente junto com as imagens
@@ -1670,6 +1668,22 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
     } catch { toast.error("Erro ao baixar imagem"); }
   };
 
+  const handleOpenCarousel = () => {
+    if (generatedImage) {
+      try {
+        sessionStorage.setItem(
+          `fabrica-carousel-ad-cover:${state.projectId || "local"}`,
+          "1",
+        );
+      } catch {}
+    }
+    if (initialMode === "carousel") {
+      setCreativeMode("carousel");
+      return;
+    }
+    onNext();
+  };
+
   const sectionCls = "bg-[#0F0F11]/80 border border-white/10 rounded-3xl p-6 backdrop-blur-2xl shadow-2xl shadow-black/50 space-y-4 transition-all";
   const labelCls = "text-[10px] font-extrabold text-white/50 uppercase tracking-[0.15em] block mb-1.5";
   const inputCls = "w-full bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05] focus:border-amber-400/60 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(251,191,36,0.15)] rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all duration-300";
@@ -1714,6 +1728,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
           sourceImage={generatedImage}
           locale="es"
           onNext={onSkipToSite || onNext}
+          onBackToAd={initialMode === "carousel" ? onBack : () => setCreativeMode("ad")}
         />
       ) : (
         <>
@@ -2749,7 +2764,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                     <>
                       <button
                         type="button"
-                        onClick={onNext}
+                        onClick={handleOpenCarousel}
                         disabled={!generatedImage}
                         className="shrink-0 rounded-xl bg-[#F5F906] px-3 py-2 text-xs font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                       >

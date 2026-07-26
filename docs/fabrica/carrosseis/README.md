@@ -19,6 +19,8 @@ Documentação central da ferramenta de carrosséis da Fábrica de Destinos.
 4. [QA-E-VALIDACAO.md](./QA-E-VALIDACAO.md) — testes executados e checklist de regressão.
 5. [PROXIMA-SESSAO.md](./PROXIMA-SESSAO.md) — próximos passos em ordem de prioridade.
 
+6. [HANDOFF-2026-07-26-CAPAS-E-LOGO.md](./HANDOFF-2026-07-26-CAPAS-E-LOGO.md) - capa nativa, handoff do Anuncio F1 e controle de logo.
+
 ## Regra de escopo
 
 O carrossel é F2 e deve permanecer isolado do motor de geração de artes do Anúncio F1.

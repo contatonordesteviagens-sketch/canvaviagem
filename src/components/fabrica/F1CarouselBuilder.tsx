@@ -13,6 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  Eye,
+  EyeOff,
   ImagePlus,
   LayoutGrid,
   Lock,
@@ -86,6 +88,7 @@ interface CarouselSlide {
   titleStyle?: FieldTypography;
   bodyStyle?: FieldTypography;
   bulletStyle?: FieldTypography;
+  coverSource?: "ad" | "native";
 }
 
 interface PhotoResult {
@@ -99,6 +102,7 @@ interface F1CarouselBuilderProps {
   sourceImage?: string;
   locale?: "pt" | "es";
   onNext?: () => void;
+  onBackToAd?: () => void;
 }
 
 const DEFAULT_COVER_RATIO = 4 / 5;
@@ -487,6 +491,7 @@ function createSlides(
   isEs: boolean,
   extraImages: string[] = [],
   strategy: CarouselSlideVariant = "impact",
+  coverSource: "ad" | "native" = "native",
 ): CarouselSlide[] {
   const allDestImages = uniqueImages([
     pacote.imageUrl,
@@ -522,15 +527,26 @@ function createSlides(
     {
       id: createId(),
       kind: "cover",
-      label: "",
+      label: isEs ? "DESCUBRE" : "DESCUBRA",
       title: pacote.title,
-      body: "",
-      bullets: [],
+      body:
+        pacote.description ||
+        (pacote.price
+          ? isEs
+            ? `Viaja desde ${pacote.price}`
+            : `Viaje a partir de ${pacote.price}`
+          : isEs
+            ? "Una experiencia pensada para recordar."
+            : "Uma experiência feita para lembrar."),
+      bullets: compact([...(pacote.highlights || []), ...(pacote.included || [])])
+        .map(cleanCarouselText)
+        .filter(Boolean)
+        .slice(0, 2),
       imageUrl: coverImage,
       textColor: "#FFFFFF",
       cta: "",
       phone: "",
-      slideVariant: "impact",
+      slideVariant: strategy,
       bulletIcon: "none",
       showShadow: true,
       labelStyle: "filled",
@@ -541,6 +557,7 @@ function createSlides(
       titleStyle: { bold: true, italic: false, underline: false },
       bodyStyle: { bold: false, italic: false, underline: false },
       bulletStyle: { bold: false, italic: false, underline: false },
+      coverSource,
     },
   ];
 
@@ -597,11 +614,12 @@ function mergeSlidesForSize(
   current: CarouselSlide[],
   generated: CarouselSlide[],
 ): CarouselSlide[] {
+  const currentCover = current.find((slide) => slide.kind === "cover");
   const currentContent = current.filter((slide) => slide.kind === "content");
   const currentClosing = current.find((slide) => slide.kind === "closing");
 
   return generated.map((slide, index) => {
-    if (slide.kind === "cover") return slide;
+    if (slide.kind === "cover") return carrySlidePresentation(slide, currentCover);
     if (slide.kind === "closing" && currentClosing) {
       const merged = { ...slide, ...currentClosing, id: currentClosing.id };
       return { ...merged, imageUrl: merged.imageUrl || slide.imageUrl };
@@ -633,7 +651,17 @@ function mergeActiveIntoArchive(
 }
 
 function carrySlidePresentation(next: CarouselSlide, current?: CarouselSlide): CarouselSlide {
-  if (!current || current.kind !== next.kind || next.kind === "cover") return next;
+  if (!current || current.kind !== next.kind) return next;
+  if (next.kind === "cover") {
+    if (next.coverSource === "ad" || current.coverSource === "ad") return next;
+    return {
+      ...next,
+      ...current,
+      slideVariant: next.slideVariant,
+      coverSource: "native",
+      imageUrl: current.imageUrl || next.imageUrl,
+    };
+  }
   if (next.kind === "closing") {
     return {
       ...next,
@@ -804,7 +832,7 @@ function CarouselCanvas({
     ? { width: baseWidth, height: computedHeight }
     : { width: "100%", aspectRatio: `${ratio}` };
 
-  if (slide.kind === "cover") {
+  if (slide.kind === "cover" && slide.coverSource === "ad") {
     return (
       <div
         ref={canvasRef}
@@ -924,7 +952,10 @@ function CarouselCanvas({
   const bodyShadow = slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`;
   const bulletShadow = slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(10 * Z)}px rgba(0, 0, 0, 0.88)`;
 
-  const renderLabel = (label: string) => {
+  const renderLabel = (
+    label: string,
+    alignment: "left" | "center" | "right" = "left",
+  ) => {
     if (!label) return null;
     const rawBg = slide.labelColor || secondary;
     const bg = rawBg.toUpperCase() === "#F5F906" ? "#F5F906" : rawBg;
@@ -933,7 +964,8 @@ function CarouselCanvas({
     const style = slide.labelStyle || "filled";
     const commonStyle: CSSProperties = {
       display: "inline-block",
-      alignSelf: "flex-start",
+      alignSelf:
+        alignment === "right" ? "flex-end" : alignment === "center" ? "center" : "flex-start",
       width: "fit-content",
       maxWidth: "88%",
       marginBottom: Math.round(10 * Z),
@@ -1014,7 +1046,7 @@ function CarouselCanvas({
     numbered?: boolean;
     columns?: 1 | 2;
     textShadow?: string;
-    align?: "left" | "right";
+    align?: "left" | "center" | "right";
     compact?: boolean;
     scale?: number;
   }) => {
@@ -1038,6 +1070,7 @@ function CarouselCanvas({
             style={{
               display: "flex",
               flexDirection: align === "right" ? "row-reverse" : "row",
+              justifyContent: align === "center" ? "center" : "flex-start",
               gap: Math.round((compact ? 6 : 8) * scale * Z),
               alignItems: "flex-start",
               minWidth: 0,
@@ -1427,7 +1460,6 @@ function CarouselCanvas({
 
             {/* ─── VARIANT: OFERTA — conversion panel using the agency palette ─── */}
             {slide.slideVariant === "oferta" && (() => {
-              const alignRight = index % 2 === 1;
               const offerTitleSize = isDenseSlide ? 19 : titleLength > 38 ? 22 : ratio < 0.68 ? 25 : 28;
               return (
                 <div
@@ -1437,11 +1469,11 @@ function CarouselCanvas({
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "flex-end",
-                    alignItems: alignRight ? "flex-end" : "flex-start",
+                    alignItems: "center",
                     boxSizing: "border-box",
                   }}
                 >
-                  <div style={{ position: "absolute", top: "7%", [alignRight ? "left" : "right"]: "7%", zIndex: 12 }}>
+                  <div style={{ position: "absolute", top: "7%", right: "7%", zIndex: 12 }}>
                     {logo ? (
                       <img
                         src={logo}
@@ -1453,37 +1485,37 @@ function CarouselCanvas({
                   </div>
                   <div
                     style={{
-                      width: "76%",
+                      width: "82%",
                       minHeight: "48%",
                       background: "rgba(8, 9, 11, 0.94)",
                       color: bodyColor,
                       padding: isDenseSlide ? "4.5% 8%" : "6% 8%",
                       borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`,
-                      borderLeft: alignRight ? `${Math.max(1, Math.round(2 * Z))}px solid ${primary}` : "none",
-                      borderRight: alignRight ? "none" : `${Math.max(1, Math.round(2 * Z))}px solid ${primary}`,
-                      borderTopLeftRadius: alignRight ? Math.round(24 * Z) : 0,
-                      borderTopRightRadius: alignRight ? 0 : Math.round(24 * Z),
+                      borderLeft: `${Math.max(1, Math.round(2 * Z))}px solid ${primary}`,
+                      borderRight: `${Math.max(1, Math.round(2 * Z))}px solid ${primary}`,
+                      borderTopLeftRadius: Math.round(24 * Z),
+                      borderTopRightRadius: Math.round(24 * Z),
                       boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(34 * Z)}px rgba(0, 0, 0, 0.2)`,
                       position: "relative",
                       zIndex: 10,
                       boxSizing: "border-box",
-                      textAlign: alignRight ? "right" : "left",
+                      textAlign: "center",
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: alignRight ? "flex-end" : "flex-start" }}>
-                      {renderLabel(slide.label)}
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      {renderLabel(slide.label, "center")}
                     </div>
                     {slide.title && (
-                      <h3 style={{ maxWidth: "92%", margin: alignRight ? "0 0 0 auto" : 0, color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
                         {slide.title}
                       </h3>
                     )}
                     {slide.body && (
-                      <p style={{ maxWidth: "92%", margin: alignRight ? `${Math.round((isDenseSlide ? 7 : 10) * denseTextScale * Z)}px 0 0 auto` : `${Math.round((isDenseSlide ? 7 : 10) * denseTextScale * Z)}px 0 0`, color: bodyColor, fontSize: Math.max(6, Math.round((isDenseSlide ? 10.5 : 12.5) * denseTextScale * Z)), lineHeight: isDenseSlide ? 1.24 : 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, whiteSpace: "pre-wrap" }}>
+                      <p style={{ maxWidth: "92%", margin: `${Math.round((isDenseSlide ? 7 : 10) * denseTextScale * Z)}px auto 0`, color: bodyColor, fontSize: Math.max(6, Math.round((isDenseSlide ? 10.5 : 12.5) * denseTextScale * Z)), lineHeight: isDenseSlide ? 1.24 : 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, whiteSpace: "pre-wrap" }}>
                         {slide.body}
                       </p>
                     )}
-                    {renderBullets({ color: bulletColor, max: 4, columns: 2, align: alignRight ? "right" : "left", compact: isDenseSlide, scale: denseTextScale })}
+                    {renderBullets({ color: bulletColor, max: 4, columns: 2, align: "center", compact: isDenseSlide, scale: denseTextScale })}
                   </div>
                 </div>
               );
@@ -1612,7 +1644,7 @@ function CarouselCanvas({
                     }}
                   >
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
-                      {renderLabel(slide.label)}
+                      {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
                         <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
                           {slide.title}
@@ -1660,7 +1692,7 @@ function CarouselCanvas({
                     }}
                   >
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
-                      {renderLabel(slide.label)}
+                      {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
                         <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow, overflowWrap: "anywhere" }}>
                           {slide.title}
@@ -1840,7 +1872,7 @@ function MiniTypographyBar({
         {brandColors.map(({ hex, label }) => (
           <button key={hex} type="button" onClick={(e) => { e.preventDefault(); handleColorClick(hex); }}
             title={`${label} (${hex})`}
-            className={`${compact ? "h-5 w-5" : "h-7 w-7"} rounded-full border-2 transition-all hover:scale-110 ${
+            className={`${compact ? "h-[18px] w-[18px]" : "h-6 w-6"} rounded-full border-2 transition-all hover:scale-110 ${
               currentColor.toUpperCase() === hex.toUpperCase()
                 ? "scale-110 border-white ring-2 ring-[#F5F906] ring-offset-1 ring-offset-zinc-900"
                 : "border-white/30"
@@ -1848,7 +1880,7 @@ function MiniTypographyBar({
         ))}
         {/* Arco-íris */}
         <div className="relative cursor-pointer transition-transform hover:scale-110"
-          style={{ width: 28, height: 28, borderRadius: "50%", padding: 2,
+          style={{ width: 24, height: 24, borderRadius: "50%", padding: 2,
             background: "conic-gradient(from 0deg, #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
           title={isEs ? "Elegir color" : "Qualquer cor"}
         >
@@ -1925,12 +1957,23 @@ function MiniTypographyBar({
               handleColorClick(hex);
             }}
             title={`${label} (${hex})`}
-            className={`h-7 w-7 rounded-full border-2 transition-all hover:scale-110 ${
-              currentColor.toUpperCase() === hex.toUpperCase()
-                ? "scale-110 border-white ring-2 ring-[#F5F906] ring-offset-1 ring-offset-zinc-900"
-                : "border-white/30"
-            }`}
-            style={{ backgroundColor: hex }}
+            className="h-6 w-6 rounded-full border-2 transition-all hover:scale-110"
+            data-selected={currentColor.toUpperCase() === hex.toUpperCase()}
+            style={{
+              backgroundColor: hex,
+              borderColor:
+                currentColor.toUpperCase() === hex.toUpperCase()
+                  ? "#FFFFFF"
+                  : "rgba(255,255,255,.3)",
+              boxShadow:
+                currentColor.toUpperCase() === hex.toUpperCase()
+                  ? "0 0 0 2px #F5F906"
+                  : "none",
+              transform:
+                currentColor.toUpperCase() === hex.toUpperCase()
+                  ? "scale(1.08)"
+                  : undefined,
+            }}
           />
         ))}
 
@@ -1938,8 +1981,8 @@ function MiniTypographyBar({
         <div
           className="relative cursor-pointer transition-transform hover:scale-110"
           style={{
-            width: compact ? 20 : 28,
-            height: compact ? 20 : 28,
+            width: compact ? 18 : 24,
+            height: compact ? 18 : 24,
             borderRadius: "50%",
             padding: compact ? 1.5 : 2.5,
             background: "conic-gradient(from 0deg, #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)",
@@ -2023,9 +2066,32 @@ function MiniTypographyBar({
   );
 }
 
-export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F1CarouselBuilderProps) {
+export function F1CarouselBuilder({
+  sourceImage = "",
+  locale = "pt",
+  onNext,
+  onBackToAd,
+}: F1CarouselBuilderProps) {
   const { state } = useFabricaContext();
   const isEs = locale === "es";
+  const adCoverHandoffKey = `fabrica-carousel-ad-cover:${state.projectId || "local"}`;
+  const [hasAdCoverHandoff] = useState(() => {
+    if (sourceImage.trim()) return true;
+    try {
+      return (
+        sessionStorage.getItem(adCoverHandoffKey) === "1" &&
+        Boolean(state.generatedAdImage?.trim())
+      );
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    if (!hasAdCoverHandoff) return;
+    try {
+      sessionStorage.removeItem(adCoverHandoffKey);
+    } catch {}
+  }, [adCoverHandoffKey, hasAdCoverHandoff]);
   const currentDestination = state.destinos.find((destination) => destination?.trim()) || "";
   const packages = useMemo(() => {
     const valid = state.selectedPackages.filter((pacote) => pacote.title?.trim());
@@ -2040,11 +2106,26 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   }, [currentDestination, state.selectedPackages]);
   const [selectedPackageId, setSelectedPackageId] = useState(packages[0]?.id || "");
   const selectedPackage = packages.find((pacote) => pacote.id === selectedPackageId) || packages[0];
+  const selectedPackageName = normalizeName(selectedPackage?.title);
+  const currentDestinationName = normalizeName(currentDestination);
   const selectedIsCurrent =
-    Boolean(currentDestination) && normalizeName(selectedPackage?.title) === normalizeName(currentDestination);
-  const coverImage = selectedIsCurrent
-    ? sourceImage || state.generatedAdImage || selectedPackage?.imageUrl || ""
-    : selectedPackage?.imageUrl || "";
+    Boolean(selectedPackageName) &&
+    (!currentDestinationName ||
+      selectedPackageName === currentDestinationName ||
+      selectedPackageName.includes(currentDestinationName) ||
+      currentDestinationName.includes(selectedPackageName));
+  const inheritedCoverImage = selectedIsCurrent
+    ? sourceImage.trim() ||
+      (hasAdCoverHandoff ? state.generatedAdImage?.trim() || "" : "")
+    : "";
+  const coverSource: "ad" | "native" = inheritedCoverImage ? "ad" : "native";
+  const coverImage =
+    inheritedCoverImage ||
+    selectedPackage?.imageUrl ||
+    selectedPackage?.galleryImages?.[0] ||
+    (selectedIsCurrent
+      ? state.lastCleanPhoto || state.siteContent.galleryImages?.[0] || ""
+      : "");
   const carouselContact =
     [
       { icon: state.footerContact1Icon, value: state.footerContact1Value },
@@ -2054,15 +2135,16 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   const agencyPhone =
     carouselContact || phoneLabel(state.whatsappDialCode || "55", state.whatsapp || "");
   const [slideCount, setSlideCount] = useState<CarouselSize>(6);
+  const [showLogo, setShowLogo] = useState(true);
   const slideCountRef = useRef<CarouselSize>(6);
   const [slides, setSlides] = useState<CarouselSlide[]>(() =>
     selectedPackage
-      ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, uniqueImages([...(state.siteContent.galleryImages || [])]))
+      ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, uniqueImages([...(state.siteContent.galleryImages || [])]), "impact", coverSource)
       : [],
   );
   const slideArchiveRef = useRef<CarouselSlide[]>(
     selectedPackage
-      ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, uniqueImages([...(state.siteContent.galleryImages || [])]))
+      ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, uniqueImages([...(state.siteContent.galleryImages || [])]), "impact", coverSource)
       : [],
   );
   const slidesRef = useRef(slides);
@@ -2085,8 +2167,12 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   const objectiveRowRef = useRef<HTMLDivElement>(null);
   const uploadRequestRef = useRef(new Map<string, symbol>());
   const activeSlide = slides[activeIndex];
+  const activeCoverIsProtected =
+    activeSlide?.kind === "cover" && activeSlide.coverSource === "ad";
+  const effectiveCoverSource = slides[0]?.coverSource || coverSource;
+  const renderedLogo = showLogo ? state.logoBase64 : "";
   const activeFieldFallback =
-    activeSlide?.kind === "content"
+    activeSlide && activeSlide.kind !== "closing"
       ? defaultContentTextColor(activeSlide.slideVariant, state.primaryColor)
       : activeSlide?.textColor || "#FFFFFF";
   const qualityIssues = useMemo(() => {
@@ -2097,9 +2183,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       issues.push(isEs ? "Selecciona un paquete" : "Selecione um pacote");
     }
     if (!slides.find((slide) => slide.kind === "cover")?.imageUrl?.trim()) {
-      issues.push(isEs ? "Genera la portada en Anuncio" : "Gere a capa no Anúncio");
+      issues.push(isEs ? "Elige la foto de portada" : "Escolha a foto da capa");
     }
-    if (!state.logoBase64?.trim()) {
+    if (showLogo && !state.logoBase64?.trim()) {
       issues.push(isEs ? "Agrega el logo en el Panel" : "Adicione a logo no Painel");
     }
     if (!contentSlides.length || contentSlides.some((slide) => !cleanCarouselText(slide.title))) {
@@ -2115,7 +2201,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       issues.push(isEs ? "Agrega el WhatsApp" : "Adicione o WhatsApp");
     }
     return issues;
-  }, [isEs, selectedPackage?.title, slides, state.logoBase64]);
+  }, [isEs, selectedPackage?.title, showLogo, slides, state.logoBase64]);
   const qualityReady = qualityIssues.length === 0;
 
   const generateCaption = async () => {
@@ -2212,6 +2298,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
 
   useEffect(() => {
     skipNextPersistRef.current = storageKey;
+    setShowLogo(true);
     if (!selectedPackage) {
       slideArchiveRef.current = [];
       setSlides([]);
@@ -2228,6 +2315,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       agencyPhone,
       isEs,
       destImages,
+      "impact",
+      coverSource,
     );
     const generatedArchive = createSlides(
       selectedPackage,
@@ -2236,6 +2325,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       agencyPhone,
       isEs,
       destImages,
+      "impact",
+      coverSource,
     );
 
     try {
@@ -2245,7 +2336,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
           slideCount?: CarouselSize;
           slides?: CarouselSlide[];
           allSlides?: CarouselSlide[];
+          showLogo?: boolean;
         };
+        setShowLogo(parsed.showLogo !== false);
         const restoredCount =
           parsed.slideCount === 3 || parsed.slideCount === 4 || parsed.slideCount === 5 || parsed.slideCount === 6
             ? parsed.slideCount
@@ -2254,7 +2347,17 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
           parsed.allSlides || parsed.slides || [],
           generatedArchive,
         ).map((slide) => {
-          const withCover = slide.kind === "cover" ? { ...slide, imageUrl: coverImage } : slide;
+          const withCover =
+            slide.kind === "cover"
+              ? {
+                  ...slide,
+                  imageUrl:
+                    coverSource === "ad"
+                      ? coverImage
+                      : slide.imageUrl || coverImage,
+                  coverSource,
+                }
+              : slide;
           const legacyColor =
             withCover.kind === "content" &&
             /^#[0-9a-f]{6}$/i.test(withCover.textColor || "") &&
@@ -2278,9 +2381,20 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
           agencyPhone,
           isEs,
           destImages,
+          "impact",
+          coverSource,
         );
         const restored = mergeSlidesForSize(restoredArchive, restoredBase).map((slide) =>
-          slide.kind === "cover" ? { ...slide, imageUrl: coverImage } : slide,
+          slide.kind === "cover"
+            ? {
+                ...slide,
+                imageUrl:
+                  coverSource === "ad"
+                    ? coverImage
+                    : slide.imageUrl || coverImage,
+                coverSource,
+              }
+            : slide,
         );
         slideArchiveRef.current = restoredArchive;
         setSlideCount(restoredCount);
@@ -2295,7 +2409,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     slideArchiveRef.current = generatedArchive;
     setSlides(generated);
     setActiveIndex(generated.length > 1 ? 1 : 0);
-  }, [agencyPhone, availableImages, coverImage, isEs, selectedPackage, storageKey]);
+  }, [agencyPhone, availableImages, coverImage, coverSource, isEs, selectedPackage, storageKey]);
 
   useEffect(() => {
     if (!slides.length) return;
@@ -2307,7 +2421,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       try {
         const destImages = uniqueImages([...availableImages, ...photoResults.map((p) => p.url)]);
         const generatedArchive = selectedPackage
-          ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, destImages)
+          ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, destImages, "impact", effectiveCoverSource)
           : [];
         const archiveBase = mergeSlidesForSize(
           slideArchiveRef.current,
@@ -2318,7 +2432,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
         const safeSlide = (slide: CarouselSlide) => ({
           ...slide,
           imageUrl:
-            slide.kind === "cover" || slide.imageUrl.startsWith("data:")
+            (slide.kind === "cover" && slide.coverSource === "ad") ||
+            slide.imageUrl.startsWith("data:")
               ? ""
               : slide.imageUrl,
         });
@@ -2326,6 +2441,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
           storageKey,
           JSON.stringify({
             slideCount,
+            showLogo,
             slides: slides.map(safeSlide),
             allSlides: allSlides.map(safeSlide),
           }),
@@ -2348,7 +2464,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       window.removeEventListener("pagehide", persistBeforeLeaving);
       persistDraft(false);
     };
-  }, [agencyPhone, availableImages, coverImage, isEs, photoResults, selectedPackage, slideCount, slides, storageKey]);
+  }, [agencyPhone, availableImages, coverImage, effectiveCoverSource, isEs, photoResults, selectedPackage, showLogo, slideCount, slides, storageKey]);
 
   useEffect(() => {
     const ff = activeSlide?.fontFamily || "Inter";
@@ -2364,7 +2480,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   }, [activeSlide?.fontFamily]);
 
   const patchActive = (patch: Partial<CarouselSlide>) => {
-    if (!activeSlide || activeSlide.kind === "cover") return;
+    if (!activeSlide || activeCoverIsProtected) return;
     setSlides((current) =>
       current.map((slide, index) => (index === activeIndex ? { ...slide, ...patch } : slide)),
     );
@@ -2383,6 +2499,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     if (!selectedPackage) return;
     const destImages = uniqueImages([...availableImages, ...photoResults.map((p) => p.url)]);
     const currentArchive = mergeActiveIntoArchive(slides, slideArchiveRef.current);
+    const currentCover = currentArchive.find((slide) => slide.kind === "cover");
     const currentContent = currentArchive.filter((slide) => slide.kind === "content");
     const currentClosing = currentArchive.find((slide) => slide.kind === "closing");
     let contentIndex = 0;
@@ -2394,8 +2511,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       isEs,
       destImages,
       strategy,
+      effectiveCoverSource,
     ).map((slide) => {
-      if (slide.kind === "cover") return slide;
+      if (slide.kind === "cover") return carrySlidePresentation(slide, currentCover);
       if (slide.kind === "closing") return carrySlidePresentation(slide, currentClosing);
       const current = currentContent[contentIndex];
       contentIndex += 1;
@@ -2411,6 +2529,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
         isEs,
         destImages,
         strategy,
+        effectiveCoverSource,
       ),
     );
     slideArchiveRef.current = generatedArchive;
@@ -2418,6 +2537,38 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     setActiveIndex(generated.length > 1 ? 1 : 0);
     toast.success(
       isEs ? "Estrategia aplicada al carrusel." : "Estratégia aplicada ao carrossel.",
+    );
+  };
+
+  const switchToNativeCover = () => {
+    if (!selectedPackage) return;
+    const nativeCoverImage =
+      selectedPackage.imageUrl ||
+      selectedPackage.galleryImages?.[0] ||
+      availableImages[0] ||
+      "";
+    const nativeCover = createSlides(
+      selectedPackage,
+      slideCount,
+      nativeCoverImage,
+      agencyPhone,
+      isEs,
+      availableImages,
+      currentStrategy,
+      "native",
+    )[0];
+    if (!nativeCover) return;
+    slideArchiveRef.current = slideArchiveRef.current.map((slide) =>
+      slide.kind === "cover" ? nativeCover : slide,
+    );
+    setSlides((current) =>
+      current.map((slide) => (slide.kind === "cover" ? nativeCover : slide)),
+    );
+    setActiveIndex(0);
+    toast.success(
+      isEs
+        ? "Portada editable del carrusel aplicada."
+        : "Capa editável do carrossel aplicada.",
     );
   };
 
@@ -2432,6 +2583,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       isEs,
       destImages,
       currentStrategy,
+      effectiveCoverSource,
     );
     const generatedArchive = createSlides(
       selectedPackage,
@@ -2441,6 +2593,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       isEs,
       destImages,
       currentStrategy,
+      effectiveCoverSource,
     );
     setSlides((current) => {
       const archiveBase = mergeSlidesForSize(
@@ -2473,6 +2626,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       isEs,
       destImages,
       nextVariant,
+      effectiveCoverSource,
     );
     const generated = mergeSlidesForSize(
       generatedArchive,
@@ -2484,6 +2638,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
         isEs,
         destImages,
         nextVariant,
+        effectiveCoverSource,
       ),
     );
     slideArchiveRef.current = generatedArchive;
@@ -2553,7 +2708,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    const targetSlideId = activeSlide?.kind === "cover" ? "" : activeSlide?.id || "";
+    const targetSlideId = activeCoverIsProtected ? "" : activeSlide?.id || "";
     const targetPackageId = selectedPackage?.id || "";
     if (!targetSlideId || !targetPackageId) return;
     const requestKey = `${targetPackageId}:${targetSlideId}`;
@@ -2636,18 +2791,18 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       );
       return;
     }
-    if (!coverImage) {
+    if (!slides[0]?.imageUrl?.trim()) {
       setActiveIndex(0);
       toast.error(
         isEs
-          ? "Genera primero la portada en la pestaña Anuncio."
-          : "Gere primeiro a arte de capa na aba Anúncio.",
+          ? "Elige una foto para la portada."
+          : "Escolha uma foto para a capa.",
       );
       return;
     }
 
     const closingSlide = slides.find((slide) => slide.kind === "closing");
-    if (!state.logoBase64) {
+    if (showLogo && !state.logoBase64) {
       setActiveIndex(slides.length - 1);
       toast.error(
         isEs
@@ -2714,7 +2869,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
     });
     setSlides(resolvedSlides);
 
-    for (let index = 1; index < resolvedSlides.length; index += 1) {
+    const validationStartIndex = resolvedSlides[0]?.coverSource === "ad" ? 1 : 0;
+    for (let index = validationStartIndex; index < resolvedSlides.length; index += 1) {
       try {
         await assertExportImageReadable(resolvedSlides[index].imageUrl);
       } catch {
@@ -2728,7 +2884,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       }
     }
     try {
-      await assertExportImageReadable(state.logoBase64);
+      if (showLogo) await assertExportImageReadable(state.logoBase64);
     } catch {
       setActiveIndex(resolvedSlides.length - 1);
       toast.error(
@@ -2748,11 +2904,14 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
       .replace(/^-|-$/g, "");
 
     try {
-      const coverToDownload = resolvedSlides[0]?.imageUrl || coverImage;
-      await downloadOriginalImage(coverToDownload, `carrossel-${slug}-01-capa.png`);
+      const protectedCover = resolvedSlides[0]?.coverSource === "ad";
+      if (protectedCover) {
+        const coverToDownload = resolvedSlides[0]?.imageUrl || coverImage;
+        await downloadOriginalImage(coverToDownload, `carrossel-${slug}-01-capa.png`);
+      }
       const { default: html2canvas } = await import("html2canvas");
 
-      for (let index = 1; index < resolvedSlides.length; index += 1) {
+      for (let index = protectedCover ? 1 : 0; index < resolvedSlides.length; index += 1) {
         const node = exportRefs.current[index];
         if (!node) throw new Error("missing-export-node");
 
@@ -2815,8 +2974,12 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
 
       toast.success(
         isEs
-          ? `${slides.length} imágenes listas. La portada original fue preservada.`
-          : `${slides.length} imagens prontas. A capa original foi preservada.`,
+          ? protectedCover
+            ? `${slides.length} imágenes listas. La portada del anuncio fue preservada.`
+            : `${slides.length} imágenes listas para publicar.`
+          : protectedCover
+            ? `${slides.length} imagens prontas. A capa do anúncio foi preservada.`
+            : `${slides.length} imagens prontas para publicar.`,
       );
     } catch (error) {
       console.error("Falha ao exportar carrossel:", error);
@@ -2849,7 +3012,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   }
 
   const renderPhotoSelectionBox = () => {
-    if (!activeSlide || activeSlide.kind === "cover") return null;
+    if (!activeSlide || activeCoverIsProtected) return null;
     return (
       <details
         open={photoPanelOpen}
@@ -2933,7 +3096,6 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                 const usedByOtherSlide = slides.some(
                   (slide, slideIndex) =>
                     slideIndex !== activeIndex &&
-                    slide.kind !== "cover" &&
                     slide.imageUrl === photo.url,
                 );
                 return (
@@ -3093,6 +3255,52 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                 ))}
               </select>
             </div>
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-3 py-2.5">
+              <div className="flex min-w-0 items-center gap-2.5">
+                {showLogo ? (
+                  <Eye className="h-4 w-4 shrink-0 text-[#F5F906]" />
+                ) : (
+                  <EyeOff className="h-4 w-4 shrink-0 text-white/40" />
+                )}
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold text-white">
+                    {isEs ? "Mostrar logo" : "Mostrar logo"}
+                  </p>
+                  <p className="truncate text-[9px] text-white/40">
+                    {isEs
+                      ? "Visible en todo el carrusel"
+                      : "Visível em todo o carrossel"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={showLogo}
+                onClick={() => setShowLogo((current) => !current)}
+                className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors ${
+                  showLogo
+                    ? "border-[#F5F906] bg-[#F5F906]"
+                    : "border-white/15 bg-white/10"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform ${
+                    showLogo ? "translate-x-5" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
+            </div>
+            {onBackToAd && effectiveCoverSource !== "ad" && (
+              <button
+                type="button"
+                onClick={onBackToAd}
+                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.03] px-3 text-[11px] font-bold text-white/75 transition-colors hover:bg-white/[0.07] hover:text-white"
+              >
+                <ImagePlus className="h-4 w-4 text-[#F5F906]" />
+                {isEs ? "Crear portada en Anuncio (F1)" : "Criar capa no Anúncio (F1)"}
+              </button>
+            )}
           </div>
 
           <div>
@@ -3338,7 +3546,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                         index={index}
                         total={slides.length}
                         ratio={carouselRatio}
-                        logo={state.logoBase64}
+                        logo={renderedLogo}
                         primary={state.primaryColor}
                         secondary={state.secondaryColor}
                         width={thumbWidth}
@@ -3382,13 +3590,17 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                             }`}
                           >
                             {slide.kind === "cover"
-                              ? (isEs ? "Original" : "Original")
+                              ? slide.coverSource === "ad"
+                                ? "Original"
+                                : (isEs ? "Editable" : "Editável")
                               : slide.kind === "closing"
                                 ? (isEs ? "Contacto" : "Fechamento")
                                 : `${isEs ? "Diapositiva" : "Slide"} ${index + 1}`}
                           </span>
                         </div>
-                        {slide.kind === "cover" && <Lock className="h-3 w-3 shrink-0 text-[#F5F906]" />}
+                        {slide.kind === "cover" && slide.coverSource === "ad" && (
+                          <Lock className="h-3 w-3 shrink-0 text-[#F5F906]" />
+                        )}
                       </div>
                     </button>
                   );
@@ -3447,7 +3659,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       index={index}
                       total={slides.length}
                       ratio={carouselRatio}
-                      logo={state.logoBase64}
+                      logo={renderedLogo}
                       primary={state.primaryColor}
                       secondary={state.secondaryColor}
                       width={thumbWidth}
@@ -3491,13 +3703,17 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                           }`}
                         >
                           {slide.kind === "cover"
-                            ? (isEs ? "Portada original" : "Capa original")
+                            ? slide.coverSource === "ad"
+                              ? (isEs ? "Portada del anuncio" : "Capa do anúncio")
+                              : (isEs ? "Portada editable" : "Capa editável")
                             : slide.kind === "closing"
                               ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
                               : `${isEs ? "Contenido" : "Conteúdo"} ${index + 1}`}
                         </span>
                       </div>
-                      {slide.kind === "cover" && <Lock className="h-3.5 w-3.5 shrink-0 text-[#F5F906]" />}
+                      {slide.kind === "cover" && slide.coverSource === "ad" && (
+                        <Lock className="h-3.5 w-3.5 shrink-0 text-[#F5F906]" />
+                      )}
                     </div>
                   </button>
                 );
@@ -3560,7 +3776,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                     index={activeIndex}
                     total={slides.length}
                     ratio={carouselRatio}
-                    logo={state.logoBase64}
+                    logo={renderedLogo}
                     primary={state.primaryColor}
                     secondary={state.secondaryColor}
                     width={thumbWidth}
@@ -3570,7 +3786,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
 
               <p className="text-[10px] text-white/40">
                 {activeSlide?.kind === "cover"
-                  ? (isEs ? "Portada original — bloqueada." : "Capa original — bloqueada.")
+                  ? activeCoverIsProtected
+                    ? (isEs ? "Portada creada en Anuncio." : "Capa criada no Anúncio.")
+                    : (isEs ? "Edita esta portada." : "Edite esta capa.")
                   : activeSlide?.kind === "closing"
                     ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
                     : `${isEs ? "Edita la imagen" : "Edite a imagem"} ${activeIndex + 1}`}
@@ -3592,7 +3810,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                 <div>
                   <h3 className="text-sm font-bold text-white leading-none">
                     {activeSlide?.kind === "cover"
-                      ? (isEs ? "Portada protegida" : "Capa protegida")
+                      ? activeCoverIsProtected
+                        ? (isEs ? "Portada del anuncio" : "Capa do anúncio")
+                        : (isEs ? "Edita la portada" : "Editar capa")
                       : activeSlide?.kind === "closing"
                         ? (isEs ? "Edita el cierre" : "Edite o fechamento")
                         : (isEs ? "Foto y texto de esta imagen" : "Editar slide")}
@@ -3636,30 +3856,43 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
               </div>
             </div>
 
-            {/* Capa protegida */}
-            {activeSlide?.kind === "cover" && (
+            {/* Capa herdada do anúncio */}
+            {activeCoverIsProtected && (
               <div className="m-4 rounded-xl border border-[#F5F906]/20 bg-[#F5F906]/[0.05] p-4 flex gap-3">
                 <Lock className="mt-0.5 h-5 w-5 shrink-0 text-[#F5F906]" />
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-white">{isEs ? "Esta imagen no se modifica." : "Capa protegida. Esta imagem original não pode ser modificada diretamente."}</p>
+                  <p className="text-sm font-bold text-white">
+                    {isEs ? "Portada creada en Anuncio." : "Capa criada no Anúncio."}
+                  </p>
                   <p className="mt-1 text-xs leading-relaxed text-white/50">
                     {isEs
-                      ? "Es exactamente la pieza generada en Anuncio."
-                      : "É exatamente a arte gerada em Anúncio. Ela é baixada pelo arquivo original."}
+                      ? "La pieza original se mantiene intacta al descargar."
+                      : "A arte original será preservada exatamente como foi gerada."}
                   </p>
-                  {!coverImage && (
-                    <p className="mt-3 rounded-lg bg-amber-300/10 px-3 py-2 text-xs font-semibold text-amber-100">
-                      {isEs
-                        ? 'Vuelve a Anuncio, genera la portada y usa "Transformar en carrusel".'
-                        : 'Volte para Anúncio, gere a capa e use "Transformar em carrossel".'}
-                    </p>
-                  )}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {onBackToAd && (
+                      <button
+                        type="button"
+                        onClick={onBackToAd}
+                        className="min-h-9 rounded-lg border border-white/15 px-3 text-[10px] font-bold text-white/75 transition-colors hover:bg-white/[0.06]"
+                      >
+                        {isEs ? "Crear otra en Anuncio" : "Gerar outra no Anúncio"}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={switchToNativeCover}
+                      className="min-h-9 rounded-lg bg-[#F5F906] px-3 text-[10px] font-extrabold text-zinc-950 transition-transform active:scale-[0.98]"
+                    >
+                      {isEs ? "Usar portada editable" : "Usar capa editável"}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* Content & Closing slide editor */}
-            {activeSlide && activeSlide.kind !== "cover" && (
+            {activeSlide && !activeCoverIsProtected && (
               <div className="divide-y divide-white/[0.06]">
 
                 {/* ── SECTION 1: Estilo & Fonte ── */}
@@ -3760,7 +3993,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                   </div>
                 </div>
 
-                {activeSlide.kind === "content" ? (
+                {activeSlide.kind !== "closing" ? (
                   <>
                     {/* ── SECTION 3: Título ── */}
                     <div className="px-4 py-3.5 space-y-2">
@@ -3929,7 +4162,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                         />
                       </div>
                     </div>
-                    {!state.logoBase64 && (
+                    {showLogo && !state.logoBase64 && (
                       <div className="px-4 py-3">
                         <p className="rounded-xl border border-amber-300/20 bg-amber-300/[0.06] px-3 py-2 text-xs text-amber-100/80">
                           {isEs
@@ -3944,7 +4177,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
             )}
           </div>
 
-          {activeSlide && activeSlide.kind !== "cover" && (
+          {activeSlide && !activeCoverIsProtected && (
             <div className="block lg:hidden space-y-4">
               {renderPhotoSelectionBox()}
               {renderPublishFooterBox()}
@@ -3970,7 +4203,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                   index={activeIndex}
                   total={slides.length}
                   ratio={carouselRatio}
-                  logo={state.logoBase64}
+                  logo={renderedLogo}
                   primary={state.primaryColor}
                   secondary={state.secondaryColor}
                   width={400}
@@ -4005,7 +4238,9 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
 
             <p className="mt-4 text-center text-[10px] leading-relaxed text-white/35">
               {activeSlide?.kind === "cover"
-                ? (isEs ? "Portada original bloqueada." : "Capa original bloqueada.")
+                ? activeCoverIsProtected
+                  ? (isEs ? "Portada original del anuncio." : "Capa original do anúncio.")
+                  : (isEs ? "Los cambios aparecen aquí al instante." : "As alterações aparecem aqui na hora.")
                 : (isEs ? "Los cambios aparecen aquí al instante." : "As alterações aparecem aqui na hora.")}
             </p>
           </div>
@@ -4087,7 +4322,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
             index={index}
             total={slides.length}
             ratio={carouselRatio}
-            logo={state.logoBase64}
+            logo={renderedLogo}
             primary={state.primaryColor}
             secondary={state.secondaryColor}
             canvasRef={(node) => {
