@@ -32,7 +32,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 type CarouselSize = 3 | 4 | 5 | 6;
 type CarouselSlideKind = "cover" | "content" | "closing";
-type CarouselSlideVariant = "impact" | "itinerary" | "editorial" | "oferta" | "minimalist" | "vibrant";
+type CarouselSlideVariant =
+  | "impact"
+  | "itinerary"
+  | "editorial"
+  | "oferta"
+  | "minimalist"
+  | "vibrant"
+  | "organic"
+  | "glass";
 type LabelStyle = "filled" | "outline-thin" | "outline-thick" | "stripe-left" | "rectangle" | "translucent" | "gradient";
 
 const CAROUSEL_VARIANTS: CarouselSlideVariant[] = [
@@ -42,6 +50,8 @@ const CAROUSEL_VARIANTS: CarouselSlideVariant[] = [
   "oferta",
   "minimalist",
   "vibrant",
+  "organic",
+  "glass",
 ];
 
 interface FieldTypography {
@@ -119,25 +129,34 @@ const readableText = (hex: string) => {
   return (red * 299 + green * 587 + blue * 114) / 1000 > 150 ? "#111318" : "#F8FAFC";
 };
 
-const relativeLuminance = (hex: string) => {
-  const normalized = hex.replace("#", "");
-  if (!/^[0-9a-f]{6}$/i.test(normalized)) return 0;
-  const channels = [0, 2, 4].map((index) => {
-    const channel = Number.parseInt(normalized.slice(index, index + 2), 16) / 255;
-    return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-  });
-  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+const editableColor = (preferred: string | undefined, fallback: string) =>
+  preferred && /^#[0-9a-f]{6}$/i.test(preferred) ? preferred : fallback;
+
+const defaultContentTextColor = (variant: CarouselSlideVariant, primary: string) => {
+  if (variant === "editorial" || variant === "minimalist" || variant === "organic") {
+    return "#17191D";
+  }
+  if (variant === "vibrant") return readableText(primary);
+  return "#F8FAFC";
 };
 
-const contrastRatio = (foreground: string, background: string) => {
-  const lighter = Math.max(relativeLuminance(foreground), relativeLuminance(background));
-  const darker = Math.min(relativeLuminance(foreground), relativeLuminance(background));
-  return (lighter + 0.05) / (darker + 0.05);
-};
+const usesLightContentPanel = (variant: CarouselSlideVariant) =>
+  variant === "editorial" || variant === "minimalist" || variant === "organic";
 
-const contrastSafeColor = (preferred: string | undefined, background: string) => {
-  const candidate = preferred && /^#[0-9a-f]{6}$/i.test(preferred) ? preferred : readableText(background);
-  return contrastRatio(candidate, background) >= 4.5 ? candidate : readableText(background);
+const carryFieldTypography = (
+  style: FieldTypography | undefined,
+  fromVariant: CarouselSlideVariant,
+  toVariant: CarouselSlideVariant,
+) => {
+  const needsColorReset =
+    fromVariant === "vibrant" ||
+    toVariant === "vibrant" ||
+    usesLightContentPanel(fromVariant) !== usesLightContentPanel(toVariant);
+  if (!style || !needsColorReset) {
+    return style;
+  }
+  const { color: _discardedColor, ...typography } = style;
+  return typography;
 };
 
 const normalizeName = (value = "") =>
@@ -403,6 +422,58 @@ function contentPresets(
         bullets: priceAndTerms,
       },
     ],
+    organic: [
+      {
+        label: isEs ? "Viaja a tu ritmo" : "Viaje no seu ritmo",
+        title: destination,
+        body: description || (isEs ? "Una experiencia pensada para disfrutar sin prisa." : "Uma experiência pensada para aproveitar sem pressa."),
+        bullets: highlights.slice(0, 3),
+      },
+      {
+        label: isEs ? "Momentos que quedan" : "Momentos que ficam",
+        title: isEs ? "Una experiencia con tu manera de viajar" : "Uma experiência com o seu jeito de viajar",
+        body: shortDescription,
+        bullets: route.slice(0, 4),
+      },
+      {
+        label: isEs ? "Todo más ligero" : "Tudo mais leve",
+        title: isEs ? "Lo esencial ya está organizado" : "O essencial já está organizado",
+        body: cleanBody(pacote.importantNotes, 100),
+        bullets: packageFacts,
+      },
+      {
+        label: isEs ? "Guarda esta idea" : "Guarde esta ideia",
+        title: isEs ? `Tu próxima pausa puede ser ${destination}` : `Sua próxima pausa pode ser ${destination}`,
+        body: isEs ? "Comparte con quien viajaría contigo." : "Compartilhe com quem viajaria com você.",
+        bullets: priceAndTerms,
+      },
+    ],
+    glass: [
+      {
+        label: isEs ? "Mira con calma" : "Veja com calma",
+        title: isEs ? `Descubre ${destination}` : `Descubra ${destination}`,
+        body: description,
+        bullets: highlights.slice(0, 3),
+      },
+      {
+        label: isEs ? "Lo que importa" : "O que importa",
+        title: isEs ? "Una visión clara de tu viaje" : "Uma visão clara da sua viagem",
+        body: shortDescription,
+        bullets: packageFacts,
+      },
+      {
+        label: isEs ? "Antes de decidir" : "Antes de decidir",
+        title: isEs ? "Fechas, condiciones y detalles" : "Datas, condições e detalhes",
+        body: cleanBody(pacote.importantNotes, 110),
+        bullets: logistics,
+      },
+      {
+        label: isEs ? "Siguiente paso" : "Próximo passo",
+        title: isEs ? "Habla con quien conoce el destino" : "Fale com quem conhece o destino",
+        body: isEs ? "Recibe información actualizada por WhatsApp." : "Receba informações atualizadas pelo WhatsApp.",
+        bullets: priceAndTerms,
+      },
+    ],
   };
 
   return strategies[strategy];
@@ -575,7 +646,7 @@ function carrySlidePresentation(next: CarouselSlide, current?: CarouselSlide): C
     ...next,
     id: current.id,
     imageUrl: current.imageUrl || next.imageUrl,
-    textColor: current.textColor,
+    textColor: next.textColor,
     bulletIcon: current.bulletIcon,
     showShadow: current.showShadow,
     labelStyle: current.labelStyle,
@@ -584,9 +655,9 @@ function carrySlidePresentation(next: CarouselSlide, current?: CarouselSlide): C
     fontWeight: current.fontWeight,
     fontStyle: current.fontStyle,
     textDecoration: current.textDecoration,
-    titleStyle: current.titleStyle,
-    bodyStyle: current.bodyStyle,
-    bulletStyle: current.bulletStyle,
+    titleStyle: carryFieldTypography(current.titleStyle, current.slideVariant, next.slideVariant),
+    bodyStyle: carryFieldTypography(current.bodyStyle, current.slideVariant, next.slideVariant),
+    bulletStyle: carryFieldTypography(current.bulletStyle, current.slideVariant, next.slideVariant),
   };
 }
 
@@ -707,7 +778,7 @@ async function assertExportImageReadable(source: string) {
 
 function CarouselCanvas({
   slide,
-  index: _index,
+  index,
   total: _total,
   ratio,
   logo,
@@ -816,24 +887,38 @@ function CarouselCanvas({
   const titleWeight = titleBold ? 950 : 600;
   const titleStyleAttr = (slide.titleStyle?.italic !== undefined ? slide.titleStyle.italic : slide.fontStyle === "italic") ? "italic" : "normal";
   const titleDecAttr = (slide.titleStyle?.underline !== undefined ? slide.titleStyle.underline : slide.textDecoration === "underline") ? "underline" : "none";
-  const titleColor = slide.titleStyle?.color || slide.textColor;
+  const contentTextFallback = defaultContentTextColor(slide.slideVariant, primary);
+  const titleColor = editableColor(
+    slide.titleStyle?.color,
+    isClosing ? slide.textColor || "#F8FAFC" : contentTextFallback,
+  );
 
   const bodyBold = slide.bodyStyle?.bold !== undefined ? slide.bodyStyle.bold : (slide.fontWeight === "bold" ? true : false);
   const bodyWeight = bodyBold ? 750 : 450;
   const bodyStyleAttr = (slide.bodyStyle?.italic !== undefined ? slide.bodyStyle.italic : slide.fontStyle === "italic") ? "italic" : "normal";
   const bodyDecAttr = (slide.bodyStyle?.underline !== undefined ? slide.bodyStyle.underline : slide.textDecoration === "underline") ? "underline" : "none";
-  const bodyColor = slide.bodyStyle?.color || slide.textColor;
+  const bodyColor = editableColor(
+    slide.bodyStyle?.color,
+    isClosing ? slide.textColor || "#F8FAFC" : contentTextFallback,
+  );
 
   const bulletBold = slide.bulletStyle?.bold !== undefined ? slide.bulletStyle.bold : (slide.fontWeight === "bold" ? true : false);
   const bulletWeight = bulletBold ? 700 : 450;
   const bulletStyleAttr = (slide.bulletStyle?.italic !== undefined ? slide.bulletStyle.italic : slide.fontStyle === "italic") ? "italic" : "normal";
   const bulletDecAttr = (slide.bulletStyle?.underline !== undefined ? slide.bulletStyle.underline : slide.textDecoration === "underline") ? "underline" : "none";
-  const bulletColor = slide.bulletStyle?.color || slide.textColor;
-  const imageTitleColor = contrastSafeColor(titleColor, "#111318");
-  const imageBodyColor = contrastSafeColor(bodyColor, "#111318");
-  const imageBulletColor = contrastSafeColor(bulletColor, "#111318");
+  const bulletColor = editableColor(
+    slide.bulletStyle?.color,
+    isClosing ? slide.textColor || "#F8FAFC" : contentTextFallback,
+  );
   const titleLength = cleanCarouselText(slide.title).length;
   const titleScale = titleLength > 70 ? 0.76 : titleLength > 52 ? 0.84 : titleLength > 38 ? 0.92 : 1;
+  const contentLength =
+    titleLength +
+    cleanCarouselText(slide.body).length +
+    slide.bullets.reduce((total, item) => total + cleanCarouselText(item).length, 0);
+  const isDenseSlide = contentLength > 165;
+  const denseTextScale =
+    contentLength > 520 ? 0.62 : contentLength > 360 ? 0.72 : contentLength > 240 ? 0.84 : 1;
 
   const textShadow = slide.showShadow === false ? "none" : `0px ${Math.round(3 * Z)}px ${Math.round(18 * Z)}px rgba(0, 0, 0, 0.75)`;
   const bodyShadow = slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`;
@@ -920,12 +1005,18 @@ function CarouselCanvas({
     numbered = false,
     columns = 1,
     textShadow: customTextShadow = "none",
+    align = "left",
+    compact = false,
+    scale = 1,
   }: {
     color: string;
     max?: number;
     numbered?: boolean;
     columns?: 1 | 2;
     textShadow?: string;
+    align?: "left" | "right";
+    compact?: boolean;
+    scale?: number;
   }) => {
     const items = slide.bullets.map(cleanCarouselText).filter(Boolean).slice(0, max);
     if (!items.length) return null;
@@ -935,9 +1026,9 @@ function CarouselCanvas({
         style={{
           display: "grid",
           gridTemplateColumns: columns === 2 ? "repeat(2, minmax(0, 1fr))" : "1fr",
-          gap: `${Math.round((dense ? 5 : 7) * Z)}px ${Math.round(12 * Z)}px`,
+          gap: `${Math.round((compact ? 4 : dense ? 5 : 7) * scale * Z)}px ${Math.round((compact ? 9 : 12) * scale * Z)}px`,
           padding: 0,
-          margin: `${Math.round(14 * Z)}px 0 0`,
+          margin: `${Math.round((compact ? 9 : 14) * scale * Z)}px 0 0`,
           listStyle: "none",
         }}
       >
@@ -946,12 +1037,14 @@ function CarouselCanvas({
             key={`${slide.id}-b-${bulletIndex}`}
             style={{
               display: "flex",
-              gap: Math.round(8 * Z),
+              flexDirection: align === "right" ? "row-reverse" : "row",
+              gap: Math.round((compact ? 6 : 8) * scale * Z),
               alignItems: "flex-start",
               minWidth: 0,
               color,
-              fontSize: Math.round((dense ? 10.25 : 11.5) * Z),
-              lineHeight: dense ? 1.24 : 1.32,
+              textAlign: align,
+              fontSize: Math.max(6, Math.round((compact ? 9 : dense ? 10.25 : 11.5) * scale * Z)),
+              lineHeight: compact ? 1.18 : dense ? 1.24 : 1.32,
               fontFamily: ff,
               fontWeight: bulletWeight,
               fontStyle: bulletStyleAttr,
@@ -1218,14 +1311,10 @@ function CarouselCanvas({
                 style={{
                   position: "absolute",
                   inset: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  padding: "8%",
                   boxSizing: "border-box",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: Math.round(12 * Z) }}>
+                <div style={{ position: "absolute", left: "8%", right: "8%", top: "8%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: Math.round(12 * Z) }}>
                   {logo ? (
                     <img
                       src={logo}
@@ -1235,79 +1324,64 @@ function CarouselCanvas({
                     />
                   ) : <span />}
                 </div>
-                <div>
+                <div style={{ position: "absolute", left: "8%", right: "8%", bottom: "14%" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: imageTitleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ maxWidth: "88%", margin: `${Math.round(11 * Z)}px 0 0`, color: imageBodyColor, fontSize: Math.round((ratio < 0.68 ? 12 : 13) * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
+                    <p style={{ maxWidth: "88%", margin: `${Math.round(11 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round((ratio < 0.68 ? 12 : 13) * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
                       {slide.body}
                     </p>
                   )}
-                  {renderBullets({ color: imageBulletColor, max: 4, columns: 2, textShadow: bulletShadow })}
+                  {renderBullets({ color: bulletColor, max: 4, columns: 2, textShadow: bulletShadow })}
                 </div>
               </div>
             )}
 
             {/* ─── VARIANT: ITINERARY — photo top ~45%, colored block bottom ─── */}
-            {slide.slideVariant === "itinerary" && (() => {
-              const boxTitleColor = contrastSafeColor(slide.titleStyle?.color, primary);
-              const boxBodyColor = contrastSafeColor(slide.bodyStyle?.color, primary);
-              const boxBulletColor = contrastSafeColor(slide.bulletStyle?.color, primary);
-              return (
+            {slide.slideVariant === "itinerary" && (
+              <div style={{ position: "absolute", inset: 0, boxSizing: "border-box" }}>
+                {logo && (
+                  <img
+                    src={logo}
+                    alt=""
+                    crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                    style={{ position: "absolute", top: "7%", left: "7%", width: Math.round(36 * Z), height: Math.round(36 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), zIndex: 5, boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }}
+                  />
+                )}
                 <div
                   style={{
                     position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    flexDirection: "column",
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    minHeight: "32%",
+                    background: "rgba(8, 9, 11, 0.92)",
+                    color: bodyColor,
+                    padding: isDenseSlide ? "4.5% 8% 5%" : "6.5% 8% 7.5%",
                     boxSizing: "border-box",
+                    borderTop: `${Math.max(2, Math.round(3 * Z))}px solid ${secondary}`,
+                    boxShadow: `0 ${Math.round(-12 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.24)`,
                   }}
                 >
-                  <div style={{ position: "relative", height: "38%", width: "100%", flexShrink: 0, overflow: "hidden" }}>
-                    {logo && (
-                      <img
-                        src={logo}
-                        alt=""
-                        crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                        style={{ position: "absolute", top: "12%", left: "7%", width: Math.round(36 * Z), height: Math.round(36 * Z), borderRadius: Math.round(10 * Z), objectFit: "contain", background: "rgba(255, 255, 255, 0.94)", padding: Math.round(4 * Z), zIndex: 5, boxShadow: `0px ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px rgba(0, 0, 0, 0.22)` }}
-                      />
-                    )}
-                  </div>
-                  <div
-                    style={{
-                      flex: 1,
-                      background: primary,
-                      color: boxBodyColor,
-                      padding: "6.5% 8% 7%",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "flex-start",
-                      boxSizing: "border-box",
-                      borderTop: `${Math.round(3 * Z)}px solid ${secondary}`,
-                    }}
-                  >
-                    <div>
-                      {renderLabel(slide.label)}
-                      {slide.title && (
-                        <h3 style={{ margin: 0, color: boxTitleColor, fontSize: Math.round((ratio < 0.68 ? 24 : 28) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow: "none" }}>
-                          {slide.title}
-                        </h3>
-                      )}
-                      {slide.body && (
-                        <p style={{ margin: `${Math.round(9 * Z)}px 0 0`, color: boxBodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.38, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: "none" }}>
-                          {slide.body}
-                        </p>
-                      )}
-                    </div>
-                    {renderBullets({ color: boxBulletColor, max: 4, numbered: true })}
-                  </div>
+                  {renderLabel(slide.label)}
+                  {slide.title && (
+                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
+                      {slide.title}
+                    </h3>
+                  )}
+                  {slide.body && (
+                    <p style={{ maxWidth: "92%", margin: `${Math.round((isDenseSlide ? 6 : 9) * denseTextScale * Z)}px 0 0`, color: bodyColor, fontSize: Math.max(6, Math.round((isDenseSlide ? 10.25 : 12) * denseTextScale * Z)), lineHeight: isDenseSlide ? 1.24 : 1.38, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
+                      {slide.body}
+                    </p>
+                  )}
+                  {renderBullets({ color: bulletColor, max: 4, numbered: true, textShadow: bulletShadow, compact: isDenseSlide, scale: denseTextScale })}
                 </div>
-              );
-            })()}
+              </div>
+            )}
 
             {/* ─── VARIANT: EDITORIAL — useful guide with photo-forward split layout ─── */}
             {slide.slideVariant === "editorial" && (
@@ -1327,16 +1401,16 @@ function CarouselCanvas({
                 >
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: "#17191D", fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ margin: `${Math.round(11 * Z)}px 0 0`, color: "#42454C", fontSize: Math.round(11.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
+                    <p style={{ margin: `${Math.round(11 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round(11.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
                       {slide.body}
                     </p>
                   )}
-                  {renderBullets({ color: "#303238", max: 4 })}
+                  {renderBullets({ color: bulletColor, max: 4 })}
                 </div>
                 <div style={{ position: "relative", flex: 1 }}>
                   {logo && (
@@ -1353,9 +1427,8 @@ function CarouselCanvas({
 
             {/* ─── VARIANT: OFERTA — conversion panel using the agency palette ─── */}
             {slide.slideVariant === "oferta" && (() => {
-              const panelText = contrastSafeColor(slide.textColor || readableText(primary), primary);
-              const panelBody = contrastSafeColor(slide.bodyStyle?.color || panelText, primary);
-              const panelBullet = contrastSafeColor(slide.bulletStyle?.color || panelText, primary);
+              const alignRight = index % 2 === 1;
+              const offerTitleSize = isDenseSlide ? 19 : titleLength > 38 ? 22 : ratio < 0.68 ? 25 : 28;
               return (
                 <div
                   style={{
@@ -1364,10 +1437,11 @@ function CarouselCanvas({
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "flex-end",
+                    alignItems: alignRight ? "flex-end" : "flex-start",
                     boxSizing: "border-box",
                   }}
                 >
-                  <div style={{ position: "absolute", top: "7%", right: "7%", zIndex: 12 }}>
+                  <div style={{ position: "absolute", top: "7%", [alignRight ? "left" : "right"]: "7%", zIndex: 12 }}>
                     {logo ? (
                       <img
                         src={logo}
@@ -1379,32 +1453,37 @@ function CarouselCanvas({
                   </div>
                   <div
                     style={{
-                      width: "78%",
-                      minHeight: "53%",
-                      background: primary,
-                      color: panelText,
-                      padding: "7.5% 8%",
-                      borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${secondary}`,
-                      borderRight: `${Math.max(1, Math.round(2 * Z))}px solid ${secondary}`,
-                      borderTopRightRadius: Math.round(18 * Z),
+                      width: "76%",
+                      minHeight: "48%",
+                      background: "rgba(8, 9, 11, 0.94)",
+                      color: bodyColor,
+                      padding: isDenseSlide ? "4.5% 8%" : "6% 8%",
+                      borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`,
+                      borderLeft: alignRight ? `${Math.max(1, Math.round(2 * Z))}px solid ${primary}` : "none",
+                      borderRight: alignRight ? "none" : `${Math.max(1, Math.round(2 * Z))}px solid ${primary}`,
+                      borderTopLeftRadius: alignRight ? Math.round(24 * Z) : 0,
+                      borderTopRightRadius: alignRight ? 0 : Math.round(24 * Z),
                       boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(34 * Z)}px rgba(0, 0, 0, 0.2)`,
                       position: "relative",
                       zIndex: 10,
                       boxSizing: "border-box",
+                      textAlign: alignRight ? "right" : "left",
                     }}
                   >
-                    {renderLabel(slide.label)}
+                    <div style={{ display: "flex", justifyContent: alignRight ? "flex-end" : "flex-start" }}>
+                      {renderLabel(slide.label)}
+                    </div>
                     {slide.title && (
-                      <h3 style={{ maxWidth: "92%", margin: 0, color: panelText, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                      <h3 style={{ maxWidth: "92%", margin: alignRight ? "0 0 0 auto" : 0, color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
                         {slide.title}
                       </h3>
                     )}
                     {slide.body && (
-                      <p style={{ maxWidth: "92%", margin: `${Math.round(10 * Z)}px 0 0`, color: panelBody, fontSize: Math.round(12.5 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.92, whiteSpace: "pre-wrap" }}>
+                      <p style={{ maxWidth: "92%", margin: alignRight ? `${Math.round((isDenseSlide ? 7 : 10) * denseTextScale * Z)}px 0 0 auto` : `${Math.round((isDenseSlide ? 7 : 10) * denseTextScale * Z)}px 0 0`, color: bodyColor, fontSize: Math.max(6, Math.round((isDenseSlide ? 10.5 : 12.5) * denseTextScale * Z)), lineHeight: isDenseSlide ? 1.24 : 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, whiteSpace: "pre-wrap" }}>
                         {slide.body}
                       </p>
                     )}
-                    {renderBullets({ color: panelBullet, max: 4, columns: 2 })}
+                    {renderBullets({ color: bulletColor, max: 4, columns: 2, align: alignRight ? "right" : "left", compact: isDenseSlide, scale: denseTextScale })}
                   </div>
                 </div>
               );
@@ -1430,28 +1509,26 @@ function CarouselCanvas({
                     style={{ position: "absolute", right: "7%", top: "7%", width: Math.round(38 * Z), height: Math.round(38 * Z), borderRadius: Math.round(9 * Z), objectFit: "contain", background: "rgba(255,255,255,.94)", padding: Math.round(4 * Z), boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.22)` }}
                   />
                 )}
-                <div style={{ minHeight: "48%", background: "rgba(248,248,246,0.98)", color: "#15171A", padding: "6.5% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
+                <div style={{ minHeight: "48%", background: "rgba(248,248,246,0.98)", color: titleColor, padding: "6.5% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: "#15171A", fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ maxWidth: "92%", margin: `${Math.round(10 * Z)}px 0 0`, color: "#41444A", fontSize: Math.round(12.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
+                    <p style={{ maxWidth: "92%", margin: `${Math.round(10 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round(12.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
                       {slide.body}
                     </p>
                   )}
-                  {renderBullets({ color: "#34373C", max: 3, columns: 2 })}
+                  {renderBullets({ color: bulletColor, max: 3, columns: 2 })}
                 </div>
               </div>
             )}
 
             {/* ─── VARIANT: VIBRANT — FAQ split layout without decorative gradients ─── */}
             {slide.slideVariant === "vibrant" && (() => {
-              const panelText = contrastSafeColor(slide.textColor || readableText(primary), primary);
-              const panelBody = contrastSafeColor(slide.bodyStyle?.color || panelText, primary);
-              const panelBullet = contrastSafeColor(slide.bulletStyle?.color || panelText, primary);
+              const faqTitleSize = isDenseSlide ? 18.5 : titleLength > 38 ? 21 : ratio < 0.68 ? 24 : 27;
               return (
                 <div
                   style={{
@@ -1467,8 +1544,8 @@ function CarouselCanvas({
                       width: "62%",
                       minWidth: 0,
                       background: primary,
-                      color: panelText,
-                      padding: "9% 7.5%",
+                      color: titleColor,
+                      padding: isDenseSlide ? "5.5% 7.5%" : "9% 7.5%",
                       borderTop: `${Math.max(4, Math.round(7 * Z))}px solid ${secondary}`,
                       boxSizing: "border-box",
                       display: "flex",
@@ -1479,16 +1556,16 @@ function CarouselCanvas({
                   >
                     {renderLabel(slide.label)}
                     {slide.title && (
-                      <h3 style={{ maxWidth: "94%", margin: 0, color: panelText, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                      <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round(faqTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
                         {slide.title}
                       </h3>
                     )}
                     {slide.body && (
-                      <p style={{ maxWidth: "94%", margin: `${Math.round(10 * Z)}px 0 0`, color: panelBody, fontSize: Math.round(12 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9 }}>
+                      <p style={{ maxWidth: "94%", margin: `${Math.round((isDenseSlide ? 7 : 10) * denseTextScale * Z)}px 0 0`, color: bodyColor, fontSize: Math.max(6, Math.round((isDenseSlide ? 10.25 : 12) * denseTextScale * Z)), lineHeight: isDenseSlide ? 1.24 : 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9 }}>
                         {slide.body}
                       </p>
                     )}
-                    {renderBullets({ color: panelBullet, max: 4, numbered: true })}
+                    {renderBullets({ color: bulletColor, max: 4, numbered: true, compact: isDenseSlide, scale: denseTextScale })}
                   </div>
                   <div style={{ position: "relative", flex: 1 }}>
                     {logo && (
@@ -1499,6 +1576,103 @@ function CarouselCanvas({
                         style={{ position: "absolute", right: "13%", top: "8%", width: Math.round(38 * Z), height: Math.round(38 * Z), borderRadius: Math.round(9 * Z), objectFit: "contain", background: "rgba(255,255,255,.94)", padding: Math.round(4 * Z), boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.22)` }}
                       />
                     )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Curved editorial panel with alternating visual rhythm. */}
+            {slide.slideVariant === "organic" && (() => {
+              const alignRight = index % 2 === 1;
+              return (
+                <div style={{ position: "absolute", inset: 0, boxSizing: "border-box" }}>
+                  {logo && (
+                    <img
+                      src={logo}
+                      alt=""
+                      crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                      style={{ position: "absolute", [alignRight ? "left" : "right"]: "7%", top: "7%", width: Math.round(38 * Z), height: Math.round(38 * Z), borderRadius: Math.round(9 * Z), objectFit: "contain", background: "rgba(255,255,255,.94)", padding: Math.round(4 * Z), boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.22)` }}
+                    />
+                  )}
+                  <div
+                    style={{
+                      position: "absolute",
+                      [alignRight ? "right" : "left"]: 0,
+                      bottom: 0,
+                      width: "91%",
+                      minHeight: "44%",
+                      padding: "7% 8% 7.5%",
+                      background: "rgba(248,248,246,.97)",
+                      borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`,
+                      borderTopLeftRadius: alignRight ? Math.round(118 * Z) : 0,
+                      borderTopRightRadius: alignRight ? 0 : Math.round(118 * Z),
+                      boxShadow: `0 ${Math.round(-12 * Z)}px ${Math.round(34 * Z)}px rgba(0,0,0,.2)`,
+                      boxSizing: "border-box",
+                      textAlign: alignRight ? "right" : "left",
+                    }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
+                      {renderLabel(slide.label)}
+                      {slide.title && (
+                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                          {slide.title}
+                        </h3>
+                      )}
+                      {slide.body && (
+                        <p style={{ maxWidth: "84%", margin: `${Math.round(10 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round(12.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
+                          {slide.body}
+                        </p>
+                      )}
+                      {renderBullets({ color: bulletColor, max: 4, columns: 2, align: alignRight ? "right" : "left" })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Transparent panel keeps the destination visible while separating copy. */}
+            {slide.slideVariant === "glass" && (() => {
+              const alignRight = index % 2 === 1;
+              return (
+                <div style={{ position: "absolute", inset: 0, boxSizing: "border-box" }}>
+                  {logo && (
+                    <img
+                      src={logo}
+                      alt=""
+                      crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
+                      style={{ position: "absolute", [alignRight ? "left" : "right"]: "7%", top: "7%", width: Math.round(38 * Z), height: Math.round(38 * Z), borderRadius: Math.round(9 * Z), objectFit: "contain", background: "rgba(255,255,255,.94)", padding: Math.round(4 * Z), boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.22)` }}
+                    />
+                  )}
+                  <div
+                    style={{
+                      position: "absolute",
+                      [alignRight ? "right" : "left"]: "7%",
+                      bottom: "9%",
+                      width: "78%",
+                      minHeight: "39%",
+                      padding: "6.5% 7%",
+                      background: "rgba(8,9,11,.78)",
+                      border: "1px solid rgba(255,255,255,.38)",
+                      borderRadius: Math.round(24 * Z),
+                      boxShadow: `0 ${Math.round(16 * Z)}px ${Math.round(42 * Z)}px rgba(0,0,0,.34)`,
+                      boxSizing: "border-box",
+                      textAlign: alignRight ? "right" : "left",
+                    }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
+                      {renderLabel(slide.label)}
+                      {slide.title && (
+                        <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow, overflowWrap: "anywhere" }}>
+                          {slide.title}
+                        </h3>
+                      )}
+                      {slide.body && (
+                        <p style={{ maxWidth: "94%", margin: `${Math.round(10 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, textShadow: bodyShadow, whiteSpace: "pre-wrap" }}>
+                          {slide.body}
+                        </p>
+                      )}
+                      {renderBullets({ color: bulletColor, max: 4, columns: 2, textShadow: bulletShadow, align: alignRight ? "right" : "left" })}
+                    </div>
                   </div>
                 </div>
               );
@@ -1615,7 +1789,6 @@ function MiniTypographyBar({
   primaryColor = "#F5F906",
   secondaryColor = "#00F0FF",
   onChange,
-  onSelectTextColor,
   isEs = false,
   compact = false,
   vertical = false,
@@ -1626,7 +1799,6 @@ function MiniTypographyBar({
   primaryColor?: string;
   secondaryColor?: string;
   onChange: (updated: FieldTypography) => void;
-  onSelectTextColor?: (color: string) => void;
   isEs?: boolean;
   compact?: boolean;
   vertical?: boolean;
@@ -1641,7 +1813,6 @@ function MiniTypographyBar({
 
   const handleColorClick = (hex: string) => {
     onChange({ ...style, color: hex });
-    if (onSelectTextColor) onSelectTextColor(hex);
   };
 
   const brandColors = [
@@ -1911,8 +2082,13 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
   const [photoPanelOpen, setPhotoPanelOpen] = useState(false);
   const exportRefs = useRef<Array<HTMLDivElement | null>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const objectiveRowRef = useRef<HTMLDivElement>(null);
   const uploadRequestRef = useRef(new Map<string, symbol>());
   const activeSlide = slides[activeIndex];
+  const activeFieldFallback =
+    activeSlide?.kind === "content"
+      ? defaultContentTextColor(activeSlide.slideVariant, state.primaryColor)
+      : activeSlide?.textColor || "#FFFFFF";
   const qualityIssues = useMemo(() => {
     const issues: string[] = [];
     const contentSlides = slides.filter((slide) => slide.kind === "content");
@@ -2079,11 +2255,20 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
           generatedArchive,
         ).map((slide) => {
           const withCover = slide.kind === "cover" ? { ...slide, imageUrl: coverImage } : slide;
+          const legacyColor =
+            withCover.kind === "content" &&
+            /^#[0-9a-f]{6}$/i.test(withCover.textColor || "") &&
+            !["#FFFFFF", "#F8FAFC"].includes(withCover.textColor.toUpperCase())
+              ? withCover.textColor
+              : undefined;
           // backward compat: add new fields if missing from old localStorage saves
           return {
             ...withCover,
             slideVariant: withCover.slideVariant ?? "impact",
             bulletIcon: withCover.bulletIcon ?? "none",
+            titleStyle: { ...withCover.titleStyle, color: withCover.titleStyle?.color || legacyColor },
+            bodyStyle: { ...withCover.bodyStyle, color: withCover.bodyStyle?.color || legacyColor },
+            bulletStyle: { ...withCover.bulletStyle, color: withCover.bulletStyle?.color || legacyColor },
           } as CarouselSlide;
         });
         const restoredBase = createSlides(
@@ -2187,6 +2372,12 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
 
   const currentStrategy =
     slides.find((slide) => slide.kind === "content")?.slideVariant || "impact";
+
+  useEffect(() => {
+    objectiveRowRef.current
+      ?.querySelector<HTMLButtonElement>('[aria-pressed="true"]')
+      ?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [currentStrategy]);
 
   const applyCarouselStrategy = (strategy: CarouselSlideVariant) => {
     if (!selectedPackage) return;
@@ -2904,7 +3095,7 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div>
             <fieldset>
               <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
                 {isEs ? "Total de imágenes" : "Total de imagens"}
@@ -2928,11 +3119,13 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
               </div>
             </fieldset>
 
-            <fieldset>
+            </div>
+
+            <fieldset className="min-w-0 lg:col-span-2">
               <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
                 {isEs ? "Objetivo del carrusel" : "Objetivo do carrossel"}
               </legend>
-              <div className="mt-1.5 grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+              <div ref={objectiveRowRef} className="f1-carousel-scroll mt-1.5 flex gap-1.5 overflow-x-auto pb-1">
                 {([
                   ["impact", isEs ? "Inspirar" : "Inspirar", isEs ? "Deseo y experiencia" : "Desejo e experiência"],
                   ["itinerary", isEs ? "Itinerario" : "Roteiro", isEs ? "Ruta y logística" : "Percurso e logística"],
@@ -2940,6 +3133,8 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                   ["oferta", isEs ? "Oferta" : "Oferta", isEs ? "Valor y conversión" : "Valor e conversão"],
                   ["minimalist", isEs ? "Confianza" : "Confiança", isEs ? "Claridad y atención" : "Clareza e atendimento"],
                   ["vibrant", "FAQ", isEs ? "Resuelve objeciones" : "Resolve objeções"],
+                  ["organic", "Curvo", isEs ? "Formas orgánicas" : "Formas orgânicas"],
+                  ["glass", "Transparente", isEs ? "Ligero y sofisticado" : "Leve e sofisticado"],
                 ] as const).map(([variant, labelText, description]) => {
                   const isActiveVariant = currentStrategy === variant;
                   return (
@@ -2947,8 +3142,10 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       key={variant}
                       type="button"
                       aria-pressed={isActiveVariant}
+                      aria-label={`${labelText}: ${description}`}
+                      title={description}
                       onClick={() => applyCarouselStrategy(variant)}
-                      className={`min-h-12 rounded-xl border px-2.5 py-2 text-left transition-colors ${
+                      className={`min-h-9 min-w-[88px] flex-1 whitespace-nowrap rounded-lg border px-2.5 py-2 text-center transition-colors ${
                         isActiveVariant
                           ? "border-[#F5F906] bg-[#F5F906]/10"
                           : "border-white/10 bg-transparent hover:border-white/20 hover:bg-white/[0.03]"
@@ -2957,15 +3154,11 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       <span className={`block text-[10px] font-extrabold ${isActiveVariant ? "text-[#F5F906]" : "text-white/75"}`}>
                         {labelText}
                       </span>
-                      <span className="mt-0.5 block text-[8px] leading-tight text-white/35">
-                        {description}
-                      </span>
                     </button>
                   );
                 })}
               </div>
             </fieldset>
-          </div>
         </div>
       </div>
 
@@ -3578,11 +3771,10 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                     <MiniTypographyBar
                       style={activeSlide.titleStyle}
                       fallbackBold={activeSlide.fontWeight !== "normal"}
-                      fallbackColor={activeSlide.textColor || "#FFFFFF"}
+                      fallbackColor={activeFieldFallback}
                       primaryColor={state.primaryColor}
                       secondaryColor={state.secondaryColor}
                       onChange={(updated) => patchActive({ titleStyle: updated })}
-                      onSelectTextColor={(color) => patchActive({ textColor: color })}
                       isEs={isEs}
                       compact
                     />
@@ -3607,11 +3799,10 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       <MiniTypographyBar
                         style={activeSlide.bodyStyle}
                         fallbackBold={activeSlide.fontWeight === "bold"}
-                        fallbackColor={activeSlide.textColor || "#FFFFFF"}
+                        fallbackColor={activeFieldFallback}
                         primaryColor={state.primaryColor}
                         secondaryColor={state.secondaryColor}
                         onChange={(updated) => patchActive({ bodyStyle: updated })}
-                        onSelectTextColor={(color) => patchActive({ textColor: color })}
                         isEs={isEs}
                         compact
                       />
@@ -3647,11 +3838,10 @@ export function F1CarouselBuilder({ sourceImage = "", locale = "pt", onNext }: F
                       <MiniTypographyBar
                         style={activeSlide.bulletStyle}
                         fallbackBold={activeSlide.fontWeight === "bold"}
-                        fallbackColor={activeSlide.textColor || "#FFFFFF"}
+                        fallbackColor={activeFieldFallback}
                         primaryColor={state.primaryColor}
                         secondaryColor={state.secondaryColor}
                         onChange={(updated) => patchActive({ bulletStyle: updated })}
-                        onSelectTextColor={(color) => patchActive({ textColor: color })}
                         isEs={isEs}
                         compact
                       />
