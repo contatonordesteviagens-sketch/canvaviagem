@@ -549,9 +549,75 @@ function contentPresets(
         bullets: priceAndTerms,
       },
     ],
+    headline: [
+      {
+        label: isEs ? "Tu próximo destino" : "Seu próximo destino",
+        title: isEs ? `¿Pensando en viajar a ${destination}?` : `Pensando em viajar para ${destination}?`,
+        body:
+          description ||
+          (isEs
+            ? "Descubre lo esencial antes de preparar tu viaje."
+            : "Confira o que você precisa saber antes de preparar sua viagem."),
+        bullets: highlights.slice(0, 3),
+      },
+      {
+        label: isEs ? "La experiencia" : "A experiência",
+        title: isEs ? "Lo que hace este viaje inolvidable" : "O que torna esta viagem inesquecível",
+        body: shortDescription,
+        bullets: route.slice(0, 4),
+      },
+      {
+        label: isEs ? "Viaja preparado" : "Viaje preparado",
+        title: isEs ? "Todo lo importante en un solo lugar" : "Tudo o que importa em um só lugar",
+        body: cleanBody(pacote.importantNotes, 110),
+        bullets: logistics.length ? logistics : packageFacts,
+      },
+      {
+        label: isEs ? "Guarda esta idea" : "Salve esta ideia",
+        title: isEs ? `Tu historia puede comenzar en ${destination}` : `Sua história pode começar em ${destination}`,
+        body:
+          isEs
+            ? "Comparte con quien viviría esta experiencia contigo."
+            : "Compartilhe com quem viveria essa experiência com você.",
+        bullets: priceAndTerms,
+      },
+    ],
+    ticket: [
+      {
+        label: isEs ? "Tarjeta de embarque" : "Cartão de embarque",
+        title: destination,
+        body:
+          shortDescription ||
+          (isEs ? "Tu viaje empieza con una buena planificación." : "Sua viagem começa com um bom planejamento."),
+        bullets: compact([pacote.duration, pacote.travelDates, pacote.departureLocation])
+          .map(cleanCarouselText)
+          .filter(Boolean),
+      },
+      {
+        label: isEs ? "Servicios incluidos" : "Serviços incluídos",
+        title: isEs ? "Tu viaje, organizado" : "Sua viagem, organizada",
+        body: "",
+        bullets: packageFacts,
+      },
+      {
+        label: isEs ? "Datos del viaje" : "Dados da viagem",
+        title: isEs ? "Fechas, salida y alojamiento" : "Datas, saída e hospedagem",
+        body: cleanBody(pacote.importantNotes, 100),
+        bullets: logistics,
+      },
+      {
+        label: isEs ? "Confirma tu embarque" : "Confirme seu embarque",
+        title: isEs ? "Solicita disponibilidad" : "Consulte a disponibilidade",
+        body:
+          isEs
+            ? "Habla con nuestro equipo para recibir los valores actualizados."
+            : "Fale com nossa equipe para receber os valores atualizados.",
+        bullets: priceAndTerms,
+      },
+    ],
   };
 
-  return strategies[strategy];
+  return strategies[strategy] || strategies.impact;
 }
 
 function createSlides(
