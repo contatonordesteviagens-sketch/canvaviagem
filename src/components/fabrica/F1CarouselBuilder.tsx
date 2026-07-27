@@ -55,6 +55,8 @@ type CarouselSlideVariant =
   | "organic"
   | "glass"
   | "headline"
+  | "headline-center"
+  | "headline-footer"
   | "ticket";
 type LabelStyle = "filled" | "outline-thin" | "outline-thick" | "stripe-left" | "rectangle" | "translucent" | "gradient";
 
@@ -68,6 +70,8 @@ const CAROUSEL_VARIANTS: CarouselSlideVariant[] = [
   "organic",
   "glass",
   "headline",
+  "headline-center",
+  "headline-footer",
   "ticket",
 ];
 
@@ -94,6 +98,7 @@ interface CarouselSlide {
   showShadow?: boolean;
   labelStyle?: LabelStyle;
   labelColor?: string;
+  labelTextColor?: string;
   fontFamily?: string;
   fontWeight?: "normal" | "bold";
   fontStyle?: "normal" | "italic";
@@ -138,6 +143,11 @@ const compact = (values: Array<string | undefined>) =>
 const uniqueImages = (values: Array<string | undefined>) =>
   Array.from(new Set(values.map((value) => (value || "").trim()).filter(Boolean)));
 
+const isUserUploadedImage = (value = "") =>
+  value.startsWith("data:") ||
+  value.startsWith("blob:") ||
+  /\/storage\/v1\/object\/public\/thumbnails\/sites\//i.test(value);
+
 const cleanCarouselText = (value = "") =>
   value
     .replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s•✓✔☑▪▫■□➜→\-*]+/gu, "")
@@ -149,7 +159,7 @@ const splitBalancedHeadline = (value: string, maxLines = 3) => {
   if (!words.length) return [];
 
   const characterCount = words.join(" ").length;
-  const lineCount = Math.min(maxLines, characterCount > 34 ? 3 : characterCount > 17 ? 2 : 1);
+  const lineCount = Math.min(maxLines, characterCount > 28 ? 3 : characterCount > 15 ? 2 : 1);
   const lines: string[] = [];
   let cursor = 0;
 
@@ -217,6 +227,11 @@ const readableGradientText = (start: string, end: string) => {
 
 const editableColor = (preferred: string | undefined, fallback: string) =>
   preferred && /^#[0-9a-f]{6}$/i.test(preferred) ? preferred : fallback;
+
+const isHeadlineVariant = (variant: CarouselSlideVariant) =>
+  variant === "headline" ||
+  variant === "headline-center" ||
+  variant === "headline-footer";
 
 const defaultContentTextColor = (variant: CarouselSlideVariant, primary: string) => {
   if (
@@ -363,12 +378,12 @@ function contentPresets(
   const shortDescription = cleanBody(pacote.description || pacote.subtitle, 110);
   const priceAndTerms = compact([pacote.price, pacote.paymentTerms]).map(cleanCarouselText);
 
-  const strategies: Record<CarouselSlideVariant, Array<{
+  const strategies: Partial<Record<CarouselSlideVariant, Array<{
     label: string;
     title: string;
     body: string;
     bullets: string[];
-  }>> = {
+  }>>> = {
     impact: [
       {
         label: isEs ? "Inspírate" : "Imagine-se aqui",
@@ -661,7 +676,10 @@ function contentPresets(
     ],
   };
 
-  return strategies[strategy] || strategies.impact;
+  if (strategy === "headline-center" || strategy === "headline-footer") {
+    return strategies.headline || [];
+  }
+  return strategies[strategy] || strategies.impact || [];
 }
 
 function createSlides(
@@ -793,6 +811,35 @@ function createSlides(
   return slides;
 }
 
+function distributeUniqueSlideImages(
+  items: CarouselSlide[],
+  candidates: string[],
+  preserveUploads = false,
+): CarouselSlide[] {
+  const pool = uniqueImages(candidates);
+  if (!pool.length) return items;
+
+  const used = new Set<string>();
+  items.forEach((slide) => {
+    if (slide.kind === "cover" && slide.imageUrl) used.add(slide.imageUrl);
+  });
+
+  return items.map((slide) => {
+    if (slide.kind === "cover") return slide;
+    if (preserveUploads && isUserUploadedImage(slide.imageUrl)) {
+      used.add(slide.imageUrl);
+      return slide;
+    }
+    const nextImage = pool.find((image) => !used.has(image));
+    if (!nextImage) {
+      if (slide.imageUrl && !used.has(slide.imageUrl)) used.add(slide.imageUrl);
+      return slide;
+    }
+    used.add(nextImage);
+    return { ...slide, imageUrl: nextImage };
+  });
+}
+
 function mergeSlidesForSize(
   current: CarouselSlide[],
   generated: CarouselSlide[],
@@ -871,6 +918,7 @@ function carrySlidePresentation(next: CarouselSlide, current?: CarouselSlide): C
     showShadow: current.showShadow,
     labelStyle: current.labelStyle,
     labelColor: current.labelColor,
+    labelTextColor: current.labelTextColor,
     fontFamily: current.fontFamily,
     fontWeight: current.fontWeight,
     fontStyle: current.fontStyle,
@@ -1189,7 +1237,7 @@ function CarouselCanvas({
     if (!label) return null;
     const rawBg = slide.labelColor || secondary;
     const bg = rawBg.toUpperCase() === "#F5F906" ? "#F5F906" : rawBg;
-    const fg = readableText(bg);
+    const fg = editableColor(slide.labelTextColor, readableText(bg));
 
     const style = slide.labelStyle || "filled";
     const commonStyle: CSSProperties = {
@@ -1214,21 +1262,21 @@ function CarouselCanvas({
 
     if (style === "outline-thin") {
       return (
-        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.round(1 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.45)", color: "#F8FAFC", padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.round(1 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.45)", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
     }
     if (style === "outline-thick") {
       return (
-        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.round(2.5 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.60)", color: "#F8FAFC", padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px` }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.round(2.5 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.60)", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px` }}>
           {label}
         </div>
       );
     }
     if (style === "stripe-left") {
       return (
-        <div style={{ ...commonStyle, borderLeft: `${Math.round(4 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.55)", color: "#F8FAFC", padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
+        <div style={{ ...commonStyle, borderLeft: `${Math.round(4 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.55)", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
@@ -1342,6 +1390,17 @@ function CarouselCanvas({
   if (isClosing) {
     const storyMode = ratio < 0.68;
     const variant = slide.slideVariant || "impact";
+    const stripedClosing = isHeadlineVariant(variant);
+    const closingHeadlineLines = stripedClosing ? splitBalancedHeadline(slide.title) : [];
+    const closingLongestHeadline = Math.max(
+      0,
+      ...closingHeadlineLines.map((line) => line.length),
+    );
+    const closingHeadlineFontScale = Math.max(
+      0.42,
+      Math.min(1, 19 / Math.max(19, closingLongestHeadline)),
+    );
+    const centeredHeadline = variant === "headline-center";
     const brandGradient = `linear-gradient(100deg, ${primary} 0%, ${secondary} 100%)`;
     const gradientForeground = readableGradientText(primary, secondary);
     const brandForeground = readableText(primary);
@@ -1381,8 +1440,8 @@ function CarouselCanvas({
     let panelShadow = "none";
     let titleBackground = "transparent";
     let titleForeground = closingTitleColor;
-    let titlePadding = 0;
-    let titleRadius: string | number = 0;
+    const titlePadding = 0;
+    const titleRadius: string | number = 0;
     let ctaBackground = primary;
     let ctaForeground = brandForeground;
     let ctaBorder = "none";
@@ -1515,21 +1574,27 @@ function CarouselCanvas({
       ctaForeground = brandForeground;
       ctaBorder = "1px solid rgba(255,255,255,.28)";
       ctaRadius = Math.round(10 * Z);
-    } else if (variant === "headline") {
+    } else if (isHeadlineVariant(variant)) {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "16%" : "10%",
+        top:
+          logoSource && !logoIsBottom
+            ? storyMode ? "14%" : "15%"
+            : variant === "headline-footer"
+              ? storyMode ? "25%" : "22%"
+              : storyMode ? "10%" : "9%",
+        bottom: logoSource && logoIsBottom
+          ? storyMode ? "13%" : "14%"
+          : storyMode ? "8%" : "7%",
         left: "8%",
         right: "8%",
-        alignItems: "flex-start",
+        alignItems: centeredHeadline ? "center" : "flex-start",
         justifyContent: "flex-start",
         padding: 0,
-        textAlign: "left",
+        textAlign: centeredHeadline ? "center" : "left",
       };
-      titleBackground = brandGradient;
-      titleForeground = editableColor(slide.titleStyle?.color, gradientForeground);
-      titlePadding = `${Math.round(12 * Z)}px ${Math.round(15 * Z)}px`;
-      titleRadius = Math.round(4 * Z);
+      titleBackground = "transparent";
+      titleForeground = "#FFFFFF";
       ctaBackground = brandGradient;
       ctaForeground = gradientForeground;
       ctaRadius = Math.round(5 * Z);
@@ -1639,30 +1704,76 @@ function CarouselCanvas({
               }}
             />
           )}
-          <h3
-            style={{
-              maxWidth: variant === "ticket" ? "72%" : "96%",
-              margin: 0,
-              padding: titlePadding,
-              borderRadius: titleRadius,
-              background: titleBackground,
-              color: titleForeground,
-              fontSize: Math.round((storyMode ? 27 : 30) * titleScale * Z),
-              lineHeight: 1.04,
-              fontFamily: ff,
-              fontWeight: titleWeight,
-              fontStyle: titleStyleAttr,
-              textDecoration: titleDecAttr,
-              overflowWrap: "anywhere",
-              textShadow: titleBackground === "transparent" && !lightPanel ? textShadow : "none",
-            }}
-          >
-            {slide.title}
-          </h3>
+          {stripedClosing ? (
+            <div
+              style={{
+                display: "flex",
+                width: "100%",
+                flexDirection: "column",
+                alignItems: centeredHeadline ? "center" : "flex-start",
+              }}
+            >
+              {closingHeadlineLines.map((line, lineIndex) => (
+                <span
+                  key={`${slide.id}-closing-headline-${lineIndex}`}
+                  style={{
+                    display: "block",
+                    width: "fit-content",
+                    maxWidth: "100%",
+                    marginTop: lineIndex ? Math.round(3 * Z) : 0,
+                    padding: `${Math.round(5 * Z)}px ${Math.round(12 * Z)}px`,
+                    background: `linear-gradient(100deg, rgba(0,0,0,.28), rgba(0,0,0,.18)), linear-gradient(${96 + lineIndex * 7}deg, ${primary} 0%, ${secondary} 100%)`,
+                    color: "#FFFFFF",
+                    fontSize: Math.round(
+                      (storyMode ? 26 : 29) *
+                        titleScale *
+                        closingHeadlineFontScale *
+                        Z,
+                    ),
+                    lineHeight: 1.02,
+                    fontFamily: ff,
+                    fontWeight: titleWeight,
+                    fontStyle: titleStyleAttr,
+                    textDecoration: titleDecAttr,
+                    whiteSpace: "nowrap",
+                    borderRadius: Math.round(3 * Z),
+                    boxShadow: `0 ${Math.round(7 * Z)}px ${Math.round(22 * Z)}px rgba(0,0,0,.22)`,
+                    textShadow: `0 ${Math.round(1 * Z)}px ${Math.round(4 * Z)}px rgba(0,0,0,.35)`,
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {line}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <h3
+              style={{
+                maxWidth: variant === "ticket" ? "72%" : "96%",
+                margin: 0,
+                padding: titlePadding,
+                borderRadius: titleRadius,
+                background: titleBackground,
+                color: titleForeground,
+                fontSize: Math.round((storyMode ? 27 : 30) * titleScale * Z),
+                lineHeight: 1.04,
+                fontFamily: ff,
+                fontWeight: titleWeight,
+                fontStyle: titleStyleAttr,
+                textDecoration: titleDecAttr,
+                overflowWrap: "anywhere",
+                textShadow: titleBackground === "transparent" && !lightPanel ? textShadow : "none",
+              }}
+            >
+              {slide.title}
+            </h3>
+          )}
           <p
             style={{
               maxWidth: variant === "ticket" ? "70%" : "92%",
-              margin: `${Math.round(12 * Z)}px 0 ${Math.round(18 * Z)}px`,
+              margin: stripedClosing
+                ? `auto 0 ${Math.round(14 * Z)}px`
+                : `${Math.round(12 * Z)}px 0 ${Math.round(18 * Z)}px`,
               color: closingBodyColor,
               fontSize: Math.round((storyMode ? 13 : 14) * Z),
               lineHeight: 1.42,
@@ -1738,7 +1849,7 @@ function CarouselCanvas({
                 maxWidth: variant === "ticket" ? "70%" : "92%",
                 marginTop: Math.round(9 * Z),
                 color: closingBodyColor,
-                fontSize: Math.round(10.5 * Z),
+                fontSize: Math.round((storyMode ? 13 : 14) * Z),
                 lineHeight: 1.25,
                 fontWeight: 700,
                 textShadow: !lightPanel && variant !== "vibrant" ? bodyShadow : "none",
@@ -1749,8 +1860,8 @@ function CarouselCanvas({
                   <Instagram
                     aria-hidden="true"
                     style={{
-                      width: Math.round(15 * Z),
-                      height: Math.round(15 * Z),
+                      width: Math.round(17 * Z),
+                      height: Math.round(17 * Z),
                       color: "#E1306C",
                       flex: "0 0 auto",
                     }}
@@ -1763,8 +1874,8 @@ function CarouselCanvas({
                   <Mail
                     aria-hidden="true"
                     style={{
-                      width: Math.round(15 * Z),
-                      height: Math.round(15 * Z),
+                      width: Math.round(17 * Z),
+                      height: Math.round(17 * Z),
                       flex: "0 0 auto",
                     }}
                   />
@@ -2392,11 +2503,25 @@ function CarouselCanvas({
             })()}
 
             {/* Brand headline: full-bleed image with an automatic-contrast gradient hook. */}
-            {slide.slideVariant === "headline" && (() => {
+            {isHeadlineVariant(slide.slideVariant) && (() => {
               const storyMode = ratio < 0.68;
               const headlineLines = splitBalancedHeadline(slide.title);
+              const centeredLayout = slide.slideVariant === "headline-center";
+              const footerLayout = slide.slideVariant === "headline-footer";
+              const informationAtBottom =
+                isLastContent ||
+                centeredLayout ||
+                footerLayout ||
+                slide.slideVariant === "headline";
+              const longestHeadline = Math.max(0, ...headlineLines.map((line) => line.length));
+              const headlineFontScale = Math.max(
+                0.42,
+                Math.min(1, 19 / Math.max(19, longestHeadline)),
+              );
               const lowerContentInset =
-                logoIsBottom && logoIsLeft
+                centeredLayout
+                  ? { left: "8%", right: "8%" }
+                  : logoIsBottom && logoIsLeft
                   ? { left: "20%", right: "8%" }
                   : logoIsBottom
                     ? { left: "8%", right: "20%" }
@@ -2406,15 +2531,19 @@ function CarouselCanvas({
                   <div
                     style={{
                       position: "absolute",
-                      top: storyMode ? "4%" : "10%",
+                      top: footerLayout
+                        ? storyMode ? "36%" : "34%"
+                        : logoSource && !logoIsBottom
+                          ? storyMode ? "14%" : "15%"
+                          : storyMode ? "6%" : "9%",
                       left: "8%",
                       right: "8%",
                       display: "flex",
                       flexDirection: "column",
-                      alignItems: "flex-start",
+                      alignItems: centeredLayout ? "center" : "flex-start",
                     }}
                   >
-                    {renderLabel(slide.label)}
+                    {renderLabel(slide.label, centeredLayout ? "center" : "left")}
                     {slide.title && (
                       <div
                         style={{
@@ -2423,6 +2552,7 @@ function CarouselCanvas({
                           fontFamily: ff,
                           fontStyle: titleStyleAttr,
                           textDecoration: titleDecAttr,
+                          textAlign: centeredLayout ? "center" : "left",
                         }}
                       >
                         {headlineLines.map((line, lineIndex) => (
@@ -2436,10 +2566,10 @@ function CarouselCanvas({
                               padding: `${Math.round(5 * Z)}px ${Math.round(13 * Z)}px`,
                               background: `linear-gradient(100deg, rgba(0,0,0,.28), rgba(0,0,0,.18)), linear-gradient(${96 + lineIndex * 7}deg, ${primary} 0%, ${secondary} 100%)`,
                               color: "#FFFFFF",
-                              fontSize: Math.round((storyMode ? 29 : 33) * titleScale * Z),
+                              fontSize: Math.round((storyMode ? 29 : 33) * titleScale * headlineFontScale * Z),
                               lineHeight: 1.02,
                               fontWeight: titleWeight,
-                              overflowWrap: "anywhere",
+                              whiteSpace: "nowrap",
                               borderRadius: Math.round(3 * Z),
                               boxShadow: `0 ${Math.round(7 * Z)}px ${Math.round(22 * Z)}px rgba(0,0,0,.22)`,
                               textShadow: `0 ${Math.round(1 * Z)}px ${Math.round(4 * Z)}px rgba(0,0,0,.35)`,
@@ -2451,7 +2581,7 @@ function CarouselCanvas({
                         ))}
                       </div>
                     )}
-                    {!isLastContent && slide.body && (
+                    {!informationAtBottom && slide.body && (
                       <p
                         style={{
                           maxWidth: "82%",
@@ -2470,18 +2600,20 @@ function CarouselCanvas({
                         {slide.body}
                       </p>
                     )}
-                    {!isLastContent &&
+                    {!informationAtBottom &&
                       renderBullets({ color: bulletColor, max: 4, textShadow: bulletShadow })}
                   </div>
-                  {isLastContent && (slide.body || slide.bullets.some(Boolean)) && (
+                  {informationAtBottom && (slide.body || slide.bullets.some(Boolean)) && (
                     <div
                       style={{
                         position: "absolute",
                         ...lowerContentInset,
-                        bottom: storyMode ? "9%" : "8%",
+                        bottom: logoSource && logoIsBottom
+                          ? storyMode ? "15%" : "16%"
+                          : storyMode ? "9%" : "8%",
                         padding: `${Math.round(16 * Z)}px ${Math.round(18 * Z)}px`,
                         color: "#FFFFFF",
-                        textAlign: "left",
+                        textAlign: centeredLayout ? "center" : "left",
                         background:
                           "linear-gradient(180deg, rgba(5,7,10,.82) 0%, rgba(5,7,10,.16) 100%)",
                         borderTop: "1px solid rgba(255,255,255,.3)",
@@ -2503,6 +2635,7 @@ function CarouselCanvas({
                             textDecoration: bodyDecAttr,
                             whiteSpace: "pre-wrap",
                             textShadow: bodyShadow,
+                            textAlign: centeredLayout ? "center" : "left",
                           }}
                         >
                           {slide.body}
@@ -2513,6 +2646,7 @@ function CarouselCanvas({
                         max: 4,
                         compact: true,
                         textShadow: bulletShadow,
+                        align: centeredLayout ? "center" : "left",
                       })}
                     </div>
                   )}
@@ -3066,11 +3200,13 @@ export function F1CarouselBuilder({
   const [showNewCarouselModal, setShowNewCarouselModal] = useState(false);
   const [captionText, setCaptionText] = useState("");
   const [generatingCaption, setGeneratingCaption] = useState(false);
-  const [photoPanelOpen, setPhotoPanelOpen] = useState(false);
+  const [photoPanelOpen, setPhotoPanelOpen] = useState(true);
   const exportRefs = useRef<Array<HTMLDivElement | null>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectiveRowRef = useRef<HTMLDivElement>(null);
   const uploadRequestRef = useRef(new Map<string, symbol>());
+  const autoPhotoSyncRef = useRef("");
+  const photoSearchRequestRef = useRef(0);
   const activeSlide = slides[activeIndex];
   const activeCoverIsProtected =
     activeSlide?.kind === "cover" && activeSlide.coverSource === "ad";
@@ -3642,8 +3778,36 @@ export function F1CarouselBuilder({
     );
   };
 
-  const searchPhotos = async () => {
+  const applyPhotoPoolToCarousel = (
+    photos: PhotoResult[],
+    preserveUploads = false,
+  ) => {
+    const urls = uniqueImages(photos.map((photo) => photo.url));
+    if (!urls.length) return;
+    slideArchiveRef.current = distributeUniqueSlideImages(
+      slideArchiveRef.current,
+      urls,
+      preserveUploads,
+    );
+    setSlides((current) =>
+      distributeUniqueSlideImages(current, urls, preserveUploads),
+    );
+  };
+
+  const searchPhotos = async ({
+    syncAll = false,
+    queryOverride = "",
+    silent = false,
+  }: {
+    syncAll?: boolean;
+    queryOverride?: string;
+    silent?: boolean;
+  } = {}) => {
+    const requestId = photoSearchRequestRef.current + 1;
+    photoSearchRequestRef.current = requestId;
+    const targetPackageId = selectedPackage?.id || "";
     const query =
+      queryOverride.trim() ||
       photoQuery.trim() ||
       selectedPackage?.title.trim() ||
       state.destinos.find(Boolean) ||
@@ -3660,27 +3824,69 @@ export function F1CarouselBuilder({
       const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
         body: {
           query,
-          perPage: 8,
+          perPage: 12,
           engine: "pexels",
           orientation: "portrait",
           fallback: false,
         },
       });
       if (error) throw error;
+      if (
+        photoSearchRequestRef.current !== requestId ||
+        selectedPackageIdRef.current !== targetPackageId
+      ) {
+        return;
+      }
       const safePhotos = (Array.isArray(data?.photos) ? data.photos : []).filter(
         (photo: PhotoResult) => /^https:\/\/images\.pexels\.com\//i.test(photo.url || ""),
       );
       setPhotoResults(safePhotos);
-      if (!safePhotos.length) {
+      if (syncAll && safePhotos.length) {
+        applyPhotoPoolToCarousel(safePhotos, silent);
+        if (!silent) {
+          toast.success(
+            isEs
+              ? "Fotos unicas sincronizadas con el destino."
+              : "Fotos únicas sincronizadas com o destino.",
+          );
+        }
+      }
+      if (!safePhotos.length && !silent) {
         toast.info(isEs ? "No encontramos fotos para esta búsqueda." : "Nenhuma foto encontrada para esta busca.");
       }
     } catch (error) {
+      if (
+        photoSearchRequestRef.current !== requestId ||
+        selectedPackageIdRef.current !== targetPackageId
+      ) {
+        return;
+      }
+      if (silent) return;
       console.error("Erro ao buscar fotos para o carrossel:", error);
       toast.error(isEs ? "No fue posible buscar fotos ahora." : "Não foi possível buscar fotos agora.");
     } finally {
-      setSearchingPhotos(false);
+      if (photoSearchRequestRef.current === requestId) {
+        setSearchingPhotos(false);
+      }
     }
   };
+
+  useEffect(() => {
+    const packageKey = [
+      state.projectId || "local",
+      selectedPackage?.id || "",
+      normalizeName(selectedPackage?.title || ""),
+    ].join(":");
+    if (!selectedPackage?.id || autoPhotoSyncRef.current === packageKey) return;
+    autoPhotoSyncRef.current = packageKey;
+    void searchPhotos({
+      syncAll: true,
+      queryOverride: selectedPackage.title,
+      silent: true,
+    });
+    // A troca de pacote e a unica origem desta sincronizacao automatica.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPackage?.id, selectedPackage?.title, state.projectId]);
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -4022,7 +4228,7 @@ export function F1CarouselBuilder({
           />
           <button
             type="button"
-            onClick={searchPhotos}
+            onClick={() => void searchPhotos()}
             disabled={searchingPhotos}
             aria-label={isEs ? "Buscar fotos" : "Buscar fotos"}
             className="grid min-h-11 min-w-11 place-items-center rounded-xl bg-[#F5F906] text-zinc-950 disabled:opacity-50 hover:bg-[#F5F906]/90 transition-colors"
@@ -4039,6 +4245,21 @@ export function F1CarouselBuilder({
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
         </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            void searchPhotos({
+              syncAll: true,
+              queryOverride: photoQuery || selectedPackage.title,
+            })
+          }
+          disabled={searchingPhotos}
+          className="mt-2 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-lg border border-[#F5F906]/35 bg-[#F5F906]/[0.07] px-3 text-[10px] font-extrabold text-[#F5F906] transition-colors hover:bg-[#F5F906]/[0.12] disabled:opacity-50"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${searchingPhotos ? "animate-spin" : ""}`} />
+          {isEs ? "Sincronizar fotos del destino" : "Sincronizar fotos do destino"}
+        </button>
 
         {state.destinos.length > 0 && (
           <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
@@ -4226,7 +4447,13 @@ export function F1CarouselBuilder({
               </label>
               <select
                 value={selectedPackage.id}
-                onChange={(event) => setSelectedPackageId(event.target.value)}
+                onChange={(event) => {
+                  const nextPackageId = event.target.value;
+                  photoSearchRequestRef.current += 1;
+                  selectedPackageIdRef.current = nextPackageId;
+                  setSearchingPhotos(false);
+                  setSelectedPackageId(nextPackageId);
+                }}
                 className="min-h-11 w-full rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm font-semibold text-white outline-none focus:border-[#F5F906]"
               >
                 {packages.map((pacote) => (
@@ -4428,6 +4655,8 @@ export function F1CarouselBuilder({
                   ["glass", "Transparente", isEs ? "Ligero y sofisticado" : "Leve e sofisticado"],
                   ["headline", isEs ? "Titular" : "Destaque", isEs ? "Gancho con degradado" : "Gancho com degradê"],
                   ["ticket", isEs ? "Billete" : "Bilhete", isEs ? "Estilo tarjeta de embarque" : "Estilo cartão de embarque"],
+                  ["headline-center", isEs ? "Franjas centro" : "Faixas centrais", isEs ? "Informacion centrada abajo" : "Informacoes centralizadas abaixo"],
+                  ["headline-footer", isEs ? "Franjas bajas" : "Faixas inferiores", isEs ? "Titulo e informacion en la base" : "Titulo e informacoes na base"],
                 ] as const).map(([variant, labelText, description]) => {
                   const isActiveVariant = currentStrategy === variant;
                   return (
@@ -5078,6 +5307,80 @@ export function F1CarouselBuilder({
                         {styleTitle}
                       </button>
                     ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 border-t border-white/[0.06] pt-3">
+                    <div>
+                      <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
+                        {isEs ? "Fondo del sello" : "Fundo do selo"}
+                      </p>
+                      <div className="flex items-center gap-1.5">
+                        {[state.primaryColor, state.secondaryColor, "#FFFFFF", "#111318"].map((color, colorIndex) => (
+                          <button
+                            key={`label-bg-${color}-${colorIndex}`}
+                            type="button"
+                            aria-label={`${isEs ? "Fondo" : "Fundo"} ${color}`}
+                            onClick={() => patchActive({ labelColor: color })}
+                            className={`h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 ${
+                              (activeSlide.labelColor || state.secondaryColor).toUpperCase() === color.toUpperCase()
+                                ? "border-[#F5F906] ring-1 ring-[#F5F906]"
+                                : "border-white/25"
+                            }`}
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                        <label
+                          title={isEs ? "Elegir otro color" : "Escolher outra cor"}
+                          className="relative h-5 w-5 cursor-pointer rounded-full border border-white/25"
+                          style={{
+                            background:
+                              "conic-gradient(#ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
+                          }}
+                        >
+                          <input
+                            type="color"
+                            value={activeSlide.labelColor || state.secondaryColor}
+                            onChange={(event) => patchActive({ labelColor: event.target.value })}
+                            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
+                        {isEs ? "Texto del sello" : "Texto do selo"}
+                      </p>
+                      <div className="flex items-center gap-1.5">
+                        {["#FFFFFF", "#111318", state.primaryColor, state.secondaryColor].map((color, colorIndex) => (
+                          <button
+                            key={`label-text-${color}-${colorIndex}`}
+                            type="button"
+                            aria-label={`${isEs ? "Texto" : "Texto"} ${color}`}
+                            onClick={() => patchActive({ labelTextColor: color })}
+                            className={`h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 ${
+                              (activeSlide.labelTextColor || readableText(activeSlide.labelColor || state.secondaryColor)).toUpperCase() === color.toUpperCase()
+                                ? "border-[#F5F906] ring-1 ring-[#F5F906]"
+                                : "border-white/25"
+                            }`}
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                        <label
+                          title={isEs ? "Elegir otro color" : "Escolher outra cor"}
+                          className="relative h-5 w-5 cursor-pointer rounded-full border border-white/25"
+                          style={{
+                            background:
+                              "conic-gradient(#ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
+                          }}
+                        >
+                          <input
+                            type="color"
+                            value={activeSlide.labelTextColor || readableText(activeSlide.labelColor || state.secondaryColor)}
+                            onChange={(event) => patchActive({ labelTextColor: event.target.value })}
+                            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                          />
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
