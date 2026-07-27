@@ -5,9 +5,11 @@ import {
   useState,
   type ChangeEvent,
   type CSSProperties,
-  type ReactNode,
 } from "react";
 import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
   AlertTriangle,
   ArrowDownLeft,
   ArrowDownRight,
@@ -70,6 +72,31 @@ type LabelStyle =
   | "gradient";
 type LabelAlignment = "auto" | "left" | "center" | "right";
 
+function SealStyleGlyph({ style }: { style: LabelStyle }) {
+  const base = "relative block h-3.5 w-6 text-current";
+  if (style === "stripe-left") {
+    return <span className={`${base} border-l-2 border-current bg-current/10`} />;
+  }
+  if (style === "line-top" || style === "line-bottom") {
+    return (
+      <span className={base}>
+        <span className={`absolute inset-x-0 ${style === "line-top" ? "top-0" : "bottom-0"} h-0.5 bg-current`} />
+      </span>
+    );
+  }
+  if (style === "outline-thin" || style === "outline-thick") {
+    return <span className={`${base} rounded-full border-current ${style === "outline-thick" ? "border-2" : "border"}`} />;
+  }
+  return (
+    <span
+      className={`${base} ${style === "rectangle" ? "rounded-sm" : "rounded-full"} ${
+        style === "translucent" ? "bg-current/35" : "bg-current"
+      }`}
+      style={style === "gradient" ? { background: "linear-gradient(90deg,currentColor,transparent)" } : undefined}
+    />
+  );
+}
+
 const CAROUSEL_VARIANTS: CarouselSlideVariant[] = [
   "impact",
   "itinerary",
@@ -108,6 +135,7 @@ interface CarouselSlide {
   showShadow?: boolean;
   labelStyle?: LabelStyle;
   labelAlignment?: LabelAlignment;
+  contentAlignment?: LabelAlignment;
   labelColor?: string;
   labelTextColor?: string;
   fontFamily?: string;
@@ -948,6 +976,7 @@ function carrySlidePresentation(next: CarouselSlide, current?: CarouselSlide): C
     showShadow: current.showShadow,
     labelStyle: current.labelStyle,
     labelAlignment: current.labelAlignment,
+    contentAlignment: current.contentAlignment,
     labelColor: current.labelColor,
     labelTextColor: current.labelTextColor,
     fontFamily: current.fontFamily,
@@ -1256,6 +1285,17 @@ function CarouselCanvas({
   const isDenseSlide = contentLength > 165;
   const denseTextScale =
     contentLength > 520 ? 0.62 : contentLength > 360 ? 0.72 : contentLength > 240 ? 0.84 : 1;
+  const automaticContentAlignment: Exclude<LabelAlignment, "auto"> =
+    slide.slideVariant === "headline-center"
+      ? "center"
+      : index % 2 === 1
+        ? "right"
+        : "left";
+  const resolvedContentAlignment =
+    slide.contentAlignment && slide.contentAlignment !== "auto"
+      ? slide.contentAlignment
+      : automaticContentAlignment;
+  const contentOnRight = resolvedContentAlignment === "right";
 
   const textShadow = slide.showShadow === false ? "none" : `0px ${Math.round(3 * Z)}px ${Math.round(18 * Z)}px rgba(0, 0, 0, 0.75)`;
   const bodyShadow = slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`;
@@ -1524,7 +1564,6 @@ function CarouselCanvas({
         left: 0,
         right: 0,
         bottom: storyMode ? "20%" : 0,
-        minHeight: storyMode ? "39%" : "44%",
         justifyContent: "center",
         alignItems: "flex-start",
         padding: "8% 9%",
@@ -1538,12 +1577,13 @@ function CarouselCanvas({
         ...panelStyle,
         top: storyMode ? "14%" : 0,
         bottom: storyMode ? "20%" : 0,
-        left: 0,
-        width: storyMode ? "82%" : "64%",
+        left: contentOnRight ? undefined : 0,
+        right: contentOnRight ? 0 : undefined,
+        width: storyMode ? "46%" : "40%",
         justifyContent: "center",
-        alignItems: "flex-start",
-        padding: "9% 8%",
-        textAlign: "left",
+        alignItems: contentOnRight ? "flex-end" : "flex-start",
+        padding: "8% 6%",
+        textAlign: contentOnRight ? "right" : "left",
       };
       panelBackground = "#F3F2EE";
       panelBorder = `${Math.max(3, Math.round(5 * Z))}px solid ${secondary}`;
@@ -1557,7 +1597,6 @@ function CarouselCanvas({
         left: "8%",
         right: "8%",
         bottom: storyMode ? "20%" : "9%",
-        minHeight: storyMode ? "38%" : "50%",
         justifyContent: "center",
         alignItems: "center",
         padding: "8% 8%",
@@ -1576,7 +1615,6 @@ function CarouselCanvas({
         left: 0,
         right: 0,
         bottom: storyMode ? "20%" : 0,
-        minHeight: storyMode ? "39%" : "48%",
         justifyContent: "center",
         alignItems: "flex-start",
         padding: "8% 9%",
@@ -1594,12 +1632,13 @@ function CarouselCanvas({
         ...panelStyle,
         top: storyMode ? "14%" : 0,
         bottom: storyMode ? "20%" : 0,
-        left: 0,
-        width: storyMode ? "84%" : "62%",
+        left: contentOnRight ? undefined : 0,
+        right: contentOnRight ? 0 : undefined,
+        width: storyMode ? "48%" : "42%",
         justifyContent: "center",
-        alignItems: "flex-start",
-        padding: "9% 8%",
-        textAlign: "left",
+        alignItems: contentOnRight ? "flex-end" : "flex-start",
+        padding: "8% 6%",
+        textAlign: contentOnRight ? "right" : "left",
       };
       panelBackground = primary;
       panelBorder = `${Math.max(4, Math.round(7 * Z))}px solid ${secondary}`;
@@ -1610,18 +1649,20 @@ function CarouselCanvas({
     } else if (variant === "organic") {
       contentStyle = {
         ...panelStyle,
-        left: 0,
+        left: contentOnRight ? undefined : 0,
+        right: contentOnRight ? 0 : undefined,
         bottom: storyMode ? "20%" : 0,
-        width: "92%",
-        minHeight: storyMode ? "39%" : "48%",
+        width: "88%",
         justifyContent: "center",
-        alignItems: "flex-start",
-        padding: "9% 9%",
-        textAlign: "left",
+        alignItems: contentOnRight ? "flex-end" : "flex-start",
+        padding: "8% 9%",
+        textAlign: contentOnRight ? "right" : "left",
       };
       panelBackground = "rgba(248,248,246,.98)";
       panelBorder = `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`;
-      panelRadius = `0 ${Math.round(120 * Z)}px 0 0`;
+      panelRadius = contentOnRight
+        ? `${Math.round(120 * Z)}px 0 0 0`
+        : `0 ${Math.round(120 * Z)}px 0 0`;
       ctaBackground = primary;
       ctaForeground = brandForeground;
     } else if (variant === "glass") {
@@ -1630,7 +1671,6 @@ function CarouselCanvas({
         left: "7%",
         right: "7%",
         bottom: storyMode ? "21%" : "8%",
-        minHeight: storyMode ? "36%" : "44%",
         justifyContent: "center",
         alignItems: "flex-start",
         padding: "8% 8%",
@@ -1674,7 +1714,6 @@ function CarouselCanvas({
         left: "7%",
         right: "7%",
         bottom: storyMode ? "20%" : "8%",
-        minHeight: storyMode ? "38%" : "48%",
         justifyContent: "center",
         alignItems: "flex-start",
         padding: "8% 9%",
@@ -2208,22 +2247,6 @@ function CarouselCanvas({
                   ) : <span />}
                 </div>
                 <div style={{ position: "absolute", left: "8%", right: "8%", bottom: "14%" }}>
-                  {slide.kind === "cover" && (
-                    <div
-                      aria-hidden="true"
-                      style={{
-                        width: Math.round(58 * Z),
-                        height: Math.max(3, Math.round(4 * Z)),
-                        marginBottom: Math.round(14 * Z),
-                        borderRadius: Math.round(999 * Z),
-                        background: secondary,
-                        boxShadow:
-                          slide.showShadow === false
-                            ? "none"
-                            : `0 ${Math.round(4 * Z)}px ${Math.round(16 * Z)}px ${safeHexToRgba(secondary, 0.45)}`,
-                      }}
-                    />
-                  )}
                   {renderLabel(slide.label)}
                   {slide.title && (
                     <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
@@ -2257,7 +2280,6 @@ function CarouselCanvas({
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    minHeight: "32%",
                     background: "rgba(8, 9, 11, 0.92)",
                     color: bodyColor,
                     padding: isDenseSlide ? "4.5% 8% 5%" : "6.5% 8% 7.5%",
@@ -2284,23 +2306,26 @@ function CarouselCanvas({
 
             {/* ─── VARIANT: EDITORIAL — useful guide with photo-forward split layout ─── */}
             {slide.slideVariant === "editorial" && (
-              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "stretch" }}>
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: contentOnRight ? "row-reverse" : "row", alignItems: "stretch" }}>
                 <div
                   style={{
-                    width: "64%",
+                    width: ratio < 0.68 ? "44%" : "38%",
                     minWidth: 0,
                     background: "#F3F2EE",
-                    padding: "9% 7.5%",
+                    padding: "8% 6%",
                     boxSizing: "border-box",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
-                    borderRight: `${Math.round(5 * Z)}px solid ${secondary}`,
+                    alignItems: contentOnRight ? "flex-end" : "flex-start",
+                    textAlign: contentOnRight ? "right" : "left",
+                    borderRight: contentOnRight ? undefined : `${Math.round(4 * Z)}px solid ${secondary}`,
+                    borderLeft: contentOnRight ? `${Math.round(4 * Z)}px solid ${secondary}` : undefined,
                   }}
                 >
-                  {renderLabel(slide.label)}
+                  {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 20 : 23) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2309,7 +2334,7 @@ function CarouselCanvas({
                       {slide.body}
                     </p>
                   )}
-                  {renderBullets({ color: bulletColor, max: 4 })}
+                  {renderBullets({ color: bulletColor, max: 4, align: contentOnRight ? "right" : "left" })}
                 </div>
                 <div style={{ position: "relative", flex: 1 }}>
                   {logo && (
@@ -2352,7 +2377,6 @@ function CarouselCanvas({
                   <div
                     style={{
                       width: "82%",
-                      minHeight: "48%",
                       background: "rgba(8, 9, 11, 0.94)",
                       color: bodyColor,
                       padding: isDenseSlide ? "4.5% 8%" : "6% 8%",
@@ -2407,7 +2431,7 @@ function CarouselCanvas({
                     style={{ position: "absolute", right: "7%", top: "7%", width: Math.round(38 * Z), height: Math.round(38 * Z), borderRadius: Math.round(9 * Z), objectFit: "contain", background: "rgba(255,255,255,.94)", padding: Math.round(4 * Z), boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.22)` }}
                   />
                 )}
-                <div style={{ minHeight: "48%", background: "rgba(248,248,246,0.98)", color: titleColor, padding: "6.5% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
+                <div style={{ background: "rgba(248,248,246,0.98)", color: titleColor, padding: isDenseSlide ? "4.5% 8%" : "6.5% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
                     <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
@@ -2426,20 +2450,21 @@ function CarouselCanvas({
 
             {/* ─── VARIANT: VIBRANT — FAQ split layout without decorative gradients ─── */}
             {slide.slideVariant === "vibrant" && (() => {
-              const faqTitleSize = isDenseSlide ? 18.5 : titleLength > 38 ? 21 : ratio < 0.68 ? 24 : 27;
+              const faqTitleSize = isDenseSlide ? 16 : titleLength > 38 ? 18 : ratio < 0.68 ? 20 : 23;
               return (
                 <div
                   style={{
                     position: "absolute",
                     inset: 0,
                     display: "flex",
+                    flexDirection: contentOnRight ? "row-reverse" : "row",
                     alignItems: "stretch",
                     boxSizing: "border-box",
                   }}
                 >
                   <div
                     style={{
-                      width: "62%",
+                      width: ratio < 0.68 ? "46%" : "40%",
                       minWidth: 0,
                       background: primary,
                       color: titleColor,
@@ -2449,10 +2474,12 @@ function CarouselCanvas({
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "center",
-                      boxShadow: `${Math.round(10 * Z)}px 0 ${Math.round(32 * Z)}px rgba(0,0,0,.2)`,
+                      alignItems: contentOnRight ? "flex-end" : "flex-start",
+                      textAlign: contentOnRight ? "right" : "left",
+                      boxShadow: `${(contentOnRight ? -1 : 1) * Math.round(10 * Z)}px 0 ${Math.round(32 * Z)}px rgba(0,0,0,.2)`,
                     }}
                   >
-                    {renderLabel(slide.label)}
+                    {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                     {slide.title && (
                       <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round(faqTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
                         {slide.title}
@@ -2463,7 +2490,7 @@ function CarouselCanvas({
                         {slide.body}
                       </p>
                     )}
-                    {renderBullets({ color: bulletColor, max: 4, numbered: true, compact: isDenseSlide, scale: denseTextScale })}
+                    {renderBullets({ color: bulletColor, max: 4, numbered: true, compact: isDenseSlide, scale: denseTextScale, align: contentOnRight ? "right" : "left" })}
                   </div>
                   <div style={{ position: "relative", flex: 1 }}>
                     {logo && (
@@ -2481,7 +2508,7 @@ function CarouselCanvas({
 
             {/* Curved editorial panel with alternating visual rhythm. */}
             {slide.slideVariant === "organic" && (() => {
-              const alignRight = index % 2 === 1;
+              const alignRight = contentOnRight;
               return (
                 <div style={{ position: "absolute", inset: 0, boxSizing: "border-box" }}>
                   {logo && (
@@ -2498,8 +2525,7 @@ function CarouselCanvas({
                       [alignRight ? "right" : "left"]: 0,
                       bottom: 0,
                       width: "91%",
-                      minHeight: "44%",
-                      padding: "7% 8% 7.5%",
+                      padding: isDenseSlide ? "5% 8%" : "7% 8% 7.5%",
                       background: "rgba(248,248,246,.97)",
                       borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`,
                       borderTopLeftRadius: alignRight ? Math.round(118 * Z) : 0,
@@ -2530,7 +2556,7 @@ function CarouselCanvas({
 
             {/* Transparent panel keeps the destination visible while separating copy. */}
             {slide.slideVariant === "glass" && (() => {
-              const alignRight = index % 2 === 1;
+              const alignRight = contentOnRight;
               return (
                 <div style={{ position: "absolute", inset: 0, boxSizing: "border-box" }}>
                   {logo && (
@@ -2546,9 +2572,8 @@ function CarouselCanvas({
                       position: "absolute",
                       [alignRight ? "right" : "left"]: "7%",
                       bottom: "9%",
-                      width: "78%",
-                      minHeight: "39%",
-                      padding: "6.5% 7%",
+                      width: ratio < 0.68 ? "82%" : "72%",
+                      padding: isDenseSlide ? "5% 7%" : "6.5% 7%",
                       background: "rgba(8,9,11,.78)",
                       border: "1px solid rgba(255,255,255,.38)",
                       borderRadius: Math.round(24 * Z),
@@ -2606,10 +2631,13 @@ function CarouselCanvas({
                     style={{
                       position: "absolute",
                       top: footerLayout
-                        ? storyMode ? "36%" : "34%"
+                        ? undefined
+                        : centeredLayout
+                          ? storyMode ? "38%" : "36%"
                         : logoSource && !logoIsBottom
                           ? storyMode ? "14%" : "15%"
                           : storyMode ? "6%" : "9%",
+                      bottom: footerLayout ? (storyMode ? "26%" : "24%") : undefined,
                       left: "8%",
                       right: "8%",
                       display: "flex",
@@ -2637,6 +2665,8 @@ function CarouselCanvas({
                               width: "fit-content",
                               maxWidth: "100%",
                               marginTop: lineIndex ? Math.round(3 * Z) : 0,
+                              marginLeft: centeredLayout ? "auto" : 0,
+                              marginRight: centeredLayout ? "auto" : 0,
                               padding: `${Math.round(5 * Z)}px ${Math.round(13 * Z)}px`,
                               background: `linear-gradient(100deg, rgba(0,0,0,.28), rgba(0,0,0,.18)), linear-gradient(${96 + lineIndex * 7}deg, ${primary} 0%, ${secondary} 100%)`,
                               color: "#FFFFFF",
@@ -2758,8 +2788,7 @@ function CarouselCanvas({
                       left: "7%",
                       right: "7%",
                       bottom: storyMode ? 0 : "8%",
-                      minHeight: storyMode ? "35%" : "45%",
-                      padding: "7% 25% 7% 8%",
+                      padding: isDenseSlide ? "5% 25% 5% 8%" : "7% 25% 7% 8%",
                       background: "#F6F2E9",
                       color: "#17191D",
                       border: `${Math.max(1, Math.round(2 * Z))}px solid ${primary}`,
@@ -2893,26 +2922,6 @@ function ScaledSlidePreview({
         />
       </div>
     </div>
-  );
-}
-
-function CarouselField({
-  label,
-  optionalAction,
-  children,
-}: {
-  label: string;
-  optionalAction?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 flex min-h-5 items-center justify-between gap-3 text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">
-        <span>{label}</span>
-        {optionalAction}
-      </span>
-      {children}
-    </label>
   );
 }
 
@@ -3269,15 +3278,18 @@ export function F1CarouselBuilder({
   const carouselRatio = CAROUSEL_RATIOS[carouselFormat];
   const [photoQuery, setPhotoQuery] = useState("");
   const [photoResults, setPhotoResults] = useState<PhotoResult[]>([]);
+  const [photoPage, setPhotoPage] = useState(1);
+  const [photoHasMore, setPhotoHasMore] = useState(false);
+  const [photoDestination, setPhotoDestination] = useState("");
   const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [showNewCarouselModal, setShowNewCarouselModal] = useState(false);
   const [captionText, setCaptionText] = useState("");
+  const [captionEdited, setCaptionEdited] = useState(false);
   const [generatingCaption, setGeneratingCaption] = useState(false);
   const [photoPanelOpen, setPhotoPanelOpen] = useState(true);
   const exportRefs = useRef<Array<HTMLDivElement | null>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const objectiveRowRef = useRef<HTMLDivElement>(null);
   const uploadRequestRef = useRef(new Map<string, symbol>());
   const autoPhotoSyncRef = useRef("");
   const photoSearchRequestRef = useRef(0);
@@ -3341,6 +3353,7 @@ export function F1CarouselBuilder({
           isEs,
         ),
       );
+      setCaptionEdited(false);
       toast.success(isEs ? "¡Leyenda generada!" : "Legenda gerada com sucesso!");
     } finally {
       setGeneratingCaption(false);
@@ -3406,8 +3419,17 @@ export function F1CarouselBuilder({
   }, [currentDestination, packages]);
 
   useEffect(() => {
-    setPhotoQuery(selectedPackage?.title || "");
+    const initialDestination =
+      currentDestination.trim() ||
+      state.destinos.find((destination) => destination?.trim())?.trim() ||
+      selectedPackage?.title ||
+      "";
+    setPhotoDestination(initialDestination);
+    setPhotoQuery(initialDestination);
     setPhotoResults([]);
+    setPhotoPage(1);
+    setPhotoHasMore(false);
+    setCaptionEdited(false);
     setCaptionText(
       selectedPackage
         ? carouselCaption(
@@ -3418,7 +3440,7 @@ export function F1CarouselBuilder({
           )
         : "",
     );
-  }, [agencyPhone, isEs, selectedPackage, state.agencyName]);
+  }, [agencyPhone, currentDestination, isEs, selectedPackage, state.agencyName, state.destinos]);
 
   useEffect(() => {
     skipNextPersistRef.current = storageKey;
@@ -3465,6 +3487,9 @@ export function F1CarouselBuilder({
           showLogo?: boolean;
           logoPosition?: LogoPosition;
           carouselFormat?: CarouselFormat;
+          photoDestination?: string;
+          captionText?: string;
+          captionEdited?: boolean;
         };
         setShowLogo(parsed.showLogo !== false);
         if (
@@ -3476,6 +3501,14 @@ export function F1CarouselBuilder({
           setLogoPosition(parsed.logoPosition);
         }
         setCarouselFormat(parsed.carouselFormat === "story" ? "story" : "feed");
+        if (parsed.photoDestination?.trim()) {
+          setPhotoDestination(parsed.photoDestination.trim());
+          setPhotoQuery(parsed.photoDestination.trim());
+        }
+        if (typeof parsed.captionText === "string") {
+          setCaptionText(parsed.captionText);
+          setCaptionEdited(parsed.captionEdited === true);
+        }
         const storedSlides = parsed.allSlides || parsed.slides || [];
         const restoredStrategy =
           storedSlides.find((slide) => slide.kind === "content")?.slideVariant || "impact";
@@ -3619,6 +3652,9 @@ export function F1CarouselBuilder({
             showLogo,
             logoPosition,
             carouselFormat,
+            photoDestination,
+            captionText,
+            captionEdited,
             slides: slides.map(safeSlide),
             allSlides: allSlides.map(safeSlide),
           }),
@@ -3641,7 +3677,7 @@ export function F1CarouselBuilder({
       window.removeEventListener("pagehide", persistBeforeLeaving);
       persistDraft(false);
     };
-  }, [agencyPhone, availableImages, carouselFormat, coverImage, effectiveCoverSource, isEs, logoPosition, photoResults, selectedPackage, showLogo, slideCount, slides, storageKey]);
+  }, [agencyPhone, availableImages, captionEdited, captionText, carouselFormat, coverImage, effectiveCoverSource, isEs, logoPosition, photoDestination, photoResults, selectedPackage, showLogo, slideCount, slides, storageKey]);
 
   useEffect(() => {
     const ff = activeSlide?.fontFamily || "Inter";
@@ -3676,12 +3712,6 @@ export function F1CarouselBuilder({
 
   const currentStrategy =
     slides.find((slide) => slide.kind === "content")?.slideVariant || "impact";
-
-  useEffect(() => {
-    objectiveRowRef.current
-      ?.querySelector<HTMLButtonElement>('[aria-pressed="true"]')
-      ?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-  }, [currentStrategy]);
 
   const applyCarouselStrategy = (strategy: CarouselSlideVariant) => {
     if (!selectedPackage) return;
@@ -3872,10 +3902,12 @@ export function F1CarouselBuilder({
     syncAll = false,
     queryOverride = "",
     silent = false,
+    pageOverride = 1,
   }: {
     syncAll?: boolean;
     queryOverride?: string;
     silent?: boolean;
+    pageOverride?: number;
   } = {}) => {
     const requestId = photoSearchRequestRef.current + 1;
     photoSearchRequestRef.current = requestId;
@@ -3883,8 +3915,9 @@ export function F1CarouselBuilder({
     const query =
       queryOverride.trim() ||
       photoQuery.trim() ||
-      selectedPackage?.title.trim() ||
+      photoDestination.trim() ||
       state.destinos.find(Boolean) ||
+      selectedPackage?.title.trim() ||
       "";
     if (!query) {
       toast.error(isEs ? "Escribe un destino para buscar." : "Digite um destino para buscar.");
@@ -3892,13 +3925,15 @@ export function F1CarouselBuilder({
     }
 
     setPhotoQuery(query);
+    setPhotoDestination(query);
     setSearchingPhotos(true);
     setPhotoResults([]);
     try {
       const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
         body: {
           query,
-          perPage: 12,
+          perPage: 8,
+          page: pageOverride,
           engine: "pexels",
           orientation: "portrait",
           fallback: false,
@@ -3915,6 +3950,8 @@ export function F1CarouselBuilder({
         (photo: PhotoResult) => /^https:\/\/images\.pexels\.com\//i.test(photo.url || ""),
       );
       setPhotoResults(safePhotos);
+      setPhotoPage(pageOverride);
+      setPhotoHasMore(safePhotos.length === 8);
       if (syncAll && safePhotos.length) {
         applyPhotoPoolToCarousel(safePhotos, silent);
         if (!silent) {
@@ -3949,18 +3986,18 @@ export function F1CarouselBuilder({
     const packageKey = [
       state.projectId || "local",
       selectedPackage?.id || "",
-      normalizeName(selectedPackage?.title || ""),
+      normalizeName(photoDestination || selectedPackage?.title || ""),
     ].join(":");
     if (!selectedPackage?.id || autoPhotoSyncRef.current === packageKey) return;
     autoPhotoSyncRef.current = packageKey;
     void searchPhotos({
       syncAll: true,
-      queryOverride: selectedPackage.title,
+      queryOverride: photoDestination || selectedPackage.title,
       silent: true,
     });
     // A troca de pacote e a unica origem desta sincronizacao automatica.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPackage?.id, selectedPackage?.title, state.projectId]);
+  }, [photoDestination, selectedPackage?.id, selectedPackage?.title, state.projectId]);
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -4292,30 +4329,37 @@ export function F1CarouselBuilder({
           </span>
         </summary>
 
-        <div className="mt-3 flex gap-2">
-          <input
-            value={photoQuery}
-            onChange={(event) => setPhotoQuery(event.target.value)}
-            onKeyDown={(event) => event.key === "Enter" && searchPhotos()}
-            placeholder={selectedPackage.title || (isEs ? "Destino" : "Destino")}
-            className="f1-carousel-input min-w-0 flex-1"
-          />
-          <button
-            type="button"
-            onClick={() => void searchPhotos()}
-            disabled={searchingPhotos}
-            aria-label={isEs ? "Buscar fotos" : "Buscar fotos"}
-            className="grid min-h-11 min-w-11 place-items-center rounded-xl bg-[#F5F906] text-zinc-950 disabled:opacity-50 hover:bg-[#F5F906]/90 transition-colors"
-          >
-            {searchingPhotos ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-          </button>
+        <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="min-w-0">
+            <label className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.12em] text-white/40">
+              {isEs ? "Destino de las fotos" : "Destino das fotos"}
+            </label>
+            <div className="flex gap-2">
+              <input
+                value={photoQuery}
+                onChange={(event) => setPhotoQuery(event.target.value)}
+                onKeyDown={(event) => event.key === "Enter" && void searchPhotos()}
+                placeholder={isEs ? "Ej: Fernando de Noronha" : "Ex: Fernando de Noronha"}
+                className="f1-carousel-input min-w-0 flex-1"
+              />
+              <button
+                type="button"
+                onClick={() => void searchPhotos()}
+                disabled={searchingPhotos}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-4 text-[10px] font-extrabold text-zinc-950 disabled:opacity-50 hover:bg-[#F5F906]/90 transition-colors"
+              >
+                {searchingPhotos ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                {isEs ? "Buscar" : "Buscar"}
+              </button>
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            aria-label={isEs ? "Enviar imagen" : "Enviar imagem"}
-            className="grid min-h-11 min-w-11 place-items-center rounded-xl border border-white/15 text-white/70 hover:bg-white/[0.05]"
+            className="mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 px-4 text-[10px] font-bold text-white/75 hover:bg-white/[0.05]"
           >
             <Upload className="h-4 w-4" />
+            {isEs ? "Subir mi foto" : "Adicionar minha foto"}
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
         </div>
@@ -4325,7 +4369,8 @@ export function F1CarouselBuilder({
           onClick={() =>
             void searchPhotos({
               syncAll: true,
-              queryOverride: photoQuery || selectedPackage.title,
+              queryOverride: photoQuery || photoDestination || selectedPackage.title,
+              pageOverride: 1,
             })
           }
           disabled={searchingPhotos}
@@ -4341,7 +4386,10 @@ export function F1CarouselBuilder({
               <button
                 key={destination}
                 type="button"
-                onClick={() => setPhotoQuery(destination)}
+                onClick={() => {
+                  setPhotoQuery(destination);
+                  setPhotoDestination(destination);
+                }}
                 className="min-h-8 shrink-0 rounded-full border border-white/10 px-3 text-[10px] font-bold text-white/55 hover:border-white/25 hover:text-white transition-colors"
               >
                 {destination}
@@ -4407,19 +4455,48 @@ export function F1CarouselBuilder({
                 );
               })}
             </div>
+            {photoResults.length > 0 && (
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <span className="text-[9px] font-medium text-white/35">
+                  {isEs ? `Página ${photoPage}` : `Página ${photoPage}`}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={searchingPhotos || photoPage <= 1}
+                    onClick={() => void searchPhotos({ queryOverride: photoDestination || photoQuery, pageOverride: Math.max(1, photoPage - 1) })}
+                    className="min-h-8 rounded-lg border border-white/10 px-3 text-[9px] font-bold text-white/60 hover:bg-white/[0.05] disabled:opacity-30"
+                  >
+                    {isEs ? "Anterior" : "Anterior"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={searchingPhotos || !photoHasMore}
+                    onClick={() => void searchPhotos({ queryOverride: photoDestination || photoQuery, pageOverride: photoPage + 1 })}
+                    className="inline-flex min-h-8 items-center gap-1.5 rounded-lg border border-[#F5F906]/35 bg-[#F5F906]/[0.07] px-3 text-[9px] font-extrabold text-[#F5F906] hover:bg-[#F5F906]/[0.12] disabled:opacity-30"
+                  >
+                    {isEs ? "Ver más fotos" : "Ver mais fotos"}
+                    <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        <div className="mt-3">
-          <CarouselField label={isEs ? "O pega un enlace de imagen" : "Ou cole um link de imagem"}>
+        <details className="mt-3 border-t border-white/[0.06] pt-3">
+          <summary className="cursor-pointer text-[9px] font-bold text-white/40 hover:text-white/65">
+            {isEs ? "Usar enlace de una imagen" : "Usar link de uma imagem"}
+          </summary>
+          <div className="mt-2">
             <input
               value={activeSlide.imageUrl.startsWith("data:") ? "" : activeSlide.imageUrl}
               onChange={(event) => patchActive({ imageUrl: event.target.value })}
               placeholder="https://..."
               className="f1-carousel-input text-xs"
             />
-          </CarouselField>
-        </div>
+          </div>
+        </details>
       </details>
     );
   };
@@ -4449,7 +4526,10 @@ export function F1CarouselBuilder({
           <div className="p-4 bg-black/40">
             <textarea
               value={captionText}
-              onChange={(e) => setCaptionText(e.target.value)}
+              onChange={(e) => {
+                setCaptionText(e.target.value);
+                setCaptionEdited(true);
+              }}
               placeholder={isEs ? "Tu texto aparecerá aquí..." : "Sua legenda aparecerá aqui..."}
               rows={5}
               className="w-full rounded-xl border border-white/10 bg-[#121316] px-3 py-2.5 text-xs text-white outline-none focus:border-[#F5F906] focus:ring-1 focus:ring-[#F5F906]/30 transition-all resize-y"
@@ -4715,16 +4795,16 @@ export function F1CarouselBuilder({
 
             <fieldset className="min-w-0 lg:col-span-2">
               <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
-                {isEs ? "Objetivo del carrusel" : "Objetivo do carrossel"}
+                {isEs ? "Formato del carrusel" : "Formato do carrossel"}
               </legend>
-              <div ref={objectiveRowRef} className="f1-carousel-scroll mt-1.5 flex gap-1.5 overflow-x-auto pb-1">
+              <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
                 {([
                   ["impact", isEs ? "Inspirar" : "Inspirar", isEs ? "Deseo y experiencia" : "Desejo e experiência"],
-                  ["itinerary", isEs ? "Itinerario" : "Roteiro", isEs ? "Ruta y logística" : "Percurso e logística"],
-                  ["editorial", isEs ? "Guía" : "Guia", isEs ? "Útil para guardar" : "Útil para salvar"],
                   ["oferta", isEs ? "Oferta" : "Oferta", isEs ? "Valor y conversión" : "Valor e conversão"],
-                  ["minimalist", isEs ? "Confianza" : "Confiança", isEs ? "Claridad y atención" : "Clareza e atendimento"],
+                  ["editorial", isEs ? "Guía" : "Guia", isEs ? "Útil para guardar" : "Útil para salvar"],
                   ["vibrant", "FAQ", isEs ? "Resuelve objeciones" : "Resolve objeções"],
+                  ["minimalist", isEs ? "Confianza" : "Confiança", isEs ? "Claridad y atención" : "Clareza e atendimento"],
+                  ["itinerary", isEs ? "Itinerario" : "Roteiro", isEs ? "Ruta y logística" : "Percurso e logística"],
                   ["organic", "Curvo", isEs ? "Formas orgánicas" : "Formas orgânicas"],
                   ["glass", "Transparente", isEs ? "Ligero y sofisticado" : "Leve e sofisticado"],
                   ["headline", isEs ? "Titular" : "Destaque", isEs ? "Gancho con degradado" : "Gancho com degradê"],
@@ -4741,7 +4821,7 @@ export function F1CarouselBuilder({
                       aria-label={`${labelText}: ${description}`}
                       title={description}
                       onClick={() => applyCarouselStrategy(variant)}
-                      className={`min-h-9 min-w-[88px] flex-1 whitespace-nowrap rounded-lg border px-2.5 py-2 text-center transition-colors ${
+                      className={`min-h-9 whitespace-nowrap rounded-lg border px-2 py-2 text-center transition-colors ${
                         isActiveVariant
                           ? "border-[#F5F906] bg-[#F5F906]/10"
                           : "border-white/10 bg-transparent hover:border-white/20 hover:bg-white/[0.03]"
@@ -5334,6 +5414,37 @@ export function F1CarouselBuilder({
                       </label>
                     </div>
                   </div>
+                  {["editorial", "vibrant", "organic", "glass", "headline-center", "headline-footer"].includes(activeSlide.slideVariant) && (
+                    <fieldset>
+                      <legend className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-white/40">
+                        {isEs ? "Posición del contenido" : "Posição do conteúdo"}
+                      </legend>
+                      <div className="grid grid-cols-4 gap-1">
+                        {([
+                          ["auto", Sparkles, "Auto"],
+                          ["left", AlignLeft, isEs ? "Izquierda" : "Esquerda"],
+                          ["center", AlignCenter, "Centro"],
+                          ["right", AlignRight, isEs ? "Derecha" : "Direita"],
+                        ] as const).map(([alignment, Icon, label]) => (
+                          <button
+                            key={alignment}
+                            type="button"
+                            title={label}
+                            aria-label={label}
+                            aria-pressed={(activeSlide.contentAlignment || "auto") === alignment}
+                            onClick={() => patchActive({ contentAlignment: alignment })}
+                            className={`grid min-h-8 place-items-center rounded-lg border transition-colors ${
+                              (activeSlide.contentAlignment || "auto") === alignment
+                                ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
+                                : "border-white/10 bg-white/[0.02] text-white/50 hover:text-white"
+                            }`}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
                 </div>
 
                 {/* ── SECTION 2: Selo / Etiqueta ── */}
@@ -5361,11 +5472,18 @@ export function F1CarouselBuilder({
                       </button>
                     ))}
                   </div>
-                  <div>
-                    <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
-                      {isEs ? "Formato del sello" : "Formato do selo"}
-                    </p>
-                    <div className="grid grid-cols-3 gap-1.5">
+                  <details className="rounded-xl border border-white/[0.07] bg-black/20 p-2.5">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[9px] font-bold text-white/55">
+                      <span>{isEs ? "Personalizar etiqueta" : "Personalizar selo"}</span>
+                      <span className="text-[8px] font-medium text-white/30">
+                        {isEs ? "formato, posición y color" : "formato, posição e cor"}
+                      </span>
+                    </summary>
+                    <div className="mt-3">
+                      <p className="mb-1.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
+                        {isEs ? "Formato" : "Formato"}
+                      </p>
+                      <div className="grid grid-cols-5 gap-1">
                       {([
                         ["filled", "Capsula"],
                         ["rectangle", isEs ? "Cuadrado" : "Quadrado"],
@@ -5380,44 +5498,50 @@ export function F1CarouselBuilder({
                         <button
                           key={styleKey}
                           type="button"
+                          title={styleTitle}
+                          aria-label={styleTitle}
+                          aria-pressed={(activeSlide.labelStyle || "filled") === styleKey}
                           onClick={() => patchActive({ labelStyle: styleKey })}
-                          className={`min-h-8 rounded-md border px-2 py-1.5 text-[9px] font-bold leading-tight transition-colors ${
+                          className={`grid min-h-8 place-items-center rounded-md border px-1 py-1 transition-colors ${
                             (activeSlide.labelStyle || "filled") === styleKey
                               ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
                               : "border-white/10 bg-white/[0.02] text-white/55 hover:border-white/25 hover:text-white"
                           }`}
                         >
-                          {styleTitle}
+                          <SealStyleGlyph style={styleKey} />
                         </button>
                       ))}
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
-                      {isEs ? "Posicion del sello" : "Posicao do selo"}
-                    </p>
-                    <div className="grid grid-cols-4 gap-1.5">
+                    <div className="mt-3">
+                      <p className="mb-1.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
+                        {isEs ? "Posición" : "Posição"}
+                      </p>
+                      <div className="grid grid-cols-4 gap-1">
                       {([
-                        ["auto", "Auto"],
-                        ["left", isEs ? "Izquierda" : "Esquerda"],
-                        ["center", "Centro"],
-                        ["right", isEs ? "Derecha" : "Direita"],
-                      ] as const).map(([alignmentKey, alignmentTitle]) => (
+                        ["auto", Sparkles, "Auto"],
+                        ["left", AlignLeft, isEs ? "Izquierda" : "Esquerda"],
+                        ["center", AlignCenter, "Centro"],
+                        ["right", AlignRight, isEs ? "Derecha" : "Direita"],
+                      ] as const).map(([alignmentKey, Icon, alignmentTitle]) => (
                         <button
                           key={alignmentKey}
                           type="button"
+                          title={alignmentTitle}
+                          aria-label={alignmentTitle}
+                          aria-pressed={(activeSlide.labelAlignment || "auto") === alignmentKey}
                           onClick={() => patchActive({ labelAlignment: alignmentKey })}
-                          className={`min-h-8 rounded-md border px-1.5 py-1 text-[8px] font-bold transition-colors ${
+                          className={`grid min-h-8 place-items-center rounded-md border transition-colors ${
                             (activeSlide.labelAlignment || "auto") === alignmentKey
                               ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
                               : "border-white/10 bg-white/[0.02] text-white/55 hover:border-white/25 hover:text-white"
                           }`}
                         >
-                          {alignmentTitle}
+                          <Icon className="h-3.5 w-3.5" />
                         </button>
                       ))}
+                      </div>
                     </div>
-                  </div>
                   {/* Legacy compact selector kept hidden for saved drafts. */}
                   <div className="hidden">
                     {([
@@ -5513,6 +5637,7 @@ export function F1CarouselBuilder({
                       </div>
                     </div>
                   </div>
+                  </details>
                 </div>
 
                 {activeSlide.kind !== "closing" ? (
@@ -5781,11 +5906,9 @@ export function F1CarouselBuilder({
           </div>
 
           {activeSlide && !activeCoverIsProtected && (
-            <div className="block lg:hidden space-y-4">
-              {renderPhotoSelectionBox()}
-              {renderPublishFooterBox()}
-            </div>
+            <div className="mt-4 block lg:hidden">{renderPhotoSelectionBox()}</div>
           )}
+          {activeSlide && <div className="mt-4">{renderPublishFooterBox()}</div>}
         </div>
 
         <aside className="order-1 lg:order-2 lg:sticky lg:top-5 lg:self-start pr-1 space-y-4">
@@ -5855,7 +5978,6 @@ export function F1CarouselBuilder({
 
           <div className="hidden lg:block space-y-4">
             {renderPhotoSelectionBox()}
-            {renderPublishFooterBox()}
           </div>
         </aside>
       </div>
