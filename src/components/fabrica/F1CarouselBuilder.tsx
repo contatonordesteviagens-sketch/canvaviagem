@@ -58,7 +58,17 @@ type CarouselSlideVariant =
   | "headline-center"
   | "headline-footer"
   | "ticket";
-type LabelStyle = "filled" | "outline-thin" | "outline-thick" | "stripe-left" | "rectangle" | "translucent" | "gradient";
+type LabelStyle =
+  | "filled"
+  | "outline-thin"
+  | "outline-thick"
+  | "stripe-left"
+  | "line-top"
+  | "line-bottom"
+  | "rectangle"
+  | "translucent"
+  | "gradient";
+type LabelAlignment = "auto" | "left" | "center" | "right";
 
 const CAROUSEL_VARIANTS: CarouselSlideVariant[] = [
   "impact",
@@ -97,6 +107,7 @@ interface CarouselSlide {
   bulletIcon: string;
   showShadow?: boolean;
   labelStyle?: LabelStyle;
+  labelAlignment?: LabelAlignment;
   labelColor?: string;
   labelTextColor?: string;
   fontFamily?: string;
@@ -227,6 +238,25 @@ const readableGradientText = (start: string, end: string) => {
 
 const editableColor = (preferred: string | undefined, fallback: string) =>
   preferred && /^#[0-9a-f]{6}$/i.test(preferred) ? preferred : fallback;
+
+const mixHexColor = (source: string, target: string, targetWeight: number) => {
+  const parse = (value: string) => {
+    const normalized = value.replace("#", "");
+    return [0, 2, 4].map((index) =>
+      Number.parseInt(normalized.slice(index, index + 2), 16),
+    );
+  };
+  const sourceChannels = parse(source);
+  const targetChannels = parse(target);
+  const weight = Math.max(0, Math.min(1, targetWeight));
+  return `#${sourceChannels
+    .map((channel, index) =>
+      Math.round(channel * (1 - weight) + targetChannels[index] * weight)
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
+};
 
 const isHeadlineVariant = (variant: CarouselSlideVariant) =>
   variant === "headline" ||
@@ -917,6 +947,7 @@ function carrySlidePresentation(next: CarouselSlide, current?: CarouselSlide): C
     bulletIcon: current.bulletIcon,
     showShadow: current.showShadow,
     labelStyle: current.labelStyle,
+    labelAlignment: current.labelAlignment,
     labelColor: current.labelColor,
     labelTextColor: current.labelTextColor,
     fontFamily: current.fontFamily,
@@ -1238,15 +1269,30 @@ function CarouselCanvas({
     const rawBg = slide.labelColor || secondary;
     const bg = rawBg.toUpperCase() === "#F5F906" ? "#F5F906" : rawBg;
     const fg = editableColor(slide.labelTextColor, readableText(bg));
+    const resolvedAlignment =
+      slide.labelAlignment && slide.labelAlignment !== "auto"
+        ? slide.labelAlignment
+        : alignment;
+    const alignmentMargins =
+      resolvedAlignment === "center"
+        ? { marginLeft: "auto", marginRight: "auto" }
+        : resolvedAlignment === "right"
+          ? { marginLeft: "auto", marginRight: 0 }
+          : { marginLeft: 0, marginRight: "auto" };
 
     const style = slide.labelStyle || "filled";
     const commonStyle: CSSProperties = {
-      display: "inline-block",
+      display: "block",
       alignSelf:
-        alignment === "right" ? "flex-end" : alignment === "center" ? "center" : "flex-start",
+        resolvedAlignment === "right"
+          ? "flex-end"
+          : resolvedAlignment === "center"
+            ? "center"
+            : "flex-start",
       width: "fit-content",
       maxWidth: "88%",
       marginBottom: Math.round(10 * Z),
+      ...alignmentMargins,
       padding: `${Math.round(5 * Z)}px ${Math.round(9 * Z)}px`,
       fontSize: Math.round(8 * Z),
       lineHeight: 1.15,
@@ -1262,7 +1308,7 @@ function CarouselCanvas({
 
     if (style === "outline-thin") {
       return (
-        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.round(1 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.45)", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.max(1, Math.round(1 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
@@ -1277,6 +1323,20 @@ function CarouselCanvas({
     if (style === "stripe-left") {
       return (
         <div style={{ ...commonStyle, borderLeft: `${Math.round(4 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.55)", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
+          {label}
+        </div>
+      );
+    }
+    if (style === "line-top") {
+      return (
+        <div style={{ ...commonStyle, borderTop: `${Math.max(2, Math.round(3 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: `${Math.round(7 * Z)}px ${Math.round(2 * Z)}px ${Math.round(3 * Z)}px`, fontWeight: 800 }}>
+          {label}
+        </div>
+      );
+    }
+    if (style === "line-bottom") {
+      return (
+        <div style={{ ...commonStyle, borderBottom: `${Math.max(2, Math.round(3 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: `${Math.round(3 * Z)}px ${Math.round(2 * Z)}px ${Math.round(7 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
@@ -1296,8 +1356,18 @@ function CarouselCanvas({
       );
     }
     if (style === "gradient") {
+      const defaultGradientFg = readableText(bg);
+      const gradientEnd = mixHexColor(
+        bg,
+        defaultGradientFg === "#111318" ? "#FFFFFF" : "#000000",
+        0.32,
+      );
+      const gradientFg = editableColor(
+        slide.labelTextColor,
+        readableGradientText(bg, gradientEnd),
+      );
       return (
-        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), background: `linear-gradient(90deg, ${bg} 0%, rgba(255, 255, 255, 0.80) 100%)`, color: fg, boxShadow: slide.showShadow === false ? "none" : `0px ${Math.round(4 * Z)}px ${Math.round(14 * Z)}px rgba(0, 0, 0, 0.35)` }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), background: `linear-gradient(90deg, ${bg} 0%, ${gradientEnd} 100%)`, color: gradientFg, boxShadow: slide.showShadow === false ? "none" : `0px ${Math.round(4 * Z)}px ${Math.round(14 * Z)}px rgba(0, 0, 0, 0.35)` }}>
           {label}
         </div>
       );
@@ -1703,6 +1773,10 @@ function CarouselCanvas({
                 boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.24)`,
               }}
             />
+          )}
+          {renderLabel(
+            slide.label,
+            contentStyle.alignItems === "center" ? "center" : "left",
           )}
           {stripedClosing ? (
             <div
@@ -5287,8 +5361,65 @@ export function F1CarouselBuilder({
                       </button>
                     ))}
                   </div>
-                  {/* Label style */}
-                  <div className="flex flex-wrap gap-1">
+                  <div>
+                    <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
+                      {isEs ? "Formato del sello" : "Formato do selo"}
+                    </p>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {([
+                        ["filled", "Capsula"],
+                        ["rectangle", isEs ? "Cuadrado" : "Quadrado"],
+                        ["outline-thin", "Contorno"],
+                        ["outline-thick", isEs ? "Borde fuerte" : "Borda forte"],
+                        ["translucent", "Suave"],
+                        ["gradient", isEs ? "Degradado" : "Degrade"],
+                        ["stripe-left", isEs ? "Linea lateral" : "Linha lateral"],
+                        ["line-top", isEs ? "Linea arriba" : "Linha acima"],
+                        ["line-bottom", isEs ? "Linea abajo" : "Linha abaixo"],
+                      ] as const).map(([styleKey, styleTitle]) => (
+                        <button
+                          key={styleKey}
+                          type="button"
+                          onClick={() => patchActive({ labelStyle: styleKey })}
+                          className={`min-h-8 rounded-md border px-2 py-1.5 text-[9px] font-bold leading-tight transition-colors ${
+                            (activeSlide.labelStyle || "filled") === styleKey
+                              ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
+                              : "border-white/10 bg-white/[0.02] text-white/55 hover:border-white/25 hover:text-white"
+                          }`}
+                        >
+                          {styleTitle}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
+                      {isEs ? "Posicion del sello" : "Posicao do selo"}
+                    </p>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {([
+                        ["auto", "Auto"],
+                        ["left", isEs ? "Izquierda" : "Esquerda"],
+                        ["center", "Centro"],
+                        ["right", isEs ? "Derecha" : "Direita"],
+                      ] as const).map(([alignmentKey, alignmentTitle]) => (
+                        <button
+                          key={alignmentKey}
+                          type="button"
+                          onClick={() => patchActive({ labelAlignment: alignmentKey })}
+                          className={`min-h-8 rounded-md border px-1.5 py-1 text-[8px] font-bold transition-colors ${
+                            (activeSlide.labelAlignment || "auto") === alignmentKey
+                              ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
+                              : "border-white/10 bg-white/[0.02] text-white/55 hover:border-white/25 hover:text-white"
+                          }`}
+                        >
+                          {alignmentTitle}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Legacy compact selector kept hidden for saved drafts. */}
+                  <div className="hidden">
                     {([
                       ["filled", "Sólido"],
                       ["outline-thin", "Contorno"],
