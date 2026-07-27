@@ -9,6 +9,10 @@ import {
 } from "react";
 import {
   AlertTriangle,
+  ArrowDownLeft,
+  ArrowDownRight,
+  ArrowUpLeft,
+  ArrowUpRight,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -40,6 +44,7 @@ type CarouselSize = 3 | 4 | 5 | 6;
 type CarouselFormat = "feed" | "story";
 type CarouselSlideKind = "cover" | "content" | "closing";
 type CarouselContactChannel = "whatsapp" | "instagram" | "email";
+type LogoPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 type CarouselSlideVariant =
   | "impact"
   | "itinerary"
@@ -138,6 +143,45 @@ const cleanCarouselText = (value = "") =>
     .replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s•✓✔☑▪▫■□➜→\-*]+/gu, "")
     .replace(/\s+/g, " ")
     .trim();
+
+const splitBalancedHeadline = (value: string, maxLines = 3) => {
+  const words = cleanCarouselText(value).split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+
+  const characterCount = words.join(" ").length;
+  const lineCount = Math.min(maxLines, characterCount > 34 ? 3 : characterCount > 17 ? 2 : 1);
+  const lines: string[] = [];
+  let cursor = 0;
+
+  for (let lineIndex = 0; lineIndex < lineCount; lineIndex += 1) {
+    const wordsLeft = words.length - cursor;
+    const linesLeft = lineCount - lineIndex;
+    const targetLength = Math.ceil(
+      words.slice(cursor).join(" ").length / Math.max(1, linesLeft),
+    );
+    const lineWords: string[] = [];
+
+    while (cursor < words.length) {
+      const candidate = [...lineWords, words[cursor]].join(" ");
+      const mustLeave = linesLeft - 1;
+      if (
+        lineWords.length &&
+        candidate.length > targetLength &&
+        wordsLeft - lineWords.length > mustLeave
+      ) {
+        break;
+      }
+      lineWords.push(words[cursor]);
+      cursor += 1;
+    }
+    lines.push(lineWords.join(" "));
+  }
+
+  if (cursor < words.length) {
+    lines[lines.length - 1] = `${lines[lines.length - 1]} ${words.slice(cursor).join(" ")}`;
+  }
+  return lines.filter(Boolean);
+};
 
 const readableText = (hex: string) => {
   const light = "#F8FAFC";
@@ -955,9 +999,10 @@ async function assertExportImageReadable(source: string) {
 function CarouselCanvas({
   slide,
   index,
-  total: _total,
+  total,
   ratio,
-  logo,
+  logo: logoSource,
+  logoPosition,
   primary,
   secondary,
   canvasRef,
@@ -968,6 +1013,7 @@ function CarouselCanvas({
   total: number;
   ratio: number;
   logo: string;
+  logoPosition: LogoPosition;
   primary: string;
   secondary: string;
   canvasRef?: (node: HTMLDivElement | null) => void;
@@ -1056,7 +1102,43 @@ function CarouselCanvas({
     );
   }
 
+  // Legacy layouts positioned the logo independently. Keep them disabled and
+  // render one predictable brand layer for every editable carousel design.
+  const logo = "";
+  const logoIsLeft = logoPosition.endsWith("left");
+  const logoIsBottom = logoPosition.startsWith("bottom");
+  const renderPositionedLogo = () =>
+    logoSource ? (
+      <img
+        src={logoSource}
+        alt=""
+        crossOrigin={
+          logoSource.startsWith("data:") || logoSource.startsWith("blob:")
+            ? undefined
+            : "anonymous"
+        }
+        style={{
+          position: "absolute",
+          zIndex: 40,
+          top: logoIsBottom ? undefined : ratio < 0.68 ? "3.5%" : "5%",
+          bottom: logoIsBottom ? (ratio < 0.68 ? "4.5%" : "5%") : undefined,
+          left: logoIsLeft ? "5%" : undefined,
+          right: logoIsLeft ? undefined : "5%",
+          width: Math.round((ratio < 0.68 ? 36 : 40) * Z),
+          height: Math.round((ratio < 0.68 ? 36 : 40) * Z),
+          borderRadius: Math.round(10 * Z),
+          objectFit: "contain",
+          background: "rgba(255,255,255,.96)",
+          padding: Math.round(4 * Z),
+          boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.24)`,
+          boxSizing: "border-box",
+          pointerEvents: "none",
+        }}
+      />
+    ) : null;
+
   const isClosing = slide.kind === "closing";
+  const isLastContent = slide.kind === "content" && index === total - 2;
   const ff = slide.fontFamily || "Inter, ui-sans-serif, system-ui, sans-serif";
   
   const titleBold = slide.titleStyle?.bold !== undefined ? slide.titleStyle.bold : (slide.fontWeight === "normal" ? false : true);
@@ -1693,6 +1775,7 @@ function CarouselCanvas({
             </div>
           ) : null}
         </div>
+        {renderPositionedLogo()}
       </div>
     );
   }
@@ -2310,30 +2393,16 @@ function CarouselCanvas({
 
             {/* Brand headline: full-bleed image with an automatic-contrast gradient hook. */}
             {slide.slideVariant === "headline" && (() => {
-              const gradientForeground = readableGradientText(primary, secondary);
-              const headlineColor = editableColor(slide.titleStyle?.color, gradientForeground);
               const storyMode = ratio < 0.68;
+              const headlineLines = splitBalancedHeadline(slide.title);
+              const lowerContentInset =
+                logoIsBottom && logoIsLeft
+                  ? { left: "20%", right: "8%" }
+                  : logoIsBottom
+                    ? { left: "8%", right: "20%" }
+                    : { left: "8%", right: "8%" };
               return (
                 <div style={{ position: "absolute", inset: 0, boxSizing: "border-box" }}>
-                  {logo && (
-                    <img
-                      src={logo}
-                      alt=""
-                      crossOrigin={logo.startsWith("data:") || logo.startsWith("blob:") ? undefined : "anonymous"}
-                      style={{
-                        position: "absolute",
-                        right: "7%",
-                        top: storyMode ? "1%" : "7%",
-                        width: Math.round(38 * Z),
-                        height: Math.round(38 * Z),
-                        borderRadius: Math.round(9 * Z),
-                        objectFit: "contain",
-                        background: "rgba(255,255,255,.94)",
-                        padding: Math.round(4 * Z),
-                        boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.22)`,
-                      }}
-                    />
-                  )}
                   <div
                     style={{
                       position: "absolute",
@@ -2347,29 +2416,42 @@ function CarouselCanvas({
                   >
                     {renderLabel(slide.label)}
                     {slide.title && (
-                      <h3
+                      <div
                         style={{
                           maxWidth: "88%",
                           margin: 0,
-                          padding: `${Math.round(11 * Z)}px ${Math.round(14 * Z)}px`,
-                          background: `linear-gradient(100deg, ${primary} 0%, ${secondary} 100%)`,
-                          color: headlineColor,
-                          fontSize: Math.round((storyMode ? 30 : 34) * titleScale * Z),
-                          lineHeight: 1.03,
                           fontFamily: ff,
-                          fontWeight: titleWeight,
                           fontStyle: titleStyleAttr,
                           textDecoration: titleDecAttr,
-                          overflowWrap: "anywhere",
-                          boxDecorationBreak: "clone",
-                          borderRadius: Math.round(4 * Z),
-                          boxShadow: `0 ${Math.round(8 * Z)}px ${Math.round(26 * Z)}px rgba(0,0,0,.24)`,
                         }}
                       >
-                        {slide.title}
-                      </h3>
+                        {headlineLines.map((line, lineIndex) => (
+                          <span
+                            key={`${slide.id}-headline-${lineIndex}`}
+                            style={{
+                              display: "table",
+                              width: "fit-content",
+                              maxWidth: "100%",
+                              marginTop: lineIndex ? Math.round(3 * Z) : 0,
+                              padding: `${Math.round(5 * Z)}px ${Math.round(13 * Z)}px`,
+                              background: `linear-gradient(100deg, rgba(0,0,0,.28), rgba(0,0,0,.18)), linear-gradient(${96 + lineIndex * 7}deg, ${primary} 0%, ${secondary} 100%)`,
+                              color: "#FFFFFF",
+                              fontSize: Math.round((storyMode ? 29 : 33) * titleScale * Z),
+                              lineHeight: 1.02,
+                              fontWeight: titleWeight,
+                              overflowWrap: "anywhere",
+                              borderRadius: Math.round(3 * Z),
+                              boxShadow: `0 ${Math.round(7 * Z)}px ${Math.round(22 * Z)}px rgba(0,0,0,.22)`,
+                              textShadow: `0 ${Math.round(1 * Z)}px ${Math.round(4 * Z)}px rgba(0,0,0,.35)`,
+                              boxSizing: "border-box",
+                            }}
+                          >
+                            {line}
+                          </span>
+                        ))}
+                      </div>
                     )}
-                    {slide.body && (
+                    {!isLastContent && slide.body && (
                       <p
                         style={{
                           maxWidth: "82%",
@@ -2388,8 +2470,52 @@ function CarouselCanvas({
                         {slide.body}
                       </p>
                     )}
-                    {renderBullets({ color: bulletColor, max: 4, textShadow: bulletShadow })}
+                    {!isLastContent &&
+                      renderBullets({ color: bulletColor, max: 4, textShadow: bulletShadow })}
                   </div>
+                  {isLastContent && (slide.body || slide.bullets.some(Boolean)) && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        ...lowerContentInset,
+                        bottom: storyMode ? "9%" : "8%",
+                        padding: `${Math.round(16 * Z)}px ${Math.round(18 * Z)}px`,
+                        color: "#FFFFFF",
+                        textAlign: "left",
+                        background:
+                          "linear-gradient(180deg, rgba(5,7,10,.82) 0%, rgba(5,7,10,.16) 100%)",
+                        borderTop: "1px solid rgba(255,255,255,.3)",
+                        borderRadius: `${Math.round(12 * Z)}px ${Math.round(12 * Z)}px ${Math.round(4 * Z)}px ${Math.round(4 * Z)}px`,
+                        boxShadow: `0 -${Math.round(10 * Z)}px ${Math.round(30 * Z)}px rgba(5,7,10,.3)`,
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      {slide.body && (
+                        <p
+                          style={{
+                            margin: 0,
+                            color: "#FFFFFF",
+                            fontSize: Math.round((storyMode ? 14 : 15) * Z),
+                            lineHeight: 1.38,
+                            fontFamily: ff,
+                            fontWeight: bodyWeight,
+                            fontStyle: bodyStyleAttr,
+                            textDecoration: bodyDecAttr,
+                            whiteSpace: "pre-wrap",
+                            textShadow: bodyShadow,
+                          }}
+                        >
+                          {slide.body}
+                        </p>
+                      )}
+                      {renderBullets({
+                        color: "#FFFFFF",
+                        max: 4,
+                        compact: true,
+                        textShadow: bulletShadow,
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })()}
@@ -2476,6 +2602,7 @@ function CarouselCanvas({
           </>
         )}
       </div>
+      {renderPositionedLogo()}
     </div>
   );
 }
@@ -2486,6 +2613,7 @@ function ScaledSlidePreview({
   total,
   ratio,
   logo,
+  logoPosition,
   primary,
   secondary,
   width,
@@ -2495,6 +2623,7 @@ function ScaledSlidePreview({
   total: number;
   ratio: number;
   logo: string;
+  logoPosition: LogoPosition;
   primary: string;
   secondary: string;
   width: number;
@@ -2550,6 +2679,7 @@ function ScaledSlidePreview({
           total={total}
           ratio={ratio}
           logo={logo}
+          logoPosition={logoPosition}
           primary={primary}
           secondary={secondary}
         />
@@ -2910,6 +3040,7 @@ export function F1CarouselBuilder({
   const [slideCount, setSlideCount] = useState<CarouselSize>(6);
   const [carouselFormat, setCarouselFormat] = useState<CarouselFormat>("feed");
   const [showLogo, setShowLogo] = useState(true);
+  const [logoPosition, setLogoPosition] = useState<LogoPosition>("top-right");
   const slideCountRef = useRef<CarouselSize>(6);
   const [slides, setSlides] = useState<CarouselSlide[]>(() =>
     selectedPackage
@@ -3082,6 +3213,7 @@ export function F1CarouselBuilder({
   useEffect(() => {
     skipNextPersistRef.current = storageKey;
     setShowLogo(true);
+    setLogoPosition("top-right");
     setCarouselFormat("feed");
     if (!selectedPackage) {
       slideArchiveRef.current = [];
@@ -3121,9 +3253,18 @@ export function F1CarouselBuilder({
           slides?: CarouselSlide[];
           allSlides?: CarouselSlide[];
           showLogo?: boolean;
+          logoPosition?: LogoPosition;
           carouselFormat?: CarouselFormat;
         };
         setShowLogo(parsed.showLogo !== false);
+        if (
+          parsed.logoPosition === "top-left" ||
+          parsed.logoPosition === "top-right" ||
+          parsed.logoPosition === "bottom-left" ||
+          parsed.logoPosition === "bottom-right"
+        ) {
+          setLogoPosition(parsed.logoPosition);
+        }
         setCarouselFormat(parsed.carouselFormat === "story" ? "story" : "feed");
         const storedSlides = parsed.allSlides || parsed.slides || [];
         const restoredStrategy =
@@ -3266,6 +3407,7 @@ export function F1CarouselBuilder({
           JSON.stringify({
             slideCount,
             showLogo,
+            logoPosition,
             carouselFormat,
             slides: slides.map(safeSlide),
             allSlides: allSlides.map(safeSlide),
@@ -3289,7 +3431,7 @@ export function F1CarouselBuilder({
       window.removeEventListener("pagehide", persistBeforeLeaving);
       persistDraft(false);
     };
-  }, [agencyPhone, availableImages, carouselFormat, coverImage, effectiveCoverSource, isEs, photoResults, selectedPackage, showLogo, slideCount, slides, storageKey]);
+  }, [agencyPhone, availableImages, carouselFormat, coverImage, effectiveCoverSource, isEs, logoPosition, photoResults, selectedPackage, showLogo, slideCount, slides, storageKey]);
 
   useEffect(() => {
     const ff = activeSlide?.fontFamily || "Inter";
@@ -4092,7 +4234,7 @@ export function F1CarouselBuilder({
                 ))}
               </select>
             </div>
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-3 py-2.5">
+            <div className="hidden">
               <div className="flex min-w-0 items-center gap-2.5">
                 {showLogo ? (
                   <Eye className="h-4 w-4 shrink-0 text-[#F5F906]" />
@@ -4127,6 +4269,79 @@ export function F1CarouselBuilder({
                   }`}
                 />
               </button>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-black/20 p-2">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={showLogo}
+                onClick={() => setShowLogo((current) => !current)}
+                className={`flex min-h-10 w-full items-center justify-between gap-3 rounded-lg border px-3 text-left transition-colors ${
+                  showLogo
+                    ? "border-[#F5F906]/55 bg-[#F5F906]/10"
+                    : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]"
+                }`}
+              >
+                <span className="flex min-w-0 items-center gap-2.5">
+                  {showLogo ? (
+                    <Eye className="h-4 w-4 shrink-0 text-[#F5F906]" />
+                  ) : (
+                    <EyeOff className="h-4 w-4 shrink-0 text-white/40" />
+                  )}
+                  <span>
+                    <span className="block text-[11px] font-bold text-white">
+                      {isEs ? "Mostrar logo" : "Mostrar logo"}
+                    </span>
+                    <span className="block text-[9px] text-white/40">
+                      {showLogo
+                        ? isEs ? "Logo activado" : "Logo ativada"
+                        : isEs ? "Logo desactivado" : "Logo desativada"}
+                    </span>
+                  </span>
+                </span>
+                <span
+                  className={`rounded-md px-2 py-1 text-[9px] font-extrabold uppercase ${
+                    showLogo ? "bg-[#F5F906] text-zinc-950" : "bg-white/10 text-white/50"
+                  }`}
+                >
+                  {showLogo ? (isEs ? "Sí" : "Sim") : (isEs ? "No" : "Não")}
+                </span>
+              </button>
+              {showLogo && (
+                <div className="mt-2 flex items-center justify-between gap-3 px-1 pb-0.5">
+                  <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/40">
+                    {isEs ? "Posición" : "Posição"}
+                  </span>
+                  <div
+                    className="grid grid-cols-4 gap-1"
+                    role="group"
+                    aria-label={isEs ? "Posición del logo" : "Posição da logo"}
+                  >
+                    {([
+                      ["top-left", ArrowUpLeft, isEs ? "Arriba izquierda" : "Superior esquerda"],
+                      ["top-right", ArrowUpRight, isEs ? "Arriba derecha" : "Superior direita"],
+                      ["bottom-left", ArrowDownLeft, isEs ? "Abajo izquierda" : "Inferior esquerda"],
+                      ["bottom-right", ArrowDownRight, isEs ? "Abajo derecha" : "Inferior direita"],
+                    ] as const).map(([position, Icon, label]) => (
+                      <button
+                        key={position}
+                        type="button"
+                        title={label}
+                        aria-label={label}
+                        aria-pressed={logoPosition === position}
+                        onClick={() => setLogoPosition(position)}
+                        className={`grid h-8 w-8 place-items-center rounded-lg border transition-colors ${
+                          logoPosition === position
+                            ? "border-[#F5F906] bg-[#F5F906] text-zinc-950"
+                            : "border-white/10 bg-white/[0.03] text-white/55 hover:bg-white/[0.08] hover:text-white"
+                        }`}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             {onBackToAd && effectiveCoverSource !== "ad" && (
               <button
@@ -4417,6 +4632,7 @@ export function F1CarouselBuilder({
                         total={slides.length}
                         ratio={carouselRatio}
                         logo={renderedLogo}
+                        logoPosition={logoPosition}
                         primary={state.primaryColor}
                         secondary={state.secondaryColor}
                         width={thumbWidth}
@@ -4530,6 +4746,7 @@ export function F1CarouselBuilder({
                       total={slides.length}
                       ratio={carouselRatio}
                       logo={renderedLogo}
+                      logoPosition={logoPosition}
                       primary={state.primaryColor}
                       secondary={state.secondaryColor}
                       width={thumbWidth}
@@ -4647,6 +4864,7 @@ export function F1CarouselBuilder({
                     total={slides.length}
                     ratio={carouselRatio}
                     logo={renderedLogo}
+                    logoPosition={logoPosition}
                     primary={state.primaryColor}
                     secondary={state.secondaryColor}
                     width={thumbWidth}
@@ -5159,6 +5377,7 @@ export function F1CarouselBuilder({
                   total={slides.length}
                   ratio={carouselRatio}
                   logo={renderedLogo}
+                  logoPosition={logoPosition}
                   primary={state.primaryColor}
                   secondary={state.secondaryColor}
                   width={400}
@@ -5278,6 +5497,7 @@ export function F1CarouselBuilder({
             total={slides.length}
             ratio={carouselRatio}
             logo={renderedLogo}
+            logoPosition={logoPosition}
             primary={state.primaryColor}
             secondary={state.secondaryColor}
             canvasRef={(node) => {
