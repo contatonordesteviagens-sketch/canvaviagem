@@ -16,8 +16,10 @@ import {
   Eye,
   EyeOff,
   ImagePlus,
+  Instagram,
   LayoutGrid,
   Lock,
+  Mail,
   Maximize2,
   RefreshCw,
   Rows,
@@ -37,6 +39,7 @@ import { supabase } from "@/integrations/supabase/client";
 type CarouselSize = 3 | 4 | 5 | 6;
 type CarouselFormat = "feed" | "story";
 type CarouselSlideKind = "cover" | "content" | "closing";
+type CarouselContactChannel = "whatsapp" | "instagram" | "email";
 type CarouselSlideVariant =
   | "impact"
   | "itinerary"
@@ -91,7 +94,9 @@ interface CarouselSlide {
   fontStyle?: "normal" | "italic";
   textDecoration?: "none" | "underline";
   instagram?: string;
+  email?: string;
   website?: string;
+  contactChannels?: CarouselContactChannel[];
   titleStyle?: FieldTypography;
   bodyStyle?: FieldTypography;
   bulletStyle?: FieldTypography;
@@ -699,8 +704,7 @@ function mergeSlidesForSize(
     const contentIndex = generated.slice(0, index).filter((item) => item.kind === "content").length;
     const existing = currentContent[contentIndex];
     if (!existing) return slide;
-    const merged = { ...slide, ...existing, id: existing.id };
-    return { ...merged, imageUrl: merged.imageUrl || slide.imageUrl };
+    return carrySlidePresentation(slide, existing);
   });
 }
 
@@ -750,6 +754,7 @@ function carrySlidePresentation(next: CarouselSlide, current?: CarouselSlide): C
   return {
     ...next,
     id: current.id,
+    slideVariant: next.slideVariant,
     imageUrl: current.imageUrl || next.imageUrl,
     textColor: next.textColor,
     bulletIcon: current.bulletIcon,
@@ -1200,6 +1205,13 @@ function CarouselCanvas({
         : "#F8FAFC";
     const closingTitleColor = editableColor(slide.titleStyle?.color, panelForeground);
     const closingBodyColor = editableColor(slide.bodyStyle?.color, panelForeground);
+    const activeContactChannels =
+      slide.contactChannels ??
+      [
+        slide.phone ? "whatsapp" : undefined,
+        slide.instagram ? "instagram" : undefined,
+        slide.email ? "email" : undefined,
+      ].filter((channel): channel is CarouselContactChannel => Boolean(channel));
     const panelStyle: CSSProperties = {
       position: "absolute",
       display: "flex",
@@ -1538,7 +1550,7 @@ function CarouselCanvas({
           >
             {slide.cta}
           </div>
-          {slide.phone && (
+          {activeContactChannels.includes("whatsapp") && slide.phone && (
             <div
               style={{
                 display: "flex",
@@ -1552,16 +1564,28 @@ function CarouselCanvas({
                 textShadow: !lightPanel && variant !== "vibrant" ? bodyShadow : "none",
               }}
             >
-              <span style={{ color: "#25D366", fontSize: Math.round(18 * Z) }}>●</span>
+              <img
+                src="/assets/whatsapp-icon.png"
+                alt=""
+                aria-hidden="true"
+                style={{
+                  width: Math.round(20 * Z),
+                  height: Math.round(20 * Z),
+                  flex: "0 0 auto",
+                  objectFit: "contain",
+                }}
+              />
               <span>{slide.phone}</span>
             </div>
           )}
-          {(slide.instagram || slide.website) && (
+          {(activeContactChannels.includes("instagram") && slide.instagram) ||
+          (activeContactChannels.includes("email") && slide.email) ||
+          slide.website ? (
             <div
               style={{
                 display: "flex",
-                flexWrap: "wrap",
-                alignItems: "center",
+                flexDirection: "column",
+                alignItems: contentStyle.alignItems === "center" ? "center" : "flex-start",
                 gap: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`,
                 maxWidth: variant === "ticket" ? "70%" : "92%",
                 marginTop: Math.round(9 * Z),
@@ -1572,10 +1596,36 @@ function CarouselCanvas({
                 textShadow: !lightPanel && variant !== "vibrant" ? bodyShadow : "none",
               }}
             >
-              {slide.instagram && <span>{slide.instagram}</span>}
+              {activeContactChannels.includes("instagram") && slide.instagram && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: Math.round(6 * Z) }}>
+                  <Instagram
+                    aria-hidden="true"
+                    style={{
+                      width: Math.round(15 * Z),
+                      height: Math.round(15 * Z),
+                      color: "#E1306C",
+                      flex: "0 0 auto",
+                    }}
+                  />
+                  {slide.instagram}
+                </span>
+              )}
+              {activeContactChannels.includes("email") && slide.email && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: Math.round(6 * Z) }}>
+                  <Mail
+                    aria-hidden="true"
+                    style={{
+                      width: Math.round(15 * Z),
+                      height: Math.round(15 * Z),
+                      flex: "0 0 auto",
+                    }}
+                  />
+                  {slide.email}
+                </span>
+              )}
               {slide.website && <span>{slide.website}</span>}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     );
@@ -2774,14 +2824,23 @@ export function F1CarouselBuilder({
     (selectedIsCurrent
       ? state.lastCleanPhoto || state.siteContent.galleryImages?.[0] || ""
       : "");
+  const configuredFooterContacts = [
+    { icon: state.footerContact1Icon, value: state.footerContact1Value },
+    { icon: state.footerContact2Icon, value: state.footerContact2Value },
+  ];
   const carouselContact =
-    [
-      { icon: state.footerContact1Icon, value: state.footerContact1Value },
-      { icon: state.footerContact2Icon, value: state.footerContact2Value },
-    ].find((contact) => contact.icon?.startsWith("whatsapp") && contact.value?.trim())?.value?.trim() ||
-    "";
+    configuredFooterContacts
+      .find((contact) => contact.icon?.startsWith("whatsapp") && contact.value?.trim())
+      ?.value?.trim() || "";
   const agencyPhone =
     carouselContact || phoneLabel(state.whatsappDialCode || "55", state.whatsapp || "");
+  const agencyInstagram =
+    configuredFooterContacts
+      .find((contact) => contact.icon?.startsWith("instagram") && contact.value?.trim())
+      ?.value?.trim() ||
+    state.instagram?.trim() ||
+    "";
+  const agencyEmail = state.agencyEmail?.trim() || "";
   const [slideCount, setSlideCount] = useState<CarouselSize>(6);
   const [carouselFormat, setCarouselFormat] = useState<CarouselFormat>("feed");
   const [showLogo, setShowLogo] = useState(true);
@@ -2846,8 +2905,17 @@ export function F1CarouselBuilder({
     if (!closingSlide?.cta?.trim()) {
       issues.push(isEs ? "Define la llamada final" : "Defina a chamada final");
     }
-    if (!closingSlide?.phone?.trim()) {
+    const closingChannels =
+      closingSlide?.contactChannels ??
+      (closingSlide?.phone ? (["whatsapp"] as CarouselContactChannel[]) : []);
+    if (closingChannels.includes("whatsapp") && !closingSlide?.phone?.trim()) {
       issues.push(isEs ? "Agrega el WhatsApp" : "Adicione o WhatsApp");
+    }
+    if (closingChannels.includes("instagram") && !closingSlide?.instagram?.trim()) {
+      issues.push(isEs ? "Agrega Instagram" : "Adicione o Instagram");
+    }
+    if (closingChannels.includes("email") && !closingSlide?.email?.trim()) {
+      issues.push(isEs ? "Agrega el correo" : "Adicione o e-mail");
     }
     return issues;
   }, [isEs, selectedPackage?.title, showLogo, slides, state.logoBase64]);
@@ -3077,6 +3145,29 @@ export function F1CarouselBuilder({
   }, [agencyPhone, availableImages, coverImage, coverSource, isEs, selectedPackage, storageKey]);
 
   useEffect(() => {
+    const defaultChannels = [
+      agencyPhone ? "whatsapp" : undefined,
+      agencyInstagram ? "instagram" : undefined,
+      agencyEmail ? "email" : undefined,
+    ].filter((channel): channel is CarouselContactChannel => Boolean(channel));
+    const hydrateContacts = (items: CarouselSlide[]) =>
+      items.map((slide) =>
+        slide.kind === "closing"
+          ? {
+              ...slide,
+              phone: slide.phone || agencyPhone,
+              instagram: slide.instagram ?? agencyInstagram,
+              email: slide.email ?? agencyEmail,
+              contactChannels: slide.contactChannels ?? defaultChannels,
+            }
+          : slide,
+      );
+
+    slideArchiveRef.current = hydrateContacts(slideArchiveRef.current);
+    setSlides((current) => hydrateContacts(current));
+  }, [agencyEmail, agencyInstagram, agencyPhone, storageKey]);
+
+  useEffect(() => {
     if (!slides.length) return;
     if (skipNextPersistRef.current === storageKey) {
       skipNextPersistRef.current = "";
@@ -3152,6 +3243,17 @@ export function F1CarouselBuilder({
     setSlides((current) =>
       current.map((slide, index) => (index === activeIndex ? { ...slide, ...patch } : slide)),
     );
+  };
+  const activeClosingChannels =
+    activeSlide?.kind === "closing"
+      ? activeSlide.contactChannels ??
+        (activeSlide.phone ? (["whatsapp"] as CarouselContactChannel[]) : [])
+      : [];
+  const toggleClosingChannel = (channel: CarouselContactChannel) => {
+    const nextChannels = activeClosingChannels.includes(channel)
+      ? activeClosingChannels.filter((item) => item !== channel)
+      : [...activeClosingChannels, channel];
+    patchActive({ contactChannels: nextChannels });
   };
 
   const currentStrategy =
@@ -4861,30 +4963,88 @@ export function F1CarouselBuilder({
                         ))}
                       </div>
                     </div>
-                    <div className="px-4 py-3.5 grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <label className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35 block">
-                          {isEs ? "WhatsApp / Teléfono" : "WhatsApp / Telefone"}
-                        </label>
-                        <input
-                          value={activeSlide.phone || ""}
-                          maxLength={32}
-                          onChange={(event) => patchActive({ phone: event.target.value })}
-                          className="f1-carousel-input !min-h-[40px] !py-2 !text-[13px]"
-                          placeholder="(00) 00000-0000"
-                        />
+                    <div className="px-4 py-3.5 space-y-3">
+                      <div>
+                        <p className="mb-2 text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35">
+                          {isEs ? "Canales visibles en el cierre" : "Canais visíveis no fechamento"}
+                        </p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {([
+                            ["whatsapp", "/assets/whatsapp-icon.png", "WhatsApp"],
+                            ["instagram", Instagram, "Instagram"],
+                            ["email", Mail, isEs ? "Correo" : "E-mail"],
+                          ] as const).map(([channel, icon, label]) => {
+                            const selected = activeClosingChannels.includes(channel);
+                            return (
+                              <button
+                                key={channel}
+                                type="button"
+                                aria-pressed={selected}
+                                onClick={() => toggleClosingChannel(channel)}
+                                className={`flex min-h-10 items-center justify-center gap-2 rounded-lg border px-2 text-[10px] font-extrabold transition-colors ${
+                                  selected
+                                    ? "border-[#F5F906]/60 bg-[#F5F906]/10 text-[#F5F906]"
+                                    : "border-white/10 bg-white/[0.02] text-white/45 hover:bg-white/[0.05] hover:text-white/70"
+                                }`}
+                              >
+                                {typeof icon === "string" ? (
+                                  <img src={icon} alt="" className="h-4 w-4 object-contain" />
+                                ) : (
+                                  (() => {
+                                    const Icon = icon;
+                                    return <Icon className="h-4 w-4" aria-hidden="true" />;
+                                  })()
+                                )}
+                                <span>{label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35 block">
-                          Instagram
-                        </label>
-                        <input
-                          value={activeSlide.instagram || ""}
-                          maxLength={32}
-                          onChange={(event) => patchActive({ instagram: event.target.value })}
-                          className="f1-carousel-input !min-h-[40px] !py-2 !text-[13px]"
-                          placeholder="@seuagência"
-                        />
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {activeClosingChannels.includes("whatsapp") && (
+                          <div className="space-y-1.5">
+                            <label className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35 block">
+                              {isEs ? "WhatsApp / Teléfono" : "WhatsApp / Telefone"}
+                            </label>
+                            <input
+                              value={activeSlide.phone || ""}
+                              maxLength={32}
+                              onChange={(event) => patchActive({ phone: event.target.value })}
+                              className="f1-carousel-input !min-h-[40px] !py-2 !text-[13px]"
+                              placeholder="(00) 00000-0000"
+                            />
+                          </div>
+                        )}
+                        {activeClosingChannels.includes("instagram") && (
+                          <div className="space-y-1.5">
+                            <label className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35 block">
+                              Instagram
+                            </label>
+                            <input
+                              value={activeSlide.instagram || ""}
+                              maxLength={48}
+                              onChange={(event) => patchActive({ instagram: event.target.value })}
+                              className="f1-carousel-input !min-h-[40px] !py-2 !text-[13px]"
+                              placeholder="@suaagencia"
+                            />
+                          </div>
+                        )}
+                        {activeClosingChannels.includes("email") && (
+                          <div className="space-y-1.5 sm:col-span-2">
+                            <label className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35 block">
+                              {isEs ? "Correo" : "E-mail"}
+                            </label>
+                            <input
+                              type="email"
+                              value={activeSlide.email || ""}
+                              maxLength={80}
+                              onChange={(event) => patchActive({ email: event.target.value })}
+                              className="f1-carousel-input !min-h-[40px] !py-2 !text-[13px]"
+                              placeholder="contato@suaagencia.com"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                     {showLogo && !state.logoBase64 && (
