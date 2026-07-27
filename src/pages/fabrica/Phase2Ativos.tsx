@@ -454,16 +454,16 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
 
       <FabricaCard title="✍️ Legendas prontas">
         {filteredCaptions.length === 0 ? (
-          <p className="text-white/50 text-sm">Sem legendas disponíveis no momento.</p>
+          <p className="text-white/50 text-[13.5px]">Sem legendas disponíveis no momento.</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {filteredCaptions.map((c: any) => (
-              <div key={c.id} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
-                <div className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: state.primaryColor }}>{c.destination}</div>
-                <p className="text-sm text-white/80 whitespace-pre-wrap leading-relaxed mb-3">{c.text}</p>
-                {c.hashtags && <p className="text-xs text-white/40 mb-3">{c.hashtags}</p>}
-                <button onClick={() => copy(`${c.text}\n\n${c.hashtags || ""}`)} className="text-xs px-3 py-1.5 rounded-md bg-white/[0.06] border border-white/10 hover:border-white/30 text-white/70 hover:text-white transition-colors flex items-center gap-1.5">
-                  <Copy className="w-3 h-3" /> Copiar
+              <div key={c.id} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 hover:border-white/[0.12] transition-colors">
+                <div className="text-[10px] font-extrabold uppercase tracking-widest mb-3" style={{ color: state.primaryColor }}>{c.destination}</div>
+                <p className="text-[13.5px] text-white/85 whitespace-pre-wrap leading-relaxed mb-4">{c.text}</p>
+                {c.hashtags && <p className="text-[12px] font-medium text-white/40 mb-4 tracking-wide">{c.hashtags}</p>}
+                <button onClick={() => copy(`${c.text}\n\n${c.hashtags || ""}`)} className="text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-lg bg-white/[0.06] border border-white/10 hover:border-white/30 text-white/70 hover:text-white transition-colors flex items-center gap-2">
+                  <Copy className="w-3.5 h-3.5" /> Copiar Legenda
                 </button>
               </div>
             ))}

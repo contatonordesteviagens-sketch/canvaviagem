@@ -708,8 +708,16 @@ const Index = () => {
 
                 {/* Artes para Agência de Viagens (Feed) — 2 cols mobile, 4 cols desktop */}
                 {!feedLoading && (feedTemplates?.length ?? 0) > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground pt-2">Artes para Agência de Viagens</h3>
+                  <div className="space-y-5 pt-8 mt-4 border-t border-border/40">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 shrink-0 shadow-sm border border-violet-200/50 dark:border-violet-500/20">
+                        <Image className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg tracking-tight text-foreground">Artes para Agência de Viagens</h3>
+                        <p className="text-[13px] text-muted-foreground mt-0.5">Templates premium para seu feed e stories</p>
+                      </div>
+                    </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                       {feedTemplates.slice(0, 4).map((template, index) => (
                         <PremiumCard

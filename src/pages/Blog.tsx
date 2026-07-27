@@ -392,14 +392,14 @@ const Blog = () => {
             <Header />
 
             <main className="container mx-auto px-4 py-12 md:py-20">
-                <div className="max-w-4xl mx-auto text-center mb-12">
-                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                <div className="max-w-4xl mx-auto text-center mb-16 mt-4">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter mb-4 text-foreground">
                         Blog Canva Viagem
                     </h1>
-                    <p className="text-xl text-muted-foreground">
+                    <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                         Estratégias validadas para transformar sua agência em uma máquina de vendas.
                     </p>
-                    <p className="text-sm text-muted-foreground mt-2">{blogPosts.length} artigos publicados</p>
+                    <p className="text-[13px] font-medium text-muted-foreground/60 mt-4 uppercase tracking-widest">{blogPosts.length} artigos publicados</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -426,20 +426,20 @@ const Blog = () => {
                                         />
                                     </div>
                                 </Link>
-                                <CardHeader className="p-5 pb-2">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-wider">
+                                <CardHeader className="p-5 pb-3">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">
                                             {post.category}
                                         </span>
                                     </div>
                                     <Link to={`/blog/${post.slug}`} state={{ fromInternal: true }}>
-                                        <CardTitle className="text-lg leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                                        <CardTitle className="text-[17px] font-bold tracking-tight leading-snug group-hover:text-primary transition-colors line-clamp-2">
                                             {post.title}
                                         </CardTitle>
                                     </Link>
                                 </CardHeader>
                                 <CardContent className="p-5 pt-0">
-                                    <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                                    <p className="text-muted-foreground text-[13.5px] leading-relaxed mb-5 line-clamp-2">
                                         {post.excerpt}
                                     </p>
                                     <div className="flex items-center justify-between">

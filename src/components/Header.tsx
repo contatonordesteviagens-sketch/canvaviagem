@@ -182,7 +182,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
             >
               <PanelLeft className="h-5 w-5" />
             </button>
-          <Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-3 hover:opacity-80 transition-opacity shrink-0 min-w-0">
+          <Link to={isESRoute ? "/es" : "/"} className={cn("flex items-center gap-3 hover:opacity-80 transition-opacity shrink-0 min-w-0", !isCollapsed && "md:hidden")}>
             <img
               src={logoImage}
               alt="TravelMarketing"
@@ -286,10 +286,10 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                 size="icon"
                 className="shadow-sm border border-input/20 bg-background/50 backdrop-blur-sm active:scale-95 transition-all"
               >
-                {isOpen ? <X className="h-5 w-5 text-amber-400" /> : <Menu className="h-5 w-5" />}
+                {isOpen ? <X className="h-5 w-5 text-amber-500" /> : <Menu className="h-5 w-5" />}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[285px] sm:w-[320px] p-0 bg-[#0F0F11] border-l border-white/15 text-white shadow-2xl">
+            <SheetContent side="right" className="w-[285px] sm:w-[320px] p-0 bg-background text-foreground border-l border-border shadow-2xl">
               <ScrollArea className="h-full px-5 py-6">
                 <nav className="flex flex-col gap-1.5 mt-6 pb-24">
                   {/* Language Switcher - Mobile */}
@@ -297,17 +297,17 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                     <LanguageSwitcher variant="mobile" />
                   </div>
 
-                  <div className="h-px bg-white/10 my-3.5 mx-2" />
+                  <div className="h-px bg-border my-3.5 mx-2" />
 
                   {/* Theme Toggle - Mobile */}
                   <div className="px-2">
                     <ThemeToggleMobile />
                   </div>
 
-                  <div className="h-px bg-white/10 my-3.5 mx-2" />
+                  <div className="h-px bg-border my-3.5 mx-2" />
 
                   {/* Navegação Principal */}
-                  <p className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest px-3 mb-2">
+                  <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest px-3 mb-2">
                     Navegação
                   </p>
                   {mainNavItems.map((item) => {
@@ -319,9 +319,9 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                             item.action!();
                             setIsOpen(false);
                           }}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/70 transition-all hover:bg-white/[0.06] hover:text-white w-full text-left"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground w-full text-left"
                         >
-                          <item.icon className="h-4 w-4 text-white/40" />
+                          <item.icon className="h-4 w-4 opacity-70" />
                           {item.label}
                         </button>
                       );
@@ -332,10 +332,10 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                         to={item.to!}
                         state={'state' in item ? item.state : undefined}
                         onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-white/70 hover:bg-white/[0.06] hover:text-white"
-                        activeClassName="bg-white/[0.08] text-amber-400 border border-white/10 shadow-sm"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
                       >
-                        <item.icon className="h-4 w-4 text-amber-400" />
+                        <item.icon className="h-4 w-4 text-amber-500" />
                         {item.label}
                       </NavLink>
                     );
@@ -346,10 +346,10 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                     <NavLink
                       to={proximoNivelItem.to}
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-white/70 hover:bg-white/[0.06] hover:text-white"
-                      activeClassName="bg-white/[0.08] text-amber-400 border border-white/10 shadow-sm"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
                     >
-                      <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+                      <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
                       {proximoNivelItem.label}
                     </NavLink>
                   )}
@@ -362,10 +362,10 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                         handleNavClick(item.to);
                         setIsOpen(false);
                       }}
-                      className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-white/70 transition-all hover:bg-white/[0.06] hover:text-white"
+                      className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground"
                     >
                       <div className="flex items-center gap-3">
-                        <item.icon className="h-4 w-4 text-white/40" />
+                        <item.icon className="h-4 w-4 opacity-70" />
                         <span>{item.label}</span>
                       </div>
                       {item.isNew && (
@@ -376,33 +376,33 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                     </button>
                   ))}
 
-                  <div className="h-px bg-white/10 my-3.5 mx-2" />
+                  <div className="h-px bg-border my-3.5 mx-2" />
 
                   {/* Conteúdos */}
-                  <p className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest px-3 mb-2">
+                  <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest px-3 mb-2">
                     Conteúdos
                   </p>
                   {contentCategories.map((item) => (
                     <button
                       key={item.category}
                       onClick={() => handleCategoryClick(item.category)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/70 transition-all hover:bg-white/[0.06] hover:text-white text-left w-full"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground text-left w-full"
                     >
-                      <item.icon className="h-4 w-4 text-white/40" />
+                      <item.icon className="h-4 w-4 opacity-70" />
                       {item.label}
                     </button>
                   ))}
 
-                  <div className="h-px bg-white/10 my-3.5 mx-2" />
+                  <div className="h-px bg-border my-3.5 mx-2" />
 
                   {user ? (
                     <>
-                      <div className="px-3 py-2 text-xs font-bold text-amber-400/90 tracking-wide">
+                      <div className="px-3 py-2 text-xs font-bold text-amber-500 tracking-wide">
                         Olá, {userName || user.email?.split("@")[0]}! 👋
                       </div>
                       <Link to="/minha-conta" onClick={() => setIsOpen(false)}>
-                        <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/70 transition-all hover:bg-white/[0.06] hover:text-white text-left w-full">
-                          <User className="h-4 w-4 text-white/40" />
+                        <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground text-left w-full">
+                          <User className="h-4 w-4 opacity-70" />
                           Minha Conta
                         </button>
                       </Link>
@@ -411,9 +411,9 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                           signOut();
                           setIsOpen(false);
                         }}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-500/10 transition-all text-left w-full mt-1"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-500/10 transition-all text-left w-full mt-1"
                       >
-                        <LogOut className="h-4 w-4 text-red-400" />
+                        <LogOut className="h-4 w-4 text-red-500" />
                         {t('header.logout')}
                       </button>
                     </>

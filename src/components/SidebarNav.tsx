@@ -409,6 +409,25 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                   </span>
                 </button>
 
+                {/* Próximo Nível - Apenas em PT */}
+                {language === 'pt' && (
+                  <button
+                    onClick={() => handleNavClick(undefined, "/proximo-nivel")}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                      location.pathname.includes('/proximo-nivel')
+                        ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Star className={`w-4 h-4 shrink-0 transition-colors ${
+                        location.pathname.includes('/proximo-nivel') ? "text-blue-600 dark:text-blue-400" : "text-amber-500 dark:text-amber-400"
+                      }`} />
+                      <span>Turbo</span>
+                    </div>
+                  </button>
+                )}
+
                 {/* Categoria somente da Fábrica / CRM Leads */}
                 <button
                   onClick={() => handleNavClick(undefined, "/fabrica", true)}

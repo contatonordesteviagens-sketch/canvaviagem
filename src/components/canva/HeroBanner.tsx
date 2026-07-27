@@ -96,7 +96,7 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
       {/* 2. Imagem Principal no Topo (~70% da tela, sozinha em 1 fileira) */}
       <div 
         onClick={() => navigate('/fabrica')}
-        className="w-full max-w-[92%] sm:max-w-[82%] md:max-w-[70%] mx-auto relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.008] hover:border-blue-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.2)] group bg-slate-950/5 dark:bg-[#0F0F11]"
+        className="w-full max-w-full sm:max-w-[82%] md:max-w-[70%] mx-auto relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.008] hover:border-blue-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.2)] group bg-slate-950/5 dark:bg-[#0F0F11]"
       >
         <img 
           src="/capa-fabrica.webp" 
@@ -106,7 +106,7 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
       </div>
 
       {/* 3. Grid 2x2 das 4 Outras Capas da Fábrica (15% menor) */}
-      <div className="w-full max-w-[85%] sm:max-w-[76%] md:max-w-[70%] mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-5 sm:mt-6">
+      <div className="w-full max-w-full sm:max-w-[76%] md:max-w-[70%] mx-auto grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-6 mt-4 sm:mt-6">
         {fabricaCapasGrid.map((capa) => {
           return (
             <div 
