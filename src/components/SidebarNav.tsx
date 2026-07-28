@@ -19,6 +19,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { CategoryType } from "@/components/canva/CategoryNav";
 import { useFabricaMetrics } from "@/hooks/useFabricaMetrics";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { cn } from "@/lib/utils";
 
 interface SidebarNavProps {
   activeCategory?: CategoryType;
@@ -139,13 +140,24 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
               <div className="space-y-1 pt-0.5">
                 <button
                   onClick={() => handleNavClick('all')}
-                  className={getButtonClass(activeCategory === 'all' || (!activeCategory && location.pathname === homeRoute))}
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
+                    activeCategory === 'all' || (!activeCategory && location.pathname === homeRoute)
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <LayoutGrid className={getIconClass(activeCategory === 'all' || (!activeCategory && location.pathname === homeRoute))} />
+                    <LayoutGrid className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      activeCategory === 'all' || (!activeCategory && location.pathname === homeRoute)
+                        ? "text-slate-900 dark:text-white"
+                        : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                    )} />
                     <span>Início (Tudo)</span>
                   </div>
                 </button>
+
 
                 <button
                   onClick={() => handleNavClick(undefined, isESRoute ? "/es/fabrica" : "/fabrica", true)}
