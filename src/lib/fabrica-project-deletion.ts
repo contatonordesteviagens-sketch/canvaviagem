@@ -36,7 +36,7 @@ export const deleteFabricaProject = async ({
   );
   if (formError) throw formError;
 
-  const { data: linkedForms, error: linkedFormsError } = await executeReadWithFreshSupabaseSession(
+  const { data: linkedFormsResult, error: linkedFormsError } = await executeReadWithFreshSupabaseSession(
     () => (supabase as any)
       .from("crm_forms")
       .select("id")
@@ -46,6 +46,7 @@ export const deleteFabricaProject = async ({
     userId,
   );
   if (linkedFormsError) throw linkedFormsError;
+  const linkedForms = Array.isArray(linkedFormsResult) ? linkedFormsResult : [];
   if (linkedForms?.length) {
     throw new Error("Não foi possível preservar os leads deste projeto. A exclusão foi cancelada.");
   }
@@ -84,8 +85,8 @@ export const deleteFabricaProject = async ({
   if (projectError) throw projectError;
 
   const [
-    { data: remainingProject, error: projectCheckError },
-    { data: remainingSites, error: sitesCheckError },
+    { data: remainingProjectResult, error: projectCheckError },
+    { data: remainingSitesResult, error: sitesCheckError },
   ] = await Promise.all([
     executeReadWithFreshSupabaseSession(
       () => (supabase as any)
@@ -109,6 +110,8 @@ export const deleteFabricaProject = async ({
 
   if (projectCheckError) throw projectCheckError;
   if (sitesCheckError) throw sitesCheckError;
+  const remainingProject = Array.isArray(remainingProjectResult) ? remainingProjectResult : [];
+  const remainingSites = Array.isArray(remainingSitesResult) ? remainingSitesResult : [];
   let remainingLegacySites: { id: string }[] = [];
   if (uniqueSlugs.length > 0) {
     const { data, error } = await executeReadWithFreshSupabaseSession(
