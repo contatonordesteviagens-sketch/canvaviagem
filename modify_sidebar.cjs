@@ -1,136 +1,8 @@
-import { useState, memo } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { 
-  Home, Bot, Wand2, Calendar, Image, GraduationCap, Heart, 
-  FileText, CreditCard, User, LogOut, Video, Megaphone,
-  Download, ChevronDown, ChevronRight, BookmarkCheck, LayoutGrid,
-  TrendingUp, Crown, MessageCircle, Star, MousePointerClick, Globe, Layers, Users
-} from "lucide-react";
-import logoImage from "@/assets/logo.png";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { ProgressBar } from "@/components/ProgressBar";
-import { hasEliteAccess } from "@/lib/planAccess";
-import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
-import { FabricaUpgradeModalES } from "@/components/fabrica/FabricaUpgradeModalES";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { CategoryType } from "@/components/canva/CategoryNav";
-import { useFabricaMetrics } from "@/hooks/useFabricaMetrics";
-import { useSidebar } from "@/contexts/SidebarContext";
+const fs = require('fs');
 
-const cn = (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(" ");
+const content = fs.readFileSync('src/components/SidebarNav.tsx', 'utf-8');
 
-interface SidebarNavProps {
-  activeCategory?: CategoryType;
-  onCategoryChange?: (category: CategoryType) => void;
-}
-
-const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavProps) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user, signOut, subscription, isAdmin } = useAuth();
-  const { t, language } = useLanguage();
-  const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
-  const { newLeadsCount } = useFabricaMetrics();
-  const { isCollapsed, setIsCollapsed } = useSidebar();
-
-  // Controle de seções recolhíveis (acordeão) para manter o menu limpo e organizado
-  const [openSections, setOpenSections] = useState({
-    principal: true,
-    fabrica: true,
-    conteudos: true,
-    gestao: true
-  });
-
-  const isElite = hasEliteAccess(subscription);
-
-  const toggleSection = (sectionKey: 'principal' | 'fabrica' | 'conteudos' | 'gestao') => {
-    setOpenSections(prev => ({ ...prev, [sectionKey]: !prev[sectionKey] }));
-  };
-
-  const isESRoute = location.pathname.startsWith('/es');
-  const homeRoute = isESRoute ? "/es" : "/";
-
-  const handleNavClick = (category?: CategoryType, path?: string, requiresElite?: boolean) => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    if (requiresElite) {
-      const isElite = hasEliteAccess(subscription);
-      if (!isElite && !isAdmin) {
-        setFabricaUpgradeOpen(true);
-        return;
-      }
-    }
-
-    if (category) {
-      if (onCategoryChange) {
-        onCategoryChange(category);
-      }
-      if (location.pathname !== homeRoute || !onCategoryChange) {
-        navigate(homeRoute, { state: { category } });
-      }
-    } else if (path) {
-      navigate(path);
-    }
-  };
-
-  if (isCollapsed) {
-    return (
-      <>
-        <button
-          onClick={() => setIsCollapsed(false)}
-          title="Abrir Menu Lateral"
-          className="hidden md:flex fixed left-4 top-20 md:top-6 z-[80] bg-blue-600 hover:bg-blue-700 text-white shadow-xl rounded-xl px-3.5 py-2 items-center gap-2 font-black text-xs transition-all hover:scale-105 cursor-pointer border border-white/20 select-none"
-        >
-          <LayoutGrid className="w-4 h-4" />
-          <span>Abrir Menu</span>
-        </button>
-        {language === "es" ? (
-          <FabricaUpgradeModalES open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
-        ) : (
-          <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
-        )}
-      </>
-    );
-  }
-
-  return (
-    <>
-      <aside className="hidden md:flex flex-col w-64 fixed left-0 top-0 bottom-0 bg-[#F9FAFB] dark:bg-[#18191B] backdrop-blur-3xl border-r border-slate-200 dark:border-white/[0.05] text-slate-800 dark:text-white z-50 select-none">
-        {/* Logo Topo e Botão Minimizar */}
-        <div className="p-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between gap-3 shrink-0">
-          <Link to={homeRoute} className="flex items-center gap-3 group min-w-0">
-            <img
-              src={logoImage}
-              alt="Canva Viagem"
-              className="h-10 w-10 rounded-xl shadow-lg group-hover:scale-105 transition-transform object-cover shrink-0"
-            />
-            <div className="flex flex-col min-w-0">
-              <span className="text-[17px] font-black text-slate-900 dark:text-white tracking-tight whitespace-nowrap leading-tight">
-                Canva Viagem
-              </span>
-              <span className="text-[10px] text-blue-600 dark:text-amber-400 font-extrabold tracking-widest uppercase -mt-0.5">
-                Portal Principal
-              </span>
-            </div>
-          </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsCollapsed(true)}
-            title="Minimizar Menu Lateral"
-            className="h-8 w-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 shrink-0 text-slate-500 dark:text-slate-400 ml-auto"
-          >
-            <ChevronDown className="h-4 w-4 rotate-90" />
-          </Button>
-        </div>
-
-        {/* Itens de Navegação com Scrollbar invisível */}
-        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-5 [C::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          
-
+const newSections = `
           {/* SEÇÃO 1: PRINCIPAL */}
           <div className="space-y-1">
             <button
@@ -603,62 +475,16 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
               </div>
             )}
           </div>
+`;
 
-        </div>
+const startIndex = content.indexOf('          {/* SEÇÃO 1: PRINCIPAL */}');
+const endIndex = content.indexOf('        {/* Rodapé do Menu Lateral */}');
+const endReplacementIndex = content.lastIndexOf('</div>', endIndex) + 6;
 
-        {/* Rodapé do Menu Lateral */}
-        <div className="p-4 border-t border-slate-200 dark:border-white/[0.05] bg-[#F9FAFB] dark:bg-[#18191B] space-y-3 shrink-0">
-          {user && (
-            <div className="px-1">
-              <ProgressBar compact />
-            </div>
-          )}
-
-          <div className="flex items-center justify-between px-1">
-            <ThemeToggle />
-            <LanguageSwitcher variant="desktop" />
-          </div>
-
-          {user ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={signOut}
-              className="w-full justify-start text-slate-600 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-red-400 dark:hover:bg-red-500/10 rounded-xl text-xs py-2"
-            >
-              <LogOut className="h-3.5 w-3.5 mr-2 shrink-0" />
-              {t('header.logout') || "Sair da Conta"}
-            </Button>
-          ) : (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => navigate('/auth')}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg text-xs py-2"
-            >
-              <User className="h-3.5 w-3.5 mr-2 shrink-0" />
-              {t('header.login') || "Fazer Login"}
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsCollapsed(true)}
-            className="w-full mt-2 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-xs py-2 flex items-center justify-center gap-2"
-          >
-            <ChevronDown className="h-4 w-4 rotate-90" />
-            Minimizar Menu
-          </Button>
-        </div>
-      </aside>
-
-      {language === "es" ? (
-        <FabricaUpgradeModalES open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
-      ) : (
-        <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
-      )}
-    </>
-  );
-};
-
-export const SidebarNav = memo(SidebarNavComponent);
+if (startIndex !== -1 && endIndex !== -1) {
+  const newContent = content.substring(0, startIndex) + newSections + '\n        </div>\n\n' + content.substring(endIndex);
+  fs.writeFileSync('src/components/SidebarNav.tsx', newContent);
+  console.log('SidebarNav replaced successfully!');
+} else {
+  console.error('Could not find markers');
+}

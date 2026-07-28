@@ -471,8 +471,8 @@ const FabricaInner = () => {
           )}
           {activeTab === "phase" && (
             <>
-              {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => setPhase(3)} />}
-              {state.currentPhase === 2 && <Phase3ArtFactory onNext={() => setPhase(3)} onBack={() => setPhase(1)} lockMode={true} initialMode="carousel" />}
+              {state.currentPhase === 1 && <Phase3ArtFactory key="phase1-ad" onNext={() => setPhase(2)} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => setPhase(3)} />}
+              {state.currentPhase === 2 && <Phase3ArtFactory key="phase2-carousel" onNext={() => setPhase(3)} onBack={() => setPhase(1)} lockMode={true} initialMode="carousel" />}
               {state.currentPhase === 3 && <Phase4LandingBuilder onNext={() => setPhase(4)} onBack={() => setPhase(2)} />}
               {state.currentPhase === 4 && <Phase5Dashboard onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
               {state.currentPhase === 5 && (

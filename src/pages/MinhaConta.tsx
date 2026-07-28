@@ -7,10 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Crown, Calendar, LogOut, ExternalLink, Loader2, Factory, Trash2, FileDown, MessageCircle } from "lucide-react";
+import { User, Crown, Calendar, LogOut, ExternalLink, Loader2, Factory, Trash2, FileDown, MessageCircle, Edit2, Check, X } from "lucide-react";
 import { useDiagnosticos, useDeleteDiagnostico } from "@/hooks/useFabricaDiagnosticos";
 import { generateDiagnosticoPDF } from "@/lib/fabrica-pdf";
 import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface ProfileData {
   name: string | null;
@@ -22,6 +24,9 @@ export default function MinhaConta() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileData>({ name: null, email: null });
   const [loadingPortal, setLoadingPortal] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState("");
+  const [savingName, setSavingName] = useState(false);
   const { data: diagnosticos = [] } = useDiagnosticos();
   const deleteDiag = useDeleteDiagnostico();
 
@@ -41,25 +46,32 @@ export default function MinhaConta() {
     fetchProfile();
   }, [user]);
 
-  const handleManageSubscription = async () => {
-    setLoadingPortal(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("stripe-dashboard", {});
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
-    } catch {
-      // fallback: redirect to plans page
-      navigate("/inicio");
-    } finally {
-      setLoadingPortal(false);
-    }
-  };
+
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/auth");
+  };
+
+  const saveProfileName = async () => {
+    if (!user) return;
+    setSavingName(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ name: editNameValue })
+        .eq("user_id", user.id);
+        
+      if (error) throw error;
+      setProfile(prev => ({ ...prev, name: editNameValue }));
+      setIsEditingName(false);
+      toast.success("Nome atualizado com sucesso!");
+    } catch (err) {
+      console.error("Error updating profile", err);
+      toast.error("Ocorreu um erro ao atualizar o perfil");
+    } finally {
+      setSavingName(false);
+    }
   };
 
   const displayName = profile.name || user?.email?.split("@")[0] || "Usuário";
@@ -94,8 +106,38 @@ export default function MinhaConta() {
             <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xl font-bold flex-shrink-0">
               {avatarLetter}
             </div>
-            <div className="min-w-0">
-              <p className="font-semibold text-foreground truncate">{displayName}</p>
+            <div className="min-w-0 flex-1">
+              {isEditingName ? (
+                <div className="flex items-center gap-2 mb-1">
+                  <Input 
+                    value={editNameValue} 
+                    onChange={(e) => setEditNameValue(e.target.value)} 
+                    className="h-8 text-sm max-w-[200px]"
+                    placeholder="Nome da Agência"
+                    disabled={savingName}
+                  />
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600" onClick={saveProfileName} disabled={savingName}>
+                    {savingName ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500" onClick={() => setIsEditingName(false)} disabled={savingName}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mb-1 group">
+                  <p className="font-semibold text-foreground truncate">{displayName}</p>
+                  <button 
+                    onClick={() => {
+                      setEditNameValue(profile.name || "");
+                      setIsEditingName(true);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-100 dark:hover:bg-white/10 rounded"
+                    title="Editar nome"
+                  >
+                    <Edit2 className="w-3.5 h-3.5 text-slate-500" />
+                  </button>
+                </div>
+              )}
               <p className="text-sm text-muted-foreground truncate">{displayEmail}</p>
             </div>
           </CardContent>
@@ -145,21 +187,7 @@ export default function MinhaConta() {
                     </div>
                   )}
 
-                  {subscription.subscribed ? (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={handleManageSubscription}
-                      disabled={loadingPortal}
-                    >
-                      {loadingPortal ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                      )}
-                      Gerenciar Assinatura
-                    </Button>
-                  ) : (
+                  {!subscription.subscribed && (
                     <Button
                       className="w-full"
                       onClick={() => navigate("/inicio")}
