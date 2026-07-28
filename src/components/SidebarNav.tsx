@@ -140,7 +140,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
         </div>
 
         {/* Itens de Navegação com Scrollbar invisível */}
-        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-1 [C::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           
           <NavButton 
             onClick={() => handleNavClick('all')}
@@ -393,7 +393,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           title={isCollapsed ? "Expandir Menu" : "Recolher Menu"}
-          className="hidden md:flex absolute -right-3.5 top-20 w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-full items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white shadow-md z-50 cursor-pointer hover:scale-110 transition-all"
+          className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/20 rounded-full items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white shadow-lg z-50 cursor-pointer hover:scale-110 transition-all"
         >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>

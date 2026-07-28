@@ -351,7 +351,7 @@ const FabricaInner = () => {
       )}
 
       {/* ——— CONTEÚDO PRINCIPAL (ÁREA DE TRABALHO) ——— */}
-      <main className="flex-1 min-w-0 pt-20 md:pt-8 px-4 md:px-8 pb-24 bg-[#0A0A0B]">
+      <main className="flex-1 min-w-0 pt-20 md:pt-8 px-4 md:px-8 pb-32 md:pb-12 bg-[#0A0A0B]">
         {/* Top Bar with Voice AI and Phase Shortcuts */}
         <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-2xl bg-black border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 relative z-30">
             <div className="w-full sm:w-auto flex justify-center sm:justify-start shrink-0 min-w-0">
@@ -360,7 +360,7 @@ const FabricaInner = () => {
 
             <div className="h-4 w-px bg-white/10 mx-1 hidden sm:block"></div>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 overflow-x-auto snap-x scroll-px-1 no-scrollbar pb-1 sm:pb-0 touch-pan-x">
               <button
                 onClick={() => navigate(isES ? "/es/fabrica" : "/fabrica")}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap shrink-0 ${

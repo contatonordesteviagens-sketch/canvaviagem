@@ -2790,9 +2790,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                   </button>
                 </div>
 
-                <div className={`grid gap-3 ${generatedImages.length > 1 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1"}`}>
+                <div className={`${generatedImages.length > 1 ? "flex md:grid gap-3 overflow-x-auto snap-x pb-2 md:pb-0 md:grid-cols-3" : "grid grid-cols-1"}`}>
                   {generatedImages.map((img, idx) => (
-                    <div key={`${img.slice(0, 48)}-${idx}`} className="relative group/img">
+                    <div key={`${img.slice(0, 48)}-${idx}`} className="relative group/img shrink-0 min-w-[75vw] md:min-w-0 snap-center">
                       <button
                         type="button"
                         onClick={() => setGeneratedImage(img)}
@@ -2809,7 +2809,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                           if (generatedImage === img) setGeneratedImage(newList[0] || "");
                           toast.success("Variação removida");
                         }}
-                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg md:opacity-0 md:group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
                         title="Excluir esta versão"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
