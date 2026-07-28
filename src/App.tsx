@@ -1,4 +1,4 @@
-﻿import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -41,7 +41,7 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
   return (
     <div className="flex min-h-screen w-full relative">
       <SidebarNav />
-      <div className={cn("flex-1 flex flex-col min-h-screen transition-all duration-300 w-full min-w-0", !isCollapsed ? "md:pl-64" : "md:pl-0")}>
+      <div className={cn("flex-1 flex flex-col min-h-screen transition-all duration-300 w-full min-w-0", !isCollapsed ? "md:pl-64" : "md:pl-[72px]")}>
         {children}
       </div>
     </div>

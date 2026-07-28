@@ -425,6 +425,7 @@ const FabricaInner = () => {
               <button
                 onClick={() => {
                   setActiveTab("dashboard");
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica" : "/fabrica");
                 }}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap shrink-0 ${
                   activeTab === "dashboard" ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
@@ -446,6 +447,8 @@ const FabricaInner = () => {
                   onClick={() => {
                     setPhase(phase);
                     setActiveTab("phase");
+                    const paths = ["", "/anuncio", "/carrossel", "/site", "/crm", "/planos"];
+                    navigate(location.pathname.startsWith("/es") ? `/es/fabrica${paths[phase]}` : `/fabrica${paths[phase]}`);
                   }}
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap shrink-0 ${
                     activeTab === "phase" && state.currentPhase === phase ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
@@ -465,7 +468,13 @@ const FabricaInner = () => {
               onNavigate={(tab, phase) => {
                 if (tab === "library") return;
                 setActiveTab(tab);
-                if (phase) setPhase(phase);
+                if (phase) {
+                  setPhase(phase);
+                  const paths = ["", "/anuncio", "/carrossel", "/site", "/crm", "/planos"];
+                  navigate(location.pathname.startsWith("/es") ? `/es/fabrica${paths[phase]}` : `/fabrica${paths[phase]}`);
+                } else if (tab === "dashboard") {
+                  navigate(location.pathname.startsWith("/es") ? "/es/fabrica" : "/fabrica");
+                }
               }} 
             />
           )}
