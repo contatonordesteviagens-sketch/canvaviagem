@@ -2,6 +2,8 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 type SupabaseResult = {
+  data?: unknown;
+  count?: number | null;
   error?: unknown;
 };
 
