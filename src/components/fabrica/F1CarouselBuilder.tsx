@@ -39,6 +39,7 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -1212,7 +1213,7 @@ function CarouselCanvas({
 
   // Legacy layouts positioned the logo independently. Keep them disabled and
   // render one predictable brand layer for every editable carousel design.
-  const logo = "";
+  const logo: string = "";
   const logoIsLeft = logoPosition.endsWith("left");
   const logoIsBottom = logoPosition.startsWith("bottom");
   const renderPositionedLogo = () =>
@@ -1796,10 +1797,8 @@ function CarouselCanvas({
           style={{
             ...contentStyle,
             background: panelBackground,
-            border:
-              accentPlacement === "top" || accentPlacement === "side" ? "none" : panelBorder,
+            border: accentPlacement === "top" ? "none" : panelBorder,
             borderTop: accentPlacement === "top" ? panelBorder : undefined,
-            borderRight: accentPlacement === "side" ? panelBorder : undefined,
             borderRadius: panelRadius,
             boxShadow: panelShadow,
             color: panelForeground,
@@ -3237,6 +3236,7 @@ export function F1CarouselBuilder({
   onBackToAd,
 }: F1CarouselBuilderProps) {
   const { state } = useFabricaContext();
+  const { user } = useAuth();
   const isEs = locale === "es";
   const adCoverHandoffKey = `fabrica-carousel-ad-cover:${state.projectId || "local"}`;
   const [hasAdCoverHandoff] = useState(() => {
@@ -4323,10 +4323,10 @@ export function F1CarouselBuilder({
 
       toast.success(
         isEs
-          ? protectedCover
+          ? preserveOriginalCover
             ? `${slides.length} imágenes listas. La portada del anuncio fue preservada.`
             : `${slides.length} imágenes listas para publicar.`
-          : protectedCover
+          : preserveOriginalCover
             ? `${slides.length} imagens prontas. A capa do anúncio foi preservada.`
             : `${slides.length} imagens prontas para publicar.`,
       );
