@@ -21,22 +21,22 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
 
-  const categories: { id: CategoryType; label: string; icon: React.ReactNode; isNew?: boolean }[] = [
-    { id: 'all', label: 'Tudo', icon: <LayoutGrid className="w-6 h-6" /> },
-    { id: 'fabrica', label: 'Fábrica', icon: <Wand2 className="w-6 h-6" />, isNew: true },
-    { id: 'calendar', label: isESRoute ? 'Calendario' : 'Calendário', icon: <Calendar className="w-6 h-6" /> },
+  const categories: { id: CategoryType; label: string; icon: React.ReactNode; isNew?: boolean; color?: string }[] = [
+    { id: 'all', label: 'Tudo', icon: <LayoutGrid className="w-6 h-6 text-slate-800 dark:text-slate-200" />, color: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700' },
+    { id: 'fabrica', label: 'Fábrica', icon: <Wand2 className="w-6 h-6 text-white" />, isNew: true, color: 'bg-gradient-to-br from-violet-600 to-fuchsia-600' },
+    { id: 'calendar', label: isESRoute ? 'Calendario' : 'Calendário', icon: <Calendar className="w-6 h-6 text-white" />, color: 'bg-[#FF6B00]' },
     // Recursos PRO
-    { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6" /> },
-    { id: 'feed', label: "Artes para Feed e Stories", icon: <Image className="w-6 h-6" /> },
-    { id: 'offers', label: "Ofertas e Legendas", icon: <Megaphone className="w-6 h-6" /> },
-    { id: 'downloads', label: isESRoute ? "Paquetes de Videos (Drive)" : "Pacotes de Vídeos (Drive)", icon: <Download className="w-6 h-6" /> },
+    { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6 text-white" />, color: 'bg-[#FF005C]' },
+    { id: 'feed', label: "Artes para Feed e Stories", icon: <Image className="w-6 h-6 text-white" />, color: 'bg-[#00C4CC]' },
+    { id: 'offers', label: "Ofertas e Legendas", icon: <Megaphone className="w-6 h-6 text-white" />, color: 'bg-[#8B3DFF]' },
+    { id: 'downloads', label: isESRoute ? "Paquetes de Videos (Drive)" : "Pacotes de Vídeos (Drive)", icon: <Download className="w-6 h-6 text-white" />, color: 'bg-[#00B259]' },
 
     // Ferramentas Gratuitas
-    { id: 'tools', label: t('category.tools'), icon: <Bot className="w-6 h-6" /> },
-    { id: 'videoaula', label: t('category.videoaula'), icon: <GraduationCap className="w-6 h-6" /> },
-    { id: 'contracts', label: "Contratos", icon: <FileText className="w-6 h-6" /> },
+    { id: 'tools', label: t('category.tools'), icon: <Bot className="w-6 h-6 text-white" />, color: 'bg-[#0085FF]' },
+    { id: 'videoaula', label: t('category.videoaula'), icon: <GraduationCap className="w-6 h-6 text-white" />, color: 'bg-[#E50087]' },
+    { id: 'contracts', label: "Contratos", icon: <FileText className="w-6 h-6 text-white" />, color: 'bg-[#40576D]' },
 
-    { id: 'favorites', label: t('category.favorites'), icon: <Heart className="w-6 h-6" /> },
+    { id: 'favorites', label: t('category.favorites'), icon: <Heart className="w-6 h-6 text-white" />, color: 'bg-rose-500' },
   ];
 
   const displayCategories = showFavorites
@@ -172,10 +172,11 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
                   {/* Circle Icon Container */}
                   <div
                     className={cn(
-                      "w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm",
+                      "w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm",
+                      category.color || "bg-secondary text-muted-foreground",
                       isActive
-                        ? "bg-primary/10 ring-[2px] sm:ring-[3px] ring-primary text-primary shadow-md"
-                        : "bg-secondary text-muted-foreground hover:bg-secondary/80 group-hover:scale-105 hover:-translate-y-1 transition-transform"
+                        ? "ring-2 sm:ring-[3px] ring-primary ring-offset-2 scale-110 shadow-md"
+                        : "hover:scale-105 hover:-translate-y-1 hover:shadow-md"
                     )}
                   >
                     {category.icon && <div className="scale-75 sm:scale-100">{category.icon}</div>}

@@ -93,7 +93,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
 
   return (
     <>
-      <aside className="hidden md:flex flex-col w-64 fixed left-0 top-0 bottom-0 bg-white dark:bg-[#08090C] backdrop-blur-3xl border-r border-slate-200 dark:border-white/[0.08] text-slate-800 dark:text-white z-50 select-none shadow-2xl">
+      <aside className="hidden md:flex flex-col w-64 fixed left-0 top-0 bottom-0 bg-[#F9FAFB] dark:bg-[#18191B] backdrop-blur-3xl border-r border-slate-200 dark:border-white/[0.05] text-slate-800 dark:text-white z-50 select-none">
         {/* Logo Topo e Botão Minimizar */}
         <div className="p-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between gap-3 shrink-0">
           <Link to={homeRoute} className="flex items-center gap-3 group min-w-0">
@@ -137,56 +137,52 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
 
             {openSections.principal && (
               <div className="space-y-1 pt-0.5">
-                {/* Tudo / Início */}
                 <button
                   onClick={() => handleNavClick('all')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
-                    (activeCategory === 'all' || (!activeCategory && location.pathname === homeRoute))
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                  className={getButtonClass(activeCategory === 'all' || (!activeCategory && location.pathname === homeRoute))}
                 >
                   <div className="flex items-center gap-3">
-                    <LayoutGrid className={`w-4 h-4 shrink-0 transition-colors ${
-                      (activeCategory === 'all' || (!activeCategory && location.pathname === homeRoute)) ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                    }`} />
+                    <LayoutGrid className={getIconClass(activeCategory === 'all' || (!activeCategory && location.pathname === homeRoute))} />
                     <span>Início (Tudo)</span>
                   </div>
                 </button>
 
-                {/* Fábrica de Destinos */}
                 <button
                   onClick={() => handleNavClick(undefined, isESRoute ? "/es/fabrica" : "/fabrica", true)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     location.pathname.includes('/fabrica')
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <Wand2 className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/fabrica') ? "text-blue-600 dark:text-blue-400" : "text-amber-500 dark:text-amber-400"
-                    }`} />
+                    <Wand2 className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      location.pathname.includes('/fabrica') ? "text-violet-500" : "text-violet-500/70 group-hover:text-violet-500"
+                    )} />
                     <span className="leading-snug">Fábrica de Destinos</span>
                   </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-extrabold shrink-0 shadow-sm">
-                    IA Pro
+                  <span className="text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300 font-extrabold uppercase shrink-0">
+                    <Crown className="w-2.5 h-2.5" /> PRO
                   </span>
                 </button>
 
                 {/* Ferramentas de IA */}
                 <button
                   onClick={() => handleNavClick('tools')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     activeCategory === 'tools' && location.pathname === homeRoute
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <Bot className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'tools' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                    }`} />
+                    <Bot className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      activeCategory === 'tools' ? "text-slate-900 dark:text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                    )} />
                     <span>Ferramentas de IA</span>
                   </div>
                 </button>
@@ -194,16 +190,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Datas & Calendário */}
                 <button
                   onClick={() => handleNavClick(undefined, isESRoute ? "/es/calendar" : "/calendar")}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     location.pathname.includes('/calendar')
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <Calendar className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/calendar') ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                    }`} />
+                    <Calendar className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      location.pathname.includes('/calendar') ? "text-slate-900 dark:text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                    )} />
                     <span>Datas & Calendário</span>
                   </div>
                 </button>
@@ -226,16 +224,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Vídeos Reels */}
                 <button
                   onClick={() => handleNavClick('videos')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     activeCategory === 'videos' && location.pathname === homeRoute
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <Video className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'videos' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                    }`} />
+                    <Video className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      activeCategory === 'videos' ? "text-slate-900 dark:text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                    )} />
                     <span>Vídeos Reels</span>
                   </div>
                 </button>
@@ -243,16 +243,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Feed & Stories */}
                 <button
                   onClick={() => handleNavClick('feed')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     activeCategory === 'feed' && location.pathname === homeRoute
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <Image className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'feed' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                    }`} />
+                    <Image className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      activeCategory === 'feed' ? "text-slate-900 dark:text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                    )} />
                     <span>Feed & Stories</span>
                   </div>
                 </button>
@@ -260,16 +262,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Ofertas e Legendas */}
                 <button
                   onClick={() => handleNavClick('offers')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     activeCategory === 'offers' && location.pathname === homeRoute
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <Megaphone className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'offers' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                    }`} />
+                    <Megaphone className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      activeCategory === 'offers' ? "text-slate-900 dark:text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                    )} />
                     <span>Ofertas & Legendas</span>
                   </div>
                 </button>
@@ -277,16 +281,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Aulas & Tutoriais */}
                 <button
                   onClick={() => handleNavClick('videoaula')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     activeCategory === 'videoaula' && location.pathname === homeRoute
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <GraduationCap className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'videoaula' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                    }`} />
+                    <GraduationCap className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      activeCategory === 'videoaula' ? "text-slate-900 dark:text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                    )} />
                     <span>Aulas & Tutoriais</span>
                   </div>
                 </button>
@@ -311,16 +317,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Central de Downloads Diretos */}
                 <button
                   onClick={() => handleNavClick(undefined, isESRoute ? "/es/downloads" : "/downloads")}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     location.pathname.includes('/downloads')
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <Download className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/downloads') ? "text-blue-600 dark:text-blue-400" : "text-emerald-500 dark:text-emerald-400 group-hover:text-blue-600"
-                    }`} />
+                    <Download className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      location.pathname.includes('/downloads') ? "text-slate-900 dark:text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                    )} />
                     <span>{isESRoute ? "Central de Descargas Diretas" : "Central de Downloads Diretos"}</span>
                   </div>
                 </button>
@@ -328,16 +336,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Contratos Prontos */}
                 <button
                   onClick={() => handleNavClick('contracts')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     activeCategory === 'contracts' && location.pathname === homeRoute
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <FileText className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'contracts' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                    }`} />
+                    <FileText className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      activeCategory === 'contracts' ? "text-slate-900 dark:text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                    )} />
                     <span>Contratos Prontos</span>
                   </div>
                 </button>
@@ -345,16 +355,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Favoritos */}
                 <button
                   onClick={() => handleNavClick('favorites')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     activeCategory === 'favorites' && location.pathname === homeRoute
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <Heart className={`w-4 h-4 shrink-0 transition-colors ${
-                      activeCategory === 'favorites' ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                    }`} />
+                    <Heart className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      activeCategory === 'favorites' ? "text-rose-500 dark:text-rose-400" : "text-slate-400 group-hover:text-rose-500 dark:group-hover:text-rose-400"
+                    )} />
                     <span>Meus Favoritos</span>
                   </div>
                 </button>
@@ -377,16 +389,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Blog de Estratégias */}
                 <button
                   onClick={() => handleNavClick(undefined, "/blog")}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     location.pathname.includes('/blog')
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <BookmarkCheck className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/blog') ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                    }`} />
+                    <BookmarkCheck className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      location.pathname.includes('/blog') ? "text-slate-900 dark:text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                    )} />
                     <span>Blog de Estratégias</span>
                   </div>
                 </button>
@@ -394,17 +408,21 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Planos & Upgrade - Direciona para /inicio */}
                 <button
                   onClick={() => handleNavClick(undefined, isESRoute ? "/es/inicio" : "/inicio")}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     location.pathname === (isESRoute ? "/es/inicio" : "/inicio")
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <CreditCard className={`w-4 h-4 shrink-0 transition-colors text-amber-500 dark:text-amber-400`} />
+                    <CreditCard className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      location.pathname === (isESRoute ? "/es/inicio" : "/inicio") ? "text-amber-500" : "text-amber-500/70 group-hover:text-amber-500"
+                    )} />
                     <span className="leading-snug">Planos & Upgrade</span>
                   </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-500 text-black font-extrabold shrink-0 shadow-sm">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 font-extrabold shrink-0 shadow-sm uppercase">
                     Elite
                   </span>
                 </button>
@@ -413,16 +431,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {language === 'pt' && (
                   <button
                     onClick={() => handleNavClick(undefined, "/proximo-nivel")}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                    className={cn(
+                      "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                       location.pathname.includes('/proximo-nivel')
-                        ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                    }`}
+                        ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                        : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                    )}
                   >
                     <div className="flex items-center gap-3">
-                      <Star className={`w-4 h-4 shrink-0 transition-colors ${
-                        location.pathname.includes('/proximo-nivel') ? "text-blue-600 dark:text-blue-400" : "text-amber-500 dark:text-amber-400"
-                      }`} />
+                      <Star className={cn(
+                        "w-[18px] h-[18px] shrink-0 transition-colors",
+                        location.pathname.includes('/proximo-nivel') ? "text-amber-500" : "text-amber-500/70 group-hover:text-amber-500"
+                      )} />
                       <span>Turbo</span>
                     </div>
                   </button>
@@ -431,24 +451,26 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Categoria somente da Fábrica / CRM Leads */}
                 <button
                   onClick={() => handleNavClick(undefined, "/fabrica", true)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     location.pathname.includes('/fabrica')
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <Wand2 className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/fabrica') ? "text-blue-600 dark:text-blue-400" : "text-purple-500 dark:text-purple-400 group-hover:text-blue-600"
-                    }`} />
+                    <Wand2 className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      location.pathname.includes('/fabrica') ? "text-violet-500" : "text-violet-500/70 group-hover:text-violet-500"
+                    )} />
                     <span>Fábrica & CRM Leads</span>
                   </div>
                   {newLeadsCount > 0 ? (
-                    <span className="bg-red-500 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full animate-pulse shadow-md">
+                    <span className="bg-red-500 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full animate-pulse shadow-md">
                       {newLeadsCount}
                     </span>
                   ) : (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-500 dark:text-purple-400 font-extrabold shrink-0">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300 font-extrabold uppercase shrink-0">
                       CRM
                     </span>
                   )}
@@ -458,16 +480,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {user && (
                   <button
                     onClick={() => handleNavClick(undefined, isESRoute ? "/es/progresso" : "/progresso")}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                    className={cn(
+                      "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                       location.pathname.includes('/progresso')
-                        ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                    }`}
+                        ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                        : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                    )}
                   >
                     <div className="flex items-center gap-3">
-                      <TrendingUp className={`w-4 h-4 shrink-0 transition-colors ${
-                        location.pathname.includes('/progresso') ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                      }`} />
+                      <TrendingUp className={cn(
+                        "w-[18px] h-[18px] shrink-0 transition-colors",
+                        location.pathname.includes('/progresso') ? "text-slate-900 dark:text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                      )} />
                       <span>Meu Progresso</span>
                     </div>
                   </button>
@@ -476,13 +500,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Suporte WhatsApp */}
                 <button
                   onClick={() => window.open("https://api.whatsapp.com/send/?phone=5585998458995&text=Ol%C3%A1%2C+quero+suporte+do+Canva+Viagem", "_blank")}
-                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
                 >
                   <div className="flex items-center gap-3">
-                    <MessageCircle className="w-4 h-4 shrink-0 text-green-500 dark:text-green-400" />
+                    <MessageCircle className="w-[18px] h-[18px] shrink-0 text-emerald-500 dark:text-emerald-400 group-hover:text-emerald-600" />
                     <span>Suporte WhatsApp</span>
                   </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-green-500/20 text-green-600 dark:text-green-400 font-extrabold shrink-0">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 font-extrabold uppercase shrink-0">
                     Online
                   </span>
                 </button>
@@ -490,16 +514,18 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
                 {/* Minha Conta */}
                 <button
                   onClick={() => handleNavClick(undefined, !user ? "/auth" : "/minha-conta")}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group ${
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group",
                     location.pathname.includes('/minha-conta') || location.pathname.includes('/auth')
-                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm dark:bg-gradient-to-r dark:from-blue-600/25 dark:to-indigo-600/25 dark:text-white dark:border-blue-500/40 dark:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                    <User className={`w-4 h-4 shrink-0 transition-colors ${
-                      location.pathname.includes('/minha-conta') ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-blue-600 dark:text-white/45 dark:group-hover:text-amber-400"
-                    }`} />
+                    <User className={cn(
+                      "w-[18px] h-[18px] shrink-0 transition-colors",
+                      location.pathname.includes('/minha-conta') || location.pathname.includes('/auth') ? "text-slate-900 dark:text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                    )} />
                     <span>Minha Conta</span>
                   </div>
                 </button>
@@ -509,7 +535,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
         </div>
 
         {/* Rodapé do Menu Lateral */}
-        <div className="p-3.5 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 space-y-2.5 shrink-0">
+        <div className="p-4 border-t border-slate-200 dark:border-white/[0.05] bg-[#F9FAFB] dark:bg-[#18191B] space-y-3 shrink-0">
           {user && (
             <div className="px-1">
               <ProgressBar compact />
