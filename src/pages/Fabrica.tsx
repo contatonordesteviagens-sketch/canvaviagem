@@ -62,6 +62,7 @@ const FabricaInner = () => {
   }, [isHydrated, location.state, location.pathname, navigate, switchProject, user?.id]);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const path = location.pathname.toLowerCase();
     if (path.includes("/anuncio") || path.includes("/anuncios")) {
       setActiveTab("phase");

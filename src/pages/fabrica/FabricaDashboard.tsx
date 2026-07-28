@@ -1060,7 +1060,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Imagens geradas</div>
               </div>
               <div 
-                onClick={() => onNavigate?.("phase", 2)}
+                onClick={() => onNavigate?.("phase", 3)}
                 className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-2">
@@ -1075,7 +1075,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 )}
               </div>
               <div 
-                onClick={() => onNavigate?.("phase", 3)}
+                onClick={() => onNavigate?.("phase", 4)}
                 className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-amber-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto mb-2">

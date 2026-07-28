@@ -38,6 +38,7 @@ const FabricaInnerES = () => {
   const [activeTab, setActiveTab] = useState<"dashboard" | "phase">("dashboard");
   
   useEffect(() => {
+    window.scrollTo(0, 0);
     const path = location.pathname.toLowerCase();
     if (path.includes("/anuncio") || path.includes("/anuncios")) {
       setActiveTab("phase");
