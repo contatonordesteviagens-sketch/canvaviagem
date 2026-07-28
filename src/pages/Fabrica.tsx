@@ -47,7 +47,7 @@ const getPhaseFromPath = (pathname: string): number => {
 
 const FabricaInner = () => {
   const { state, setPhase, switchProject, isHydrated } = useFabricaContext();
-  const { isAdmin, user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

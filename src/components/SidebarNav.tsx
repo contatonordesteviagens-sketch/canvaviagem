@@ -238,13 +238,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
           <NavButton 
             onClick={() => handleNavClick('downloads')}
             isActive={activeCategory === 'downloads' && location.pathname === homeRoute}
-            icon={Download}
+            icon={Video}
             label="Pacotes de Vídeos & Drive"
           />
 
           <NavButton 
             onClick={() => handleNavClick(undefined, isESRoute ? "/es/downloads" : "/downloads")}
-            isActive={location.pathname.includes('/downloads') && !location.pathname.includes('/es/downloads')}
+            isActive={location.pathname === '/downloads' || location.pathname === '/es/downloads'}
             icon={Download}
             label="Central de Downloads"
           />
