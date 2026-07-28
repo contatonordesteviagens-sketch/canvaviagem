@@ -19,6 +19,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { CategoryType } from "@/components/canva/CategoryNav";
 import { useFabricaMetrics } from "@/hooks/useFabricaMetrics";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { cn } from "@/lib/utils";
 
 interface SidebarNavProps {
   activeCategory?: CategoryType;
