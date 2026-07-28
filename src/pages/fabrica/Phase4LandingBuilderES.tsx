@@ -317,10 +317,11 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
     const handleIframeLoad = () => {
       const doc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (!doc || !doc.head || !doc.body) return;
+      const root = doc?.documentElement;
+      if (!doc || !root || !doc.head || !doc.body) return;
       if (doc.body.dataset.fabricaEditorInitialized === "true") return;
       doc.body.dataset.fabricaEditorInitialized = "true";
-      doc.documentElement.classList.toggle("fabrica-remove-mode", removeModeRef.current);
+      root.classList.toggle("fabrica-remove-mode", removeModeRef.current);
 
       // Restaura o scroll para evitar pulos
       if (iframe.contentWindow) {
@@ -731,7 +732,8 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       // En el modo de eliminación, captura el clic antes de los editores.
       // Así se puede tocar directamente el contenido sin buscar un espacio vacío.
       doc.addEventListener("click", (event) => {
-        if (!doc.documentElement.classList.contains("fabrica-remove-mode")) return;
+        const root = doc.documentElement;
+        if (!root?.classList.contains("fabrica-remove-mode")) return;
         const target = event.target as Element | null;
         if (!target?.closest || target.closest(".fabrica-remove-btn")) return;
         const removable = target.closest("[data-visual-removable]");
@@ -1003,8 +1005,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
   useEffect(() => {
     const doc = iframeRef.current?.contentDocument;
-    if (!doc) return;
-    doc.documentElement.classList.toggle("fabrica-remove-mode", removeMode);
+    const root = doc?.documentElement;
+    if (!doc || !root) return;
+    root.classList.toggle("fabrica-remove-mode", removeMode);
     if (!removeMode) {
       doc.querySelectorAll(".fabrica-remove-selected").forEach((element) =>
         element.classList.remove("fabrica-remove-selected"),
