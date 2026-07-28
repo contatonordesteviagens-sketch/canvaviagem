@@ -275,23 +275,30 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                 {isOpen ? <X className="h-5 w-5 text-amber-500" /> : <Menu className="h-5 w-5" />}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[285px] sm:w-[320px] p-0 bg-background text-foreground border-l border-border shadow-2xl">
-              <ScrollArea className="h-full px-5 py-5">
-                <nav className="flex flex-col gap-1 mt-4 pb-24">
-
-                  {/* Topo: Idioma + Tema */}
-                  <div className="flex items-center justify-between px-2 mb-1">
-                    <LanguageSwitcher variant="mobile" />
-                    <ThemeToggleMobile />
+            <SheetContent side="right" className="w-[285px] sm:w-[320px] p-0 bg-background text-foreground border-l border-border shadow-2xl flex flex-col">
+              {/* Cabeçalho Fixo */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+                <div className="flex items-center gap-2">
+                  <img src={logoImage} alt="Canva Viagem" className="h-8 w-8 rounded-lg object-cover" />
+                  <div>
+                    <p className="text-sm font-black text-foreground leading-tight">Canva Viagem</p>
+                    <p className="text-[10px] text-amber-500 font-bold uppercase tracking-wider -mt-0.5">Menu</p>
                   </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <LanguageSwitcher variant="mobile" />
+                  <ThemeToggleMobile />
+                </div>
+              </div>
 
-                  <div className="h-px bg-border my-3 mx-2" />
+              <ScrollArea className="flex-1 px-4 py-3">
+                <nav className="flex flex-col gap-0.5 pb-20">
 
                   {/* Fábrica — Destaque no topo */}
                   {user ? (
                     <button
                       onClick={() => { handleNavClick(isESRoute ? "/es/fabrica" : "/fabrica"); setIsOpen(false); }}
-                      className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-all w-full text-left mb-1"
+                      className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-all w-full text-left mb-2"
                     >
                       <Wand2 className="h-4 w-4" />
                       <span>Fábrica de Criação</span>

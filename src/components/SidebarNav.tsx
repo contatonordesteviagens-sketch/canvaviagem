@@ -154,8 +154,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
             isActive={location.pathname === '/fabrica' || location.pathname === '/es/fabrica'}
             icon={Wand2}
             label="Fábrica"
-            activeColorClass="text-violet-500"
-            inactiveColorClass="text-slate-400 group-hover:text-violet-500"
           />
 
           <NavButton 
@@ -163,8 +161,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
             isActive={location.pathname.includes('/fabrica/anuncio')}
             icon={MousePointerClick}
             label="Criador de Anúncios"
-            activeColorClass="text-[#00D4FF]"
-            inactiveColorClass="text-slate-400 group-hover:text-[#00D4FF]"
           />
 
           <NavButton 
@@ -172,8 +168,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
             isActive={location.pathname.includes('/fabrica/carrossel')}
             icon={Layers}
             label="Gerador de Carrosséis"
-            activeColorClass="text-[#F72585]"
-            inactiveColorClass="text-slate-400 group-hover:text-[#F72585]"
           />
 
           <NavButton 
@@ -181,8 +175,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
             isActive={location.pathname.includes('/fabrica/site')}
             icon={Globe}
             label="Construtor de Sites"
-            activeColorClass="text-[#FF9900]"
-            inactiveColorClass="text-slate-400 group-hover:text-[#FF9900]"
           />
 
           <NavButton 
@@ -190,8 +182,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
             isActive={location.pathname.includes('/fabrica/crm')}
             icon={Users}
             label="CRM e Leads"
-            activeColorClass="text-emerald-500"
-            inactiveColorClass="text-slate-400 group-hover:text-emerald-500"
             badge={
               newLeadsCount > 0 ? (
                 isCollapsed ? (
@@ -261,8 +251,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
             isActive={location.pathname.includes('/vendedor-ia')}
             icon={MessageCircle}
             label="Vendedor IA"
-            activeColorClass="text-blue-500 dark:text-blue-400"
-            inactiveColorClass="text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400"
           />
 
           {language === 'pt' && (
@@ -318,7 +306,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
             isActive={false}
             icon={MessageCircle}
             label="Suporte WhatsApp"
-            inactiveColorClass="text-slate-400 group-hover:text-emerald-500"
           />
 
           <NavButton 
