@@ -56,7 +56,7 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
                         </span>
                     )}
                 </div>
-                <span className="text-[10px] font-medium hidden sm:block">{label}</span>
+                <span className="text-[9px] font-semibold">{label}</span>
                 <span className={cn(
                     "absolute -top-8 left-1/2 -translate-x-1/2",
                     "px-2 py-1 rounded text-xs",

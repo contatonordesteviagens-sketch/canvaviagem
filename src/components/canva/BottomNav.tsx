@@ -57,11 +57,6 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
       onClick: () => handleTabClick("home")
     },
     {
-      icon: Bot,
-      label: t('nav.ai'),
-      onClick: () => handleTabClick("tools")
-    },
-    {
       icon: Wand2,
       label: "Fábrica",
       onClick: () => handleTabClick("fabrica"),
@@ -76,11 +71,6 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
       icon: Image,
       label: t('nav.arts'),
       onClick: () => handleTabClick("feed")
-    },
-    {
-      icon: GraduationCap,
-      label: t('nav.class'),
-      onClick: () => handleTabClick("tutorial")
     },
     {
       icon: Heart,

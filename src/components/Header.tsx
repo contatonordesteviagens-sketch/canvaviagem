@@ -2,8 +2,8 @@ import { useState, useEffect, memo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu, X, LogOut, User, Home, Calendar, CreditCard,
-  Video, Image, LayoutGrid, FileText, Download, Bot,
-  GraduationCap, Heart, ChevronDown, Sun, Moon, Star, TrendingUp, MessageSquare, MoreHorizontal, Wand2, PanelLeft
+  Video, Image, FileText, Download, Bot,
+  GraduationCap, Heart, Sun, Moon, Star, TrendingUp, MoreHorizontal, Wand2, PanelLeft
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -112,37 +112,31 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   );
 
   const mainNavItems = [
-    { to: isESRoute ? "/es" : "/", label: t('header.home'), icon: Home },
-    { to: isESRoute ? "/es/calendar" : "/calendar", label: t('header.calendar'), icon: Calendar },
+    { to: isESRoute ? "/es" : "/", label: "Início", icon: Home },
+    { to: isESRoute ? "/es/calendar" : "/calendar", label: "Calendário", icon: Calendar },
     { to: "/blog", label: "Blog", icon: FileText, state: { fromInternal: true } },
-    { to: isESRoute ? "/es/inicio" : "/inicio", label: t('header.plans'), icon: CreditCard },
-    { id: "aulas", label: "Aulas", icon: GraduationCap, action: () => { navigate("/tutorial"); setIsOpen(false); } }
+    { to: isESRoute ? "/es/inicio" : "/inicio", label: "Planos e Upgrade", icon: CreditCard },
   ];
 
   // Additional nav items for logged-in users
   const userNavItems = user ? [
-    { to: "/downloads", label: "Downloads", icon: Download },
-    { to: "/fabrica", label: "Fábrica", icon: Wand2, isNew: true },
-    { to: isESRoute ? "/es/progresso" : "/progresso", label: "Progresso", icon: TrendingUp },
-    { to: isESRoute ? "/es/sugestoes" : "/sugestoes", label: "Sugestões", icon: MessageSquare },
+    { to: isESRoute ? "/es/progresso" : "/progresso", label: "Meu Progresso", icon: TrendingUp },
     { to: "/minha-conta", label: "Minha Conta", icon: User },
   ] : [];
 
   const proximoNivelItem = {
     to: "/proximo-nivel",
-    label: "Turbo",
+    label: "Curso Tráfego Pago",
     icon: Star,
   };
 
   const contentCategories: { category: CategoryType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { category: "videos", label: t('category.videos'), icon: Video },
-    { category: "feed", label: t('category.feed'), icon: Image },
-    { category: "stories", label: t('category.stories'), icon: LayoutGrid },
-    { category: "captions", label: t('category.captions'), icon: FileText },
-    { category: "downloads", label: t('category.downloads'), icon: Download },
-    { category: "tools", label: t('category.tools'), icon: Bot },
-    { category: "videoaula", label: t('category.videoaula'), icon: GraduationCap },
-    { category: "favorites", label: t('category.favorites'), icon: Heart },
+    { category: "videos", label: "Vídeos Reels", icon: Video },
+    { category: "feed", label: "Feed & Stories", icon: Image },
+    { category: "downloads", label: "Pacotes de Vídeos & Drive", icon: Download },
+    { category: "tools", label: "Ferramentas de IA", icon: Bot },
+    { category: "videoaula", label: "Videoaulas", icon: GraduationCap },
+    { category: "favorites", label: "Favoritos", icon: Heart },
   ];
 
   const handleCategoryClick = (category: CategoryType) => {
@@ -282,58 +276,70 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[285px] sm:w-[320px] p-0 bg-background text-foreground border-l border-border shadow-2xl">
-              <ScrollArea className="h-full px-5 py-6">
-                <nav className="flex flex-col gap-1.5 mt-6 pb-24">
-                  {/* Language Switcher - Mobile */}
-                  <div className="px-2">
+              <ScrollArea className="h-full px-5 py-5">
+                <nav className="flex flex-col gap-1 mt-4 pb-24">
+
+                  {/* Topo: Idioma + Tema */}
+                  <div className="flex items-center justify-between px-2 mb-1">
                     <LanguageSwitcher variant="mobile" />
-                  </div>
-
-                  <div className="h-px bg-border my-3.5 mx-2" />
-
-                  {/* Theme Toggle - Mobile */}
-                  <div className="px-2">
                     <ThemeToggleMobile />
                   </div>
 
-                  <div className="h-px bg-border my-3.5 mx-2" />
+                  <div className="h-px bg-border my-3 mx-2" />
+
+                  {/* Fábrica — Destaque no topo */}
+                  {user ? (
+                    <button
+                      onClick={() => { handleNavClick(isESRoute ? "/es/fabrica" : "/fabrica"); setIsOpen(false); }}
+                      className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-all w-full text-left mb-1"
+                    >
+                      <Wand2 className="h-4 w-4" />
+                      <span>Fábrica de Criação</span>
+                      <span className="ml-auto bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">IA</span>
+                    </button>
+                  ) : null}
 
                   {/* Navegação Principal */}
-                  <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest px-3 mb-2">
+                  <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest px-3 mb-1 mt-1">
                     Navegação
                   </p>
-                  {mainNavItems.map((item) => {
-                    if ('action' in item) {
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => {
-                            item.action!();
-                            setIsOpen(false);
-                          }}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground w-full text-left"
-                        >
-                          <item.icon className="h-4 w-4 opacity-70" />
-                          {item.label}
-                        </button>
-                      );
-                    }
-                    return (
-                      <NavLink
-                        key={item.to}
-                        to={item.to!}
-                        state={'state' in item ? item.state : undefined}
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                        activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
-                      >
-                        <item.icon className="h-4 w-4 text-amber-500" />
-                        {item.label}
-                      </NavLink>
-                    );
-                  })}
+                  {mainNavItems.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      state={'state' in item ? item.state : undefined}
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
+                    >
+                      <item.icon className="h-4 w-4 text-amber-500" />
+                      {item.label}
+                    </NavLink>
+                  ))}
 
-                  {/* Próximo Nível - Mobile - Only for Portuguese */}
+                  {/* Downloads rápido */}
+                  <NavLink
+                    to="/downloads"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
+                  >
+                    <Download className="h-4 w-4 text-amber-500" />
+                    Central de Downloads
+                  </NavLink>
+
+                  {/* Vendedor IA */}
+                  <NavLink
+                    to="/vendedor-ia"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
+                  >
+                    <Bot className="h-4 w-4 text-amber-500" />
+                    Vendedor IA
+                  </NavLink>
+
+                  {/* Curso Tráfego Pago - só PT */}
                   {showProximoNivel && (
                     <NavLink
                       to={proximoNivelItem.to}
@@ -341,37 +347,28 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                       activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
                     >
-                      <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                      <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
                       {proximoNivelItem.label}
                     </NavLink>
                   )}
 
-                  {/* Recursos Adicionais de Usuário (Fábrica, etc) no Mobile */}
                   {user && userNavItems.map((item) => (
-                    <button
+                    <NavLink
                       key={item.to}
-                      onClick={() => {
-                        handleNavClick(item.to);
-                        setIsOpen(false);
-                      }}
-                      className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground"
+                      to={item.to}
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
                     >
-                      <div className="flex items-center gap-3">
-                        <item.icon className="h-4 w-4 opacity-70" />
-                        <span>{item.label}</span>
-                      </div>
-                      {item.isNew && (
-                        <span className="bg-gradient-to-r from-amber-500 to-yellow-400 text-black text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow">
-                          NOVO
-                        </span>
-                      )}
-                    </button>
+                      <item.icon className="h-4 w-4 text-amber-500" />
+                      {item.label}
+                    </NavLink>
                   ))}
 
-                  <div className="h-px bg-border my-3.5 mx-2" />
+                  <div className="h-px bg-border my-3 mx-2" />
 
                   {/* Conteúdos */}
-                  <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest px-3 mb-2">
+                  <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest px-3 mb-1">
                     Conteúdos
                   </p>
                   {contentCategories.map((item) => (
@@ -380,40 +377,32 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                       onClick={() => handleCategoryClick(item.category)}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground text-left w-full"
                     >
-                      <item.icon className="h-4 w-4 opacity-70" />
+                      <item.icon className="h-4 w-4 opacity-60" />
                       {item.label}
                     </button>
                   ))}
 
-                  <div className="h-px bg-border my-3.5 mx-2" />
+                  <div className="h-px bg-border my-3 mx-2" />
 
+                  {/* Conta */}
                   {user ? (
                     <>
-                      <div className="px-3 py-2 text-xs font-bold text-amber-500 tracking-wide">
+                      <div className="px-3 py-1.5 text-xs font-bold text-amber-500 tracking-wide">
                         Olá, {userName || user.email?.split("@")[0]}! 👋
                       </div>
-                      <Link to="/minha-conta" onClick={() => setIsOpen(false)}>
-                        <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground text-left w-full">
-                          <User className="h-4 w-4 opacity-70" />
-                          Minha Conta
-                        </button>
-                      </Link>
                       <button
-                        onClick={() => {
-                          signOut();
-                          setIsOpen(false);
-                        }}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-500/10 transition-all text-left w-full mt-1"
+                        onClick={() => { signOut(); setIsOpen(false); }}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-500/10 transition-all text-left w-full"
                       >
                         <LogOut className="h-4 w-4 text-red-500" />
-                        {t('header.logout')}
+                        Sair da conta
                       </button>
                     </>
                   ) : (
                     <Link to="/auth" onClick={() => setIsOpen(false)}>
-                      <button className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-all shadow-lg mt-2">
+                      <button className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-all shadow-lg mt-1">
                         <User className="h-4 w-4" />
-                        {t('header.login')}
+                        Entrar
                       </button>
                     </Link>
                   )}
