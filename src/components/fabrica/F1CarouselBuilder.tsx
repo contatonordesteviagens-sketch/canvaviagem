@@ -1296,6 +1296,11 @@ function CarouselCanvas({
       ? slide.contentAlignment
       : automaticContentAlignment;
   const contentOnRight = resolvedContentAlignment === "right";
+  const safeTextWrap: CSSProperties = {
+    overflowWrap: "break-word",
+    wordBreak: "normal",
+    hyphens: "none",
+  };
 
   const textShadow = slide.showShadow === false ? "none" : `0px ${Math.round(3 * Z)}px ${Math.round(18 * Z)}px rgba(0, 0, 0, 0.75)`;
   const bodyShadow = slide.showShadow === false ? "none" : `0px ${Math.round(2 * Z)}px ${Math.round(12 * Z)}px rgba(0, 0, 0, 0.82)`;
@@ -1341,9 +1346,8 @@ function CarouselCanvas({
       textTransform: "uppercase",
       boxSizing: "border-box",
       verticalAlign: "middle",
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
+      whiteSpace: "normal",
+      ...safeTextWrap,
     };
 
     if (style === "outline-thin") {
@@ -1470,7 +1474,7 @@ function CarouselCanvas({
               fontWeight: bulletWeight,
               fontStyle: bulletStyleAttr,
               textDecoration: bulletDecAttr,
-              overflowWrap: "anywhere",
+              ...safeTextWrap,
               textShadow: customTextShadow,
             }}
           >
@@ -1500,6 +1504,25 @@ function CarouselCanvas({
   if (isClosing) {
     const storyMode = ratio < 0.68;
     const variant = slide.slideVariant || "impact";
+    const closingContactLength =
+      cleanCarouselText(slide.phone).length +
+      cleanCarouselText(slide.instagram).length +
+      cleanCarouselText(slide.email).length +
+      cleanCarouselText(slide.website).length;
+    const closingContentLength =
+      titleLength +
+      cleanCarouselText(slide.body).length +
+      cleanCarouselText(slide.cta).length +
+      closingContactLength;
+    const closingTextScale =
+      closingContentLength > 190
+        ? 0.76
+        : closingContentLength > 145
+          ? 0.84
+          : closingContentLength > 110
+            ? 0.92
+            : 1;
+    const closingCompact = closingContentLength > 145;
     const stripedClosing = isHeadlineVariant(variant);
     const closingHeadlineLines = stripedClosing ? splitBalancedHeadline(slide.title) : [];
     const closingLongestHeadline = Math.max(
@@ -1561,6 +1584,7 @@ function CarouselCanvas({
     if (variant === "itinerary") {
       contentStyle = {
         ...panelStyle,
+        top: storyMode ? "40%" : "36%",
         left: 0,
         right: 0,
         bottom: storyMode ? "20%" : 0,
@@ -1575,19 +1599,18 @@ function CarouselCanvas({
     } else if (variant === "editorial") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "14%" : 0,
+        top: storyMode ? "38%" : "34%",
         bottom: storyMode ? "20%" : 0,
-        left: contentOnRight ? undefined : 0,
-        right: contentOnRight ? 0 : undefined,
-        width: storyMode ? "46%" : "40%",
+        left: 0,
+        right: 0,
         justifyContent: "center",
-        alignItems: contentOnRight ? "flex-end" : "flex-start",
-        padding: "8% 6%",
-        textAlign: contentOnRight ? "right" : "left",
+        alignItems: "flex-start",
+        padding: closingCompact ? "5% 8%" : "7% 8%",
+        textAlign: "left",
       };
       panelBackground = "#F3F2EE";
       panelBorder = `${Math.max(3, Math.round(5 * Z))}px solid ${secondary}`;
-      accentPlacement = "side";
+      accentPlacement = "top";
       ctaBackground = secondary;
       ctaForeground = readableText(secondary);
       ctaRadius = Math.round(8 * Z);
@@ -1612,12 +1635,13 @@ function CarouselCanvas({
     } else if (variant === "minimalist") {
       contentStyle = {
         ...panelStyle,
+        top: storyMode ? "38%" : "34%",
         left: 0,
         right: 0,
         bottom: storyMode ? "20%" : 0,
         justifyContent: "center",
         alignItems: "flex-start",
-        padding: "8% 9%",
+        padding: closingCompact ? "5% 8%" : "7% 8%",
         textAlign: "left",
       };
       panelBackground = "rgba(248,248,246,.98)";
@@ -1630,15 +1654,14 @@ function CarouselCanvas({
     } else if (variant === "vibrant") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "14%" : 0,
+        top: storyMode ? "38%" : "34%",
         bottom: storyMode ? "20%" : 0,
-        left: contentOnRight ? undefined : 0,
-        right: contentOnRight ? 0 : undefined,
-        width: storyMode ? "48%" : "42%",
+        left: 0,
+        right: 0,
         justifyContent: "center",
-        alignItems: contentOnRight ? "flex-end" : "flex-start",
-        padding: "8% 6%",
-        textAlign: contentOnRight ? "right" : "left",
+        alignItems: "flex-start",
+        padding: closingCompact ? "5% 8%" : "7% 8%",
+        textAlign: "left",
       };
       panelBackground = primary;
       panelBorder = `${Math.max(4, Math.round(7 * Z))}px solid ${secondary}`;
@@ -1649,20 +1672,18 @@ function CarouselCanvas({
     } else if (variant === "organic") {
       contentStyle = {
         ...panelStyle,
-        left: contentOnRight ? undefined : 0,
-        right: contentOnRight ? 0 : undefined,
+        top: storyMode ? "38%" : "34%",
+        left: 0,
+        right: 0,
         bottom: storyMode ? "20%" : 0,
-        width: "88%",
         justifyContent: "center",
-        alignItems: contentOnRight ? "flex-end" : "flex-start",
-        padding: "8% 9%",
-        textAlign: contentOnRight ? "right" : "left",
+        alignItems: "flex-start",
+        padding: closingCompact ? "5% 8%" : "7% 8%",
+        textAlign: "left",
       };
       panelBackground = "rgba(248,248,246,.98)";
       panelBorder = `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`;
-      panelRadius = contentOnRight
-        ? `${Math.round(120 * Z)}px 0 0 0`
-        : `0 ${Math.round(120 * Z)}px 0 0`;
+      panelRadius = `0 ${Math.round(90 * Z)}px 0 0`;
       ctaBackground = primary;
       ctaForeground = brandForeground;
     } else if (variant === "glass") {
@@ -1815,7 +1836,11 @@ function CarouselCanvas({
           )}
           {renderLabel(
             slide.label,
-            contentStyle.alignItems === "center" ? "center" : "left",
+            contentStyle.alignItems === "center"
+              ? "center"
+              : contentStyle.alignItems === "flex-end"
+                ? "right"
+                : "left",
           )}
           {stripedClosing ? (
             <div
@@ -1868,13 +1893,18 @@ function CarouselCanvas({
                 borderRadius: titleRadius,
                 background: titleBackground,
                 color: titleForeground,
-                fontSize: Math.round((storyMode ? 27 : 30) * titleScale * Z),
+                fontSize: Math.round(
+                  (storyMode ? 27 : 30) *
+                    titleScale *
+                    closingTextScale *
+                    Z,
+                ),
                 lineHeight: 1.04,
                 fontFamily: ff,
                 fontWeight: titleWeight,
                 fontStyle: titleStyleAttr,
                 textDecoration: titleDecAttr,
-                overflowWrap: "anywhere",
+                ...safeTextWrap,
                 textShadow: titleBackground === "transparent" && !lightPanel ? textShadow : "none",
               }}
             >
@@ -1886,15 +1916,19 @@ function CarouselCanvas({
               maxWidth: variant === "ticket" ? "70%" : "92%",
               margin: stripedClosing
                 ? `auto 0 ${Math.round(14 * Z)}px`
-                : `${Math.round(12 * Z)}px 0 ${Math.round(18 * Z)}px`,
+                : `${Math.round((closingCompact ? 8 : 12) * Z)}px 0 ${Math.round((closingCompact ? 12 : 18) * Z)}px`,
               color: closingBodyColor,
-              fontSize: Math.round((storyMode ? 13 : 14) * Z),
-              lineHeight: 1.42,
+              fontSize: Math.max(
+                Math.round(10 * Z),
+                Math.round((storyMode ? 13 : 14) * closingTextScale * Z),
+              ),
+              lineHeight: closingCompact ? 1.32 : 1.42,
               fontFamily: ff,
               fontWeight: bodyWeight,
               fontStyle: bodyStyleAttr,
               textDecoration: bodyDecAttr,
               whiteSpace: "pre-wrap",
+              ...safeTextWrap,
               textShadow: !lightPanel && variant !== "vibrant" ? bodyShadow : "none",
             }}
           >
@@ -1903,21 +1937,25 @@ function CarouselCanvas({
           <div
             style={{
               display: "inline-flex",
-              minHeight: Math.round(48 * Z),
-              maxWidth: variant === "ticket" ? "70%" : "92%",
+              minHeight: Math.round((closingCompact ? 42 : 48) * Z),
+              maxWidth: variant === "ticket" ? "76%" : "100%",
               alignItems: "center",
               justifyContent: "center",
-              padding: `0 ${Math.round(24 * Z)}px`,
+              padding: `0 ${Math.round((closingCompact ? 17 : 24) * Z)}px`,
               border: ctaBorder,
               borderRadius: ctaRadius,
               background: ctaBackground,
               color: ctaForeground,
-              fontSize: Math.round(13 * Z),
+              fontSize: Math.max(
+                Math.round(9 * Z),
+                Math.round(13 * closingTextScale * Z),
+              ),
               lineHeight: 1.15,
               fontWeight: 900,
               textAlign: "center",
               textTransform: "uppercase",
               boxSizing: "border-box",
+              ...safeTextWrap,
             }}
           >
             {slide.cta}
@@ -1928,12 +1966,17 @@ function CarouselCanvas({
                 display: "flex",
                 alignItems: "center",
                 gap: Math.round(7 * Z),
-                marginTop: Math.round(15 * Z),
+                maxWidth: "100%",
+                marginTop: Math.round((closingCompact ? 10 : 15) * Z),
                 color: closingBodyColor,
-                fontSize: Math.round((storyMode ? 15 : 17) * Z),
+                fontSize: Math.max(
+                  Math.round(10 * Z),
+                  Math.round((storyMode ? 14 : 16) * closingTextScale * Z),
+                ),
                 lineHeight: 1.2,
                 fontWeight: 800,
                 textShadow: !lightPanel && variant !== "vibrant" ? bodyShadow : "none",
+                ...safeTextWrap,
               }}
             >
               <img
@@ -1957,19 +2000,29 @@ function CarouselCanvas({
               style={{
                 display: "flex",
                 flexDirection: "column",
-                alignItems: contentStyle.alignItems === "center" ? "center" : "flex-start",
+                alignItems:
+                  contentStyle.alignItems === "center"
+                    ? "center"
+                    : contentStyle.alignItems === "flex-end"
+                      ? "flex-end"
+                      : "flex-start",
                 gap: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`,
-                maxWidth: variant === "ticket" ? "70%" : "92%",
-                marginTop: Math.round(9 * Z),
+                width: "100%",
+                maxWidth: variant === "ticket" ? "76%" : "100%",
+                marginTop: Math.round((closingCompact ? 6 : 9) * Z),
                 color: closingBodyColor,
-                fontSize: Math.round((storyMode ? 13 : 14) * Z),
+                fontSize: Math.max(
+                  Math.round(9 * Z),
+                  Math.round((storyMode ? 12 : 13) * closingTextScale * Z),
+                ),
                 lineHeight: 1.25,
                 fontWeight: 700,
                 textShadow: !lightPanel && variant !== "vibrant" ? bodyShadow : "none",
+                ...safeTextWrap,
               }}
             >
               {activeContactChannels.includes("instagram") && slide.instagram && (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: Math.round(6 * Z) }}>
+                <span style={{ display: "inline-flex", maxWidth: "100%", alignItems: "center", gap: Math.round(6 * Z), ...safeTextWrap }}>
                   <Instagram
                     aria-hidden="true"
                     style={{
@@ -1983,7 +2036,7 @@ function CarouselCanvas({
                 </span>
               )}
               {activeContactChannels.includes("email") && slide.email && (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: Math.round(6 * Z) }}>
+                <span style={{ display: "inline-flex", maxWidth: "100%", alignItems: "center", gap: Math.round(6 * Z), ...safeTextWrap }}>
                   <Mail
                     aria-hidden="true"
                     style={{
@@ -1995,7 +2048,7 @@ function CarouselCanvas({
                   {slide.email}
                 </span>
               )}
-              {slide.website && <span>{slide.website}</span>}
+              {slide.website && <span style={{ maxWidth: "100%", ...safeTextWrap }}>{slide.website}</span>}
             </div>
           ) : null}
         </div>
@@ -2249,12 +2302,12 @@ function CarouselCanvas({
                 <div style={{ position: "absolute", left: "8%", right: "8%", bottom: "14%" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, textShadow }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ maxWidth: "88%", margin: `${Math.round(11 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round((ratio < 0.68 ? 12 : 13) * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
+                    <p style={{ maxWidth: "88%", margin: `${Math.round(11 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round((ratio < 0.68 ? 12 : 13) * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, ...safeTextWrap, whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
                       {slide.body}
                     </p>
                   )}
@@ -2290,12 +2343,12 @@ function CarouselCanvas({
                 >
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere", wordBreak: "break-word", textShadow }}>
+                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, textShadow }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ maxWidth: "92%", margin: `${Math.round((isDenseSlide ? 6 : 9) * denseTextScale * Z)}px 0 0`, color: bodyColor, fontSize: Math.max(6, Math.round((isDenseSlide ? 10.25 : 12) * denseTextScale * Z)), lineHeight: isDenseSlide ? 1.24 : 1.38, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, overflowWrap: "anywhere", wordBreak: "break-word", whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
+                    <p style={{ maxWidth: "92%", margin: `${Math.round((isDenseSlide ? 6 : 9) * denseTextScale * Z)}px 0 0`, color: bodyColor, fontSize: Math.max(6, Math.round((isDenseSlide ? 10.25 : 12) * denseTextScale * Z)), lineHeight: isDenseSlide ? 1.24 : 1.38, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, ...safeTextWrap, whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
                       {slide.body}
                     </p>
                   )}
@@ -2309,7 +2362,7 @@ function CarouselCanvas({
               <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: contentOnRight ? "row-reverse" : "row", alignItems: "stretch" }}>
                 <div
                   style={{
-                    width: ratio < 0.68 ? "44%" : "38%",
+                    width: ratio < 0.68 ? "58%" : "52%",
                     minWidth: 0,
                     background: "#F3F2EE",
                     padding: "8% 6%",
@@ -2325,7 +2378,7 @@ function CarouselCanvas({
                 >
                   {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 20 : 23) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 20 : 23) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2396,7 +2449,7 @@ function CarouselCanvas({
                       {renderLabel(slide.label, "center")}
                     </div>
                     {slide.title && (
-                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
                         {slide.title}
                       </h3>
                     )}
@@ -2434,7 +2487,7 @@ function CarouselCanvas({
                 <div style={{ background: "rgba(248,248,246,0.98)", color: titleColor, padding: isDenseSlide ? "4.5% 8%" : "6.5% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2464,7 +2517,7 @@ function CarouselCanvas({
                 >
                   <div
                     style={{
-                      width: ratio < 0.68 ? "46%" : "40%",
+                      width: ratio < 0.68 ? "58%" : "52%",
                       minWidth: 0,
                       background: primary,
                       color: titleColor,
@@ -2481,7 +2534,7 @@ function CarouselCanvas({
                   >
                     {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                     {slide.title && (
-                      <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round(faqTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                      <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round(faqTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
                         {slide.title}
                       </h3>
                     )}
@@ -2538,7 +2591,7 @@ function CarouselCanvas({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
                       {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
-                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
                           {slide.title}
                         </h3>
                       )}
@@ -2585,7 +2638,7 @@ function CarouselCanvas({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
                       {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
-                        <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow, overflowWrap: "anywhere" }}>
+                        <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow, ...safeTextWrap }}>
                           {slide.title}
                         </h3>
                       )}
@@ -2822,7 +2875,7 @@ function CarouselCanvas({
                     />
                     {renderLabel(slide.label)}
                     {slide.title && (
-                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, overflowWrap: "anywhere" }}>
+                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
                         {slide.title}
                       </h3>
                     )}
