@@ -26,33 +26,33 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
     },
     {
       id: "site",
-      title: "Sites & Landings (F2)",
+      title: "Sites & Landings (F3)",
       subtitle: "Crie páginas completas de alta conversão",
       src: "/capa-3.webp",
       route: "/fabrica/site",
-      badge: "Site (F2)",
+      badge: "Site (F3)",
       icon: FileText,
       badgeColor: "border-emerald-500/40 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white"
     },
     {
-      id: "crm",
-      title: "CRM & Funil de Vendas (F3)",
-      subtitle: "Gerencie leads e feche mais viagens",
-      src: "/capa-4.webp",
-      route: "/fabrica/crm",
-      badge: "CRM (F3)",
-      icon: Users,
-      badgeColor: "border-purple-500/40 text-purple-400 group-hover:bg-purple-600 group-hover:text-white"
+      id: "carrossel",
+      title: "Carrosséis Prontos (F2)",
+      subtitle: "Sequências persuasivas em segundos",
+      src: "/capa-4.png",
+      route: "/fabrica/carrossel",
+      badge: "Carrossel (F2)",
+      icon: Wand2,
+      badgeColor: "border-pink-500/40 text-pink-400 group-hover:bg-pink-600 group-hover:text-white"
     },
     {
-      id: "checkup",
-      title: "Checkup & Planos (F4/F5)",
-      subtitle: "Estratégia e diagnóstico de vendas",
+      id: "crm",
+      title: "CRM & Funil de Vendas (F4)",
+      subtitle: "Gerencie leads e feche mais viagens",
       src: "/capa-5.webp",
-      route: "/fabrica/checkup",
-      badge: "Checkup & Planos",
-      icon: Wand2,
-      badgeColor: "border-blue-500/40 text-blue-400 group-hover:bg-blue-600 group-hover:text-white"
+      route: "/fabrica/crm",
+      badge: "CRM (F4)",
+      icon: Users,
+      badgeColor: "border-purple-500/40 text-purple-400 group-hover:bg-purple-600 group-hover:text-white"
     }
   ];
 
