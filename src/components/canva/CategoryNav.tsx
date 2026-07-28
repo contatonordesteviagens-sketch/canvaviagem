@@ -1,10 +1,10 @@
 import { useRef, useState, useEffect, useCallback, memo } from "react";
-import { useLocation } from "react-router-dom";
-import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight, Megaphone, Wand2, Calendar } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight, Megaphone, Wand2, Calendar, Layers, Globe, MousePointerClick } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-export type CategoryType = 'all' | 'fabrica' | 'calendar' | 'videos' | 'feed' | 'stories' | 'offers' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'contracts' | 'favorites';
+export type CategoryType = 'all' | 'fabrica' | 'calendar' | 'videos' | 'feed' | 'stories' | 'offers' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'contracts' | 'favorites' | 'carrossel' | 'anuncio' | 'site';
 
 interface CategoryNavProps {
   activeCategory: CategoryType;
@@ -15,15 +15,19 @@ interface CategoryNavProps {
 const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites = true }: CategoryNavProps) => {
   const { t } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
   const isESRoute = location.pathname.startsWith('/es');
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
 
-  const categories: { id: CategoryType; label: string; icon: React.ReactNode; isNew?: boolean; color?: string }[] = [
+  const categories: { id: CategoryType; label: string; icon: React.ReactNode; isNew?: boolean; color?: string; link?: string }[] = [
     { id: 'all', label: 'Tudo', icon: <LayoutGrid className="w-6 h-6 text-slate-800 dark:text-slate-200" />, color: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700' },
     { id: 'fabrica', label: 'Fábrica', icon: <Wand2 className="w-6 h-6 text-white" />, isNew: true, color: 'bg-gradient-to-br from-violet-600 to-fuchsia-600' },
+    { id: 'carrossel', label: 'Carrossel', icon: <Layers className="w-6 h-6 text-white" />, color: 'bg-[#FF0090]', link: '/carrossel' },
+    { id: 'anuncio', label: isESRoute ? 'Anuncios' : 'Anúncios', icon: <MousePointerClick className="w-6 h-6 text-white" />, color: 'bg-[#00D4FF]', link: '/anuncio' },
+    { id: 'site', label: 'Sites', icon: <Globe className="w-6 h-6 text-white" />, color: 'bg-[#FF9900]', link: '/site' },
     { id: 'calendar', label: isESRoute ? 'Calendario' : 'Calendário', icon: <Calendar className="w-6 h-6 text-white" />, color: 'bg-[#FF6B00]' },
     // Recursos PRO
     { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6 text-white" />, color: 'bg-[#FF005C]' },
@@ -159,8 +163,15 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
               return (
                 <button
                   key={category.id}
-                  onClick={() => onCategoryChange(category.id)}
-                  className="flex flex-col items-center gap-2 snap-center min-w-[72px] group relative"
+                  onClick={() => {
+                    if (category.link) {
+                      const prefix = isESRoute ? '/es' : '';
+                      navigate(`${prefix}/fabrica${category.link}`);
+                    } else {
+                      onCategoryChange(category.id);
+                    }
+                  }}
+                  className="flex flex-col items-center gap-2 snap-center w-[84px] sm:w-[96px] shrink-0 group relative"
                 >
                   {/* "Novo" badge */}
                   {category.isNew && (
@@ -185,7 +196,7 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
                   {/* Label */}
                   <span
                     className={cn(
-                      "text-[10px] sm:text-xs font-medium text-center transition-colors whitespace-nowrap",
+                      "text-[10px] sm:text-xs font-medium text-center transition-colors leading-tight line-clamp-2",
                       isActive ? "text-primary" : "text-muted-foreground"
                     )}
                   >
