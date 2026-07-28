@@ -471,13 +471,13 @@ const FabricaInner = () => {
           )}
           {activeTab === "phase" && (
             <>
-              {state.currentPhase === 1 && <Phase3ArtFactory key="phase1-ad" onNext={() => setPhase(2)} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => setPhase(3)} />}
-              {state.currentPhase === 2 && <Phase3ArtFactory key="phase2-carousel" onNext={() => setPhase(3)} onBack={() => setPhase(1)} lockMode={true} initialMode="carousel" />}
-              {state.currentPhase === 3 && <Phase4LandingBuilder onNext={() => setPhase(4)} onBack={() => setPhase(2)} />}
-              {state.currentPhase === 4 && <Phase5Dashboard onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
+              {state.currentPhase === 1 && <Phase3ArtFactory key="phase1-ad" onNext={() => navigate(location.pathname.startsWith("/es") ? "/es/fabrica/carrossel" : "/fabrica/carrossel")} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => navigate(location.pathname.startsWith("/es") ? "/es/fabrica/site" : "/fabrica/site")} />}
+              {state.currentPhase === 2 && <Phase3ArtFactory key="phase2-carousel" onNext={() => navigate(location.pathname.startsWith("/es") ? "/es/fabrica/site" : "/fabrica/site")} onBack={() => navigate(location.pathname.startsWith("/es") ? "/es/fabrica/anuncio" : "/fabrica/anuncio")} lockMode={true} initialMode="carousel" />}
+              {state.currentPhase === 3 && <Phase4LandingBuilder onNext={() => navigate(location.pathname.startsWith("/es") ? "/es/fabrica/crm" : "/fabrica/crm")} onBack={() => navigate(location.pathname.startsWith("/es") ? "/es/fabrica/carrossel" : "/fabrica/carrossel")} />}
+              {state.currentPhase === 4 && <Phase5Dashboard onNext={() => navigate(location.pathname.startsWith("/es") ? "/es/fabrica/planos" : "/fabrica/planos")} onBack={() => navigate(location.pathname.startsWith("/es") ? "/es/fabrica/site" : "/fabrica/site")} />}
               {state.currentPhase === 5 && (
                 <div className="space-y-8 pb-12">
-                  <Phase2Ativos onNext={() => {}} onBack={() => setPhase(4)} />
+                  <Phase2Ativos onNext={() => {}} onBack={() => navigate(location.pathname.startsWith("/es") ? "/es/fabrica/crm" : "/fabrica/crm")} />
                   <Phase1Diagnostico onComplete={() => {}} onBack={() => {}} />
                 </div>
               )}

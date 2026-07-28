@@ -394,13 +394,13 @@ const FabricaInnerES = () => {
           )}
           {activeTab === "phase" && (
             <>
-              {state.currentPhase === 1 && <Phase3ArtFactoryES key="phase1-ad-es" onNext={() => setPhase(2)} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => setPhase(3)} />}
-              {state.currentPhase === 2 && <Phase3ArtFactoryES key="phase2-carousel-es" onNext={() => setPhase(3)} onBack={() => setPhase(1)} lockMode={true} initialMode="carousel" />}
-              {state.currentPhase === 3 && <Phase4LandingBuilderES onNext={() => setPhase(4)} onBack={() => setPhase(2)} />}
-              {state.currentPhase === 4 && <Phase5DashboardES />}
+              {state.currentPhase === 1 && <Phase3ArtFactoryES key="phase1-ad-es" onNext={() => navigate("/es/fabrica/carrossel")} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => navigate("/es/fabrica/site")} />}
+              {state.currentPhase === 2 && <Phase3ArtFactoryES key="phase2-carousel-es" onNext={() => navigate("/es/fabrica/site")} onBack={() => navigate("/es/fabrica/anuncio")} lockMode={true} initialMode="carousel" />}
+              {state.currentPhase === 3 && <Phase4LandingBuilderES onNext={() => navigate("/es/fabrica/crm")} onBack={() => navigate("/es/fabrica/carrossel")} />}
+              {state.currentPhase === 4 && <Phase5DashboardES onNext={() => navigate("/es/fabrica/planos")} onBack={() => navigate("/es/fabrica/site")} />}
               {state.currentPhase === 5 && (
                 <div className="space-y-8 pb-12">
-                  <Phase2AtivosES onNext={() => {}} onBack={() => setPhase(4)} />
+                  <Phase2AtivosES onNext={() => {}} onBack={() => navigate("/es/fabrica/crm")} />
                   <Phase1DiagnosticoES onComplete={() => {}} onBack={() => {}} />
                 </div>
               )}
