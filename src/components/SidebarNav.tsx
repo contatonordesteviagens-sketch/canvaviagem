@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, Bot, Wand2, Calendar, Image, GraduationCap, Heart, 
   FileText, CreditCard, User, LogOut, Video, Megaphone,
-  Download, ChevronDown, ChevronRight, BookmarkCheck, LayoutGrid,
+  Download, ChevronDown, ChevronRight, ChevronLeft, BookmarkCheck, LayoutGrid,
   TrendingUp, Crown, MessageCircle, Star, MousePointerClick, Globe, Layers, Users
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
@@ -389,13 +389,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
           )}
         </div>
 
-        {/* Floating Toggle Button (Centralizado na lateral direita) */}
+        {/* Floating Toggle Button */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           title={isCollapsed ? "Expandir Menu" : "Recolher Menu"}
-          className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-full items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white shadow-sm z-50 cursor-pointer"
+          className="hidden md:flex absolute -right-3.5 top-20 w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-full items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white shadow-md z-50 cursor-pointer hover:scale-110 transition-all"
         >
-          <ChevronDown className={cn("h-3 w-3 transition-transform duration-300", isCollapsed ? "-rotate-90" : "rotate-90")} />
+          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
       </aside>
 

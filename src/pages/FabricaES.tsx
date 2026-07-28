@@ -42,21 +42,23 @@ const FabricaInnerES = () => {
     const path = location.pathname.toLowerCase();
     if (path.includes("/anuncio") || path.includes("/anuncios")) {
       setActiveTab("phase");
-      setPhase(1);
+      if (state.currentPhase !== 1) setPhase(1);
     } else if (path.includes("/carrossel") || path.includes("/carrusel")) {
       setActiveTab("phase");
-      setPhase(2);
+      if (state.currentPhase !== 2) setPhase(2);
     } else if (path.includes("/site") || path.includes("/sites") || path.includes("/sitio")) {
       setActiveTab("phase");
-      setPhase(3);
+      if (state.currentPhase !== 3) setPhase(3);
     } else if (path.includes("/crm")) {
       setActiveTab("phase");
-      setPhase(4);
+      if (state.currentPhase !== 4) setPhase(4);
     } else if (path.includes("/checkup") || path.includes("/plano") || path.includes("/plan") || path.includes("/planos") || path.includes("/projeto") || path.includes("/projetos")) {
       setActiveTab("phase");
-      setPhase(5);
+      if (state.currentPhase !== 5) setPhase(5);
+    } else if (path === "/fabrica" || path === "/es/fabrica") {
+      setActiveTab("dashboard");
     }
-  }, [location.pathname, setPhase]);
+  }, [location.pathname, state.currentPhase, setPhase]);
 
   useEffect(() => {
     const color = state.primaryColor || "#F59E0B";
