@@ -154,7 +154,7 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
 
         <div
           ref={scrollRef}
-          className="overflow-x-auto scrollbar-hide -mx-4 px-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="overflow-x-auto no-scrollbar scrollbar-hide -mx-4 px-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         >
           <div className="flex gap-4 pt-3 pb-2 snap-x-mandatory min-w-max">
             {displayCategories.map((category) => {

@@ -23,7 +23,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { supabase } from "@/integrations/supabase/client";
-import { ProgressBar } from "@/components/ProgressBar";
+
 import { cn } from "@/lib/utils";
 import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
 import { hasEliteAccess } from "@/lib/planAccess";
@@ -197,17 +197,9 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
           </Link>
           </div>
 
-          {/* Mobile Progress Bar - Compact next to logo */}
-          {user && (
-            <div className="md:hidden">
-              <ProgressBar compact />
-            </div>
-          )}
-
           {/* Desktop Navigation - Simplificado e Despoluído (Menu Principal transferido para o Menu Lateral) */}
           <nav className="hidden md:flex items-center gap-2">
-            {/* Progress Bar - Desktop */}
-            {user && <div className="mr-2"><ProgressBar /></div>}
+
 
             {/* Theme Toggle & Language - Hidden on desktop when sidebar is open */}
             <div className={cn("items-center gap-2", !isCollapsed ? "hidden" : "hidden md:flex")}>

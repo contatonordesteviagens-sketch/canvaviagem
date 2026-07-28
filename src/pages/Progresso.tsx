@@ -127,25 +127,10 @@ export default function Progresso() {
                                     <CardDescription className="text-xs md:text-sm">{currentLevelDetail.description}</CardDescription>
                                 </div>
                             </div>
-                            <Badge className={cn('text-sm md:text-base px-3 py-1 bg-gradient-to-r', currentLevelDetail.color)}>
-                                {progress?.total_points || 0} pts
-                            </Badge>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {/* Progress Bar */}
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="font-medium">Progresso para próximo nível</span>
-                                <span className="text-muted-foreground">
-                                    {level === 3 ? 'Nível Máximo!' : `${pointsToNext} pts restantes`}
-                                </span>
-                            </div>
-                            <Progress value={progressPercent} className="h-3" />
-                            <p className="text-xs text-muted-foreground text-center">
-                                {progressPercent}% completo
-                            </p>
-                        </div>
+
 
                         {/* Stats Grid */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
