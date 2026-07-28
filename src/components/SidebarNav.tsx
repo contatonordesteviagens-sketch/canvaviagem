@@ -536,46 +536,43 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
         </div>
 
         {/* Rodapé do Menu Lateral */}
-        <div className="p-4 border-t border-slate-200 dark:border-white/[0.05] bg-[#F9FAFB] dark:bg-[#18191B] space-y-3 shrink-0">
-          {user && (
-            <div className="px-1">
-              <ProgressBar compact />
+        <div className="p-3 border-t border-slate-200 dark:border-white/[0.05] bg-[#F9FAFB] dark:bg-[#18191B] flex flex-col gap-2 shrink-0">
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <LanguageSwitcher variant="desktop" />
             </div>
-          )}
-
-          <div className="flex items-center justify-between px-1">
-            <ThemeToggle />
-            <LanguageSwitcher variant="desktop" />
+            
+            {user ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={signOut}
+                className="h-8 w-8 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg"
+                title={t('header.logout') || "Sair"}
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => navigate('/auth')}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-lg h-8 px-3 text-xs"
+              >
+                Login
+              </Button>
+            )}
           </div>
 
-          {user ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={signOut}
-              className="w-full justify-start text-slate-600 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-red-400 dark:hover:bg-red-500/10 rounded-xl text-xs py-2"
-            >
-              <LogOut className="h-3.5 w-3.5 mr-2 shrink-0" />
-              {t('header.logout') || "Sair da Conta"}
-            </Button>
-          ) : (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => navigate('/auth')}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg text-xs py-2"
-            >
-              <User className="h-3.5 w-3.5 mr-2 shrink-0" />
-              {t('header.login') || "Fazer Login"}
-            </Button>
-          )}
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsCollapsed(true)}
-            className="w-full mt-2 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-xs py-2 flex items-center justify-center gap-2"
+            className="w-full h-8 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 font-medium rounded-lg text-xs flex items-center justify-center gap-1.5"
           >
-            <ChevronDown className="h-4 w-4 rotate-90" />
+            <ChevronDown className="h-3.5 w-3.5 rotate-90" />
             Minimizar Menu
           </Button>
         </div>
