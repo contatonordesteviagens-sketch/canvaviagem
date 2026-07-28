@@ -277,22 +277,22 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[285px] sm:w-[320px] p-0 bg-background text-foreground border-l border-border shadow-2xl flex flex-col">
               {/* Cabeçalho Fixo */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
-                <div className="flex items-center gap-2">
-                  <img src={logoImage} alt="Canva Viagem" className="h-8 w-8 rounded-lg object-cover" />
-                  <div>
-                    <p className="text-sm font-black text-foreground leading-tight">Canva Viagem</p>
-                    <p className="text-[10px] text-amber-500 font-bold uppercase tracking-wider -mt-0.5">Menu</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <LanguageSwitcher variant="mobile" />
-                  <ThemeToggleMobile />
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-border shrink-0 pr-12">
+                <img src={logoImage} alt="Canva Viagem" className="h-8 w-8 rounded-lg object-cover" />
+                <div>
+                  <p className="text-sm font-black text-foreground leading-tight">Canva Viagem</p>
+                  <p className="text-[10px] text-amber-500 font-bold uppercase tracking-wider -mt-0.5">Menu</p>
                 </div>
               </div>
 
               <ScrollArea className="flex-1 px-4 py-3">
                 <nav className="flex flex-col gap-0.5 pb-20">
+
+                  {/* Topo: Idioma + Tema */}
+                  <div className="flex items-center justify-between px-2 mb-2 mt-1">
+                    <LanguageSwitcher variant="mobile" />
+                    <ThemeToggleMobile />
+                  </div>
 
                   {/* Fábrica — Destaque no topo */}
                   {user ? (
