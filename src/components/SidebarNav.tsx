@@ -4,7 +4,7 @@ import {
   Home, Bot, Wand2, Calendar, Image, GraduationCap, Heart, 
   FileText, CreditCard, User, LogOut, Video, Megaphone,
   Download, ChevronDown, ChevronRight, BookmarkCheck, LayoutGrid,
-  TrendingUp, Crown, MessageCircle
+  TrendingUp, Crown, MessageCircle, Star
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
