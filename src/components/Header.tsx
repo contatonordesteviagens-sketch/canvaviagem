@@ -182,7 +182,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
             >
               <PanelLeft className="h-5 w-5" />
             </button>
-          <Link to={isESRoute ? "/es" : "/"} className={cn("flex items-center gap-3 hover:opacity-80 transition-opacity shrink-0 min-w-0", !isCollapsed && "md:hidden")}>
+          <Link to={isESRoute ? "/es" : "/"} className={cn("flex items-center gap-3 hover:opacity-80 transition-opacity shrink-0 min-w-0", !isCollapsed ? "md:hidden" : "md:flex")}>
             <img
               src={logoImage}
               alt="TravelMarketing"
@@ -209,11 +209,11 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
             {/* Progress Bar - Desktop */}
             {user && <div className="mr-2"><ProgressBar /></div>}
 
-            {/* Theme Toggle - Desktop */}
-            <ThemeToggle />
-
-            {/* Language Switcher - Desktop */}
-            <LanguageSwitcher variant="desktop" />
+            {/* Theme Toggle & Language - Hidden on desktop when sidebar is open */}
+            <div className={cn("items-center gap-2", !isCollapsed ? "hidden" : "hidden md:flex")}>
+              <ThemeToggle />
+              <LanguageSwitcher variant="desktop" />
+            </div>
 
             {/* Dropdown Mais - APENAS para recursos extras de usuário (Despoluído) */}
             <DropdownMenu>
