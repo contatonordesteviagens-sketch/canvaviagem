@@ -38,6 +38,10 @@ interface HeaderProps {
   onCategoryChange?: (category: CategoryType) => void;
 }
 
+const headerResourceItems = [
+  { to: "/minha-conta", label: "Minha Conta", icon: User },
+] as const;
+
 const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
@@ -166,10 +170,15 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
               <DropdownMenuContent align="end" className="w-60 p-1">
 
                 <div className="border-t my-1" />
-                <DropdownMenuItem onClick={() => navigate("/minha-conta")} className="cursor-pointer">
-                   <User className="w-4 h-4 mr-2 text-muted-foreground" />
-                   Minha Conta
-                </DropdownMenuItem>
+                {headerResourceItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <DropdownMenuItem key={item.to} onClick={() => navigate(item.to)} className="cursor-pointer">
+                      <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
+                      {item.label}
+                    </DropdownMenuItem>
+                  );
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
 
