@@ -39,7 +39,7 @@ import { es } from "date-fns/locale";
 
 const EMPTY_METRICS: FabricaMetricSummary = { visits: 0, clicks: 0, leads: 0, avgTime: 0 };
 
-export const Phase5DashboardES = () => {
+export const Phase5DashboardES = ({ onNext, onBack }: { onNext?: () => void; onBack?: () => void } = {}) => {
   const { state, setPhase, update } = useFabricaContext();
   const { user } = useAuth();
   const [showUrlHelp, setShowUrlHelp] = useState(false);
