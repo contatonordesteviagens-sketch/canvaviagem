@@ -164,23 +164,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-60 p-1">
-                {userNavItems.map((item) => (
-                  <DropdownMenuItem
-                    key={item.to}
-                    onClick={() => handleNavClick(item.to)}
-                    className="cursor-pointer flex items-center justify-between py-2"
-                  >
-                    <div className="flex items-center">
-                      <item.icon className="w-4 h-4 mr-2 text-muted-foreground" />
-                      <span className="font-medium">{item.label}</span>
-                    </div>
-                    {item.isNew && (
-                      <span className="bg-destructive text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
-                        NOVO
-                      </span>
-                    )}
-                  </DropdownMenuItem>
-                ))}
+
                 <div className="border-t my-1" />
                 <DropdownMenuItem onClick={() => navigate("/minha-conta")} className="cursor-pointer">
                    <User className="w-4 h-4 mr-2 text-muted-foreground" />
