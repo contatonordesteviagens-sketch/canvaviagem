@@ -58,8 +58,9 @@ const HeroBannerComponent = ({ searchValue, onSearchChange, children }: HeroBann
   ];
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 pt-4 pb-8 md:pb-12">
-      {/* 1. Busca Minimalista Acima, Sem Fundo, com Texto Azul e Sombra Degradê para Roxo */}
+    <>
+      {/* 1. Busca Minimalista Acima */}
+      <div className="w-full max-w-7xl mx-auto px-4 pt-4 mb-2">
       <div className="max-w-3xl mx-auto text-center mb-6 sm:mb-8">
         <h1 
           className="mb-2 sm:mb-3 tracking-tight font-extrabold leading-tight flex items-center justify-center gap-1.5 whitespace-nowrap flex-wrap sm:flex-nowrap bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-500 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(99,102,241,0.2)]"
@@ -94,9 +95,14 @@ const HeroBannerComponent = ({ searchValue, onSearchChange, children }: HeroBann
         </div>
       </div>
 
-      {children}
+      {/* O menu (children) agora tem seu próprio bloco isolado */}
+      <div className="w-full max-w-7xl mx-auto px-4">
+        {children}
+      </div>
 
-      {/* 2. Imagem Principal no Topo (~70% da tela, sozinha em 1 fileira) */}
+      {/* Banners isolados para não causarem layout shift no menu */}
+      <div className="w-full max-w-7xl mx-auto px-4 pb-8 md:pb-12">
+        {/* 2. Imagem Principal no Topo (~70% da tela, sozinha em 1 fileira) */}
       <div 
         onClick={() => navigate('/fabrica')}
         className="w-full max-w-full sm:max-w-[82%] md:max-w-[70%] mx-auto relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.008] hover:border-blue-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.2)] group bg-slate-950/5 dark:bg-[#0F0F11]"
@@ -126,7 +132,7 @@ const HeroBannerComponent = ({ searchValue, onSearchChange, children }: HeroBann
           );
         })}
       </div>
-    </div>
+    </>
   );
 };
 
