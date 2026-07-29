@@ -23,6 +23,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { supabase } from "@/integrations/supabase/client";
+import { SidebarNav } from "./SidebarNav";
 
 import { cn } from "@/lib/utils";
 import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
@@ -95,59 +96,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
     };
   }, [user]);
 
-  // Mobile theme toggle button component
-  const ThemeToggleMobile = () => (
-    <button
-      onClick={toggleTheme}
-      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 text-left w-full"
-      aria-label={theme === 'dark' ? t('header.lightMode') : t('header.darkMode')}
-    >
-      {theme === 'dark' ? (
-        <Sun className="h-5 w-5" />
-      ) : (
-        <Moon className="h-5 w-5" />
-      )}
-      {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
-    </button>
-  );
 
-  const mainNavItems = [
-    { to: isESRoute ? "/es" : "/", label: "Início", icon: Home },
-    { to: isESRoute ? "/es/calendar" : "/calendar", label: "Calendário", icon: Calendar },
-    { to: "/blog", label: "Blog", icon: FileText, state: { fromInternal: true } },
-    { to: isESRoute ? "/es/inicio" : "/inicio", label: "Planos e Upgrade", icon: CreditCard },
-  ];
-
-  // Additional nav items for logged-in users
-  const userNavItems = user ? [
-    { to: isESRoute ? "/es/progresso" : "/progresso", label: "Meu Progresso", icon: TrendingUp },
-    { to: "/minha-conta", label: "Minha Conta", icon: User },
-  ] : [];
-
-  const proximoNivelItem = {
-    to: "/proximo-nivel",
-    label: "Curso Tráfego Pago",
-    icon: Star,
-  };
-
-  const contentCategories: { category: CategoryType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { category: "videos", label: "Vídeos Reels", icon: Video },
-    { category: "feed", label: "Feed & Stories", icon: Image },
-    { category: "downloads", label: "Pacotes de Vídeos & Drive", icon: Download },
-    { category: "tools", label: "Ferramentas de IA", icon: Bot },
-    { category: "videoaula", label: "Videoaulas", icon: GraduationCap },
-    { category: "favorites", label: "Favoritos", icon: Heart },
-  ];
-
-  const handleCategoryClick = (category: CategoryType) => {
-    const homeRoute = isESRoute ? "/es" : "/";
-    const isOnHome = location.pathname === "/" || location.pathname === "/es";
-    if (!isOnHome) {
-      navigate(homeRoute, { state: { category } });
-    }
-    onCategoryChange?.(category);
-    setIsOpen(false);
-  };
 
   // Intercept navigation to gated routes (Fábrica / Painel de Marketing)
   const handleNavClick = (to: string) => {
@@ -285,136 +234,13 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                 </div>
               </div>
 
-              <ScrollArea className="flex-1 px-4 py-3">
-                <nav className="flex flex-col gap-0.5 pb-20">
-
-                  {/* Topo: Idioma + Tema */}
-                  <div className="flex items-center justify-between px-2 mb-2 mt-1">
-                    <LanguageSwitcher variant="mobile" />
-                    <ThemeToggleMobile />
-                  </div>
-
-                  {/* Fábrica — Destaque no topo */}
-                  {user ? (
-                    <button
-                      onClick={() => { handleNavClick(isESRoute ? "/es/fabrica" : "/fabrica"); setIsOpen(false); }}
-                      className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-all w-full text-left mb-2"
-                    >
-                      <Wand2 className="h-4 w-4" />
-                      <span>Fábrica de Criação</span>
-                      <span className="ml-auto bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">IA</span>
-                    </button>
-                  ) : null}
-
-                  {/* Navegação Principal */}
-                  <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest px-3 mb-1 mt-1">
-                    Navegação
-                  </p>
-                  {mainNavItems.map((item) => (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      state={'state' in item ? item.state : undefined}
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                      activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {item.label}
-                    </NavLink>
-                  ))}
-
-                  {/* Downloads rápido */}
-                  <NavLink
-                    to="/downloads"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
-                  >
-                    <Download className="h-4 w-4" />
-                    Central de Downloads
-                  </NavLink>
-
-                  {/* Vendedor IA */}
-                  <NavLink
-                    to="/vendedor-ia"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
-                  >
-                    <Bot className="h-4 w-4" />
-                    Vendedor IA
-                  </NavLink>
-
-                  {/* Curso Tráfego Pago - só PT */}
-                  {showProximoNivel && (
-                    <NavLink
-                      to={proximoNivelItem.to}
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                      activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
-                    >
-                      <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-                      {proximoNivelItem.label}
-                    </NavLink>
-                  )}
-
-                  {user && userNavItems.map((item) => (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                      activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {item.label}
-                    </NavLink>
-                  ))}
-
-                  <div className="h-px bg-border my-3 mx-2" />
-
-                  {/* Conteúdos */}
-                  <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest px-3 mb-1">
-                    Conteúdos
-                  </p>
-                  {contentCategories.map((item) => (
-                    <button
-                      key={item.category}
-                      onClick={() => handleCategoryClick(item.category)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground text-left w-full"
-                    >
-                      <item.icon className="h-4 w-4 opacity-60" />
-                      {item.label}
-                    </button>
-                  ))}
-
-                  <div className="h-px bg-border my-3 mx-2" />
-
-                  {/* Conta */}
-                  {user ? (
-                    <>
-                      <div className="px-3 py-1.5 text-xs font-bold text-amber-500 tracking-wide">
-                        Olá, {userName || user.email?.split("@")[0]}! 👋
-                      </div>
-                      <button
-                        onClick={() => { signOut(); setIsOpen(false); }}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-500/10 transition-all text-left w-full"
-                      >
-                        <LogOut className="h-4 w-4 text-red-500" />
-                        Sair da conta
-                      </button>
-                    </>
-                  ) : (
-                    <Link to="/auth" onClick={() => setIsOpen(false)}>
-                      <button className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-all shadow-lg mt-1">
-                        <User className="h-4 w-4" />
-                        Entrar
-                      </button>
-                    </Link>
-                  )}
-                </nav>
-              </ScrollArea>
+              <div className="flex-1 overflow-hidden relative">
+                <SidebarNav 
+                  isMobile 
+                  onCategoryChange={onCategoryChange} 
+                  onMobileNavClick={() => setIsOpen(false)} 
+                />
+              </div>
             </SheetContent>
           </Sheet>
         </div>

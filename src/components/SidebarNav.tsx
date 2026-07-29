@@ -25,9 +25,11 @@ const cn = (...classes: Array<string | false | null | undefined>) => classes.fil
 interface SidebarNavProps {
   activeCategory?: CategoryType;
   onCategoryChange?: (category: CategoryType) => void;
+  isMobile?: boolean;
+  onMobileNavClick?: () => void;
 }
 
-const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavProps) => {
+const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMobileNavClick }: SidebarNavProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, subscription, isAdmin } = useAuth();
@@ -35,6 +37,8 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
   const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
   const { newLeadsCount } = useFabricaMetrics();
   const { isCollapsed, setIsCollapsed } = useSidebar();
+  
+  const activeIsCollapsed = isMobile ? false : isCollapsed;
 
   const isElite = hasEliteAccess(subscription);
   const isESRoute = location.pathname.startsWith('/es');
@@ -57,8 +61,10 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
       if (location.pathname !== homeRoute || !onCategoryChange) {
         navigate(homeRoute, { state: { category } });
       }
+      if (isMobile && onMobileNavClick) onMobileNavClick();
     } else if (path) {
       navigate(path);
+      if (isMobile && onMobileNavClick) onMobileNavClick();
     }
   };
 
@@ -81,21 +87,21 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
   }) => (
     <button
       onClick={onClick}
-      title={isCollapsed ? label : undefined}
+      title={activeIsCollapsed ? label : undefined}
       className={cn(
         "w-full flex items-center px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors group relative",
-        isCollapsed ? "justify-center" : "justify-between",
+        activeIsCollapsed ? "justify-center" : "justify-between",
         isActive
           ? "bg-slate-200/50 text-slate-900 font-semibold dark:bg-white/10 dark:text-white"
           : "text-slate-500 hover:text-slate-900 hover:bg-slate-200/30 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
       )}
     >
-      <div className={cn("flex items-center", !isCollapsed && "gap-3")}>
+      <div className={cn("flex items-center", !activeIsCollapsed && "gap-3")}>
         <Icon className={cn(
           "w-[18px] h-[18px] shrink-0 transition-colors",
           isActive ? activeColorClass : inactiveColorClass
         )} />
-        {!isCollapsed && <span>{label}</span>}
+        {!activeIsCollapsed && <span>{label}</span>}
       </div>
       {badge}
     </button>
@@ -104,11 +110,12 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
   return (
     <>
       <aside className={cn(
-        "hidden md:flex flex-col fixed left-0 top-0 bottom-0 bg-[#F9FAFB] dark:bg-[#18191B] backdrop-blur-3xl border-r border-slate-200 dark:border-white/[0.05] text-slate-800 dark:text-white z-50 select-none transition-all duration-300",
-        isCollapsed ? "w-[72px]" : "w-64"
+        isMobile ? "flex flex-col w-full h-full bg-[#F9FAFB] dark:bg-[#18191B] text-slate-800 dark:text-white select-none" : "hidden md:flex flex-col fixed left-0 top-0 bottom-0 bg-[#F9FAFB] dark:bg-[#18191B] backdrop-blur-3xl border-r border-slate-200 dark:border-white/[0.05] text-slate-800 dark:text-white z-50 select-none transition-all duration-300",
+        !isMobile && (activeIsCollapsed ? "w-[72px]" : "w-64")
       )}>
         {/* Logo Topo e Botão Minimizar */}
-        <div className={cn("p-4 border-b border-slate-200 dark:border-white/10 flex items-center shrink-0", isCollapsed ? "justify-center" : "justify-between gap-3")}>
+        {!isMobile && (
+          <div className={cn("p-4 border-b border-slate-200 dark:border-white/10 flex items-center shrink-0", activeIsCollapsed ? "justify-center" : "justify-between gap-3")}>
           <Link to={homeRoute} className="flex items-center gap-3 group min-w-0" title={isCollapsed ? "Canva Viagem" : undefined}>
             <img
               src={logoImage}
@@ -126,7 +133,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
               </div>
             )}
           </Link>
-          {!isCollapsed && (
+          {!activeIsCollapsed && (
             <Button
               variant="ghost"
               size="icon"
@@ -138,6 +145,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
             </Button>
           )}
         </div>
+        )}
 
         {/* Itens de Navegação com Scrollbar invisível */}
         <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
@@ -184,7 +192,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
             label="CRM e Leads"
             badge={
               newLeadsCount > 0 ? (
-                isCollapsed ? (
+                activeIsCollapsed ? (
                   <span className="absolute top-1 right-1 bg-red-500 text-white font-bold text-[9px] w-4 h-4 flex items-center justify-center rounded-full animate-pulse shadow-md">
                     {newLeadsCount > 9 ? '9+' : newLeadsCount}
                   </span>
@@ -319,7 +327,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
 
         {/* Rodapé do Menu Lateral */}
         <div className="p-3 border-t border-slate-200 dark:border-white/[0.05] bg-[#F9FAFB] dark:bg-[#18191B] flex flex-col gap-2 shrink-0">
-          {!isCollapsed ? (
+          {!activeIsCollapsed ? (
             <>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -377,13 +385,15 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange }: SidebarNavPro
         </div>
 
         {/* Floating Toggle Button */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          title={isCollapsed ? "Expandir Menu" : "Recolher Menu"}
-          className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/20 rounded-full items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white shadow-lg z-50 cursor-pointer hover:scale-110 transition-all"
-        >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
+        {!isMobile && (
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            title={activeIsCollapsed ? "Expandir Menu" : "Recolher Menu"}
+            className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/20 rounded-full items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white shadow-lg z-50 cursor-pointer hover:scale-110 transition-all"
+          >
+            {activeIsCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </button>
+        )}
       </aside>
 
       {language === "es" ? (
