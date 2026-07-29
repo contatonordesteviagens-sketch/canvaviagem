@@ -319,7 +319,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                       activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
                     >
-                      <item.icon className="h-4 w-4 text-amber-500" />
+                      <item.icon className="h-4 w-4" />
                       {item.label}
                     </NavLink>
                   ))}
@@ -331,7 +331,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
                   >
-                    <Download className="h-4 w-4 text-amber-500" />
+                    <Download className="h-4 w-4" />
                     Central de Downloads
                   </NavLink>
 
@@ -342,7 +342,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
                   >
-                    <Bot className="h-4 w-4 text-amber-500" />
+                    <Bot className="h-4 w-4" />
                     Vendedor IA
                   </NavLink>
 
@@ -367,7 +367,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                       activeClassName="bg-accent text-amber-500 border border-border shadow-sm"
                     >
-                      <item.icon className="h-4 w-4 text-amber-500" />
+                      <item.icon className="h-4 w-4" />
                       {item.label}
                     </NavLink>
                   ))}
