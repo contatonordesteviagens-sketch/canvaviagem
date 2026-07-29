@@ -7,9 +7,10 @@ import { useNavigate } from "react-router-dom";
 interface HeroBannerProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
+  children?: React.ReactNode;
 }
 
-const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) => {
+const HeroBannerComponent = ({ searchValue, onSearchChange, children }: HeroBannerProps) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
 
@@ -92,6 +93,8 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
           </div>
         </div>
       </div>
+
+      {children}
 
       {/* 2. Imagem Principal no Topo (~70% da tela, sozinha em 1 fileira) */}
       <div 

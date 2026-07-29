@@ -1123,30 +1123,35 @@ const IndexES = () => {
     }
   };
 
+  const categoryNavNode = (
+    <CategoryNav
+      activeCategory={activeCategory}
+      onCategoryChange={(cat) => {
+        if (cat === 'fabrica') {
+          navigate('/es/fabrica');
+        } else {
+          setActiveCategory(cat);
+        }
+      }}
+      showFavorites={!!user}
+    />
+  );
+
   const mainContent = (
     <>
       {/* Hero Banner with Search */}
-      {activeCategory === 'all' && (
+      {activeCategory === 'all' ? (
         <HeroBanner
           searchValue={searchQuery}
           onSearchChange={(val) => {
             setSearchQuery(val);
           }}
-        />
+        >
+          {categoryNavNode}
+        </HeroBanner>
+      ) : (
+        categoryNavNode
       )}
-
-      {/* Category Navigation - Horizontal scroll with icons */}
-      <CategoryNav
-        activeCategory={activeCategory}
-        onCategoryChange={(cat) => {
-          if (cat === 'fabrica') {
-            navigate('/es/fabrica');
-          } else {
-            setActiveCategory(cat);
-          }
-        }}
-        showFavorites={!!user}
-      />
 
       {/* Dynamic Content based on category */}
       {renderContent()}

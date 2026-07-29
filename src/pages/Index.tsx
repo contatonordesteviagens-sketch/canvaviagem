@@ -1678,28 +1678,34 @@ const Index = () => {
     }
   };
 
+  const categoryNavNode = (
+    <CategoryNav
+      activeCategory={activeCategory}
+      onCategoryChange={(cat) => {
+        if (cat === 'fabrica') {
+          navigate('/fabrica');
+        } else {
+          setActiveCategory(cat);
+        }
+      }}
+      showFavorites={!!user}
+    />
+  );
+
   const mainContent = (
     <>
-      {activeCategory === 'all' && (
+      {activeCategory === 'all' ? (
         <HeroBanner
           searchValue={searchQuery}
           onSearchChange={(val) => {
             setSearchQuery(val);
           }}
-        />
+        >
+          {categoryNavNode}
+        </HeroBanner>
+      ) : (
+        categoryNavNode
       )}
-
-      <CategoryNav
-        activeCategory={activeCategory}
-        onCategoryChange={(cat) => {
-          if (cat === 'fabrica') {
-            navigate('/fabrica');
-          } else {
-            setActiveCategory(cat);
-          }
-        }}
-        showFavorites={!!user}
-      />
 
       {renderContent()}
     </>
