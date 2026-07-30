@@ -57,7 +57,7 @@ export interface ArtElementBox {
 
 export interface ArtTweakContext {
   /** Ajuste resolvido do elemento (sempre com defaults preenchidos). */
-  get(id: string): Required<ArtElementTweak>;
+  get(id: string): { dx: number; dy: number; scale: number };
   /** Aplica dx/dy a um ponto. */
   pt(id: string, x: number, y: number): { x: number; y: number };
   /** Escala de um elemento (1 = original). */
@@ -68,7 +68,7 @@ export interface ArtTweakContext {
   readonly elements: ArtElementBox[];
 }
 
-const NEUTRAL: Required<ArtElementTweak> = { dx: 0, dy: 0, scale: 1 };
+const NEUTRAL = { dx: 0, dy: 0, scale: 1 };
 
 export function createArtTweakContext(tweaks?: ArtTweakMap): ArtTweakContext {
   const map = tweaks || {};
