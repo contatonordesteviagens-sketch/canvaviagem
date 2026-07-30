@@ -4420,8 +4420,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (hasPeriod) periodW = ctx.measureText(periodText).width + 40;
         
         const totalW = (hasIcons ? iconsW : 0) + (hasIcons && hasPeriod ? gap : 0) + (hasPeriod ? periodW : 0);
-        let startX = cx - totalW / 2;
-        const alignY = currentY;
+        const iconsTw = tw.get("v7_icons");
+        const groupStartX = cx - totalW / 2 + iconsTw.dx;
+        let startX = groupStartX;
+        const alignY = currentY + iconsTw.dy;
         
         if (hasIcons) {
           ctx.fillStyle = primaryColor || "#0066FF";
@@ -4446,6 +4448,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         
         ctx.textBaseline = "alphabetic";
+        tw.record({
+          id: "v7_icons",
+          label: "Ícones / dias",
+          x: groupStartX,
+          y: alignY - hlPillH + 5,
+          w: totalW,
+          h: hlPillH,
+        });
         currentY += 15;
       }
   
