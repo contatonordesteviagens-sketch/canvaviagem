@@ -4,7 +4,7 @@ import { join, relative } from "node:path";
 const root = process.cwd();
 const failures = [];
 
-const read = (path) => readFileSync(join(root, path), "utf8");
+const read = (path) => readFileSync(join(root, path), "utf8").replace(/\r\n?/g, "\n");
 const requireText = (path, needle, message) => {
   if (!read(path).includes(needle)) failures.push(`${path}: ${message}`);
 };
