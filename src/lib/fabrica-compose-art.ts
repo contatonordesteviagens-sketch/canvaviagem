@@ -4926,36 +4926,36 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
 
   // â”€â”€ ROTEAMENTO FINAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const resolvedVariant = ((((typeof forceVariant === "number" ? forceVariant : variation) % 8) + 8) % 8);
   try {
     if (isExperience) {
-      const v = typeof forceVariant === "number" ? forceVariant : variation;
-      const variant = ((v % 8) + 8) % 8; 
+      const variant = resolvedVariant;
 
-      if (variant === 0) return await renderV0Experiencia();
-      if (variant === 1) return await renderV1Experiencia();
-      if (variant === 2) return await renderV2Experiencia();
+      if (variant === 0) return { url: await renderV0Experiencia(), variant };
+      if (variant === 1) return { url: await renderV1Experiencia(), variant };
+      if (variant === 2) return { url: await renderV2Experiencia(), variant };
       if (variant === 3) {
         // FORÃ‡ADO: opera exclusivamente na categoria Oferta de Destino (bypassa isExperience)
-        return await renderSafeSquareOffer();
+        return { url: await renderSafeSquareOffer(), variant };
       }
-      if (variant === 4) return await renderV4Experiencia();
+      if (variant === 4) return { url: await renderV4Experiencia(), variant };
       if (variant === 5) {
         // Reutiliza o motor Aurora Premium que é altamente estético e compatível
-        return await renderSafeSquareOffer();
+        return { url: await renderSafeSquareOffer(), variant };
       }
-        if (variant === 6) return await renderSafeSquareOffer();
-        if (variant === 7) return await renderSafeSquareOffer();
-      
-      return await renderV0Experiencia();
+      if (variant === 6) return { url: await renderSafeSquareOffer(), variant };
+      if (variant === 7) return { url: await renderSafeSquareOffer(), variant };
+
+      return { url: await renderV0Experiencia(), variant: 0 };
     }
 
     // Fallback para Ofertas (Matriz, Gancho, etc.)
-    return await renderSafeSquareOffer();
+    return { url: await renderSafeSquareOffer(), variant: resolvedVariant };
   } catch (error) {
     console.error("Ad Engine Error:", error);
     // Fallback: tenta V0 antes de desistir; se também falhar, propaga o erro real
     try {
-      return await renderV0Experiencia();
+      return { url: await renderV0Experiencia(), variant: 0 };
     } catch (innerErr) {
       const baseMsg = (error as Error)?.message || String(error);
       const innerMsg = (innerErr as Error)?.message || String(innerErr);

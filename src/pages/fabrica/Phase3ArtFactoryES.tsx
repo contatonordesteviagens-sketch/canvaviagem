@@ -1322,7 +1322,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                 photoRefs[idx],
                 localStrategy,
                 freshSeedPhoto + idx,
-                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx));
+                typeof nextVariantPhoto === "number" ? nextVariantPhoto + idx : undefined,
+            ));
             return {
               url: res.url,
               variant: res.variant,
@@ -1594,7 +1595,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
               refImage,
               localStrategy,
               freshSeedCustom + idx,
-              typeof nextVariant === "number" ? (nextVariant + idx));
+              typeof nextVariant === "number" ? nextVariant + idx : undefined,
+          ));
             return {
               url: res.url,
               variant: res.variant,
@@ -1692,8 +1694,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
       "ad",
       state.projectId,
       [
-        generatedImage.length,
-        generatedImage.slice(-96),
+        (generatedImage?.url || "").length,
+        (generatedImage?.url || "").slice(-96),
         destination,
         format,
       ].join(":"),
@@ -2911,7 +2913,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                           e.stopPropagation();
                           const newList = generatedImages.filter((_, i) => i !== idx);
                           setGeneratedImages(newList);
-                          if (generatedImage?.url === img.url) setGeneratedImage(newList[0] || "");
+                          if (generatedImage?.url === img.url) setGeneratedImage(newList[0] || null);
                           toast.success("Variação removida");
                         }}
                         className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
