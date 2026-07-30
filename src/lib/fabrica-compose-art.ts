@@ -989,8 +989,21 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas 2D não suportado");
+  const rawCtx = canvas.getContext("2d");
+  if (!rawCtx) throw new Error("Canvas 2D não suportado");
+
+  // ADMIN — gravador universal: torna TODO elemento (texto, imagem, forma) de
+  // QUALQUER variação editável (mover, escalar, girar, esconder, reordenar,
+  // trocar texto) sem instrumentar variação por variação.
+  const recorder = createArtRecorder(rawCtx, options.artTweaks);
+  const ctx = recorder.ctx;
+  const originalToDataURL = canvas.toDataURL.bind(canvas);
+  (canvas as any).toDataURL = (...args: any[]) => {
+    recorder.replay();
+    try { options.onArtElements?.(recorder.elements); } catch { /* noop */ }
+    return (originalToDataURL as any)(...args);
+  };
+
 
   // ====== Font customization global (família + escala título/descricão) ======
   // Intercepta o setter de `font` e o `fillStyle` para que TODAS as variantes/categorias
