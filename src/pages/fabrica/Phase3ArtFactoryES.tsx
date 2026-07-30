@@ -1322,7 +1322,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                 photoRefs[idx],
                 localStrategy,
                 freshSeedPhoto + idx,
-                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx));
+                typeof nextVariantPhoto === "number" ? nextVariantPhoto + idx : undefined,
+            ));
             return {
               url: res.url,
               variant: res.variant,
