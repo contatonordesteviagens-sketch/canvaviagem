@@ -1589,15 +1589,18 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy, idx) => {
-          let img = await composeTravelAd(
-            buildComposeOptions(
-              refImage,
-              localStrategy,
-              freshSeedCustom + idx,
-              typeof nextVariant === "number" ? (nextVariant + idx) % TOTAL_VARIANTS : undefined,
-              palette
-            )
-          );
+          const usedVariant = typeof nextVariant === "number" ? (nextVariant + idx) % TOTAL_VARIANTS : undefined;
+          const opts = buildComposeOptions(refImage, localStrategy, freshSeedCustom + idx, usedVariant, palette);
+          const img = await composeTravelAd(opts);
+          if (typeof usedVariant === "number") {
+            artMetaRef.current.set(img, {
+              options: opts,
+              variant: usedVariant,
+              category: categoria,
+              format,
+              tweaks: opts.artTweaks,
+            });
+          }
           return img;
         })
       );
