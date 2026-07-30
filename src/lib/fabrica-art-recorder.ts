@@ -316,15 +316,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       applyClips(op.state.clips);
       for (const p of STATE_PROPS) {
         try {
-          if (p === 'font' && (t.bold || t.italic)) {
-             let f = (op.state as any)[p];
-             f = f.replace(/bold\s/i, '').replace(/italic\s/i, '').replace(/oblique\s/i, '').replace(/normal\s/i, '');
-             if (t.bold) f = "bold " + f;
-             if (t.italic) f = "italic " + f;
-             (real as any)[p] = f;
-          } else {
-             (real as any)[p] = (op.state as any)[p];
-          }
+          (real as any)[p] = (op.state as any)[p];
         } catch {
           /* noop */
         }
@@ -342,25 +334,15 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
         const raw = typeof t.text === "string" ? t.text : op.text || "";
         const lines = raw.split("\n");
         const fs = fontSizeOf(op.state.font);
-        const origX = op.draw.a[1] as number;
-        const origY = op.draw.a[2] as number;
-        let adjX = origX;
-        if (t.align && t.align !== op.state.textAlign) {
-           real.textAlign = t.align;
-           if (op.state.textAlign === "left" && t.align === "center") adjX += op.box.w / 2;
-           else if (op.state.textAlign === "left" && t.align === "right") adjX += op.box.w;
-           else if (op.state.textAlign === "center" && t.align === "left") adjX -= op.box.w / 2;
-           else if (op.state.textAlign === "center" && t.align === "right") adjX += op.box.w / 2;
-           else if (op.state.textAlign === "right" && t.align === "left") adjX -= op.box.w;
-           else if (op.state.textAlign === "right" && t.align === "center") adjX -= op.box.w / 2;
-        }
         const lh = Number.isFinite(t.lineHeight as number) && (t.lineHeight as number) > 0
           ? (t.lineHeight as number)
           : fs * 1.1;
+        const x = op.draw.a[1] as number;
+        const y = op.draw.a[2] as number;
         const maxW = op.draw.a[3];
         lines.forEach((line, i) => {
-          if (typeof maxW === "number") (real as any)[op.draw.m](line, adjX, origY + i * lh, maxW);
-          else (real as any)[op.draw.m](line, adjX, origY + i * lh);
+          if (typeof maxW === "number") (real as any)[op.draw.m](line, x, y + i * lh, maxW);
+          else (real as any)[op.draw.m](line, x, y + i * lh);
         });
       } else if (op.path) {
         real.beginPath();
@@ -387,8 +369,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
     for (const entry of ordered) drawOp(entry.op);
     real.restore();
 
-    for (const entry of ordered) {
-      const op = entry.op;
+    for (const op of slice) {
       const t = map[op.id] || {};
       const scale = Number.isFinite(t.scale as number) && (t.scale as number) > 0 ? (t.scale as number) : 1;
       const cx = op.box.x + op.box.w / 2;
