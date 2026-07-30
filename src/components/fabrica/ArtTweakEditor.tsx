@@ -16,6 +16,12 @@ import {
   Undo2,
   Redo2,
   X,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Trash,
+  Copy,
+  Square,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -70,7 +76,7 @@ export default function ArtTweakEditor({
   
   // Drag & Marquee Refs
   const stageRef = useRef<HTMLDivElement | null>(null);
-  const dragRef = useRef<{ type?: 'move' | 'scale'; corner?: string; items: { id: string; startDx: number; startDy: number; startScale: number }[]; x: number; y: number } | null>(null);
+  const dragRef = useRef<{ type?: 'move' | 'scale'; corner?: string; items: { id: string; startDx: number; startDy: number; startScale: number, startScaleX: number, startScaleY: number }[]; x: number; y: number } | null>(null);
   const [marquee, setMarquee] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
   const marqueeRef = useRef<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
   
@@ -198,6 +204,8 @@ export default function ArtTweakEditor({
       startDx: tweaks[id]?.dx || 0,
       startDy: tweaks[id]?.dy || 0,
       startScale: tweaks[id]?.scale || 1,
+      startScaleX: tweaks[id]?.scaleX || tweaks[id]?.scale || 1,
+      startScaleY: tweaks[id]?.scaleY || tweaks[id]?.scale || 1,
     }));
     dragRef.current = { type: 'scale', corner, items, x: e.clientX, y: e.clientY };
   };
@@ -230,6 +238,8 @@ export default function ArtTweakEditor({
       startDx: tweaks[id]?.dx || 0,
       startDy: tweaks[id]?.dy || 0,
       startScale: tweaks[id]?.scale || 1,
+      startScaleX: tweaks[id]?.scaleX || tweaks[id]?.scale || 1,
+      startScaleY: tweaks[id]?.scaleY || tweaks[id]?.scale || 1,
     }));
     dragRef.current = { type: 'move', items, x: e.clientX, y: e.clientY };
   };
@@ -269,10 +279,20 @@ export default function ArtTweakEditor({
            else if (d.corner === 'sw') scaleDelta = (deltaY - deltaX) / 100;
            else if (d.corner === 'se') scaleDelta = dist;
            
-           let newScale = item.startScale + scaleDelta;
-           if (newScale < 0.1) newScale = 0.1;
-           if (newScale > 5) newScale = 5;
-           updates[item.id] = { scale: Number(newScale.toFixed(2)) };
+           if (['e', 'w', 'n', 's'].includes(d.corner!)) {
+               if (d.corner === 'e' || d.corner === 'w') {
+                   const sxDelta = d.corner === 'w' ? -deltaX / 100 : deltaX / 100;
+                   const newScaleX = Math.max(0.1, Math.min(5, item.startScaleX + sxDelta));
+                   updates[item.id] = { scaleX: Number(newScaleX.toFixed(2)) };
+               } else {
+                   const syDelta = d.corner === 'n' ? -deltaY / 100 : deltaY / 100;
+                   const newScaleY = Math.max(0.1, Math.min(5, item.startScaleY + syDelta));
+                   updates[item.id] = { scaleY: Number(newScaleY.toFixed(2)) };
+               }
+           } else {
+               const newScale = Math.max(0.1, Math.min(5, item.startScale + scaleDelta));
+               updates[item.id] = { scale: Number(newScale.toFixed(2)) };
+           }
         } else {
            updates[item.id] = {
              dx: Math.round(item.startDx + deltaX),
@@ -460,6 +480,11 @@ export default function ArtTweakEditor({
                       <div className="absolute -top-1.5 -right-1.5 h-3 w-3 cursor-nesw-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'ne')} />
                       <div className="absolute -bottom-1.5 -left-1.5 h-3 w-3 cursor-nesw-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'sw')} />
                       <div className="absolute -bottom-1.5 -right-1.5 h-3 w-3 cursor-nwse-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'se')} />
+                      
+                      <div className="absolute top-1/2 -left-1.5 h-3 w-3 -translate-y-1/2 cursor-ew-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'w')} />
+                      <div className="absolute top-1/2 -right-1.5 h-3 w-3 -translate-y-1/2 cursor-ew-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'e')} />
+                      <div className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 cursor-ns-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'n')} />
+                      <div className="absolute -bottom-1.5 left-1/2 h-3 w-3 -translate-x-1/2 cursor-ns-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 's')} />
                     </>
                   )}
                 </div>
@@ -515,6 +540,10 @@ export default function ArtTweakEditor({
                   })}
                 </div>
               )}
+              <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => {
+                const id = `custom_shape_${Date.now()}`;
+                pushHistory({ ...tweaks, [id]: { custom: { kind: 'shape', w: 200, h: 200, bg: '#ffffff' }, dx: 0, dy: 0, z: 999 } });
+              }}><Square className="h-4 w-4 mr-2" /> Adicionar Quadrado</Button>
             </div>
 
             {selected.size > 0 && (
@@ -522,6 +551,43 @@ export default function ArtTweakEditor({
                 <p className="truncate text-xs font-semibold">
                   {selected.size === 1 ? firstSelectedBox?.label || firstSelectedId : `${selected.size} elementos selecionados`}
                 </p>
+
+                
+                <div>
+                  <p className="mb-1 text-[11px] text-muted-foreground">
+                    Opacidade: {selected.size > 1 ? "Misto" : `${Math.round((firstSt.opacity ?? 1) * 100)}%`}
+                  </p>
+                  <Slider
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={[Math.round((firstSt.opacity ?? 1) * 100)]}
+                    onValueChange={(v) => patchSelected({ opacity: v[0] / 100 })}
+                  />
+                </div>
+
+                {selected.size === 1 && firstSelectedBox?.kind === "text" && (
+                  <div className="flex gap-2">
+                     <Button variant={firstSt.align === 'left' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => patchSelected({ align: 'left' })}><AlignLeft className="h-4 w-4" /></Button>
+                     <Button variant={firstSt.align === 'center' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => patchSelected({ align: 'center' })}><AlignCenter className="h-4 w-4" /></Button>
+                     <Button variant={firstSt.align === 'right' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => patchSelected({ align: 'right' })}><AlignRight className="h-4 w-4" /></Button>
+                  </div>
+                )}
+                
+                <div className="flex gap-2 pt-2 border-t border-border">
+                  <Button variant="outline" size="sm" className="flex-1 text-red-500 hover:text-red-600" onClick={() => patchSelected({ hidden: true })}><Trash className="h-4 w-4 mr-2"/> Remover</Button>
+                  {selected.size === 1 && (
+                     <Button variant="outline" size="sm" className="flex-1" onClick={() => {
+                        const originalId = firstSelectedId;
+                        const cloneId = `clone_${Date.now()}`;
+                        pushHistory({
+                           ...tweaks,
+                           [cloneId]: { cloneOf: originalId, dx: (firstSt.dx || 0) + 20, dy: (firstSt.dy || 0) + 20 }
+                        });
+                        setSelected(new Set([cloneId]));
+                     }}><Copy className="h-4 w-4 mr-2"/> Duplicar</Button>
+                  )}
+                </div>
 
                 <div className="grid grid-cols-3 gap-1.5">
                   <span />

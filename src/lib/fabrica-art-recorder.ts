@@ -194,6 +194,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
   let clipStack: ClipEntry[] = [];
   const saveStack: ClipEntry[][] = [];
   let replayedUpTo = 0;
+  let currentGroup: { id: string; label: string; ops: DrawOp[]; box: any; state: any } | null = null;
   const elements: ArtElementBox[] = [];
 
   const snap = (): StateSnap => {
@@ -389,6 +390,34 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
   const proxy = new Proxy(real, {
     get(target, prop: string, receiver) {
       if (prop === "__artRecorder") return true;
+
+      if (prop === "__beginGroup") {
+        return (label: string) => {
+          const id = nextId("shape");
+          currentGroup = {
+            id,
+            label,
+            ops: [],
+            box: { x: 9999, y: 9999, w: 0, h: 0 },
+            state: snap(),
+          };
+        };
+      }
+      if (prop === "__endGroup") {
+        return () => {
+          if (currentGroup && currentGroup.ops.length > 0) {
+            ops.push({
+              id: currentGroup.id,
+              kind: "shape",
+              label: currentGroup.label,
+              draw: { m: "__group", a: currentGroup.ops },
+              state: currentGroup.state,
+              box: currentGroup.box,
+            });
+          }
+          currentGroup = null;
+        };
+      }
 
       if (prop === "getImageData") {
         return (...a: any[]) => {

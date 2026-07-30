@@ -24,6 +24,10 @@ export interface ArtElementTweak {
   dx?: number;
   dy?: number;
   scale?: number;
+  /** Escala não uniforme (largura). */
+  scaleX?: number;
+  /** Escala não uniforme (altura). */
+  scaleY?: number;
   /** Rotação em graus. */
   rotate?: number;
   /** Esconde o elemento. */
@@ -34,6 +38,14 @@ export interface ArtElementTweak {
   text?: string;
   /** Altura da linha quando o texto tem quebras. */
   lineHeight?: number;
+  /** Alinhamento do texto/bloco. */
+  align?: "left" | "center" | "right" | "end" | "start";
+  /** ID de um elemento pai para clonar propriedades. */
+  cloneOf?: string;
+  /** Propriedades de customização dinâmica. */
+  custom?: { kind: "shape" | "text", w?: number, h?: number, color?: string, bg?: string };
+  /** Opacidade (0.0 a 1.0) */
+  opacity?: number;
 }
 
 export type ArtTweakMap = Record<string, ArtElementTweak>;
