@@ -1,4 +1,5 @@
 import { createArtTweakContext, type ArtElementBox, type ArtTweakMap } from "@/lib/fabrica-art-tweaks";
+import { createArtRecorder } from "@/lib/fabrica-art-recorder";
 
 type Format = "square" | "story";
 type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
@@ -963,9 +964,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   // ADMIN — camada de ajustes finos (posição/escala por elemento).
   const tw = createArtTweakContext(options.artTweaks);
-  const flushArtElements = () => {
-    try { options.onArtElements?.(tw.elements); } catch { /* noop */ }
-  };
+  // Legado: a camada manual (V0/V7) continua funcionando, mas quem lista os
+  // elementos para o editor agora é o gravador universal.
+  const flushArtElements = () => { /* noop — ver recorder abaixo */ };
 
   const destination = sanitizeAdText(options.destination || "");
   const city = sanitizeAdText(options.city || "");
@@ -989,8 +990,21 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas 2D não suportado");
+  const rawCtx = canvas.getContext("2d");
+  if (!rawCtx) throw new Error("Canvas 2D não suportado");
+
+  // ADMIN — gravador universal: torna TODO elemento (texto, imagem, forma) de
+  // QUALQUER variação editável (mover, escalar, girar, esconder, reordenar,
+  // trocar texto) sem instrumentar variação por variação.
+  const recorder = createArtRecorder(rawCtx, options.artTweaks);
+  const ctx = recorder.ctx;
+  const originalToDataURL = canvas.toDataURL.bind(canvas);
+  (canvas as any).toDataURL = (...args: any[]) => {
+    recorder.replay();
+    try { options.onArtElements?.(recorder.elements); } catch { /* noop */ }
+    return (originalToDataURL as any)(...args);
+  };
+
 
   // ====== Font customization global (família + escala título/descricão) ======
   // Intercepta o setter de `font` e o `fillStyle` para que TODAS as variantes/categorias

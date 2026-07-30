@@ -24,6 +24,16 @@ export interface ArtElementTweak {
   dx?: number;
   dy?: number;
   scale?: number;
+  /** Rotação em graus. */
+  rotate?: number;
+  /** Esconde o elemento. */
+  hidden?: boolean;
+  /** Ordem de empilhamento (maior = mais à frente). */
+  z?: number;
+  /** Substitui o texto (use \n para quebrar linha). */
+  text?: string;
+  /** Altura da linha quando o texto tem quebras. */
+  lineHeight?: number;
 }
 
 export type ArtTweakMap = Record<string, ArtElementTweak>;
@@ -36,13 +46,18 @@ export interface ArtElementBox {
   y: number;
   w: number;
   h: number;
+  /** Tipo da primitiva desenhada. */
+  kind?: "text" | "image" | "shape";
+  /** Texto original (quando kind === "text"). */
+  text?: string;
   /** Se false, o editor esconde as alças de escala (só move). */
   resizable?: boolean;
 }
 
+
 export interface ArtTweakContext {
   /** Ajuste resolvido do elemento (sempre com defaults preenchidos). */
-  get(id: string): Required<ArtElementTweak>;
+  get(id: string): { dx: number; dy: number; scale: number };
   /** Aplica dx/dy a um ponto. */
   pt(id: string, x: number, y: number): { x: number; y: number };
   /** Escala de um elemento (1 = original). */
@@ -53,7 +68,7 @@ export interface ArtTweakContext {
   readonly elements: ArtElementBox[];
 }
 
-const NEUTRAL: Required<ArtElementTweak> = { dx: 0, dy: 0, scale: 1 };
+const NEUTRAL = { dx: 0, dy: 0, scale: 1 };
 
 export function createArtTweakContext(tweaks?: ArtTweakMap): ArtTweakContext {
   const map = tweaks || {};
@@ -105,7 +120,14 @@ export function mergeArtTweaks(base?: ArtTweakMap, override?: ArtTweakMap): ArtT
 export function isEmptyTweakMap(map?: ArtTweakMap): boolean {
   if (!map) return true;
   return Object.values(map).every(
-    (t) => (!t.dx || t.dx === 0) && (!t.dy || t.dy === 0) && (!t.scale || t.scale === 1),
+    (t) =>
+      (!t.dx || t.dx === 0) &&
+      (!t.dy || t.dy === 0) &&
+      (!t.scale || t.scale === 1) &&
+      (!t.rotate || t.rotate === 0) &&
+      !t.hidden &&
+      (!t.z || t.z === 0) &&
+      typeof t.text !== "string",
   );
 }
 
