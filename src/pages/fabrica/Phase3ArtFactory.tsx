@@ -471,7 +471,7 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
 
 export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode = false, onSkipToSite }: Props) => {
   const { state, update, systemUpdate, reset } = useFabricaContext();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { reserve, commit, release, track, can, tier, remaining } = useEntitlements();
   const [showExportPaywall, setShowExportPaywall] = useState(false);
   const isAdPreviewLocked = tier === "guest"
