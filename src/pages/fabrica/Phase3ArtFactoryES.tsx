@@ -8,6 +8,7 @@ import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } f
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { composeTravelAd, formatAdPhone, type PaymentMode } from "@/lib/fabrica-compose-art";
+import { GeneratedArt } from "@/lib/fabrica-art-types";
 import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
   Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw,
@@ -780,8 +781,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
   const [loading, setLoading] = useState(false);
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false); // Nova feature: Lote A/B (3 variações)
-  const [generatedImage, setGeneratedImage] = useState<string>("");
-  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [generatedImage, setGeneratedImage] = useState<GeneratedArt | null>(null);
+  const [generatedImages, setGeneratedImages] = useState<GeneratedArt[]>([]);
   const [variationCounter, setVariationCounter] = useState(0);
   const [forcedVariant, setForcedVariant] = useState<number | null>(null);
   // Legendas/Copy geradas automaticamente junto com as imagens
@@ -920,7 +921,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
     Object.keys(localStorage)
       .filter((k) => k.startsWith("fabrica_generation_cycle_") || k.startsWith("fabrica_strategy_history_") || k.startsWith("fabrica_last_template_ids_") || k.startsWith("fabrica_recent_template_ids_"))
       .forEach((k) => localStorage.removeItem(k));
-    setGeneratedImage("");
+    setGeneratedImage(null);
     setGeneratedImages([]);
     systemUpdate({ generatedAdImage: "" });
     localStorage.setItem(key, FABRICA_RENDER_ENGINE_VERSION);
@@ -1197,7 +1198,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
     }
     if (loading && genMode === "ai") return;
     setLoading(true);
-    setGeneratedImage("");
+    setGeneratedImage(null);
     setGenerationError(null);
     if (!accumulate) setGeneratedImages([]);
     try {
@@ -1317,16 +1318,21 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
 
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
-            let img = await composeTravelAd(
-              buildComposeOptions(
+            let res = await composeTravelAd(buildComposeOptions(
                 photoRefs[idx],
                 localStrategy,
                 freshSeedPhoto + idx,
-                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % TOTAL_VARIANTS_PHOTO : undefined,
-                palette
-              )
-            );
-            return img;
+                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx));
+            return {
+              url: res.url,
+              variant: res.variant,
+              engine: "photo", // or custom, will fix below
+              categoria: categoria as any,
+              format: format as any,
+              strategyId: localStrategy,
+              seed: res.variant,
+              createdAt: Date.now()
+            } as GeneratedArt;
           })
         );
 
@@ -1342,13 +1348,13 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
         setGeneratedImages((prev) => [...prev, ...composed].slice(-MAX_VARIATIONS_PHOTO));
         setGeneratedImage(composed[composed.length - 1]);
         const currentGenerated = state.allGeneratedAdImages || [];
-        const updatedGenerated = [composed[composed.length - 1], ...currentGenerated].slice(0, 10);
+        const updatedGenerated = [composed[composed.length - 1].url, ...currentGenerated].slice(0, 10);
         update({ 
-          generatedAdImage: composed[composed.length - 1], 
+          generatedAdImage: composed[composed.length - 1].url, 
           primaryColor: palette.primary,
           allGeneratedAdImages: updatedGenerated
         });
-        await syncGeneratedPackageToSite(composed[composed.length - 1], refImage);
+        await syncGeneratedPackageToSite(composed[composed.length - 1].url, refImage);
 
         const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
@@ -1445,7 +1451,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
           const reframedBg = await reframeImageToAspect(refImage, format);
 
           // 🛡️ Renderização SEQUENCIAL para evitar OOM em mobile (3 canvases 1080×1920 simultâneos = ~25MB)
-          const finalImages: string[] = [];
+          const finalImages: GeneratedArt[] = [];
           for (const layoutJson of results) {
               const canvas = document.createElement("canvas");
               canvas.width = 1080;
@@ -1488,7 +1494,16 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                 isExperience: categoria === "experiencia_destino",
               } as any, layoutJson as any);
 
-              finalImages.push(canvas.toDataURL("image/png", 0.9));
+              finalImages.push({
+                url: canvas.toDataURL("image/png", 0.9),
+                variant: null,
+                engine: "ia",
+                categoria: categoria as any,
+                format: format as any,
+                strategyId: "iapura",
+                seed: 0,
+                createdAt: Date.now()
+              } as GeneratedArt);
           }
 
           setGeneratedImages((prev) => {
@@ -1498,14 +1513,14 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
           setGeneratedImage(finalImages[finalImages.length - 1]);
 
           const currentGenerated = state.allGeneratedAdImages || [];
-          const updatedGenerated = [...finalImages.slice().reverse(), ...currentGenerated].slice(0, 10);
+          const updatedGenerated = [...finalImages.map(a => a.url).reverse(), ...currentGenerated].slice(0, 10);
           update({
-            generatedAdImage: finalImages[finalImages.length - 1],
+            generatedAdImage: finalImages[finalImages.length - 1].url,
             allGeneratedAdImages: updatedGenerated
           });
 
           // 🛡️ FALHA #10 FIX — Sincroniza a PRIMEIRA imagem do lote (mais estável) em vez da última
-          await syncGeneratedPackageToSite(finalImages[0], refImage);
+          await syncGeneratedPackageToSite(finalImages[0].url, refImage);
 
           toast.success(`${finalImages.length} ${finalImages.length === 1 ? "Design Dinâmico gerado" : "Designs Dinâmicos gerados"} com sucesso pela IA!`);
 
@@ -1575,16 +1590,21 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy, idx) => {
-          let img = await composeTravelAd(
-            buildComposeOptions(
+          let res = await composeTravelAd(buildComposeOptions(
               refImage,
               localStrategy,
               freshSeedCustom + idx,
-              typeof nextVariant === "number" ? (nextVariant + idx) % TOTAL_VARIANTS : undefined,
-              palette
-            )
-          );
-          return img;
+              typeof nextVariant === "number" ? (nextVariant + idx));
+            return {
+              url: res.url,
+              variant: res.variant,
+              engine: "custom", // or custom, will fix below
+              categoria: categoria as any,
+              format: format as any,
+              strategyId: localStrategy,
+              seed: res.variant,
+              createdAt: Date.now()
+            } as GeneratedArt;
         })
       );
 
@@ -1603,13 +1623,13 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
       });
       setGeneratedImage(imagesCustom[imagesCustom.length - 1]);
       const currentGenerated = state.allGeneratedAdImages || [];
-      const updatedGenerated = [imagesCustom[imagesCustom.length - 1], ...currentGenerated].slice(0, 10);
+      const updatedGenerated = [imagesCustom[imagesCustom.length - 1].url, ...currentGenerated].slice(0, 10);
       update({ 
-        generatedAdImage: imagesCustom[imagesCustom.length - 1], 
+        generatedAdImage: imagesCustom[imagesCustom.length - 1].url, 
         primaryColor: palette.primary,
         allGeneratedAdImages: updatedGenerated
       });
-      await syncGeneratedPackageToSite(imagesCustom[imagesCustom.length - 1], refImage);
+      await syncGeneratedPackageToSite(imagesCustom[imagesCustom.length - 1].url, refImage);
 
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);
@@ -1696,7 +1716,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
 
     try {
       const downloadedBatch = can("ad.export") && isBatchMode;
-      const toDownload = downloadedBatch ? generatedImages : [generatedImage];
+      const toDownload = downloadedBatch ? generatedImages.map(i => i.url) : [generatedImage?.url || ""];
       
       toDownload.forEach((img, idx) => {
         const a = document.createElement("a");
@@ -1778,7 +1798,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
 
       {creativeMode === "carousel" ? (
         <F1CarouselBuilder
-          sourceImage={generatedImage}
+          sourceImage={generatedImage?.url || ""}
           locale="es"
           onNext={onSkipToSite || onNext}
           onBackToAd={initialMode === "carousel" ? onBack : () => setCreativeMode("ad")}
@@ -2857,15 +2877,15 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
 
                 <div className={`grid gap-3 ${generatedImages.length > 1 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1"}`}>
                   {generatedImages.map((img, idx) => (
-                    <div key={`${img.slice(0, 48)}-${idx}`} className="relative group/img">
+                    <div key={`${img.url.slice(0, 48)}-${idx}`} className="relative group/img">
                       <button
                         type="button"
                         onClick={() => setGeneratedImage(img)}
-                        className={`w-full overflow-hidden rounded-xl border-2 bg-black/30 transition-all ${generatedImage === img ? "border-white shadow-lg" : "border-white/10 hover:border-white/30"}`}
+                        className={`w-full overflow-hidden rounded-xl border-2 bg-black/30 transition-all ${generatedImage?.url === img.url ? "border-white shadow-lg" : "border-white/10 hover:border-white/30"}`}
                         title={`Selecionar variação ${idx + 1}`}
                       >
                         <img
-                          src={img}
+                          src={img.url}
                           alt={`Anuncio generado ${idx + 1}`}
                           className={`w-full h-auto object-contain transition ${isAdPreviewLocked ? "blur-md" : ""}`}
                         />
@@ -2891,7 +2911,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                           e.stopPropagation();
                           const newList = generatedImages.filter((_, i) => i !== idx);
                           setGeneratedImages(newList);
-                          if (generatedImage === img) setGeneratedImage(newList[0] || "");
+                          if (generatedImage?.url === img.url) setGeneratedImage(newList[0] || "");
                           toast.success("Variação removida");
                         }}
                         className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"

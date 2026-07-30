@@ -1,3 +1,7 @@
+export interface ComposeAdResult {
+  url: string;
+  variant: number;
+}
 
 type Format = "square" | "story";
 type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
@@ -916,7 +920,7 @@ function resolveTotalStr(installments: string, rawPrice: string, curSym: string,
   return total > 0 ? `${curSym} ${formatBRL(total, hasCents)}` : "";
 }
 
-export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<string> {
+export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<ComposeAdResult> {
   __currentDialCode = options.whatsappDialCode || "55";
   const {
     imageUrl,
