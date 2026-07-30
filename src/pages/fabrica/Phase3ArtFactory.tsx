@@ -2884,8 +2884,11 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 </div>
 
                 <div className={`${generatedImages.length > 1 ? "flex md:grid gap-3 overflow-x-auto snap-x pb-2 md:pb-0 md:grid-cols-3" : "grid grid-cols-1"}`}>
-                  {generatedImages.map((img, idx) => (
-                    <div key={`${img.url.slice(0, 48)}-${idx}`} className="relative group/img shrink-0 min-w-[75vw] md:min-w-0 snap-center">
+                  {generatedImages.map((raw, idx) => {
+                    const img: any = typeof raw === "string" ? { url: raw, engine: "compose", variant: 0 } : (raw || { url: "" });
+                    if (!img.url) return null;
+                    return (
+                    <div key={`${String(img.url).slice(0, 48)}-${idx}`} className="relative group/img shrink-0 min-w-[75vw] md:min-w-0 snap-center">
                       <button
                         type="button"
                         onClick={() => setGeneratedImage(img)}
@@ -2949,7 +2952,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                         </div>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {isAdmin && artEditorTarget && (
