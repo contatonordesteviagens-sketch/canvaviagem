@@ -600,9 +600,6 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-          </div>
-                  </div>
-                </div>
                 {toolsLoading ? (
                   <ToolSkeleton />
                 ) : allFilterTools.length > 0 ? (
