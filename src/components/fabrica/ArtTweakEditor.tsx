@@ -1,22 +1,3 @@
-/**
- * EDITOR VISUAL DE AJUSTE FINO DA ARTE — SOMENTE ADMIN
- *
- * Funciona para TODAS as variações (V0…V8 e as futuras), porque os elementos
- * são capturados automaticamente pelo gravador do canvas
- * (`src/lib/fabrica-art-recorder.ts`): cada texto, ícone, imagem e forma vira
- * um bloco editável.
- *
- * O que dá para fazer em cada bloco:
- *   • mover (arrastar ou setas), escalar, girar
- *   • esconder
- *   • trazer para frente / enviar para trás (z-index)
- *   • trocar o texto, inclusive quebrando em várias linhas ("10x\nde")
- *
- * Salvar:
- *   • "Aplicar só nesta arte" → vale apenas para a imagem atual
- *   • "Salvar como padrão da variação" → grava em `fabrica_art_tweak_presets`
- *     e TODOS os usuários passam a gerar essa variação já ajustada.
- */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -32,6 +13,8 @@ import {
   Move,
   RotateCcw,
   Save,
+  Undo2,
+  Redo2,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -72,25 +55,84 @@ export default function ArtTweakEditor({
   onApply,
 }: ArtTweakEditorProps) {
   const canvasH = format === "story" ? 1920 : 1080;
+  
+  // State
   const [tweaks, setTweaks] = useState<ArtTweakMap>(initialTweaks || {});
+  const [history, setHistory] = useState<ArtTweakMap[]>([initialTweaks || {}]);
+  const [pointer, setPointer] = useState(0);
+  
   const [elements, setElements] = useState<ArtElementBox[]>([]);
   const [preview, setPreview] = useState<string>("");
   const [rendering, setRendering] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [showBoxes, setShowBoxes] = useState(true);
+  
+  // Drag & Marquee Refs
   const stageRef = useRef<HTMLDivElement | null>(null);
-  const dragRef = useRef<{ id: string; x: number; y: number; dx: number; dy: number } | null>(null);
+  const dragRef = useRef<{ items: { id: string; startDx: number; startDy: number }[]; x: number; y: number } | null>(null);
+  const [marquee, setMarquee] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
+  const marqueeRef = useRef<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
+  
   const renderToken = useRef(0);
 
+  // Initialize
   useEffect(() => {
     if (open) {
       setTweaks(initialTweaks || {});
-      setSelected(null);
+      setHistory([initialTweaks || {}]);
+      setPointer(0);
+      setSelected(new Set());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, initialTweaks]);
 
+  // History Actions
+  const pushHistory = useCallback((newTweaks: ArtTweakMap) => {
+    setHistory((prev) => {
+      const newH = prev.slice(0, pointer + 1);
+      newH.push(newTweaks);
+      if (newH.length > 50) newH.shift();
+      return newH;
+    });
+    setPointer((prev) => Math.min(prev + 1, 50));
+  }, [pointer]);
+
+  const undo = useCallback(() => {
+    if (pointer > 0) {
+      const p = pointer - 1;
+      setPointer(p);
+      setTweaks(history[p]);
+    }
+  }, [pointer, history]);
+
+  const redo = useCallback(() => {
+    if (pointer < history.length - 1) {
+      const p = pointer + 1;
+      setPointer(p);
+      setTweaks(history[p]);
+    }
+  }, [pointer, history]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!open) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, undo, redo]);
+
+  // Renderer
   const render = useCallback(
     async (map: ArtTweakMap) => {
       const token = ++renderToken.current;
@@ -104,7 +146,7 @@ export default function ArtTweakEditor({
           onArtElements: (els: ArtElementBox[]) => { boxes = els.slice(); },
         });
         if (token !== renderToken.current) return;
-        setPreview(img);
+        setPreview(img.url || (typeof img === 'string' ? img : ""));
         setElements(boxes);
       } catch (err: any) {
         if (token === renderToken.current) toast.error(err?.message || "Erro ao redesenhar a arte");
@@ -121,8 +163,22 @@ export default function ArtTweakEditor({
     return () => clearTimeout(t);
   }, [open, tweaks, render]);
 
-  const patch = (id: string, data: Partial<ArtElementTweak>) =>
-    setTweaks((prev) => ({ ...prev, [id]: { ...(prev[id] || {}), ...data } }));
+  // Actions
+  const patch = (updates: Record<string, Partial<ArtElementTweak>>, commit = true) => {
+    const next = { ...tweaks };
+    for (const [id, data] of Object.entries(updates)) {
+      next[id] = { ...(next[id] || {}), ...data };
+    }
+    setTweaks(next);
+    if (commit) pushHistory(next);
+  };
+
+  const patchSelected = (data: Partial<ArtElementTweak>, commit = true) => {
+    if (selected.size === 0) return;
+    const updates: Record<string, Partial<ArtElementTweak>> = {};
+    selected.forEach(id => { updates[id] = data; });
+    patch(updates, commit);
+  };
 
   const scaleFactor = () => {
     const el = stageRef.current;
@@ -130,50 +186,138 @@ export default function ArtTweakEditor({
     return el.clientWidth / CANVAS_W;
   };
 
-  const onPointerDown = (e: React.PointerEvent, box: ArtElementBox) => {
+  // Drag Handlers
+  const onPointerDownBox = (e: React.PointerEvent, box: ArtElementBox) => {
     e.preventDefault();
+    e.stopPropagation();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    setSelected(box.id);
-    const cur = tweaks[box.id] || {};
-    dragRef.current = { id: box.id, x: e.clientX, y: e.clientY, dx: cur.dx || 0, dy: cur.dy || 0 };
+    
+    let newSel = new Set(selected);
+    if (e.ctrlKey || e.metaKey) {
+      if (newSel.has(box.id)) newSel.delete(box.id);
+      else newSel.add(box.id);
+    } else {
+      if (!newSel.has(box.id)) {
+        newSel = new Set([box.id]);
+      }
+    }
+    setSelected(newSel);
+    
+    const items = Array.from(newSel).map(id => ({
+      id,
+      startDx: tweaks[id]?.dx || 0,
+      startDy: tweaks[id]?.dy || 0,
+    }));
+    dragRef.current = { items, x: e.clientX, y: e.clientY };
+  };
+
+  const onPointerDownStage = (e: React.PointerEvent) => {
+    e.preventDefault();
+    const el = stageRef.current;
+    if (!el) return;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    
+    if (!e.ctrlKey && !e.metaKey) setSelected(new Set());
+    
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const m = { startX: x, startY: y, endX: x, endY: y };
+    setMarquee(m);
+    marqueeRef.current = m;
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
-    const d = dragRef.current;
-    if (!d) return;
-    const k = scaleFactor() || 1;
-    patch(d.id, {
-      dx: Math.round(d.dx + (e.clientX - d.x) / k),
-      dy: Math.round(d.dy + (e.clientY - d.y) / k),
-    });
+    if (dragRef.current) {
+      const d = dragRef.current;
+      const k = scaleFactor() || 1;
+      const deltaX = (e.clientX - d.x) / k;
+      const deltaY = (e.clientY - d.y) / k;
+      
+      const updates: Record<string, Partial<ArtElementTweak>> = {};
+      d.items.forEach(item => {
+        updates[item.id] = {
+          dx: Math.round(item.startDx + deltaX),
+          dy: Math.round(item.startDy + deltaY),
+        };
+      });
+      patch(updates, false);
+    }
+    
+    if (marqueeRef.current) {
+      const el = stageRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const newX = e.clientX - rect.left;
+      const newY = e.clientY - rect.top;
+      setMarquee(prev => prev ? { ...prev, endX: newX, endY: newY } : null);
+      marqueeRef.current = { ...marqueeRef.current, endX: newX, endY: newY };
+    }
   };
 
-  const onPointerUp = () => { dragRef.current = null; };
+  const onPointerUp = () => {
+    if (dragRef.current) {
+      dragRef.current = null;
+      pushHistory(tweaks); // commit the move
+    }
+    if (marqueeRef.current) {
+      const k = scaleFactor() || 1;
+      const { startX, startY, endX, endY } = marqueeRef.current;
+      const minX = Math.min(startX, endX) / k;
+      const maxX = Math.max(startX, endX) / k;
+      const minY = Math.min(startY, endY) / k;
+      const maxY = Math.max(startY, endY) / k;
+      
+      const newSel = new Set(selected);
+      elements.forEach(box => {
+        const boxMinX = box.x;
+        const boxMaxX = box.x + box.w;
+        const boxMinY = box.y;
+        const boxMaxY = box.y + box.h;
+        if (boxMinX < maxX && boxMaxX > minX && boxMinY < maxY && boxMaxY > minY) {
+           newSel.add(box.id);
+        }
+      });
+      setSelected(newSel);
+      setMarquee(null);
+      marqueeRef.current = null;
+    }
+  };
 
   const nudge = (dx: number, dy: number) => {
-    if (!selected) return;
-    const cur = tweaks[selected] || {};
-    patch(selected, { dx: (cur.dx || 0) + dx, dy: (cur.dy || 0) + dy });
+    if (selected.size === 0) return;
+    const updates: Record<string, Partial<ArtElementTweak>> = {};
+    selected.forEach(id => {
+      const cur = tweaks[id] || {};
+      updates[id] = { dx: (cur.dx || 0) + dx, dy: (cur.dy || 0) + dy };
+    });
+    patch(updates, true);
   };
 
   const bringTo = (delta: number) => {
-    if (!selected) return;
-    const cur = tweaks[selected] || {};
-    patch(selected, { z: (cur.z || 0) + delta });
-  };
-
-  const resetAll = () => { setTweaks({}); setSelected(null); };
-  const resetOne = () => {
-    if (!selected) return;
-    setTweaks((prev) => {
-      const next = { ...prev };
-      delete next[selected];
-      return next;
+    if (selected.size === 0) return;
+    const updates: Record<string, Partial<ArtElementTweak>> = {};
+    selected.forEach(id => {
+      const cur = tweaks[id] || {};
+      updates[id] = { z: (cur.z || 0) + delta };
     });
+    patch(updates, true);
   };
 
-  const selectedBox = elements.find((e) => e.id === selected) || null;
-  const st: ArtElementTweak = (selected && tweaks[selected]) || {};
+  const resetAll = () => { 
+    setTweaks({}); 
+    pushHistory({});
+    setSelected(new Set()); 
+  };
+  
+  const resetSelected = () => {
+    if (selected.size === 0) return;
+    const next = { ...tweaks };
+    selected.forEach(id => { delete next[id]; });
+    setTweaks(next);
+    pushHistory(next);
+  };
+
   const label = useMemo(() => artVariantLabel(category, variant, format), [category, variant, format]);
 
   const handleSavePreset = async () => {
@@ -192,17 +336,40 @@ export default function ArtTweakEditor({
 
   if (!open || typeof document === "undefined") return null;
 
+  // Derive first selected box properties for UI (scale, rotate, text, etc)
+  const firstSelectedId = Array.from(selected)[0];
+  const firstSelectedBox = firstSelectedId ? elements.find((e) => e.id === firstSelectedId) : null;
+  const firstSt: ArtElementTweak = (firstSelectedId && tweaks[firstSelectedId]) || {};
+  
+  // Mixed state logic
+  let mixedHidden = false;
+  let allHidden = true;
+  selected.forEach(id => {
+    const isHidden = !!tweaks[id]?.hidden;
+    if (isHidden) mixedHidden = true;
+    if (!isHidden) allHidden = false;
+  });
+  const showHideIcon = allHidden ? <Eye className="mr-2 h-4 w-4" /> : <EyeOff className="mr-2 h-4 w-4" />;
+  const showHideLabel = allHidden ? "Mostrar seleção" : "Esconder seleção";
+
   return createPortal(
     <div className="fixed inset-0 z-[2000] overflow-y-auto bg-background text-foreground">
       <div className="mx-auto max-w-6xl p-4 md:p-6">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-foreground">Ajuste fino da arte</h2>
             <p className="text-xs text-muted-foreground">
-              {label} · arraste qualquer bloco · {elements.length} elementos detectados
+              {label} · {elements.length} elementos detectados
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={undo} disabled={pointer === 0} title="Desfazer (Ctrl+Z)">
+              <Undo2 className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={redo} disabled={pointer === history.length - 1} title="Refazer (Ctrl+Y)">
+              <Redo2 className="h-4 w-4" />
+            </Button>
+            <div className="w-px h-6 bg-border mx-1" />
             <Button variant="outline" size="sm" onClick={() => setShowBoxes((v) => !v)}>
               {showBoxes ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
               {showBoxes ? "Ocultar caixas" : "Mostrar caixas"}
@@ -214,14 +381,15 @@ export default function ArtTweakEditor({
         <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_320px]">
           <div
             ref={stageRef}
-            className="relative w-full select-none overflow-hidden rounded-lg border border-border bg-muted"
+            className="relative w-full select-none overflow-hidden rounded-lg border border-border bg-muted cursor-crosshair"
             style={{ aspectRatio: `${CANVAS_W} / ${canvasH}` }}
+            onPointerDown={onPointerDownStage}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerLeave={onPointerUp}
           >
             {preview && (
-              <img src={preview} alt="Prévia da arte em ajuste" className="pointer-events-none h-full w-full object-contain" />
+              <img src={preview} alt="Prévia da arte em ajuste" className="pointer-events-none absolute inset-0 h-full w-full object-contain" />
             )}
             {rendering && (
               <div className="absolute inset-0 grid place-items-center bg-background/40">
@@ -229,11 +397,11 @@ export default function ArtTweakEditor({
               </div>
             )}
             {showBoxes && elements.map((box) => {
-              const isSel = selected === box.id;
+              const isSel = selected.has(box.id);
               return (
                 <div
                   key={box.id}
-                  onPointerDown={(e) => onPointerDown(e, box)}
+                  onPointerDown={(e) => onPointerDownBox(e, box)}
                   className={`absolute cursor-move rounded-[2px] border transition-colors ${
                     isSel ? "border-2 border-primary bg-primary/10" : "border-primary/30 hover:border-primary/80"
                   }`}
@@ -249,6 +417,18 @@ export default function ArtTweakEditor({
                 />
               );
             })}
+            
+            {marquee && (
+              <div
+                className="absolute border border-blue-500 bg-blue-500/20 pointer-events-none"
+                style={{
+                  left: Math.min(marquee.startX, marquee.endX),
+                  top: Math.min(marquee.startY, marquee.endY),
+                  width: Math.abs(marquee.startX - marquee.endX),
+                  height: Math.abs(marquee.startY - marquee.endY),
+                }}
+              />
+            )}
           </div>
 
           <div className="space-y-4">
@@ -260,26 +440,40 @@ export default function ArtTweakEditor({
                 <p className="text-xs text-muted-foreground">Gerando… aguarde o desenho da arte.</p>
               ) : (
                 <div className="max-h-52 space-y-1 overflow-y-auto pr-1">
-                  {elements.map((el) => (
-                    <button
-                      key={el.id}
-                      onClick={() => setSelected(el.id)}
-                      className={`block w-full truncate rounded border px-2 py-1 text-left text-[11px] ${
-                        selected === el.id
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-muted text-foreground hover:bg-accent hover:text-accent-foreground"
-                      }`}
-                    >
-                      {tweaks[el.id]?.hidden ? "🚫 " : ""}{el.label}
-                    </button>
-                  ))}
+                  {elements.map((el) => {
+                    const isSel = selected.has(el.id);
+                    return (
+                      <button
+                        key={el.id}
+                        onClick={(e) => {
+                          let newSel = new Set(selected);
+                          if (e.ctrlKey || e.metaKey) {
+                            if (newSel.has(el.id)) newSel.delete(el.id);
+                            else newSel.add(el.id);
+                          } else {
+                            newSel = new Set([el.id]);
+                          }
+                          setSelected(newSel);
+                        }}
+                        className={`block w-full truncate rounded border px-2 py-1 text-left text-[11px] ${
+                          isSel
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-muted text-foreground hover:bg-accent hover:text-accent-foreground"
+                        }`}
+                      >
+                        {tweaks[el.id]?.hidden ? "🚫 " : ""}{el.label}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>
 
-            {selected && (
+            {selected.size > 0 && (
               <div className="space-y-3 rounded-lg border border-border bg-card p-3 text-card-foreground">
-                <p className="truncate text-xs font-semibold">{selectedBox?.label || selected}</p>
+                <p className="truncate text-xs font-semibold">
+                  {selected.size === 1 ? firstSelectedBox?.label || firstSelectedId : `${selected.size} elementos selecionados`}
+                </p>
 
                 <div className="grid grid-cols-3 gap-1.5">
                   <span />
@@ -292,25 +486,27 @@ export default function ArtTweakEditor({
 
                 <div>
                   <p className="mb-1 text-[11px] text-muted-foreground">
-                    Tamanho: {Math.round((st.scale ?? 1) * 100)}%
+                    Tamanho: {selected.size > 1 ? "Misto" : `${Math.round((firstSt.scale ?? 1) * 100)}%`}
                   </p>
                   <Slider
                     min={20}
                     max={300}
                     step={2}
-                    value={[Math.round((st.scale ?? 1) * 100)]}
-                    onValueChange={(v) => patch(selected, { scale: v[0] / 100 })}
+                    value={[Math.round((firstSt.scale ?? 1) * 100)]}
+                    onValueChange={(v) => patchSelected({ scale: v[0] / 100 })}
                   />
                 </div>
 
                 <div>
-                  <p className="mb-1 text-[11px] text-muted-foreground">Rotação: {st.rotate ?? 0}°</p>
+                  <p className="mb-1 text-[11px] text-muted-foreground">
+                    Rotação: {selected.size > 1 ? "Misto" : `${firstSt.rotate ?? 0}°`}
+                  </p>
                   <Slider
                     min={-45}
                     max={45}
                     step={1}
-                    value={[st.rotate ?? 0]}
-                    onValueChange={(v) => patch(selected, { rotate: v[0] })}
+                    value={[firstSt.rotate ?? 0]}
+                    onValueChange={(v) => patchSelected({ rotate: v[0] })}
                   />
                 </div>
 
@@ -322,21 +518,24 @@ export default function ArtTweakEditor({
                     <ArrowDownToLine className="mr-1 h-4 w-4" /> Trás
                   </Button>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Camada: {st.z ?? 0} · Posição: {st.dx || 0}px / {st.dy || 0}px
-                </p>
+                
+                {selected.size === 1 && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Camada: {firstSt.z ?? 0} · Posição: {firstSt.dx || 0}px / {firstSt.dy || 0}px
+                  </p>
+                )}
 
                 <Button
-                  variant={st.hidden ? "default" : "outline"}
+                  variant={allHidden ? "default" : "outline"}
                   size="sm"
                   className="w-full"
-                  onClick={() => patch(selected, { hidden: !st.hidden })}
+                  onClick={() => patchSelected({ hidden: !allHidden })}
                 >
-                  {st.hidden ? <Eye className="mr-2 h-4 w-4" /> : <EyeOff className="mr-2 h-4 w-4" />}
-                  {st.hidden ? "Mostrar elemento" : "Esconder elemento"}
+                  {showHideIcon}
+                  {showHideLabel}
                 </Button>
 
-                {selectedBox?.kind === "text" && (
+                {selected.size === 1 && firstSelectedBox?.kind === "text" && (
                   <div>
                     <p className="mb-1 text-[11px] text-muted-foreground">
                       Texto (use Enter para quebrar linha — ex.: “10x” em cima, “de” embaixo)
@@ -344,14 +543,15 @@ export default function ArtTweakEditor({
                     <Textarea
                       rows={3}
                       className="text-xs"
-                      value={st.text ?? selectedBox.text ?? ""}
-                      onChange={(e) => patch(selected, { text: e.target.value })}
+                      value={firstSt.text ?? firstSelectedBox.text ?? ""}
+                      onChange={(e) => patchSelected({ text: e.target.value })}
                     />
                   </div>
                 )}
 
-                <Button variant="ghost" size="sm" className="w-full" onClick={resetOne}>
-                  <RotateCcw className="mr-2 h-4 w-4" /> Zerar este elemento
+                <Button variant="ghost" size="sm" className="w-full" onClick={resetSelected}>
+                  <RotateCcw className="mr-2 h-4 w-4" /> 
+                  {selected.size === 1 ? "Zerar este elemento" : "Zerar itens selecionados"}
                 </Button>
               </div>
             )}
