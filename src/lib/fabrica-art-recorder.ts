@@ -342,7 +342,9 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
         const raw = typeof t.text === "string" ? t.text : op.text || "";
         const lines = raw.split("\n");
         const fs = fontSizeOf(op.state.font);
-        let adjX = x;
+        const origX = op.draw.a[1] as number;
+        const origY = op.draw.a[2] as number;
+        let adjX = origX;
         if (t.align && t.align !== op.state.textAlign) {
            real.textAlign = t.align;
            if (op.state.textAlign === "left" && t.align === "center") adjX += op.box.w / 2;
@@ -355,12 +357,10 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
         const lh = Number.isFinite(t.lineHeight as number) && (t.lineHeight as number) > 0
           ? (t.lineHeight as number)
           : fs * 1.1;
-        const x = op.draw.a[1] as number;
-        const y = op.draw.a[2] as number;
         const maxW = op.draw.a[3];
         lines.forEach((line, i) => {
-          if (typeof maxW === "number") (real as any)[op.draw.m](line, x, y + i * lh, maxW);
-          else (real as any)[op.draw.m](line, x, y + i * lh);
+          if (typeof maxW === "number") (real as any)[op.draw.m](line, adjX, origY + i * lh, maxW);
+          else (real as any)[op.draw.m](line, adjX, origY + i * lh);
         });
       } else if (op.path) {
         real.beginPath();
