@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { Header } from "@/components/Header";
 import { SidebarNav } from "@/components/SidebarNav";
 import { Footer } from "@/components/Footer";
@@ -57,7 +58,8 @@ const FORCED_LANGUAGE = 'es' as const;
 
 const IndexES = () => {
   const navigate = useNavigate();
-  const { user, loading, subscription } = useAuth();
+  const { user } = useAuth();
+  const { can } = useEntitlements();
   const { setLanguage, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllVideos, setShowAllVideos] = useState(false);
@@ -96,15 +98,18 @@ const IndexES = () => {
     }
   }, [user, trackPageView]);
 
-  // Note: Removed blocking loader for subscription.loading for better LCP.
+  // Free content renders immediately; server entitlements protect paid content.
   // Free content renders immediately; premium gates update when subscription resolves.
 
-  // Check if user is subscribed for showing premium content (logged in + active subscription)
-  const isSubscribed = user && subscription.subscribed;
+  const hasPremiumContent = Boolean(user) && can("premium_content.open");
 
   // Function to get the premium required callback
   const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string, itemTitle?: string, index?: number) => {
-    // 1. Force LOGIN if not logged in at all
+    const isPremium = Boolean(isItemPremiumOverride)
+      || checkIfItemIsPremium(itemType || category || '', itemTitle, index);
+
+    if (!isPremium) return undefined;
+
     if (!user) {
       return () => {
         toast.info("Inicia sesión para acceder al contenido", {
@@ -114,20 +119,8 @@ const IndexES = () => {
       };
     }
 
-    if (isSubscribed) return undefined;
-
-    // Si el elemento es explícitamente premium (ex: ferramenta específica ou override)
-    if (isItemPremiumOverride) return () => setShowPremiumGate(true);
-
-    // Biblioteca de vídeos y Reels son SIEMPRE premium
-    const premiumTypes = ['video', 'seasonal', 'reel', 'story', 'weekly-story', 'feed'];
-    if (itemType && premiumTypes.includes(itemType)) return () => setShowPremiumGate(true);
-
-    // Si la categoría es premium (fallback)
-    const isPremium = checkIfItemIsPremium(itemType || category || '', itemTitle, index);
-    if (isPremium) return () => setShowPremiumGate(true);
-
-    return undefined;
+    if (hasPremiumContent) return undefined;
+    return () => setShowPremiumGate(true);
   };
 
   const checkIfItemIsPremium = (type: string, title?: string, index?: number) => {
@@ -1123,30 +1116,35 @@ const IndexES = () => {
     }
   };
 
+  const categoryNavNode = (
+    <CategoryNav
+      activeCategory={activeCategory}
+      onCategoryChange={(cat) => {
+        if (cat === 'fabrica') {
+          navigate('/es/fabrica');
+        } else {
+          setActiveCategory(cat);
+        }
+      }}
+      showFavorites={!!user}
+    />
+  );
+
   const mainContent = (
     <>
       {/* Hero Banner with Search */}
-      {activeCategory === 'all' && (
+      {activeCategory === 'all' ? (
         <HeroBanner
           searchValue={searchQuery}
           onSearchChange={(val) => {
             setSearchQuery(val);
           }}
-        />
+        >
+          {categoryNavNode}
+        </HeroBanner>
+      ) : (
+        categoryNavNode
       )}
-
-      {/* Category Navigation - Horizontal scroll with icons */}
-      <CategoryNav
-        activeCategory={activeCategory}
-        onCategoryChange={(cat) => {
-          if (cat === 'fabrica') {
-            navigate('/es/fabrica');
-          } else {
-            setActiveCategory(cat);
-          }
-        }}
-        showFavorites={!!user}
-      />
 
       {/* Dynamic Content based on category */}
       {renderContent()}

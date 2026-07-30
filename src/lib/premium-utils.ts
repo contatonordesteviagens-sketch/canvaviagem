@@ -9,7 +9,10 @@ export const FREE_TYPES = ['caption'];
  * Checks if a specific content item should be considered premium
  */
 export const checkIfItemIsPremium = (type: string, title?: string, index?: number): boolean => {
-    const itemTitle = title?.toLowerCase() || '';
+    const itemTitle = (title || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
 
     // Captions: only the first 2 (index 0, 1) are free
     if (type === 'caption') {
@@ -20,8 +23,8 @@ export const checkIfItemIsPremium = (type: string, title?: string, index?: numbe
     // Feed: first 2 items are free
     if (type === 'feed') {
         if (typeof index === 'number') return index >= 2;
-        // If no index provided, check title for "Grátis"
-        return !itemTitle.includes('grátis');
+        // If no index is provided, keep explicit free catalog titles available.
+        return !itemTitle.includes('gratis');
     }
 
     // AI Tools / Marketing Tools logic

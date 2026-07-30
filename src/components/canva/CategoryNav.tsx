@@ -109,17 +109,17 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
   };
 
   return (
-    <div className="mb-8 relative">
+    <div className="mb-4 sm:mb-8 relative">
       {/* Left arrow - mobile + desktop */}
       <button
         onClick={() => scroll('left')}
         className={cn(
-          "absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-8 md:h-8 rounded-full bg-white/90 shadow-md flex items-center justify-center transition-all duration-200",
+          "absolute -left-2 sm:left-0 top-[28px] sm:top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 shadow-lg flex items-center justify-center transition-all duration-200",
           canScrollLeft ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         aria-label="Scroll para esquerda"
       >
-        <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-300" />
       </button>
 
       {/* Categories container with fade edges */}
@@ -144,12 +144,12 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
         <button
           onClick={() => scroll('right')}
           className={cn(
-            "absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/90 shadow-md transition-all duration-200",
+            "absolute -right-2 sm:right-0 top-[28px] sm:top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 shadow-lg transition-all duration-200",
             canScrollRight ? "opacity-100" : "opacity-0 pointer-events-none"
           )}
           aria-label="Scroll para direita"
         >
-          <ChevronRight className="w-5 h-5 text-muted-foreground animate-pulse" />
+          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-300" />
         </button>
 
         <div

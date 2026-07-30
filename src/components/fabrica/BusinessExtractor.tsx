@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { Sparkles, Link as LinkIcon, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { getGeminiApiKey } from "@/pages/vendedor-ia/services/gemini";
 import { supabase } from "@/integrations/supabase/client";
 
 export const BusinessExtractor = ({ onExtract }: { onExtract: (data: any) => void }) => {
@@ -39,14 +38,13 @@ export const BusinessExtractor = ({ onExtract }: { onExtract: (data: any) => voi
       setLoading(true);
       toast.info(`Iniciando extração inteligente via IA...`, { duration: 3000 });
       
-      const apiKey = getGeminiApiKey();
       const { data: sessionData } = await supabase.auth.getSession();
       const response = await supabase.functions.invoke("fabrica-extract-business-info", {
         method: "POST",
         headers: sessionData.session?.access_token
           ? { Authorization: `Bearer ${sessionData.session.access_token}` }
           : undefined,
-        body: { type, content, geminiApiKey: apiKey },
+        body: { type, content },
       });
       if (response.error) {
         throw new Error(response.error.message || "Erro ao comunicar com a inteligencia artificial");

@@ -54,7 +54,7 @@ const AccessFilterComponent = ({
                 )}
             >
                 <Crown className={cn("w-3 h-3 sm:w-3.5 sm:h-3.5", selectedFilters.includes('premium') ? "text-primary fill-primary/20" : "text-muted-foreground/50")} />
-                PRO
+                Elite
             </Button>
             <Button
                 variant="ghost"

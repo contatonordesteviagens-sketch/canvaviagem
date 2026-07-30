@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { type StrategyId } from "@/data/fabrica-prompts";
 import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } from "@/data/fabrica-categories";
@@ -12,10 +13,13 @@ import {
   Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
   Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2, Copy, ClipboardCheck, FileText, Key,
+  LockKeyhole,
 } from "lucide-react";
 import { toast } from "sonner";
 import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
 import { F1CarouselBuilder } from "@/components/fabrica/F1CarouselBuilder";
+import { FabricaPaywallDialog } from "@/components/fabrica/FabricaPaywallDialog";
+import { createExportIdentity } from "@/lib/exportIdentity";
 
 type GenMode = "ai" | "photo" | "custom";
 type CustomSource = "upload" | "link";
@@ -465,6 +469,10 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
 export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode = false, onSkipToSite }: Props) => {
   const { state, update, systemUpdate, reset } = useFabricaContext();
   const { user } = useAuth();
+  const { reserve, commit, release, track, can, tier, remaining } = useEntitlements();
+  const [showExportPaywall, setShowExportPaywall] = useState(false);
+  const isAdPreviewLocked = tier === "guest"
+    || (!can("ad.export") && remaining?.ad_export === 0);
   const { data: savedProjects } = useDiagnosticos();
   const [creativeMode, setCreativeMode] = useState<"ad" | "carousel">(initialMode);
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
@@ -1001,6 +1009,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   ];
 
   const searchPhotos = async (overrideQuery?: string) => {
+    if (!user) {
+      setShowExportPaywall(true);
+      return;
+    }
     const q = (overrideQuery ?? photoQuery ?? destination).trim();
     if (!q) {
       toast.error("Digite o destino para buscar fotos");
@@ -1652,11 +1664,42 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     setCaptionCopied(false);
   }, [generatedImages.length, destination, formattedPriceForAd, price, paymentLabel, installments, paymentMode, paymentSuffix, highlights, promoName, travelPeriod, categoria, state.agencyName, state.footerContact1Value, state.whatsapp, state.footerContact2Value, state.instagram]);
 
-  const downloadPNG = () => {
+  const downloadPNG = async () => {
     if (generatedImages.length === 0) return;
-    
+    if (!user) {
+      setShowExportPaywall(true);
+      return;
+    }
+
+    const exportIdentity = createExportIdentity(
+      "ad",
+      state.projectId,
+      [
+        generatedImage.length,
+        generatedImage.slice(-96),
+        destination,
+        format,
+      ].join(":"),
+    );
+    const reservation = await reserve("ad_export", exportIdentity, {
+      projectId: state.projectId,
+      metadata: { destination, format, batch_requested: isBatchMode },
+    });
+
+    if (!reservation.allowed) {
+      if (reservation.error) {
+        toast.error(reservation.error);
+        return;
+      }
+      track("free_limit_reached", { capability: "ad_export" });
+      track("paywall_viewed", { feature: "ad_export" });
+      setShowExportPaywall(true);
+      return;
+    }
+
     try {
-      const toDownload = isBatchMode ? generatedImages : [generatedImage];
+      const downloadedBatch = can("ad.export") && isBatchMode;
+      const toDownload = downloadedBatch ? generatedImages : [generatedImage];
       
       toDownload.forEach((img, idx) => {
         const a = document.createElement("a");
@@ -1667,9 +1710,17 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         a.click();
         a.remove();
       });
-      
-      toast.success(isBatchMode ? "Todas as imagens baixadas!" : "Imagem baixada!");
-    } catch { toast.error("Erro ao baixar imagem"); }
+
+      await commit(reservation.reservationId);
+      track("free_export_completed", {
+        capability: "ad_export",
+        remaining: reservation.remaining,
+      });
+      toast.success(downloadedBatch ? "Todas as imagens baixadas!" : "Imagem baixada!");
+    } catch {
+      await release(reservation.reservationId).catch(() => undefined);
+      toast.error("Erro ao baixar imagem");
+    }
   };
 
   const handleOpenCarousel = () => {
@@ -1875,7 +1926,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "photo" ? "text-black shadow-sm" : "text-white/50 hover:text-white"}`}
               style={genMode === "photo" ? { background: UI_ACCENT } : undefined}
             >
-              <ImageIcon className="w-3.5 h-3.5" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(ilimitada)</span>
+              <ImageIcon className="w-3.5 h-3.5" /> Foto Real
             </button>
             <button
               onClick={() => setGenMode("custom")}
@@ -2790,17 +2841,35 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                   </button>
                 </div>
 
-                <div className={`grid gap-3 ${generatedImages.length > 1 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1"}`}>
+                <div className={`${generatedImages.length > 1 ? "flex md:grid gap-3 overflow-x-auto snap-x pb-2 md:pb-0 md:grid-cols-3" : "grid grid-cols-1"}`}>
                   {generatedImages.map((img, idx) => (
-                    <div key={`${img.slice(0, 48)}-${idx}`} className="relative group/img">
+                    <div key={`${img.slice(0, 48)}-${idx}`} className="relative group/img shrink-0 min-w-[75vw] md:min-w-0 snap-center">
                       <button
                         type="button"
                         onClick={() => setGeneratedImage(img)}
                         className={`w-full overflow-hidden rounded-xl border-2 bg-black/30 transition-all ${generatedImage === img ? "border-white shadow-lg" : "border-white/10 hover:border-white/30"}`}
                         title={`Selecionar variação ${idx + 1}`}
                       >
-                        <img src={img} alt={`Anúncio gerado ${idx + 1}`} className="w-full h-auto object-contain" />
+                        <img
+                          src={img}
+                          alt={`Anúncio gerado ${idx + 1}`}
+                          className={`w-full h-auto object-contain transition ${isAdPreviewLocked ? "blur-md" : ""}`}
+                        />
                       </button>
+                      {isAdPreviewLocked && (
+                        <button
+                          type="button"
+                          onClick={() => setShowExportPaywall(true)}
+                          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-black/35 px-5 text-center text-white backdrop-blur-[1px]"
+                        >
+                          <span className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/70">
+                            <LockKeyhole className="h-5 w-5" />
+                          </span>
+                          <span className="text-xs font-black">
+                            {tier === "guest" ? "Crie sua conta para liberar" : "Prévia pronta. Libere o download no Elite"}
+                          </span>
+                        </button>
+                      )}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -2809,7 +2878,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                           if (generatedImage === img) setGeneratedImage(newList[0] || "");
                           toast.success("Variação removida");
                         }}
-                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg md:opacity-0 md:group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
                         title="Excluir esta versão"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -2887,6 +2956,13 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       </div>
         </>
       )}
+      <FabricaPaywallDialog
+        open={showExportPaywall}
+        onOpenChange={setShowExportPaywall}
+        feature="ad_export"
+        title="Seus 3 anúncios gratuitos já foram usados"
+        description="Você pode continuar editando e salvando este projeto. Para baixar novas artes sem limite, libere o Plano Elite."
+      />
     </div>
   );
 };

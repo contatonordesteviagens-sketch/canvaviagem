@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
+import { isEliteProduct } from "../_shared/planAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,20 +21,62 @@ const GENERIC_ERRORS = {
   configError: "Service configuration error",
 };
 
-// Price ID for the monthly subscription - R$ 29,00/month
-const PRICE_ID = "price_1SvPypLXUoWoiE4T9zd9mbfR";
+type BillingCycle = "monthly" | "semiannual" | "annual";
+
+const getPriceId = (billingCycle: BillingCycle) => {
+  const envName = {
+    monthly: "STRIPE_ELITE_MONTHLY_PRICE_ID",
+    semiannual: "STRIPE_ELITE_SEMIANNUAL_PRICE_ID",
+    annual: "STRIPE_ELITE_ANNUAL_PRICE_ID",
+  }[billingCycle];
+
+  return Deno.env.get(envName) ?? "";
+};
+
+const getAppOrigin = () => {
+  const configuredOrigin = Deno.env.get("APP_URL")
+    ?? Deno.env.get("SITE_URL")
+    ?? "https://canvaviagem.com";
+
+  try {
+    return new URL(configuredOrigin).origin;
+  } catch {
+    return "https://canvaviagem.com";
+  }
+};
+
+const isCurrentSubscription = (subscription?: {
+  status?: string | null;
+  current_period_end?: string | null;
+  trial_ends_at?: string | null;
+} | null) => {
+  if (!subscription || !["active", "trialing"].includes(subscription.status ?? "")) return false;
+  const entitlementEnd = subscription.status === "trialing"
+    ? subscription.trial_ends_at ?? subscription.current_period_end
+    : subscription.current_period_end;
+
+  if (subscription.status === "trialing" && !entitlementEnd) return false;
+  return !entitlementEnd || new Date(entitlementEnd) > new Date();
+};
+
+const stripeProductId = (subscription: Stripe.Subscription) => {
+  const product = subscription.items.data[0]?.price?.product;
+  if (typeof product === "string") return product;
+  return product?.id ?? null;
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
 
   try {
+    assertOfficialSupabaseProject("create-checkout");
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -64,34 +108,101 @@ serve(async (req) => {
         status: 401,
       });
     }
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    logStep("User authenticated", { userId: user.id });
+
+    let requestedCycle: BillingCycle = "monthly";
+    try {
+      const body = await req.json();
+      if (body?.billing_cycle === "semiannual" || body?.billing_cycle === "annual") {
+        requestedCycle = body.billing_cycle;
+      }
+    } catch {
+      // Empty request bodies use the canonical monthly offer.
+    }
+
+    const priceId = getPriceId(requestedCycle);
+    if (!priceId) {
+      logStep("ERROR: Elite price is not configured", { billingCycle: requestedCycle });
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.configError }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    // Check if customer already exists
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      logStep("Existing customer found", { customerId });
-    } else {
-      logStep("No existing customer, will create new one");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    if (serviceRoleKey) {
+      const dbClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        serviceRoleKey,
+        { auth: { persistSession: false } },
+      );
+      const [{ data: localSubscription }, { data: adminRole }] = await Promise.all([
+        dbClient
+          .from("subscriptions")
+          .select("product_id,status,current_period_end,trial_ends_at")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        dbClient
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .maybeSingle(),
+      ]);
+
+      if (
+        adminRole
+        || (
+          isEliteProduct(localSubscription?.product_id)
+          && isCurrentSubscription(localSubscription)
+        )
+      ) {
+        logStep("Checkout skipped: account already has Elite access", { userId: user.id });
+        return new Response(JSON.stringify({ already_subscribed: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
     }
 
-    const origin = req.headers.get("origin") || "https://lovable.dev";
+    const customers = await stripe.customers.list({ email: user.email, limit: 10 });
+    let customerId = customers.data[0]?.id;
+    for (const customer of customers.data) {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: "all",
+        limit: 20,
+      });
+      const existingElite = subscriptions.data.some((subscription) =>
+        ["active", "trialing"].includes(subscription.status)
+        && isEliteProduct(stripeProductId(subscription))
+      );
 
-    // Get user name from metadata with fallbacks
-    const userName = user.user_metadata?.name ||
-      user.user_metadata?.full_name ||
-      user.email?.split('@')[0] ||
-      'usuário';
+      if (existingElite) {
+        logStep("Checkout skipped: active Elite subscription found in Stripe", { userId: user.id });
+        return new Response(JSON.stringify({ already_subscribed: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+    }
+
+    if (customerId) {
+      logStep("Existing Stripe customer found");
+    } else {
+      logStep("No existing Stripe customer found");
+    }
+
+    const origin = getAppOrigin();
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],
@@ -99,12 +210,16 @@ serve(async (req) => {
       // 3-day free trial period
       subscription_data: {
         trial_period_days: 3,
+        metadata: {
+          user_id: user.id,
+          billing_cycle: requestedCycle,
+        },
       },
-      // Redirect to /obrigado with email for tracking
-      success_url: `${origin}/obrigado?email=${encodeURIComponent(user.email || '')}&source=checkout`,
-      cancel_url: `${origin}/planos?canceled=true`,
+      success_url: `${origin}/obrigado?source=checkout`,
+      cancel_url: `${origin}/inicio?checkout=canceled`,
       metadata: {
         user_id: user.id,
+        billing_cycle: requestedCycle,
       },
       // Enable abandoned cart recovery
       after_expiration: {
@@ -119,7 +234,7 @@ serve(async (req) => {
       expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 minutes
     });
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    logStep("Checkout session created", { sessionId: session.id });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

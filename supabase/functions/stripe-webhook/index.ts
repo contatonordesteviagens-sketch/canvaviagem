@@ -36,6 +36,39 @@ function isValidEmail(email: string | null | undefined): email is string {
   return emailRegex.test(email) && email.length <= 254;
 }
 
+type SubscriptionAccessDetails = {
+  status: string;
+  currentPeriodEnd: string | null;
+  trialStartedAt: string | null;
+  trialEndsAt: string | null;
+  billingCycle: string | null;
+};
+
+function getSubscriptionAccessDetails(subscription: Stripe.Subscription): SubscriptionAccessDetails {
+  const recurring = subscription.items.data[0]?.price?.recurring;
+  const billingCycle = recurring?.interval === "year"
+    ? "annual"
+    : recurring?.interval === "month" && recurring.interval_count === 6
+      ? "semiannual"
+      : recurring?.interval === "month"
+        ? "monthly"
+        : null;
+
+  return {
+    status: subscription.status,
+    currentPeriodEnd: subscription.current_period_end
+      ? new Date(subscription.current_period_end * 1000).toISOString()
+      : null,
+    trialStartedAt: subscription.trial_start
+      ? new Date(subscription.trial_start * 1000).toISOString()
+      : null,
+    trialEndsAt: subscription.trial_end
+      ? new Date(subscription.trial_end * 1000).toISOString()
+      : null,
+    billingCycle,
+  };
+}
+
 async function findExistingUserIdByEmail(supabase: any, email: string): Promise<string | null> {
   const { data: profileUser, error: profileError } = await supabase
     .from("profiles")
@@ -100,7 +133,8 @@ async function ensureUserAndOnboarding(
   stripeCustomerId: string,
   stripeSubscriptionId: string,
   phone: string | null,
-  productId?: string
+  productId?: string,
+  accessDetails?: SubscriptionAccessDetails,
 ) {
   const normalizedEmail = email.toLowerCase().trim();
   logStep("Starting onboarding for", { email: redactEmail(normalizedEmail), productId });
@@ -166,8 +200,13 @@ async function ensureUserAndOnboarding(
     user_id: userId,
     stripe_customer_id: stripeCustomerId,
     stripe_subscription_id: stripeSubscriptionId,
-    status: "active",
+    status: accessDetails?.status ?? "active",
     product_id: productId || null,
+    current_period_end: accessDetails?.currentPeriodEnd ?? null,
+    trial_started_at: accessDetails?.trialStartedAt ?? null,
+    trial_ends_at: accessDetails?.trialEndsAt ?? null,
+    billing_provider: "stripe",
+    billing_cycle: accessDetails?.billingCycle ?? null,
     updated_at: new Date().toISOString(),
   }, { onConflict: "user_id" });
 
@@ -288,10 +327,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
   const stripeSubscriptionId = session.subscription as string;
 
   let productId: string | undefined = undefined;
+  let accessDetails: SubscriptionAccessDetails | undefined;
   if (stripeSubscriptionId) {
     try {
       const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
       const retrievedProductId = subscription.items.data[0]?.price?.product as string;
+      accessDetails = getSubscriptionAccessDetails(subscription);
       if (retrievedProductId) {
         productId = retrievedProductId;
         logStep("Retrieved product ID from subscription", { productId });
@@ -316,20 +357,38 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
     }
   }
 
-  await ensureUserAndOnboarding(supabase, resend, email, customerName, stripeCustomerId, stripeSubscriptionId, customerPhone, productId);
+  await ensureUserAndOnboarding(
+    supabase,
+    resend,
+    email,
+    customerName,
+    stripeCustomerId,
+    stripeSubscriptionId,
+    customerPhone,
+    productId,
+    accessDetails,
+  );
 }
 
 async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabase: any) {
-  // Only needed if we want to track 'incomplete' subs
   logStep("Processing customer.subscription.created", { subscriptionId: subscription.id });
+  await handleSubscriptionUpdated(subscription, supabase);
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supabase: any) {
   logStep("Processing customer.subscription.updated", { subscriptionId: subscription.id });
   const stripeCustomerId = subscription.customer as string;
+  const productId = subscription.items.data[0]?.price?.product as string | undefined;
+  const accessDetails = getSubscriptionAccessDetails(subscription);
   const { error } = await supabase.from("subscriptions").update({
-    status: subscription.status === "active" || subscription.status === "trialing" ? "active" : subscription.status,
-    current_period_end: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null,
+    status: accessDetails.status,
+    current_period_end: accessDetails.currentPeriodEnd,
+    trial_started_at: accessDetails.trialStartedAt,
+    trial_ends_at: accessDetails.trialEndsAt,
+    billing_provider: "stripe",
+    billing_cycle: accessDetails.billingCycle,
+    product_id: productId ?? null,
+    stripe_subscription_id: subscription.id,
     updated_at: new Date().toISOString(),
   }).eq("stripe_customer_id", stripeCustomerId);
   if (error) logStep("ERROR updating subscription", { error: error.message });
@@ -355,10 +414,12 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
       const subscriptionId = invoice.subscription as string;
       
       let productId: string | undefined = undefined;
+      let accessDetails: SubscriptionAccessDetails | undefined;
       if (subscriptionId) {
         try {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           const retrievedProductId = subscription.items.data[0]?.price?.product as string;
+          accessDetails = getSubscriptionAccessDetails(subscription);
           if (retrievedProductId) {
             productId = retrievedProductId;
             logStep("Retrieved product ID from subscription (invoice)", { productId });
@@ -377,7 +438,17 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
         }
       }
 
-      await ensureUserAndOnboarding(supabase, resend, email, customerName, stripeCustomerId, subscriptionId, null, productId);
+      await ensureUserAndOnboarding(
+        supabase,
+        resend,
+        email,
+        customerName,
+        stripeCustomerId,
+        subscriptionId,
+        null,
+        productId,
+        accessDetails,
+      );
       return; // ensureUserAndOnboarding also upserts subscription, so we can return or continue. 
     } else {
       logStep("No email in invoice for subscription_create", { invoiceId: invoice.id });

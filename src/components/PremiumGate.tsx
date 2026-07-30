@@ -1,12 +1,8 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { Lock, Loader2 } from "lucide-react";
-
-// Checkout links by language
-const STRIPE_LINKS = {
-  pt: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-  es: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04",
-};
+import { useLocation, useNavigate } from "react-router-dom";
+import { buildUpgradePath } from "@/lib/eliteOffer";
 
 interface PremiumGateProps {
   children: React.ReactNode;
@@ -20,12 +16,13 @@ export const PremiumGate = ({
   const {
     user,
     loading,
-    subscription
   } = useAuth();
-  const { language, t } = useLanguage();
+  const { can, loading: entitlementsLoading } = useEntitlements();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Show loading state
-  if (loading || subscription.loading) {
+  if (loading || entitlementsLoading) {
     return <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>;
@@ -35,12 +32,12 @@ export const PremiumGate = ({
   const isChildrenPremium = (children as any)?.props?.isPremium !== false;
 
   // If not logged in OR no subscription AND it's a premium item, show blurred preview
-  if ((!user || !subscription.subscribed) && isChildrenPremium) {
+  if ((!user || !can("premium_content.open")) && isChildrenPremium) {
     const handleAction = () => {
       if (onPremiumClick) {
         onPremiumClick();
       } else {
-        window.open(STRIPE_LINKS[language as keyof typeof STRIPE_LINKS] || STRIPE_LINKS.pt, "_blank");
+        navigate(buildUpgradePath("premium_content", location.pathname));
       }
     };
 
@@ -81,7 +78,7 @@ export const PremiumGate = ({
           {/* Persistent bottom hint */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-yellow-500 text-black border-none rounded-full px-4 py-1.5 shadow-lg flex items-center gap-2 text-[10px] font-black uppercase tracking-wider opacity-90 group-hover:opacity-100">
             <Lock className="h-3 w-3" />
-            <span>EXCLUSIVO PRO</span>
+            <span>EXCLUSIVO ELITE</span>
           </div>
         </div>
       </div>;

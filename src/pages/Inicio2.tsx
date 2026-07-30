@@ -1,5 +1,5 @@
 // Sincronização e verificação ativa pós-restauração: links de compra, preços e layouts 100% íntegros
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   Calendar,
@@ -37,13 +37,16 @@ import showcaseCrm from "@/assets/images/showcase-crm.png";
 import showcaseScheduler from "@/assets/images/showcase-scheduler.png";
 import showcasePremiumMedias from "@/assets/images/showcase-premium-medias.png";
 import { ELITE_OFFER } from "@/lib/eliteOffer";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const supportWhatsAppUrl =
   "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20sobre%20o%20Canva%20Viagem";
 const instagramUrl = "https://www.instagram.com/lucasferrari.pro/";
-const annualCheckoutUrl = ELITE_OFFER.annualCheckoutUrl;
-const monthlyCheckoutUrl = ELITE_OFFER.monthlyCheckoutUrl;
 const metaPixelId = "916689227676142";
+const pendingCheckoutKey = "cv:pending-elite-checkout";
 const reelsMainGifUrl =
   "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm5kcmcybmE2aTFkOTU3ZDNqYmZkbHQ2YjRibjB1NjFtN2RoNWdrMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6osnZ6joYcPfERZsaE/giphy.gif";
 const reelsPreviewGifs = [
@@ -118,7 +121,7 @@ const includedResultCards = [
 const trustProofMetrics = [
   ["7 dias", "para testar com garantia"],
   ["12 meses", "de acesso no plano anual"],
-  ["R$ 817", "de economia no plano anual"],
+  [ELITE_OFFER.annualSavings, "de economia no plano anual"],
   ["250 Reels", "para deixar o perfil mais profissional"],
 ];
 
@@ -127,7 +130,7 @@ const objectionCards = [
   ["Isso serve para agência pequena?", "Serve principalmente para agência pequena, consultor e equipe enxuta que precisa parecer mais profissional sem contratar uma estrutura cara."],
   ["Vale a pena pagar por isso?", "Se ela economizar algumas horas por mês e melhorar a apresentação de uma única oferta, o plano anual já tende a se pagar rápido."],
   ["O acesso é imediato?", "Sim. Depois da compra pela Stripe, você recebe as instruções de acesso no e-mail usado no checkout."],
-  ["Mensal ou anual?", "O mensal é para testar com menor compromisso. O anual é a melhor escolha: custa menos por mês, libera 12 meses e economiza R$ 817."],
+  ["Mensal ou anual?", `O mensal é para testar com menor compromisso. O anual é a melhor escolha: custa menos por mês, libera 12 meses e economiza ${ELITE_OFFER.annualSavings}.`],
 ];
 
 const afterPurchaseSteps = [
@@ -187,7 +190,7 @@ const faqs = [
   },
   {
     q: "Mensal ou anual, qual escolher?",
-    a: "O mensal custa R$ 97/mês e serve para começar com menor compromisso. O anual custa R$ 347 por ano, libera 12 meses de acesso e é o plano com maior economia.",
+    a: "O mensal custa R$ 97/mês e serve para começar com menor compromisso. O anual custa R$ 482 por ano, libera 12 meses de acesso e é o plano com maior economia.",
   },
   {
     q: "O pagamento é seguro?",
@@ -237,11 +240,15 @@ function ChatCard({ proof }: { proof: (typeof socialProofChats)[number] }) {
 }
 
 export default function Inicio2() {
+  const { user, session } = useAuth();
+  const { can, loading: entitlementsLoading } = useEntitlements();
   const [activeToolTab, setActiveToolTab] = useState("featured");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [heroMutedActive, setHeroMutedActive] = useState(true);
   const [activePlan, setActivePlan] = useState(2);
   const [isPricingVisible, setIsPricingVisible] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const resumedCheckoutRef = useRef(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -263,7 +270,6 @@ export default function Inicio2() {
       name: "Plano Mensal",
       price: ELITE_OFFER.monthlyPrice,
       monthlyEquivalent: ELITE_OFFER.monthlyPrice,
-      checkoutUrl: ELITE_OFFER.monthlyCheckoutUrl,
       trackValue: 97,
       popular: false,
       features: [
@@ -276,9 +282,8 @@ export default function Inicio2() {
     {
       id: "semestral",
       name: "Plano Semestral",
-      price: "R$ 347",
+      price: ELITE_OFFER.semiannualPrice,
       monthlyEquivalent: "R$ 57,83",
-      checkoutUrl: "https://buy.stripe.com/8x2cN60HwcaY2Yr38w8so0j",
       trackValue: 347,
       popular: false,
       features: [
@@ -294,7 +299,6 @@ export default function Inicio2() {
       name: "Plano Anual",
       price: ELITE_OFFER.annualPrice,
       monthlyEquivalent: ELITE_OFFER.annualMonthlyEquivalent,
-      checkoutUrl: ELITE_OFFER.annualCheckoutUrl,
       trackValue: 482,
       popular: true,
       features: [
@@ -307,7 +311,7 @@ export default function Inicio2() {
     }
   ];
 
-  const trackCheckoutClick = (value: number, plan: "anual" | "mensal") => {
+  const trackCheckoutClick = useCallback((value: number, plan: "anual" | "semestral" | "mensal") => {
     const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
     if (!fbq) return;
 
@@ -317,7 +321,76 @@ export default function Inicio2() {
       content_name: `Canva Viagem ${plan}`,
       content_category: "inicio2",
     });
-  };
+  }, []);
+
+  const startEliteCheckout = useCallback(async (
+    billingCycle: "monthly" | "semiannual" | "annual",
+    trackValue: number,
+  ) => {
+    const pixelPlan = billingCycle === "monthly"
+      ? "mensal"
+      : billingCycle === "semiannual"
+        ? "semestral"
+        : "anual";
+    trackCheckoutClick(trackValue, pixelPlan);
+
+    if (!user || !session?.access_token) {
+      const returnPath = `/inicio?checkout=${billingCycle}`;
+      sessionStorage.setItem(pendingCheckoutKey, billingCycle);
+      window.location.assign(`/auth?redirect=${encodeURIComponent(returnPath)}`);
+      return;
+    }
+
+    if (!entitlementsLoading && can("site.publish")) {
+      sessionStorage.removeItem(pendingCheckoutKey);
+      toast.success("Seu acesso Elite já está ativo.");
+      window.location.assign("/fabrica");
+      return;
+    }
+
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { billing_cycle: billingCycle },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (data?.already_subscribed) {
+        sessionStorage.removeItem(pendingCheckoutKey);
+        toast.success("Seu acesso Elite já está ativo.");
+        window.location.assign("/fabrica");
+        return;
+      }
+      if (error || !data?.url) throw error || new Error("Checkout indisponível");
+      sessionStorage.removeItem(pendingCheckoutKey);
+      window.location.assign(data.url);
+    } catch (error) {
+      console.error("[Inicio] Falha ao criar checkout:", error);
+      toast.error("Não foi possível iniciar o checkout seguro agora. Tente novamente em instantes.");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  }, [can, entitlementsLoading, session?.access_token, trackCheckoutClick, user]);
+
+  useEffect(() => {
+    if (!user || !session?.access_token || resumedCheckoutRef.current) return;
+    const queryCycle = new URLSearchParams(window.location.search).get("checkout");
+    const storedCycle = sessionStorage.getItem(pendingCheckoutKey);
+    const requestedCycle = queryCycle || storedCycle;
+    if (!["monthly", "semiannual", "annual"].includes(requestedCycle ?? "")) return;
+
+    resumedCheckoutRef.current = true;
+    sessionStorage.removeItem(pendingCheckoutKey);
+    window.history.replaceState({}, "", "/inicio");
+    const selectedPlan = requestedCycle === "monthly"
+      ? { value: 97 }
+      : requestedCycle === "semiannual"
+        ? { value: 347 }
+        : { value: 482 };
+    void startEliteCheckout(
+      requestedCycle as "monthly" | "semiannual" | "annual",
+      selectedPlan.value,
+    );
+  }, [session?.access_token, startEliteCheckout, user]);
 
   useEffect(() => {
     document.documentElement.lang = "pt-BR";
@@ -350,7 +423,8 @@ export default function Inicio2() {
         </div>
       </header>
 
-      <main>\n<section id="hero" className="relative bg-[#0F172A] overflow-hidden pt-24 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32">
+      <main>
+        <section id="hero" className="relative bg-[#0F172A] overflow-hidden pt-24 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] -z-10" />
 
           <div className="inicio-container relative z-10 mx-auto">
@@ -1052,7 +1126,7 @@ export default function Inicio2() {
                         <div className="mt-auto pt-4 border-t border-purple-200/50">
                           <div className="bg-[#F0FDF4] rounded-[6px] px-[12px] py-[8px]">
                             <p className="text-[#16A34A] font-[700] text-[14px] leading-snug m-0">
-                              💰 Você economiza R$682 em relação ao mensal
+                              Você economiza {ELITE_OFFER.annualSavings} em relação ao mensal
                             </p>
                           </div>
                         </div>
@@ -1064,25 +1138,57 @@ export default function Inicio2() {
                 <div className="w-full max-w-2xl mt-4">
                   <div className="bg-[#F0FDF4] border-l-[4px] border-[#16A34A] rounded-[8px] p-[14px_18px] mb-[16px] shadow-sm">
                     <p className="text-[14px] text-[#15803D] font-bold m-0 text-left flex items-center gap-2">
-                      <span>🛡️</span> Teste 3 dias grátis sem risco. Sem cobrança hoje e cancelamento online em 1 clique.
+                      Teste Elite por 3 dias. Sem cobrança hoje e com cancelamento online.
                     </p>
                   </div>
-                  <a
-                    href={plans[activePlan].checkoutUrl}
-                    onClick={() => trackCheckoutClick(plans[activePlan].trackValue, plans[activePlan].id as "anual" | "mensal")}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-black text-lg lg:text-xl rounded-2xl py-5 flex items-center justify-center shadow-lg shadow-purple-600/40 transition-all active:scale-95 animate-[pulse_2s_ease-in-out_infinite]"
+                  <button
+                    type="button"
+                    disabled={checkoutLoading}
+                    onClick={() => {
+                      if (checkoutLoading) return;
+                      const selectedPlan = plans[activePlan];
+                      const billingCycle = selectedPlan.id === "mensal"
+                        ? "monthly"
+                        : selectedPlan.id === "semestral"
+                          ? "semiannual"
+                          : "annual";
+                      void startEliteCheckout(
+                        billingCycle,
+                        selectedPlan.trackValue,
+                      );
+                    }}
+                    className={`w-full bg-purple-600 hover:bg-purple-700 text-white font-black text-lg lg:text-xl rounded-2xl py-5 flex items-center justify-center shadow-lg shadow-purple-600/40 transition-all active:scale-95 animate-[pulse_2s_ease-in-out_infinite] ${
+                      checkoutLoading ? "pointer-events-none opacity-70" : ""
+                    }`}
                   >
-                    Começar agora (Acesso em 2 minutos)
-                  </a>
+                    {checkoutLoading ? "Abrindo checkout seguro..." : "Começar agora (Acesso em 2 minutos)"}
+                  </button>
                   <p className="text-center text-[12px] font-bold text-[#64748B] mt-4 leading-relaxed px-2">
-                    🔒 Pagamento seguro via Stripe · Não cobraremos hoje · Cancele antes de 3 dias com 1 clique · Garantia de 7 dias após o teste
+                    Pagamento seguro via Stripe · Não cobraremos hoje · Cancele antes do fim do teste · Garantia de 7 dias após o teste
                   </p>
                 </div>
               </div>
 
+              <div className="w-full border border-slate-200 bg-slate-50 rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                <div className="max-w-3xl">
+                  <p className="text-slate-950 font-black text-lg mb-1">Quer conhecer antes sem cadastrar cartão?</p>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    O acesso grátis permanente inclui conteúdos selecionados e, com uma conta gratuita,
+                    1 projeto salvo, 3 anúncios e 2 carrosséis completos. Site publicado, CRM, voz e IA
+                    avançada ficam disponíveis no Elite.
+                  </p>
+                </div>
+                <a
+                  href="/"
+                  className="shrink-0 inline-flex items-center justify-center min-h-11 px-5 rounded-lg border border-slate-300 bg-white text-slate-900 font-bold hover:border-purple-400 hover:text-purple-700 transition-colors"
+                >
+                  Continuar com acesso grátis
+                </a>
+              </div>
+
               {/* Lista única de benefícios */}
               <div className="w-full bg-slate-50 border border-slate-200 rounded-[2rem] p-8 lg:p-10 flex flex-col items-center">
-                <p className="text-[#0F172A] text-[15px] font-bold text-center mb-8">Todos os planos incluem exatamente os mesmos recursos. Sem plano básico e sem ferramentas bloqueadas.</p>
+                <p className="text-[#0F172A] text-[15px] font-bold text-center mb-8">As três formas de assinatura Elite incluem exatamente os mesmos recursos. Sem plano básico e sem ferramentas bloqueadas.</p>
                 <div className="w-full max-w-4xl grid md:grid-cols-2 gap-x-8 gap-y-5">
                   {pricingFeatures.map((feature) => (
                     <div key={feature} className="flex items-start gap-3">

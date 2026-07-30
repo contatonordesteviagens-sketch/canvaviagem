@@ -40,8 +40,50 @@ interface SubscriptionStatus {
   subscribed: boolean;
   productId: string | null;
   subscriptionEnd: string | null;
+  status: string | null;
+  trialEnd: string | null;
+  billingCycle: string | null;
+  billingProvider: string | null;
   loading: boolean;
 }
+
+const isSubscriptionSnapshotCurrent = (
+  value: SubscriptionStatus | null,
+  now = Date.now(),
+) => {
+  if (!value?.subscribed || value.productId === "admin_bypass") return true;
+  if (value.status !== "active" && value.status !== "trialing") return false;
+
+  const entitlementEnd = value.status === "trialing"
+    ? value.trialEnd ?? value.subscriptionEnd
+    : value.subscriptionEnd;
+
+  if (value.status === "trialing" && !entitlementEnd) return false;
+  if (!entitlementEnd) return true;
+
+  const entitlementEndMs = Date.parse(entitlementEnd);
+  return Number.isFinite(entitlementEndMs) && entitlementEndMs > now;
+};
+
+const withoutExpiredSubscription = (
+  value: SubscriptionStatus,
+  now = Date.now(),
+): SubscriptionStatus => {
+  if (isSubscriptionSnapshotCurrent(value, now)) {
+    return { ...value, loading: false };
+  }
+
+  return {
+    subscribed: false,
+    productId: null,
+    subscriptionEnd: null,
+    status: null,
+    trialEnd: null,
+    billingCycle: null,
+    billingProvider: null,
+    loading: false,
+  };
+};
 
 interface AuthContextType {
   user: User | null;
@@ -86,6 +128,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     subscribed: false,
     productId: null,
     subscriptionEnd: null,
+    status: null,
+    trialEnd: null,
+    billingCycle: null,
+    billingProvider: null,
     loading: true,
   });
 
@@ -154,7 +200,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const stored = localStorage.getItem(`cv-sub-cache-${userId}`);
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (now - parsed.timestamp < PERSISTED_CACHE_DURATION) {
+          if (
+            now - parsed.timestamp < PERSISTED_CACHE_DURATION
+            && isSubscriptionSnapshotCurrent(parsed.data, now)
+          ) {
             subscriptionCache = {
               data: parsed.data,
               timestamp: parsed.timestamp,
@@ -162,6 +211,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             };
             // Instantly apply cached subscription without blocking
             setSubscription({ ...parsed.data, loading: false });
+          } else {
+            localStorage.removeItem(`cv-sub-cache-${userId}`);
           }
         }
       } catch {}
@@ -209,6 +260,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         subscribed: true,
         productId: 'admin_bypass',
         subscriptionEnd: null,
+        status: 'active',
+        trialEnd: null,
+        billingCycle: null,
+        billingProvider: 'admin',
         loading: false,
       };
       setSubscription(adminStatus);
@@ -231,7 +286,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       !forceRefresh &&
       subscriptionCache.data &&
       subscriptionCache.userId === userId &&
-      now - subscriptionCache.timestamp < CACHE_DURATION
+      now - subscriptionCache.timestamp < CACHE_DURATION &&
+      isSubscriptionSnapshotCurrent(subscriptionCache.data, now)
     ) {
       console.log('[AuthContext] Using cached subscription status');
       setSubscription(subscriptionCache.data);
@@ -270,12 +326,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error checking subscription:', error);
-        // 🛡️ SEGURANÇA DE CONEXÃO: Nunca define como "não-assinante" se for falha de rede/Edge!
-        setSubscription(prev => ({
-          ...prev,
-          loading: false,
-          subscribed: prev.subscribed || false // Mantém o status assinado anterior caso houvesse
-        }));
+        // Mantém acesso em uma queda de rede somente enquanto o período salvo
+        // ainda é válido. Trial ou assinatura vencida nunca sobrevive pelo cache.
+        setSubscription(prev => withoutExpiredSubscription(prev, now));
         return;
       }
 
@@ -283,6 +336,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         subscribed: data.subscribed || false,
         productId: data.product_id || null,
         subscriptionEnd: data.subscription_end || null,
+        status: data.status || null,
+        trialEnd: data.trial_end || null,
+        billingCycle: data.billing_cycle || null,
+        billingProvider: data.billing_provider || null,
         loading: false,
       };
 
@@ -304,12 +361,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('[AuthContext] Subscription status updated:', newStatus);
     } catch (error) {
       console.error('Error checking subscription:', error);
-      // 🛡️ SEGURANÇA DE CONEXÃO: Nunca define como "não-assinante" se for falha de rede/Edge!
-      setSubscription(prev => ({
-        ...prev,
-        loading: false,
-        subscribed: prev.subscribed || false // Mantém o status assinado anterior caso houvesse
-      }));
+      setSubscription(prev => withoutExpiredSubscription(prev, now));
     } finally {
       isCheckingRef.current = false;
     }
@@ -336,6 +388,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscribed: false,
       productId: null,
       subscriptionEnd: null,
+      status: null,
+      trialEnd: null,
+      billingCycle: null,
+      billingProvider: null,
       loading: false,
     });
     // Clear cache on sign out
@@ -396,6 +452,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             subscribed: false,
             productId: null,
             subscriptionEnd: null,
+            status: null,
+            trialEnd: null,
+            billingCycle: null,
+            billingProvider: null,
             loading: false,
           });
           subscriptionCache = { data: null, timestamp: 0, userId: null };
@@ -431,9 +491,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const stored = localStorage.getItem(`cv-sub-cache-${userId}`);
             if (stored) {
               const parsed = JSON.parse(stored);
-              if (Date.now() - parsed.timestamp < PERSISTED_CACHE_DURATION) {
+              if (
+                Date.now() - parsed.timestamp < PERSISTED_CACHE_DURATION
+                && isSubscriptionSnapshotCurrent(parsed.data)
+              ) {
                 cached = parsed.data;
                 subscriptionCache = { data: parsed.data, timestamp: parsed.timestamp, userId };
+              } else {
+                localStorage.removeItem(`cv-sub-cache-${userId}`);
               }
             }
           } catch {}
@@ -441,7 +506,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (cached) {
           setSubscription({ ...cached, loading: false });
-          if (cached.productId === 'admin_bypass' || cached.productId?.includes('admin') || existingSession.user?.email === "lucashenriquephd@gmail.com") {
+          if (cached.productId === 'admin_bypass' || existingSession.user?.email === "lucashenriquephd@gmail.com") {
             setIsAdmin(true);
           }
           checkSubscription(existingSession.access_token, existingSession.user, false);

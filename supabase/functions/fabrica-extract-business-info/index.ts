@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { GoogleGenerativeAI } from "npm:@google/generative-ai";
+import { verifyFabricaEliteAccess } from "../_shared/fabricaAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,13 +13,15 @@ serve(async (req) => {
   }
 
   try {
+    const access = await verifyFabricaEliteAccess(req, corsHeaders);
+    if (!access.ok) return access.response;
+
     const bodyData = await req.json();
-    const { type, content, geminiApiKey } = bodyData;
+    const { type, content } = bodyData;
     
-    // API KEY usually injected by Supabase secrets or passed from client
-    const apiKey = geminiApiKey || Deno.env.get("USER_GEMINI_API_KEY") || Deno.env.get("IA_PURA_GEMINI_KEY") || Deno.env.get("GEMINI_API_KEY");
+    const apiKey = Deno.env.get("USER_GEMINI_API_KEY") || Deno.env.get("IA_PURA_GEMINI_KEY") || Deno.env.get("GEMINI_API_KEY");
     if (!apiKey) {
-      throw new Error("API Key for Gemini is missing");
+      throw new Error("Serviço de IA temporariamente indisponível");
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);

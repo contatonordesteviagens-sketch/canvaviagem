@@ -1,13 +1,15 @@
 import { useState, useRef, useEffect, useId } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { useFabricaContext, type AgencyType, type Pacote, type Depoimento, type SocialLink, type SocialType } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
-import { downloadLandingHTML, buildLandingHTML } from "@/lib/fabrica-html-export";
+import { buildLandingHTML } from "@/lib/fabrica-html-export";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
 import { BrandPaletteEditor, SectionBackgroundEditor } from "@/components/fabrica/BrandPaletteEditor";
 import { SiteTemplateSelector } from "@/components/fabrica/SiteTemplateSelector";
 import { materializeRecoveredProject, useDiagnosticos, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
 import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
+import { FabricaPaywallDialog } from "@/components/fabrica/FabricaPaywallDialog";
 import { getSiteTemplateDefinition } from "@/lib/site-template-catalog";
 import { publishFabricaSite } from "@/lib/fabrica-site-publisher";
 import {
@@ -146,7 +148,6 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const [previewing, setPreviewing] = useState(true);
-  const [downloadCount, setDownloadCount] = useState(0);
   const [autoSyncDone, setAutoSyncDone] = useState(false);
   const [autoSyncFields, setAutoSyncFields] = useState<string[]>([]);
   const [pickingHeroImage, setPickingHeroImage] = useState(false);
@@ -1189,12 +1190,6 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       );
     }
   }, [previewHTML, removeMode]);
-
-  const handleDownload = () => {
-    setDownloadCount((c) => c + 1);
-    downloadLandingHTML(state, downloadCount + 1, user?.id);
-    toast.success(`Versão ${downloadCount + 1} baixada! O arquivo HTML está pronto.`);
-  };
 
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
 
@@ -2860,8 +2855,16 @@ const PublishSiteCard = ({
 }) => {
   const { state, update } = useFabricaContext();
   const { user } = useAuth();
+  const { can, track } = useEntitlements();
+  const [showPublishPaywall, setShowPublishPaywall] = useState(false);
 
   const handleDownload = () => {
+    if (!can("site.publish")) {
+      track("site_publish_blocked", { source: "site_html_download" });
+      track("paywall_viewed", { feature: "site_publish", source: "site_html_download" });
+      setShowPublishPaywall(true);
+      return;
+    }
     try {
       const blob = new Blob([html], { type: "text/html;charset=utf-8" });
       const url = URL.createObjectURL(blob);
@@ -2894,11 +2897,12 @@ const PublishSiteCard = ({
   }, [state.projectId, state.siteContent.canvaViagemUrl, state.agencyName]);
 
   const handleCanvaViagemPublish = async () => {
-    if (!user?.id) {
-      toast.error("Faça login para publicar.");
+    if (!user?.id || !can("site.publish")) {
+      track("site_publish_blocked", { source: "site_publish" });
+      track("paywall_viewed", { feature: "site_publish", source: "site_publish" });
+      setShowPublishPaywall(true);
       return;
     }
-
     // Fix #5: Bloqueia se o nome da agência está em branco (geraria slug inválido)
     if (!state.agencyName?.trim() && !canvaViagemSubdomain?.trim()) {
       toast.error("Preencha o nome da agência no painel inicial antes de publicar.", {
@@ -3138,6 +3142,13 @@ const PublishSiteCard = ({
             Avançar para CRM <Rocket className="w-5 h-5" />
           </button>
         </div>
+        <FabricaPaywallDialog
+          open={showPublishPaywall}
+          onOpenChange={setShowPublishPaywall}
+          feature="site_publish"
+          title="Seu site está pronto para entrar no ar"
+          description="Continue editando e visualizando sem perder nada. A publicação, as atualizações e o HTML completo são liberados no Plano Elite."
+        />
       </div>
     </div>
   );

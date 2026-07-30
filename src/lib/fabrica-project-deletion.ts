@@ -20,69 +20,18 @@ export const deleteFabricaProject = async ({
   const uniqueSlugs = [...new Set(legacySlugs.filter(Boolean))];
   const uniqueProjectIds = [...new Set([projectId, ...linkedProjectIds].filter(Boolean))];
 
-  // Detach forms first so an older ON DELETE CASCADE constraint can never
-  // remove customer submissions together with the project.
-  const { error: formError } = await executeIdempotentWriteWithFreshSupabaseSession(
-    () => (supabase as any)
-      .from("crm_forms")
-      .update({ project_id: null, status: "archived" })
-      .eq("owner_id", userId)
-      .or(uniqueProjectIds.flatMap((id) => [
-        `project_id.eq.${id}`,
-        `id.eq.${id}`,
-        `embed_key.eq.${id}`,
-      ]).join(",")),
-    userId,
-  );
-  if (formError) throw formError;
-
-  const { data: linkedFormsResult, error: linkedFormsError } = await executeReadWithFreshSupabaseSession(
-    () => (supabase as any)
-      .from("crm_forms")
-      .select("id")
-      .eq("owner_id", userId)
-      .in("project_id", uniqueProjectIds)
-      .limit(1),
-    userId,
-  );
-  if (linkedFormsError) throw linkedFormsError;
-  const linkedForms = Array.isArray(linkedFormsResult) ? linkedFormsResult : [];
-  if (linkedForms?.length) {
-    throw new Error("Não foi possível preservar os leads deste projeto. A exclusão foi cancelada.");
-  }
-
-  const { error: sitesError } = await executeIdempotentWriteWithFreshSupabaseSession(
-    () => supabase
-      .from("public_sites")
-      .delete()
-      .eq("owner_id", userId)
-      .in("project_id", uniqueProjectIds),
-    userId,
-  );
-  if (sitesError) throw sitesError;
-
-  if (uniqueSlugs.length > 0) {
-    const { error: slugsError } = await executeIdempotentWriteWithFreshSupabaseSession(
-      () => supabase
-        .from("public_sites")
-        .delete()
-        .eq("owner_id", userId)
-        .is("project_id", null)
-        .in("id", uniqueSlugs),
+  // The authenticated RPC owns the transaction: it archives forms before
+  // removing the project, so captured leads never follow an old cascade.
+  for (const [index, ownedProjectId] of uniqueProjectIds.entries()) {
+    const { error } = await executeIdempotentWriteWithFreshSupabaseSession(
+      () => (supabase as any).rpc("delete_fabrica_project", {
+        p_project_id: ownedProjectId,
+        p_legacy_slugs: index === 0 ? uniqueSlugs : [],
+      }),
       userId,
     );
-    if (slugsError) throw slugsError;
+    if (error) throw error;
   }
-
-  const { error: projectError } = await executeIdempotentWriteWithFreshSupabaseSession(
-    () => (supabase as any)
-      .from("fabrica_diagnosticos")
-      .delete()
-      .eq("user_id", userId)
-      .in("id", uniqueProjectIds),
-    userId,
-  );
-  if (projectError) throw projectError;
 
   const [
     { data: remainingProjectResult, error: projectCheckError },

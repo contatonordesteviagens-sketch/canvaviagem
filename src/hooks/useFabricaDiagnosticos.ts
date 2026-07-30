@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { buildCanvaSiteSlug, extractCanvaSiteSlug, getCanvaSiteUrl } from "@/lib/canva-site-domain";
 import { recoverFabricaStateFromPublishedHtml } from "@/lib/fabrica-project-recovery";
 import {
+  createCloudProjectSnapshot,
   isPersistedProjectId,
   persistFabricaProject,
   resolveFabricaProjectId,
@@ -43,29 +44,84 @@ export const materializeRecoveredProject = async (
     return project;
   }
 
+  const recoveredProjectId = resolveFabricaProjectId(
+    project.state_snapshot.projectId || project.id,
+  );
+  const recoveredSnapshot = createCloudProjectSnapshot({
+    ...project.state_snapshot,
+    projectId: recoveredProjectId,
+  });
+
+  if (project.published_site_id) {
+    try {
+      const { data, error } = await executeIdempotentWriteWithFreshSupabaseSession(
+        () => (supabase as any).rpc("materialize_fabrica_published_site", {
+          p_site_id: project.published_site_id,
+          p_project_id: recoveredProjectId,
+          p_agency_name: project.agency_name,
+          p_state_snapshot: recoveredSnapshot,
+          p_digital_score: project.digital_score || 0,
+          p_level: project.level || 1,
+          p_checklist_progress: project.checklist_progress || {},
+        }),
+        userId,
+      );
+
+      if (error) throw error;
+      const persisted = data as DiagnosticoSalvo | null;
+      if (!persisted?.id) throw new Error("recovered_project_missing");
+
+      return {
+        ...project,
+        ...persisted,
+        state_snapshot: {
+          ...(persisted.state_snapshot as FabricaState),
+          projectId: persisted.id,
+        },
+        published_site_id: project.published_site_id,
+        published_site_url: project.published_site_url,
+        published_project_id: persisted.id,
+        source: "saved",
+      };
+    } catch (error) {
+      const code = String((error as { code?: unknown })?.code || "");
+      const message = String((error as { message?: unknown })?.message || "");
+      const rpcUnavailable = code === "PGRST202"
+        || code === "42883"
+        || message.includes("materialize_fabrica_published_site");
+
+      if (!rpcUnavailable) {
+        console.warn(
+          "[Fabrica] A recuperacao atomica do site falhou; abrindo a copia local sem alterar o banco.",
+          error,
+        );
+        return {
+          ...project,
+          state_snapshot: recoveredSnapshot,
+          published_project_id: null,
+        };
+      }
+    }
+  }
+
+  // Compatibilidade durante o intervalo entre o deploy do front-end e a
+  // migration. Depois da migration, toda recuperacao passa pela RPC acima.
   let persisted: Awaited<ReturnType<typeof persistFabricaProject>>;
   try {
     persisted = await persistFabricaProject({
-      state: project.state_snapshot,
+      state: recoveredSnapshot,
       userId,
       levelName: "Site publicado recuperado",
     });
   } catch (error) {
-    const fallbackId = resolveFabricaProjectId(
-      project.state_snapshot.projectId || project.id,
-    );
     console.warn(
       "[Fabrica] Site recuperado aberto localmente; a nuvem sera sincronizada depois.",
       error,
     );
     return {
       ...project,
-      id: fallbackId,
-      state_snapshot: {
-        ...project.state_snapshot,
-        projectId: fallbackId,
-      },
-      published_project_id: fallbackId,
+      state_snapshot: recoveredSnapshot,
+      published_project_id: null,
     };
   }
   const stateSnapshot = {

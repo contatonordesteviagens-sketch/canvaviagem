@@ -57,6 +57,12 @@ verify_jwt = false
 [functions.fabrica-search-photos]
 verify_jwt = false
 
+[functions.fabrica-entitlements]
+verify_jwt = false
+
+[functions.vendedor-generate-response]
+verify_jwt = false
+
 [functions.fabrica-edit-photo]
 verify_jwt = false
 

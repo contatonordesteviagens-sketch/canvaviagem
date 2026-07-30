@@ -39,9 +39,12 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { toast } from "sonner";
+import { FabricaPaywallDialog } from "@/components/fabrica/FabricaPaywallDialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
+import { createExportIdentity } from "@/lib/exportIdentity";
 
 type CarouselSize = 3 | 4 | 5 | 6;
 type CarouselFormat = "feed" | "story";
@@ -3237,7 +3240,10 @@ export function F1CarouselBuilder({
 }: F1CarouselBuilderProps) {
   const { state } = useFabricaContext();
   const { user } = useAuth();
+  const { reserve, commit, release, track, can, tier, remaining } = useEntitlements();
   const isEs = locale === "es";
+  const isCarouselPreviewLocked = tier === "guest"
+    || (!can("carousel.export") && remaining?.carousel_export === 0);
   const adCoverHandoffKey = `fabrica-carousel-ad-cover:${state.projectId || "local"}`;
   const [hasAdCoverHandoff] = useState(() => {
     if (sourceImage.trim()) return true;
@@ -3337,6 +3343,7 @@ export function F1CarouselBuilder({
   const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [showNewCarouselModal, setShowNewCarouselModal] = useState(false);
+  const [showExportPaywall, setShowExportPaywall] = useState(false);
   const [captionText, setCaptionText] = useState("");
   const [captionEdited, setCaptionEdited] = useState(false);
   const [generatingCaption, setGeneratingCaption] = useState(false);
@@ -3962,6 +3969,11 @@ export function F1CarouselBuilder({
     silent?: boolean;
     pageOverride?: number;
   } = {}) => {
+    if (!user) {
+      if (!silent) setShowExportPaywall(true);
+      return;
+    }
+
     const requestId = photoSearchRequestRef.current + 1;
     photoSearchRequestRef.current = requestId;
     const targetPackageId = selectedPackage?.id || "";
@@ -4131,6 +4143,10 @@ export function F1CarouselBuilder({
 
   const downloadAll = async () => {
     if (!selectedPackage || !slides.length) return;
+    if (!user) {
+      setShowExportPaywall(true);
+      return;
+    }
     if (!qualityReady) {
       toast.error(
         isEs
@@ -4245,6 +4261,45 @@ export function F1CarouselBuilder({
       return;
     }
 
+    const exportIdentity = createExportIdentity(
+      "carousel",
+      state.projectId,
+      JSON.stringify({
+        format: carouselFormat,
+        packageId: selectedPackage.id,
+        slides: resolvedSlides.map((slide) => ({
+          id: slide.id,
+          kind: slide.kind,
+          title: slide.title,
+          body: slide.body,
+          bullets: slide.bullets,
+          cta: slide.cta,
+          image: `${slide.imageUrl.length}:${slide.imageUrl.slice(-96)}`,
+        })),
+      }),
+    );
+    const reservation = await reserve("carousel_export", exportIdentity, {
+      projectId: state.projectId,
+      metadata: {
+        package_id: selectedPackage.id,
+        slide_count: resolvedSlides.length,
+        format: carouselFormat,
+      },
+    });
+    if (!reservation.allowed) {
+      if (reservation.error) {
+        toast.error(reservation.error);
+      } else {
+        track("free_limit_reached", { capability: "carousel_export" });
+        track("paywall_viewed", {
+          feature: "carousel_export",
+          source: "carousel_download",
+        });
+        setShowExportPaywall(true);
+      }
+      return;
+    }
+
     setDownloading(true);
     const slug = (selectedPackage.slug || selectedPackage.title || "pacote")
       .toLowerCase()
@@ -4321,6 +4376,13 @@ export function F1CarouselBuilder({
         await new Promise((resolve) => window.setTimeout(resolve, 200));
       }
 
+      await commit(reservation.reservationId);
+      track("free_export_completed", {
+        feature: "carousel_export",
+        package_id: selectedPackage.id,
+        slide_count: resolvedSlides.length,
+        duplicate: Boolean(reservation.duplicate),
+      });
       toast.success(
         isEs
           ? preserveOriginalCover
@@ -4332,6 +4394,7 @@ export function F1CarouselBuilder({
       );
     } catch (error) {
       console.error("Falha ao exportar carrossel:", error);
+      await release(reservation.reservationId).catch(() => undefined);
       toast.error(
         isEs
           ? "No fue posible exportar. Prueba otra foto del banco o un archivo enviado."
@@ -5979,19 +6042,37 @@ export function F1CarouselBuilder({
               </p>
             </div>
             
-            <div className="mx-auto flex w-full max-w-[420px] justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
+            <div className="relative mx-auto flex w-full max-w-[420px] justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
               {activeSlide && (
-                <ScaledSlidePreview
-                  slide={activeSlide}
-                  index={activeIndex}
-                  total={slides.length}
-                  ratio={carouselRatio}
-                  logo={renderedLogo}
-                  logoPosition={logoPosition}
-                  primary={state.primaryColor}
-                  secondary={state.secondaryColor}
-                  width={400}
-                />
+                <div className={`transition ${isCarouselPreviewLocked ? "blur-md" : ""}`}>
+                  <ScaledSlidePreview
+                    slide={activeSlide}
+                    index={activeIndex}
+                    total={slides.length}
+                    ratio={carouselRatio}
+                    logo={renderedLogo}
+                    logoPosition={logoPosition}
+                    primary={state.primaryColor}
+                    secondary={state.secondaryColor}
+                    width={400}
+                  />
+                </div>
+              )}
+              {activeSlide && isCarouselPreviewLocked && (
+                <button
+                  type="button"
+                  onClick={() => setShowExportPaywall(true)}
+                  className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/35 px-8 text-center text-white backdrop-blur-[1px]"
+                >
+                  <span className="grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/70">
+                    <Lock className="h-5 w-5" />
+                  </span>
+                  <span className="text-sm font-black">
+                    {tier === "guest"
+                      ? (isEs ? "Crea tu cuenta para liberar el carrusel" : "Crie sua conta para liberar o carrossel")
+                      : (isEs ? "Vista previa lista. Desbloquea la descarga con Elite" : "Prévia pronta. Libere o download no Elite")}
+                  </span>
+                </button>
               )}
             </div>
 
@@ -6084,6 +6165,18 @@ export function F1CarouselBuilder({
           </div>
         </div>
       )}
+
+      <FabricaPaywallDialog
+        open={showExportPaywall}
+        onOpenChange={setShowExportPaywall}
+        feature="carousel_export"
+        title={isEs ? "Tu carrusel está listo" : "Seu carrossel está pronto"}
+        description={
+          isEs
+            ? "Tu proyecto sigue guardado. Activa Elite para descargar nuevos carruseles sin límite."
+            : "Seu projeto continua salvo. Ative o Elite para baixar novos carrosséis sem limite."
+        }
+      />
 
       <div
         aria-hidden="true"
