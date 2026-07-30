@@ -15,13 +15,15 @@ import {
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useEntitlements } from '@/contexts/EntitlementsContext';
 
 const SESSIONS_KEY = 'ia_vendedor_sessions_cv';
 const PROFILE_KEY = 'ia_vendedor_profile_cv';
 
 const VendedorIA: React.FC = () => {
   const navigate = useNavigate();
-  const { user, subscription, isAdmin } = useAuth();
+  const { user } = useAuth();
+  const { can, loading: entitlementsLoading } = useEntitlements();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -163,23 +165,6 @@ const VendedorIA: React.FC = () => {
       timestamp: Date.now()
     };
 
-    const today = new Date().toDateString();
-    const usageKey = `ia_vendedor_usage_${user?.id || 'guest'}`;
-    const usageStr = localStorage.getItem(usageKey);
-    let usage = usageStr ? JSON.parse(usageStr) : { date: today, count: 0 };
-    
-    if (usage.date !== today) {
-      usage = { date: today, count: 0 };
-    }
-
-    if (!isAdmin && usage.count >= 10) {
-      toast.error("Limite de 10 mensagens por dia atingido. Volte amanhã para gerar mais copys estratégicas!");
-      return;
-    }
-
-    usage.count += 1;
-    localStorage.setItem(usageKey, JSON.stringify(usage));
-
     updateCurrentSession(userMessage.content, 'user');
     setIsLoading(true);
 
@@ -214,7 +199,15 @@ const VendedorIA: React.FC = () => {
 
   const currentSession = sessions.find(s => s.id === currentSessionId);
 
-  if (!isAdmin && !subscription?.subscribed) {
+  if (entitlementsLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-[#0f0f0f] text-sm text-white/60">
+        Verificando seu acesso...
+      </div>
+    );
+  }
+
+  if (!can("vendedor.use")) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-[#0f0f0f] text-white p-4">
         <div className="max-w-md w-full bg-[#111114] border border-white/10 rounded-2xl p-8 text-center shadow-2xl">

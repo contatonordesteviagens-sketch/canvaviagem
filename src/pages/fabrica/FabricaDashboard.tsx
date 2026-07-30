@@ -2,11 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
 import { materializeRecoveredProject, useDiagnosticos, useSaveDiagnostico, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
 import { BrandPaletteEditor } from "@/components/fabrica/BrandPaletteEditor";
 import { ProjectDeleteDialog } from "@/components/fabrica/ProjectDeleteDialog";
 import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
+import { FabricaPaywallDialog } from "@/components/fabrica/FabricaPaywallDialog";
 import { PackageAdvancedFields } from "@/components/fabrica/PackageAdvancedFields";
 
 import { 
@@ -36,7 +38,6 @@ import { getCanvaSiteUrl } from "@/lib/canva-site-domain";
 import { recoverFabricaStateFromPublishedHtml } from "@/lib/fabrica-project-recovery";
 import {
   isPersistedProjectId,
-  persistFabricaProject,
   resolveFabricaProjectId,
 } from "@/lib/fabrica-project-persistence";
 import {
@@ -99,6 +100,7 @@ const projectSwitchErrorMessage = (
 export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update, reset, deleteAndDiscardCurrentProject, switchProject } = useFabricaContext();
   const { user } = useAuth();
+  const { limits, track } = useEntitlements();
   const {
     data: savedProjects,
     isPending: projectsLoading,
@@ -113,9 +115,24 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   const [pendingProjectSwitch, setPendingProjectSwitch] = useState<DiagnosticoSalvo | null>(null);
   const [isSwitchingProject, setIsSwitchingProject] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [showProjectPaywall, setShowProjectPaywall] = useState(false);
   const [isDeletingProject, setIsDeletingProject] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const autoRecoveredProjectIdsRef = useRef<Set<string>>(new Set());
+
+  const canStartNewProject = () => {
+    if (!limits) return true;
+    const projectCount = savedProjects?.length ?? 0;
+    if (projectCount < limits.projects) return true;
+
+    track("paywall_viewed", {
+      feature: "fabrica",
+      source: "new_project",
+      project_count: projectCount,
+    });
+    setShowProjectPaywall(true);
+    return false;
+  };
 
   const loadSavedProject = async (project: DiagnosticoSalvo) => {
     const targetName = project.agency_name || "Sem nome";
@@ -134,12 +151,19 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     }
 
     try {
+      const editableProjectId = editableProject.source === "saved"
+        ? editableProject.id
+        : editableProject.state_snapshot.projectId || editableProject.id;
       await switchProject(
-        { ...editableProject.state_snapshot, projectId: editableProject.id },
+        { ...editableProject.state_snapshot, projectId: editableProjectId },
         { preserveCurrentPhase: true, expectedUserId: user?.id },
       );
       setPendingProjectSwitch(null);
-      if (isRecovered) toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
+      if (isRecovered && editableProject.source === "saved") {
+        toast.warning(`Site legado "${targetName}" recuperado. Revise os dados antes de republicar.`);
+      } else if (isRecovered) {
+        toast.warning(`Site "${targetName}" aberto neste dispositivo. A sincronização na nuvem continua pendente.`);
+      }
       else toast.success(`Projeto "${targetName}" carregado!`);
     } catch (error) {
       console.error("[FabricaDashboard] Falha ao salvar o projeto atual antes da troca:", error);
@@ -203,32 +227,40 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           canvaViagemUrl: siteUrl,
         },
       };
-      const persisted = await persistFabricaProject({
-        state: stateSnapshot as any,
-        userId: user.id,
-        levelName: "Site publicado recuperado",
-      });
+      const persisted = await materializeRecoveredProject({
+        id: `proj_legacy_${site.id}`,
+        user_id: user.id,
+        agency_name: agencyName,
+        digital_score: 0,
+        level: 1,
+        level_name: "Site publicado recuperado",
+        state_snapshot: stateSnapshot as any,
+        checklist_progress: {},
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        published_site_id: site.id,
+        published_site_url: siteUrl,
+        published_project_id: data.project_id,
+        source: "published_recovery",
+      }, user.id);
 
-      const { error: linkError } = await executeIdempotentWriteWithFreshSupabaseSession(
-        () => supabase
-          .from("public_sites")
-          .update({ project_id: persisted.id })
-          .eq("id", site.id)
-          .eq("owner_id", user.id),
-        user.id,
-      );
-      if (linkError) throw linkError;
-
+      const editableProjectId = persisted.source === "saved"
+        ? persisted.id
+        : persisted.state_snapshot.projectId || persisted.id;
       await switchProject(
-        { ...persisted.stateSnapshot, projectId: persisted.id },
+        { ...persisted.state_snapshot, projectId: editableProjectId },
         { preserveCurrentPhase: true, expectedUserId: user.id },
       );
       await queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
-      setPublishedSites((current) =>
-        current.map((item) => item.id === site.id ? { ...item, project_id: persisted.id } : item),
-      );
-      toast.success(`Site "${agencyName}" recuperado e carregado para edição.`);
-      window.setTimeout(() => onNavigate?.("phase", 4), 100);
+      if (persisted.source === "saved") {
+        setPublishedSites((current) =>
+          current.map((item) => item.id === site.id ? { ...item, project_id: persisted.id } : item),
+        );
+        toast.success(`Site "${agencyName}" recuperado e carregado para edição.`);
+      } else {
+        toast.warning(`Site "${agencyName}" aberto neste dispositivo. A sincronização na nuvem continua pendente.`);
+      }
+      window.setTimeout(() => onNavigate?.("phase", 3), 100);
     } catch (error: any) {
       console.error("[FabricaDashboard] Falha ao recuperar site publicado:", error);
       toast.error("Não foi possível recuperar este site agora. Atualize a página e tente novamente.");
@@ -315,8 +347,12 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       let recoveredCount = 0;
       for (const project of recoverableProjects) {
         try {
-          await materializeRecoveredProject(project, user.id);
-          recoveredCount += 1;
+          const materialized = await materializeRecoveredProject(project, user.id);
+          if (materialized.source === "saved") {
+            recoveredCount += 1;
+          } else {
+            autoRecoveredProjectIdsRef.current.delete(project.id);
+          }
         } catch (error) {
           autoRecoveredProjectIdsRef.current.delete(project.id);
           console.warn("[FabricaDashboard] Falha ao materializar site recuperado:", project.published_site_id, error);
@@ -678,6 +714,13 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
         onCancel={() => !isDeletingProject && setDeleteDialogOpen(false)}
         onConfirm={() => void handleDeleteCurrentProject()}
       />
+      <FabricaPaywallDialog
+        open={showProjectPaywall}
+        onOpenChange={setShowProjectPaywall}
+        feature="fabrica"
+        title="Seu primeiro projeto continua salvo"
+        description="A conta gratuita inclui um projeto completo. No Elite, você cria e administra quantos projetos, marcas, pacotes e sites precisar."
+      />
 
       {/* Projetos Salvos */}
       {user && (
@@ -786,6 +829,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               <button
                 type="button"
                 onClick={() => {
+                  if (!canStartNewProject()) return;
                   const confirmed = window.confirm(
                     `⚠️ Antes de criar um novo projeto, certifique-se de ter salvo o projeto atual ("${state.agencyName || 'Sem nome'}").\n\nDeseja continuar e criar um novo projeto em branco?`
                    );
@@ -1132,7 +1176,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                             }
 
                             await loadSavedProject(p);
-                            window.setTimeout(() => onNavigate?.("phase", 4), 100);
+                            window.setTimeout(() => onNavigate?.("phase", 3), 100);
                           }}
                           className="px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 text-violet-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
                         >
@@ -1219,6 +1263,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             <div className="pt-2 border-t border-white/5">
               <button
                 onClick={() => {
+                  if (!canStartNewProject()) return;
                   const confirmed = window.confirm(
                     `Deseja começar um novo projeto em branco? O projeto atual ("${state.agencyName || "Sem nome"}") continuará salvo.`
                   );

@@ -9,6 +9,9 @@ import { Phase5Dashboard } from "@/pages/fabrica/Phase5Dashboard";
 import { FabricaDashboard } from "@/pages/fabrica/FabricaDashboard";
 import { FabricaLibrary } from "@/pages/fabrica/FabricaLibrary";
 import { VoiceOnboarding } from "@/components/fabrica/VoiceOnboarding";
+import { FabricaAccessSummary } from "@/components/fabrica/FabricaAccessSummary";
+import { FabricaLockedFeature } from "@/components/fabrica/FabricaLockedFeature";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { 
   ArrowLeft, 
   Sparkles,
@@ -26,10 +29,9 @@ import {
   Users,
   Layout
 } from "lucide-react";
-import { useLocation, useNavigate, Navigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
-import { hasEliteAccess } from "@/lib/planAccess";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import { toast } from "sonner";
 
@@ -48,6 +50,7 @@ const getPhaseFromPath = (pathname: string): number => {
 const FabricaInner = () => {
   const { state, setPhase, switchProject, isHydrated } = useFabricaContext();
   const { user } = useAuth();
+  const { can, track } = useEntitlements();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -81,6 +84,10 @@ const FabricaInner = () => {
 
   // Scroll to top on navigation
   useEffect(() => { window.scrollTo(0, 0); }, [location.pathname]);
+
+  useEffect(() => {
+    track("fabrica_opened", { phase: activePhase || "dashboard" });
+  }, [activePhase, track]);
 
   useEffect(() => {
     const color = state.primaryColor || "#F59E0B";
@@ -352,6 +359,7 @@ const FabricaInner = () => {
 
       {/* ——— CONTEÚDO PRINCIPAL (ÁREA DE TRABALHO) ——— */}
       <main className="flex-1 min-w-0 pt-20 md:pt-8 px-4 md:px-8 pb-32 md:pb-12 bg-[#0A0A0B]">
+        <FabricaAccessSummary />
         {/* Top Bar with Voice AI and Phase Shortcuts */}
         <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-2xl bg-black border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 relative z-30">
             <div className="w-full sm:w-auto flex justify-center sm:justify-start shrink-0 min-w-0">
@@ -406,7 +414,20 @@ const FabricaInner = () => {
               {activePhase === 1 && <Phase3ArtFactory key="phase1-ad" onNext={() => navigate(isES ? "/es/fabrica/carrossel" : "/fabrica/carrossel")} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => navigate(isES ? "/es/fabrica/site" : "/fabrica/site")} />}
               {activePhase === 2 && <Phase3ArtFactory key="phase2-carousel" onNext={() => navigate(isES ? "/es/fabrica/site" : "/fabrica/site")} onBack={() => navigate(isES ? "/es/fabrica/anuncio" : "/fabrica/anuncio")} lockMode={true} initialMode="carousel" />}
               {activePhase === 3 && <Phase4LandingBuilder onNext={() => navigate(isES ? "/es/fabrica/crm" : "/fabrica/crm")} onBack={() => navigate(isES ? "/es/fabrica/carrossel" : "/fabrica/carrossel")} />}
-              {activePhase === 4 && <Phase5Dashboard onNext={() => navigate(isES ? "/es/fabrica/planos" : "/fabrica/planos")} onBack={() => navigate(isES ? "/es/fabrica/site" : "/fabrica/site")} />}
+              {activePhase === 4 && (
+                can("crm.real_data")
+                  ? <Phase5Dashboard onNext={() => navigate(isES ? "/es/fabrica/planos" : "/fabrica/planos")} onBack={() => navigate(isES ? "/es/fabrica/site" : "/fabrica/site")} />
+                  : <FabricaLockedFeature
+                      feature="crm"
+                      title="Transforme os acessos do site em vendas"
+                      description="Conheça o CRM antes de assinar. Os dados reais, leads e métricas de cada projeto continuam preservados e separados; a operação é liberada no Plano Elite."
+                      previewItems={[
+                        "Leads separados por projeto e por conta",
+                        "Visitas, cliques no WhatsApp e conversão",
+                        "Funil comercial e histórico de atendimento",
+                      ]}
+                    />
+              )}
               {activePhase === 5 && (
                 <div className="space-y-8 pb-12">
                   <Phase2Ativos onNext={() => {}} onBack={() => navigate(isES ? "/es/fabrica/crm" : "/fabrica/crm")} />
@@ -422,40 +443,18 @@ const FabricaInner = () => {
 };
 
 const FabricaContent = () => {
-  const navigate = useNavigate();
-  const { subscription, isAdmin, user, loading: authLoading } = useAuth();
-  const [accessGranted, setAccessGranted] = useState(false);
+  const { loading: authLoading } = useAuth();
   const localPreview = isLocalPreviewEnabled();
-
-  // Navigate is now handled gracefully during render with <Navigate />
-
-  const isElite = hasEliteAccess(subscription);
-  const hasAccess = isAdmin || isElite || user?.email === "lucashenriquephd@gmail.com" || localPreview;
-  const canUseFabrica = hasAccess;
-
-  useEffect(() => {
-    if (hasAccess && !accessGranted) {
-      setAccessGranted(true);
-    }
-  }, [hasAccess, accessGranted]);
 
   // Spinner SÓ no primeiro carregamento real (sem user e sem acesso já concedido).
   // Reverificações silenciosas em background NÃO devem mais derrubar pra esta tela.
-  if (!localPreview && !accessGranted && (authLoading || subscription.loading)) {
+  if (!localPreview && authLoading) {
     return (
       <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white">
         <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-2" />
         <span className="text-sm text-white/60">Verificando permissões de acesso...</span>
       </div>
     );
-  }
-
-  if (!user && !localPreview) {
-    return <Navigate to="/auth?redirect=/fabrica" replace />;
-  }
-
-  if (!canUseFabrica && !subscription.loading) {
-    return <Navigate to="/inicio?upgrade=fabrica" replace />;
   }
 
   return (

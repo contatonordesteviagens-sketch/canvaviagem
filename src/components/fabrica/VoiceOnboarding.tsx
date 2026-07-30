@@ -5,6 +5,8 @@ import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
 import { useSaveDiagnostico } from "@/hooks/useFabricaDiagnosticos";
 import { toast } from "sonner";
 import { buildPackageSlug, createUniquePackageSlug, suggestPackageSegment } from "@/lib/package-details";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
+import { FabricaPaywallDialog } from "@/components/fabrica/FabricaPaywallDialog";
 
 type State = "idle" | "recording" | "uploading" | "transcribing" | "extracting" | "review" | "error";
 
@@ -24,8 +26,10 @@ export function VoiceOnboarding() {
   const [timer, setTimer] = useState(0);
   const [transcript, setTranscript] = useState("");
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
+  const [showVoicePaywall, setShowVoicePaywall] = useState(false);
 
   const { state: fabricaState, update } = useFabricaContext();
+  const { can, track } = useEntitlements();
   const saveProject = useSaveDiagnostico();
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -45,6 +49,11 @@ export function VoiceOnboarding() {
   }, [state]);
 
   const startRecording = async () => {
+    if (!can("voice.use")) {
+      track("paywall_viewed", { feature: "voice", source: "voice_onboarding" });
+      setShowVoicePaywall(true);
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       let mimeType = "audio/webm";
@@ -353,6 +362,13 @@ export function VoiceOnboarding() {
           </div>
         </div>
       )}
+      <FabricaPaywallDialog
+        open={showVoicePaywall}
+        onOpenChange={setShowVoicePaywall}
+        feature="voice"
+        title="Preenchimento por voz é Elite"
+        description="Você pode preencher todos os campos manualmente sem custo. No Elite, a IA ouve seu áudio e organiza agência, destinos e pacotes automaticamente."
+      />
     </div>
   );
 }

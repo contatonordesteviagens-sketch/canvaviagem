@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, Suspense, lazy } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { templates as localTemplates, feedTemplates as localFeedTemplates, storyTemplates as localStoryTemplates, weeklyStories as localWeeklyStories } from "@/data/templates";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -111,13 +112,15 @@ import { trackViewContent } from "@/lib/meta-pixel";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useGamification } from "@/hooks/useGamification";
 import { checkIfItemIsPremium } from "@/lib/premium-utils";
+import { FREE_CAPTIONS, FREE_FEED_TEMPLATE_IDS } from "@/data/free-content";
 
 
 
 const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, loading, subscription } = useAuth();
+  const { user } = useAuth();
+  const { can } = useEntitlements();
   const { setLanguage, t } = useLanguage();
 
   // Force PT language on this page
@@ -234,12 +237,16 @@ const Index = () => {
   // Note: Removed blocking loader for better LCP. 
   // We handle loading states within individual components or sections.
 
-  // Check if user is subscribed for showing premium content (logged in + active subscription)
-  const isSubscribed = user && subscription.subscribed;
+  const hasPremiumContent = Boolean(user) && can("premium_content.open");
 
   // Function to get the premium required callback
   const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string, itemTitle?: string, index?: number) => {
-    // 1. Force LOGIN if not logged in at all
+    const isPremium = Boolean(isItemPremiumOverride)
+      || checkIfItemIsPremium(itemType || category || '', itemTitle, index);
+
+    // Public free items remain available without forcing account creation.
+    if (!isPremium) return undefined;
+
     if (!user) {
       return () => {
         toast.info("Faça login para acessar o conteúdo", {
@@ -249,15 +256,9 @@ const Index = () => {
       };
     }
 
-    // 2. If logged in but not subscribed, check for premium gate
-    if (isSubscribed) return undefined;
+    if (hasPremiumContent) return undefined;
 
-    // Check if item is premium using centralized logic or override
-    const isPremium = isItemPremiumOverride || checkIfItemIsPremium(itemType || category || '', itemTitle, index);
-
-    if (isPremium) return () => setShowPremiumGate(true);
-
-    return undefined;
+    return () => setShowPremiumGate(true);
   };
   const destinosNacionais = [
     'Maragogi', 'Salvador', 'Trancoso', 'Jalapão', 'Foz do Iguaçu', 'Florianópolis',
@@ -273,6 +274,11 @@ const Index = () => {
     const fromDb = feedTemplates || [];
     return [...localFeedTemplates, ...fromDb];
   }, [feedTemplates]);
+
+  const freeFeedTemplates = useMemo(
+    () => localFeedTemplates.filter((template) => template.id && FREE_FEED_TEMPLATE_IDS.has(template.id)),
+    [],
+  );
 
   const isNacional = (title: string, category?: string | null) => {
     if (category === 'nacional') return true;
@@ -564,15 +570,34 @@ const Index = () => {
             </div>
 
             {showOnlyFree ? (
-              // Show only FREE AI Tools + Captions when gratis filter active
+              // Stable public catalog plus the free creation allowance.
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Ferramentas gratuitas disponíveis na plataforma. Para vídeos, artes e stories —{" "}
-                  <button onClick={() => navigate("/inicio")} className="underline font-semibold text-foreground">veja o plano Pro</button>.
-                </p>
+                <div className="border border-border bg-card p-4 md:p-5">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <h3 className="text-base font-bold text-foreground">Seu acesso grátis inclui</h3>
+                      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" />3 anúncios personalizados</span>
+                        <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" />2 carrosséis completos</span>
+                        <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" />Artes, legendas e videoaulas</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button onClick={() => navigate("/fabrica")}>
+                        Criar conteúdo grátis
+                      </Button>
+                      <Button variant="outline" onClick={() => setActiveCategory("videoaula")}>
+                        Ver videoaulas
+                      </Button>
+                      <Button variant="ghost" onClick={() => navigate("/inicio")}>
+                        Conhecer o Elite
+                      </Button>
+                    </div>
+                  </div>
+                </div>
                 {toolsLoading ? (
                   <ToolSkeleton />
-                ) : (
+                ) : allFilterTools.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {allFilterTools.map(tool => {
                       const isToolPremium = checkIfItemIsPremium('tool', tool.title);
@@ -599,37 +624,35 @@ const Index = () => {
                       );
                     })}
                   </div>
-                )}
+                ) : null}
                 {/* Captions in free mode */}
-                {!captionsLoading && initialCaptions.length > 0 && (
+                {FREE_CAPTIONS.length > 0 && (
                   <div className="space-y-3 mt-6">
-                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Legendas</h3>
+                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Legendas gratuitas</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {initialCaptions.map(caption => (
+                      {FREE_CAPTIONS.map(caption => (
                         <CaptionCard
                           key={caption.id}
                           id={caption.id}
                           destination={caption.destination}
                           text={caption.text}
                           hashtags={caption.hashtags}
-                          isFavorite={isFavorite("caption", caption.id)}
-                          onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
                         />
                       ))}
                     </div>
                   </div>
                 )}
-                {/* Free feed arts (first 2 are free) */}
-                {!feedLoading && allFeedTemplates.length > 0 && (
+                {/* Explicit free art catalog; downloads the exact displayed file. */}
+                {freeFeedTemplates.length > 0 && (
                   <div className="space-y-3 mt-6">
-                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Arte para Agência de Viagens</h3>
+                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Artes gratuitas para agência de viagens</h3>
                     <div className="grid grid-cols-2 gap-4">
-                      {allFeedTemplates.slice(0, 2).map((template: any, index: number) => (
+                      {freeFeedTemplates.map((template, index) => (
                         <PremiumCard
                           key={template.id || `free-feed-${index}`}
                           id={template.id || `free-feed-${index}`}
-                          title={template.title}
-                          url={template.url} driveUrl={template.drive_url}
+                          title={index === 0 ? "Arte para agência: Maragogi" : "Arte para agência: Rio de Janeiro"}
+                          url={template.image_url || template.url}
                           imageUrl={template.image_url}
                           category={template.category}
                           isNew={(template as any).isNew || (template as any).is_new}
@@ -637,10 +660,9 @@ const Index = () => {
                           aspectRatio="4/5"
                           contentType={template.type}
                           description={template.description}
-                          onClick={() => handleCardClick(template as ContentItem)}
-                          isFavorite={template.id ? isFavorite("content_item", template.id) : false}
-                          onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
                           isPremium={false}
+                          downloadOnly
+                          downloadFileName={index === 0 ? "arte-agencia-maragogi" : "arte-agencia-rio-de-janeiro"}
                         />
                       ))}
                     </div>
@@ -667,7 +689,6 @@ const Index = () => {
                         description={template.description}
                         // Performance: Prioritize first 2 items (especially on mobile)
                         loading={index < 2 ? "eager" : "lazy"}
-                        fetchPriority={index < 2 ? "high" : "auto"}
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
@@ -1186,7 +1207,7 @@ const Index = () => {
                   onPremiumRequired: getPremiumCallback('downloads', true, 'resource', r.name)
                 }))}
                 description="Vídeos prontos organizados por categoria"
-                locked={!isSubscribed}
+                locked={!hasPremiumContent}
                 onLockedClick={() => setShowPremiumGate(true)}
               />
 
@@ -1217,7 +1238,7 @@ const Index = () => {
                         .filter(link => link.title.toLowerCase().includes(downloadSearch.toLowerCase()))
                         .slice(0, showAllDownloads ? undefined : 12)
                         .map((link, idx) => {
-                          const isLocked = !isSubscribed;
+                          const isLocked = !hasPremiumContent;
                           if (isLocked) {
                             return (
                               <Button

@@ -665,6 +665,9 @@ const hasMeaningfulProgress = (snapshot?: Partial<FabricaState> | null): boolean
 };
 
 const LOCAL_PREVIEW_USER_ID = "__canva_viagem_local_preview__";
+const GUEST_USER_ID = "__canva_viagem_guest__";
+const isLocalOnlyUserId = (userId?: string | null) =>
+  userId === LOCAL_PREVIEW_USER_ID || userId === GUEST_USER_ID;
 
 const getStateTimestamp = (snapshot?: Partial<FabricaState> | null, fallback?: string | null): number => {
   const raw = snapshot?.lastEditedAt || fallback || 0;
@@ -1158,7 +1161,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const [state, setState] = useState<FabricaState>(() =>
-    loadInitialState(isLocalPreviewEnabled() ? LOCAL_PREVIEW_USER_ID : undefined)
+    loadInitialState(isLocalPreviewEnabled() ? LOCAL_PREVIEW_USER_ID : GUEST_USER_ID)
   );
   const stateRef = useRef(state);
   const lastUserEditAtRef = useRef(0);
@@ -1169,6 +1172,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const projectSaveQueueRef = useRef<Map<string, Promise<{ id: string; stateSnapshot: FabricaState }>>>(new Map());
   const blockedProjectPersistenceRef = useRef<Set<string>>(new Set());
   const projectSwitchSequenceRef = useRef(0);
+  const pendingGuestImportProjectRef = useRef<string | null>(null);
   const [historyCount, setHistoryCount] = useState(0);
   const [redoCount, setRedoCount] = useState(0);
   const historyRef = useRef<FabricaState[]>([]);
@@ -1301,7 +1305,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     let pendingCloudSnapshot: FabricaState | null = null;
     if (
       currentUserId &&
-      currentUserId !== LOCAL_PREVIEW_USER_ID &&
+      !isLocalOnlyUserId(currentUserId) &&
       hasMeaningfulProgress(previousState)
     ) {
       setSyncStatus("saving");
@@ -1332,7 +1336,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       if (
         !pendingCloudSnapshot
         && currentUserId
-        && currentUserId !== LOCAL_PREVIEW_USER_ID
+        && !isLocalOnlyUserId(currentUserId)
         && hasMeaningfulProgress(latestCurrentState)
       ) {
         try {
@@ -1401,8 +1405,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
-    const userId = user?.id || (isLocalPreviewEnabled() ? LOCAL_PREVIEW_USER_ID : null);
-    if (!userId) return;
+    const userId = user?.id || (isLocalPreviewEnabled() ? LOCAL_PREVIEW_USER_ID : GUEST_USER_ID);
     if (!hasLoadedFromDb) return;
 
     try {
@@ -1420,20 +1423,22 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     });
 
     if (!user?.id) {
-      if (isLocalPreviewEnabled()) {
-        activeUserIdRef.current = LOCAL_PREVIEW_USER_ID;
-        setState((prev) => hasMeaningfulProgress(prev) ? prev : loadInitialState(LOCAL_PREVIEW_USER_ID));
-        setHasLoadedFromDb(true);
-        return;
-      }
-      activeUserIdRef.current = null;
-      setState(createFreshState());
-      setHasLoadedFromDb(false);
+      const localUserId = isLocalPreviewEnabled() ? LOCAL_PREVIEW_USER_ID : GUEST_USER_ID;
+      const localState = loadInitialState(localUserId);
+      pendingGuestImportProjectRef.current = null;
+      activeUserIdRef.current = localUserId;
+      stateRef.current = localState;
+      setState(localState);
+      setHasLoadedFromDb(true);
+      setSyncStatus("idle");
       return;
     }
 
+    const guestDraft = readPersistedState(GUEST_USER_ID);
+    const hasGuestDraft = hasMeaningfulProgress(guestDraft);
     safeSetItem(LAST_ACTIVE_USER_KEY, user.id);
     const userChanged = activeUserIdRef.current !== user.id;
+    if (userChanged) pendingGuestImportProjectRef.current = null;
     activeUserIdRef.current = user.id;
 
     setHasLoadedFromDb(false);
@@ -1460,7 +1465,11 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       try {
         console.log("[Supabase Load] Iniciando carregamento do banco de dados...");
         const activeProjectId = activeProjectIdAtStart;
-        const localSnapshot = readPersistedState(hydrationUserId, activeProjectId || undefined);
+        const accountLocalSnapshot = readPersistedState(hydrationUserId, activeProjectId || undefined);
+        const importGuestDraft = userChanged
+          && !hasMeaningfulProgress(accountLocalSnapshot)
+          && hasGuestDraft;
+        const localSnapshot = importGuestDraft ? guestDraft : accountLocalSnapshot;
         const requestedCloudProjectId = activeProjectId
           || (isPersistedProjectId(localSnapshot.projectId) ? localSnapshot.projectId : null);
         const hasActiveProjectCache = Boolean(
@@ -1500,6 +1509,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
             && getStateTimestamp(localSnapshot) > getStateTimestamp(cloudSnapshot, data.updated_at);
           const legacyLocalIsNewer = !activeProjectId
             && !sameProject
+            && !importGuestDraft
             && hasMeaningfulProgress(localSnapshot)
             && getStateTimestamp(localSnapshot) > getStateTimestamp(cloudSnapshot, data.updated_at);
 
@@ -1520,6 +1530,12 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
           stateRef.current = selected;
           setState(selected);
           persistLocalState(selected, hydrationUserId);
+          if (importGuestDraft && guestDraft.projectId) {
+            // O rascunho visitante só é removido depois que o primeiro save na
+            // nuvem for confirmado. Uma queda de conexão durante o cadastro não
+            // pode apagar o trabalho que levou o usuário até a conta.
+            pendingGuestImportProjectRef.current = guestDraft.projectId;
+          }
           console.log("[Supabase Load] Mantendo projeto local ativo.");
         }
       } catch (err) {
@@ -1570,6 +1586,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         const { id } = await persistence;
         const activeProjectId = stateRef.current.projectId;
         const projectStillActive = activeProjectId === originalProjectId || activeProjectId === id;
+        const importedGuestProjectId = pendingGuestImportProjectRef.current;
 
         if (id !== originalProjectId) {
           if (stateRef.current.projectId === originalProjectId) {
@@ -1595,6 +1612,13 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         }
 
         await queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
+        if (importedGuestProjectId) {
+          removeLocalProjectState(GUEST_USER_ID, importedGuestProjectId);
+          if (readActiveProjectId(GUEST_USER_ID) === importedGuestProjectId) {
+            localStorage.removeItem(getActiveProjectKey(GUEST_USER_ID));
+          }
+          pendingGuestImportProjectRef.current = null;
+        }
         if (projectStillActive) {
           console.log("[Supabase Sync] ✓ Projeto salvo na nuvem");
           setLastSyncedAt(new Date());
@@ -1821,7 +1845,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       if (
         !persistedProjectId
         && currentUserId
-        && currentUserId !== LOCAL_PREVIEW_USER_ID
+        && !isLocalOnlyUserId(currentUserId)
       ) {
         const { data: persistedAfterFailure, error: lookupError } = await supabase
           .from("fabrica_diagnosticos")
@@ -1841,7 +1865,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       // para não deixar uma edição feita durante o debounce apenas no navegador.
       if (
         currentUserId
-        && currentUserId !== LOCAL_PREVIEW_USER_ID
+        && !isLocalOnlyUserId(currentUserId)
         && stateRef.current.projectId === discardedProjectId
         && hasMeaningfulProgress(stateRef.current)
       ) {

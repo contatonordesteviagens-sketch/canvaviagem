@@ -107,16 +107,15 @@ serve(async (req) => {
     const access = await verifyFabricaEliteAccess(req, corsHeaders);
     if (!access.ok) return access.response;
 
-    // Chave do gateway Lovable AI — fallback embutido (Nano Banana / Fábrica)
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") || "gestão de imagens com IA usando o nano banana no fabrica";
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const IA_PURA_GEMINI_KEY = Deno.env.get("IA_PURA_GEMINI_KEY");
     const USER_GEMINI_API_KEY_RAW = Deno.env.get("USER_GEMINI_API_KEY");
 
-    const body = (await req.json()) as AdParams & { customPrompt?: string; iaPuraMode?: boolean; userGeminiKey?: string };
-    // Quando vier do modo "IA Pura", usa a chave enviada no request body ou as chaves de ambiente dedicadas.
-    const USER_GEMINI_API_KEY = body.userGeminiKey || (body.iaPuraMode
+    const body = (await req.json()) as AdParams & { customPrompt?: string; iaPuraMode?: boolean };
+    // Chaves de provedor permanecem exclusivamente nos secrets do servidor.
+    const SERVER_GEMINI_API_KEY = body.iaPuraMode
       ? (IA_PURA_GEMINI_KEY || USER_GEMINI_API_KEY_RAW)
-      : USER_GEMINI_API_KEY_RAW);
+      : USER_GEMINI_API_KEY_RAW;
     // Se o template for de força bruta, a IA tentará renderizar a UI na marra
     const isForcaBruta = body.templateId?.startsWith("forca_bruta");
     // TRAVA GLOBAL: esta função NUNCA mais gera UI, exceto nos templates Força Bruta
@@ -146,7 +145,7 @@ serve(async (req) => {
     // === Monta o prompt ===
     let prompt: string;
     let usedTemplateId: string | null = null;
-    let provider: "user_gemini" | "lovable_ai" = USER_GEMINI_API_KEY ? "user_gemini" : "lovable_ai";
+    let provider: "server_gemini" | "lovable_ai" = SERVER_GEMINI_API_KEY ? "server_gemini" : "lovable_ai";
 
     if (forcePhotoOnly) {
       const dest = body.destination || "destino paradisíaco";
@@ -250,8 +249,8 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
 
     let imageUrl: string | undefined;
 
-    // ===== Tentativa 1: User Gemini API Key =====
-    if (!imageUrl && USER_GEMINI_API_KEY) {
+    // ===== Tentativa 1: Gemini configurado no servidor =====
+    if (!imageUrl && SERVER_GEMINI_API_KEY) {
       try {
         const geminiBody: Record<string, unknown> = {
           contents: [{
@@ -287,7 +286,7 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
 
         for (const modelName of geminiModelCandidates) {
           const gemResp = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${USER_GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${SERVER_GEMINI_API_KEY}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -300,7 +299,7 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
             const gemData = await gemResp.json();
             imageUrl = extractGeminiImageUrl(gemData);
             if (imageUrl) {
-              provider = "user_gemini";
+              provider = "server_gemini";
               break;
             }
             lastErrText = "Gemini respondeu sem imagem inline.";
@@ -312,20 +311,20 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
         }
 
         if (!imageUrl) {
-          console.warn("User Gemini failed:", lastStatus, lastErrText.slice(0, 300));
-          // 401/403 = chave inválida → erro acionável (somente se NÃO houver fallback Lovable)
+          console.warn("Server Gemini failed:", lastStatus, lastErrText.slice(0, 300));
           const invalidKey = lastStatus === 401 || lastStatus === 403;
           if (invalidKey && !LOVABLE_API_KEY) {
             return new Response(JSON.stringify({
-              error: "Sua chave Gemini é inválida ou foi revogada. Atualize-a em Configurações.",
-              provider: "user_gemini", action: "update_user_key", fallback: false,
-            }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+              error: "O provedor de imagens está temporariamente indisponível.",
+              provider: "server_gemini",
+              fallback: false,
+            }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
           }
           // 429 (cota) ou qualquer outro erro → fallback silencioso para Lovable AI Gateway
           if (LOVABLE_API_KEY) provider = "lovable_ai";
         }
       } catch (e) {
-        console.warn("User Gemini exception, falling back:", e);
+        console.warn("Server Gemini exception, falling back:", e);
         if (LOVABLE_API_KEY) provider = "lovable_ai";
       }
     }
@@ -359,7 +358,6 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
         return new Response(JSON.stringify({
           error: "Créditos esgotados no provedor de IA. A chave Gemini do projeto não conseguiu gerar a imagem antes do fallback.",
           provider,
-          action: "add_user_key",
           fallback: false,
         }), {
           status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },

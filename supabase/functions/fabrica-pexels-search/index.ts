@@ -1,4 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { verifyFabricaAuthenticatedAccess } from "../_shared/fabricaAccess.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,15 +12,29 @@ serve(async (req) => {
   }
 
   try {
-    const { query } = await req.json()
+    if (req.method !== "POST") {
+      return new Response(
+        JSON.stringify({ error: "Método não permitido" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 405 },
+      )
+    }
+
+    const access = await verifyFabricaAuthenticatedAccess(req, corsHeaders)
+    if (!access.ok) return access.response
+
+    const body = await req.json()
+    const query = typeof body?.query === "string" ? body.query.trim().slice(0, 120) : ""
     const apiKey = Deno.env.get('PEXELS_API_KEY')
 
     if (!apiKey) {
       throw new Error("PEXELS_API_KEY is missing")
     }
 
-    if (!query) {
-      throw new Error("Query is required")
+    if (query.length < 2) {
+      return new Response(
+        JSON.stringify({ error: "Informe um destino válido" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+      )
     }
 
     const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=3&orientation=landscape`, {
@@ -46,10 +61,11 @@ serve(async (req) => {
       JSON.stringify({ photos }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
-  } catch (error: any) {
+  } catch (error: unknown) {
+    console.error("fabrica-pexels-search error:", error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      JSON.stringify({ error: "Não foi possível buscar fotos agora" }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
 })

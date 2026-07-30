@@ -10,7 +10,6 @@ import { FabricaDashboardES } from "@/pages/fabrica/FabricaDashboardES";
 import { FabricaLibraryES } from "@/pages/fabrica/FabricaLibraryES";
 import { 
   ArrowLeft, 
-  Crown, 
   Sparkles, 
   Loader2, 
   LayoutDashboard, 
@@ -24,14 +23,16 @@ import {
   Menu,
   X
 } from "lucide-react";
-import { useNavigate, useLocation, Navigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 import { CloudSaveIndicatorES } from "@/components/fabrica/CloudSaveIndicatorES";
-import { hasEliteAccess } from "@/lib/planAccess";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
+import { FabricaLockedFeature } from "@/components/fabrica/FabricaLockedFeature";
 
 const FabricaInnerES = () => {
   const { state, setPhase } = useFabricaContext();
   const { isAdmin } = useAuth();
+  const { can } = useEntitlements();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -400,7 +401,22 @@ const FabricaInnerES = () => {
               {state.currentPhase === 1 && <Phase3ArtFactoryES key="phase1-ad-es" onNext={() => navigate("/es/fabrica/carrossel")} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => navigate("/es/fabrica/site")} />}
               {state.currentPhase === 2 && <Phase3ArtFactoryES key="phase2-carousel-es" onNext={() => navigate("/es/fabrica/site")} onBack={() => navigate("/es/fabrica/anuncio")} lockMode={true} initialMode="carousel" />}
               {state.currentPhase === 3 && <Phase4LandingBuilderES onNext={() => navigate("/es/fabrica/crm")} onBack={() => navigate("/es/fabrica/carrossel")} />}
-              {state.currentPhase === 4 && <Phase5DashboardES onNext={() => navigate("/es/fabrica/planos")} onBack={() => navigate("/es/fabrica/site")} />}
+              {state.currentPhase === 4 && (
+                can("crm.real_data") ? (
+                  <Phase5DashboardES onNext={() => navigate("/es/fabrica/planos")} onBack={() => navigate("/es/fabrica/site")} />
+                ) : (
+                  <FabricaLockedFeature
+                    feature="crm"
+                    title="Convierte visitas en una cartera organizada"
+                    description="Puedes conocer el flujo completo. Los leads reales, las métricas y el seguimiento se liberan con Elite."
+                    previewItems={[
+                      "Visitas, clics y conversión por proyecto",
+                      "Leads separados para cada agencia y sitio",
+                      "Historial preservado incluso al cambiar de plan",
+                    ]}
+                  />
+                )
+              )}
               {state.currentPhase === 5 && (
                 <div className="space-y-8 pb-12">
                   <Phase2AtivosES onNext={() => {}} onBack={() => navigate("/es/fabrica/crm")} />
@@ -416,126 +432,13 @@ const FabricaInnerES = () => {
 };
 
 const FabricaContentES = () => {
-  const navigate = useNavigate();
-  const { subscription, isAdmin, user, loading: authLoading } = useAuth();
-  const [accessGranted, setAccessGranted] = useState(false);
+  const { loading: authLoading } = useAuth();
 
-  // Navigate is now handled gracefully during render with <Navigate />
-
-  const isElite = hasEliteAccess(subscription);
-  const hasAccess = isAdmin || isElite;
-  const canUseFabrica = hasAccess;
-
-  useEffect(() => {
-    if (hasAccess) setAccessGranted(true);
-  }, [hasAccess]);
-
-  if (authLoading || (subscription.loading && !accessGranted)) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white font-sans">
         <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-2" />
         <span className="text-sm text-white/60">Verificando tus credenciales...</span>
-      </div>
-    );
-  }
-
-  if (!user) {
-    if (!authLoading) {
-      // Use standard react-router Navigate component instead of useEffect for reliable redirects
-      return <Navigate to="/auth?redirect=/es/fabrica" replace />;
-    }
-    
-    return (
-      <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center text-white font-sans">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mb-2" />
-        <span className="text-sm text-white/60">Verificando sesión...</span>
-      </div>
-    );
-  }
-
-  if (!canUseFabrica) {
-    return (
-      <div 
-        className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans"
-        style={{
-          backgroundImage: "radial-gradient(circle at 50% 30%, rgba(0,229,255,0.08) 0%, transparent 60%)"
-        }}
-      >
-        <div className="max-w-md w-full bg-[#050D1A] border border-cyan-500/20 rounded-3xl p-6 md:p-8 shadow-2xl shadow-cyan-500/5 relative z-10 text-center">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 mb-6">
-            <Crown className="w-4 h-4 text-cyan-400 animate-bounce" />
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-cyan-400">Mejora Recomendada</span>
-          </div>
-
-          <h2 className="text-2xl md:text-3xl font-black text-white mb-2 tracking-tight">
-            Desbloquea la Fábrica 👑
-          </h2>
-          <p className="text-xs text-white/60 mb-6 leading-relaxed">
-            Esta herramienta es exclusiva para miembros del <strong className="text-cyan-400">Plan Elite</strong>. ¡Mejora ahora para tener acceso ilimitado a la Fábrica de Anuncios y al Creador de Sitios de Viajes!
-          </p>
-
-          <div className="grid gap-4 mb-6">
-            {/* Opción Anual */}
-            <div className="border border-orange-500/30 bg-orange-500/[0.02] hover:bg-orange-500/[0.04] p-5 rounded-2xl text-left relative overflow-hidden transition-all shadow-[0_0_15px_rgba(249,115,22,0.05)]">
-              <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-red-600 text-[9px] font-black uppercase text-white px-2.5 py-1 rounded-bl-xl tracking-wider">
-                MAYOR AHORRO (70% DE DESCUENTO)
-              </div>
-              
-              <div className="flex justify-between items-start mb-2 mt-1">
-                <div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm font-black text-orange-400">Plan Elite Anual</span>
-                    <Sparkles className="w-3.5 h-3.5 text-orange-400 animate-pulse" />
-                  </div>
-                  <p className="text-[10px] text-white/40 mt-0.5">Acceso completo por 12 meses</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-xl font-black text-white">$ 28,91</span>
-                  <span className="text-[11px] text-white/50">/mes</span>
-                  <p className="text-[9px] text-orange-400 font-bold mt-0.5">$ 347 cobrado anualmente</p>
-                </div>
-              </div>
-              
-              <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-2.5 mb-4 text-[10px] text-orange-200 leading-normal">
-                💡 <strong>Análisis de Ahorro:</strong> Comprar mensualmente por 1 año cuesta $ 1.164. ¡En el plan anual, pagas solo $ 347 — un ahorro garantizado del <strong>70% de descuento real ($ 817,00/año ahorrados)</strong>!
-              </div>
-
-              <button 
-                onClick={() => navigate("/inicio")}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs transition-all shadow-lg shadow-orange-500/20 uppercase tracking-wider border-0 cursor-pointer text-center"
-              >
-                Garantizar Anual con Descuento →
-              </button>
-            </div>
-
-            {/* Opção Mensal */}
-            <div className="border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] p-4 rounded-2xl text-left transition-all">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <span className="text-xs font-bold text-white/80">Plan Elite Mensual</span>
-                  <p className="text-[10px] text-white/40 mt-0.5">Acceso recurrente, cancela cuando quieras</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-lg font-black text-white">$ 97</span>
-                  <span className="text-[10px] text-white/50">/mes</span>
-                </div>
-              </div>
-              <button 
-                onClick={() => navigate("/inicio")}
-                className="w-full bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-bold py-2 px-3 rounded-xl text-xs mt-1 transition-colors border-0 cursor-pointer text-center"
-              >
-                Suscribir Mensual por $ 97 →
-              </button>
-            </div>
-          </div>
-
-          <button 
-            onClick={() => navigate("/es")}
-            className="text-xs text-white/40 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition-colors border-0 bg-transparent cursor-pointer"
-          >
-            ← Volver al Panel
-          </button>
-        </div>
       </div>
     );
   }

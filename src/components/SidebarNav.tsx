@@ -12,9 +12,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ProgressBar } from "@/components/ProgressBar";
-import { hasEliteAccess } from "@/lib/planAccess";
-import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
-import { FabricaUpgradeModalES } from "@/components/fabrica/FabricaUpgradeModalES";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { CategoryType } from "@/components/canva/CategoryNav";
 import { useFabricaMetrics } from "@/hooks/useFabricaMetrics";
@@ -32,27 +29,18 @@ interface SidebarNavProps {
 const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMobileNavClick }: SidebarNavProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut, subscription, isAdmin } = useAuth();
+  const { user, signOut } = useAuth();
   const { t, language } = useLanguage();
-  const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
   const { newLeadsCount } = useFabricaMetrics();
   const { isCollapsed, setIsCollapsed } = useSidebar();
   
   const activeIsCollapsed = isMobile ? false : isCollapsed;
 
-  const isElite = hasEliteAccess(subscription);
   const isESRoute = location.pathname.startsWith('/es');
   const homeRoute = isESRoute ? "/es" : "/";
 
-  const handleNavClick = (category?: CategoryType, path?: string, requiresElite?: boolean) => {
+  const handleNavClick = (category?: CategoryType, path?: string) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    if (requiresElite) {
-      if (!isElite && !isAdmin) {
-        setFabricaUpgradeOpen(true);
-        return;
-      }
-    }
 
     if (category) {
       if (onCategoryChange) {
@@ -158,35 +146,35 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
           />
 
           <NavButton 
-            onClick={() => handleNavClick(undefined, isESRoute ? "/es/fabrica" : "/fabrica", true)}
+            onClick={() => handleNavClick(undefined, isESRoute ? "/es/fabrica" : "/fabrica")}
             isActive={location.pathname === '/fabrica' || location.pathname === '/es/fabrica'}
             icon={Wand2}
             label="Fábrica"
           />
 
           <NavButton 
-            onClick={() => handleNavClick(undefined, "/fabrica/anuncio", true)}
+            onClick={() => handleNavClick(undefined, "/fabrica/anuncio")}
             isActive={location.pathname.includes('/fabrica/anuncio')}
             icon={MousePointerClick}
             label="Criador de Anúncios"
           />
 
           <NavButton 
-            onClick={() => handleNavClick(undefined, "/fabrica/carrossel", true)}
+            onClick={() => handleNavClick(undefined, "/fabrica/carrossel")}
             isActive={location.pathname.includes('/fabrica/carrossel')}
             icon={Layers}
             label="Gerador de Carrosséis"
           />
 
           <NavButton 
-            onClick={() => handleNavClick(undefined, "/fabrica/site", true)}
+            onClick={() => handleNavClick(undefined, "/fabrica/site")}
             isActive={location.pathname.includes('/fabrica/site')}
             icon={Globe}
             label="Construtor de Sites"
           />
 
           <NavButton 
-            onClick={() => handleNavClick(undefined, "/fabrica/crm", true)}
+            onClick={() => handleNavClick(undefined, "/fabrica/crm")}
             isActive={location.pathname.includes('/fabrica/crm')}
             icon={Users}
             label="CRM e Leads"
@@ -396,11 +384,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
         )}
       </aside>
 
-      {language === "es" ? (
-        <FabricaUpgradeModalES open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
-      ) : (
-        <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
-      )}
     </>
   );
 };

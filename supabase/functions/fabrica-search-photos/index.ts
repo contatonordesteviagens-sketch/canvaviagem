@@ -1,7 +1,7 @@
 // Edge function: fabrica-search-photos
 // Busca fotos turísticas usando Pexels (principal) e Google Custom Search (alternativo).
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { verifyFabricaEliteAccess } from "../_shared/fabricaAccess.ts";
+import { verifyFabricaAuthenticatedAccess } from "../_shared/fabricaAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +18,27 @@ interface PhotoOut {
 }
 
 type PhotoOrientation = "landscape" | "portrait" | "square";
+
+const requestWindows = new Map<string, { count: number; resetsAt: number }>();
+const photoCache = new Map<string, { photos: PhotoOut[]; expiresAt: number }>();
+
+function allowPhotoSearch(userId: string) {
+  const now = Date.now();
+  const current = requestWindows.get(userId);
+  if (!current || current.resetsAt <= now) {
+    requestWindows.set(userId, { count: 1, resetsAt: now + 60_000 });
+    return true;
+  }
+  if (current.count >= 30) return false;
+  current.count += 1;
+  return true;
+}
+
+function getPositiveInteger(value: unknown, fallback: number, maximum: number) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(maximum, Math.max(1, Math.floor(parsed)));
+}
 
 async function searchPexels(
   query: string,
@@ -86,18 +107,25 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const access = await verifyFabricaEliteAccess(req, corsHeaders);
+    const access = await verifyFabricaAuthenticatedAccess(req, corsHeaders);
     if (!access.ok) return access.response;
+    if (!allowPhotoSearch(access.userId)) {
+      return new Response(JSON.stringify({ error: "Muitas buscas seguidas. Aguarde um minuto." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const body = await req.json();
-    const query = (body.query || "").trim();
-    const engine = (body.engine || "pexels").toLowerCase();
+    const query = typeof body?.query === "string" ? body.query.trim().slice(0, 120) : "";
+    const requestedEngine = typeof body?.engine === "string" ? body.engine.toLowerCase() : "pexels";
+    const engine = requestedEngine === "google" ? "google" : "pexels";
     const allowFallback = body.fallback !== false;
     const orientation: PhotoOrientation =
       body.orientation === "portrait" || body.orientation === "square"
         ? body.orientation
         : "landscape";
-    const page = Math.max(1, Number(body.page || 1));
+    const page = getPositiveInteger(body.page, 1, 50);
 
     if (query.length < 2) {
       return new Response(JSON.stringify({ error: "Query é necessária" }), {
@@ -106,7 +134,14 @@ serve(async (req) => {
       });
     }
 
-    const perPage = Math.min(body.perPage || 16, 40);
+    const perPage = getPositiveInteger(body.perPage, 16, 24);
+    const cacheKey = JSON.stringify({ query: query.toLocaleLowerCase("pt-BR"), engine, orientation, page, perPage });
+    const cached = photoCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return new Response(JSON.stringify({ photos: cached.photos, cached: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     let photos: PhotoOut[] = [];
     if (engine === "google") {
@@ -120,6 +155,12 @@ serve(async (req) => {
         photos = await searchGoogle(query, perPage);
       }
     }
+
+    if (photoCache.size >= 100) {
+      const oldestKey = photoCache.keys().next().value;
+      if (oldestKey) photoCache.delete(oldestKey);
+    }
+    photoCache.set(cacheKey, { photos, expiresAt: Date.now() + 5 * 60_000 });
 
     return new Response(JSON.stringify({ photos }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

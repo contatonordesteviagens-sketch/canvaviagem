@@ -3,11 +3,6 @@ import { CategoryType } from "./CategoryNav";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Dock } from "@/components/ui/Dock";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
-import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
-import { FabricaUpgradeModalES } from "@/components/fabrica/FabricaUpgradeModalES";
-import { hasEliteAccess } from "@/lib/planAccess";
 
 interface BottomNavProps {
   activeCategory: CategoryType;
@@ -17,8 +12,6 @@ interface BottomNavProps {
 export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const { user, subscription, isAdmin } = useAuth();
-  const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
 
   const handleTabClick = (category: CategoryType | "home" | "calendar" | "fabrica" | "tutorial") => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -31,19 +24,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
     } else if (category === "tutorial") {
       navigate("/tutorial");
     } else if (category === "fabrica") {
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      const isElite = hasEliteAccess(subscription);
-        
-      const isUnlocked = isElite || isAdmin;
-
-      if (isUnlocked) {
-        navigate(language === "es" ? "/es/fabrica" : "/fabrica");
-      } else {
-        setFabricaUpgradeOpen(true);
-      }
+      navigate(language === "es" ? "/es/fabrica" : "/fabrica");
     } else {
       onCategoryChange(category as CategoryType);
       navigate("/"); // Ensure we are on home to see content
@@ -86,11 +67,6 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
           <Dock items={navItems} className="h-auto" />
         </div>
       </div>
-      {language === "es" ? (
-        <FabricaUpgradeModalES open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
-      ) : (
-        <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
-      )}
     </>
   );
 };

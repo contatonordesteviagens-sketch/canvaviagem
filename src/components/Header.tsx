@@ -106,7 +106,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   const handleNavClick = (to: string) => {
     const isElite = hasEliteAccess(subscription);
 
-    if ((to === "/fabrica" || to === "/painel-marketing") && !isAdmin && !isElite) {
+    if (to === "/painel-marketing" && !isAdmin && !isElite) {
       setFabricaUpgradeOpen(true);
       setIsOpen(false);
       return;

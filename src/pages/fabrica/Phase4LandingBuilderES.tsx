@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useId } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { useFabricaContext, type AgencyType, type Pacote, type Depoimento as Testimonio } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML } from "@/lib/fabrica-html-export-es";
@@ -12,6 +13,7 @@ import {
   type DiagnosticoSalvo,
 } from "@/hooks/useFabricaDiagnosticos";
 import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
+import { FabricaPaywallDialog } from "@/components/fabrica/FabricaPaywallDialog";
 import { getSiteTemplateDefinition } from "@/lib/site-template-catalog";
 import { publishFabricaSite } from "@/lib/fabrica-site-publisher";
 import {
@@ -146,8 +148,10 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   const { data: savedProjects } = useDiagnosticos();
   const { state, update, systemUpdate, reset, undo, redo, switchProject, canUndo, canRedo, isHydrated } = useFabricaContext();
   const { user } = useAuth();
+  const { can, track } = useEntitlements();
   const [previewing, setPreviewing] = useState(true);
   const [downloadCount, setDownloadCount] = useState(0);
+  const [showDownloadPaywall, setShowDownloadPaywall] = useState(false);
   const [autoSyncDone, setAutoSyncDone] = useState(false);
   const [autoSyncFields, setAutoSyncFields] = useState<string[]>([]);
   const [pickingHeroImage, setPickingHeroImage] = useState(false);
@@ -1034,6 +1038,12 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   }, []);
 
   const handleDownload = () => {
+    if (!can("site.publish")) {
+      track("site_publish_blocked", { source: "site_html_download", locale: "es" });
+      track("paywall_viewed", { feature: "site_publish", source: "site_html_download", locale: "es" });
+      setShowDownloadPaywall(true);
+      return;
+    }
     setDownloadCount((c) => c + 1);
     downloadLandingHTML(state, downloadCount + 1, user?.id);
     toast.success(`¡Versión ${downloadCount + 1} descargada! El archivo HTML está listo para usar.`);
@@ -1801,6 +1811,13 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         </div>
       )}
 
+      <FabricaPaywallDialog
+        open={showDownloadPaywall}
+        onOpenChange={setShowDownloadPaywall}
+        feature="site_publish"
+        title="Publicar y descargar el sitio es una función Elite"
+        description="Tu proyecto continúa guardado. Activa Elite para descargar el HTML, publicar el sitio y mantener todas las herramientas profesionales disponibles."
+      />
     </div>
   );
 };
@@ -2479,6 +2496,8 @@ const PublishSiteCardES = ({
 }) => {
   const { state, update } = useFabricaContext();
   const { user } = useAuth();
+  const { can, track } = useEntitlements();
+  const [showPublishPaywall, setShowPublishPaywall] = useState(false);
 
   const [isPublishing, setIsPublishing] = useState(false);
   // ── PUBLICACIÓN EN 1 CLIC EN CANVA VIAGEM ──
@@ -2497,6 +2516,12 @@ const PublishSiteCardES = ({
   }, [state.projectId, state.siteContent.canvaViagemUrl, state.agencyName]);
 
   const handleDownload = () => {
+    if (!can("site.publish")) {
+      track("site_publish_blocked", { source: "site_html_download", locale: "es" });
+      track("paywall_viewed", { feature: "site_publish", source: "site_html_download", locale: "es" });
+      setShowPublishPaywall(true);
+      return;
+    }
     try {
       const blob = new Blob([html], { type: "text/html" });
       const url = URL.createObjectURL(blob);
@@ -2515,11 +2540,12 @@ const PublishSiteCardES = ({
 
 
   const handleDirectPublish = async () => {
-    if (!user?.id) {
-      toast.error("Inicia sesión para publicar.");
+    if (!user?.id || !can("site.publish")) {
+      track("site_publish_blocked", { source: "site_publish", locale: "es" });
+      track("paywall_viewed", { feature: "site_publish", source: "site_publish", locale: "es" });
+      setShowPublishPaywall(true);
       return;
     }
-
     const cleanSlug = buildSiteSlug(finalSubdomain);
     const slugError = validateCanvaSiteSlug(cleanSlug);
     if (slugError) {
@@ -2756,6 +2782,13 @@ const PublishSiteCardES = ({
             Siguiente Paso: Diagnóstico <Rocket className="w-5 h-5" />
           </button>
         </div>
+        <FabricaPaywallDialog
+          open={showPublishPaywall}
+          onOpenChange={setShowPublishPaywall}
+          feature="site_publish"
+          title="Tu sitio está listo para publicarse"
+          description="Sigue editando y viendo la vista previa sin perder nada. Publicar, actualizar y descargar el HTML completo requiere Elite."
+        />
       </div>
     </div>
   );

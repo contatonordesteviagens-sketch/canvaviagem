@@ -1,8 +1,9 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { Loader2 } from "lucide-react";
-import { hasEliteAccess } from "@/lib/planAccess";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
+import { buildUpgradePath } from "@/lib/eliteOffer";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -20,7 +21,8 @@ export const ProtectedRoute = ({
     allowExternalBlog = false
 }: ProtectedRouteProps) => {
     const location = useLocation();
-    const { user, loading, subscription, isAdmin } = useAuth();
+    const { user, loading, isAdmin } = useAuth();
+    const { can, loading: entitlementsLoading } = useEntitlements();
 
     // Liberar acesso público irrestrito ao Blog (/blog) e postagens para indexação e SEO do Google
     if (location.pathname.startsWith("/blog")) {
@@ -32,7 +34,7 @@ export const ProtectedRoute = ({
 
     const needsSubscriptionState = requireSubscription || requireElite;
 
-    if (loading || (needsSubscriptionState && subscription.loading)) {
+    if (loading || (needsSubscriptionState && entitlementsLoading)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -59,14 +61,12 @@ export const ProtectedRoute = ({
 
     // 3. Check Subscription (if required)
     // Note: Admins bypass subscription checks ensuring they can access everything
-    if (requireSubscription && !subscription.subscribed && !isAdmin && !localPreview) {
-        return <Navigate to="/inicio" replace />;
+    if (requireSubscription && !can("premium_content.open") && !isAdmin && !localPreview) {
+        return <Navigate to={buildUpgradePath("premium_content", location.pathname)} replace />;
     }
 
-    const isElite = hasEliteAccess(subscription);
-
-    if (requireElite && !isElite && !isAdmin && !localPreview) {
-        return <Navigate to="/fabrica" replace />;
+    if (requireElite && !can("vendedor.use") && !isAdmin && !localPreview) {
+        return <Navigate to={buildUpgradePath("vendedor", location.pathname)} replace />;
     }
 
     return <>{children}</>;

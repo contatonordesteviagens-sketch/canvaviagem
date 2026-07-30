@@ -105,16 +105,30 @@ serve(async (req) => {
         .eq("user_id", userId)
         .single();
       
-      if (!localSubError && localSub && localSub.status === "active" && localSub.product_id) {
-        const endDate = localSub.current_period_end;
-        if (!endDate || new Date(endDate) > new Date()) {
+      if (
+        !localSubError &&
+        localSub &&
+        ["active", "trialing"].includes(localSub.status) &&
+        localSub.product_id
+      ) {
+        const endDate = localSub.status === "trialing"
+          ? localSub.trial_ends_at ?? localSub.current_period_end
+          : localSub.current_period_end;
+        const isCurrent = localSub.status === "trialing"
+          ? Boolean(endDate && new Date(endDate) > new Date())
+          : !endDate || new Date(endDate) > new Date();
+        if (isCurrent) {
           localActiveSub = localSub;
           if (isEliteProduct(localSub.product_id)) {
             logStep("Elite/Ticto subscription found in local database", { productId: localSub.product_id });
             return new Response(JSON.stringify({ 
               subscribed: true, 
               product_id: localSub.product_id, 
-              subscription_end: endDate 
+              subscription_end: endDate,
+              status: localSub.status,
+              trial_end: localSub.trial_ends_at ?? null,
+              billing_cycle: localSub.billing_cycle ?? null,
+              billing_provider: localSub.billing_provider ?? null,
             }), {
               headers: { ...corsHeaders, "Content-Type": "application/json" },
               status: 200,
@@ -155,19 +169,46 @@ serve(async (req) => {
           const subscriptionId = selected.subscription.id;
           const subscriptionEnd = selected.subscription.current_period_end ? new Date(selected.subscription.current_period_end * 1000).toISOString() : null;
           const productId = selected.productId;
+          const subscriptionStatus = selected.subscription.status;
+          const trialStart = selected.subscription.trial_start
+            ? new Date(selected.subscription.trial_start * 1000).toISOString()
+            : null;
+          const trialEnd = selected.subscription.trial_end
+            ? new Date(selected.subscription.trial_end * 1000).toISOString()
+            : null;
+          const recurring = selected.subscription.items.data[0]?.price?.recurring;
+          const billingCycle = recurring?.interval === "year"
+            ? "annual"
+            : recurring?.interval === "month" && recurring.interval_count === 6
+              ? "semiannual"
+              : recurring?.interval === "month"
+                ? "monthly"
+                : null;
 
           if (dbClient) {
             await dbClient.from("subscriptions").upsert({
               user_id: userId,
-              status: "active",
+              status: subscriptionStatus,
               stripe_customer_id: customerId,
               stripe_subscription_id: subscriptionId,
               product_id: productId,
               current_period_end: subscriptionEnd,
+              trial_started_at: trialStart,
+              trial_ends_at: trialEnd,
+              billing_provider: "stripe",
+              billing_cycle: billingCycle,
             }, { onConflict: "user_id" });
           }
 
-          return new Response(JSON.stringify({ subscribed: true, product_id: productId, subscription_end: subscriptionEnd }), {
+          return new Response(JSON.stringify({
+            subscribed: true,
+            product_id: productId,
+            subscription_end: subscriptionEnd,
+            status: subscriptionStatus,
+            trial_end: trialEnd,
+            billing_cycle: billingCycle,
+            billing_provider: "stripe",
+          }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 200,
           });
@@ -212,10 +253,20 @@ serve(async (req) => {
                 stripe_subscription_id: null,
                 product_id: productId,
                 current_period_end: expiryDate,
+                billing_provider: "stripe",
+                billing_cycle: "one_time",
               }, { onConflict: "user_id" });
             }
 
-            return new Response(JSON.stringify({ subscribed: true, product_id: productId, subscription_end: expiryDate }), {
+            return new Response(JSON.stringify({
+              subscribed: true,
+              product_id: productId,
+              subscription_end: expiryDate,
+              status: "active",
+              trial_end: null,
+              billing_cycle: "one_time",
+              billing_provider: "stripe",
+            }), {
               headers: { ...corsHeaders, "Content-Type": "application/json" },
               status: 200,
             });
@@ -228,7 +279,15 @@ serve(async (req) => {
 
     if (localActiveSub) {
       logStep("Stripe did not show upgrade; returning local active subscription", { productId: localActiveSub.product_id });
-      return new Response(JSON.stringify({ subscribed: true, product_id: localActiveSub.product_id, subscription_end: localActiveSub.current_period_end }), {
+      return new Response(JSON.stringify({
+        subscribed: true,
+        product_id: localActiveSub.product_id,
+        subscription_end: localActiveSub.current_period_end,
+        status: localActiveSub.status,
+        trial_end: localActiveSub.trial_ends_at ?? null,
+        billing_cycle: localActiveSub.billing_cycle ?? null,
+        billing_provider: localActiveSub.billing_provider ?? null,
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -237,7 +296,15 @@ serve(async (req) => {
 
 
     logStep("No active subscription found anywhere");
-    return new Response(JSON.stringify({ subscribed: false, product_id: null, subscription_end: null }), {
+    return new Response(JSON.stringify({
+      subscribed: false,
+      product_id: null,
+      subscription_end: null,
+      status: null,
+      trial_end: null,
+      billing_cycle: null,
+      billing_provider: null,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

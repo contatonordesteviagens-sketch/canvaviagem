@@ -1,4 +1,3 @@
-export const ABACATE_API_KEY = "abc_prod_6jPB0Cn3XxNpwqz1mxEDwG1a";
 export const ABACATE_URL = "https://api.abacatepay.com/v1";
 
 export const ABACATE_PLANS = {

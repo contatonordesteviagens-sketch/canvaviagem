@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { EntitlementsProvider } from "@/contexts/EntitlementsContext";
 import { useTrackUtm } from "@/hooks/useTrackUtm";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -133,11 +134,9 @@ const BlogPost49 = lazy(() => import("./pages/BlogPost49"));
 const BlogPost50 = lazy(() => import("./pages/BlogPost50"));
 const Blog = lazy(() => import("./pages/Blog"));
 const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
-const Inicio = lazy(() => import("./pages/Inicio"));
 const Inicio2 = lazy(() => import("./pages/Inicio2"));
 const InicioES = lazy(() => import("./pages/InicioES"));
 const CanvaClone = lazy(() => import("./pages/CanvaClone"));
-const SalesPage = lazy(() => import("./pages/SalesPage"));
 const Diferencas = lazy(() => import("./pages/Diferencas"));
 const MinhaConta = lazy(() => import("./pages/MinhaConta"));
 const Downloads = lazy(() => import("./pages/Downloads"));
@@ -204,8 +203,9 @@ const App = () => {
       <ThemeProvider>
         <TooltipProvider>
           <AuthProvider>
-            <LanguageProvider>
-              <SidebarProvider>
+            <EntitlementsProvider>
+              <LanguageProvider>
+                <SidebarProvider>
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
@@ -230,17 +230,17 @@ const App = () => {
                         <Calendar />
                       </ProtectedRoute>
                     } />
-                    <Route path="/planos" element={<SalesPage />} />
-                    <Route path="/pt/planos" element={<SalesPage />} />
+                    <Route path="/planos" element={<Navigate to="/inicio" replace />} />
+                    <Route path="/pt/planos" element={<Navigate to="/inicio" replace />} />
                     <Route path="/inicio" element={<Inicio2 />} />
-                    <Route path="/inicio2" element={<Inicio />} />
+                    <Route path="/inicio2" element={<Navigate to="/inicio" replace />} />
                     <Route path="/canva" element={<CanvaClone />} />
                     <Route path="/diferencas" element={<Diferencas />} />
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />
                     <Route path="/fabrica" element={<Fabrica />} />
                     <Route path="/fabrica/*" element={<Fabrica />} />
                     <Route path="/vendedor-ia" element={
-                      <ProtectedRoute requireSubscription>
+                      <ProtectedRoute requireElite>
                         <VendedorIA />
                       </ProtectedRoute>
                     } />
@@ -390,8 +390,9 @@ const App = () => {
                   )}
                 </Suspense>
               </BrowserRouter>
-              </SidebarProvider>
-            </LanguageProvider>
+                </SidebarProvider>
+              </LanguageProvider>
+            </EntitlementsProvider>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
