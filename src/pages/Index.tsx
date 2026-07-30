@@ -565,9 +565,13 @@ const Index = () => {
             <div className="flex items-center mb-6 gap-4">
               <AccessFilter
                 selectedFilters={accessFilters}
-                onFiltersChange={            {showOnlyFree ? (
+                onFiltersChange={setAccessFilters}
+              />
+            </div>
+            {showOnlyFree ? (
               // Stable public catalog plus the free creation allowance.
               <div className="space-y-4">
+
                 {/* Banner: O que é grátis — mais claro e orientado a conversão */}
                 <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800/50 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/30 p-5 md:p-6 shadow-sm">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
