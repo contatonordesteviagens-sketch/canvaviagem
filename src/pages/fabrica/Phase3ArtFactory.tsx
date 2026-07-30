@@ -19,6 +19,9 @@ import { toast } from "sonner";
 import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
 import { F1CarouselBuilder } from "@/components/fabrica/F1CarouselBuilder";
 import { FabricaPaywallDialog } from "@/components/fabrica/FabricaPaywallDialog";
+import ArtTweakEditor from "@/components/fabrica/ArtTweakEditor";
+import { artVariantLabel, type ArtTweakMap } from "@/lib/fabrica-art-tweaks";
+import { getArtTweakPreset, loadArtTweakPresets } from "@/lib/fabrica-art-tweak-presets";
 import { createExportIdentity } from "@/lib/exportIdentity";
 
 type GenMode = "ai" | "photo" | "custom";
@@ -468,7 +471,7 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
 
 export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode = false, onSkipToSite }: Props) => {
   const { state, update, systemUpdate, reset } = useFabricaContext();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { reserve, commit, release, track, can, tier, remaining } = useEntitlements();
   const [showExportPaywall, setShowExportPaywall] = useState(false);
   const isAdPreviewLocked = tier === "guest"
@@ -783,6 +786,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   const [captionCopied, setCaptionCopied] = useState(false);
   // Histórico das últimas variantes do compositor canvas (modo Sua Imagem) para forçar rotação
   const variantHistoryRef = useRef<number[]>([]);
+  // ADMIN — metadados da arte (variação + opções usadas) para o editor de ajuste fino
+  const artMetaRef = useRef<Map<string, { options: any; variant: number; category: string; format: string; tweaks?: ArtTweakMap }>>(new Map());
+  const [artEditorTarget, setArtEditorTarget] = useState<{ image: string; meta: { options: any; variant: number; category: string; format: string; tweaks?: ArtTweakMap } } | null>(null);
+  useEffect(() => { void loadArtTweakPresets(); }, []);
   // Proteção anti-loop: limita fallbacks automáticos da IA Pura
   const retryCountRef = useRef<number>(0);
   // Versão forçada (null = automático/rotação). 0..4 fixa a variante exata para correções cirúrgicas.
@@ -1275,6 +1282,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           descScale,
           textColorOverride: effectiveTextColor,
           isExperience: categoria === "experiencia_destino",
+          artTweaks: getArtTweakPreset(categoria, forceVar, format),
         };
       };
 
@@ -1314,15 +1322,18 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
 
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
-            let img = await composeTravelAd(
-              buildComposeOptions(
-                photoRefs[idx],
-                localStrategy,
-                freshSeedPhoto + idx,
-                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % TOTAL_VARIANTS_PHOTO : undefined,
-                palette
-              )
-            );
+            const usedVariant = typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % TOTAL_VARIANTS_PHOTO : undefined;
+            const opts = buildComposeOptions(photoRefs[idx], localStrategy, freshSeedPhoto + idx, usedVariant, palette);
+            const img = await composeTravelAd(opts);
+            if (typeof usedVariant === "number") {
+              artMetaRef.current.set(img, {
+                options: opts,
+                variant: usedVariant,
+                category: categoria,
+                format,
+                tweaks: opts.artTweaks,
+              });
+            }
             return img;
           })
         );
@@ -1578,15 +1589,18 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy, idx) => {
-          let img = await composeTravelAd(
-            buildComposeOptions(
-              refImage,
-              localStrategy,
-              freshSeedCustom + idx,
-              typeof nextVariant === "number" ? (nextVariant + idx) % TOTAL_VARIANTS : undefined,
-              palette
-            )
-          );
+          const usedVariant = typeof nextVariant === "number" ? (nextVariant + idx) % TOTAL_VARIANTS : undefined;
+          const opts = buildComposeOptions(refImage, localStrategy, freshSeedCustom + idx, usedVariant, palette);
+          const img = await composeTravelAd(opts);
+          if (typeof usedVariant === "number") {
+            artMetaRef.current.set(img, {
+              options: opts,
+              variant: usedVariant,
+              category: categoria,
+              format,
+              tweaks: opts.artTweaks,
+            });
+          }
           return img;
         })
       );
@@ -2883,9 +2897,50 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
+                      {isAdmin && artMetaRef.current.get(img) && (
+                        <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1.5">
+                          <span className="rounded-md bg-black/80 px-2 py-1 text-[10px] font-black text-white">
+                            {artVariantLabel(
+                              artMetaRef.current.get(img)!.category,
+                              artMetaRef.current.get(img)!.variant,
+                              artMetaRef.current.get(img)!.format,
+                            )}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const meta = artMetaRef.current.get(img);
+                              if (meta) setArtEditorTarget({ image: img, meta });
+                            }}
+                            className="rounded-md bg-white/90 px-2 py-1 text-[10px] font-black text-black hover:bg-white"
+                            title="Ajustar posições desta arte (admin)"
+                          >
+                            Ajustar arte
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
+
+                {isAdmin && artEditorTarget && (
+                  <ArtTweakEditor
+                    open
+                    onClose={() => setArtEditorTarget(null)}
+                    composeOptions={artEditorTarget.meta.options}
+                    category={artEditorTarget.meta.category}
+                    variant={artEditorTarget.meta.variant}
+                    format={artEditorTarget.meta.format}
+                    initialTweaks={artEditorTarget.meta.tweaks}
+                    onApply={(newImage, tweaks) => {
+                      const oldImage = artEditorTarget.image;
+                      artMetaRef.current.set(newImage, { ...artEditorTarget.meta, tweaks });
+                      setGeneratedImages((prev) => prev.map((it) => (it === oldImage ? newImage : it)));
+                      setGeneratedImage((cur) => (cur === oldImage ? newImage : cur));
+                    }}
+                  />
+                )}
 
                 {adCaptions.length > 0 && (
                   <div className="rounded-xl border border-white/10 bg-black/20 p-3">

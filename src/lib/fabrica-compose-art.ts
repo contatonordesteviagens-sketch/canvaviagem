@@ -1,3 +1,4 @@
+import { createArtTweakContext, type ArtElementBox, type ArtTweakMap } from "@/lib/fabrica-art-tweaks";
 
 type Format = "square" | "story";
 type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
@@ -239,6 +240,10 @@ interface ComposeTravelAdOptions {
   footerContact2Value?: string;
   isExperience?: boolean;
   hideCents?: boolean;
+  /** ADMIN: ajustes finos por elemento ({ id: { dx, dy, scale } }). */
+  artTweaks?: ArtTweakMap;
+  /** ADMIN: callback com as caixas dos elementos desenhados (para o editor visual). */
+  onArtElements?: (elements: ArtElementBox[]) => void;
 }
 
 /** Formata telefone no padrão (XX) 9 XXXX-XXXX */
@@ -955,6 +960,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     hideCents,
     logoFormat = "circle",
   } = options;
+
+  // ADMIN — camada de ajustes finos (posição/escala por elemento).
+  const tw = createArtTweakContext(options.artTweaks);
+  const flushArtElements = () => {
+    try { options.onArtElements?.(tw.elements); } catch { /* noop */ }
+  };
 
   const destination = sanitizeAdText(options.destination || "");
   const city = sanitizeAdText(options.city || "");
@@ -2698,19 +2709,23 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza') badges.push(`Saindo de ${cityFmt}`);
       if (travelPeriod && travelPeriod.trim()) badges.push(travelPeriod.trim().toUpperCase());
 
-      ctx.font = "800 24px Inter, Arial, sans-serif";
-      const badgeGap = 15;
+      const twBadges = tw.get("badges");
+      const badgeFs = Math.max(12, Math.round(24 * twBadges.scale));
+      const badgeHS = Math.max(28, Math.round(badgeH * twBadges.scale));
+      ctx.font = `800 ${badgeFs}px Inter, Arial, sans-serif`;
+      const badgeGap = Math.round(15 * twBadges.scale);
       let totalBadgeW = 0;
       const badgeWidths: number[] = [];
       badges.forEach(text => {
-        const w = ctx.measureText(text).width + 30;
+        const w = ctx.measureText(text).width + 30 * twBadges.scale;
         badgeWidths.push(w);
         totalBadgeW += w;
       });
       if (badges.length > 0) totalBadgeW += badgeGap * (badges.length - 1);
 
-      const badgeY = safeAnchorY;
-      let badgeX = (width / 2) - (totalBadgeW / 2);
+      const badgeY = safeAnchorY + twBadges.dy;
+      let badgeX = (width / 2) - (totalBadgeW / 2) + twBadges.dx;
+      const badgeStartX = badgeX;
 
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.12)";
@@ -2718,52 +2733,72 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.shadowOffsetY = 4;
       badges.forEach((text, i) => {
         const w = badgeWidths[i];
-        fillRoundRect(ctx, badgeX, badgeY, w, badgeH, 12, v0BadgeBg);
+        fillRoundRect(ctx, badgeX, badgeY, w, badgeHS, 12, v0BadgeBg);
         ctx.fillStyle = v0OnBadge;
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(text, badgeX + w / 2, badgeY + badgeH / 2);
+        ctx.fillText(text, badgeX + w / 2, badgeY + badgeHS / 2);
         badgeX += w + badgeGap;
       });
       ctx.restore();
       ctx.textBaseline = "alphabetic";
+      if (badges.length > 0) {
+        tw.record({ id: "badges", label: "Selos do topo", x: badgeStartX, y: badgeY, w: totalBadgeW, h: badgeHS });
+      }
 
       // 7) Headline (1 linha, fonte adaptativa)
+      const twTitle = tw.get("title");
+      const titleSizeAdj = Math.max(18, Math.round(titleSize * twTitle.scale));
       ctx.fillStyle = v0OnPanel;
-      ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
-      const titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, safeAnchorY + 12 + titleSize);
+      ctx.font = `900 ${titleSizeAdj}px Inter, Arial, sans-serif`;
+      const titleBaseY = Math.max(safeAnchorY + badgeH + topPaddingBeforeTitle + titleSize, safeAnchorY + 12 + titleSize);
+      const titleY = titleBaseY + twTitle.dy;
+      const titleX = width / 2 + twTitle.dx;
       ctx.textAlign = "center";
-      safeFillText(ctx, titleText, width / 2, titleY, width - 80, 22);
+      safeFillText(ctx, titleText, titleX, titleY, width - 80, 22);
+      tw.record({
+        id: "title",
+        label: "Título",
+        x: titleX - (width - 80) / 2,
+        y: titleY - titleSizeAdj,
+        w: width - 80,
+        h: Math.round(titleSizeAdj * 1.25),
+      });
 
       // 8) Benefits + Preço lado a lado â€” preço ALINHADO Ã€ DIREITA pra eliminar
       //    o espaço em branco que sobrava no canto direito.
-      const rowTopY = titleY + titleToContent;
+      const rowTopY = titleBaseY + titleToContent;
       const benefitsX = left;
       // Largura do bloco de preço: ~46% da contentWidth, mínimo 380px
       const priceBlockW = Math.max(380, Math.round(contentWidth * 0.46));
       const priceX = width - 60 - priceBlockW; // encosta no padding direito
       const benefitsMaxW = priceX - 24 - benefitsX;
 
+      const twBenefits = tw.get("benefits");
+      const benefitsOriginX = benefitsX + twBenefits.dx;
+      const benefitsOriginY = rowTopY + twBenefits.dy;
+      const benefitScale = twBenefits.scale;
+
       ctx.fillStyle = v0OnPanel;
-      const iconSize0 = 28;
-      const iconTextGap = 52; 
+      const iconSize0 = 28 * benefitScale;
+      const iconTextGap = 52 * benefitScale;
       ctx.textAlign = "left";
       benefitsList.forEach((b, i) => {
         const iconKey = (b.icon as IconKey) || (["bus", "map", "guide", "star"][i] as IconKey) || "check";
-        const lineY = rowTopY + 28 + i * benefitLineH;
-        
+        const lineY = benefitsOriginY + 28 * benefitScale + i * benefitLineH * benefitScale;
+
         // Fundo do icone (bolinha preta)
-        const cx = benefitsX + iconSize0 / 2;
+        const cx = benefitsOriginX + iconSize0 / 2;
         const cy = lineY - iconSize0 * 0.25;
         ctx.beginPath();
         ctx.arc(cx, cy, iconSize0 * 0.8, 0, Math.PI * 2);
         ctx.fillStyle = v0OnPanel;
         ctx.fill();
-        
+
         // Desenha icone grafico (amarelo) por cima
         drawMonoIcon(ctx, iconKey, cx, cy, iconSize0 * 0.85, v0PanelBg);
-        
+
         // Texto ao lado do icone, com auto-shrink
-        let bfs = 26;
+        let bfs = Math.max(12, Math.round(26 * benefitScale));
         ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
         const textMaxW = benefitsMaxW - iconTextGap;
         while (ctx.measureText(b.text).width > textMaxW && bfs > 16) {
@@ -2771,9 +2806,27 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
         }
         ctx.textBaseline = "middle";
-        safeFillText(ctx, b.text, benefitsX + iconTextGap, lineY - benefitLineH * 0.1, textMaxW, 14);
+        safeFillText(ctx, b.text, benefitsOriginX + iconTextGap, lineY - benefitLineH * benefitScale * 0.1, textMaxW, 14);
         ctx.textBaseline = "alphabetic";
       });
+      if (benefitsList.length > 0) {
+        tw.record({
+          id: "benefits",
+          label: "Lista de benefícios",
+          x: benefitsOriginX,
+          y: benefitsOriginY,
+          w: benefitsMaxW,
+          h: Math.max(40, benefitsBlockH * benefitScale),
+        });
+      }
+
+      // Bloco de preço (ajustável: posição + escala)
+      const twPrice = tw.get("price");
+      const priceScale = twPrice.scale;
+      const priceBoxX = priceX + twPrice.dx;
+      const priceBoxY = rowTopY + twPrice.dy;
+      const priceBoxW = priceBlockW * priceScale;
+      const priceBoxH = (contentRowH + 20) * priceScale;
 
       // Fundo sutil para o bloco de preco
       ctx.save();
@@ -2781,18 +2834,19 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.shadowBlur = 12;
       ctx.shadowOffsetY = 4;
       ctx.fillStyle = "rgba(0,0,0,0.06)";
-      fillRoundRect(ctx, priceX, rowTopY, priceBlockW, contentRowH + 20, 16);
+      fillRoundRect(ctx, priceBoxX, priceBoxY, priceBoxW, priceBoxH, 16);
       ctx.restore();
+      tw.record({ id: "price", label: "Bloco de preço", x: priceBoxX, y: priceBoxY, w: priceBoxW, h: priceBoxH });
 
       // Preço centralizado verticalmente
-      const priceCenterX = priceX + priceBlockW / 2;
+      const priceCenterX = priceBoxX + priceBoxW / 2;
       ctx.textAlign = "center";
-      
+
       // Calculate vertical offset to center the 124px tall content inside the box
-      const boxH = contentRowH + 20;
-      const contentH = 124;
-      const offsetY = (boxH - contentH) / 2 - 30;
-      
+      const boxH = priceBoxH;
+      const contentH = 124 * priceScale;
+      const offsetY = (boxH - contentH) / 2 - 30 * priceScale;
+
       // Prefixo
       const prefixText = (() => {
         if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
@@ -2800,9 +2854,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         return paymentLabel || pricePrefix || "a partir de";
       })().toString();
 
-      ctx.fillStyle = v0OnPanel; ctx.font = "600 20px Inter, Arial, sans-serif";
-      safeFillText(ctx, prefixText, priceCenterX, rowTopY + 30 + offsetY, priceBlockW - 20, 14);
-      
+      ctx.fillStyle = v0OnPanel;
+      ctx.font = `600 ${Math.max(10, Math.round(20 * priceScale))}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, prefixText, priceCenterX, priceBoxY + 30 * priceScale + offsetY, priceBoxW - 20, 14);
+
       // Valores e Parcelas
       const priceStrV0 = mainPrice || `${curSym} ${price}`.trim();
       let pMainV0 = priceStrV0;
@@ -2818,8 +2873,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         : "";
 
       // Medir e centralizar Parcela + Preço + Centavos
-      const priceFs = 56;
-      const instFs = 28;
+      const priceFs = Math.max(18, Math.round(56 * priceScale));
+      const instFs = Math.max(12, Math.round(28 * priceScale));
       ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       const pMainW = ctx.measureText(pMainV0).width;
       ctx.font = `900 ${instFs}px Inter, Arial, sans-serif`;
@@ -2828,7 +2883,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       const totalW = instW + pMainW + pCentsW;
       const startX = priceCenterX - totalW / 2;
-      const py = rowTopY + 80 + offsetY;
+      const py = priceBoxY + 80 * priceScale + offsetY;
 
       ctx.textAlign = "left";
       ctx.fillStyle = v0OnPanel;
@@ -2845,19 +2900,20 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // Sufixo
       ctx.textAlign = "center";
-      ctx.font = "600 18px Inter, Arial, sans-serif"; ctx.fillStyle = v0OnPanel;
+      ctx.font = `600 ${Math.max(10, Math.round(18 * priceScale))}px Inter, Arial, sans-serif`;
+      ctx.fillStyle = v0OnPanel;
       ctx.globalAlpha = 0.7;
-      ctx.fillText(bottomSuffix, priceCenterX, py + 25);
+      ctx.fillText(bottomSuffix, priceCenterX, py + 25 * priceScale);
       ctx.globalAlpha = 1;
 
       // Pilula PIX
       const pixV0 = (pixBannerText || "").toUpperCase();
       if (pixV0) {
-        const pixFs = 16;
+        const pixFs = Math.max(10, Math.round(16 * priceScale));
         ctx.font = `800 ${pixFs}px Inter, Arial, sans-serif`;
-        const pixW = ctx.measureText(pixV0).width + 30;
-        const pixH = 34;
-        const pixY = py + 40;
+        const pixW = ctx.measureText(pixV0).width + 30 * priceScale;
+        const pixH = 34 * priceScale;
+        const pixY = py + 40 * priceScale;
         fillRoundRect(ctx, priceCenterX - pixW/2, pixY, pixW, pixH, 16, v0BadgeBg);
         ctx.fillStyle = v0OnBadge;
         ctx.textBaseline = "middle";
@@ -2879,6 +2935,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         false,
         logoFormat
       );
+      flushArtElements();
       return canvas.toDataURL("image/png");
     }
 
