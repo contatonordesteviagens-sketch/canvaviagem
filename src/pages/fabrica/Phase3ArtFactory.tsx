@@ -19,6 +19,9 @@ import { toast } from "sonner";
 import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
 import { F1CarouselBuilder } from "@/components/fabrica/F1CarouselBuilder";
 import { FabricaPaywallDialog } from "@/components/fabrica/FabricaPaywallDialog";
+import ArtTweakEditor from "@/components/fabrica/ArtTweakEditor";
+import { artVariantLabel, type ArtTweakMap } from "@/lib/fabrica-art-tweaks";
+import { getArtTweakPreset, loadArtTweakPresets } from "@/lib/fabrica-art-tweak-presets";
 import { createExportIdentity } from "@/lib/exportIdentity";
 
 type GenMode = "ai" | "photo" | "custom";
