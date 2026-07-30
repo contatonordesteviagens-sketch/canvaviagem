@@ -1,4 +1,5 @@
 import { createArtTweakContext, type ArtElementBox, type ArtTweakMap } from "@/lib/fabrica-art-tweaks";
+import { createArtRecorder } from "@/lib/fabrica-art-recorder";
 
 type Format = "square" | "story";
 type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
@@ -963,9 +964,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   // ADMIN — camada de ajustes finos (posição/escala por elemento).
   const tw = createArtTweakContext(options.artTweaks);
-  const flushArtElements = () => {
-    try { options.onArtElements?.(tw.elements); } catch { /* noop */ }
-  };
+  // Legado: a camada manual (V0/V7) continua funcionando, mas quem lista os
+  // elementos para o editor agora é o gravador universal.
+  const flushArtElements = () => { /* noop — ver recorder abaixo */ };
 
   const destination = sanitizeAdText(options.destination || "");
   const city = sanitizeAdText(options.city || "");
