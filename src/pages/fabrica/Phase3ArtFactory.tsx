@@ -2897,9 +2897,50 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
+                      {isAdmin && artMetaRef.current.get(img) && (
+                        <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1.5">
+                          <span className="rounded-md bg-black/80 px-2 py-1 text-[10px] font-black text-white">
+                            {artVariantLabel(
+                              artMetaRef.current.get(img)!.category,
+                              artMetaRef.current.get(img)!.variant,
+                              artMetaRef.current.get(img)!.format,
+                            )}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const meta = artMetaRef.current.get(img);
+                              if (meta) setArtEditorTarget({ image: img, meta });
+                            }}
+                            className="rounded-md bg-white/90 px-2 py-1 text-[10px] font-black text-black hover:bg-white"
+                            title="Ajustar posições desta arte (admin)"
+                          >
+                            Ajustar arte
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
+
+                {isAdmin && artEditorTarget && (
+                  <ArtTweakEditor
+                    open
+                    onClose={() => setArtEditorTarget(null)}
+                    composeOptions={artEditorTarget.meta.options}
+                    category={artEditorTarget.meta.category}
+                    variant={artEditorTarget.meta.variant}
+                    format={artEditorTarget.meta.format}
+                    initialTweaks={artEditorTarget.meta.tweaks}
+                    onApply={(newImage, tweaks) => {
+                      const oldImage = artEditorTarget.image;
+                      artMetaRef.current.set(newImage, { ...artEditorTarget.meta, tweaks });
+                      setGeneratedImages((prev) => prev.map((it) => (it === oldImage ? newImage : it)));
+                      setGeneratedImage((cur) => (cur === oldImage ? newImage : cur));
+                    }}
+                  />
+                )}
 
                 {adCaptions.length > 0 && (
                   <div className="rounded-xl border border-white/10 bg-black/20 p-3">
