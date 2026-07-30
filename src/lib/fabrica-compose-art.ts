@@ -4364,31 +4364,46 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.restore();
       
       // 3. Pilula do topo
-      ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
+      const pillTw = tw.get("v7_pill");
+      const pillFS = Math.max(8, Math.round(T.pillTxtSize * pillTw.scale));
+      ctx.font = `900 ${pillFS}px Inter, Arial, sans-serif`;
       const pillPad = 60;
       const pillW = ctx.measureText(promoPillV7).width + pillPad;
-      const pillY = cardY - pillH / 2;
+      const pillY = cardY - pillH / 2 + pillTw.dy;
+      const pillX = cx - pillW / 2 + pillTw.dx;
       
       const pColor = primaryColor || "#0066FF";
       const sColor = secondaryColor || pColor;
 
       ctx.fillStyle = sColor;
-      fillRoundRect(ctx, cx - pillW / 2, pillY, pillW, pillH, pillH / 2);
+      fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
       
       ctx.fillStyle = getSafeColor(sColor, "#FFFFFF");
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, promoPillV7, cx, pillY + pillH / 2 + 2, pillW - 20, Math.round(T.pillTxtSize * 0.7));
+      ctx.font = `900 ${pillFS}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, promoPillV7, pillX + pillW / 2, pillY + pillH / 2 + 2, pillW - 20, Math.round(pillFS * 0.7));
       ctx.textBaseline = "alphabetic";
+      tw.record({ id: "v7_pill", label: "Selo da promoção", x: pillX, y: pillY, w: pillW, h: pillH });
   
       // 4. Conteudo do Card: Titulo (SEM A CIDADE EMBAIXO)
       const cardInnerPad = T.cardW * 0.05;
       let currentY = cardY + pillH / 2 + T.titleSize + 15;
       
+      const titleTw = tw.get("v7_title");
+      const titleFS = Math.max(10, Math.round(T.titleSize * titleTw.scale));
       ctx.fillStyle = "#000000"; 
-      ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, destinationV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.titleSize * 0.7));
+      ctx.textAlign = "center";
+      ctx.font = `900 ${titleFS}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, destinationV7, cx + titleTw.dx, currentY + titleTw.dy, T.cardW - cardInnerPad * 2, Math.round(titleFS * 0.7));
+      tw.record({
+        id: "v7_title",
+        label: "Título / destino",
+        x: cardX + cardInnerPad + titleTw.dx,
+        y: currentY - titleFS + titleTw.dy,
+        w: T.cardW - cardInnerPad * 2,
+        h: titleFS * 1.25,
+      });
   
       // 5. Bloco de Icones e Dias (Pills combinadas)
       currentY += T.titleSize * 0.5 + 40; // Desce os icones, afastando do titulo
@@ -4405,8 +4420,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (hasPeriod) periodW = ctx.measureText(periodText).width + 40;
         
         const totalW = (hasIcons ? iconsW : 0) + (hasIcons && hasPeriod ? gap : 0) + (hasPeriod ? periodW : 0);
-        let startX = cx - totalW / 2;
-        const alignY = currentY;
+        const iconsTw = tw.get("v7_icons");
+        const groupStartX = cx - totalW / 2 + iconsTw.dx;
+        let startX = groupStartX;
+        const alignY = currentY + iconsTw.dy;
         
         if (hasIcons) {
           ctx.fillStyle = primaryColor || "#0066FF";
@@ -4431,6 +4448,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         
         ctx.textBaseline = "alphabetic";
+        tw.record({
+          id: "v7_icons",
+          label: "Ícones / dias",
+          x: groupStartX,
+          y: alignY - hlPillH + 5,
+          w: totalW,
+          h: hlPillH,
+        });
         currentY += 15;
       }
   
@@ -4442,10 +4467,18 @@ const panelBottom = RULES.PANEL_BOTTOM;
         return paymentLabel || pricePrefix || "a partir de";
       })().toString();
       
+      const priceTw = tw.get("v7_price");
+      const pcx = cx + priceTw.dx;
+      const pdy = priceTw.dy;
+      const priceTop = currentY - T.labelSize;
+      const PS = Math.max(10, Math.round(T.priceSize * priceTw.scale));
+      const IS = Math.max(8, Math.round(T.installSize * priceTw.scale));
+      const LS = Math.max(8, Math.round(T.labelSize * priceTw.scale));
+
       ctx.fillStyle = "#000000";
-      ctx.font = `800 ${T.labelSize}px Inter, Arial, sans-serif`;
+      ctx.font = `800 ${LS}px Inter, Arial, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText(labelV7, cx, currentY); 
+      ctx.fillText(labelV7, pcx, currentY + pdy); 
       
       currentY += T.priceSize;
       let priceV7 = mainPrice || `${curSym} ${price}`.trim();
@@ -4464,44 +4497,44 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const drawCents = (baseX: number, align: "center" | "left") => {
         if (!pCents) {
           ctx.textAlign = align;
-          ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-          ctx.fillText(priceV7, baseX, currentY);
+          ctx.font = `900 ${PS}px Inter, Arial, sans-serif`;
+          ctx.fillText(priceV7, baseX, currentY + pdy);
           return;
         }
-        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${PS}px Inter, Arial, sans-serif`;
         const w1 = ctx.measureText(pMain).width;
-        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${IS}px Inter, Arial, sans-serif`;
         const w2 = ctx.measureText(pCents).width;
         let sx = align === "center" ? baseX - (w1 + w2) / 2 : baseX;
         
         ctx.textAlign = "left";
-        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(pMain, sx, currentY);
-        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(pCents, sx + w1, currentY);
+        ctx.font = `900 ${PS}px Inter, Arial, sans-serif`;
+        ctx.fillText(pMain, sx, currentY + pdy);
+        ctx.font = `900 ${IS}px Inter, Arial, sans-serif`;
+        ctx.fillText(pCents, sx + w1, currentY + pdy);
       };
 
       if (installments && (paymentMode === "installments" || paymentMode === "down_plus")) {
-        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${IS}px Inter, Arial, sans-serif`;
         const instText = installments.toLowerCase().includes("de") ? installments : `${installments} de`;
         const instW = ctx.measureText(instText).width;
         
-        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${PS}px Inter, Arial, sans-serif`;
         const w1Sim = ctx.measureText(pMain).width;
-        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${IS}px Inter, Arial, sans-serif`;
         const w2Sim = pCents ? ctx.measureText(pCents).width : 0;
         const priceW = w1Sim + w2Sim;
         
         const totalW = instW + 15 + priceW;
-        const startX = cx - totalW / 2;
+        const startX = pcx - totalW / 2;
         
         ctx.textAlign = "left";
-        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(instText, startX, currentY); 
+        ctx.font = `900 ${IS}px Inter, Arial, sans-serif`;
+        ctx.fillText(instText, startX, currentY + pdy); 
         
         drawCents(startX + instW + 15, "left");
       } else {
-        drawCents(cx, "center");
+        drawCents(pcx, "center");
       }
       
       // 7. Total (Se ativo)
@@ -4511,7 +4544,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `600 ${T.labelSize}px Inter, Arial, sans-serif`;
         ctx.textAlign = "center";
         const totalText = totalOverride.toLowerCase().includes("total") ? totalOverride : `Total: ${curSym} ${totalOverride}`;
-        ctx.fillText(totalText, cx, currentY);
+        ctx.fillText(totalText, pcx, currentY + pdy);
       }
       
       // 8. Sufixo
@@ -4520,30 +4553,41 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = "#000000";
       ctx.font = `700 ${T.suffixSize}px Inter, Arial, sans-serif`;
       ctx.textAlign = "center";
-      safeFillText(ctx, suffixV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.suffixSize * 0.7));
+      safeFillText(ctx, suffixV7, pcx, currentY + pdy, T.cardW - T.cardW * 0.1, Math.round(T.suffixSize * 0.7));
+      tw.record({
+        id: "v7_price",
+        label: "Bloco de preço",
+        x: cardX + T.cardW * 0.05 + priceTw.dx,
+        y: priceTop + pdy,
+        w: T.cardW - T.cardW * 0.1,
+        h: currentY - priceTop + T.suffixSize * 0.4,
+      });
+
   
       // 9. Pilula de Desconto (PIX) na borda inferior do card
       const pixV7 = (pixBannerText || "").toUpperCase();
       if (pixV7) {
-        ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-        // Ajusta a largura dinamicamente. Vamos assumir que a imagem 2 usa a cor amarela (secondaryColor ou amarela padrao)
+        const pixTw = tw.get("v7_pix");
+        const pixFS = Math.max(8, Math.round(T.pillTxtSize * pixTw.scale));
+        ctx.font = `900 ${pixFS}px Inter, Arial, sans-serif`;
         const pixPad = 60; 
         const textW = ctx.measureText(pixV7).width;
-        // Se a string "PIX" tiver presente, adicionamos um espaco extra pro icone (opcional)
         const pixW = textW + pixPad;
-        const pixH = Math.round(T.pillTxtSize * 1.8);
-        const pixY = cardY + cardH - pixH / 2; // Metade dentro, metade fora do bloco
+        const pixH = Math.round(pixFS * 1.8);
+        const pixY = cardY + cardH - pixH / 2 + pixTw.dy;
+        const pixX = cx - pixW / 2 + pixTw.dx;
         
         const pillColor = secondaryColor || "#FFD700"; // Amarelo se nao houver cor secundaria
         ctx.fillStyle = pillColor;
-        fillRoundRect(ctx, cx - pixW / 2, pixY, pixW, pixH, pixH / 2);
+        fillRoundRect(ctx, pixX, pixY, pixW, pixH, pixH / 2);
         
         ctx.fillStyle = getSafeColor(pillColor, "#FFFFFF");
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, pixV7, cx, pixY + pixH / 2 + 2, pixW - 20, Math.round(T.pillTxtSize * 0.7));
+        ctx.font = `900 ${pixFS}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, pixV7, pixX + pixW / 2, pixY + pixH / 2 + 2, pixW - 20, Math.round(pixFS * 0.7));
         ctx.textBaseline = "alphabetic";
+        tw.record({ id: "v7_pix", label: "Selo PIX", x: pixX, y: pixY, w: pixW, h: pixH });
       }
 
       // 10. Sombra Inferior para destacar contatos e logo

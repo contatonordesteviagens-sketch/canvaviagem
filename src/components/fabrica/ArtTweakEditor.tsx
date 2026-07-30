@@ -7,6 +7,7 @@
  *   • como padrão da variação (todos os usuários passam a gerar assim)
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Loader2, Move, RotateCcw, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -148,11 +149,12 @@ export default function ArtTweakEditor({
     }
   };
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
-    <div className="fixed inset-0 z-[120] bg-background/95 backdrop-blur-sm overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 z-[2000] bg-background overflow-y-auto">
       <div className="mx-auto max-w-6xl p-4 md:p-6">
+
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-lg font-bold">Ajuste fino da arte</h2>
@@ -271,6 +273,7 @@ export default function ArtTweakEditor({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
