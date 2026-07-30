@@ -102,43 +102,45 @@ export default function MinhaConta() {
               Meu Perfil
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xl font-bold flex-shrink-0">
+          <CardContent className="flex items-start gap-3">
+            <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-lg font-bold flex-shrink-0 mt-0.5">
               {avatarLetter}
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="flex-1 min-w-0 overflow-hidden">
               {isEditingName ? (
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
                   <Input 
                     value={editNameValue} 
                     onChange={(e) => setEditNameValue(e.target.value)} 
-                    className="h-8 text-sm max-w-[200px]"
+                    className="h-8 text-sm w-full max-w-[220px]"
                     placeholder="Nome da Agência"
                     disabled={savingName}
                   />
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600" onClick={saveProfileName} disabled={savingName}>
-                    {savingName ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                  </Button>
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500" onClick={() => setIsEditingName(false)} disabled={savingName}>
-                    <X className="w-4 h-4" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600" onClick={saveProfileName} disabled={savingName}>
+                      {savingName ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500" onClick={() => setIsEditingName(false)} disabled={savingName}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mb-1 group">
-                  <p className="font-semibold text-foreground truncate">{displayName}</p>
+                  <p className="font-semibold text-foreground break-words leading-snug">{displayName}</p>
                   <button 
                     onClick={() => {
                       setEditNameValue(profile.name || "");
                       setIsEditingName(true);
                     }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-100 dark:hover:bg-white/10 rounded"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-100 dark:hover:bg-white/10 rounded flex-shrink-0"
                     title="Editar nome"
                   >
                     <Edit2 className="w-3.5 h-3.5 text-slate-500" />
                   </button>
                 </div>
               )}
-              <p className="text-sm text-muted-foreground truncate">{displayEmail}</p>
+              <p className="text-sm text-muted-foreground break-all leading-snug">{displayEmail}</p>
             </div>
           </CardContent>
         </Card>
@@ -236,14 +238,14 @@ export default function MinhaConta() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-xs text-muted-foreground">
-              Precisa de ajuda ou tem alguma dúvida? Fale diretamente com nossa equipe de suporte no WhatsApp.
+              Precisa de ajuda ou tem alguma dúvida? Fale diretamente com nossa equipe no WhatsApp.
             </p>
             <Button
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold text-sm"
               onClick={() => window.open("https://api.whatsapp.com/send/?phone=5585998458995&text=Ol%C3%A1%2C+quero+suporte+do+Canva+Viagem", "_blank")}
             >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Falar com Suporte (WhatsApp) →
+              <MessageCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span>Falar com Suporte via WhatsApp</span>
             </Button>
           </CardContent>
         </Card>
