@@ -568,6 +568,8 @@ export default function ArtTweakEditor({
 
                 {selected.size === 1 && firstSelectedBox?.kind === "text" && (
                   <div className="flex gap-2">
+                     <Button variant={firstSt.bold ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => patchSelected({ bold: !firstSt.bold })}><Bold className="h-4 w-4" /></Button>
+                     <Button variant={firstSt.italic ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => patchSelected({ italic: !firstSt.italic })}><Italic className="h-4 w-4" /></Button>
                      <Button variant={firstSt.align === 'left' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => patchSelected({ align: 'left' })}><AlignLeft className="h-4 w-4" /></Button>
                      <Button variant={firstSt.align === 'center' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => patchSelected({ align: 'center' })}><AlignCenter className="h-4 w-4" /></Button>
                      <Button variant={firstSt.align === 'right' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => patchSelected({ align: 'right' })}><AlignRight className="h-4 w-4" /></Button>

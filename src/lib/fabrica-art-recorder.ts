@@ -316,7 +316,15 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       applyClips(op.state.clips);
       for (const p of STATE_PROPS) {
         try {
-          (real as any)[p] = (op.state as any)[p];
+          if (p === 'font' && (t.bold || t.italic)) {
+             let f = (op.state as any)[p];
+             f = f.replace(/bold\s/i, '').replace(/italic\s/i, '').replace(/oblique\s/i, '').replace(/normal\s/i, '');
+             if (t.bold) f = "bold " + f;
+             if (t.italic) f = "italic " + f;
+             (real as any)[p] = f;
+          } else {
+             (real as any)[p] = (op.state as any)[p];
+          }
         } catch {
           /* noop */
         }
