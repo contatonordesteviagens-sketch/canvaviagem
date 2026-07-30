@@ -91,11 +91,6 @@ interface AuthContextType {
   loading: boolean;
   subscription: SubscriptionStatus;
   isAdmin: boolean;
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  subscription: SubscriptionStatus;
-  isAdmin: boolean;
   signOut: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
 }

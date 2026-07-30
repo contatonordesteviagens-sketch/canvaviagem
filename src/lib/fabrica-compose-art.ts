@@ -2,6 +2,9 @@ export interface ComposeAdResult {
   url: string;
   variant: number;
 }
+import { createArtTweakContext, type ArtElementBox, type ArtTweakMap } from "@/lib/fabrica-art-tweaks";
+import { createArtRecorder } from "@/lib/fabrica-art-recorder";
+
 
 type Format = "square" | "story";
 type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
@@ -243,6 +246,10 @@ interface ComposeTravelAdOptions {
   footerContact2Value?: string;
   isExperience?: boolean;
   hideCents?: boolean;
+  /** ADMIN: ajustes finos por elemento ({ id: { dx, dy, scale } }). */
+  artTweaks?: ArtTweakMap;
+  /** ADMIN: callback com as caixas dos elementos desenhados (para o editor visual). */
+  onArtElements?: (elements: ArtElementBox[]) => void;
 }
 
 /** Formata telefone no padrão (XX) 9 XXXX-XXXX */
@@ -960,6 +967,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     logoFormat = "circle",
   } = options;
 
+  // ADMIN — camada de ajustes finos (posição/escala por elemento).
+  const tw = createArtTweakContext(options.artTweaks);
+  // Legado: a camada manual (V0/V7) continua funcionando, mas quem lista os
+  // elementos para o editor agora é o gravador universal.
+  const flushArtElements = () => { /* noop — ver recorder abaixo */ };
+
   const destination = sanitizeAdText(options.destination || "");
   const city = sanitizeAdText(options.city || "");
   const promoName = sanitizeAdText(options.promoName || "");
@@ -982,8 +995,21 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas 2D não suportado");
+  const rawCtx = canvas.getContext("2d");
+  if (!rawCtx) throw new Error("Canvas 2D não suportado");
+
+  // ADMIN — gravador universal: torna TODO elemento (texto, imagem, forma) de
+  // QUALQUER variação editável (mover, escalar, girar, esconder, reordenar,
+  // trocar texto) sem instrumentar variação por variação.
+  const recorder = createArtRecorder(rawCtx, options.artTweaks);
+  const ctx = recorder.ctx;
+  const originalToDataURL = canvas.toDataURL.bind(canvas);
+  (canvas as any).toDataURL = (...args: any[]) => {
+    recorder.replay();
+    try { options.onArtElements?.(recorder.elements); } catch { /* noop */ }
+    return (originalToDataURL as any)(...args);
+  };
+
 
   // ====== Font customization global (família + escala título/descricão) ======
   // Intercepta o setter de `font` e o `fillStyle` para que TODAS as variantes/categorias
@@ -2702,19 +2728,23 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza') badges.push(`Saindo de ${cityFmt}`);
       if (travelPeriod && travelPeriod.trim()) badges.push(travelPeriod.trim().toUpperCase());
 
-      ctx.font = "800 24px Inter, Arial, sans-serif";
-      const badgeGap = 15;
+      const twBadges = tw.get("badges");
+      const badgeFs = Math.max(12, Math.round(24 * twBadges.scale));
+      const badgeHS = Math.max(28, Math.round(badgeH * twBadges.scale));
+      ctx.font = `800 ${badgeFs}px Inter, Arial, sans-serif`;
+      const badgeGap = Math.round(15 * twBadges.scale);
       let totalBadgeW = 0;
       const badgeWidths: number[] = [];
       badges.forEach(text => {
-        const w = ctx.measureText(text).width + 30;
+        const w = ctx.measureText(text).width + 30 * twBadges.scale;
         badgeWidths.push(w);
         totalBadgeW += w;
       });
       if (badges.length > 0) totalBadgeW += badgeGap * (badges.length - 1);
 
-      const badgeY = safeAnchorY;
-      let badgeX = (width / 2) - (totalBadgeW / 2);
+      const badgeY = safeAnchorY + twBadges.dy;
+      let badgeX = (width / 2) - (totalBadgeW / 2) + twBadges.dx;
+      const badgeStartX = badgeX;
 
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.12)";
@@ -2722,52 +2752,72 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.shadowOffsetY = 4;
       badges.forEach((text, i) => {
         const w = badgeWidths[i];
-        fillRoundRect(ctx, badgeX, badgeY, w, badgeH, 12, v0BadgeBg);
+        fillRoundRect(ctx, badgeX, badgeY, w, badgeHS, 12, v0BadgeBg);
         ctx.fillStyle = v0OnBadge;
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(text, badgeX + w / 2, badgeY + badgeH / 2);
+        ctx.fillText(text, badgeX + w / 2, badgeY + badgeHS / 2);
         badgeX += w + badgeGap;
       });
       ctx.restore();
       ctx.textBaseline = "alphabetic";
+      if (badges.length > 0) {
+        tw.record({ id: "badges", label: "Selos do topo", x: badgeStartX, y: badgeY, w: totalBadgeW, h: badgeHS });
+      }
 
       // 7) Headline (1 linha, fonte adaptativa)
+      const twTitle = tw.get("title");
+      const titleSizeAdj = Math.max(18, Math.round(titleSize * twTitle.scale));
       ctx.fillStyle = v0OnPanel;
-      ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
-      const titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, safeAnchorY + 12 + titleSize);
+      ctx.font = `900 ${titleSizeAdj}px Inter, Arial, sans-serif`;
+      const titleBaseY = Math.max(safeAnchorY + badgeH + topPaddingBeforeTitle + titleSize, safeAnchorY + 12 + titleSize);
+      const titleY = titleBaseY + twTitle.dy;
+      const titleX = width / 2 + twTitle.dx;
       ctx.textAlign = "center";
-      safeFillText(ctx, titleText, width / 2, titleY, width - 80, 22);
+      safeFillText(ctx, titleText, titleX, titleY, width - 80, 22);
+      tw.record({
+        id: "title",
+        label: "Título",
+        x: titleX - (width - 80) / 2,
+        y: titleY - titleSizeAdj,
+        w: width - 80,
+        h: Math.round(titleSizeAdj * 1.25),
+      });
 
       // 8) Benefits + Preço lado a lado â€” preço ALINHADO Ã€ DIREITA pra eliminar
       //    o espaço em branco que sobrava no canto direito.
-      const rowTopY = titleY + titleToContent;
+      const rowTopY = titleBaseY + titleToContent;
       const benefitsX = left;
       // Largura do bloco de preço: ~46% da contentWidth, mínimo 380px
       const priceBlockW = Math.max(380, Math.round(contentWidth * 0.46));
       const priceX = width - 60 - priceBlockW; // encosta no padding direito
       const benefitsMaxW = priceX - 24 - benefitsX;
 
+      const twBenefits = tw.get("benefits");
+      const benefitsOriginX = benefitsX + twBenefits.dx;
+      const benefitsOriginY = rowTopY + twBenefits.dy;
+      const benefitScale = twBenefits.scale;
+
       ctx.fillStyle = v0OnPanel;
-      const iconSize0 = 28;
-      const iconTextGap = 52; 
+      const iconSize0 = 28 * benefitScale;
+      const iconTextGap = 52 * benefitScale;
       ctx.textAlign = "left";
       benefitsList.forEach((b, i) => {
         const iconKey = (b.icon as IconKey) || (["bus", "map", "guide", "star"][i] as IconKey) || "check";
-        const lineY = rowTopY + 28 + i * benefitLineH;
-        
+        const lineY = benefitsOriginY + 28 * benefitScale + i * benefitLineH * benefitScale;
+
         // Fundo do icone (bolinha preta)
-        const cx = benefitsX + iconSize0 / 2;
+        const cx = benefitsOriginX + iconSize0 / 2;
         const cy = lineY - iconSize0 * 0.25;
         ctx.beginPath();
         ctx.arc(cx, cy, iconSize0 * 0.8, 0, Math.PI * 2);
         ctx.fillStyle = v0OnPanel;
         ctx.fill();
-        
+
         // Desenha icone grafico (amarelo) por cima
         drawMonoIcon(ctx, iconKey, cx, cy, iconSize0 * 0.85, v0PanelBg);
-        
+
         // Texto ao lado do icone, com auto-shrink
-        let bfs = 26;
+        let bfs = Math.max(12, Math.round(26 * benefitScale));
         ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
         const textMaxW = benefitsMaxW - iconTextGap;
         while (ctx.measureText(b.text).width > textMaxW && bfs > 16) {
@@ -2775,9 +2825,27 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
         }
         ctx.textBaseline = "middle";
-        safeFillText(ctx, b.text, benefitsX + iconTextGap, lineY - benefitLineH * 0.1, textMaxW, 14);
+        safeFillText(ctx, b.text, benefitsOriginX + iconTextGap, lineY - benefitLineH * benefitScale * 0.1, textMaxW, 14);
         ctx.textBaseline = "alphabetic";
       });
+      if (benefitsList.length > 0) {
+        tw.record({
+          id: "benefits",
+          label: "Lista de benefícios",
+          x: benefitsOriginX,
+          y: benefitsOriginY,
+          w: benefitsMaxW,
+          h: Math.max(40, benefitsBlockH * benefitScale),
+        });
+      }
+
+      // Bloco de preço (ajustável: posição + escala)
+      const twPrice = tw.get("price");
+      const priceScale = twPrice.scale;
+      const priceBoxX = priceX + twPrice.dx;
+      const priceBoxY = rowTopY + twPrice.dy;
+      const priceBoxW = priceBlockW * priceScale;
+      const priceBoxH = (contentRowH + 20) * priceScale;
 
       // Fundo sutil para o bloco de preco
       ctx.save();
@@ -2785,18 +2853,19 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.shadowBlur = 12;
       ctx.shadowOffsetY = 4;
       ctx.fillStyle = "rgba(0,0,0,0.06)";
-      fillRoundRect(ctx, priceX, rowTopY, priceBlockW, contentRowH + 20, 16);
+      fillRoundRect(ctx, priceBoxX, priceBoxY, priceBoxW, priceBoxH, 16);
       ctx.restore();
+      tw.record({ id: "price", label: "Bloco de preço", x: priceBoxX, y: priceBoxY, w: priceBoxW, h: priceBoxH });
 
       // Preço centralizado verticalmente
-      const priceCenterX = priceX + priceBlockW / 2;
+      const priceCenterX = priceBoxX + priceBoxW / 2;
       ctx.textAlign = "center";
-      
+
       // Calculate vertical offset to center the 124px tall content inside the box
-      const boxH = contentRowH + 20;
-      const contentH = 124;
-      const offsetY = (boxH - contentH) / 2 - 30;
-      
+      const boxH = priceBoxH;
+      const contentH = 124 * priceScale;
+      const offsetY = (boxH - contentH) / 2 - 30 * priceScale;
+
       // Prefixo
       const prefixText = (() => {
         if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
@@ -2804,9 +2873,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         return paymentLabel || pricePrefix || "a partir de";
       })().toString();
 
-      ctx.fillStyle = v0OnPanel; ctx.font = "600 20px Inter, Arial, sans-serif";
-      safeFillText(ctx, prefixText, priceCenterX, rowTopY + 30 + offsetY, priceBlockW - 20, 14);
-      
+      ctx.fillStyle = v0OnPanel;
+      ctx.font = `600 ${Math.max(10, Math.round(20 * priceScale))}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, prefixText, priceCenterX, priceBoxY + 30 * priceScale + offsetY, priceBoxW - 20, 14);
+
       // Valores e Parcelas
       const priceStrV0 = mainPrice || `${curSym} ${price}`.trim();
       let pMainV0 = priceStrV0;
@@ -2822,8 +2892,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         : "";
 
       // Medir e centralizar Parcela + Preço + Centavos
-      const priceFs = 56;
-      const instFs = 28;
+      const priceFs = Math.max(18, Math.round(56 * priceScale));
+      const instFs = Math.max(12, Math.round(28 * priceScale));
       ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       const pMainW = ctx.measureText(pMainV0).width;
       ctx.font = `900 ${instFs}px Inter, Arial, sans-serif`;
@@ -2832,7 +2902,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       const totalW = instW + pMainW + pCentsW;
       const startX = priceCenterX - totalW / 2;
-      const py = rowTopY + 80 + offsetY;
+      const py = priceBoxY + 80 * priceScale + offsetY;
 
       ctx.textAlign = "left";
       ctx.fillStyle = v0OnPanel;
@@ -2849,19 +2919,20 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // Sufixo
       ctx.textAlign = "center";
-      ctx.font = "600 18px Inter, Arial, sans-serif"; ctx.fillStyle = v0OnPanel;
+      ctx.font = `600 ${Math.max(10, Math.round(18 * priceScale))}px Inter, Arial, sans-serif`;
+      ctx.fillStyle = v0OnPanel;
       ctx.globalAlpha = 0.7;
-      ctx.fillText(bottomSuffix, priceCenterX, py + 25);
+      ctx.fillText(bottomSuffix, priceCenterX, py + 25 * priceScale);
       ctx.globalAlpha = 1;
 
       // Pilula PIX
       const pixV0 = (pixBannerText || "").toUpperCase();
       if (pixV0) {
-        const pixFs = 16;
+        const pixFs = Math.max(10, Math.round(16 * priceScale));
         ctx.font = `800 ${pixFs}px Inter, Arial, sans-serif`;
-        const pixW = ctx.measureText(pixV0).width + 30;
-        const pixH = 34;
-        const pixY = py + 40;
+        const pixW = ctx.measureText(pixV0).width + 30 * priceScale;
+        const pixH = 34 * priceScale;
+        const pixY = py + 40 * priceScale;
         fillRoundRect(ctx, priceCenterX - pixW/2, pixY, pixW, pixH, 16, v0BadgeBg);
         ctx.fillStyle = v0OnBadge;
         ctx.textBaseline = "middle";
@@ -2883,6 +2954,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         false,
         logoFormat
       );
+      flushArtElements();
       return canvas.toDataURL("image/png");
     }
 
@@ -4311,31 +4383,46 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.restore();
       
       // 3. Pilula do topo
-      ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
+      const pillTw = tw.get("v7_pill");
+      const pillFS = Math.max(8, Math.round(T.pillTxtSize * pillTw.scale));
+      ctx.font = `900 ${pillFS}px Inter, Arial, sans-serif`;
       const pillPad = 60;
       const pillW = ctx.measureText(promoPillV7).width + pillPad;
-      const pillY = cardY - pillH / 2;
+      const pillY = cardY - pillH / 2 + pillTw.dy;
+      const pillX = cx - pillW / 2 + pillTw.dx;
       
       const pColor = primaryColor || "#0066FF";
       const sColor = secondaryColor || pColor;
 
       ctx.fillStyle = sColor;
-      fillRoundRect(ctx, cx - pillW / 2, pillY, pillW, pillH, pillH / 2);
+      fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
       
       ctx.fillStyle = getSafeColor(sColor, "#FFFFFF");
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, promoPillV7, cx, pillY + pillH / 2 + 2, pillW - 20, Math.round(T.pillTxtSize * 0.7));
+      ctx.font = `900 ${pillFS}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, promoPillV7, pillX + pillW / 2, pillY + pillH / 2 + 2, pillW - 20, Math.round(pillFS * 0.7));
       ctx.textBaseline = "alphabetic";
+      tw.record({ id: "v7_pill", label: "Selo da promoção", x: pillX, y: pillY, w: pillW, h: pillH });
   
       // 4. Conteudo do Card: Titulo (SEM A CIDADE EMBAIXO)
       const cardInnerPad = T.cardW * 0.05;
       let currentY = cardY + pillH / 2 + T.titleSize + 15;
       
+      const titleTw = tw.get("v7_title");
+      const titleFS = Math.max(10, Math.round(T.titleSize * titleTw.scale));
       ctx.fillStyle = "#000000"; 
-      ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, destinationV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.titleSize * 0.7));
+      ctx.textAlign = "center";
+      ctx.font = `900 ${titleFS}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, destinationV7, cx + titleTw.dx, currentY + titleTw.dy, T.cardW - cardInnerPad * 2, Math.round(titleFS * 0.7));
+      tw.record({
+        id: "v7_title",
+        label: "Título / destino",
+        x: cardX + cardInnerPad + titleTw.dx,
+        y: currentY - titleFS + titleTw.dy,
+        w: T.cardW - cardInnerPad * 2,
+        h: titleFS * 1.25,
+      });
   
       // 5. Bloco de Icones e Dias (Pills combinadas)
       currentY += T.titleSize * 0.5 + 40; // Desce os icones, afastando do titulo
@@ -4352,8 +4439,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (hasPeriod) periodW = ctx.measureText(periodText).width + 40;
         
         const totalW = (hasIcons ? iconsW : 0) + (hasIcons && hasPeriod ? gap : 0) + (hasPeriod ? periodW : 0);
-        let startX = cx - totalW / 2;
-        const alignY = currentY;
+        const iconsTw = tw.get("v7_icons");
+        const groupStartX = cx - totalW / 2 + iconsTw.dx;
+        let startX = groupStartX;
+        const alignY = currentY + iconsTw.dy;
         
         if (hasIcons) {
           ctx.fillStyle = primaryColor || "#0066FF";
@@ -4378,6 +4467,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         
         ctx.textBaseline = "alphabetic";
+        tw.record({
+          id: "v7_icons",
+          label: "Ícones / dias",
+          x: groupStartX,
+          y: alignY - hlPillH + 5,
+          w: totalW,
+          h: hlPillH,
+        });
         currentY += 15;
       }
   
@@ -4389,10 +4486,18 @@ const panelBottom = RULES.PANEL_BOTTOM;
         return paymentLabel || pricePrefix || "a partir de";
       })().toString();
       
+      const priceTw = tw.get("v7_price");
+      const pcx = cx + priceTw.dx;
+      const pdy = priceTw.dy;
+      const priceTop = currentY - T.labelSize;
+      const PS = Math.max(10, Math.round(T.priceSize * priceTw.scale));
+      const IS = Math.max(8, Math.round(T.installSize * priceTw.scale));
+      const LS = Math.max(8, Math.round(T.labelSize * priceTw.scale));
+
       ctx.fillStyle = "#000000";
-      ctx.font = `800 ${T.labelSize}px Inter, Arial, sans-serif`;
+      ctx.font = `800 ${LS}px Inter, Arial, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText(labelV7, cx, currentY); 
+      ctx.fillText(labelV7, pcx, currentY + pdy); 
       
       currentY += T.priceSize;
       let priceV7 = mainPrice || `${curSym} ${price}`.trim();
@@ -4411,44 +4516,44 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const drawCents = (baseX: number, align: "center" | "left") => {
         if (!pCents) {
           ctx.textAlign = align;
-          ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-          ctx.fillText(priceV7, baseX, currentY);
+          ctx.font = `900 ${PS}px Inter, Arial, sans-serif`;
+          ctx.fillText(priceV7, baseX, currentY + pdy);
           return;
         }
-        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${PS}px Inter, Arial, sans-serif`;
         const w1 = ctx.measureText(pMain).width;
-        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${IS}px Inter, Arial, sans-serif`;
         const w2 = ctx.measureText(pCents).width;
         let sx = align === "center" ? baseX - (w1 + w2) / 2 : baseX;
         
         ctx.textAlign = "left";
-        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(pMain, sx, currentY);
-        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(pCents, sx + w1, currentY);
+        ctx.font = `900 ${PS}px Inter, Arial, sans-serif`;
+        ctx.fillText(pMain, sx, currentY + pdy);
+        ctx.font = `900 ${IS}px Inter, Arial, sans-serif`;
+        ctx.fillText(pCents, sx + w1, currentY + pdy);
       };
 
       if (installments && (paymentMode === "installments" || paymentMode === "down_plus")) {
-        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${IS}px Inter, Arial, sans-serif`;
         const instText = installments.toLowerCase().includes("de") ? installments : `${installments} de`;
         const instW = ctx.measureText(instText).width;
         
-        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${PS}px Inter, Arial, sans-serif`;
         const w1Sim = ctx.measureText(pMain).width;
-        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${IS}px Inter, Arial, sans-serif`;
         const w2Sim = pCents ? ctx.measureText(pCents).width : 0;
         const priceW = w1Sim + w2Sim;
         
         const totalW = instW + 15 + priceW;
-        const startX = cx - totalW / 2;
+        const startX = pcx - totalW / 2;
         
         ctx.textAlign = "left";
-        ctx.font = `900 ${T.installSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(instText, startX, currentY); 
+        ctx.font = `900 ${IS}px Inter, Arial, sans-serif`;
+        ctx.fillText(instText, startX, currentY + pdy); 
         
         drawCents(startX + instW + 15, "left");
       } else {
-        drawCents(cx, "center");
+        drawCents(pcx, "center");
       }
       
       // 7. Total (Se ativo)
@@ -4458,7 +4563,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `600 ${T.labelSize}px Inter, Arial, sans-serif`;
         ctx.textAlign = "center";
         const totalText = totalOverride.toLowerCase().includes("total") ? totalOverride : `Total: ${curSym} ${totalOverride}`;
-        ctx.fillText(totalText, cx, currentY);
+        ctx.fillText(totalText, pcx, currentY + pdy);
       }
       
       // 8. Sufixo
@@ -4467,30 +4572,41 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = "#000000";
       ctx.font = `700 ${T.suffixSize}px Inter, Arial, sans-serif`;
       ctx.textAlign = "center";
-      safeFillText(ctx, suffixV7, cx, currentY, T.cardW - T.cardW * 0.1, Math.round(T.suffixSize * 0.7));
+      safeFillText(ctx, suffixV7, pcx, currentY + pdy, T.cardW - T.cardW * 0.1, Math.round(T.suffixSize * 0.7));
+      tw.record({
+        id: "v7_price",
+        label: "Bloco de preço",
+        x: cardX + T.cardW * 0.05 + priceTw.dx,
+        y: priceTop + pdy,
+        w: T.cardW - T.cardW * 0.1,
+        h: currentY - priceTop + T.suffixSize * 0.4,
+      });
+
   
       // 9. Pilula de Desconto (PIX) na borda inferior do card
       const pixV7 = (pixBannerText || "").toUpperCase();
       if (pixV7) {
-        ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-        // Ajusta a largura dinamicamente. Vamos assumir que a imagem 2 usa a cor amarela (secondaryColor ou amarela padrao)
+        const pixTw = tw.get("v7_pix");
+        const pixFS = Math.max(8, Math.round(T.pillTxtSize * pixTw.scale));
+        ctx.font = `900 ${pixFS}px Inter, Arial, sans-serif`;
         const pixPad = 60; 
         const textW = ctx.measureText(pixV7).width;
-        // Se a string "PIX" tiver presente, adicionamos um espaco extra pro icone (opcional)
         const pixW = textW + pixPad;
-        const pixH = Math.round(T.pillTxtSize * 1.8);
-        const pixY = cardY + cardH - pixH / 2; // Metade dentro, metade fora do bloco
+        const pixH = Math.round(pixFS * 1.8);
+        const pixY = cardY + cardH - pixH / 2 + pixTw.dy;
+        const pixX = cx - pixW / 2 + pixTw.dx;
         
         const pillColor = secondaryColor || "#FFD700"; // Amarelo se nao houver cor secundaria
         ctx.fillStyle = pillColor;
-        fillRoundRect(ctx, cx - pixW / 2, pixY, pixW, pixH, pixH / 2);
+        fillRoundRect(ctx, pixX, pixY, pixW, pixH, pixH / 2);
         
         ctx.fillStyle = getSafeColor(pillColor, "#FFFFFF");
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, pixV7, cx, pixY + pixH / 2 + 2, pixW - 20, Math.round(T.pillTxtSize * 0.7));
+        ctx.font = `900 ${pixFS}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, pixV7, pixX + pixW / 2, pixY + pixH / 2 + 2, pixW - 20, Math.round(pixFS * 0.7));
         ctx.textBaseline = "alphabetic";
+        tw.record({ id: "v7_pix", label: "Selo PIX", x: pixX, y: pixY, w: pixW, h: pixH });
       }
 
       // 10. Sombra Inferior para destacar contatos e logo

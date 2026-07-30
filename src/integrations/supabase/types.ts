@@ -459,6 +459,39 @@ export type Database = {
         }
         Relationships: []
       }
+      fabrica_art_tweak_presets: {
+        Row: {
+          category: string
+          created_at: string
+          format: string
+          id: string
+          tweaks: Json
+          updated_at: string
+          updated_by: string | null
+          variant: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          format: string
+          id?: string
+          tweaks?: Json
+          updated_at?: string
+          updated_by?: string | null
+          variant: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          format?: string
+          id?: string
+          tweaks?: Json
+          updated_at?: string
+          updated_by?: string | null
+          variant?: number
+        }
+        Relationships: []
+      }
       fabrica_diagnosticos: {
         Row: {
           agency_name: string
@@ -493,6 +526,45 @@ export type Database = {
           level?: number
           level_name?: string | null
           state_snapshot?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fabrica_usage_ledger: {
+        Row: {
+          capability: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          idempotency_key: string
+          metadata: Json
+          project_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          capability: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          idempotency_key: string
+          metadata?: Json
+          project_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          capability?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string
+          metadata?: Json
+          project_id?: string | null
+          status?: string
           updated_at?: string
           user_id?: string
         }
@@ -746,6 +818,8 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          billing_cycle: string | null
+          billing_provider: string | null
           created_at: string
           current_period_end: string | null
           id: string
@@ -754,10 +828,14 @@ export type Database = {
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           traffic_source_id: string | null
+          trial_ends_at: string | null
+          trial_started_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          billing_cycle?: string | null
+          billing_provider?: string | null
           created_at?: string
           current_period_end?: string | null
           id?: string
@@ -766,10 +844,14 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           traffic_source_id?: string | null
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          billing_cycle?: string | null
+          billing_provider?: string | null
           created_at?: string
           current_period_end?: string | null
           id?: string
@@ -778,6 +860,8 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           traffic_source_id?: string | null
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1183,6 +1267,17 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      reserve_fabrica_usage: {
+        Args: {
+          p_capability: string
+          p_idempotency_key: string
+          p_limit: number
+          p_metadata: Json
+          p_project_id: string
+          p_user_id: string
+        }
+        Returns: Json
       }
       update_webinar_lead_session: {
         Args: {
