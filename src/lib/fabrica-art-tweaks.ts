@@ -46,6 +46,10 @@ export interface ArtElementTweak {
   custom?: { kind: "shape" | "text", w?: number, h?: number, color?: string, bg?: string };
   /** Opacidade (0.0 a 1.0) */
   opacity?: number;
+  /** Negrito. */
+  bold?: boolean;
+  /** Itálico. */
+  italic?: boolean;
 }
 
 export type ArtTweakMap = Record<string, ArtElementTweak>;
