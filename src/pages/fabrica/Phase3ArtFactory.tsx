@@ -786,6 +786,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   const [captionCopied, setCaptionCopied] = useState(false);
   // Histórico das últimas variantes do compositor canvas (modo Sua Imagem) para forçar rotação
   const variantHistoryRef = useRef<number[]>([]);
+  // ADMIN — metadados da arte (variação + opções usadas) para o editor de ajuste fino
+  const artMetaRef = useRef<Map<string, { options: any; variant: number; category: string; format: string; tweaks?: ArtTweakMap }>>(new Map());
+  const [artEditorTarget, setArtEditorTarget] = useState<{ image: string; meta: { options: any; variant: number; category: string; format: string; tweaks?: ArtTweakMap } } | null>(null);
+  useEffect(() => { void loadArtTweakPresets(); }, []);
   // Proteção anti-loop: limita fallbacks automáticos da IA Pura
   const retryCountRef = useRef<number>(0);
   // Versão forçada (null = automático/rotação). 0..4 fixa a variante exata para correções cirúrgicas.
