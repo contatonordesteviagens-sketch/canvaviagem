@@ -565,34 +565,38 @@ const Index = () => {
             <div className="flex items-center mb-6 gap-4">
               <AccessFilter
                 selectedFilters={accessFilters}
-                onFiltersChange={setAccessFilters}
-              />
-            </div>
-
-            {showOnlyFree ? (
+                onFiltersChange={            {showOnlyFree ? (
               // Stable public catalog plus the free creation allowance.
               <div className="space-y-4">
-                <div className="border border-border bg-card p-4 md:p-5">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                      <h3 className="text-base font-bold text-foreground">Seu acesso grátis inclui</h3>
-                      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" />3 anúncios personalizados</span>
-                        <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" />2 carrosséis completos</span>
-                        <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" />Artes, legendas e videoaulas</span>
+                {/* Banner: O que é grátis — mais claro e orientado a conversão */}
+                <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800/50 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/30 p-5 md:p-6 shadow-sm">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/50 px-2.5 py-1 rounded-full">✦ 100% Grátis</span>
+                        <span className="text-xs text-muted-foreground">Sem cartão de crédito</span>
+                      </div>
+                      <h3 className="text-lg font-extrabold text-foreground mt-2 mb-3">O que você pode usar agora, de graça</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>3 anúncios</strong> com sua logo e pacotes</span></span>
+                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>2 carrosséis</strong> prontos para postar</span></span>
+                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Artes</strong> para agência de viagem</span></span>
+                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Legendas</strong> prontas para Instagram</span></span>
+                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Videoaulas</strong> de marketing para agências</span></span>
+                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Textos de oferta</strong> prontos para usar</span></span>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button onClick={() => navigate("/fabrica")}>
-                        Criar conteúdo grátis
+                    <div className="flex flex-col gap-2 lg:ml-6 shrink-0">
+                      <Button onClick={() => navigate("/fabrica")} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md">
+                        Criar anúncio grátis
                       </Button>
-                      <Button variant="outline" onClick={() => setActiveCategory("videoaula")}>
-                        Ver videoaulas
-                      </Button>
-                      <Button variant="ghost" onClick={() => navigate("/inicio")}>
-                        Conhecer o Elite
+                      <Button variant="outline" onClick={() => navigate("/inicio")} className="text-xs border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50">
+                        Ver plano Elite (3 dias grátis)
                       </Button>
                     </div>
+                  </div>
+                </div>
+          </div>
                   </div>
                 </div>
                 {toolsLoading ? (
