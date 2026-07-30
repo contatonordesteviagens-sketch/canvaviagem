@@ -273,6 +273,7 @@ export default function ArtTweakEditor({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
