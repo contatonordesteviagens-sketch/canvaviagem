@@ -4364,31 +4364,46 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.restore();
       
       // 3. Pilula do topo
-      ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
+      const pillTw = tw.get("v7_pill");
+      const pillFS = Math.max(8, Math.round(T.pillTxtSize * pillTw.scale));
+      ctx.font = `900 ${pillFS}px Inter, Arial, sans-serif`;
       const pillPad = 60;
       const pillW = ctx.measureText(promoPillV7).width + pillPad;
-      const pillY = cardY - pillH / 2;
+      const pillY = cardY - pillH / 2 + pillTw.dy;
+      const pillX = cx - pillW / 2 + pillTw.dx;
       
       const pColor = primaryColor || "#0066FF";
       const sColor = secondaryColor || pColor;
 
       ctx.fillStyle = sColor;
-      fillRoundRect(ctx, cx - pillW / 2, pillY, pillW, pillH, pillH / 2);
+      fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
       
       ctx.fillStyle = getSafeColor(sColor, "#FFFFFF");
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, promoPillV7, cx, pillY + pillH / 2 + 2, pillW - 20, Math.round(T.pillTxtSize * 0.7));
+      ctx.font = `900 ${pillFS}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, promoPillV7, pillX + pillW / 2, pillY + pillH / 2 + 2, pillW - 20, Math.round(pillFS * 0.7));
       ctx.textBaseline = "alphabetic";
+      tw.record({ id: "v7_pill", label: "Selo da promoção", x: pillX, y: pillY, w: pillW, h: pillH });
   
       // 4. Conteudo do Card: Titulo (SEM A CIDADE EMBAIXO)
       const cardInnerPad = T.cardW * 0.05;
       let currentY = cardY + pillH / 2 + T.titleSize + 15;
       
+      const titleTw = tw.get("v7_title");
+      const titleFS = Math.max(10, Math.round(T.titleSize * titleTw.scale));
       ctx.fillStyle = "#000000"; 
-      ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, destinationV7, cx, currentY, T.cardW - cardInnerPad * 2, Math.round(T.titleSize * 0.7));
+      ctx.textAlign = "center";
+      ctx.font = `900 ${titleFS}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, destinationV7, cx + titleTw.dx, currentY + titleTw.dy, T.cardW - cardInnerPad * 2, Math.round(titleFS * 0.7));
+      tw.record({
+        id: "v7_title",
+        label: "Título / destino",
+        x: cardX + cardInnerPad + titleTw.dx,
+        y: currentY - titleFS + titleTw.dy,
+        w: T.cardW - cardInnerPad * 2,
+        h: titleFS * 1.25,
+      });
   
       // 5. Bloco de Icones e Dias (Pills combinadas)
       currentY += T.titleSize * 0.5 + 40; // Desce os icones, afastando do titulo
