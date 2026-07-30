@@ -333,13 +333,25 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       const cx = op.box.x + op.box.w / 2;
       const cy = op.box.y + op.box.h / 2;
       let m = new DOMMatrix();
-      m = m.translate(dx, dy).translate(cx, cy).scale(scale, scale).rotate(rot).translate(-cx, -cy);
+      const sx = Number.isFinite(t.scaleX as number) ? (t.scaleX as number) : scale;
+      const sy = Number.isFinite(t.scaleY as number) ? (t.scaleY as number) : scale;
+      m = m.translate(dx, dy).translate(cx, cy).scale(sx, sy).rotate(rot).translate(-cx, -cy);
       real.setTransform(m.multiply(op.state.matrix));
 
       if (op.kind === "text") {
         const raw = typeof t.text === "string" ? t.text : op.text || "";
         const lines = raw.split("\n");
         const fs = fontSizeOf(op.state.font);
+        let adjX = x;
+        if (t.align && t.align !== op.state.textAlign) {
+           real.textAlign = t.align;
+           if (op.state.textAlign === "left" && t.align === "center") adjX += op.box.w / 2;
+           else if (op.state.textAlign === "left" && t.align === "right") adjX += op.box.w;
+           else if (op.state.textAlign === "center" && t.align === "left") adjX -= op.box.w / 2;
+           else if (op.state.textAlign === "center" && t.align === "right") adjX += op.box.w / 2;
+           else if (op.state.textAlign === "right" && t.align === "left") adjX -= op.box.w;
+           else if (op.state.textAlign === "right" && t.align === "center") adjX -= op.box.w / 2;
+        }
         const lh = Number.isFinite(t.lineHeight as number) && (t.lineHeight as number) > 0
           ? (t.lineHeight as number)
           : fs * 1.1;
