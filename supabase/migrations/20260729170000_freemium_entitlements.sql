@@ -212,7 +212,6 @@ AS $$
             )
           )
         )
-      )
     );
 $$;
 
@@ -729,17 +728,31 @@ CREATE POLICY "Users delete own crm submissions"
 
 -- The legacy publish RPC used SECURITY DEFINER and therefore bypassed all CRM
 -- policies. Run it as the caller so the Elite checks above remain authoritative.
-ALTER FUNCTION IF EXISTS public.publish_fabrica_crm_form(
-  uuid, text, text, jsonb, jsonb
-) SECURITY INVOKER;
+DO $$
+BEGIN
+  IF to_regprocedure(
+    'public.publish_fabrica_crm_form(uuid,text,text,jsonb,jsonb)'
+  ) IS NOT NULL THEN
+    EXECUTE
+      'ALTER FUNCTION public.publish_fabrica_crm_form(uuid, text, text, jsonb, jsonb) SECURITY INVOKER';
+  END IF;
 
--- Keep every authenticated mutation path behind the same RLS rules, including
--- functions created by older migrations.
-ALTER FUNCTION IF EXISTS public.publish_fabrica_site(
-  text, uuid, text, text
-) SECURITY INVOKER;
-ALTER FUNCTION IF EXISTS public.promote_fabrica_legacy_lead(
-  uuid, text
-) SECURITY INVOKER;
+  -- Keep every authenticated mutation path behind the same RLS rules,
+  -- including functions created by older migrations.
+  IF to_regprocedure(
+    'public.publish_fabrica_site(text,uuid,text,text)'
+  ) IS NOT NULL THEN
+    EXECUTE
+      'ALTER FUNCTION public.publish_fabrica_site(text, uuid, text, text) SECURITY INVOKER';
+  END IF;
+
+  IF to_regprocedure(
+    'public.promote_fabrica_legacy_lead(uuid,text)'
+  ) IS NOT NULL THEN
+    EXECUTE
+      'ALTER FUNCTION public.promote_fabrica_legacy_lead(uuid, text) SECURITY INVOKER';
+  END IF;
+END;
+$$;
 
 NOTIFY pgrst, 'reload schema';

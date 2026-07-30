@@ -70,18 +70,17 @@ rejectText(
   '.includes("elite")',
   "server plan access must use exact product IDs.",
 );
-for (const [signature, label] of [
-  ["public.publish_fabrica_crm_form(", "CRM form publishing"],
-  ["public.publish_fabrica_site(", "site publishing"],
-  ["public.promote_fabrica_legacy_lead(", "legacy lead promotion"],
+for (const [routine, label] of [
+  ["publish_fabrica_crm_form", "CRM form publishing"],
+  ["publish_fabrica_site", "site publishing"],
+  ["promote_fabrica_legacy_lead", "legacy lead promotion"],
 ]) {
   const migration = read("supabase/migrations/20260729170000_freemium_entitlements.sql");
-  const conditionalStart = migration.indexOf(`ALTER FUNCTION IF EXISTS ${signature}`);
-  const start = conditionalStart >= 0
-    ? conditionalStart
-    : migration.indexOf(`ALTER FUNCTION ${signature}`);
-  const end = start < 0 ? -1 : migration.indexOf("SECURITY INVOKER;", start);
-  if (start < 0 || end < 0 || end - start > 140) {
+  const securityInvoker = new RegExp(
+    `ALTER\\s+FUNCTION\\s+public\\.${routine}\\s*\\([^)]*\\)\\s+SECURITY\\s+INVOKER`,
+    "i",
+  );
+  if (!securityInvoker.test(migration)) {
     failures.push(`SQL migration: ${label} must explicitly obey RLS.`);
   }
 }
