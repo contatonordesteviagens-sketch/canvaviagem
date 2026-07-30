@@ -4567,25 +4567,27 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // 9. Pilula de Desconto (PIX) na borda inferior do card
       const pixV7 = (pixBannerText || "").toUpperCase();
       if (pixV7) {
-        ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-        // Ajusta a largura dinamicamente. Vamos assumir que a imagem 2 usa a cor amarela (secondaryColor ou amarela padrao)
+        const pixTw = tw.get("v7_pix");
+        const pixFS = Math.max(8, Math.round(T.pillTxtSize * pixTw.scale));
+        ctx.font = `900 ${pixFS}px Inter, Arial, sans-serif`;
         const pixPad = 60; 
         const textW = ctx.measureText(pixV7).width;
-        // Se a string "PIX" tiver presente, adicionamos um espaco extra pro icone (opcional)
         const pixW = textW + pixPad;
-        const pixH = Math.round(T.pillTxtSize * 1.8);
-        const pixY = cardY + cardH - pixH / 2; // Metade dentro, metade fora do bloco
+        const pixH = Math.round(pixFS * 1.8);
+        const pixY = cardY + cardH - pixH / 2 + pixTw.dy;
+        const pixX = cx - pixW / 2 + pixTw.dx;
         
         const pillColor = secondaryColor || "#FFD700"; // Amarelo se nao houver cor secundaria
         ctx.fillStyle = pillColor;
-        fillRoundRect(ctx, cx - pixW / 2, pixY, pixW, pixH, pixH / 2);
+        fillRoundRect(ctx, pixX, pixY, pixW, pixH, pixH / 2);
         
         ctx.fillStyle = getSafeColor(pillColor, "#FFFFFF");
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.font = `900 ${T.pillTxtSize}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, pixV7, cx, pixY + pixH / 2 + 2, pixW - 20, Math.round(T.pillTxtSize * 0.7));
+        ctx.font = `900 ${pixFS}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, pixV7, pixX + pixW / 2, pixY + pixH / 2 + 2, pixW - 20, Math.round(pixFS * 0.7));
         ctx.textBaseline = "alphabetic";
+        tw.record({ id: "v7_pix", label: "Selo PIX", x: pixX, y: pixY, w: pixW, h: pixH });
       }
 
       // 10. Sombra Inferior para destacar contatos e logo
