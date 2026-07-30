@@ -387,7 +387,8 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
     for (const entry of ordered) drawOp(entry.op);
     real.restore();
 
-    for (const op of slice) {
+    for (const entry of ordered) {
+      const op = entry.op;
       const t = map[op.id] || {};
       const scale = Number.isFinite(t.scale as number) && (t.scale as number) > 0 ? (t.scale as number) : 1;
       const cx = op.box.x + op.box.w / 2;
