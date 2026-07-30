@@ -120,7 +120,14 @@ export function mergeArtTweaks(base?: ArtTweakMap, override?: ArtTweakMap): ArtT
 export function isEmptyTweakMap(map?: ArtTweakMap): boolean {
   if (!map) return true;
   return Object.values(map).every(
-    (t) => (!t.dx || t.dx === 0) && (!t.dy || t.dy === 0) && (!t.scale || t.scale === 1),
+    (t) =>
+      (!t.dx || t.dx === 0) &&
+      (!t.dy || t.dy === 0) &&
+      (!t.scale || t.scale === 1) &&
+      (!t.rotate || t.rotate === 0) &&
+      !t.hidden &&
+      (!t.z || t.z === 0) &&
+      typeof t.text !== "string",
   );
 }
 
