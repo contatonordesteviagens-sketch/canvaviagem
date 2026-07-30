@@ -1,36 +1,61 @@
 /**
  * EDITOR VISUAL DE AJUSTE FINO DA ARTE — SOMENTE ADMIN
  *
- * Permite arrastar e redimensionar os blocos registrados pelo motor de
- * composição (título, selos, benefícios, preço) e salvar:
- *   • só nesta arte (aplica na imagem atual)
- *   • como padrão da variação (todos os usuários passam a gerar assim)
+ * Funciona para TODAS as variações (V0…V8 e as futuras), porque os elementos
+ * são capturados automaticamente pelo gravador do canvas
+ * (`src/lib/fabrica-art-recorder.ts`): cada texto, ícone, imagem e forma vira
+ * um bloco editável.
+ *
+ * O que dá para fazer em cada bloco:
+ *   • mover (arrastar ou setas), escalar, girar
+ *   • esconder
+ *   • trazer para frente / enviar para trás (z-index)
+ *   • trocar o texto, inclusive quebrando em várias linhas ("10x\nde")
+ *
+ * Salvar:
+ *   • "Aplicar só nesta arte" → vale apenas para a imagem atual
+ *   • "Salvar como padrão da variação" → grava em `fabrica_art_tweak_presets`
+ *     e TODOS os usuários passam a gerar essa variação já ajustada.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Loader2, Move, RotateCcw, Save, X } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowDownToLine,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ArrowUpToLine,
+  Eye,
+  EyeOff,
+  Loader2,
+  Move,
+  RotateCcw,
+  Save,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { composeTravelAd } from "@/lib/fabrica-compose-art";
+import { Textarea } from "@/components/ui/textarea";
 import {
   artVariantLabel,
   isEmptyTweakMap,
   type ArtElementBox,
+  type ArtElementTweak,
   type ArtTweakMap,
 } from "@/lib/fabrica-art-tweaks";
 import { saveArtTweakPreset } from "@/lib/fabrica-art-tweak-presets";
+import { composeTravelAd } from "@/lib/fabrica-compose-art";
 
 interface ArtTweakEditorProps {
   open: boolean;
   onClose: () => void;
-  /** Opções exatas usadas para compor a arte. */
   composeOptions: any;
   category: string;
   variant: number;
   format: string;
   initialTweaks?: ArtTweakMap;
-  /** Aplica o resultado na arte atual da galeria. */
   onApply: (image: string, tweaks: ArtTweakMap) => void;
 }
 
@@ -53,12 +78,16 @@ export default function ArtTweakEditor({
   const [rendering, setRendering] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showBoxes, setShowBoxes] = useState(true);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<{ id: string; x: number; y: number; dx: number; dy: number } | null>(null);
   const renderToken = useRef(0);
 
   useEffect(() => {
-    if (open) setTweaks(initialTweaks || {});
+    if (open) {
+      setTweaks(initialTweaks || {});
+      setSelected(null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -67,12 +96,12 @@ export default function ArtTweakEditor({
       const token = ++renderToken.current;
       setRendering(true);
       try {
-        const boxes: ArtElementBox[] = [];
+        let boxes: ArtElementBox[] = [];
         const img = await composeTravelAd({
           ...composeOptions,
           forceVariant: variant,
           artTweaks: map,
-          onArtElements: (els: ArtElementBox[]) => boxes.push(...els),
+          onArtElements: (els: ArtElementBox[]) => { boxes = els.slice(); },
         });
         if (token !== renderToken.current) return;
         setPreview(img);
@@ -88,9 +117,12 @@ export default function ArtTweakEditor({
 
   useEffect(() => {
     if (!open) return;
-    const t = setTimeout(() => { void render(tweaks); }, 150);
+    const t = setTimeout(() => { void render(tweaks); }, 160);
     return () => clearTimeout(t);
   }, [open, tweaks, render]);
+
+  const patch = (id: string, data: Partial<ArtElementTweak>) =>
+    setTweaks((prev) => ({ ...prev, [id]: { ...(prev[id] || {}), ...data } }));
 
   const scaleFactor = () => {
     const el = stageRef.current;
@@ -110,36 +142,45 @@ export default function ArtTweakEditor({
     const d = dragRef.current;
     if (!d) return;
     const k = scaleFactor() || 1;
-    const ndx = Math.round(d.dx + (e.clientX - d.x) / k);
-    const ndy = Math.round(d.dy + (e.clientY - d.y) / k);
-    setTweaks((prev) => ({ ...prev, [d.id]: { ...(prev[d.id] || {}), dx: ndx, dy: ndy } }));
+    patch(d.id, {
+      dx: Math.round(d.dx + (e.clientX - d.x) / k),
+      dy: Math.round(d.dy + (e.clientY - d.y) / k),
+    });
   };
 
   const onPointerUp = () => { dragRef.current = null; };
 
   const nudge = (dx: number, dy: number) => {
     if (!selected) return;
-    setTweaks((prev) => {
-      const cur = prev[selected] || {};
-      return { ...prev, [selected]: { ...cur, dx: (cur.dx || 0) + dx, dy: (cur.dy || 0) + dy } };
-    });
+    const cur = tweaks[selected] || {};
+    patch(selected, { dx: (cur.dx || 0) + dx, dy: (cur.dy || 0) + dy });
   };
 
-  const setScale = (value: number) => {
+  const bringTo = (delta: number) => {
     if (!selected) return;
-    setTweaks((prev) => ({ ...prev, [selected]: { ...(prev[selected] || {}), scale: value } }));
+    const cur = tweaks[selected] || {};
+    patch(selected, { z: (cur.z || 0) + delta });
   };
 
   const resetAll = () => { setTweaks({}); setSelected(null); };
+  const resetOne = () => {
+    if (!selected) return;
+    setTweaks((prev) => {
+      const next = { ...prev };
+      delete next[selected];
+      return next;
+    });
+  };
 
-  const selectedTweak = selected ? tweaks[selected] || {} : {};
+  const selectedBox = elements.find((e) => e.id === selected) || null;
+  const st: ArtElementTweak = (selected && tweaks[selected]) || {};
   const label = useMemo(() => artVariantLabel(category, variant, format), [category, variant, format]);
 
   const handleSavePreset = async () => {
     setSaving(true);
     try {
       await saveArtTweakPreset(category, variant, format, tweaks);
-      toast.success("Padrão da variação salvo — todos passam a gerar ajustado.");
+      toast.success("Padrão salvo — todos os usuários passam a gerar essa variação ajustada.");
       if (preview) onApply(preview, tweaks);
       onClose();
     } catch (err: any) {
@@ -152,73 +193,84 @@ export default function ArtTweakEditor({
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[2000] bg-background overflow-y-auto">
+    <div className="fixed inset-0 z-[2000] overflow-y-auto bg-background text-foreground">
       <div className="mx-auto max-w-6xl p-4 md:p-6">
-
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold">Ajuste fino da arte</h2>
-            <p className="text-xs text-muted-foreground">{label} · arraste os blocos na imagem</p>
+            <h2 className="text-lg font-bold text-foreground">Ajuste fino da arte</h2>
+            <p className="text-xs text-muted-foreground">
+              {label} · arraste qualquer bloco · {elements.length} elementos detectados
+            </p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowBoxes((v) => !v)}>
+              {showBoxes ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
+              {showBoxes ? "Ocultar caixas" : "Mostrar caixas"}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
+          </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_320px]">
           <div
             ref={stageRef}
-            className="relative w-full select-none rounded-lg overflow-hidden border border-border bg-muted"
+            className="relative w-full select-none overflow-hidden rounded-lg border border-border bg-muted"
             style={{ aspectRatio: `${CANVAS_W} / ${canvasH}` }}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerLeave={onPointerUp}
           >
-            {preview && <img src={preview} alt="Prévia da arte em ajuste" className="w-full h-full object-contain pointer-events-none" />}
+            {preview && (
+              <img src={preview} alt="Prévia da arte em ajuste" className="pointer-events-none h-full w-full object-contain" />
+            )}
             {rendering && (
               <div className="absolute inset-0 grid place-items-center bg-background/40">
-                <Loader2 className="h-6 w-6 animate-spin" />
+                <Loader2 className="h-6 w-6 animate-spin text-foreground" />
               </div>
             )}
-            {elements.map((box) => {
+            {showBoxes && elements.map((box) => {
               const isSel = selected === box.id;
               return (
                 <div
                   key={box.id}
                   onPointerDown={(e) => onPointerDown(e, box)}
-                  className={`absolute cursor-move rounded-sm border-2 transition-colors ${
-                    isSel ? "border-primary bg-primary/10" : "border-primary/40 hover:border-primary/80 bg-transparent"
+                  className={`absolute cursor-move rounded-[2px] border transition-colors ${
+                    isSel ? "border-2 border-primary bg-primary/10" : "border-primary/30 hover:border-primary/80"
                   }`}
                   style={{
                     left: `${(box.x / CANVAS_W) * 100}%`,
                     top: `${(box.y / canvasH) * 100}%`,
                     width: `${(box.w / CANVAS_W) * 100}%`,
                     height: `${(box.h / canvasH) * 100}%`,
+                    minWidth: 6,
+                    minHeight: 6,
                   }}
                   title={box.label}
-                >
-                  <span className="absolute -top-5 left-0 text-[10px] font-semibold px-1 rounded bg-primary text-primary-foreground whitespace-nowrap">
-                    {box.label}
-                  </span>
-                </div>
+                />
               );
             })}
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-lg border border-border p-3">
-              <p className="text-xs font-semibold mb-2 flex items-center gap-1"><Move className="h-3.5 w-3.5" /> Elemento</p>
+            <div className="rounded-lg border border-border bg-card p-3 text-card-foreground">
+              <p className="mb-2 flex items-center gap-1 text-xs font-semibold">
+                <Move className="h-3.5 w-3.5" /> Elementos da arte
+              </p>
               {elements.length === 0 ? (
-                <p className="text-xs text-muted-foreground">Esta variação ainda não tem blocos ajustáveis.</p>
+                <p className="text-xs text-muted-foreground">Gerando… aguarde o desenho da arte.</p>
               ) : (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="max-h-52 space-y-1 overflow-y-auto pr-1">
                   {elements.map((el) => (
                     <button
                       key={el.id}
                       onClick={() => setSelected(el.id)}
-                      className={`text-[11px] px-2 py-1 rounded border ${
-                        selected === el.id ? "bg-primary text-primary-foreground border-primary" : "border-border"
+                      className={`block w-full truncate rounded border px-2 py-1 text-left text-[11px] ${
+                        selected === el.id
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-muted text-foreground hover:bg-accent hover:text-accent-foreground"
                       }`}
                     >
-                      {el.label}
+                      {tweaks[el.id]?.hidden ? "🚫 " : ""}{el.label}
                     </button>
                   ))}
                 </div>
@@ -226,36 +278,87 @@ export default function ArtTweakEditor({
             </div>
 
             {selected && (
-              <div className="rounded-lg border border-border p-3 space-y-3">
-                <div className="grid grid-cols-3 gap-1.5 text-xs">
+              <div className="space-y-3 rounded-lg border border-border bg-card p-3 text-card-foreground">
+                <p className="truncate text-xs font-semibold">{selectedBox?.label || selected}</p>
+
+                <div className="grid grid-cols-3 gap-1.5">
                   <span />
-                  <Button variant="outline" size="sm" onClick={() => nudge(0, -8)}>↑</Button>
+                  <Button variant="outline" size="sm" onClick={() => nudge(0, -8)}><ArrowUp className="h-4 w-4" /></Button>
                   <span />
-                  <Button variant="outline" size="sm" onClick={() => nudge(-8, 0)}>←</Button>
-                  <Button variant="outline" size="sm" onClick={() => nudge(0, 8)}>↓</Button>
-                  <Button variant="outline" size="sm" onClick={() => nudge(8, 0)}>→</Button>
+                  <Button variant="outline" size="sm" onClick={() => nudge(-8, 0)}><ArrowLeft className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="sm" onClick={() => nudge(0, 8)}><ArrowDown className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="sm" onClick={() => nudge(8, 0)}><ArrowRight className="h-4 w-4" /></Button>
                 </div>
+
                 <div>
-                  <p className="text-[11px] text-muted-foreground mb-1">
-                    Tamanho: {Math.round((selectedTweak.scale ?? 1) * 100)}%
+                  <p className="mb-1 text-[11px] text-muted-foreground">
+                    Tamanho: {Math.round((st.scale ?? 1) * 100)}%
                   </p>
                   <Slider
-                    min={50}
-                    max={160}
+                    min={20}
+                    max={300}
                     step={2}
-                    value={[Math.round((selectedTweak.scale ?? 1) * 100)]}
-                    onValueChange={(v) => setScale(v[0] / 100)}
+                    value={[Math.round((st.scale ?? 1) * 100)]}
+                    onValueChange={(v) => patch(selected, { scale: v[0] / 100 })}
                   />
                 </div>
+
+                <div>
+                  <p className="mb-1 text-[11px] text-muted-foreground">Rotação: {st.rotate ?? 0}°</p>
+                  <Slider
+                    min={-45}
+                    max={45}
+                    step={1}
+                    value={[st.rotate ?? 0]}
+                    onValueChange={(v) => patch(selected, { rotate: v[0] })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Button variant="outline" size="sm" onClick={() => bringTo(1)}>
+                    <ArrowUpToLine className="mr-1 h-4 w-4" /> Frente
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => bringTo(-1)}>
+                    <ArrowDownToLine className="mr-1 h-4 w-4" /> Trás
+                  </Button>
+                </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Deslocamento: {selectedTweak.dx || 0}px / {selectedTweak.dy || 0}px
+                  Camada: {st.z ?? 0} · Posição: {st.dx || 0}px / {st.dy || 0}px
                 </p>
+
+                <Button
+                  variant={st.hidden ? "default" : "outline"}
+                  size="sm"
+                  className="w-full"
+                  onClick={() => patch(selected, { hidden: !st.hidden })}
+                >
+                  {st.hidden ? <Eye className="mr-2 h-4 w-4" /> : <EyeOff className="mr-2 h-4 w-4" />}
+                  {st.hidden ? "Mostrar elemento" : "Esconder elemento"}
+                </Button>
+
+                {selectedBox?.kind === "text" && (
+                  <div>
+                    <p className="mb-1 text-[11px] text-muted-foreground">
+                      Texto (use Enter para quebrar linha — ex.: “10x” em cima, “de” embaixo)
+                    </p>
+                    <Textarea
+                      rows={3}
+                      className="text-xs"
+                      value={st.text ?? selectedBox.text ?? ""}
+                      onChange={(e) => patch(selected, { text: e.target.value })}
+                    />
+                  </div>
+                )}
+
+                <Button variant="ghost" size="sm" className="w-full" onClick={resetOne}>
+                  <RotateCcw className="mr-2 h-4 w-4" /> Zerar este elemento
+                </Button>
               </div>
             )}
 
             <div className="space-y-2">
               <Button variant="outline" className="w-full" onClick={resetAll} disabled={isEmptyTweakMap(tweaks)}>
-                <RotateCcw className="h-4 w-4 mr-2" /> Zerar ajustes
+                <RotateCcw className="mr-2 h-4 w-4" /> Zerar todos os ajustes
               </Button>
               <Button
                 variant="secondary"
@@ -266,7 +369,7 @@ export default function ArtTweakEditor({
                 Aplicar só nesta arte
               </Button>
               <Button className="w-full" disabled={saving || rendering} onClick={handleSavePreset}>
-                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                 Salvar como padrão da variação
               </Button>
             </div>
