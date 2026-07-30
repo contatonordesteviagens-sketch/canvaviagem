@@ -141,6 +141,29 @@ function boxFromPoints(pts: Array<[number, number]>, m: DOMMatrix) {
   return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
 }
 
+/** Captura o `d` de cada Path2D criado para conseguir estimar a caixa do ícone. */
+const path2dSources = new WeakMap<object, string>();
+if (typeof window !== "undefined" && !(window as any).__artPath2DPatched) {
+  const OriginalPath2D = (window as any).Path2D;
+  if (OriginalPath2D) {
+    const Patched = function (this: any, arg?: any) {
+      const instance = arg === undefined ? new OriginalPath2D() : new OriginalPath2D(arg);
+      if (typeof arg === "string") path2dSources.set(instance, arg);
+      return instance;
+    } as any;
+    Patched.prototype = OriginalPath2D.prototype;
+    (window as any).Path2D = Patched;
+    (window as any).__artPath2DPatched = true;
+  }
+}
+
+function pointsFromPathData(d: string): Array<[number, number]> {
+  const nums = (d.match(/-?\d*\.?\d+(?:e[-+]?\d+)?/gi) || []).map(Number).filter((n) => Number.isFinite(n));
+  const pts: Array<[number, number]> = [];
+  for (let i = 0; i + 1 < nums.length; i += 2) pts.push([nums[i], nums[i + 1]]);
+  return pts;
+}
+
 function fontSizeOf(font: string): number {
   const m = /(\d+(?:\.\d+)?)px/.exec(font || "");
   return m ? parseFloat(m[1]) : 16;
@@ -408,8 +431,14 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       }
       if (prop === "fill" || prop === "stroke") {
         return (...a: any[]) => {
-          if (a[0] instanceof Path2D) {
-            (target as any)[prop](...a);
+          if (a[0] && typeof a[0] === "object" && typeof (a[0] as any).addPath === "function") {
+            const state = snap();
+            const d = path2dSources.get(a[0] as any) || "";
+            const pts = pointsFromPathData(d);
+            const box = pts.length
+              ? boxFromPoints(pts, state.matrix)
+              : boxFromPoints([[0, 0], [24, 24]], state.matrix);
+            pushOp({ kind: "shape", draw: { m: prop, a: a.slice() }, state, box });
             return;
           }
           recordPathDraw(prop as "fill" | "stroke", a);
