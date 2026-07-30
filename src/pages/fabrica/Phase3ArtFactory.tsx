@@ -1717,8 +1717,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       "ad",
       state.projectId,
       [
-        generatedImage.length,
-        generatedImage.slice(-96),
+        (generatedImage?.url || "").length,
+        (generatedImage?.url || "").slice(-96),
         destination,
         format,
       ].join(":"),
@@ -2917,7 +2917,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                           e.stopPropagation();
                           const newList = generatedImages.filter((_, i) => i !== idx);
                           setGeneratedImages(newList);
-                          if (generatedImage?.url === img.url) setGeneratedImage(newList[0] || "");
+                          if (generatedImage?.url === img.url) setGeneratedImage(newList[0] || null);
                           toast.success("Variação removida");
                         }}
                         className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg md:opacity-0 md:group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
@@ -2925,21 +2925,21 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                      {isAdmin && artMetaRef.current.get(img) && (
+                      {isAdmin && artMetaRef.current.get(img.url) && (
                         <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1.5">
                           <span className="rounded-md bg-black/80 px-2 py-1 text-[10px] font-black text-white">
                             {artVariantLabel(
-                              artMetaRef.current.get(img)!.category,
-                              artMetaRef.current.get(img)!.variant,
-                              artMetaRef.current.get(img)!.format,
+                              artMetaRef.current.get(img.url)!.category,
+                              artMetaRef.current.get(img.url)!.variant,
+                              artMetaRef.current.get(img.url)!.format,
                             )}
                           </span>
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              const meta = artMetaRef.current.get(img);
-                              if (meta) setArtEditorTarget({ image: img, meta });
+                              const meta = artMetaRef.current.get(img.url);
+                              if (meta) setArtEditorTarget({ image: img.url, meta });
                             }}
                             className="rounded-md bg-white/90 px-2 py-1 text-[10px] font-black text-black hover:bg-white"
                             title="Ajustar posições desta arte (admin)"
@@ -2964,8 +2964,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     onApply={(newImage, tweaks) => {
                       const oldImage = artEditorTarget.image;
                       artMetaRef.current.set(newImage, { ...artEditorTarget.meta, tweaks });
-                      setGeneratedImages((prev) => prev.map((it) => (it === oldImage ? newImage : it)));
-                      setGeneratedImage((cur) => (cur === oldImage ? newImage : cur));
+                      setGeneratedImages((prev) => prev.map((it) => (it.url === oldImage ? { ...it, url: newImage } : it)));
+                      setGeneratedImage((cur) => (cur && cur.url === oldImage ? { ...cur, url: newImage } : cur));
                     }}
                   />
                 )}
