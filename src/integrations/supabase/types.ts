@@ -459,6 +459,39 @@ export type Database = {
         }
         Relationships: []
       }
+      fabrica_art_tweak_presets: {
+        Row: {
+          category: string
+          created_at: string
+          format: string
+          id: string
+          tweaks: Json
+          updated_at: string
+          updated_by: string | null
+          variant: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          format: string
+          id?: string
+          tweaks?: Json
+          updated_at?: string
+          updated_by?: string | null
+          variant: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          format?: string
+          id?: string
+          tweaks?: Json
+          updated_at?: string
+          updated_by?: string | null
+          variant?: number
+        }
+        Relationships: []
+      }
       fabrica_diagnosticos: {
         Row: {
           agency_name: string
