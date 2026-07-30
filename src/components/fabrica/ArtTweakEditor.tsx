@@ -201,14 +201,19 @@ export default function ArtTweakEditor({
       setSelected(newSel);
     }
     
-    const items = Array.from(newSel).map(id => ({
-      id,
-      startDx: tweaks[id]?.dx || 0,
-      startDy: tweaks[id]?.dy || 0,
-      startScale: tweaks[id]?.scale || 1,
-      startScaleX: tweaks[id]?.scaleX || tweaks[id]?.scale || 1,
-      startScaleY: tweaks[id]?.scaleY || tweaks[id]?.scale || 1,
-    }));
+    const items = Array.from(newSel).map(id => {
+      const elBox = elements.find(el => el.id === id) || box;
+      return {
+        id,
+        w: elBox.w,
+        h: elBox.h,
+        startDx: tweaks[id]?.dx || 0,
+        startDy: tweaks[id]?.dy || 0,
+        startScale: tweaks[id]?.scale || 1,
+        startScaleX: tweaks[id]?.scaleX || tweaks[id]?.scale || 1,
+        startScaleY: tweaks[id]?.scaleY || tweaks[id]?.scale || 1,
+      };
+    });
     dragRef.current = { type: 'scale', corner, items, x: e.clientX, y: e.clientY };
   };
 
@@ -237,11 +242,11 @@ export default function ArtTweakEditor({
     
     const items = Array.from(newSel).map(id => ({
       id,
+      w: 0, h: 0, // not needed for move
       startDx: tweaks[id]?.dx || 0,
       startDy: tweaks[id]?.dy || 0,
       startScale: tweaks[id]?.scale || 1,
-      startScaleX: tweaks[id]?.scaleX || tweaks[id]?.scale || 1,
-      startScaleY: tweaks[id]?.scaleY || tweaks[id]?.scale || 1,
+      startScaleX: 1, startScaleY: 1,
     }));
     dragRef.current = { type: 'move', items, x: e.clientX, y: e.clientY };
   };
@@ -272,28 +277,46 @@ export default function ArtTweakEditor({
       const updates: Record<string, Partial<ArtElementTweak>> = {};
       d.items.forEach(item => {
         if (d.type === 'scale') {
-           // We map dragging delta to scale proportional to typical element size (e.g. 100px base)
-           // If dragging right/down, it scales up.
-           const dist = (deltaX + deltaY) / 100; 
-           let scaleDelta = dist;
-           if (d.corner === 'nw') scaleDelta = -dist;
-           else if (d.corner === 'ne') scaleDelta = (deltaX - deltaY) / 100;
-           else if (d.corner === 'sw') scaleDelta = (deltaY - deltaX) / 100;
-           else if (d.corner === 'se') scaleDelta = dist;
+           const W2 = item.w / 2;
+           const H2 = item.h / 2;
            
            if (['e', 'w', 'n', 's'].includes(d.corner!)) {
                if (d.corner === 'e' || d.corner === 'w') {
                    const sxDelta = d.corner === 'w' ? -deltaX / 100 : deltaX / 100;
                    const newScaleX = Math.max(0.1, Math.min(5, item.startScaleX + sxDelta));
-                   updates[item.id] = { scaleX: Number(newScaleX.toFixed(2)) };
+                   const ds = newScaleX - item.startScaleX;
+                   const newDx = d.corner === 'e' ? item.startDx + W2 * ds : item.startDx - W2 * ds;
+                   updates[item.id] = { scaleX: Number(newScaleX.toFixed(2)), dx: Math.round(newDx) };
                } else {
                    const syDelta = d.corner === 'n' ? -deltaY / 100 : deltaY / 100;
                    const newScaleY = Math.max(0.1, Math.min(5, item.startScaleY + syDelta));
-                   updates[item.id] = { scaleY: Number(newScaleY.toFixed(2)) };
+                   const ds = newScaleY - item.startScaleY;
+                   const newDy = d.corner === 's' ? item.startDy + H2 * ds : item.startDy - H2 * ds;
+                   updates[item.id] = { scaleY: Number(newScaleY.toFixed(2)), dy: Math.round(newDy) };
                }
            } else {
+               const dist = (deltaX + deltaY) / 100; 
+               let scaleDelta = dist;
+               if (d.corner === 'nw') scaleDelta = -dist;
+               else if (d.corner === 'ne') scaleDelta = (deltaX - deltaY) / 100;
+               else if (d.corner === 'sw') scaleDelta = (deltaY - deltaX) / 100;
+               else if (d.corner === 'se') scaleDelta = dist;
+               
                const newScale = Math.max(0.1, Math.min(5, item.startScale + scaleDelta));
-               updates[item.id] = { scale: Number(newScale.toFixed(2)) };
+               const ds = newScale - item.startScale;
+               
+               let newDx = item.startDx;
+               let newDy = item.startDy;
+               if (d.corner === 'se') { newDx += W2 * ds; newDy += H2 * ds; }
+               else if (d.corner === 'nw') { newDx -= W2 * ds; newDy -= H2 * ds; }
+               else if (d.corner === 'ne') { newDx += W2 * ds; newDy -= H2 * ds; }
+               else if (d.corner === 'sw') { newDx -= W2 * ds; newDy += H2 * ds; }
+               
+               updates[item.id] = { 
+                  scale: Number(newScale.toFixed(2)),
+                  dx: Math.round(newDx),
+                  dy: Math.round(newDy)
+               };
            }
         } else {
            updates[item.id] = {
@@ -478,6 +501,7 @@ export default function ArtTweakEditor({
                 >
                   {isSel && selected.size === 1 && (
                     <>
+                      {/* Corner Handles */}
                       <div className="absolute -top-1.5 -left-1.5 h-3 w-3 cursor-nwse-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'nw')} />
                       <div className="absolute -top-1.5 -right-1.5 h-3 w-3 cursor-nesw-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'ne')} />
                       <div className="absolute -bottom-1.5 -left-1.5 h-3 w-3 cursor-nesw-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'sw')} />
