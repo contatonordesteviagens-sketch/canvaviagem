@@ -24,6 +24,16 @@ export interface ArtElementTweak {
   dx?: number;
   dy?: number;
   scale?: number;
+  /** Rotação em graus. */
+  rotate?: number;
+  /** Esconde o elemento. */
+  hidden?: boolean;
+  /** Ordem de empilhamento (maior = mais à frente). */
+  z?: number;
+  /** Substitui o texto (use \n para quebrar linha). */
+  text?: string;
+  /** Altura da linha quando o texto tem quebras. */
+  lineHeight?: number;
 }
 
 export type ArtTweakMap = Record<string, ArtElementTweak>;
@@ -36,9 +46,14 @@ export interface ArtElementBox {
   y: number;
   w: number;
   h: number;
+  /** Tipo da primitiva desenhada. */
+  kind?: "text" | "image" | "shape";
+  /** Texto original (quando kind === "text"). */
+  text?: string;
   /** Se false, o editor esconde as alças de escala (só move). */
   resizable?: boolean;
 }
+
 
 export interface ArtTweakContext {
   /** Ajuste resolvido do elemento (sempre com defaults preenchidos). */
