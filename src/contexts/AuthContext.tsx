@@ -91,6 +91,11 @@ interface AuthContextType {
   loading: boolean;
   subscription: SubscriptionStatus;
   isAdmin: boolean;
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  subscription: SubscriptionStatus;
+  isAdmin: boolean;
   signOut: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
 }
@@ -99,7 +104,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Cache for subscription status to avoid rate limits and prevent mid-session lockouts
 const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in-memory cache
-const PERSISTED_CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days: instant UX, verified silently
+const PERSISTED_CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 horas: equilibrio entre UX e dados frescos
 const SUBSCRIPTION_CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes: never interrupt users while editing
 let subscriptionCache: {
   data: SubscriptionStatus | null;
@@ -443,8 +448,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Only check subscription on specific events, not every state change
         if (currentSession?.access_token && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
+          // SIGNED_IN always forces a fresh server check to prevent stale Elite cache on free accounts
+          const force = event === 'SIGNED_IN';
           setTimeout(() => {
-            checkSubscription(currentSession.access_token, currentSession?.user ?? null);
+            checkSubscription(currentSession.access_token, currentSession?.user ?? null, force);
           }, 100);
         } else if (event === 'SIGNED_OUT') {
           setIsAdmin(false);
