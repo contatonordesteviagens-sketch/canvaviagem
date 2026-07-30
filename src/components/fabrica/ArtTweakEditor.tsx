@@ -70,7 +70,7 @@ export default function ArtTweakEditor({
   
   // Drag & Marquee Refs
   const stageRef = useRef<HTMLDivElement | null>(null);
-  const dragRef = useRef<{ items: { id: string; startDx: number; startDy: number }[]; x: number; y: number } | null>(null);
+  const dragRef = useRef<{ type?: 'move' | 'scale'; corner?: string; items: { id: string; startDx: number; startDy: number; startScale: number }[]; x: number; y: number } | null>(null);
   const [marquee, setMarquee] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
   const marqueeRef = useRef<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
   
@@ -180,6 +180,28 @@ export default function ArtTweakEditor({
     patch(updates, commit);
   };
 
+  
+  const onPointerDownHandle = (e: React.PointerEvent, box: ArtElementBox, corner: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    
+    // Select only this box if not selected
+    let newSel = new Set(selected);
+    if (!newSel.has(box.id)) {
+      newSel = new Set([box.id]);
+      setSelected(newSel);
+    }
+    
+    const items = Array.from(newSel).map(id => ({
+      id,
+      startDx: tweaks[id]?.dx || 0,
+      startDy: tweaks[id]?.dy || 0,
+      startScale: tweaks[id]?.scale || 1,
+    }));
+    dragRef.current = { type: 'scale', corner, items, x: e.clientX, y: e.clientY };
+  };
+
   const scaleFactor = () => {
     const el = stageRef.current;
     if (!el) return 1;
@@ -207,8 +229,9 @@ export default function ArtTweakEditor({
       id,
       startDx: tweaks[id]?.dx || 0,
       startDy: tweaks[id]?.dy || 0,
+      startScale: tweaks[id]?.scale || 1,
     }));
-    dragRef.current = { items, x: e.clientX, y: e.clientY };
+    dragRef.current = { type: 'move', items, x: e.clientX, y: e.clientY };
   };
 
   const onPointerDownStage = (e: React.PointerEvent) => {
@@ -236,10 +259,26 @@ export default function ArtTweakEditor({
       
       const updates: Record<string, Partial<ArtElementTweak>> = {};
       d.items.forEach(item => {
-        updates[item.id] = {
-          dx: Math.round(item.startDx + deltaX),
-          dy: Math.round(item.startDy + deltaY),
-        };
+        if (d.type === 'scale') {
+           // We map dragging delta to scale proportional to typical element size (e.g. 100px base)
+           // If dragging right/down, it scales up.
+           const dist = (deltaX + deltaY) / 100; 
+           let scaleDelta = dist;
+           if (d.corner === 'nw') scaleDelta = -dist;
+           else if (d.corner === 'ne') scaleDelta = (deltaX - deltaY) / 100;
+           else if (d.corner === 'sw') scaleDelta = (deltaY - deltaX) / 100;
+           else if (d.corner === 'se') scaleDelta = dist;
+           
+           let newScale = item.startScale + scaleDelta;
+           if (newScale < 0.1) newScale = 0.1;
+           if (newScale > 5) newScale = 5;
+           updates[item.id] = { scale: Number(newScale.toFixed(2)) };
+        } else {
+           updates[item.id] = {
+             dx: Math.round(item.startDx + deltaX),
+             dy: Math.round(item.startDy + deltaY),
+           };
+        }
       });
       patch(updates, false);
     }
@@ -399,7 +438,7 @@ export default function ArtTweakEditor({
             {showBoxes && elements.map((box) => {
               const isSel = selected.has(box.id);
               return (
-                <div
+<div
                   key={box.id}
                   onPointerDown={(e) => onPointerDownBox(e, box)}
                   className={`absolute cursor-move rounded-[2px] border transition-colors ${
@@ -414,7 +453,16 @@ export default function ArtTweakEditor({
                     minHeight: 6,
                   }}
                   title={box.label}
-                />
+                >
+                  {isSel && selected.size === 1 && (
+                    <>
+                      <div className="absolute -top-1.5 -left-1.5 h-3 w-3 cursor-nwse-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'nw')} />
+                      <div className="absolute -top-1.5 -right-1.5 h-3 w-3 cursor-nesw-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'ne')} />
+                      <div className="absolute -bottom-1.5 -left-1.5 h-3 w-3 cursor-nesw-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'sw')} />
+                      <div className="absolute -bottom-1.5 -right-1.5 h-3 w-3 cursor-nwse-resize rounded-full border border-primary bg-white pointer-events-auto" onPointerDown={(e) => onPointerDownHandle(e, box, 'se')} />
+                    </>
+                  )}
+                </div>
               );
             })}
             
