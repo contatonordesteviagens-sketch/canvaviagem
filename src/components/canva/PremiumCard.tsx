@@ -101,27 +101,6 @@ const PremiumCardComponent = ({
     
     const isNac = destinosNacionais.some(destino =>
       title.toLowerCase().includes(destino.toLowerCase())
-  const gradient = getTypeGradient(contentType, title);
-  const navigate = useNavigate();
-
-  const getFallbackDriveUrl = () => {
-    if (category === 'nacional') return "https://drive.google.com/drive/folders/10KCEnIdj6oC8rtOAEl-G0nHtPfC56ln9?usp=drive_link";
-    if (category === 'internacional') return "https://drive.google.com/drive/folders/10LWKcjLVA6L1FLkzRGDpDmCkKlTHoNOu";
-    
-    // Fallback detection using title
-    const destinosNacionais = [
-      'Maragogi', 'Salvador', 'Trancoso', 'Jalapão', 'Foz do Iguaçu', 'Florianópolis',
-      'Gramado', 'Natal', 'Fortaleza', 'Pantanal', 'Rio de Janeiro', 'Recife',
-      'Balneário Camboriú', 'Alter do Chão', 'Arraial do Cabo', 'Rota das Emoções',
-      'Maceió', 'Lençóis Maranhenses', 'Fernando de Noronha', 'Angra dos Reis',
-      'Jericoacoara', 'Porto de Galinhas', 'Amazônia', 'Amazonas', 'Alagoas',
-      'João Pessoa', 'Ouro Preto', 'Genipabu', '5 Praias Floripa', 'Bonito',
-      'Chapada Diamantina', 'Curitiba', 'São Paulo', 'Belo Horizonte', 'Manaus',
-      'Ceará', 'Canoa Quebrada', 'Beto Carrero', 'Brasil'
-    ];
-    
-    const isNac = destinosNacionais.some(destino =>
-      title.toLowerCase().includes(destino.toLowerCase())
     ) || title.includes('- AL') || title.includes('- BA') || title.includes('- CE') ||
       title.includes('- SC') || title.includes('- RN') || title.includes('- TO') ||
       title.includes('- PE') || title.includes('- PB') || title.includes('- MG') ||
