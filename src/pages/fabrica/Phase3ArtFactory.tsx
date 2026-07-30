@@ -1282,6 +1282,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           descScale,
           textColorOverride: effectiveTextColor,
           isExperience: categoria === "experiencia_destino",
+          artTweaks: getArtTweakPreset(categoria, forceVar, format),
         };
       };
 
