@@ -95,10 +95,10 @@ const ICON_OPTIONS: { key: IconKey; Icon: any; label: string }[] = [
 interface Highlight { text: string; icon: IconKey; }
 
 const DEFAULT_HIGHLIGHTS: Highlight[] = [
-  { text: "Transporte incluso", icon: "bus" },
-  { text: "Hospedagem", icon: "hotel" },
-  { text: "Café da manhã", icon: "coffee" },
-  { text: "Guia local", icon: "guide" },
+  { text: "Transporte incluso", icon: "onibus" },
+  { text: "Hospedagem", icon: "placa-do-hotel" },
+  { text: "Café da manhã", icon: "cafe-da-manha" },
+  { text: "Guia local", icon: "guia-turistico" },
 ];
 
 const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [

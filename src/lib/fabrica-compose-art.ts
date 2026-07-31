@@ -693,7 +693,7 @@ export async function preloadNewIcons() {
   const iconKeys = ["aviao", "balsa", "bicycle", "cafe-da-manha", "calendar", "carro-sedan-na-frente", "coffe-cup", "enviar", "estacao-de-trem", "food-and-restaurant", "guia-turistico", "kit-de-primeiros-socorros", "motorcycle", "onibus", "pino-de-localizacao-1", "pino-de-localizacao", "placa-do-hotel", "relogio", "taxi-frontal"];
   await Promise.all(iconKeys.map(async (key) => {
     try {
-      __newIconsCache[key] = await loadRemoteImage(`/assets/icons/${key}.png`);
+      __newIconsCache[key] = await loadImage(`/assets/icons/${key}.png`);
     } catch(e) {
       console.warn("Could not preload icon", key);
     }
