@@ -4909,7 +4909,7 @@ export function F1CarouselBuilder({
                         <span className="block text-[10px] font-extrabold">{labelText}</span>
                         <span className="block text-[8px] text-white/40">{dimensionsText}</span>
                       </span>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -5344,7 +5344,7 @@ export function F1CarouselBuilder({
                         <Lock className="h-3.5 w-3.5 shrink-0 text-[#F5F906]" />
                       )}
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
