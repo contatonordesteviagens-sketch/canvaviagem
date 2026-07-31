@@ -2802,6 +2802,32 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         title="Seus 3 anúncios gratuitos já foram usados"
         description="Você pode continuar editando e salvando este projeto. Para baixar novas artes sem limite, libere o Plano Elite."
       />
+
+      {maximizedImage && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 p-4 md:p-8 backdrop-blur-md"
+          onClick={() => setMaximizedImage(null)}
+        >
+          <div
+            className="relative max-h-full max-w-full overflow-hidden rounded-2xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setMaximizedImage(null)}
+              className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/50 text-white backdrop-blur-md transition-colors hover:bg-black/80"
+              title="Fechar"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <img
+              src={maximizedImage}
+              alt="Imagem ampliada"
+              className="max-h-[85vh] w-auto max-w-[95vw] rounded-xl object-contain"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

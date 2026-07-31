@@ -4891,12 +4891,14 @@ export function F1CarouselBuilder({
                 ] as const).map(([format, Icon, labelText, dimensionsText]) => {
                   const active = carouselFormat === format;
                   return (
-                    <button
+                    <div
                       key={format}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       aria-pressed={active}
                       onClick={() => setCarouselFormat(format)}
-                      className={`flex min-h-12 items-center gap-2.5 rounded-xl border px-3 text-left transition-colors ${
+                      onKeyDown={(e) => e.key === "Enter" && setCarouselFormat(format)}
+                      className={`flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl border px-3 text-left transition-colors ${
                         active
                           ? "border-[#F5F906] bg-[#F5F906]/10 text-white"
                           : "border-white/10 bg-white/[0.02] text-white/65 hover:bg-white/[0.06] hover:text-white"
@@ -5114,17 +5116,24 @@ export function F1CarouselBuilder({
                   {slides.map((slide, index) => {
                   const isActive = activeIndex === index;
                   return (
-                    <button
+                    <div
                       key={slide.id}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setActiveIndex(index)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setActiveIndex(index);
+                        }
+                      }}
                       aria-label={`${isEs ? "Abrir imagen" : "Abrir imagem"} ${index + 1}`}
                       aria-pressed={isActive}
                       style={{
                         flex: "0 0 auto",
                         width: `${thumbWidth}px`,
                       }}
-                      className={`snap-center group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-[#121316] text-left transition-all ${
+                      className={`snap-center group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-[#121316] text-left transition-all cursor-pointer ${
                         isActive
                           ? "border-[#F5F906] shadow-[0_0_24px_rgba(245,249,6,0.22)] ring-1 ring-[#F5F906]/40"
                           : "border-white/12 hover:border-white/30 hover:-translate-y-0.5"
@@ -5203,7 +5212,7 @@ export function F1CarouselBuilder({
                           <Lock className="h-3 w-3 shrink-0 text-[#F5F906]" />
                         )}
                       </div>
-                    </button>
+                    </div>
                   );
                   })}
                 </div>
@@ -5242,14 +5251,21 @@ export function F1CarouselBuilder({
               {slides.map((slide, index) => {
                 const isActive = activeIndex === index;
                 return (
-                  <button
+                  <div
                     key={slide.id}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setActiveIndex(index)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setActiveIndex(index);
+                      }
+                    }}
                     aria-label={`${isEs ? "Abrir imagen" : "Abrir imagem"} ${index + 1}`}
                     aria-pressed={isActive}
                     style={{ width: "100%", maxWidth: `${thumbWidth}px` }}
-                    className={`group relative mx-auto flex flex-col overflow-hidden rounded-2xl border-2 bg-[#121316] text-left transition-all ${
+                    className={`group relative mx-auto flex flex-col overflow-hidden rounded-2xl border-2 bg-[#121316] text-left transition-all cursor-pointer ${
                       isActive
                         ? "border-[#F5F906] shadow-[0_0_24px_rgba(245,249,6,0.22)] ring-1 ring-[#F5F906]/40"
                         : "border-white/12 hover:border-white/30 hover:-translate-y-0.5"
