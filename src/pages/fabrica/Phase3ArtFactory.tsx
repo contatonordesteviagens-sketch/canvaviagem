@@ -2612,12 +2612,35 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                       </div>
                     ))}
                     
+                    <div className="flex items-center gap-1.5 pl-2 ml-1 border-l border-white/10">
+                      {[
+                        { name: "Solar", p: "#F59E0B", s: "#171717" },
+                        { name: "Premium", p: "#1E293B", s: "#D4A853" },
+                        { name: "Oceano", p: "#0E7490", s: "#171717" },
+                        { name: "Floresta", p: "#166534", s: "#171717" },
+                      ].map((pal) => (
+                        <button
+                          key={pal.name}
+                          type="button"
+                          title={pal.name}
+                          onClick={() => {
+                            setPrimaryColor(pal.p);
+                            setSecondaryColor(pal.s);
+                          }}
+                          className="flex h-4 w-6 overflow-hidden rounded-full border border-white/20 hover:scale-110 transition-transform hover:border-white/60 shrink-0"
+                        >
+                          <div className="h-full w-1/2" style={{ backgroundColor: pal.p }} />
+                          <div className="h-full w-1/2" style={{ backgroundColor: pal.s }} />
+                        </button>
+                      ))}
+                    </div>
+
                     <button
                       type="button"
                       onClick={() => generateNext()}
                       disabled={loading}
                       title="Aplicar cores"
-                      className="ml-1 grid h-7 w-7 place-items-center rounded-lg bg-[#F5F906] text-black hover:scale-105 transition-transform disabled:opacity-50"
+                      className="ml-2 grid h-7 w-7 place-items-center rounded-lg bg-[#F5F906] text-black hover:scale-105 transition-transform disabled:opacity-50 shrink-0"
                     >
                       <RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                     </button>
