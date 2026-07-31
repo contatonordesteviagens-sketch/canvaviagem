@@ -111,9 +111,10 @@ serve(async (req) => {
     });
     const db = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
-    const { data: userData, error: userError } = await authClient.auth.getUser();
-    const userId = userData?.user?.id;
-    if (userError || !userId) return jsonResponse({ error: "Sessão inválida" }, 401);
+    const token = authHeader.slice("Bearer ".length).trim();
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    const userId = typeof claimsData?.claims?.sub === "string" ? claimsData.claims.sub : null;
+    if (claimsError || !userId) return jsonResponse({ error: "Sessão inválida" }, 401);
 
     const body = await req.json().catch(() => ({}));
     const action = typeof body.action === "string" ? body.action : "status";
