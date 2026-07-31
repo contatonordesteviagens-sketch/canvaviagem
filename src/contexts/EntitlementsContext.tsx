@@ -12,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
 import {
   ensureFreshSupabaseSession,
-  isSupabaseAuthError,
 } from "@/lib/supabase-session";
 
 export type AccountTier =
