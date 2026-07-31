@@ -78,7 +78,7 @@ export default function ArtTweakEditor({
   
   // Drag & Marquee Refs
   const stageRef = useRef<HTMLDivElement | null>(null);
-  const dragRef = useRef<{ type?: 'move' | 'scale'; corner?: string; items: { id: string; startDx: number; startDy: number; startScale: number, startScaleX: number, startScaleY: number }[]; x: number; y: number } | null>(null);
+  const dragRef = useRef<{ type?: 'move' | 'scale'; corner?: string; items: { id: string; w: number; h: number; startDx: number; startDy: number; startScale: number, startScaleX: number, startScaleY: number }[]; x: number; y: number } | null>(null);
   const [marquee, setMarquee] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
   const marqueeRef = useRef<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
   
