@@ -2579,50 +2579,58 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
 
             {generatedImages.length > 0 && (
               <>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div className="flex-1">
                     <h3 className="text-sm font-bold text-white">Imagem gerada</h3>
                     <p className="text-[11px] text-white/50">A última arte aparece abaixo e já está pronta para baixar.</p>
                   </div>
-                  {lockMode ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={handleOpenCarousel}
-                        disabled={!generatedImage}
-                        className="shrink-0 rounded-xl bg-[#F5F906] px-3 py-2 text-xs font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        Avançar para o Carrossel (F2)
-                      </button>
-                      {onSkipToSite && (
-                        <button
-                          type="button"
-                          onClick={onSkipToSite}
-                          disabled={!generatedImage}
-                          className="shrink-0 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-2 text-xs font-extrabold transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 hover:bg-blue-500/30"
+                  
+                  <div className="flex items-center gap-3 bg-white/[0.03] p-1.5 rounded-xl border border-white/5">
+                    {[
+                      { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo" },
+                      { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
+                    ].map(({ label, value, setter, hint }) => (
+                      <div key={label} className="flex items-center gap-1.5 px-2">
+                        <label
+                          className="relative w-7 h-7 rounded-full cursor-pointer overflow-hidden border border-white/20 hover:border-white/60 transition-all shadow-md shrink-0"
+                          style={{ background: value }}
+                          title="Clique para mudar a cor da arte"
                         >
-                          Avançar para o Site (F3)
-                        </button>
-                      )}
-                    </>
-                  ) : (
+                          <input
+                            type="color"
+                            value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"}
+                            onChange={(e) => setter(e.target.value)}
+                            onBlur={() => {
+                              if (generatedImages.length > 0) generateNext();
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                          />
+                        </label>
+                        <div className="flex flex-col hidden sm:flex">
+                          <span className="text-[9px] font-semibold text-white/80 leading-none">{label}</span>
+                        </div>
+                      </div>
+                    ))}
+                    
                     <button
                       type="button"
-                      onClick={() => setCreativeMode("carousel")}
-                      disabled={!generatedImage}
-                      className="shrink-0 rounded-xl bg-[#F5F906] px-3 py-2 text-xs font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                      onClick={() => generateNext()}
+                      disabled={loading}
+                      title="Aplicar cores"
+                      className="ml-1 grid h-7 w-7 place-items-center rounded-lg bg-[#F5F906] text-black hover:scale-105 transition-transform disabled:opacity-50"
                     >
-                      Transformar em carrossel
+                      <RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                     </button>
-                  )}
+                  </div>
+
                   <button
                     type="button"
                     onClick={downloadPNG}
                     disabled={!generatedImage}
-                    className="shrink-0 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-bold text-white hover:bg-white/[0.12] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="shrink-0 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.08] px-4 py-2 text-xs font-bold text-white hover:bg-white/[0.12] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
                     <Download className="w-4 h-4" />
-                    Baixar PNG
+                    Baixar imagens
                   </button>
                 </div>
 
