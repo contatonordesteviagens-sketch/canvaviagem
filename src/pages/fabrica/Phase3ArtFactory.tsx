@@ -11,7 +11,7 @@ import { composeTravelAd, formatAdPhone, type PaymentMode } from "@/lib/fabrica-
 import { GeneratedArt } from "@/lib/fabrica-art-types";
 import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
-  Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw,
+  Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw, Maximize2,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
   Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2, Copy, ClipboardCheck, FileText, Key,
   LockKeyhole,
@@ -84,10 +84,6 @@ const DEFAULT_SUFFIXES_OFERTA = new Set(["por pessoa", "por casal", "por pacote"
 const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
 
 // ====== Padronização de CORES por categoria ======
-// Estas cores são aplicadas automaticamente ao trocar de categoria, garantindo
-// um visual coerente com o "tom" daquela categoria (oferta = âmbar/quente,
-// experiência = navy/dourado luxo). O usuário pode customizar livremente depois;
-// só são re-aplicadas se ele ainda estiver usando os defaults da OUTRA categoria.
 const DEFAULT_COLORS_OFERTA = { primary: "#080808", secondary: "#F5F906" };
 const DEFAULT_COLORS_EXPERIENCIA = { primary: "#080808", secondary: "#F5F906" };
 const UI_ACCENT = "#F5F906";
@@ -106,18 +102,8 @@ const sameHighlightTexts = (items: Highlight[], defaults: Highlight[]) =>
   items.length === defaults.length &&
   items.every((item, index) => item.text === defaults[index]?.text);
 
-// Paleta enxuta: 10 cores distintas (sem repetir tons próximos)
 const PRESET_COLORS = [
-  "#000000", // preto
-  "#ffffff", // branco
-  "#6b7280", // cinza
-  "#0c2340", // azul marinho
-  "#2563eb", // azul
-  "#7c3aed", // roxo
-  "#dc2626", // vermelho
-  "#f97316", // laranja
-  "#facc15", // amarelo
-  "#16a34a", // verde
+  "#000000", "#ffffff", "#6b7280", "#0c2340", "#2563eb", "#7c3aed", "#dc2626", "#f97316", "#facc15", "#16a34a",
 ];
 
 type Currency = "BRL" | "USD" | "EUR" | "ARS" | "GBP";
@@ -129,50 +115,33 @@ const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: s
   { id: "ARS", symbol: "AR$", label: "Peso AR (AR$)", locale: "es-AR" },
 ];
 
-/**
- * Formata um valor de preço aplicando separador de milhar e casa decimal
- * conforme a moeda selecionada. Aceita strings com vírgula ou ponto como decimal.
- * Ex: "4124312"  → BRL: "4.124.312,00"  USD: "4,124,312.00"
- *     "1499,90"  → BRL: "1.499,90"
- */
 const formatPriceValue = (raw: string, currency: Currency, assumeCents = false, noCents = false): string => {
   const value = (raw || "").trim();
   if (!value) return "";
   
-  // Limpa tudo exceto números e separadores existentes
   const cleaned = value.replace(/[^\d.,]/g, "");
   const digits = cleaned.replace(/\D/g, "");
   if (!digits) return "";
 
   let num = 0;
   
-  // 🛡️ REGRA DE OURO: O cálculo do valor escalar numérico NÃO PODE depender de `noCents`.
-  // Nós extraímos o valor REAL contido na string e apenas FORMATAMOS depois.
   if (assumeCents) {
-    // Se assumeCents for true (vindo de digitação direta sem separador), trata os últimos 2 como decimais
     num = parseInt(digits, 10) / 100;
   } else {
-    // Tenta encontrar o último separador decimal para extrair a parte inteira e fracionária.
     const lastComma = cleaned.lastIndexOf(",");
     const lastDot = cleaned.lastIndexOf(".");
     const lastSep = Math.max(lastComma, lastDot);
     
     if (lastSep !== -1) {
-      // Pega o texto após o separador e valida se são no máximo 2 dígitos
       const afterSepText = cleaned.slice(lastSep + 1).replace(/\D/g, "");
-      
-      // Se tiver mais de 2 dígitos após o separador, provavelmente é separador de milhar em digitação errática
       if (afterSepText.length > 2) {
-         // Trata tudo como dígitos contínuos, valor bruto
          num = parseInt(digits, 10);
       } else {
-         // Interpretamos como decimal legítimo
          const intPart = cleaned.slice(0, lastSep).replace(/\D/g, "");
          const decPart = afterSepText.slice(0, 2);
          num = parseInt(intPart || "0", 10) + parseInt(decPart.padEnd(2, "0"), 10) / 100;
       }
     } else {
-      // Sem nenhum separador, é um inteiro puro
       num = parseInt(digits, 10);
     }
   }
@@ -204,13 +173,11 @@ const formatPriceWhileTyping = (raw: string, currency: Currency): string => {
   const value = stripCurrencyFromPrice(raw, currency);
   if (!value.trim()) return "";
   
-  // Se contiver letras, não tenta formatar como número (permite "Grátis", "Sob consulta")
   if (/[A-Za-zÀ-ÿ]/.test(value)) return value;
   
   const digits = value.replace(/\D/g, "");
   const hasManualSeparator = /[.,]/.test(value);
   
-  // Assume centavos se houver muitos dígitos e nenhum separador foi digitado ainda
   const shouldAssumeCents = digits.length >= 4 && !hasManualSeparator;
   
   if (digits.length >= 3 || hasManualSeparator) {
@@ -224,8 +191,8 @@ interface PaymentPreset {
   name: string;
   emoji: string;
   description: string;
-  hint: string;          // dica do que digitar
-  defaultLabel?: string; // label padrão
+  hint: string;
+  defaultLabel?: string;
 }
 
 const PAYMENT_PRESETS: PaymentPreset[] = [
@@ -252,7 +219,6 @@ const AD_TITLE_PRESETS: string[] = [
   "Vamos para {destino}?",
 ];
 
-// Presets de TÍTULO para a categoria "Experiência de Destino" (luxo / sensação)
 const AD_TITLE_PRESETS_EXPERIENCIA: string[] = [
   "Sua próxima viagem é {destino}",
   "Viva o melhor de {destino}",
@@ -266,7 +232,6 @@ const AD_TITLE_PRESETS_EXPERIENCIA: string[] = [
   "Descubra o lado secreto de {destino}",
 ];
 
-// Nomes "promo" sofisticados para Experiência de Destino
 const PROMO_NAME_PRESETS_EXPERIENCIA: string[] = [
   "EXPERIÊNCIA EXCLUSIVA",
   "MOMENTOS INESQUECÍVEIS",
@@ -285,8 +250,6 @@ const PROMO_NAME_PRESETS: string[] = [
   "QUEIMA DE ESTOQUE"
 ];
 
-// Defaults reconhecidos como "padrão da Oferta" — autorizados a serem sobrescritos
-// quando o usuário troca de categoria sem ter customizado.
 const DEFAULT_PROMO_NAMES_OFERTA = new Set(["OFERTA ESPECIAL", "Oferta Especial", "BLACK FRIDAY"]);
 const DEFAULT_AD_TITLES_OFERTA = new Set(["Pacote {destino}", "Conheça o melhor de {destino}", "Descubra {destino}"]);
 const DEFAULT_PROMO_NAMES_EXPERIENCIA = new Set(PROMO_NAME_PRESETS_EXPERIENCIA);
@@ -305,7 +268,6 @@ const TITLE_NEIGHBORS: Record<string, string[]> = {
   "Explore {destino}": ["Descubra {destino}", "{destino} vai te surpreender"],
   "Partiu {destino}": ["Vamos para {destino}?", "{destino} te espera"],
   "Vamos para {destino}?": ["Partiu {destino}", "{destino} te espera"],
-  // Vizinhos de Experiência
   "Sua próxima viagem é {destino}": ["Viva o melhor de {destino}", "Momentos inesquecíveis em {destino}"],
   "Viva o melhor de {destino}": ["Sua próxima viagem é {destino}", "Experiência exclusiva em {destino}"],
   "Momentos inesquecíveis em {destino}": ["Desperte os sentidos em {destino}", "Prazer em cada detalhe · {destino}"],
@@ -357,11 +319,6 @@ const shuffleArray = <T,>(arr: T[]): T[] => {
   return a;
 };
 
-/**
- * Escolhe `count` estratégias DISTINTAS para a categoria, evitando ao máximo
- * repetir as estratégias usadas na geração anterior. Se o pool for muito pequeno
- * para evitar todas, prioriza as que estão fora do histórico mais recente.
- */
 const pickDistinctLocalStrategies = (
   categoria: CategoriaId,
   _seed: number,
@@ -370,8 +327,6 @@ const pickDistinctLocalStrategies = (
 ): StrategyId[] => {
   const pool = CATEGORY_LOCAL_STRATEGIES[categoria];
   const desired = Math.min(count, pool.length);
-  // Prefere estratégias FORA do histórico recente; se faltar, completa com as do histórico
-  // (mas embaralhadas para nunca repetir exatamente a mesma sequência).
   const fresh = shuffleArray(pool.filter((s) => !history.includes(s)));
   const stale = shuffleArray(pool.filter((s) => history.includes(s)));
   const ordered = [...fresh, ...stale];
@@ -384,17 +339,10 @@ const pickPhotoRefs = (
   _seed: number,
   count: number,
 ) => {
-  // SEMPRE usa a foto que o usuário selecionou como primeira.
-  // Se não houver seleção, cai para a primeira da lista.
   const primary = selectedPhotoUrl || photos[0]?.url || "";
   return Array.from({ length: count }, () => primary);
 };
 
-// ============================================================
-// GERADOR DE LEGENDAS / COPY para Instagram
-// Gera 3 variações de texto adaptadas aos dados do anúncio,
-// sem chamadas à IA — 100% local, instantâneo.
-// ============================================================
 interface CaptionVars {
   destination: string;
   price: string;
@@ -417,7 +365,6 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   const hasPrice = !!priceStr && v.paymentMode !== "free_quote";
   const hasInstall = !!v.installments.trim() && v.paymentMode === "installments";
   const period = v.travelPeriod.trim();
-  // Fix #4: Usa nome real da agência na legenda; fallback amigável genérico
   const agency = v.agencyName.trim() || "nossa equipe especializada";
   const ig = v.instagram.trim() ? `@${v.instagram.replace(/^@/, "").trim()}` : "";
   const wa = v.whatsapp.trim();
@@ -427,7 +374,6 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
     ? `📲 Nos siga: ${ig}`
     : "📲 Entre em contato para reservar!";
 
-  // Benefícios: pega os 3 primeiros highlights como bullet points
   const benefitLines = v.highlights
     .slice(0, 4)
     .map((h) => `✅ ${h.text}`)
@@ -442,29 +388,17 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   const periodLine = period ? `🗓️ ${period}` : "";
 
   if (v.isExperience) {
-    // Variante Experiência: estilo editorial/luxo
     const caps: string[] = [
-      // Variação 1 — Cinematográfica
       `✨ ${destUp} vai te surpreender.\n\nExperiências como essa não se esquecem — e você merece vivê-las.\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}${contactLine}`,
-
-      // Variação 2 — Direta com CTA
       `🌟 Já imaginou ${v.isExperience ? "viver" : "conhecer"} ${dest}?\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}Cada detalhe foi pensado para você. Vamos planejar juntos?\n\n${contactLine}`,
-
-      // Variação 3 — Curiosidade/teaser
       `Tem destino que transforma. ${dest} é um deles. 🧳\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}💌 Reserve com a ${agency}. Parceria que entende o que você quer de uma viagem.\n\n${contactLine}`,
     ];
     return caps;
   }
 
-  // Variante Oferta: 3 estilos distintos
   const caps: string[] = [
-    // Variação 1 — Benefícios/Inclusos
     `🚨 ${v.promoName || "OFERTA ESPECIAL"} — ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n⚠️ Vagas limitadas! Não perca essa oportunidade.\n\n${contactLine}`,
-
-    // Variação 2 — SEO / Posicionamento Google
     `${dest}: Pacote completo com a ${agency} 🌎\n\nProcurando o melhor pacote para ${dest}? Veja o que está incluso:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nAgência especializada em ${dest} — atendimento humanizado e suporte 24h. Solicite seu orçamento.\n\n${contactLine}`,
-
-    // Variação 3 — Storytelling / CTA direto
     `Partiu ${dest}? ✈️\n\nMontamos um pacote COMPLETO pra você não se preocupar com nada:\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n👉 Me chama agora e garanta sua vaga!\n\n${contactLine}`,
   ];
   return caps;
@@ -480,10 +414,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   const { data: savedProjects } = useDiagnosticos();
   const [creativeMode, setCreativeMode] = useState<"ad" | "carousel">(initialMode);
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
-  
-
-  
-
   const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
   const [lastTemplateId, setLastTemplateId] = useState<string | null>(() => localStorage.getItem("fabrica_last_template_id"));
   const [recentTemplateIds, setRecentTemplateIds] = useState<string[]>(() => {
@@ -492,10 +422,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   });
   const [format, setFormatState] = useState<"square" | "story">(state.lastFormat || "story");
   const setFormat = (f: "square" | "story") => { setFormatState(f); update({ lastFormat: f }); };
-
   const [destinationState, setDestinationState] = useState(state.destinos?.[0] || "");
   const destination = destinationState;
-  // Persiste destino no contexto/localStorage para sobreviver à navegação F1↔F3↔F4.
   const setDestination = (v: string) => {
     setDestinationState(v);
     const rest = (state.destinos || []).slice(1);
@@ -505,12 +433,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
   const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
   const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
-  // V3: opções extras
   const [hideCents, setHideCentsState] = useState<boolean>(!!state.hideCents);
   const setHideCents = (v: boolean) => {
     setHideCentsState(v);
     update({ hideCents: v });
-    // NUNCA sobrescreve o valor bruto 'price' no state, para não corromper a digitação original do usuário!
   };
   const [pricePrefix, setPricePrefixState] = useState<string>((state as any).pricePrefix ?? "a partir de");
   const setPricePrefix = (v: string) => { setPricePrefixState(v); update({ pricePrefix: v } as any); };
@@ -518,13 +444,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
   const [totalOverride, setTotalOverrideState] = useState<string>(state.totalOverride || "");
   const setTotalOverride = (v: string) => { setTotalOverrideState(v); update({ totalOverride: v }); };
-  // V3: faixa azul do Pix (editável e ocultável)
   const [showPixBanner, setShowPixBannerState] = useState<boolean>((state as any).showPixBanner !== false);
   const setShowPixBanner = (v: boolean) => { setShowPixBannerState(v); update({ showPixBanner: v } as any); };
   const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
   const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
-
-  // Tipografia global (família + escala título/descrição + cor de override)
   const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Montserrat");
   const setFontFamily = (v: string) => { setFontFamilyState(v); update({ fontFamily: v } as any); };
   const [titleScale, setTitleScaleState] = useState<number>(((state as any).titleScale as number) || 1);
@@ -534,25 +457,21 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   const [textColorOverride, setTextColorOverrideState] = useState<string>((state as any).textColorOverride || "");
   const [autoTextColor, setAutoTextColor] = useState<string>("#ffffff");
   const [autoLuminance, setAutoLuminance] = useState<number>(0.5);
-  // Cor efetiva: se o usuário escolheu manualmente, respeita; senão usa auto-contraste.
   const effectiveTextColor = textColorOverride || autoTextColor;
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
   const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
   const [advancedSizeOpen, setAdvancedSizeOpen] = useState(false);
   const [colorsOpen, setColorsOpen] = useState(false);
-  // "Cor dos textos base": força textos claros ou escuros nas artes
   const [baseTextMode, setBaseTextModeState] = useState<"light" | "dark">(
     (((state as any).baseTextMode as "light" | "dark") || "light")
   );
   const setBaseTextMode = (m: "light" | "dark") => {
     setBaseTextModeState(m);
     update({ baseTextMode: m } as any);
-    // sincroniza com o override de cor de texto já existente
     setTextColorOverride(m === "light" ? "#FFFFFF" : "#0A0A0A");
   };
   const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
 
-  // Carrega Google Font dinamicamente quando o usuário escolhe uma família custom
   useEffect(() => {
     if (!fontFamily || fontFamily === "Inter") return;
     const id = `gf-${fontFamily.replace(/\s+/g, "-").toLowerCase()}`;
@@ -562,21 +481,17 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     link.rel = "stylesheet";
     link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;600;700;800;900&display=swap`;
     document.head.appendChild(link);
-    // Garante que o canvas use a fonte já carregada antes de renderizar
     if ((document as any).fonts?.load) {
       (document as any).fonts.load(`900 32px "${fontFamily}"`).catch(() => {});
       (document as any).fonts.load(`400 16px "${fontFamily}"`).catch(() => {});
     }
   }, [fontFamily]);
 
-  // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
-
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
   const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
 
-  
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -606,18 +521,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         canvas.height = height;
         const ctx = canvas.getContext("2d");
         ctx?.drawImage(img, 0, 0, width, height);
-        
-        // Limpa chaves pesadas legadas para liberar espaço no localStorage antes de salvar a nova logo
-        try {
-          Object.keys(localStorage).forEach((key) => {
-            if (key.startsWith("fabrica-heavy-v1:") && key !== "fabrica-heavy-v1:logoBase64") {
-              localStorage.removeItem(key);
-            }
-          });
-        } catch (e) {
-          console.warn("Clean storage failed", e);
-        }
-
         update({ logoBase64: canvas.toDataURL("image/png") });
         toast.success("Logo adicionada com sucesso!");
       };
@@ -630,7 +533,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     const previousCategoria = categoria;
     setCategoriaState(c);
     update({ lastCategoria: c });
-    // Troca defaults de promoName / adTitle quando ainda são padrões da outra categoria
     setPromoNameState((prev) => {
       if (c === "experiencia_destino" && DEFAULT_PROMO_NAMES_OFERTA.has(prev)) {
         const next = PROMO_NAME_PRESETS_EXPERIENCIA[0];
@@ -685,9 +587,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       }
       return prev;
     });
-
-    // Padronização de CORES por categoria — só sobrescreve se o usuário ainda
-    // estiver com os defaults da OUTRA categoria (preserva customização manual).
     setPrimaryColorState((prevP) => {
       const prevS = secondaryColor;
       if (c === "experiencia_destino" && isDefaultColorsOferta(prevP, prevS)) {
@@ -702,9 +601,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       }
       return prevP;
     });
-
-    // Limpa override manual de cor de texto ao trocar categoria —
-    // o auto-contraste (claro/escuro baseado na imagem) volta a valer.
     setTextColorOverrideState("");
     update({ textColorOverride: "" } as any);
   };
@@ -717,8 +613,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     : "Pacote {destino}";
   const [promoName, setPromoNameState] = useState(state.lastPromoName || initialPromoDefault);
   const setPromoName = (n: string) => { setPromoNameState(n); update({ lastPromoName: n }); };
-
-  // Título do anúncio (com presets editáveis usando {destino})
   const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || initialAdTitleDefault);
   const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
   const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
@@ -739,10 +633,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     "Porto de Galinhas", "Búzios", "Cancún", "Punta Cana", "Paris",
     "Orlando", "Lisboa", "Santiago", "Bariloche", "Maldivas",
   ]));
-
   const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
   const setPaymentMode = (m: PaymentMode) => { setPaymentModeState(m); update({ lastPaymentMode: m }); };
-
   const [paymentLabelState, setPaymentLabelState] = useState(state.lastPaymentLabel || "");
   const setPaymentLabel = (label: string) => { setPaymentLabelState(label); update({ lastPaymentLabel: label }); };
   const [paymentSuffixState, setPaymentSuffixState] = useState(() => {
@@ -759,10 +651,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     : DEFAULT_COLORS_OFERTA;
   const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || initialCategoryColors.primary);
   const [secondaryColor, setSecondaryColorState] = useState(state.secondaryColor || initialCategoryColors.secondary);
-  
   const setPrimaryColor = (c: string) => { setPrimaryColorState(c); update({ primaryColor: c }); };
   const setSecondaryColor = (c: string) => { setSecondaryColorState(c); update({ secondaryColor: c }); };
-
   const [highlights, setHighlightsState] = useState<Highlight[]>(() => {
     const savedHighlights = state.lastHighlights || DEFAULT_HIGHLIGHTS;
     if ((state.lastCategoria as CategoriaId) === "experiencia_destino" && sameHighlightTexts(savedHighlights, DEFAULT_HIGHLIGHTS)) {
@@ -775,25 +665,21 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   const [newHl, setNewHl] = useState("");
   const [loading, setLoading] = useState(false);
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
-  const [isBatchMode, setIsBatchMode] = useState(false); // Nova feature: Lote A/B (3 variações)
-  const [variationsOpen, setVariationsOpen] = useState(false); // Versão do Layout colapsável
+  const [isBatchMode, setIsBatchMode] = useState(false);
+  const [variationsOpen, setVariationsOpen] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<GeneratedArt | null>(null);
   const [generatedImages, setGeneratedImages] = useState<GeneratedArt[]>([]);
+  const [maximizedImage, setMaximizedImage] = useState<string | null>(null);
   const [variationCounter, setVariationCounter] = useState(0);
   const [forcedVariant, setForcedVariant] = useState<number | null>(null);
-  // Legendas/Copy geradas automaticamente junto com as imagens
   const [adCaptions, setAdCaptions] = useState<string[]>([]);
   const [selectedCaption, setSelectedCaption] = useState<string | null>(null);
   const [captionCopied, setCaptionCopied] = useState(false);
-  // Histórico das últimas variantes do compositor canvas (modo Sua Imagem) para forçar rotação
   const variantHistoryRef = useRef<number[]>([]);
-  // ADMIN — metadados da arte (variação + opções usadas) para o editor de ajuste fino
   const artMetaRef = useRef<Map<string, { options: any; variant: number; category: string; format: string; tweaks?: ArtTweakMap }>>(new Map());
   const [artEditorTarget, setArtEditorTarget] = useState<{ image: string; meta: { options: any; variant: number; category: string; format: string; tweaks?: ArtTweakMap } } | null>(null);
   useEffect(() => { void loadArtTweakPresets(); }, []);
-  // Proteção anti-loop: limita fallbacks automáticos da IA Pura
   const retryCountRef = useRef<number>(0);
-  // Versão forçada (null = automático/rotação). 0..4 fixa a variante exata para correções cirúrgicas.
   const [lastProvider, setLastProvider] = useState<"secure_gemini" | null>(() => {
     return (localStorage.getItem("fabrica_last_provider") as "secure_gemini") || "secure_gemini";
   });
@@ -894,7 +780,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     initialCategoryColors.secondary,
   ]);
 
-  // Zerar limites de geração diária de todos os usuários (uma única vez por nova versão)
   useEffect(() => {
     const resetKey = "fabrica_limits_reset_v4";
     if (!localStorage.getItem(resetKey)) {
@@ -905,7 +790,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       setAiPureCount(0);
       setGenerationCount(0);
       setLastProvider("secure_gemini");
-      // Fix #6: Não exibir toast técnico para o usuário final
       console.log("[Fábrica] Limites de geração resetados para versão v4.");
     }
   }, []);
@@ -913,11 +797,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   useEffect(() => {
     const key = "fabrica-render-engine-version";
     if (localStorage.getItem(key) === FABRICA_RENDER_ENGINE_VERSION) return;
-    // 🛡️ CACHE BUST: Limpa imagens geradas E o cache da logo antiga
     localStorage.removeItem("fabrica-heavy-v1:generatedAdImage");
     localStorage.removeItem("fabrica_last_template_id");
     localStorage.removeItem("fabrica_recent_template_ids");
-    // Reseta o auto-sync da Fase 4 para que os novos dados sejam re-sincronizados
     localStorage.removeItem("fabrica-phase4-autosync-v1");
     Object.keys(localStorage)
       .filter((k) => k.startsWith("fabrica_generation_cycle_") || k.startsWith("fabrica_strategy_history_") || k.startsWith("fabrica_last_template_ids_") || k.startsWith("fabrica_recent_template_ids_"))
@@ -928,24 +810,18 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     localStorage.setItem(key, FABRICA_RENDER_ENGINE_VERSION);
   }, [systemUpdate]);
 
-  // ===== Modo de geração =====
   const [genMode, setGenMode] = useState<GenMode>("photo");
   const [searchEngine, setSearchEngine] = useState<"pexels" | "google" | "galeria" | "geradas">("pexels");
-  // Foto Real (Pexels/Google)
   const [photoQuery, setPhotoQuery] = useState("");
   const [photos, setPhotos] = useState<Array<{ id: number; url: string; thumb: string; alt: string }>>([]);
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string>("");
   const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [visiblePhotoCount, setVisiblePhotoCount] = useState(3);
-  // Sua imagem
   const [customSource, setCustomSource] = useState<CustomSource>("upload");
-  const [customImageData, setCustomImageData] = useState<string>(""); // base64 (upload) ou URL (link) — só em memória
+  const [customImageData, setCustomImageData] = useState<string>("");
   const [customLink, setCustomLink] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ====== Auto-contraste: detecta luminância média da imagem ativa e
-  // define cor de texto padrão (branca em fundos escuros, preta em fundos claros).
-  // Garante nitidez/legibilidade automaticamente; o usuário ainda pode sobrescrever.
   useEffect(() => {
     const activeUrl =
       genMode === "photo" ? selectedPhotoUrl :
@@ -977,7 +853,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         const lum = n ? sum / n : 0.5;
         setAutoTextColor(lum > 0.55 ? "#0d0d0d" : "#ffffff");
       } catch {
-        // tainted canvas → fallback seguro (branco com sombra cobre a maioria dos casos)
         setAutoTextColor("#ffffff");
       }
     };
@@ -1000,21 +875,12 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     }
     const reader = new FileReader();
     reader.onload = () => {
-      // base64 vive APENAS em memória do browser → nunca toca o banco
       setCustomImageData(String(reader.result || ""));
       toast.success("Imagem carregada (apenas em memória)");
     };
     reader.onerror = () => toast.error("Erro ao ler imagem");
     reader.readAsDataURL(file);
   };
-
-  const TRAVEL_TERMS_CYCLE = [
-    "beach", "tropical beach", "ocean", "coastline", "sea", "paradise",
-    "landscape", "nature", "tourism", "travel", "resort", "scenic",
-    "aerial view", "sunset beach", "vacation", "holiday destination",
-    "travel photography", "adventure", "waterfall", "mountain",
-    "city tourism", "skyline", "cultural travel", "sightseeing",
-  ];
 
   const searchPhotos = async (overrideQuery?: string) => {
     if (!user) {
@@ -1030,19 +896,11 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     setSearchingPhotos(true);
     setPhotos([]);
     setSelectedPhotoUrl("");
-
     setPhotoQuery(q);
-
-
     try {
       const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
-        body: { 
-          query: q, 
-          perPage: 12, 
-          engine: searchEngine 
-        }
+        body: { query: q, perPage: 12, engine: searchEngine }
       });
-
       if (error) throw error;
       if (data?.photos) {
         setPhotos(data.photos);
@@ -1111,19 +969,12 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     });
   };
 
-  // 🌐 Integração Inteligente de Pacotes com o Site F2 (Acumulativo)
-  // Pega o último anúncio gerado e o insere no Site, preferencialmente usando a FOTO LIMPA
-  // para o fundo do site, em vez da arte poluída com texto do Canva, conforme exigido pelo usuário.
   const syncGeneratedPackageToSite = async (finalComposedImg: string, sourceCleanImg?: string) => {
     if (!finalComposedImg || !destination.trim()) return;
-
-    // A imagem que vai para o site é PREFERENCIALMENTE a foto limpa de fundo!
     const rawImageToUse = sourceCleanImg || finalComposedImg;
     const imageToUse = await compressImage(rawImageToUse);
-
     const currentPrice = formattedPriceForAd || price;
     const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
-
     const priceLabel = (() => {
       const suffix = paymentSuffix || "por pessoa";
       const pVal = `${sym} ${currentPrice}`;
@@ -1131,10 +982,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       if (paymentMode === "cash") return `À vista ${pVal} ${suffix}`;
       return `${pVal} ${suffix}`;
     })();
-
     const descLines = highlights.slice(0, 4).map((h) => `✅ ${h.text}`).join("\n");
     const period = travelPeriod ? `\n📅 ${travelPeriod}` : "";
-    
     const cleanDest = destination.trim();
     const packageId = `gen-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const usedPackageSlugs = (state.selectedPackages || []).map(
@@ -1150,12 +999,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       ctaLabel: "Reservar",
       isDraft: true,
     };
-
     const currentPackages = state.selectedPackages || [];
     const existingIdx = currentPackages.findIndex(
       (p: any) => (p.title || "").toLowerCase().trim() === cleanDest.toLowerCase()
     );
-
     let updatedPackages = [];
     if (existingIdx > -1) {
       updatedPackages = [...currentPackages];
@@ -1169,9 +1016,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       const base = currentPackages.filter((p: any) => p.title !== "Novo pacote");
       updatedPackages = [newPkg, ...base];
     }
-
-    // Garante APENAS a foto LIMPA (sem a arte poluída de texto do anúncio) no banco do site.
-    // Se não há foto limpa (modo IA pura sem referência), não adiciona nada ao banco de fotos.
     const currentGallery = state.siteContent.galleryImages || [];
     let updatedGallery = [...currentGallery];
     if (sourceCleanImg) {
@@ -1180,11 +1024,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
          updatedGallery = [compressedClean, ...updatedGallery];
        }
     }
-
-    // Inteligência Adicional: Se o site não tem NENHUMA foto de capa no Hero,
-    // usa a primeira foto limpa gerada como capa inicial do site!
     const hasHero = !!state.siteContent.heroImageUrl;
-
     update({
       selectedPackages: updatedPackages,
       lastCleanPhoto: sourceCleanImg || finalComposedImg,
@@ -1207,12 +1047,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     setGenerationError(null);
     if (!accumulate) setGeneratedImages([]);
     try {
-      // Resolve imagem de referência conforme modo
       const refImage =
         genMode === "photo" ? selectedPhotoUrl :
         genMode === "custom" ? (customSource === "upload" ? customImageData : customLink.trim()) :
         "";
-
       if (genMode === "photo" && !refImage) {
         toast.error("Selecione uma foto da galeria primeiro");
         setLoading(false);
@@ -1232,7 +1070,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         setVariationCounter(nextSeed);
         localStorage.setItem(cycleKey, String(nextSeed));
       };
-
       const buildComposeOptions = (
         imgUrl: string,
         localStrategy: string,
@@ -1287,26 +1124,19 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         };
       };
 
-      // ===== MODO FOTO (composição local) — gera 1 ou mais imagens =====
       if (genMode === "photo") {
         toast.info(isBatchMode ? "Gerando lote de 3 variações com foto real" : "Gerando 1 imagem única com foto real");
         const guard = getForbiddenSets(categoria, "photo", format);
         const stratHistKey = scopedStrategyHistoryKey(categoria, "photo", format);
         let stratHistory: StrategyId[] = [];
         try { stratHistory = JSON.parse(localStorage.getItem(stratHistKey) || "[]"); } catch { stratHistory = []; }
-        // Combina histórico local + histórico do guard (proíbe layouts recentes)
         const mergedHist = Array.from(new Set([...stratHistory, ...(guard.layouts as StrategyId[])]));
         const freshSeedPhoto = freshSeed(generationSeed);
-        // Feature Lote A/B: Pede 3 estratégias distintas se isBatchMode estiver ativado
         const numToGen = isBatchMode ? 3 : 1;
         const chosen = pickDistinctLocalStrategies(categoria, freshSeedPhoto, numToGen, mergedHist);
         localStorage.setItem(stratHistKey, JSON.stringify(chosen));
         const photoRefs = pickPhotoRefs(photos, refImage, freshSeedPhoto, chosen.length);
-
-        // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
-
-        // Rotacao deterministica entre variantes do compositor (V0..V8, V2 desativada)
         const TOTAL_VARIANTS_PHOTO = 9;
         const DISABLED_VARIANTS_PHOTO: number[] = [];
         const recentPhoto = variantHistoryRef.current.slice(-2);
@@ -1320,7 +1150,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           ? forcedVariant
           : candidatesPhoto[Math.floor(Math.random() * candidatesPhoto.length)];
         variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantPhoto];
-
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
             const usedVariant = typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % TOTAL_VARIANTS_PHOTO : undefined;
@@ -1347,15 +1176,12 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             } as GeneratedArt;
           })
         );
-
-        // Registra no GenerationGuard (a "headline" no modo foto = promoName, pois é o que aparece)
         registerGeneration(categoria, "photo", format, {
           layoutId: chosen[0],
           headline: promoName || "OFERTA ESPECIAL",
           primary: palette.primary,
           secondary: palette.secondary,
         });
-
         const MAX_VARIATIONS_PHOTO = 3;
         setGeneratedImages((prev) => [...prev, ...composed].slice(-MAX_VARIATIONS_PHOTO));
         setGeneratedImage(composed[composed.length - 1]);
@@ -1367,20 +1193,16 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           allGeneratedAdImages: updatedGenerated
         });
         await syncGeneratedPackageToSite(composed[composed.length - 1].url, refImage);
-
         const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
         finishCycle(composed.length);
-        // Mantém a versão escolhida pelo usuário. Se V5 está selecionada, o próximo clique continua em V5.
         retryCountRef.current = 0;
-
         toast.success(`${composed.length} ${composed.length === 1 ? "variação gerada" : "variações geradas"} com foto real!`);
         requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         return;
       }
 
-      // ===== MODO IA PURA: MOTOR DE LAYOUT DINÂMICO (via Lovable AI Gateway) =====
       if (genMode === "ai") {
         const refImage = selectedPhotoUrl;
         if (!refImage) {
@@ -1388,8 +1210,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           setLoading(false);
           return;
         }
-
-        // 🛡️ FALHA #4 FIX — Gate real de limite diário ANTES de chamar a API
         const AI_PURE_DAILY_LIMIT = 9999;
         const currentCount = getAiPureDailyCount();
         if (currentCount >= AI_PURE_DAILY_LIMIT) {
@@ -1397,28 +1217,21 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           setLoading(false);
           return;
         }
-
-        // 🛡️ FALHA #9 FIX — Pré-carrega Playfair Display antes do canvas para evitar fallback em Times New Roman
         if (document.fonts?.load) {
           try {
             await Promise.race([
               document.fonts.load('900 64px "Playfair Display"'),
               new Promise((_, reject) => setTimeout(() => reject(), 2000))
             ]);
-          } catch { /* fonte não disponível, usa Inter como fallback — aceitável */ }
+          } catch { }
         }
-
         toast.info("Iniciando IA Designer v3...");
-
         const highlightTexts: string[] = (highlights || []).map((h: any) =>
           typeof h === "string" ? h : (h?.text || "")
         ).filter(Boolean);
-
         const numToGen = isBatchMode ? 3 : 1;
         const picks = Array.from({ length: numToGen }, (_, idx) => idx);
-
         try {
-          // 🛡️ Promise.allSettled: 1 falha NÃO derruba as outras 2 variações
           const settled = await Promise.allSettled(
             picks.map(async (idx) => {
               const { data: aiData, error: aiError } = await supabase.functions.invoke("fabrica-design-ai", {
@@ -1437,7 +1250,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                   locale: "pt-BR"
                 },
               });
-
               if (aiError) throw new Error(aiError.message || "Falha na IA");
               if ((aiData as any)?.error) throw new Error((aiData as any).error);
               const layoutJson = (aiData as any)?.layout;
@@ -1447,20 +1259,15 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               return layoutJson;
             })
           );
-
           const results = settled
             .filter((r): r is PromiseFulfilledResult<any> => r.status === "fulfilled")
             .map(r => r.value);
           const failedCount = settled.filter(r => r.status === "rejected").length;
           if (failedCount > 0) toast.warning(`${failedCount} variação(ões) falharam, renderizando as restantes...`);
           if (results.length === 0) throw new Error("Todas as variações de IA falharam. Tente novamente.");
-
           const { renderIAPuraLayout, reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
-
           const isStory = format === "story";
           const reframedBg = await reframeImageToAspect(refImage, format);
-
-          // 🛡️ Renderização SEQUENCIAL para evitar OOM em mobile (3 canvases 1080×1920 simultâneos = ~25MB)
           const finalImages: GeneratedArt[] = [];
           for (const layoutJson of results) {
               const canvas = document.createElement("canvas");
@@ -1468,7 +1275,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               canvas.height = isStory ? 1920 : 1080;
               const ctx = canvas.getContext("2d");
               if (!ctx) throw new Error("Falha ao inicializar Canvas");
-
               await renderIAPuraLayout(ctx, {
                 format,
                 destination: destination || "Destino",
@@ -1503,7 +1309,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 imageUrl: reframedBg,
                 isExperience: categoria === "experiencia_destino",
               } as any, layoutJson as any);
-
               finalImages.push({
                 url: canvas.toDataURL("image/png", 0.9),
                 variant: null,
@@ -1515,50 +1320,37 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 createdAt: Date.now()
               } as GeneratedArt);
           }
-
           setGeneratedImages((prev) => {
             const merged = isBatchMode ? finalImages : [...prev, ...finalImages].slice(-3);
             return merged;
           });
           setGeneratedImage(finalImages[finalImages.length - 1]);
-
           const currentGenerated = state.allGeneratedAdImages || [];
           const updatedGenerated = [...finalImages.map(a => a.url).reverse(), ...currentGenerated].slice(0, 10);
           update({
             generatedAdImage: finalImages[finalImages.length - 1].url,
             allGeneratedAdImages: updatedGenerated
           });
-
-          // 🛡️ FALHA #10 FIX — Sincroniza a PRIMEIRA imagem do lote (mais estável) em vez da última
           await syncGeneratedPackageToSite(finalImages[0].url, refImage);
-
           toast.success(`${finalImages.length} ${finalImages.length === 1 ? "Design Dinâmico gerado" : "Designs Dinâmicos gerados"} com sucesso pela IA!`);
-
           const nextAiPureCount = incrementAiPureDailyCount(finalImages.length);
           setAiPureCount(nextAiPureCount);
-
           const newCount = generationCount + finalImages.length;
           setGenerationCount(newCount);
           localStorage.setItem("fabrica_gen_count", String(newCount));
           finishCycle(finalImages.length);
           retryCountRef.current = 0;
-
           requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         } catch (error: any) {
           console.error("ERRO_IA_PURA_CATCH:", error);
-          // Fix #1: Mensagem de erro clara e acionável para o usuário
           const rawErrMsg = error?.message || "desconhecido";
-          // Sanitiza mensagens técnicas de banco/API antes de exibir
           const isDbError = rawErrMsg.toLowerCase().includes("row-level") || rawErrMsg.toLowerCase().includes("rls") || rawErrMsg.toLowerCase().includes("policy");
           const isApiKeyError = rawErrMsg.toLowerCase().includes("api key") || rawErrMsg.toLowerCase().includes("401") || rawErrMsg.toLowerCase().includes("403");
           const isLimitError = rawErrMsg.toLowerCase().includes("429") || rawErrMsg.toLowerCase().includes("quota");
-
           let userFriendlyMsg = "Não foi possível gerar o design. Tente novamente.";
           if (isLimitError) userFriendlyMsg = "Muitas gerações em pouco tempo. Aguarde alguns segundos e tente de novo.";
           else if (isApiKeyError) userFriendlyMsg = "Serviço de IA temporariamente indisponível. Tente novamente em instantes.";
           else if (isDbError) userFriendlyMsg = "Erro de autenticação. Faça login novamente para continuar.";
-
-          // 🛡️ Anti-loop: só tenta fallback UMA vez com foto real antes de desistir
           if (retryCountRef.current < 1 && selectedPhotoUrl) {
             retryCountRef.current += 1;
             toast.warning("IA indisponível no momento. Gerando com Foto Real como alternativa...");
@@ -1573,11 +1365,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             toast.error(userFriendlyMsg);
           }
         }
-
         return;
       }
 
-      // ===== MODO CUSTOM (link/upload do usuário) — gera 1 ou mais imagens locais =====
       toast.info(isBatchMode ? "Gerando lote de 3 variações com sua imagem" : "Gerando 1 imagem única com sua imagem");
       const guardCustom = getForbiddenSets(categoria, "custom", format);
       const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, "custom", format);
@@ -1585,13 +1375,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       try { stratHistoryCustom = JSON.parse(localStorage.getItem(stratHistKeyCustom) || "[]"); } catch { stratHistoryCustom = []; }
       const mergedHistCustom = Array.from(new Set([...stratHistoryCustom, ...(guardCustom.layouts as StrategyId[])]));
       const freshSeedCustom = freshSeed(generationSeed);
-      // Feature Lote A/B: Pede 3 estratégias distintas se isBatchMode estiver ativado
       const numToGenCustom = isBatchMode ? 3 : 1;
       const chosen = pickDistinctLocalStrategies(categoria, freshSeedCustom, numToGenCustom, mergedHistCustom);
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
-
-      // Rotacao deterministica entre variantes do compositor (V0..V8, V2 desativada)
       const TOTAL_VARIANTS = 9;
       const DISABLED_VARIANTS: number[] = [];
       const recent = variantHistoryRef.current.slice(-2);
@@ -1605,7 +1392,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         ? forcedVariant
         : candidates[Math.floor(Math.random() * candidates.length)];
       variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariant];
-
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy, idx) => {
           const usedVariant = typeof nextVariant === "number" ? (nextVariant + idx) % TOTAL_VARIANTS : undefined;
@@ -1632,15 +1418,12 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           } as GeneratedArt;
         })
       );
-
       registerGeneration(categoria, "custom", format, {
         layoutId: chosen[0],
         headline: promoName || "OFERTA ESPECIAL",
         primary: palette.primary,
         secondary: palette.secondary,
       });
-
-      // Acumula até 3 variações lado a lado (não substitui as anteriores)
       const MAX_VARIATIONS = 3;
       setGeneratedImages((prev) => {
         const merged = [...prev, ...imagesCustom].slice(-MAX_VARIATIONS);
@@ -1655,17 +1438,13 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         allGeneratedAdImages: updatedGenerated
       });
       await syncGeneratedPackageToSite(imagesCustom[imagesCustom.length - 1].url, refImage);
-
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);
       localStorage.setItem("fabrica_gen_count", String(newCount));
       finishCycle(imagesCustom.length);
-
       toast.success(`${imagesCustom.length} ${imagesCustom.length === 1 ? "variação gerada" : "variações geradas"} com sua imagem!`);
-
     } catch (err: any) {
       console.error("generate error", err);
-      // 🛡️ FALHA #8 FIX — Mensagem específica para erros de CORS em links externos
       const rawMsg = err?.message || "Erro ao gerar anúncio";
       const isCorsError = rawMsg.toLowerCase().includes("tainted") || rawMsg.toLowerCase().includes("cors") || rawMsg.toLowerCase().includes("security") || rawMsg.toLowerCase().includes("cross-origin");
       const message = isCorsError
@@ -1684,7 +1463,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     generate(next, true);
   };
 
-  // Gera as legendas de copy sempre que as imagens ou os dados do anúncio mudarem
   useEffect(() => {
     if (generatedImages.length === 0) return;
     const caps = buildAdCaptions({
@@ -1712,7 +1490,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       setShowExportPaywall(true);
       return;
     }
-
     const exportIdentity = createExportIdentity(
       "ad",
       state.projectId,
@@ -1727,7 +1504,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       projectId: state.projectId,
       metadata: { destination, format, batch_requested: isBatchMode },
     });
-
     if (!reservation.allowed) {
       if (reservation.error) {
         toast.error(reservation.error);
@@ -1738,11 +1514,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       setShowExportPaywall(true);
       return;
     }
-
     try {
       const downloadedBatch = can("ad.export") && isBatchMode;
       const toDownload = downloadedBatch ? generatedImages.map(i => i.url) : [generatedImage?.url || ""];
-      
       toDownload.forEach((img, idx) => {
         const a = document.createElement("a");
         a.href = img;
@@ -1752,7 +1526,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         a.click();
         a.remove();
       });
-
       await commit(reservation.reservationId);
       track("free_export_completed", {
         capability: "ad_export",
@@ -1830,9 +1603,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       ) : (
         <>
 
-      {/* Grid de Perfil e Contatos */}
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 bg-white/[0.02] border border-white/[0.08] p-6 rounded-2xl">
-          {/* Coluna Logo: mais estreita e profissional */}
           <div className="sm:col-span-4">
             <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidade Visual</label>
             {!state.logoBase64 ? (
@@ -1884,11 +1655,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             )}
           </div>
 
-          {/* Coluna Contatos: mais larga e organizada */}
           <div className="sm:col-span-8 space-y-3">
             <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Canais de Atendimento</label>
             
-            {/* Contato 1 */}
             <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
               <div className="w-[45%] relative">
                 <select
@@ -1921,7 +1690,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               </div>
             </div>
 
-            {/* Contato 2 */}
             <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
               <div className="w-[45%] relative">
                 <select
@@ -1958,7 +1726,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             </div>
           </div>
         </div>
-      {/* 0 · Modo de Criação (Foto Real | Sua Imagem) */}
       <div className={`${sectionCls} space-y-5`}>
         <div>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Criação</h3>
@@ -1979,7 +1746,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             </button>
           </div>
 
-          {/* Seletor de Versao (V0..V8) - COLAPSAVEL */}
           <div className="mt-3">
             <button
               type="button"
@@ -2020,7 +1786,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         </div>
 
-        {/* Formato do Anúncio */}
         <div>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">2 · Formato do Anúncio</h3>
           <div className="grid grid-cols-2 gap-3">
@@ -2051,7 +1816,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       </div>
 
 
-      {/* 1b · Galeria Pexels (modo foto ou IA Pura) */}
       {(genMode === "photo" || genMode === "ai") && (
         <div className={sectionCls}>
           <div className="flex items-center justify-between mb-4">
@@ -2060,7 +1824,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
 
           <>
-              {/* Sugestões de destinos populares + os destinos da agência */}
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {[...new Set([...(state.destinos || []), ...POPULAR_PHOTO_DESTINATIONS])].slice(0, 14).map((d) => (
                   <button
@@ -2139,7 +1902,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         )}
 
-      {/* 1c · Sua imagem (modo custom) */}
       {genMode === "custom" && (
         <div className={sectionCls}>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">1 · Sua imagem de referência</h3>
@@ -2202,7 +1964,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         </div>
       )}
 
-      {/* 3 · Dados */}
       <div className={`${sectionCls} space-y-4`}>
         <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 · Dados do anúncio</h3>
 
@@ -2354,7 +2115,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         </div>
 
-        {/* Modo de pagamento */}
         {categoria !== "experiencia_destino" && (
           <div className="space-y-3">
             <label className={labelCls}>Modo de exibição do preço</label>
@@ -2480,9 +2240,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         )}
       </div>
 
-      {/* Tipografia, Cores, Benefícios e Gerar */}
       <div className={`${sectionCls} space-y-5`}>
-        {/* Tipografia — colapsável (mesmo padrão dos outros blocos) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
           <button
             type="button"
@@ -2499,7 +2257,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </button>
           {fontOptionsOpen && (
             <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              {/* Fonte: select + chips */}
               <div>
                 <label className={labelCls}>Fonte</label>
                 <select
@@ -2513,7 +2270,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 </select>
               </div>
 
-              {/* Ajustes Avançados de Tamanho — accordion interno */}
               <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
                 <button
                   type="button"
@@ -2539,7 +2295,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 )}
               </div>
 
-              {/* Cor do texto: mesmo padrão das cores Primária/Secundária */}
               <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
                 <div className="flex items-baseline justify-between mb-2">
                   <label className={labelCls}>Cor do texto</label>
@@ -2586,7 +2341,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           )}
         </div>
 
-        {/* Cores — colapsável (mesmo padrão de Tipografia) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
           <button
             type="button"
@@ -2615,7 +2369,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </button>
           {colorsOpen && (
             <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              {/* Bolinhas de cor — clicar abre o color picker nativo */}
               <div className="grid grid-cols-2 gap-4">
                 {[
                   { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
@@ -2643,7 +2396,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 ))}
               </div>
 
-              {/* Cor dos Textos Base */}
               <div>
                 <label className={labelCls}>Cor dos textos base</label>
                 <div className="grid grid-cols-2 gap-2">
@@ -2678,7 +2430,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           )}
         </div>
 
-        {/* Benefícios — em Experiência de Destino usa apenas texto, sem selector de ícones. */}
         <div>
           <div className="flex items-baseline justify-between mb-2 gap-2">
             <label className={labelCls}>{categoria === "experiencia_destino" ? "Descrição da experiência" : "Benefícios / Inclusos"}</label>
@@ -2752,7 +2503,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               );
             })}
 
-            {/* Slot "adicionar" — só aparece se ainda dá pra adicionar */}
             {highlights.length < MAX_HIGHLIGHTS && (
               <div className="bg-white/[0.02] border border-dashed border-white/15 rounded-lg flex gap-1.5 items-center px-2.5 py-2 hover:border-white/30 transition-colors">
                 <Plus className="w-4 h-4 flex-shrink-0 text-yellow-300" />
@@ -2779,9 +2529,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </p>
         </div>
         
-        {/* IA Pura agora roda no servidor — chave não é mais necessária */}
-
-        {/* Feature: 3 variações (minimalista) */}
         <button
           type="button"
           onClick={() => setIsBatchMode(!isBatchMode)}
@@ -2799,10 +2546,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </span>
         </button>
 
-
-
-
-        {/* Fix #3: Bloqueia visualmente e avisa quando foto não selecionada */}
         {!loading && (genMode === "photo" && !selectedPhotoUrl) && (
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-semibold">
             <span className="text-base">📷</span>
@@ -2918,6 +2661,16 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          setMaximizedImage(img.url);
+                        }}
+                        className="absolute top-2 right-12 p-2 bg-black/60 text-white rounded-lg md:opacity-0 md:group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-black/90 backdrop-blur-md"
+                        title="Maximizar imagem"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
                           const newList = generatedImages.filter((_, i) => i !== idx);
                           setGeneratedImages(newList);
                           if (generatedImage?.url === img.url) setGeneratedImage(newList[0] || null);
@@ -3023,7 +2776,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         )}
 
-        {/* Botão de avanço para Fase 2 */}
         <div className="mt-8 pt-6 border-t border-white/[0.06]">
           <button
             onClick={onNext}

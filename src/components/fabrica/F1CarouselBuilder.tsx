@@ -5141,6 +5141,17 @@ export function F1CarouselBuilder({
                         secondary={state.secondaryColor}
                         width={thumbWidth}
                       />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMaximizedSlide(slide);
+                        }}
+                        className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-black/90 backdrop-blur-md z-10"
+                        title={isEs ? "Ampliar imagen" : "Ampliar imagem"}
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      </button>
                       <div
                         className={`flex w-full items-center justify-between gap-1 border-t px-2.5 py-2 transition-colors ${
                           isActive
@@ -5255,6 +5266,17 @@ export function F1CarouselBuilder({
                       secondary={state.secondaryColor}
                       width={thumbWidth}
                     />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMaximizedSlide(slide);
+                      }}
+                      className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-black/90 backdrop-blur-md z-10"
+                      title={isEs ? "Ampliar imagen" : "Ampliar imagem"}
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
                     <div
                       className={`flex w-full items-center justify-between gap-2 border-t px-3 py-2.5 transition-colors ${
                         isActive

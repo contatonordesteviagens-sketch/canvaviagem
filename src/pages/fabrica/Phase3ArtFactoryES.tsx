@@ -11,7 +11,7 @@ import { composeTravelAd, formatAdPhone, type PaymentMode } from "@/lib/fabrica-
 import { GeneratedArt } from "@/lib/fabrica-art-types";
 import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
-  Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw,
+  Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw, Maximize2,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
   Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2, Copy, ClipboardCheck, FileText, Key,
   LockKeyhole,
@@ -783,6 +783,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
   const [isBatchMode, setIsBatchMode] = useState(false); // Nova feature: Lote A/B (3 variações)
   const [generatedImage, setGeneratedImage] = useState<GeneratedArt | null>(null);
   const [generatedImages, setGeneratedImages] = useState<GeneratedArt[]>([]);
+  const [maximizedImage, setMaximizedImage] = useState<string | null>(null);
   const [variationCounter, setVariationCounter] = useState(0);
   const [forcedVariant, setForcedVariant] = useState<number | null>(null);
   // Legendas/Copy geradas automaticamente junto com as imagens
@@ -2892,7 +2893,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                           className={`w-full h-auto object-contain transition ${isAdPreviewLocked ? "blur-md" : ""}`}
                         />
                       </button>
-                      {isAdPreviewLocked && (
+                      {isAdPreviewLocked ? (
                         <button
                           type="button"
                           onClick={() => setShowExportPaywall(true)}
@@ -2907,20 +2908,33 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                               : "La vista previa está lista. Desbloquea la descarga con Elite"}
                           </span>
                         </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMaximizedImage(img.url);
+                            }}
+                            className="absolute top-2 right-12 p-1.5 bg-black/60 text-white rounded-lg opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-black/90 backdrop-blur-md"
+                            title="Ampliar imagen"
+                          >
+                            <Maximize2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const newList = generatedImages.filter((_, i) => i !== idx);
+                              setGeneratedImages(newList);
+                              if (generatedImage?.url === img.url) setGeneratedImage(newList[0] || null);
+                              toast.success("Variação removida");
+                            }}
+                            className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                            title="Excluir esta versão"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </>
                       )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newList = generatedImages.filter((_, i) => i !== idx);
-                          setGeneratedImages(newList);
-                          if (generatedImage?.url === img.url) setGeneratedImage(newList[0] || null);
-                          toast.success("Variação removida");
-                        }}
-                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
-                        title="Excluir esta versão"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -2994,6 +3008,33 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
       </div>
         </>
       )}
+
+      {maximizedImage && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 p-4 md:p-8 backdrop-blur-md"
+          onClick={() => setMaximizedImage(null)}
+        >
+          <div
+            className="relative max-h-full max-w-full overflow-hidden rounded-2xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setMaximizedImage(null)}
+              className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/50 text-white backdrop-blur-md transition-colors hover:bg-black/80"
+              title="Cerrar"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <img
+              src={maximizedImage}
+              alt="Imagen ampliada"
+              className="max-h-[90vh] max-w-[90vw] object-contain"
+            />
+          </div>
+        </div>
+      )}
+
       <FabricaPaywallDialog
         open={showExportPaywall}
         onOpenChange={setShowExportPaywall}
