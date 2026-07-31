@@ -919,21 +919,33 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
     // Ignore storage iteration errors
   }
 
-  const savedMain = safeSetItem(
-    getProjectStorageKey(resolvedUserId, projectId),
-    JSON.stringify({
-      ...rest,
-      selectedPackages: packagesForMain,
-      allGeneratedAdImages: remoteGeneratedImages,
-      siteContent: {
-        ...siteRest,
-        heroImageUrl: isInlineMediaUrl(heroImageUrl) ? undefined : heroImageUrl,
-        aboutImageUrl: isInlineMediaUrl(aboutImageUrl) ? undefined : aboutImageUrl,
-      },
-    })
-  );
+  const mainPayload = JSON.stringify({
+    ...rest,
+    selectedPackages: packagesForMain,
+    allGeneratedAdImages: remoteGeneratedImages,
+    siteContent: {
+      ...siteRest,
+      heroImageUrl: isInlineMediaUrl(heroImageUrl) ? undefined : heroImageUrl,
+      aboutImageUrl: isInlineMediaUrl(aboutImageUrl) ? undefined : aboutImageUrl,
+    },
+  });
+
+  let savedMain = safeSetItem(getProjectStorageKey(resolvedUserId, projectId), mainPayload);
+
   if (!savedMain) {
-    toast.error("Memória do navegador cheia! Suas edições podem não ser salvas offline. Limpe o cache ou imagens geradas.");
+    // Current project's heavy data might be choking the quota. Delete them!
+    localStorage.removeItem(heavyPrefix + "logoBase64");
+    localStorage.removeItem(heavyPrefix + "generatedAdImage");
+    localStorage.removeItem(heavyPrefix + "lastCleanPhoto");
+    localStorage.removeItem(heavyPrefix + PROJECT_MEDIA_CACHE_KEY);
+    localStorage.removeItem(getProjectGalleryKey(resolvedUserId, projectId));
+
+    // Retry saving main
+    savedMain = safeSetItem(getProjectStorageKey(resolvedUserId, projectId), mainPayload);
+
+    if (!savedMain) {
+      toast.error("Memória do navegador cheia! Suas edições podem não ser salvas offline. Limpe o cache ou imagens geradas.");
+    }
   }
 
   let savedHeavyContent = true;
@@ -969,11 +981,10 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
     console.warn("Quota exceeded when saving gallery to local storage.");
   }
 
-  // We only block project switching if the MAIN configuration could not be saved locally.
-  // Missing heavy caches (images) will just be re-fetched from the cloud.
-  return savedUserPointer
-    && savedProjectPointer
-    && savedMain;
+  // We no longer block project switching even if local storage is completely full.
+  // The user is already warned via toast if savedMain fails.
+  // Blocking the switch is a worse UX than risking offline data loss.
+  return true;
 };
 
 const removeLocalProjectState = (userId: string, projectId?: string | null) => {
