@@ -702,7 +702,18 @@ export default function ArtTweakEditor({
               <Button variant="outline" className="w-full" onClick={resetAll} disabled={isEmptyTweakMap(tweaks)}>
                 <RotateCcw className="mr-2 h-4 w-4" /> Zerar todos os ajustes
               </Button>
-              <Button className="w-full" disabled={!preview || rendering} onClick={() => { onApply(preview, tweaks); onClose(); }}>{saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} Salvar Ajustes na Imagem</Button><Button variant="outline" className="w-full text-muted-foreground" disabled={saving || rendering} onClick={handleSavePreset}>Definir como Padr�o Global (Avan�ado)</Button>
+              <Button
+                variant="secondary"
+                className="w-full"
+                disabled={!preview || rendering}
+                onClick={() => { onApply(preview, tweaks); onClose(); }}
+              >
+                Aplicar só nesta arte
+              </Button>
+              <Button className="w-full" disabled={saving || rendering} onClick={handleSavePreset}>
+                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                Salvar como padrão da variação
+              </Button>
             </div>
           </div>
         </div>
@@ -711,5 +722,3 @@ export default function ArtTweakEditor({
     document.body,
   );
 }
-
-

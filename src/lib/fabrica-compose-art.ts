@@ -1035,11 +1035,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // trocar texto) sem instrumentar variação por variação.
   const recorder = createArtRecorder(rawCtx, options.artTweaks);
   const ctx = recorder.ctx;
-  const originalToDataURL = canvas.toDataURL;
-  (canvas as any).toDataURL = function(...args: any[]) {
+  const originalToDataURL = canvas.toDataURL.bind(canvas);
+  (canvas as any).toDataURL = (...args: any[]) => {
     recorder.replay();
     try { options.onArtElements?.(recorder.elements); } catch { /* noop */ }
-    return originalToDataURL.apply(canvas, args);
+    return (originalToDataURL as any)(...args);
   };
 
 
@@ -1060,9 +1060,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const proto = Object.getPrototypeOf(ctx) as any;
     const desc = Object.getOwnPropertyDescriptor(proto, "font");
     if (desc && desc.set && desc.get) {
-      const origSet = desc.set.bind(rawCtx);
-      const origGet = desc.get.bind(rawCtx);
-      Object.defineProperty(rawCtx, "font", {
+      const origSet = desc.set.bind(ctx);
+      const origGet = desc.get.bind(ctx);
+      Object.defineProperty(ctx, "font", {
         configurable: true,
         get: () => origGet(),
         set: (val: string) => {
@@ -1566,7 +1566,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       );
 
       const minContentGap = Math.round(height * 0.035);
-      const contentY = Math.round(infoY + infoH + minContentGap);
+      const contentY = Math.max(
+        Math.round(height * (isStoryV8Luxury ? 0.455 : 0.40)),
+        Math.round(infoY + infoH + minContentGap)
+      );
 
       const benefitItems = (highlights && highlights.length ? highlights : [
         { icon: "star" as IconKey, text: "Melhores experiencias" },
@@ -1584,7 +1587,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const fitBenefitGap = Math.floor((availableBoxH - cardVerticalPad) / Math.max(1, numRows));
       const benefitGap = Math.max(minBenefitGap, Math.min(maxBenefitGap, fitBenefitGap));
       const cardH = Math.min(availableBoxH, numRows * benefitGap + cardVerticalPad);
-      const cardY = contentY + Math.round(height * 0.02);
+      const cardY = Math.max(contentY, ctaY - cardH - boxBottomGap);
 
       const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
       const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
@@ -3132,7 +3135,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           tf -= 2;
           ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
         }
-        safeFillText(ctx, h.text, px + 76, py + pillH / 2 - 2, pw - 90, 14); // Afastamento aumentado para 76px para o ícone maior
+        safeFillText(ctx, h.text, px + 76, py + pillH / 2, pw - 90, 14); // Afastamento aumentado para 76px para o ícone maior
         ctx.textBaseline = "alphabetic";
       });
 
@@ -5664,8 +5667,6 @@ export async function renderIAPuraLayout(
     true
   );
 }
-
-
 
 
 
