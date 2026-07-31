@@ -188,6 +188,12 @@ export interface ArtRecorder {
 
 export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTweakMap): ArtRecorder {
   const map = tweaks || {};
+  /**
+   * Sem ajustes de admin não há motivo para adiar o desenho: desenhamos direto
+   * (comportamento original do motor) e apenas gravamos as caixas dos elementos
+   * para o editor. Só quando existem tweaks é que entramos no modo "replay".
+   */
+  const deferred = Object.keys(map).length > 0;
   const ops: DrawOp[] = [];
   const counters: Record<string, number> = { text: 0, image: 0, shape: 0 };
   let pendingPath: Cmd[] = [];
@@ -239,6 +245,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       state.matrix,
     );
     pushOp({ kind: "text", text, draw: { m: method, a: a.slice() }, state, box }, text);
+    if (!deferred) (real as any)[method](...a);
   };
 
   const recordImage = (a: any[]) => {
@@ -272,6 +279,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       state.matrix,
     );
     pushOp({ kind: "image", draw: { m: "drawImage", a: a.slice() }, state, box });
+    if (!deferred) (real as any).drawImage(...a);
   };
 
   const recordRect = (method: "fillRect" | "strokeRect", a: any[]) => {
@@ -284,6 +292,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       state.matrix,
     );
     pushOp({ kind: "shape", draw: { m: method, a: a.slice() }, state, box });
+    if (!deferred) (real as any)[method](...a);
   };
 
   const recordPathDraw = (method: "fill" | "stroke", a: any[]) => {
@@ -291,6 +300,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
     const cmds = pendingPath.slice();
     const box = boxFromPoints(pathPoints(cmds), state.matrix);
     pushOp({ kind: "shape", path: cmds, draw: { m: method, a: a.slice() }, state, box });
+    if (!deferred) (real as any)[method](...a);
   };
 
   const applyClips = (clips: ClipEntry[]) => {
@@ -380,12 +390,14 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
     if (replayedUpTo >= ops.length) return;
     const slice = ops.slice(replayedUpTo);
     replayedUpTo = ops.length;
+    if (deferred) {
     const ordered = slice
       .map((op, i) => ({ op, i, z: Number.isFinite(map[op.id]?.z as number) ? (map[op.id]!.z as number) : 0 }))
       .sort((a, b) => (a.z === b.z ? a.i - b.i : a.z - b.z));
     real.save();
     for (const entry of ordered) drawOp(entry.op);
     real.restore();
+    }
 
     for (const op of slice) {
       const t = map[op.id] || {};
@@ -488,6 +500,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
               ? boxFromPoints(pts, state.matrix)
               : boxFromPoints([[0, 0], [24, 24]], state.matrix);
             pushOp({ kind: "shape", draw: { m: prop, a: a.slice() }, state, box });
+            if (!deferred) (target as any)[prop](...a);
             return;
           }
           recordPathDraw(prop as "fill" | "stroke", a);
