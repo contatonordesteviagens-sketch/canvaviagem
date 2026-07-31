@@ -273,7 +273,7 @@ export function formatAdPhone(val: string, explicitDialCode?: string): string {
 
 /** Desenha ícone do WhatsApp colorido */
 function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "green" | "custom" = "green", customColor: string = "#ffffff") {
-  if (typeof (ctx as any).__beginGroup === "function") (ctx as any).__beginGroup("Ícone");
+
   try {
 
   ctx.save();
@@ -324,14 +324,14 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
   ctx.restore();
 
   ctx.restore();
-  } finally {
-    if (typeof (ctx as any).__endGroup === "function") (ctx as any).__endGroup();
+  
+
   }
 }
 
 /** Desenha ícone do Instagram com gradiente oficial */
 function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "gradient" | "custom" = "gradient", customColor: string = "#ffffff") {
-  if (typeof (ctx as any).__beginGroup === "function") (ctx as any).__beginGroup("Ícone");
+
   try {
 
   ctx.save();
@@ -382,14 +382,14 @@ function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number
   }
 
   ctx.restore();
-  } finally {
-    if (typeof (ctx as any).__endGroup === "function") (ctx as any).__endGroup();
+  
+
   }
 }
 
 /** Desenha ícone de Site / Globo */
 function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string = "#ffffff") {
-  if (typeof (ctx as any).__beginGroup === "function") (ctx as any).__beginGroup("Ícone");
+
   try {
 
   ctx.save();
@@ -400,8 +400,8 @@ function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, 
   ctx.beginPath(); ctx.ellipse(0, 0, size * 0.18, size * 0.45, 0, 0, Math.PI * 2); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(-size * 0.45, 0); ctx.lineTo(size * 0.45, 0); ctx.stroke();
   ctx.restore();
-  } finally {
-    if (typeof (ctx as any).__endGroup === "function") (ctx as any).__endGroup();
+  
+
   }
 }
 
@@ -412,7 +412,7 @@ function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, 
  */
 let __waIconCache: HTMLImageElement | null = null;
 export async function drawWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
-  if (typeof (ctx as any).__beginGroup === "function") (ctx as any).__beginGroup("Ícone");
+
   try {
 
   try {
@@ -429,8 +429,8 @@ export async function drawWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number,
   } catch {
     drawAdWhatsAppIcon(ctx, x, y, size, "green");
   }
-  } finally {
-    if (typeof (ctx as any).__endGroup === "function") (ctx as any).__endGroup();
+  
+
   }
 }
 
@@ -439,12 +439,12 @@ export async function drawWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number,
  * Todos os layouts (V0â€“V4, Feed/Stories) passam por aqui â€” substituição centralizada.
  */
 export async function drawWhatsAppContact(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
-  if (typeof (ctx as any).__beginGroup === "function") (ctx as any).__beginGroup("Ícone");
+
   try {
 
   return drawWhatsAppIcon(ctx, x, y, size);
-  } finally {
-    if (typeof (ctx as any).__endGroup === "function") (ctx as any).__endGroup();
+  
+
   }
 }
 
