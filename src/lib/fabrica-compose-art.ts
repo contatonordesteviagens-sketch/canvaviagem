@@ -1060,9 +1060,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const proto = Object.getPrototypeOf(ctx) as any;
     const desc = Object.getOwnPropertyDescriptor(proto, "font");
     if (desc && desc.set && desc.get) {
-      const origSet = desc.set.bind(ctx);
-      const origGet = desc.get.bind(ctx);
-      Object.defineProperty(ctx, "font", {
+      const origSet = desc.set.bind(rawCtx);
+      const origGet = desc.get.bind(rawCtx);
+      Object.defineProperty(rawCtx, "font", {
         configurable: true,
         get: () => origGet(),
         set: (val: string) => {
