@@ -342,7 +342,7 @@ const normalizeHexColor = (value: string, fallback: string) => {
 
 const selectedPalette = (primary: string, secondary: string) => ({
   primary: normalizeHexColor(primary, "#0c2340"),
-  secondary: normalizeHexColor(secondary, "#FCD34D"),
+  secondary: normalizeHexColor(secondary, "#171717"),
 });
 
 const scopedGenerationKey = (categoria: CategoriaId, genMode: GenMode, format: "square" | "story") =>
@@ -1052,7 +1052,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
       }
     } catch (err) {
       console.error("Erro ao buscar fotos:", err);
-      toast.error("Erro na busca de fotos.");
+      toast.error(err instanceof Error ? err.message : String(err) || "Erro na busca de fotos.");
     } finally {
       setSearchingPhotos(false);
     }

@@ -119,7 +119,7 @@ serve(async (req) => {
           : !endDate || new Date(endDate) > new Date();
         if (isCurrent) {
           localActiveSub = localSub;
-          if (isEliteProduct(localSub.product_id)) {
+          if (isEliteProduct(localSub.product_id) && localSub.billing_provider !== 'stripe') {
             logStep("Elite/Ticto subscription found in local database", { productId: localSub.product_id });
             return new Response(JSON.stringify({ 
               subscribed: true, 
@@ -233,6 +233,23 @@ serve(async (req) => {
           if (validSession) {
             logStep("Found valid recent one-time session", { sessionId: validSession.id });
             
+            let isRefunded = false;
+            try {
+              if (typeof validSession.payment_intent === 'string') {
+                const pi = await stripe.paymentIntents.retrieve(validSession.payment_intent);
+                if (pi.amount_refunded && pi.amount_refunded > 0) {
+                  isRefunded = true;
+                }
+              }
+            } catch (piErr: any) {
+              logStep("Warning: failed to fetch payment intent", { error: piErr.message });
+            }
+
+            if (isRefunded) {
+              logStep("Payment intent has refunds. Skipping this session.");
+              continue;
+            }
+
             let productId: string | null = null;
             try {
               const lineItems = await stripe.checkout.sessions.listLineItems(validSession.id, { limit: 1 });
@@ -278,6 +295,17 @@ serve(async (req) => {
 
 
     if (localActiveSub) {
+      if (localActiveSub.billing_provider === 'stripe') {
+         logStep('Stripe check did not find active subscription. Invalidating local Stripe sub.');
+         if (dbClient) {
+           await dbClient.from('subscriptions').update({ status: 'canceled' }).eq('user_id', userId).eq('billing_provider', 'stripe');
+         }
+         return new Response(JSON.stringify({ error: 'Assinatura cancelada ou expirada' }), {
+           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+           status: 403,
+         });
+      }
+
       logStep("Stripe did not show upgrade; returning local active subscription", { productId: localActiveSub.product_id });
       return new Response(JSON.stringify({
         subscribed: true,

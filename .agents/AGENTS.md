@@ -93,3 +93,13 @@ Antes de qualquer push que toque neste arquivo:
 cd "C:\Users\win 10\Desktop\CANVA E FABRICA - JUNHO 26"
 npx tsc --noEmit
 ```
+
+
+## 🎨 MOTOR CANVAS (EDITOR DE ARTES E ANÚNCIOS)
+
+**REGRA DE ROTEAMENTO INSTANTÂNEO:** Sempre que o usuário mencionar **"editor de artes"**, **"editor de anuncios"**, **"sumiu o texto"**, **"criação de artes"**, **"gerador de imagens"**, ou problemas com botões da UI do editor:
+
+1. **Localização do Editor:** A Interface Visual (UI) está em `src/components/fabrica/ArtTweakEditor.tsx`.
+2. **Localização do Gravador (Proxy):** A inteligência que captura as modificações está em `src/lib/fabrica-art-recorder.ts`.
+3. **Localização do Pintor (Renderização):** As artes originais em si (variantes) estão em `src/lib/fabrica-compose-art.ts`.
+4. **DOCUMENTAÇÃO OBRIGATÓRIA ANTES DE ALTERAR:** Leia **SEMPRE** o arquivo `geração de imagens engenharia como funciona/DOC_ENGENHARIA_MOTOR_CANVAS.md` para entender a arquitetura do Proxy e não quebrar o texto, nem a ordem de renderização (z-index) ou a funcionalidade dos botões (como remover, negrito, etc).

@@ -119,11 +119,12 @@ serve(async (req) => {
     const action = typeof body.action === "string" ? body.action : "status";
 
     const [{ data: adminRole }, { data: subscription }] = await Promise.all([
-      db.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle(),
+      db.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").limit(1).maybeSingle(),
       db
         .from("subscriptions")
         .select("product_id,status,current_period_end,trial_started_at,trial_ends_at,billing_provider,billing_cycle")
         .eq("user_id", userId)
+        .limit(1)
         .maybeSingle(),
     ]);
 

@@ -78,6 +78,7 @@ export async function verifyFabricaEliteAccess(req: Request, corsHeaders: Header
     .select("role")
     .eq("user_id", userId)
     .eq("role", "admin")
+    .limit(1)
     .maybeSingle();
 
   if (adminRole) return { ok: true as const, userId };
@@ -87,6 +88,7 @@ export async function verifyFabricaEliteAccess(req: Request, corsHeaders: Header
     .select("product_id,status,current_period_end,trial_ends_at")
     .eq("user_id", userId)
     .in("status", ["active", "trialing"])
+    .limit(1)
     .maybeSingle();
 
   const entitlementEnd = subscription?.status === "trialing"

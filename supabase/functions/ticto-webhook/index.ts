@@ -294,9 +294,8 @@ serve(async (req) => {
     
     logStep("Event received", { event: payload.event, status: payload.data?.status });
 
-    // Se houver um token configurado nas variáveis de ambiente do Supabase, valide o header de segurança da Ticto
     const authorizationHeader = req.headers.get("authorization") || req.headers.get("x-ticto-token");
-    if (tictoSecretToken && authorizationHeader !== tictoSecretToken) {
+    if (!tictoSecretToken || authorizationHeader !== tictoSecretToken) {
       logStep("ERROR: Unauthorized access request", { receivedToken: authorizationHeader });
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
     }

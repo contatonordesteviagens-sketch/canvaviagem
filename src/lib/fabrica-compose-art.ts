@@ -2022,7 +2022,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
         // â”€â”€ Cores do V3 (box CVC) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        const yellow = secondaryColor || "#FCD34D";
+        const yellow = secondaryColor || "#171717";
         const yellowDark = shadeColor(yellow, -12);
         const navy = getSafeColor(yellow, primaryColor);
         const navyRaw = primaryColor || "#0c2340";
@@ -2342,7 +2342,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         // yellow  = cor secundária do usuário (fundo do box)
         // navy    = cor primária do usuário   (texto/anel dentro do box)
         // navyRaw = primaryColor normalizado  (para a faixa Pix)
-        const yellow = secondaryColor || "#FCD34D";
+        const yellow = secondaryColor || "#171717";
         const yellowDark = shadeColor(yellow, -12);
         const navy = getSafeColor(yellow, primaryColor);
         const navyRaw = primaryColor || "#0c2340";
@@ -5310,9 +5310,9 @@ export async function renderIAPuraLayout(
       const pHeight = 64;
       const pX = (cw - pWidth) / 2;
       const pY = isStory ? 580 : 350;
-      fillRoundRect(ctx, pX, pY, pWidth, pHeight, pHeight / 2, options.secondaryColor || "#F59E0B");
+      fillRoundRect(ctx, pX, pY, pWidth, pHeight, pHeight / 2, options.secondaryColor || "#171717");
       
-      ctx.fillStyle = contrastOn(options.secondaryColor || "#F59E0B");
+      ctx.fillStyle = contrastOn(options.secondaryColor || "#171717");
       ctx.font = `900 26px ${sans}`;
       safeFillText(ctx, priceText, cw / 2, pY + pHeight / 2, pWidth - 40, 14);
       
@@ -5324,7 +5324,7 @@ export async function renderIAPuraLayout(
       const bX = (cw - bWidth) / 2;
       const bY = isStory ? 1300 : 750;
       
-      ctx.strokeStyle = options.secondaryColor || "#F59E0B";
+      ctx.strokeStyle = options.secondaryColor || "#171717";
       ctx.lineWidth = 3;
       ctx.beginPath();
       if (ctx.roundRect) {
@@ -5358,7 +5358,7 @@ export async function renderIAPuraLayout(
       cardHighlights.forEach((hl: any, idx) => {
         const hy = cardY + 110 + idx * 80;
         const iconKey = hl.icon || "star";
-        drawMonoIcon(ctx, iconKey, cardX + 50, hy + 15, 32, options.secondaryColor || "#F59E0B");
+        drawMonoIcon(ctx, iconKey, cardX + 50, hy + 15, 32, options.secondaryColor || "#171717");
         
         let hfs = 24;
         ctx.font = `700 ${hfs}px ${sans}`;
@@ -5383,7 +5383,7 @@ export async function renderIAPuraLayout(
       const badgeY = isStory ? 500 : 250;
       fillRoundRect(ctx, badgeX, badgeY, badgeW, badgeH, 18, options.primaryColor || "#0C2340");
       
-      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.fillStyle = options.secondaryColor || "#171717";
       ctx.font = `800 24px ${sans}`;
       safeFillText(ctx, "UP TO 45% OFF", badgeX + badgeW / 2, badgeY + 45, badgeW - 40, 14);
       
@@ -5405,7 +5405,7 @@ export async function renderIAPuraLayout(
       ctx.textBaseline = "middle";
       
       // Logo / Categoria
-      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.fillStyle = options.secondaryColor || "#171717";
       ctx.font = `800 26px ${sans}`;
       safeFillText(ctx, (options.promoName || "MDLULI SAFARI LODGE").toUpperCase(), cw / 2, isStory ? 420 : 200, cw - 120, 12);
       
@@ -5438,8 +5438,8 @@ export async function renderIAPuraLayout(
       // Destaque inclinado
       const badgeW = 280;
       const badgeH = 56;
-      fillRoundRect(ctx, blockX + 40, blockY + 40, badgeW, badgeH, 8, options.secondaryColor || "#F59E0B");
-      ctx.fillStyle = contrastOn(options.secondaryColor || "#F59E0B");
+      fillRoundRect(ctx, blockX + 40, blockY + 40, badgeW, badgeH, 8, options.secondaryColor || "#171717");
+      ctx.fillStyle = contrastOn(options.secondaryColor || "#171717");
       ctx.font = `900 24px ${sans}`;
       safeFillText(ctx, options.promoName || "Ã‰ ISSO MESMO", blockX + 40 + badgeW / 2, blockY + 40 + badgeH / 2, badgeW - 20, 12);
       
@@ -5472,7 +5472,7 @@ export async function renderIAPuraLayout(
       safeFillText(ctx, (options.destination || "CIRCUITO PORTUGAL").toUpperCase(), cw / 2, cardY + 100, cardW - 80, 24);
       
       // Duração / Período
-      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.fillStyle = options.secondaryColor || "#171717";
       ctx.font = `800 28px ${sans}`;
       safeFillText(ctx, options.travelPeriod || "5 dias | Roteiro Completo", cw / 2, cardY + 200, cardW - 80, 14);
       
@@ -5483,8 +5483,8 @@ export async function renderIAPuraLayout(
       
       // Pílula 12X
       const pillTxt = options.installments || "12X";
-      fillRoundRect(ctx, cardX + 60, cardY + 340, 200, 52, 10, options.secondaryColor || "#F59E0B");
-      ctx.fillStyle = contrastOn(options.secondaryColor || "#F59E0B");
+      fillRoundRect(ctx, cardX + 60, cardY + 340, 200, 52, 10, options.secondaryColor || "#171717");
+      ctx.fillStyle = contrastOn(options.secondaryColor || "#171717");
       ctx.font = `900 28px ${sans}`;
       safeFillText(ctx, pillTxt, cardX + 160, cardY + 366, 180, 12);
       
@@ -5500,8 +5500,8 @@ export async function renderIAPuraLayout(
       
       // Banner do Pix
       const pixY = cardY + cardH - 120;
-      fillRoundRect(ctx, cardX + 60, pixY, cardW - 120, 72, 36, options.secondaryColor || "#F59E0B");
-      ctx.fillStyle = contrastOn(options.secondaryColor || "#F59E0B");
+      fillRoundRect(ctx, cardX + 60, pixY, cardW - 120, 72, 36, options.secondaryColor || "#171717");
+      ctx.fillStyle = contrastOn(options.secondaryColor || "#171717");
       ctx.textAlign = "center";
       ctx.font = `900 24px ${sans}`;
       safeFillText(ctx, options.pixBannerText || "5% OFF Ã€ VISTA NO Pix", cw / 2, pixY + 36, cardW - 180, 12);
@@ -5509,7 +5509,7 @@ export async function renderIAPuraLayout(
     } else if (style === "F") {
       // === Estilo F: Vertical Sidebar ===
       const sideW = isStory ? 200 : 150;
-      fillRoundRect(ctx, 0, 0, sideW, ch, 0, options.secondaryColor || "#F59E0B");
+      fillRoundRect(ctx, 0, 0, sideW, ch, 0, options.secondaryColor || "#171717");
       
       // Texto Vertical
       ctx.save();
@@ -5517,7 +5517,7 @@ export async function renderIAPuraLayout(
       ctx.rotate(-Math.PI / 2);
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = contrastOn(options.secondaryColor || "#F59E0B");
+      ctx.fillStyle = contrastOn(options.secondaryColor || "#171717");
       ctx.font = `900 36px ${sans}`;
       safeFillText(ctx, (options.destination || "CRUZEIROS").toUpperCase(), 0, 0, ch - 200, 18);
       ctx.restore();
@@ -5546,7 +5546,7 @@ export async function renderIAPuraLayout(
       ctx.fillStyle = "#ffffff";
       ctx.font = `800 22px ${sans}`;
       safeFillText(ctx, `EM ATÃ‰ ${options.installments || "12X"}`, cX, cardY + 40, cardW - 40, 12);
-      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.fillStyle = options.secondaryColor || "#171717";
       ctx.font = `900 32px ${sans}`;
       safeFillText(ctx, `R$ ${options.price}`, cX, cardY + 96, cardW - 40, 14);
       
@@ -5566,7 +5566,7 @@ export async function renderIAPuraLayout(
       // Título / Destino
       let destFsG = isStory ? 56 : 42;
       ctx.font = `900 ${destFsG}px ${sans}`;
-      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.fillStyle = options.secondaryColor || "#171717";
       safeFillText(ctx, options.destination || "Combo 3 Praias", 40, isStory ? 200 : 120, colW - 80, 20);
       
       // Bullets com Checkmark
@@ -5587,7 +5587,7 @@ export async function renderIAPuraLayout(
       
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.fillStyle = options.secondaryColor || "#171717";
       ctx.font = `800 20px ${sans}`;
       safeFillText(ctx, options.pricePrefix || "DE R$ 670 POR", colW / 2, priceY + 36, colW - 100, 12);
       
@@ -5598,7 +5598,7 @@ export async function renderIAPuraLayout(
       safeFillText(ctx, priceStrG, colW / 2, priceY + 100, colW - 100, 20);
       
       ctx.font = `700 18px ${sans}`;
-      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.fillStyle = options.secondaryColor || "#171717";
       safeFillText(ctx, options.paymentSuffix || "APENAS HOJE", colW / 2, priceY + 160, colW - 100, 12);
       
     } else if (style === "H") {

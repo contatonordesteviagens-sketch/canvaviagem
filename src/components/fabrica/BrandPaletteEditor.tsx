@@ -15,15 +15,15 @@ type BrandPaletteEditorProps = BrandPalette & {
 
 const DEFAULT_PALETTE: BrandPalette = {
   primaryColor: "#F59E0B",
-  secondaryColor: "#FCD34D",
-  backgroundColor: "#F4F6F9",
+  secondaryColor: "#171717",
+  backgroundColor: "#FFFFFF",
 };
 
 const PALETTES: Array<{ name: string; colors: BrandPalette }> = [
   { name: "Solar", colors: DEFAULT_PALETTE },
-  { name: "Oceano", colors: { primaryColor: "#0E7490", secondaryColor: "#38BDF8", backgroundColor: "#F0F9FF" } },
-  { name: "Floresta", colors: { primaryColor: "#166534", secondaryColor: "#84CC16", backgroundColor: "#F7FEE7" } },
   { name: "Premium", colors: { primaryColor: "#1E293B", secondaryColor: "#D4A853", backgroundColor: "#F8F5EE" } },
+  { name: "Oceano", colors: { primaryColor: "#0E7490", secondaryColor: "#171717", backgroundColor: "#F0F9FF" } },
+  { name: "Floresta", colors: { primaryColor: "#166534", secondaryColor: "#171717", backgroundColor: "#F7FEE7" } },
 ];
 
 const COPY = {
