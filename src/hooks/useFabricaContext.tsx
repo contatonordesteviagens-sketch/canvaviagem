@@ -905,6 +905,20 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
   );
   const heavyPrefix = getProjectHeavyPrefix(resolvedUserId, projectId);
 
+  // Aggressive cleanup: remove heavy local caches of OTHER projects to ensure space
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("fabrica-heavy-v2:") && !key.includes(`:${projectId}:`)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((k) => localStorage.removeItem(k));
+  } catch (e) {
+    // Ignore storage iteration errors
+  }
+
   const savedMain = safeSetItem(
     getProjectStorageKey(resolvedUserId, projectId),
     JSON.stringify({
@@ -955,12 +969,11 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
     console.warn("Quota exceeded when saving gallery to local storage.");
   }
 
+  // We only block project switching if the MAIN configuration could not be saved locally.
+  // Missing heavy caches (images) will just be re-fetched from the cloud.
   return savedUserPointer
     && savedProjectPointer
-    && savedMain
-    && savedHeavyContent
-    && savedMedia
-    && savedGallery;
+    && savedMain;
 };
 
 const removeLocalProjectState = (userId: string, projectId?: string | null) => {
