@@ -716,6 +716,21 @@ function drawPremiumShadow(
   ctx.restore();
 }
 
+export const __newIconsCache: Record<string, HTMLImageElement> = {};
+let __newIconsLoaded = false;
+export async function preloadNewIcons() {
+  if (__newIconsLoaded) return;
+  const iconKeys = ["aviao", "balsa", "bicycle", "cafe-da-manha", "calendar", "carro-sedan-na-frente", "coffe-cup", "enviar", "estacao-de-trem", "food-and-restaurant", "guia-turistico", "kit-de-primeiros-socorros", "motorcycle", "onibus", "pino-de-localizacao-1", "pino-de-localizacao", "placa-do-hotel", "relogio", "taxi-frontal"];
+  await Promise.all(iconKeys.map(async (key) => {
+    try {
+      __newIconsCache[key] = await loadRemoteImage(`/assets/icons/${key}.png`);
+    } catch(e) {
+      console.warn("Could not preload icon", key);
+    }
+  }));
+  __newIconsLoaded = true;
+}
+
 function drawMonoIcon(
   ctx: CanvasRenderingContext2D,
   kind: IconKey,
@@ -725,6 +740,22 @@ function drawMonoIcon(
   color: string,
   strokeWidth = 1.3,
 ) {
+  if (__newIconsCache[kind]) {
+    const img = __newIconsCache[kind];
+    const off = document.createElement("canvas");
+    off.width = size;
+    off.height = size;
+    const octx = off.getContext("2d");
+    if (octx) {
+      octx.drawImage(img, 0, 0, size, size);
+      octx.globalCompositeOperation = "source-in";
+      octx.fillStyle = color;
+      octx.fillRect(0, 0, size, size);
+      ctx.drawImage(off, cx - size / 2, cy - size / 2, size, size);
+    }
+    return;
+  }
+
   ctx.save();
   const s = size / 24;
   ctx.translate(cx - 12 * s, cy - 12 * s);
@@ -958,6 +989,7 @@ function resolveTotalStr(installments: string, rawPrice: string, curSym: string,
 }
 
 export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<ComposeAdResult> {
+  await preloadNewIcons();
   __currentDialCode = options.whatsappDialCode || "55";
   const {
     imageUrl,

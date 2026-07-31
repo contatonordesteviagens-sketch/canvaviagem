@@ -45,23 +45,50 @@ const BADGE_BG: Record<string, string> = {
   red: "bg-red-500/15 text-red-400 border-red-500/30",
 };
 
-type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
+const CustomImageIcon = (src: string) => ({ className, style }: any) => (
+  <div 
+    className={className} 
+    style={{ 
+      ...style,
+      backgroundColor: style?.color || 'currentColor', 
+      WebkitMaskImage: `url(${src})`, 
+      WebkitMaskSize: 'contain',
+      WebkitMaskRepeat: 'no-repeat',
+      WebkitMaskPosition: 'center',
+      maskImage: `url(${src})`,
+      maskSize: 'contain',
+      maskRepeat: 'no-repeat',
+      maskPosition: 'center'
+    }} 
+  />
+);
 
-const ICON_OPTIONS: { key: IconKey; Icon: typeof Bus; label: string }[] = [
-  { key: "check", Icon: Check, label: "Check" },
-  { key: "bus", Icon: Bus, label: "Ônibus" },
-  { key: "hotel", Icon: Hotel, label: "Hotel" },
-  { key: "plane", Icon: Plane, label: "Avião" },
-  { key: "ship", Icon: Ship, label: "Navio" },
-  { key: "palm", Icon: Palmtree, label: "Coqueiro" },
-  { key: "sun", Icon: Sun, label: "Sol" },
-  { key: "food", Icon: Utensils, label: "Refeição" },
-  { key: "coffee", Icon: Coffee, label: "Café" },
-  { key: "map", Icon: MapPin, label: "Mapa" },
+export type IconKey = "aviao" | "balsa" | "bicycle" | "cafe-da-manha" | "calendar" | "carro-sedan-na-frente" | "coffe-cup" | "enviar" | "estacao-de-trem" | "food-and-restaurant" | "guia-turistico" | "kit-de-primeiros-socorros" | "motorcycle" | "onibus" | "pino-de-localizacao-1" | "pino-de-localizacao" | "placa-do-hotel" | "relogio" | "taxi-frontal" | "check" | "camera" | "star" | "heart" | "sun" | "wifi";
+
+const ICON_OPTIONS: { key: IconKey; Icon: any; label: string }[] = [
+  { key: "check", Icon: Check, label: "Check (Padrão)" },
+  { key: "aviao", Icon: CustomImageIcon("/assets/icons/aviao.png"), label: "Avião" },
+  { key: "balsa", Icon: CustomImageIcon("/assets/icons/balsa.png"), label: "Balsa" },
+  { key: "bicycle", Icon: CustomImageIcon("/assets/icons/bicycle.png"), label: "Bicicleta" },
+  { key: "cafe-da-manha", Icon: CustomImageIcon("/assets/icons/cafe-da-manha.png"), label: "Café da manhã" },
+  { key: "calendar", Icon: CustomImageIcon("/assets/icons/calendar.png"), label: "Calendário" },
+  { key: "carro-sedan-na-frente", Icon: CustomImageIcon("/assets/icons/carro-sedan-na-frente.png"), label: "Carro" },
+  { key: "coffe-cup", Icon: CustomImageIcon("/assets/icons/coffe-cup.png"), label: "Café" },
+  { key: "enviar", Icon: CustomImageIcon("/assets/icons/enviar.png"), label: "Enviar" },
+  { key: "estacao-de-trem", Icon: CustomImageIcon("/assets/icons/estacao-de-trem.png"), label: "Trem" },
+  { key: "food-and-restaurant", Icon: CustomImageIcon("/assets/icons/food-and-restaurant.png"), label: "Restaurante" },
+  { key: "guia-turistico", Icon: CustomImageIcon("/assets/icons/guia-turistico.png"), label: "Guia" },
+  { key: "kit-de-primeiros-socorros", Icon: CustomImageIcon("/assets/icons/kit-de-primeiros-socorros.png"), label: "Socorros" },
+  { key: "motorcycle", Icon: CustomImageIcon("/assets/icons/motorcycle.png"), label: "Moto" },
+  { key: "onibus", Icon: CustomImageIcon("/assets/icons/onibus.png"), label: "Ônibus" },
+  { key: "pino-de-localizacao", Icon: CustomImageIcon("/assets/icons/pino-de-localizacao.png"), label: "Local" },
+  { key: "placa-do-hotel", Icon: CustomImageIcon("/assets/icons/placa-do-hotel.png"), label: "Hotel" },
+  { key: "relogio", Icon: CustomImageIcon("/assets/icons/relogio.png"), label: "Relógio" },
+  { key: "taxi-frontal", Icon: CustomImageIcon("/assets/icons/taxi-frontal.png"), label: "Táxi" },
   { key: "camera", Icon: Camera, label: "Câmera" },
   { key: "star", Icon: Star, label: "Estrela" },
   { key: "heart", Icon: Heart, label: "Coração" },
-  { key: "guide", Icon: User, label: "Guia" },
+  { key: "sun", Icon: Sun, label: "Sol" },
   { key: "wifi", Icon: Wifi, label: "Wi-Fi" },
 ];
 
