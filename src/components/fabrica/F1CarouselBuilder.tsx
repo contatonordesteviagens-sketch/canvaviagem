@@ -5344,7 +5344,7 @@ export function F1CarouselBuilder({
                         <Lock className="h-3.5 w-3.5 shrink-0 text-[#F5F906]" />
                       )}
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
