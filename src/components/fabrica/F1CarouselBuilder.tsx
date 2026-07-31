@@ -4039,7 +4039,11 @@ export function F1CarouselBuilder({
       }
       if (silent) return;
       console.error("Erro ao buscar fotos para o carrossel:", error);
-      toast.error(error instanceof Error ? error.message : String(error) || (isEs ? " No fue posible buscar fotos ahora.\ : \No foi possvel buscar fotos agora.\));
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : String(error) || (isEs ? "No fue posible buscar fotos ahora." : "Não foi possível buscar fotos agora."),
+      );
     } finally {
       if (photoSearchRequestRef.current === requestId) {
         setSearchingPhotos(false);
