@@ -12,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
 import {
   ensureFreshSupabaseSession,
-  isSupabaseAuthError,
 } from "@/lib/supabase-session";
 
 export type AccountTier =
@@ -175,20 +174,27 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
   const invoke = useCallback(async (body: Record<string, unknown>) => {
     if (!user) throw new Error("Login necessário");
 
-    const callWithToken = (accessToken: string) =>
-      supabase.functions.invoke("fabrica-entitlements", {
-        body,
-        headers: { Authorization: `Bearer ${accessToken}` },
+    const functionsBaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!functionsBaseUrl) throw new Error("Serviço temporariamente indisponível");
+
+    const callWithToken = async (accessToken: string) => {
+      const response = await fetch(`${functionsBaseUrl}/functions/v1/fabrica-entitlements`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
       });
+      const data = await response.json().catch(() => ({ error: "Resposta inválida do serviço" }));
+      return { data, status: response.status, ok: response.ok };
+    };
 
     const freshSession = await ensureFreshSupabaseSession({ expectedUserId: user.id });
     let result = await callWithToken(freshSession.access_token);
 
-    const responseStatus = Number(
-      (result.error as { context?: { status?: unknown } } | null)?.context?.status ?? 0,
-    );
-    const unauthorized = responseStatus === 401
-      || isSupabaseAuthError(result.error)
+    const unauthorized = result.status === 401
       || result.data?.error === "Sessão inválida"
       || result.data?.error === "Sessao invalida";
 
@@ -201,7 +207,11 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
       result = await callWithToken(renewedSession.access_token);
     }
 
-    if (result.error) throw result.error;
+    if (!result.ok) {
+      const error = new Error(result.data?.error || "Falha ao validar permissões");
+      if (result.status === 401) error.name = "FabricaAuthSessionError";
+      throw error;
+    }
     if (result.data?.error) throw new Error(result.data.error);
     return result.data;
   }, [user]);
