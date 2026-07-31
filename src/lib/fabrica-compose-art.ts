@@ -1035,11 +1035,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // trocar texto) sem instrumentar variação por variação.
   const recorder = createArtRecorder(rawCtx, options.artTweaks);
   const ctx = recorder.ctx;
-  const originalToDataURL = canvas.toDataURL.bind(canvas);
-  (canvas as any).toDataURL = (...args: any[]) => {
+  const originalToDataURL = canvas.toDataURL;
+  (canvas as any).toDataURL = function(...args: any[]) {
     recorder.replay();
     try { options.onArtElements?.(recorder.elements); } catch { /* noop */ }
-    return (originalToDataURL as any)(...args);
+    return originalToDataURL.apply(canvas, args);
   };
 
 
