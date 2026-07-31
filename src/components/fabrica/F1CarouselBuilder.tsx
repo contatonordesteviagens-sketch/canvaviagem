@@ -3333,6 +3333,7 @@ export function F1CarouselBuilder({
   const skipNextPersistRef = useRef("");
   const [activeIndex, setActiveIndex] = useState(() => (slides.length > 1 ? 1 : 0));
   const [viewMode, setViewMode] = useState<"ribbon" | "stack" | "focus">("ribbon");
+  const [maximizedSlide, setMaximizedSlide] = useState<CarouselSlide | null>(null);
   const [zoomScale, setZoomScale] = useState<number>(1);
   const carouselRatio = CAROUSEL_RATIOS[carouselFormat];
   const [photoQuery, setPhotoQuery] = useState("");
@@ -5359,20 +5360,33 @@ export function F1CarouselBuilder({
               </div>
 
               {/* Canvas do slide ativo em destaque */}
-              <div className="mx-auto overflow-hidden rounded-2xl border-2 border-[#F5F906] shadow-[0_0_32px_rgba(245,249,6,0.15)]">
-                {activeSlide && (
-                  <ScaledSlidePreview
-                    slide={activeSlide}
-                    index={activeIndex}
-                    total={slides.length}
-                    ratio={carouselRatio}
-                    logo={renderedLogo}
-                    logoPosition={logoPosition}
-                    primary={state.primaryColor}
-                    secondary={state.secondaryColor}
-                    width={thumbWidth}
-                  />
-                )}
+              <div className="group relative mx-auto overflow-hidden rounded-2xl border-2 border-[#F5F906] shadow-[0_0_32px_rgba(245,249,6,0.15)]">
+                  {activeSlide && (
+                    <>
+                      <ScaledSlidePreview
+                        slide={activeSlide}
+                        index={activeIndex}
+                        total={slides.length}
+                        ratio={carouselRatio}
+                        logo={renderedLogo}
+                        logoPosition={logoPosition}
+                        primary={state.primaryColor}
+                        secondary={state.secondaryColor}
+                        width={thumbWidth}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setMaximizedSlide(activeSlide)}
+                        className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100"
+                        title={isEs ? "Ampliar imagen" : "Ampliar imagem"}
+                      >
+                        <span className="flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-bold text-white backdrop-blur-md">
+                          <Maximize2 className="h-4 w-4" />
+                          {isEs ? "Ver más grande" : "Ver maior"}
+                        </span>
+                      </button>
+                    </>
+                  )}
               </div>
 
               <p className="text-[10px] text-white/40">
@@ -5390,7 +5404,7 @@ export function F1CarouselBuilder({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
-        {/* â•â• LEFT: Slide Editor â•â• */}
+        {/* â• â•  LEFT: Slide Editor â• â•  */}
         <div className="order-2 space-y-3 lg:order-1">
           {/* â”€â”€ Card: Slide being edited â”€â”€ */}
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] overflow-hidden">
@@ -6213,6 +6227,39 @@ export function F1CarouselBuilder({
           />
         ))}
       </div>
+
+      {/* Maximize Image Modal */}
+      {maximizedSlide && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 p-8 backdrop-blur-md"
+          onClick={() => setMaximizedSlide(null)}
+        >
+          <div
+            className="relative max-h-full max-w-full overflow-hidden rounded-2xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setMaximizedSlide(null)}
+              className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/50 text-white backdrop-blur-md transition-colors hover:bg-black/80"
+              title={isEs ? "Cerrar" : "Fechar"}
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <ScaledSlidePreview
+              slide={maximizedSlide}
+              index={slides.findIndex((s) => s.id === maximizedSlide.id)}
+              total={slides.length}
+              ratio={carouselRatio}
+              logo={renderedLogo}
+              logoPosition={logoPosition}
+              primary={state.primaryColor}
+              secondary={state.secondaryColor}
+              width={carouselFormat === "square" ? Math.min(window.innerWidth - 64, window.innerHeight - 64, 800) : Math.min(window.innerWidth - 64, (window.innerHeight - 64) * carouselRatio, 500)}
+            />
+          </div>
+        </div>
+      )}
 
       <style>{`
         .f1-carousel-input {
