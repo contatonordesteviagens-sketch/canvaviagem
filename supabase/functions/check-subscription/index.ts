@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
-import { isEliteProduct } from "../_shared/planAccess.ts";
+import { isEliteProduct, isStartProduct } from "../_shared/planAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -259,6 +259,11 @@ serve(async (req) => {
               logStep("Warning: failed to fetch session items", { error: lineErr.message });
             }
 
+            if (!isEliteProduct(productId) && !isStartProduct(productId)) {
+              logStep("Payment intent is for a non-subscription product. Skipping this session.", { productId });
+              continue;
+            }
+
             // Define fim de período arbitrário de 30 dias após a compra
             const expiryDate = new Date((validSession.created + (30 * 24 * 60 * 60)) * 1000).toISOString();
 
@@ -300,9 +305,17 @@ serve(async (req) => {
          if (dbClient) {
            await dbClient.from('subscriptions').update({ status: 'canceled' }).eq('user_id', userId).eq('billing_provider', 'stripe');
          }
-         return new Response(JSON.stringify({ error: 'Assinatura cancelada ou expirada' }), {
+         return new Response(JSON.stringify({
+           subscribed: false,
+           product_id: null,
+           subscription_end: null,
+           status: 'canceled',
+           trial_end: null,
+           billing_cycle: null,
+           billing_provider: null,
+         }), {
            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-           status: 403,
+           status: 200,
          });
       }
 
