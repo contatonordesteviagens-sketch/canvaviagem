@@ -1566,10 +1566,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       );
 
       const minContentGap = Math.round(height * 0.035);
-      const contentY = Math.max(
-        Math.round(height * (isStoryV8Luxury ? 0.455 : 0.40)),
-        Math.round(infoY + infoH + minContentGap)
-      );
+      const contentY = Math.round(infoY + infoH + minContentGap);
 
       const benefitItems = (highlights && highlights.length ? highlights : [
         { icon: "star" as IconKey, text: "Melhores experiencias" },
@@ -1587,7 +1584,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const fitBenefitGap = Math.floor((availableBoxH - cardVerticalPad) / Math.max(1, numRows));
       const benefitGap = Math.max(minBenefitGap, Math.min(maxBenefitGap, fitBenefitGap));
       const cardH = Math.min(availableBoxH, numRows * benefitGap + cardVerticalPad);
-      const cardY = Math.max(contentY, ctaY - cardH - boxBottomGap);
+      const cardY = contentY + Math.round(height * 0.02);
 
       const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
       const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
@@ -3135,7 +3132,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           tf -= 2;
           ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
         }
-        safeFillText(ctx, h.text, px + 76, py + pillH / 2, pw - 90, 14); // Afastamento aumentado para 76px para o ícone maior
+        safeFillText(ctx, h.text, px + 76, py + pillH / 2 - 2, pw - 90, 14); // Afastamento aumentado para 76px para o ícone maior
         ctx.textBaseline = "alphabetic";
       });
 
@@ -5667,6 +5664,8 @@ export async function renderIAPuraLayout(
     true
   );
 }
+
+
 
 
 

@@ -63,7 +63,7 @@ const CustomImageIcon = (src: string) => ({ className, style }: any) => (
   />
 );
 
-export type IconKey = "aviao" | "balsa" | "bicycle" | "cafe-da-manha" | "calendar" | "carro-sedan-na-frente" | "coffe-cup" | "enviar" | "estacao-de-trem" | "food-and-restaurant" | "guia-turistico" | "kit-de-primeiros-socorros" | "motorcycle" | "onibus" | "pino-de-localizacao-1" | "pino-de-localizacao" | "placa-do-hotel" | "relogio" | "taxi-frontal" | "check" | "camera" | "star" | "heart" | "sun" | "wifi";
+export type IconKey = "aviao" | "balsa" | "bicycle" | "cafe-da-manha" | "calendar" | "carro-sedan-na-frente" | "coffe-cup" | "enviar" | "estacao-de-trem" | "food-and-restaurant" | "guia-turistico" | "kit-de-primeiros-socorros" | "motorcycle" | "onibus" | "pino-de-localizacao-1" | "pino-de-localizacao" | "placa-do-hotel" | "relogio" | "taxi-frontal" | "check" | "camera" | "star" | "heart" | "sun" | "wifi" | "coqueiro";
 
 const ICON_OPTIONS: { key: IconKey; Icon: any; label: string }[] = [
   { key: "check", Icon: Check, label: "Check (Padrão)" },
@@ -89,16 +89,15 @@ const ICON_OPTIONS: { key: IconKey; Icon: any; label: string }[] = [
   { key: "star", Icon: Star, label: "Estrela" },
   { key: "heart", Icon: Heart, label: "Coração" },
   { key: "sun", Icon: Sun, label: "Sol" },
-  { key: "wifi", Icon: Wifi, label: "Wi-Fi" },
+  { key: "wifi", Icon: Wifi, label: "Wi-Fi" }, { key: "coqueiro", Icon: Palmtree, label: "Coqueiro" },
 ];
 
 interface Highlight { text: string; icon: IconKey; }
 
 const DEFAULT_HIGHLIGHTS: Highlight[] = [
-  { text: "Transporte incluso", icon: "onibus" },
-  { text: "Hospedagem", icon: "placa-do-hotel" },
-  { text: "Café da manhã", icon: "cafe-da-manha" },
-  { text: "Guia local", icon: "guia-turistico" },
+  { text: "Transporte", icon: "onibus" },
+  { text: "Melhores lugares", icon: "camera" },
+  { text: "Guia local", icon: "guia-turistico" }
 ];
 
 const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [
@@ -960,7 +959,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       toast.error(`Máximo de ${MAX_HIGHLIGHTS} atingido.`);
       return;
     }
-    setHighlights([...highlights, { text: v, icon: "check" }]);
+    setHighlights([...highlights, { text: v, icon: "camera" }]);
     setNewHl("");
     toast.success("Adicionado! Clique no ícone para alterar se quiser.");
   };
@@ -2889,3 +2888,4 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     </div>
   );
 };
+
