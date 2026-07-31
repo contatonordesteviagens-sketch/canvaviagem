@@ -10,6 +10,10 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
+import {
+  ensureFreshSupabaseSession,
+  isSupabaseAuthError,
+} from "@/lib/supabase-session";
 
 export type AccountTier =
   | "guest"
@@ -169,18 +173,38 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
   }, [fallback, user]);
 
   const invoke = useCallback(async (body: Record<string, unknown>) => {
-    if (!session?.access_token) throw new Error("Login necessário");
-    // Always use a fresh token: getSession() auto-refreshes an expired JWT.
-    const { data: fresh } = await supabase.auth.getSession();
-    const token = fresh.session?.access_token ?? session.access_token;
-    const { data, error } = await supabase.functions.invoke("fabrica-entitlements", {
-      body,
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
-    return data;
-  }, [session?.access_token]);
+    if (!user) throw new Error("Login necessário");
+
+    const callWithToken = (accessToken: string) =>
+      supabase.functions.invoke("fabrica-entitlements", {
+        body,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+    const freshSession = await ensureFreshSupabaseSession({ expectedUserId: user.id });
+    let result = await callWithToken(freshSession.access_token);
+
+    const responseStatus = Number(
+      (result.error as { context?: { status?: unknown } } | null)?.context?.status ?? 0,
+    );
+    const unauthorized = responseStatus === 401
+      || isSupabaseAuthError(result.error)
+      || result.data?.error === "Sessão inválida"
+      || result.data?.error === "Sessao invalida";
+
+    if (unauthorized) {
+      const renewedSession = await ensureFreshSupabaseSession({
+        expectedUserId: user.id,
+        forceRefresh: true,
+        staleAccessToken: freshSession.access_token,
+      });
+      result = await callWithToken(renewedSession.access_token);
+    }
+
+    if (result.error) throw result.error;
+    if (result.data?.error) throw new Error(result.data.error);
+    return result.data;
+  }, [user]);
 
   const refresh = useCallback(async () => {
     if (!user || !session?.access_token) {

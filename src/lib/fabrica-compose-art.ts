@@ -273,9 +273,6 @@ export function formatAdPhone(val: string, explicitDialCode?: string): string {
 
 /** Desenha ícone do WhatsApp colorido */
 function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "green" | "custom" = "green", customColor: string = "#ffffff") {
-
-  try {
-
   ctx.save();
   ctx.translate(x, y);
   ctx.shadowColor = "rgba(0,0,0,0.25)";
@@ -324,16 +321,10 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
   ctx.restore();
 
   ctx.restore();
-  
-
-  }
 }
 
 /** Desenha ícone do Instagram com gradiente oficial */
 function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "gradient" | "custom" = "gradient", customColor: string = "#ffffff") {
-
-  try {
-
   ctx.save();
   ctx.translate(x, y);
   ctx.shadowColor = "rgba(0,0,0,0.3)";
@@ -382,16 +373,10 @@ function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number
   }
 
   ctx.restore();
-  
-
-  }
 }
 
 /** Desenha ícone de Site / Globo */
 function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string = "#ffffff") {
-
-  try {
-
   ctx.save();
   ctx.translate(x, y);
   ctx.strokeStyle = color;
@@ -400,9 +385,6 @@ function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, 
   ctx.beginPath(); ctx.ellipse(0, 0, size * 0.18, size * 0.45, 0, 0, Math.PI * 2); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(-size * 0.45, 0); ctx.lineTo(size * 0.45, 0); ctx.stroke();
   ctx.restore();
-  
-
-  }
 }
 
 /**
@@ -412,9 +394,6 @@ function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, 
  */
 let __waIconCache: HTMLImageElement | null = null;
 export async function drawWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
-
-  try {
-
   try {
     if (!__waIconCache) {
       __waIconCache = await loadImage("/assets/whatsapp-icon.png");
@@ -429,9 +408,6 @@ export async function drawWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number,
   } catch {
     drawAdWhatsAppIcon(ctx, x, y, size, "green");
   }
-  
-
-  }
 }
 
 /**
@@ -439,13 +415,7 @@ export async function drawWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number,
  * Todos os layouts (V0â€“V4, Feed/Stories) passam por aqui â€” substituição centralizada.
  */
 export async function drawWhatsAppContact(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
-
-  try {
-
   return drawWhatsAppIcon(ctx, x, y, size);
-  
-
-  }
 }
 
 /**
@@ -723,7 +693,7 @@ export async function preloadNewIcons() {
   const iconKeys = ["aviao", "balsa", "bicycle", "cafe-da-manha", "calendar", "carro-sedan-na-frente", "coffe-cup", "enviar", "estacao-de-trem", "food-and-restaurant", "guia-turistico", "kit-de-primeiros-socorros", "motorcycle", "onibus", "pino-de-localizacao-1", "pino-de-localizacao", "placa-do-hotel", "relogio", "taxi-frontal"];
   await Promise.all(iconKeys.map(async (key) => {
     try {
-      __newIconsCache[key] = await loadRemoteImage(`/assets/icons/${key}.png`);
+      __newIconsCache[key] = await loadImage(`/assets/icons/${key}.png`);
     } catch(e) {
       console.warn("Could not preload icon", key);
     }
