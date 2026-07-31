@@ -170,9 +170,12 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
 
   const invoke = useCallback(async (body: Record<string, unknown>) => {
     if (!session?.access_token) throw new Error("Login necessário");
+    // Always use a fresh token: getSession() auto-refreshes an expired JWT.
+    const { data: fresh } = await supabase.auth.getSession();
+    const token = fresh.session?.access_token ?? session.access_token;
     const { data, error } = await supabase.functions.invoke("fabrica-entitlements", {
       body,
-      headers: { Authorization: `Bearer ${session.access_token}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (error) throw error;
     if (data?.error) throw new Error(data.error);

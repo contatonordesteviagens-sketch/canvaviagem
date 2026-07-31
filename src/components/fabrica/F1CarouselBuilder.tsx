@@ -6277,7 +6277,7 @@ export function F1CarouselBuilder({
               logoPosition={logoPosition}
               primary={state.primaryColor}
               secondary={state.secondaryColor}
-              width={carouselFormat === "square" ? Math.min(window.innerWidth - 64, window.innerHeight - 64, 800) : Math.min(window.innerWidth - 64, (window.innerHeight - 64) * carouselRatio, 500)}
+              width={carouselFormat === "feed" ? Math.min(window.innerWidth - 64, window.innerHeight - 64, 800) : Math.min(window.innerWidth - 64, (window.innerHeight - 64) * carouselRatio, 500)}
             />
           </div>
         </div>
