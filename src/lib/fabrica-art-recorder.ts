@@ -245,7 +245,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       state.matrix,
     );
     pushOp({ kind: "text", text, draw: { m: method, a: a.slice() }, state, box }, text);
-    if (!deferred) (real as any)[method](...a);
+    if (!deferred) (real as any)[method].apply(real, a);
   };
 
   const recordImage = (a: any[]) => {
@@ -279,7 +279,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       state.matrix,
     );
     pushOp({ kind: "image", draw: { m: "drawImage", a: a.slice() }, state, box });
-    if (!deferred) (real as any).drawImage(...a);
+    if (!deferred) (real as any).drawImage.apply(real, a);
   };
 
   const recordRect = (method: "fillRect" | "strokeRect", a: any[]) => {
@@ -292,7 +292,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       state.matrix,
     );
     pushOp({ kind: "shape", draw: { m: method, a: a.slice() }, state, box });
-    if (!deferred) (real as any)[method](...a);
+    if (!deferred) (real as any)[method].apply(real, a);
   };
 
   const recordPathDraw = (method: "fill" | "stroke", a: any[]) => {
@@ -300,14 +300,14 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
     const cmds = pendingPath.slice();
     const box = boxFromPoints(pathPoints(cmds), state.matrix);
     pushOp({ kind: "shape", path: cmds, draw: { m: method, a: a.slice() }, state, box });
-    if (!deferred) (real as any)[method](...a);
+    if (!deferred) (real as any)[method].apply(real, a);
   };
 
   const applyClips = (clips: ClipEntry[]) => {
     for (const clip of clips) {
       real.setTransform(clip.matrix);
       real.beginPath();
-      for (const c of clip.cmds) (real as any)[c.m](...c.a);
+      for (const c of clip.cmds) (real as any)[c.m].apply(real, c.a);
       if (clip.rule) real.clip(clip.rule);
       else real.clip();
     }
@@ -369,15 +369,15 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
           : fs * 1.1;
         const maxW = op.draw.a[3];
         lines.forEach((line, i) => {
-          if (typeof maxW === "number") (real as any)[op.draw.m](line, adjX, origY + i * lh, maxW);
-          else (real as any)[op.draw.m](line, adjX, origY + i * lh);
+          if (typeof maxW === "number") (real as any)[op.draw.m].apply(real, [line, adjX, origY + i * lh, maxW]);
+          else (real as any)[op.draw.m].apply(real, [line, adjX, origY + i * lh]);
         });
       } else if (op.path) {
         real.beginPath();
-        for (const c of op.path) (real as any)[c.m](...c.a);
-        (real as any)[op.draw.m](...op.draw.a);
+        for (const c of op.path) (real as any)[c.m].apply(real, c.a);
+        (real as any)[op.draw.m].apply(real, op.draw.a);
       } else {
-        (real as any)[op.draw.m](...op.draw.a);
+        (real as any)[op.draw.m].apply(real, op.draw.a);
       }
     } catch {
       /* uma primitiva quebrada não pode derrubar a arte inteira */
@@ -454,7 +454,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       if (prop === "getImageData") {
         return (...a: any[]) => {
           replay();
-          return (target.getImageData as any)(...a);
+          return (target as any).getImageData.apply(target, a);
         };
       }
 
@@ -479,7 +479,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       if (PATH_CMDS.has(prop)) {
         return (...a: any[]) => {
           pendingPath.push({ m: prop, a });
-          (target as any)[prop](...a);
+          (target as any)[prop].apply(target, a);
         };
       }
       if (prop === "clip") {
@@ -487,7 +487,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
           clipStack = clipStack.concat([
             { cmds: pendingPath.slice(), matrix: target.getTransform(), rule: a[0] as CanvasFillRule },
           ]);
-          (target as any).clip(...a);
+          (target as any).clip.apply(target, a);
         };
       }
       if (prop === "fill" || prop === "stroke") {
@@ -500,7 +500,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
               ? boxFromPoints(pts, state.matrix)
               : boxFromPoints([[0, 0], [24, 24]], state.matrix);
             pushOp({ kind: "shape", draw: { m: prop, a: a.slice() }, state, box });
-            if (!deferred) (target as any)[prop](...a);
+            if (!deferred) (target as any)[prop].apply(target, a);
             return;
           }
           recordPathDraw(prop as "fill" | "stroke", a);
