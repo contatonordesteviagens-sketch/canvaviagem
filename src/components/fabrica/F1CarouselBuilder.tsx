@@ -4909,7 +4909,7 @@ export function F1CarouselBuilder({
                         <span className="block text-[10px] font-extrabold">{labelText}</span>
                         <span className="block text-[8px] text-white/40">{dimensionsText}</span>
                       </span>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
