@@ -2431,7 +2431,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         
         const boxH = simY + padBottom;
-        const safeBoxY = 180;
+        const safeBoxY = Math.max(40, (height - boxH) / 2); // Centralizado verticalmente em square
 
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.25)"; ctx.shadowBlur = 28; ctx.shadowOffsetY = 8;
@@ -2561,34 +2561,68 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
         let valW = ctx.measureText(pMain).width;
         
-        while (valW > ringW * 0.40 && priceSize > 48) {
+        const computeRightColW = (ps: number) => {
+           const ss = Math.round(ps * 0.45);
+           ctx.font = `900 ${ss}px Inter, Arial, sans-serif`;
+           const sw = ctx.measureText(pSym).width;
+           
+           const cs = Math.round(ps * 0.50);
+           ctx.font = `900 ${cs}px Inter, Arial, sans-serif`;
+           const cw = pCents ? ctx.measureText(pCents).width : 0;
+           
+           ctx.font = `900 ${ps}px Inter, Arial, sans-serif`;
+           const vw = ctx.measureText(pMain).width;
+           return sw + 12 + vw + (pCents ? 6 + cw : 0);
+        };
+        
+        let rightColW = computeRightColW(priceSize);
+        let totalW = leftColW + 40 + rightColW; // 40 is midGap
+        
+        while (totalW > ringW - 40 && priceSize > 48) {
            priceSize -= 4;
-           ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-           valW = ctx.measureText(pMain).width;
+           rightColW = computeRightColW(priceSize);
+           totalW = leftColW + 40 + rightColW;
+        }
+        
+        // Se ainda for muito grande (ex: texto A VISTA ocupando metade), reduz leftCol
+        while (totalW > ringW - 40 && pTxtSize > 24) {
+           pTxtSize -= 2;
+           ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
+           const newMainW = ctx.measureText(mainTxt).width;
+           const newLeftColW = Math.max(newMainW, topTxtW, btmTxtW);
+           totalW = newLeftColW + 40 + rightColW;
+           // Não precisa reatribuir leftColW pois ele será recalculado antes do desenho,
+           // mas aqui nós estimamos a colisão.
         }
         
         const symSize = Math.round(priceSize * 0.45);
+        const centsSize = Math.round(priceSize * 0.50);
+        
         ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
         const symW = ctx.measureText(pSym).width;
-        
-        const centsSize = Math.round(priceSize * 0.50);
         ctx.font = `900 ${centsSize}px Inter, Arial, sans-serif`;
         const centsW = pCents ? ctx.measureText(pCents).width : 0;
+        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+        valW = ctx.measureText(pMain).width;
         
-        const rightColW = symW + 12 + valW + (pCents ? 6 + centsW : 0);
+        rightColW = symW + 12 + valW + (pCents ? 6 + centsW : 0);
+        // Atualiza leftColW definitivo apos redução de pTxtSize
+        ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
+        const finalMainTxtW = ctx.measureText(mainTxt).width;
+        const finalLeftColW = Math.max(finalMainTxtW, topTxtW, btmTxtW);
 
         // Layout Centralizado
         const midGap = 40;
-        const totalW = leftColW + midGap + rightColW;
-        const startX = ringX + (ringW - totalW) / 2;
+        const finalTotalW = finalLeftColW + midGap + rightColW;
+        const startX = ringX + (ringW - finalTotalW) / 2;
         
         const leftColX = startX;
-        const rightColX = startX + leftColW + midGap;
+        const rightColX = startX + finalLeftColW + midGap;
 
         // Desenhar Lado Esquerdo centralizado
         ctx.textAlign = "center";
         ctx.fillStyle = navy;
-        const leftColCx = leftColX + leftColW / 2;
+        const leftColCx = leftColX + finalLeftColW / 2;
         
         ctx.font = "600 20px Inter, Arial, sans-serif";
         ctx.fillText(topTxt.toUpperCase(), leftColCx, priceBlockY - 2);
@@ -2737,13 +2771,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // 4) Altura ADAPTATIVA do painel:
       const badgeH = 60;
-      const topPaddingBeforeTitle = 40;
-      const titleToContent = 50;
-      const bottomPadding = 50;
+      const topPaddingBeforeTitle = isStory ? 40 : 20;
+      const titleToContent = isStory ? 50 : 25;
+      const bottomPadding = isStory ? 50 : 25;
       const safeAnchorY = isStory ? safeTop : (logoH + 28);
       
       const topH = Math.min(
-        Math.round(height * 0.62),
+        Math.round(height * (isStory ? 0.62 : 0.54)),
         Math.max(
           Math.round(height * 0.46),
           safeAnchorY + badgeH + topPaddingBeforeTitle + titleSize + titleToContent + contentRowH + bottomPadding
@@ -3578,12 +3612,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const wSufV2 = ctx.measureText(suffixTxtV2).width;
         const maxContentWV2 = Math.max(wPrefV2, wPillV2, wPriceV2, wSufV2);
         const priceBlockW = Math.min(width * 0.84, Math.max(width * 0.5, Math.round(maxContentWV2 + 110)));
-        const priceCardH = 232;
+        const priceCardH = 186; // Reduzido de 232 para formato Square
         const priceCardX = Math.round((width - priceBlockW) / 2);
 
         // Reserve space for total + pix badges below the card
-        const extrasBelowH = (showTotalV2 ? 36 : 0) + (showPixV2 ? 46 : 0) + (showTotalV2 || showPixV2 ? 16 : 0);
-        const priceCardY = panelBottom - priceCardH - extrasBelowH - 40;
+        const extrasBelowH = (showTotalV2 ? 28 : 0) + (showPixV2 ? 38 : 0) + (showTotalV2 || showPixV2 ? 10 : 0);
+        const priceCardY = panelBottom - priceCardH - extrasBelowH - 15; // Reduzida margem inferior de 40 para 15
 
         // Card body
         fillRoundRect(ctx, priceCardX, priceCardY, priceBlockW, priceCardH, 22, v2CardBg);
@@ -3601,14 +3635,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.fillStyle = v2CardLabel;
           ctx.font = "800 24px Inter, Arial, sans-serif";
           ctx.textAlign = "center";
-          safeFillText(ctx, prefixTxtV2, cardCenterX, priceCardY + 38, priceBlockW - 40, 14);
+          safeFillText(ctx, prefixTxtV2, cardCenterX, priceCardY + 32, priceBlockW - 40, 14);
         }
 
         // Installment pill
         const pillH = 38;
         const pillW = Math.max(72, wPillV2);
         const pillX = cardCenterX - pillW / 2;
-        const pillY = priceCardY + 56;
+        const pillY = priceCardY + 48;
         fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, v2CardLabel);
         ctx.fillStyle = v2CardBg;
         ctx.font = "900 22px Inter, Arial, sans-serif";
@@ -3626,13 +3660,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         ctx.fillStyle = v2CardLabel;
         ctx.textAlign = "center";
-        ctx.fillText(priceStrV2, cardCenterX, priceCardY + 158);
+        ctx.fillText(priceStrV2, cardCenterX, priceCardY + 130);
 
         // Suffix (bottom)
         if (suffixTxtV2) {
           ctx.font = "800 22px Inter, Arial, sans-serif";
           ctx.globalAlpha = 0.92;
-          ctx.fillText(suffixTxtV2, cardCenterX, priceCardY + 200);
+          ctx.fillText(suffixTxtV2, cardCenterX, priceCardY + 168);
           ctx.globalAlpha = 1.0;
         }
 
