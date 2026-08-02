@@ -3560,7 +3560,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const wSufV2 = ctx.measureText(suffixTxtV2).width;
         const maxContentWV2 = Math.max(wPrefV2, wPillV2, wPriceV2, wSufV2);
         const priceBlockW = Math.min(width * 0.84, Math.max(width * 0.5, Math.round(maxContentWV2 + 110)));
-        const priceCardH = 186; // Reduzido de 232 para formato Square
+        const priceCardH = 232; // Restaurado de 186 para formato Square p/ evitar sobreposicao
         const priceCardX = Math.round((width - priceBlockW) / 2);
 
         // Reserve space for total + pix badges below the card
@@ -3583,14 +3583,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.fillStyle = v2CardLabel;
           ctx.font = "800 24px Inter, Arial, sans-serif";
           ctx.textAlign = "center";
-          safeFillText(ctx, prefixTxtV2, cardCenterX, priceCardY + 32, priceBlockW - 40, 14);
+          safeFillText(ctx, prefixTxtV2, cardCenterX, priceCardY + 36, priceBlockW - 40, 14);
         }
 
         // Installment pill
         const pillH = 38;
         const pillW = Math.max(72, wPillV2);
         const pillX = cardCenterX - pillW / 2;
-        const pillY = priceCardY + 48;
+        const pillY = priceCardY + 54;
         fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, v2CardLabel);
         ctx.fillStyle = v2CardBg;
         ctx.font = "900 22px Inter, Arial, sans-serif";
@@ -3608,13 +3608,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         ctx.fillStyle = v2CardLabel;
         ctx.textAlign = "center";
-        ctx.fillText(priceStrV2, cardCenterX, priceCardY + 130);
+        ctx.fillText(priceStrV2, cardCenterX, priceCardY + 168);
 
         // Suffix (bottom)
         if (suffixTxtV2) {
           ctx.font = "800 22px Inter, Arial, sans-serif";
           ctx.globalAlpha = 0.92;
-          ctx.fillText(suffixTxtV2, cardCenterX, priceCardY + 168);
+          ctx.fillText(suffixTxtV2, cardCenterX, priceCardY + 208);
           ctx.globalAlpha = 1.0;
         }
 
@@ -3763,7 +3763,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        effectiveTextColor,
+        "#000000", // Forçar PRETO no texto pois o fundo da V2 é bege clarinho
         userFamily,
         false,
         logoFormat
