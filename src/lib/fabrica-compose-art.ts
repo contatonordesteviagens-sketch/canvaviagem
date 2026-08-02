@@ -346,7 +346,7 @@ function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number
     ctx.fillStyle = "white";
     // Câmera
     ctx.lineWidth = size * 0.08; 
-    ctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
+    ctx.beginPath(); ctx.roundRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6, size * 0.15); ctx.stroke();
     ctx.beginPath(); ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); ctx.stroke();
     ctx.beginPath(); ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); ctx.fill();
   } else {
@@ -364,7 +364,7 @@ function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number
       
       bctx.globalCompositeOperation = "destination-out";
       bctx.lineWidth = size * 0.08;
-      bctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
+      bctx.beginPath(); bctx.roundRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6, size * 0.15); bctx.stroke();
       bctx.beginPath(); bctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); bctx.stroke();
       bctx.beginPath(); bctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); bctx.fill();
       
@@ -710,8 +710,19 @@ function drawMonoIcon(
   color: string,
   strokeWidth = 1.3,
 ) {
-  if (__newIconsCache[kind]) {
-    const img = __newIconsCache[kind];
+  const iconTranslationMap: Record<string, string> = {
+    "plane": "aviao",
+    "bus": "onibus",
+    "hotel": "placa-do-hotel",
+    "food": "cafe-da-manha",
+    "guide": "guia-turistico",
+    "map": "pino-de-localizacao",
+    "coffee": "coffe-cup"
+  };
+  const targetKey = iconTranslationMap[kind] || kind;
+
+  if (__newIconsCache[targetKey]) {
+    const img = __newIconsCache[targetKey];
     const off = document.createElement("canvas");
     off.width = size;
     off.height = size;
