@@ -1507,7 +1507,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textBaseline = "middle";
 
       const pillH = Math.round(width * (isStoryV8Luxury ? 0.07 : 0.056));
-      const pillY = Math.round(height * (isStoryV8Luxury ? 0.055 : 0.04));
+      const pillY = Math.round(height * (isStoryV8Luxury ? 0.055 : 0.02));
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.027))}px Inter, Arial, sans-serif`;
       const promoW = Math.min(width - pad * 2, Math.max(width * 0.34, ctx.measureText(promoText).width + pillH * 1.55));
       ctx.save();
@@ -1528,7 +1528,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const destinationLines = wrapTextSafe(ctx, destinationText, titleMaxW, 2, Math.round(destBase * 0.54));
       const leadLineH = Math.round(leadSize * 0.94);
       const destLineH = Math.round(destBase * 0.9);
-      const titleStartY = pillY + pillH + Math.round(height * (isStoryV8Luxury ? 0.04 : 0.025)) + leadLineH / 2 - 4;
+      const titleStartY = pillY + pillH + Math.round(height * (isStoryV8Luxury ? 0.04 : 0.015)) + leadLineH / 2 - 4;
 
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.78)";
@@ -1676,9 +1676,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const benefitPadY = Math.max(16, Math.round(cardH * 0.08));
       const benefitCellW = (cardW - benefitPadX * 2) / 2;
       const benefitSlotH = (cardH - benefitPadY * 2) / Math.max(1, numRows);
-      const benefitIconSize = Math.round(width * (benefitCount <= 4 ? 0.028 : 0.0245));
+      const showText = benefitCount <= 4;
+      const benefitIconSize = Math.round(width * (showText ? 0.025 : 0.034));
       const benefitBubbleR = Math.round(benefitIconSize * 1.08);
-      const benefitFontSize = Math.round(width * (benefitCount <= 4 ? 0.0162 : 0.0145));
+      const benefitFontSize = Math.round(width * 0.0135);
       const benefitLineH = Math.round(benefitFontSize * 1.04);
 
       ctx.textAlign = "center";
@@ -1690,8 +1691,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
           cx = cardX + cardW / 2;
         }
         const slotTop = cardY + benefitPadY + benefitSlotH * row;
-        const iconY = slotTop + benefitSlotH * 0.30;
-        const textStartY = slotTop + benefitSlotH * 0.58;
+        const iconY = slotTop + benefitSlotH * (showText ? 0.35 : 0.50);
+        const textStartY = slotTop + benefitSlotH * 0.62;
 
         ctx.save();
         ctx.fillStyle = "rgba(0,0,0,0.105)";
@@ -1699,17 +1700,23 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.arc(cx, iconY - benefitIconSize * 0.08, benefitBubbleR, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
-        drawMonoIcon(ctx, (item.icon || "check") as IconKey, cx, iconY, benefitIconSize, onGold, 1.85);
+        
+        // Ensure valid icon key to avoid missing graphics
+        const validKey = item.icon && ICON_SYMBOL[item.icon as IconKey] ? item.icon : null;
+        const iconKey = (validKey as IconKey) || (["bus", "hotel", "food", "guide", "star"][idx] as IconKey) || "check";
+        drawMonoIcon(ctx, iconKey, cx, iconY, benefitIconSize, onGold, 1.85);
 
-        ctx.fillStyle = onGold;
-        ctx.font = `800 ${benefitFontSize}px Inter, Arial, sans-serif`;
-        const textMaxW = idx === benefitItems.length - 1 && benefitItems.length % 2 !== 0
-          ? cardW - benefitPadX * 2
-          : benefitCellW - 8;
-        const lines = wrapTextSafe(ctx, String(item.text || ""), textMaxW, 2, 9);
-        lines.forEach((line, lineIdx) => {
-          safeFillText(ctx, line, cx, textStartY + lineIdx * benefitLineH, textMaxW, 9);
-        });
+        if (showText) {
+          ctx.fillStyle = onGold;
+          ctx.font = `800 ${benefitFontSize}px Inter, Arial, sans-serif`;
+          const textMaxW = idx === benefitItems.length - 1 && benefitItems.length % 2 !== 0
+            ? cardW - benefitPadX * 2
+            : benefitCellW - 4;
+          const lines = wrapTextSafe(ctx, String(item.text || ""), textMaxW, 2, 9);
+          lines.forEach((line, lineIdx) => {
+            safeFillText(ctx, line, cx, textStartY + lineIdx * benefitLineH, textMaxW, 9);
+          });
+        }
       });
 
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.034 : 0.031))}px Inter, Arial, sans-serif`;
