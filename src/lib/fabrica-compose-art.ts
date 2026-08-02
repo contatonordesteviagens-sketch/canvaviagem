@@ -536,8 +536,8 @@ async function drawFinalBranding(
   const logoEdge = logoUrl ? (padX + lw + bgPad * 2 + 30) : padX;
   const maxAllowedWidthForContacts = isStory ? (cw * 0.70) : (cw * 0.45);
 
-  // Aumentado o espaçamento vertical entre os dois contatos (de 0.18 para 0.22)
-  let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.22) : centerY;
+  // Aumentado o espaçamento vertical entre os dois contatos para evitar colisão!
+  let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.28) : centerY;
 
   for (const c of contactsToDraw) {
     let displayValue = c.value;
@@ -571,8 +571,8 @@ async function drawFinalBranding(
       drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
     }
 
-    // Aumentado o pulo para a linha de cima (de 0.36 para 0.44)
-    yPos -= (footerHeight * 0.44);
+    // Aumentado o pulo para a linha de cima (garantir respiro real para 2 contatos empilhados)
+    yPos -= (footerHeight * 0.56);
   }
   ctx.restore();
 }
@@ -3212,21 +3212,27 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`) 
         : "";
 
-      const priceFsV1 = 64;
-      const instFsV1 = 28;
+      let priceFsV1 = 64;
+      let instFsV1 = 28;
+      let pMainWV1 = 0, instWV1 = 0, pCentsWV1 = 0, totalWV1 = 0;
       
-      ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
-      const pMainWV1 = ctx.measureText(priceMainV1).width;
-      ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
-      const instWV1 = instTextV1 ? ctx.measureText(instTextV1).width + 12 : 0;
-      const pCentsWV1 = priceCentsV1 ? ctx.measureText(priceCentsV1).width + 2 : 0;
+      const calcPriceWidthsV1 = () => {
+        ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
+        pMainWV1 = ctx.measureText(priceMainV1).width;
+        ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
+        instWV1 = instTextV1 ? ctx.measureText(instTextV1).width + 12 : 0;
+        pCentsWV1 = priceCentsV1 ? ctx.measureText(priceCentsV1).width + 2 : 0;
+        totalWV1 = instWV1 + pMainWV1 + pCentsWV1;
+      };
       
-      const totalWV1 = instWV1 + pMainWV1 + pCentsWV1;
-      let startXV1 = (px + pw / 2) - totalWV1 / 2;
-      
-      if (totalWV1 > pw - 20) {
-        startXV1 = px + 10;
+      calcPriceWidthsV1();
+      while (totalWV1 > pw - 20 && priceFsV1 > 32) {
+        priceFsV1 -= 4;
+        instFsV1 -= 2;
+        calcPriceWidthsV1();
       }
+      
+      let startXV1 = (px + pw / 2) - totalWV1 / 2;
       
       const pyV1 = priceBlockY + 95;
       
@@ -3296,96 +3302,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         false,
         logoFormat
       );
-      if (false) {
-        // ==========================================
-        // DEDICATED RENDERER FOR V1 SQUARE 1:1 FOOTER
-        // ==========================================
-        const footerHeight = 100;
-        const footerY = height - footerHeight - 20;
-        const centerY = footerY + footerHeight / 2;
 
-        // 1. Véu Gradiente Escuro
-        const veilStartY = footerY - 80;
-        const grad = ctx.createLinearGradient(0, veilStartY, 0, height);
-        grad.addColorStop(0, "rgba(0,0,0,0.0)");
-        grad.addColorStop(0.2, "rgba(0,0,0,0.7)");
-        grad.addColorStop(1, "rgba(0,0,0,0.96)");
-        ctx.save();
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, veilStartY, width, height - veilStartY);
-        ctx.restore();
-
-        // 2. Resolver Contatos
-        const contact1 = options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined);
-        const contact2 = options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined);
-
-        const contactsToDraw: { icon: string; value: string }[] = [];
-        if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
-        if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
-
-        if (contactsToDraw.length > 0) {
-          ctx.save();
-          ctx.textAlign = "right";
-          ctx.textBaseline = "middle";
-          ctx.fillStyle = "#ffffff";
-          ctx.shadowColor = "rgba(0,0,0,0.8)";
-          ctx.shadowBlur = 6;
-
-          const textRightX = width - 60;
-          const itemGap = 20;
-          const safeFont = userFamily || "Inter";
-          
-          let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.18) : centerY;
-
-          for (const c of contactsToDraw) {
-            let displayValue = c.value;
-            const isWhatsapp = c.icon.startsWith("whatsapp");
-            const isWebsite = c.icon === "website" || c.icon === "website_custom";
-            
-            if (isWhatsapp) displayValue = formatAdPhone(c.value);
-            if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
-
-            let currentFontSize = 22;
-            const iconSizeFactor = 1.35;
-            let currentIconSize = currentFontSize * iconSizeFactor;
-
-            // REGRA MATEMÁTICA RIGOROSA DE LIMITE PARA ESTE TEXTO NA V1 QUADRADO
-            const maxUrlWidth = width * 0.40;
-
-            ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
-            while (ctx.measureText(displayValue).width > maxUrlWidth && currentFontSize > 12) {
-              currentFontSize -= 1;
-              currentIconSize = currentFontSize * iconSizeFactor;
-              ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
-            }
-
-            ctx.fillText(displayValue, textRightX, yPos);
-            const textWidth = ctx.measureText(displayValue).width;
-            const iconX = textRightX - textWidth - itemGap - currentIconSize / 2;
-
-            if (isWhatsapp) {
-              await drawWhatsAppContact(ctx, iconX, yPos, currentIconSize);
-            } else if (c.icon.startsWith("instagram")) {
-              drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
-            } else if (isWebsite) {
-              drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle as string);
-            }
-
-            yPos -= (footerHeight * 0.36);
-          }
-          ctx.restore();
-        }
-      } else {
-        await drawFinalBranding(
-          ctx, width, height, logoDataUrl, 
-          options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-          options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-          effectiveTextColor,
-          userFamily,
-          true,
-          logoFormat
-        );
-      }
     return canvas.toDataURL("image/png");
     }
 
