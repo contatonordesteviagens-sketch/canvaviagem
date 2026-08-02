@@ -2762,7 +2762,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
       benefitsList = benefitsList.slice(0, 6);
       const benefitsCount = Math.max(1, benefitsList.length);
-      const benefitLineH = benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34;
+      const benefitLineH = isStory ? (benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34) : (benefitsCount <= 4 ? 36 : 32);
       const benefitsBlockH = benefitsCount * benefitLineH;
 
       // 3) Altura do bloco preço (agora maior para caber o PIX e prefixo)
@@ -2772,7 +2772,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // 4) Altura ADAPTATIVA do painel:
       const badgeH = 60;
       const topPaddingBeforeTitle = isStory ? 40 : 20;
-      const titleToContent = isStory ? 50 : 25;
+      const titleToContent = isStory ? 50 : 15;
       const bottomPadding = isStory ? 50 : 25;
       const safeAnchorY = isStory ? safeTop : (logoH + 28);
       
@@ -2868,7 +2868,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const iconTextGap = 52 * benefitScale;
       ctx.textAlign = "left";
       benefitsList.forEach((b, i) => {
-        const iconKey = (b.icon as IconKey) || (["bus", "map", "guide", "star"][i] as IconKey) || "check";
+        const validKey = b.icon && ICON_SYMBOL[b.icon as IconKey] ? b.icon : null;
+        const iconKey = (validKey as IconKey) || (["bus", "hotel", "food", "guide", "star"][i] as IconKey) || "check";
         const lineY = benefitsOriginY + 28 * benefitScale + i * benefitLineH * benefitScale;
 
         // Fundo do icone (bolinha preta)
