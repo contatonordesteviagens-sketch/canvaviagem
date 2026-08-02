@@ -287,9 +287,13 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
   // Balão Branco
   ctx.fillStyle = "white";
   ctx.beginPath();
-  ctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
-  ctx.lineTo(-size * 0.35, size * 0.45);
-  ctx.closePath();
+  ctx.arc(0, 0, size * 0.38, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(-size * 0.38, size * 0.38);
+  ctx.lineTo(-size * 0.12, size * 0.35);
+  ctx.lineTo(-size * 0.35, size * 0.12);
   ctx.fill();
 
   // Fone Verde - Desenho em Vetor de Alta Fidelidade (Curvado Oficial do WhatsApp)
