@@ -394,20 +394,7 @@ function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, 
  */
 let __waIconCache: HTMLImageElement | null = null;
 export async function drawWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
-  try {
-    if (!__waIconCache) {
-      __waIconCache = await loadImage("/assets/whatsapp-icon.png");
-    }
-    const prevSmoothing = ctx.imageSmoothingEnabled;
-    const prevQuality = (ctx as any).imageSmoothingQuality;
-    ctx.imageSmoothingEnabled = true;
-    (ctx as any).imageSmoothingQuality = "high";
-    ctx.drawImage(__waIconCache, x - size / 2, y - size / 2, size, size);
-    ctx.imageSmoothingEnabled = prevSmoothing;
-    (ctx as any).imageSmoothingQuality = prevQuality;
-  } catch {
-    drawAdWhatsAppIcon(ctx, x, y, size, "green");
-  }
+  drawAdWhatsAppIcon(ctx, x, y, size, "green");
 }
 
 /**
@@ -3253,13 +3240,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       
       let startXV1 = (px + pw / 2) - totalWV1 / 2;
       
-      const pyV1 = priceBlockY + 95;
+      const pyV1 = priceBlockY + 110;
       
       ctx.textAlign = "left";
       ctx.fillStyle = v1OnPanel;
       if (instTextV1) {
         ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
-        ctx.fillText(instTextV1, startXV1, pyV1);
+        ctx.fillText(instTextV1, startXV1, pyV1 - 12);
       }
       ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
       const priceMainXV1 = startXV1 + instWV1;
@@ -3277,7 +3264,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "center";
       ctx.fillStyle = v1Accent;
       ctx.font = "800 20px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, pyV1 + 32);
+      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, pyV1 + 36);
       
       // Pilula PIX
       if (hasPixV1) {
@@ -3285,7 +3272,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${pixFsV1}px Inter, Arial, sans-serif`;
         const pixWV1 = ctx.measureText(pixTxtV1).width + 36;
         const pixHV1 = 36;
-        const pixYV1 = pyV1 + 46;
+        const pixYV1 = pyV1 + 52;
         
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)";
@@ -3302,7 +3289,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       
       ctx.textAlign = "left";
 
-      // 10) Sombra de base para destacar os contatos
+      // 10) Sombra de base p/ foto caso precise (mantida para a foto sangrada)
       const shadowH = 220;
       const shadowY = height - shadowH;
       const bottomGrad = ctx.createLinearGradient(0, shadowY, 0, height);
@@ -3310,17 +3297,42 @@ const panelBottom = RULES.PANEL_BOTTOM;
       bottomGrad.addColorStop(0.5, "rgba(0,0,0,0.5)");
       bottomGrad.addColorStop(1, "rgba(0,0,0,0.85)");
       ctx.fillStyle = bottomGrad;
-      ctx.fillRect(0, shadowY, width, shadowH);
+      ctx.fillRect(photoX, shadowY, photoW, shadowH);
 
-      await drawFinalBranding(
-        ctx, width, height, logoDataUrl, 
-        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        effectiveTextColor,
-        userFamily,
-        false,
-        logoFormat
-      );
+      // 11) Contatos na base do painel esquerdo
+      const contactFs = 18;
+      ctx.font = `700 ${contactFs}px Inter, Arial, sans-serif`;
+      ctx.fillStyle = v1OnPanel;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+
+      let contactY = height - (format === "story" ? 60 : 45);
+      
+      if (instagram || options.footerContact2Value) {
+        const val = options.footerContact2Value || instagram;
+        const icon = options.footerContact2Icon || "instagram_gradient";
+        if (icon === "instagram_gradient" || icon.startsWith("instagram")) {
+            drawAdInstagramIcon(ctx, px + 18, contactY, 28, icon.includes("gradient") ? "gradient" : "custom", v1OnPanel);
+        } else {
+            drawAdWebsiteIcon(ctx, px + 18, contactY, 28, v1OnPanel);
+        }
+        ctx.fillStyle = v1OnPanel;
+        safeFillText(ctx, val, px + 42, contactY + 2, pw - 42, contactFs);
+        contactY -= 36;
+      }
+
+      if (whatsapp || options.footerContact1Value) {
+        const val = options.footerContact1Value || whatsapp;
+        const icon = options.footerContact1Icon || "whatsapp_green";
+        if (icon.startsWith("whatsapp")) {
+            drawAdWhatsAppIcon(ctx, px + 18, contactY, 28, "green");
+        } else {
+            drawAdWebsiteIcon(ctx, px + 18, contactY, 28, v1OnPanel);
+        }
+        ctx.fillStyle = v1OnPanel;
+        safeFillText(ctx, val, px + 42, contactY + 2, pw - 42, contactFs);
+      }
+      ctx.textBaseline = "alphabetic";
 
     return canvas.toDataURL("image/png");
     }
