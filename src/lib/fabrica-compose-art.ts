@@ -2835,23 +2835,30 @@ const panelBottom = RULES.PANEL_BOTTOM;
         tw.record({ id: "badges", label: "Selos do topo", x: badgeStartX, y: badgeY, w: totalBadgeW, h: badgeHS });
       }
 
-      // 7) Headline (1 linha, fonte adaptativa)
+      // 7) Headline (adaptativo, suporta 2 linhas para evitar overlap)
       const twTitle = tw.get("title");
       const titleSizeAdj = Math.max(18, Math.round(titleSize * twTitle.scale));
       ctx.fillStyle = v0OnPanel;
       ctx.font = `900 ${titleSizeAdj}px Inter, Arial, sans-serif`;
-      const titleBaseY = Math.max(safeAnchorY + badgeH + topPaddingBeforeTitle + titleSize, safeAnchorY + 12 + titleSize);
-      const titleY = titleBaseY + twTitle.dy;
+      
+      const titleLines = wrapTextSafe(ctx, titleText, width - 80, 2, 22);
+      const titleBlockH = titleLines.length * (titleSizeAdj * 1.05);
+      const titleBaseY = Math.max(safeAnchorY + badgeH + topPaddingBeforeTitle + titleBlockH, safeAnchorY + 12 + titleBlockH);
+      const titleY = titleBaseY - titleBlockH + titleSizeAdj + twTitle.dy;
       const titleX = width / 2 + twTitle.dx;
+      
       ctx.textAlign = "center";
-      safeFillText(ctx, titleText, titleX, titleY, width - 80, 22);
+      titleLines.forEach((line, idx) => {
+        ctx.fillText(line, titleX, titleY + idx * (titleSizeAdj * 1.05));
+      });
+
       tw.record({
         id: "title",
         label: "Título",
         x: titleX - (width - 80) / 2,
         y: titleY - titleSizeAdj,
         w: width - 80,
-        h: Math.round(titleSizeAdj * 1.25),
+        h: titleBlockH,
       });
 
       // 8) Benefits + Preço lado a lado â€” preço ALINHADO Ã€ DIREITA pra eliminar
@@ -2886,7 +2893,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fill();
 
         // Desenha icone grafico (amarelo) por cima
-        drawMonoIcon(ctx, iconKey, cx, cy, iconSize0 * 0.85, v0PanelBg);
+        drawMonoIcon(ctx, iconKey, cx, cy, iconSize0 * 0.85, v0PanelBg, 1.7);
 
         // Texto ao lado do icone, com auto-shrink
         let bfs = Math.max(12, Math.round(26 * benefitScale));
@@ -5656,6 +5663,7 @@ export async function renderIAPuraLayout(
     true
   );
 }
+
 
 
 
