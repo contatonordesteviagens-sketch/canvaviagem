@@ -4627,11 +4627,28 @@ export function F1CarouselBuilder({
           </summary>
           <div className="mt-2">
             <input
-              value={activeSlide.imageUrl.startsWith("data:") ? "" : activeSlide.imageUrl}
-              onChange={(event) => patchActive({ imageUrl: event.target.value })}
+              value={activeSlide.imageUrl.startsWith("data:") ? "" : activeSlide.imageUrl.includes("corsproxy.io") ? decodeURIComponent(activeSlide.imageUrl.split("?")[1] || activeSlide.imageUrl) : activeSlide.imageUrl}
+              onChange={(event) => {
+                let val = event.target.value.trim();
+                if (val && val.startsWith("http") && !val.includes("supabase.co") && !val.includes("unsplash.com") && !val.includes("pexels.com") && !val.includes("corsproxy.io")) {
+                  val = `https://corsproxy.io/?${encodeURIComponent(val)}`;
+                }
+                patchActive({ imageUrl: val });
+              }}
               placeholder="https://..."
               className="f1-carousel-input text-xs"
             />
+            {activeSlide.imageUrl && !activeSlide.imageUrl.startsWith("data:") && (
+               <div className="mt-3 rounded-xl overflow-hidden border border-white/10 p-1.5 bg-black/40 shadow-inner flex flex-col items-center">
+                 <img 
+                   src={activeSlide.imageUrl} 
+                   alt="preview do link" 
+                   className="w-full h-28 object-cover rounded-lg" 
+                   onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/400x200/1a1a1a/444444?text=Link+Invalido"; }} 
+                 />
+                 <p className="text-[10px] text-emerald-400 font-bold mt-1.5">✔ Imagem carregada via Link</p>
+               </div>
+            )}
           </div>
         </details>
       </details>
