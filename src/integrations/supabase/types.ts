@@ -1240,6 +1240,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      owns_fabrica_project: { Args: { _project_id: string }; Returns: boolean }
       publish_fabrica_crm_form: {
         Args: {
           p_description: string
