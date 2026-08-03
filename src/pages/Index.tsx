@@ -122,6 +122,7 @@ const Index = () => {
   const location = useLocation();
   const { user } = useAuth();
   const { can } = useEntitlements();
+  const hasPremiumContent = can("library.premium.open");
   const { setLanguage, t } = useLanguage();
 
   // Force PT language on this page

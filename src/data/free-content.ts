@@ -30,4 +30,4 @@ export const FREE_FEED_TEMPLATE_IDS = new Set([
   "local-feed-2",
 ]);
 
-export const FREE_CAPTION_IDS = new Set(FREE_CAPTIONS.map((caption) => caption.id));
+export const FREE_CAPTION_IDS = new Set<string>(FREE_CAPTIONS.map((caption) => caption.id));
