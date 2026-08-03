@@ -279,7 +279,12 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       state.matrix,
     );
     pushOp({ kind: "image", draw: { m: "drawImage", a: a.slice() }, state, box });
-    if (!deferred) (real as any).drawImage.apply(real, a);
+    if (!deferred) {
+      if (a.length === 3) real.drawImage(a[0], a[1], a[2]);
+      else if (a.length === 5) real.drawImage(a[0], a[1], a[2], a[3], a[4]);
+      else if (a.length === 9) real.drawImage(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
+      else (real as any).drawImage.apply(real, a);
+    }
   };
 
   const recordRect = (method: "fillRect" | "strokeRect", a: any[]) => {
@@ -375,9 +380,32 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       } else if (op.path) {
         real.beginPath();
         for (const c of op.path) (real as any)[c.m].apply(real, c.a);
-        (real as any)[op.draw.m].apply(real, op.draw.a);
+        
+        if ((op.draw.m === "fill" || op.draw.m === "stroke") && op.draw.a.length >= 1 && typeof op.draw.a[0] === "object") {
+          if (op.draw.m === "stroke") real.stroke(op.draw.a[0]);
+          else if (op.draw.a.length > 1) real.fill(op.draw.a[0], op.draw.a[1]);
+          else real.fill(op.draw.a[0]);
+        } else if (op.draw.m === "drawImage") {
+          if (op.draw.a.length === 3) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2]);
+          else if (op.draw.a.length === 5) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2], op.draw.a[3], op.draw.a[4]);
+          else if (op.draw.a.length === 9) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2], op.draw.a[3], op.draw.a[4], op.draw.a[5], op.draw.a[6], op.draw.a[7], op.draw.a[8]);
+          else (real as any).drawImage.apply(real, op.draw.a);
+        } else {
+          (real as any)[op.draw.m].apply(real, op.draw.a);
+        }
       } else {
-        (real as any)[op.draw.m].apply(real, op.draw.a);
+        if ((op.draw.m === "fill" || op.draw.m === "stroke") && op.draw.a.length >= 1 && typeof op.draw.a[0] === "object") {
+          if (op.draw.m === "stroke") real.stroke(op.draw.a[0]);
+          else if (op.draw.a.length > 1) real.fill(op.draw.a[0], op.draw.a[1]);
+          else real.fill(op.draw.a[0]);
+        } else if (op.draw.m === "drawImage") {
+          if (op.draw.a.length === 3) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2]);
+          else if (op.draw.a.length === 5) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2], op.draw.a[3], op.draw.a[4]);
+          else if (op.draw.a.length === 9) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2], op.draw.a[3], op.draw.a[4], op.draw.a[5], op.draw.a[6], op.draw.a[7], op.draw.a[8]);
+          else (real as any).drawImage.apply(real, op.draw.a);
+        } else {
+          (real as any)[op.draw.m].apply(real, op.draw.a);
+        }
       }
     } catch {
       /* uma primitiva quebrada não pode derrubar a arte inteira */
@@ -500,7 +528,11 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
               ? boxFromPoints(pts, state.matrix)
               : boxFromPoints([[0, 0], [24, 24]], state.matrix);
             pushOp({ kind: "shape", draw: { m: prop, a: a.slice() }, state, box });
-            if (!deferred) (target as any)[prop].apply(target, a);
+            if (!deferred) {
+              if (prop === "stroke") target.stroke(a[0]);
+              else if (a.length > 1) target.fill(a[0], a[1]);
+              else target.fill(a[0]);
+            }
             return;
           }
           recordPathDraw(prop as "fill" | "stroke", a);
