@@ -1,6 +1,4 @@
-/**
- * Centralized logic for premium content verification
- */
+import { FREE_CAPTION_IDS, FREE_FEED_TEMPLATE_IDS } from "@/data/free-content";
 
 export const PREMIUM_TYPES = ['video', 'seasonal', 'reel', 'story', 'weekly-story', 'feed', 'resource', 'download'];
 export const FREE_TYPES = ['caption'];
@@ -8,23 +6,24 @@ export const FREE_TYPES = ['caption'];
 /**
  * Checks if a specific content item should be considered premium
  */
-export const checkIfItemIsPremium = (type: string, title?: string, index?: number): boolean => {
+export const checkIfItemIsPremium = (
+    type: string,
+    title?: string,
+    _index?: number,
+    itemId?: string,
+): boolean => {
     const itemTitle = (title || '')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase();
 
-    // Captions: only the first 2 (index 0, 1) are free
     if (type === 'caption') {
-        if (typeof index === 'number') return index >= 2;
-        return false;
+        return !itemId || !FREE_CAPTION_IDS.has(itemId);
     }
 
-    // Feed: first 2 items are free
     if (type === 'feed') {
-        if (typeof index === 'number') return index >= 2;
-        // If no index is provided, keep explicit free catalog titles available.
-        return !itemTitle.includes('gratis');
+        const explicitFreeItem = Boolean(itemId && FREE_FEED_TEMPLATE_IDS.has(itemId));
+        return !explicitFreeItem && !itemTitle.includes('(gratis)');
     }
 
     // AI Tools / Marketing Tools logic

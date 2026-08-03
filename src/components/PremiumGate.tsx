@@ -32,7 +32,7 @@ export const PremiumGate = ({
   const isChildrenPremium = (children as any)?.props?.isPremium !== false;
 
   // If not logged in OR no subscription AND it's a premium item, show blurred preview
-  if ((!user || !can("premium_content.open")) && isChildrenPremium) {
+  if ((!user || !can("library.premium.open")) && isChildrenPremium) {
     const handleAction = () => {
       if (onPremiumClick) {
         onPremiumClick();
@@ -78,7 +78,7 @@ export const PremiumGate = ({
           {/* Persistent bottom hint */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-yellow-500 text-black border-none rounded-full px-4 py-1.5 shadow-lg flex items-center gap-2 text-[10px] font-black uppercase tracking-wider opacity-90 group-hover:opacity-100">
             <Lock className="h-3 w-3" />
-            <span>EXCLUSIVO ELITE</span>
+            <span>CONTEUDO PARA ASSINANTES</span>
           </div>
         </div>
       </div>;

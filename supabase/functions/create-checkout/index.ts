@@ -23,6 +23,22 @@ const GENERIC_ERRORS = {
 
 type BillingCycle = "monthly" | "semiannual" | "annual";
 
+const validUpgradeFeatures = new Set([
+  "ad_export",
+  "carousel_export",
+  "site_publish",
+  "crm",
+  "voice",
+  "vendedor",
+  "premium_content",
+  "fabrica",
+]);
+
+const sanitizeInternalPath = (value: unknown) => {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return "";
+  return value.slice(0, 480);
+};
+
 const getPriceId = (billingCycle: BillingCycle) => {
   const envName = {
     monthly: "STRIPE_ELITE_MONTHLY_PRICE_ID",
@@ -111,10 +127,16 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id });
 
     let requestedCycle: BillingCycle = "monthly";
+    let returnTo = "";
+    let upgradeFeature = "";
     try {
       const body = await req.json();
       if (body?.billing_cycle === "semiannual" || body?.billing_cycle === "annual") {
         requestedCycle = body.billing_cycle;
+      }
+      returnTo = sanitizeInternalPath(body?.return_to);
+      if (typeof body?.upgrade === "string" && validUpgradeFeatures.has(body.upgrade)) {
+        upgradeFeature = body.upgrade;
       }
     } catch {
       // Empty request bodies use the canonical monthly offer.
@@ -196,6 +218,19 @@ serve(async (req) => {
     }
 
     const origin = getAppOrigin();
+    const successParams = new URLSearchParams({
+      source: "checkout",
+      billingCycle: requestedCycle,
+    });
+    const cancelParams = new URLSearchParams({ checkout: "canceled" });
+    if (returnTo) {
+      successParams.set("returnTo", returnTo);
+      cancelParams.set("returnTo", returnTo);
+    }
+    if (upgradeFeature) {
+      successParams.set("upgrade", upgradeFeature);
+      cancelParams.set("upgrade", upgradeFeature);
+    }
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -213,13 +248,17 @@ serve(async (req) => {
         metadata: {
           user_id: user.id,
           billing_cycle: requestedCycle,
+          upgrade: upgradeFeature,
+          return_to: returnTo,
         },
       },
-      success_url: `${origin}/obrigado?source=checkout`,
-      cancel_url: `${origin}/inicio?checkout=canceled`,
+      success_url: `${origin}/obrigado?${successParams.toString()}`,
+      cancel_url: `${origin}/inicio?${cancelParams.toString()}`,
       metadata: {
         user_id: user.id,
         billing_cycle: requestedCycle,
+        upgrade: upgradeFeature,
+        return_to: returnTo,
       },
       // Enable abandoned cart recovery
       after_expiration: {

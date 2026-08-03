@@ -6,10 +6,11 @@ import { Mail, Loader2, ArrowRight, MessageCircle, RefreshCw } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MetaPixelNew } from "@/components/MetaPixelNew";
-import { SpanishPixel } from "@/components/SpanishPixel";
-import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
-import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
 import { MetaPixel916689227676142 } from "@/components/MetaPixel916689227676142";
+import { useEntitlements } from "@/contexts/EntitlementsContext";
+
+const safeInternalPath = (value: string | null) =>
+  value?.startsWith("/") && !value.startsWith("//") ? value : null;
 
 // Pixel IDs that should receive Purchase event on PT thank you page
 const PT_PIXEL_IDS = [
@@ -140,13 +141,31 @@ const ConfettiCanvas = () => {
 const Obrigado = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { tier, track } = useEntitlements();
   const emailFromUrl = searchParams.get("email");
   const sourceFromUrl = searchParams.get("source");
+  const billingCycle = searchParams.get("billingCycle");
+  const returnTo = safeInternalPath(searchParams.get("returnTo"));
+  const upgradeFeature = searchParams.get("upgrade") || "general";
+  const purchaseValue = billingCycle === "annual" ? 482 : billingCycle === "semiannual" ? 347 : 97;
+  const predictedLtv = billingCycle === "annual" ? 482 : billingCycle === "semiannual" ? 694 : 1164;
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [tracked, setTracked] = useState(false);
   const [showConfetti, setShowConfetti] = useState(true);
+  const checkoutTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (sourceFromUrl !== "checkout" || checkoutTrackedRef.current) return;
+    checkoutTrackedRef.current = true;
+    track("checkout_completed", {
+      feature: upgradeFeature,
+      billing_cycle: billingCycle || "monthly",
+      tier,
+      return_to: returnTo,
+    });
+  }, [billingCycle, returnTo, sourceFromUrl, tier, track, upgradeFeature]);
 
   useEffect(() => {
     if (emailFromUrl) setEmail(decodeURIComponent(emailFromUrl));
@@ -168,15 +187,13 @@ const Obrigado = () => {
       const fbqReady = typeof window !== 'undefined' && typeof window.fbq === 'function';
       if (fbqReady) {
         console.log(`[Meta Pixel] fbq ready after ${attempts} attempt(s) — firing Purchase/Subscribe`);
-        const okP = trackPurchaseOnAllPixels(29.0, 'BRL', `${eventID}_p`);
-        const okS = trackSubscribeOnAllPixels(29.0, 'BRL', 29.0 * 12, `${eventID}_s`);
-        trackESPurchase(9.09, 'USD');
-        trackESSubscribe(9.09, 'USD', 9.09 * 12);
+        const okP = trackPurchaseOnAllPixels(purchaseValue, 'BRL', `${eventID}_p`);
+        const okS = trackSubscribeOnAllPixels(purchaseValue, 'BRL', predictedLtv, `${eventID}_s`);
         // Google Ads conversion
         if (typeof window !== 'undefined' && (window as any).gtag) {
           (window as any).gtag('event', 'conversion', {
             send_to: 'AW-18034387036/QeQUCJ-g7Y0cENzQu5dD',
-            value: 29.0,
+            value: purchaseValue,
             currency: 'BRL',
             transaction_id: eventID,
           });
@@ -193,7 +210,7 @@ const Obrigado = () => {
               body: {
                 event_id: `${eventID}_p`,
                 event_source_url: window.location.href,
-                value: 29.0,
+                value: purchaseValue,
                 currency: 'BRL',
                 email: email || emailFromUrl || undefined,
                 fbp,
@@ -222,7 +239,7 @@ const Obrigado = () => {
       cancelled = true;
       clearTimeout(startTimer);
     };
-  }, [tracked]);
+  }, [email, emailFromUrl, predictedLtv, purchaseValue, tracked]);
 
   useEffect(() => {
     const t = setTimeout(() => setShowConfetti(false), 10500);
@@ -281,6 +298,16 @@ const Obrigado = () => {
   const supportWhatsAppUrl =
     "https://wa.me/5585986411294?text=Fiz%20a%20compra%20do%20Canva%20Viagem%20e%20gostaria%20de%20suporte";
 
+  const continueToFeature = () => {
+    if (!returnTo) return;
+    track("returned_to_feature", {
+      feature: upgradeFeature,
+      tier,
+      return_to: returnTo,
+    });
+    navigate(returnTo);
+  };
+
   return (
     <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center p-6 md:p-8 relative overflow-hidden" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
       {/* Rich Background Effects to match SalesPage */}
@@ -288,7 +315,6 @@ const Obrigado = () => {
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/5 blur-[100px] pointer-events-none" />
 
       <MetaPixelNew isPurchasePage={true} />
-      <SpanishPixel />
       <MetaPixel916689227676142 isPurchase={true} />
       {showConfetti && <ConfettiCanvas />}
 
@@ -318,6 +344,16 @@ const Obrigado = () => {
 
         {/* Card redesigned as a sleek Dark Glass Container */}
         <div className="w-full bg-white/[0.02] border border-white/10 rounded-[2.5rem] p-8 md:p-10 shadow-2xl transition-all duration-500 backdrop-blur-md animate-scale-in">
+          {returnTo && (
+            <button
+              type="button"
+              onClick={continueToFeature}
+              className="mb-6 flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#00E5FF] px-5 text-sm font-black uppercase tracking-wide text-black transition-transform hover:scale-[1.02]"
+            >
+              Continuar no recurso liberado
+              <ArrowRight className="h-5 w-5" />
+            </button>
+          )}
           {!magicLinkSent ? (
             <div className="space-y-6">
               <div className="text-center space-y-2">

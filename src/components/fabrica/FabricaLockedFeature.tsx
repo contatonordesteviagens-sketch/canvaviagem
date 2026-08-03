@@ -19,17 +19,19 @@ export function FabricaLockedFeature({
 }: FabricaLockedFeatureProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { track } = useEntitlements();
+  const { tier, track } = useEntitlements();
+  const returnTo = `${location.pathname}${location.search}`;
 
   useEffect(() => {
+    track("paywall_viewed", { feature, source: "fabrica_locked_feature", tier });
     if (feature === "crm") {
-      track("crm_preview_opened", { source: "fabrica_locked_feature" });
+      track("crm_preview_opened", { source: "fabrica_locked_feature", tier });
     }
-  }, [feature, track]);
+  }, [feature, tier, track]);
 
   const openUpgrade = () => {
-    track("upgrade_clicked", { feature, source: "fabrica_locked_feature" });
-    navigate(buildUpgradePath(feature, location.pathname));
+    track("upgrade_clicked", { feature, source: "fabrica_locked_feature", tier });
+    navigate(buildUpgradePath(feature, returnTo));
   };
 
   return (

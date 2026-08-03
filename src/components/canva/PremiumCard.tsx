@@ -122,6 +122,10 @@ const PremiumCardComponent = ({
   const handleCopyCaption = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (onPremiumRequired) {
+      onPremiumRequired();
+      return;
+    }
     if (description) {
       navigator.clipboard.writeText(description);
       toast.success("Legenda copiada para a área de transferência!");
@@ -297,6 +301,10 @@ const PremiumCardComponent = ({
                 onClick={(e) => { 
                   e.preventDefault(); 
                   e.stopPropagation(); 
+                  if (onPremiumRequired) {
+                    onPremiumRequired();
+                    return;
+                  }
                   window.open(finalDriveUrl, '_blank', 'noopener,noreferrer');
                 }} 
                 title="Abrir Link do Drive"

@@ -24,6 +24,11 @@ const TRACKED_EVENTS = new Set([
   "upgrade_clicked",
   "site_publish_blocked",
   "crm_preview_opened",
+  "landing_viewed",
+  "plan_selected",
+  "checkout_started",
+  "checkout_completed",
+  "returned_to_feature",
 ]);
 
 type Tier =
@@ -82,6 +87,9 @@ function buildCapabilities(tier: Tier) {
     "crm.real_data": fullAccess,
     "voice.use": fullAccess,
     "vendedor.use": fullAccess,
+    "library.premium.open": fullAccess || tier === "start_legacy",
+    "tools.basic.use": fullAccess || tier === "start_legacy",
+    "tools.elite.use": fullAccess,
     "premium_content.open": fullAccess || tier === "start_legacy",
     unlimited: fullAccess,
   };

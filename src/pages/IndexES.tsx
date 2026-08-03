@@ -50,6 +50,7 @@ import { resources, videoDownloads, feedTemplates as localFeedTemplates } from "
 import { trackViewContent } from "@/lib/meta-pixel";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { contentLibraryES } from "@/data/content-library-es";
+import { isStartTool } from "@/lib/contentAccess";
 
 // ⭐ FORCE SPANISH LANGUAGE ⭐
 const FORCED_LANGUAGE = 'es' as const;
@@ -101,25 +102,17 @@ const IndexES = () => {
   // Free content renders immediately; server entitlements protect paid content.
   // Free content renders immediately; premium gates update when subscription resolves.
 
-  const hasPremiumContent = Boolean(user) && can("premium_content.open");
-
   // Function to get the premium required callback
-  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string, itemTitle?: string, index?: number) => {
+  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string, itemTitle?: string, index?: number, itemId?: string) => {
     const isPremium = Boolean(isItemPremiumOverride)
       || checkIfItemIsPremium(itemType || category || '', itemTitle, index);
 
     if (!isPremium) return undefined;
 
-    if (!user) {
-      return () => {
-        toast.info("Inicia sesión para acceder al contenido", {
-          description: "Serás redireccionado a la página de inicio de sesión.",
-        });
-        setTimeout(() => navigate('/auth'), 1500);
-      };
-    }
-
-    if (hasPremiumContent) return undefined;
+    const hasAccess = itemType === "tool"
+      ? can(isStartTool(itemId) ? "tools.basic.use" : "tools.elite.use")
+      : can("library.premium.open");
+    if (user && hasAccess) return undefined;
     return () => setShowPremiumGate(true);
   };
 
@@ -331,7 +324,7 @@ const IndexES = () => {
                         isNew={tool.is_new} onClick={() => trackClick('tool', tool.id)}
                         isFavorite={isFavorite("marketing_tool", tool.id)}
                         onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                        onPremiumRequired={getPremiumCallback('all', isToolPremium, 'tool', tool.title)}
+                        onPremiumRequired={getPremiumCallback('all', isToolPremium, 'tool', tool.title, undefined, tool.id)}
                         isPremium={isToolPremium}
                       />
                     );
@@ -890,7 +883,7 @@ const IndexES = () => {
                       onClick={() => trackClick('tool', tool.id)}
                       isFavorite={isFavorite("marketing_tool", tool.id)}
                       onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                      onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, 'tool', tool.title)}
+                      onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, 'tool', tool.title, undefined, tool.id)}
                       isPremium={isToolPremium}
                     />
                   );
@@ -1099,7 +1092,7 @@ const IndexES = () => {
                             description={tool.description || ""}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                            onPremiumRequired={getPremiumCallback('tools', checkIfItemIsPremium('tool', tool.title), 'tool', tool.title)}
+                            onPremiumRequired={getPremiumCallback('tools', checkIfItemIsPremium('tool', tool.title), 'tool', tool.title, undefined, tool.id)}
                           />
                         ))}
                       </div>

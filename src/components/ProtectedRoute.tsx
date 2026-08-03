@@ -61,7 +61,7 @@ export const ProtectedRoute = ({
 
     // 3. Check Subscription (if required)
     // Note: Admins bypass subscription checks ensuring they can access everything
-    if (requireSubscription && !can("premium_content.open") && !isAdmin && !localPreview) {
+    if (requireSubscription && !can("library.premium.open") && !isAdmin && !localPreview) {
         return <Navigate to={buildUpgradePath("premium_content", location.pathname)} replace />;
     }
 

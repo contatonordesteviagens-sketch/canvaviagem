@@ -8,7 +8,6 @@ import {
   type ReactNode,
 } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
 import {
   ensureFreshSupabaseSession,
@@ -37,6 +36,9 @@ export type EntitlementCapability =
   | "crm.real_data"
   | "voice.use"
   | "vendedor.use"
+  | "library.premium.open"
+  | "tools.basic.use"
+  | "tools.elite.use"
   | "premium_content.open";
 
 export type MeteredCapability = "ad_export" | "carousel_export";
@@ -97,6 +99,9 @@ const buildGuestSnapshot = (): EntitlementsSnapshot => ({
     "crm.real_data": false,
     "voice.use": false,
     "vendedor.use": false,
+    "library.premium.open": false,
+    "tools.basic.use": false,
+    "tools.elite.use": false,
     "premium_content.open": false,
     unlimited: false,
   },
@@ -141,6 +146,9 @@ const buildFallbackSnapshot = (
       "crm.real_data": elite,
       "voice.use": elite,
       "vendedor.use": elite,
+      "library.premium.open": elite || start,
+      "tools.basic.use": elite || start,
+      "tools.elite.use": elite,
       "premium_content.open": elite || start,
       unlimited: elite,
     },

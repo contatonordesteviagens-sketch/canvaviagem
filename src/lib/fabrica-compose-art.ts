@@ -278,47 +278,26 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
   ctx.shadowColor = "rgba(0,0,0,0.25)";
   ctx.shadowBlur = 4;
 
-  // Fundo Verde Oficial do WhatsApp (Sempre Verde Oficial para consistência e blindagem)
-  ctx.fillStyle = "#25D366";
+  // Balão Verde Sólido Oficial do WhatsApp
+  ctx.fillStyle = colorMode === "green" ? "#25D366" : customColor;
   ctx.beginPath(); 
-  ctx.arc(0, 0, size * 0.48, 0, Math.PI * 2); 
-  ctx.fill();
-  
-  // Balão Branco
-  ctx.fillStyle = "white";
-  ctx.beginPath();
-  ctx.arc(0, 0, size * 0.38, 0, Math.PI * 2);
+  ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2); 
   ctx.fill();
 
   ctx.beginPath();
-  ctx.moveTo(-size * 0.38, size * 0.38);
-  ctx.lineTo(-size * 0.12, size * 0.35);
-  ctx.lineTo(-size * 0.35, size * 0.12);
+  ctx.moveTo(-size * 0.45, size * 0.45);
+  ctx.lineTo(-size * 0.40, size * 0.18);
+  ctx.lineTo(-size * 0.18, size * 0.40);
   ctx.fill();
 
-  // Fone Verde - Desenho em Vetor de Alta Fidelidade (Curvado Oficial do WhatsApp)
-  ctx.fillStyle = "#25D366";
-  ctx.strokeStyle = "#25D366";
-  ctx.lineWidth = size * 0.10;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  
-  ctx.beginPath();
-  ctx.arc(0, -size * 0.02, size * 0.20, 0.7, 2.4);
-  ctx.stroke();
-  
-  // Almofadas curvas do fone (microfone e fone de ouvido do logo do WhatsApp)
-  ctx.save();
-  ctx.translate(0, -size * 0.02);
-  ctx.rotate(0.65);
-  ctx.beginPath();
-  ctx.ellipse(size * 0.20, 0, size * 0.07, size * 0.11, -0.3, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
+  // Vetor do Telefone (Telefone Branco)
+  const phonePath = new Path2D("M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347");
   
   ctx.save();
-  ctx.translate(0, -size * 0.02);
-  ctx.rotate(2.45);
+  const scale = (size * 0.90) / 24; 
+  ctx.scale(scale, scale);
+  ctx.translate(-12, -12); // Ponto central do SVG 24x24 é 12,12
+  
   ctx.beginPath();
   ctx.ellipse(size * 0.20, 0, size * 0.07, size * 0.11, 0.3, 0, Math.PI * 2);
   ctx.fill();
@@ -3208,10 +3187,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
         return paymentLabel || pricePrefix || "a partir de";
       })().toString().toUpperCase();
-      ctx.fillText(topLabelRenderV1, px + pw / 2, priceBlockY + 36);
       
-      // Valor formatado: a parte inteira permanece em destaque e os centavos
-      // usam a mesma escala do texto de parcelas para não vazar do card.
+      let currentLabelY = priceBlockY + 36;
+      ctx.fillText(topLabelRenderV1, px + pw / 2, currentLabelY);
+      
+      // Valor formatado
       let priceStrV1 = mainPrice || `${curSym} ${price}`.trim();
       if (hideCents) priceStrV1 = priceStrV1.replace(/[.,]\d{2}\s*$/, "");
       const centsMatchV1 = priceStrV1.match(/^(.*?)([,.]\d{1,2})$/);
@@ -3222,45 +3202,46 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`) 
         : "";
 
+      // Se houver parcelamento, desenhamos centralizado abaixo de "A PARTIR DE" e acima do preço!
+      if (instTextV1) {
+         currentLabelY += 26;
+         ctx.font = "900 18px Inter, Arial, sans-serif";
+         ctx.fillStyle = v1OnPanel;
+         ctx.fillText(instTextV1.toUpperCase(), px + pw / 2, currentLabelY);
+      }
+
       let priceFsV1 = 64;
-      let instFsV1 = 28;
-      let pMainWV1 = 0, instWV1 = 0, pCentsWV1 = 0, totalWV1 = 0;
+      let pMainWV1 = 0, pCentsWV1 = 0, totalWV1 = 0;
       
       const calcPriceWidthsV1 = () => {
         ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
         pMainWV1 = ctx.measureText(priceMainV1).width;
-        ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
-        instWV1 = instTextV1 ? ctx.measureText(instTextV1).width + 12 : 0;
+        // Centavos são menores e seguem o fluxo
+        ctx.font = `900 ${Math.max(20, priceFsV1 - 36)}px Inter, Arial, sans-serif`;
         pCentsWV1 = priceCentsV1 ? ctx.measureText(priceCentsV1).width + 2 : 0;
-        totalWV1 = instWV1 + pMainWV1 + pCentsWV1;
+        totalWV1 = pMainWV1 + pCentsWV1;
       };
       
       calcPriceWidthsV1();
-      while (totalWV1 > pw - 20 && priceFsV1 > 32) {
+      while (totalWV1 > pw - 30 && priceFsV1 > 32) {
         priceFsV1 -= 4;
-        instFsV1 -= 2;
         calcPriceWidthsV1();
       }
       
       let startXV1 = (px + pw / 2) - totalWV1 / 2;
-      
-      const pyV1 = priceBlockY + 110;
+      const pyV1 = currentLabelY + priceFsV1 + 10;
       
       ctx.textAlign = "left";
       ctx.fillStyle = v1OnPanel;
-      if (instTextV1) {
-        ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
-        ctx.fillText(instTextV1, startXV1, pyV1 - 12);
-      }
       ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
-      const priceMainXV1 = startXV1 + instWV1;
-      ctx.fillText(priceMainV1, priceMainXV1, pyV1);
+      ctx.fillText(priceMainV1, startXV1, pyV1);
+      
       if (priceCentsV1) {
-        ctx.font = `900 ${instFsV1}px Inter, Arial, sans-serif`;
+        ctx.font = `900 ${Math.max(20, priceFsV1 - 36)}px Inter, Arial, sans-serif`;
         ctx.fillText(
           priceCentsV1,
-          priceMainXV1 + pMainWV1 + 2,
-          pyV1 - priceFsV1 + instFsV1 + 8,
+          startXV1 + pMainWV1 + 2,
+          pyV1 - priceFsV1 + Math.max(20, priceFsV1 - 36) + 8,
         );
       }
       
@@ -3268,7 +3249,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "center";
       ctx.fillStyle = v1Accent;
       ctx.font = "800 20px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, pyV1 + 36);
+      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, pyV1 + 32);
       
       // Pilula PIX
       if (hasPixV1) {
@@ -3310,7 +3291,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
 
-      let contactY = height - (format === "story" ? 60 : 45);
+      let contactY = height - (format === "story" ? 80 : 130); // Elevado MUITO mais para não colar na marca d'água gigantesca da V1
       
       if (instagram || options.footerContact2Value) {
         const val = options.footerContact2Value || instagram;
@@ -3594,7 +3575,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const pillH = 38;
         const pillW = Math.max(72, wPillV2);
         const pillX = cardCenterX - pillW / 2;
-        const pillY = priceCardY + 54;
+        const pillY = priceCardY + 42; // Distanciado do preço principal
         fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, v2CardLabel);
         ctx.fillStyle = v2CardBg;
         ctx.font = "900 22px Inter, Arial, sans-serif";
@@ -3604,7 +3585,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textBaseline = "alphabetic";
 
         // Price (auto-shrink)
-        let pfsV2 = 76;
+        let pfsV2 = 72; // Ligeiramente reduzido para não encavalar no 10x
         ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
         while (ctx.measureText(priceStrV2).width > priceBlockW - 50 && pfsV2 > 30) {
           pfsV2 -= 4;
@@ -3612,7 +3593,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         ctx.fillStyle = v2CardLabel;
         ctx.textAlign = "center";
-        ctx.fillText(priceStrV2, cardCenterX, priceCardY + 168);
+        ctx.fillText(priceStrV2, cardCenterX, priceCardY + 172); // Descido 4px
 
         // Suffix (bottom)
         if (suffixTxtV2) {
@@ -3691,11 +3672,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         // Promo tagline accent at top of faixa
         if (hasPromoV2) {
-          ctx.fillStyle = secondaryColor;
           ctx.font = "800 22px Inter, Arial, sans-serif";
+          const promoW = ctx.measureText(promoTagV2).width;
+          
+          // Bloco branco transparente para destacar a oferta especial
+          fillRoundRect(ctx, left - 12, faixaY + 8, promoW + 24, 32, 8, "rgba(255,255,255,0.85)");
+          
+          ctx.fillStyle = secondaryColor;
           ctx.textAlign = "left";
           ctx.textBaseline = "alphabetic";
-          safeFillText(ctx, promoTagV2, left, faixaY + 28, width - left - 40, 14);
+          safeFillText(ctx, promoTagV2, left, faixaY + 31, width - left - 40, 14);
         }
 
         ctx.fillStyle = v2HeadlineColor;

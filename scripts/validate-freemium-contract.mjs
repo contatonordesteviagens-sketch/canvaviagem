@@ -48,6 +48,62 @@ requireText(
   "const FREE_LIMITS = { ad_export: 3, carousel_export: 2, projects: 1 };",
   "browser fallback must expose 3 ad exports, 2 carousel exports and 1 project.",
 );
+for (const capability of [
+  '"library.premium.open"',
+  '"tools.basic.use"',
+  '"tools.elite.use"',
+]) {
+  requireText(
+    "src/contexts/EntitlementsContext.tsx",
+    capability,
+    `browser entitlement matrix is missing ${capability}.`,
+  );
+  requireText(
+    "supabase/functions/fabrica-entitlements/index.ts",
+    capability,
+    `server entitlement matrix is missing ${capability}.`,
+  );
+}
+requireText(
+  "src/contexts/EntitlementsContext.tsx",
+  '"library.premium.open": elite || start',
+  "Start must retain the paid media library.",
+);
+requireText(
+  "src/contexts/EntitlementsContext.tsx",
+  '"tools.elite.use": elite',
+  "Start must not inherit Elite-only AI tools.",
+);
+requireText(
+  "src/lib/premium-utils.ts",
+  "FREE_CAPTION_IDS",
+  "free captions must use stable IDs instead of list position.",
+);
+requireText(
+  "src/lib/premium-utils.ts",
+  "FREE_FEED_TEMPLATE_IDS",
+  "free art templates must use stable IDs instead of list position.",
+);
+rejectText(
+  "src/lib/premium-utils.ts",
+  "index >=",
+  "free content must never depend on its visual list position.",
+);
+const premiumCardSource = read("src/components/canva/PremiumCard.tsx");
+const guardedPremiumActions = premiumCardSource.match(/if \(onPremiumRequired\)/g) ?? [];
+if (guardedPremiumActions.length < 3) {
+  failures.push("PremiumCard: card, caption and Drive actions must all obey the premium gate.");
+}
+requireText(
+  "src/components/UpgradePromptDialog.tsx",
+  'isGuest && isPremiumOnlyFeature',
+  "premium-only guest actions must explain the paid plan instead of promising access after free signup.",
+);
+requireText(
+  "src/components/UpgradePromptDialog.tsx",
+  'isGuest && !isPremiumOnlyFeature',
+  "free guest quotas must still preserve the account-creation handoff.",
+);
 for (const [needle, label] of [
   ["ad_export: 3", "3 ad exports"],
   ["carousel_export: 2", "2 carousel exports"],
@@ -155,6 +211,26 @@ requireText(
   "supabase/functions/create-checkout/index.ts",
   "const origin = getAppOrigin();",
   "checkout redirects must use the configured application origin.",
+);
+requireText(
+  "supabase/functions/create-checkout/index.ts",
+  "return_to",
+  "checkout must preserve the blocked feature return path.",
+);
+requireText(
+  "supabase/functions/create-checkout/index.ts",
+  "billingCycle: requestedCycle",
+  "checkout confirmation must preserve the purchased billing cycle for accurate analytics.",
+);
+requireText(
+  "src/pages/Inicio2.tsx",
+  'searchParams.get("upgrade")',
+  "the sales page must adapt its message to the blocked feature.",
+);
+requireText(
+  "src/pages/Obrigado.tsx",
+  'track("returned_to_feature"',
+  "purchase confirmation must return customers to the feature they unlocked.",
 );
 rejectText(
   "supabase/functions/create-checkout/index.ts",

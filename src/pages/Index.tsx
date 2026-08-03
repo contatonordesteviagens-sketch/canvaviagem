@@ -113,6 +113,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useGamification } from "@/hooks/useGamification";
 import { checkIfItemIsPremium } from "@/lib/premium-utils";
 import { FREE_CAPTIONS, FREE_FEED_TEMPLATE_IDS } from "@/data/free-content";
+import { isStartTool } from "@/lib/contentAccess";
 
 
 
@@ -237,26 +238,25 @@ const Index = () => {
   // Note: Removed blocking loader for better LCP. 
   // We handle loading states within individual components or sections.
 
-  const hasPremiumContent = Boolean(user) && can("premium_content.open");
-
   // Function to get the premium required callback
-  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string, itemTitle?: string, index?: number) => {
+  const getPremiumCallback = (
+    category?: CategoryType,
+    isItemPremiumOverride?: boolean,
+    itemType?: string,
+    itemTitle?: string,
+    index?: number,
+    itemId?: string,
+  ) => {
     const isPremium = Boolean(isItemPremiumOverride)
-      || checkIfItemIsPremium(itemType || category || '', itemTitle, index);
+      || checkIfItemIsPremium(itemType || category || '', itemTitle, index, itemId);
 
     // Public free items remain available without forcing account creation.
     if (!isPremium) return undefined;
 
-    if (!user) {
-      return () => {
-        toast.info("Faça login para acessar o conteúdo", {
-          description: "Você será redirecionado para a página de login.",
-        });
-        setTimeout(() => navigate('/auth'), 1500);
-      };
-    }
-
-    if (hasPremiumContent) return undefined;
+    const hasAccess = itemType === "tool"
+      ? can(isStartTool(itemId) ? "tools.basic.use" : "tools.elite.use")
+      : can("library.premium.open");
+    if (user && hasAccess) return undefined;
 
     return () => setShowPremiumGate(true);
   };
@@ -324,7 +324,7 @@ const Index = () => {
     // Aplicar filtro multi-select
     if (accessFilters.length > 0) {
       filtered = filtered.filter(item => {
-        const isItemPremium = checkIfItemIsPremium(item.type, item.title);
+        const isItemPremium = checkIfItemIsPremium(item.type, item.title, undefined, item.id);
         if (accessFilters.includes('premium') && isItemPremium) return true;
         if (accessFilters.includes('gratis') && !isItemPremium) return true;
         return false;
@@ -548,7 +548,7 @@ const Index = () => {
         // Filter by access if selected
         const allFilterTools = (toolsData || []).filter(tool => {
           if (accessFilters.length === 0) return true;
-          const isToolPremium = checkIfItemIsPremium('tool', tool.title);
+          const isToolPremium = checkIfItemIsPremium('tool', tool.title, undefined, tool.id);
           if (accessFilters.includes('premium') && isToolPremium) return true;
           if (accessFilters.includes('gratis') && !isToolPremium) return true;
           return false;
@@ -605,7 +605,6 @@ const Index = () => {
                 ) : allFilterTools.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {allFilterTools.map(tool => {
-                      const isToolPremium = checkIfItemIsPremium('tool', tool.title);
                       return (
                         <ToolCard
                           key={tool.id}
@@ -623,8 +622,8 @@ const Index = () => {
                           }}
                           isFavorite={isFavorite("marketing_tool", tool.id)}
                           onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                          onPremiumRequired={getPremiumCallback(activeCategory, checkIfItemIsPremium('tool', tool.title), 'tool', tool.title)}
-                          isPremium={checkIfItemIsPremium('tool', tool.title)}
+                          onPremiumRequired={getPremiumCallback(activeCategory, true, 'tool', tool.title, undefined, tool.id)}
+                          isPremium={checkIfItemIsPremium('tool', tool.title, undefined, tool.id)}
                         />
                       );
                     })}
@@ -697,8 +696,8 @@ const Index = () => {
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title)}
-                        isPremium={checkIfItemIsPremium(template.type, template.title)}
+                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title, undefined, template.id)}
+                        isPremium={checkIfItemIsPremium(template.type, template.title, undefined, template.id)}
                       />
                     ))}
                   </div>
@@ -709,7 +708,7 @@ const Index = () => {
                   {!toolsLoading && firstFourTools.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {firstFourTools.map(tool => {
-                        const isToolPremium = checkIfItemIsPremium('tool', tool.title);
+                        const isToolPremium = checkIfItemIsPremium('tool', tool.title, undefined, tool.id);
                         return (
                           <ToolCard
                             key={tool.id} id={tool.id} title={tool.title} url={tool.url}
@@ -723,7 +722,7 @@ const Index = () => {
                             }}
                             isFavorite={isFavorite("marketing_tool", tool.id)}
                             onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                            onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, 'tool', tool.title)}
+                            onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, 'tool', tool.title, undefined, tool.id)}
                             isPremium={isToolPremium}
                           />
                         );
@@ -761,8 +760,8 @@ const Index = () => {
                           onClick={() => handleCardClick(template as ContentItem)}
                           isFavorite={template.id ? isFavorite("content_item", template.id) : false}
                           onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
-                          onPremiumRequired={getPremiumCallback('feed', false, template.type, template.title, index)}
-                          isPremium={checkIfItemIsPremium(template.type, template.title, index)}
+                          onPremiumRequired={getPremiumCallback('feed', false, template.type, template.title, index, template.id)}
+                          isPremium={checkIfItemIsPremium(template.type, template.title, index, template.id)}
                         />
                       ))}
                     </div>
@@ -784,8 +783,8 @@ const Index = () => {
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title)}
-                        isPremium={checkIfItemIsPremium(template.type, template.title)}
+                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title, undefined, template.id)}
+                        isPremium={checkIfItemIsPremium(template.type, template.title, undefined, template.id)}
                       />
                     ))}
                   </div>
@@ -822,8 +821,8 @@ const Index = () => {
                               hashtags={caption.hashtags}
                               isFavorite={isFavorite("caption", caption.id)}
                               onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                              onPremiumRequired={getPremiumCallback('all', false, 'caption', caption.destination, index)}
-                              isPremium={checkIfItemIsPremium('caption', caption.destination, index)}
+                              onPremiumRequired={getPremiumCallback('all', false, 'caption', caption.destination, index, caption.id)}
+                              isPremium={checkIfItemIsPremium('caption', caption.destination, index, caption.id)}
                             />
                           </div>
                         ))}
@@ -869,7 +868,7 @@ const Index = () => {
                             isFavorite={isFavorite("content_item", offer.id)}
                             onToggleFavorite={() => handleToggleFavorite("content_item", offer.id)}
                             onPremiumRequired={getPremiumCallback('offers', true, 'offer', offer.title)}
-                            isPremium={checkIfItemIsPremium(offer.type, offer.title)}
+                            isPremium={checkIfItemIsPremium(offer.type, offer.title, undefined, offer.id)}
                           />
                         ))}
                       </div>
@@ -892,7 +891,16 @@ const Index = () => {
                   title="Destaques: Férias & Alta Temporada ☀️"
                 />
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  {featuredVideos.map(item => (
+                  {featuredVideos.map(item => {
+                    const requirePremium = getPremiumCallback(
+                      "videos",
+                      true,
+                      item.type,
+                      item.title,
+                      undefined,
+                      item.id,
+                    );
+                    return (
                     <Card key={item.id} className="overflow-hidden border-primary/30 shadow-lg hover:shadow-xl transition-shadow">
                       {/* Animated Media (GIF or Video) */}
                       {item.media_url ? (
@@ -947,8 +955,12 @@ const Index = () => {
                           <Button
                             className="col-span-2"
                             onClick={() => {
+                              if (requirePremium) {
+                                requirePremium();
+                                return;
+                              }
                               trackClick(item.type, item.id);
-                              window.open(item.url, '_blank');
+                              window.open(item.url, '_blank', 'noopener,noreferrer');
                             }}
                           >
                             <ExternalLink className="w-4 h-4 mr-2" />
@@ -960,6 +972,10 @@ const Index = () => {
                               variant="outline"
                               className="col-span-2"
                               onClick={() => {
+                                if (requirePremium) {
+                                  requirePremium();
+                                  return;
+                                }
                                 navigator.clipboard.writeText(item.description!);
                                 toast.success("Legenda copiada para a área de transferência!");
                               }}
@@ -974,6 +990,10 @@ const Index = () => {
                               variant="secondary"
                               className="col-span-2"
                               onClick={() => {
+                                if (requirePremium) {
+                                  requirePremium();
+                                  return;
+                                }
                                 navigator.clipboard.writeText(item.drive_url!);
                                 toast.success("Link do Drive copiado! Cole no seu navegador Chrome/Safari.");
                               }}
@@ -985,7 +1005,8 @@ const Index = () => {
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -1046,8 +1067,8 @@ const Index = () => {
                         onClick={() => handleCardClick(template)}
                         isFavorite={template.id ? isFavorite("content_item", template.id) : false}
                         onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
-                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title, index)}
-                        isPremium={checkIfItemIsPremium(template.type, template.title, index)}
+                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title, index, template.id)}
+                        isPremium={checkIfItemIsPremium(template.type, template.title, index, template.id)}
                       />
                     ))}
                   </div>
@@ -1121,8 +1142,8 @@ const Index = () => {
                       onClick={() => handleCardClick(template as ContentItem)}
                       isFavorite={template.id ? isFavorite("content_item", template.id) : false}
                       onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
-                      onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title, index)}
-                      isPremium={checkIfItemIsPremium(template.type, template.title, index)}
+                      onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title, index, template.id)}
+                      isPremium={checkIfItemIsPremium(template.type, template.title, index, template.id)}
                     />
                   ))}
                 </div>
@@ -1340,7 +1361,6 @@ const Index = () => {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
                 {toolsData?.map((tool) => {
-                  const isToolPremium = checkIfItemIsPremium('tool', tool.title);
                   return (
                     <ToolCard
                       key={tool.id}
@@ -1356,8 +1376,8 @@ const Index = () => {
                       }}
                       isFavorite={isFavorite("marketing_tool", tool.id)}
                       onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                      onPremiumRequired={getPremiumCallback(activeCategory, checkIfItemIsPremium('tool', tool.title), 'tool', tool.title)}
-                      isPremium={checkIfItemIsPremium('tool', tool.title)}
+                      onPremiumRequired={getPremiumCallback(activeCategory, true, 'tool', tool.title, undefined, tool.id)}
+                      isPremium={checkIfItemIsPremium('tool', tool.title, undefined, tool.id)}
                     />
                   );
                 })}
@@ -1447,8 +1467,8 @@ const Index = () => {
                           hashtags={caption.hashtags}
                           isFavorite={isFavorite("caption", caption.id)}
                           onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                          onPremiumRequired={getPremiumCallback(activeCategory, false, 'caption', caption.destination, index)}
-                          isPremium={checkIfItemIsPremium('caption', caption.destination, index)}
+                          onPremiumRequired={getPremiumCallback(activeCategory, false, 'caption', caption.destination, index, caption.id)}
+                          isPremium={checkIfItemIsPremium('caption', caption.destination, index, caption.id)}
                         />
                       </div>
                     ))}
@@ -1649,7 +1669,7 @@ const Index = () => {
                           description={tool.description || ""}
                           isFavorite={true}
                           onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                          onPremiumRequired={getPremiumCallback('tools', checkIfItemIsPremium('tool', tool.title), 'tool', tool.title)}
+                          onPremiumRequired={getPremiumCallback('tools', true, 'tool', tool.title, undefined, tool.id)}
                           onClick={() => {
                             trackClick('marketing_tool', tool.id);
                             trackActivity('tool');

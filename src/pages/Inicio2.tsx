@@ -1,5 +1,6 @@
 // Sincronização e verificação ativa pós-restauração: links de compra, preços e layouts 100% íntegros
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   BookOpen,
   Calendar,
@@ -36,7 +37,7 @@ import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
 import showcaseCrm from "@/assets/images/showcase-crm.png";
 import showcaseScheduler from "@/assets/images/showcase-scheduler.png";
 import showcasePremiumMedias from "@/assets/images/showcase-premium-medias.png";
-import { ELITE_OFFER } from "@/lib/eliteOffer";
+import { ELITE_OFFER, type UpgradeFeature } from "@/lib/eliteOffer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +48,62 @@ const supportWhatsAppUrl =
 const instagramUrl = "https://www.instagram.com/lucasferrari.pro/";
 const metaPixelId = "916689227676142";
 const pendingCheckoutKey = "cv:pending-elite-checkout";
+const upgradeFeatures: UpgradeFeature[] = [
+  "ad_export",
+  "carousel_export",
+  "site_publish",
+  "crm",
+  "voice",
+  "vendedor",
+  "premium_content",
+  "fabrica",
+];
+const upgradeLandingCopy: Record<UpgradeFeature, { eyebrow: string; title: string; description: string }> = {
+  ad_export: {
+    eyebrow: "Seu anuncio continua salvo",
+    title: "Libere novas exportacoes sem perder o trabalho que ja fez.",
+    description: "O gratuito inclui 3 anuncios. O Elite remove o limite e mantem seus projetos organizados.",
+  },
+  carousel_export: {
+    eyebrow: "Seu carrossel continua salvo",
+    title: "Baixe novas sequencias e continue criando conteudo para vender.",
+    description: "O gratuito inclui 2 carrosseis. O Elite libera novas geracoes e downloads sem limite.",
+  },
+  site_publish: {
+    eyebrow: "Seu site esta pronto",
+    title: "Publique sua pagina de vendas e coloque sua oferta no ar.",
+    description: "Voce pode montar a estrutura antes de assinar. Publicacao e atualizacoes do site fazem parte do Elite.",
+  },
+  crm: {
+    eyebrow: "Seus leads merecem acompanhamento",
+    title: "Libere o CRM para organizar contatos, etapas e resultados.",
+    description: "A demonstracao fica visivel para voce conhecer o fluxo. Dados reais e metricas sao recursos Elite.",
+  },
+  voice: {
+    eyebrow: "Recurso com processamento de IA",
+    title: "Crie narracoes e audios para suas campanhas no Elite.",
+    description: "A geracao de voz usa processamento pago e fica disponivel no teste e na assinatura Elite.",
+  },
+  vendedor: {
+    eyebrow: "Atendimento inteligente",
+    title: "Libere o Vendedor de Viagens IA para sua operacao.",
+    description: "Conheca a ferramenta e use o atendimento inteligente durante o teste de 3 dias do Elite.",
+  },
+  premium_content: {
+    eyebrow: "Biblioteca para assinantes",
+    title: "Libere videos editaveis, downloads e midias premium.",
+    description: "Conteudos gratuitos continuam abertos. Videos editaveis e arquivos premium sao exclusivos para assinantes Start ou Elite.",
+  },
+  fabrica: {
+    eyebrow: "Sua operacao em um so lugar",
+    title: "Continue criando gratuitamente e libere a Fabrica completa quando precisar.",
+    description: "Monte sua agencia, cadastre pacotes e experimente as geracoes. Site, CRM, automacoes e uso ilimitado fazem parte do Elite.",
+  },
+};
+
+function safeInternalPath(value: string | null) {
+  return value?.startsWith("/") && !value.startsWith("//") ? value : null;
+}
 const reelsMainGifUrl =
   "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm5kcmcybmE2aTFkOTU3ZDNqYmZkbHQ2YjRibjB1NjFtN2RoNWdrMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6osnZ6joYcPfERZsaE/giphy.gif";
 const reelsPreviewGifs = [
@@ -240,8 +297,9 @@ function ChatCard({ proof }: { proof: (typeof socialProofChats)[number] }) {
 }
 
 export default function Inicio2() {
+  const [searchParams] = useSearchParams();
   const { user, session } = useAuth();
-  const { can, loading: entitlementsLoading } = useEntitlements();
+  const { can, tier, track, loading: entitlementsLoading } = useEntitlements();
   const [activeToolTab, setActiveToolTab] = useState("featured");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [heroMutedActive, setHeroMutedActive] = useState(true);
@@ -249,6 +307,26 @@ export default function Inicio2() {
   const [isPricingVisible, setIsPricingVisible] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const resumedCheckoutRef = useRef(false);
+  const landingTrackedRef = useRef(false);
+  const requestedUpgrade = searchParams.get("upgrade");
+  const upgradeFeature = upgradeFeatures.includes(requestedUpgrade as UpgradeFeature)
+    ? requestedUpgrade as UpgradeFeature
+    : null;
+  const returnTo = safeInternalPath(searchParams.get("returnTo"));
+  const contextualCopy = upgradeFeature ? upgradeLandingCopy[upgradeFeature] : null;
+  const isStartUpgrade = tier === "start_legacy";
+  const isFreeAccount = tier === "free";
+
+  useEffect(() => {
+    if (landingTrackedRef.current || entitlementsLoading) return;
+    landingTrackedRef.current = true;
+    track("landing_viewed", {
+      feature: upgradeFeature || "general",
+      source: upgradeFeature ? "contextual_paywall" : "direct",
+      tier,
+      return_to: returnTo,
+    });
+  }, [entitlementsLoading, returnTo, tier, track, upgradeFeature]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -263,6 +341,15 @@ export default function Inicio2() {
     }
     return () => observer.disconnect();
   }, []);
+
+  const freeWorkspacePath = returnTo || "/fabrica";
+  const heroEyebrow = contextualCopy?.eyebrow
+    || (isStartUpgrade ? "Seu Plano Start continua ativo" : isFreeAccount ? "Voce ja pode criar gratuitamente" : "Comece gratis, sem cartao");
+  const heroTitle = contextualCopy?.title
+    || "Crie campanhas para sua agencia antes de decidir assinar.";
+  const heroDescription = contextualCopy?.description
+    || "Cadastre sua agencia e seus pacotes, salve 1 projeto e experimente 3 anuncios e 2 carrosseis. O Elite libera site, CRM, automacoes e uso ilimitado.";
+  const workspaceCta = user ? "Continuar no meu projeto" : "Criar gratuitamente";
 
   const plans = [
     {
@@ -332,10 +419,17 @@ export default function Inicio2() {
       : billingCycle === "semiannual"
         ? "semestral"
         : "anual";
+    track("plan_selected", {
+      billing_cycle: billingCycle,
+      feature: upgradeFeature || "general",
+      tier,
+    });
     trackCheckoutClick(trackValue, pixelPlan);
 
     if (!user || !session?.access_token) {
-      const returnPath = `/inicio?checkout=${billingCycle}`;
+      const params = new URLSearchParams(searchParams);
+      params.set("checkout", billingCycle);
+      const returnPath = `/inicio?${params.toString()}`;
       sessionStorage.setItem(pendingCheckoutKey, billingCycle);
       window.location.assign(`/auth?redirect=${encodeURIComponent(returnPath)}`);
       return;
@@ -350,8 +444,18 @@ export default function Inicio2() {
 
     setCheckoutLoading(true);
     try {
+      track("checkout_started", {
+        billing_cycle: billingCycle,
+        feature: upgradeFeature || "general",
+        tier,
+        return_to: returnTo,
+      });
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { billing_cycle: billingCycle },
+        body: {
+          billing_cycle: billingCycle,
+          upgrade: upgradeFeature,
+          return_to: returnTo,
+        },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (data?.already_subscribed) {
@@ -369,18 +473,21 @@ export default function Inicio2() {
     } finally {
       setCheckoutLoading(false);
     }
-  }, [can, entitlementsLoading, session?.access_token, trackCheckoutClick, user]);
+  }, [can, entitlementsLoading, returnTo, searchParams, session?.access_token, tier, track, trackCheckoutClick, upgradeFeature, user]);
 
   useEffect(() => {
     if (!user || !session?.access_token || resumedCheckoutRef.current) return;
-    const queryCycle = new URLSearchParams(window.location.search).get("checkout");
+    const queryCycle = searchParams.get("checkout");
     const storedCycle = sessionStorage.getItem(pendingCheckoutKey);
     const requestedCycle = queryCycle || storedCycle;
     if (!["monthly", "semiannual", "annual"].includes(requestedCycle ?? "")) return;
 
     resumedCheckoutRef.current = true;
     sessionStorage.removeItem(pendingCheckoutKey);
-    window.history.replaceState({}, "", "/inicio");
+    const cleanParams = new URLSearchParams(searchParams);
+    cleanParams.delete("checkout");
+    const cleanQuery = cleanParams.toString();
+    window.history.replaceState({}, "", cleanQuery ? `/inicio?${cleanQuery}` : "/inicio");
     const selectedPlan = requestedCycle === "monthly"
       ? { value: 97 }
       : requestedCycle === "semiannual"
@@ -390,7 +497,7 @@ export default function Inicio2() {
       requestedCycle as "monthly" | "semiannual" | "annual",
       selectedPlan.value,
     );
-  }, [session?.access_token, startEliteCheckout, user]);
+  }, [searchParams, session?.access_token, startEliteCheckout, user]);
 
   useEffect(() => {
     document.documentElement.lang = "pt-BR";
@@ -419,7 +526,9 @@ export default function Inicio2() {
       <header className="site-header">
         <div className="header-inner">
           <img src={logoImage} alt="Canva Viagem" className="logo" />
-          <a href="#planos" className="header-cta">Testar grátis</a>
+          <a href={upgradeFeature ? "#planos" : freeWorkspacePath} className="header-cta">
+            {upgradeFeature ? "Ver Plano Elite" : workspaceCta}
+          </a>
         </div>
       </header>
 
@@ -432,21 +541,21 @@ export default function Inicio2() {
               <div className="w-full lg:w-[60%] flex flex-col items-center lg:items-start text-center lg:text-left">
                 <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-purple-500/30 rounded-full px-4 py-1.5 md:px-5 md:py-2 backdrop-blur-md shadow-[0_0_30px_rgba(124,58,237,0.15)] mb-4 md:mb-6">
                   <span className="text-[10px] md:text-xs font-bold text-purple-200 uppercase tracking-widest">
-                    🔥 Acesso imediato liberado para novas agências
+                    {heroEyebrow}
                   </span>
                 </div>
 
                 <h1 className="text-[28px] sm:text-4xl md:text-5xl lg:text-[4.5rem] font-black text-white leading-[1.05] mb-3 tracking-tighter" style={{ fontSize: "clamp(28px, 6vw, 4.5rem)" }}>
-                  Sua agência parece profissional ou parece pequena?
+                  {heroTitle}
                 </h1>
 
                 <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-300 font-medium mb-4 max-w-2xl leading-relaxed">
-                  O Canva Viagem entrega tudo pronto para você criar ofertas, postar no Instagram, narrar vídeos e organizar seus clientes. Sem designer. Sem social media. Sem locutor. Sem improviso.
+                  {heroDescription}
                 </p>
 
                 <div className="bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 md:px-5 md:py-2.5 rounded-lg md:rounded-xl mb-5 shadow-lg shadow-emerald-500/5 max-w-2xl backdrop-blur-sm">
                   <p className="font-semibold text-[11px] md:text-[13px] !text-emerald-300 leading-snug" style={{ color: '#6ee7b7' }}>
-                    ⚡ A ferramenta simples que te dá tudo pronto para você focar no que realmente importa: fechar vendas.
+                    Conteudos gratuitos nao pedem cartao. O teste de 3 dias libera os recursos Elite e so comeca quando voce escolhe um plano.
                   </p>
                 </div>
 
@@ -464,24 +573,24 @@ export default function Inicio2() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2.5 md:gap-4 mb-6 w-full max-w-2xl">
-                  <a href="#planos" className="w-full sm:w-auto min-h-[52px] bg-purple-600 hover:bg-purple-500 text-white text-sm md:text-base font-bold py-3 px-7 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1 flex items-center justify-center whitespace-nowrap active:scale-95 animate-[pulse_2.5s_ease-in-out_infinite]">
-                    Iniciar 3 dias grátis (Sem cobrança hoje)
+                  <a href={upgradeFeature ? "#planos" : freeWorkspacePath} className="w-full sm:w-auto min-h-[52px] bg-purple-600 hover:bg-purple-500 text-white text-sm md:text-base font-bold py-3 px-7 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1 flex items-center justify-center whitespace-nowrap active:scale-95 animate-[pulse_2.5s_ease-in-out_infinite]">
+                    {upgradeFeature ? "Liberar com o Plano Elite" : workspaceCta}
                   </a>
-                  <a href="#video-prova" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-3 px-6 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 whitespace-nowrap text-xs md:text-sm active:scale-95">
-                    <Play size={16} fill="currentColor" /> Ver ferramenta funcionando
+                  <a href={upgradeFeature ? freeWorkspacePath : "#video-prova"} className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-3 px-6 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 whitespace-nowrap text-xs md:text-sm active:scale-95">
+                    <Play size={16} fill="currentColor" /> {upgradeFeature ? "Continuar no que e gratuito" : "Ver ferramenta funcionando"}
                   </a>
                 </div>
 
                 <div className="flex flex-wrap justify-center lg:justify-start gap-x-3 gap-y-2 w-full max-w-[700px] text-slate-400 text-[11px] md:text-xs font-semibold">
-                  <span className="whitespace-nowrap">✓ Acesso imediato</span>
+                  <span className="whitespace-nowrap">✓ 1 projeto salvo</span>
                   <span className="hidden md:inline">·</span>
-                  <span className="whitespace-nowrap">✓ Checkout seguro Stripe</span>
+                  <span className="whitespace-nowrap">✓ 3 anuncios gratuitos</span>
                   <span className="hidden md:inline">·</span>
-                  <span className="whitespace-nowrap">✓ 3 dias grátis</span>
+                  <span className="whitespace-nowrap">✓ 2 carrosseis gratuitos</span>
                   <span className="hidden md:inline">·</span>
-                  <span className="whitespace-nowrap">✓ 7 dias de garantia</span>
+                  <span className="whitespace-nowrap">✓ Sem cartao</span>
                   <span className="hidden md:inline">·</span>
-                  <span className="whitespace-nowrap">✓ Cancele com 1 clique</span>
+                  <span className="whitespace-nowrap">✓ Elite com 3 dias de teste</span>
                 </div>
               </div>
 
@@ -553,7 +662,7 @@ export default function Inicio2() {
         <div className="w-full bg-white pt-8">
           <div className="inicio-container">
             <div className="bg-[#7C3AED] text-white text-center text-[14px] font-medium py-[12px] px-[24px] rounded-[8px] mx-auto max-w-[720px]">
-              🟢 Mais de 200 agências já usam a plataforma. Os 3 dias grátis incluem acesso completo a todos os recursos, sem nenhuma restrição.
+              Comece sem pagar: 1 projeto, 3 anúncios e 2 carrosséis. Vídeos editáveis, downloads premium, site, CRM e recursos de IA avançados são liberados conforme o plano.
             </div>
           </div>
         </div>
@@ -780,17 +889,17 @@ export default function Inicio2() {
                  <div>
                    <h3 className="text-2xl md:text-3xl font-black mb-4 text-center md:text-left">Lucas Ferrari</h3>
                    <p className="text-slate-300 leading-relaxed text-base mb-6 text-center md:text-left">
-                     Antes de criar o Canva Viagem, Lucas Ferrari gerenciou campanhas de tráfego pago para mais de 40 agências no Brasil. Ele viu de perto o mesmo problema se repetindo: agentes com pacotes excelentes, mas sem material profissional para divulgar. O Canva Viagem nasceu para resolver exatamente esse desafio e hoje impulsiona as vendas de mais de 200 agências de turismo.
+                     Antes de criar o Canva Viagem, Lucas Ferrari gerenciou campanhas de tráfego pago para mais de 40 agências no Brasil. Ele viu de perto o mesmo problema se repetindo: agentes com pacotes excelentes, mas sem material profissional para divulgar. O Canva Viagem nasceu para resolver exatamente esse desafio.
                    </p>
 
                    <div className="flex gap-0 border-t border-[#1E293B] mt-[16px] pt-[16px] mb-6">
                      <div className="w-1/3 text-center border-r border-[#1E293B]">
-                       <div className="text-[18px] md:text-[22px] font-[800] text-[#7C3AED]">200+</div>
-                       <div className="text-[10px] md:text-[11px] text-[#94A3B8] mt-[2px]">agências ativas</div>
+                       <div className="text-[18px] md:text-[22px] font-[800] text-[#7C3AED]">40+</div>
+                       <div className="text-[10px] md:text-[11px] text-[#94A3B8] mt-[2px]">agências atendidas</div>
                      </div>
                      <div className="w-1/3 text-center border-r border-[#1E293B]">
-                       <div className="text-[18px] md:text-[22px] font-[800] text-[#7C3AED]">R$1.5M+</div>
-                       <div className="text-[10px] md:text-[11px] text-[#94A3B8] mt-[2px]">gerenciados</div>
+                       <div className="text-[18px] md:text-[22px] font-[800] text-[#7C3AED]">Brasil</div>
+                       <div className="text-[10px] md:text-[11px] text-[#94A3B8] mt-[2px]">experiência prática</div>
                      </div>
                      <div className="w-1/3 text-center">
                        <div className="text-[18px] md:text-[22px] font-[800] text-[#7C3AED]">100%</div>
@@ -1179,7 +1288,7 @@ export default function Inicio2() {
                   </p>
                 </div>
                 <a
-                  href="/"
+                  href={freeWorkspacePath}
                   className="shrink-0 inline-flex items-center justify-center min-h-11 px-5 rounded-lg border border-slate-300 bg-white text-slate-900 font-bold hover:border-purple-400 hover:text-purple-700 transition-colors"
                 >
                   Continuar com acesso grátis
@@ -1294,11 +1403,11 @@ export default function Inicio2() {
           <div className="inicio-container">
             <div className="max-w-[560px] mx-auto text-center flex flex-col items-center">
               <h2 className="text-[18px] font-[600] text-[#0F172A] mb-2">Ainda ficou alguma dúvida?</h2>
-              <p className="text-[14px] text-[#64748B] mb-6">Fale com nosso suporte antes de decidir ou comece o teste grátis agora mesmo, sem cobrança hoje.</p>
+              <p className="text-[14px] text-[#64748B] mb-6">Fale com nosso suporte antes de decidir ou continue usando os recursos gratuitos sem cadastrar cartão.</p>
               
               <div className="w-full flex flex-col gap-3">
                 <a href="#planos" className="w-full max-w-[400px] mx-auto bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-[700] text-[16px] py-[14px] px-[32px] rounded-[8px] transition-colors">
-                  Iniciar meus 3 dias grátis agora →
+                  Conhecer o Plano Elite →
                 </a>
                 <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="w-full max-w-[400px] mx-auto bg-transparent border-[1.5px] border-[#7C3AED] hover:bg-purple-50 text-[#7C3AED] font-[600] text-[15px] py-[12px] px-[32px] rounded-[8px] transition-colors">
                   Falar com suporte no WhatsApp →
@@ -1314,10 +1423,10 @@ export default function Inicio2() {
               Sua próxima oferta pode ter o visual de uma grande agência. E você pode criar agora mesmo.
             </h2>
             <p className="text-[#94A3B8] text-[16px] max-w-[520px] mx-auto mt-[16px] mb-[32px] leading-relaxed">
-              Escolha um plano, receba acesso em minutos e use os 3 dias grátis para criar sua primeira oferta profissional com um pacote real da sua agência.
+              Continue criando gratuitamente ou escolha o Elite para liberar todos os recursos por 3 dias antes da primeira cobrança.
             </p>
             <a href="#planos" className="bg-[#7C3AED] text-white px-[40px] py-[16px] rounded-[8px] text-[18px] font-[700] hover:bg-[#6D28D9] transition-colors inline-block">
-              Iniciar meus 3 dias grátis agora
+              Liberar o Plano Elite
             </a>
             <p className="text-[#64748B] text-[13px] mt-[12px]">
               Não cobraremos hoje. Cancele com 1 clique antes de 3 dias.
@@ -1357,7 +1466,7 @@ export default function Inicio2() {
 
       <div className={`md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#7C3AED] text-white font-[700] text-[15px] text-center rounded-t-[8px] transition-transform duration-300 ${isPricingVisible ? 'translate-y-full' : 'translate-y-0'}`}>
         <a href="#planos" className="block w-full px-[24px] py-[14px]">
-          Iniciar 3 dias grátis (Sem cobrança hoje) →
+          {upgradeFeature ? "Concluir meu upgrade →" : "Conhecer o Plano Elite →"}
         </a>
       </div>
 
