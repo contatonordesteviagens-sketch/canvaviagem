@@ -186,6 +186,64 @@ export interface ArtRecorder {
   elements: ArtElementBox[];
 }
 
+
+const safeApply = (ctx: CanvasRenderingContext2D, method: string, args: any[]) => {
+  if (method === 'drawImage') {
+    if (args.length === 3) return ctx.drawImage(args[0], args[1], args[2]);
+    if (args.length === 5) return ctx.drawImage(args[0], args[1], args[2], args[3], args[4]);
+    if (args.length === 9) return ctx.drawImage(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
+  }
+  if (method === 'getImageData') return ctx.getImageData(args[0], args[1], args[2], args[3]);
+  if (method === 'putImageData') {
+    if (args.length === 3) return ctx.putImageData(args[0], args[1], args[2]);
+    if (args.length === 7) return ctx.putImageData(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+  }
+  if (method === 'fill') {
+    if (args.length >= 1 && typeof args[0] === 'object') {
+      if (args.length > 1) return ctx.fill(args[0], args[1]);
+      return ctx.fill(args[0]);
+    }
+    if (args.length === 1) return ctx.fill(args[0]);
+    return ctx.fill();
+  }
+  if (method === 'stroke') {
+    if (args.length >= 1 && typeof args[0] === 'object') return ctx.stroke(args[0]);
+    return ctx.stroke();
+  }
+  if (method === 'clip') {
+    if (args.length >= 1 && typeof args[0] === 'object') {
+      if (args.length > 1) return ctx.clip(args[0], args[1]);
+      return ctx.clip(args[0]);
+    }
+    if (args.length === 1) return ctx.clip(args[0]);
+    return ctx.clip();
+  }
+  if (method === 'fillText') {
+    if (args.length > 3) return ctx.fillText(args[0], args[1], args[2], args[3]);
+    return ctx.fillText(args[0], args[1], args[2]);
+  }
+  if (method === 'strokeText') {
+    if (args.length > 3) return ctx.strokeText(args[0], args[1], args[2], args[3]);
+    return ctx.strokeText(args[0], args[1], args[2]);
+  }
+  if (method === 'fillRect') return ctx.fillRect(args[0], args[1], args[2], args[3]);
+  if (method === 'strokeRect') return ctx.strokeRect(args[0], args[1], args[2], args[3]);
+  if (method === 'clearRect') return ctx.clearRect(args[0], args[1], args[2], args[3]);
+  if (method === 'rect') return ctx.rect(args[0], args[1], args[2], args[3]);
+  if (method === 'arc') return ctx.arc(args[0], args[1], args[2], args[3], args[4], args[5]);
+  if (method === 'moveTo') return ctx.moveTo(args[0], args[1]);
+  if (method === 'lineTo') return ctx.lineTo(args[0], args[1]);
+  if (method === 'bezierCurveTo') return ctx.bezierCurveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
+  if (method === 'quadraticCurveTo') return ctx.quadraticCurveTo(args[0], args[1], args[2], args[3]);
+  if (method === 'arcTo') return ctx.arcTo(args[0], args[1], args[2], args[3], args[4]);
+  if (method === 'createPattern') return ctx.createPattern(args[0], args[1]);
+  if (method === 'createLinearGradient') return ctx.createLinearGradient(args[0], args[1], args[2], args[3]);
+  if (method === 'createRadialGradient') return ctx.createRadialGradient(args[0], args[1], args[2], args[3], args[4], args[5]);
+  if (method === 'setLineDash') return ctx.setLineDash(args[0]);
+  
+  return (ctx as any)[method].apply(ctx, args);
+};
+
 export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTweakMap): ArtRecorder {
   const map = tweaks || {};
   /**
@@ -245,7 +303,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       state.matrix,
     );
     pushOp({ kind: "text", text, draw: { m: method, a: a.slice() }, state, box }, text);
-    if (!deferred) (real as any)[method].apply(real, a);
+    if (!deferred) safeApply(real, method, a);
   };
 
   const recordImage = (a: any[]) => {
@@ -283,7 +341,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       if (a.length === 3) real.drawImage(a[0], a[1], a[2]);
       else if (a.length === 5) real.drawImage(a[0], a[1], a[2], a[3], a[4]);
       else if (a.length === 9) real.drawImage(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
-      else (real as any).drawImage.apply(real, a);
+      else safeApply(real, 'drawImage', a);
     }
   };
 
@@ -297,7 +355,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       state.matrix,
     );
     pushOp({ kind: "shape", draw: { m: method, a: a.slice() }, state, box });
-    if (!deferred) (real as any)[method].apply(real, a);
+    if (!deferred) safeApply(real, method, a);
   };
 
   const recordPathDraw = (method: "fill" | "stroke", a: any[]) => {
@@ -305,14 +363,14 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
     const cmds = pendingPath.slice();
     const box = boxFromPoints(pathPoints(cmds), state.matrix);
     pushOp({ kind: "shape", path: cmds, draw: { m: method, a: a.slice() }, state, box });
-    if (!deferred) (real as any)[method].apply(real, a);
+    if (!deferred) safeApply(real, method, a);
   };
 
   const applyClips = (clips: ClipEntry[]) => {
     for (const clip of clips) {
       real.setTransform(clip.matrix);
       real.beginPath();
-      for (const c of clip.cmds) (real as any)[c.m].apply(real, c.a);
+      for (const c of clip.cmds) safeApply(real, c.m, c.a);
       if (clip.rule) real.clip(clip.rule);
       else real.clip();
     }
@@ -379,7 +437,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
         });
       } else if (op.path) {
         real.beginPath();
-        for (const c of op.path) (real as any)[c.m].apply(real, c.a);
+        for (const c of op.path) safeApply(real, c.m, c.a);
         
         if ((op.draw.m === "fill" || op.draw.m === "stroke") && op.draw.a.length >= 1 && typeof op.draw.a[0] === "object") {
           if (op.draw.m === "stroke") real.stroke(op.draw.a[0]);
@@ -389,9 +447,9 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
           if (op.draw.a.length === 3) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2]);
           else if (op.draw.a.length === 5) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2], op.draw.a[3], op.draw.a[4]);
           else if (op.draw.a.length === 9) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2], op.draw.a[3], op.draw.a[4], op.draw.a[5], op.draw.a[6], op.draw.a[7], op.draw.a[8]);
-          else (real as any).drawImage.apply(real, op.draw.a);
+          else safeApply(real, 'drawImage', op.draw.a);
         } else {
-          (real as any)[op.draw.m].apply(real, op.draw.a);
+          safeApply(real, op.draw.m, op.draw.a);
         }
       } else {
         if ((op.draw.m === "fill" || op.draw.m === "stroke") && op.draw.a.length >= 1 && typeof op.draw.a[0] === "object") {
@@ -402,9 +460,9 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
           if (op.draw.a.length === 3) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2]);
           else if (op.draw.a.length === 5) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2], op.draw.a[3], op.draw.a[4]);
           else if (op.draw.a.length === 9) real.drawImage(op.draw.a[0], op.draw.a[1], op.draw.a[2], op.draw.a[3], op.draw.a[4], op.draw.a[5], op.draw.a[6], op.draw.a[7], op.draw.a[8]);
-          else (real as any).drawImage.apply(real, op.draw.a);
+          else safeApply(real, 'drawImage', op.draw.a);
         } else {
-          (real as any)[op.draw.m].apply(real, op.draw.a);
+          safeApply(real, op.draw.m, op.draw.a);
         }
       }
     } catch {
@@ -482,7 +540,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       if (prop === "getImageData") {
         return (...a: any[]) => {
           replay();
-          return (target as any).getImageData.apply(target, a);
+          return safeApply(target, 'getImageData', a);
         };
       }
 
@@ -507,7 +565,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
       if (PATH_CMDS.has(prop)) {
         return (...a: any[]) => {
           pendingPath.push({ m: prop, a });
-          (target as any)[prop].apply(target, a);
+          safeApply(target, prop, a);
         };
       }
       if (prop === "clip") {
@@ -515,7 +573,7 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
           clipStack = clipStack.concat([
             { cmds: pendingPath.slice(), matrix: target.getTransform(), rule: a[0] as CanvasFillRule },
           ]);
-          (target as any).clip.apply(target, a);
+          safeApply(target, 'clip', a);
         };
       }
       if (prop === "fill" || prop === "stroke") {
@@ -529,9 +587,9 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
               : boxFromPoints([[0, 0], [24, 24]], state.matrix);
             pushOp({ kind: "shape", draw: { m: prop, a: a.slice() }, state, box });
             if (!deferred) {
-              if (prop === "stroke") target.stroke(a[0]);
-              else if (a.length > 1) target.fill(a[0], a[1]);
-              else target.fill(a[0]);
+              if (prop === "stroke") safeApply(target, 'stroke', a);
+              else if (a.length > 1) safeApply(target, 'fill', a);
+              else safeApply(target, 'fill', a);
             }
             return;
           }
@@ -564,3 +622,4 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
     elements,
   };
 }
+
