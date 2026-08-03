@@ -1986,6 +1986,19 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 className={inputCls}
               />
               <p className="text-[10px] text-white/40 mt-2">A IA vai adaptar a imagem ao formato escolhido.</p>
+              {customLink.trim() && (
+                <div className="mt-4 border border-white/10 rounded-xl overflow-hidden bg-black/40 p-2 flex flex-col items-center">
+                  <img 
+                    src={customLink.trim()} 
+                    alt="preview do link" 
+                    className="w-32 h-32 mx-auto rounded-lg object-cover mb-2" 
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "https://placehold.co/400x400/1a1a1a/444444?text=Link+Invalido";
+                    }} 
+                  />
+                  <p className="text-xs text-blue-400 font-semibold">✔ Imagem via Link</p>
+                </div>
+              )}
             </div>
           )}
         </div>

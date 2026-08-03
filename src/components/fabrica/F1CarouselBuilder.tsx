@@ -4112,21 +4112,37 @@ export function F1CarouselBuilder({
       if (user?.id) {
         const hash = await hashBlob(optimized);
         const path = `sites/${user.id}/assets/${hash}.webp`;
-        const { error } = await supabase.storage
-          .from("thumbnails")
-          .upload(path, optimized, {
-            contentType: "image/webp",
-            upsert: true,
-        });
-        if (error) throw error;
-        const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(path).data.publicUrl;
+        let publicUrl = "";
+        try {
+          const { error } = await supabase.storage
+            .from("thumbnails")
+            .upload(path, optimized, {
+              contentType: "image/webp",
+              upsert: true,
+          });
+          if (error) throw error;
+          publicUrl = supabase.storage.from("thumbnails").getPublicUrl(path).data.publicUrl;
+        } catch (uploadError) {
+          console.warn("Falha no upload do Supabase, usando Base64", uploadError);
+        }
+
         if (uploadRequestRef.current.get(requestKey) !== requestToken) return;
-        if (!applyToOriginalSlide(publicUrl)) return;
-        toast.success(
-          isEs
-            ? "Foto optimizada, guardada y aplicada."
-            : "Foto otimizada, salva e aplicada.",
-        );
+        
+        if (publicUrl) {
+          if (!applyToOriginalSlide(publicUrl)) return;
+          toast.success(
+            isEs
+              ? "Foto optimizada, guardada y aplicada."
+              : "Foto otimizada, salva e aplicada.",
+          );
+        } else {
+          if (!applyToOriginalSlide(await blobToDataUrl(optimized))) return;
+          toast.success(
+            isEs
+              ? "Foto aplicada temporalmente (offline)."
+              : "Foto aplicada temporariamente (salvamento na nuvem indisponível).",
+          );
+        }
       } else {
         if (!applyToOriginalSlide(await blobToDataUrl(optimized))) return;
         toast.success(
