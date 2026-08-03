@@ -576,12 +576,19 @@ const ICON_SYMBOL: Record<IconKey, string> = {
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    if (src && !src.startsWith("data:")) {
+    
+    // Aplicar Proxy de CORS automaticamente para links externos (ex: TripAdvisor, Google Images)
+    let finalSrc = src;
+    if (src && src.startsWith("http") && !src.includes("supabase.co") && !src.includes("unsplash.com") && !src.includes("pexels.com") && !src.includes("localhost") && !src.includes("corsproxy.io")) {
+      finalSrc = `https://corsproxy.io/?${encodeURIComponent(src)}`;
+    }
+
+    if (finalSrc && !finalSrc.startsWith("data:") && !finalSrc.startsWith("blob:")) {
       img.crossOrigin = "anonymous";
     }
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error("Falha ao carregar imagem base"));
-    img.src = src;
+    img.src = finalSrc;
   });
 }
 
