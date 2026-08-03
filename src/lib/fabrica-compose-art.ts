@@ -1053,11 +1053,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   if (wantsCustomFont || wantsScale) {
     const fontRe = /^(.*?)(\d+(?:\.\d+)?)px\s+(.+)$/; // captura: prefix(weight/style) | size | family
-    const proto = Object.getPrototypeOf(ctx) as any;
+    const proto = Object.getPrototypeOf(rawCtx) as any;
     const desc = Object.getOwnPropertyDescriptor(proto, "font");
     if (desc && desc.set && desc.get) {
-      const origSet = desc.set.bind(ctx);
-      const origGet = desc.get.bind(ctx);
+      // Canvas accessors are brand-checked by the browser and must receive the
+      // native context, never the recorder Proxy, as their `this` value.
+      const origSet = desc.set.bind(rawCtx);
+      const origGet = desc.get.bind(rawCtx);
       Object.defineProperty(ctx, "font", {
         configurable: true,
         get: () => origGet(),
