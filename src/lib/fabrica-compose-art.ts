@@ -2992,9 +2992,25 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.13)" : "rgba(0,0,0,0.15)";
       const cleanV1InlineText = (value = "") =>
         value
-          .replace(/[\u200B-\u200D\uFEFF]/g, "")
+          .replace(/[\u0000-\u001F\u007F-\u009F\u00AD\u034F\u061C\u180E\u200B-\u200F\u2028-\u202F\u205F-\u206F\uFEFF]/g, " ")
           .replace(/\s+/g, " ")
           .trim();
+      const hasReadableV1Text = (value = "") => /[0-9A-Za-zÀ-ÖØ-öø-ÿ]/.test(value);
+      const resolveV1BenefitIcon = (icon: string | undefined, text: string): IconKey => {
+        const rawIcon = cleanV1InlineText(icon || "").toLowerCase();
+        const rawText = cleanV1InlineText(text).toLowerCase();
+        if (["bus", "onibus", "ônibus", "transport", "transporte"].includes(rawIcon)) return "bus";
+        if (["map", "pin", "place", "location", "lugar", "lugares"].includes(rawIcon)) return "map";
+        if (["guide", "guia", "user", "local"].includes(rawIcon)) return "guide";
+        if (["food", "meal", "restaurant", "restaurante", "utensils", "cafe"].includes(rawIcon)) return "food";
+        if (["hotel", "hospedagem"].includes(rawIcon)) return "hotel";
+        if (rawText.includes("transporte") || rawText.includes("ônibus") || rawText.includes("onibus")) return "bus";
+        if (rawText.includes("lugar") || rawText.includes("roteiro") || rawText.includes("localiza")) return "map";
+        if (rawText.includes("guia")) return "guide";
+        if (rawText.includes("café") || rawText.includes("cafe") || rawText.includes("comida") || rawText.includes("restaurante")) return "food";
+        if (rawText.includes("hotel") || rawText.includes("hosped")) return "hotel";
+        return "check";
+      };
 
       // ── 1) PAINEL ESQUERDO sólido ──────────────────────────────────────────────────
       ctx.fillStyle = v1PanelBg;
@@ -3139,8 +3155,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       let benefitsListV1 = (highlights || [])
         .map((h) => ({ ...h, text: cleanV1InlineText(h?.text || "") }))
-        .filter((h) => h.text.length > 0)
-        .slice(0, Math.min(6, maxPills));
+        .filter((h) => hasReadableV1Text(h.text))
+        .slice(0, Math.min(4, maxPills));
 
       benefitsListV1.forEach((h, i) => {
         const text = cleanV1InlineText(h.text);
@@ -3152,21 +3168,21 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         // Ícone centralizado verticalmente
         const iconCX = padX + Math.round(pillH * 0.56);
-        drawMonoIcon(ctx, h.icon || "check", iconCX, py + pillH / 2, iconSz, v1Accent, 1.75);
+        drawMonoIcon(ctx, resolveV1BenefitIcon(h.icon, text), iconCX, py + pillH / 2, iconSz, v1Accent, 1.9);
 
         // Texto — à direita do ícone, com auto-shrink
-        const textX    = padX + pillH + 8;
-        const textMaxW = pw - pillH - 10;
+        const textX    = padX + Math.round(pillH * 0.92);
+        const textMaxW = pw - (textX - padX) - 14;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
         ctx.fillStyle = v1OnPanel;
-        ctx.font = `700 ${pillFont}px Inter, Arial, sans-serif`;
+        ctx.font = `800 ${pillFont}px Inter, Arial, sans-serif`;
         let tf = pillFont;
         while (tf > 14 && ctx.measureText(text).width > textMaxW) {
           tf -= 1;
-          ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
+          ctx.font = `800 ${tf}px Inter, Arial, sans-serif`;
         }
-        ctx.fillText(text, textX, py + pillH / 2);
+        safeFillText(ctx, text, textX, py + pillH / 2, textMaxW, 14);
         ctx.textBaseline = "alphabetic";
       });
 
@@ -3291,6 +3307,103 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textAlign    = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(pixTxtV1, padX + pw / 2, pixYV1 + pixHV1 / 2 + 1);
+      }
+
+      // Repaint the V1 price card in controlled lanes so old price text cannot overlap.
+      ctx.fillStyle = v1PanelBg;
+      ctx.fillRect(padX - 16, priceBlockY - 16, pw + 32, priceCardH + 32);
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.18)";
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 6;
+      ctx.shadowOffsetX = 0;
+      fillRoundRect(ctx, padX, priceBlockY, pw, priceCardH, 18, priceCardOverlay);
+      ctx.restore();
+
+      const cardCxV1 = padX + pw / 2;
+      const cardTopV1 = priceBlockY;
+      const cardBottomV1 = priceBlockY + priceCardH;
+      const innerPadV1 = 16;
+      const redrawInstLinesV1 = instTextV1
+        ? instTextV1.toUpperCase().replace(/\s+DE$/i, "").split(/\s+/).filter(Boolean).concat("DE").slice(0, 2)
+        : [];
+
+      if (redrawInstLinesV1.length > 0) {
+        ctx.fillStyle = v1OnPanel;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = "900 17px Inter, Arial, sans-serif";
+        redrawInstLinesV1.forEach((line, index) => {
+          safeFillText(ctx, line, padX + innerPadV1, cardTopV1 + 24 + index * 17, Math.round(pw * 0.28), 12);
+        });
+      }
+
+      if (topLabelRenderV1) {
+        ctx.fillStyle = v1Accent;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "900 22px Inter, Arial, sans-serif";
+        const labelYV1 = cardTopV1 + (redrawInstLinesV1.length > 0 ? 62 : 34);
+        safeFillText(ctx, topLabelRenderV1, cardCxV1, labelYV1, pw - 34, 12);
+      }
+
+      let redrawPriceFsV1 = hasPixV1 ? 72 : 78;
+      let redrawSymWV1 = 0;
+      let redrawIntWV1 = 0;
+      let redrawCentsWV1 = 0;
+      let redrawTotalWV1 = 0;
+      const calcRedrawPriceV1 = () => {
+        ctx.font = `800 ${Math.round(redrawPriceFsV1 * 0.38)}px Inter, Arial, sans-serif`;
+        redrawSymWV1 = ctx.measureText(pSym + " ").width;
+        ctx.font = `900 ${redrawPriceFsV1}px Inter, Arial, sans-serif`;
+        redrawIntWV1 = ctx.measureText(pInt).width;
+        ctx.font = `800 ${Math.round(redrawPriceFsV1 * 0.38)}px Inter, Arial, sans-serif`;
+        redrawCentsWV1 = pCents ? ctx.measureText(pCents).width + 6 : 0;
+        redrawTotalWV1 = redrawSymWV1 + redrawIntWV1 + redrawCentsWV1;
+      };
+      calcRedrawPriceV1();
+      while (redrawTotalWV1 > pw - 30 && redrawPriceFsV1 > 38) {
+        redrawPriceFsV1 -= 2;
+        calcRedrawPriceV1();
+      }
+
+      const priceBaselineV1 = cardTopV1 + Math.round(priceCardH * (hasPixV1 ? 0.58 : 0.64));
+      const redrawStartXV1 = cardCxV1 - redrawTotalWV1 / 2;
+      ctx.fillStyle = v1OnPanel;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.font = `800 ${Math.round(redrawPriceFsV1 * 0.38)}px Inter, Arial, sans-serif`;
+      ctx.fillText(pSym, redrawStartXV1, priceBaselineV1 - redrawPriceFsV1 * 0.43);
+      ctx.font = `900 ${redrawPriceFsV1}px Inter, Arial, sans-serif`;
+      ctx.fillText(pInt, redrawStartXV1 + redrawSymWV1, priceBaselineV1);
+      if (pCents) {
+        ctx.font = `800 ${Math.round(redrawPriceFsV1 * 0.38)}px Inter, Arial, sans-serif`;
+        ctx.fillText(pCents, redrawStartXV1 + redrawSymWV1 + redrawIntWV1 + 6, priceBaselineV1 - redrawPriceFsV1 * 0.43);
+      }
+
+      const suffixYV1 = Math.min(cardBottomV1 - (hasPixV1 ? 58 : 26), priceBaselineV1 + Math.round(redrawPriceFsV1 * 0.30));
+      ctx.fillStyle = v1OnPanel;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "800 18px Inter, Arial, sans-serif";
+      safeFillText(ctx, suffixText, cardCxV1, suffixYV1, pw - 34, 12);
+
+      if (hasPixV1) {
+        const redrawPixH = 32;
+        const redrawPixY = cardBottomV1 - 44;
+        ctx.font = "900 14px Inter, Arial, sans-serif";
+        const redrawPixW = Math.min(pw - 34, ctx.measureText(pixTxtV1).width + 32);
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.15)";
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetY = 2;
+        ctx.shadowOffsetX = 0;
+        fillRoundRect(ctx, cardCxV1 - redrawPixW / 2, redrawPixY, redrawPixW, redrawPixH, redrawPixH / 2, v1Accent);
+        ctx.restore();
+        ctx.fillStyle = v1OnAccent;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, pixTxtV1, cardCxV1, redrawPixY + redrawPixH / 2 + 1, redrawPixW - 20, 10);
       }
 
       ctx.textAlign = "left";
