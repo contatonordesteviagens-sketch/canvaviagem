@@ -271,126 +271,54 @@ export function formatAdPhone(val: string, explicitDialCode?: string): string {
   return `+${dial} ${val}`;
 }
 
-/** Desenha ícone do WhatsApp colorido */
-function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "green" | "custom" = "green", customColor: string = "#ffffff") {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.shadowColor = "rgba(0,0,0,0.25)";
-  ctx.shadowBlur = 4;
+/** Cache de imagens sociais para evitar flicker e lentidão */
+const __socialIconCache = new Map<string, HTMLImageElement>();
 
-  // Balão Verde Sólido Oficial do WhatsApp
-  ctx.fillStyle = colorMode === "green" ? "#25D366" : customColor;
-  ctx.beginPath(); 
-  ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2); 
-  ctx.fill();
+export async function drawAdSocialIcon(ctx: CanvasRenderingContext2D, iconName: string, x: number, y: number, size: number) {
+  let resolvedName = iconName;
+  if (iconName === "instagram_gradient" || iconName === "instagram_custom" || iconName === "instagram") resolvedName = "instagram_fino";
+  else if (iconName === "whatsapp_green" || iconName === "whatsapp_custom" || iconName === "whatsapp") resolvedName = "whatsapp";
+  else if (iconName === "website") resolvedName = "site";
+  else if (iconName === "none" || !iconName) return;
 
-  ctx.beginPath();
-  ctx.moveTo(-size * 0.45, size * 0.45);
-  ctx.lineTo(-size * 0.40, size * 0.18);
-  ctx.lineTo(-size * 0.18, size * 0.40);
-  ctx.fill();
-
-  // Fone Branco (Desenhado com primitivas puras para máxima compatibilidade)
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = size * 0.12;
-  ctx.lineCap = "round";
+  const url = `/social-icons/${resolvedName}.png`;
   
-  ctx.beginPath();
-  // Arco que liga o bocal (embaixo-esquerda) ao fone (cima-direita)
-  ctx.arc(-size * 0.2, -size * 0.2, size * 0.4, 0, Math.PI / 2);
-  ctx.stroke();
+  let img = __socialIconCache.get(url);
+  if (!img) {
+    try {
+      img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const i = new Image();
+        i.crossOrigin = "anonymous";
+        i.onload = () => resolve(i);
+        i.onerror = reject;
+        i.src = url;
+      });
+      __socialIconCache.set(url, img);
+    } catch (e) {
+      console.error(`Falha ao carregar ícone social: ${url}`, e);
+      return;
+    }
+  }
 
-  // Extremidade Cima-Direita (Earpiece)
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.arc(size * 0.2, -size * 0.2, size * 0.07, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Extremidade Embaixo-Esquerda (Mouthpiece)
-  ctx.beginPath();
-  ctx.arc(-size * 0.2, size * 0.2, size * 0.07, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-/** Desenha ícone do Instagram com gradiente oficial */
-function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "gradient" | "custom" = "gradient", customColor: string = "#ffffff") {
   ctx.save();
   ctx.translate(x, y);
   ctx.shadowColor = "rgba(0,0,0,0.3)";
   ctx.shadowBlur = 4;
-
-  if (colorMode === "gradient") {
-    const g = ctx.createRadialGradient(size * 0.1, size * 0.1, 0, 0, 0, size * 0.7);
-    g.addColorStop(0, "#f09433"); 
-    g.addColorStop(0.25, "#e6683c"); 
-    g.addColorStop(0.5, "#dc2743");
-    g.addColorStop(0.75, "#cc2366"); 
-    g.addColorStop(1, "#bc1888");
-    ctx.fillStyle = g;
-    ctx.beginPath(); 
-    ctx.roundRect(-size / 2, -size / 2, size, size, size * 0.25); 
-    ctx.fill();
-    
-    ctx.strokeStyle = "white";
-    ctx.fillStyle = "white";
-    // Câmera
-    ctx.lineWidth = size * 0.08; 
-    ctx.beginPath(); ctx.roundRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6, size * 0.15); ctx.stroke();
-    ctx.beginPath(); ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); ctx.fill();
-  } else {
-    // MODO MONOCROMÁTICO
-    const buffer = document.createElement("canvas");
-    buffer.width = size;
-    buffer.height = size;
-    const bctx = buffer.getContext("2d");
-    if (bctx) {
-      bctx.translate(size/2, size/2);
-      bctx.fillStyle = customColor;
-      bctx.beginPath(); 
-      bctx.roundRect(-size / 2, -size / 2, size, size, size * 0.25); 
-      bctx.fill();
-      
-      bctx.globalCompositeOperation = "destination-out";
-      bctx.lineWidth = size * 0.08;
-      bctx.beginPath(); bctx.roundRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6, size * 0.15); bctx.stroke();
-      bctx.beginPath(); bctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); bctx.stroke();
-      bctx.beginPath(); bctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); bctx.fill();
-      
-      ctx.drawImage(buffer, -size/2, -size/2);
-    }
-  }
-
-  ctx.restore();
-}
-
-/** Desenha ícone de Site / Globo */
-function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string = "#ffffff") {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = size * 0.08;
-  ctx.beginPath(); ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2); ctx.stroke();
-  ctx.beginPath(); ctx.ellipse(0, 0, size * 0.18, size * 0.45, 0, 0, Math.PI * 2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(-size * 0.45, 0); ctx.lineTo(size * 0.45, 0); ctx.stroke();
+  ctx.shadowOffsetY = 2;
+  
+  ctx.drawImage(img, -size/2, -size/2, size, size);
   ctx.restore();
 }
 
 /**
- * Desenha o ícone OFICIAL do WhatsApp a partir do asset PNG (`/assets/whatsapp-icon.png`).
- * Centralizado em (x, y) com lado `size`. Usado por TODOS os layouts (V0â€“V4, Feed e Stories).
- * Cacheia a imagem para evitar reload a cada frame.
+ * @deprecated Alias para compatibilidade. Use drawAdSocialIcon.
  */
-let __waIconCache: HTMLImageElement | null = null;
 export async function drawWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
-  drawAdWhatsAppIcon(ctx, x, y, size, "green");
+  return drawAdSocialIcon(ctx, "whatsapp", x, y, size);
 }
 
 /**
- * @deprecated Mantido como alias para retrocompatibilidade. Use drawWhatsAppIcon.
- * Todos os layouts (V0â€“V4, Feed/Stories) passam por aqui â€” substituição centralizada.
+ * @deprecated Mantido como alias para retrocompatibilidade.
  */
 export async function drawWhatsAppContact(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
   return drawWhatsAppIcon(ctx, x, y, size);
@@ -539,15 +467,7 @@ async function drawFinalBranding(
     const textWidth = ctx.measureText(displayValue).width;
     const iconX = textRightX - textWidth - itemGap - currentIconSize/2;
 
-    if (c.icon === "whatsapp_green" || c.icon === "whatsapp_custom" || c.icon.startsWith("whatsapp")) {
-      await drawWhatsAppContact(ctx, iconX, yPos, currentIconSize);
-    } else if (c.icon === "instagram_gradient" || c.icon.startsWith("instagram")) {
-      drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
-    } else if (c.icon === "instagram_custom") {
-      drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "custom", ctx.fillStyle);
-    } else if (c.icon === "website" || c.icon.startsWith("website")) {
-      drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
-    }
+    await drawAdSocialIcon(ctx, c.icon, iconX, yPos, currentIconSize);
 
     // Aumentado o pulo para a linha de cima (garantir respiro real para 2 contatos empilhados)
     yPos -= (footerHeight * 0.56);
@@ -3342,12 +3262,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       
       if (instagram || options.footerContact2Value) {
         const val = options.footerContact2Value || instagram;
-        const icon = options.footerContact2Icon || "instagram_gradient";
-        if (icon === "instagram_gradient" || icon.startsWith("instagram")) {
-            drawAdInstagramIcon(ctx, px + 18, contactY, 28, icon.includes("gradient") ? "gradient" : "custom", v1OnPanel);
-        } else {
-            drawAdWebsiteIcon(ctx, px + 18, contactY, 28, v1OnPanel);
-        }
+        const icon = options.footerContact2Icon || "instagram_fino";
+        await drawAdSocialIcon(ctx, icon, px + 18, contactY, 28);
         ctx.fillStyle = v1OnPanel;
         safeFillText(ctx, val, px + 42, contactY + 2, pw - 42, contactFs);
         contactY -= 36;
@@ -3355,12 +3271,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       if (whatsapp || options.footerContact1Value) {
         const val = options.footerContact1Value || whatsapp;
-        const icon = options.footerContact1Icon || "whatsapp_green";
-        if (icon.startsWith("whatsapp")) {
-            drawAdWhatsAppIcon(ctx, px + 18, contactY, 28, "green");
-        } else {
-            drawAdWebsiteIcon(ctx, px + 18, contactY, 28, v1OnPanel);
-        }
+        const icon = options.footerContact1Icon || "whatsapp";
+        await drawAdSocialIcon(ctx, icon, px + 18, contactY, 28);
         ctx.fillStyle = v1OnPanel;
         safeFillText(ctx, val, px + 42, contactY + 2, pw - 42, contactFs);
       }

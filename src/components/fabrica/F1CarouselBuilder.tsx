@@ -2018,7 +2018,7 @@ function CarouselCanvas({
               }}
             >
               <img
-                src="/assets/whatsapp-icon.png"
+                src="/social-icons/whatsapp.png"
                 alt=""
                 aria-hidden="true"
                 style={{
@@ -2061,28 +2061,13 @@ function CarouselCanvas({
             >
               {activeContactChannels.includes("instagram") && slide.instagram && (
                 <span style={{ display: "inline-flex", maxWidth: "100%", alignItems: "center", gap: Math.round(6 * Z), ...safeTextWrap }}>
-                  <Instagram strokeWidth={1.5}
-                    aria-hidden="true"
-                    style={{
-                      width: Math.round(17 * Z),
-                      height: Math.round(17 * Z),
-                      color: "#E1306C",
-                      flex: "0 0 auto",
-                    }}
-                  />
+                  <img src="/social-icons/instagram_fino.png" alt="" aria-hidden="true" style={{ width: Math.round(17 * Z), height: Math.round(17 * Z), objectFit: "contain", flex: "0 0 auto" }} />
                   {slide.instagram}
                 </span>
               )}
               {activeContactChannels.includes("email") && slide.email && (
                 <span style={{ display: "inline-flex", maxWidth: "100%", alignItems: "center", gap: Math.round(6 * Z), ...safeTextWrap }}>
-                  <Mail strokeWidth={1.5}
-                    aria-hidden="true"
-                    style={{
-                      width: Math.round(17 * Z),
-                      height: Math.round(17 * Z),
-                      flex: "0 0 auto",
-                    }}
-                  />
+                  <img src="/social-icons/email_azul.png" alt="" aria-hidden="true" style={{ width: Math.round(17 * Z), height: Math.round(17 * Z), objectFit: "contain", flex: "0 0 auto" }} />
                   {slide.email}
                 </span>
               )}

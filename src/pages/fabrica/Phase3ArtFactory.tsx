@@ -24,9 +24,23 @@ import ArtTweakEditor from "@/components/fabrica/ArtTweakEditor";
 import { artVariantLabel, type ArtTweakMap } from "@/lib/fabrica-art-tweaks";
 import { getArtTweakPreset, loadArtTweakPresets } from "@/lib/fabrica-art-tweak-presets";
 import { createExportIdentity } from "@/lib/exportIdentity";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type GenMode = "ai" | "photo" | "custom";
 type CustomSource = "upload" | "link";
+
+const CONTACT_OPTIONS = [
+  { value: "whatsapp", label: "WhatsApp", img: "/social-icons/whatsapp.png" },
+  { value: "whatsapp_alt", label: "WhatsApp Alt", img: "/social-icons/whatsapp_alt.png" },
+  { value: "instagram_fino", label: "Instagram Fino", img: "/social-icons/instagram_fino.png" },
+  { value: "instagram_bolinha", label: "Insta Bolinha", img: "/social-icons/instagram_bolinha.png" },
+  { value: "facebook", label: "Facebook", img: "/social-icons/facebook.png" },
+  { value: "email_azul", label: "E-mail Azul", img: "/social-icons/email_azul.png" },
+  { value: "email_vermelho", label: "E-mail Verm", img: "/social-icons/email_vermelho.png" },
+  { value: "gmail", label: "Gmail", img: "/social-icons/gmail.png" },
+  { value: "site", label: "Site / Link", img: "/social-icons/site.png" },
+  { value: "none", label: "Ocultar", img: null }
+];
 
 interface Props { 
   onNext: () => void; 
@@ -1680,28 +1694,26 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="sm:col-span-8 space-y-3">
-            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Canais de Atendimento</label>
-            
-            <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
+               <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
               <div className="w-[45%] relative">
-                <select
-                  value={state.footerContact1Icon || "whatsapp_green"}
-                  onChange={(e) => update({ footerContact1Icon: e.target.value as any })}
-                  className="w-full bg-white/5 border-none rounded-lg pl-3 pr-8 py-2 text-[11px] font-medium text-white outline-none appearance-none cursor-pointer"
+                <Select
+                  value={state.footerContact1Icon || "whatsapp"}
+                  onValueChange={(val) => update({ footerContact1Icon: val as any })}
                 >
-                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
-                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
-                  <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
-                  <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
-                  <option value="website" className="bg-zinc-900">Website / Link</option>
-                  <option value="none" className="bg-zinc-900">Ocultar</option>
-                </select>
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
-                  <ChevronDown className="w-3.5 h-3.5 text-white" />
-                </div>
+                  <SelectTrigger className="w-full bg-white/5 border-none rounded-lg h-9 text-[11px] font-medium text-white shadow-none">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                    {CONTACT_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value} className="text-xs cursor-pointer focus:bg-zinc-800">
+                        <div className="flex items-center gap-2">
+                          {opt.img && <img src={opt.img} alt={opt.label} className="w-4 h-4 object-contain" />}
+                          {opt.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="w-[55%]">
                 <input
@@ -1719,21 +1731,24 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
 
             <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
               <div className="w-[45%] relative">
-                <select
-                  value={state.footerContact2Icon || "instagram_gradient"}
-                  onChange={(e) => update({ footerContact2Icon: e.target.value as any })}
-                  className="w-full bg-white/5 border-none rounded-lg pl-3 pr-8 py-2 text-[11px] font-medium text-white outline-none appearance-none cursor-pointer"
+                <Select
+                  value={state.footerContact2Icon || "instagram_fino"}
+                  onValueChange={(val) => update({ footerContact2Icon: val as any })}
                 >
-                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
-                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
-                  <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
-                  <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
-                  <option value="website" className="bg-zinc-900">Website / Link</option>
-                  <option value="none" className="bg-zinc-900">Ocultar</option>
-                </select>
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
-                  <ChevronDown className="w-3.5 h-3.5 text-white" />
-                </div>
+                  <SelectTrigger className="w-full bg-white/5 border-none rounded-lg h-9 text-[11px] font-medium text-white shadow-none">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                    {CONTACT_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value} className="text-xs cursor-pointer focus:bg-zinc-800">
+                        <div className="flex items-center gap-2">
+                          {opt.img && <img src={opt.img} alt={opt.label} className="w-4 h-4 object-contain" />}
+                          {opt.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="w-[55%]">
                 <input
