@@ -3155,7 +3155,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       let benefitsListV1 = (highlights || [])
         .map((h) => ({ ...h, text: cleanV1InlineText(h?.text || "") }))
-        .filter((h) => hasReadableV1Text(h.text))
+        .filter((h) => h.text.length >= 3 && hasReadableV1Text(h.text))
         .slice(0, Math.min(4, maxPills));
 
       benefitsListV1.forEach((h, i) => {
@@ -3168,19 +3168,19 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         // Ícone centralizado verticalmente
         const iconCX = padX + Math.round(pillH * 0.56);
-        drawMonoIcon(ctx, resolveV1BenefitIcon(h.icon, text), iconCX, py + pillH / 2, iconSz, v1Accent, 1.9);
+        drawMonoIcon(ctx, resolveV1BenefitIcon(h.icon, text), iconCX, py + pillH / 2, iconSz, v1Accent, 1.75);
 
         // Texto — à direita do ícone, com auto-shrink
-        const textX    = padX + Math.round(pillH * 0.92);
-        const textMaxW = pw - (textX - padX) - 14;
+        const textX    = padX + pillH + 12;
+        const textMaxW = pw - pillH - 18;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
         ctx.fillStyle = v1OnPanel;
-        ctx.font = `800 ${pillFont}px Inter, Arial, sans-serif`;
+        ctx.font = `700 ${pillFont}px Inter, Arial, sans-serif`;
         let tf = pillFont;
         while (tf > 14 && ctx.measureText(text).width > textMaxW) {
           tf -= 1;
-          ctx.font = `800 ${tf}px Inter, Arial, sans-serif`;
+          ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
         }
         safeFillText(ctx, text, textX, py + pillH / 2, textMaxW, 14);
         ctx.textBaseline = "alphabetic";
