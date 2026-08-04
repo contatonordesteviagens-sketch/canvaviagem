@@ -2990,6 +2990,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const contactLineH  = Math.round(contactIconSz * 1.75);
       const bottomPad     = Math.round(height * 0.042); // ~45px
       const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.13)" : "rgba(0,0,0,0.15)";
+      const cleanV1InlineText = (value = "") =>
+        value
+          .replace(/[\u200B-\u200D\uFEFF]/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
 
       // ── 1) PAINEL ESQUERDO sólido ──────────────────────────────────────────────────
       ctx.fillStyle = v1PanelBg;
@@ -3103,23 +3108,26 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const contactsTopY = height - contactsReservedH;
 
       // Reserva price card acima da logo na esquerda
-      const pixTxtV1   = showPixBanner ? (pixBannerText || "").trim().toUpperCase() : "";
+      const pixTxtV1   = showPixBanner ? cleanV1InlineText(pixBannerText || "").toUpperCase() : "";
       const hasPixV1   = pixTxtV1.length > 0;
       const topLabelTempV1 = (() => {
         if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
         if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
         return paymentLabel || pricePrefix || "a partir de";
-      })().toString().toUpperCase();
+      })().toString().replace(/\s+/g, " ").trim().toUpperCase();
       const instTextTempV1 = installments && (paymentMode === "installments" || paymentMode === "down_plus")
-        ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`)
+        ? (() => {
+            const cleanInstallments = cleanV1InlineText(installments);
+            return cleanInstallments.toLowerCase().includes("de") ? cleanInstallments : `${cleanInstallments} de`;
+          })()
         : "";
 
-      let priceCardH = 40; 
-      if (instTextTempV1) priceCardH += 22;
-      if (topLabelTempV1) priceCardH += 26;
-      priceCardH += 70; // Price approx
-      priceCardH += 26; // suffix
-      if (hasPixV1) priceCardH += 46; 
+      let priceCardH = 48;
+      if (instTextTempV1) priceCardH += 24;
+      if (topLabelTempV1) priceCardH += 30;
+      priceCardH += 78; // Price approx
+      priceCardH += 34; // suffix
+      if (hasPixV1) priceCardH += 48;
 
       const priceGap   = Math.round(height * 0.022);
       const priceCardMaxY = contactsTopY - priceGap - priceCardH;
@@ -3130,11 +3138,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const maxPills = Math.max(0, Math.floor((benefitAvailH + pillGap) / (pillH + pillGap)));
 
       let benefitsListV1 = (highlights || [])
-        .filter(h => h?.text && h.text.replace(/\u200B/g, '').trim().length > 0)
+        .map((h) => ({ ...h, text: cleanV1InlineText(h?.text || "") }))
+        .filter((h) => h.text.length > 0)
         .slice(0, Math.min(6, maxPills));
 
       benefitsListV1.forEach((h, i) => {
-        const text = h.text.replace(/\u200B/g, '').trim();
+        const text = cleanV1InlineText(h.text);
         if (!text) return;
         const py = benefitStartY + i * (pillH + pillGap);
 
@@ -3183,7 +3192,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const topLabelRenderV1 = topLabelTempV1;
       const instTextV1 = instTextTempV1;
 
-      let currentLabelY = priceBlockY + 24;
+      let currentLabelY = priceBlockY + 28;
       ctx.textAlign = "center";
 
       if (instTextV1) {
@@ -3191,14 +3200,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = "900 16px Inter, Arial, sans-serif";
         ctx.textBaseline = "middle";
         ctx.fillText(instTextV1.toUpperCase(), padX + pw / 2, currentLabelY);
-        currentLabelY += 22;
+        currentLabelY += 24;
       }
       if (topLabelRenderV1) {
         ctx.fillStyle = v1Accent;
         ctx.font = "900 22px Inter, Arial, sans-serif";
         ctx.textBaseline = "middle";
         ctx.fillText(topLabelRenderV1, padX + pw / 2, currentLabelY);
-        currentLabelY += 26;
+        currentLabelY += 30;
       }
 
       // Preço varejista: R$ | inteiro | ,90
@@ -3220,7 +3229,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         pInt = pInt.replace(/[,.]\d{2}$/, "");
       }
 
-      let priceFsV1 = 76;
+      let priceFsV1 = hasPixV1 ? 72 : 76;
       let symWV1 = 0, intWV1 = 0, centsWV1 = 0, totalWV1 = 0;
       const calcPWV1 = () => {
         ctx.font = `800 ${Math.round(priceFsV1 * 0.40)}px Inter, Arial, sans-serif`;
@@ -3235,7 +3244,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       while (totalWV1 > pw - 24 && priceFsV1 > 36) { priceFsV1 -= 4; calcPWV1(); }
 
       const startXV1 = padX + pw / 2 - totalWV1 / 2;
-      const pyV1     = currentLabelY + priceFsV1 - 8;
+      const pyV1     = currentLabelY + priceFsV1 - 6;
 
       ctx.textAlign    = "left";
       ctx.fillStyle    = v1OnPanel;
@@ -3259,7 +3268,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.font         = "800 18px Inter, Arial, sans-serif";
       ctx.textBaseline = "middle";
       const suffixText = (bottomSuffix && bottomSuffix.trim().length > 0) ? bottomSuffix.trim() : "por pessoa";
-      const suffixBaseY = pyV1 + 18;
+      const suffixBaseY = pyV1 + Math.round(priceFsV1 * 0.30);
       ctx.fillText(suffixText, padX + pw / 2, suffixBaseY);
 
       // Pílula PIX
@@ -3268,7 +3277,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${pixFsV1}px Inter, Arial, sans-serif`;
         const pixWV1 = Math.min(pw, ctx.measureText(pixTxtV1).width + 32);
         const pixHV1 = 34;
-        const pixYV1 = suffixBaseY + 16;
+        const pixYV1 = suffixBaseY + Math.round(priceFsV1 * 0.24);
 
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)";
