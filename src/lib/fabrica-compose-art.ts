@@ -2999,33 +2999,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const c1 = fitCover(image.naturalWidth, image.naturalHeight, photoW, height, 0.40);
       ctx.drawImage(image, c1.sx, c1.sy, c1.sw, c1.sh, photoX, 0, photoW, height);
 
-      // ── 3) LOGO manual (drawProminentLogo está bypassed) ───────────────────────────
-      let logoBottomY = logoTopY;
-      if (logoDataUrl) {
-        try {
-          const logoImgV1 = await new Promise<HTMLImageElement>((resolve, reject) => {
-            const el = new Image();
-            el.onload = () => resolve(el);
-            el.onerror = reject;
-            el.src = logoDataUrl;
-          });
-          const logoScale = Math.min(
-            logoMaxW / logoImgV1.naturalWidth,
-            logoMaxH / logoImgV1.naturalHeight,
-            1
-          );
-          const logoW = Math.round(logoImgV1.naturalWidth * logoScale);
-          const logoH = Math.round(logoImgV1.naturalHeight * logoScale);
-          ctx.save();
-          ctx.shadowColor = "rgba(0,0,0,0.28)";
-          ctx.shadowBlur = 10;
-          ctx.shadowOffsetY = 3;
-          ctx.drawImage(logoImgV1, padX, logoTopY, logoW, logoH);
-          ctx.restore();
-          logoBottomY = logoTopY + logoH;
-        } catch (_logoErrV1) { /* skip silently */ }
-      }
-
+      // ── 3) LOGO movido para a base (veja seção 10) ──────────────────────────────
+      let logoBottomY = Math.round(height * 0.035); // Referência inicial do topo
       const logoGap = Math.round(height * 0.020);
 
       // ── 4) BADGES — empilhados verticalmente, nunca vazam na foto ─────────────────
@@ -3033,7 +3008,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (promoName) badgesV1.push(promoName.toUpperCase());
       if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza')
         badgesV1.push(`Saindo de ${cityFmt}`);
-      if (travelPeriod && travelPeriod.trim()) badgesV1.push(travelPeriod.trim().toUpperCase());
       if (badgesV1.length === 0) badgesV1.push("OFERTA ESPECIAL");
 
       ctx.font = `800 ${Math.round(badgeH * 0.38)}px Inter, Arial, sans-serif`;
@@ -3051,6 +3025,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.shadowColor = "rgba(0,0,0,0.15)";
         ctx.shadowBlur = 8;
         ctx.shadowOffsetY = 4;
+        ctx.shadowOffsetX = 0; // Fix shadow bleeding to the right
         fillRoundRect(ctx, padX, badgeCurrentY, bW, badgeH, badgeH / 2, bBg);
         ctx.restore();
 
@@ -3060,6 +3035,30 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, bText, padX + bW / 2, badgeCurrentY + badgeH / 2, bW - 40, 13);
         badgeCurrentY += badgeH + Math.round(height * 0.009);
       });
+
+      // Travel Period no topo direito (sobre a foto) com a cor primária (v1PanelBg)
+      if (travelPeriod && travelPeriod.trim()) {
+        const tpText = travelPeriod.trim().toUpperCase();
+        ctx.font = `800 ${Math.round(badgeH * 0.38)}px Inter, Arial, sans-serif`;
+        const tpTextW = ctx.measureText(tpText).width;
+        const tpW = tpTextW + 40;
+        const tpX = width - Math.round(photoW * 0.08) - tpW; // alinhado à direita
+        const tpY = Math.round(height * 0.045); 
+
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.25)";
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 4;
+        ctx.shadowOffsetX = 0;
+        fillRoundRect(ctx, tpX, tpY, tpW, badgeH, badgeH / 2, v1PanelBg); 
+        ctx.restore();
+
+        ctx.fillStyle = v1OnPanel;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, tpText, tpX + tpW / 2, tpY + badgeH / 2, tpW - 40, 13);
+      }
+
       ctx.textBaseline = "alphabetic";
       ctx.textAlign = "left";
 
@@ -3086,6 +3085,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.shadowColor = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.25)";
       ctx.shadowBlur = 10;
       ctx.shadowOffsetY = 4;
+      ctx.shadowOffsetX = 0;
       ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
       titleLines.forEach((ln, i) => ctx.fillText(ln, padX, titleY + i * titleLineH));
       ctx.restore();
@@ -3093,16 +3093,32 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const titleBottomY = titleY + titleLines.length * titleLineH;
 
       // ── 6) RESERVAS DE ESPAÇO (bottom-up) ─────────────────────────────────────────
-      // Reserva contatos na base
       const contactCount = ((whatsapp || options.footerContact1Value) ? 1 : 0)
                          + ((instagram || options.footerContact2Value) ? 1 : 0);
-      const contactsReservedH = contactCount * contactLineH + bottomPad + Math.round(height * 0.012);
+      
+      const logoSpace = logoDataUrl ? Math.round(height * 0.10) + 16 : 0;
+      const contactsReservedH = bottomPad + logoSpace + 16;
       const contactsTopY = height - contactsReservedH;
 
-      // Reserva price card acima dos contatos
+      // Reserva price card acima da logo na esquerda
       const pixTxtV1   = showPixBanner ? (pixBannerText || "").trim().toUpperCase() : "";
       const hasPixV1   = pixTxtV1.length > 0;
-      const priceCardH = hasPixV1 ? 232 : 192;
+      const topLabelTempV1 = (() => {
+        if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
+        if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
+        return paymentLabel || pricePrefix || "a partir de";
+      })().toString().toUpperCase();
+      const instTextTempV1 = installments && (paymentMode === "installments" || paymentMode === "down_plus")
+        ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`)
+        : "";
+
+      let priceCardH = 40; 
+      if (instTextTempV1) priceCardH += 22;
+      if (topLabelTempV1) priceCardH += 26;
+      priceCardH += 70; // Price approx
+      priceCardH += 26; // suffix
+      if (hasPixV1) priceCardH += 46; 
+
       const priceGap   = Math.round(height * 0.022);
       const priceCardMaxY = contactsTopY - priceGap - priceCardH;
 
@@ -3112,7 +3128,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const maxPills = Math.max(0, Math.floor((benefitAvailH + pillGap) / (pillH + pillGap)));
 
       let benefitsListV1 = (highlights || [])
-        .filter(h => h?.text && h.text.replace(/\\u200B/g, '').trim().length > 0)
+        .filter(h => h?.text && h.text.replace(/\u200B/g, '').trim().length > 0)
         .slice(0, Math.min(6, maxPills));
 
       benefitsListV1.forEach((h, i) => {
@@ -3158,21 +3174,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.shadowColor = "rgba(0,0,0,0.18)";
       ctx.shadowBlur = 12;
       ctx.shadowOffsetY = 6;
+      ctx.shadowOffsetX = 0;
       fillRoundRect(ctx, padX, priceBlockY, pw, priceCardH, 18, priceCardOverlay);
       ctx.restore();
 
-      // Label de pagamento
-      const topLabelRenderV1 = (() => {
-        if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
-        if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
-        return paymentLabel || pricePrefix || "a partir de";
-      })().toString().toUpperCase();
+      const topLabelRenderV1 = topLabelTempV1;
+      const instTextV1 = instTextTempV1;
 
-      const instTextV1 = installments && (paymentMode === "installments" || paymentMode === "down_plus")
-        ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`)
-        : "";
-
-      let currentLabelY = priceBlockY + Math.round(priceCardH * 0.14);
+      let currentLabelY = priceBlockY + 24;
       ctx.textAlign = "center";
 
       if (instTextV1) {
@@ -3182,11 +3191,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillText(instTextV1.toUpperCase(), padX + pw / 2, currentLabelY);
         currentLabelY += 22;
       }
-      ctx.fillStyle = v1Accent;
-      ctx.font = "800 22px Inter, Arial, sans-serif";
-      ctx.textBaseline = "middle";
-      ctx.fillText(topLabelRenderV1, padX + pw / 2, currentLabelY);
-      currentLabelY += 26;
+      if (topLabelRenderV1) {
+        ctx.fillStyle = v1Accent;
+        ctx.font = "900 22px Inter, Arial, sans-serif";
+        ctx.textBaseline = "middle";
+        ctx.fillText(topLabelRenderV1, padX + pw / 2, currentLabelY);
+        currentLabelY += 26;
+      }
 
       // Preço varejista: R$ | inteiro | ,90
       const rawPriceV1 = (mainPrice || price || "").trim();
@@ -3215,7 +3226,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
         intWV1   = ctx.measureText(pInt).width;
         ctx.font = `800 ${Math.round(priceFsV1 * 0.40)}px Inter, Arial, sans-serif`;
-        centsWV1 = pCents ? ctx.measureText(pCents).width : 0;
+        centsWV1 = pCents ? ctx.measureText(pCents).width + 6 : 0;
         totalWV1 = symWV1 + intWV1 + centsWV1;
       };
       calcPWV1();
@@ -3234,41 +3245,40 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // Inteiro (gigante)
       ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
       ctx.fillText(pInt, startXV1 + symWV1, pyV1);
-      // Centavos (topo-direito, menor)
+      // Centavos (topo-direito, afastado para não sobrepor)
       if (pCents) {
         ctx.font = `800 ${Math.round(priceFsV1 * 0.40)}px Inter, Arial, sans-serif`;
-        ctx.fillText(pCents, startXV1 + symWV1 + intWV1, pyV1 - priceFsV1 * 0.46);
+        ctx.fillText(pCents, startXV1 + symWV1 + intWV1 + 6, pyV1 - priceFsV1 * 0.46);
       }
 
       // Sufixo "por pessoa"
       ctx.textAlign    = "center";
-      ctx.fillStyle    = v1Accent;
-      ctx.font         = "800 20px Inter, Arial, sans-serif";
-      ctx.textBaseline = "top";
-      const suffixBaseY = pyV1 + 26;
+      ctx.fillStyle    = v1OnPanel; // Mudado para garantir contraste com o fundo opaco do bloco
+      ctx.font         = "800 18px Inter, Arial, sans-serif";
+      ctx.textBaseline = "middle";
+      const suffixBaseY = pyV1 + 18;
       ctx.fillText(bottomSuffix || "por pessoa", padX + pw / 2, suffixBaseY);
-      ctx.textBaseline = "alphabetic";
 
-      // Pílula PIX — APÓS sufixo, nunca sobre o número do preço
+      // Pílula PIX
       if (hasPixV1) {
-        const pixFsV1 = 18;
+        const pixFsV1 = 16;
         ctx.font = `900 ${pixFsV1}px Inter, Arial, sans-serif`;
-        const pixWV1 = Math.min(pw, ctx.measureText(pixTxtV1).width + 36);
-        const pixHV1 = 36;
-        const pixYV1 = suffixBaseY + 30;
+        const pixWV1 = Math.min(pw, ctx.measureText(pixTxtV1).width + 32);
+        const pixHV1 = 34;
+        const pixYV1 = suffixBaseY + 16;
 
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)";
         ctx.shadowBlur = 6;
         ctx.shadowOffsetY = 2;
-        fillRoundRect(ctx, padX + pw / 2 - pixWV1 / 2, pixYV1, pixWV1, pixHV1, 18, v1Accent);
+        ctx.shadowOffsetX = 0;
+        fillRoundRect(ctx, padX + pw / 2 - pixWV1 / 2, pixYV1, pixWV1, pixHV1, pixHV1 / 2, v1Accent);
         ctx.restore();
 
         ctx.fillStyle    = v1OnAccent;
         ctx.textAlign    = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(pixTxtV1, padX + pw / 2, pixYV1 + pixHV1 / 2 + 1);
-        ctx.textBaseline = "alphabetic";
       }
 
       ctx.textAlign = "left";
@@ -3283,7 +3293,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = bottomGradV1;
       ctx.fillRect(photoX, shadowYV1, photoW, shadowHV1); // apenas na área da foto
 
-      // ── 10) LOGO no painel esquerdo — drawProminentLogo está bypassed, carregamos manualmente
+      // ── 10) LOGO no painel esquerdo (canto inferior esquerdo)
+      let logoCurrentY = height - bottomPad - 16;
       if (logoDataUrl) {
         try {
           const logoImgV1b = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -3292,47 +3303,59 @@ const panelBottom = RULES.PANEL_BOTTOM;
             el2.onerror = reject;
             el2.src = logoDataUrl;
           });
-          const lMaxH = Math.round(height * 0.10);
+          const lMaxH = Math.round(height * 0.09);
           const lMaxW = Math.round(panelW * 0.64);
           const lScale = Math.min(lMaxW / logoImgV1b.naturalWidth, lMaxH / logoImgV1b.naturalHeight, 1);
           const lW = Math.round(logoImgV1b.naturalWidth * lScale);
           const lH = Math.round(logoImgV1b.naturalHeight * lScale);
+          
+          logoCurrentY -= lH;
+          
           ctx.save();
           ctx.shadowColor = "rgba(0,0,0,0.25)";
           ctx.shadowBlur = 8;
           ctx.shadowOffsetY = 3;
-          ctx.drawImage(logoImgV1b, padX, Math.round(height * 0.035), lW, lH);
+          ctx.shadowOffsetX = 0;
+          ctx.drawImage(logoImgV1b, padX, logoCurrentY, lW, lH);
           ctx.restore();
         } catch (_) { /* skip silently */ }
       }
 
-      // ── 11) Contatos na base do painel — ícones 37px, texto 22px, bem alinhados ────
-      const contactTextX2   = padX + contactIconSz + 12;
-      const contactTextMaxW2 = pw - contactIconSz - 14;
+      // ── 11) Contatos movidos para o lado direito (sobre a foto com sombra/gradiente escuro)
+      const largerContactIconSz = Math.round(contactIconSz * 1.3);
+      const largerContactFontSz = Math.round(contactFontSz * 1.1);
+      const rightPad = Math.round(photoW * 0.08);
+      const contactRightX = width - rightPad;
       let contactY2 = height - bottomPad;
 
+      ctx.textAlign = "left";
+      
       if (instagram || options.footerContact2Value) {
         const val  = options.footerContact2Value || instagram;
         const icon = options.footerContact2Icon || "instagram_fino";
         contactY2 -= contactLineH;
-        await drawAdSocialIcon(ctx, icon, padX + contactIconSz / 2, contactY2, contactIconSz);
-        ctx.fillStyle    = v1OnPanel;
-        ctx.font         = `700 ${contactFontSz}px Inter, Arial, sans-serif`;
-        ctx.textAlign    = "left";
+        
+        ctx.fillStyle    = "#ffffff";
+        ctx.font         = `700 ${largerContactFontSz}px Inter, Arial, sans-serif`;
         ctx.textBaseline = "middle";
-        safeFillText(ctx, val, contactTextX2, contactY2, contactTextMaxW2, Math.round(contactFontSz * 0.64));
+        const valW = ctx.measureText(val).width;
+        
+        await drawMonoIcon(ctx, icon, contactRightX - valW - largerContactIconSz - 6, contactY2, largerContactIconSz, "#ffffff", 1.8);
+        ctx.fillText(val, contactRightX - valW, contactY2);
       }
 
       if (whatsapp || options.footerContact1Value) {
         const val  = options.footerContact1Value || whatsapp;
         const icon = options.footerContact1Icon || "whatsapp";
         contactY2 -= contactLineH;
-        await drawAdSocialIcon(ctx, icon, padX + contactIconSz / 2, contactY2, contactIconSz);
-        ctx.fillStyle    = v1OnPanel;
-        ctx.font         = `700 ${contactFontSz}px Inter, Arial, sans-serif`;
-        ctx.textAlign    = "left";
+        
+        ctx.fillStyle    = "#ffffff";
+        ctx.font         = `700 ${largerContactFontSz}px Inter, Arial, sans-serif`;
         ctx.textBaseline = "middle";
-        safeFillText(ctx, val, contactTextX2, contactY2, contactTextMaxW2, Math.round(contactFontSz * 0.64));
+        const valW = ctx.measureText(val).width;
+        
+        await drawMonoIcon(ctx, icon, contactRightX - valW - largerContactIconSz - 6, contactY2, largerContactIconSz, "#ffffff", 1.8);
+        ctx.fillText(val, contactRightX - valW, contactY2);
       }
       ctx.textBaseline = "alphabetic";
 
