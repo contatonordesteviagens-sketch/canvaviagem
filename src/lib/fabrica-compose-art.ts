@@ -3037,8 +3037,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
       });
 
       // Travel Period no topo direito (sobre a foto) com a cor primária (v1PanelBg)
-      if (travelPeriod && travelPeriod.trim()) {
-        const tpText = travelPeriod.trim().toUpperCase();
+      const tpVal = (travelPeriod || options?.date || "").trim();
+      if (tpVal) {
+        const tpText = tpVal.toUpperCase();
         ctx.font = `800 ${Math.round(badgeH * 0.38)}px Inter, Arial, sans-serif`;
         const tpTextW = ctx.measureText(tpText).width;
         const tpW = tpTextW + 40;
@@ -3087,6 +3088,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.shadowOffsetY = 4;
       ctx.shadowOffsetX = 0;
       ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
+      ctx.textBaseline = "top";
       titleLines.forEach((ln, i) => ctx.fillText(ln, padX, titleY + i * titleLineH));
       ctx.restore();
 
@@ -3253,11 +3255,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // Sufixo "por pessoa"
       ctx.textAlign    = "center";
-      ctx.fillStyle    = v1OnPanel; // Mudado para garantir contraste com o fundo opaco do bloco
+      ctx.fillStyle    = v1OnPanel;
       ctx.font         = "800 18px Inter, Arial, sans-serif";
       ctx.textBaseline = "middle";
+      const suffixText = (bottomSuffix && bottomSuffix.trim().length > 0) ? bottomSuffix.trim() : "por pessoa";
       const suffixBaseY = pyV1 + 18;
-      ctx.fillText(bottomSuffix || "por pessoa", padX + pw / 2, suffixBaseY);
+      ctx.fillText(suffixText, padX + pw / 2, suffixBaseY);
 
       // Pílula PIX
       if (hasPixV1) {
