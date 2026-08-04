@@ -1,0 +1,106 @@
+﻿
+>   const renderV0Experiencia = async (): Promise<string> => {
+      await drawProminentLogo(ctx, 40, 40, 120);
+      const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+      ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+  
+      const grad = ctx.createLinearGradient(0, 0, 0, height);
+      grad.addColorStop(0, "rgba(0,0,0,0.60)");
+      grad.addColorStop(0.5, "rgba(0,0,0,0.30)");
+      grad.addColorStop(1, "rgba(0,0,0,0.80)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+      applyVignette(ctx, width, height, 0.4);
+  
+      const cx = width / 2;
+      const isStory = format === "story";
+      const sans = `Inter, Arial, sans-serif`;
+      const serif = `'Playfair Display', Georgia, serif`;
+  
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#ffffff";
+  
+      const promo = (promoName || "EXPERIÃŠNCIA EXCLUSIVA").toUpperCase();
+      ctx.font = `800 ${isStory ? 44 : 36}px ${serif}`;
+      const topAnchorY = isStory ? safeTop + 20 : 150;
+      ctx.fillText(promo.split("").join("\u2009"), cx, topAnchorY);
+  
+      if (titleText) {
+        ctx.font = `300 ${isStory ? 28 : 22}px ${sans}`;
+        ctx.fillStyle = "rgba(255,255,255,0.92)";
+        safeFillText(ctx, titleText.trim(), cx, topAnchorY + 70, width - 120, 16);
+      }
+  
+      const brandingSafeY = panelBottom;
+      const line2Y = brandingSafeY - (isStory ? 180 : 120);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `800 ${isStory ? 110 : 78}px ${sans}`;
+      safeFillText(ctx, (destFmt || destination || "DESTINO").toUpperCase(), cx, line2Y, width - 80, 24);
+  
+      await drawFinalBranding(
+        ctx,
+        width,
+        height,
+        logoDataUrl,
+        footerContact1Icon ? { icon: footerContact1Icon, value: footerContact1Value || "" } : (whatsapp ? { icon: 
+"whatsapp_green", value: whatsapp } : undefined),
+        footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: 
+"instagram_gradient", value: instagram } : undefined),
+        effectiveTextColor,
+        userFamily,
+        false,
+        logoFormat
+      );
+      return canvas.toDataURL("image/png");
+    };
+  
+    // ============================================================
+    // V1_Experiencia Â· LUXO CINEMATOGRÃFICO (canvas)
+    // ============================================================
+    const renderV1Experiencia = async (): Promise<string> => {
+      await drawProminentLogo(ctx, 40, 40, 120);
+      const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+      ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+  
+      const grad = ctx.createLinearGradient(0, 0, 0, height);
+      grad.addColorStop(0, "rgba(0,0,0,0.4)");
+      grad.addColorStop(0.5, "rgba(0,0,0,0.1)");
+      grad.addColorStop(1, "rgba(0,0,0,0.6)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+      applyVignette(ctx, width, height, 0.35);
+  
+      const cx = width / 2;
+      const isStory = format === "story";
+      const serif = `'Playfair Display', Georgia, serif`;
+      const sans = `Inter, Arial, sans-serif`;
+  
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#ffffff";
+  
+      const promo = (promoName || "Experiencia ÃƒÅ¡nica").toUpperCase();
+      ctx.font = `800 ${isStory ? 32 : 24}px ${sans}`;
+      ctx.fillStyle = secondaryColor;
+      const topAnchorY = isStory ? safeTop + 40 : 150;
+      ctx.fillText(promo.split("").join(" "), cx, topAnchorY);
+  
+      ctx.fillStyle = "#ffffff";
+      const titSize = isStory ? 120 : 90;
+      ctx.font = `900 ${titSize}px ${serif}`;
+      const titLines = (titleText || "").toUpperCase().split(/\s+/);
+      let line1 = titLines.slice(0, Math.ceil(titLines.length / 2)).join(" ");
+      let line2 = titLines.slice(Math.ceil(titLines.length / 2)).join(" ");
+      
+      const midY = height / 2;
+      ctx.shadowColor = "rgba(0,0,0,0.5)";
+      ctx.shadowBlur = 15;
+      ctx.fillText(line1, cx, midY - (line2 ? titSize * 0.4 : 0));
+      if (line2) ctx.fillText(line2, cx, midY + titSize * 0.7);
+      ctx.shadowBlur = 0;
+  
+      await drawFinalBranding(
+        ctx,
+
+

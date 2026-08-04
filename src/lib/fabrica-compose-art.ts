@@ -3146,9 +3146,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // Ponto limite calculado: no feed, deixamos mais alto (height - 460) para garantir respiro na base
       const limitY = format === "story" ? height - 680 : height - 460;
       
-      // 8) BENEFITS â€” pílulas adaptativas no espaco restante
+      // 8) BENEFITS — pílulas adaptativas no espaco restante
       let benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0);
-      // Removemos a logica de adicionar travelPeriod aos beneficios pois ja esta nas badges do topo!
       benefitsListV1 = benefitsListV1.slice(0, 6);
       const hlStart = titleY + titleBlockH + (format === "story" ? 24 : 16);
       
@@ -3168,12 +3167,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.14)";
 
       benefitsListV1.forEach((h, i) => {
+        if (!h.text || !h.text.trim()) return;
         const py = hlStart + i * (pillH + pillGap);
         fillRoundRect(ctx, px, py, pw, pillH, 14, pillBg);
         ctx.fillStyle = v1Accent;
         ctx.font = `400 ${iconFont}px Inter, Arial, sans-serif`;
         ctx.textBaseline = "middle";
-        drawMonoIcon(ctx, h.icon || "check", px + 22 + 32/2, py + pillH / 2, 32, v1Accent); // Ícone aumentado para 32px (20% maior)
+        drawMonoIcon(ctx, h.icon || "check", px + 22 + 32/2, py + pillH / 2, 32, v1Accent, 1.7);
         ctx.fillStyle = v1OnPanel;
         let tf = pillFont;
         ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
@@ -3201,79 +3201,99 @@ const panelBottom = RULES.PANEL_BOTTOM;
       fillRoundRect(ctx, px, priceBlockY, pw, finalPriceBlockH, 18, priceCardOverlay);
       ctx.restore();
       
-      ctx.textAlign = "center";
-      
-      // Prefixo (Top Label ou Parcela)
-      ctx.fillStyle = v1Accent;
-      ctx.font = "800 22px Inter, Arial, sans-serif";
       const topLabelRenderV1 = (() => {
         if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
         if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
         return paymentLabel || pricePrefix || "a partir de";
       })().toString().toUpperCase();
-      
-      let currentLabelY = priceBlockY + 36;
-      ctx.fillText(topLabelRenderV1, px + pw / 2, currentLabelY);
-      
-      // Valor formatado
-      let priceStrV1 = mainPrice || `${curSym} ${price}`.trim();
-      if (hideCents) priceStrV1 = priceStrV1.replace(/[.,]\d{2}\s*$/, "");
-      const centsMatchV1 = priceStrV1.match(/^(.*?)([,.]\d{1,2})$/);
-      const priceMainV1 = centsMatchV1 ? centsMatchV1[1] : priceStrV1;
-      const priceCentsV1 = centsMatchV1 ? centsMatchV1[2] : "";
-      
+
       const instTextV1 = installments && (paymentMode === "installments" || paymentMode === "down_plus") 
         ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`) 
         : "";
 
-      // Se houver parcelamento, desenhamos centralizado abaixo de "A PARTIR DE" e acima do preço!
+      let currentLabelY = priceBlockY + 32;
+      ctx.textAlign = "center";
+      
+      // Se houver parcelamento, junta na mesma linha ou empilha de forma elegante
       if (instTextV1) {
-         currentLabelY += 26;
-         ctx.font = "900 18px Inter, Arial, sans-serif";
          ctx.fillStyle = v1OnPanel;
+         ctx.font = "900 16px Inter, Arial, sans-serif";
          ctx.fillText(instTextV1.toUpperCase(), px + pw / 2, currentLabelY);
+         currentLabelY += 20;
+      }
+      ctx.fillStyle = v1Accent;
+      ctx.font = "800 22px Inter, Arial, sans-serif";
+      ctx.fillText(topLabelRenderV1, px + pw / 2, currentLabelY);
+
+      currentLabelY += 10; // Espaço antes do preço
+
+      // Separando Moeda, Inteiro e Centavos
+      const rawPrice = (mainPrice || price || "").trim();
+      let pSym = (curSym || "R$").trim();
+      let pInt = rawPrice;
+      let pCents = "";
+
+      // Remove a moeda se ela já vier na string do preço
+      if (pInt.toUpperCase().startsWith(pSym.toUpperCase())) {
+          pInt = pInt.substring(pSym.length).trim();
+      } else if (pInt.toUpperCase().startsWith("R$")) {
+          pSym = "R$";
+          pInt = pInt.substring(2).trim();
       }
 
-      let priceFsV1 = 64;
-      let pMainWV1 = 0, pCentsWV1 = 0, totalWV1 = 0;
-      
-      const calcPriceWidthsV1 = () => {
-        ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
-        pMainWV1 = ctx.measureText(priceMainV1).width;
-        // Centavos são menores e seguem o fluxo
-        ctx.font = `900 ${Math.max(20, priceFsV1 - 36)}px Inter, Arial, sans-serif`;
-        pCentsWV1 = priceCentsV1 ? ctx.measureText(priceCentsV1).width + 2 : 0;
-        totalWV1 = pMainWV1 + pCentsWV1;
-      };
-      
-      calcPriceWidthsV1();
-      while (totalWV1 > pw - 30 && priceFsV1 > 32) {
-        priceFsV1 -= 4;
-        calcPriceWidthsV1();
+      if (!hideCents) {
+          const match = pInt.match(/^(.*?)([,.]\d{2})$/);
+          if (match) {
+              pInt = match[1];
+              pCents = match[2];
+          }
+      } else {
+          pInt = pInt.replace(/[,.]\d{2}$/, "");
       }
-      
+
+      let priceFsV1 = 76; // Fonte base maior
+      let symWV1 = 0, intWV1 = 0, centsWV1 = 0, totalWV1 = 0;
+      const calcPriceWidthsV1 = () => {
+          ctx.font = `800 ${Math.round(priceFsV1 * 0.4)}px Inter, Arial, sans-serif`;
+          symWV1 = ctx.measureText(pSym + " ").width;
+          ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
+          intWV1 = ctx.measureText(pInt).width;
+          ctx.font = `800 ${Math.round(priceFsV1 * 0.4)}px Inter, Arial, sans-serif`;
+          centsWV1 = pCents ? ctx.measureText(pCents).width : 0;
+          totalWV1 = symWV1 + intWV1 + centsWV1;
+      };
+
+      calcPriceWidthsV1();
+      while (totalWV1 > pw - 30 && priceFsV1 > 40) {
+          priceFsV1 -= 4;
+          calcPriceWidthsV1();
+      }
+
       let startXV1 = (px + pw / 2) - totalWV1 / 2;
-      const pyV1 = currentLabelY + priceFsV1 + 10;
-      
+      const pyV1 = currentLabelY + priceFsV1 - 10;
+
       ctx.textAlign = "left";
       ctx.fillStyle = v1OnPanel;
-      ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
-      ctx.fillText(priceMainV1, startXV1, pyV1);
       
-      if (priceCentsV1) {
-        ctx.font = `900 ${Math.max(20, priceFsV1 - 36)}px Inter, Arial, sans-serif`;
-        ctx.fillText(
-          priceCentsV1,
-          startXV1 + pMainWV1 + 2,
-          pyV1 - priceFsV1 + Math.max(20, priceFsV1 - 36) + 8,
-        );
+      // 1. Simbolo
+      ctx.font = `800 ${Math.round(priceFsV1 * 0.4)}px Inter, Arial, sans-serif`;
+      ctx.fillText(pSym, startXV1, pyV1 - priceFsV1 * 0.45);
+      
+      // 2. Inteiro
+      ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
+      ctx.fillText(pInt, startXV1 + symWV1, pyV1);
+
+      // 3. Centavos
+      if (pCents) {
+          ctx.font = `800 ${Math.round(priceFsV1 * 0.4)}px Inter, Arial, sans-serif`;
+          ctx.fillText(pCents, startXV1 + symWV1 + intWV1, pyV1 - priceFsV1 * 0.45);
       }
       
       // Sufixo
       ctx.textAlign = "center";
       ctx.fillStyle = v1Accent;
       ctx.font = "800 20px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, pyV1 + 32);
+      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, pyV1 + 30);
       
       // Pilula PIX
       if (hasPixV1) {
@@ -3281,7 +3301,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${pixFsV1}px Inter, Arial, sans-serif`;
         const pixWV1 = ctx.measureText(pixTxtV1).width + 36;
         const pixHV1 = 36;
-        const pixYV1 = pyV1 + 52;
+        const pixYV1 = pyV1 + 45;
         
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)";

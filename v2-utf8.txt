@@ -1,0 +1,306 @@
+﻿
+>     if (variant === 2) {
+        await drawProminentLogo(ctx, 40, 40, 120);
+  
+        if (format === "story") {
+          // ============================================================
+          // DEDICATED REENGINEERING FOR V2 STORIES (9:16)
+          // ============================================================
+          ctx.fillStyle = "#f7f4ef"; 
+          ctx.fillRect(0, 0, width, height);
+  
+          const v2CardBg = primaryColor;
+          const v2CardLabel = getSafeColor(v2CardBg, secondaryColor);
+          const v2BenefitColor = getSafeColor("#f7f4ef", secondaryColor);
+          const v2HeadlineColor = v2CardLabel;
+  
+          const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
+          const benefitsCountV2 = Math.max(1, benefitsListV2.length);
+  
+          // 1) Dynamic Price Block - Mirror Feed logic to avoid being oversized & fix hardcoded labels
+          const priceStrV2 = mainPrice || `${curSym} ${price}`;
+          const topLabelTxt = (topLabel || installments || "por apenas").toString().toUpperCase();
+          
+          ctx.font = "700 24px Inter, Arial, sans-serif";
+          const w1 = ctx.measureText(topLabelTxt).width;
+          ctx.font = "900 74px Inter, Arial, sans-serif";
+          const w2 = ctx.measureText(priceStrV2).width;
+          ctx.font = "800 22px Inter, Arial, sans-serif";
+          const w3 = ctx.measureText((bottomSuffix || "por pessoa").toUpperCase()).width;
+          
+          const maxContentW = Math.max(w1, w2, w3);
+          const priceBlockW = Math.min(width * 0.8, Math.max(width * 0.45, Math.round(maxContentW + 100)));
+          const priceCardH = 168;
+          const priceCardX = Math.round((width - priceBlockW) / 2);
+          // Securely anchor above the Instagram safe bottom zone (1440)
+          const priceCardY = panelBottom - priceCardH - 35; 
+          
+          fillRoundRect(ctx, priceCardX, priceCardY, priceBlockW, priceCardH, 24, v2CardBg);
+          
+          // Subtle relief effect on card
+          ctx.save();
+          ctx.strokeStyle = "rgba(255,255,255,0.3)";
+          ctx.lineWidth = 2.5;
+          fillRoundRect(ctx, priceCardX + 1.5, priceCardY + 1.5, priceBlockW - 3, priceCardH - 3, 22, "transparent");
+          ctx.stroke();
+          ctx.restore();
+  
+          const cardCenterX = priceCardX + priceBlockW / 2;
+          ctx.textAlign = "center";
+          ctx.fillStyle = v2CardLabel;
+          
+          ctx.font = "800 24px Inter, Arial, sans-serif";
+          safeFillText(ctx, topLabelTxt, cardCenterX, priceCardY + 45, priceBlockW - 40, 14);
+  
+          let pfsV2 = 74;
+          ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+          while (ctx.measureText(priceStrV2).width > priceBlockW - 50 && pfsV2 > 28) {
+            pfsV2 -= 4;
+            ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+          }
+          safeFillText(ctx, priceStrV2, cardCenterX, priceCardY + 108, priceBlockW - 50, 24);
+  
+          ctx.fillStyle = v2CardLabel;
+          ctx.globalAlpha = 0.9;
+          ctx.font = "800 22px Inter, Arial, sans-serif";
+          ctx.fillText((bottomSuffix || "por pessoa").toUpperCase(), cardCenterX, priceCardY + 150);
+          ctx.globalAlpha = 1.0;
+  
+          // Optional Travel Period injection between components
+          let periodYOffset = 0;
+          if (travelPeriod && travelPeriod.trim()) {
+            ctx.fillStyle = v2BenefitColor;
+            ctx.font = "900 36px Inter, Arial, sans-serif";
+            ctx.fillText(travelPeriod.trim().toUpperCase(), width / 2, priceCardY - 52);
+            periodYOffset = 72; // Allocates extra safety offset upwards
+          }
+          ctx.textAlign = "left";
+  
+          // 2) Intelligent Multi-line Headline Bar
+          const resolvedTitle = (titleText || "").toUpperCase();
+          ctx.font = "900 56px Inter, Arial, sans-serif";
+          const titleLines = wrapTextSafe(ctx, resolvedTitle, contentWidth - 40, 2, 34);
+          const isMultiLine = titleLines.length > 1;
+          const faixaH = isMultiLine ? 190 : 135;
+  
+          // Ã°Å¸â€ºÂ¡Ã¯Â¸Â DYNAMIC COLLISION PROTECTION ENGINE Ã°Å¸â€ºÂ¡Ã¯Â¸Â
+          // Calculates guaranteed minimum vertical space reservation to prevent component overlaps.
+          const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
+          const benefitGap = benefitRowsV2 <= 2 ? 82 : 68; 
+          const benefitsEffectiveH = (benefitRowsV2 - 1) * benefitGap;
+          
+          // We require at least the highlights stack, the price floor, and reasonable empty buffers (70px total)
+          const requiredBuff = 70; 
+          const contentFloorLimit = priceCardY - periodYOffset;
+          // Safe ceiling threshold for content based on strict stacking needs
+          const maxSafeCeiling = contentFloorLimit - (benefitsEffectiveH + requiredBuff);
+  
+          // Re-evaluate optimal photo anchor to make it large, but fit inside constraints
+          let photoBottom = 800; 
+          // photoBottom + 16 (gap) + faixaH must not exceed maxSafeCeiling
+          const photoConstraint = maxSafeCeiling - 16 - faixaH;
+          photoBottom = Math.min(photoBottom, photoConstraint);
+          
+          const faixaY = photoBottom + 16;
+  
+          fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
+          ctx.fillStyle = v2HeadlineColor;
+          ctx.textBaseline = "middle";
+          
+          const lineSpacing = 62;
+          const textBlockH = isMultiLine ? lineSpacing : 0;
+          const startTextY = (faixaY + faixaH / 2) - (textBlockH / 2);
+          
+          titleLines.forEach((txt, i) => {
+             safeFillText(ctx, txt, left, startTextY + (i * lineSpacing), width - left - 40, 20);
+          });
+          ctx.textBaseline = "alphabetic";
+  
+          // 3) Expanded Photo Mask - Autonomously size-constrained to prevent content bleed
+          const photoTop = safeTop - 20; 
+          const fW2 = width - 32;
+          const fH2 = photoBottom - photoTop; 
+          const c2 = fitCover(image.naturalWidth, image.naturalHeight, fW2, fH2, 0.36);
+          ctx.save();
+          fillRoundRect(ctx, 16, photoTop, fW2, fH2, 22, "#ccc");
+          ctx.clip();
+          ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, 16, photoTop, fW2, fH2);
+          ctx.restore();
+  
+          // 4) Mathematical Vertical Balancing (Safe Centering)
+          const bfs = benefitRowsV2 <= 2 ? 38 : 32; 
+          const contentCeilLimit = faixaY + faixaH;
+          const verticalFreeSpace = contentFloorLimit - contentCeilLimit;
+          
+          // Anchor top at the precise vertical half-point of the computed gap
+          const benefitsTop = contentCeilLimit + (verticalFreeSpace - benefitsEffectiveH) / 2;
+  
+          const colGapV2 = 28;
+          const colWV2 = (contentWidth - colGapV2) / 2;
+  
+          benefitsListV2.forEach((h, i) => {
+            let fs = bfs;
+            const col = i % 2;
+            const row = Math.floor(i / 2);
+            const tx = left + col * (colWV2 + colGapV2);
+            const ty = benefitsTop + row * benefitGap;
+            
+            const iconSizeV2 = Math.round(fs * 1.5);
+            // Offset icon slightly upwards visually to accommodate text baseline
+            drawMonoIcon(ctx, h.icon || "check", tx + iconSizeV2 / 2, ty - fs/6, iconSizeV2, v2BenefitColor);
+            
+            ctx.fillStyle = v2BenefitColor;
+>       if (variant === 2) return { url: await renderV2Experiencia(), variant };
+        if (variant === 3) {
+          // FORÃƒâ€¡ADO: opera exclusivamente na categoria Oferta de Destino (bypassa isExperience)
+          return { url: await renderSafeSquareOffer(), variant };
+        }
+        if (variant === 4) return { url: await renderV4Experiencia(), variant };
+        if (variant === 5) {
+          // Reutiliza o motor Aurora Premium que Ã© altamente estÃ©tico e compatÃ­vel
+          return { url: await renderSafeSquareOffer(), variant };
+        }
+        if (variant === 6) return { url: await renderSafeSquareOffer(), variant };
+        if (variant === 7) return { url: await renderSafeSquareOffer(), variant };
+  
+        return { url: await renderV0Experiencia(), variant: 0 };
+      }
+  
+      // Fallback para Ofertas (Matriz, Gancho, etc.)
+      return { url: await renderSafeSquareOffer(), variant: resolvedVariant };
+    } catch (error) {
+      console.error("Ad Engine Error:", error);
+      // Fallback: tenta V0 antes de desistir; se tambÃ©m falhar, propaga o erro real
+      try {
+        return { url: await renderV0Experiencia(), variant: 0 };
+      } catch (innerErr) {
+        const baseMsg = (error as Error)?.message || String(error);
+        const innerMsg = (innerErr as Error)?.message || String(innerErr);
+        throw new Error(
+          baseMsg.includes("carregar imagem")
+            ? "NÃ£o foi possÃvel carregar a foto selecionada (CORS / link bloqueado). Escolha outra foto da galeria ou 
+cole um link de imagem direta (.jpg/.png)."
+            : `Falha ao compor anÃºncio: ${baseMsg} | ${innerMsg}`
+        );
+      }
+    }
+  }
+  
+  /**
+   * Reenquadra (cover crop) uma imagem qualquer para o aspecto pedido (story 9:16 ou square 1:1).
+   * Garante que a IA, que normalmente devolve em ~quadrado, fique no formato correto da rede social.
+   */
+  export async function reframeImageToAspect(
+    imageDataUrl: string,
+    format: Format
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const targetW = 1080;
+          const targetH = format === "story" ? 1920 : 1080;
+          // Se ja esta no aspecto desejado (tolerÃ¢ncia de 2%), retorna como veio.
+          const currentRatio = img.naturalWidth / img.naturalHeight;
+          const targetRatio = targetW / targetH;
+          if (Math.abs(currentRatio - targetRatio) < 0.02) {
+            resolve(imageDataUrl);
+            return;
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = targetW;
+          canvas.height = targetH;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject(new Error("Canvas 2D nÃ£o suportado"));
+  
+          // COVER CROP Ã¢â‚¬â€ preenche toda a tela 9:16 ou 1:1 sem barras laterais brancas.
+          // O prompt da IA ja instrui a concentrar o conteudo importante no miolo central
+          // (entre 18% e 82% da altura, com ~10% de margem lateral), de modo que o recorte
+          // lateral nÃ£o corta texto, preco nem CTA. Isso elimina o efeito "moldura branca".
+          const scale = Math.max(targetW / img.naturalWidth, targetH / img.naturalHeight);
+          const drawW = Math.round(img.naturalWidth * scale);
+          const drawH = Math.round(img.naturalHeight * scale);
+          const dx = Math.round((targetW - drawW) / 2);
+          const dy = Math.round((targetH - drawH) / 2);
+          ctx.drawImage(img, dx, dy, drawW, drawH);
+  
+          resolve(canvas.toDataURL("image/png"));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      img.onerror = () => reject(new Error("Falha ao carregar imagem para reenquadrar"));
+      img.src = imageDataUrl;
+    });
+  }
+  
+  // ==============================================================================
+  // Ã°Å¸Â¤â€“ TAREFA 3: O Renderizador Universal de IA (Canvas 2D para JSON DinÃ¢mico)
+  // ==============================================================================
+  
+  export interface IAElement {
+    type: "box" | "text";
+    x: number;
+    y: number;
+    width?: number;
+    height?: number;
+    backgroundColor?: string;
+    borderRadius?: number;
+    color?: string;
+    fontSize?: number;
+    fontFamily?: string;
+    fontWeight?: string;
+    content?: string;
+    textAlign?: "left" | "center" | "right";
+    borderColor?: string;
+    borderWidth?: number;
+  }
+  
+  export interface IALayoutSchema {
+    elements: IAElement[];
+    style?: string;
+  }
+  
+  export async function renderIAPuraLayout(
+    ctx: CanvasRenderingContext2D,
+    options: ComposeTravelAdOptions,
+    layoutJson: IALayoutSchema
+  ): Promise<void> {
+    const isStory = options.format === "story";
+    const cw = 1080;
+    const ch = isStory ? 1920 : 1080;
+  
+    // Passo 1: Desenhar Foto Real (Base)
+    if (options.imageUrl) {
+      const bg = await loadImage(options.imageUrl);
+      const scale = Math.max(cw / bg.naturalWidth, ch / bg.naturalHeight);
+      const dw = bg.naturalWidth * scale;
+      const dh = bg.naturalHeight * scale;
+      const dx = (cw - dw) / 2;
+      const dy = (ch - dh) / 2;
+      ctx.drawImage(bg, dx, dy, dw, dh);
+    } else {
+      // Fundo preto caso nÃ£o tenha foto (embora obrigatÃ³rio pela UI)
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, cw, ch);
+    }
+  
+    // Passo 2: Ancoragem de base (gradiente para o branding)
+    const gradY = ch * 0.5;
+    const grad = ctx.createLinearGradient(0, gradY, 0, ch);
+    grad.addColorStop(0, "rgba(0,0,0,0)");
+    grad.addColorStop(0.5, "rgba(0,0,0,0.5)");
+    grad.addColorStop(1, "rgba(0,0,0,0.9)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, gradY, cw, ch - gradY);
+  
+    if (layoutJson && layoutJson.elements) {
+      // Passo 3: Parse do JSON MatemÃ¡tico de elementos dinÃ¢micos com Auto-Layout e Auto-Contrast
+      
+      // 1. PrÃ©-processamento de Auto-Layout para ajustar o tamanho dos Boxes que possuem texto interno
+      for (const textEl of layoutJson.elements) {
+        if (textEl.type === "text") {
+          const family = textEl.fontFamily || options.fontFamily || "Inter";
+
+

@@ -1,0 +1,1039 @@
+﻿
+>   const renderSafeSquareOffer = async () => {
+      // Variantes ATIVAS: V0, V1, V2, V3, V4, V5, V6, V7, V8.
+      const TOTAL_VARIANTS = 9;
+      let variant = typeof forceVariant === "number"
+        ? ((forceVariant % TOTAL_VARIANTS) + TOTAL_VARIANTS) % TOTAL_VARIANTS
+        : Math.abs(variation) % TOTAL_VARIANTS;
+  
+      // V8 - Luxury Experience Deal
+      // Foto full-bleed, chamada solta no topo, preco em caixa escura, beneficios
+      // em caixa de acento e CTA na base. V7 e demais variantes permanecem intactas.
+      if (variant === 8) {
+        const isStoryV8Luxury = format === "story";
+        const accent = primaryColor || "#0b8c8f";
+        const gold = secondaryColor || "#d9b15f";
+        const onAccent = getSafeColor(accent, "#ffffff");
+        const onGold = getSafeColor(gold, "#1f1605");
+        const pad = Math.round(width * (isStoryV8Luxury ? 0.065 : 0.052));
+  
+        const crop = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.48);
+        ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, height);
+  
+        const overlay = ctx.createLinearGradient(0, 0, 0, height);
+        overlay.addColorStop(0, "rgba(0,0,0,0.66)");
+        overlay.addColorStop(isStoryV8Luxury ? 0.34 : 0.28, "rgba(0,0,0,0.34)");
+        overlay.addColorStop(0.58, "rgba(0,0,0,0.08)");
+        overlay.addColorStop(1, "rgba(0,0,0,0.60)");
+        ctx.fillStyle = overlay;
+        ctx.fillRect(0, 0, width, height);
+  
+        const promoText = (promoName || "SUPER OFERTA").trim();
+        const destinationText = (destination || destFmt || "DESTINO").trim();
+        const titleTemplateV8 = (titleText || titleOverride || "").trim();
+        const titleTextV8 = titleTemplateV8
+          .replace(/\{destino\}/ig, destinationText)
+          .replace(/\s+([!?.,])/g, "$1")
+          .replace(/!{2,}/g, "!")
+          .trim();
+        const headline = titleTextV8 && !/^pacote\s+\{?destino\}?$/i.test(titleTextV8)
+          ? titleTextV8
+          : destinationText;
+        const escapedDest = destinationText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const titleLeadRaw = titleTemplateV8
+          ? titleTemplateV8
+            .replace(/\{destino\}/ig, "")
+            .replace(new RegExp(escapedDest, "ig"), "")
+            .replace(/\s+([!?.,])/g, "$1")
+            .replace(/[!?.,]+$/g, "")
+            .trim()
+          : "";
+        const titleLead = titleLeadRaw || (headline !== destinationText ? headline : promoText);
+        const periodText = (travelPeriod || "").trim();
+        const priceLabel = (pricePrefix || paymentLabel || topLabel || "PRECO").toString().trim();
+        let priceText = mainPrice || `${curSym} ${price}`.trim();
+        if (hideCents) priceText = priceText.replace(/[.,]\d{2}\s*$/, "");
+        const suffixText = (paymentSuffix || bottomSuffix || "").trim();
+        const ctaText = (rawShowPixBanner !== false ? (pixBannerText || "RESERVAR AGORA") : "GARANTIR VAGA").trim();
+  
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+  
+        const pillH = Math.round(width * (isStoryV8Luxury ? 0.07 : 0.056));
+        const pillY = Math.round(height * (isStoryV8Luxury ? 0.055 : 0.04));
+        ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.027))}px Inter, Arial, sans-serif`;
+        const promoW = Math.min(width - pad * 2, Math.max(width * 0.34, ctx.measureText(promoText).width + pillH * 
+1.55));
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.32)";
+        ctx.shadowBlur = 14;
+        ctx.shadowOffsetY = 5;
+        fillRoundRect(ctx, width / 2 - promoW / 2, pillY, promoW, pillH, pillH / 2, accent);
+        ctx.restore();
+        ctx.fillStyle = onAccent;
+        safeFillText(ctx, promoText, width / 2, pillY + pillH / 2 + 1, promoW - 32, 14);
+  
+        const titleMaxW = width - pad * 2;
+        const leadSize = Math.round(width * (isStoryV8Luxury ? 0.048 : 0.038));
+        ctx.font = `900 ${leadSize}px Inter, Arial, sans-serif`;
+        const leadLines = wrapTextSafe(ctx, titleLead, titleMaxW, 2, Math.round(leadSize * 0.62));
+        const destBase = Math.round(width * (isStoryV8Luxury ? 0.085 : 0.065));
+        ctx.font = `900 ${destBase}px Inter, Arial, sans-serif`;
+        const destinationLines = wrapTextSafe(ctx, destinationText, titleMaxW, 2, Math.round(destBase * 0.54));
+        const leadLineH = Math.round(leadSize * 0.94);
+        const destLineH = Math.round(destBase * 0.9);
+        const titleStartY = pillY + pillH + Math.round(height * (isStoryV8Luxury ? 0.04 : 0.025)) + leadLineH / 2 - 4;
+  
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.78)";
+        ctx.shadowBlur = 18;
+        ctx.shadowOffsetY = 5;
+        ctx.fillStyle = "#f7f3e8";
+        ctx.font = `900 ${leadSize}px Inter, Arial, sans-serif`;
+        leadLines.forEach((line, idx) => {
+          safeFillText(ctx, line, width / 2, titleStartY + idx * leadLineH, titleMaxW, Math.round(leadSize * 0.62));
+        });
+        ctx.font = `900 ${destBase}px Inter, Arial, sans-serif`;
+        const destStartY = titleStartY + leadLines.length * leadLineH + Math.round(height * 0.012) + destLineH / 2 - 2;
+        destinationLines.forEach((line, idx) => {
+          safeFillText(ctx, line, width / 2, destStartY + idx * destLineH, titleMaxW, Math.round(destBase * 0.54));
+        });
+        ctx.restore();
+  
+        const titleBottomY = destStartY + Math.max(0, destinationLines.length - 0.5) * destLineH;
+        const infoY = titleBottomY + Math.round(height * 0.026) - 2;
+        const infoText = periodText || destinationText;
+        const infoH = infoText ? Math.round(width * (isStoryV8Luxury ? 0.064 : 0.054)) : 0;
+        if (infoText) {
+          ctx.font = `800 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.029))}px Inter, Arial, sans-serif`;
+          const infoW = Math.min(width - pad * 2, ctx.measureText(infoText).width + 56);
+          fillRoundRect(ctx, width / 2 - infoW / 2, infoY, infoW, infoH, infoH / 2, gold);
+          ctx.fillStyle = onGold;
+          safeFillText(ctx, infoText, width / 2, infoY + infoH / 2 + 1, infoW - 32, 12);
+        }
+  
+        const ctaH = Math.round(width * (isStoryV8Luxury ? 0.074 : 0.062));
+        const brandSafeTop = isStoryV8Luxury ? height - 270 : height - 155;
+        const ctaY = Math.min(
+          Math.round(height * (isStoryV8Luxury ? 0.76 : 0.85)),
+          brandSafeTop - ctaH - Math.round(height * (isStoryV8Luxury ? 0.026 : 0.012))
+        );
+  
+        const minContentGap = Math.round(height * 0.035);
+        const contentY = Math.round(infoY + infoH + minContentGap);
+  
+        const benefitItems = (highlights && highlights.length ? highlights : [
+          { icon: "star" as IconKey, text: "Melhores experiencias" },
+          { icon: "heart" as IconKey, text: "Atendimento premium" },
+          { icon: "check" as IconKey, text: "Beneficios exclusivos" },
+        ]).slice(0, 6);
+  
+        const boxBottomGap = Math.round(height * (isStoryV8Luxury ? 0.05 : 0.03));
+        const availableBoxH = Math.max(150, ctaY - contentY - boxBottomGap);
+        const benefitCount = benefitItems.length;
+        const numRows = Math.ceil(benefitCount / 2);
+        const cardVerticalPad = Math.round(height * (benefitCount <= 4 ? 0.038 : 0.028));
+        const maxBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.074 : 0.078));
+        const minBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.052 : 0.054));
+        const fitBenefitGap = Math.floor((availableBoxH - cardVerticalPad) / Math.max(1, numRows));
+        const benefitGap = Math.max(minBenefitGap, Math.min(maxBenefitGap, fitBenefitGap));
+        const cardH = Math.min(availableBoxH, numRows * benefitGap + cardVerticalPad);
+        const cardY = contentY + Math.round(height * 0.02);
+  
+        const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
+        const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
+        const priceMain = (priceMatch?.[2] || priceText).trim();
+        const priceCents = (priceMatch?.[3] || "").trim();
+        const hasCents = !!priceCents && !hideCents;
+        const hasTotalLine = rawShowTotal !== false && !!totalOverride && totalOverride.trim() !== "";
+        const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.085 : 0.082));
+        const priceSmallSize = Math.round(priceMainSize * 0.46);
+        const priceLabelSize = Math.round(width * (isStoryV8Luxury ? 0.027 : 0.024));
+        const suffixSize = Math.round(width * (isStoryV8Luxury ? 0.024 : 0.022));
+        const totalSize = Math.round(width * 0.0235);
+        const priceBoxBaseW = Math.round(width * (
+          hasCents
+            ? (isStoryV8Luxury ? 0.36 : 0.32)
+            : hasTotalLine
+              ? (isStoryV8Luxury ? 0.33 : 0.30)
+              : (isStoryV8Luxury ? 0.30 : 0.28)
+        ));
+        const priceBoxW = priceBoxBaseW;
+        const priceBoxH = Math.round(
+          20 + priceLabelSize + 8 + priceMainSize + (suffixText ? 8 + suffixSize : 0) + (hasTotalLine ? 8 + totalSize 
+: 0) + 16
+        );
+        const priceBoxY = Math.max(contentY, cardY + cardH / 2 - priceBoxH / 2);
+  
+        const cardW = Math.round(width * (isStoryV8Luxury ? 0.33 : 0.30));
+        const gap = Math.round(width * 0.022);
+        const totalBoxesW = priceBoxW + gap + cardW;
+        const startX = (width - totalBoxesW) / 2 - (isStoryV8Luxury ? 0 : 20);
+        const priceBoxX = startX;
+        const cardX = priceBoxX + priceBoxW + gap;
+  
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.38)";
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetY = 9;
+        fillRoundRect(ctx, priceBoxX, priceBoxY, priceBoxW, priceBoxH, 26, accent);
+        ctx.restore();
+  
+        ctx.textAlign = "left";
+        ctx.fillStyle = onAccent;
+        ctx.font = `900 ${priceLabelSize}px Inter, Arial, sans-serif`;
+        const priceLabelY = priceBoxY + 32;
+        safeFillText(ctx, priceLabel, priceBoxX + 20, priceLabelY, priceBoxW - 40, 12);
+  
+        const priceBaseY = priceLabelY + priceMainSize + 6;
+        const priceStartX = priceBoxX + 20;
+  
+        ctx.save();
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = onAccent;
+        ctx.font = `900 ${priceSmallSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(priceSymbol, priceStartX, priceBaseY - Math.round(priceMainSize * 0.12));
+        let priceCursorX = priceStartX + (priceSymbol ? ctx.measureText(priceSymbol).width + 8 : 0);
+        ctx.font = `900 ${priceMainSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(priceMain, priceCursorX, priceBaseY);
+        priceCursorX += ctx.measureText(priceMain).width + 4;
+        if (priceCents && !hideCents) {
+          ctx.font = `900 ${priceSmallSize}px Inter, Arial, sans-serif`;
+          ctx.fillText(priceCents, priceCursorX, priceBaseY - Math.round(priceMainSize * 0.12));
+        }
+        ctx.restore();
+  
+        if (suffixText) {
+          ctx.textAlign = "left";
+          ctx.fillStyle = onAccent;
+          ctx.font = `800 ${suffixSize}px Inter, Arial, sans-serif`;
+          safeFillText(ctx, suffixText, priceBoxX + 20, priceBaseY + 36, priceBoxW - 40, 10);
+        }
+  
+        if (hasTotalLine) {
+          ctx.textAlign = "left";
+          ctx.fillStyle = onAccent;
+          ctx.font = `700 ${totalSize}px Inter, Arial, sans-serif`;
+          safeFillText(ctx, totalOverride.trim(), priceBoxX + 20, priceBaseY + 36 + suffixSize + 10, priceBoxW - 40, 
+10);
+        }
+  
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.34)";
+        ctx.shadowBlur = 28;
+        ctx.shadowOffsetY = 12;
+        fillRoundRect(ctx, cardX, cardY, cardW, cardH, 24, gold);
+        ctx.restore();
+  
+        const benefitPadX = Math.round(cardW * 0.11);
+        const benefitPadY = Math.max(16, Math.round(cardH * 0.08));
+        const benefitCellW = (cardW - benefitPadX * 2) / 2;
+        const benefitSlotH = (cardH - benefitPadY * 2) / Math.max(1, numRows);
+        const benefitIconSize = Math.round(width * (benefitCount <= 4 ? 0.028 : 0.0245));
+        const benefitBubbleR = Math.round(benefitIconSize * 1.08);
+        const benefitFontSize = Math.round(width * (benefitCount <= 4 ? 0.0162 : 0.0145));
+        const benefitLineH = Math.round(benefitFontSize * 1.04);
+  
+        ctx.textAlign = "center";
+        benefitItems.forEach((item, idx) => {
+          const row = Math.floor(idx / 2);
+          const col = idx % 2;
+          let cx = cardX + benefitPadX + benefitCellW * (col + 0.5);
+          if (idx === benefitItems.length - 1 && benefitItems.length % 2 !== 0) {
+            cx = cardX + cardW / 2;
+          }
+          const slotTop = cardY + benefitPadY + benefitSlotH * row;
+          const iconY = slotTop + benefitSlotH * 0.30;
+          const textStartY = slotTop + benefitSlotH * 0.58;
+  
+          ctx.save();
+          ctx.fillStyle = "rgba(0,0,0,0.105)";
+          ctx.beginPath();
+          ctx.arc(cx, iconY - benefitIconSize * 0.08, benefitBubbleR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          drawMonoIcon(ctx, (item.icon || "check") as IconKey, cx, iconY, benefitIconSize, onGold, 1.85);
+  
+          ctx.fillStyle = onGold;
+          ctx.font = `800 ${benefitFontSize}px Inter, Arial, sans-serif`;
+          const textMaxW = idx === benefitItems.length - 1 && benefitItems.length % 2 !== 0
+            ? cardW - benefitPadX * 2
+            : benefitCellW - 8;
+          const lines = wrapTextSafe(ctx, String(item.text || ""), textMaxW, 2, 9);
+          lines.forEach((line, lineIdx) => {
+            safeFillText(ctx, line, cx, textStartY + lineIdx * benefitLineH, textMaxW, 9);
+          });
+        });
+  
+        ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.034 : 0.031))}px Inter, Arial, sans-serif`;
+        const ctaTextFinal = `${ctaText} ->`;
+        const ctaW = Math.min(width - pad * 2, Math.max(width * 0.36, ctx.measureText(ctaTextFinal).width + ctaH * 
+1.85));
+        const ctaX = width / 2 - ctaW / 2;
+  
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.35)";
+        ctx.shadowBlur = 18;
+        ctx.shadowOffsetY = 8;
+        fillRoundRect(ctx, ctaX, ctaY, ctaW, ctaH, 16, gold);
+        ctx.restore();
+  
+        ctx.textAlign = "center";
+        ctx.fillStyle = onGold;
+        safeFillText(ctx, ctaTextFinal, width / 2, ctaY + ctaH / 2 + 2, ctaW - ctaH, 12);
+  
+        await drawFinalBranding(
+          ctx, width, height, logoDataUrl,
+          options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } 
+: (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined),
+          options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } 
+: (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+          "#ffffff",
+          userFamily,
+          false,
+          logoFormat
+        );
+        return canvas.toDataURL("image/png");
+      }
+  
+      // V6 - Split Destination Price
+      // Referencia: foto hero no topo + rodape comercial dividido em 2 colunas.
+      // Dados consumidos: destination, city, travelPeriod, paymentMode, installments,
+      // pricePrefix/paymentLabel, price/paymentSuffix, showTotal e pixBannerText.
+      if (variant === 6) {
+        const isStoryV6 = format === "story";
+        const T = {
+          photoH: Math.round(height * (isStoryV6 ? 0.62 : 0.55)),
+          splitX: Math.round(width * 0.5),
+          padX: Math.round(width * 0.055),
+          photoFocusY: 0.45,
+          footerReserve: isStoryV6 ? 360 : 190,
+          titleSize: Math.round(width * (isStoryV6 ? 0.076 : 0.062)),
+          kickerSize: Math.round(width * (isStoryV6 ? 0.025 : 0.021)),
+          subSize: Math.round(width * (isStoryV6 ? 0.038 : 0.032)),
+          metaSize: Math.round(width * (isStoryV6 ? 0.028 : 0.024)),
+          labelSize: Math.round(width * (isStoryV6 ? 0.043 : 0.034)),
+          priceSize: Math.round(width * (isStoryV6 ? 0.074 : 0.06)),
+          suffixSize: Math.round(width * (isStoryV6 ? 0.024 : 0.019)),
+        };
+        const bottomY = T.photoH;
+        const bottomH = height - bottomY;
+        const leftW = T.splitX;
+        const rightX = T.splitX;
+        const rightW = width - rightX;
+        const leftCx = leftW / 2;
+        const rightCx = rightX + rightW / 2;
+        const usableBottom = Math.max(bottomY + 220, height - T.footerReserve);
+  
+        const photoCrop = fitCover(image.naturalWidth, image.naturalHeight, width, T.photoH, T.photoFocusY);
+        ctx.drawImage(image, photoCrop.sx, photoCrop.sy, photoCrop.sw, photoCrop.sh, 0, 0, width, T.photoH);
+  
+        const panelLeftBg = "#ffffff";
+        const panelRightBg = secondaryColor || "#078BD3";
+        const leftText = ensureContrast(primaryColor || "#078BD3", panelLeftBg, 0.35);
+        const rightText = getSafeColor(panelRightBg, "#ffffff");
+        const rightMuted = rightText === "#ffffff" ? "rgba(255,255,255,0.82)" : "rgba(17,17,17,0.72)";
+  
+        ctx.fillStyle = panelLeftBg;
+        ctx.fillRect(0, bottomY, leftW, bottomH);
+        ctx.fillStyle = panelRightBg;
+        ctx.fillRect(rightX, bottomY, rightW, bottomH);
+  
+        const footerGrad = ctx.createLinearGradient(0, height - (isStoryV6 ? 420 : 300), 0, height);
+        footerGrad.addColorStop(0, "rgba(0,0,0,0)");
+        footerGrad.addColorStop(0.45, "rgba(0,0,0,0.18)");
+        footerGrad.addColorStop(1, "rgba(0,0,0,0.52)");
+        ctx.fillStyle = footerGrad;
+        ctx.fillRect(0, height - (isStoryV6 ? 420 : 300), width, isStoryV6 ? 420 : 300);
+  
+        ctx.save();
+        ctx.strokeStyle = "rgba(0,0,0,0.06)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(rightX, bottomY);
+        ctx.lineTo(rightX, height);
+        ctx.stroke();
+        ctx.restore();
+  
+        const destinationRawV6 = (destination || destFmt || "DESTINO").trim();
+        const destinationV6 = destinationRawV6.toUpperCase();
+        const normalizedCityV6 = cityFmt.trim().toLocaleLowerCase("pt-BR");
+        const cityV6 = cityFmt && normalizedCityV6 !== "fortaleza" ? `SAINDO DE ${cityFmt}`.toUpperCase() : "";
+        const periodV6 = (travelPeriod || "").trim();
+        const titleRawV6 = (titleText || "").trim();
+        const titleWithoutDestinationV6 = titleRawV6
+          .replace(new RegExp(destinationRawV6.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig"), "")
+          .replace(/[-â€“â€”|:]+/g, " ")
+          .replace(/\s+/g, " ")
+          .replace(/\s+([!?.,])/g, "$1")
+          .replace(/[!?.,]+$/g, "")
+          .trim();
+        const titleKickerV6 = titleWithoutDestinationV6.length >= 3 && titleWithoutDestinationV6.length <= 26
+          ? titleWithoutDestinationV6.toUpperCase()
+          : "";
+        const labelV6 = (() => {
+          if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
+          if (paymentMode === "down_plus") return pricePrefix || "entrada + parcelas";
+          return paymentLabel || pricePrefix || topLabel || "a partir de";
+        })().toString().toUpperCase();
+        let priceV6 = mainPrice || `${curSym} ${price}`.trim();
+        if (hideCents) priceV6 = priceV6.replace(/[.,]\d{2}\s*$/, "");
+        const installmentV6 = paymentMode === "installments" && installments
+          ? installments.toUpperCase().replace(/\s+/g, "")
+          : "";
+        const suffixV6 = (paymentSuffix || bottomSuffix || "").trim();
+        const totalV6 = showTotal ? resolveTotalStr(installments, price || "", curSym, totalOverride) : "";
+        const pixV6 = showPixBanner ? (pixBannerText || "").trim() : "";
+  
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = leftText;
+        ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
+        const titleMaxW = leftW - T.padX * 2;
+        const buildTitleLinesV6 = () => {
+          const words = destinationV6.split(/\s+/).filter(Boolean);
+          if (words.length > 1) {
+            const minTitleSize = Math.round(T.titleSize * 0.62);
+            for (let size = T.titleSize; size >= minTitleSize; size -= 1) {
+              ctx.font = `900 ${size}px Inter, Arial, sans-serif`;
+              let best: { lines: string[]; score: number; size: number } | null = null;
+              for (let split = 1; split < words.length; split++) {
+                const first = words.slice(0, split).join(" ");
+                const second = words.slice(split).join(" ");
+                const firstW = ctx.measureText(first).width;
+                const secondW = ctx.measureText(second).width;
+                if (firstW <= titleMaxW && secondW <= titleMaxW) {
+                  const secondStartsWithConnector = /^(DE|DA|DO|DOS|DAS|E)$/i.test(words[split]);
+                  const score = Math.abs(firstW - secondW) + (secondStartsWithConnector ? 120 : 0);
+                  if (!best || score < best.score) best = { lines: [first, second], score, size };
+                }
+              }
+              if (best) return best;
+            }
+          }
+          ctx.font = `900 ${T.titleSize}px Inter, Arial, sans-serif`;
+          return { lines: wrapTextSafe(ctx, destinationV6, titleMaxW, 2, Math.round(T.titleSize * 0.48)), size: 
+T.titleSize };
+        };
+        const titleLayoutV6 = buildTitleLinesV6();
+        const titleLines = titleLayoutV6.lines;
+        const titleSizeV6 = titleLayoutV6.size;
+        const titleLineH = titleSizeV6 * 0.98;
+        const periodPillH = periodV6 ? Math.round(T.metaSize * 1.55) : 0;
+        const leftContentH = (titleKickerV6 ? T.kickerSize * 1.35 : 0)
+          + titleLines.length * titleLineH
+          + (cityV6 ? T.subSize * 1.45 : 0)
+          + (periodV6 ? periodPillH + T.metaSize * 1.2 : 0);
+        let leftY = Math.max(bottomY + T.titleSize + 34, bottomY + (usableBottom - bottomY - leftContentH) / 2 + 
+T.titleSize * 0.7);
+        leftY += 35; // Ajuste para descer o titulo um pouquinho e alinhar perfeitamente com o preco
+  
+        ctx.save();
+        // Sombra removida do texto (conforme solicitado pelo usuario)
+  
+        if (titleKickerV6) {
+          ctx.font = `900 ${T.kickerSize}px Inter, Arial, sans-serif`;
+          safeFillText(ctx, titleKickerV6, leftCx, leftY - T.titleSize * 0.95, titleMaxW, Math.round(T.kickerSize * 
+0.7));
+        }
+  
+        ctx.font = `900 ${titleSizeV6}px Inter, Arial, sans-serif`;
+        titleLines.forEach((line, idx) => {
+          safeFillText(ctx, line, leftCx, leftY + 2 + idx * titleLineH, titleMaxW, Math.round(titleSizeV6 * 0.62));
+        });
+        leftY += titleLines.length * titleLineH + Math.round(T.subSize * 0.75);
+        ctx.restore();
+  
+        if (cityV6) {
+          ctx.font = `900 ${T.subSize}px Inter, Arial, sans-serif`;
+          safeFillText(ctx, cityV6, leftCx, leftY, titleMaxW, Math.round(T.subSize * 0.68));
+          leftY += Math.round(T.subSize * 1.5);
+        }
+        if (periodV6) {
+          const scaledMetaSize = Math.round(T.metaSize * 1.1); // Aumentou 10%
+          ctx.font = `800 ${scaledMetaSize}px Inter, Arial, sans-serif`;
+          const periodLabel = periodV6.toUpperCase();
+          const scaledPeriodPillH = Math.round(periodPillH * 1.1); // Aumentou altura 10%
+          const periodW = Math.min(titleMaxW, Math.max(width * 0.20, ctx.measureText(periodLabel).width + 64)); // 
+Ajuste de largura
+          const periodX = leftCx - periodW / 2;
+          // Sobe um pouquinho (estava +60) para alinhar perfeitamente com a pilula de PIX na direita
+          const periodY = Math.min(leftY - Math.round(scaledPeriodPillH * 0.55) - (titleLines.length === 1 ? 5 : 2), 
+usableBottom - scaledPeriodPillH - 10) + 20;
+          ctx.save();
+          const periodBg = primaryColor || "#0C2340";
+          fillRoundRect(ctx, periodX, periodY, periodW, scaledPeriodPillH, scaledPeriodPillH / 2, periodBg);
+          ctx.restore();
+          ctx.textBaseline = "middle";
+          ctx.textAlign = "center";
+          ctx.fillStyle = getSafeColor(periodBg, "#ffffff");
+          safeFillText(ctx, periodLabel, periodX + periodW / 2, periodY + scaledPeriodPillH / 2 + 1, periodW - 34, 
+Math.round(scaledMetaSize * 0.7));
+          ctx.textBaseline = "alphabetic";
+        }
+  
+        ctx.fillStyle = rightText;
+        const labelSizeV6 = Math.round(T.labelSize * 0.95);
+        ctx.font = `900 ${labelSizeV6}px Inter, Arial, sans-serif`;
+        const rightMaxW = rightW - T.padX * 2;
+        const hasPill = !!installmentV6;
+        const priceBlockH = T.labelSize * 1.35
+          + (hasPill ? T.metaSize * 1.8 : 0)
+          + T.priceSize * 1.15
+          + (suffixV6 ? T.suffixSize * 1.45 : 0)
+          + (totalV6 ? T.suffixSize * 1.35 : 0)
+          + (pixV6 ? T.suffixSize * 1.55 : 0);
+        let rightY = Math.max(bottomY + T.labelSize + 22, bottomY + (usableBottom - bottomY - priceBlockH) / 2 + 
+T.labelSize - Math.round(height * 0.11)); // Subiu cerca de 2cm a mais
+        rightY -= 15; // Baixou 30px em relacao a ultima versao para tirar o "A PARTIR DE" da foto
+  
+        const labelY = rightY + 24; // Desceu 20px para alinhar visualmente com "VOCE PRECISA CONHECER"
+        safeFillText(ctx, labelV6, rightCx, labelY, rightMaxW, Math.round(labelSizeV6 * 0.65));
+        // Mantem a acumulacao de rightY identica ao que era antes (rightY + 4) para nao empurrar o resto do bloco pra 
+baixo
+        rightY = (rightY + 4) + Math.round(labelSizeV6 * 0.72) + 12;
+  
+        if (installmentV6) {
+          ctx.font = `900 ${Math.round(T.metaSize * 1.3)}px Inter, Arial, sans-serif`; // 10x de text size increased
+          const pillText = `${installmentV6} DE`;
+          const pillW = Math.min(rightMaxW, Math.max(160, ctx.measureText(pillText).width + 64));
+          const pillH = Math.round(T.metaSize * 1.85); // pill height
+          
+          // Draw pill exactly at current rightY
+          fillRoundRect(ctx, rightCx - pillW / 2, rightY, pillW, pillH, 14, "rgba(255,255,255,0.18)");
+          ctx.fillStyle = rightText;
+          ctx.textBaseline = "middle";
+          safeFillText(ctx, pillText, rightCx, rightY + pillH / 2, pillW - 28, Math.round(T.metaSize * 0.9));
+          ctx.textBaseline = "alphabetic";
+          
+          rightY += pillH + 8; // Advance rightY PAST the pill with a small gap
+        }
+  
+        ctx.font = `900 ${T.priceSize}px Inter, Arial, sans-serif`;
+        const priceBaseY = rightY + T.priceSize - 12; // Base for price text
+        safeFillText(ctx, priceV6, rightCx, priceBaseY, rightMaxW, Math.round(T.priceSize * 0.52));
+        rightY = priceBaseY + Math.round(T.suffixSize * 2.2); // VERY LARGE gap below price to prevent comma 
+overlapping "POR PESSOA"
+  
+        if (suffixV6) {
+          ctx.fillStyle = rightMuted;
+          ctx.font = `800 ${T.suffixSize}px Inter, Arial, sans-serif`;
+          safeFillText(ctx, suffixV6.toUpperCase(), rightCx, rightY, rightMaxW, Math.round(T.suffixSize * 0.72));
+          rightY += Math.round(T.suffixSize * 1.32);
+        }
+  
+        if (totalV6) {
+          ctx.fillStyle = rightMuted;
+          ctx.font = `700 ${Math.round(T.suffixSize * 1.1)}px Inter, Arial, sans-serif`; // Total aumentado em ~20%
+          const totalLabelV6 = /^total\b/i.test(totalV6.trim()) ? totalV6.trim() : `Total: ${totalV6}`;
+          safeFillText(ctx, totalLabelV6.toUpperCase(), rightCx, rightY, rightMaxW, Math.round(T.suffixSize * 0.75));
+          rightY += Math.round(T.suffixSize * 2.0); // Mais espaco apos o Total
+        }
+  
+        if (pixV6) {
+          ctx.font = `900 ${Math.round(T.suffixSize * 1.15)}px Inter, Arial, sans-serif`; // PIX aumentado em ~20%
+          const pixW = Math.min(rightMaxW, ctx.measureText(pixV6.toUpperCase()).width + 50); // Ajuste na largura
+          const pixH = Math.round(T.suffixSize * 1.85); // Altura aumentada
+          const pixY = rightY - pixH + Math.round(T.suffixSize * 1.1); // Reposicionamento
+          fillRoundRect(ctx, rightCx - pixW / 2, pixY, pixW, pixH, pixH / 2, primaryColor || "#0C2340");
+          ctx.fillStyle = getSafeColor(primaryColor || "#0C2340", "#ffffff");
+          ctx.textBaseline = "middle";
+          safeFillText(ctx, pixV6.toUpperCase(), rightCx, pixY + pixH / 2 + 1, pixW - 34, Math.round(T.suffixSize * 
+0.75));
+          ctx.textBaseline = "alphabetic";
+        }
+  
+        await drawFinalBranding(
+          ctx, width, height, logoDataUrl,
+          options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } 
+: (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined),
+          options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } 
+: (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+          effectiveTextColor,
+          userFamily,
+          false,
+          logoFormat
+        );
+        return canvas.toDataURL("image/png");
+      }
+  
+      // Ã¢â€â‚¬Ã¢â€â‚¬ V3 Â· ESTRUTURA (oferta com box destacado) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢
+â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã
+¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+      // Spec estrutural Ã¢â‚¬â€ layout/visual ainda NÃƒÆ’O implementado.
+      // PadrÃ£o identico a V0/V1/V2: early-branch por variante, lendo dos mesmos
+      // dados dinÃ¢micos ja existentes no escopo de composeTravelAd().
+      //
+      // ÃREAS (de fundo Ã¢â€ â€™ frente):
+      //   [BG]      Fundo com imagem turÃ­stica do destino  Ã¢â€ â€™ image (drawImage cover)
+      //   [BOX]     Bloco principal central (card destacado sobre o BG)
+      //     Ãƒâ€Ã¶Â£Ã¢â€â‚¬ [TITLE]      Ãrea de tÃ­tulo            Ã¢â€ â€™ titleText
+      //     Ãƒâ€Ã¶Â£Ã¢â€â‚¬ [INFO]       Dias + Ã­cones (highlights)Ã¢â€ â€™ highlights[] (ICON_SYMBOL)
+      //     Ãƒâ€Ã¶Â£Ã¢â€â‚¬ [INSTALL]    Preco parcelado           Ã¢â€ â€™ installments / paymentLabel
+      //     Ãƒâ€Ã¶Â£Ã¢â€â‚¬ [TOTAL]      Valor total               Ã¢â€ â€™ mainPrice / price / curSym
+      //     Ãƒâ€Ã¶Ã¶Ã¢â€â‚¬ [PROMO]      Destaque promocional      Ã¢â€ â€™ promoName (desconto/badge)
+      //
+      // DADOS DINÃƒâ€šMICOS REUTILIZADOS (ja disponÃ­veis no escopo):
+      //   destination, destUp     Ã¢â€ â€™ nome do destino
+      //   highlights[]            Ã¢â€ â€™ dias + Ã­cones (text + icon)
+      //   installments            Ã¢â€ â€™ parcelas
+      //   mainPrice / price       Ã¢â€ â€™ total
+      //   curSym                  Ã¢â€ â€™ moeda
+      //   promoName               Ã¢â€ â€™ destaque/desconto
+      //   primaryColor / secondaryColor Ã¢â€ â€™ cores do box
+      //   hasLogo, logoH          Ã¢â€ â€™ reserva de topo p/ logo
+      // Ã¢â€â‚¬Ã¢â€â‚¬ V3 Â· REF "CVC" Ã¢â‚¬â€ foto cheia + BOX AMARELO destacado Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã
+¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+      // Estrutura: BG (foto destino) Ã¢â€ â€™ BOX amarelo arredondado no topo-esquerda
+      // contendo: PACOTE / destino / dias+Ã­cones / "a partir de" + 12x sem juros
+      // + R$ preco gigante / total por pessoa / faixa Pix com desconto.
+      if (variant === 3) {
+        if (format === "story") {
+          // [BG] Foto do destino cobrindo todo o canvas (primeira coisa a desenhar)
+          const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+          // Bypassed logo (drawProminentLogo called after drawImage is complete)
+          ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+  
+          // Ã¢â€â‚¬Ã¢â€â‚¬ Cores do V3 (box CVC) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â
+€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢
+â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã
+¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+          const yellow = secondaryColor || "#171717";
+          const yellowDark = shadeColor(yellow, -12);
+          const navy = getSafeColor(yellow, primaryColor);
+          const navyRaw = primaryColor || "#0c2340";
+  
+          const destinoUp = (destination || "DESTINO").toUpperCase();
+          // Desconto: extrai nÃºmero do promoName (ex.: "5% OFF") ou usa 5 como default
+          const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
+          const descN = descMatch ? descMatch[1] : "5";
+  
+          const instMatch = (installments || "12x").match(/(\d{1,2})\s*x?/i);
+          const parcN = instMatch ? instMatch[1] : "10";
+          const priceStr = mainPrice || `${curSym} ${price}`;
+          const topLabel = paymentLabel || (installments ? `${installments} de` : `${parcN}x de`);
+          const bottomSuffix = paymentSuffix || "por pessoa";
+  
+          // Pre-calculo para altura dinamica
+          const shownItems = highlights.filter(h => h && h.text && h.text.trim()).slice(0, 4);
+          const benefitsList = shownItems.length > 0 ? shownItems.map(h => ({
+            text: h.text,
+            icon: h.icon || "check"
+          })) : [
+            { text: "Transporte", icon: "bus" },
+            { text: "Hospedagem", icon: "hotel" },
+            { text: "CafÃ© da manhÃ£", icon: "coffee" },
+            { text: "Guia local", icon: "guide" }
+          ];
+  
+          const boxW = 900; // Reduzido de 1000px para 900px
+          const boxX = (width - boxW) / 2;
+          
+          const rowGap = 55; // Aumentado o respiro entre beneficios (era 80)
+          const topPadding = 195; // Respiro do topo ate os icones (era 230)
+          const benefitsH = Math.ceil(benefitsList.length / 2) * rowGap;
+          const priceBlockTopGap = 15; // Respiro entre icones e bloco de preco (era 55)
+          const ringH = 150;
+          
+          const baseBoxH = topPadding + benefitsH + priceBlockTopGap + ringH + 10;
+          const stripeH = 60;
+          const stripeGap = 15;
+          const boxH = showPixBanner ? baseBoxH + stripeH + stripeGap : baseBoxH;
+          
+          // Centralizacao Vertical no Story (ou levemente abaixo)
+          const boxY = Math.max(safeTop, (height - boxH) / 2);
+  
+          const startY = boxY + topPadding;
+          const benefitsEnd = startY + benefitsH;
+          const priceBlockY = benefitsEnd + priceBlockTopGap;
+  
+          // â€”â€”â€”â€” [BOX] amarelo arredondado â€” â€”â€”â€”â€”â€”â€”
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.3)";
+          ctx.shadowBlur = 32;
+          ctx.shadowOffsetY = 12;
+          fillRoundRect(ctx, boxX, boxY, boxW, boxH, 40, yellow);
+          ctx.restore();
+  
+          const cx = boxX + boxW / 2;
+  
+          // Titulo "PACOTE" como Badge
+          const pacoteText = (promoName || "PACOTE").trim().toUpperCase();
+          ctx.font = "900 32px Inter, Arial, sans-serif";
+          const pacoteW = ctx.measureText(pacoteText).width + 70;
+          const pacoteH = 52;
+          const badgeY = boxY + 64; // Subiu ~0.5cm (era 84)
+  
+          const dateText = (travelPeriod || "").trim().toUpperCase();
+          const dateW = dateText ? ctx.measureText(dateText).width + 40 : 0;
+          const gap = 12;
+          const totalBadgeW = dateText ? pacoteW + gap + dateW : pacoteW;
+          const badgeStartX = cx - totalBadgeW / 2;
+  
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.15)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
+          fillRoundRect(ctx, badgeStartX, badgeY - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
+          if (dateText) {
+            fillRoundRect(ctx, badgeStartX + pacoteW + gap, badgeY - pacoteH/2, dateW, pacoteH, pacoteH/2, navy);
+          }
+          ctx.restore();
+          
+          ctx.fillStyle = yellow;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(pacoteText, badgeStartX + pacoteW/2, badgeY + 4);
+          if (dateText) {
+            ctx.fillText(dateText, badgeStartX + pacoteW + gap + dateW/2, badgeY + 4);
+          }
+          ctx.textBaseline = "alphabetic";
+  
+          // Destino (multiplicado por 1.2x)
+          ctx.fillStyle = navy;
+          let destSize = 54;
+          ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+          while (ctx.measureText(destinoUp).width > boxW - 80 && destSize > 32) {
+            destSize -= 2;
+            ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+          }
+          safeFillText(ctx, destinoUp, cx, boxY + 140, boxW - 80, 24);
+  
+          // Grade de 4 BenefÃ­cios
+          const colW = (boxW - 100) / 2; // 400px cada coluna
+          const colGap = 30;
+          const startX = boxX + 50;
+          
+          benefitsList.forEach((b, i) => {
+            const col = i % 2;
+            const row = Math.floor(i / 2);
+            const tx = startX + col * (colW + colGap);
+            const ty = startY + row * rowGap;
+            
+            const iconSize = 54;
+            drawMonoIcon(ctx, b.icon as IconKey, tx + iconSize/2, ty, iconSize, navy);
+            
+            const isDuration = /\d+\s*dia/i.test(b.text) || /noite/i.test(b.text);
+            let bfs = 32;
+            ctx.fillStyle = navy;
+            ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
+            ctx.textAlign = "left";
+            const textX = tx + iconSize + 14;
+            const textMaxW = colW - (iconSize + 14);
+            while (ctx.measureText(b.text).width > textMaxW && bfs > 16) {
+              bfs -= 1;
+              ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
+            }
+            ctx.fillText(b.text, textX, ty + 10);
+          });
+  
+          // Bloco de PreÃ§o
+          const ringX = boxX + 40;
+          const ringY = priceBlockY;
+          const ringW = boxW - 80;
+          
+          // Alto Relevo
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.38)";
+          ctx.shadowBlur = 20;
+          ctx.shadowOffsetY = 8;
+          fillRoundRect(ctx, ringX, ringY, ringW, ringH, 24, yellowDark);
+          ctx.restore();
+  
+          ctx.save();
+          ctx.strokeStyle = "rgba(255,255,255,0.45)";
+          ctx.lineWidth = 3;
+          roundRect(ctx, ringX + 1.5, ringY + 1.5, ringW - 3, ringH - 3, 22);
+          ctx.stroke();
+          ctx.restore();
+  
+          const priceCenterX = ringX + ringW / 2;
+          ctx.textAlign = "center";
+          ctx.fillStyle = navy;
+          
+          const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
+          const topLabelRender = isCash 
+            ? (pricePrefix !== undefined ? pricePrefix : "A VISTA").toString().toUpperCase()
+            : (topLabel || "Ãƒâ‚¬ VISTA").toString().toUpperCase();
+            
+          ctx.font = "800 28px Inter, Arial, sans-serif";
+          ctx.fillText(topLabelRender, priceCenterX, ringY + 28); // Movido para cima
+          
+          ctx.save();
+          ctx.shadowColor = "rgba(0, 0, 0, 0.18)";
+          ctx.shadowBlur = 12;
+          ctx.shadowOffsetY = 4;
+          
+          // Quebra "R$ 149,90" em partes
+          const symMatch = priceStr.match(/^([^\d]+)\s*(.*)$/);
+          let pSym = "R$";
+          let pVal = priceStr;
+          if (symMatch) { pSym = symMatch[1].trim(); pVal = symMatch[2].trim(); }
+          const centsMatch = pVal.match(/^(.*)(,\d{2})$/);
+          let pMain = pVal;
+          let pCents = "";
+          if (centsMatch) { pMain = centsMatch[1]; pCents = centsMatch[2]; }
+          
+          let priceSize = 85;
+          let symSize = Math.round(priceSize * 0.45);
+          let centSize = Math.round(priceSize * 0.5);
+          
+          ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+          let mainW = ctx.measureText(pMain).width;
+          ctx.font = `800 ${symSize}px Inter, Arial, sans-serif`;
+          let symW = ctx.measureText(pSym).width + 6;
+          ctx.font = `800 ${centSize}px Inter, Arial, sans-serif`;
+          let centW = pCents ? ctx.measureText(pCents).width + 4 : 0;
+          let totalW = symW + mainW + centW;
+          
+          while (totalW > ringW - 60 && priceSize > 40) {
+            priceSize -= 4;
+            symSize = Math.round(priceSize * 0.45);
+            centSize = Math.round(priceSize * 0.5);
+            ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+            mainW = ctx.measureText(pMain).width;
+            ctx.font = `800 ${symSize}px Inter, Arial, sans-serif`;
+            symW = ctx.measureText(pSym).width + 6;
+            ctx.font = `800 ${centSize}px Inter, Arial, sans-serif`;
+            centW = pCents ? ctx.measureText(pCents).width + 4 : 0;
+            totalW = symW + mainW + centW;
+          }
+          
+          const priceStartX = priceCenterX - (totalW / 2);
+          const priceBaseY = ringY + 105; // Movido para cima
+          
+          ctx.fillStyle = navy;
+          ctx.textAlign = "left";
+          
+          // Simbolo no topo esquerdo
+          ctx.font = `800 ${symSize}px Inter, Arial, sans-serif`;
+          ctx.fillText(pSym, priceStartX, priceBaseY - priceSize + symSize + 8);
+          
+          // Valor principal
+          ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+          ctx.fillText(pMain, priceStartX + symW, priceBaseY);
+          
+          // Centavos no topo direito
+          if (pCents) {
+            ctx.font = `800 ${centSize}px Inter, Arial, sans-serif`;
+            ctx.fillText(pCents, priceStartX + symW + mainW + 4, priceBaseY - priceSize + centSize + 10);
+          }
+          ctx.restore();
+          
+          ctx.fillStyle = navy;
+          ctx.globalAlpha = 0.75;
+          ctx.font = "800 26px Inter, Arial, sans-serif";
+          ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 135); // Movido para cima
+          ctx.globalAlpha = 1;
+  
+          // Faixa de Desconto Pix no rodapÃ© do cartÃ£o amarelo
+          if (showPixBanner) {
+            const customBanner = (pixBannerText || "").trim();
+            let totalPixW = 0;
+            const pixText = `${descN}% OFF A VISTA NO`;
+            const pixIconSize = 32;
+            const pixGap = 10;
+            const pillPad = 8;
+            let pillW = 0;
+  
+            ctx.font = "900 26px Inter, Arial, sans-serif";
+            if (customBanner) {
+              totalPixW = ctx.measureText(customBanner).width;
+            } else {
+              const pixTextW = ctx.measureText(pixText).width;
+              ctx.font = "800 24px Inter, Arial, sans-serif";
+              const pixLabelW = ctx.measureText("pix").width;
+              pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
+              totalPixW = pixTextW + pixGap + pillW;
+            }
+  
+            const stripeW = totalPixW + 60; // Margem de respiro justa
+            const stripeX = cx - stripeW / 2; // Centralizado
+            
+            // Desce um pouco (+10px) e diminui a altura (stripeH = 50)
+            const stripeY = boxY + boxH - 80;
+            const myStripeH = 50; 
+            
+            fillRoundRect(ctx, stripeX, stripeY, stripeW, myStripeH, 25, navyRaw); // Bordas mais arredondadas
+            ctx.fillStyle = contrastOn(navyRaw);
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            
+            if (customBanner) {
+              ctx.font = "900 24px Inter, Arial, sans-serif";
+              ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + myStripeH / 2 + 1);
+            } else {
+              ctx.font = "900 24px Inter, Arial, sans-serif";
+              const pixTextW = ctx.measureText(pixText).width;
+              const pixStartX = stripeX + (stripeW - totalPixW) / 2;
+              ctx.textAlign = "left";
+              ctx.fillText(pixText, pixStartX, stripeY + myStripeH / 2);
+              
+              const pillX = pixStartX + pixTextW + pixGap;
+              const pillY = stripeY + (myStripeH - (myStripeH - 16)) / 2;
+              const pillH = myStripeH - 16;
+              fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
+              
+              const pxCx = pillX + pillPad + pixIconSize / 2;
+              const pxCy = stripeY + myStripeH / 2;
+              
+              ctx.fillStyle = navyRaw;
+              ctx.beginPath();
+              ctx.arc(pxCx, pxCy, pixIconSize / 2, 0, Math.PI * 2);
+              ctx.fill();
+              
+              ctx.fillStyle = "#ffffff";
+              ctx.beginPath();
+              ctx.moveTo(pxCx - 4, pxCy - 6);
+              ctx.lineTo(pxCx + 6, pxCy);
+              ctx.lineTo(pxCx - 4, pxCy + 6);
+              ctx.closePath();
+              ctx.fill();
+              
+              ctx.fillStyle = navyRaw;
+              ctx.textAlign = "left";
+              ctx.font = "800 24px Inter, Arial, sans-serif";
+              ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + myStripeH / 2 + 1);
+            }
+            ctx.textBaseline = "alphabetic";
+          }
+  
+          // VÃ©u Gradiente Escuro do rodapÃ©
+          await drawFinalBranding(
+            ctx,
+            width,
+            height,
+            logoDataUrl,
+            options.footerContact1Icon ? { icon: options.footerContact1Icon.startsWith("whatsapp") ? "whatsapp_green" 
+: options.footerContact1Icon, value: options.footerContact1Value || "" } : (whatsapp ? { icon: "whatsapp_green", 
+value: whatsapp } : undefined),
+            options.footerContact2Icon ? { icon: options.footerContact2Icon.startsWith("whatsapp") ? "whatsapp_green" 
+: options.footerContact2Icon, value: options.footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", 
+value: instagram } : undefined),
+            effectiveTextColor,
+            userFamily,
+            false
+          );
+          return canvas.toDataURL("image/png");
+        } else {
+          // [BG] Foto do destino cobrindo todo o canvas (primeira coisa a desenhar)
+          const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+          // Bypassed logo (drawProminentLogo called after drawImage is complete)
+  
+          // Ã¢â€â‚¬Ã¢â€â‚¬ Cores do V3 (box CVC) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â
+€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢
+â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã
+¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+          // yellow  = cor secundÃ¡ria do usuÃ¡rio (fundo do box)
+          // navy    = cor primÃ¡ria do usuÃ¡rio   (texto/anel dentro do box)
+          // navyRaw = primaryColor normalizado  (para a faixa Pix)
+          const yellow = secondaryColor || "#171717";
+          const yellowDark = shadeColor(yellow, -12);
+          const navy = getSafeColor(yellow, primaryColor);
+          const navyRaw = primaryColor || "#0c2340";
+  
+          ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+          await drawProminentLogo(ctx, 40, 40, 120);
+  
+          // Ã¢â€â‚¬Ã¢â€â‚¬ Dados dinÃ¢micos Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚
+¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â
+‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+          const destinoUp = (destination || "DESTINO").toUpperCase();
+          const daysItem = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
+          const daysText = (travelPeriod && travelPeriod.trim()) || (daysItem?.text || "").trim();
+          // Ãcones: usa APENAS os selecionados pelo usuario (sem merge com defaults).
+          // Se nenhum highlight tiver Ã­cone, usa um conjunto padrÃ£o mÃ­nimo.
+          const iconList = (() => {
+            const fromHl = highlights
+              .map((h) => h?.icon)
+              .filter((k) => !!k);
+            if (fromHl.length === 0) {
+              return ["plane", "hotel", "coffee", "camera"];
+            }
+            // dedup preservando ordem do usuario, maximo 5
+            const seen = new Set();
+            const out = [];
+            for (const k of fromHl) {
+              if (!seen.has(k)) {
+                seen.add(k);
+                out.push(k);
+                if (out.length >= 5) break;
+              }
+            }
+            return out;
+          })();
+  
+          // Parcelas: extrai nÃºmero de "12x", "12 x", "12" etc.
+          const instMatch = (installments || "12x").match(/(\d{1,2})\s*x?/i);
+          const parcN = instMatch ? instMatch[1] : "12";
+          const priceStr = mainPrice || `${curSym} ${price}`;
+          // Calcula total = preco Ãƒâ€” parcelas (se parcelado), formatando milhares com "." e centavos com ","
+          const priceNumeric = parseFloat(((price || "").trim()).replace(/\./g, "").replace(",", "."));
+          const totalMultiplier = (paymentMode === "cash" || paymentMode === "cash_discount") ? 1 : parseInt(parcN, 
+10);
+          const totalNum = !isNaN(priceNumeric) ? priceNumeric * totalMultiplier : NaN;
+          // Se preco nÃ£o tem centavos (inteiro), o total tambem nÃ£o tera.
+          const priceHasDecimals = /[.,]\d{1,2}\s*$/.test((price || "").trim());
+          const fmtBR = (n) => {
+            const showDec = priceHasDecimals && n % 1 !== 0;
+            return n.toLocaleString("pt-BR", {
+              minimumFractionDigits: showDec ? 2 : 0,
+              maximumFractionDigits: showDec ? 2 : 0,
+            });
+          };
+          // Total: prioriza override do usuario; senÃ£o calcula automatico com sufixo
+          const computedTotal = !isNaN(totalNum)
+            ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBR(totalNum)}`
+            : "";
+          const totalStr = (totalOverride && totalOverride.trim()) || computedTotal;
+          // Desconto: extrai nÃºmero do promoName (ex.: "5% OFF") ou usa 5 como default
+          const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
+          const descN = descMatch ? descMatch[1] : "5";
+  
+          // Ã¢â€â‚¬Ã¢â€â‚¬ [BOX] amarelo arredondado Ã¢â€â‚¬ Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+          const boxX = (width - Math.round(width * 0.68)) / 2;
+          const boxW = Math.round(width * 0.68); // Ajustado de 0.72 para 0.68 para ser menos "largo"
+          const boxR = 36;
+          const padTop = 36;
+          const titleGap = 24;
+          const destGap = 18;
+          const totalH = (showTotal && totalStr) ? 36 : 0;
+          const totalGap = totalH ? 14 : 0;
+          const stripeH = 50;
+          const padBottom = 20; // Reduzido drasticamente para remover espaco vazio
+  
+          const priceBlockH = 130; // Reduzido de 160 para remover espaco vazio dentro do box
+          const ringH = priceBlockH - 8;
+  
+          // Calculo dinamico exato do Box
+          let simY = padTop + 32;       // Altura base do pacote
+          simY += titleGap + 48;        // Pos pacote
+          simY += destGap + 36;         // Pos destino
+          simY += 55;                   // Pos icones
+          simY += ringH;                // Pos bloco de preco
+          simY += totalGap + totalH;    // Pos total
+          if (showPixBanner) {
+            simY += 12 + stripeH;       // Pos pix (stripeGap + stripeH)
+          }
+          
+          const boxH = simY + padBottom;
+          const safeBoxY = 180;
+  
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.25)"; ctx.shadowBlur = 28; ctx.shadowOffsetY = 8;
+          fillRoundRect(ctx, boxX, safeBoxY, boxW, boxH, boxR, yellow);
+          ctx.restore();
+  
+          const cx = boxX + boxW / 2;
+          let cursorY = safeBoxY + padTop + 42;
+          
+          const pacoteText = (promoName || "PACOTE").trim().toUpperCase();
+          ctx.font = "900 28px Inter, Arial, sans-serif";
+          const pacoteW = ctx.measureText(pacoteText).width + 60;
+          const pacoteH = 50;
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.15)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
+          fillRoundRect(ctx, cx - pacoteW/2, cursorY - pacoteH/2, pacoteW, pacoteH, pacoteH/2, navy);
+          ctx.restore();
+          
+
+

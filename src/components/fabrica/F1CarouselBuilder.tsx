@@ -1119,6 +1119,8 @@ function CarouselCanvas({
   secondary,
   canvasRef,
   exportMode = false,
+  showPixBanner = false,
+  pixBannerText = "",
 }: {
   slide: CarouselSlide;
   index: number;
@@ -1130,6 +1132,8 @@ function CarouselCanvas({
   secondary: string;
   canvasRef?: (node: HTMLDivElement | null) => void;
   exportMode?: boolean;
+  showPixBanner?: boolean;
+  pixBannerText?: string;
 }) {
   const Z = exportMode ? 2.5 : 1;
   const baseWidth = Math.round(432 * Z);
@@ -1300,6 +1304,38 @@ function CarouselCanvas({
       ? slide.contentAlignment
       : automaticContentAlignment;
   const contentOnRight = resolvedContentAlignment === "right";
+  const renderBodyText = (text: string) => {
+    if (!text || (!text.includes('R$') && !text.includes('$'))) return text;
+    const priceRegex = /(.*?)(R\$|\$)\s*([\d.,]+)(.*)/i;
+    const match = text.match(priceRegex);
+    if (!match) return text;
+    
+    const [, before, symbol, value, after] = match;
+    const isRetail = value.includes(',');
+    let mainValue = value;
+    let cents = '';
+    if (isRetail) {
+      const parts = value.split(',');
+      if (parts.length === 2 && parts[1].length === 2) {
+        mainValue = parts[0];
+        cents = ',' + parts[1];
+      }
+    }
+    
+    return (
+      <>
+        {before}
+        <span style={{ fontWeight: 900, whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: '0.65em', verticalAlign: 'top', marginRight: '0.1em' }}>{symbol}</span>
+          <span style={{ fontSize: '1.15em' }}>{mainValue}</span>
+          {cents && <span style={{ fontSize: '0.65em', verticalAlign: 'top' }}>{cents}</span>}
+        </span>
+        {after}
+      </>
+    );
+  };
+
+  const safeClamp = (lines: number): CSSProperties => ({ display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden" });
   const safeTextWrap: CSSProperties = {
     overflowWrap: "break-word",
     wordBreak: "normal",
@@ -1934,7 +1970,7 @@ function CarouselCanvas({
               textShadow: !lightPanel && variant !== "vibrant" ? bodyShadow : "none",
             }}
           >
-            {slide.body}
+            {renderBodyText(slide.body)}
           </p>
           <div
             style={{
@@ -2025,7 +2061,7 @@ function CarouselCanvas({
             >
               {activeContactChannels.includes("instagram") && slide.instagram && (
                 <span style={{ display: "inline-flex", maxWidth: "100%", alignItems: "center", gap: Math.round(6 * Z), ...safeTextWrap }}>
-                  <Instagram
+                  <Instagram strokeWidth={1.5}
                     aria-hidden="true"
                     style={{
                       width: Math.round(17 * Z),
@@ -2039,7 +2075,7 @@ function CarouselCanvas({
               )}
               {activeContactChannels.includes("email") && slide.email && (
                 <span style={{ display: "inline-flex", maxWidth: "100%", alignItems: "center", gap: Math.round(6 * Z), ...safeTextWrap }}>
-                  <Mail
+                  <Mail strokeWidth={1.5}
                     aria-hidden="true"
                     style={{
                       width: Math.round(17 * Z),
@@ -2055,6 +2091,11 @@ function CarouselCanvas({
           ) : null}
         </div>
         {renderPositionedLogo()}
+        {showPixBanner && slide.kind === "closing" && (
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: Math.round(30 * Z), background: "#111", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: Math.round(10 * Z), fontWeight: 900, zIndex: 50 }}>
+            <span style={{ color: "#F5F906", marginRight: "4px" }}>PIX OU BOLETO:</span> {pixBannerText || "Consulte descontos"}
+          </div>
+        )}
       </div>
     );
   }
@@ -2304,13 +2345,13 @@ function CarouselCanvas({
                 <div style={{ position: "absolute", left: "8%", right: "8%", bottom: "14%" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, textShadow }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), textShadow }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
                     <p style={{ maxWidth: "88%", margin: `${Math.round(11 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round((ratio < 0.68 ? 12 : 13) * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, ...safeTextWrap, whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
-                      {slide.body}
+                      {renderBodyText(slide.body)}
                     </p>
                   )}
                   {renderBullets({ color: bulletColor, max: 4, columns: 2, textShadow: bulletShadow })}
@@ -2345,13 +2386,13 @@ function CarouselCanvas({
                 >
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, textShadow }}>
+                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), textShadow }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
                     <p style={{ maxWidth: "92%", margin: `${Math.round((isDenseSlide ? 6 : 9) * denseTextScale * Z)}px 0 0`, color: bodyColor, fontSize: Math.max(6, Math.round((isDenseSlide ? 10.25 : 12) * denseTextScale * Z)), lineHeight: isDenseSlide ? 1.24 : 1.38, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, ...safeTextWrap, whiteSpace: "pre-wrap", textShadow: bodyShadow }}>
-                      {slide.body}
+                      {renderBodyText(slide.body)}
                     </p>
                   )}
                   {renderBullets({ color: bulletColor, max: 4, numbered: true, textShadow: bulletShadow, compact: isDenseSlide, scale: denseTextScale })}
@@ -2380,13 +2421,13 @@ function CarouselCanvas({
                 >
                   {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 20 : 23) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
+                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 20 : 23) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
                     <p style={{ margin: `${Math.round(11 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round(11.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
-                      {slide.body}
+                      {renderBodyText(slide.body)}
                     </p>
                   )}
                   {renderBullets({ color: bulletColor, max: 4, align: contentOnRight ? "right" : "left" })}
@@ -2451,13 +2492,13 @@ function CarouselCanvas({
                       {renderLabel(slide.label, "center")}
                     </div>
                     {slide.title && (
-                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
+                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
                         {slide.title}
                       </h3>
                     )}
                     {slide.body && (
                       <p style={{ maxWidth: "92%", margin: `${Math.round((isDenseSlide ? 7 : 10) * denseTextScale * Z)}px auto 0`, color: bodyColor, fontSize: Math.max(6, Math.round((isDenseSlide ? 10.5 : 12.5) * denseTextScale * Z)), lineHeight: isDenseSlide ? 1.24 : 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.94, whiteSpace: "pre-wrap" }}>
-                        {slide.body}
+                        {renderBodyText(slide.body)}
                       </p>
                     )}
                     {renderBullets({ color: bulletColor, max: 4, columns: 2, align: "center", compact: isDenseSlide, scale: denseTextScale })}
@@ -2489,13 +2530,13 @@ function CarouselCanvas({
                 <div style={{ background: "rgba(248,248,246,0.98)", color: titleColor, padding: isDenseSlide ? "4.5% 8%" : "6.5% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
                     <p style={{ maxWidth: "92%", margin: `${Math.round(10 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round(12.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
-                      {slide.body}
+                      {renderBodyText(slide.body)}
                     </p>
                   )}
                   {renderBullets({ color: bulletColor, max: 3, columns: 2 })}
@@ -2536,13 +2577,13 @@ function CarouselCanvas({
                   >
                     {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                     {slide.title && (
-                      <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round(faqTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
+                      <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round(faqTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
                         {slide.title}
                       </h3>
                     )}
                     {slide.body && (
                       <p style={{ maxWidth: "94%", margin: `${Math.round((isDenseSlide ? 7 : 10) * denseTextScale * Z)}px 0 0`, color: bodyColor, fontSize: Math.max(6, Math.round((isDenseSlide ? 10.25 : 12) * denseTextScale * Z)), lineHeight: isDenseSlide ? 1.24 : 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, opacity: 0.9 }}>
-                        {slide.body}
+                        {renderBodyText(slide.body)}
                       </p>
                     )}
                     {renderBullets({ color: bulletColor, max: 4, numbered: true, compact: isDenseSlide, scale: denseTextScale, align: contentOnRight ? "right" : "left" })}
@@ -2593,13 +2634,13 @@ function CarouselCanvas({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
                       {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
-                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
+                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
                           {slide.title}
                         </h3>
                       )}
                       {slide.body && (
                         <p style={{ maxWidth: "84%", margin: `${Math.round(10 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round(12.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
-                          {slide.body}
+                          {renderBodyText(slide.body)}
                         </p>
                       )}
                       {renderBullets({ color: bulletColor, max: 4, columns: 2, align: alignRight ? "right" : "left" })}
@@ -2640,13 +2681,13 @@ function CarouselCanvas({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
                       {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
-                        <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow, ...safeTextWrap }}>
+                        <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow, ...safeTextWrap, ...safeClamp(3) }}>
                           {slide.title}
                         </h3>
                       )}
                       {slide.body && (
                         <p style={{ maxWidth: "94%", margin: `${Math.round(10 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, textShadow: bodyShadow, whiteSpace: "pre-wrap" }}>
-                          {slide.body}
+                          {renderBodyText(slide.body)}
                         </p>
                       )}
                       {renderBullets({ color: bulletColor, max: 4, columns: 1, textShadow: bulletShadow, align: alignRight ? "right" : "left" })}
@@ -2756,7 +2797,7 @@ function CarouselCanvas({
                           textShadow: bodyShadow,
                         }}
                       >
-                        {slide.body}
+                        {renderBodyText(slide.body)}
                       </p>
                     )}
                     {!informationAtBottom &&
@@ -2797,7 +2838,7 @@ function CarouselCanvas({
                             textAlign: centeredLayout ? "center" : "left",
                           }}
                         >
-                          {slide.body}
+                          {renderBodyText(slide.body)}
                         </p>
                       )}
                       {renderBullets({
@@ -2877,13 +2918,13 @@ function CarouselCanvas({
                     />
                     {renderLabel(slide.label)}
                     {slide.title && (
-                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap }}>
+                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
                         {slide.title}
                       </h3>
                     )}
                     {slide.body && (
                       <p style={{ maxWidth: "96%", margin: `${Math.round(10 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round(12 * Z), lineHeight: 1.4, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
-                        {slide.body}
+                        {renderBodyText(slide.body)}
                       </p>
                     )}
                     {renderBullets({ color: bulletColor, max: 4, compact: true })}
@@ -2900,6 +2941,8 @@ function CarouselCanvas({
 }
 
 function ScaledSlidePreview({
+  showPixBanner,
+  pixBannerText,
   slide,
   index,
   total,
@@ -2966,7 +3009,9 @@ function ScaledSlidePreview({
         }}
       >
         <CarouselCanvas
-          slide={slide}
+        showPixBanner={showPixBanner}
+        pixBannerText={pixBannerText}
+        slide={slide}
           index={index}
           total={total}
           ratio={ratio}
@@ -5173,6 +5218,8 @@ export function F1CarouselBuilder({
                       }`}
                     >
                       <ScaledSlidePreview
+                      showPixBanner={(state as any).showPixBanner}
+                      pixBannerText={(state as any).pixBannerText}
                         slide={slide}
                         index={index}
                         total={slides.length}
@@ -5305,6 +5352,8 @@ export function F1CarouselBuilder({
                     }`}
                   >
                     <ScaledSlidePreview
+                      showPixBanner={(state as any).showPixBanner}
+                      pixBannerText={(state as any).pixBannerText}
                       slide={slide}
                       index={index}
                       total={slides.length}
@@ -5435,6 +5484,8 @@ export function F1CarouselBuilder({
                   {activeSlide && (
                     <>
                       <ScaledSlidePreview
+                      showPixBanner={(state as any).showPixBanner}
+                      pixBannerText={(state as any).pixBannerText}
                         slide={activeSlide}
                         index={activeIndex}
                         total={slides.length}
@@ -6135,6 +6186,8 @@ export function F1CarouselBuilder({
               {activeSlide && (
                 <div className={`transition ${isCarouselPreviewLocked ? "blur-md" : ""}`}>
                   <ScaledSlidePreview
+                      showPixBanner={(state as any).showPixBanner}
+                      pixBannerText={(state as any).pixBannerText}
                     slide={activeSlide}
                     index={activeIndex}
                     total={slides.length}
@@ -6318,6 +6371,8 @@ export function F1CarouselBuilder({
               <X className="h-5 w-5" />
             </button>
             <ScaledSlidePreview
+                      showPixBanner={(state as any).showPixBanner}
+                      pixBannerText={(state as any).pixBannerText}
               slide={maximizedSlide}
               index={slides.findIndex((s) => s.id === maximizedSlide.id)}
               total={slides.length}
@@ -6356,3 +6411,8 @@ export function F1CarouselBuilder({
     </section>
   );
 }
+
+
+
+
+

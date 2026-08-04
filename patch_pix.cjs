@@ -1,92 +1,29 @@
 const fs = require('fs');
-const path = 'C:/Users/win 10/Desktop/CANVA E FABRICA - JUNHO 26/src/lib/fabrica-compose-art.ts';
-let content = fs.readFileSync(path, 'utf8');
+let code = fs.readFileSync('src/components/fabrica/F1CarouselBuilder.tsx', 'utf8');
 
-const targetStr = `          const pixText = \`\${descN}% OFF A VISTA NO\`;
-          const pixTextW = ctx.measureText(pixText).width;
-          const pixIconSize = 32;
-          const pixGap = 10;
-          ctx.font = "800 24px Inter, Arial, sans-serif";
-          const pixLabelW = ctx.measureText("pix").width;
-          
-          const pillPad = 8;
-          const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
-          const pillH = stripeH - 16;
-          const totalPixW = pixTextW + pixGap + pillW;
-          const pixStartX = stripeX + (stripeW - totalPixW) / 2;
-          
-          ctx.textAlign = "left";
-          ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2);`;
+// 1. Add props to CarouselCanvas
+code = code.replace(/exportMode = false,\n\}: \{/, 'exportMode = false,\n  showPixBanner = false,\n  pixBannerText = "",\n}: {');
+code = code.replace(/exportMode\?: boolean;\n\}\) \{/, 'exportMode?: boolean;\n  showPixBanner?: boolean;\n  pixBannerText?: string;\n}) {');
 
-const newStr = `          const customBanner = (pixBannerText || "").trim();
-          if (customBanner) {
-            ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
-          } else {
-            const pixText = \`\${descN}% OFF A VISTA NO\`;
-            const pixTextW = ctx.measureText(pixText).width;
-            const pixIconSize = 32;
-            const pixGap = 10;
-            ctx.font = "800 24px Inter, Arial, sans-serif";
-            const pixLabelW = ctx.measureText("pix").width;
-            
-            const pillPad = 8;
-            const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
-            const pillH = stripeH - 16;
-            const totalPixW = pixTextW + pixGap + pillW;
-            const pixStartX = stripeX + (stripeW - totalPixW) / 2;
-            
-            ctx.textAlign = "left";
-            ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2);
-            const pillX = pixStartX + pixTextW + pixGap;
-            const pillY = stripeY + (stripeH - pillH) / 2;
-            fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
-            
-            const pxCx = pillX + pillPad + pixIconSize / 2;
-            const pxCy = stripeY + stripeH / 2;
-            drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
-            
-            ctx.fillStyle = "#32BCAD";
-            ctx.fillText("pix", pillX + pillPad + pixIconSize + 4, stripeY + stripeH / 2 + 2);
-          }`;
+// 2. Add props to ScaledSlidePreview
+code = code.replace(/width: number;\n\} \{/g, 'width: number;\n  showPixBanner?: boolean;\n  pixBannerText?: string;\n} {');
+code = code.replace(/function ScaledSlidePreview\(\{/g, 'function ScaledSlidePreview({\n  showPixBanner,\n  pixBannerText,');
+code = code.replace(/<CarouselCanvas\n\s*slide=\{slide\}/g, '<CarouselCanvas\n        showPixBanner={showPixBanner}\n        pixBannerText={pixBannerText}\n        slide={slide}');
 
-// Find the target block and replace it
-let replaced = false;
+// 3. Render banner
+const bannerStr =         {showPixBanner && slide.kind === "closing" && (
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: Math.round(30 * Z), background: "#111", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: Math.round(10 * Z), fontWeight: 900, zIndex: 50 }}>
+            <span style={{ color: "#F5F906", marginRight: "4px" }}>PIX OU BOLETO:</span> {pixBannerText || "Consulte descontos"}
+          </div>
+        )}
+      </div>
+    );
+  };
 
-// Since the file has some lines below that need to be wrapped in the 'else' block, we will replace the block and append the closing brace.
-const fullTargetStr = `          const pixText = \`\${descN}% OFF A VISTA NO\`;
-          const pixTextW = ctx.measureText(pixText).width;
-          const pixIconSize = 32;
-          const pixGap = 10;
-          ctx.font = "800 24px Inter, Arial, sans-serif";
-          const pixLabelW = ctx.measureText("pix").width;
-          
-          const pillPad = 8;
-          const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
-          const pillH = stripeH - 16;
-          const totalPixW = pixTextW + pixGap + pillW;
-          const pixStartX = stripeX + (stripeW - totalPixW) / 2;
-          
-          ctx.textAlign = "left";
-          ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2);
-          const pillX = pixStartX + pixTextW + pixGap;
-          const pillY = stripeY + (stripeH - pillH) / 2;
-          fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
-          
-          const pxCx = pillX + pillPad + pixIconSize / 2;
-          const pxCy = stripeY + stripeH / 2;
-          drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
-          
-          ctx.fillStyle = "#32BCAD";
-          ctx.fillText("pix", pillX + pillPad + pixIconSize + 4, stripeY + stripeH / 2 + 2);`;
+code = code.replace(/\{renderPositionedLogo\(\)\}\s*<\/div>\s*\);\s*\}/, '{renderPositionedLogo()}\n' + bannerStr);
 
-if (content.includes(fullTargetStr)) {
-    content = content.replace(fullTargetStr, newStr);
-    replaced = true;
-} else {
-    console.log("Could not find exact block. Let's do a more robust regex or split replacement.");
-}
+// 4. Pass from F1CarouselBuilder to ScaledSlidePreview and CarouselCanvas instances
+code = code.replace(/<ScaledSlidePreview\n/g, '<ScaledSlidePreview\n                      showPixBanner={(state as any).showPixBanner}\n                      pixBannerText={(state as any).pixBannerText}\n');
+code = code.replace(/<CarouselCanvas\n\s*key=\{export/g, '<CarouselCanvas\n            showPixBanner={(state as any).showPixBanner}\n            pixBannerText={(state as any).pixBannerText}\n            key={export');
 
-if (replaced) {
-    fs.writeFileSync(path, content, 'utf8');
-    console.log("Replaced successfully!");
-}
+fs.writeFileSync('src/components/fabrica/F1CarouselBuilder.tsx', code);
