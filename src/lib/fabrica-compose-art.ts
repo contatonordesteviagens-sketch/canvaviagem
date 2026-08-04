@@ -3296,89 +3296,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = bottomGradV1;
       ctx.fillRect(photoX, shadowYV1, photoW, shadowHV1); // apenas na área da foto
 
-      // ── 10) LOGO no painel esquerdo (canto inferior esquerdo)
-      let logoCurrentY = height - bottomPad - 16;
-      if (logoDataUrl) {
-        try {
-          const logoImgV1b = await new Promise<HTMLImageElement>((resolve, reject) => {
-            const el2 = new Image();
-            el2.onload = () => resolve(el2);
-            el2.onerror = reject;
-            el2.src = logoDataUrl;
-          });
-          const lMaxH = Math.round(height * 0.09);
-          const lMaxW = Math.round(panelW * 0.64);
-          const lScale = Math.min(lMaxW / logoImgV1b.naturalWidth, lMaxH / logoImgV1b.naturalHeight, 1);
-          const lW = Math.round(logoImgV1b.naturalWidth * lScale);
-          const lH = Math.round(logoImgV1b.naturalHeight * lScale);
-          
-          logoCurrentY -= lH;
-          
-          ctx.save();
-          ctx.shadowColor = "rgba(0,0,0,0.4)";
-          ctx.shadowBlur = 10;
-          ctx.shadowOffsetY = 4;
-          ctx.shadowOffsetX = 0;
-          
-          ctx.beginPath();
-          ctx.arc(padX + lW / 2, logoCurrentY + lH / 2, Math.min(lW, lH) / 2, 0, Math.PI * 2);
-          ctx.clip();
-          
-          ctx.drawImage(logoImgV1b, padX, logoCurrentY, lW, lH);
-          ctx.restore();
-        } catch (_) { /* skip silently */ }
-      }
-
-      // ── 11) Contatos movidos para o lado direito (sobre a foto com sombra/gradiente escuro)
-      const largerContactFontSz = Math.round(contactFontSz * 1.15); // Um pouco maior e legível
-      const rightPad = Math.round(photoW * 0.08);
-      const contactRightX = width - rightPad;
-      let contactY2 = height - bottomPad;
-
-      ctx.textAlign = "right";
-      
-      if (instagram || options.footerContact2Value) {
-        const val  = options.footerContact2Value || instagram;
-        let icon = options.footerContact2Icon || "instagram_gradient";
-        if (icon === "instagram_fino" || icon === "instagram") icon = "instagram_gradient";
-        
-        contactY2 -= contactLineH;
-        
-        ctx.fillStyle    = "#ffffff";
-        ctx.font         = `700 ${largerContactFontSz}px Inter, Arial, sans-serif`;
-        ctx.textBaseline = "middle";
-        
-        const displayValue = val.startsWith("@") ? val : `@${val}`;
-        ctx.fillText(displayValue, contactRightX, contactY2);
-        
-        const valW = ctx.measureText(displayValue).width;
-        const iconSize = largerContactFontSz * 1.35;
-        const iconX = contactRightX - valW - 14 - iconSize / 2;
-        
-        await drawAdSocialIcon(ctx, icon, iconX, contactY2, iconSize);
-      }
-
-      if (whatsapp || options.footerContact1Value) {
-        const val  = options.footerContact1Value || whatsapp;
-        let icon = options.footerContact1Icon || "whatsapp";
-        if (icon.startsWith("whatsapp")) icon = "whatsapp_green";
-        
-        contactY2 -= Math.round(contactLineH * 1.25); // Respiro um pouco maior entre eles
-        
-        ctx.fillStyle    = "#ffffff";
-        ctx.font         = `700 ${largerContactFontSz}px Inter, Arial, sans-serif`;
-        ctx.textBaseline = "middle";
-        
-        const displayValue = formatAdPhone(val);
-        ctx.fillText(displayValue, contactRightX, contactY2);
-        
-        const valW = ctx.measureText(displayValue).width;
-        const iconSize = largerContactFontSz * 1.35;
-        const iconX = contactRightX - valW - 14 - iconSize / 2;
-        
-        await drawAdSocialIcon(ctx, icon, iconX, contactY2, iconSize);
-      }
-      ctx.textBaseline = "alphabetic";
+      // ── 10 & 11) BRANDING FINAL (Logo e Contatos copiados da V5)
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        effectiveTextColor,
+        userFamily,
+        false,
+        logoFormat
+      );
 
       return canvas.toDataURL("image/png");
     }
