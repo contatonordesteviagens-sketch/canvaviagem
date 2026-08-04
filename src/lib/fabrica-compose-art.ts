@@ -2995,21 +2995,38 @@ const panelBottom = RULES.PANEL_BOTTOM;
           .replace(/[\u0000-\u001F\u007F-\u009F\u00AD\u034F\u061C\u180E\u200B-\u200F\u2028-\u202F\u205F-\u206F\uFEFF]/g, " ")
           .replace(/\s+/g, " ")
           .trim();
-      const hasReadableV1Text = (value = "") => /[0-9A-Za-zÀ-ÖØ-öø-ÿ]/.test(value);
+      const hasReadableV1Text = (value = "") => /[\p{L}\p{N}]/u.test(value);
+      const normalizeV1Key = (value = "") =>
+        cleanV1InlineText(value)
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase();
       const resolveV1BenefitIcon = (icon: string | undefined, text: string): IconKey => {
-        const rawIcon = cleanV1InlineText(icon || "").toLowerCase();
-        const rawText = cleanV1InlineText(text).toLowerCase();
-        if (["bus", "onibus", "ônibus", "transport", "transporte"].includes(rawIcon)) return "bus";
-        if (["map", "pin", "place", "location", "lugar", "lugares"].includes(rawIcon)) return "map";
-        if (["guide", "guia", "user", "local"].includes(rawIcon)) return "guide";
-        if (["food", "meal", "restaurant", "restaurante", "utensils", "cafe"].includes(rawIcon)) return "food";
+        const rawIcon = normalizeV1Key(icon || "");
+        const rawText = normalizeV1Key(text);
+        if (["bus", "onibus", "transport", "transporte"].includes(rawIcon)) return "bus";
+        if (["map", "pin", "place", "location", "lugar", "lugares", "pino-de-localizacao"].includes(rawIcon)) return "map";
+        if (["guide", "guia", "guia-turistico", "user", "local"].includes(rawIcon)) return "guide";
+        if (["food", "meal", "restaurant", "restaurante", "utensils", "cafe", "cafe-da-manha"].includes(rawIcon)) return "food";
         if (["hotel", "hospedagem"].includes(rawIcon)) return "hotel";
-        if (rawText.includes("transporte") || rawText.includes("ônibus") || rawText.includes("onibus")) return "bus";
+        if (rawText.includes("transporte") || rawText.includes("onibus")) return "bus";
         if (rawText.includes("lugar") || rawText.includes("roteiro") || rawText.includes("localiza")) return "map";
         if (rawText.includes("guia")) return "guide";
-        if (rawText.includes("café") || rawText.includes("cafe") || rawText.includes("comida") || rawText.includes("restaurante")) return "food";
+        if (rawText.includes("cafe") || rawText.includes("comida") || rawText.includes("restaurante")) return "food";
         if (rawText.includes("hotel") || rawText.includes("hosped")) return "hotel";
         return "check";
+      };
+      const resolveV1BenefitText = (icon: string | undefined, text: string) => {
+        const cleanText = cleanV1InlineText(text);
+        if (cleanText.length >= 3 && hasReadableV1Text(cleanText)) return cleanText;
+        const rawIcon = normalizeV1Key(icon || "");
+        if (rawIcon.includes("bus") || rawIcon.includes("onibus") || rawIcon.includes("transporte")) return "Transporte";
+        if (rawIcon.includes("map") || rawIcon.includes("pin") || rawIcon.includes("localizacao") || rawIcon.includes("lugar")) return "Melhores lugares";
+        if (rawIcon.includes("guia") || rawIcon.includes("guide")) return "Guia local";
+        if (rawIcon.includes("seguro") || rawIcon.includes("passageiro") || rawIcon.includes("mala") || rawIcon.includes("bag")) return "Seguro Passageiro";
+        if (rawIcon.includes("hotel") || rawIcon.includes("hosped")) return "Hotel";
+        if (rawIcon.includes("food") || rawIcon.includes("cafe") || rawIcon.includes("restaurante")) return "Cafe da manha";
+        return "";
       };
 
       // ── 1) PAINEL ESQUERDO sólido ──────────────────────────────────────────────────
@@ -3058,7 +3075,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
       });
 
       // Travel Period no topo direito (sobre a foto) com a cor primária (v1PanelBg)
-      const tpVal = (travelPeriod || options?.date || "").trim();
+      const tpVal = cleanV1InlineText(
+        String(travelPeriod || (options as any)?.travelPeriod || (options as any)?.date || (options as any)?.travelDate || (options as any)?.period || "")
+      );
       if (tpVal) {
         const tpText = tpVal.toUpperCase();
         ctx.font = `800 ${Math.round(badgeH * 0.38)}px Inter, Arial, sans-serif`;
@@ -3075,7 +3094,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         fillRoundRect(ctx, tpX, tpY, tpW, badgeH, badgeH / 2, v1PanelBg); 
         ctx.restore();
 
-        ctx.fillStyle = v1OnPanel;
+        ctx.fillStyle = ensureContrast(v1OnPanel, v1PanelBg);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         safeFillText(ctx, tpText, tpX + tpW / 2, tpY + badgeH / 2, tpW - 40, 13);
@@ -3153,9 +3172,19 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const benefitAvailH = priceCardMaxY - benefitStartY - Math.round(height * 0.016);
       const maxPills = Math.max(0, Math.floor((benefitAvailH + pillGap) / (pillH + pillGap)));
 
+      const seenBenefitsV1 = new Set<string>();
       let benefitsListV1 = (highlights || [])
-        .map((h) => ({ ...h, text: cleanV1InlineText(h?.text || "") }))
-        .filter((h) => h.text.length >= 3 && hasReadableV1Text(h.text))
+        .map((h) => {
+          const text = resolveV1BenefitText(h?.icon, h?.text || "");
+          return { icon: resolveV1BenefitIcon(h?.icon, text), text };
+        })
+        .filter((h) => {
+          if (!h.text || !hasReadableV1Text(h.text)) return false;
+          const key = normalizeV1Key(h.text);
+          if (seenBenefitsV1.has(key)) return false;
+          seenBenefitsV1.add(key);
+          return true;
+        })
         .slice(0, Math.min(4, maxPills));
 
       benefitsListV1.forEach((h, i) => {
@@ -3358,7 +3387,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${redrawPriceFsV1}px Inter, Arial, sans-serif`;
         redrawIntWV1 = ctx.measureText(pInt).width;
         ctx.font = `800 ${Math.round(redrawPriceFsV1 * 0.38)}px Inter, Arial, sans-serif`;
-        redrawCentsWV1 = pCents ? ctx.measureText(pCents).width + 6 : 0;
+        redrawCentsWV1 = pCents ? ctx.measureText(pCents).width + 16 : 0;
         redrawTotalWV1 = redrawSymWV1 + redrawIntWV1 + redrawCentsWV1;
       };
       calcRedrawPriceV1();
@@ -3378,7 +3407,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillText(pInt, redrawStartXV1 + redrawSymWV1, priceBaselineV1);
       if (pCents) {
         ctx.font = `800 ${Math.round(redrawPriceFsV1 * 0.38)}px Inter, Arial, sans-serif`;
-        ctx.fillText(pCents, redrawStartXV1 + redrawSymWV1 + redrawIntWV1 + 6, priceBaselineV1 - redrawPriceFsV1 * 0.43);
+        ctx.fillText(pCents, redrawStartXV1 + redrawSymWV1 + redrawIntWV1 + 16, priceBaselineV1 - redrawPriceFsV1 * 0.43);
       }
 
       const suffixYV1 = Math.min(cardBottomV1 - (hasPixV1 ? 58 : 26), priceBaselineV1 + Math.round(redrawPriceFsV1 * 0.30));
@@ -3389,10 +3418,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, suffixText, cardCxV1, suffixYV1, pw - 34, 12);
 
       if (hasPixV1) {
-        const redrawPixH = 32;
-        const redrawPixY = cardBottomV1 - 44;
-        ctx.font = "900 14px Inter, Arial, sans-serif";
-        const redrawPixW = Math.min(pw - 34, ctx.measureText(pixTxtV1).width + 32);
+        const redrawPixH = 38;
+        const redrawPixY = cardBottomV1 - 52;
+        ctx.font = "900 18px Inter, Arial, sans-serif";
+        const redrawPixW = Math.min(pw - 28, ctx.measureText(pixTxtV1).width + 48);
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)";
         ctx.shadowBlur = 6;
@@ -3403,7 +3432,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillStyle = v1OnAccent;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        safeFillText(ctx, pixTxtV1, cardCxV1, redrawPixY + redrawPixH / 2 + 1, redrawPixW - 20, 10);
+        safeFillText(ctx, pixTxtV1, cardCxV1, redrawPixY + redrawPixH / 2 + 1, redrawPixW - 20, 12);
       }
 
       ctx.textAlign = "left";
@@ -3417,17 +3446,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
       bottomGradV1.addColorStop(1, "rgba(0,0,0,0.82)");
       ctx.fillStyle = bottomGradV1;
       ctx.fillRect(photoX, shadowYV1, photoW, shadowHV1); // apenas na área da foto
-
-      // ── 10 & 11) BRANDING FINAL (Logo e Contatos copiados da V5)
-      await drawFinalBranding(
-        ctx, width, height, logoDataUrl, 
-        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        effectiveTextColor,
-        userFamily,
-        false,
-        logoFormat
-      );
 
       const footerHeightV1 = isStoryV1 ? 120 : 100;
       const footerYV1 = (isStoryV1 ? height - 150 : height - 40) - footerHeightV1;
