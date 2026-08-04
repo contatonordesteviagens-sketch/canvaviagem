@@ -3184,12 +3184,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
         return paymentLabel || pricePrefix || "a partir de";
       })().toString().replace(/\s+/g, " ").trim().toUpperCase();
-      const instTextTempV1 = installments && (paymentMode === "installments" || paymentMode === "down_plus")
-        ? (() => {
-            const cleanInstallments = cleanV1InlineText(installments);
-            return cleanInstallments.toLowerCase().includes("de") ? cleanInstallments : `${cleanInstallments} de`;
-          })()
-        : "";
+      const instTextTempV1 = "";
 
       let priceCardH = 48;
       if (instTextTempV1) priceCardH += 24;
@@ -3264,10 +3259,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         - (benefitsListV1.length > 0 ? benefitGapV1 : 0);
 
       // ── 8) PRICE CARD — posição dinâmica entre benefits e contatos ─────────────────
-      const priceBlockY = Math.max(
-        lastBenefitBottomY + Math.round(height * 0.016),
-        priceCardMaxY
-      );
+      const priceBlockY = priceCardMaxY;
 
       const priceCardOverlay = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.30)" : "rgba(255,255,255,0.26)";
       ctx.save();
