@@ -3312,50 +3312,68 @@ const panelBottom = RULES.PANEL_BOTTOM;
           logoCurrentY -= lH;
           
           ctx.save();
-          ctx.shadowColor = "rgba(0,0,0,0.25)";
-          ctx.shadowBlur = 8;
-          ctx.shadowOffsetY = 3;
+          ctx.shadowColor = "rgba(0,0,0,0.4)";
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetY = 4;
           ctx.shadowOffsetX = 0;
+          
+          ctx.beginPath();
+          ctx.arc(padX + lW / 2, logoCurrentY + lH / 2, Math.min(lW, lH) / 2, 0, Math.PI * 2);
+          ctx.clip();
+          
           ctx.drawImage(logoImgV1b, padX, logoCurrentY, lW, lH);
           ctx.restore();
         } catch (_) { /* skip silently */ }
       }
 
       // ── 11) Contatos movidos para o lado direito (sobre a foto com sombra/gradiente escuro)
-      const largerContactIconSz = Math.round(contactIconSz * 1.3);
-      const largerContactFontSz = Math.round(contactFontSz * 1.1);
+      const largerContactFontSz = Math.round(contactFontSz * 1.15); // Um pouco maior e legível
       const rightPad = Math.round(photoW * 0.08);
       const contactRightX = width - rightPad;
       let contactY2 = height - bottomPad;
 
-      ctx.textAlign = "left";
+      ctx.textAlign = "right";
       
       if (instagram || options.footerContact2Value) {
         const val  = options.footerContact2Value || instagram;
-        const icon = options.footerContact2Icon || "instagram_fino";
+        let icon = options.footerContact2Icon || "instagram_gradient";
+        if (icon === "instagram_fino" || icon === "instagram") icon = "instagram_gradient";
+        
         contactY2 -= contactLineH;
         
         ctx.fillStyle    = "#ffffff";
         ctx.font         = `700 ${largerContactFontSz}px Inter, Arial, sans-serif`;
         ctx.textBaseline = "middle";
-        const valW = ctx.measureText(val).width;
         
-        await drawMonoIcon(ctx, icon, contactRightX - valW - largerContactIconSz - 6, contactY2, largerContactIconSz, "#ffffff", 1.8);
-        ctx.fillText(val, contactRightX - valW, contactY2);
+        const displayValue = val.startsWith("@") ? val : `@${val}`;
+        ctx.fillText(displayValue, contactRightX, contactY2);
+        
+        const valW = ctx.measureText(displayValue).width;
+        const iconSize = largerContactFontSz * 1.35;
+        const iconX = contactRightX - valW - 14 - iconSize / 2;
+        
+        await drawAdSocialIcon(ctx, icon, iconX, contactY2, iconSize);
       }
 
       if (whatsapp || options.footerContact1Value) {
         const val  = options.footerContact1Value || whatsapp;
-        const icon = options.footerContact1Icon || "whatsapp";
-        contactY2 -= contactLineH;
+        let icon = options.footerContact1Icon || "whatsapp";
+        if (icon.startsWith("whatsapp")) icon = "whatsapp_green";
+        
+        contactY2 -= Math.round(contactLineH * 1.25); // Respiro um pouco maior entre eles
         
         ctx.fillStyle    = "#ffffff";
         ctx.font         = `700 ${largerContactFontSz}px Inter, Arial, sans-serif`;
         ctx.textBaseline = "middle";
-        const valW = ctx.measureText(val).width;
         
-        await drawMonoIcon(ctx, icon, contactRightX - valW - largerContactIconSz - 6, contactY2, largerContactIconSz, "#ffffff", 1.8);
-        ctx.fillText(val, contactRightX - valW, contactY2);
+        const displayValue = formatAdPhone(val);
+        ctx.fillText(displayValue, contactRightX, contactY2);
+        
+        const valW = ctx.measureText(displayValue).width;
+        const iconSize = largerContactFontSz * 1.35;
+        const iconX = contactRightX - valW - 14 - iconSize / 2;
+        
+        await drawAdSocialIcon(ctx, icon, iconX, contactY2, iconSize);
       }
       ctx.textBaseline = "alphabetic";
 
