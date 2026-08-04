@@ -3263,6 +3263,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       const priceCardOverlay = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.30)" : "rgba(255,255,255,0.26)";
       ctx.save();
+      ctx.globalAlpha = 0;
+      ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.18)";
       ctx.shadowBlur = 12;
       ctx.shadowOffsetY = 6;
@@ -3374,6 +3376,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillText(pixTxtV1, padX + pw / 2, pixYV1 + pixHV1 / 2 + 1);
       }
 
+      ctx.restore();
       // Repaint the V1 price card in controlled lanes so old price text cannot overlap.
       ctx.fillStyle = v1PanelBg;
       ctx.fillRect(padX - 16, priceBlockY - 16, pw + 32, priceCardH + 32);
