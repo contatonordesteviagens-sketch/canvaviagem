@@ -3001,9 +3001,30 @@ const panelBottom = RULES.PANEL_BOTTOM;
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
           .toLowerCase();
-      const resolveV1BenefitIcon = (icon: string | undefined, text: string): IconKey => {
+      const resolveV1BenefitIcon = (icon: string | undefined, text: string) => {
         const rawIcon = normalizeV1Key(icon || "");
         const rawText = normalizeV1Key(text);
+        if ([
+          "aviao",
+          "balsa",
+          "bicycle",
+          "cafe-da-manha",
+          "calendar",
+          "carro-sedan-na-frente",
+          "coffe-cup",
+          "enviar",
+          "estacao-de-trem",
+          "food-and-restaurant",
+          "guia-turistico",
+          "kit-de-primeiros-socorros",
+          "motorcycle",
+          "onibus",
+          "pino-de-localizacao-1",
+          "pino-de-localizacao",
+          "placa-do-hotel",
+          "relogio",
+          "taxi-frontal",
+        ].includes(rawIcon)) return rawIcon;
         if (["bus", "onibus", "transport", "transporte"].includes(rawIcon)) return "bus";
         if (["map", "pin", "place", "location", "lugar", "lugares", "pino-de-localizacao"].includes(rawIcon)) return "map";
         if (["guide", "guia", "guia-turistico", "user", "local"].includes(rawIcon)) return "guide";
@@ -3023,7 +3044,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (rawIcon.includes("bus") || rawIcon.includes("onibus") || rawIcon.includes("transporte")) return "Transporte";
         if (rawIcon.includes("map") || rawIcon.includes("pin") || rawIcon.includes("localizacao") || rawIcon.includes("lugar")) return "Melhores lugares";
         if (rawIcon.includes("guia") || rawIcon.includes("guide")) return "Guia local";
-        if (rawIcon.includes("seguro") || rawIcon.includes("passageiro") || rawIcon.includes("mala") || rawIcon.includes("bag")) return "Seguro Passageiro";
+        if (rawIcon.includes("seguro") || rawIcon.includes("passageiro") || rawIcon.includes("mala") || rawIcon.includes("bag") || rawIcon.includes("socorros")) return "Seguro Passageiro";
         if (rawIcon.includes("hotel") || rawIcon.includes("hosped")) return "Hotel";
         if (rawIcon.includes("food") || rawIcon.includes("cafe") || rawIcon.includes("restaurante")) return "Cafe da manha";
         return "";
@@ -3075,8 +3096,21 @@ const panelBottom = RULES.PANEL_BOTTOM;
       });
 
       // Travel Period no topo direito (sobre a foto) com a cor primária (v1PanelBg)
+      const monthFromHighlightsV1 = (highlights || []).find((h) =>
+        /janeiro|fevereiro|mar[cç]o|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/i.test(h?.text || "")
+      )?.text || "";
       const tpVal = cleanV1InlineText(
-        String(travelPeriod || (options as any)?.travelPeriod || (options as any)?.date || (options as any)?.travelDate || (options as any)?.period || "")
+        String(
+          travelPeriod ||
+          (options as any)?.travelPeriod ||
+          (options as any)?.date ||
+          (options as any)?.travelDate ||
+          (options as any)?.travelDateLabel ||
+          (options as any)?.period ||
+          (options as any)?.periodLabel ||
+          monthFromHighlightsV1 ||
+          ""
+        )
       );
       if (tpVal) {
         const tpText = tpVal.toUpperCase();
@@ -3197,7 +3231,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         // Ícone centralizado verticalmente
         const iconCX = padX + Math.round(pillH * 0.56);
-        drawMonoIcon(ctx, resolveV1BenefitIcon(h.icon, text), iconCX, py + pillH / 2, iconSz, v1Accent, 1.75);
+        drawMonoIcon(ctx, h.icon as IconKey, iconCX, py + pillH / 2, iconSz, v1Accent, 1.75);
 
         // Texto — à direita do ícone, com auto-shrink
         const textX    = padX + pillH + 12;
