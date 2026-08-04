@@ -3038,8 +3038,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
         return "check";
       };
       const resolveV1BenefitText = (icon: string | undefined, text: string) => {
-        const cleanText = cleanV1InlineText(text);
-        if (cleanText.length >= 3 && hasReadableV1Text(cleanText)) return cleanText;
         const rawIcon = normalizeV1Key(icon || "");
         if (rawIcon.includes("bus") || rawIcon.includes("onibus") || rawIcon.includes("transporte")) return "Transporte";
         if (rawIcon.includes("map") || rawIcon.includes("pin") || rawIcon.includes("localizacao") || rawIcon.includes("lugar")) return "Melhores lugares";
@@ -3047,6 +3045,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (rawIcon.includes("seguro") || rawIcon.includes("passageiro") || rawIcon.includes("mala") || rawIcon.includes("bag") || rawIcon.includes("socorros")) return "Seguro Passageiro";
         if (rawIcon.includes("hotel") || rawIcon.includes("hosped")) return "Hotel";
         if (rawIcon.includes("food") || rawIcon.includes("cafe") || rawIcon.includes("restaurante")) return "Cafe da manha";
+        const cleanText = cleanV1InlineText(text);
+        if (cleanText.length >= 3 && hasReadableV1Text(cleanText)) return cleanText;
         return "";
       };
 
