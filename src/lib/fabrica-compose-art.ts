@@ -3316,6 +3316,109 @@ const panelBottom = RULES.PANEL_BOTTOM;
         logoFormat
       );
 
+      const footerHeightV1 = isStoryV1 ? 120 : 100;
+      const footerYV1 = (isStoryV1 ? height - 150 : height - 40) - footerHeightV1;
+      const footerCenterYV1 = footerYV1 + footerHeightV1 / 2;
+      const footerPadXV1 = isStoryV1 ? 80 : 60;
+      const footerGradTopV1 = Math.max(0, footerYV1 - Math.round(height * 0.08));
+      const footerGradV1 = ctx.createLinearGradient(0, footerGradTopV1, 0, height);
+      footerGradV1.addColorStop(0, "rgba(0,0,0,0)");
+      footerGradV1.addColorStop(0.48, "rgba(0,0,0,0.48)");
+      footerGradV1.addColorStop(1, "rgba(0,0,0,0.92)");
+      ctx.fillStyle = footerGradV1;
+      ctx.fillRect(0, footerGradTopV1, width, height - footerGradTopV1);
+
+      if (logoDataUrl) {
+        try {
+          const logoV1 = await loadImage(logoDataUrl);
+          const maxLogoH = footerHeightV1 * 0.85 * 0.85;
+          const maxLogoW = width * 0.35;
+          const ratio = logoV1.naturalWidth / logoV1.naturalHeight;
+          let logoH = maxLogoH;
+          let logoW = logoH * ratio;
+          if (logoW > maxLogoW) {
+            logoW = maxLogoW;
+            logoH = logoW / ratio;
+          }
+
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.4)";
+          ctx.shadowBlur = 15;
+          ctx.shadowOffsetY = 5;
+          if (logoFormat === "circle") {
+            ctx.beginPath();
+            ctx.arc(footerPadXV1 + logoW / 2, footerCenterYV1, Math.min(logoW, logoH) / 2, 0, Math.PI * 2);
+            ctx.clip();
+          } else if (logoFormat === "square") {
+            roundRect(ctx, footerPadXV1, footerCenterYV1 - logoH / 2, logoW, logoH, 16);
+            ctx.clip();
+          }
+          ctx.drawImage(logoV1, footerPadXV1, footerCenterYV1 - logoH / 2, logoW, logoH);
+          ctx.restore();
+        } catch (e) {
+          console.warn("Falha ao carregar logo para rodape V1", e);
+        }
+      }
+
+      const rawContactsV1 = [
+        options.footerContact1Icon
+          ? { icon: options.footerContact1Icon, value: options.footerContact1Value || "" }
+          : (whatsapp ? { icon: "whatsapp_green", value: whatsapp } : undefined),
+        options.footerContact2Icon
+          ? { icon: options.footerContact2Icon, value: options.footerContact2Value || "" }
+          : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
+      ].filter((item): item is { icon: string; value: string } =>
+        Boolean(item && item.icon !== "none" && cleanV1InlineText(item.value).length > 0)
+      );
+
+      const contactsV1 = rawContactsV1
+        .map((item) => {
+          const icon = item.icon;
+          let value = cleanV1InlineText(item.value);
+          if (icon.startsWith("whatsapp")) value = formatAdPhone(value);
+          if (icon.startsWith("instagram")) value = value.startsWith("@") ? value : `@${value}`;
+          return { icon, value };
+        })
+        .sort((a, b) => {
+          const rank = (icon: string) => icon.startsWith("instagram") ? 0 : icon.startsWith("whatsapp") ? 1 : 2;
+          return rank(a.icon) - rank(b.icon);
+        })
+        .slice(0, 2);
+
+      ctx.save();
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = "rgba(0,0,0,0.85)";
+      ctx.shadowBlur = 40;
+      ctx.shadowOffsetY = 4;
+      const contactFontV1 = isStoryV1 ? 36 : 30;
+      const contactGapYV1 = footerHeightV1 * 0.42;
+      const textRightXV1 = width - footerPadXV1;
+      const iconTextGapV1 = isStoryV1 ? 22 : 20;
+      const safeFontV1 = userFamily || "Inter";
+
+      for (let i = 0; i < contactsV1.length; i += 1) {
+        const contact = contactsV1[i];
+        let fontSize = contactFontV1;
+        ctx.font = `700 ${fontSize}px ${safeFontV1}, sans-serif`;
+        const maxTextW = width * (isStoryV1 ? 0.70 : 0.45);
+        while (ctx.measureText(contact.value).width > maxTextW && fontSize > 14) {
+          fontSize -= 1;
+          ctx.font = `700 ${fontSize}px ${safeFontV1}, sans-serif`;
+        }
+        const iconSize = Math.round(fontSize * 1.12);
+        const y = contactsV1.length === 1
+          ? footerCenterYV1
+          : footerCenterYV1 + (i === 0 ? -contactGapYV1 / 2 : contactGapYV1 / 2);
+
+        ctx.fillText(contact.value, textRightXV1, y);
+        const textW = ctx.measureText(contact.value).width;
+        const iconCx = textRightXV1 - textW - iconTextGapV1 - iconSize / 2;
+        await drawAdSocialIcon(ctx, contact.icon, iconCx, y, iconSize);
+      }
+      ctx.restore();
+
       return canvas.toDataURL("image/png");
     }
 
