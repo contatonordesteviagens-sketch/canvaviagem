@@ -3204,10 +3204,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // ── 7) BENEFITS — clampados ao espaço disponível ──────────────────────────────
       const benefitStartY = titleBottomY + Math.round(height * 0.018);
       const benefitAvailH = priceCardMaxY - benefitStartY - Math.round(height * 0.016);
-      const maxPills = Math.max(0, Math.floor((benefitAvailH + pillGap) / (pillH + pillGap)));
-
       const seenBenefitsV1 = new Set<string>();
-      let benefitsListV1 = (highlights || [])
+      const allBenefitsV1 = (highlights || [])
         .map((h) => {
           const manualText = cleanV1InlineText(h?.text || "");
           const fallbackText = resolveV1BenefitText(h?.icon, manualText);
@@ -3220,40 +3218,50 @@ const panelBottom = RULES.PANEL_BOTTOM;
           if (seenBenefitsV1.has(key)) return false;
           seenBenefitsV1.add(key);
           return true;
-        })
-        .slice(0, Math.min(4, maxPills));
+        });
+      const desiredBenefitCountV1 = Math.min(6, allBenefitsV1.length);
+      const benefitGapV1 = desiredBenefitCountV1 > 4 ? Math.max(6, Math.round(pillGap * 0.55)) : pillGap;
+      const benefitMinPillHV1 = Math.round(height * 0.032);
+      const fitPillHV1 = desiredBenefitCountV1 > 0
+        ? Math.floor((benefitAvailH - benefitGapV1 * (desiredBenefitCountV1 - 1)) / desiredBenefitCountV1)
+        : pillH;
+      const benefitPillHV1 = Math.max(benefitMinPillHV1, Math.min(pillH, fitPillHV1));
+      const maxPillsV1 = Math.max(0, Math.floor((benefitAvailH + benefitGapV1) / (benefitPillHV1 + benefitGapV1)));
+      let benefitsListV1 = allBenefitsV1.slice(0, Math.min(desiredBenefitCountV1, maxPillsV1));
+      const benefitIconSzV1 = Math.min(iconSz, Math.round(benefitPillHV1 * 0.66));
+      const benefitFontV1 = Math.min(pillFont, Math.round(benefitPillHV1 * 0.46));
 
       benefitsListV1.forEach((h, i) => {
         const text = cleanV1InlineText(h.text);
         if (!text) return;
-        const py = benefitStartY + i * (pillH + pillGap);
+        const py = benefitStartY + i * (benefitPillHV1 + benefitGapV1);
 
         // Pílula de fundo
-        fillRoundRect(ctx, padX, py, pw, pillH, Math.round(pillH * 0.30), pillBg);
+        fillRoundRect(ctx, padX, py, pw, benefitPillHV1, Math.round(benefitPillHV1 * 0.30), pillBg);
 
         // Ícone centralizado verticalmente
-        const iconCX = padX + Math.round(pillH * 0.56);
-        drawMonoIcon(ctx, h.icon as IconKey, iconCX, py + pillH / 2, iconSz, v1Accent, 1.75);
+        const iconCX = padX + Math.round(benefitPillHV1 * 0.56);
+        drawMonoIcon(ctx, h.icon as IconKey, iconCX, py + benefitPillHV1 / 2, benefitIconSzV1, v1Accent, 1.75);
 
         // Texto — à direita do ícone, com auto-shrink
-        const textX    = padX + pillH + 12;
-        const textMaxW = pw - pillH - 18;
+        const textX    = padX + benefitPillHV1 + 12;
+        const textMaxW = pw - benefitPillHV1 - 18;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
         ctx.fillStyle = v1OnPanel;
-        ctx.font = `700 ${pillFont}px Inter, Arial, sans-serif`;
-        let tf = pillFont;
+        ctx.font = `700 ${benefitFontV1}px Inter, Arial, sans-serif`;
+        let tf = benefitFontV1;
         while (tf > 14 && ctx.measureText(text).width > textMaxW) {
           tf -= 1;
           ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
         }
-        safeFillText(ctx, text, textX, py + pillH / 2, textMaxW, 14);
+        safeFillText(ctx, text, textX, py + benefitPillHV1 / 2, textMaxW, 14);
         ctx.textBaseline = "alphabetic";
       });
 
       const lastBenefitBottomY = benefitStartY
-        + benefitsListV1.length * (pillH + pillGap)
-        - (benefitsListV1.length > 0 ? pillGap : 0);
+        + benefitsListV1.length * (benefitPillHV1 + benefitGapV1)
+        - (benefitsListV1.length > 0 ? benefitGapV1 : 0);
 
       // ── 8) PRICE CARD — posição dinâmica entre benefits e contatos ─────────────────
       const priceBlockY = Math.max(
