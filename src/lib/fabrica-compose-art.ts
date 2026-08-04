@@ -2962,321 +2962,381 @@ const panelBottom = RULES.PANEL_BOTTOM;
     // â”€â”€ V1 · REF "Black Friday" â€” painel escuro ESQUERDA + coluna fotos DIREITA â”€â”€
     // Painel primario na esquerda com texto/preco; coluna direita com foto empilhada
     if (variant === 1) {
-      // â”€â”€ V1 STORIES 9:16 â€” REFATORADO: painel esquerdo SÃ“LIDO + foto sangrada á direita â”€
+      // ── V1 FEED 1:1 + STORY 9:16 – painel esquerdo SÓLIDO + foto sangrada à direita ─
+      // FIX 2026-08-04: logo manual, badges verticais, benefits clampados, PIX pós-sufixo,
+      // gradiente só na foto, ícones sociais maiores e bem alinhados.
+      const isStoryV1 = format === "story";
       const panelW = Math.round(width * 0.44);
       const photoX = panelW;
       const photoW = width - panelW;
-      const v1PanelBg = primaryColor;
+      const v1PanelBg = primaryColor || "#1a1a2e";
       const v1OnPanel = getSafeColor(v1PanelBg);
       const v1Accent  = getSafeColor(v1PanelBg, secondaryColor);
+      const v1OnAccent = getSafeColor(v1Accent);
 
-      // 1) PAINEL ESQUERDO solido
+      // Token system derivado de width/height — zero ternários soltos
+      const padX       = Math.round(panelW * 0.118);  // ~56px em 475
+      const pw         = panelW - padX * 2;
+      const logoMaxH   = Math.round(height * 0.098);  // ~106px em 1080
+      const logoMaxW   = Math.round(panelW * 0.64);   // ~304px em 475
+      const logoTopY   = Math.round(height * 0.035);  // ~38px
+      const badgeH     = Math.round(height * 0.052);  // ~56px
+      const pillH      = Math.round(height * 0.043);  // ~46px
+      const pillGap    = Math.round(height * 0.011);  // ~12px
+      const pillFont   = Math.round(panelW * 0.048);  // ~23px
+      const iconSz     = Math.round(pillH * 0.70);    // ~32px
+      const contactIconSz = Math.round(height * 0.034); // ~37px
+      const contactFontSz = Math.round(panelW * 0.046); // ~22px
+      const contactLineH  = Math.round(contactIconSz * 1.75);
+      const bottomPad     = Math.round(height * 0.042); // ~45px
+      const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.13)" : "rgba(0,0,0,0.15)";
+
+      // ── 1) PAINEL ESQUERDO sólido ──────────────────────────────────────────────────
       ctx.fillStyle = v1PanelBg;
       ctx.fillRect(0, 0, panelW, height);
-      await drawProminentLogo(ctx, 40, 40, 120);
 
-      // 2) FOTO sangrada á direita (sem moldura)
+      // ── 2) FOTO sangrada à direita ─────────────────────────────────────────────────
       const c1 = fitCover(image.naturalWidth, image.naturalHeight, photoW, height, 0.40);
       ctx.drawImage(image, c1.sx, c1.sy, c1.sw, c1.sh, photoX, 0, photoW, height);
 
-      // 3) Layout do painel
-      const px = 56;
-      const pw = panelW - px * 2;
-      // Teto EXTREMAMENTE apertado no Feed para ganhar máxima área útil vertical (subido para 24px)
-      const logoReserve = format === "story" ? safeTop : (hasLogo ? 110 : 24);
+      // ── 3) LOGO manual (drawProminentLogo está bypassed) ───────────────────────────
+      let logoBottomY = logoTopY;
+      if (logoDataUrl) {
+        try {
+          const logoImgV1 = await new Promise<HTMLImageElement>((resolve, reject) => {
+            const el = new Image();
+            el.onload = () => resolve(el);
+            el.onerror = reject;
+            el.src = logoDataUrl;
+          });
+          const logoScale = Math.min(
+            logoMaxW / logoImgV1.naturalWidth,
+            logoMaxH / logoImgV1.naturalHeight,
+            1
+          );
+          const logoW = Math.round(logoImgV1.naturalWidth * logoScale);
+          const logoH = Math.round(logoImgV1.naturalHeight * logoScale);
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.28)";
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetY = 3;
+          ctx.drawImage(logoImgV1, padX, logoTopY, logoW, logoH);
+          ctx.restore();
+          logoBottomY = logoTopY + logoH;
+        } catch (_logoErrV1) { /* skip silently */ }
+      }
 
-      // 4) BADGE pílula
+      const logoGap = Math.round(height * 0.020);
+
+      // ── 4) BADGES — empilhados verticalmente, nunca vazam na foto ─────────────────
       const badgesV1: string[] = [];
       if (promoName) badgesV1.push(promoName.toUpperCase());
-      if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza') badgesV1.push(`Saindo de ${cityFmt}`);
+      if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza')
+        badgesV1.push(`Saindo de ${cityFmt}`);
       if (travelPeriod && travelPeriod.trim()) badgesV1.push(travelPeriod.trim().toUpperCase());
       if (badgesV1.length === 0) badgesV1.push("OFERTA ESPECIAL");
 
-      const badgeY    = logoReserve;
-      const badgeH    = 56;
-      let badgeX = px;
-      ctx.font = "800 22px Inter, Arial, sans-serif";
-      
+      ctx.font = `800 ${Math.round(badgeH * 0.38)}px Inter, Arial, sans-serif`;
+      let badgeCurrentY = logoBottomY + logoGap;
+
       badgesV1.forEach((bText, i) => {
-         const badgeTextW = ctx.measureText(bText).width;
-         const badgeW = Math.min(pw, badgeTextW + 40);
-         // O primeiro badge usa a cor de destaque. Os extras usam fundo mais neutro.
-         const bBg = i === 0 ? v1Accent : (v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)");
-         const bFg = i === 0 ? contrastOn(bBg) : v1OnPanel;
-         
-         ctx.save();
-         ctx.shadowColor = "rgba(0,0,0,0.15)";
-         ctx.shadowBlur = 8;
-         ctx.shadowOffsetY = 4;
-         fillRoundRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2, bBg);
-         ctx.restore();
-         
-         ctx.fillStyle = bFg;
-         ctx.textAlign = "center"; ctx.textBaseline = "middle";
-         safeFillText(ctx, bText, badgeX + badgeW/2, badgeY + badgeH / 2, badgeW - 40, 14);
-         badgeX += badgeW + 10;
+        const bTextW = ctx.measureText(bText).width;
+        const bW    = Math.min(pw, bTextW + 40);
+        const bBg   = i === 0
+          ? v1Accent
+          : (v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)");
+        const bFg   = i === 0 ? v1OnAccent : v1OnPanel;
+
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.15)";
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 4;
+        fillRoundRect(ctx, padX, badgeCurrentY, bW, badgeH, badgeH / 2, bBg);
+        ctx.restore();
+
+        ctx.fillStyle = bFg;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, bText, padX + bW / 2, badgeCurrentY + badgeH / 2, bW - 40, 13);
+        badgeCurrentY += badgeH + Math.round(height * 0.009);
       });
       ctx.textBaseline = "alphabetic";
       ctx.textAlign = "left";
 
-      // 5) TÍTULO PRINCIPAL (Gap ajustado para 65px no feed p/ compensar baseline e nunca sobrepor!)
-      const titleY = badgeY + badgeH + (format === "story" ? 40 : 65); 
-      ctx.fillStyle = v1OnPanel; 
-      
-      // Começa um pouco menor no feed (42px) para não estourar no topo
-      let mainTitleSize = format === "story" ? 48 : 42; 
+      // ── 5) TÍTULO PRINCIPAL ────────────────────────────────────────────────────────
+      const titleGap  = Math.round(height * (isStoryV1 ? 0.030 : 0.022));
+      const titleY    = badgeCurrentY + titleGap;
+      let mainTitleSize = Math.round(panelW * (isStoryV1 ? 0.096 : 0.082));
       ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
+      let titleLines = wrapTextSafe(ctx, titleText || "", pw, 4, 22);
 
-      const titleWords = (titleText || "").split(/\s+/).filter(Boolean);
-      let titleLines: string[] = [];
-      let currentLine = "";
-
-      for (const w of titleWords) {
-        const tryLine = currentLine ? `${currentLine} ${w}` : w;
+      // Auto-shrink se alguma linha ainda transbordar
+      while (mainTitleSize > 22 && titleLines.some(ln => {
         ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
-        if (ctx.measureText(tryLine).width > pw && currentLine) {
-          titleLines.push(currentLine);
-          currentLine = w;
-        } else {
-          currentLine = tryLine;
-        }
-      }
-      if (currentLine) titleLines.push(currentLine);
-
-      // Encolhimento dinâmico de segurança do font-size para que caiba perfeitamente no pw
-      while (titleLines.some(ln => ctx.measureText(ln).width > pw) && mainTitleSize > 24) {
+        return ctx.measureText(ln).width > pw;
+      })) {
         mainTitleSize -= 2;
         ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
+        titleLines = wrapTextSafe(ctx, titleText || "", pw, 4, 22);
       }
+      const titleLineH = mainTitleSize + Math.round(mainTitleSize * 0.24);
 
       ctx.save();
-      ctx.shadowColor = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.3)";
+      ctx.fillStyle = v1OnPanel;
+      ctx.shadowColor = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.25)";
       ctx.shadowBlur = 10;
       ctx.shadowOffsetY = 4;
-      titleLines.forEach((ln, i) => {
-        ctx.fillText(ln, px, titleY + i * (mainTitleSize + 12));
-      });
+      ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
+      titleLines.forEach((ln, i) => ctx.fillText(ln, padX, titleY + i * titleLineH));
       ctx.restore();
 
-      const titleBlockH = titleLines.length * (mainTitleSize + 8);
+      const titleBottomY = titleY + titleLines.length * titleLineH;
 
-      // 7) PRICE CARD & BENEFITS - Engenharia dinâmica inteligente
-      
-      // Ponto limite calculado: no feed, deixamos mais alto (height - 460) para garantir respiro na base
-      const limitY = format === "story" ? height - 680 : height - 460;
-      
-      // 8) BENEFITS — pílulas adaptativas no espaco restante
-      let benefitsListV1 = highlights.filter((h) => h?.text && h.text.replace(/\\u200B/g, '').trim().length > 0);
-      benefitsListV1 = benefitsListV1.slice(0, 6);
-      const hlStart = titleY + titleBlockH + (format === "story" ? 24 : 16);
-      
-      // O espaço disponível força o encolhimento das pílulas, empurrando tudo para cima logicamente!
-      const hlAvailH = limitY - hlStart; 
-      const count = Math.max(1, benefitsListV1.length);
-      const pillGap = 12;
-      const pillH = 46; // FIXED HEIGHT SO IT ISNT HUGE
-      // O bloco de preço AGORA segue dinamicamente o fim dos benefícios TANTO no story QUANTO no feed!
-      const lastBenefitY = hlStart + (count - 1) * (pillH + pillGap) + pillH;
-      let priceBlockY = lastBenefitY + (format === "story" ? height * 0.08 : 28);
-      // Fontes e ícones aumentados em 20% para legibilidade impecável
-      const pillFont = 22; // SLIGHTLY LARGER FONT
-      const iconFont = 26;
-      const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.14)";
+      // ── 6) RESERVAS DE ESPAÇO (bottom-up) ─────────────────────────────────────────
+      // Reserva contatos na base
+      const contactCount = ((whatsapp || options.footerContact1Value) ? 1 : 0)
+                         + ((instagram || options.footerContact2Value) ? 1 : 0);
+      const contactsReservedH = contactCount * contactLineH + bottomPad + Math.round(height * 0.012);
+      const contactsTopY = height - contactsReservedH;
+
+      // Reserva price card acima dos contatos
+      const pixTxtV1   = showPixBanner ? (pixBannerText || "").trim().toUpperCase() : "";
+      const hasPixV1   = pixTxtV1.length > 0;
+      const priceCardH = hasPixV1 ? 232 : 192;
+      const priceGap   = Math.round(height * 0.022);
+      const priceCardMaxY = contactsTopY - priceGap - priceCardH;
+
+      // ── 7) BENEFITS — clampados ao espaço disponível ──────────────────────────────
+      const benefitStartY = titleBottomY + Math.round(height * 0.018);
+      const benefitAvailH = priceCardMaxY - benefitStartY - Math.round(height * 0.016);
+      const maxPills = Math.max(0, Math.floor((benefitAvailH + pillGap) / (pillH + pillGap)));
+
+      let benefitsListV1 = (highlights || [])
+        .filter(h => h?.text && h.text.replace(/\\u200B/g, '').trim().length > 0)
+        .slice(0, Math.min(6, maxPills));
 
       benefitsListV1.forEach((h, i) => {
-        const text = h.text ? h.text.replace(/\u200B/g, '').trim() : '';
+        const text = h.text.replace(/\u200B/g, '').trim();
         if (!text) return;
-        const py = hlStart + i * (pillH + pillGap);
-        fillRoundRect(ctx, px, py, pw, pillH, 14, pillBg);
-        ctx.fillStyle = v1Accent;
-        ctx.font = `400 ${iconFont}px Inter, Arial, sans-serif`;
+        const py = benefitStartY + i * (pillH + pillGap);
+
+        // Pílula de fundo
+        fillRoundRect(ctx, padX, py, pw, pillH, Math.round(pillH * 0.30), pillBg);
+
+        // Ícone centralizado verticalmente
+        const iconCX = padX + Math.round(pillH * 0.56);
+        drawMonoIcon(ctx, h.icon || "check", iconCX, py + pillH / 2, iconSz, v1Accent, 1.75);
+
+        // Texto — à direita do ícone, com auto-shrink
+        const textX    = padX + pillH + 8;
+        const textMaxW = pw - pillH - 10;
         ctx.textBaseline = "middle";
-        drawMonoIcon(ctx, h.icon || "check", px + 22 + 32/2, py + pillH / 2, 32, v1Accent, 1.7);
+        ctx.textAlign = "left";
         ctx.fillStyle = v1OnPanel;
+        ctx.font = `700 ${pillFont}px Inter, Arial, sans-serif`;
         let tf = pillFont;
-        ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
-        const maxTw = pw - 90; // Respiro ampliado
-        while (ctx.measureText(text).width > maxTw && tf > 14) {
-          tf -= 2;
+        while (tf > 14 && ctx.measureText(text).width > textMaxW) {
+          tf -= 1;
           ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
         }
-        safeFillText(ctx, text, px + 76, py + pillH / 2, pw - 90, 14); // Afastamento aumentado para 76px para o ícone maior
+        ctx.fillText(text, textX, py + pillH / 2);
         ctx.textBaseline = "alphabetic";
       });
 
-      // 9) PRICE CARD overlay
-      const priceCardOverlay = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.32)" : "rgba(255,255,255,0.28)";
-      
-      // Calculate dynamic price block height to fit everything
-      const pixTxtV1 = showPixBanner ? (pixBannerText || "").trim().toUpperCase() : "";
-      const hasPixV1 = pixTxtV1.length > 0;
-      const finalPriceBlockH = hasPixV1 ? 230 : 190;
-      
+      const lastBenefitBottomY = benefitStartY
+        + benefitsListV1.length * (pillH + pillGap)
+        - (benefitsListV1.length > 0 ? pillGap : 0);
+
+      // ── 8) PRICE CARD — posição dinâmica entre benefits e contatos ─────────────────
+      const priceBlockY = Math.max(
+        lastBenefitBottomY + Math.round(height * 0.016),
+        priceCardMaxY
+      );
+
+      const priceCardOverlay = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.30)" : "rgba(255,255,255,0.26)";
       ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.15)";
-      ctx.shadowBlur = 10;
+      ctx.shadowColor = "rgba(0,0,0,0.18)";
+      ctx.shadowBlur = 12;
       ctx.shadowOffsetY = 6;
-      fillRoundRect(ctx, px, priceBlockY, pw, finalPriceBlockH, 18, priceCardOverlay);
+      fillRoundRect(ctx, padX, priceBlockY, pw, priceCardH, 18, priceCardOverlay);
       ctx.restore();
-      
+
+      // Label de pagamento
       const topLabelRenderV1 = (() => {
         if (paymentMode === "installments" || paymentMode === "from") return pricePrefix || "a partir de";
         if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
         return paymentLabel || pricePrefix || "a partir de";
       })().toString().toUpperCase();
 
-      const instTextV1 = installments && (paymentMode === "installments" || paymentMode === "down_plus") 
-        ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`) 
+      const instTextV1 = installments && (paymentMode === "installments" || paymentMode === "down_plus")
+        ? (installments.toLowerCase().includes("de") ? installments : `${installments} de`)
         : "";
 
-      let currentLabelY = priceBlockY + 32;
+      let currentLabelY = priceBlockY + Math.round(priceCardH * 0.14);
       ctx.textAlign = "center";
-      
-      // Se houver parcelamento, junta na mesma linha ou empilha de forma elegante
+
       if (instTextV1) {
-         ctx.fillStyle = v1OnPanel;
-         ctx.font = "900 16px Inter, Arial, sans-serif";
-         ctx.textBaseline = "middle";
-         ctx.fillText(instTextV1.toUpperCase(), px + pw / 2, currentLabelY);
-         currentLabelY += 20;
+        ctx.fillStyle = v1OnPanel;
+        ctx.font = "900 16px Inter, Arial, sans-serif";
+        ctx.textBaseline = "middle";
+        ctx.fillText(instTextV1.toUpperCase(), padX + pw / 2, currentLabelY);
+        currentLabelY += 22;
       }
       ctx.fillStyle = v1Accent;
       ctx.font = "800 22px Inter, Arial, sans-serif";
       ctx.textBaseline = "middle";
-      ctx.fillText(topLabelRenderV1, px + pw / 2, currentLabelY);
+      ctx.fillText(topLabelRenderV1, padX + pw / 2, currentLabelY);
+      currentLabelY += 26;
 
-      currentLabelY += 20; // Espaço antes do preço
-
-      // Separando Moeda, Inteiro e Centavos
-      const rawPrice = (mainPrice || price || "").trim();
+      // Preço varejista: R$ | inteiro | ,90
+      const rawPriceV1 = (mainPrice || price || "").trim();
       let pSym = (curSym || "R$").trim();
-      let pInt = rawPrice;
+      let pInt = rawPriceV1;
       let pCents = "";
 
-      // Remove a moeda se ela já vier na string do preço
       if (pInt.toUpperCase().startsWith(pSym.toUpperCase())) {
-          pInt = pInt.substring(pSym.length).trim();
+        pInt = pInt.substring(pSym.length).trim();
       } else if (pInt.toUpperCase().startsWith("R$")) {
-          pSym = "R$";
-          pInt = pInt.substring(2).trim();
+        pSym = "R$";
+        pInt = pInt.substring(2).trim();
       }
-
       if (!hideCents) {
-          const match = pInt.match(/^(.*?)([,.]\d{2})$/);
-          if (match) {
-              pInt = match[1];
-              pCents = match[2];
-          }
+        const mC = pInt.match(/^(.*?)([,.]\d{2})$/);
+        if (mC) { pInt = mC[1]; pCents = mC[2]; }
       } else {
-          pInt = pInt.replace(/[,.]\d{2}$/, "");
+        pInt = pInt.replace(/[,.]\d{2}$/, "");
       }
 
-      let priceFsV1 = 76; // Fonte base maior
+      let priceFsV1 = 76;
       let symWV1 = 0, intWV1 = 0, centsWV1 = 0, totalWV1 = 0;
-      const calcPriceWidthsV1 = () => {
-          ctx.font = `800 ${Math.round(priceFsV1 * 0.4)}px Inter, Arial, sans-serif`;
-          symWV1 = ctx.measureText(pSym + " ").width;
-          ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
-          intWV1 = ctx.measureText(pInt).width;
-          ctx.font = `800 ${Math.round(priceFsV1 * 0.4)}px Inter, Arial, sans-serif`;
-          centsWV1 = pCents ? ctx.measureText(pCents).width : 0;
-          totalWV1 = symWV1 + intWV1 + centsWV1;
+      const calcPWV1 = () => {
+        ctx.font = `800 ${Math.round(priceFsV1 * 0.40)}px Inter, Arial, sans-serif`;
+        symWV1   = ctx.measureText(pSym + " ").width;
+        ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
+        intWV1   = ctx.measureText(pInt).width;
+        ctx.font = `800 ${Math.round(priceFsV1 * 0.40)}px Inter, Arial, sans-serif`;
+        centsWV1 = pCents ? ctx.measureText(pCents).width : 0;
+        totalWV1 = symWV1 + intWV1 + centsWV1;
       };
+      calcPWV1();
+      while (totalWV1 > pw - 24 && priceFsV1 > 36) { priceFsV1 -= 4; calcPWV1(); }
 
-      calcPriceWidthsV1();
-      while (totalWV1 > pw - 30 && priceFsV1 > 40) {
-          priceFsV1 -= 4;
-          calcPriceWidthsV1();
-      }
+      const startXV1 = padX + pw / 2 - totalWV1 / 2;
+      const pyV1     = currentLabelY + priceFsV1 - 8;
 
-      let startXV1 = (px + pw / 2) - totalWV1 / 2;
-      const pyV1 = currentLabelY + priceFsV1 - 10;
+      ctx.textAlign    = "left";
+      ctx.fillStyle    = v1OnPanel;
+      ctx.textBaseline = "alphabetic";
 
-      ctx.textAlign = "left";
-      ctx.fillStyle = v1OnPanel;
-      ctx.textBaseline = "alphabetic"; // <--- Força baseline correta
-      
-      // 1. Simbolo
-      ctx.font = `800 ${Math.round(priceFsV1 * 0.4)}px Inter, Arial, sans-serif`;
-      ctx.fillText(pSym, startXV1, pyV1 - priceFsV1 * 0.45);
-      
-      // 2. Inteiro
+      // Símbolo (topo-esquerdo, menor)
+      ctx.font = `800 ${Math.round(priceFsV1 * 0.40)}px Inter, Arial, sans-serif`;
+      ctx.fillText(pSym, startXV1, pyV1 - priceFsV1 * 0.46);
+      // Inteiro (gigante)
       ctx.font = `900 ${priceFsV1}px Inter, Arial, sans-serif`;
       ctx.fillText(pInt, startXV1 + symWV1, pyV1);
-
-      // 3. Centavos
+      // Centavos (topo-direito, menor)
       if (pCents) {
-          ctx.font = `800 ${Math.round(priceFsV1 * 0.4)}px Inter, Arial, sans-serif`;
-          ctx.fillText(pCents, startXV1 + symWV1 + intWV1, pyV1 - priceFsV1 * 0.45);
+        ctx.font = `800 ${Math.round(priceFsV1 * 0.40)}px Inter, Arial, sans-serif`;
+        ctx.fillText(pCents, startXV1 + symWV1 + intWV1, pyV1 - priceFsV1 * 0.46);
       }
-      
-      // Sufixo
-      ctx.textAlign = "center";
-      ctx.fillStyle = v1Accent;
-      ctx.font = "800 20px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, pyV1 + 30);
-      
-      // Pilula PIX
+
+      // Sufixo "por pessoa"
+      ctx.textAlign    = "center";
+      ctx.fillStyle    = v1Accent;
+      ctx.font         = "800 20px Inter, Arial, sans-serif";
+      ctx.textBaseline = "top";
+      const suffixBaseY = pyV1 + 26;
+      ctx.fillText(bottomSuffix || "por pessoa", padX + pw / 2, suffixBaseY);
+      ctx.textBaseline = "alphabetic";
+
+      // Pílula PIX — APÓS sufixo, nunca sobre o número do preço
       if (hasPixV1) {
         const pixFsV1 = 18;
         ctx.font = `900 ${pixFsV1}px Inter, Arial, sans-serif`;
-        const pixWV1 = ctx.measureText(pixTxtV1).width + 36;
+        const pixWV1 = Math.min(pw, ctx.measureText(pixTxtV1).width + 36);
         const pixHV1 = 36;
-        const pixYV1 = pyV1 + 35; // Abaixado
-        
+        const pixYV1 = suffixBaseY + 30;
+
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)";
         ctx.shadowBlur = 6;
         ctx.shadowOffsetY = 2;
-        fillRoundRect(ctx, (px + pw/2) - pixWV1/2, pixYV1, pixWV1, pixHV1, 18, v1Accent);
+        fillRoundRect(ctx, padX + pw / 2 - pixWV1 / 2, pixYV1, pixWV1, pixHV1, 18, v1Accent);
         ctx.restore();
-        
-        ctx.fillStyle = contrastOn(v1Accent);
+
+        ctx.fillStyle    = v1OnAccent;
+        ctx.textAlign    = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(pixTxtV1, px + pw/2, pixYV1 + pixHV1/2 + 1);
+        ctx.fillText(pixTxtV1, padX + pw / 2, pixYV1 + pixHV1 / 2 + 1);
         ctx.textBaseline = "alphabetic";
       }
-      
+
       ctx.textAlign = "left";
 
-      // 10) Sombra de base p/ foto caso precise (mantida para a foto sangrada)
-      const shadowH = 220;
-      const shadowY = height - shadowH;
-      const bottomGrad = ctx.createLinearGradient(0, shadowY, 0, height);
-      bottomGrad.addColorStop(0, "rgba(0,0,0,0)");
-      bottomGrad.addColorStop(0.5, "rgba(0,0,0,0.5)");
-      bottomGrad.addColorStop(1, "rgba(0,0,0,0.85)");
-      ctx.fillStyle = bottomGrad;
-      ctx.fillRect(0, shadowY, width, shadowH);
+      // ── 9) Gradiente de sombra SOMENTE na foto ─────────────────────────────────────
+      const shadowHV1 = Math.round(height * 0.204);
+      const shadowYV1 = height - shadowHV1;
+      const bottomGradV1 = ctx.createLinearGradient(0, shadowYV1, 0, height);
+      bottomGradV1.addColorStop(0, "rgba(0,0,0,0)");
+      bottomGradV1.addColorStop(0.48, "rgba(0,0,0,0.46)");
+      bottomGradV1.addColorStop(1, "rgba(0,0,0,0.82)");
+      ctx.fillStyle = bottomGradV1;
+      ctx.fillRect(photoX, shadowYV1, photoW, shadowHV1); // apenas na área da foto
 
-      // 11) Contatos na base do painel esquerdo
-      const contactFs = 18;
-      ctx.font = `700 ${contactFs}px Inter, Arial, sans-serif`;
-      ctx.fillStyle = v1OnPanel;
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
+      // ── 10) LOGO no painel esquerdo — drawProminentLogo está bypassed, carregamos manualmente
+      if (logoDataUrl) {
+        try {
+          const logoImgV1b = await new Promise<HTMLImageElement>((resolve, reject) => {
+            const el2 = new Image();
+            el2.onload = () => resolve(el2);
+            el2.onerror = reject;
+            el2.src = logoDataUrl;
+          });
+          const lMaxH = Math.round(height * 0.10);
+          const lMaxW = Math.round(panelW * 0.64);
+          const lScale = Math.min(lMaxW / logoImgV1b.naturalWidth, lMaxH / logoImgV1b.naturalHeight, 1);
+          const lW = Math.round(logoImgV1b.naturalWidth * lScale);
+          const lH = Math.round(logoImgV1b.naturalHeight * lScale);
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.25)";
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetY = 3;
+          ctx.drawImage(logoImgV1b, padX, Math.round(height * 0.035), lW, lH);
+          ctx.restore();
+        } catch (_) { /* skip silently */ }
+      }
 
-      let contactY = height - (format === "story" ? 60 : 110); // Elevado MUITO mais para não colar na marca d'água gigantesca da V1
-      
+      // ── 11) Contatos na base do painel — ícones 37px, texto 22px, bem alinhados ────
+      const contactTextX2   = padX + contactIconSz + 12;
+      const contactTextMaxW2 = pw - contactIconSz - 14;
+      let contactY2 = height - bottomPad;
+
       if (instagram || options.footerContact2Value) {
-        const val = options.footerContact2Value || instagram;
+        const val  = options.footerContact2Value || instagram;
         const icon = options.footerContact2Icon || "instagram_fino";
-        await drawAdSocialIcon(ctx, icon, px + 18, contactY, 28);
-        ctx.fillStyle = v1OnPanel;
-        safeFillText(ctx, val, px + 42, contactY + 2, pw - 42, contactFs);
-        contactY -= 42;
+        contactY2 -= contactLineH;
+        await drawAdSocialIcon(ctx, icon, padX + contactIconSz / 2, contactY2, contactIconSz);
+        ctx.fillStyle    = v1OnPanel;
+        ctx.font         = `700 ${contactFontSz}px Inter, Arial, sans-serif`;
+        ctx.textAlign    = "left";
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, val, contactTextX2, contactY2, contactTextMaxW2, Math.round(contactFontSz * 0.64));
       }
 
       if (whatsapp || options.footerContact1Value) {
-        const val = options.footerContact1Value || whatsapp;
+        const val  = options.footerContact1Value || whatsapp;
         const icon = options.footerContact1Icon || "whatsapp";
-        await drawAdSocialIcon(ctx, icon, px + 18, contactY, 28);
-        ctx.fillStyle = v1OnPanel;
-        safeFillText(ctx, val, px + 42, contactY + 2, pw - 42, contactFs);
+        contactY2 -= contactLineH;
+        await drawAdSocialIcon(ctx, icon, padX + contactIconSz / 2, contactY2, contactIconSz);
+        ctx.fillStyle    = v1OnPanel;
+        ctx.font         = `700 ${contactFontSz}px Inter, Arial, sans-serif`;
+        ctx.textAlign    = "left";
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, val, contactTextX2, contactY2, contactTextMaxW2, Math.round(contactFontSz * 0.64));
       }
       ctx.textBaseline = "alphabetic";
 
-    return canvas.toDataURL("image/png");
+      return canvas.toDataURL("image/png");
     }
 
     // â”€â”€ V2 · REF "Santa Teresa" â€” foto topo + faixa headline + benefits + preco â”€â”€
