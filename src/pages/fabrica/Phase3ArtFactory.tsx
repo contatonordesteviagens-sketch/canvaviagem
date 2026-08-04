@@ -1700,8 +1700,12 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                   value={state.footerContact1Icon || "whatsapp"}
                   onValueChange={(val) => update({ footerContact1Icon: val as any })}
                 >
-                  <SelectTrigger className="w-full bg-white/5 border-none rounded-lg h-9 text-[11px] font-medium text-white shadow-none">
-                    <SelectValue placeholder="Selecione" />
+                  <SelectTrigger className="w-[50px] bg-white/5 border-none rounded-lg h-9 text-white shadow-none [&>svg]:hidden flex justify-center items-center overflow-hidden">
+                    {(() => {
+                      const val = state.footerContact1Icon || "whatsapp";
+                      const opt = CONTACT_OPTIONS.find(o => o.value === val);
+                      return opt?.img ? <img src={opt.img} className="w-5 h-5 object-contain" /> : <div className="w-5 h-5" />;
+                    })()}
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
                     {CONTACT_OPTIONS.map((opt) => (
@@ -1735,8 +1739,12 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                   value={state.footerContact2Icon || "instagram_fino"}
                   onValueChange={(val) => update({ footerContact2Icon: val as any })}
                 >
-                  <SelectTrigger className="w-full bg-white/5 border-none rounded-lg h-9 text-[11px] font-medium text-white shadow-none">
-                    <SelectValue placeholder="Selecione" />
+                  <SelectTrigger className="w-[50px] bg-white/5 border-none rounded-lg h-9 text-white shadow-none [&>svg]:hidden flex justify-center items-center overflow-hidden">
+                    {(() => {
+                      const val = state.footerContact2Icon || "instagram_fino";
+                      const opt = CONTACT_OPTIONS.find(o => o.value === val);
+                      return opt?.img ? <img src={opt.img} className="w-5 h-5 object-contain" /> : <div className="w-5 h-5" />;
+                    })()}
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
                     {CONTACT_OPTIONS.map((opt) => (
@@ -1767,7 +1775,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               </div>
             </div>
           </div>
-        </div>
           <div className="sm:col-span-8 flex flex-col justify-end">
             <div>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">Formato</h3>
@@ -1797,6 +1804,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         </div>
           </div>
+        </div>
       <div className={`${sectionCls} space-y-5`}>
         <div>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Criação</h3>

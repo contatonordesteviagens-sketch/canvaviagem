@@ -2680,7 +2680,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
       }
 
-      let benefitsList = highlights.filter((h) => h?.text && h.text.trim().length > 0);
+      let benefitsList = highlights.filter((h) => h?.text && h.text.replace(/\\u200B/g, '').trim().length > 0);
       if (travelPeriod && travelPeriod.trim()) {
         const tp = travelPeriod.trim();
         benefitsList = benefitsList.filter(b => b.text.toLowerCase() !== tp.toLowerCase());
@@ -2962,7 +2962,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
     // â”€â”€ V1 · REF "Black Friday" â€” painel escuro ESQUERDA + coluna fotos DIREITA â”€â”€
     // Painel primario na esquerda com texto/preco; coluna direita com foto empilhada
     if (variant === 1) {
-      await drawProminentLogo(ctx, 40, 40, 120);
       // â”€â”€ V1 STORIES 9:16 â€” REFATORADO: painel esquerdo SÃ“LIDO + foto sangrada á direita â”€
       const panelW = Math.round(width * 0.44);
       const photoX = panelW;
@@ -2974,6 +2973,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // 1) PAINEL ESQUERDO solido
       ctx.fillStyle = v1PanelBg;
       ctx.fillRect(0, 0, panelW, height);
+      await drawProminentLogo(ctx, 40, 40, 120);
 
       // 2) FOTO sangrada á direita (sem moldura)
       const c1 = fitCover(image.naturalWidth, image.naturalHeight, photoW, height, 0.40);
@@ -3066,7 +3066,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const limitY = format === "story" ? height - 680 : height - 460;
       
       // 8) BENEFITS — pílulas adaptativas no espaco restante
-      let benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0);
+      let benefitsListV1 = highlights.filter((h) => h?.text && h.text.replace(/\\u200B/g, '').trim().length > 0);
       benefitsListV1 = benefitsListV1.slice(0, 6);
       const hlStart = titleY + titleBlockH + (format === "story" ? 24 : 16);
       
@@ -3074,15 +3074,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const hlAvailH = limitY - hlStart; 
       const count = Math.max(1, benefitsListV1.length);
       const pillGap = 12;
-      const pillH = Math.max(42, Math.min(68, Math.floor((hlAvailH - pillGap * (count - 1)) / count)));
-
+      const pillH = 46; // FIXED HEIGHT SO IT ISNT HUGE
       // O bloco de preço AGORA segue dinamicamente o fim dos benefícios TANTO no story QUANTO no feed!
       const lastBenefitY = hlStart + (count - 1) * (pillH + pillGap) + pillH;
       let priceBlockY = lastBenefitY + (format === "story" ? height * 0.08 : 28);
-      
       // Fontes e ícones aumentados em 20% para legibilidade impecável
-      const pillFont = pillH >= 56 ? 28 : pillH >= 46 ? 24 : 20;
-      const iconFont = pillH >= 56 ? 34 : 30;
+      const pillFont = 22; // SLIGHTLY LARGER FONT
+      const iconFont = 26;
       const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.14)";
 
       benefitsListV1.forEach((h, i) => {
@@ -3224,7 +3222,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${pixFsV1}px Inter, Arial, sans-serif`;
         const pixWV1 = ctx.measureText(pixTxtV1).width + 36;
         const pixHV1 = 36;
-        const pixYV1 = pyV1 + 25; // Abaixado
+        const pixYV1 = pyV1 + 35; // Abaixado
         
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)";
@@ -3249,7 +3247,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       bottomGrad.addColorStop(0.5, "rgba(0,0,0,0.5)");
       bottomGrad.addColorStop(1, "rgba(0,0,0,0.85)");
       ctx.fillStyle = bottomGrad;
-      ctx.fillRect(photoX, shadowY, photoW, shadowH);
+      ctx.fillRect(0, shadowY, width, shadowH);
 
       // 11) Contatos na base do painel esquerdo
       const contactFs = 18;
@@ -3258,7 +3256,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
 
-      let contactY = height - (format === "story" ? 80 : 130); // Elevado MUITO mais para não colar na marca d'água gigantesca da V1
+      let contactY = height - (format === "story" ? 60 : 110); // Elevado MUITO mais para não colar na marca d'água gigantesca da V1
       
       if (instagram || options.footerContact2Value) {
         const val = options.footerContact2Value || instagram;
@@ -3266,7 +3264,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         await drawAdSocialIcon(ctx, icon, px + 18, contactY, 28);
         ctx.fillStyle = v1OnPanel;
         safeFillText(ctx, val, px + 42, contactY + 2, pw - 42, contactFs);
-        contactY -= 36;
+        contactY -= 42;
       }
 
       if (whatsapp || options.footerContact1Value) {
@@ -3299,7 +3297,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const v2BenefitColor = getSafeColor("#f7f4ef", secondaryColor);
         const v2HeadlineColor = v2CardLabel;
 
-        const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
+        const benefitsListV2 = highlights.filter((h) => h?.text && h.text.replace(/\\u200B/g, '').trim().length > 0).slice(0, 6);
         const benefitsCountV2 = Math.max(1, benefitsListV2.length);
 
         // 1) Dynamic Price Block - Mirror Feed logic to avoid being oversized & fix hardcoded labels
@@ -3457,7 +3455,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const v2BenefitColor = getSafeColor("#f7f4ef", secondaryColor);
         const v2HeadlineColor = v2CardLabel;
 
-        const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
+        const benefitsListV2 = highlights.filter((h) => h?.text && h.text.replace(/\\u200B/g, '').trim().length > 0).slice(0, 6);
         const benefitsCountV2 = Math.max(1, benefitsListV2.length);
 
         // 1) Price block with full form parity (prefix + pill + price + suffix + total + pix)
