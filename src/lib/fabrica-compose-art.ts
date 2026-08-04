@@ -3557,10 +3557,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.shadowColor = "rgba(0,0,0,0.85)";
       ctx.shadowBlur = 40;
       ctx.shadowOffsetY = 4;
-      const contactFontV1 = isStoryV1 ? 36 : 30;
+      const contactFontV1 = isStoryV1 ? 31 : 26;
       const contactGapYV1 = footerHeightV1 * 0.42;
       const textRightXV1 = width - footerPadXV1;
-      const iconTextGapV1 = isStoryV1 ? 22 : 20;
+      const iconTextGapV1 = isStoryV1 ? 54 : 44;
       const safeFontV1 = userFamily || "Inter";
 
       for (let i = 0; i < contactsV1.length; i += 1) {
