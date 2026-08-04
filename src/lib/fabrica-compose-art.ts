@@ -3141,7 +3141,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const titleBlockH = titleLines.length * (mainTitleSize + 8);
 
       // 7) PRICE CARD & BENEFITS - Engenharia dinâmica inteligente
-      const priceBlockH = 200;
       
       // Ponto limite calculado: no feed, deixamos mais alto (height - 460) para garantir respiro na base
       const limitY = format === "story" ? height - 680 : height - 460;
@@ -3167,7 +3166,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.14)";
 
       benefitsListV1.forEach((h, i) => {
-        if (!h.text || !h.text.trim()) return;
+        const text = h.text ? h.text.replace(/\u200B/g, '').trim() : '';
+        if (!text) return;
         const py = hlStart + i * (pillH + pillGap);
         fillRoundRect(ctx, px, py, pw, pillH, 14, pillBg);
         ctx.fillStyle = v1Accent;
@@ -3178,11 +3178,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
         let tf = pillFont;
         ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
         const maxTw = pw - 90; // Respiro ampliado
-        while (ctx.measureText(h.text).width > maxTw && tf > 14) {
+        while (ctx.measureText(text).width > maxTw && tf > 14) {
           tf -= 2;
           ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
         }
-        safeFillText(ctx, h.text, px + 76, py + pillH / 2, pw - 90, 14); // Afastamento aumentado para 76px para o ícone maior
+        safeFillText(ctx, text, px + 76, py + pillH / 2, pw - 90, 14); // Afastamento aumentado para 76px para o ícone maior
         ctx.textBaseline = "alphabetic";
       });
 
@@ -3218,14 +3218,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (instTextV1) {
          ctx.fillStyle = v1OnPanel;
          ctx.font = "900 16px Inter, Arial, sans-serif";
+         ctx.textBaseline = "middle";
          ctx.fillText(instTextV1.toUpperCase(), px + pw / 2, currentLabelY);
          currentLabelY += 20;
       }
       ctx.fillStyle = v1Accent;
       ctx.font = "800 22px Inter, Arial, sans-serif";
+      ctx.textBaseline = "middle";
       ctx.fillText(topLabelRenderV1, px + pw / 2, currentLabelY);
 
-      currentLabelY += 10; // Espaço antes do preço
+      currentLabelY += 20; // Espaço antes do preço
 
       // Separando Moeda, Inteiro e Centavos
       const rawPrice = (mainPrice || price || "").trim();
@@ -3274,6 +3276,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       ctx.textAlign = "left";
       ctx.fillStyle = v1OnPanel;
+      ctx.textBaseline = "alphabetic"; // <--- Força baseline correta
       
       // 1. Simbolo
       ctx.font = `800 ${Math.round(priceFsV1 * 0.4)}px Inter, Arial, sans-serif`;
@@ -3301,7 +3304,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${pixFsV1}px Inter, Arial, sans-serif`;
         const pixWV1 = ctx.measureText(pixTxtV1).width + 36;
         const pixHV1 = 36;
-        const pixYV1 = pyV1 + 45;
+        const pixYV1 = pyV1 + 25; // Abaixado
         
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.15)";
