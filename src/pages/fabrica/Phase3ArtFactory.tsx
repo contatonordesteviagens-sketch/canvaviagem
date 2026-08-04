@@ -1778,28 +1778,32 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           <div className="sm:col-span-8 flex flex-col justify-end">
             <div>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">Formato</h3>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-2">
             <button
               onClick={() => setFormat("square")}
-              className={`p-2.5 rounded-xl border-2 text-left transition-all ${
+              className={`p-2 flex items-center gap-3 rounded-xl border-2 text-left transition-all ${
                 format === "square" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
               }`}
               style={format === "square" ? { borderColor: UI_ACCENT_BORDER, background: UI_ACCENT_SOFT } : undefined}
             >
-              <Square className="w-4 h-4 mb-2 text-white/80" />
-              <div className="text-xs font-bold text-white">Quadrado 1:1</div>
-              <div className="text-[9px] text-white/55">Feed Instagram (1080×1080)</div>
+              <Square className="w-5 h-5 text-white/80 flex-shrink-0" />
+              <div>
+                <div className="text-[11px] font-bold text-white">Quadrado 1:1</div>
+                <div className="text-[9px] text-white/55">Feed Instagram (1080×1080)</div>
+              </div>
             </button>
             <button
               onClick={() => setFormat("story")}
-              className={`p-2.5 rounded-xl border-2 text-left transition-all ${
+              className={`p-2 flex items-center gap-3 rounded-xl border-2 text-left transition-all ${
                 format === "story" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
               }`}
               style={format === "story" ? { borderColor: UI_ACCENT_BORDER, background: UI_ACCENT_SOFT } : undefined}
             >
-              <Smartphone className="w-4 h-4 mb-2 text-white/80" />
-              <div className="text-xs font-bold text-white">Stories / Reels 9:16</div>
-              <div className="text-[9px] text-white/55">Vertical com safe zones (1080×1920)</div>
+              <Smartphone className="w-5 h-5 text-white/80 flex-shrink-0" />
+              <div>
+                <div className="text-[11px] font-bold text-white">Stories 9:16</div>
+                <div className="text-[9px] text-white/55">Vertical (1080×1920)</div>
+              </div>
             </button>
           </div>
         </div>
