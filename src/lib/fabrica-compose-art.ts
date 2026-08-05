@@ -3167,7 +3167,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (paymentMode === "down_plus") return pricePrefix || "Entrada +";
         return paymentLabel || pricePrefix || "a partir de";
       })().toString().replace(/\s+/g, " ").trim().toUpperCase();
-      const instTextTempV1 = "";
+      const instTextTempV1: string = "";
 
       let priceCardH = 48;
       if (instTextTempV1) priceCardH += 24;
