@@ -3045,6 +3045,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (rawIcon.includes("map") || rawIcon.includes("pin") || rawIcon.includes("localizacao") || rawIcon.includes("lugar")) return "Melhores lugares";
         if (rawIcon.includes("guia") || rawIcon.includes("guide")) return "Guia local";
         if (rawIcon.includes("seguro") || rawIcon.includes("passageiro") || rawIcon.includes("mala") || rawIcon.includes("bag") || rawIcon.includes("socorros")) return "Seguro Passageiro";
+        if (rawIcon.includes("check") || rawIcon.includes("ok") || rawIcon.includes("confirm")) return "Seguro Passageiro";
         if (rawIcon.includes("hotel") || rawIcon.includes("hosped")) return "Hotel";
         if (rawIcon.includes("food") || rawIcon.includes("cafe") || rawIcon.includes("restaurante")) return "Cafe da manha";
         return "";
