@@ -4052,7 +4052,28 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const v4Primary = primaryColor || "#0B2B7A";
       const v4Secondary = secondaryColor || "#FFE600";
       const v4OnSecondary = ensureContrast(v4Primary, v4Secondary, 0.4); // contraste do texto sobre amarelo
-      const v4OnPrimary = getSafeColor(v4Primary, "#ffffff"); // Texto com contraste dinâmico
+      
+      // Ajuste cirúrgico: leitura de luminância infalível via canvas para qualquer formato de cor (hex, rgb, etc)
+      const isColorLight = (c: string) => {
+        try {
+          const cvs = document.createElement('canvas');
+          cvs.width = 1; cvs.height = 1;
+          const tctx = cvs.getContext('2d', { willReadFrequently: true });
+          if(tctx) {
+            tctx.fillStyle = c;
+            tctx.fillRect(0,0,1,1);
+            const d = tctx.getImageData(0,0,1,1).data;
+            return (0.299 * (d[0]/255) + 0.587 * (d[1]/255) + 0.114 * (d[2]/255)) > 0.55;
+          }
+        } catch(e) {}
+        return true; // fallback
+      };
+      // Se primária for clara (ex: amarelo), usa a secundária (ex: preto). Se secundária também for clara, força preto.
+      // Se primária for escura (ex: azul escuro), usa branco.
+      const v4OnPrimary = isColorLight(v4Primary) 
+        ? (isColorLight(v4Secondary) ? "#000000" : v4Secondary)
+        : "#ffffff";
+        
       const destinoV4 = (destination || "DESTINO").toUpperCase();
       // Tagline do topo = promoName (se vazio, usa "PACOTE" como neutro)
       const taglineV4 = ((promoName || "PACOTE").trim()).toUpperCase();
