@@ -8,8 +8,8 @@
 
 1. [Arquitetura de Dados (Fluxo)](#1-arquitetura-de-dados-fluxo)
 2. [Leis da Física do Canvas (Regras Inegociáveis)](#2-leis-da-física-do-canvas-regras-inegociáveis)
-3. [Mapeamento das Variantes (V0 → V6)](#3-mapeamento-das-variantes-v0--v6)
-4. [Protocolo de Criação para Novas Variantes (V7+)](#4-protocolo-de-criação-para-novas-variantes-v7)
+3. [Mapeamento das Variantes (V0 → V8)](#3-mapeamento-das-variantes-v0--v8)
+4. [Protocolo de Criação para Novas Variantes (V9+)](#4-protocolo-de-criação-para-novas-variantes-v9)
 5. [Anti-padrões Proibidos (Hall of Shame)](#5-anti-padrões-proibidos)
 6. [Glossário de Helpers Globais](#6-glossário-de-helpers-globais)
 
