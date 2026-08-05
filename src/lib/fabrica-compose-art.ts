@@ -3004,32 +3004,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const resolveV1BenefitIcon = (icon: string | undefined, text: string) => {
         const rawIcon = normalizeV1Key(icon || "");
         const rawText = normalizeV1Key(text);
-        if ([
-          "aviao",
-          "balsa",
-          "bicycle",
-          "cafe-da-manha",
-          "calendar",
-          "carro-sedan-na-frente",
-          "coffe-cup",
-          "enviar",
-          "estacao-de-trem",
-          "food-and-restaurant",
-          "guia-turistico",
-          "kit-de-primeiros-socorros",
-          "motorcycle",
-          "onibus",
-          "pino-de-localizacao-1",
-          "pino-de-localizacao",
-          "placa-do-hotel",
-          "relogio",
-          "taxi-frontal",
-        ].includes(rawIcon)) return rawIcon;
-        if (["bus", "onibus", "transport", "transporte"].includes(rawIcon)) return "bus";
-        if (["map", "pin", "place", "location", "lugar", "lugares", "pino-de-localizacao"].includes(rawIcon)) return "map";
+        if (["bus", "onibus", "transport", "transporte", "carro-sedan-na-frente", "taxi-frontal", "estacao-de-trem", "motorcycle", "bicycle"].includes(rawIcon)) return "bus";
+        if (["map", "pin", "place", "location", "lugar", "lugares", "pino-de-localizacao", "pino-de-localizacao-1"].includes(rawIcon)) return "map";
         if (["guide", "guia", "guia-turistico", "user", "local"].includes(rawIcon)) return "guide";
-        if (["food", "meal", "restaurant", "restaurante", "utensils", "cafe", "cafe-da-manha"].includes(rawIcon)) return "food";
-        if (["hotel", "hospedagem"].includes(rawIcon)) return "hotel";
+        if (["food", "meal", "restaurant", "restaurante", "utensils", "food-and-restaurant", "cafe", "cafe-da-manha", "coffe-cup"].includes(rawIcon)) return "food";
+        if (["hotel", "hospedagem", "placa-do-hotel"].includes(rawIcon)) return "hotel";
+        if (["plane", "aviao", "enviar"].includes(rawIcon)) return "plane";
+        if (["ship", "balsa"].includes(rawIcon)) return "ship";
+        if (["check", "ok", "confirm", "kit-de-primeiros-socorros", "calendar", "relogio"].includes(rawIcon)) return "check";
         if (rawText.includes("transporte") || rawText.includes("onibus")) return "bus";
         if (rawText.includes("lugar") || rawText.includes("roteiro") || rawText.includes("localiza")) return "map";
         if (rawText.includes("guia")) return "guide";
