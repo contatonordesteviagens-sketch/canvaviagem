@@ -2685,8 +2685,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
       benefitsList = benefitsList.slice(0, 6);
       const benefitsCount = Math.max(1, benefitsList.length);
-      // Ajuste cirúrgico V0: espaçamento super compacto (~1px entre ícones de 28px)
-      const benefitLineH = 34;
+      // Ajuste cirúrgico V0: exatos 47px garantem ~2px de gap entre os fundos circulares (diâmetro 44.8px)
+      const benefitLineH = 47;
       const benefitsBlockH = benefitsCount * benefitLineH;
 
       // 3) Altura do bloco preço (agora maior para caber o PIX e prefixo)
@@ -2890,8 +2890,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         : "";
 
       // Medir e centralizar Parcela + Preço + Centavos
-      // Ajuste cirúrgico: tamanho reduzido do preço para caber melhor
-      const priceFs = Math.max(18, Math.round(56 * priceScale)) + 20;
+      // Ajuste cirúrgico: tamanho reduzido do preço para caber melhor, mas ainda forte
+      const priceFs = Math.max(18, Math.round(56 * priceScale)) + 40;
       const instFs = Math.max(12, Math.round(28 * priceScale));
       ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       const pMainW = ctx.measureText(pMainV0).width;
@@ -2913,7 +2913,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillText(pMainV0, startX + instW, py);
       if (pCentsV0) {
         ctx.font = `900 ${instFs}px Inter, Arial, sans-serif`;
-        ctx.fillText(pCentsV0, startX + instW + pMainW, py);
+        // Ajuste cirúrgico: ,90 como superscript no topo direito
+        ctx.fillText(pCentsV0, startX + instW + pMainW, py - priceFs * 0.45);
       }
 
       // Sufixo
