@@ -219,7 +219,7 @@ Sempre que mexer em `shadowBlur`, `globalAlpha`, `transform`, `clip`, **embrulhe
 
 ---
 
-## 4. PROTOCOLO DE CRIAÇÃO PARA NOVAS VARIANTES (V7+)
+## 4. PROTOCOLO DE CRIAÇÃO PARA NOVAS VARIANTES (V9+)
 
 **SOP (Standard Operating Procedure) — 5 passos obrigatórios:**
 
@@ -235,9 +235,10 @@ Preencher integralmente o template `docs/fabrica/TEMPLATE_NOVA_VARIANTE.md`:
 > 🛑 Sem briefing preenchido = PR rejeitado.
 
 ### Passo 2 — Reservar Slot
-1. Confirmar próximo índice livre (atual: **V6**).
-2. Atualizar `TOTAL_VARIANTS` no início de `renderSafeSquareOffer`.
+1. Confirmar próximo índice livre (atual: **V9** — V0 a V8 já estão ocupados).
+2. Atualizar `TOTAL_VARIANTS` (hoje `9`) no início de `renderSafeSquareOffer`.
 3. Criar branch vazio `if (variant === N) { ... }` retornando um canvas de teste (cor sólida) para validar roteamento.
+4. Atualizar o roteador de Experiência (`if (variant === N) return { url: await renderSafeSquareOffer(), variant };`) e a rotação nas telas PT/ES.
 
 ### Passo 3 — Implementar com Tokens (não pixels)
 Todo valor numérico deve ser derivado de `width`/`height` ou de constantes do escopo. Toda string fixa deve passar por i18n (PT/ES). Toda fonte/cor passa pelos helpers globais (`getSafeColor`, `ensureContrast`).
