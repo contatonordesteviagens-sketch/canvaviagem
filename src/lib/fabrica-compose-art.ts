@@ -2687,7 +2687,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
       benefitsList = benefitsList.slice(0, 6);
       const benefitsCount = Math.max(1, benefitsList.length);
-      const benefitLineH = isStory ? (benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34) : (benefitsCount <= 4 ? 36 : 32);
+      // Ajuste cirúrgico: +40px (1cm) de espaçamento extra entre os ícones
+      const benefitLineH = (isStory ? (benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34) : (benefitsCount <= 4 ? 36 : 32)) + 40;
       const benefitsBlockH = benefitsCount * benefitLineH;
 
       // 3) Altura do bloco preço (agora maior para caber o PIX e prefixo)
@@ -2800,8 +2801,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const iconTextGap = 52 * benefitScale;
       ctx.textAlign = "left";
       benefitsList.forEach((b, i) => {
-        const validKey = b.icon && ICON_SYMBOL[b.icon as IconKey] ? b.icon : null;
-        const iconKey = (validKey as IconKey) || (["bus", "hotel", "food", "guide", "star"][i] as IconKey) || "check";
+        // Ajuste cirúrgico: usar exatamente o ícone que o usuário selecionou (sem array aleatório)
+        const iconKey = (b.icon as IconKey) || "check";
         const lineY = benefitsOriginY + 28 * benefitScale + i * benefitLineH * benefitScale;
 
         // Fundo do icone (bolinha preta)
@@ -2891,7 +2892,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         : "";
 
       // Medir e centralizar Parcela + Preço + Centavos
-      const priceFs = Math.max(18, Math.round(56 * priceScale));
+      // Ajuste cirúrgico: aumenta o preço em 2cm (~80px)
+      const priceFs = Math.max(18, Math.round(56 * priceScale)) + 80;
       const instFs = Math.max(12, Math.round(28 * priceScale));
       ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       const pMainW = ctx.measureText(pMainV0).width;
@@ -2944,6 +2946,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const photoH0 = height - topH;
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
+      
+      // Ajuste cirúrgico: Sombra no fundo para destacar a logo e redes sociais
+      const grad = ctx.createLinearGradient(0, height - 160, 0, height);
+      grad.addColorStop(0, "rgba(0,0,0,0)");
+      grad.addColorStop(1, "rgba(0,0,0,0.85)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, height - 160, width, 160);
+
       await drawFinalBranding(
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
