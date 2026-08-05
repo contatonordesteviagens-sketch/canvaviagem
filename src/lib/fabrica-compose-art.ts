@@ -4052,6 +4052,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const v4Primary = primaryColor || "#0B2B7A";
       const v4Secondary = secondaryColor || "#FFE600";
       const v4OnSecondary = ensureContrast(v4Primary, v4Secondary, 0.4); // contraste do texto sobre amarelo
+      const v4OnPrimary = getSafeColor(v4Primary, "#ffffff"); // Texto com contraste dinâmico
       const destinoV4 = (destination || "DESTINO").toUpperCase();
       // Tagline do topo = promoName (se vazio, usa "PACOTE" como neutro)
       const taglineV4 = ((promoName || "PACOTE").trim()).toUpperCase();
@@ -4169,8 +4170,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, taglineV4, cardX + 36, cyV4, cardW - 80, 12);
       cyV4 += tagGap + 56;
 
-      // [TÍTULO/DESTINO] branco, regular (mais leve), maior
-      ctx.fillStyle = "#ffffff";
+      // [TÍTULO/DESTINO] adaptativo com base na cor primária, regular (mais leve), maior
+      ctx.fillStyle = v4OnPrimary;
       let titSize = 72;
       ctx.font = `400 ${titSize}px Inter, Arial, sans-serif`;
       while (ctx.measureText(titleLineV4).width > cardW - 80 && titSize > 36) {
@@ -4218,7 +4219,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // Esquerda
       ctx.textAlign = "left";
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = v4OnPrimary;
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText(leftTopV4, leftX, priceY + 24);
 
@@ -4240,13 +4241,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "left";
 
       // "sem juros" abaixo da pílula
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = v4OnPrimary;
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText(leftBottomV4, leftX, pillY + pillH + 28);
 
       // Direita: R$ + centavos pequenos; valor principal gigante.
       ctx.textAlign = "right";
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = v4OnPrimary;
       // Auto-shrink valor
       const reservedLeftPrice = pillX + pillW + 20;
       const maxValW = rightEdge - reservedLeftPrice - 70; // reserva menor p/ aproximar R$ + valor da pílula
@@ -4283,7 +4284,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // [TOTAL] (opcional)
       if (totalHv4 > 0) {
         ctx.textAlign = "center";
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = v4OnPrimary;
         ctx.font = "600 22px Inter, Arial, sans-serif";
         ctx.fillText(totalStrV4, cxV4, cyV4 + 18);
       }
@@ -4327,6 +4328,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillText("pix", pxIconCx + pixIconSize / 2 + 6, midY + 1);
         ctx.textBaseline = "alphabetic";
       }
+
+      // Ajuste cirúrgico: Sombra na base da foto para V4 também
+      const gradV4 = ctx.createLinearGradient(0, height - 200, 0, height);
+      gradV4.addColorStop(0, "rgba(0,0,0,0)");
+      gradV4.addColorStop(1, "rgba(0,0,0,0.85)");
+      ctx.fillStyle = gradV4;
+      ctx.fillRect(0, height - 200, width, 200);
 
       await drawFinalBranding(
         ctx, width, height, logoDataUrl, 
