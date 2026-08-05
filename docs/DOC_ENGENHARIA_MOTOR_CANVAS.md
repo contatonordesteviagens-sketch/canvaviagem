@@ -186,9 +186,12 @@ Sempre que mexer em `shadowBlur`, `globalAlpha`, `transform`, `clip`, **embrulhe
 
 ---
 
-## 3. MAPEAMENTO DAS VARIANTES (V0 → V6)
+## 3. MAPEAMENTO DAS VARIANTES (V0 → V8)
 
-> `TOTAL_VARIANTS = 6` → índices válidos `0..5`. Atualmente **V6 NÃO existe** no código (slot reservado, cai em V0 por módulo). Documentado abaixo como `🔴 SLOT LIVRE`.
+> `TOTAL_VARIANTS = 9` (linha ~1369 de `src/lib/fabrica-compose-art.ts`) → índices válidos `0..8`. **Todos os 9 branches estão implementados.** Não existe mais slot livre; o próximo índice a criar é **V9**.
+>
+> Ordem física dos branches no arquivo (confirme sempre com `rg -n "if \(variant === N\)"`, os números mudam a cada edição):
+> V8 ~1377 · V6 ~1672 · V3 ~1944 · V0 ~2665 · V1 ~2964 · V2 ~3581 · V4 ~4033 · V5 ~4332 · V7 ~4586.
 
 | # | Apelido | Estrutura visual | Square | Story | wrapTextSafe? |
 |---|---|---|---|---|---|
@@ -198,14 +201,21 @@ Sempre que mexer em `shadowBlur`, `globalAlpha`, `transform`, `clip`, **embrulhe
 | **V3** | CVC Box Amarelo | Foto cobre 100% + box arredondado `secondaryColor` topo-esquerda com PACOTE → destino → dias → preço gigante → faixa Pix | ✅ | ✅ | ❌ (só `safeFillText`) |
 | **V4** | Card Central Vertical | Foto 100% + card vertical centrado: tagline → título → info → preço | ✅ | ✅ (parametrizado) | ❌ |
 | **V5** | Aurora Premium | Foto 100% + overlay gradiente escuro + card horizontal glassmorphism (esquerda: texto / direita: preço) com borda glow | ✅ | ✅ (parametrizado) | ❌ (wrapping próprio inline) |
-| **V6** | 🔴 SLOT LIVRE | **Não implementado.** Reservado para "Split Bottom" (Foto 65% topo / faixa sólida 35% rodapé dividida em 2 colunas). Atualmente cai em V0 silenciosamente. | — | — | — |
+| **V6** | Split Destination Price | ✅ **Implementado** (~1672). Foto no topo e bloco inferior dividido por `splitX`/`photoH`: coluna esquerda com kicker + destino (máx. 2 linhas, nunca perde palavra) + pill de período na `primaryColor`; coluna direita com preço e complemento | ✅ | ✅ (mesmo branch, `format === "story"`) | ❌ (auto-shrink progressivo próprio) |
+| **V7** | Card Compacto 85% | ✅ **Implementado** (~4586). Layout em card com **escala global reduzida em 15%** a pedido do usuário: `const scale = 0.85;` — todas as dimensões (`cardW`, fontes, paddings) são multiplicadas por esse fator. Alterar `scale` reescala a arte inteira | ✅ | ✅ (`isStoryV7`) | ❌ |
+| **V8** | Luxury Experience Deal | ✅ **Implementado** (~1377), a variante mais recente. Foto **full-bleed** com overlay escuro; chamada/headline solta no topo (sem painel); preço em caixa de fundo escuro; benefícios desenhados na cor de acento. Story usa fator `0.76` onde o feed usa `0.85` | ✅ | ✅ (`isStoryV8Luxury`) | ❌ |
 
-> Para liberar V6: implementar `if (variant === 6) { ... }` em `renderSafeSquareOffer` (e equivalente em Experiência) e incrementar `TOTAL_VARIANTS` para 7.
+> Regra de ouro mantida: cada branch é isolado. Corrigir V6/V7/V8 **nunca** justifica editar V0–V5.
 
-### 3.1 Duplicações conhecidas (a remover em refactor futuro)
-- V4 e V5 compartilham 80% da lógica de cálculo de preço (`fmtBRv4`/`fmtBRv5`, `totalMultiplierV4`/`V5`). Extrair `computePriceModel()`.
-- V2 (story) e V2 (square) são dois renderers separados quase idênticos. Extrair `renderV2Core(format)`.
+### 3.1 Duplicações conhecidas (ainda presentes — verificado no código atual)
+- **NÃO foi feito nenhum refactor de unificação.** `computePriceModel()` **não existe** no arquivo; foi apenas uma proposta.
+- V4 e V5 continuam com lógica de preço praticamente idêntica: `fmtBRv4` (~4094) / `fmtBRv5` (~4389), `totalMultiplierV4` (~4104) / `totalMultiplierV5` (~4398).
+- V2 (story) e V2 (square) continuam como renderers separados quase idênticos.
 - V3 (story) e V3 (square) mesmo problema.
+- V6, V7 e V8 também reimplementam sua própria formatação de preço dentro do branch.
+
+> Isso é **intencional por segurança**: a duplicação é o que garante o isolamento entre variantes. Só unifique com um refactor dedicado que valide V0–V8 nos dois formatos.
+
 
 ---
 
