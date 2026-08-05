@@ -1619,9 +1619,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fill();
         ctx.restore();
         
-        // Ensure valid icon key to avoid missing graphics
-        const validKey = item.icon && ICON_SYMBOL[item.icon as IconKey] ? item.icon : null;
-        const iconKey = (validKey as IconKey) || (["bus", "hotel", "food", "guide", "star"][idx] as IconKey) || "check";
+        const iconKey = (item.icon as IconKey) || "check";
         drawMonoIcon(ctx, iconKey, cx, iconY, benefitIconSize, onGold, 1.85);
 
         if (showText) {
