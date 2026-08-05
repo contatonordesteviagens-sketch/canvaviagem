@@ -2685,8 +2685,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
       benefitsList = benefitsList.slice(0, 6);
       const benefitsCount = Math.max(1, benefitsList.length);
-      // Ajuste cirúrgico V0: espaçamento garantido matematicamente (não permite sobreposição)
-      const benefitLineH = (isStory ? (benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34) : (benefitsCount <= 4 ? 36 : 32)) + 40;
+      // Ajuste cirúrgico V0: espaçamento super compacto (~1px entre ícones de 28px)
+      const benefitLineH = 34;
       const benefitsBlockH = benefitsCount * benefitLineH;
 
       // 3) Altura do bloco preço (agora maior para caber o PIX e prefixo)
@@ -2695,10 +2695,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // 4) Altura ADAPTATIVA do painel:
       const badgeH = 60;
-      const topPaddingBeforeTitle = isStory ? 40 : 20;
+      const topPaddingBeforeTitle = isStory ? 20 : 10;
       const titleToContent = isStory ? 50 : 15;
       const bottomPadding = isStory ? 50 : 25;
-      const safeAnchorY = isStory ? safeTop : (logoH + 28);
+      const safeAnchorY = isStory ? safeTop : (logoH + 10);
       
       const topH = Math.min(
         Math.round(height * (isStory ? 0.62 : 0.54)),
@@ -2872,8 +2872,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       })().toString();
 
       ctx.fillStyle = v0OnPanel;
-      ctx.font = `600 ${Math.max(10, Math.round(20 * priceScale))}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, prefixText, priceCenterX, priceBoxY + 30 * priceScale + offsetY, priceBoxW - 20, 14);
+      ctx.font = `600 ${Math.max(10, Math.round(18 * priceScale))}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, prefixText, priceCenterX, priceBoxY + 25 * priceScale + offsetY, priceBoxW - 20, 14);
 
       // Valores e Parcelas
       const priceStrV0 = mainPrice || `${curSym} ${price}`.trim();
@@ -2890,8 +2890,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         : "";
 
       // Medir e centralizar Parcela + Preço + Centavos
-      // Ajuste cirúrgico: aumenta o preço em 2cm (~80px)
-      const priceFs = Math.max(18, Math.round(56 * priceScale)) + 80;
+      // Ajuste cirúrgico: tamanho reduzido do preço para caber melhor
+      const priceFs = Math.max(18, Math.round(56 * priceScale)) + 20;
       const instFs = Math.max(12, Math.round(28 * priceScale));
       ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       const pMainW = ctx.measureText(pMainV0).width;
@@ -2927,10 +2927,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // Pilula PIX
       const pixV0 = (pixBannerText || "").toUpperCase();
       if (pixV0) {
-        const pixFs = Math.max(10, Math.round(16 * priceScale));
+        // Aumentado em ~10%
+        const pixFs = Math.max(10, Math.round(18 * priceScale));
         ctx.font = `800 ${pixFs}px Inter, Arial, sans-serif`;
-        const pixW = ctx.measureText(pixV0).width + 30 * priceScale;
-        const pixH = 34 * priceScale;
+        const pixW = ctx.measureText(pixV0).width + 40 * priceScale;
+        const pixH = 38 * priceScale;
         const pixY = py + 40 * priceScale;
         fillRoundRect(ctx, priceCenterX - pixW/2, pixY, pixW, pixH, 16, v0BadgeBg);
         ctx.fillStyle = v0OnBadge;
