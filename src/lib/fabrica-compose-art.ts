@@ -2685,8 +2685,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
       benefitsList = benefitsList.slice(0, 6);
       const benefitsCount = Math.max(1, benefitsList.length);
-      // Ajuste cirúrgico: +40px (1cm) de espaçamento extra entre os ícones
-      const benefitLineH = (isStory ? (benefitsCount <= 4 ? 38 : 34) : (benefitsCount <= 4 ? 36 : 32)) + 40;
+      // Ajuste cirúrgico V0: espaçamento garantido matematicamente (não permite sobreposição)
+      const benefitLineH = (isStory ? (benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34) : (benefitsCount <= 4 ? 36 : 32)) + 40;
       const benefitsBlockH = benefitsCount * benefitLineH;
 
       // 3) Altura do bloco preço (agora maior para caber o PIX e prefixo)
