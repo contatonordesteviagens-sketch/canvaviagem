@@ -356,8 +356,8 @@ async function drawFinalBranding(
 ) {
   const contactsToDraw: { icon: string; value: string }[] = [];
   // So adiciona contatos que tenham valor preenchido (evita ícones vazios)
-  if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
-  if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
+  if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push({ ...contact1, value: contact1.value.trim() });
+  if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push({ ...contact2, value: contact2.value.trim() });
 
   if (!logoUrl && contactsToDraw.length === 0) return;
 
@@ -1378,8 +1378,24 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const isStoryV8Luxury = format === "story";
       const accent = primaryColor || "#0b8c8f";
       const gold = secondaryColor || "#d9b15f";
-      const onAccent = getSafeColor(accent, "#ffffff");
-      const onGold = getSafeColor(gold, "#1f1605");
+
+      const isColorLight = (c: string) => {
+        try {
+          const cvs = document.createElement('canvas');
+          cvs.width = 1; cvs.height = 1;
+          const tctx = cvs.getContext('2d', { willReadFrequently: true });
+          if(tctx) {
+            tctx.fillStyle = c;
+            tctx.fillRect(0,0,1,1);
+            const d = tctx.getImageData(0,0,1,1).data;
+            return (0.299 * (d[0]/255) + 0.587 * (d[1]/255) + 0.114 * (d[2]/255)) > 0.55;
+          }
+        } catch(e) {}
+        return true;
+      };
+
+      const onAccent = isColorLight(accent) ? "#000000" : "#ffffff";
+      const onGold = isColorLight(gold) ? "#000000" : "#ffffff";
       const pad = Math.round(width * (isStoryV8Luxury ? 0.065 : 0.052));
 
       const crop = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.48);
@@ -1500,8 +1516,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const benefitCount = benefitItems.length;
       const numRows = Math.ceil(benefitCount / 2);
       const cardVerticalPad = Math.round(height * (benefitCount <= 4 ? 0.038 : 0.028));
-      const maxBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.074 : 0.078));
-      const minBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.052 : 0.054));
+      const maxBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.065 : 0.065));
+      const minBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.045 : 0.045));
       const fitBenefitGap = Math.floor((availableBoxH - cardVerticalPad) / Math.max(1, numRows));
       const benefitGap = Math.max(minBenefitGap, Math.min(maxBenefitGap, fitBenefitGap));
       const cardH = Math.min(availableBoxH, numRows * benefitGap + cardVerticalPad);
