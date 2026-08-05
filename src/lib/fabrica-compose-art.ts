@@ -2722,7 +2722,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const badgeFs = Math.max(12, Math.round(24 * twBadges.scale));
       const badgeHS = Math.max(28, Math.round(badgeH * twBadges.scale));
       ctx.font = `800 ${badgeFs}px Inter, Arial, sans-serif`;
-      const badgeGap = Math.round(15 * twBadges.scale);
+      // Ajuste cirúrgico: gap horizontal maior entre os badges (30px)
+      const badgeGap = Math.round(30 * twBadges.scale);
       let totalBadgeW = 0;
       const badgeWidths: number[] = [];
       badges.forEach(text => {
@@ -2732,7 +2733,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       });
       if (badges.length > 0) totalBadgeW += badgeGap * (badges.length - 1);
 
-      const badgeY = safeAnchorY + twBadges.dy;
+      // Ajuste cirúrgico: badges 40px mais para cima (~1cm)
+      const badgeY = safeAnchorY + twBadges.dy - 40;
       let badgeX = (width / 2) - (totalBadgeW / 2) + twBadges.dx;
       const badgeStartX = badgeX;
 
@@ -2947,12 +2949,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
       
-      // Ajuste cirúrgico: Sombra no fundo para destacar a logo e redes sociais
-      const grad = ctx.createLinearGradient(0, height - 160, 0, height);
+      // Ajuste cirúrgico: Sombra mais alta (~1cm a mais) para proteger melhor os textos do rodapé
+      const grad = ctx.createLinearGradient(0, height - 200, 0, height);
       grad.addColorStop(0, "rgba(0,0,0,0)");
       grad.addColorStop(1, "rgba(0,0,0,0.85)");
       ctx.fillStyle = grad;
-      ctx.fillRect(0, height - 160, width, 160);
+      ctx.fillRect(0, height - 200, width, 200);
 
       await drawFinalBranding(
         ctx, width, height, logoDataUrl, 
