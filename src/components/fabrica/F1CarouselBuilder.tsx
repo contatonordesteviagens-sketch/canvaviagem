@@ -2938,6 +2938,8 @@ function ScaledSlidePreview({
   secondary,
   width,
 }: {
+  showPixBanner?: boolean;
+  pixBannerText?: string;
   slide: CarouselSlide;
   index: number;
   total: number;
