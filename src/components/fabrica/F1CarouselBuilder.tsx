@@ -4533,7 +4533,7 @@ export function F1CarouselBuilder({
         <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
           <div className="min-w-0">
             <label className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.12em] text-white/40">
-              {isEs ? "Destino de las fotos" : "Destino das fotos"}
+              {isEs ? "Fotos y objetivos / Imágenes" : "Fotos e objetivos / Imagens"}
             </label>
             <div className="flex gap-2">
               <input
@@ -4803,11 +4803,11 @@ export function F1CarouselBuilder({
 
   return (
     <section className="space-y-4" data-testid="f1-carousel-builder">
-      <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-4 sm:p-5">
+      <div className="rounded-3xl border border-white/[0.08] bg-[#0F0F11]/80 backdrop-blur-2xl p-4 sm:p-6 shadow-2xl transition-all duration-300">
         <div className="flex items-center gap-2 mb-4">
           <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">1</span>
-          <h3 className="text-sm font-bold text-white">
-            {isEs ? "Elige el paquete, cantidad y objetivo" : "Escolha o pacote, quantidade e objetivo"}
+          <h3 className="text-sm font-semibold tracking-tight text-white">
+            {isEs ? "Formato y paquete, cantidad y objetivo" : "Formato e pacote, quantidade e objetivo"}
           </h3>
         </div>
 
@@ -5058,7 +5058,7 @@ export function F1CarouselBuilder({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-3 sm:p-4">
+      <div className="rounded-3xl border border-white/[0.08] bg-[#0F0F11]/80 backdrop-blur-2xl p-4 sm:p-5 shadow-2xl transition-all duration-300">
         {/* Header: título + contador + controles de modo e zoom */}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -5548,7 +5548,7 @@ export function F1CarouselBuilder({
         {/* � �  LEFT: Slide Editor � �  */}
         <div className="order-2 space-y-3 lg:order-1">
           {/* ── Card: Slide being edited ── */}
-          <div className="rounded-2xl border border-white/10 bg-[#0F0F11] overflow-hidden">
+          <div className="rounded-3xl border border-white/[0.08] bg-[#0F0F11]/80 backdrop-blur-2xl overflow-hidden shadow-2xl transition-all duration-300">
             {/* Header bar */}
             <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06]">
               <div className="flex items-center gap-2.5">
@@ -5644,7 +5644,7 @@ export function F1CarouselBuilder({
                 {/* ── SECTION 1: Estilo & Fonte ── */}
                 <div className="px-4 py-3.5 space-y-3">
                   <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                    {isEs ? "Estilo e Tipografía" : "Estilo e Tipografia"}
+                    {isEs ? "Textos y colores / Dirección" : "Textos e cores / Direção"}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {/* Font selector */}
@@ -5971,7 +5971,7 @@ export function F1CarouselBuilder({
                 <div className="px-4 pb-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                      {isEs ? "Descripción" : "Descrição"}
+                      {isEs ? "Cuerpo de texto" : "Corpo de texto"}
                     </p>
                     <div className="flex items-center gap-1.5">
                       <MiniTypographyBar
@@ -6010,7 +6010,7 @@ export function F1CarouselBuilder({
                 <div className="px-4 pb-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                      {isEs ? "Información complementaria (opcional)" : "Informações complementares (opcional)"}
+                      {isEs ? "Texto opcional / Detalles extra" : "Texto opcional / Informações extras"}
                     </p>
                     <div className="flex items-center gap-1.5">
                       <MiniTypographyBar
