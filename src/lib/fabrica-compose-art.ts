@@ -438,10 +438,9 @@ async function drawFinalBranding(
   ctx.shadowOffsetY = 4;
 
   let textRightX = cw - (isStory ? 80 : 60); // Sincronizado com a margem do logo
-  const itemGap = 20; // Aumentado o gap entre ícone e texto
-  const logoEdge = logoUrl ? (padX + lw + bgPad * 2 + 30) : padX;
-  const maxAllowedWidthForContacts = isStory ? (cw * 0.70) : (cw * 0.45);
-
+  const itemGap = 32; // Gap horizontal aumentado entre ícone e texto
+  const logoEdge = logoUrl ? (padX + lw + 40) : padX;
+  
   // Aumentado o espaçamento vertical entre os dois contatos para evitar colisão!
   let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.28) : centerY;
 
@@ -450,9 +449,10 @@ async function drawFinalBranding(
     if (c.icon.startsWith("whatsapp")) displayValue = formatAdPhone(c.value);
     if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
 
-    // Auto-shrink para evitar colisão (Quadro Inteligente de URL Dinâmica unificado)
-    const isWebsite = c.icon.startsWith("website");
-    const maxAllowedWidthPerItem = maxAllowedWidthForContacts * (isWebsite ? 0.75 : 0.95);
+    // Dinamicamente calcular a largura máxima disponível para não encostar no logo
+    const availableWidth = textRightX - logoEdge - itemGap - 60; // 60 extra safe margin for icon
+    const maxAllowedWidthForContacts = isStory ? (cw * 0.70) : (cw * 0.45);
+    const maxAllowedWidthPerItem = Math.min(maxAllowedWidthForContacts, availableWidth);
 
     let currentFontSize = fontSize;
     ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
@@ -469,7 +469,7 @@ async function drawFinalBranding(
 
     await drawAdSocialIcon(ctx, c.icon, iconX, yPos, currentIconSize);
 
-    // Aumentado o pulo para a linha de cima (garantir respiro real para 2 contatos empilhados)
+    // Pulo vertical para o contato de cima
     yPos -= (footerHeight * 0.56);
   }
   ctx.restore();
@@ -1441,7 +1441,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textBaseline = "middle";
 
       const pillH = Math.round(width * (isStoryV8Luxury ? 0.07 : 0.056));
-      const pillY = Math.round(height * (isStoryV8Luxury ? 0.055 : 0.02));
+      const pillY = Math.round(height * (isStoryV8Luxury ? 0.055 : 0.012));
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.027))}px Inter, Arial, sans-serif`;
       const promoW = Math.min(width - pad * 2, Math.max(width * 0.34, ctx.measureText(promoText).width + pillH * 1.55));
       ctx.save();
@@ -1462,7 +1462,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const destinationLines = wrapTextSafe(ctx, destinationText, titleMaxW, 2, Math.round(destBase * 0.54));
       const leadLineH = Math.round(leadSize * 0.94);
       const destLineH = Math.round(destBase * 0.9);
-      const titleStartY = pillY + pillH + Math.round(height * (isStoryV8Luxury ? 0.04 : 0.015)) + leadLineH / 2 - 4;
+      const titleStartY = pillY + pillH + Math.round(height * (isStoryV8Luxury ? 0.04 : 0.005)) + leadLineH / 2 - 4;
 
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.78)";
@@ -1481,7 +1481,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.restore();
 
       const titleBottomY = destStartY + Math.max(0, destinationLines.length - 0.5) * destLineH;
-      const infoY = titleBottomY + Math.round(height * 0.026) - 2;
+      const infoY = titleBottomY + Math.round(height * 0.015) - 2;
       const infoText = periodText || destinationText;
       const infoH = infoText ? Math.round(width * (isStoryV8Luxury ? 0.064 : 0.054)) : 0;
       if (infoText) {
@@ -1492,7 +1492,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, infoText, width / 2, infoY + infoH / 2 + 1, infoW - 32, 12);
       }
 
-      const ctaH = Math.round(width * (isStoryV8Luxury ? 0.074 : 0.062));
+      const ctaH = Math.round(width * (isStoryV8Luxury ? 0.074 : 0.068));
       const brandSafeTop = isStoryV8Luxury ? height - 270 : height - 155;
       const ctaY = Math.min(
         Math.round(height * (isStoryV8Luxury ? 0.76 : 0.85)),
@@ -1501,7 +1501,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       const minContentGap = Math.round(height * 0.035);
       const contentY = Math.max(
-        Math.round(height * (isStoryV8Luxury ? 0.455 : 0.40)),
+        Math.round(height * (isStoryV8Luxury ? 0.455 : 0.46)),
         Math.round(infoY + infoH + minContentGap)
       );
 
@@ -1516,8 +1516,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const benefitCount = benefitItems.length;
       const numRows = Math.ceil(benefitCount / 2);
       const cardVerticalPad = Math.round(height * (benefitCount <= 4 ? 0.038 : 0.028));
-      const maxBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.065 : 0.065));
-      const minBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.045 : 0.045));
+      const maxBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.065 : 0.055));
+      const minBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.045 : 0.035));
       const fitBenefitGap = Math.floor((availableBoxH - cardVerticalPad) / Math.max(1, numRows));
       const benefitGap = Math.max(minBenefitGap, Math.min(maxBenefitGap, fitBenefitGap));
       const cardH = Math.min(availableBoxH, numRows * benefitGap + cardVerticalPad);
@@ -1564,10 +1564,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "left";
       ctx.fillStyle = onAccent;
       ctx.font = `900 ${priceLabelSize}px Inter, Arial, sans-serif`;
-      const priceLabelY = priceBoxY + 32;
+      const priceLabelY = priceBoxY + 38;
       safeFillText(ctx, priceLabel, priceBoxX + 20, priceLabelY, priceBoxW - 40, 12);
 
-      const priceBaseY = priceLabelY + priceMainSize + 6;
+      const priceBaseY = priceLabelY + priceMainSize + 10;
       const priceStartX = priceBoxX + 20;
 
       ctx.save();
@@ -1651,7 +1651,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
       });
 
-      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.034 : 0.031))}px Inter, Arial, sans-serif`;
+      ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.034 : 0.034))}px Inter, Arial, sans-serif`;
       const ctaTextFinal = `${ctaText} ->`;
       const ctaW = Math.min(width - pad * 2, Math.max(width * 0.36, ctx.measureText(ctaTextFinal).width + ctaH * 1.85));
       const ctaX = width / 2 - ctaW / 2;
