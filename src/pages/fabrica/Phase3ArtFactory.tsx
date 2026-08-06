@@ -2154,7 +2154,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-1">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-2">
           <div>
             <label className={labelCls}>Dias / data da viagem</label>
           <div className="relative">
