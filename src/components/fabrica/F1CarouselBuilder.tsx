@@ -193,7 +193,7 @@ const isUserUploadedImage = (value = "") =>
 
 const cleanCarouselText = (value = "") =>
   value
-    .replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s\u2022\u2713\u2714\u2611\u25AA\u25AB\u25A0\u25A1\u2794\u2192\-*]+/gu, "")
+    .replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s•✓✔☑▪▫■□➜→\-*]+/gu, "")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -347,7 +347,7 @@ const carouselCaption = (pacote: Pacote, brand: string, phone: string, isEs: boo
     ? [
         `¿Listo para vivir ${pacote.title}?`,
         pacote.description || "Preparamos una experiencia completa para que disfrutes cada momento.",
-        ...details.map((item) => `⬢ ${item}`),
+        ...details.map((item) => `• ${item}`),
         pacote.price ? `Inversión: ${pacote.price}` : "",
         phone ? `Habla con ${brand} por WhatsApp: ${phone}` : `Habla con ${brand} y reserva tu viaje.`,
         `#viajes #${destinationTag} #turismo #vacaciones`,
@@ -355,7 +355,7 @@ const carouselCaption = (pacote: Pacote, brand: string, phone: string, isEs: boo
     : [
         `Pronto para viver ${pacote.title}?`,
         pacote.description || "Preparamos uma experiência completa para você aproveitar cada momento.",
-        ...details.map((item) => `⬢ ${item}`),
+        ...details.map((item) => `• ${item}`),
         pacote.price ? `Investimento: ${pacote.price}` : "",
         phone ? `Fale com a ${brand} pelo WhatsApp: ${phone}` : `Fale com a ${brand} e reserve sua viagem.`,
         `#viagem #${destinationTag} #turismo #ferias`,
@@ -2100,7 +2100,7 @@ function CarouselCanvas({
         boxSizing: "border-box",
       }}
     >
-      {/* ���� Background Photo & Gradient Overlay (zIndex: 0) ���� */}
+      {/* ── Background Photo & Gradient Overlay (zIndex: 0) ── */}
       <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}>
         {slide.imageUrl && (
           <img
@@ -2133,7 +2133,7 @@ function CarouselCanvas({
         />
       </div>
 
-      {/* ���� Content & Text Boxes (zIndex: 10) ���� */}
+      {/* ── Content & Text Boxes (zIndex: 10) ── */}
       <div
         style={{
           position: "absolute",
@@ -2306,9 +2306,9 @@ function CarouselCanvas({
             )}
           </div>
         ) : (
-          /* ���� CONTENT SLIDES � 3 visual variants ���� */
+          /* ── CONTENT SLIDES — 3 visual variants ── */
           <>
-            {/* ������ VARIANT: IMPACT (default) � full-bleed photo, content at bottom ������ */}
+            {/* ─── VARIANT: IMPACT (default) — full-bleed photo, content at bottom ─── */}
             {(slide.slideVariant === "impact" || !slide.slideVariant) && (
               <div
                 style={{
@@ -2344,7 +2344,7 @@ function CarouselCanvas({
               </div>
             )}
 
-            {/* ������ VARIANT: ITINERARY � photo top ~45%, colored block bottom ������ */}
+            {/* ─── VARIANT: ITINERARY — photo top ~45%, colored block bottom ─── */}
             {slide.slideVariant === "itinerary" && (
               <div style={{ position: "absolute", inset: 0, boxSizing: "border-box" }}>
                 {logo && (
@@ -2385,7 +2385,7 @@ function CarouselCanvas({
               </div>
             )}
 
-            {/* ������ VARIANT: EDITORIAL � useful guide with photo-forward split layout ������ */}
+            {/* ─── VARIANT: EDITORIAL — useful guide with photo-forward split layout ─── */}
             {slide.slideVariant === "editorial" && (
               <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: contentOnRight ? "row-reverse" : "row", alignItems: "stretch" }}>
                 <div
@@ -2430,7 +2430,7 @@ function CarouselCanvas({
               </div>
             )}
 
-            {/* ������ VARIANT: OFERTA � conversion panel using the agency palette ������ */}
+            {/* ─── VARIANT: OFERTA — conversion panel using the agency palette ─── */}
             {slide.slideVariant === "oferta" && (() => {
               const offerTitleSize = isDenseSlide ? 19 : titleLength > 38 ? 22 : ratio < 0.68 ? 25 : 28;
               return (
@@ -2492,7 +2492,7 @@ function CarouselCanvas({
               );
             })()}
 
-            {/* ������ VARIANT: MINIMALIST � quiet service-led composition ������ */}
+            {/* ─── VARIANT: MINIMALIST — quiet service-led composition ─── */}
             {slide.slideVariant === "minimalist" && (
               <div
                 style={{
@@ -2529,7 +2529,7 @@ function CarouselCanvas({
               </div>
             )}
 
-            {/* ������ VARIANT: VIBRANT � FAQ split layout without decorative gradients ������ */}
+            {/* ─── VARIANT: VIBRANT — FAQ split layout without decorative gradients ─── */}
             {slide.slideVariant === "vibrant" && (() => {
               const faqTitleSize = isDenseSlide ? 16 : titleLength > 38 ? 18 : ratio < 0.68 ? 20 : 23;
               return (
@@ -3254,7 +3254,7 @@ function MiniTypographyBar({
                 }}
                 className="text-[9px] text-white/50 hover:text-white px-0.5"
               >
-                �
+                ×
               </button>
             </div>
           )}
@@ -4372,7 +4372,7 @@ export function F1CarouselBuilder({
         const node = exportRefs.current[index];
         if (!node) throw new Error("missing-export-node");
 
-        // ���� 1. Pré-carrega TODAS as imagens como data: URL no nó original ����
+        // ── 1. Pré-carrega TODAS as imagens como data: URL no nó original ──
         const imgNodes = node.querySelectorAll("img");
         await Promise.all(
           Array.from(imgNodes).map(async (img) => {
@@ -4385,10 +4385,10 @@ export function F1CarouselBuilder({
           })
         );
 
-        // ���� 2. Aguarda o browser re-renderizar com as data:URLs ����
+        // ── 2. Aguarda o browser re-renderizar com as data:URLs ──
         await new Promise((resolve) => window.setTimeout(resolve, 400));
 
-        // ���� 3. Traz o nó pro viewport (necessário para html2canvas ver os pixels) ����
+        // ── 3. Traz o nó pro viewport (necessário para html2canvas ver os pixels) ──
         const prevPosition = node.style.position;
         const prevPointerEvents = node.style.pointerEvents;
         const prevZIndex = node.style.zIndex;
@@ -4400,7 +4400,7 @@ export function F1CarouselBuilder({
 
         await new Promise((resolve) => window.setTimeout(resolve, 120));
 
-        // ���� 4. Captura com html2canvas ����
+        // ── 4. Captura com html2canvas ──
         const canvas = await html2canvas(node, {
           backgroundColor: "#08090B",
           useCORS: true,
@@ -4414,12 +4414,12 @@ export function F1CarouselBuilder({
           windowHeight: node.offsetHeight,
         });
 
-        // ���� 5. Restaura posição original ����
+        // ── 5. Restaura posição original ──
         node.style.position = prevPosition;
         node.style.pointerEvents = prevPointerEvents;
         node.style.zIndex = prevZIndex;
 
-        // ���� 6. Baixa a imagem ����
+        // ── 6. Baixa a imagem ──
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png", 1);
         link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
@@ -4710,7 +4710,7 @@ export function F1CarouselBuilder({
                    className="w-full h-28 object-cover rounded-lg" 
                    onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/400x200/1a1a1a/444444?text=Link+Invalido"; }} 
                  />
-                 <p className="text-[10px] text-emerald-400 font-bold mt-1.5"> Imagem carregada via Link</p>
+                 <p className="text-[10px] text-emerald-400 font-bold mt-1.5">✔ Imagem carregada via Link</p>
                </div>
             )}
           </div>
@@ -4722,7 +4722,7 @@ export function F1CarouselBuilder({
   const renderPublishFooterBox = () => {
     return (
       <div className="space-y-4">
-        {/* ���� Ready-to-publish caption ���� */}
+        {/* ── Ready-to-publish caption ── */}
         <div className="rounded-2xl border border-[#F5F906]/20 bg-[#0F0F11] overflow-hidden shadow-lg">
           <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06]">
             <div className="flex items-center gap-2.5">
@@ -4788,7 +4788,7 @@ export function F1CarouselBuilder({
           <RefreshCw className="h-4 w-4" />
           {isEs ? "Nueva variación" : "Nova variação"}
         </button>
-        <button type="button" onClick={downloadAll} disabled={downloading || !qualityReady} title={!qualityReady ? qualityIssues.join(" ⬢ ") : undefined} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:cursor-not-allowed disabled:opacity-40">
+        <button type="button" onClick={downloadAll} disabled={downloading || !qualityReady} title={!qualityReady ? qualityIssues.join(" • ") : undefined} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:cursor-not-allowed disabled:opacity-40">
           <Download className="h-4 w-4" />
           {isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}
         </button>
@@ -4983,8 +4983,8 @@ export function F1CarouselBuilder({
               </legend>
               <div className="mt-1.5 grid grid-cols-2 gap-2">
                 {([
-                  ["feed", Square, "Feed 4:5", "1080 � 1350"],
-                  ["story", Smartphone, "Stories 9:16", "1080 � 1920"],
+                  ["feed", Square, "Feed 4:5", "1080 × 1350"],
+                  ["story", Smartphone, "Stories 9:16", "1080 × 1920"],
                 ] as const).map(([format, Icon, labelText, dimensionsText]) => {
                   const active = carouselFormat === format;
                   return (
@@ -5021,7 +5021,7 @@ export function F1CarouselBuilder({
                 {([
                   ["impact", isEs ? "Inspirar" : "Inspirar", isEs ? "Deseo y experiencia" : "Desejo e experiência"],
                   ["oferta", isEs ? "Oferta" : "Oferta", isEs ? "Valor y conversión" : "Valor e conversão"],
-                  ["editorial", isEs ? "Guía" : "Guia", isEs ? "�atil para guardar" : "�atil para salvar"],
+                  ["editorial", isEs ? "Guía" : "Guia", isEs ? "Útil para guardar" : "Útil para salvar"],
                   ["vibrant", "FAQ", isEs ? "Resuelve objeciones" : "Resolve objeções"],
                   ["minimalist", isEs ? "Confianza" : "Confiança", isEs ? "Claridad y atención" : "Clareza e atendimento"],
                   ["itinerary", isEs ? "Itinerario" : "Roteiro", isEs ? "Ruta y logística" : "Percurso e logística"],
@@ -5162,7 +5162,7 @@ export function F1CarouselBuilder({
                   type="button"
                   onClick={zoomReset}
                   aria-label={isEs ? "Ajustar zoom" : "Ajustar zoom"}
-                  title={`${Math.round(zoomScale * 100)}% � ${isEs ? "clic para resetear" : "clique para redefinir"}`}
+                  title={`${Math.round(zoomScale * 100)}% — ${isEs ? "clic para resetear" : "clique para redefinir"}`}
                   className="min-w-[34px] rounded-lg px-1 py-1 text-[9px] font-bold text-white/40 hover:bg-white/[0.07] hover:text-white"
                 >
                   {Math.round(zoomScale * 100)}%
@@ -5182,7 +5182,7 @@ export function F1CarouselBuilder({
           </div>
         </div>
 
-        {/* ���� MODO: FAIXA HORIZONTAL (ribbon) ���� */}
+        {/* ── MODO: FAIXA HORIZONTAL (ribbon) ── */}
         {viewMode === "ribbon" && (() => {
           const isMobile = typeof window !== "undefined" && window.innerWidth < 420;
           const widthsByCount: Record<CarouselSize, number> = isMobile
@@ -5336,10 +5336,10 @@ export function F1CarouselBuilder({
           );
         })()}
 
-        {/* ���� MODO: GRADE VERTICAL (stack) � uma embaixo da outra ���� */}
+        {/* ── MODO: GRADE VERTICAL (stack) — uma embaixo da outra ── */}
         {viewMode === "stack" && (() => {
           // Redimensionamento dinâmico na grade
-          // 3 slides �  2 colunas grandes | 4 �  2 cols | 5-6 �  3 cols | 7+ �  4 cols
+          // 3 slides → 2 colunas grandes | 4 → 2 cols | 5-6 → 3 cols | 7+ → 4 cols
           const cols = slides.length <= 4 ? 2 : slides.length <= 6 ? 3 : 4;
           const isMobile = typeof window !== "undefined" && window.innerWidth < 420;
           const baseWidth = isMobile ? Math.max(120, 160 - slides.length * 5) : Math.round(Math.max(140, 340 - slides.length * 20));
@@ -5452,7 +5452,7 @@ export function F1CarouselBuilder({
           );
         })()}
 
-        {/* ���� MODO: FOCO � uma imagem grande por vez com setas ���� */}
+        {/* ── MODO: FOCO — uma imagem grande por vez com setas ── */}
         {viewMode === "focus" && (() => {
           const isMobile = typeof window !== "undefined" && window.innerWidth < 420;
           const baseFocusW = isMobile ? window.innerWidth - 64 : 380;
@@ -5545,9 +5545,9 @@ export function F1CarouselBuilder({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
-        {/* �" �"  LEFT: Slide Editor �" �"  */}
+        {/* � �  LEFT: Slide Editor � �  */}
         <div className="order-2 space-y-3 lg:order-1">
-          {/* ���� Card: Slide being edited ���� */}
+          {/* ── Card: Slide being edited ── */}
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] overflow-hidden">
             {/* Header bar */}
             <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06]">
@@ -5641,7 +5641,7 @@ export function F1CarouselBuilder({
             {activeSlide && !activeCoverIsProtected && (
               <div className="divide-y divide-white/[0.06]">
 
-                {/* ���� SECTION 1: Estilo & Fonte ���� */}
+                {/* ── SECTION 1: Estilo & Fonte ── */}
                 <div className="px-4 py-3.5 space-y-3">
                   <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
                     {isEs ? "Estilo e Tipografía" : "Estilo e Tipografia"}
@@ -5658,12 +5658,12 @@ export function F1CarouselBuilder({
                         aria-label={isEs ? "Tipo de letra" : "Família da fonte"}
                         className="w-full rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-[11px] font-bold text-white outline-none focus:border-[#F5F906] focus:ring-2 focus:ring-[#F5F906]/15 transition-all cursor-pointer"
                       >
-                        <option value="Inter">Inter � Moderno</option>
-                        <option value="Montserrat">Montserrat � Elegante</option>
-                        <option value="Poppins">Poppins � Geométrico</option>
-                        <option value="Outfit">Outfit � Vibrante</option>
-                        <option value="Playfair Display">Playfair � Luxo</option>
-                        <option value="Roboto">Roboto � Clássica</option>
+                        <option value="Inter">Inter — Moderno</option>
+                        <option value="Montserrat">Montserrat — Elegante</option>
+                        <option value="Poppins">Poppins — Geométrico</option>
+                        <option value="Outfit">Outfit — Vibrante</option>
+                        <option value="Playfair Display">Playfair — Luxo</option>
+                        <option value="Roboto">Roboto — Clássica</option>
                       </select>
                     </div>
                     {/* Shadow toggle */}
@@ -5722,7 +5722,7 @@ export function F1CarouselBuilder({
                   )}
                 </div>
 
-                {/* ���� SECTION 2: Selo / Etiqueta ���� */}
+                {/* ── SECTION 2: Selo / Etiqueta ── */}
                 <div className="px-4 py-3.5 space-y-3">
                   <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
                     {isEs ? "Etiqueta opcional" : "Selo opcional"}
@@ -5736,7 +5736,7 @@ export function F1CarouselBuilder({
                   />
                   {/* Pill suggestions */}
                   <div className="flex flex-wrap gap-1.5">
-                    {["EXPERI�`NCIA", "ROTEIRO", "GUIA", "INCLUI", "DICA"].map((pill) => (
+                    {["EXPERIÊNCIA", "ROTEIRO", "GUIA", "INCLUI", "DICA"].map((pill) => (
                       <button
                         key={pill}
                         type="button"
@@ -5917,7 +5917,7 @@ export function F1CarouselBuilder({
 
                 {activeSlide.kind !== "closing" ? (
                   <>
-                    {/* ���� SECTION 3: Título ���� */}
+                    {/* ── SECTION 3: Título ── */}
                     <div className="px-4 py-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
@@ -5967,7 +5967,7 @@ export function F1CarouselBuilder({
                   )}
                 </div>
 
-                {/* ���� SECTION 4: Descrição Curta ���� */}
+                {/* ── SECTION 4: Descrição Curta ── */}
                 <div className="px-4 pb-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
@@ -6006,7 +6006,7 @@ export function F1CarouselBuilder({
                   />
                 </div>
 
-                {/* ���� SECTION 5: Descrição Inferior (bullets) ���� */}
+                {/* ── SECTION 5: Descrição Inferior (bullets) ── */}
                 <div className="px-4 pb-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
@@ -6055,7 +6055,7 @@ export function F1CarouselBuilder({
                 </div>
               </>
                 ) : (
-                  /* ���� Closing slide fields ���� */
+                  /* ── Closing slide fields ── */
                   <div className="divide-y divide-white/[0.06]">
                     <div className="px-4 py-3.5 space-y-2">
                       <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
