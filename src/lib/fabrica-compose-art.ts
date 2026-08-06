@@ -1538,7 +1538,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ]).slice(0, 6);
 
       const boxBottomGap = Math.round(height * (isStoryV8Luxury ? 0.05 : 0.03));
-
+      const availableBoxH = Math.max(150, ctaY - contentY - boxBottomGap);
+      const benefitCount = benefitItems.length;
+      const numRows = Math.ceil(benefitCount / 2);
 
       const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
       const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
@@ -1558,7 +1560,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       );
       
       const cardH = priceBoxH;
-
+      const boxBottomGap = Math.round(height * (isStoryV8Luxury ? 0.05 : 0.03));
       const boxY = Math.max(contentY, ctaY - cardH - boxBottomGap);
       const cardY = boxY;
       const priceBoxY = boxY;
