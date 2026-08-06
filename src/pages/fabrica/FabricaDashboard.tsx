@@ -1092,41 +1092,41 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             </div>
 
             {/* Cards de contagem */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <div 
                 onClick={() => onNavigate?.("phase", 1)}
-                className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center"
               >
-                <div className="w-8 h-8 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center mx-auto mb-2">
-                  <ImageIcon className="w-4 h-4" />
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center mb-1.5 sm:mb-2">
+                  <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
-                <div className="text-2xl font-black text-white leading-none">{state.allGeneratedAdImages?.length || 0}</div>
-                <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Imagens geradas</div>
+                <div className="text-xl sm:text-2xl font-black text-white leading-none">{state.allGeneratedAdImages?.length || 0}</div>
+                <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Imagens</div>
               </div>
               <div 
                 onClick={() => onNavigate?.("phase", 3)}
-                className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center"
               >
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-2">
-                  <Globe className="w-4 h-4" />
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-1.5 sm:mb-2">
+                  <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
-                <div className="text-2xl font-black text-white leading-none">{publishedSites.length}</div>
-                <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Sites publicados</div>
+                <div className="text-xl sm:text-2xl font-black text-white leading-none">{publishedSites.length}</div>
+                <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Sites</div>
                 {publishedSites.length > 0 && (
-                   <div className="text-[9px] text-zinc-500/80 mb-2 leading-tight">
+                   <div className="text-[7.5px] sm:text-[9px] text-zinc-500/80 mt-2 leading-tight hidden sm:block">
                      Dica: Para editar um projeto, selecione-o na lista <b>"EDITAR PROJETOS"</b> no topo da página.
                    </div>
                 )}
               </div>
               <div 
                 onClick={() => onNavigate?.("phase", 4)}
-                className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-amber-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-amber-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center"
               >
-                <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto mb-2">
-                  <Package className="w-4 h-4" />
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-1.5 sm:mb-2">
+                  <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
-                <div className="text-2xl font-black text-white leading-none">{realLeadsCount}</div>
-                <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Leads capturados</div>
+                <div className="text-xl sm:text-2xl font-black text-white leading-none">{realLeadsCount}</div>
+                <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Leads</div>
               </div>
             </div>
 
