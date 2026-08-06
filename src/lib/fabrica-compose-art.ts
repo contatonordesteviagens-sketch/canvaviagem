@@ -1564,7 +1564,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const priceBoxY = boxY;
 
       const numRows = 2; // Sempre 2 linhas
-      const numCols = Math.ceil(benefitItems.length / 2); // 1, 2 ou 3 colunas dinâmicas!
+      let numCols = Math.ceil(benefitItems.length / 2); // 1, 2 ou 3 colunas dinâmicas!
+      if (benefitItems.length === 5) {
+        numCols = 2; // Mantém a caixa estreita para formar o "dado de 5" no centro!
+      }
       
       const benefitIconSize = Math.round(cardH * 0.22); // Tamanho proporcional a altura da caixa
       const benefitBubbleR = Math.round(benefitIconSize * 1.05);
@@ -1607,11 +1610,28 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       ctx.textAlign = "center";
       benefitItems.forEach((item, idx) => {
-        // Preencher em colunas verticais para a grade ser sempre reta da esquerda pra direita!
-        const col = Math.floor(idx / 2);
-        const row = idx % 2;
-        let cx = gridStartX + tightCellW * (col + 0.5);
-        const cy = gridStartY + tightSlotH * (row + 0.5);
+        let cx = 0;
+        let cy = 0;
+
+        if (benefitItems.length === 5) {
+          if (idx < 4) {
+            // 4 primeiros formam um quadrado 2x2 nas bordas
+            const col = idx % 2;
+            const row = Math.floor(idx / 2);
+            cx = gridStartX + tightCellW * (col + 0.5);
+            cy = gridStartY + tightSlotH * (row + 0.5);
+          } else {
+            // O 5º ícone fica exatamente no "X" imaginário do centro!
+            cx = gridStartX + tightCellW;
+            cy = gridStartY + tightSlotH;
+          }
+        } else {
+          // Preencher normal da esquerda pra direita, descendo as linhas
+          const col = idx % numCols;
+          const row = Math.floor(idx / numCols);
+          cx = gridStartX + tightCellW * (col + 0.5);
+          cy = gridStartY + tightSlotH * (row + 0.5);
+        }
 
         ctx.save();
         ctx.fillStyle = "rgba(0,0,0,0.105)";
