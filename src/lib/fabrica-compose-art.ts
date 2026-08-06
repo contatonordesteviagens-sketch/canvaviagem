@@ -1581,11 +1581,21 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const overlap = Math.round(width * 0.045); // Amarelo em cima do preto
       const blackPadX = Math.round(width * 0.035);
       
-      const priceBoxW = Math.round(width * (
+      ctx.save();
+      ctx.font = `900 ${priceSmallSize}px Inter, Arial, sans-serif`;
+      const symW = priceSymbol ? ctx.measureText(priceSymbol).width + 8 : 0;
+      const centsW = hasCents ? ctx.measureText(priceCents).width : 0;
+      ctx.font = `900 ${priceMainSize}px Inter, Arial, sans-serif`;
+      const mainW = ctx.measureText(priceMain).width + 4;
+      ctx.restore();
+      const measuredPriceW = 20 + symW + mainW + centsW + 20;
+
+      const priceBoxBaseW = Math.round(width * (
         hasCents ? (isStoryV8Luxury ? 0.32 : 0.30)
                  : hasTotalLine ? (isStoryV8Luxury ? 0.28 : 0.26)
                                 : (isStoryV8Luxury ? 0.25 : 0.24)
       ));
+      const priceBoxW = Math.max(priceBoxBaseW, measuredPriceW);
       
       const cardW = overlap + blackPadX * 2 + gridW; // Cresce dinamicamente dependendo da qtd de ícones!
       
