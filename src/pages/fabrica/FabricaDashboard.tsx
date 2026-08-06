@@ -1537,8 +1537,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                         </div>
                       )}
                     </div>
-                  ))
-                )}
+                  ))}
               </div>
 
               {/* Banner indicator */}
