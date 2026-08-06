@@ -1548,42 +1548,90 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const priceCents = (priceMatch?.[3] || "").trim();
       const hasCents = !!priceCents && !hideCents;
       const hasTotalLine = rawShowTotal !== false && !!totalOverride && totalOverride.trim() !== "";
-      const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.085 : 0.082));
+      
+      const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.075 : 0.072)); 
       const priceSmallSize = Math.round(priceMainSize * 0.46);
-      const priceLabelSize = Math.round(width * (isStoryV8Luxury ? 0.027 : 0.024));
-      const suffixSize = Math.round(width * (isStoryV8Luxury ? 0.024 : 0.022));
-      const totalSize = Math.round(width * 0.0235);
+      const priceLabelSize = Math.round(width * (isStoryV8Luxury ? 0.024 : 0.022));
+      const suffixSize = Math.round(width * (isStoryV8Luxury ? 0.022 : 0.020));
+      const totalSize = Math.round(width * 0.020);
       
       const priceBoxH = Math.round(
         20 + priceLabelSize + 8 + priceMainSize + (suffixText ? 8 + suffixSize : 0) + (hasTotalLine ? 8 + totalSize : 0) + 16
       );
       
-      // FORÇAR a altura do quadro de benefícios para ser EXATAMENTE igual a do quadro de preço!
       const cardH = priceBoxH;
-      // Posicionar AMBOS na mesma altura exata e linha reta
-      const cardY = Math.max(contentY, ctaY - cardH - boxBottomGap);
-      const priceBoxY = cardY;
+      const boxBottomGap = Math.round(height * (isStoryV8Luxury ? 0.05 : 0.03));
+      const boxY = Math.max(contentY, ctaY - cardH - boxBottomGap);
+      const cardY = boxY;
+      const priceBoxY = boxY;
 
-      const priceBoxBaseW = Math.round(width * (
-        hasCents
-          ? (isStoryV8Luxury ? 0.36 : 0.32)
-          : hasTotalLine
-            ? (isStoryV8Luxury ? 0.33 : 0.30)
-            : (isStoryV8Luxury ? 0.30 : 0.28)
+      const numRows = 2; // Sempre 2 linhas
+      const numCols = Math.ceil(benefitItems.length / 2); // 1, 2 ou 3 colunas dinâmicas!
+      
+      const benefitIconSize = Math.round(cardH * 0.22); // Tamanho proporcional a altura da caixa
+      const benefitBubbleR = Math.round(benefitIconSize * 1.05);
+
+      // Calculando um grid compacto para agrupar os ícones
+      const tightCellW = benefitIconSize * 2.6;
+      const tightSlotH = benefitIconSize * 2.6;
+      const gridW = tightCellW * numCols;
+      const gridH = tightSlotH * numRows;
+      
+      const overlap = Math.round(width * 0.045); // Amarelo em cima do preto
+      const blackPadX = Math.round(width * 0.035);
+      
+      const priceBoxW = Math.round(width * (
+        hasCents ? (isStoryV8Luxury ? 0.32 : 0.30)
+                 : hasTotalLine ? (isStoryV8Luxury ? 0.28 : 0.26)
+                                : (isStoryV8Luxury ? 0.25 : 0.24)
       ));
-      const priceBoxW = priceBoxBaseW;
-
-      const cardW = Math.round(width * (isStoryV8Luxury ? 0.33 : 0.28));
-      const gap = Math.round(width * 0.022);
-      const totalBoxesW = priceBoxW + gap + cardW;
-      const startX = (width - totalBoxesW) / 2 - (isStoryV8Luxury ? 0 : 20);
+      
+      const cardW = overlap + blackPadX * 2 + gridW; // Cresce dinamicamente dependendo da qtd de ícones!
+      
+      const totalBoxesW = priceBoxW + cardW - overlap;
+      const startX = (width - totalBoxesW) / 2;
       const priceBoxX = startX;
-      const cardX = priceBoxX + priceBoxW + gap;
+      const cardX = priceBoxX + priceBoxW - overlap; // Começa por debaixo do amarelo!
 
+      // 1. DESENHAR O BLOCO PRETO (FICA ATRÁS)
       ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.38)";
+      ctx.shadowColor = "rgba(0,0,0,0.5)";
       ctx.shadowBlur = 24;
-      ctx.shadowOffsetY = 9;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 15; // Sombra SÓ embaixo!
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, 24, gold);
+      ctx.restore();
+
+      // 2. DESENHAR OS ÍCONES (Alinhados na parte livre do bloco preto)
+      const visibleBlackW = cardW - overlap;
+      const gridStartX = cardX + overlap + visibleBlackW / 2 - gridW / 2;
+      const gridStartY = cardY + cardH / 2 - gridH / 2;
+
+      ctx.textAlign = "center";
+      benefitItems.forEach((item, idx) => {
+        // Preencher em colunas verticais para a grade ser sempre reta da esquerda pra direita!
+        const col = Math.floor(idx / 2);
+        const row = idx % 2;
+        let cx = gridStartX + tightCellW * (col + 0.5);
+        const cy = gridStartY + tightSlotH * (row + 0.5);
+
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,0.105)";
+        ctx.beginPath();
+        ctx.arc(cx, cy, benefitBubbleR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        
+        const iconKey = (item.icon as IconKey) || "check";
+        drawMonoIcon(ctx, iconKey, cx, cy, benefitIconSize, onGold, 1.85);
+      });
+
+      // 3. DESENHAR O BLOCO AMARELO (FICA NA FRENTE E SOBREPÕE O PRETO)
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.5)";
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 15; // Sombra SÓ embaixo!
       fillRoundRect(ctx, priceBoxX, priceBoxY, priceBoxW, priceBoxH, 26, accent);
       ctx.restore();
 
@@ -1625,59 +1673,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, totalOverride.trim(), priceBoxX + 20, priceBaseY + 36 + suffixSize + 10, priceBoxW - 40, 10);
       }
 
-      ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.34)";
-      ctx.shadowBlur = 28;
-      ctx.shadowOffsetY = 12;
-      fillRoundRect(ctx, cardX, cardY, cardW, cardH, 24, gold);
-      ctx.restore();
-
-      const benefitPadX = Math.round(cardW * 0.11);
-      const benefitPadY = Math.max(16, Math.round(cardH * 0.08));
-      const numCols = 2; // Sempre 2 colunas para o grid de ícones (dado que são no máx 6 ícones)
-      const showText = false; // Forçado para nunca exibir texto e deixar os ícones limpos
-      const benefitIconSize = Math.round(width * 0.045); // Maior para dar destaque já que não tem texto
-      const benefitBubbleR = Math.round(benefitIconSize * 1.08);
-
-      // Calculando um grid compacto para agrupar os ícones no centro do quadro preto
-      // Multiplicador 2.3 garante que as bolinhas não se sobreponham (diâmetro é ~2.16x)
-      const tightCellW = benefitIconSize * 2.3;
-      const tightSlotH = benefitIconSize * 2.3;
-      const gridW = tightCellW * numCols;
-      const gridH = tightSlotH * numRows;
-      const gridStartX = cardX + cardW / 2 - gridW / 2;
-      const gridStartY = cardY + cardH / 2 - gridH / 2;
-
-      ctx.textAlign = "center";
-      benefitItems.forEach((item, idx) => {
-        const row = Math.floor(idx / 2);
-        const col = idx % 2;
-        let cx = gridStartX + tightCellW * (col + 0.5);
-        if (idx === benefitItems.length - 1 && benefitItems.length % 2 !== 0) {
-          cx = cardX + cardW / 2;
-        }
-        const cy = gridStartY + tightSlotH * (row + 0.5);
-
-        ctx.save();
-        ctx.fillStyle = "rgba(0,0,0,0.105)";
-        ctx.beginPath();
-        ctx.arc(cx, cy, benefitBubbleR, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-        
-        const iconKey = (item.icon as IconKey) || "check";
-        drawMonoIcon(ctx, iconKey, cx, cy, benefitIconSize, onGold, 1.85);
-      });
-
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.034 : 0.034))}px Inter, Arial, sans-serif`;
       const ctaTextFinal = `${ctaText} ->`;
       const ctaW = Math.min(width - pad * 2, Math.max(width * 0.36, ctx.measureText(ctaTextFinal).width + ctaH * 1.85));
       const ctaX = width / 2 - ctaW / 2;
 
       ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.35)";
+      ctx.shadowColor = "rgba(0,0,0,0.5)";
       ctx.shadowBlur = 18;
-      ctx.shadowOffsetY = 8;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 15; // Sombra apenas inferior
       fillRoundRect(ctx, ctaX, ctaY, ctaW, ctaH, 16, gold);
       ctx.restore();
 
