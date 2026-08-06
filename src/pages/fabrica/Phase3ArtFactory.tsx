@@ -2886,12 +2886,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               color: "#0A0A0A",
             }}
           >
-            <span>Avançar para Fase 2 — Seu Site</span>
+            <span>Avançar para Carrossel</span>
             <ArrowRight className="w-5 h-5" />
           </button>
-          <p className="text-center text-[11px] text-white/30 mt-2">
-            Crie a página de vendas da sua agência no próximo passo
-          </p>
         </div>
       </div>
         </>
