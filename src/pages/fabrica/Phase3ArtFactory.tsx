@@ -2116,7 +2116,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             </div>
           </div>
 
-          <div className="sm:col-span-2">
+          <div className="col-span-2">
             <label className={labelCls}>Título do anúncio</label>
             <div className="relative">
               <input
