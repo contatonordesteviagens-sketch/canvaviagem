@@ -857,7 +857,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
         <div className="md:col-span-5 space-y-6">
           
           {/* CARD 1: IDENTIDADE & PERFIL DA AGÊNCIA */}
-          <div className="bg-[#1c1c1e]/60 border border-white/10 border-t-white/20 rounded-3xl p-6 backdrop-blur-2xl shadow-2xl shadow-black/50 space-y-5">
+          <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
             <h3 
               onClick={() => onNavigate?.("phase", 5)}
               className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 mb-2 cursor-pointer hover:text-amber-400 transition-colors group"
@@ -1082,7 +1082,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           </div>
 
           {/* CARD RESUMO & HISTÓRICO DO USUÁRIO */}
-          <div className="mt-6 bg-[#1c1c1e]/60 border border-white/10 border-t-white/20 rounded-3xl p-6 backdrop-blur-2xl shadow-2xl shadow-black/50 space-y-5">
+          <div className="mt-6 bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
@@ -1095,22 +1095,22 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <div 
                 onClick={() => onNavigate?.("phase", 1)}
-                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-150 ease-out hover:scale-[1.02] active:scale-[0.97] flex flex-col items-center justify-center"
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center"
               >
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center mb-1.5 sm:mb-2">
                   <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
-                <div className="text-xl sm:text-2xl font-black text-white leading-none tracking-tight">{state.allGeneratedAdImages?.length || 0}</div>
+                <div className="text-xl sm:text-2xl font-black text-white leading-none">{state.allGeneratedAdImages?.length || 0}</div>
                 <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Imagens</div>
               </div>
               <div 
                 onClick={() => onNavigate?.("phase", 3)}
-                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-150 ease-out hover:scale-[1.02] active:scale-[0.97] flex flex-col items-center justify-center"
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center"
               >
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-1.5 sm:mb-2">
                   <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
-                <div className="text-xl sm:text-2xl font-black text-white leading-none tracking-tight">{publishedSites.length}</div>
+                <div className="text-xl sm:text-2xl font-black text-white leading-none">{publishedSites.length}</div>
                 <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Sites</div>
                 {publishedSites.length > 0 && (
                    <div className="text-[7.5px] sm:text-[9px] text-zinc-500/80 mt-2 leading-tight hidden sm:block">
@@ -1120,12 +1120,12 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               </div>
               <div 
                 onClick={() => onNavigate?.("phase", 4)}
-                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-amber-500/30 transition-all duration-150 ease-out hover:scale-[1.02] active:scale-[0.97] flex flex-col items-center justify-center"
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-amber-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center"
               >
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-1.5 sm:mb-2">
                   <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
-                <div className="text-xl sm:text-2xl font-black text-white leading-none tracking-tight">{realLeadsCount}</div>
+                <div className="text-xl sm:text-2xl font-black text-white leading-none">{realLeadsCount}</div>
                 <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Leads</div>
               </div>
             </div>
@@ -1288,7 +1288,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           {false && <BusinessExtractor onExtract={handleExtractorData} />}
 
           {/* DYNAMIC CARD: SEUS PACOTES */}
-          <div className="bg-[#1c1c1e]/60 border border-white/10 border-t-white/20 rounded-3xl p-6 backdrop-blur-2xl shadow-2xl shadow-black/50 space-y-6">
+          <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 
@@ -1560,4 +1560,3 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     </div>
   );
 };
-
