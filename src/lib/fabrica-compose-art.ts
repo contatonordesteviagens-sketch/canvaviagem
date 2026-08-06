@@ -1558,7 +1558,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       );
       
       const cardH = priceBoxH;
-      const boxBottomGap = Math.round(height * (isStoryV8Luxury ? 0.05 : 0.03));
+
       const boxY = Math.max(contentY, ctaY - cardH - boxBottomGap);
       const cardY = boxY;
       const priceBoxY = boxY;
