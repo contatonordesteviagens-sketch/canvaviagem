@@ -193,7 +193,7 @@ const isUserUploadedImage = (value = "") =>
 
 const cleanCarouselText = (value = "") =>
   value
-    .replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\sâ€¢âœ“âœ”â˜‘â–ªâ–«â– â–¡âžœâ†’\-*]+/gu, "")
+    .replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s\u2022\u2713\u2714\u2611\u25AA\u25AB\u25A0\u25A1\u2794\u2192\-*]+/gu, "")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -345,17 +345,17 @@ const carouselCaption = (pacote: Pacote, brand: string, phone: string, isEs: boo
   const destinationTag = normalizeName(pacote.title).replace(/[^a-z0-9]+/g, "");
   const lines = isEs
     ? [
-        `Â¿Listo para vivir ${pacote.title}?`,
+        `¿Listo para vivir ${pacote.title}?`,
         pacote.description || "Preparamos una experiencia completa para que disfrutes cada momento.",
-        ...details.map((item) => `â€¢ ${item}`),
-        pacote.price ? `InversiÃ³n: ${pacote.price}` : "",
+        ...details.map((item) => `⬢ ${item}`),
+        pacote.price ? `Inversión: ${pacote.price}` : "",
         phone ? `Habla con ${brand} por WhatsApp: ${phone}` : `Habla con ${brand} y reserva tu viaje.`,
         `#viajes #${destinationTag} #turismo #vacaciones`,
       ]
     : [
         `Pronto para viver ${pacote.title}?`,
-        pacote.description || "Preparamos uma experiÃªncia completa para vocÃª aproveitar cada momento.",
-        ...details.map((item) => `â€¢ ${item}`),
+        pacote.description || "Preparamos uma experiência completa para você aproveitar cada momento.",
+        ...details.map((item) => `⬢ ${item}`),
         pacote.price ? `Investimento: ${pacote.price}` : "",
         phone ? `Fale com a ${brand} pelo WhatsApp: ${phone}` : `Fale com a ${brand} e reserve sua viagem.`,
         `#viagem #${destinationTag} #turismo #ferias`,
@@ -385,21 +385,21 @@ const phoneLabel = (dialCode: string, phone: string) => {
 function coverTitleSuggestions(pacote: Pacote, isEs: boolean): string[] {
   const destination =
     cleanCarouselText(pacote.title).replace(/^(pacote|paquete)\s+/i, "") ||
-    (isEs ? "tu prÃ³ximo destino" : "seu prÃ³ximo destino");
+    (isEs ? "tu próximo destino" : "seu próximo destino");
   const suggestions = isEs
     ? [
         `Descubre ${destination}`,
         `${destination}: el viaje que mereces`,
-        `Tu prÃ³xima historia comienza en ${destination}`,
-        `Vive dÃ­as inolvidables en ${destination}`,
-        `${destination} como siempre lo soÃ±aste`,
+        `Tu próxima historia comienza en ${destination}`,
+        `Vive días inolvidables en ${destination}`,
+        `${destination} como siempre lo soñaste`,
       ]
     : [
         `Descubra ${destination}`,
-        `${destination}: a viagem que vocÃª merece`,
-        `Sua prÃ³xima histÃ³ria comeÃ§a em ${destination}`,
-        `Viva dias inesquecÃ­veis em ${destination}`,
-        `${destination} do jeito que vocÃª sempre sonhou`,
+        `${destination}: a viagem que você merece`,
+        `Sua próxima história começa em ${destination}`,
+        `Viva dias inesquecíveis em ${destination}`,
+        `${destination} do jeito que você sempre sonhou`,
       ];
 
   return suggestions.map((title) =>
@@ -418,8 +418,8 @@ function contentPresets(
   const itinerary = compact(pacote.itinerary || []).map(cleanCarouselText).filter(Boolean);
   const planning = compact([
     pacote.travelDates && `${isEs ? "Fechas" : "Datas"}: ${pacote.travelDates}`,
-    pacote.duration && `${isEs ? "DuraciÃ³n" : "DuraÃ§Ã£o"}: ${pacote.duration}`,
-    pacote.departureLocation && `${isEs ? "Salida" : "SaÃ­da"}: ${pacote.departureLocation}`,
+    pacote.duration && `${isEs ? "Duración" : "Duração"}: ${pacote.duration}`,
+    pacote.departureLocation && `${isEs ? "Salida" : "Saída"}: ${pacote.departureLocation}`,
     pacote.accommodation && `${isEs ? "Alojamiento" : "Hospedagem"}: ${pacote.accommodation}`,
     pacote.price && `${isEs ? "Valor" : "Valor"}: ${pacote.price}`,
     pacote.paymentTerms && `${isEs ? "Pago" : "Pagamento"}: ${pacote.paymentTerms}`,
@@ -448,14 +448,14 @@ function contentPresets(
   }>>> = {
     impact: [
       {
-        label: isEs ? "InspÃ­rate" : "Imagine-se aqui",
+        label: isEs ? "Inspírate" : "Imagine-se aqui",
         title: destination,
-        body: description || (isEs ? "Un viaje para salir de la rutina y coleccionar buenos recuerdos." : "Uma viagem para sair da rotina e colecionar boas memÃ³rias."),
+        body: description || (isEs ? "Un viaje para salir de la rutina y coleccionar buenos recuerdos." : "Uma viagem para sair da rotina e colecionar boas memórias."),
         bullets: highlights.slice(0, 3),
       },
       {
-        label: isEs ? "La experiencia" : "O que vocÃª vai viver",
-        title: pacote.subtitle ? cleanCarouselText(pacote.subtitle) : (isEs ? "DÃ­as para recordar" : "Dias para lembrar"),
+        label: isEs ? "La experiencia" : "O que você vai viver",
+        title: pacote.subtitle ? cleanCarouselText(pacote.subtitle) : (isEs ? "Días para recordar" : "Dias para lembrar"),
         body: shortDescription,
         bullets: route.slice(0, 4),
       },
@@ -464,14 +464,14 @@ function contentPresets(
           ? (isEs ? "Todo organizado" : "Tudo organizado")
           : (isEs ? "Destacados del viaje" : "Destaques da viagem"),
         title: hasIncludedItems
-          ? (isEs ? "Viaja con mÃ¡s tranquilidad" : "Viaje com mais tranquilidade")
-          : (isEs ? "QuÃ© hace especial este viaje" : "O que torna esta viagem especial"),
+          ? (isEs ? "Viaja con más tranquilidad" : "Viaje com mais tranquilidade")
+          : (isEs ? "Qué hace especial este viaje" : "O que torna esta viagem especial"),
         body: cleanBody(pacote.importantNotes, 100),
         bullets: packageFacts,
       },
       {
-        label: isEs ? "Tu prÃ³xima historia" : "Sua prÃ³xima histÃ³ria",
-        title: isEs ? `Â¿Nos vemos en ${destination}?` : `Nos vemos em ${destination}?`,
+        label: isEs ? "Tu próxima historia" : "Sua próxima história",
+        title: isEs ? `¿Nos vemos en ${destination}?` : `Nos vemos em ${destination}?`,
         body: isEs ? "Guarda este post y habla con nuestro equipo cuando quieras planificar." : "Salve este post e fale com nossa equipe quando quiser planejar.",
         bullets: priceAndTerms,
       },
@@ -479,56 +479,56 @@ function contentPresets(
     itinerary: [
       {
         label: isEs ? "Ruta resumida" : "Roteiro resumido",
-        title: isEs ? `AsÃ­ serÃ¡ ${destination}` : `Assim serÃ¡ ${destination}`,
+        title: isEs ? `Así será ${destination}` : `Assim será ${destination}`,
         body: shortDescription,
         bullets: route,
       },
       {
         label: hasIncludedItems
-          ? (isEs ? "Incluido" : "O que estÃ¡ incluÃ­do")
+          ? (isEs ? "Incluido" : "O que está incluído")
           : (isEs ? "Destacados" : "Destaques"),
         title: hasIncludedItems
-          ? (isEs ? "Lo esencial ya estÃ¡ previsto" : "O essencial jÃ¡ estÃ¡ previsto")
-          : (isEs ? "QuÃ© vale la pena conocer" : "O que vale a pena conhecer"),
+          ? (isEs ? "Lo esencial ya está previsto" : "O essencial já está previsto")
+          : (isEs ? "Qué vale la pena conocer" : "O que vale a pena conhecer"),
         body: "",
         bullets: packageFacts,
       },
       {
-        label: isEs ? "OrganÃ­zate" : "Para se organizar",
-        title: isEs ? "Fechas y logÃ­stica" : "Datas e logÃ­stica",
+        label: isEs ? "Organízate" : "Para se organizar",
+        title: isEs ? "Fechas y logística" : "Datas e logística",
         body: cleanBody(pacote.importantNotes, 100),
         bullets: logistics,
       },
       {
-        label: isEs ? "PrÃ³ximo paso" : "PrÃ³ximo passo",
-        title: isEs ? "Solicita el itinerario completo" : "PeÃ§a o roteiro completo",
-        body: isEs ? "Habla con la agencia y confirma todos los detalles antes de reservar." : "Fale com a agÃªncia e confirme todos os detalhes antes de reservar.",
+        label: isEs ? "Próximo paso" : "Próximo passo",
+        title: isEs ? "Solicita el itinerario completo" : "Peça o roteiro completo",
+        body: isEs ? "Habla con la agencia y confirma todos los detalles antes de reservar." : "Fale com a agência e confirme todos os detalhes antes de reservar.",
         bullets: priceAndTerms,
       },
     ],
     editorial: [
       {
-        label: isEs ? "GuÃ­a rÃ¡pida" : "Guia rÃ¡pido",
+        label: isEs ? "Guía rápida" : "Guia rápido",
         title: isEs ? `Lo mejor de ${destination}` : `O melhor de ${destination}`,
         body: description,
         bullets: highlights.slice(0, 3),
       },
       {
-        label: isEs ? "Experiencias" : "ExperiÃªncias",
-        title: isEs ? "QuÃ© vale la pena vivir" : "O que vale a pena viver",
+        label: isEs ? "Experiencias" : "Experiências",
+        title: isEs ? "Qué vale la pena vivir" : "O que vale a pena viver",
         body: "",
         bullets: route,
       },
       {
         label: isEs ? "Consejo para planificar" : "Dica para planejar",
         title: isEs ? "Planifica sin improvisar" : "Planeje sem improviso",
-        body: cleanBody(pacote.importantNotes, 120) || (isEs ? "Confirma fechas, disponibilidad y condiciones con el equipo antes de reservar." : "Confirme datas, disponibilidade e condiÃ§Ãµes com a equipe antes de reservar."),
+        body: cleanBody(pacote.importantNotes, 120) || (isEs ? "Confirma fechas, disponibilidad y condiciones con el equipo antes de reservar." : "Confirme datas, disponibilidade e condições com a equipe antes de reservar."),
         bullets: logistics.slice(0, 3),
       },
       {
-        label: isEs ? "GuÃ¡rdalo" : "Salve para consultar",
-        title: isEs ? "Tu guÃ­a empieza aquÃ­" : "Seu planejamento comeÃ§a aqui",
-        body: isEs ? "Comparte con quien viajarÃ­a contigo." : "Compartilhe com quem viajaria com vocÃª.",
+        label: isEs ? "Guárdalo" : "Salve para consultar",
+        title: isEs ? "Tu guía empieza aquí" : "Seu planejamento começa aqui",
+        body: isEs ? "Comparte con quien viajaría contigo." : "Compartilhe com quem viajaria com você.",
         bullets: packageFacts.slice(0, 3),
       },
     ],
@@ -544,47 +544,47 @@ function contentPresets(
           ? (isEs ? "Tu paquete" : "Seu pacote")
           : (isEs ? "Destacados" : "Destaques"),
         title: hasIncludedItems
-          ? (isEs ? "QuÃ© recibes al reservar" : "O que vocÃª recebe ao reservar")
-          : (isEs ? "QuÃ© hace especial este viaje" : "O que torna esta viagem especial"),
+          ? (isEs ? "Qué recibes al reservar" : "O que você recebe ao reservar")
+          : (isEs ? "Qué hace especial este viaje" : "O que torna esta viagem especial"),
         body: "",
         bullets: packageFacts,
       },
       {
-        label: isEs ? "Condiciones" : "CondiÃ§Ãµes",
-        title: isEs ? "Planifica tu inversiÃ³n" : "Planeje seu investimento",
+        label: isEs ? "Condiciones" : "Condições",
+        title: isEs ? "Planifica tu inversión" : "Planeje seu investimento",
         body: cleanBody(pacote.paymentTerms, 110),
         bullets: logistics,
       },
       {
-        label: isEs ? "Cotiza ahora" : "Solicite sua cotaÃ§Ã£o",
+        label: isEs ? "Cotiza ahora" : "Solicite sua cotação",
         title: isEs ? "Confirma valor y disponibilidad" : "Confirme valor e disponibilidade",
-        body: isEs ? "Habla por WhatsApp y recibe la informaciÃ³n actualizada." : "Fale pelo WhatsApp e receba as informaÃ§Ãµes atualizadas.",
+        body: isEs ? "Habla por WhatsApp y recibe la información actualizada." : "Fale pelo WhatsApp e receba as informações atualizadas.",
         bullets: priceAndTerms,
       },
     ],
     minimalist: [
       {
         label: isEs ? "Viaja tranquilo" : "Viaje tranquilo",
-        title: isEs ? "Menos preocupaciÃ³n. MÃ¡s viaje." : "Menos preocupaÃ§Ã£o. Mais viagem.",
+        title: isEs ? "Menos preocupación. Más viaje." : "Menos preocupação. Mais viagem.",
         body: description,
         bullets: packageFacts.slice(0, 3),
       },
       {
         label: isEs ? "Conveniencia" : "Praticidade",
-        title: isEs ? "Lo importante ya organizado" : "O importante jÃ¡ organizado",
+        title: isEs ? "Lo importante ya organizado" : "O importante já organizado",
         body: "",
         bullets: logistics.length ? logistics : packageFacts,
       },
       {
         label: isEs ? "Soporte" : "Apoio",
-        title: isEs ? "InformaciÃ³n antes de decidir" : "InformaÃ§Ã£o antes de decidir",
+        title: isEs ? "Información antes de decidir" : "Informação antes de decidir",
         body: cleanBody(pacote.importantNotes, 120),
         bullets: route.slice(0, 3),
       },
       {
-        label: isEs ? "Habla con la agencia" : "Fale com a agÃªncia",
-        title: isEs ? "Aclara tus dudas antes de decidir" : "Tire suas dÃºvidas antes de decidir",
-        body: isEs ? "Solicita valores, disponibilidad y condiciones actualizadas." : "Solicite valores, disponibilidade e condiÃ§Ãµes atualizadas.",
+        label: isEs ? "Habla con la agencia" : "Fale com a agência",
+        title: isEs ? "Aclara tus dudas antes de decidir" : "Tire suas dúvidas antes de decidir",
+        body: isEs ? "Solicita valores, disponibilidad y condiciones actualizadas." : "Solicite valores, disponibilidade e condições atualizadas.",
         bullets: priceAndTerms,
       },
     ],
@@ -597,11 +597,11 @@ function contentPresets(
       },
       {
         label: hasIncludedItems
-          ? (isEs ? "Â¿QuÃ© incluye?" : "O que inclui?")
+          ? (isEs ? "¿Qué incluye?" : "O que inclui?")
           : (isEs ? "Destacados" : "Destaques"),
         title: hasIncludedItems
           ? (isEs ? "Revisa los elementos del paquete" : "Confira os itens do pacote")
-          : (isEs ? "Conoce los destacados del viaje" : "ConheÃ§a os destaques da viagem"),
+          : (isEs ? "Conoce los destacados del viaje" : "Conheça os destaques da viagem"),
         body: "",
         bullets: packageFacts,
       },
@@ -612,9 +612,9 @@ function contentPresets(
         bullets: logistics,
       },
       {
-        label: isEs ? "Â¿Tienes dudas?" : "Ficou com dÃºvidas?",
+        label: isEs ? "¿Tienes dudas?" : "Ficou com dúvidas?",
         title: isEs ? "Habla con nuestro equipo" : "Fale com nossa equipe",
-        body: isEs ? "Recibe valores, disponibilidad y condiciones actualizadas por WhatsApp." : "Receba valores, disponibilidade e condiÃ§Ãµes atualizadas pelo WhatsApp.",
+        body: isEs ? "Recibe valores, disponibilidad y condiciones actualizadas por WhatsApp." : "Receba valores, disponibilidade e condições atualizadas pelo WhatsApp.",
         bullets: priceAndTerms,
       },
     ],
@@ -622,25 +622,25 @@ function contentPresets(
       {
         label: isEs ? "Viaja a tu ritmo" : "Viaje no seu ritmo",
         title: destination,
-        body: description || (isEs ? "Una experiencia pensada para disfrutar sin prisa." : "Uma experiÃªncia pensada para aproveitar sem pressa."),
+        body: description || (isEs ? "Una experiencia pensada para disfrutar sin prisa." : "Uma experiência pensada para aproveitar sem pressa."),
         bullets: highlights.slice(0, 3),
       },
       {
         label: isEs ? "Momentos que quedan" : "Momentos que ficam",
-        title: isEs ? "Una experiencia con tu manera de viajar" : "Uma experiÃªncia com o seu jeito de viajar",
+        title: isEs ? "Una experiencia con tu manera de viajar" : "Uma experiência com o seu jeito de viajar",
         body: shortDescription,
         bullets: route.slice(0, 4),
       },
       {
-        label: isEs ? "Todo mÃ¡s ligero" : "Tudo mais leve",
-        title: isEs ? "Lo esencial ya estÃ¡ organizado" : "O essencial jÃ¡ estÃ¡ organizado",
+        label: isEs ? "Todo más ligero" : "Tudo mais leve",
+        title: isEs ? "Lo esencial ya está organizado" : "O essencial já está organizado",
         body: cleanBody(pacote.importantNotes, 100),
         bullets: packageFacts,
       },
       {
         label: isEs ? "Guarda esta idea" : "Guarde esta ideia",
-        title: isEs ? `Tu prÃ³xima pausa puede ser ${destination}` : `Sua prÃ³xima pausa pode ser ${destination}`,
-        body: isEs ? "Comparte con quien viajarÃ­a contigo." : "Compartilhe com quem viajaria com vocÃª.",
+        title: isEs ? `Tu próxima pausa puede ser ${destination}` : `Sua próxima pausa pode ser ${destination}`,
+        body: isEs ? "Comparte con quien viajaría contigo." : "Compartilhe com quem viajaria com você.",
         bullets: priceAndTerms,
       },
     ],
@@ -653,76 +653,76 @@ function contentPresets(
       },
       {
         label: isEs ? "Lo que importa" : "O que importa",
-        title: isEs ? "Una visiÃ³n clara de tu viaje" : "Uma visÃ£o clara da sua viagem",
+        title: isEs ? "Una visión clara de tu viaje" : "Uma visão clara da sua viagem",
         body: shortDescription,
         bullets: packageFacts,
       },
       {
         label: isEs ? "Antes de decidir" : "Antes de decidir",
-        title: isEs ? "Fechas, condiciones y detalles" : "Datas, condiÃ§Ãµes e detalhes",
+        title: isEs ? "Fechas, condiciones y detalles" : "Datas, condições e detalhes",
         body: cleanBody(pacote.importantNotes, 110),
         bullets: logistics,
       },
       {
-        label: isEs ? "Siguiente paso" : "PrÃ³ximo passo",
+        label: isEs ? "Siguiente paso" : "Próximo passo",
         title: isEs ? "Habla con quien conoce el destino" : "Fale com quem conhece o destino",
-        body: isEs ? "Recibe informaciÃ³n actualizada por WhatsApp." : "Receba informaÃ§Ãµes atualizadas pelo WhatsApp.",
+        body: isEs ? "Recibe información actualizada por WhatsApp." : "Receba informações atualizadas pelo WhatsApp.",
         bullets: priceAndTerms,
       },
     ],
     headline: [
       {
-        label: isEs ? "Tu prÃ³ximo destino" : "Seu prÃ³ximo destino",
-        title: isEs ? `Â¿Pensando en viajar a ${destination}?` : `Pensando em viajar para ${destination}?`,
+        label: isEs ? "Tu próximo destino" : "Seu próximo destino",
+        title: isEs ? `¿Pensando en viajar a ${destination}?` : `Pensando em viajar para ${destination}?`,
         body:
           description ||
           (isEs
             ? "Descubre lo esencial antes de preparar tu viaje."
-            : "Confira o que vocÃª precisa saber antes de preparar sua viagem."),
+            : "Confira o que você precisa saber antes de preparar sua viagem."),
         bullets: highlights.slice(0, 3),
       },
       {
-        label: isEs ? "La experiencia" : "A experiÃªncia",
-        title: isEs ? "Lo que hace este viaje inolvidable" : "O que torna esta viagem inesquecÃ­vel",
+        label: isEs ? "La experiencia" : "A experiência",
+        title: isEs ? "Lo que hace este viaje inolvidable" : "O que torna esta viagem inesquecível",
         body: shortDescription,
         bullets: route.slice(0, 4),
       },
       {
         label: isEs ? "Viaja preparado" : "Viaje preparado",
-        title: isEs ? "Todo lo importante en un solo lugar" : "Tudo o que importa em um sÃ³ lugar",
+        title: isEs ? "Todo lo importante en un solo lugar" : "Tudo o que importa em um só lugar",
         body: cleanBody(pacote.importantNotes, 110),
         bullets: logistics.length ? logistics : packageFacts,
       },
       {
         label: isEs ? "Guarda esta idea" : "Salve esta ideia",
-        title: isEs ? `Tu historia puede comenzar en ${destination}` : `Sua histÃ³ria pode comeÃ§ar em ${destination}`,
+        title: isEs ? `Tu historia puede comenzar en ${destination}` : `Sua história pode começar em ${destination}`,
         body:
           isEs
-            ? "Comparte con quien vivirÃ­a esta experiencia contigo."
-            : "Compartilhe com quem viveria essa experiÃªncia com vocÃª.",
+            ? "Comparte con quien viviría esta experiencia contigo."
+            : "Compartilhe com quem viveria essa experiência com você.",
         bullets: priceAndTerms,
       },
     ],
     ticket: [
       {
-        label: isEs ? "Tarjeta de embarque" : "CartÃ£o de embarque",
+        label: isEs ? "Tarjeta de embarque" : "Cartão de embarque",
         title: destination,
         body:
           shortDescription ||
-          (isEs ? "Tu viaje empieza con una buena planificaciÃ³n." : "Sua viagem comeÃ§a com um bom planejamento."),
+          (isEs ? "Tu viaje empieza con una buena planificación." : "Sua viagem começa com um bom planejamento."),
         bullets: compact([pacote.duration, pacote.travelDates, pacote.departureLocation])
           .map(cleanCarouselText)
           .filter(Boolean),
       },
       {
-        label: isEs ? "Servicios incluidos" : "ServiÃ§os incluÃ­dos",
+        label: isEs ? "Servicios incluidos" : "Serviços incluídos",
         title: isEs ? "Tu viaje, organizado" : "Sua viagem, organizada",
         body: "",
         bullets: packageFacts,
       },
       {
         label: isEs ? "Datos del viaje" : "Dados da viagem",
-        title: isEs ? "Fechas, salida y alojamiento" : "Datas, saÃ­da e hospedagem",
+        title: isEs ? "Fechas, salida y alojamiento" : "Datas, saída e hospedagem",
         body: cleanBody(pacote.importantNotes, 100),
         bullets: logistics,
       },
@@ -798,7 +798,7 @@ function createSlides(
             : `Viaje a partir de ${pacote.price}`
           : isEs
             ? "Una experiencia pensada para recordar."
-            : "Uma experiÃªncia feita para lembrar."),
+            : "Uma experiência feita para lembrar."),
       bullets: compact([...(pacote.highlights || []), ...(pacote.included || [])])
         .map(cleanCarouselText)
         .filter(Boolean)
@@ -849,7 +849,7 @@ function createSlides(
     id: createId(),
     kind: "closing",
     label: "",
-    title: isEs ? "Da el siguiente paso hacia tu viaje" : "DÃª o prÃ³ximo passo para a sua viagem",
+    title: isEs ? "Da el siguiente paso hacia tu viaje" : "Dê o próximo passo para a sua viagem",
     body: isEs
       ? "Habla con nuestro equipo y recibe una propuesta personalizada."
       : "Fale com nossa equipe e receba uma proposta personalizada.",
@@ -1211,7 +1211,7 @@ function CarouselCanvas({
               font: `${Math.round(800 * Z)} ${Math.round(18 * Z)}px/1.35 Inter, sans-serif`,
             }}
           >
-            Gere a arte de capa na aba AnÃºncio
+            Gere a arte de capa na aba Anúncio
           </div>
         )}
       </div>
@@ -2100,7 +2100,7 @@ function CarouselCanvas({
         boxSizing: "border-box",
       }}
     >
-      {/* â”€â”€ Background Photo & Gradient Overlay (zIndex: 0) â”€â”€ */}
+      {/* ���� Background Photo & Gradient Overlay (zIndex: 0) ���� */}
       <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}>
         {slide.imageUrl && (
           <img
@@ -2133,7 +2133,7 @@ function CarouselCanvas({
         />
       </div>
 
-      {/* â”€â”€ Content & Text Boxes (zIndex: 10) â”€â”€ */}
+      {/* ���� Content & Text Boxes (zIndex: 10) ���� */}
       <div
         style={{
           position: "absolute",
@@ -2216,7 +2216,7 @@ function CarouselCanvas({
                 textShadow: bodyShadow,
               }}
             >
-              {slide.body || "Atendimento humanizado, parcelamento facilitado e suporte do inÃ­cio ao fim do seu roteiro."}
+              {slide.body || "Atendimento humanizado, parcelamento facilitado e suporte do início ao fim do seu roteiro."}
             </p>
 
             <div
@@ -2306,9 +2306,9 @@ function CarouselCanvas({
             )}
           </div>
         ) : (
-          /* â”€â”€ CONTENT SLIDES â€” 3 visual variants â”€â”€ */
+          /* ���� CONTENT SLIDES � 3 visual variants ���� */
           <>
-            {/* â”€â”€â”€ VARIANT: IMPACT (default) â€” full-bleed photo, content at bottom â”€â”€â”€ */}
+            {/* ������ VARIANT: IMPACT (default) � full-bleed photo, content at bottom ������ */}
             {(slide.slideVariant === "impact" || !slide.slideVariant) && (
               <div
                 style={{
@@ -2344,7 +2344,7 @@ function CarouselCanvas({
               </div>
             )}
 
-            {/* â”€â”€â”€ VARIANT: ITINERARY â€” photo top ~45%, colored block bottom â”€â”€â”€ */}
+            {/* ������ VARIANT: ITINERARY � photo top ~45%, colored block bottom ������ */}
             {slide.slideVariant === "itinerary" && (
               <div style={{ position: "absolute", inset: 0, boxSizing: "border-box" }}>
                 {logo && (
@@ -2385,7 +2385,7 @@ function CarouselCanvas({
               </div>
             )}
 
-            {/* â”€â”€â”€ VARIANT: EDITORIAL â€” useful guide with photo-forward split layout â”€â”€â”€ */}
+            {/* ������ VARIANT: EDITORIAL � useful guide with photo-forward split layout ������ */}
             {slide.slideVariant === "editorial" && (
               <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: contentOnRight ? "row-reverse" : "row", alignItems: "stretch" }}>
                 <div
@@ -2430,7 +2430,7 @@ function CarouselCanvas({
               </div>
             )}
 
-            {/* â”€â”€â”€ VARIANT: OFERTA â€” conversion panel using the agency palette â”€â”€â”€ */}
+            {/* ������ VARIANT: OFERTA � conversion panel using the agency palette ������ */}
             {slide.slideVariant === "oferta" && (() => {
               const offerTitleSize = isDenseSlide ? 19 : titleLength > 38 ? 22 : ratio < 0.68 ? 25 : 28;
               return (
@@ -2492,7 +2492,7 @@ function CarouselCanvas({
               );
             })()}
 
-            {/* â”€â”€â”€ VARIANT: MINIMALIST â€” quiet service-led composition â”€â”€â”€ */}
+            {/* ������ VARIANT: MINIMALIST � quiet service-led composition ������ */}
             {slide.slideVariant === "minimalist" && (
               <div
                 style={{
@@ -2529,7 +2529,7 @@ function CarouselCanvas({
               </div>
             )}
 
-            {/* â”€â”€â”€ VARIANT: VIBRANT â€” FAQ split layout without decorative gradients â”€â”€â”€ */}
+            {/* ������ VARIANT: VIBRANT � FAQ split layout without decorative gradients ������ */}
             {slide.slideVariant === "vibrant" && (() => {
               const faqTitleSize = isDenseSlide ? 16 : titleLength > 38 ? 18 : ratio < 0.68 ? 20 : 23;
               return (
@@ -3047,8 +3047,8 @@ function MiniTypographyBar({
 
   const brandColors = [
     { hex: "#FFFFFF", label: isEs ? "Claro" : "Claro" },
-    { hex: primaryColor || "#F5F906", label: isEs ? "Principal" : "PrimÃ¡ria" },
-    { hex: secondaryColor || "#00F0FF", label: isEs ? "Secundario" : "SecundÃ¡ria" },
+    { hex: primaryColor || "#F5F906", label: isEs ? "Principal" : "Primária" },
+    { hex: secondaryColor || "#00F0FF", label: isEs ? "Secundario" : "Secundária" },
   ];
 
   if (vertical) {
@@ -3076,7 +3076,7 @@ function MiniTypographyBar({
                 : "border-white/30"
             }`} style={{ backgroundColor: hex }} />
         ))}
-        {/* Arco-Ã­ris */}
+        {/* Arco-íris */}
         <div className="relative cursor-pointer transition-transform hover:scale-110"
           style={{ width: 24, height: 24, borderRadius: "50%", padding: 2,
             background: "conic-gradient(from 0deg, #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
@@ -3118,7 +3118,7 @@ function MiniTypographyBar({
             e.preventDefault();
             onChange({ ...style, italic: !isItalic });
           }}
-          title={isEs ? "Cursiva (I)" : "ItÃ¡lico (I)"}
+          title={isEs ? "Cursiva (I)" : "Itálico (I)"}
           className={`grid h-8 w-8 place-items-center rounded text-sm font-bold italic transition-colors ${
             isItalic
               ? "bg-[#F5F906] text-zinc-950 shadow-sm"
@@ -3175,7 +3175,7 @@ function MiniTypographyBar({
           />
         ))}
 
-        {/* CÃ­rculo arco-Ã­ris: anel externo colorido + cor atual no centro */}
+        {/* Círculo arco-íris: anel externo colorido + cor atual no centro */}
         <div
           className="relative cursor-pointer transition-transform hover:scale-110"
           style={{
@@ -3198,7 +3198,7 @@ function MiniTypographyBar({
               border: "1.5px solid rgba(0,0,0,0.35)",
             }}
           />
-          {/* Input color nativo invisÃ­vel sobreposto */}
+          {/* Input color nativo invisível sobreposto */}
           <input
             type="color"
             value={currentColor.startsWith("#") ? currentColor : "#FFFFFF"}
@@ -3208,7 +3208,7 @@ function MiniTypographyBar({
           />
         </div>
 
-        {/* BotÃ£o para cÃ³digo HEX (por Ãºltimo, separado e discreto) */}
+        {/* Botão para código HEX (por último, separado e discreto) */}
         <div className="flex items-center border-l border-white/15 pl-2">
           {!showHexInput ? (
             <button
@@ -3218,7 +3218,7 @@ function MiniTypographyBar({
                 setShowHexInput(true);
                 setHexInput(currentColor);
               }}
-              title={isEs ? "Adicionar cÃ³digo HEX" : "Adicionar cÃ³digo da cor (HEX)"}
+              title={isEs ? "Adicionar código HEX" : "Adicionar código da cor (HEX)"}
               className="rounded border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-mono font-bold text-white/60 hover:border-white/25 hover:bg-white/10 hover:text-white transition-all"
             >
               HEX #
@@ -3254,7 +3254,7 @@ function MiniTypographyBar({
                 }}
                 className="text-[9px] text-white/50 hover:text-white px-0.5"
               >
-                Ã—
+                �
               </button>
             </div>
           )}
@@ -3409,7 +3409,7 @@ export function F1CarouselBuilder({
       issues.push(isEs ? "Agrega el logo en el Panel" : "Adicione a logo no Painel");
     }
     if (!contentSlides.length || contentSlides.some((slide) => !cleanCarouselText(slide.title))) {
-      issues.push(isEs ? "Completa los tÃ­tulos" : "Complete os tÃ­tulos");
+      issues.push(isEs ? "Completa los títulos" : "Complete os títulos");
     }
     if (slides.some((slide) => slide.kind !== "cover" && !slide.imageUrl?.trim())) {
       issues.push(isEs ? "Elige las fotos" : "Escolha as fotos");
@@ -3441,13 +3441,13 @@ export function F1CarouselBuilder({
       setCaptionText(
         carouselCaption(
           selectedPackage,
-          state.agencyName || (isEs ? "Agencia de Viajes" : "AgÃªncia de Viagens"),
+          state.agencyName || (isEs ? "Agencia de Viajes" : "Agência de Viagens"),
           agencyPhone,
           isEs,
         ),
       );
       setCaptionEdited(false);
-      toast.success(isEs ? "Â¡Leyenda generada!" : "Legenda gerada com sucesso!");
+      toast.success(isEs ? "¡Leyenda generada!" : "Legenda gerada com sucesso!");
     } finally {
       setGeneratingCaption(false);
     }
@@ -3527,7 +3527,7 @@ export function F1CarouselBuilder({
       selectedPackage
         ? carouselCaption(
             selectedPackage,
-            state.agencyName || (isEs ? "Agencia de Viajes" : "AgÃªncia de Viagens"),
+            state.agencyName || (isEs ? "Agencia de Viajes" : "Agência de Viagens"),
             agencyPhone,
             isEs,
           )
@@ -3757,7 +3757,7 @@ export function F1CarouselBuilder({
           toast.error(
             isEs
               ? "No fue posible guardar el borrador en este navegador."
-              : "NÃ£o foi possÃ­vel salvar o rascunho neste navegador.",
+              : "Não foi possível salvar o rascunho neste navegador.",
           );
         }
       }
@@ -3847,7 +3847,7 @@ export function F1CarouselBuilder({
     setSlides(generated);
     setActiveIndex(generated.length > 1 ? 1 : 0);
     toast.success(
-      isEs ? "Estrategia aplicada al carrusel." : "EstratÃ©gia aplicada ao carrossel.",
+      isEs ? "Estrategia aplicada al carrusel." : "Estratégia aplicada ao carrossel.",
     );
   };
 
@@ -3879,7 +3879,7 @@ export function F1CarouselBuilder({
     toast.success(
       isEs
         ? "Portada editable del carrusel aplicada."
-        : "Capa editÃ¡vel do carrossel aplicada.",
+        : "Capa editável do carrossel aplicada.",
     );
   };
 
@@ -3958,7 +3958,7 @@ export function F1CarouselBuilder({
     toast.success(
       isEs
         ? "Contenido actualizado con los datos reales del paquete."
-        : "ConteÃºdo atualizado com os dados reais do pacote.",
+        : "Conteúdo atualizado com os dados reais do pacote.",
     );
   };
 
@@ -4056,12 +4056,12 @@ export function F1CarouselBuilder({
           toast.success(
             isEs
               ? "Fotos unicas sincronizadas con el destino."
-              : "Fotos Ãºnicas sincronizadas com o destino.",
+              : "Fotos únicas sincronizadas com o destino.",
           );
         }
       }
       if (!safePhotos.length && !silent) {
-        toast.info(isEs ? "No encontramos fotos para esta bÃºsqueda." : "Nenhuma foto encontrada para esta busca.");
+        toast.info(isEs ? "No encontramos fotos para esta búsqueda." : "Nenhuma foto encontrada para esta busca.");
       }
     } catch (error) {
       if (
@@ -4075,7 +4075,7 @@ export function F1CarouselBuilder({
       toast.error(
         error instanceof Error
           ? error.message
-          : String(error) || (isEs ? "No fue posible buscar fotos ahora." : "Não foi possível buscar fotos agora."),
+          : String(error) || (isEs ? "No fue posible buscar fotos ahora." : "N�o foi poss�vel buscar fotos agora."),
       );
     } finally {
       if (photoSearchRequestRef.current === requestId) {
@@ -4126,7 +4126,7 @@ export function F1CarouselBuilder({
           toast.info(
             isEs
               ? "Cambiaste de paquete. Vuelve a elegir el slide para aplicar la foto."
-              : "VocÃª mudou de pacote. Selecione o slide novamente para aplicar a foto.",
+              : "Você mudou de pacote. Selecione o slide novamente para aplicar a foto.",
           );
           return false;
         }
@@ -4172,20 +4172,20 @@ export function F1CarouselBuilder({
           toast.success(
             isEs
               ? "Foto aplicada temporalmente (offline)."
-              : "Foto aplicada temporariamente (salvamento na nuvem indisponível).",
+              : "Foto aplicada temporariamente (salvamento na nuvem indispon�vel).",
           );
         }
       } else {
         if (!applyToOriginalSlide(await blobToDataUrl(optimized))) return;
         toast.success(
           isEs
-            ? "Foto aplicada temporalmente. Inicia sesiÃ³n para conservarla al volver."
-          : "Foto aplicada temporariamente. Entre na conta para mantÃª-la ao voltar.",
+            ? "Foto aplicada temporalmente. Inicia sesión para conservarla al volver."
+          : "Foto aplicada temporariamente. Entre na conta para mantê-la ao voltar.",
         );
       }
     } catch {
       if (uploadRequestRef.current.get(requestKey) === requestToken) {
-        toast.error(isEs ? "No fue posible preparar esta imagen." : "NÃ£o foi possÃ­vel preparar esta imagem.");
+        toast.error(isEs ? "No fue posible preparar esta imagen." : "Não foi possível preparar esta imagem.");
       }
     } finally {
       if (uploadRequestRef.current.get(requestKey) === requestToken) {
@@ -4232,7 +4232,7 @@ export function F1CarouselBuilder({
       setActiveIndex(slides.length - 1);
       toast.error(
         isEs
-          ? "Agrega el telÃ©fono o WhatsApp en la imagen final."
+          ? "Agrega el teléfono o WhatsApp en la imagen final."
           : "Adicione o telefone ou WhatsApp na imagem final.",
       );
       return;
@@ -4241,8 +4241,8 @@ export function F1CarouselBuilder({
       setActiveIndex(slides.length - 1);
       toast.error(
         isEs
-          ? "Agrega una llamada a la acciÃ³n en la imagen final."
-          : "Adicione uma chamada para aÃ§Ã£o na imagem final.",
+          ? "Agrega una llamada a la acción en la imagen final."
+          : "Adicione uma chamada para ação na imagem final.",
       );
       return;
     }
@@ -4296,8 +4296,8 @@ export function F1CarouselBuilder({
         setActiveIndex(index);
         toast.error(
           isEs
-            ? `La foto de la imagen ${index + 1} no permite exportaciÃ³n. Usa otra foto del banco o envÃ­a un archivo.`
-            : `A foto da imagem ${index + 1} nÃ£o permite exportaÃ§Ã£o. Use outra foto do banco ou envie um arquivo.`,
+            ? `La foto de la imagen ${index + 1} no permite exportación. Usa otra foto del banco o envía un archivo.`
+            : `A foto da imagem ${index + 1} não permite exportação. Use outra foto do banco ou envie um arquivo.`,
         );
         return;
       }
@@ -4308,8 +4308,8 @@ export function F1CarouselBuilder({
       setActiveIndex(resolvedSlides.length - 1);
       toast.error(
         isEs
-          ? "La logo actual no permite exportaciÃ³n. Vuelve a enviarla en el Panel."
-          : "A logo atual nÃ£o permite exportaÃ§Ã£o. Envie-a novamente no Painel.",
+          ? "La logo actual no permite exportación. Vuelve a enviarla en el Panel."
+          : "A logo atual não permite exportação. Envie-a novamente no Painel.",
       );
       return;
     }
@@ -4372,7 +4372,7 @@ export function F1CarouselBuilder({
         const node = exportRefs.current[index];
         if (!node) throw new Error("missing-export-node");
 
-        // â”€â”€ 1. PrÃ©-carrega TODAS as imagens como data: URL no nÃ³ original â”€â”€
+        // ���� 1. Pré-carrega TODAS as imagens como data: URL no nó original ����
         const imgNodes = node.querySelectorAll("img");
         await Promise.all(
           Array.from(imgNodes).map(async (img) => {
@@ -4385,10 +4385,10 @@ export function F1CarouselBuilder({
           })
         );
 
-        // â”€â”€ 2. Aguarda o browser re-renderizar com as data:URLs â”€â”€
+        // ���� 2. Aguarda o browser re-renderizar com as data:URLs ����
         await new Promise((resolve) => window.setTimeout(resolve, 400));
 
-        // â”€â”€ 3. Traz o nÃ³ pro viewport (necessÃ¡rio para html2canvas ver os pixels) â”€â”€
+        // ���� 3. Traz o nó pro viewport (necessário para html2canvas ver os pixels) ����
         const prevPosition = node.style.position;
         const prevPointerEvents = node.style.pointerEvents;
         const prevZIndex = node.style.zIndex;
@@ -4400,7 +4400,7 @@ export function F1CarouselBuilder({
 
         await new Promise((resolve) => window.setTimeout(resolve, 120));
 
-        // â”€â”€ 4. Captura com html2canvas â”€â”€
+        // ���� 4. Captura com html2canvas ����
         const canvas = await html2canvas(node, {
           backgroundColor: "#08090B",
           useCORS: true,
@@ -4414,12 +4414,12 @@ export function F1CarouselBuilder({
           windowHeight: node.offsetHeight,
         });
 
-        // â”€â”€ 5. Restaura posiÃ§Ã£o original â”€â”€
+        // ���� 5. Restaura posição original ����
         node.style.position = prevPosition;
         node.style.pointerEvents = prevPointerEvents;
         node.style.zIndex = prevZIndex;
 
-        // â”€â”€ 6. Baixa a imagem â”€â”€
+        // ���� 6. Baixa a imagem ����
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png", 1);
         link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
@@ -4439,10 +4439,10 @@ export function F1CarouselBuilder({
       toast.success(
         isEs
           ? preserveOriginalCover
-            ? `${slides.length} imÃ¡genes listas. La portada del anuncio fue preservada.`
-            : `${slides.length} imÃ¡genes listas para publicar.`
+            ? `${slides.length} imágenes listas. La portada del anuncio fue preservada.`
+            : `${slides.length} imágenes listas para publicar.`
           : preserveOriginalCover
-            ? `${slides.length} imagens prontas. A capa do anÃºncio foi preservada.`
+            ? `${slides.length} imagens prontas. A capa do anúncio foi preservada.`
             : `${slides.length} imagens prontas para publicar.`,
       );
     } catch (error) {
@@ -4451,7 +4451,7 @@ export function F1CarouselBuilder({
       toast.error(
         isEs
           ? "No fue posible exportar. Prueba otra foto del banco o un archivo enviado."
-          : "NÃ£o foi possÃ­vel exportar. Tente outra foto do banco ou um arquivo enviado.",
+          : "Não foi possível exportar. Tente outra foto do banco ou um arquivo enviado.",
       );
     } finally {
       setDownloading(false);
@@ -4485,21 +4485,21 @@ export function F1CarouselBuilder({
           </div>
         </div>
 
-        {/* Informações e Botão */}
+        {/* Informa��es e Bot�o */}
         <div className="text-center relative z-20 space-y-5 w-full max-w-[280px]">
           <div className="space-y-2">
             <h2 className="text-lg sm:text-xl font-black text-white leading-tight">
-              {isEs ? "Crea Carruseles Automáticos" : "Crie Carrosséis Automáticos"}
+              {isEs ? "Crea Carruseles Autom�ticos" : "Crie Carross�is Autom�ticos"}
             </h2>
             <p className="text-[10px] sm:text-xs font-medium text-white/40">
               {isEs 
-                ? "Selecciona una foto y el sistema sincronizará los datos al instante."
-                : "Selecione uma foto e o sistema sincronizará os dados instantaneamente."}
+                ? "Selecciona una foto y el sistema sincronizar� los datos al instante."
+                : "Selecione uma foto e o sistema sincronizar� os dados instantaneamente."}
             </p>
           </div>
           <button
             onClick={() => onBackToAd?.()} 
-            className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-black text-[11px] sm:text-xs uppercase tracking-widest transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#F5F906]/20 bg-[#F5F906] text-black hover:bg-[#e3e705]"
+            className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-black text-[11px] sm:text-xs uppercase tracking-widest transition-all duration-150 ease-out  active:scale-[0.97] shadow-lg shadow-[#F5F906]/20 bg-[#F5F906] text-black hover:bg-[#e3e705]"
           >
             <ImagePlus className="w-4 h-4" /> {isEs ? "Seleccionar Imagen" : "Selecionar Imagem"}
           </button>
@@ -4603,8 +4603,8 @@ export function F1CarouselBuilder({
           <div className="mt-4">
             <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.13em] text-white/35">
               {photoResults.length
-                ? (isEs ? "Resultados de la bÃºsqueda" : "Resultados da busca")
-                : (isEs ? "Banco de imÃ¡genes" : "Banco de imagens")}
+                ? (isEs ? "Resultados de la búsqueda" : "Resultados da busca")
+                : (isEs ? "Banco de imágenes" : "Banco de imagens")}
             </p>
             <div className="grid grid-cols-4 gap-2">
               {(photoResults.length
@@ -4659,7 +4659,7 @@ export function F1CarouselBuilder({
             {photoResults.length > 0 && (
               <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="text-[9px] font-medium text-white/35">
-                  {isEs ? `PÃ¡gina ${photoPage}` : `PÃ¡gina ${photoPage}`}
+                  {isEs ? `Página ${photoPage}` : `Página ${photoPage}`}
                 </span>
                 <div className="flex gap-2">
                   <button
@@ -4676,7 +4676,7 @@ export function F1CarouselBuilder({
                     onClick={() => void searchPhotos({ queryOverride: photoDestination || photoQuery, pageOverride: photoPage + 1 })}
                     className="inline-flex min-h-8 items-center gap-1.5 rounded-lg border border-[#F5F906]/35 bg-[#F5F906]/[0.07] px-3 text-[9px] font-extrabold text-[#F5F906] hover:bg-[#F5F906]/[0.12] disabled:opacity-30"
                   >
-                    {isEs ? "Ver mÃ¡s fotos" : "Ver mais fotos"}
+                    {isEs ? "Ver más fotos" : "Ver mais fotos"}
                     <ChevronRight className="h-3 w-3" />
                   </button>
                 </div>
@@ -4710,7 +4710,7 @@ export function F1CarouselBuilder({
                    className="w-full h-28 object-cover rounded-lg" 
                    onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/400x200/1a1a1a/444444?text=Link+Invalido"; }} 
                  />
-                 <p className="text-[10px] text-emerald-400 font-bold mt-1.5">✔ Imagem carregada via Link</p>
+                 <p className="text-[10px] text-emerald-400 font-bold mt-1.5"> Imagem carregada via Link</p>
                </div>
             )}
           </div>
@@ -4722,7 +4722,7 @@ export function F1CarouselBuilder({
   const renderPublishFooterBox = () => {
     return (
       <div className="space-y-4">
-        {/* â”€â”€ Ready-to-publish caption â”€â”€ */}
+        {/* ���� Ready-to-publish caption ���� */}
         <div className="rounded-2xl border border-[#F5F906]/20 bg-[#0F0F11] overflow-hidden shadow-lg">
           <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06]">
             <div className="flex items-center gap-2.5">
@@ -4748,7 +4748,7 @@ export function F1CarouselBuilder({
                 setCaptionText(e.target.value);
                 setCaptionEdited(true);
               }}
-              placeholder={isEs ? "Tu texto aparecerÃ¡ aquÃ­..." : "Sua legenda aparecerÃ¡ aqui..."}
+              placeholder={isEs ? "Tu texto aparecerá aquí..." : "Sua legenda aparecerá aqui..."}
               rows={5}
               className="w-full rounded-xl border border-white/10 bg-[#121316] px-3 py-2.5 text-xs text-white outline-none focus:border-[#F5F906] focus:ring-1 focus:ring-[#F5F906]/30 transition-all resize-y"
             />
@@ -4786,15 +4786,15 @@ export function F1CarouselBuilder({
       <div className="grid gap-2.5 sm:grid-cols-3">
         <button type="button" onClick={() => setShowNewCarouselModal(true)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-3 text-xs font-extrabold text-white/80 hover:bg-white/[0.08]">
           <RefreshCw className="h-4 w-4" />
-          {isEs ? "Nueva variaciÃ³n" : "Nova variaÃ§Ã£o"}
+          {isEs ? "Nueva variación" : "Nova variação"}
         </button>
-        <button type="button" onClick={downloadAll} disabled={downloading || !qualityReady} title={!qualityReady ? qualityIssues.join(" â€¢ ") : undefined} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:cursor-not-allowed disabled:opacity-40">
+        <button type="button" onClick={downloadAll} disabled={downloading || !qualityReady} title={!qualityReady ? qualityIssues.join(" ⬢ ") : undefined} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:cursor-not-allowed disabled:opacity-40">
           <Download className="h-4 w-4" />
-          {isEs ? `Descargar ${slides.length} imÃ¡genes` : `Baixar ${slides.length} imagens`}
+          {isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}
         </button>
         {onNext && (
           <button type="button" onClick={onNext} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 text-xs font-extrabold text-cyan-300 hover:bg-cyan-400/15">
-            {isEs ? "Avanzar al Sitio (F3)" : "AvanÃ§ar para o Site (F3)"}
+            {isEs ? "Avanzar al Sitio (F3)" : "Avançar para o Site (F3)"}
           </button>
         )}
       </div>
@@ -4847,7 +4847,7 @@ export function F1CarouselBuilder({
                   <p className="truncate text-[9px] text-white/40">
                     {isEs
                       ? "Visible en todo el carrusel"
-                      : "VisÃ­vel em todo o carrossel"}
+                      : "Visível em todo o carrossel"}
                   </p>
                 </div>
               </div>
@@ -4903,18 +4903,18 @@ export function F1CarouselBuilder({
                     showLogo ? "bg-[#F5F906] text-zinc-950" : "bg-white/10 text-white/50"
                   }`}
                 >
-                  {showLogo ? (isEs ? "SÃ­" : "Sim") : (isEs ? "No" : "NÃ£o")}
+                  {showLogo ? (isEs ? "Sí" : "Sim") : (isEs ? "No" : "Não")}
                 </span>
               </button>
               {showLogo && (
                 <div className="mt-2 flex items-center justify-between gap-3 px-1 pb-0.5">
                   <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/40">
-                    {isEs ? "PosiciÃ³n" : "PosiÃ§Ã£o"}
+                    {isEs ? "Posición" : "Posição"}
                   </span>
                   <div
                     className="grid grid-cols-4 gap-1"
                     role="group"
-                    aria-label={isEs ? "PosiciÃ³n del logo" : "PosiÃ§Ã£o da logo"}
+                    aria-label={isEs ? "Posición del logo" : "Posição da logo"}
                   >
                     {([
                       ["top-left", ArrowUpLeft, isEs ? "Arriba izquierda" : "Superior esquerda"],
@@ -4949,7 +4949,7 @@ export function F1CarouselBuilder({
                 className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.03] px-3 text-[11px] font-bold text-white/75 transition-colors hover:bg-white/[0.07] hover:text-white"
               >
                 <ImagePlus className="h-4 w-4 text-[#F5F906]" />
-                {isEs ? "Crear portada en Anuncio (F1)" : "Criar capa no AnÃºncio (F1)"}
+                {isEs ? "Crear portada en Anuncio (F1)" : "Criar capa no Anúncio (F1)"}
               </button>
             )}
           </div>
@@ -4957,7 +4957,7 @@ export function F1CarouselBuilder({
           <div>
             <fieldset>
               <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
-                {isEs ? "Total de imÃ¡genes" : "Total de imagens"}
+                {isEs ? "Total de imágenes" : "Total de imagens"}
               </legend>
               <div className="mt-1.5 grid grid-cols-4 gap-2">
                 {([3, 4, 5, 6] as CarouselSize[]).map((count) => (
@@ -4979,12 +4979,12 @@ export function F1CarouselBuilder({
             </fieldset>
             <fieldset className="mt-3">
               <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
-                {isEs ? "Formato de salida" : "Formato de saÃ­da"}
+                {isEs ? "Formato de salida" : "Formato de saída"}
               </legend>
               <div className="mt-1.5 grid grid-cols-2 gap-2">
                 {([
-                  ["feed", Square, "Feed 4:5", "1080 Ã— 1350"],
-                  ["story", Smartphone, "Stories 9:16", "1080 Ã— 1920"],
+                  ["feed", Square, "Feed 4:5", "1080 � 1350"],
+                  ["story", Smartphone, "Stories 9:16", "1080 � 1920"],
                 ] as const).map(([format, Icon, labelText, dimensionsText]) => {
                   const active = carouselFormat === format;
                   return (
@@ -5019,16 +5019,16 @@ export function F1CarouselBuilder({
               </legend>
               <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
                 {([
-                  ["impact", isEs ? "Inspirar" : "Inspirar", isEs ? "Deseo y experiencia" : "Desejo e experiÃªncia"],
-                  ["oferta", isEs ? "Oferta" : "Oferta", isEs ? "Valor y conversiÃ³n" : "Valor e conversÃ£o"],
-                  ["editorial", isEs ? "GuÃ­a" : "Guia", isEs ? "Ãštil para guardar" : "Ãštil para salvar"],
-                  ["vibrant", "FAQ", isEs ? "Resuelve objeciones" : "Resolve objeÃ§Ãµes"],
-                  ["minimalist", isEs ? "Confianza" : "ConfianÃ§a", isEs ? "Claridad y atenciÃ³n" : "Clareza e atendimento"],
-                  ["itinerary", isEs ? "Itinerario" : "Roteiro", isEs ? "Ruta y logÃ­stica" : "Percurso e logÃ­stica"],
-                  ["organic", "Curvo", isEs ? "Formas orgÃ¡nicas" : "Formas orgÃ¢nicas"],
+                  ["impact", isEs ? "Inspirar" : "Inspirar", isEs ? "Deseo y experiencia" : "Desejo e experiência"],
+                  ["oferta", isEs ? "Oferta" : "Oferta", isEs ? "Valor y conversión" : "Valor e conversão"],
+                  ["editorial", isEs ? "Guía" : "Guia", isEs ? "�atil para guardar" : "�atil para salvar"],
+                  ["vibrant", "FAQ", isEs ? "Resuelve objeciones" : "Resolve objeções"],
+                  ["minimalist", isEs ? "Confianza" : "Confiança", isEs ? "Claridad y atención" : "Clareza e atendimento"],
+                  ["itinerary", isEs ? "Itinerario" : "Roteiro", isEs ? "Ruta y logística" : "Percurso e logística"],
+                  ["organic", "Curvo", isEs ? "Formas orgánicas" : "Formas orgânicas"],
                   ["glass", "Transparente", isEs ? "Ligero y sofisticado" : "Leve e sofisticado"],
-                  ["headline", isEs ? "Titular" : "Destaque", isEs ? "Gancho con degradado" : "Gancho com degradÃª"],
-                  ["ticket", isEs ? "Billete" : "Bilhete", isEs ? "Estilo tarjeta de embarque" : "Estilo cartÃ£o de embarque"],
+                  ["headline", isEs ? "Titular" : "Destaque", isEs ? "Gancho con degradado" : "Gancho com degradê"],
+                  ["ticket", isEs ? "Billete" : "Bilhete", isEs ? "Estilo tarjeta de embarque" : "Estilo cartão de embarque"],
                   ["headline-center", isEs ? "Franjas centro" : "Faixas centrais", isEs ? "Informacion centrada abajo" : "Informacoes centralizadas abaixo"],
                   ["headline-footer", isEs ? "Franjas bajas" : "Faixas inferiores", isEs ? "Titulo e informacion en la base" : "Titulo e informacoes na base"],
                 ] as const).map(([variant, labelText, description]) => {
@@ -5059,12 +5059,12 @@ export function F1CarouselBuilder({
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-3 sm:p-4">
-        {/* Header: tÃ­tulo + contador + controles de modo e zoom */}
+        {/* Header: título + contador + controles de modo e zoom */}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">2</span>
             <div>
-              <h3 className="text-sm font-bold text-white">{isEs ? "Revisa la secuencia" : "Revise a sequÃªncia"}</h3>
+              <h3 className="text-sm font-bold text-white">{isEs ? "Revisa la secuencia" : "Revise a sequência"}</h3>
               <p className="text-[10px] text-white/40">
                 {isEs ? "Toca una imagen para abrirla." : "Toque em uma imagem para abri-la."}
               </p>
@@ -5072,7 +5072,7 @@ export function F1CarouselBuilder({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Contador + Setas de NavegaÃ§Ã£o */}
+            {/* Contador + Setas de Navegação */}
             <div className="flex items-center rounded-xl border border-white/10 bg-black/50 p-0.5">
               <button
                 type="button"
@@ -5091,21 +5091,21 @@ export function F1CarouselBuilder({
                 type="button"
                 onClick={() => setActiveIndex((c) => Math.min(slides.length - 1, c + 1))}
                 disabled={activeIndex === slides.length - 1}
-                aria-label={isEs ? "PrÃ³ximo" : "PrÃ³ximo"}
-                title={isEs ? "Siguiente diapositiva (>)" : "PrÃ³ximo slide (>)"}
+                aria-label={isEs ? "Próximo" : "Próximo"}
+                title={isEs ? "Siguiente diapositiva (>)" : "Próximo slide (>)"}
                 className="grid h-7 w-7 place-items-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-25"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
             </div>
 
-            {/* BotÃµes de modo de visualizaÃ§Ã£o */}
+            {/* Botões de modo de visualização */}
             <div className="flex items-center gap-1 rounded-xl border border-white/10 p-1">
               <button
                 type="button"
                 onClick={() => setViewMode("ribbon")}
                 aria-pressed={viewMode === "ribbon"}
-                aria-label={isEs ? "Vista horizontal" : "VisualizaÃ§Ã£o horizontal"}
+                aria-label={isEs ? "Vista horizontal" : "Visualização horizontal"}
                 title={isEs ? "Fila horizontal" : "Faixa horizontal"}
                 className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
                   viewMode === "ribbon"
@@ -5119,7 +5119,7 @@ export function F1CarouselBuilder({
                 type="button"
                 onClick={() => setViewMode("stack")}
                 aria-pressed={viewMode === "stack"}
-                aria-label={isEs ? "Vista vertical" : "VisualizaÃ§Ã£o vertical"}
+                aria-label={isEs ? "Vista vertical" : "Visualização vertical"}
                 title={isEs ? "Grade vertical" : "Grade vertical (uma abaixo da outra)"}
                 className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
                   viewMode === "stack"
@@ -5145,7 +5145,7 @@ export function F1CarouselBuilder({
               </button>
             </div>
 
-            {/* Controles de Zoom (ocultos no modo focus pois jÃ¡ tem escala grande) */}
+            {/* Controles de Zoom (ocultos no modo focus pois já tem escala grande) */}
             {viewMode !== "focus" && (
               <div className="flex items-center gap-1 rounded-xl border border-white/10 p-1">
                 <button
@@ -5162,7 +5162,7 @@ export function F1CarouselBuilder({
                   type="button"
                   onClick={zoomReset}
                   aria-label={isEs ? "Ajustar zoom" : "Ajustar zoom"}
-                  title={`${Math.round(zoomScale * 100)}% â€” ${isEs ? "clic para resetear" : "clique para redefinir"}`}
+                  title={`${Math.round(zoomScale * 100)}% � ${isEs ? "clic para resetear" : "clique para redefinir"}`}
                   className="min-w-[34px] rounded-lg px-1 py-1 text-[9px] font-bold text-white/40 hover:bg-white/[0.07] hover:text-white"
                 >
                   {Math.round(zoomScale * 100)}%
@@ -5182,7 +5182,7 @@ export function F1CarouselBuilder({
           </div>
         </div>
 
-        {/* â”€â”€ MODO: FAIXA HORIZONTAL (ribbon) â”€â”€ */}
+        {/* ���� MODO: FAIXA HORIZONTAL (ribbon) ���� */}
         {viewMode === "ribbon" && (() => {
           const isMobile = typeof window !== "undefined" && window.innerWidth < 420;
           const widthsByCount: Record<CarouselSize, number> = isMobile
@@ -5301,7 +5301,7 @@ export function F1CarouselBuilder({
                             {slide.kind === "cover"
                               ? slide.coverSource === "ad"
                                 ? "Original"
-                                : (isEs ? "Editable" : "EditÃ¡vel")
+                                : (isEs ? "Editable" : "Editável")
                               : slide.kind === "closing"
                                 ? (isEs ? "Contacto" : "Fechamento")
                                 : `${isEs ? "Diapositiva" : "Slide"} ${index + 1}`}
@@ -5326,8 +5326,8 @@ export function F1CarouselBuilder({
                   setActiveIndex((c) => Math.min(slides.length - 1, c + 1));
                 }}
                 disabled={activeIndex === slides.length - 1}
-                aria-label={isEs ? "PrÃ³xima" : "PrÃ³xima"}
-                title={isEs ? "Rolagem e prÃ³ximo slide" : "Rolagem e prÃ³ximo slide"}
+                aria-label={isEs ? "Próxima" : "Próxima"}
+                title={isEs ? "Rolagem e próximo slide" : "Rolagem e próximo slide"}
                 className="absolute right-1 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/80 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black hover:scale-105 disabled:pointer-events-none disabled:opacity-0"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -5336,10 +5336,10 @@ export function F1CarouselBuilder({
           );
         })()}
 
-        {/* â”€â”€ MODO: GRADE VERTICAL (stack) â€” uma embaixo da outra â”€â”€ */}
+        {/* ���� MODO: GRADE VERTICAL (stack) � uma embaixo da outra ���� */}
         {viewMode === "stack" && (() => {
-          // Redimensionamento dinÃ¢mico na grade
-          // 3 slides â†’ 2 colunas grandes | 4 â†’ 2 cols | 5-6 â†’ 3 cols | 7+ â†’ 4 cols
+          // Redimensionamento dinâmico na grade
+          // 3 slides �  2 colunas grandes | 4 �  2 cols | 5-6 �  3 cols | 7+ �  4 cols
           const cols = slides.length <= 4 ? 2 : slides.length <= 6 ? 3 : 4;
           const isMobile = typeof window !== "undefined" && window.innerWidth < 420;
           const baseWidth = isMobile ? Math.max(120, 160 - slides.length * 5) : Math.round(Math.max(140, 340 - slides.length * 20));
@@ -5434,11 +5434,11 @@ export function F1CarouselBuilder({
                         >
                           {slide.kind === "cover"
                             ? slide.coverSource === "ad"
-                              ? (isEs ? "Portada del anuncio" : "Capa do anÃºncio")
-                              : (isEs ? "Portada editable" : "Capa editÃ¡vel")
+                              ? (isEs ? "Portada del anuncio" : "Capa do anúncio")
+                              : (isEs ? "Portada editable" : "Capa editável")
                             : slide.kind === "closing"
                               ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
-                              : `${isEs ? "Contenido" : "ConteÃºdo"} ${index + 1}`}
+                              : `${isEs ? "Contenido" : "Conteúdo"} ${index + 1}`}
                         </span>
                       </div>
                       {slide.kind === "cover" && slide.coverSource === "ad" && (
@@ -5452,14 +5452,14 @@ export function F1CarouselBuilder({
           );
         })()}
 
-        {/* â”€â”€ MODO: FOCO â€” uma imagem grande por vez com setas â”€â”€ */}
+        {/* ���� MODO: FOCO � uma imagem grande por vez com setas ���� */}
         {viewMode === "focus" && (() => {
           const isMobile = typeof window !== "undefined" && window.innerWidth < 420;
           const baseFocusW = isMobile ? window.innerWidth - 64 : 380;
           const thumbWidth = Math.round(baseFocusW * zoomScale);
           return (
             <div className="flex flex-col items-center gap-3">
-              {/* Setas de navegaÃ§Ã£o + indicador */}
+              {/* Setas de navegação + indicador */}
               <div className="flex w-full items-center justify-between gap-2">
                 <button
                   type="button"
@@ -5491,7 +5491,7 @@ export function F1CarouselBuilder({
                   type="button"
                   onClick={() => setActiveIndex((c) => Math.min(slides.length - 1, c + 1))}
                   disabled={activeIndex === slides.length - 1}
-                  aria-label={isEs ? "Siguiente imagen" : "PrÃ³xima imagem"}
+                  aria-label={isEs ? "Siguiente imagen" : "Próxima imagem"}
                   className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 text-white/70 hover:bg-white/[0.06] disabled:opacity-25"
                 >
                   <ChevronRight className="h-4 w-4" />
@@ -5523,7 +5523,7 @@ export function F1CarouselBuilder({
                       >
                         <span className="flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-bold text-white backdrop-blur-md">
                           <Maximize2 className="h-4 w-4" />
-                          {isEs ? "Ver más grande" : "Ver maior"}
+                          {isEs ? "Ver m�s grande" : "Ver maior"}
                         </span>
                       </button>
                     </>
@@ -5533,7 +5533,7 @@ export function F1CarouselBuilder({
               <p className="text-[10px] text-white/40">
                 {activeSlide?.kind === "cover"
                   ? activeCoverIsProtected
-                    ? (isEs ? "Portada creada en Anuncio." : "Capa criada no AnÃºncio.")
+                    ? (isEs ? "Portada creada en Anuncio." : "Capa criada no Anúncio.")
                     : (isEs ? "Edita esta portada." : "Edite esta capa.")
                   : activeSlide?.kind === "closing"
                     ? (isEs ? "Cierre + contacto" : "Fechamento + contato")
@@ -5545,9 +5545,9 @@ export function F1CarouselBuilder({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,.82fr)_minmax(340px,1.18fr)]">
-        {/* â• â•  LEFT: Slide Editor â• â•  */}
+        {/* �" �"  LEFT: Slide Editor �" �"  */}
         <div className="order-2 space-y-3 lg:order-1">
-          {/* â”€â”€ Card: Slide being edited â”€â”€ */}
+          {/* ���� Card: Slide being edited ���� */}
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] overflow-hidden">
             {/* Header bar */}
             <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06]">
@@ -5557,7 +5557,7 @@ export function F1CarouselBuilder({
                   <h3 className="text-sm font-bold text-white leading-none">
                     {activeSlide?.kind === "cover"
                       ? activeCoverIsProtected
-                        ? (isEs ? "Portada del anuncio" : "Capa do anÃºncio")
+                        ? (isEs ? "Portada del anuncio" : "Capa do anúncio")
                         : (isEs ? "Edita la portada" : "Editar capa")
                       : activeSlide?.kind === "closing"
                         ? (isEs ? "Edita el cierre" : "Edite o fechamento")
@@ -5594,7 +5594,7 @@ export function F1CarouselBuilder({
                   type="button"
                   onClick={() => setActiveIndex((c) => Math.min(slides.length - 1, c + 1))}
                   disabled={activeIndex === slides.length - 1}
-                  aria-label={isEs ? "PrÃ³xima" : "PrÃ³xima"}
+                  aria-label={isEs ? "Próxima" : "Próxima"}
                   className="grid h-7 w-7 place-items-center rounded-lg text-white/60 hover:bg-white/[0.08] hover:text-white disabled:opacity-25 transition-all"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
@@ -5602,18 +5602,18 @@ export function F1CarouselBuilder({
               </div>
             </div>
 
-            {/* Capa herdada do anÃºncio */}
+            {/* Capa herdada do anúncio */}
             {activeCoverIsProtected && (
               <div className="m-4 rounded-xl border border-[#F5F906]/20 bg-[#F5F906]/[0.05] p-4 flex gap-3">
                 <Lock className="mt-0.5 h-5 w-5 shrink-0 text-[#F5F906]" />
                 <div className="flex-1">
                   <p className="text-sm font-bold text-white">
-                    {isEs ? "Portada creada en Anuncio." : "Capa criada no AnÃºncio."}
+                    {isEs ? "Portada creada en Anuncio." : "Capa criada no Anúncio."}
                   </p>
                   <p className="mt-1 text-xs leading-relaxed text-white/50">
                     {isEs
                       ? "La pieza original se mantiene intacta al descargar."
-                      : "A arte original serÃ¡ preservada exatamente como foi gerada."}
+                      : "A arte original será preservada exatamente como foi gerada."}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {onBackToAd && (
@@ -5622,15 +5622,15 @@ export function F1CarouselBuilder({
                         onClick={onBackToAd}
                         className="min-h-9 rounded-lg border border-white/15 px-3 text-[10px] font-bold text-white/75 transition-colors hover:bg-white/[0.06]"
                       >
-                        {isEs ? "Crear otra en Anuncio" : "Gerar outra no AnÃºncio"}
+                        {isEs ? "Crear otra en Anuncio" : "Gerar outra no Anúncio"}
                       </button>
                     )}
                     <button
                       type="button"
                       onClick={switchToNativeCover}
-                      className="min-h-9 rounded-lg bg-[#F5F906] px-3 text-[10px] font-extrabold text-zinc-950 transition-transform active:scale-[0.98]"
+                      className="min-h-9 rounded-lg bg-[#F5F906] px-3 text-[10px] font-extrabold text-zinc-950 transition-transform active:scale-[0.97]"
                     >
-                      {isEs ? "Usar portada editable" : "Usar capa editÃ¡vel"}
+                      {isEs ? "Usar portada editable" : "Usar capa editável"}
                     </button>
                   </div>
                 </div>
@@ -5641,10 +5641,10 @@ export function F1CarouselBuilder({
             {activeSlide && !activeCoverIsProtected && (
               <div className="divide-y divide-white/[0.06]">
 
-                {/* â”€â”€ SECTION 1: Estilo & Fonte â”€â”€ */}
+                {/* ���� SECTION 1: Estilo & Fonte ���� */}
                 <div className="px-4 py-3.5 space-y-3">
                   <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                    {isEs ? "Estilo e TipografÃ­a" : "Estilo e Tipografia"}
+                    {isEs ? "Estilo e Tipografía" : "Estilo e Tipografia"}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {/* Font selector */}
@@ -5655,21 +5655,21 @@ export function F1CarouselBuilder({
                       <select
                         value={activeSlide.fontFamily || "Inter"}
                         onChange={(event) => patchActive({ fontFamily: event.target.value })}
-                        aria-label={isEs ? "Tipo de letra" : "FamÃ­lia da fonte"}
+                        aria-label={isEs ? "Tipo de letra" : "Família da fonte"}
                         className="w-full rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-[11px] font-bold text-white outline-none focus:border-[#F5F906] focus:ring-2 focus:ring-[#F5F906]/15 transition-all cursor-pointer"
                       >
-                        <option value="Inter">Inter â€” Moderno</option>
-                        <option value="Montserrat">Montserrat â€” Elegante</option>
-                        <option value="Poppins">Poppins â€” GeomÃ©trico</option>
-                        <option value="Outfit">Outfit â€” Vibrante</option>
-                        <option value="Playfair Display">Playfair â€” Luxo</option>
-                        <option value="Roboto">Roboto â€” ClÃ¡ssica</option>
+                        <option value="Inter">Inter � Moderno</option>
+                        <option value="Montserrat">Montserrat � Elegante</option>
+                        <option value="Poppins">Poppins � Geométrico</option>
+                        <option value="Outfit">Outfit � Vibrante</option>
+                        <option value="Playfair Display">Playfair � Luxo</option>
+                        <option value="Roboto">Roboto � Clássica</option>
                       </select>
                     </div>
                     {/* Shadow toggle */}
                     <div className="space-y-1.5">
                       <label className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/40 block">
-                        {isEs ? "Opciones" : "OpÃ§Ãµes"}
+                        {isEs ? "Opciones" : "Opções"}
                       </label>
                       <label className={`flex items-center gap-2.5 cursor-pointer rounded-xl border px-3 py-2 transition-all ${
                         activeSlide.showShadow !== false
@@ -5692,7 +5692,7 @@ export function F1CarouselBuilder({
                   {["editorial", "vibrant", "organic", "glass", "headline-center", "headline-footer"].includes(activeSlide.slideVariant) && (
                     <fieldset>
                       <legend className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-white/40">
-                        {isEs ? "PosiciÃ³n del contenido" : "PosiÃ§Ã£o do conteÃºdo"}
+                        {isEs ? "Posición del contenido" : "Posição do conteúdo"}
                       </legend>
                       <div className="grid grid-cols-4 gap-1">
                         {([
@@ -5722,7 +5722,7 @@ export function F1CarouselBuilder({
                   )}
                 </div>
 
-                {/* â”€â”€ SECTION 2: Selo / Etiqueta â”€â”€ */}
+                {/* ���� SECTION 2: Selo / Etiqueta ���� */}
                 <div className="px-4 py-3.5 space-y-3">
                   <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
                     {isEs ? "Etiqueta opcional" : "Selo opcional"}
@@ -5730,13 +5730,13 @@ export function F1CarouselBuilder({
                   <input
                     value={activeSlide.label || ""}
                     maxLength={32}
-                    placeholder={isEs ? "Ej: GUÃA RÃPIDA" : "Ex: GUIA RÃPIDO"}
+                    placeholder={isEs ? "Ej: GUÍA RÁPIDA" : "Ex: GUIA RÁPIDO"}
                     onChange={(event) => patchActive({ label: event.target.value })}
                     className="f1-carousel-input !min-h-[38px] !py-2 !text-[13px]"
                   />
                   {/* Pill suggestions */}
                   <div className="flex flex-wrap gap-1.5">
-                    {["EXPERIÃŠNCIA", "ROTEIRO", "GUIA", "INCLUI", "DICA"].map((pill) => (
+                    {["EXPERI�`NCIA", "ROTEIRO", "GUIA", "INCLUI", "DICA"].map((pill) => (
                       <button
                         key={pill}
                         type="button"
@@ -5751,7 +5751,7 @@ export function F1CarouselBuilder({
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[9px] font-bold text-white/55">
                       <span>{isEs ? "Personalizar etiqueta" : "Personalizar selo"}</span>
                       <span className="text-[8px] font-medium text-white/30">
-                        {isEs ? "formato, posiciÃ³n y color" : "formato, posiÃ§Ã£o e cor"}
+                        {isEs ? "formato, posición y color" : "formato, posição e cor"}
                       </span>
                     </summary>
                     <div className="mt-3">
@@ -5790,7 +5790,7 @@ export function F1CarouselBuilder({
                     </div>
                     <div className="mt-3">
                       <p className="mb-1.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
-                        {isEs ? "PosiciÃ³n" : "PosiÃ§Ã£o"}
+                        {isEs ? "Posición" : "Posição"}
                       </p>
                       <div className="grid grid-cols-4 gap-1">
                       {([
@@ -5820,7 +5820,7 @@ export function F1CarouselBuilder({
                   {/* Legacy compact selector kept hidden for saved drafts. */}
                   <div className="hidden">
                     {([
-                      ["filled", "SÃ³lido"],
+                      ["filled", "Sólido"],
                       ["outline-thin", "Contorno"],
                       ["translucent", "Suave"],
                     ] as const).map(([styleKey, styleTitle]) => (
@@ -5917,11 +5917,11 @@ export function F1CarouselBuilder({
 
                 {activeSlide.kind !== "closing" ? (
                   <>
-                    {/* â”€â”€ SECTION 3: TÃ­tulo â”€â”€ */}
+                    {/* ���� SECTION 3: Título ���� */}
                     <div className="px-4 py-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                      {isEs ? "TÃ­tulo" : "TÃ­tulo"}
+                      {isEs ? "Título" : "Título"}
                     </p>
                     <MiniTypographyBar
                       style={activeSlide.titleStyle}
@@ -5945,7 +5945,7 @@ export function F1CarouselBuilder({
                   {activeSlide.kind === "cover" && selectedPackage && (
                     <div className="space-y-1.5">
                       <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/30">
-                        {isEs ? "TÃ­tulos sugeridos" : "TÃ­tulos sugeridos"}
+                        {isEs ? "Títulos sugeridos" : "Títulos sugeridos"}
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {coverTitleSuggestions(selectedPackage, isEs).map((suggestion) => (
@@ -5967,11 +5967,11 @@ export function F1CarouselBuilder({
                   )}
                 </div>
 
-                {/* â”€â”€ SECTION 4: DescriÃ§Ã£o Curta â”€â”€ */}
+                {/* ���� SECTION 4: Descrição Curta ���� */}
                 <div className="px-4 pb-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                      {isEs ? "DescripciÃ³n" : "DescriÃ§Ã£o"}
+                      {isEs ? "Descripción" : "Descrição"}
                     </p>
                     <div className="flex items-center gap-1.5">
                       <MiniTypographyBar
@@ -6006,11 +6006,11 @@ export function F1CarouselBuilder({
                   />
                 </div>
 
-                {/* â”€â”€ SECTION 5: DescriÃ§Ã£o Inferior (bullets) â”€â”€ */}
+                {/* ���� SECTION 5: Descrição Inferior (bullets) ���� */}
                 <div className="px-4 pb-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                      {isEs ? "InformaciÃ³n complementaria (opcional)" : "InformaÃ§Ãµes complementares (opcional)"}
+                      {isEs ? "Información complementaria (opcional)" : "Informações complementares (opcional)"}
                     </p>
                     <div className="flex items-center gap-1.5">
                       <MiniTypographyBar
@@ -6039,7 +6039,7 @@ export function F1CarouselBuilder({
                     value={activeSlide.bullets.join("\n")}
                     rows={3}
                     placeholder={isEs
-                      ? "Transporte incluido\nGuÃ­a local\nSeguro de viaje"
+                      ? "Transporte incluido\nGuía local\nSeguro de viaje"
                       : "Transporte incluso\nGuia local\nSeguro viagem"}
                     onChange={(event) =>
                       patchActive({
@@ -6051,15 +6051,15 @@ export function F1CarouselBuilder({
                     }
                     className="f1-carousel-input !min-h-[76px] !py-2.5 text-sm resize-none w-full leading-snug"
                   />
-                  <p className="text-[9px] text-white/25">{isEs ? "Una lÃ­nea por informaciÃ³n. MÃ¡ximo 4." : "Uma linha por informaÃ§Ã£o. MÃ¡ximo 4."}</p>
+                  <p className="text-[9px] text-white/25">{isEs ? "Una línea por información. Máximo 4." : "Uma linha por informação. Máximo 4."}</p>
                 </div>
               </>
                 ) : (
-                  /* â”€â”€ Closing slide fields â”€â”€ */
+                  /* ���� Closing slide fields ���� */
                   <div className="divide-y divide-white/[0.06]">
                     <div className="px-4 py-3.5 space-y-2">
                       <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                        {isEs ? "Llamada a la acciÃ³n" : "Chamada para AÃ§Ã£o"}
+                        {isEs ? "Llamada a la acción" : "Chamada para Ação"}
                       </p>
                       <input
                         value={activeSlide.cta}
@@ -6084,7 +6084,7 @@ export function F1CarouselBuilder({
                     <div className="px-4 py-3.5 space-y-3">
                       <div>
                         <p className="mb-2 text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35">
-                          {isEs ? "Canales visibles en el cierre" : "Canais visÃ­veis no fechamento"}
+                          {isEs ? "Canales visibles en el cierre" : "Canais visíveis no fechamento"}
                         </p>
                         <div className="grid grid-cols-3 gap-2">
                           {([
@@ -6123,7 +6123,7 @@ export function F1CarouselBuilder({
                         {activeClosingChannels.includes("whatsapp") && (
                           <div className="space-y-1.5">
                             <label className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35 block">
-                              {isEs ? "WhatsApp / TelÃ©fono" : "WhatsApp / Telefone"}
+                              {isEs ? "WhatsApp / Teléfono" : "WhatsApp / Telefone"}
                             </label>
                             <input
                               value={activeSlide.phone || ""}
@@ -6169,8 +6169,8 @@ export function F1CarouselBuilder({
                       <div className="px-4 py-3">
                         <p className="rounded-xl border border-amber-300/20 bg-amber-300/[0.06] px-3 py-2 text-xs text-amber-100/80">
                           {isEs
-                            ? "Agrega la logo en el Panel de la FÃ¡brica para completar el cierre."
-                            : "Adicione a logo no Painel da FÃ¡brica para completar o fechamento."}
+                            ? "Agrega la logo en el Panel de la Fábrica para completar el cierre."
+                            : "Adicione a logo no Painel da Fábrica para completar o fechamento."}
                         </p>
                       </div>
                     )}
@@ -6190,7 +6190,7 @@ export function F1CarouselBuilder({
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-3 sm:p-4">
             <div className="mb-3">
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/35">
-                {isEs ? "Vista previa" : "PrÃ©via"}
+                {isEs ? "Vista previa" : "Prévia"}
               </p>
               <p className="mt-1 text-xs text-white/55">
                 {carouselFormat === "story"
@@ -6231,13 +6231,13 @@ export function F1CarouselBuilder({
                   <span className="text-sm font-black">
                     {tier === "guest"
                       ? (isEs ? "Crea tu cuenta para liberar el carrusel" : "Crie sua conta para liberar o carrossel")
-                      : (isEs ? "Vista previa lista. Desbloquea la descarga con Elite" : "PrÃ©via pronta. Libere o download no Elite")}
+                      : (isEs ? "Vista previa lista. Desbloquea la descarga con Elite" : "Prévia pronta. Libere o download no Elite")}
                   </span>
                 </button>
               )}
             </div>
 
-            {/* Setas de navegaÃ§Ã£o abaixo do preview */}
+            {/* Setas de navegação abaixo do preview */}
             <div className="mt-4 flex items-center justify-center gap-3">
               <button
                 type="button"
@@ -6255,7 +6255,7 @@ export function F1CarouselBuilder({
                 type="button"
                 onClick={() => setActiveIndex((current) => Math.min(slides.length - 1, current + 1))}
                 disabled={activeIndex === slides.length - 1}
-                aria-label={isEs ? "Siguiente imagen" : "PrÃ³xima imagem"}
+                aria-label={isEs ? "Siguiente imagen" : "Próxima imagem"}
                 className="flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.08] hover:text-white transition-all disabled:pointer-events-none disabled:opacity-25"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -6265,9 +6265,9 @@ export function F1CarouselBuilder({
             <p className="mt-4 text-center text-[10px] leading-relaxed text-white/35">
               {activeSlide?.kind === "cover"
                 ? activeCoverIsProtected
-                  ? (isEs ? "Portada original del anuncio." : "Capa original do anÃºncio.")
-                  : (isEs ? "Los cambios aparecen aquÃ­ al instante." : "As alteraÃ§Ãµes aparecem aqui na hora.")
-                : (isEs ? "Los cambios aparecen aquÃ­ al instante." : "As alteraÃ§Ãµes aparecem aqui na hora.")}
+                  ? (isEs ? "Portada original del anuncio." : "Capa original do anúncio.")
+                  : (isEs ? "Los cambios aparecen aquí al instante." : "As alterações aparecem aqui na hora.")
+                : (isEs ? "Los cambios aparecen aquí al instante." : "As alterações aparecem aqui na hora.")}
             </p>
           </div>
 
@@ -6287,13 +6287,13 @@ export function F1CarouselBuilder({
                 <Sparkles className="h-5 w-5" />
               </div>
               <h3 className="text-lg font-black text-white">
-                {isEs ? "Â¿Ya descargaste las imÃ¡genes de este carrusel?" : "JÃ¡ baixou as imagens desse carrossel?"}
+                {isEs ? "¿Ya descargaste las imágenes de este carrusel?" : "Já baixou as imagens desse carrossel?"}
               </h3>
             </div>
             <p className="text-xs leading-relaxed text-white/70">
               {isEs
-                ? "Se crearÃ¡ una nueva composiciÃ³n para el mismo destino. Puedes descargar la versiÃ³n actual antes de continuar."
-                : "SerÃ¡ criada uma nova composiÃ§Ã£o para o mesmo destino. VocÃª pode baixar a versÃ£o atual antes de continuar."}
+                ? "Se creará una nueva composición para el mismo destino. Puedes descargar la versión actual antes de continuar."
+                : "Será criada uma nova composição para o mesmo destino. Você pode baixar a versão atual antes de continuar."}
             </p>
             <div className="flex flex-col gap-2.5 pt-2">
               <button
@@ -6305,7 +6305,7 @@ export function F1CarouselBuilder({
                 className="w-full min-h-11 rounded-xl bg-[#F5F906] font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 transition-colors flex items-center justify-center gap-2"
               >
                 <Download className="h-4 w-4" />
-                {isEs ? "Descargar imÃ¡genes del carrusel" : "Baixar Imagens do Carrossel"}
+                {isEs ? "Descargar imágenes del carrusel" : "Baixar Imagens do Carrossel"}
               </button>
               <button
                 type="button"
@@ -6313,7 +6313,7 @@ export function F1CarouselBuilder({
                 className="w-full min-h-11 rounded-xl border border-white/15 bg-white/[0.05] font-extrabold text-white/80 hover:bg-white/[0.09] transition-colors flex items-center justify-center gap-2"
               >
                 <RefreshCw className="h-4 w-4" />
-                {isEs ? "Generar otra variaciÃ³n" : "Gerar outra variaÃ§Ã£o"}
+                {isEs ? "Generar otra variación" : "Gerar outra variação"}
               </button>
               <button
                 type="button"
@@ -6331,11 +6331,11 @@ export function F1CarouselBuilder({
         open={showExportPaywall}
         onOpenChange={setShowExportPaywall}
         feature="carousel_export"
-        title={isEs ? "Tu carrusel estÃ¡ listo" : "Seu carrossel estÃ¡ pronto"}
+        title={isEs ? "Tu carrusel está listo" : "Seu carrossel está pronto"}
         description={
           isEs
-            ? "Tu proyecto sigue guardado. Activa Elite para descargar nuevos carruseles sin lÃ­mite."
-            : "Seu projeto continua salvo. Ative o Elite para baixar novos carrossÃ©is sem limite."
+            ? "Tu proyecto sigue guardado. Activa Elite para descargar nuevos carruseles sin límite."
+            : "Seu projeto continua salvo. Ative o Elite para baixar novos carrosséis sem limite."
         }
       />
 

@@ -794,7 +794,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 type="button"
                 onClick={handleSaveProject}
                 disabled={isSaving || !state.agencyName}
-                className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 shrink-0 flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-[0.97] shrink-0 flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 title={!state.agencyName ? "Preencha o nome da agência antes de salvar" : "Salvar projeto atual na sua conta"}
               >
                 {isSaving ? (
@@ -818,7 +818,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   type="button"
                   onClick={() => setDeleteDialogOpen(true)}
                   disabled={isDeletingProject}
-                  className="px-3 py-2 rounded-lg text-red-400 text-xs font-bold transition-all border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
+                  className="px-3 py-2 rounded-lg text-red-400 text-xs font-bold transition-all border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 active:scale-[0.97] shrink-0 flex items-center justify-center gap-1.5"
                   title="Excluir o projeto atual"
                 >
                   <span>🗑️</span>
@@ -839,7 +839,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                    setProjectsPanelOpen(false);
                    onNavigate?.("phase", 1);
                 }}
-                className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
+                className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-[0.97] shrink-0 flex items-center justify-center gap-1.5"
                 style={{ borderColor: UI_ACCENT_BORDER_SOFT }}
               >
                 <span>+ Novo Projeto</span>
@@ -857,7 +857,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
         <div className="md:col-span-5 space-y-6">
           
           {/* CARD 1: IDENTIDADE & PERFIL DA AGÊNCIA */}
-          <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
+          <div className="bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
             <h3 
               onClick={() => onNavigate?.("phase", 5)}
               className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 mb-2 cursor-pointer hover:text-amber-400 transition-colors group"
@@ -873,7 +873,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               <div className="relative group flex-shrink-0">
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/10 hover:border-amber-500/40 bg-white/[0.01] flex flex-col items-center justify-center overflow-hidden transition-all duration-300 cursor-pointer relative"
+                  className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/10 hover:border-amber-500/40 bg-white/[0.01] flex flex-col items-center justify-center overflow-hidden transition-all duration-150 ease-out cursor-pointer relative"
                 >
                   {state.logoBase64 ? (
                     <img src={state.logoBase64} className="w-full h-full object-contain p-2" alt="Logo" />
@@ -1082,7 +1082,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           </div>
 
           {/* CARD RESUMO & HISTÓRICO DO USUÁRIO */}
-          <div className="mt-6 bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
+          <div className="mt-6 bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
@@ -1095,7 +1095,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <div 
                 onClick={() => onNavigate?.("phase", 1)}
-                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center"
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-150 ease-out  active:scale-[0.98] flex flex-col items-center justify-center"
               >
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center mb-1.5 sm:mb-2">
                   <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1105,7 +1105,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               </div>
               <div 
                 onClick={() => onNavigate?.("phase", 3)}
-                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center"
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-150 ease-out  active:scale-[0.98] flex flex-col items-center justify-center"
               >
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-1.5 sm:mb-2">
                   <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1120,7 +1120,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               </div>
               <div 
                 onClick={() => onNavigate?.("phase", 4)}
-                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-amber-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center"
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-amber-500/30 transition-all duration-150 ease-out  active:scale-[0.98] flex flex-col items-center justify-center"
               >
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-1.5 sm:mb-2">
                   <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1288,7 +1288,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           {false && <BusinessExtractor onExtract={handleExtractorData} />}
 
           {/* DYNAMIC CARD: SEUS PACOTES */}
-          <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-6">
+          <div className="bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 
@@ -1324,7 +1324,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   <div className="flex justify-center">
                     <button
                       onClick={() => { setShowAddForm(true); setEditingId(null); }}
-                      className="group flex items-center justify-center p-3 rounded-full bg-amber-500 hover:bg-amber-400 text-black transition-all duration-300 shadow-lg shadow-amber-500/20"
+                      className="group flex items-center justify-center p-3 rounded-full bg-amber-500 hover:bg-amber-400 text-black transition-all duration-150 ease-out shadow-lg shadow-amber-500/20"
                     >
                       <Plus className="w-5 h-5 font-bold" />
                       <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-500 ease-in-out text-[10px] uppercase font-black tracking-widest">
@@ -1414,7 +1414,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   state.selectedPackages.map((pkg) => (
                     <div 
                       key={pkg.id} 
-                      className="bg-white/[0.01] border border-white/5 rounded-2xl p-4 hover:border-white/15 transition-all duration-300 group"
+                      className="bg-white/[0.01] border border-white/5 rounded-2xl p-4 hover:border-white/15 transition-all duration-150 ease-out group"
                     >
                       {editingId === pkg.id ? (
                         /* Edit mode expanded inline */
