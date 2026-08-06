@@ -467,7 +467,8 @@ async function drawFinalBranding(
     const textWidth = ctx.measureText(displayValue).width;
     const iconX = textRightX - textWidth - itemGap - currentIconSize/2;
 
-    await drawAdSocialIcon(ctx, c.icon, iconX, yPos, currentIconSize);
+    // Descer o ícone alguns pixels para alinhar perfeitamente com o meio visual do texto
+    await drawAdSocialIcon(ctx, c.icon, iconX, yPos + 3, currentIconSize);
 
     // Pulo vertical para o contato de cima
     yPos -= (footerHeight * 0.56);
@@ -1435,13 +1436,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
       let priceText = mainPrice || `${curSym} ${price}`.trim();
       if (hideCents) priceText = priceText.replace(/[.,]\d{2}\s*$/, "");
       const suffixText = (paymentSuffix || bottomSuffix || "").trim();
-      const ctaText = (rawShowPixBanner !== false ? (pixBannerText || "RESERVAR AGORA") : "GARANTIR VAGA").trim();
+      let ctaText = (rawShowPixBanner !== false ? (pixBannerText || "RESERVAR AGORA") : "GARANTIR VAGA").trim();
+      if (!ctaText) ctaText = "RESERVAR AGORA"; // Fallback seguro caso enviem apenas espaços
 
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
       const pillH = Math.round(width * (isStoryV8Luxury ? 0.07 : 0.056));
-      const pillY = Math.round(height * (isStoryV8Luxury ? 0.055 : 0.012));
+      const pillY = Math.round(height * (isStoryV8Luxury ? 0.065 : 0.035));
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.027))}px Inter, Arial, sans-serif`;
       const promoW = Math.min(width - pad * 2, Math.max(width * 0.34, ctx.measureText(promoText).width + pillH * 1.55));
       ctx.save();
@@ -1462,7 +1464,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const destinationLines = wrapTextSafe(ctx, destinationText, titleMaxW, 2, Math.round(destBase * 0.54));
       const leadLineH = Math.round(leadSize * 0.94);
       const destLineH = Math.round(destBase * 0.9);
-      const titleStartY = pillY + pillH + Math.round(height * (isStoryV8Luxury ? 0.04 : 0.005)) + leadLineH / 2 - 4;
+      const titleStartY = pillY + pillH + Math.round(height * (isStoryV8Luxury ? 0.04 : 0.020)) + leadLineH / 2 - 4;
 
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.78)";
@@ -1481,7 +1483,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.restore();
 
       const titleBottomY = destStartY + Math.max(0, destinationLines.length - 0.5) * destLineH;
-      const infoY = titleBottomY + Math.round(height * 0.015) - 2;
+      const infoY = titleBottomY + Math.round(height * 0.020) - 2;
       const infoText = periodText || destinationText;
       const infoH = infoText ? Math.round(width * (isStoryV8Luxury ? 0.064 : 0.054)) : 0;
       if (infoText) {
@@ -1547,7 +1549,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       );
       const priceBoxY = Math.max(contentY, cardY + cardH / 2 - priceBoxH / 2);
 
-      const cardW = Math.round(width * (isStoryV8Luxury ? 0.33 : 0.30));
+      const cardW = Math.round(width * (isStoryV8Luxury ? 0.22 : 0.18)); // Mais estreito para aproximar ícones
       const gap = Math.round(width * 0.022);
       const totalBoxesW = priceBoxW + gap + cardW;
       const startX = (width - totalBoxesW) / 2 - (isStoryV8Luxury ? 0 : 20);
@@ -1610,8 +1612,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const benefitPadY = Math.max(16, Math.round(cardH * 0.08));
       const benefitCellW = (cardW - benefitPadX * 2) / 2;
       const benefitSlotH = (cardH - benefitPadY * 2) / Math.max(1, numRows);
-      const showText = benefitCount <= 4;
-      const benefitIconSize = Math.round(width * (showText ? 0.025 : 0.034));
+      const showText = false; // Forçado para nunca exibir texto e deixar os ícones limpos
+      const benefitIconSize = Math.round(width * 0.045); // Maior para dar destaque já que não tem texto
       const benefitBubbleR = Math.round(benefitIconSize * 1.08);
       const benefitFontSize = Math.round(width * 0.0135);
       const benefitLineH = Math.round(benefitFontSize * 1.04);
