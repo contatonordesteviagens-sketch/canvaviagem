@@ -1381,7 +1381,33 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const gold = secondaryColor || "#d9b15f";
 
       const isColorLight = (c: string) => {
-        let hex = (c || "#ffffff").replace('#', '');
+        try {
+          if (typeof document !== 'undefined') {
+            const cvs = document.createElement('canvas');
+            cvs.width = 1; cvs.height = 1;
+            const tctx = cvs.getContext('2d', { willReadFrequently: true });
+            if (tctx) {
+              tctx.fillStyle = c;
+              tctx.fillRect(0,0,1,1);
+              const d = tctx.getImageData(0,0,1,1).data;
+              return (0.299 * (d[0]/255) + 0.587 * (d[1]/255) + 0.114 * (d[2]/255)) > 0.55;
+            }
+          }
+        } catch(e) {}
+        
+        let colorStr = (c || "#ffffff").toLowerCase().trim();
+        if (colorStr.startsWith('rgb')) {
+          const match = colorStr.match(/[\d.]+/g);
+          if (match && match.length >= 3) {
+            const r = parseInt(match[0], 10);
+            const g = parseInt(match[1], 10);
+            const b = parseInt(match[2], 10);
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            return luminance > 0.55;
+          }
+        }
+        
+        let hex = colorStr.replace('#', '');
         if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
         if (hex.length === 6) {
           const r = parseInt(hex.slice(0, 2), 16);
@@ -1390,7 +1416,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
           return luminance > 0.55;
         }
-        return true; // Fallback safe
+        return false; // Fallback SAFE = false (texto branco em botões escuros é mais seguro)
       };
 
       const onAccent = isColorLight(accent) ? "#000000" : "#ffffff";
@@ -1441,7 +1467,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textBaseline = "middle";
 
       const pillH = Math.round(width * (isStoryV8Luxury ? 0.07 : 0.056));
-      const pillY = Math.round(height * (isStoryV8Luxury ? 0.065 : 0.035));
+      const pillY = Math.round(height * (isStoryV8Luxury ? 0.08 : 0.055));
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.027))}px Inter, Arial, sans-serif`;
       const promoW = Math.min(width - pad * 2, Math.max(width * 0.34, ctx.measureText(promoText).width + pillH * 1.55));
       ctx.save();
@@ -1614,8 +1640,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const benefitBubbleR = Math.round(benefitIconSize * 1.08);
 
       // Calculando um grid compacto para agrupar os ícones no centro do quadro preto
-      const tightCellW = benefitIconSize * 2.8;
-      const tightSlotH = benefitIconSize * 2.8;
+      // Multiplicador 2.3 garante que as bolinhas não se sobreponham (diâmetro é ~2.16x)
+      const tightCellW = benefitIconSize * 2.3;
+      const tightSlotH = benefitIconSize * 2.3;
       const gridW = tightCellW * numCols;
       const gridH = tightSlotH * numRows;
       const gridStartX = cardX + cardW / 2 - gridW / 2;
