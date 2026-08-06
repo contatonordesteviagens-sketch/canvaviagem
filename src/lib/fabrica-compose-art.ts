@@ -1381,18 +1381,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const gold = secondaryColor || "#d9b15f";
 
       const isColorLight = (c: string) => {
-        try {
-          const cvs = document.createElement('canvas');
-          cvs.width = 1; cvs.height = 1;
-          const tctx = cvs.getContext('2d', { willReadFrequently: true });
-          if(tctx) {
-            tctx.fillStyle = c;
-            tctx.fillRect(0,0,1,1);
-            const d = tctx.getImageData(0,0,1,1).data;
-            return (0.299 * (d[0]/255) + 0.587 * (d[1]/255) + 0.114 * (d[2]/255)) > 0.55;
-          }
-        } catch(e) {}
-        return true;
+        let hex = (c || "#ffffff").replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+        if (hex.length === 6) {
+          const r = parseInt(hex.slice(0, 2), 16);
+          const g = parseInt(hex.slice(2, 4), 16);
+          const b = parseInt(hex.slice(4, 6), 16);
+          const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+          return luminance > 0.55;
+        }
+        return true; // Fallback safe
       };
 
       const onAccent = isColorLight(accent) ? "#000000" : "#ffffff";
@@ -1549,7 +1547,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       );
       const priceBoxY = Math.max(contentY, cardY + cardH / 2 - priceBoxH / 2);
 
-      const cardW = Math.round(width * (isStoryV8Luxury ? 0.22 : 0.18)); // Mais estreito para aproximar ícones
+      const cardW = Math.round(width * (isStoryV8Luxury ? 0.33 : 0.28));
       const gap = Math.round(width * 0.022);
       const totalBoxesW = priceBoxW + gap + cardW;
       const startX = (width - totalBoxesW) / 2 - (isStoryV8Luxury ? 0 : 20);
@@ -1610,47 +1608,38 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       const benefitPadX = Math.round(cardW * 0.11);
       const benefitPadY = Math.max(16, Math.round(cardH * 0.08));
-      const benefitCellW = (cardW - benefitPadX * 2) / 2;
-      const benefitSlotH = (cardH - benefitPadY * 2) / Math.max(1, numRows);
+      const numCols = 2; // Sempre 2 colunas para o grid de ícones (dado que são no máx 6 ícones)
       const showText = false; // Forçado para nunca exibir texto e deixar os ícones limpos
       const benefitIconSize = Math.round(width * 0.045); // Maior para dar destaque já que não tem texto
       const benefitBubbleR = Math.round(benefitIconSize * 1.08);
-      const benefitFontSize = Math.round(width * 0.0135);
-      const benefitLineH = Math.round(benefitFontSize * 1.04);
+
+      // Calculando um grid compacto para agrupar os ícones no centro do quadro preto
+      const tightCellW = benefitIconSize * 2.8;
+      const tightSlotH = benefitIconSize * 2.8;
+      const gridW = tightCellW * numCols;
+      const gridH = tightSlotH * numRows;
+      const gridStartX = cardX + cardW / 2 - gridW / 2;
+      const gridStartY = cardY + cardH / 2 - gridH / 2;
 
       ctx.textAlign = "center";
       benefitItems.forEach((item, idx) => {
         const row = Math.floor(idx / 2);
         const col = idx % 2;
-        let cx = cardX + benefitPadX + benefitCellW * (col + 0.5);
+        let cx = gridStartX + tightCellW * (col + 0.5);
         if (idx === benefitItems.length - 1 && benefitItems.length % 2 !== 0) {
           cx = cardX + cardW / 2;
         }
-        const slotTop = cardY + benefitPadY + benefitSlotH * row;
-        const iconY = slotTop + benefitSlotH * (showText ? 0.35 : 0.50);
-        const textStartY = slotTop + benefitSlotH * 0.62;
+        const cy = gridStartY + tightSlotH * (row + 0.5);
 
         ctx.save();
         ctx.fillStyle = "rgba(0,0,0,0.105)";
         ctx.beginPath();
-        ctx.arc(cx, iconY - benefitIconSize * 0.08, benefitBubbleR, 0, Math.PI * 2);
+        ctx.arc(cx, cy, benefitBubbleR, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
         
         const iconKey = (item.icon as IconKey) || "check";
-        drawMonoIcon(ctx, iconKey, cx, iconY, benefitIconSize, onGold, 1.85);
-
-        if (showText) {
-          ctx.fillStyle = onGold;
-          ctx.font = `800 ${benefitFontSize}px Inter, Arial, sans-serif`;
-          const textMaxW = idx === benefitItems.length - 1 && benefitItems.length % 2 !== 0
-            ? cardW - benefitPadX * 2
-            : benefitCellW - 4;
-          const lines = wrapTextSafe(ctx, String(item.text || ""), textMaxW, 2, 9);
-          lines.forEach((line, lineIdx) => {
-            safeFillText(ctx, line, cx, textStartY + lineIdx * benefitLineH, textMaxW, 9);
-          });
-        }
+        drawMonoIcon(ctx, iconKey, cx, cy, benefitIconSize, onGold, 1.85);
       });
 
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.034 : 0.034))}px Inter, Arial, sans-serif`;
