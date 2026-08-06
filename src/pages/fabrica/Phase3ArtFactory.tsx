@@ -1110,6 +1110,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         const nextSeed = generationSeed + amount;
         setVariationCounter(nextSeed);
         localStorage.setItem(cycleKey, String(nextSeed));
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("cv:guest-has-generated", "true");
+          window.dispatchEvent(new Event("fabrica:generated"));
+        }
       };
       const buildComposeOptions = (
         imgUrl: string,
@@ -1881,12 +1885,12 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
 
           <>
-              <div className="flex flex-wrap gap-1.5 mb-3">
+              <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ WebkitOverflowScrolling: "touch" }}>
                 {[...new Set([...(state.destinos || []), ...POPULAR_PHOTO_DESTINATIONS])].slice(0, 14).map((d) => (
                   <button
                     key={d}
                     onClick={() => { setDestination(d); searchPhotos(d); }}
-                    className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
+                    className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors flex-shrink-0 whitespace-nowrap ${
                       photoQuery === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
                     }`}
                     style={photoQuery === d ? { background: UI_ACCENT, borderColor: UI_ACCENT } : undefined}
@@ -2018,10 +2022,11 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               <p className="text-[10px] text-white/40 mt-2">A IA vai adaptar a imagem ao formato escolhido.</p>
               {customLink.trim() && (
                 <div className="mt-4 border border-white/10 rounded-xl overflow-hidden bg-black/40 p-2 flex flex-col items-center">
+                <div className="mt-3 border border-white/10 rounded-xl overflow-hidden bg-black/40 p-2 flex flex-col items-center">
                   <img 
                     src={customLink.trim()} 
                     alt="preview do link" 
-                    className="w-32 h-32 mx-auto rounded-lg object-cover mb-2" 
+                    className="w-24 h-24 mx-auto rounded-lg object-cover mb-2" 
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = "https://placehold.co/400x400/1a1a1a/444444?text=Link+Invalido";
                     }} 
@@ -2034,10 +2039,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         </div>
       )}
 
-      <div className={`${sectionCls} space-y-4`}>
+      <div className={`${sectionCls} space-y-3`}>
         <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 · Dados do anúncio</h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Destino *</label>
             <div className="relative">
@@ -2149,8 +2154,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         </div>
 
-        <div>
-          <label className={labelCls}>Dias / data da viagem</label>
+        <div className="grid grid-cols-2 gap-3 mb-1">
+          <div>
+            <label className={labelCls}>Dias / data da viagem</label>
           <div className="relative">
             <input
               value={travelPeriod}
@@ -2206,7 +2212,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               ))}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {paymentMode !== "cash" && (
                 <div>
                   <label className={labelCls}>Parcelas</label>
