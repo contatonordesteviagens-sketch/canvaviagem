@@ -2316,6 +2316,47 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         )}
       </div>
 
+      <div className={`${sectionCls} !border-amber-500/30 !bg-amber-500/5 shadow-amber-500/10`}>
+        <button
+          type="button"
+          onClick={() => setIsBatchMode(!isBatchMode)}
+          title={isBatchMode ? "Desativar: gerar apenas 1 arte" : "Ativar: gerar 3 variações diferentes de uma vez"}
+          className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-bold transition-all border ${
+            isBatchMode
+              ? "bg-indigo-500/15 border-indigo-500/40 text-indigo-200"
+              : "bg-white/[0.02] border-white/10 text-white/50 hover:text-white hover:bg-white/[0.05]"
+          }`}
+        >
+          <Sparkles className={`w-3.5 h-3.5 ${isBatchMode ? "text-indigo-300" : "text-white/40"}`} />
+          Gerar 3 variações diferentes
+          <span className={`w-7 h-3.5 rounded-full relative transition-colors ${isBatchMode ? "bg-indigo-500" : "bg-white/15"}`}>
+            <span className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white transition-all ${isBatchMode ? "left-4" : "left-0.5"}`} />
+          </span>
+        </button>
+
+        {!loading && (genMode === "photo" && !selectedPhotoUrl) && (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-semibold">
+            <span className="text-base">📷</span>
+            Selecione uma foto acima para habilitar a geração do anúncio
+          </div>
+        )}
+        {!loading && (genMode === "custom" && !customImageData && !customLink.trim()) && (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-semibold">
+            <span className="text-base">🖼️</span>
+            {customSource === "upload" ? "Carregue uma imagem para habilitar a geração" : "Cole o link da imagem para habilitar a geração"}
+          </div>
+        )}
+        <button
+          onClick={() => generateNext()}
+          disabled={loading || !destination || (genMode === "photo" && !selectedPhotoUrl) || (genMode === "custom" && !customImageData && !customLink.trim())}
+          className="w-full py-4 rounded-xl font-extrabold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
+          style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)`, boxShadow: "0 10px 30px rgba(245, 249, 6, 0.24)" }}
+        >
+          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Gerar Anúncio</>}
+        </button>
+        {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
+      </div>
+
       <div className={`${sectionCls} space-y-5`}>
         <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
           <button
@@ -2606,43 +2647,12 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         </div>
         
         <button
-          type="button"
-          onClick={() => setIsBatchMode(!isBatchMode)}
-          title={isBatchMode ? "Desativar: gerar apenas 1 arte" : "Ativar: gerar 3 variações diferentes de uma vez"}
-          className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-bold transition-all border ${
-            isBatchMode
-              ? "bg-indigo-500/15 border-indigo-500/40 text-indigo-200"
-              : "bg-white/[0.02] border-white/10 text-white/50 hover:text-white hover:bg-white/[0.05]"
-          }`}
-        >
-          <Sparkles className={`w-3.5 h-3.5 ${isBatchMode ? "text-indigo-300" : "text-white/40"}`} />
-          Gerar 3 variações diferentes
-          <span className={`w-7 h-3.5 rounded-full relative transition-colors ${isBatchMode ? "bg-indigo-500" : "bg-white/15"}`}>
-            <span className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white transition-all ${isBatchMode ? "left-4" : "left-0.5"}`} />
-          </span>
-        </button>
-
-        {!loading && (genMode === "photo" && !selectedPhotoUrl) && (
-          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-semibold">
-            <span className="text-base">📷</span>
-            Selecione uma foto acima para habilitar a geração do anúncio
-          </div>
-        )}
-        {!loading && (genMode === "custom" && !customImageData && !customLink.trim()) && (
-          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-semibold">
-            <span className="text-base">🖼️</span>
-            {customSource === "upload" ? "Carregue uma imagem para habilitar a geração" : "Cole o link da imagem para habilitar a geração"}
-          </div>
-        )}
-        <button
           onClick={() => generateNext()}
           disabled={loading || !destination || (genMode === "photo" && !selectedPhotoUrl) || (genMode === "custom" && !customImageData && !customLink.trim())}
-          className="w-full py-4 rounded-xl font-extrabold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
-          style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)`, boxShadow: "0 10px 30px rgba(245, 249, 6, 0.24)" }}
+          className="w-full py-3 rounded-xl font-bold text-white/70 bg-white/[0.03] border border-white/10 flex items-center justify-center gap-2 hover:bg-white/[0.08] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Gerar Anúncio</>}
+          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Processando...</> : "Avançar"}
         </button>
-        {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
 
         {(generationError || generatedImages.length > 0) && (
           <div ref={resultRef} className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4 scroll-mt-24">
