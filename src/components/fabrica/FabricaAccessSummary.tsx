@@ -32,26 +32,21 @@ export function FabricaAccessSummary() {
 
   const isGuest = tier === "guest";
   
-  // Regra de Ouro: Ocultar tudo para visitante se ainda NÃO gerou nada
-  if (isGuest && !hasGenerated) {
-    return null;
-  }
-
   const tierLabel = tier === "start_legacy"
     ? "Plano Start"
     : isGuest
-      ? "" // Visitante não precisa mais ler "Modo visitante"
+      ? "" // Visitante
       : "Acesso gratuito";
 
   return (
     <div className={`mb-4 flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.035] px-3 py-2.5 sm:flex-row sm:items-center ${isGuest ? 'sm:justify-end' : 'sm:justify-between'}`}>
       
-      {/* Esconde a parte de texto do banner se for visitante */}
-      {!isGuest && (
+      {/* Esconde a parte de texto do banner se for visitante e ainda não tiver gerado */}
+      {(!isGuest || hasGenerated) && (
         <div className="flex min-w-0 items-center gap-2">
           <Sparkles className="h-4 w-4 shrink-0 text-amber-300" />
           <div className="min-w-0">
-            <p className="text-xs font-bold text-white">{tierLabel}</p>
+            <p className="text-xs font-bold text-white">{isGuest ? "Modo Visitante" : tierLabel}</p>
             <p className="truncate text-[10px] text-white/45">
               Monte tudo e use seus créditos somente ao baixar.
             </p>
@@ -68,7 +63,7 @@ export function FabricaAccessSummary() {
           <Layers3 className="h-3 w-3 text-emerald-300" />
           {isGuest ? `${limits.carousel_export} carrosséis` : `${remaining.carousel_export} de ${limits.carousel_export} carrosséis`}
         </span>
-        {isGuest && (
+        {isGuest && hasGenerated && (
           <button
             type="button"
             onClick={() => {

@@ -1599,8 +1599,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     onNext();
   };
 
-  const sectionCls = "bg-[#0F0F11]/80 border border-white/10 rounded-3xl p-6 backdrop-blur-2xl shadow-2xl shadow-black/50 space-y-4 transition-all";
-  const labelCls = "text-[10px] font-extrabold text-white/50 uppercase tracking-[0.15em] block mb-1.5";
+  const sectionCls = "bg-[#0F0F11]/80 border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 backdrop-blur-2xl shadow-2xl shadow-black/50 space-y-3 sm:space-y-4 transition-all";
+  const labelCls = "text-[10px] font-extrabold text-white/50 uppercase tracking-[0.15em] block mb-1";
   const inputCls = "w-full bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05] focus:border-amber-400/60 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(251,191,36,0.15)] rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all duration-300";
 
   return (
@@ -2042,7 +2042,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       <div className={`${sectionCls} space-y-3`}>
         <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 · Dados do anúncio</h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <div>
             <label className={labelCls}>Destino *</label>
             <div className="relative">
@@ -2532,7 +2532,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               </span>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {highlights.map((h, i) => {
               const IconComp = ICON_OPTIONS.find((o) => o.key === h.icon)?.Icon || Check;
               return (
