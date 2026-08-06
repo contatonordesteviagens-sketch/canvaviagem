@@ -1186,7 +1186,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                           <button
                             type="button"
                           onClick={async () => {
-                            if (!window.confirm(`⚠️ Deseja realmente despublicar o site "${url}"? O projeto continuará salvo para edição.`)) return;
+                            if (!window.confirm(`⚠️ Deseja realmente excluir o site publicado "${url}"? O projeto continuará salvo para edição.`)) return;
                             try {
                               const project = savedProjects?.find((candidate) => candidate.id === site.project_id) || savedProjects?.find((candidate) => {
                                 const snapshot = candidate.state_snapshot as any;

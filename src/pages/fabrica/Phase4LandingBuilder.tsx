@@ -1336,16 +1336,31 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                     onDelete={() => delPacote(p.id)}
                   />
                 ))}
-                <button
-                  onClick={addPacote}
-                  className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
-                >
-                  <Plus className="w-4 h-4" /> Adicionar pacote
-                </button>
+                <div className="flex justify-center mt-4">
+                  <button
+                    onClick={addPacote}
+                    title="Adicionar novo pacote"
+                    className="group relative w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center border border-amber-500/30 hover:scale-105"
+                  >
+                    <Plus className="w-5 h-5" />
+                    <span className="absolute bottom-full mb-2 bg-black/80 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                      Adicionar novo pacote
+                    </span>
+                  </button>
+                </div>
               </div>
             </FabricaCard>
 
           <div className="space-y-6">
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={onNext}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl flex items-center gap-2 transition-colors shadow-lg shadow-blue-500/20"
+              >
+                Avançar para Criar Anúncios (F1) <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
             <FabricaCard title="Paleta da marca">
               <BrandPaletteEditor
                 primaryColor={state.primaryColor}
@@ -1787,6 +1802,15 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 />
               </div>
             </FabricaCard>
+            
+            <div className="flex justify-center mt-8 pb-12">
+              <button
+                onClick={onNext}
+                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white text-base font-bold rounded-2xl flex items-center gap-3 transition-all shadow-xl shadow-blue-600/30 hover:scale-105"
+              >
+                Avançar para Criar Anúncios (F1) <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* BARRA DE AÇÕES INFERIOR FIXA */}
