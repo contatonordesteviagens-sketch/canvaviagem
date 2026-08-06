@@ -1467,7 +1467,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textBaseline = "middle";
 
       const pillH = Math.round(width * (isStoryV8Luxury ? 0.07 : 0.056));
-      const pillY = Math.round(height * (isStoryV8Luxury ? 0.08 : 0.055));
+      const pillY = Math.round(height * (isStoryV8Luxury ? 0.065 : 0.035));
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.032 : 0.027))}px Inter, Arial, sans-serif`;
       const promoW = Math.min(width - pad * 2, Math.max(width * 0.34, ctx.measureText(promoText).width + pillH * 1.55));
       ctx.save();
@@ -1541,13 +1541,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const availableBoxH = Math.max(150, ctaY - contentY - boxBottomGap);
       const benefitCount = benefitItems.length;
       const numRows = Math.ceil(benefitCount / 2);
-      const cardVerticalPad = Math.round(height * (benefitCount <= 4 ? 0.038 : 0.028));
-      const maxBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.065 : 0.055));
-      const minBenefitGap = Math.round(height * (isStoryV8Luxury ? 0.045 : 0.035));
-      const fitBenefitGap = Math.floor((availableBoxH - cardVerticalPad) / Math.max(1, numRows));
-      const benefitGap = Math.max(minBenefitGap, Math.min(maxBenefitGap, fitBenefitGap));
-      const cardH = Math.min(availableBoxH, numRows * benefitGap + cardVerticalPad);
-      const cardY = Math.max(contentY, ctaY - cardH - boxBottomGap);
 
       const priceMatch = priceText.match(/^([^\d]*?)\s*([\d. ]+)([,.]\d{1,2})?$/);
       const priceSymbol = (priceMatch?.[1] || curSym || "").trim();
@@ -1560,6 +1553,17 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const priceLabelSize = Math.round(width * (isStoryV8Luxury ? 0.027 : 0.024));
       const suffixSize = Math.round(width * (isStoryV8Luxury ? 0.024 : 0.022));
       const totalSize = Math.round(width * 0.0235);
+      
+      const priceBoxH = Math.round(
+        20 + priceLabelSize + 8 + priceMainSize + (suffixText ? 8 + suffixSize : 0) + (hasTotalLine ? 8 + totalSize : 0) + 16
+      );
+      
+      // FORÇAR a altura do quadro de benefícios para ser EXATAMENTE igual a do quadro de preço!
+      const cardH = priceBoxH;
+      // Posicionar AMBOS na mesma altura exata e linha reta
+      const cardY = Math.max(contentY, ctaY - cardH - boxBottomGap);
+      const priceBoxY = cardY;
+
       const priceBoxBaseW = Math.round(width * (
         hasCents
           ? (isStoryV8Luxury ? 0.36 : 0.32)
@@ -1568,10 +1572,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
             : (isStoryV8Luxury ? 0.30 : 0.28)
       ));
       const priceBoxW = priceBoxBaseW;
-      const priceBoxH = Math.round(
-        20 + priceLabelSize + 8 + priceMainSize + (suffixText ? 8 + suffixSize : 0) + (hasTotalLine ? 8 + totalSize : 0) + 16
-      );
-      const priceBoxY = Math.max(contentY, cardY + cardH / 2 - priceBoxH / 2);
 
       const cardW = Math.round(width * (isStoryV8Luxury ? 0.33 : 0.28));
       const gap = Math.round(width * 0.022);
