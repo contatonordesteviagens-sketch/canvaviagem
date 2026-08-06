@@ -1154,36 +1154,37 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                           </div>
                           <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white shrink-0" />
                         </a>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            // 1. Tenta encontrar por ID exato do projeto (ignorando user.id se foi salvo com UUID do usuário)
-                            const exactProject = (site.project_id && site.project_id !== user?.id)
-                              ? savedProjects?.find((x) => x.id === site.project_id)
-                              : undefined;
-                            let p = exactProject && projectMatchesSite(exactProject, site)
-                              ? exactProject
-                              : undefined;
-
-                            // 2. Se não encontrou por ID, procura pelo slug da URL ou nome da agência ou ID do site
-                            if (!p) {
-                              p = savedProjects?.find((x) => projectMatchesSite(x, site));
-                            }
-
-                            if (!p?.state_snapshot) {
-                              await recoverPublishedSiteForEditing(site);
-                              return;
-                            }
-
-                            await loadSavedProject(p);
-                            window.setTimeout(() => onNavigate?.("phase", 3), 100);
-                          }}
-                          className="px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 text-violet-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-                        >
-                          <Pencil className="w-3.5 h-3.5" /> Editar Site
-                        </button>
-                        <button
-                          type="button"
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              // 1. Tenta encontrar por ID exato do projeto (ignorando user.id se foi salvo com UUID do usuário)
+                              const exactProject = (site.project_id && site.project_id !== user?.id)
+                                ? savedProjects?.find((x) => x.id === site.project_id)
+                                : undefined;
+                              let p = exactProject && projectMatchesSite(exactProject, site)
+                                ? exactProject
+                                : undefined;
+  
+                              // 2. Se não encontrou por ID, procura pelo slug da URL ou nome da agência ou ID do site
+                              if (!p) {
+                                p = savedProjects?.find((x) => projectMatchesSite(x, site));
+                              }
+  
+                              if (!p?.state_snapshot) {
+                                await recoverPublishedSiteForEditing(site);
+                                return;
+                              }
+  
+                              await loadSavedProject(p);
+                              window.setTimeout(() => onNavigate?.("phase", 3), 100);
+                            }}
+                            className="flex-1 sm:flex-none px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 text-violet-400 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shrink-0"
+                          >
+                            <Pencil className="w-3.5 h-3.5" /> Editar Site
+                          </button>
+                          <button
+                            type="button"
                           onClick={async () => {
                             if (!window.confirm(`⚠️ Deseja realmente despublicar o site "${url}"? O projeto continuará salvo para edição.`)) return;
                             try {
@@ -1217,11 +1218,12 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                               toast.error(err?.message || "Erro ao excluir site publicado");
                             }
                           }}
-                          className="px-3 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-                          title="Tirar o site do ar sem apagar o projeto"
-                        >
-                          📴 Despublicar
-                        </button>
+                            className="px-3.5 py-2.5 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/20 text-red-400 transition-all flex items-center justify-center shrink-0"
+                            title="Excluir site publicado"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -1319,12 +1321,17 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => { setShowAddForm(true); setEditingId(null); }}
-                    className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-dashed border-white/10 text-white/40 hover:border-amber-500/40 hover:text-amber-400 transition-all duration-300 text-xs uppercase font-extrabold tracking-widest bg-white/[0.01] hover:bg-amber-500/[0.02]"
-                  >
-                    <Plus className="w-4 h-4" /> Adicionar novo pacote
-                  </button>
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => { setShowAddForm(true); setEditingId(null); }}
+                      className="group flex items-center justify-center p-3 rounded-full bg-amber-500 hover:bg-amber-400 text-black transition-all duration-300 shadow-lg shadow-amber-500/20"
+                    >
+                      <Plus className="w-5 h-5 font-bold" />
+                      <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-500 ease-in-out text-[10px] uppercase font-black tracking-widest">
+                        <span className="pr-3 pl-2">Adicionar novo pacote</span>
+                      </span>
+                    </button>
+                  </div>
                 )
               ) : (
                 <div className="bg-[#141416] border border-white/10 rounded-2xl p-5 space-y-4 animate-scaleUp">

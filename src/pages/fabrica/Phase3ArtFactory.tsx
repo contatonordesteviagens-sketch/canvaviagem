@@ -2649,9 +2649,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         <button
           onClick={() => generateNext()}
           disabled={loading || !destination || (genMode === "photo" && !selectedPhotoUrl) || (genMode === "custom" && !customImageData && !customLink.trim())}
-          className="w-full py-3 rounded-xl font-bold text-white/70 bg-white/[0.03] border border-white/10 flex items-center justify-center gap-2 hover:bg-white/[0.08] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full py-4 rounded-xl font-extrabold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
+          style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)`, boxShadow: "0 10px 30px rgba(245, 249, 6, 0.24)" }}
         >
-          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Processando...</> : "Avançar"}
+          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Gerar Anúncio</>}
         </button>
 
         {(generationError || generatedImages.length > 0) && (
