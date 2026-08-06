@@ -12,6 +12,20 @@ import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
 import {
   ensureFreshSupabaseSession,
 } from "@/lib/supabase-session";
+import fpPromise from "@fingerprintjs/fingerprintjs";
+
+let visitorIdPromise: Promise<string | null> | null = null;
+const getVisitorId = async () => {
+  if (typeof window === "undefined") return null;
+  if (!visitorIdPromise) {
+    visitorIdPromise = fpPromise
+      .load()
+      .then((fp) => fp.get())
+      .then((result) => result.visitorId)
+      .catch(() => null);
+  }
+  return await visitorIdPromise;
+};
 
 export type AccountTier =
   | "guest"
@@ -262,12 +276,14 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
   const reserve = useCallback<EntitlementsContextValue["reserve"]>(
     async (capability, idempotencyKey, options) => {
       try {
+        const fingerprint = await getVisitorId();
         const data = await invoke({
           action: "reserve",
           capability,
           idempotency_key: idempotencyKey,
           project_id: options?.projectId ?? "",
           metadata: options?.metadata ?? {},
+          fingerprint,
         });
         return {
           allowed: Boolean(data.allowed),

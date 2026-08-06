@@ -197,6 +197,7 @@ serve(async (req) => {
         p_project_id: typeof body.project_id === "string" ? body.project_id : "",
         p_metadata: typeof body.metadata === "object" && body.metadata ? body.metadata : {},
         p_limit: limit,
+        p_fingerprint: typeof body.fingerprint === "string" ? body.fingerprint : null,
       });
       if (error) throw error;
       const reservation = data && typeof data === "object" && !Array.isArray(data)
