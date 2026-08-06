@@ -2877,7 +2877,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         )}
 
-        <div className="mt-8 pt-6 border-t border-white/[0.06]">
+        <div className="mt-8 pt-6 border-t border-white/[0.06] flex flex-col gap-3">
           <button
             onClick={onNext}
             className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
@@ -2886,9 +2886,23 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               color: "#0A0A0A",
             }}
           >
-            <span>Avançar para Carrossel</span>
+            <span>{initialMode === "ad" ? "Criar Carrossel" : "Criar Site"}</span>
             <ArrowRight className="w-5 h-5" />
           </button>
+
+          {initialMode === "ad" && onSkipToSite && (
+            <button
+              onClick={onSkipToSite}
+              className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-600/20 hover:shadow-amber-600/30"
+              style={{
+                background: "linear-gradient(135deg, #FCD34D, #F59E0B)",
+                color: "#0A0A0A",
+              }}
+            >
+              <span>Criar Site</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
         </>
