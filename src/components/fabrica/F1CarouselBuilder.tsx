@@ -3270,7 +3270,7 @@ export function F1CarouselBuilder({
   onNext,
   onBackToAd,
 }: F1CarouselBuilderProps) {
-  const { state } = useFabricaContext();
+  const { state, update } = useFabricaContext();
   const { user } = useAuth();
   const { reserve, commit, release, track, can, tier, remaining } = useEntitlements();
   const isEs = locale === "es";
@@ -4460,18 +4460,50 @@ export function F1CarouselBuilder({
 
   if (!selectedPackage) {
     return (
-      <section className="rounded-2xl border border-white/10 bg-[#0F0F11] p-5 sm:p-6">
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#F5F906]">
-          {isEs ? "Carrusel" : "Carrossel"}
-        </p>
-        <h2 className="mt-3 text-xl font-bold text-white">
-          {isEs ? "Primero agrega un paquete" : "Primeiro adicione um pacote"}
-        </h2>
-        <p className="mt-2 max-w-[65ch] text-sm leading-relaxed text-white/55">
-          {isEs
-            ? "El carrusel usa el mismo paquete sincronizado en el Panel, Plan y Sitio."
-            : "O carrossel usa o mesmo pacote sincronizado no Painel, Plano e Site."}
-        </p>
+      <section className="flex flex-col items-center justify-center py-10 px-6 space-y-8 bg-[#0F0F11] border border-white/5 rounded-2xl animate-fade-in relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#141416] to-[#0A0A0A] pointer-events-none" />
+        
+        {/* Mockups de Carrossel */}
+        <div className="flex items-center justify-center gap-3 sm:gap-6 opacity-50 pointer-events-none w-full max-w-sm mx-auto relative z-10">
+          <div className="w-16 h-24 sm:w-24 sm:h-32 bg-white/[0.02] border border-white/5 rounded-lg flex flex-col p-2 gap-2 shadow-xl shadow-black/50 -rotate-[8deg] translate-y-4">
+            <div className="w-full h-8 sm:h-12 bg-white/10 rounded-md" />
+            <div className="w-2/3 h-1.5 sm:h-2 bg-white/10 rounded-full" />
+            <div className="w-1/2 h-1.5 sm:h-2 bg-white/10 rounded-full" />
+          </div>
+          <div className="w-24 h-36 sm:w-32 sm:h-48 bg-[#141416] border-2 border-white/10 rounded-xl flex flex-col p-3 gap-3 shadow-2xl shadow-black/80 z-20">
+            <div className="w-full h-12 sm:h-20 bg-white/10 rounded-lg flex items-center justify-center">
+              <ImagePlus className="w-5 h-5 sm:w-6 sm:h-6 text-white/20" />
+            </div>
+            <div className="w-3/4 h-2 bg-white/20 rounded-full" />
+            <div className="w-full h-1.5 bg-white/10 rounded-full" />
+            <div className="w-4/5 h-1.5 bg-white/10 rounded-full" />
+          </div>
+          <div className="w-16 h-24 sm:w-24 sm:h-32 bg-white/[0.02] border border-white/5 rounded-lg flex flex-col p-2 gap-2 shadow-xl shadow-black/50 rotate-[8deg] translate-y-4">
+            <div className="w-full h-8 sm:h-12 bg-white/10 rounded-md" />
+            <div className="w-2/3 h-1.5 sm:h-2 bg-white/10 rounded-full" />
+            <div className="w-1/2 h-1.5 sm:h-2 bg-white/10 rounded-full" />
+          </div>
+        </div>
+
+        {/* Informações e Botão */}
+        <div className="text-center relative z-20 space-y-5 w-full max-w-[280px]">
+          <div className="space-y-2">
+            <h2 className="text-lg sm:text-xl font-black text-white leading-tight">
+              {isEs ? "Crea Carruseles Automáticos" : "Crie Carrosséis Automáticos"}
+            </h2>
+            <p className="text-[10px] sm:text-xs font-medium text-white/40">
+              {isEs 
+                ? "Selecciona una foto y el sistema sincronizará los datos al instante."
+                : "Selecione uma foto e o sistema sincronizará os dados instantaneamente."}
+            </p>
+          </div>
+          <button
+            onClick={() => onBackToAd?.()} 
+            className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-black text-[11px] sm:text-xs uppercase tracking-widest transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#F5F906]/20 bg-[#F5F906] text-black hover:bg-[#e3e705]"
+          >
+            <ImagePlus className="w-4 h-4" /> {isEs ? "Seleccionar Imagen" : "Selecionar Imagem"}
+          </button>
+        </div>
       </section>
     );
   }

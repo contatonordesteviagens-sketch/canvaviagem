@@ -1303,12 +1303,29 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             {/* Adicionar novo pacote Form */}
             <div className="space-y-4">
               {!showAddForm ? (
-                <button
-                  onClick={() => { setShowAddForm(true); setEditingId(null); }}
-                  className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-dashed border-white/10 text-white/40 hover:border-amber-500/40 hover:text-amber-400 transition-all duration-300 text-xs uppercase font-extrabold tracking-widest bg-white/[0.01] hover:bg-amber-500/[0.02]"
-                >
-                  <Plus className="w-4 h-4" /> Adicionar novo pacote
-                </button>
+                state.selectedPackages.length === 0 ? (
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={() => onNavigate?.("phase", 3)}
+                      className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black text-sm uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-amber-500/20 animate-fade-in"
+                    >
+                      <ImageIcon className="w-5 h-5" /> Criar Anúncio (F1)
+                    </button>
+                    <button
+                      onClick={() => { setShowAddForm(true); setEditingId(null); }}
+                      className="w-full text-center py-2 text-[10px] font-bold text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors underline decoration-white/10 underline-offset-4"
+                    >
+                      Ou adicione um pacote manualmente
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setShowAddForm(true); setEditingId(null); }}
+                    className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-dashed border-white/10 text-white/40 hover:border-amber-500/40 hover:text-amber-400 transition-all duration-300 text-xs uppercase font-extrabold tracking-widest bg-white/[0.01] hover:bg-amber-500/[0.02]"
+                  >
+                    <Plus className="w-4 h-4" /> Adicionar novo pacote
+                  </button>
+                )
               ) : (
                 <div className="bg-[#141416] border border-white/10 rounded-2xl p-5 space-y-4 animate-scaleUp">
                   <div className="flex items-center justify-between border-b border-white/5 pb-2">
@@ -1386,17 +1403,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
               {/* Package cards list */}
               <div className="space-y-4">
-                {state.selectedPackages.length === 0 ? (
-                  <div className="text-center py-12 bg-white/[0.01] border border-white/5 border-dashed rounded-3xl space-y-3">
-                    <Package className="w-10 h-10 mx-auto opacity-20 text-white" />
-                    <div className="space-y-1">
-                      <p className="text-xs text-white/60 font-bold">Nenhum pacote cadastrado</p>
-                      <p className="text-[10px] text-white/30 max-w-[280px] mx-auto leading-normal">
-                        Adicione novos destinos acima para carregar automaticamente o catálogo no seu site profissional.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
+                {state.selectedPackages.length > 0 &&
                   state.selectedPackages.map((pkg) => (
                     <div 
                       key={pkg.id} 
