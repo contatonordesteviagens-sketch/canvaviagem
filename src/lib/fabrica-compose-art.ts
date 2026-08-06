@@ -1569,17 +1569,17 @@ const panelBottom = RULES.PANEL_BOTTOM;
         numCols = 2; // Mantém a caixa estreita para formar o "dado de 5" no centro!
       }
       
-      const benefitIconSize = Math.round(cardH * 0.22); // Tamanho proporcional a altura da caixa
+      const benefitIconSize = Math.round(cardH * 0.20); // 1px menor conforme pedido (0.22 -> 0.20)
       const benefitBubbleR = Math.round(benefitIconSize * 1.05);
 
       // Calculando um grid compacto para agrupar os ícones
-      const tightCellW = benefitIconSize * 2.6;
-      const tightSlotH = benefitIconSize * 2.6;
+      const tightCellW = benefitIconSize * 2.4; // Ícones mais próximos (2.6 -> 2.4)
+      const tightSlotH = benefitIconSize * 2.4;
       const gridW = tightCellW * numCols;
       const gridH = tightSlotH * numRows;
       
       const overlap = Math.round(width * 0.045); // Amarelo em cima do preto
-      const blackPadX = Math.round(width * 0.035);
+      const blackPadX = Math.round(width * 0.025); // Reduz espaços vazios na lateral direita (0.035 -> 0.025)
       
       ctx.save();
       ctx.font = `900 ${priceSmallSize}px Inter, Arial, sans-serif`;
