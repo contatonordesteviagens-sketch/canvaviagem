@@ -2911,7 +2911,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           )}
         </div>
       </div>
+      </div>
         </>
+
       )}
       <FabricaPaywallDialog
         open={showExportPaywall}
