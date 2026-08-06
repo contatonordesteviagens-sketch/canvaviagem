@@ -2021,8 +2021,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               />
               <p className="text-[10px] text-white/40 mt-2">A IA vai adaptar a imagem ao formato escolhido.</p>
               {customLink.trim() && (
-                <div className="mt-4 border border-white/10 rounded-xl overflow-hidden bg-black/40 p-2 flex flex-col items-center">
                 <div className="mt-3 border border-white/10 rounded-xl overflow-hidden bg-black/40 p-2 flex flex-col items-center">
+
                   <img 
                     src={customLink.trim()} 
                     alt="preview do link" 
