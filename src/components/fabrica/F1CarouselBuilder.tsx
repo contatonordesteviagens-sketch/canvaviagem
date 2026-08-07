@@ -6320,7 +6320,7 @@ export function F1CarouselBuilder({
                             }`}
                           />
                         </button>
-                      </div>
+                      </summary>
                       {(state as any).showPixBanner && (
                         <>
                           <div className="grid grid-cols-2 gap-2 mt-2">
