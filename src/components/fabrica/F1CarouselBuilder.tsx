@@ -6182,9 +6182,7 @@ export function F1CarouselBuilder({
             )}
           </div>
 
-          {activeSlide && !activeCoverIsProtected && (
-            <div className="mt-4 block lg:hidden">{renderPhotoSelectionBox()}</div>
-          )}
+
           {activeSlide && <div className="mt-4">{renderPublishFooterBox()}</div>}
         </div>
 
@@ -6273,9 +6271,11 @@ export function F1CarouselBuilder({
             </p>
           </div>
 
-          <div className="hidden lg:block space-y-4">
-            {renderPhotoSelectionBox()}
-          </div>
+          {activeSlide && !activeCoverIsProtected && (
+            <div className="space-y-4">
+              {renderPhotoSelectionBox()}
+            </div>
+          )}
         </aside>
       </div>
 
