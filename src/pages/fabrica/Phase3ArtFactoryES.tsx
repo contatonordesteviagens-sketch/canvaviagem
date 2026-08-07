@@ -1728,21 +1728,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
         format,
       ].join(":"),
     );
-    const reservation = await reserve("ad_export", exportIdentity, {
-      projectId: state.projectId,
-      metadata: { destination, format, batch_requested: isBatchMode, locale: "es" },
-    });
-
-    if (!reservation.allowed) {
-      if (reservation.error) {
-        toast.error(reservation.error);
-        return;
-      }
-      track("free_limit_reached", { capability: "ad_export" });
-      track("paywall_viewed", { feature: "ad_export", locale: "es" });
-      setShowExportPaywall(true);
-      return;
-    }
+    // O usuário solicitou remoção da validação de créditos para baixar as imagens.
+    // Nenhuma reserva de crédito é necessária.
 
     try {
       const downloadedBatch = can("ad.export") && isBatchMode;

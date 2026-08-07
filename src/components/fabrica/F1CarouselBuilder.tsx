@@ -4333,27 +4333,8 @@ export function F1CarouselBuilder({
         })),
       }),
     );
-    const reservation = await reserve("carousel_export", exportIdentity, {
-      projectId: state.projectId,
-      metadata: {
-        package_id: selectedPackage.id,
-        slide_count: resolvedSlides.length,
-        format: carouselFormat,
-      },
-    });
-    if (!reservation.allowed) {
-      if (reservation.error) {
-        toast.error(reservation.error);
-      } else {
-        track("free_limit_reached", { capability: "carousel_export" });
-        track("paywall_viewed", {
-          feature: "carousel_export",
-          source: "carousel_download",
-        });
-        setShowExportPaywall(true);
-      }
-      return;
-    }
+    // O usuário solicitou remoção da validação de créditos para baixar as imagens.
+    // Nenhuma reserva de crédito é necessária.
 
     setDownloading(true);
     const slug = (selectedPackage.slug || selectedPackage.title || "pacote")
