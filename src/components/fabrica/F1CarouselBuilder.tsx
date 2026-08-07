@@ -2958,7 +2958,9 @@ function ScaledSlidePreview({
     if (!el) return;
     const updateWidth = () => {
       if (el.clientWidth > 0) {
-        setParentWidth(el.clientWidth);
+        const computedStyle = window.getComputedStyle(el);
+        const padX = (parseFloat(computedStyle.paddingLeft) || 0) + (parseFloat(computedStyle.paddingRight) || 0);
+        setParentWidth(el.clientWidth - padX);
       }
     };
     updateWidth();
