@@ -1631,7 +1631,7 @@ function CarouselCanvas({
         bottom: storyMode ? "20%" : 0,
         justifyContent: "center",
         alignItems: "flex-start",
-        padding: "8% 9%",
+        padding: "8% 9% 10% 9%",
         textAlign: "left",
       };
       panelBackground = "rgba(8,9,11,.94)";
@@ -1646,7 +1646,7 @@ function CarouselCanvas({
         right: 0,
         justifyContent: "center",
         alignItems: "flex-start",
-        padding: closingCompact ? "5% 8%" : "7% 8%",
+        padding: closingCompact ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
         textAlign: "left",
       };
       panelBackground = "#F3F2EE";
@@ -1663,7 +1663,7 @@ function CarouselCanvas({
         bottom: storyMode ? "20%" : "9%",
         justifyContent: "center",
         alignItems: "center",
-        padding: "8% 8%",
+        padding: "8% 8% 10% 8%",
         textAlign: "center",
       };
       panelBackground = "rgba(8,9,11,.94)";
@@ -1682,7 +1682,7 @@ function CarouselCanvas({
         bottom: storyMode ? "20%" : 0,
         justifyContent: "center",
         alignItems: "flex-start",
-        padding: closingCompact ? "5% 8%" : "7% 8%",
+        padding: closingCompact ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
         textAlign: "left",
       };
       panelBackground = "rgba(248,248,246,.98)";
@@ -1701,7 +1701,7 @@ function CarouselCanvas({
         right: 0,
         justifyContent: "center",
         alignItems: "flex-start",
-        padding: closingCompact ? "5% 8%" : "7% 8%",
+        padding: closingCompact ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
         textAlign: "left",
       };
       panelBackground = primary;
@@ -1719,7 +1719,7 @@ function CarouselCanvas({
         bottom: storyMode ? "20%" : 0,
         justifyContent: "center",
         alignItems: "flex-start",
-        padding: closingCompact ? "5% 8%" : "7% 8%",
+        padding: closingCompact ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
         textAlign: "left",
       };
       panelBackground = "rgba(248,248,246,.98)";
@@ -2364,7 +2364,7 @@ function CarouselCanvas({
                     bottom: 0,
                     background: "rgba(8, 9, 11, 0.92)",
                     color: bodyColor,
-                    padding: isDenseSlide ? "4.5% 8% 5%" : "6.5% 8% 7.5%",
+                    padding: isDenseSlide ? "4.5% 8% 7%" : "6.5% 8% 10%",
                     boxSizing: "border-box",
                     borderTop: `${Math.max(2, Math.round(3 * Z))}px solid ${secondary}`,
                     boxShadow: `0 ${Math.round(-12 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.24)`,
@@ -2394,7 +2394,7 @@ function CarouselCanvas({
                     width: ratio < 0.68 ? "58%" : "52%",
                     minWidth: 0,
                     background: "#F3F2EE",
-                    padding: "8% 6%",
+                    padding: "8% 6% 12% 6%",
                     boxSizing: "border-box",
                     display: "flex",
                     flexDirection: "column",
@@ -2461,7 +2461,7 @@ function CarouselCanvas({
                       width: "82%",
                       background: "rgba(8, 9, 11, 0.94)",
                       color: bodyColor,
-                      padding: isDenseSlide ? "4.5% 8%" : "6% 8%",
+                      padding: isDenseSlide ? "4.5% 8% 8% 8%" : "6% 8% 12% 8%",
                       borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`,
                       borderLeft: `${Math.max(1, Math.round(2 * Z))}px solid ${primary}`,
                       borderRight: `${Math.max(1, Math.round(2 * Z))}px solid ${primary}`,
@@ -2513,7 +2513,7 @@ function CarouselCanvas({
                     style={{ position: "absolute", right: "7%", top: "7%", width: Math.round(38 * Z), height: Math.round(38 * Z), borderRadius: Math.round(9 * Z), objectFit: "contain", background: "rgba(255,255,255,.94)", padding: Math.round(4 * Z), boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.22)` }}
                   />
                 )}
-                <div style={{ background: "rgba(248,248,246,0.98)", color: titleColor, padding: isDenseSlide ? "4.5% 8%" : "6.5% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
+                <div style={{ background: "rgba(248,248,246,0.98)", color: titleColor, padding: isDenseSlide ? "4.5% 8% 7% 8%" : "6.5% 8% 10% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
                     <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
@@ -2550,7 +2550,7 @@ function CarouselCanvas({
                       minWidth: 0,
                       background: primary,
                       color: titleColor,
-                      padding: isDenseSlide ? "5.5% 7.5%" : "9% 7.5%",
+                      padding: isDenseSlide ? "5.5% 7.5% 7.5% 7.5%" : "9% 7.5% 12% 7.5%",
                       borderTop: `${Math.max(4, Math.round(7 * Z))}px solid ${secondary}`,
                       boxSizing: "border-box",
                       display: "flex",
@@ -2607,7 +2607,7 @@ function CarouselCanvas({
                       [alignRight ? "right" : "left"]: 0,
                       bottom: 0,
                       width: "91%",
-                      padding: isDenseSlide ? "5% 8%" : "7% 8% 7.5%",
+                      padding: isDenseSlide ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
                       background: "rgba(248,248,246,.97)",
                       borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`,
                       borderTopLeftRadius: alignRight ? Math.round(118 * Z) : 0,
