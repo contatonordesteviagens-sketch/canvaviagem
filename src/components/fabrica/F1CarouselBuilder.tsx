@@ -5998,7 +5998,6 @@ export function F1CarouselBuilder({
                       </div>
                     </div>
                   )}
-                        )}
                       </div>
                     </details>
 
