@@ -11,11 +11,13 @@ import {
   AlignLeft,
   AlignRight,
   AlertTriangle,
+  ArrowUp,
   ArrowDownLeft,
   ArrowDownRight,
   ArrowUpLeft,
   ArrowUpRight,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -5943,12 +5945,18 @@ export function F1CarouselBuilder({
                 {activeSlide.kind !== "closing" ? (
                   <>
                     {/* ── SECTION 3: Título ── */}
-                    <div className="px-4 py-3.5 space-y-2">
-                  <div className="flex flex-col gap-1.5 mb-1.5">
-                    <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                      {isEs ? "Título" : "Título"}
-                    </p>
-                    <MiniTypographyBar
+                    <details open className="group px-4 py-3.5 border-b border-white/[0.06]">
+                      <summary className="flex cursor-pointer list-none items-center justify-between select-none">
+                        <div className="flex items-center gap-2">
+                          <ChevronDown className="h-3.5 w-3.5 text-white/30 transition-transform group-open:-rotate-180" />
+                          <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
+                            {isEs ? "Título" : "Título"}
+                          </p>
+                        </div>
+                      </summary>
+                      <div className="mt-3 space-y-2">
+                        <div className="flex flex-col gap-1.5 mb-1.5">
+                          <MiniTypographyBar
                       style={activeSlide.titleStyle}
                       fallbackBold={activeSlide.fontWeight !== "normal"}
                       fallbackColor={activeFieldFallback}
@@ -5990,27 +5998,33 @@ export function F1CarouselBuilder({
                       </div>
                     </div>
                   )}
-                </div>
+                        )}
+                      </div>
+                    </details>
 
                 {/* ── SECTION 4: Descrição Curta ── */}
-                <div className="px-4 pb-3.5 space-y-2">
-                  <div className="flex flex-col gap-1.5 mb-1.5">
-                    <div className="flex items-center justify-between">
+                <details open className="group px-4 py-3.5 border-b border-white/[0.06]">
+                  <summary className="flex cursor-pointer list-none items-center justify-between select-none">
+                    <div className="flex items-center gap-2">
+                      <ChevronDown className="h-3.5 w-3.5 text-white/30 transition-transform group-open:-rotate-180" />
                       <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
                         {isEs ? "Cuerpo de texto" : "Corpo de texto"}
                       </p>
-                      {activeSlide.body && (
-                        <button
-                          type="button"
-                          onClick={(e) => { e.preventDefault(); patchActive({ body: "" }); }}
-                          className="grid h-4 w-4 place-items-center rounded-full text-white/30 hover:bg-white/10 hover:text-white transition-all"
-                          title="Remover"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      )}
                     </div>
-                    <MiniTypographyBar
+                    {activeSlide.body && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); patchActive({ body: "" }); }}
+                        className="grid h-4 w-4 place-items-center rounded-full text-white/30 hover:bg-white/10 hover:text-white transition-all"
+                        title="Remover"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </summary>
+                  <div className="mt-3 space-y-2">
+                    <div className="flex flex-col gap-1.5 mb-1.5">
+                      <MiniTypographyBar
                       style={activeSlide.bodyStyle}
                       fallbackBold={activeSlide.fontWeight === "bold"}
                       fallbackColor={activeFieldFallback}
@@ -6029,27 +6043,32 @@ export function F1CarouselBuilder({
                     onChange={(event) => patchActive({ body: event.target.value })}
                     className="f1-carousel-input !py-2.5 text-sm resize-none w-full leading-snug"
                   />
-                </div>
+                    </div>
+                  </details>
 
                 {/* ── SECTION 5: Descrição Inferior (bullets) ── */}
-                <div className="px-4 pb-3.5 space-y-2">
-                  <div className="flex flex-col gap-1.5 mb-1.5">
-                    <div className="flex items-center justify-between">
+                <details open className="group px-4 py-3.5 border-b border-white/[0.06]">
+                  <summary className="flex cursor-pointer list-none items-center justify-between select-none">
+                    <div className="flex items-center gap-2">
+                      <ChevronDown className="h-3.5 w-3.5 text-white/30 transition-transform group-open:-rotate-180" />
                       <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
                         {isEs ? "Texto opcional / Detalles extra" : "Texto opcional / Informações extras"}
                       </p>
-                      {activeSlide.bullets.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={(e) => { e.preventDefault(); patchActive({ bullets: [] }); }}
-                          className="grid h-4 w-4 place-items-center rounded-full text-white/30 hover:bg-white/10 hover:text-white transition-all"
-                          title="Remover"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      )}
                     </div>
-                    <MiniTypographyBar
+                    {activeSlide.bullets.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); patchActive({ bullets: [] }); }}
+                        className="grid h-4 w-4 place-items-center rounded-full text-white/30 hover:bg-white/10 hover:text-white transition-all"
+                        title="Remover"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </summary>
+                  <div className="mt-3 space-y-2">
+                    <div className="flex flex-col gap-1.5 mb-1.5">
+                      <MiniTypographyBar
                       style={activeSlide.bulletStyle}
                       fallbackBold={activeSlide.fontWeight === "bold"}
                       fallbackColor={activeFieldFallback}
@@ -6077,16 +6096,23 @@ export function F1CarouselBuilder({
                     className="f1-carousel-input !min-h-[76px] !py-2.5 text-sm resize-none w-full leading-snug"
                   />
                   <p className="text-[9px] text-white/25">{isEs ? "Una línea por información. Máximo 4." : "Uma linha por informação. Máximo 4."}</p>
-                </div>
+                    </div>
+                  </details>
               </>
                 ) : (
                   /* ── Closing slide fields ── */
                   <div className="divide-y divide-white/[0.06]">
-                    <div className="px-4 py-3.5 space-y-2">
-                      <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                        {isEs ? "Llamada a la acción" : "Chamada para Ação"}
-                      </p>
-                      <input
+                    <details open className="group px-4 py-3.5">
+                      <summary className="flex cursor-pointer list-none items-center justify-between select-none">
+                        <div className="flex items-center gap-2">
+                          <ChevronDown className="h-3.5 w-3.5 text-white/30 transition-transform group-open:-rotate-180" />
+                          <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
+                            {isEs ? "Llamada a la acción" : "Chamada para Ação"}
+                          </p>
+                        </div>
+                      </summary>
+                      <div className="mt-3 space-y-2">
+                        <input
                         value={activeSlide.cta}
                         maxLength={62}
                         onChange={(event) => patchActive({ cta: event.target.value })}
@@ -6179,12 +6205,18 @@ export function F1CarouselBuilder({
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="px-4 py-3.5 space-y-3">
-                      <div>
-                        <p className="mb-2 text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35">
-                          {isEs ? "Canales visibles en el cierre" : "Canais visíveis no fechamento"}
-                        </p>
+                      </div>
+                    </details>
+                    <details open className="group px-4 py-3.5">
+                      <summary className="flex cursor-pointer list-none items-center justify-between select-none">
+                        <div className="flex items-center gap-2">
+                          <ChevronDown className="h-3.5 w-3.5 text-white/30 transition-transform group-open:-rotate-180" />
+                          <p className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-white/35">
+                            {isEs ? "Canales visibles en el cierre" : "Canais visíveis no fechamento"}
+                          </p>
+                        </div>
+                      </summary>
+                      <div className="mt-3 space-y-3">
                         <div className="grid grid-cols-3 gap-2">
                           {([
                             ["whatsapp", "/assets/whatsapp-icon.png", "WhatsApp"],
@@ -6262,16 +6294,24 @@ export function F1CarouselBuilder({
                             />
                           </div>
                         )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="px-4 py-3.5 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                          {isEs ? "Descuento PIX o Boleto" : "Desconto PIX ou Boleto"}
-                        </p>
+                    </details>
+                    <details open className="group px-4 py-3.5">
+                      <summary className="flex cursor-pointer list-none items-center justify-between select-none">
+                        <div className="flex items-center gap-2">
+                          <ChevronDown className="h-3.5 w-3.5 text-white/30 transition-transform group-open:-rotate-180" />
+                          <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
+                            {isEs ? "Descuento PIX o Boleto" : "Desconto PIX ou Boleto"}
+                          </p>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => patchState({ showPixBanner: !((state as any).showPixBanner) } as any)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            patchState({ showPixBanner: !((state as any).showPixBanner) } as any);
+                          }}
                           className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
                             (state as any).showPixBanner ? "bg-[#F5F906]" : "bg-white/10"
                           }`}
@@ -6373,7 +6413,7 @@ export function F1CarouselBuilder({
                           </div>
                         </>
                       )}
-                    </div>
+                    </details>
                     {showLogo && !state.logoBase64 && (
                       <div className="px-4 py-3">
                         <p className="rounded-xl border border-amber-300/20 bg-amber-300/[0.06] px-3 py-2 text-xs text-amber-100/80">
@@ -6621,6 +6661,16 @@ export function F1CarouselBuilder({
         </div>
       )}
 
+      {/* Mobile Scroll to Top Button */}
+      <button
+        type="button"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="lg:hidden fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[#F5F906] text-black shadow-lg shadow-black/50 transition-transform active:scale-95 border-2 border-zinc-900"
+        title={isEs ? "Ver previa arriba" : "Ver prévia acima"}
+      >
+        <ArrowUp className="h-6 w-6" />
+      </button>
+
       <style>{`
         .f1-carousel-input {
           min-height: 44px;
@@ -6640,6 +6690,12 @@ export function F1CarouselBuilder({
         .f1-carousel-scroll {
           scrollbar-width: thin;
           scrollbar-color: rgba(255,255,255,.2) transparent;
+        }
+        details > summary {
+          list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+          display: none;
         }
       `}</style>
     </section>
