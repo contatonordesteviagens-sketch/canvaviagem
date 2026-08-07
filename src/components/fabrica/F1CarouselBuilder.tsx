@@ -6203,9 +6203,9 @@ export function F1CarouselBuilder({
               </p>
             </div>
             
-            <div className="relative mx-auto flex w-full max-w-[420px] justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-2xl">
+            <div className="relative mx-auto flex w-full max-w-[340px] justify-center overflow-hidden rounded-[32px] border border-white/[0.08] bg-zinc-950 shadow-2xl transition-all duration-300">
               {activeSlide && (
-                <div className={`transition ${isCarouselPreviewLocked ? "blur-md" : ""}`}>
+                <div className={`w-full flex justify-center transition ${isCarouselPreviewLocked ? "blur-md" : ""}`}>
                   <ScaledSlidePreview
                       showPixBanner={(state as any).showPixBanner}
                       pixBannerText={(state as any).pixBannerText}
@@ -6217,7 +6217,7 @@ export function F1CarouselBuilder({
                     logoPosition={logoPosition}
                     primary={state.primaryColor}
                     secondary={state.secondaryColor}
-                    width={400}
+                    width={340}
                   />
                 </div>
               )}
