@@ -6428,7 +6428,19 @@ export function F1CarouselBuilder({
           </div>
 
 
-          {activeSlide && <div className="mt-4">{renderPublishFooterBox()}</div>}
+          {activeSlide && (
+            <div className="mt-4 flex flex-col gap-4">
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="lg:hidden flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-white/10 active:scale-95"
+              >
+                <ArrowUp className="h-4 w-4 text-[#F5F906]" />
+                {isEs ? "Ver previa arriba" : "Ver prévia acima"}
+              </button>
+              {renderPublishFooterBox()}
+            </div>
+          )}
         </div>
 
         <aside className="order-1 lg:order-2 lg:sticky lg:top-5 lg:self-start pr-1 space-y-4">
@@ -6659,15 +6671,7 @@ export function F1CarouselBuilder({
         </div>
       )}
 
-      {/* Mobile Scroll to Top Button */}
-      <button
-        type="button"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="lg:hidden fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[#F5F906] text-black shadow-lg shadow-black/50 transition-transform active:scale-95 border-2 border-zinc-900"
-        title={isEs ? "Ver previa arriba" : "Ver prévia acima"}
-      >
-        <ArrowUp className="h-6 w-6" />
-      </button>
+      {/* Mobile Scroll to Top Button Removed from here */}
 
       <style>{`
         .f1-carousel-input {
