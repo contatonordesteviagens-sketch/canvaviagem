@@ -5998,7 +5998,6 @@ export function F1CarouselBuilder({
                       </div>
                     </div>
                   )}
-                        )}
                       </div>
                     </details>
 
@@ -6295,7 +6294,6 @@ export function F1CarouselBuilder({
                           </div>
                         )}
                         </div>
-                      </div>
                     </details>
                     <details open className="group px-4 py-3.5">
                       <summary className="flex cursor-pointer list-none items-center justify-between select-none">
@@ -6310,7 +6308,7 @@ export function F1CarouselBuilder({
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            patchState({ showPixBanner: !((state as any).showPixBanner) } as any);
+                            update({ showPixBanner: !((state as any).showPixBanner) } as any);
                           }}
                           className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
                             (state as any).showPixBanner ? "bg-[#F5F906]" : "bg-white/10"
@@ -6322,21 +6320,21 @@ export function F1CarouselBuilder({
                             }`}
                           />
                         </button>
-                      </div>
+                      </summary>
                       {(state as any).showPixBanner && (
                         <>
                           <div className="grid grid-cols-2 gap-2 mt-2">
                             <input
                               value={(state as any).pixBannerHighlight ?? "PIX OU BOLETO:"}
                               maxLength={30}
-                              onChange={(event) => patchState({ pixBannerHighlight: event.target.value } as any)}
+                              onChange={(event) => update({ pixBannerHighlight: event.target.value } as any)}
                               className="f1-carousel-input !min-h-[40px] !py-2 text-[#F5F906]"
                               placeholder="PIX OU BOLETO:"
                             />
                             <input
                               value={(state as any).pixBannerText ?? "10% OFF NO PIX"}
                               maxLength={40}
-                              onChange={(event) => patchState({ pixBannerText: event.target.value } as any)}
+                              onChange={(event) => update({ pixBannerText: event.target.value } as any)}
                               className="f1-carousel-input !min-h-[40px] !py-2"
                               placeholder="10% OFF NO PIX"
                             />
@@ -6351,7 +6349,7 @@ export function F1CarouselBuilder({
                                   <button
                                     key={`pix-bg-${color}-${colorIndex}`}
                                     type="button"
-                                    onClick={() => patchState({ pixBannerHighlightColor: color } as any)}
+                                    onClick={() => update({ pixBannerHighlightColor: color } as any)}
                                     className={`h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 ${
                                       ((state as any).pixBannerHighlightColor || "#F5F906").toUpperCase() === color.toUpperCase()
                                         ? "border-[#F5F906] ring-1 ring-[#F5F906]"
@@ -6370,7 +6368,7 @@ export function F1CarouselBuilder({
                                   <input
                                     type="color"
                                     value={(state as any).pixBannerHighlightColor || "#F5F906"}
-                                    onChange={(event) => patchState({ pixBannerHighlightColor: event.target.value } as any)}
+                                    onChange={(event) => update({ pixBannerHighlightColor: event.target.value } as any)}
                                     className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                                   />
                                 </label>
@@ -6385,7 +6383,7 @@ export function F1CarouselBuilder({
                                   <button
                                     key={`pix-text-${color}-${colorIndex}`}
                                     type="button"
-                                    onClick={() => patchState({ pixBannerTextColor: color } as any)}
+                                    onClick={() => update({ pixBannerTextColor: color } as any)}
                                     className={`h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 ${
                                       ((state as any).pixBannerTextColor || "#FFFFFF").toUpperCase() === color.toUpperCase()
                                         ? "border-[#F5F906] ring-1 ring-[#F5F906]"
@@ -6404,7 +6402,7 @@ export function F1CarouselBuilder({
                                   <input
                                     type="color"
                                     value={(state as any).pixBannerTextColor || "#FFFFFF"}
-                                    onChange={(event) => patchState({ pixBannerTextColor: event.target.value } as any)}
+                                    onChange={(event) => update({ pixBannerTextColor: event.target.value } as any)}
                                     className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                                   />
                                 </label>
