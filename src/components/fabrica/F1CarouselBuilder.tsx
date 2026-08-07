@@ -6294,7 +6294,6 @@ export function F1CarouselBuilder({
                           </div>
                         )}
                         </div>
-                      </div>
                     </details>
                     <details open className="group px-4 py-3.5">
                       <summary className="flex cursor-pointer list-none items-center justify-between select-none">
