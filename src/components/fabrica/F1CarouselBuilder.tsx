@@ -1120,6 +1120,7 @@ function CarouselCanvas({
   canvasRef,
   exportMode = false,
   showPixBanner = false,
+  pixBannerHighlight = "",
   pixBannerText = "",
 }: {
   slide: CarouselSlide;
@@ -1133,6 +1134,7 @@ function CarouselCanvas({
   canvasRef?: (node: HTMLDivElement | null) => void;
   exportMode?: boolean;
   showPixBanner?: boolean;
+  pixBannerHighlight?: string;
   pixBannerText?: string;
 }) {
   const Z = exportMode ? 2.5 : 1;
@@ -2079,7 +2081,7 @@ function CarouselCanvas({
         {renderPositionedLogo()}
         {showPixBanner && slide.kind === "closing" && (
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: Math.round(30 * Z), background: "#111", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: Math.round(10 * Z), fontWeight: 900, zIndex: 50 }}>
-            <span style={{ color: "#F5F906", marginRight: "4px" }}>PIX OU BOLETO:</span> {pixBannerText || "Consulte descontos"}
+            <span style={{ color: "#F5F906", marginRight: "4px" }}>{(pixBannerHighlight !== undefined && pixBannerHighlight !== null) ? pixBannerHighlight : "PIX OU BOLETO:"}</span> {(pixBannerText !== undefined && pixBannerText !== null) ? pixBannerText : "Consulte descontos"}
           </div>
         )}
       </div>
@@ -2942,6 +2944,7 @@ function CarouselCanvas({
 
 function ScaledSlidePreview({
   showPixBanner,
+  pixBannerHighlight,
   pixBannerText,
   slide,
   index,
@@ -2954,6 +2957,7 @@ function ScaledSlidePreview({
   width,
 }: {
   showPixBanner?: boolean;
+  pixBannerHighlight?: string;
   pixBannerText?: string;
   slide: CarouselSlide;
   index: number;
@@ -3014,6 +3018,7 @@ function ScaledSlidePreview({
       >
         <CarouselCanvas
         showPixBanner={showPixBanner}
+        pixBannerHighlight={pixBannerHighlight}
         pixBannerText={pixBannerText}
         slide={slide}
           index={index}
@@ -5234,6 +5239,7 @@ export function F1CarouselBuilder({
                     >
                       <ScaledSlidePreview
                       showPixBanner={(state as any).showPixBanner}
+                      pixBannerHighlight={(state as any).pixBannerHighlight}
                       pixBannerText={(state as any).pixBannerText}
                         slide={slide}
                         index={index}
@@ -5368,6 +5374,7 @@ export function F1CarouselBuilder({
                   >
                     <ScaledSlidePreview
                       showPixBanner={(state as any).showPixBanner}
+                      pixBannerHighlight={(state as any).pixBannerHighlight}
                       pixBannerText={(state as any).pixBannerText}
                       slide={slide}
                       index={index}
@@ -5500,6 +5507,7 @@ export function F1CarouselBuilder({
                     <>
                       <ScaledSlidePreview
                       showPixBanner={(state as any).showPixBanner}
+                      pixBannerHighlight={(state as any).pixBannerHighlight}
                       pixBannerText={(state as any).pixBannerText}
                         slide={activeSlide}
                         index={activeIndex}
@@ -6165,13 +6173,22 @@ export function F1CarouselBuilder({
                       <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
                         {isEs ? "Descuento PIX o Boleto" : "Desconto PIX ou Boleto"}
                       </p>
-                      <input
-                        value={(state as any).pixBannerText || ""}
-                        maxLength={40}
-                        onChange={(event) => patchState({ pixBannerText: event.target.value } as any)}
-                        className="f1-carousel-input !min-h-[40px] !py-2"
-                        placeholder="10% OFF NO PIX"
-                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          value={(state as any).pixBannerHighlight ?? "PIX OU BOLETO:"}
+                          maxLength={30}
+                          onChange={(event) => patchState({ pixBannerHighlight: event.target.value } as any)}
+                          className="f1-carousel-input !min-h-[40px] !py-2 text-[#F5F906]"
+                          placeholder="PIX OU BOLETO:"
+                        />
+                        <input
+                          value={(state as any).pixBannerText ?? "10% OFF NO PIX"}
+                          maxLength={40}
+                          onChange={(event) => patchState({ pixBannerText: event.target.value } as any)}
+                          className="f1-carousel-input !min-h-[40px] !py-2"
+                          placeholder="10% OFF NO PIX"
+                        />
+                      </div>
                     </div>
                     {showLogo && !state.logoBase64 && (
                       <div className="px-4 py-3">
@@ -6212,6 +6229,7 @@ export function F1CarouselBuilder({
                 <div className={`w-full flex justify-center transition ${isCarouselPreviewLocked ? "blur-md" : ""}`}>
                   <ScaledSlidePreview
                       showPixBanner={(state as any).showPixBanner}
+                      pixBannerHighlight={(state as any).pixBannerHighlight}
                       pixBannerText={(state as any).pixBannerText}
                     slide={activeSlide}
                     index={activeIndex}
@@ -6399,6 +6417,7 @@ export function F1CarouselBuilder({
             </button>
             <ScaledSlidePreview
                       showPixBanner={(state as any).showPixBanner}
+                      pixBannerHighlight={(state as any).pixBannerHighlight}
                       pixBannerText={(state as any).pixBannerText}
               slide={maximizedSlide}
               index={slides.findIndex((s) => s.id === maximizedSlide.id)}
