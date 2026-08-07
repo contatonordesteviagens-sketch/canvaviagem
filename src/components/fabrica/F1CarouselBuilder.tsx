@@ -2708,10 +2708,18 @@ function CarouselCanvas({
                     ? { left: "8%", right: "20%" }
                     : { left: "8%", right: "8%" };
               return (
-                <div style={{ position: "absolute", inset: 0, boxSizing: "border-box" }}>
+                <div style={{ 
+                  position: "absolute", 
+                  inset: 0, 
+                  boxSizing: "border-box",
+                  display: footerLayout ? "flex" : "block",
+                  flexDirection: "column",
+                  justifyContent: "flex-end",
+                  paddingBottom: footerLayout ? (logoSource && logoIsBottom ? (storyMode ? "15%" : "16%") : (storyMode ? "9%" : "8%")) : 0,
+                }}>
                   <div
                     style={{
-                      position: "absolute",
+                      position: footerLayout ? "relative" : "absolute",
                       top: footerLayout
                         ? undefined
                         : centeredLayout
@@ -2719,9 +2727,12 @@ function CarouselCanvas({
                         : logoSource && !logoIsBottom
                           ? storyMode ? "14%" : "15%"
                           : storyMode ? "6%" : "9%",
-                      bottom: footerLayout ? (storyMode ? "26%" : "24%") : undefined,
-                      left: "8%",
-                      right: "8%",
+                      bottom: footerLayout ? undefined : undefined,
+                      marginLeft: footerLayout ? "8%" : 0,
+                      marginRight: footerLayout ? "8%" : 0,
+                      left: footerLayout ? undefined : "8%",
+                      right: footerLayout ? undefined : "8%",
+                      marginBottom: footerLayout ? `${Math.round(16 * Z)}px` : 0,
                       display: "flex",
                       flexDirection: "column",
                       alignItems: centeredLayout ? "center" : "flex-start",
@@ -2792,11 +2803,14 @@ function CarouselCanvas({
                   {informationAtBottom && (slide.body || slide.bullets.some(Boolean)) && (
                     <div
                       style={{
-                        position: "absolute",
-                        ...lowerContentInset,
-                        bottom: logoSource && logoIsBottom
+                        position: footerLayout ? "relative" : "absolute",
+                        ...(footerLayout ? {
+                          marginLeft: lowerContentInset.left,
+                          marginRight: lowerContentInset.right
+                        } : lowerContentInset),
+                        bottom: footerLayout ? undefined : (logoSource && logoIsBottom
                           ? storyMode ? "15%" : "16%"
-                          : storyMode ? "9%" : "8%",
+                          : storyMode ? "9%" : "8%"),
                         padding: `${Math.round(16 * Z)}px ${Math.round(18 * Z)}px`,
                         color: "#FFFFFF",
                         textAlign: centeredLayout ? "center" : "left",
