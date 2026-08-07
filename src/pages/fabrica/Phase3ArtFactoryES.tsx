@@ -1745,15 +1745,12 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
         a.remove();
       });
       
-      await commit(reservation.reservationId);
       track("free_export_completed", {
         capability: "ad_export",
-        remaining: reservation.remaining,
         locale: "es",
       });
       toast.success(downloadedBatch ? "Todas las imágenes fueron descargadas." : "Imagen descargada.");
     } catch {
-      await release(reservation.reservationId).catch(() => undefined);
       toast.error("No fue posible descargar la imagen.");
     }
   };
