@@ -1335,7 +1335,7 @@ function CarouselCanvas({
     );
   };
 
-  const safeClamp = (lines: number): CSSProperties => ({ display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden" });
+  const safeClamp = (lines: number): CSSProperties => ({ display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden", paddingBottom: "0.1em" });
   const safeTextWrap: CSSProperties = {
     overflowWrap: "break-word",
     wordBreak: "normal",
@@ -4412,12 +4412,11 @@ export function F1CarouselBuilder({
         await new Promise((resolve) => window.setTimeout(resolve, 200));
       }
 
-      await commit(reservation.reservationId);
       track("free_export_completed", {
         feature: "carousel_export",
         package_id: selectedPackage.id,
         slide_count: resolvedSlides.length,
-        duplicate: Boolean(reservation.duplicate),
+        duplicate: false,
       });
       toast.success(
         isEs
@@ -4430,7 +4429,6 @@ export function F1CarouselBuilder({
       );
     } catch (error) {
       console.error("Falha ao exportar carrossel:", error);
-      await release(reservation.reservationId).catch(() => undefined);
       toast.error(
         isEs
           ? "No fue posible exportar. Prueba otra foto del banco o un archivo enviado."
