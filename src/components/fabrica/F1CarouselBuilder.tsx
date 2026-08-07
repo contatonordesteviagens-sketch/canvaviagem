@@ -1235,7 +1235,7 @@ function CarouselCanvas({
         }
         style={{
           position: "absolute",
-          zIndex: 40,
+          zIndex: 60,
           top: logoIsBottom ? undefined : ratio < 0.68 ? "3.5%" : "5%",
           bottom: logoIsBottom ? (ratio < 0.68 ? "4.5%" : "5%") : undefined,
           left: logoIsLeft ? "5%" : undefined,
@@ -6146,6 +6146,18 @@ export function F1CarouselBuilder({
                           </div>
                         )}
                       </div>
+                    </div>
+                    <div className="px-4 py-3.5 space-y-2">
+                      <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
+                        {isEs ? "Descuento PIX o Boleto" : "Desconto PIX ou Boleto"}
+                      </p>
+                      <input
+                        value={(state as any).pixBannerText || ""}
+                        maxLength={40}
+                        onChange={(event) => patchState({ pixBannerText: event.target.value } as any)}
+                        className="f1-carousel-input !min-h-[40px] !py-2"
+                        placeholder="10% OFF NO PIX"
+                      />
                     </div>
                     {showLogo && !state.logoBase64 && (
                       <div className="px-4 py-3">
