@@ -1335,11 +1335,12 @@ function CarouselCanvas({
     );
   };
 
-  const safeClamp = (lines: number): CSSProperties => ({ display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden", paddingBottom: "0.1em" });
+  const safeClamp = (lines: number): CSSProperties => exportMode ? {} : { display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden" };
   const safeTextWrap: CSSProperties = {
     overflowWrap: "break-word",
     wordBreak: "normal",
     hyphens: "none",
+    paddingBottom: "0.2em",
   };
 
   const textShadow = slide.showShadow === false ? "none" : `0px ${Math.round(3 * Z)}px ${Math.round(18 * Z)}px rgba(0, 0, 0, 0.75)`;
