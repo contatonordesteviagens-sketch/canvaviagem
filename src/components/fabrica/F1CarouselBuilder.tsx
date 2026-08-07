@@ -3094,11 +3094,11 @@ function MiniTypographyBar({
   }
 
   return (
-    <div className={`flex flex-wrap items-center justify-between gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-1 ${
+    <div className={`flex items-center justify-between gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-1.5 py-1 ${
       compact ? "" : "mb-1"
     }`}>
       {/* B / I / U (Lado esquerdo) */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
         <button
           type="button"
           onClick={(e) => {
@@ -3106,7 +3106,7 @@ function MiniTypographyBar({
             onChange({ ...style, bold: !isBold });
           }}
           title={isEs ? "Negrita (B)" : "Negrito (B)"}
-          className={`grid h-8 w-8 place-items-center rounded text-sm font-black transition-colors ${
+          className={`grid ${compact ? "h-6 w-6 text-xs" : "h-8 w-8 text-sm"} place-items-center rounded font-black transition-colors ${
             isBold
               ? "bg-[#F5F906] text-zinc-950 shadow-sm"
               : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -3121,7 +3121,7 @@ function MiniTypographyBar({
             onChange({ ...style, italic: !isItalic });
           }}
           title={isEs ? "Cursiva (I)" : "Itálico (I)"}
-          className={`grid h-8 w-8 place-items-center rounded text-sm font-bold italic transition-colors ${
+          className={`grid ${compact ? "h-6 w-6 text-xs" : "h-8 w-8 text-sm"} place-items-center rounded font-bold italic transition-colors ${
             isItalic
               ? "bg-[#F5F906] text-zinc-950 shadow-sm"
               : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -3136,7 +3136,7 @@ function MiniTypographyBar({
             onChange({ ...style, underline: !isUnderline });
           }}
           title={isEs ? "Subrayado (U)" : "Sublinhado (U)"}
-          className={`grid h-8 w-8 place-items-center rounded text-sm font-bold underline transition-colors ${
+          className={`grid ${compact ? "h-6 w-6 text-xs" : "h-8 w-8 text-sm"} place-items-center rounded font-bold underline transition-colors ${
             isUnderline
               ? "bg-[#F5F906] text-zinc-950 shadow-sm"
               : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -3157,7 +3157,7 @@ function MiniTypographyBar({
               handleColorClick(hex);
             }}
             title={`${label} (${hex})`}
-            className="h-6 w-6 rounded-full border-2 transition-all hover:scale-110"
+            className={`${compact ? "h-4 w-4" : "h-5 w-5"} rounded-full border-2 transition-all hover:scale-110`}
             data-selected={currentColor.toUpperCase() === hex.toUpperCase()}
             style={{
               backgroundColor: hex,
@@ -3181,10 +3181,10 @@ function MiniTypographyBar({
         <div
           className="relative cursor-pointer transition-transform hover:scale-110"
           style={{
-            width: compact ? 18 : 24,
-            height: compact ? 18 : 24,
+            width: compact ? 16 : 22,
+            height: compact ? 16 : 22,
             borderRadius: "50%",
-            padding: compact ? 1.5 : 2.5,
+            padding: compact ? 1 : 2,
             background: "conic-gradient(from 0deg, #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)",
             boxShadow: "0 0 6px 1px rgba(255,255,255,0.18)",
           }}
@@ -5921,7 +5921,7 @@ export function F1CarouselBuilder({
                   <>
                     {/* ── SECTION 3: Título ── */}
                     <div className="px-4 py-3.5 space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1.5 mb-1.5">
                     <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
                       {isEs ? "Título" : "Título"}
                     </p>
@@ -5971,21 +5971,11 @@ export function F1CarouselBuilder({
 
                 {/* ── SECTION 4: Descrição Curta ── */}
                 <div className="px-4 pb-3.5 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                      {isEs ? "Cuerpo de texto" : "Corpo de texto"}
-                    </p>
-                    <div className="flex items-center gap-1.5">
-                      <MiniTypographyBar
-                        style={activeSlide.bodyStyle}
-                        fallbackBold={activeSlide.fontWeight === "bold"}
-                        fallbackColor={activeFieldFallback}
-                        primaryColor={state.primaryColor}
-                        secondaryColor={state.secondaryColor}
-                        onChange={(updated) => patchActive({ bodyStyle: updated })}
-                        isEs={isEs}
-                        compact
-                      />
+                  <div className="flex flex-col gap-1.5 mb-1.5">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
+                        {isEs ? "Cuerpo de texto" : "Corpo de texto"}
+                      </p>
                       {activeSlide.body && (
                         <button
                           type="button"
@@ -5997,6 +5987,16 @@ export function F1CarouselBuilder({
                         </button>
                       )}
                     </div>
+                    <MiniTypographyBar
+                      style={activeSlide.bodyStyle}
+                      fallbackBold={activeSlide.fontWeight === "bold"}
+                      fallbackColor={activeFieldFallback}
+                      primaryColor={state.primaryColor}
+                      secondaryColor={state.secondaryColor}
+                      onChange={(updated) => patchActive({ bodyStyle: updated })}
+                      isEs={isEs}
+                      compact
+                    />
                   </div>
                   <textarea
                     value={activeSlide.body}
@@ -6010,21 +6010,11 @@ export function F1CarouselBuilder({
 
                 {/* ── SECTION 5: Descrição Inferior (bullets) ── */}
                 <div className="px-4 pb-3.5 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                      {isEs ? "Texto opcional / Detalles extra" : "Texto opcional / Informações extras"}
-                    </p>
-                    <div className="flex items-center gap-1.5">
-                      <MiniTypographyBar
-                        style={activeSlide.bulletStyle}
-                        fallbackBold={activeSlide.fontWeight === "bold"}
-                        fallbackColor={activeFieldFallback}
-                        primaryColor={state.primaryColor}
-                        secondaryColor={state.secondaryColor}
-                        onChange={(updated) => patchActive({ bulletStyle: updated })}
-                        isEs={isEs}
-                        compact
-                      />
+                  <div className="flex flex-col gap-1.5 mb-1.5">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
+                        {isEs ? "Texto opcional / Detalles extra" : "Texto opcional / Informações extras"}
+                      </p>
                       {activeSlide.bullets.length > 0 && (
                         <button
                           type="button"
@@ -6036,6 +6026,16 @@ export function F1CarouselBuilder({
                         </button>
                       )}
                     </div>
+                    <MiniTypographyBar
+                      style={activeSlide.bulletStyle}
+                      fallbackBold={activeSlide.fontWeight === "bold"}
+                      fallbackColor={activeFieldFallback}
+                      primaryColor={state.primaryColor}
+                      secondaryColor={state.secondaryColor}
+                      onChange={(updated) => patchActive({ bulletStyle: updated })}
+                      isEs={isEs}
+                      compact
+                    />
                   </div>
                   <textarea
                     value={activeSlide.bullets.join("\n")}
