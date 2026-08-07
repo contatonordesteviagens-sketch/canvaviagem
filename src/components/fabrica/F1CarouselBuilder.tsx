@@ -1122,6 +1122,8 @@ function CarouselCanvas({
   showPixBanner = false,
   pixBannerHighlight = "",
   pixBannerText = "",
+  pixBannerHighlightColor = "#F5F906",
+  pixBannerTextColor = "#FFFFFF",
 }: {
   slide: CarouselSlide;
   index: number;
@@ -1136,6 +1138,8 @@ function CarouselCanvas({
   showPixBanner?: boolean;
   pixBannerHighlight?: string;
   pixBannerText?: string;
+  pixBannerHighlightColor?: string;
+  pixBannerTextColor?: string;
 }) {
   const Z = exportMode ? 2.5 : 1;
   const baseWidth = Math.round(432 * Z);
@@ -1792,6 +1796,11 @@ function CarouselCanvas({
       ctaForeground = brandForeground;
       ctaRadius = Math.round(5 * Z);
     }
+    
+    if (slide.kind === "closing") {
+      if (slide.labelColor) ctaBackground = slide.labelColor;
+      if (slide.labelTextColor) ctaForeground = slide.labelTextColor;
+    }
 
     return (
       <div
@@ -2080,8 +2089,8 @@ function CarouselCanvas({
         </div>
         {renderPositionedLogo()}
         {showPixBanner && slide.kind === "closing" && (
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: Math.round(30 * Z), background: "#111", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: Math.round(10 * Z), fontWeight: 900, zIndex: 50 }}>
-            <span style={{ color: "#F5F906", marginRight: "4px" }}>{(pixBannerHighlight !== undefined && pixBannerHighlight !== null) ? pixBannerHighlight : "PIX OU BOLETO:"}</span> {(pixBannerText !== undefined && pixBannerText !== null) ? pixBannerText : "Consulte descontos"}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: Math.round(30 * Z), background: "#111", color: pixBannerTextColor || "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: Math.round(10 * Z), fontWeight: 900, zIndex: 50 }}>
+            <span style={{ color: pixBannerHighlightColor || "#F5F906", marginRight: "4px" }}>{(pixBannerHighlight !== undefined && pixBannerHighlight !== null) ? pixBannerHighlight : "PIX OU BOLETO:"}</span> {(pixBannerText !== undefined && pixBannerText !== null) ? pixBannerText : "Consulte descontos"}
           </div>
         )}
       </div>
@@ -2946,6 +2955,8 @@ function ScaledSlidePreview({
   showPixBanner,
   pixBannerHighlight,
   pixBannerText,
+  pixBannerHighlightColor,
+  pixBannerTextColor,
   slide,
   index,
   total,
@@ -2959,6 +2970,8 @@ function ScaledSlidePreview({
   showPixBanner?: boolean;
   pixBannerHighlight?: string;
   pixBannerText?: string;
+  pixBannerHighlightColor?: string;
+  pixBannerTextColor?: string;
   slide: CarouselSlide;
   index: number;
   total: number;
@@ -3020,6 +3033,8 @@ function ScaledSlidePreview({
         showPixBanner={showPixBanner}
         pixBannerHighlight={pixBannerHighlight}
         pixBannerText={pixBannerText}
+        pixBannerHighlightColor={pixBannerHighlightColor}
+        pixBannerTextColor={pixBannerTextColor}
         slide={slide}
           index={index}
           total={total}
@@ -5241,6 +5256,8 @@ export function F1CarouselBuilder({
                       showPixBanner={(state as any).showPixBanner}
                       pixBannerHighlight={(state as any).pixBannerHighlight}
                       pixBannerText={(state as any).pixBannerText}
+                      pixBannerHighlightColor={(state as any).pixBannerHighlightColor}
+                      pixBannerTextColor={(state as any).pixBannerTextColor}
                         slide={slide}
                         index={index}
                         total={slides.length}
@@ -5376,6 +5393,8 @@ export function F1CarouselBuilder({
                       showPixBanner={(state as any).showPixBanner}
                       pixBannerHighlight={(state as any).pixBannerHighlight}
                       pixBannerText={(state as any).pixBannerText}
+                      pixBannerHighlightColor={(state as any).pixBannerHighlightColor}
+                      pixBannerTextColor={(state as any).pixBannerTextColor}
                       slide={slide}
                       index={index}
                       total={slides.length}
@@ -5509,6 +5528,8 @@ export function F1CarouselBuilder({
                       showPixBanner={(state as any).showPixBanner}
                       pixBannerHighlight={(state as any).pixBannerHighlight}
                       pixBannerText={(state as any).pixBannerText}
+                      pixBannerHighlightColor={(state as any).pixBannerHighlightColor}
+                      pixBannerTextColor={(state as any).pixBannerTextColor}
                         slide={activeSlide}
                         index={activeIndex}
                         total={slides.length}
@@ -6084,6 +6105,80 @@ export function F1CarouselBuilder({
                           </button>
                         ))}
                       </div>
+                      <div className="mt-3 flex items-center gap-4">
+                        <div>
+                          <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
+                            {isEs ? "Fondo del botón" : "Fundo do botão"}
+                          </p>
+                          <div className="flex items-center gap-1.5">
+                            {[state.primaryColor, state.secondaryColor, "#FFFFFF", "#111318"].map((color, colorIndex) => (
+                              <button
+                                key={`cta-bg-${color}-${colorIndex}`}
+                                type="button"
+                                aria-label={`${isEs ? "Fondo" : "Fundo"} ${color}`}
+                                onClick={() => patchActive({ labelColor: color })}
+                                className={`h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 ${
+                                  (activeSlide.labelColor || "").toUpperCase() === color.toUpperCase()
+                                    ? "border-[#F5F906] ring-1 ring-[#F5F906]"
+                                    : "border-white/25"
+                                }`}
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                            <label
+                              title={isEs ? "Elegir otro color" : "Escolher outra cor"}
+                              className="relative h-5 w-5 cursor-pointer rounded-full border border-white/25"
+                              style={{
+                                background:
+                                  "conic-gradient(#ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
+                              }}
+                            >
+                              <input
+                                type="color"
+                                value={activeSlide.labelColor || state.primaryColor}
+                                onChange={(event) => patchActive({ labelColor: event.target.value })}
+                                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                              />
+                            </label>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
+                            {isEs ? "Texto del botón" : "Texto do botão"}
+                          </p>
+                          <div className="flex items-center gap-1.5">
+                            {["#FFFFFF", "#111318", state.primaryColor, state.secondaryColor].map((color, colorIndex) => (
+                              <button
+                                key={`cta-text-${color}-${colorIndex}`}
+                                type="button"
+                                aria-label={`${isEs ? "Texto" : "Texto"} ${color}`}
+                                onClick={() => patchActive({ labelTextColor: color })}
+                                className={`h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 ${
+                                  (activeSlide.labelTextColor || "").toUpperCase() === color.toUpperCase()
+                                    ? "border-[#F5F906] ring-1 ring-[#F5F906]"
+                                    : "border-white/25"
+                                }`}
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                            <label
+                              title={isEs ? "Elegir otro color" : "Escolher otra cor"}
+                              className="relative h-5 w-5 cursor-pointer rounded-full border border-white/25"
+                              style={{
+                                background:
+                                  "conic-gradient(#ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
+                              }}
+                            >
+                              <input
+                                type="color"
+                                value={activeSlide.labelTextColor || "#ffffff"}
+                                onChange={(event) => patchActive({ labelTextColor: event.target.value })}
+                                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <div className="px-4 py-3.5 space-y-3">
                       <div>
@@ -6170,25 +6265,114 @@ export function F1CarouselBuilder({
                       </div>
                     </div>
                     <div className="px-4 py-3.5 space-y-2">
-                      <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
-                        {isEs ? "Descuento PIX o Boleto" : "Desconto PIX ou Boleto"}
-                      </p>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          value={(state as any).pixBannerHighlight ?? "PIX OU BOLETO:"}
-                          maxLength={30}
-                          onChange={(event) => patchState({ pixBannerHighlight: event.target.value } as any)}
-                          className="f1-carousel-input !min-h-[40px] !py-2 text-[#F5F906]"
-                          placeholder="PIX OU BOLETO:"
-                        />
-                        <input
-                          value={(state as any).pixBannerText ?? "10% OFF NO PIX"}
-                          maxLength={40}
-                          onChange={(event) => patchState({ pixBannerText: event.target.value } as any)}
-                          className="f1-carousel-input !min-h-[40px] !py-2"
-                          placeholder="10% OFF NO PIX"
-                        />
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
+                          {isEs ? "Descuento PIX o Boleto" : "Desconto PIX ou Boleto"}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => patchState({ showPixBanner: !((state as any).showPixBanner) } as any)}
+                          className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
+                            (state as any).showPixBanner ? "bg-[#F5F906]" : "bg-white/10"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                              (state as any).showPixBanner ? "translate-x-3.5" : "translate-x-0.5"
+                            }`}
+                          />
+                        </button>
                       </div>
+                      {(state as any).showPixBanner && (
+                        <>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            <input
+                              value={(state as any).pixBannerHighlight ?? "PIX OU BOLETO:"}
+                              maxLength={30}
+                              onChange={(event) => patchState({ pixBannerHighlight: event.target.value } as any)}
+                              className="f1-carousel-input !min-h-[40px] !py-2 text-[#F5F906]"
+                              placeholder="PIX OU BOLETO:"
+                            />
+                            <input
+                              value={(state as any).pixBannerText ?? "10% OFF NO PIX"}
+                              maxLength={40}
+                              onChange={(event) => patchState({ pixBannerText: event.target.value } as any)}
+                              className="f1-carousel-input !min-h-[40px] !py-2"
+                              placeholder="10% OFF NO PIX"
+                            />
+                          </div>
+                          <div className="mt-2 flex items-center gap-4">
+                            <div>
+                              <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
+                                {isEs ? "Color destaque" : "Cor destaque"}
+                              </p>
+                              <div className="flex items-center gap-1.5">
+                                {["#F5F906", "#FFFFFF", state.primaryColor, state.secondaryColor].map((color, colorIndex) => (
+                                  <button
+                                    key={`pix-bg-${color}-${colorIndex}`}
+                                    type="button"
+                                    onClick={() => patchState({ pixBannerHighlightColor: color } as any)}
+                                    className={`h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 ${
+                                      ((state as any).pixBannerHighlightColor || "#F5F906").toUpperCase() === color.toUpperCase()
+                                        ? "border-[#F5F906] ring-1 ring-[#F5F906]"
+                                        : "border-white/25"
+                                    }`}
+                                    style={{ backgroundColor: color }}
+                                  />
+                                ))}
+                                <label
+                                  className="relative h-5 w-5 cursor-pointer rounded-full border border-white/25"
+                                  style={{
+                                    background:
+                                      "conic-gradient(#ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
+                                  }}
+                                >
+                                  <input
+                                    type="color"
+                                    value={(state as any).pixBannerHighlightColor || "#F5F906"}
+                                    onChange={(event) => patchState({ pixBannerHighlightColor: event.target.value } as any)}
+                                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.12em] text-white/30">
+                                {isEs ? "Color texto" : "Cor texto"}
+                              </p>
+                              <div className="flex items-center gap-1.5">
+                                {["#FFFFFF", "#F5F906", state.primaryColor, state.secondaryColor].map((color, colorIndex) => (
+                                  <button
+                                    key={`pix-text-${color}-${colorIndex}`}
+                                    type="button"
+                                    onClick={() => patchState({ pixBannerTextColor: color } as any)}
+                                    className={`h-5 w-5 rounded-full border-2 transition-transform hover:scale-110 ${
+                                      ((state as any).pixBannerTextColor || "#FFFFFF").toUpperCase() === color.toUpperCase()
+                                        ? "border-[#F5F906] ring-1 ring-[#F5F906]"
+                                        : "border-white/25"
+                                    }`}
+                                    style={{ backgroundColor: color }}
+                                  />
+                                ))}
+                                <label
+                                  className="relative h-5 w-5 cursor-pointer rounded-full border border-white/25"
+                                  style={{
+                                    background:
+                                      "conic-gradient(#ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
+                                  }}
+                                >
+                                  <input
+                                    type="color"
+                                    value={(state as any).pixBannerTextColor || "#FFFFFF"}
+                                    onChange={(event) => patchState({ pixBannerTextColor: event.target.value } as any)}
+                                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                     {showLogo && !state.logoBase64 && (
                       <div className="px-4 py-3">
@@ -6231,6 +6415,8 @@ export function F1CarouselBuilder({
                       showPixBanner={(state as any).showPixBanner}
                       pixBannerHighlight={(state as any).pixBannerHighlight}
                       pixBannerText={(state as any).pixBannerText}
+                      pixBannerHighlightColor={(state as any).pixBannerHighlightColor}
+                      pixBannerTextColor={(state as any).pixBannerTextColor}
                     slide={activeSlide}
                     index={activeIndex}
                     total={slides.length}
@@ -6419,6 +6605,8 @@ export function F1CarouselBuilder({
                       showPixBanner={(state as any).showPixBanner}
                       pixBannerHighlight={(state as any).pixBannerHighlight}
                       pixBannerText={(state as any).pixBannerText}
+                      pixBannerHighlightColor={(state as any).pixBannerHighlightColor}
+                      pixBannerTextColor={(state as any).pixBannerTextColor}
               slide={maximizedSlide}
               index={slides.findIndex((s) => s.id === maximizedSlide.id)}
               total={slides.length}
