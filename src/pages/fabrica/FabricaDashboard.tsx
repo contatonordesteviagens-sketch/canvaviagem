@@ -857,17 +857,28 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
         <div className="md:col-span-5 space-y-6">
           
           {/* CARD 1: IDENTIDADE & PERFIL DA AGÊNCIA */}
-          <div className="bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
-            <h3 
-              onClick={() => onNavigate?.("phase", 5)}
-              className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 mb-2 cursor-pointer hover:text-amber-400 transition-colors group"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              Identidade & Perfil da Agência
-              <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ml-1 text-amber-400 shrink-0" />
-            </h3>
+          <details 
+            open={!state.agencyName}
+            className="group bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5 [&::-webkit-details-marker]:hidden"
+          >
+            <summary className="list-none outline-none cursor-pointer flex items-center justify-between">
+              <h3 
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigate?.("phase", 5);
+                }}
+                className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 cursor-pointer hover:text-amber-400 transition-colors group/h3"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                Identidade & Perfil da Agência
+                <ExternalLink className="w-3 h-3 opacity-0 group-hover/h3:opacity-100 transition-opacity ml-1 text-amber-400 shrink-0" />
+              </h3>
+              <div className="text-[10px] text-white/40 font-bold group-open:hidden">▼ EXPANDIR</div>
+              <div className="text-[10px] text-white/40 font-bold hidden group-open:block">▲ RECOLHER</div>
+            </summary>
 
-            {/* Logo e Nome */}
+            <div className="mt-5 space-y-5 animate-fade-in">
+              {/* Logo e Nome */}
             <div className="flex flex-row gap-4 sm:gap-6 items-start bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5">
               {/* Logo Box */}
               <div className="relative group flex-shrink-0 mt-1">
@@ -1063,22 +1074,37 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
-                <div className="mb-3">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-white/55">Cores da marca</div>
-                  <p className="mt-1 text-[10px] leading-relaxed text-white/35">
-                    Defina uma vez e use automaticamente nos anúncios e nos sites.
-                  </p>
-                </div>
-                <BrandPaletteEditor
-                  compact
-                  primaryColor={state.primaryColor}
-                  secondaryColor={state.secondaryColor}
-                  backgroundColor={state.backgroundColor || "#F4F6F9"}
-                  onChange={(patch) => update(patch)}
-                />
-              </div>
             </div>
+          </details>
+
+          {/* NOVO BOTÃO DE CRIAR ANÚNCIO (F1) */}
+          <button
+             type="button"
+             onClick={() => onNavigate?.("phase", 1)}
+             className="w-full bg-violet-600 hover:bg-violet-500 text-white font-black py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-violet-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
+          >
+             <span className="flex items-center gap-2"><ImageIcon className="w-5 h-5" /> CRIAR ANÚNCIO (F1)</span>
+             <span className="text-[10px] font-bold text-white/60 bg-black/20 px-2 py-0.5 rounded-full ml-0 sm:ml-2">PRÓXIMA ETAPA ➔</span>
+          </button>
+
+          {/* CORES DA MARCA AQUI FORA */}
+          <div className="bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl">
+             <div className="mb-4">
+               <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 mb-1">
+                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                 Cores da marca
+               </h3>
+               <p className="text-[10px] leading-relaxed text-white/35">
+                 Defina uma vez e use automaticamente nos anúncios e nos sites.
+               </p>
+             </div>
+             <BrandPaletteEditor
+               compact
+               primaryColor={state.primaryColor}
+               secondaryColor={state.secondaryColor}
+               backgroundColor={state.backgroundColor || "#F4F6F9"}
+               onChange={(patch) => update(patch)}
+             />
           </div>
 
           {/* CARD RESUMO & HISTÓRICO DO USUÁRIO */}

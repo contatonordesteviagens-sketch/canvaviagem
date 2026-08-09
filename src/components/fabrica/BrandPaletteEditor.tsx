@@ -156,7 +156,7 @@ export function BrandPaletteEditor({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-2.5 min-[430px]:grid-cols-3">
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
         {roles.map((role) => (
           <ColorRoleField
             key={role.key}
