@@ -799,13 +799,13 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                   </div>
                 ) : (
                   state.selectedPackages.map((pkg) => (
-                    <div 
+                    <details 
                       key={pkg.id} 
-                      className="bg-white/[0.01] border border-white/5 rounded-2xl p-4 hover:border-white/15 transition-all duration-300 group"
+                      className="bg-white/[0.01] border border-white/5 rounded-2xl p-4 hover:border-white/15 transition-all duration-150 ease-out group [&::-webkit-details-marker]:hidden"
                     >
                       {editingId === pkg.id ? (
                         /* Edit mode expanded inline */
-                        <div className="space-y-3">
+                        <summary className="list-none outline-none space-y-3">
                           <div className="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1">Editando Paquete</div>
                           <input 
                             value={editTitle} 
@@ -849,16 +849,9 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                               Cancelar
                             </button>
                           </div>
-                        </div>
+                        </summary>
                       ) : (
                         /* Normal display view */
-                        <div>
-                          <div className="flex items-start gap-4">
-                            {/* Package visual asset */}
-                            <div className="w-16 h-16 rounded-xl bg-white/[0.02] border border-white/10 flex-shrink-0 overflow-hidden relative shadow-inner flex items-center justify-center">
-                              {pkg.imageUrl ? (
-                                <img src={pkg.imageUrl} className="w-full h-full object-cover" alt="" />
-                              ) : (
                                 <div className="text-white/20 text-center">
                                   <ImageIcon className="w-5 h-5 mx-auto" />
                                   <span className="text-[7px] uppercase font-bold text-white/30 block mt-0.5">Sin Foto</span>
@@ -874,8 +867,11 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                               <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
                                 {pkg.price}
                               </span>
+                              </div>
                             </div>
+                          </summary>
 
+                          <div className="pt-4 mt-3 border-t border-white/5 animate-fade-in">
                             {/* Action Tools Overlay */}
                             <div className="flex gap-1 items-center">
                               {pkg.isDraft ? (
@@ -917,23 +913,23 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
-                          </div>
 
-                          {/* Image sync banner status */}
-                          {pkg.imageUrl ? (
-                            <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-emerald-500/10 bg-emerald-500/[0.02] text-[9px] font-bold text-emerald-400/70 font-sans tracking-wide">
-                              <Check className="w-3 h-3" />
-                              Sincronizado con Anuncio & Foto de la Fase 3
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-amber-500/10 bg-amber-500/[0.02] text-[9px] font-bold text-amber-400/80 font-sans tracking-wide">
-                              <Link className="w-3 h-3 animate-pulse" />
-                              <span>Foto vinculada ausente: Usa el <strong>Generador de Anuncios (F1)</strong> para crear el anuncio de este paquete</span>
-                            </div>
-                          )}
-                        </div>
+                            {/* Image sync banner status */}
+                            {pkg.imageUrl ? (
+                              <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-emerald-500/10 bg-emerald-500/[0.02] text-[9px] font-bold text-emerald-400/70 font-sans tracking-wide">
+                                <Check className="w-3 h-3" />
+                                Sincronizado con Anuncio & Foto de la Fase 3
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-amber-500/10 bg-amber-500/[0.02] text-[9px] font-bold text-amber-400/80 font-sans tracking-wide">
+                                <Link className="w-3 h-3 animate-pulse" />
+                                <span>Foto vinculada ausente: Usa el <strong>Generador de Anuncios (F1)</strong> para crear el anuncio de este paquete</span>
+                              </div>
+                            )}
+                          </div>
+                        </>
                       )}
-                    </div>
+                    </details>
                   ))
                 )}
               </div>
@@ -943,6 +939,18 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                 <div className="text-center py-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-[9px] uppercase font-black tracking-widest text-white/30 font-sans">
                   ⚡ {state.selectedPackages.length} paquete{state.selectedPackages.length !== 1 ? "s" : ""} sincronizado{state.selectedPackages.length !== 1 ? "s" : ""} con tu sitio web
                 </div>
+              )}
+
+              {/* Botón de Avanzar */}
+              {state.selectedPackages.length > 0 && (
+                <button
+                   type="button"
+                   onClick={() => onNavigate?.("phase", 1)}
+                   className="w-full mt-4 bg-violet-600 hover:bg-violet-500 text-white font-black py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-violet-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
+                >
+                   <span className="flex items-center gap-2"><ImageIcon className="w-5 h-5" /> AVANZAR PARA CREAR ANUNCIO (F1)</span>
+                   <span className="text-[10px] font-bold text-white/60 bg-black/20 px-2 py-0.5 rounded-full ml-0 sm:ml-2">PRÓXIMA ETAPA ➔</span>
+                </button>
               )}
             </div>
           </div>

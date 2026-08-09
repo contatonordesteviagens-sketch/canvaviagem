@@ -1438,13 +1438,13 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-2 overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/20">
                 {state.selectedPackages.length > 0 &&
                   state.selectedPackages.map((pkg) => (
-                    <div 
+                    <details 
                       key={pkg.id} 
-                      className="bg-white/[0.01] border border-white/5 rounded-2xl p-4 hover:border-white/15 transition-all duration-150 ease-out group"
+                      className="bg-white/[0.01] border border-white/5 rounded-2xl p-4 hover:border-white/15 transition-all duration-150 ease-out group [&::-webkit-details-marker]:hidden"
                     >
                       {editingId === pkg.id ? (
                         /* Edit mode expanded inline */
-                        <div className="space-y-3">
+                        <summary className="list-none outline-none space-y-3">
                           <div className="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1">Editando Pacote</div>
                           <input 
                             value={editTitle} 
@@ -1487,11 +1487,12 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                               Cancelar
                             </button>
                           </div>
-                        </div>
+                        </summary>
                       ) : (
                         /* Normal display view */
-                        <div>
-                          <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                        <>
+                          <summary className="list-none outline-none cursor-pointer flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 relative pr-6">
+                            <div className="absolute right-0 top-1 text-white/30 group-open:rotate-180 transition-transform">▼</div>
                             <div className="flex items-start gap-3 flex-1 min-w-0">
                               {/* Package visual asset */}
                               <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white/[0.02] border border-white/10 flex-shrink-0 overflow-hidden relative shadow-inner flex items-center justify-center">
@@ -1515,9 +1516,11 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                                 </span>
                               </div>
                             </div>
+                          </summary>
 
+                          <div className="pt-4 mt-3 border-t border-white/5 animate-fade-in">
                             {/* Action Tools Overlay */}
-                            <div className="flex flex-wrap gap-1.5 items-center w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-0 border-white/5">
+                            <div className="flex flex-wrap gap-1.5 items-center w-full justify-start">
                               {pkg.isDraft ? (
                                 <button
                                   onClick={() => togglePublish(pkg.id, true)}
@@ -1553,23 +1556,23 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
-                          </div>
 
-                          {/* Image sync banner status */}
-                          {pkg.imageUrl ? (
-                            <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-[9px] font-bold text-emerald-400">
-                              <Check className="w-3 h-3" />
-                              Sincronizado com Anúncio & Foto da Fase 3
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-amber-500/20 bg-amber-500/5 text-[9px] font-bold text-amber-400">
-                              <Link className="w-3 h-3 animate-pulse" />
-                              <span>Foto vinculada ausente: Use o <strong>Gerador de Anúncios (F1)</strong> para criar a arte deste pacote</span>
-                            </div>
-                          )}
-                        </div>
+                            {/* Image sync banner status */}
+                            {pkg.imageUrl ? (
+                              <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-[9px] font-bold text-emerald-400">
+                                <Check className="w-3 h-3" />
+                                Sincronizado com Anúncio & Foto da Fase 3
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-amber-500/20 bg-amber-500/5 text-[9px] font-bold text-amber-400">
+                                <Link className="w-3 h-3 animate-pulse" />
+                                <span>Foto vinculada ausente: Use o <strong>Gerador de Anúncios (F1)</strong> para criar a arte deste pacote</span>
+                              </div>
+                            )}
+                          </div>
+                        </>
                       )}
-                    </div>
+                    </details>
                   ))}
               </div>
 
@@ -1578,6 +1581,18 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 <div className="text-center py-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-[9px] uppercase font-black tracking-widest text-white/30">
                   ⚡ {state.selectedPackages.length} pacote{state.selectedPackages.length !== 1 ? "s" : ""} sincronizado{state.selectedPackages.length !== 1 ? "s" : ""} com seu site Canva Viagem
                 </div>
+              )}
+
+              {/* Botão de Avançar */}
+              {state.selectedPackages.length > 0 && (
+                <button
+                   type="button"
+                   onClick={() => onNavigate?.("phase", 1)}
+                   className="w-full mt-4 bg-violet-600 hover:bg-violet-500 text-white font-black py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-violet-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
+                >
+                   <span className="flex items-center gap-2"><ImageIcon className="w-5 h-5" /> AVANÇAR PARA CRIAR ANÚNCIO (F1)</span>
+                   <span className="text-[10px] font-bold text-white/60 bg-black/20 px-2 py-0.5 rounded-full ml-0 sm:ml-2">PRÓXIMA ETAPA ➔</span>
+                </button>
               )}
             </div>
           </div>
