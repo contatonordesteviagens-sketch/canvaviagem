@@ -1308,7 +1308,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 state.selectedPackages.length === 0 ? (
                   <div className="flex flex-col gap-3">
                     <button
-                      onClick={() => onNavigate?.("phase", 3)}
+                      onClick={() => onNavigate?.("phase", 1)}
                       className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black text-sm uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-amber-500/20 animate-fade-in"
                     >
                       <ImageIcon className="w-5 h-5" /> Criar Anúncio (F1)
