@@ -97,14 +97,14 @@ function ColorRoleField({
   };
 
   return (
-    <div className={`rounded-xl border border-white/10 bg-white/[0.035] ${compact ? "p-2.5" : "p-3"}`}>
-      <div className="mb-2 min-w-0">
-        <div className="truncate text-[11px] font-bold text-white">{role.label}</div>
+    <div className={`rounded-xl border border-white/10 bg-white/[0.035] ${compact ? "p-2 sm:p-2.5" : "p-3"} text-center`}>
+      <div className="mb-2.5 min-w-0">
+        <div className="text-[10px] sm:text-[11px] font-bold text-white leading-tight break-words">{role.label}</div>
         {!compact && <div className="mt-0.5 text-[10px] leading-relaxed text-white/40">{role.hint}</div>}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col items-center gap-2">
         <label
-          className="relative h-9 w-9 shrink-0 cursor-pointer overflow-hidden rounded-full border border-white/20"
+          className="relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 cursor-pointer overflow-hidden rounded-full border border-white/20 shadow-md shadow-black/20 hover:scale-105 transition-transform"
           style={{ backgroundColor: value }}
           aria-label={`${COPY[locale].select} ${role.label.toLowerCase()}`}
         >
@@ -135,7 +135,7 @@ function ColorRoleField({
           maxLength={7}
           spellCheck={false}
           aria-label={`${COPY[locale].hex} ${role.label.toLowerCase()}`}
-          className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/20 px-2.5 py-2 text-[11px] font-semibold uppercase tracking-wide text-white outline-none transition-colors focus:border-white/35"
+          className="w-full max-w-[70px] rounded-md border border-white/10 bg-black/20 px-1.5 py-1.5 text-[9px] sm:text-[10px] font-semibold text-center uppercase tracking-wide text-white outline-none transition-colors focus:border-white/35"
         />
       </div>
     </div>

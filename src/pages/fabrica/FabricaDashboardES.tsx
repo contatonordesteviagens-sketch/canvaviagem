@@ -957,10 +957,9 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                 <button
                    type="button"
                    onClick={() => onNavigate?.("phase", 1)}
-                   className="w-full mt-4 bg-violet-600 hover:bg-violet-500 text-white font-black py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-violet-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
+                   className="w-full mt-4 bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-3xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-amber-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
                 >
-                   <span className="flex items-center gap-2"><ImageIcon className="w-5 h-5" /> AVANZAR PARA CREAR ANUNCIO (F1)</span>
-                   <span className="text-[10px] font-bold text-white/60 bg-black/20 px-2 py-0.5 rounded-full ml-0 sm:ml-2">PRÓXIMA ETAPA ➔</span>
+                   <ImageIcon className="w-5 h-5 shrink-0" /> AVANZAR PARA CREAR ANUNCIO (F1)
                 </button>
               )}
             </div>

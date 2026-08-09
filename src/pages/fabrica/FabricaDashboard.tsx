@@ -862,16 +862,9 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             className="group bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5 [&::-webkit-details-marker]:hidden"
           >
             <summary className="list-none outline-none cursor-pointer flex items-center justify-between">
-              <h3 
-                onClick={(e) => {
-                  e.preventDefault();
-                  onNavigate?.("phase", 5);
-                }}
-                className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 cursor-pointer hover:text-amber-400 transition-colors group/h3"
-              >
+              <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                Identidade & Perfil da Agência
-                <ExternalLink className="w-3 h-3 opacity-0 group-hover/h3:opacity-100 transition-opacity ml-1 text-amber-400 shrink-0" />
+                Dados do Perfil
               </h3>
               <div className="text-[10px] text-white/40 font-bold group-open:hidden">▼ EXPANDIR</div>
               <div className="text-[10px] text-white/40 font-bold hidden group-open:block">▲ RECOLHER</div>
@@ -1083,10 +1076,9 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           <button
              type="button"
              onClick={() => onNavigate?.("phase", 1)}
-             className="w-full bg-violet-600 hover:bg-violet-500 text-white font-black py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-violet-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
+             className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-amber-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
           >
              <span className="flex items-center gap-2"><ImageIcon className="w-5 h-5" /> CRIAR ANÚNCIO (F1)</span>
-             <span className="text-[10px] font-bold text-white/60 bg-black/20 px-2 py-0.5 rounded-full ml-0 sm:ml-2">PRÓXIMA ETAPA ➔</span>
           </button>
 
           {/* CORES DA MARCA AQUI FORA */}
@@ -1590,10 +1582,9 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 <button
                    type="button"
                    onClick={() => onNavigate?.("phase", 1)}
-                   className="w-full mt-4 bg-violet-600 hover:bg-violet-500 text-white font-black py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-violet-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
+                   className="w-full mt-4 bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-3xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-amber-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
                 >
-                   <span className="flex items-center gap-2"><ImageIcon className="w-5 h-5" /> AVANÇAR PARA CRIAR ANÚNCIO (F1)</span>
-                   <span className="text-[10px] font-bold text-white/60 bg-black/20 px-2 py-0.5 rounded-full ml-0 sm:ml-2">PRÓXIMA ETAPA ➔</span>
+                   <ImageIcon className="w-5 h-5 shrink-0" /> AVANÇAR PARA CRIAR ANÚNCIO (F1)
                 </button>
               )}
             </div>
