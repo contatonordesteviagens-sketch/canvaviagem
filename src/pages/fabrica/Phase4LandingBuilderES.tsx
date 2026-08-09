@@ -1465,26 +1465,6 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             </FabricaCard>
           </div>
 
-          {/* BARRA DE ACCIONES INFERIOR FIJA */}
-          <div className="flex gap-3 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-white/10 mt-6">
-            <button
-              onClick={onBack}
-              className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
-            >
-              Atrás
-            </button>
-            <button
-              onClick={handleDownload}
-              className="flex-1 py-3 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
-              style={{
-                background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)`,
-                boxShadow: `0 8px 24px ${UI_ACCENT_SHADOW}`,
-              }}
-            >
-              <Download className="w-4 h-4" /> Descargar HTML {downloadCount > 0 && `(v${downloadCount})`}
-            </button>
-          </div>
-
 
         </div>
 
@@ -1572,25 +1552,17 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 💡 <strong>Haz clic en textos, iconos, fotos o fondos para editar.</strong> En botones, usa doble clic para abrir los colores.
               </div>
 
-              <div 
-                 className="transition-all duration-300 ease-in-out w-full @container"
-                 style={previewMode === "desktop" ? { height: "calc(1150px * min(1, 100cqi / 1280))" } : undefined}
-              >
-                <div 
-                  className={previewMode === "desktop" ? "w-[1280px] h-[1150px] origin-top-left" : ""}
-                  style={previewMode === "desktop" ? { transform: "scale(min(1, 100cqi / 1280))" } : undefined}
-                >
-                  <iframe
-                    ref={iframeRef}
-                    srcDoc={previewHTML}
-                    className={`bg-white transition-all duration-500 ${
-                      previewMode === "mobile"
-                        ? "w-full max-w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px] shadow-[0_20px_60px_rgba(0,0,0,0.7)]"
-                        : "w-full h-full border border-white/[0.05] rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-                    }`}
-                    title="Preview"
-                  />
-                </div>
+              <div className="transition-all duration-300 ease-in-out w-full h-[800px] sm:h-[900px] lg:h-[1050px]">
+                <iframe
+                  ref={iframeRef}
+                  srcDoc={previewHTML}
+                  className={`bg-white transition-all duration-500 ${
+                    previewMode === "mobile"
+                      ? "w-full max-w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px] shadow-[0_20px_60px_rgba(0,0,0,0.7)]"
+                      : "w-full h-full border border-white/[0.05] rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                  }`}
+                  title="Preview"
+                />
               </div>
               {activePackagePreviewId && (
                 <div className="fixed inset-x-3 top-16 z-[80] flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-zinc-950/95 p-2 shadow-2xl backdrop-blur md:hidden">

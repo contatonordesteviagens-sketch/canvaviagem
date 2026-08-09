@@ -1370,17 +1370,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-          <div className="space-y-6">
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={onNext}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl flex items-center gap-2 transition-colors shadow-lg shadow-blue-500/20"
-              >
-                Avançar para Criar Anúncios (F1) <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
 
-            <FabricaCard title="Paleta da marca">
               <BrandPaletteEditor
                 primaryColor={state.primaryColor}
                 secondaryColor={state.secondaryColor}
@@ -1821,31 +1811,6 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 />
               </div>
             </FabricaCard>
-            
-            <div className="flex justify-center mt-8 pb-12">
-              <button
-                onClick={onNext}
-                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white text-base font-bold rounded-2xl flex items-center gap-3 transition-all shadow-xl shadow-blue-600/30 hover:scale-105"
-              >
-                Avançar para Criar Anúncios (F1) <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* BARRA DE AÇÕES INFERIOR FIXA */}
-          <div className="flex flex-col sm:flex-row gap-3 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-white/10 mt-6">
-            <button
-              onClick={onBack}
-              className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
-            >
-              Voltar ao Início
-            </button>
-            <button
-              onClick={onNext}
-              className="flex-[2] py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)]"
-            >
-              Avançar <ArrowRight className="w-5 h-5" />
-            </button>
           </div>
 
 
@@ -1946,25 +1911,17 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 💡 <strong>Clique em textos, ícones, fotos ou fundos para editar.</strong> Em botões, use duplo clique para abrir as cores da marca.
               </div>
 
-              <div 
-                 className="transition-all duration-300 ease-in-out w-full @container"
-                 style={previewMode === "desktop" ? { height: "calc(1150px * min(1, 100cqi / 1280))" } : undefined}
-              >
-                <div 
-                  className={previewMode === "desktop" ? "w-[1280px] h-[1150px] origin-top-left" : ""}
-                  style={previewMode === "desktop" ? { transform: "scale(min(1, 100cqi / 1280))" } : undefined}
-                >
-                  <iframe
-                    ref={iframeRef}
-                    srcDoc={previewHTML}
-                    className={`bg-white transition-all duration-300 shadow-xl ${
-                      previewMode === "mobile"
-                        ? "w-full max-w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px]"
-                        : "w-full h-full border border-white/10 rounded-2xl"
-                    }`}
-                    title="Preview"
-                  />
-                </div>
+              <div className="transition-all duration-300 ease-in-out w-full h-[800px] sm:h-[900px] lg:h-[1050px]">
+                <iframe
+                  ref={iframeRef}
+                  srcDoc={previewHTML}
+                  className={`bg-white transition-all duration-300 shadow-xl ${
+                    previewMode === "mobile"
+                      ? "w-full max-w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px]"
+                      : "w-full h-full border border-white/10 rounded-2xl"
+                  }`}
+                  title="Preview"
+                />
               </div>
               {activePackagePreviewId && (
                 <div className="fixed inset-x-3 top-16 z-[80] flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-zinc-950/95 p-2 shadow-2xl backdrop-blur md:hidden">
