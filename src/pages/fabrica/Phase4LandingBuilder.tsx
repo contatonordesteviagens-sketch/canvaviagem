@@ -1219,10 +1219,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         onCancel={() => !isSwitchingProject && setPendingProjectSwitch(null)}
         onConfirm={() => pendingProjectSwitch && void loadSavedProject(pendingProjectSwitch)}
       />
-      {/* ── Indicador de salvamento na nuvem ── */}
-      <div className="flex justify-end mb-3">
-        <CloudSaveIndicator />
-      </div>
+
       {/* ── SELETOR DE PROJETO PERMANENTE — Sempre visível independente do estado ── */}
       <details className="group rounded-xl border border-white/5 bg-white/[0.02] mb-4 [&::-webkit-details-marker]:hidden relative overflow-hidden">
         {/* Yellow left accent bar */}
