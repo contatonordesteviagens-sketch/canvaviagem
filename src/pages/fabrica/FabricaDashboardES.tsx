@@ -376,13 +376,13 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
           <button
             type="button"
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
-            className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
+            className="w-full flex flex-row items-center justify-between gap-2 text-[10px] text-white/50 font-medium outline-none text-left"
           >
-            <span className="flex items-center gap-1.5">
-              📂 EDITANDO: {state.agencyName?.trim() || "Proyecto sin nombre"}
+            <span className="flex items-center gap-1.5 truncate">
+              📂 Editando: {state.agencyName?.trim() || "Proyecto sin nombre"}
               {savedProjects && savedProjects.length > 0 && ` • ${savedProjects.length} guardado${savedProjects.length !== 1 ? "s" : ""}`}
             </span>
-            <span className="self-end sm:self-auto text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ OCULTAR" : "▼ EXPANDIR / CARGAR"}</span>
+            <span className="text-[9px] text-white/40 shrink-0">{projectsPanelOpen ? "▲ Ocultar" : "▼ Expandir / Cargar"}</span>
           </button>
           
           {projectsPanelOpen && (
@@ -495,12 +495,12 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
             </h3>
 
             {/* Logo y Nombre */}
-            <div className="flex flex-col sm:flex-row gap-6 items-center bg-white/[0.02] border border-white/5 rounded-2xl p-4">
+            <div className="flex flex-row gap-4 sm:gap-6 items-start bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5">
               {/* Logo Box */}
-              <div className="relative group flex-shrink-0">
+              <div className="relative group flex-shrink-0 mt-1">
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/10 hover:border-amber-500/40 bg-white/[0.01] flex flex-col items-center justify-center overflow-hidden transition-all duration-300 cursor-pointer relative"
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-dashed border-white/10 hover:border-amber-500/40 bg-white/[0.01] flex flex-col items-center justify-center overflow-hidden transition-all duration-150 ease-out cursor-pointer relative"
                 >
                   {state.logoBase64 ? (
                     <img src={state.logoBase64} className="w-full h-full object-contain p-2" alt="Logo" />
