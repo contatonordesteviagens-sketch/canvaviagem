@@ -1491,19 +1491,29 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         {/* Painel Direito: Preview do Site */}
         <div className="w-full space-y-6 lg:sticky lg:top-24">
           <div className="bg-[#0A0A0C] border border-white/[0.07] rounded-3xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.7)]">
-            <div className="px-4 py-3 bg-black/60 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="px-3 py-2 bg-black/60 border-b border-white/[0.06] flex items-center justify-between gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+              
               <div className="flex items-center gap-2">
-                <div className="flex gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-400/70 inline-block" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/70 inline-block" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-400/70 inline-block" />
+                {/* Seletor Dispositivo */}
+                <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/10">
+                  <button
+                    onClick={() => setPreviewMode("desktop")}
+                    className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all whitespace-nowrap ${
+                      previewMode === "desktop" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    Computadora
+                  </button>
+                  <button
+                    onClick={() => setPreviewMode("mobile")}
+                    className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all whitespace-nowrap ${
+                      previewMode === "mobile" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    Celular
+                  </button>
                 </div>
-                <div className="ml-3 px-3 py-1.5 rounded-lg bg-white/[0.03] text-[10px] font-mono text-white/40 w-44 sm:w-64 truncate border border-white/[0.05] tracking-wide">
-                  https://{(state.agencyName || "tu-agencia").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-")}.canvaviagem.com
-                </div>
-              </div>
 
-              <div className="flex flex-wrap items-center gap-2">
                 {/* Histórico Desfazer/Refazer */}
                 <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
                   <button
@@ -1514,7 +1524,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                     }`}
                     title="Deshacer cambio (Undo)"
                   >
-                    <Undo className="w-3.5 h-3.5" />
+                    <Undo className="w-4 h-4" />
                   </button>
                   <button
                     onClick={redo}
@@ -1524,52 +1534,31 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                     }`}
                     title="Rehacer cambio (Redo)"
                   >
-                    <Redo className="w-3.5 h-3.5" />
+                    <Redo className="w-4 h-4" />
                   </button>
                 </div>
+              </div>
 
-                {/* Seletor Dispositivo */}
-                <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/10">
-                  <button
-                    onClick={() => setPreviewMode("desktop")}
-                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${
-                      previewMode === "desktop" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
-                    }`}
-                  >
-                    Computadora
-                  </button>
-                  <button
-                    onClick={() => setPreviewMode("mobile")}
-                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${
-                      previewMode === "mobile" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
-                    }`}
-                  >
-                    Celular
-                  </button>
-                </div>
-
-                <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-                  Editor Visual
-                </span>
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   aria-pressed={removeMode}
                   onClick={() => setRemoveMode((current) => !current)}
-                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-2.5 text-[10px] font-bold ${
+                  title={removeMode ? "Toca el elemento del sitio para quitarlo" : "Quitar elemento del sitio"}
+                  className={`inline-flex items-center justify-center min-h-8 min-w-8 rounded-lg border transition-colors ${
                     removeMode
-                      ? "border-red-400/50 bg-red-500/15 text-red-200"
-                      : "border-white/10 text-white/45 hover:text-white"
+                      ? "border-red-400/50 bg-red-500/15 text-red-400"
+                      : "border-white/10 text-white/45 hover:text-white hover:bg-white/5"
                   }`}
                 >
-                  <X className="h-3 w-3" />
-                  {removeMode ? "Toca el elemento" : "Quitar elemento"}
+                  <Trash2 className="h-4 w-4" />
                 </button>
+                
                 {(state.siteContent.hiddenElements?.length || 0) > 0 && (
                   <button
                     type="button"
                     onClick={() => updSite({ hiddenElements: [] })}
-                    className="min-h-9 rounded-lg border border-white/10 px-2.5 text-[10px] font-bold text-white/45 hover:text-white"
+                    className="min-h-8 rounded-lg border border-white/10 px-2.5 text-[10px] font-bold text-white/45 hover:text-white whitespace-nowrap"
                   >
                     Restaurar ({state.siteContent.hiddenElements?.length})
                   </button>
@@ -1583,17 +1572,25 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 💡 <strong>Haz clic en textos, iconos, fotos o fondos para editar.</strong> En botones, usa doble clic para abrir los colores.
               </div>
 
-              <div className="transition-all duration-300 ease-in-out">
-                <iframe
-                  ref={iframeRef}
-                  srcDoc={previewHTML}
-                  className={`bg-white transition-all duration-500 ${
-                    previewMode === "mobile"
-                      ? "w-full max-w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px] shadow-[0_20px_60px_rgba(0,0,0,0.7)]"
-                      : "w-full h-[1150px] border border-white/[0.05] rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-                  }`}
-                  title="Preview"
-                />
+              <div 
+                 className="transition-all duration-300 ease-in-out w-full @container"
+                 style={previewMode === "desktop" ? { height: "calc(1150px * min(1, 100cqi / 1280))" } : undefined}
+              >
+                <div 
+                  className={previewMode === "desktop" ? "w-[1280px] h-[1150px] origin-top-left" : ""}
+                  style={previewMode === "desktop" ? { transform: "scale(min(1, 100cqi / 1280))" } : undefined}
+                >
+                  <iframe
+                    ref={iframeRef}
+                    srcDoc={previewHTML}
+                    className={`bg-white transition-all duration-500 ${
+                      previewMode === "mobile"
+                        ? "w-full max-w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px] shadow-[0_20px_60px_rgba(0,0,0,0.7)]"
+                        : "w-full h-full border border-white/[0.05] rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                    }`}
+                    title="Preview"
+                  />
+                </div>
               </div>
               {activePackagePreviewId && (
                 <div className="fixed inset-x-3 top-16 z-[80] flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-zinc-950/95 p-2 shadow-2xl backdrop-blur md:hidden">
