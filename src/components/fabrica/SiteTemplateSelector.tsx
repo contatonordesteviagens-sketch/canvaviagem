@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Check } from "lucide-react";
 import {
   SITE_TEMPLATE_CATALOG,
@@ -124,21 +125,35 @@ export const SiteTemplateSelector = ({
 }: SiteTemplateSelectorProps) => {
   const activeTemplateId = normalizeSiteTemplateId(selected);
   const labels = copy[locale];
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <fieldset className="mb-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-      <legend className="sr-only">{labels.title}</legend>
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <div>
-          <h3 className="text-sm font-bold text-white">{labels.title}</h3>
-          <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-white/55">{labels.support}</p>
+    <details 
+      open={isOpen}
+      onToggle={(e) => setIsOpen(e.currentTarget.open)}
+      className="group mb-4 rounded-2xl border border-white/10 bg-white/[0.03] [&::-webkit-details-marker]:hidden"
+    >
+      <summary className="list-none outline-none cursor-pointer p-4 hover:bg-white/[0.02] transition-colors rounded-2xl select-none">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-bold text-white">{labels.title}</h3>
+            <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-white/55">{labels.support}</p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 shrink-0">
+            <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] font-semibold text-white/55">
+              {labels.count}
+            </span>
+            <div className="text-[10px] text-white/40 font-bold group-open:hidden flex items-center gap-1.5 whitespace-nowrap">
+              ▼ {locale === "es" ? "Expandir" : "Expandir"}
+            </div>
+            <div className="text-[10px] text-white/40 font-bold hidden group-open:flex items-center gap-1.5 whitespace-nowrap">
+              ▲ {locale === "es" ? "Ocultar" : "Recolher"}
+            </div>
+          </div>
         </div>
-        <span className="shrink-0 rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[10px] font-semibold text-white/55">
-          {labels.count}
-        </span>
-      </div>
+      </summary>
 
-      <div className="grid grid-cols-1 gap-2 min-[560px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-6" data-testid="site-template-selector">
+      <div className="p-4 pt-0 border-t border-white/5 mt-2 animate-fade-in grid grid-cols-1 gap-2 min-[560px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-6" data-testid="site-template-selector">
         {SITE_TEMPLATE_CATALOG.map((template) => {
           const templateCopy = template.copy[locale];
           const active = activeTemplateId === template.id;
@@ -159,7 +174,10 @@ export const SiteTemplateSelector = ({
                 name="site-template"
                 value={template.id}
                 checked={active}
-                onChange={() => onSelect(template.id)}
+                onChange={() => {
+                  onSelect(template.id);
+                  setIsOpen(false); // auto-minimize upon selection
+                }}
                 aria-labelledby={nameId}
                 aria-describedby={descriptionId}
                 data-testid={`site-template-${template.id}`}
@@ -193,6 +211,6 @@ export const SiteTemplateSelector = ({
           );
         })}
       </div>
-    </fieldset>
+    </details>
   );
 };
