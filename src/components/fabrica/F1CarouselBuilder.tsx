@@ -6432,7 +6432,7 @@ export function F1CarouselBuilder({
             <div className="mt-4 flex flex-col gap-4">
               <button
                 type="button"
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                onClick={() => document.getElementById("mobile-preview-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" })}
                 className="lg:hidden flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-white/10 active:scale-95"
               >
                 <ArrowUp className="h-4 w-4 text-[#F5F906]" />
@@ -6443,7 +6443,7 @@ export function F1CarouselBuilder({
           )}
         </div>
 
-        <aside className="order-1 lg:order-2 lg:sticky lg:top-5 lg:self-start pr-1 space-y-4">
+        <aside id="mobile-preview-anchor" className="order-1 lg:order-2 lg:sticky lg:top-5 lg:self-start pr-1 space-y-4">
           <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-3 sm:p-4">
             <div className="mb-3">
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/35">
