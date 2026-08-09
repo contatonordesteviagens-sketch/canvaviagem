@@ -948,7 +948,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
               {/* Banner indicator */}
               {state.selectedPackages.length > 0 && (
                 <div className="text-center py-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-[9px] uppercase font-black tracking-widest text-white/30 font-sans">
-                  ⚡ {state.selectedPackages.length} paquete{state.selectedPackages.length !== 1 ? "s" : ""} sincronizado{state.selectedPackages.length !== 1 ? "s" : ""} con tu sitio web
+                  ⚡ {state.selectedPackages.length} paquete{state.selectedPackages.length !== 1 ? "s" : ""} seleccionado{state.selectedPackages.length !== 1 ? "s" : ""}
                 </div>
               )}
 
@@ -959,7 +959,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                    onClick={() => onNavigate?.("phase", 1)}
                    className="w-full mt-4 bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-3xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-amber-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
                 >
-                   <ImageIcon className="w-5 h-5 shrink-0" /> AVANZAR PARA CREAR ANUNCIO (F1)
+                   <ImageIcon className="w-5 h-5 shrink-0" /> AVANZAR PRÓXIMA ETAPA
                 </button>
               )}
             </div>
