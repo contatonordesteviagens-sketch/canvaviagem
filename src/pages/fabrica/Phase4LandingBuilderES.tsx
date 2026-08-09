@@ -2648,9 +2648,9 @@ const PublishSiteCardES = ({
           </div>
         </div>
 
-        <div className="mb-6 p-4 rounded-xl bg-black/40 border border-white/10 backdrop-blur-sm">
-          <p className="text-[13px] text-white/80 leading-relaxed font-medium">
-            Acabamos de lanzar la publicación automática. ¡Elige un enlace y presiona publicar!
+        <div className="mb-4">
+          <p className="text-xs text-white/70 mb-2">
+            Publica tu sitio en Canva Viagem o descarga el código para usarlo externamente.
           </p>
         </div>
 
@@ -2696,23 +2696,24 @@ const PublishSiteCardES = ({
             <div>
               <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2 flex justify-between">
                 <span>Enlace personalizado</span>
-                {isPublished && <span className="text-emerald-400 text-[10px]">Alterar mudará el enlace</span>}
+                {isPublished && <span className="text-emerald-400 text-[10px]">Alterar cambiará el enlace</span>}
               </label>
-              <div className="flex items-center">
+              <div className="flex items-center mb-4">
+                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none shrink-0">
+                  https://
+                </span>
                 <input
                   type="text"
                   value={subdomain}
                   onChange={(e) => setSubdomain(buildSiteSlug(e.target.value))}
                   maxLength={63}
                   placeholder="nombre-de-tu-agencia"
-                  className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30 rounded-l-lg border-r-0 text-right"
-                  style={{ textAlign: "right" }}
+                  className="min-w-0 w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
                 />
-                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 rounded-r-lg text-xs text-white/40 select-none border-l-0">
+                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 rounded-r-lg border-l-0 text-xs text-white/40 select-none shrink-0 break-all">
                   .canvaviagem.com
                 </span>
               </div>
-              <p className="text-[10px] text-white/40 mt-1">Usa solo letras minúsculas, números y guiones.</p>
               <div>
                 <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
                   Google Analytics ID (Opcional):
@@ -2762,9 +2763,6 @@ const PublishSiteCardES = ({
               </button>
             </div>
 
-            <p className="text-[11px] text-white/50 mt-4 leading-relaxed">
-              El HTML publicado se guarda en Supabase y el subdominio se entrega mediante la capa Cloudflare de Canva Viagem. No necesitas configurar un alojamiento externo.
-            </p>
           </div>
         </div>
 

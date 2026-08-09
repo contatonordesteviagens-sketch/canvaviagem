@@ -3037,8 +3037,8 @@ const PublishSiteCard = ({
           </div>
         </div>
 
-        <p className="text-sm text-white/70 mb-5 leading-relaxed">
-          Escolha a sua opção preferida para publicar ou baixar o código completo do seu site perfeitamente como ele está:
+        <p className="text-xs text-white/70 mb-4">
+          Publique o seu site no Canva Viagem ou baixe o código para usar externamente.
         </p>
 
         {/* PUBLICAÇÃO EM SUBDOMÍNIO CANVA VIAGEM (PRIMÁRIA) */}
@@ -3086,8 +3086,8 @@ const PublishSiteCard = ({
           <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
             Link do cliente:
           </label>
-          <div className="grid grid-cols-[auto_minmax(0,1fr)] sm:grid-cols-[auto_minmax(0,1fr)_auto] mb-3">
-            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-tl-lg sm:rounded-l-lg text-xs text-white/40 select-none">
+          <div className="flex items-center mb-4">
+            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none shrink-0">
               https://
             </span>
             <input
@@ -3096,9 +3096,9 @@ const PublishSiteCard = ({
               onChange={(e) => setCanvaViagemSubdomain(buildSiteSlug(e.target.value))}
               maxLength={63}
               placeholder="nome-da-agencia"
-              className="min-w-0 w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30 rounded-tr-lg sm:rounded-none"
+              className="min-w-0 w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
             />
-            <span className="col-span-2 sm:col-span-1 px-3 py-2 bg-white/[0.04] border border-white/10 border-t-0 sm:border-t sm:border-l-0 rounded-b-lg sm:rounded-b-none sm:rounded-r-lg text-center sm:text-left text-xs text-white/40 select-none break-all">
+            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-xs text-white/40 select-none shrink-0 break-all">
               .canvaviagem.com
             </span>
           </div>
@@ -3144,9 +3144,7 @@ const PublishSiteCard = ({
             </button>
           </div>
 
-          <p className="text-[10px] text-white/45 mt-3 leading-relaxed">
-            O HTML fica salvo no Supabase e o domínio é entregue pela camada Cloudflare do Canva Viagem.
-          </p>
+
         </div>
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
