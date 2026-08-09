@@ -1491,8 +1491,12 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                       ) : (
                         /* Normal display view */
                         <>
-                          <summary className="list-none outline-none cursor-pointer flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 relative pr-6">
-                            <div className="absolute right-0 top-1 text-white/30 group-open:rotate-180 transition-transform">▼</div>
+                          <summary className="list-none outline-none cursor-pointer flex items-center justify-between gap-3 relative">
+                            <h4 className="text-sm font-bold text-white leading-tight truncate">{pkg.title}</h4>
+                            <div className="text-white/30 group-open:rotate-180 transition-transform px-1">▼</div>
+                          </summary>
+
+                          <div className="pt-4 mt-3 border-t border-white/5 animate-fade-in space-y-4">
                             <div className="flex items-start gap-3 flex-1 min-w-0">
                               {/* Package visual asset */}
                               <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white/[0.02] border border-white/10 flex-shrink-0 overflow-hidden relative shadow-inner flex items-center justify-center">
@@ -1508,7 +1512,6 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
                               {/* Content Details */}
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-bold text-white leading-tight mb-1 truncate">{pkg.title}</h4>
                                 <p className="text-xs text-white/50 line-clamp-2 leading-relaxed mb-2 pr-4">{pkg.description}</p>
                                 
                                 <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg w-fit mt-0.5 max-w-full">
@@ -1516,9 +1519,6 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                                 </span>
                               </div>
                             </div>
-                          </summary>
-
-                          <div className="pt-4 mt-3 border-t border-white/5 animate-fade-in">
                             {/* Action Tools Overlay */}
                             <div className="flex flex-wrap gap-1.5 items-center w-full justify-start">
                               {pkg.isDraft ? (

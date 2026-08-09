@@ -852,26 +852,35 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                         </summary>
                       ) : (
                         /* Normal display view */
-                                <div className="text-white/20 text-center">
-                                  <ImageIcon className="w-5 h-5 mx-auto" />
-                                  <span className="text-[7px] uppercase font-bold text-white/30 block mt-0.5">Sin Foto</span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Content Details */}
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-bold text-white leading-tight mb-1 truncate">{pkg.title}</h4>
-                              <p className="text-xs text-white/50 line-clamp-2 leading-relaxed mb-2 pr-4">{pkg.description}</p>
-                              
-                              <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                                {pkg.price}
-                              </span>
-                              </div>
-                            </div>
+                        <>
+                          <summary className="list-none outline-none cursor-pointer flex items-center justify-between gap-3 relative">
+                            <h4 className="text-sm font-bold text-white leading-tight truncate">{pkg.title}</h4>
+                            <div className="text-white/30 group-open:rotate-180 transition-transform px-1">▼</div>
                           </summary>
 
-                          <div className="pt-4 mt-3 border-t border-white/5 animate-fade-in">
+                          <div className="pt-4 mt-3 border-t border-white/5 animate-fade-in space-y-4">
+                            <div className="flex items-start gap-4">
+                              {/* Package visual asset */}
+                              <div className="w-16 h-16 rounded-xl bg-white/[0.02] border border-white/10 flex-shrink-0 overflow-hidden relative shadow-inner flex items-center justify-center">
+                                {pkg.imageUrl ? (
+                                  <img src={pkg.imageUrl} className="w-full h-full object-cover" alt="" />
+                                ) : (
+                                  <div className="text-white/20 text-center">
+                                    <ImageIcon className="w-5 h-5 mx-auto" />
+                                    <span className="text-[7px] uppercase font-bold text-white/30 block mt-0.5">Sin Foto</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Content Details */}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-white/50 line-clamp-2 leading-relaxed mb-2 pr-4">{pkg.description}</p>
+                                
+                                <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full mt-0.5">
+                                  {pkg.price}
+                                </span>
+                              </div>
+                            </div>
                             {/* Action Tools Overlay */}
                             <div className="flex gap-1 items-center">
                               {pkg.isDraft ? (
