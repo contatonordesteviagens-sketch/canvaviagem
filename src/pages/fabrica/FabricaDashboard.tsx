@@ -1075,7 +1075,9 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               </div>
 
             </div>
+            </div>
           </details>
+
 
           {/* NOVO BOTÃO DE CRIAR ANÚNCIO (F1) */}
           <button
