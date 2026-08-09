@@ -1224,56 +1224,78 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         <CloudSaveIndicator />
       </div>
       {/* ── SELETOR DE PROJETO PERMANENTE — Sempre visível independente do estado ── */}
-      <div className="rounded-2xl p-3 border bg-white/[0.03] border-white/10 flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-        <span className="text-base flex-shrink-0">📂</span>
-        <div className="w-full flex-1 min-w-0">
-          <p className="text-[10px] text-white/40 mb-1.5 font-semibold uppercase tracking-wider break-words">
-            Editando site: <span className="text-white/70 normal-case font-bold">{state.agencyName || "Sem nome"}</span>
+      <details className="group rounded-xl border border-white/5 bg-white/[0.02] mb-4 [&::-webkit-details-marker]:hidden relative overflow-hidden">
+        {/* Yellow left accent bar */}
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
+        
+        <summary className="list-none outline-none cursor-pointer flex items-center justify-between p-3 sm:p-4 hover:bg-white/[0.02] transition-colors">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-base flex-shrink-0">📁</span>
+            <p className="text-[11px] sm:text-xs text-white/60 font-semibold truncate">
+              Editando: <span className="text-white/90 font-bold">{state.agencyName || "Sem nome"}</span> 
+              {savedProjects && savedProjects.length > 0 && ` • ${savedProjects.length} salvo${savedProjects.length !== 1 ? "s" : ""}`}
+            </p>
+          </div>
+          <div className="text-[10px] text-white/40 font-bold group-open:hidden flex items-center gap-1.5 whitespace-nowrap ml-2">
+            ▼ <span className="hidden sm:inline">Expandir / Carregar</span>
+          </div>
+          <div className="text-[10px] text-white/40 font-bold hidden group-open:flex items-center gap-1.5 whitespace-nowrap ml-2">
+            ▲ <span className="hidden sm:inline">Recolher</span>
+          </div>
+        </summary>
+
+        <div className="p-4 pt-2 sm:px-4 sm:pb-4 border-t border-white/5 animate-fade-in flex flex-col gap-4">
+          <div className="w-full flex-1 min-w-0 space-y-3">
             {state.siteContent?.canvaViagemUrl && (
-              <a href={normalizeCanvaSiteUrl(state.siteContent.canvaViagemUrl)} target="_blank" rel="noopener noreferrer"
-                className="block sm:inline sm:ml-2 break-all text-emerald-400 hover:text-emerald-300 transition-colors">
-                ↗ {state.siteContent.canvaViagemUrl}
-              </a>
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider break-words">
+                URL DO SITE: 
+                <a href={normalizeCanvaSiteUrl(state.siteContent.canvaViagemUrl)} target="_blank" rel="noopener noreferrer"
+                  className="block sm:inline sm:ml-2 break-all text-emerald-400 hover:text-emerald-300 transition-colors">
+                  ↗ {state.siteContent.canvaViagemUrl}
+                </a>
+              </p>
             )}
-          </p>
-          {/* ✅ CORREÇÃO CRÍTICA: seletor sempre visível para TODOS os projetos salvos */}
-          {savedProjects && savedProjects.length > 0 && (
-            <select
-              value=""
-              onChange={(e) => {
-                const val = e.target.value;
-                if (!val) return;
-                const p = savedProjects!.find(x => x.id === val);
-                if (!p || !p.state_snapshot) return;
-                requestProjectSwitch(p);
-              }}
-              className="w-full max-w-md bg-white/[0.04] border border-white/15 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
+            
+            {/* ✅ CORREÇÃO CRÍTICA: seletor sempre visível para TODOS os projetos salvos */}
+            {savedProjects && savedProjects.length > 0 && (
+              <select
+                value=""
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (!val) return;
+                  const p = savedProjects!.find(x => x.id === val);
+                  if (!p || !p.state_snapshot) return;
+                  requestProjectSwitch(p);
+                }}
+                className="w-full max-w-md bg-white/[0.04] border border-white/15 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
+              >
+                <option value="" className="bg-zinc-900">↕ Trocar projeto / Carregar outro site salvo...</option>
+                {savedProjects.map((p) => {
+                  const snap = p.state_snapshot as any;
+                  const pkgCount = snap?.selectedPackages?.length || 0;
+                  const url = snap?.siteContent?.canvaViagemUrl || "";
+                  const isCurrent = p.id === state.projectId;
+                  const isRecovered = p.source === "published_recovery";
+                  const date = new Date(p.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+                  return (
+                    <option key={p.id} value={p.id} className="bg-zinc-900 text-white">
+                      {isCurrent ? "● " : ""}{p.agency_name || "Sem Nome"}{isRecovered ? " • Recuperado" : ""}{url ? ` — ${url}` : ""} • {pkgCount} pacote{pkgCount !== 1 ? "s" : ""} • {date}
+                    </option>
+                  );
+                })}
+              </select>
+            )}
+            
+            <button
+              onClick={resetSiteToBlank}
+              className="w-full sm:w-auto mt-2 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
+              title="Limpar tudo e começar um novo site do zero"
             >
-              <option value="" className="bg-zinc-900">↕ Trocar projeto / Carregar outro site salvo...</option>
-              {savedProjects.map((p) => {
-                const snap = p.state_snapshot as any;
-                const pkgCount = snap?.selectedPackages?.length || 0;
-                const url = snap?.siteContent?.canvaViagemUrl || "";
-                const isCurrent = p.id === state.projectId;
-                const isRecovered = p.source === "published_recovery";
-                const date = new Date(p.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
-                return (
-                  <option key={p.id} value={p.id} className="bg-zinc-900 text-white">
-                    {isCurrent ? "● " : ""}{p.agency_name || "Sem Nome"}{isRecovered ? " • Recuperado" : ""}{url ? ` — ${url}` : ""} • {pkgCount} pacote{pkgCount !== 1 ? "s" : ""} • {date}
-                  </option>
-                );
-              })}
-            </select>
-          )}
+              Criar Novo Site
+            </button>
+          </div>
         </div>
-        <button
-          onClick={resetSiteToBlank}
-          className="w-full sm:w-auto flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
-          title="Limpar tudo e começar um novo site do zero"
-        >
-          Criar Novo Site
-        </button>
-      </div>
+      </details>
 
       <SiteTemplateSelector
         selected={state.siteContent.templateId}
