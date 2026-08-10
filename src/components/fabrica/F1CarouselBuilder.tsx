@@ -1145,7 +1145,7 @@ function CarouselCanvas({
   pixBannerHighlightColor?: string;
   pixBannerTextColor?: string;
 }) {
-  const Z = exportMode ? 2.5 : 1;
+  const Z = 1;
   const baseWidth = Math.round(432 * Z);
   const computedHeight = Math.round((432 / (ratio || 0.8)) * Z);
   const dimensions: CSSProperties = exportMode
@@ -4423,7 +4423,7 @@ export function F1CarouselBuilder({
 
         node.style.position = "fixed";
         node.style.pointerEvents = "none";
-        node.style.zIndex = "99999";
+        node.style.zIndex = "1";
         node.style.left = "0px";
         node.style.top = "0px";
 
@@ -4434,7 +4434,7 @@ export function F1CarouselBuilder({
           backgroundColor: "#08090B",
           useCORS: true,
           allowTaint: true,
-          scale: 1,
+          scale: 2.5,
           logging: false,
           imageTimeout: 15000,
           width: node.offsetWidth,
