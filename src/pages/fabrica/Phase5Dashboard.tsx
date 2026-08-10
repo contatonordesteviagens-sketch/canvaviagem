@@ -953,12 +953,12 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           {onBack && (
             <button onClick={onBack} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white/70 hover:bg-white/[0.08] transition-colors">
               <ArrowLeft className="h-4 w-4" />
-              Voltar: Site (F2)
+              Voltar: Site
             </button>
           )}
           {onNext && (
             <button onClick={onNext} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 text-sm font-black text-zinc-950 hover:bg-amber-300 transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)]">
-              Avançar: Checkup (F4)
+              Avançar: Checkup
               <ArrowRight className="h-4 w-4" />
             </button>
           )}

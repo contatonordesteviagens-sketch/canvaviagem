@@ -2879,20 +2879,30 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         )}
 
-        <div className="mt-8 pt-6 border-t border-white/[0.06] flex flex-col gap-3">
+        <div className="mt-8 pt-6 border-t border-white/[0.06] flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={onBack}
+            className="w-full flex-1 flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 border border-white/10 bg-white/[0.04] text-white/70 hover:bg-white/[0.08]"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Voltar: {initialMode === "ad" ? "Painel Inicial" : "Anúncios"}</span>
+          </button>
+
           <button
             onClick={onNext}
-            className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
+            className="w-full flex-[2] flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
             style={{
               background: "linear-gradient(135deg, #F5F906, #FCD34D)",
               color: "#0A0A0A",
             }}
           >
-            <span>{initialMode === "ad" ? "Criar Carrossel" : "Criar Site"}</span>
+            <span>{initialMode === "ad" ? "Avançar: Carrossel" : "Avançar: Site"}</span>
             <ArrowRight className="w-5 h-5" />
           </button>
+        </div>
 
-          {initialMode === "ad" && onSkipToSite && (
+        {initialMode === "ad" && onSkipToSite && (
+          <div className="mt-3">
             <button
               onClick={onSkipToSite}
               className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-600/20 hover:shadow-amber-600/30"
@@ -2901,11 +2911,11 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 color: "#0A0A0A",
               }}
             >
-              <span>Criar Site</span>
+              <span>Avançar direto para o Site</span>
               <ArrowRight className="w-5 h-5" />
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       </div>
         </>

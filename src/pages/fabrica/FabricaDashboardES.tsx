@@ -676,7 +676,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
              onClick={() => onNavigate?.("phase", 1)}
              className="w-full bg-violet-600 hover:bg-violet-500 text-white font-black py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-violet-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
           >
-             <span className="flex items-center gap-2"><ImageIcon className="w-5 h-5" /> CREAR ANUNCIO (F1)</span>
+             <span className="flex items-center gap-2"><ImageIcon className="w-5 h-5" /> CREAR ANUNCIO</span>
              <span className="text-[10px] font-bold text-white/60 bg-black/20 px-2 py-0.5 rounded-full ml-0 sm:ml-2">PRÓXIMA ETAPA ➔</span>
           </button>
 
@@ -934,7 +934,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                             ) : (
                               <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-amber-500/10 bg-amber-500/[0.02] text-[9px] font-bold text-amber-400/80 font-sans tracking-wide">
                                 <Link className="w-3 h-3 animate-pulse" />
-                                <span>Foto vinculada ausente: Usa el <strong>Generador de Anuncios (F1)</strong> para crear el anuncio de este paquete</span>
+                                <span>Foto vinculada ausente: Usa el <strong>Generador de Anuncios</strong> para crear el anuncio de este paquete</span>
                               </div>
                             )}
                           </div>

@@ -2855,7 +2855,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                         disabled={!generatedImage}
                         className="shrink-0 rounded-xl bg-[#F5F906] px-3 py-2 text-xs font-extrabold text-zinc-950 transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        Avanzar al Carrusel (F2)
+                        Avanzar al Carrusel
                       </button>
                       {onSkipToSite && (
                         <button
@@ -2864,7 +2864,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                           disabled={!generatedImage}
                           className="shrink-0 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-2 text-xs font-extrabold transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 hover:bg-blue-500/30"
                         >
-                          Avanzar al Sitio (F3)
+                          Avanzar al Sitio
                         </button>
                       )}
                     </>
@@ -3000,21 +3000,26 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
         )}
 
         {/* Botão de avanço para Fase 2 */}
-        <div className="mt-8 pt-6 border-t border-white/[0.06]">
+        <div className="mt-8 pt-6 border-t border-white/[0.06] flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={onBack}
+            className="w-full flex-1 flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 border border-white/10 bg-white/[0.04] text-white/70 hover:bg-white/[0.08]"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Volver: {initialMode === "ad" ? "Panel Inicial" : "Anuncios"}</span>
+          </button>
+          
           <button
             onClick={onNext}
-            className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
+            className="w-full flex-[2] flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
             style={{
               background: "linear-gradient(135deg, #F5F906, #FCD34D)",
               color: "#0A0A0A",
             }}
           >
-            <span>Avanzar a la Fase 2 — Tu Sitio</span>
+            <span>{initialMode === "ad" ? "Avanzar: Carrusel" : "Avanzar: Sitio"}</span>
             <ArrowRight className="w-5 h-5" />
           </button>
-          <p className="text-center text-[11px] text-white/30 mt-2">
-            Crea la página de ventas de tu agencia en el siguiente paso
-          </p>
         </div>
       </div>
         </>

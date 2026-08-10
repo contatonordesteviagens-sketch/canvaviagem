@@ -1464,10 +1464,17 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
               </div>
             </FabricaCard>
 
-            <div className="pt-6 pb-12">
+            <div className="pt-6 pb-12 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={onBack}
+                className="w-full flex-1 flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 border border-white/10 bg-white/[0.04] text-white/70 hover:bg-white/[0.08]"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Volver: Carrusel</span>
+              </button>
               <button
                 onClick={onNext}
-                className="w-full py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:brightness-110 transition-all hover:scale-[1.02]"
+                className="w-full flex-[2] py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:brightness-110 transition-all hover:scale-[1.02]"
                 style={{ 
                   background: UI_ACCENT,
                   color: "#000000",
@@ -1475,7 +1482,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                   boxShadow: `0 0 20px ${UI_ACCENT_SHADOW}`
                 }}
               >
-                Siguiente Paso: Diagnóstico <Rocket className="w-5 h-5" />
+                Siguiente Paso: CRM <Rocket className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -2783,7 +2790,7 @@ const PublishSiteCardES = ({
               boxShadow: `0 0 20px ${UI_ACCENT_SHADOW}`
             }}
           >
-            Siguiente Paso: Diagnóstico <Rocket className="w-5 h-5" />
+            Siguiente Paso: CRM <Rocket className="w-5 h-5" />
           </button>
         </div>
         <FabricaPaywallDialog

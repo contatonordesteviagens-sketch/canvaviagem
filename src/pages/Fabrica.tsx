@@ -411,7 +411,7 @@ const FabricaInner = () => {
           )}
           {activeTab === "phase" && (
             <>
-              {activePhase === 1 && <Phase3ArtFactory key="phase1-ad" onNext={() => navigate(isES ? "/es/fabrica/carrossel" : "/fabrica/carrossel")} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => navigate(isES ? "/es/fabrica/site" : "/fabrica/site")} />}
+              {activePhase === 1 && <Phase3ArtFactory key="phase1-ad" onNext={() => navigate(isES ? "/es/fabrica/carrossel" : "/fabrica/carrossel")} onBack={() => navigate(isES ? "/es/fabrica" : "/fabrica")} lockMode={true} initialMode="ad" onSkipToSite={() => navigate(isES ? "/es/fabrica/site" : "/fabrica/site")} />}
               {activePhase === 2 && <Phase3ArtFactory key="phase2-carousel" onNext={() => navigate(isES ? "/es/fabrica/site" : "/fabrica/site")} onBack={() => navigate(isES ? "/es/fabrica/anuncio" : "/fabrica/anuncio")} lockMode={true} initialMode="carousel" />}
               {activePhase === 3 && <Phase4LandingBuilder onNext={() => navigate(isES ? "/es/fabrica/crm" : "/fabrica/crm")} onBack={() => navigate(isES ? "/es/fabrica/carrossel" : "/fabrica/carrossel")} />}
               {activePhase === 4 && (

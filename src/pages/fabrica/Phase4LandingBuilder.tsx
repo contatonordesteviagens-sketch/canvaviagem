@@ -1813,12 +1813,19 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-            <div className="pt-6 pb-12">
+            <div className="pt-6 pb-12 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={onBack}
+                className="w-full flex-1 flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 border border-white/10 bg-white/[0.04] text-white/70 hover:bg-white/[0.08]"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Voltar: Carrossel</span>
+              </button>
               <button
                 onClick={onNext}
-                className="w-full py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-[1.02]"
+                className="w-full flex-[2] py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-[1.02]"
               >
-                Avançar para CRM <Rocket className="w-5 h-5" />
+                Avançar: CRM <Rocket className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -3144,7 +3151,7 @@ const PublishSiteCard = ({
             onClick={onNext}
             className="flex-[2] py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)]"
           >
-            Avançar para CRM <Rocket className="w-5 h-5" />
+            Avançar: CRM <Rocket className="w-5 h-5" />
           </button>
         </div>
         <FabricaPaywallDialog

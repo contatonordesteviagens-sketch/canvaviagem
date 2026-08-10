@@ -143,8 +143,8 @@ export const FabricaLibraryES = ({ subTab, setSubTab }: Props) => {
             <h3 className="text-sm font-bold text-white/60 uppercase tracking-wider">Biblioteca Vacía</h3>
             <p className="text-xs text-white/30 max-w-[320px] mx-auto leading-normal">
               {subTab === "ofertas"
-                ? "Aún no has generado ningún anuncio. ¡Ve al Generador de Imágenes (F3) y crea tu primera pieza gráfica!"
-                : "Ninguna foto limpia guardada aún. Genera anuncios en modo Foto Real (F3) — las fotos de fondo se guardan aquí automáticamente."}
+                ? "Aún no has generado ningún anuncio. ¡Ve al Generador de Imágenes y crea tu primera pieza gráfica!"
+                : "Ninguna foto limpia guardada aún. Genera anuncios en modo Foto Real — las fotos de fondo se guardan aquí automáticamente."}
             </p>
           </div>
         </div>

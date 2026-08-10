@@ -1078,7 +1078,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
              onClick={() => onNavigate?.("phase", 1)}
              className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-amber-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
           >
-             <span className="flex items-center gap-2"><ImageIcon className="w-5 h-5" /> CRIAR ANÚNCIO (F1)</span>
+             <span className="flex items-center gap-2"><ImageIcon className="w-5 h-5" /> CRIAR ANÚNCIO</span>
           </button>
 
           {/* CORES DA MARCA AQUI FORA */}
@@ -1331,7 +1331,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                       onClick={() => onNavigate?.("phase", 1)}
                       className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black text-sm uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-amber-500/20 animate-fade-in"
                     >
-                      <ImageIcon className="w-5 h-5" /> Criar Anúncio (F1)
+                      <ImageIcon className="w-5 h-5" /> Criar Anúncio
                     </button>
                     <button
                       onClick={() => { setShowAddForm(true); setEditingId(null); }}
@@ -1560,7 +1560,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                             ) : (
                               <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-amber-500/20 bg-amber-500/5 text-[9px] font-bold text-amber-400">
                                 <Link className="w-3 h-3 animate-pulse" />
-                                <span>Foto vinculada ausente: Use o <strong>Gerador de Anúncios (F1)</strong> para criar a arte deste pacote</span>
+                                <span>Foto vinculada ausente: Use o <strong>Gerador de Anúncios</strong> para criar a arte deste pacote</span>
                               </div>
                             )}
                           </div>
