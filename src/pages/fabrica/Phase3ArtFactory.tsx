@@ -11,7 +11,7 @@ import { composeTravelAd, formatAdPhone, type PaymentMode } from "@/lib/fabrica-
 import { GeneratedArt } from "@/lib/fabrica-art-types";
 import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
-  Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw, Maximize2,
+  Loader2, Download, Sparkles, ArrowLeft, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw, Maximize2,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
   Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2, Copy, ClipboardCheck, FileText, Key,
   LockKeyhole,
