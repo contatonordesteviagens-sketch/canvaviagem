@@ -2778,7 +2778,7 @@ const PublishSiteCardES = ({
             onClick={onBack}
             className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
           >
-            Volver
+            Volver: Carrusel
           </button>
           <button
             onClick={onNext}

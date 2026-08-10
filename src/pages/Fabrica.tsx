@@ -107,11 +107,11 @@ const FabricaInner = () => {
 
   const getPhaseName = () => {
     if (activeTab === "dashboard") return "Painel Inicial";
-    if (activePhase === 1) return "Anúncio (F1)";
-    if (activePhase === 2) return "Carrossel (F2)";
-    if (activePhase === 3) return "Site (F3)";
-    if (activePhase === 4) return "CRM (F4)";
-    if (activePhase === 5) return "Planos (F5)";
+    if (activePhase === 1) return "Anúncio";
+    if (activePhase === 2) return "Carrossel";
+    if (activePhase === 3) return "Site";
+    if (activePhase === 4) return "CRM";
+    if (activePhase === 5) return "Planos";
     return "";
   };
 
@@ -166,7 +166,6 @@ const FabricaInner = () => {
                 <ImageIcon className={`w-4 h-4 ${activePhase === 1 ? "text-amber-400" : "text-white/40"}`} />
                 <span>Anúncio</span>
               </div>
-              <span className="text-[10px] text-white/30 font-bold">F1</span>
             </button>
           </div>
 
@@ -189,7 +188,6 @@ const FabricaInner = () => {
                   <Layout className={`w-4 h-4 ${activePhase === 2 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Carrossel</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold">F2</span>
               </button>
 
               {/* F3: Site */}
@@ -205,7 +203,6 @@ const FabricaInner = () => {
                   <FileText className={`w-4 h-4 ${activePhase === 3 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Site</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold">F3</span>
               </button>
 
               {/* F4: CRM */}
@@ -221,7 +218,6 @@ const FabricaInner = () => {
                   <Users className={`w-4 h-4 ${activePhase === 4 ? "text-amber-400" : "text-white/40"}`} />
                   <span>CRM</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold">F4</span>
               </button>
 
               {/* F5: Planos */}
@@ -237,7 +233,6 @@ const FabricaInner = () => {
                   <Sliders className={`w-4 h-4 ${activePhase === 5 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Planos</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold">F5</span>
               </button>
             </div>
           </div>
@@ -245,8 +240,6 @@ const FabricaInner = () => {
 
         {/* Bottom Actions */}
         <div className="p-4 border-t border-white/5 space-y-3">
-          {/* âœ… FIX #5: Indicador de sync visível em todas as fases */}
-          <CloudSaveIndicator />
           <div className="pt-2">
             <button
               onClick={() => navigate("/")}
@@ -270,7 +263,6 @@ const FabricaInner = () => {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <div className="hidden sm:block">
-            <CloudSaveIndicator />
           </div>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -303,47 +295,23 @@ const FabricaInner = () => {
           </button>
           
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Geração</div>
-          <button
-            onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/anuncio" : "/fabrica/anuncio"); }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activePhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>🖼️</span> Anúncio (F1)
+          <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/anuncio" : "/fabrica/anuncio"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
+            <span>✨</span> Anúncio
           </button>
-
-          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Ferramentas</div>
-          <button
-            onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/carrossel" : "/fabrica/carrossel"); }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activePhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>🖼️</span> Carrossel (F2)
+          
+          <div className="text-[10px] font-bold text-white/30 tracking-widest uppercase mt-4 mb-2">FERRAMENTAS</div>
+          
+          <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/carrossel" : "/fabrica/carrossel"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
+            <span>🖼️</span> Carrossel
           </button>
-          <button
-            onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/site" : "/fabrica/site"); }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activePhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>📄</span> Site (F3)
+          <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/site" : "/fabrica/site"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
+            <span>📄</span> Site
           </button>
-          <button
-            onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/crm" : "/fabrica/crm"); }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activePhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>👥</span> CRM (F4)
+          <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/crm" : "/fabrica/crm"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
+            <span>👥</span> CRM
           </button>
-          <button
-            onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/planos" : "/fabrica/planos"); }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
-              activePhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            <span>⚙️</span> Planos (F5)
+          <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/planos" : "/fabrica/planos"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
+            <span>⚙️</span> Planos
           </button>
 
           <div className="border-t border-white/5 pt-3">

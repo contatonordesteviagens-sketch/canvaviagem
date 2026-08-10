@@ -1860,26 +1860,26 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 </div>
 
                 {/* Histórico Desfazer/Refazer */}
-                <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
+                <div className="flex rounded-lg bg-white/[0.04] p-1 border border-white/15">
                   <button
                     onClick={undo}
                     disabled={!canUndo}
-                    className={`p-1.5 rounded-md transition-all ${
+                    className={`p-2 rounded-md transition-all ${
                       canUndo ? "text-amber-400 hover:bg-white/10" : "text-white/20 cursor-not-allowed"
                     }`}
                     title="Desfazer alteração (Undo)"
                   >
-                    <Undo className="w-4 h-4" />
+                    <Undo className="w-5 h-5" />
                   </button>
                   <button
                     onClick={redo}
                     disabled={!canRedo}
-                    className={`p-1.5 rounded-md transition-all ${
+                    className={`p-2 rounded-md transition-all ${
                       canRedo ? "text-emerald-400 hover:bg-white/10" : "text-white/20 cursor-not-allowed"
                     }`}
                     title="Refazer alteração (Redo)"
                   >
-                    <Redo className="w-4 h-4" />
+                    <Redo className="w-5 h-5" />
                   </button>
                 </div>
               </div>
@@ -1895,30 +1895,6 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 >
                   Modelo: {activeSiteTemplate.copy.pt.label}
                 </div>
-
-                <button
-                  type="button"
-                  aria-pressed={removeMode}
-                  onClick={() => setRemoveMode((current) => !current)}
-                  title={removeMode ? "Toque no item do site para remover" : "Remover item do site"}
-                  className={`inline-flex items-center justify-center min-h-8 min-w-8 rounded-lg border transition-colors ${
-                    removeMode
-                      ? "border-red-400/50 bg-red-500/15 text-red-400"
-                      : "border-white/10 text-white/45 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-                
-                {(state.siteContent.hiddenElements?.length || 0) > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => updSite({ hiddenElements: [] })}
-                    className="min-h-8 rounded-lg border border-white/10 px-2.5 text-[10px] font-bold text-white/45 hover:text-white whitespace-nowrap"
-                  >
-                    Restaurar ({state.siteContent.hiddenElements?.length})
-                  </button>
-                )}
               </div>
             </div>
 
@@ -3139,7 +3115,7 @@ const PublishSiteCard = ({
             onClick={onBack}
             className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
           >
-            Voltar
+            Voltar: Carrossel
           </button>
           <button
             onClick={handleDownload}

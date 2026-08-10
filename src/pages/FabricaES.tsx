@@ -146,7 +146,6 @@ const FabricaInnerES = () => {
                 <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 1 ? "text-amber-400" : "text-white/40"}`} />
                 <span>Anuncio</span>
               </div>
-              <span className="text-[10px] text-white/30 font-bold">F1</span>
             </button>
           </div>
 
@@ -173,7 +172,6 @@ const FabricaInnerES = () => {
                   <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Carrusel</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold font-sans">F2</span>
               </button>
 
               {/* F3: Sitio */}
@@ -193,7 +191,6 @@ const FabricaInnerES = () => {
                   <FileText className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Sitio</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold font-sans">F3</span>
               </button>
 
               {/* F4: CRM */}
@@ -213,7 +210,6 @@ const FabricaInnerES = () => {
                   <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
                   <span>CRM</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold font-sans">F4</span>
               </button>
 
               {/* F5: Planos */}
@@ -233,7 +229,6 @@ const FabricaInnerES = () => {
                   <Sliders className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Planos</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold font-sans">F5</span>
               </button>
             </div>
           </div>
@@ -242,7 +237,7 @@ const FabricaInnerES = () => {
         {/* User Footer / Info */}
         <div className="p-4 border-t border-white/5 bg-[#0A0A0B]/40 font-sans space-y-3">
           {/* ✅ FIX #5: Indicador de sync visível em todas as fases */}
-          <CloudSaveIndicatorES />
+          
           <button
             onClick={() => navigate("/es")}
             className="w-full py-2.5 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-white/80 text-xs font-semibold flex items-center justify-center gap-2 transition-all"
@@ -296,7 +291,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            🖼️ Anuncio (F1)
+            🖼️ Anuncio
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Herramientas</div>
@@ -310,7 +305,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            🖼️ Carrusel (F2)
+            🖼️ Carrusel
           </button>
           <button
             onClick={() => {
@@ -322,7 +317,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            📄 Sitio (F3)
+            📄 Sitio
           </button>
           <button
             onClick={() => {
@@ -334,7 +329,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            👥 CRM (F4)
+            👥 CRM
           </button>
           <button
             onClick={() => {
@@ -346,7 +341,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚙️ Planos (F5)
+            ⚙️ Planos
           </button>
 
 

@@ -4801,18 +4801,24 @@ export function F1CarouselBuilder({
           ))}
         </div>
       )}
-      <div className="grid gap-2.5 sm:grid-cols-3">
-        <button type="button" onClick={() => setShowNewCarouselModal(true)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-3 text-xs font-extrabold text-white/80 hover:bg-white/[0.08]">
+      <div className="flex flex-col sm:flex-row gap-2.5">
+        {onBackToAd && (
+          <button type="button" onClick={onBackToAd} className="flex-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-xs font-extrabold text-white/70 hover:bg-white/[0.08] transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            {isEs ? "Volver: Anuncio" : "Voltar: Anúncio"}
+          </button>
+        )}
+        <button type="button" onClick={() => setShowNewCarouselModal(true)} className="flex-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-3 text-xs font-extrabold text-white/80 hover:bg-white/[0.08]">
           <RefreshCw className="h-4 w-4" />
           {isEs ? "Nueva variación" : "Nova variação"}
         </button>
-        <button type="button" onClick={downloadAll} disabled={downloading || !qualityReady} title={!qualityReady ? qualityIssues.join(" • ") : undefined} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:cursor-not-allowed disabled:opacity-40">
+        <button type="button" onClick={downloadAll} disabled={downloading || !qualityReady} title={!qualityReady ? qualityIssues.join(" • ") : undefined} className="flex-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:cursor-not-allowed disabled:opacity-40">
           <Download className="h-4 w-4" />
-          {isEs ? `Descargar ${slides.length} imágenes` : `Baixar ${slides.length} imagens`}
+          {isEs ? `Descargar ${slides.length}` : `Baixar ${slides.length}`}
         </button>
         {onNext && (
-          <button type="button" onClick={onNext} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 text-xs font-extrabold text-cyan-300 hover:bg-cyan-400/15">
-            {isEs ? "Avanzar al Sitio (F3)" : "Avançar para o Site (F3)"}
+          <button type="button" onClick={onNext} className="flex-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black px-3 text-xs font-extrabold shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-colors">
+            {isEs ? "Avanzar: Sitio" : "Avançar: Site"} <ArrowRight className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -4967,7 +4973,7 @@ export function F1CarouselBuilder({
                 className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.03] px-3 text-[11px] font-bold text-white/75 transition-colors hover:bg-white/[0.07] hover:text-white"
               >
                 <ImagePlus className="h-4 w-4 text-[#F5F906]" />
-                {isEs ? "Crear portada en Anuncio (F1)" : "Criar capa no Anúncio (F1)"}
+                {isEs ? "Crear portada en Anuncio" : "Criar capa no Anúncio"}
               </button>
             )}
           </div>
