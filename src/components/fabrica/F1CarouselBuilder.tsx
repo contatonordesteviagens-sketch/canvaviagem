@@ -1634,7 +1634,7 @@ function CarouselCanvas({
     if (variant === "itinerary") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "24%" : "36%",
+        top: storyMode ? "40%" : "36%",
         left: 0,
         right: 0,
         bottom: storyMode ? "20%" : 0,
@@ -1649,7 +1649,7 @@ function CarouselCanvas({
     } else if (variant === "editorial") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "22%" : "34%",
+        top: storyMode ? "38%" : "34%",
         bottom: storyMode ? "20%" : 0,
         left: 0,
         right: 0,
@@ -1685,7 +1685,7 @@ function CarouselCanvas({
     } else if (variant === "minimalist") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "22%" : "34%",
+        top: storyMode ? "38%" : "34%",
         left: 0,
         right: 0,
         bottom: storyMode ? "20%" : 0,
@@ -1704,7 +1704,7 @@ function CarouselCanvas({
     } else if (variant === "vibrant") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "22%" : "34%",
+        top: storyMode ? "38%" : "34%",
         bottom: storyMode ? "20%" : 0,
         left: 0,
         right: 0,
@@ -1722,7 +1722,7 @@ function CarouselCanvas({
     } else if (variant === "organic") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "22%" : "34%",
+        top: storyMode ? "38%" : "34%",
         left: 0,
         right: 0,
         bottom: storyMode ? "20%" : 0,
