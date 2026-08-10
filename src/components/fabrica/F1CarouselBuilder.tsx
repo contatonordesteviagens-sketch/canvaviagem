@@ -11,6 +11,7 @@ import {
   AlignLeft,
   AlignRight,
   AlertTriangle,
+  ArrowLeft,
   ArrowUp,
   ArrowDownLeft,
   ArrowDownRight,
