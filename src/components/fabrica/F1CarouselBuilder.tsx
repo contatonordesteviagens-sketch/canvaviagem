@@ -4503,16 +4503,16 @@ export function F1CarouselBuilder({
           </div>
         </div>
 
-        {/* Informa��es e Bot�o */}
+        {/* Informações e Botão */}
         <div className="text-center relative z-20 space-y-5 w-full max-w-[280px]">
           <div className="space-y-2">
             <h2 className="text-lg sm:text-xl font-black text-white leading-tight">
-              {isEs ? "Crea Carruseles Autom�ticos" : "Crie Carross�is Autom�ticos"}
+              {isEs ? "Crea Carruseles Automáticos" : "Crie Carrosséis Automáticos"}
             </h2>
             <p className="text-[10px] sm:text-xs font-medium text-white/40">
               {isEs 
-                ? "Selecciona una foto y el sistema sincronizar� los datos al instante."
-                : "Selecione uma foto e o sistema sincronizar� os dados instantaneamente."}
+                ? "Selecciona una foto y el sistema sincronizará los datos al instante."
+                : "Selecione uma foto e o sistema sincronizará os dados instantaneamente."}
             </p>
           </div>
           <button
