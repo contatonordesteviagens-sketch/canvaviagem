@@ -1377,21 +1377,20 @@ function CarouselCanvas({
           : { marginLeft: 0, marginRight: "auto" };
 
     const style = slide.labelStyle || "filled";
-    const commonStyle: CSSProperties = {
-      display: "block",
-      alignSelf:
-        resolvedAlignment === "right"
-          ? "flex-end"
-          : resolvedAlignment === "center"
-            ? "center"
-            : "flex-start",
-      width: "fit-content",
-      maxWidth: "88%",
+    const commonStyle: React.CSSProperties = {
+      display: exportMode ? "inline-block" : "inline-flex",
+      alignItems: exportMode ? undefined : "center",
+      justifyContent: exportMode ? undefined : "center",
+      textAlign: "center",
+      minHeight: Math.round(20 * Z),
+      minWidth: Math.round(20 * Z),
       marginBottom: Math.round(10 * Z),
       ...alignmentMargins,
-      padding: `${Math.round(5 * Z)}px ${Math.round(9 * Z)}px`,
+      padding: exportMode 
+        ? `${Math.round(4 * Z)}px ${Math.round(9 * Z)}px ${Math.round(6 * Z)}px`
+        : `${Math.round(5 * Z)}px ${Math.round(9 * Z)}px`,
       fontSize: Math.round(8 * Z),
-      lineHeight: 1.15,
+      lineHeight: exportMode ? 1.05 : 1.15,
       fontWeight: 900,
       letterSpacing: ".08em",
       textTransform: "uppercase",
@@ -1403,35 +1402,35 @@ function CarouselCanvas({
 
     if (style === "outline-thin") {
       return (
-        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.max(1, Math.round(1 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.max(1, Math.round(1 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: exportMode ? `${Math.round(5 * Z)}px ${Math.round(12 * Z)}px ${Math.round(7 * Z)}px` : `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
     }
     if (style === "outline-thick") {
       return (
-        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.round(2.5 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.60)", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px` }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.round(2.5 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.60)", color: fg, padding: exportMode ? `${Math.round(5 * Z)}px ${Math.round(12 * Z)}px ${Math.round(7 * Z)}px` : `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px` }}>
           {label}
         </div>
       );
     }
     if (style === "stripe-left") {
       return (
-        <div style={{ ...commonStyle, borderLeft: `${Math.round(4 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.55)", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
+        <div style={{ ...commonStyle, borderLeft: `${Math.round(4 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.55)", color: fg, padding: exportMode ? `${Math.round(5 * Z)}px ${Math.round(12 * Z)}px ${Math.round(7 * Z)}px` : `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
     }
     if (style === "line-top") {
       return (
-        <div style={{ ...commonStyle, borderTop: `${Math.max(2, Math.round(3 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: `${Math.round(7 * Z)}px ${Math.round(2 * Z)}px ${Math.round(3 * Z)}px`, fontWeight: 800 }}>
+        <div style={{ ...commonStyle, borderTop: `${Math.max(2, Math.round(3 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: exportMode ? `${Math.round(6 * Z)}px ${Math.round(2 * Z)}px ${Math.round(4 * Z)}px` : `${Math.round(7 * Z)}px ${Math.round(2 * Z)}px ${Math.round(3 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
     }
     if (style === "line-bottom") {
       return (
-        <div style={{ ...commonStyle, borderBottom: `${Math.max(2, Math.round(3 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: `${Math.round(3 * Z)}px ${Math.round(2 * Z)}px ${Math.round(7 * Z)}px`, fontWeight: 800 }}>
+        <div style={{ ...commonStyle, borderBottom: `${Math.max(2, Math.round(3 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: exportMode ? `${Math.round(2 * Z)}px ${Math.round(2 * Z)}px ${Math.round(8 * Z)}px` : `${Math.round(3 * Z)}px ${Math.round(2 * Z)}px ${Math.round(7 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
@@ -1638,7 +1637,7 @@ function CarouselCanvas({
         top: storyMode ? "40%" : "36%",
         left: 0,
         right: 0,
-        bottom: storyMode ? "20%" : 0,
+        bottom: storyMode ? "20%" : "36%",
         justifyContent: "center",
         alignItems: "flex-start",
         padding: "8% 9% 10% 9%",
@@ -1651,7 +1650,7 @@ function CarouselCanvas({
       contentStyle = {
         ...panelStyle,
         top: storyMode ? "38%" : "34%",
-        bottom: storyMode ? "20%" : 0,
+        bottom: storyMode ? "20%" : "34%",
         left: 0,
         right: 0,
         justifyContent: "center",
@@ -1689,7 +1688,7 @@ function CarouselCanvas({
         top: storyMode ? "38%" : "34%",
         left: 0,
         right: 0,
-        bottom: storyMode ? "20%" : 0,
+        bottom: storyMode ? "20%" : "34%",
         justifyContent: "center",
         alignItems: "flex-start",
         padding: closingCompact ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
@@ -1706,7 +1705,7 @@ function CarouselCanvas({
       contentStyle = {
         ...panelStyle,
         top: storyMode ? "38%" : "34%",
-        bottom: storyMode ? "20%" : 0,
+        bottom: storyMode ? "20%" : "34%",
         left: 0,
         right: 0,
         justifyContent: "center",
@@ -1726,7 +1725,7 @@ function CarouselCanvas({
         top: storyMode ? "38%" : "34%",
         left: 0,
         right: 0,
-        bottom: storyMode ? "20%" : 0,
+        bottom: storyMode ? "20%" : "34%",
         justifyContent: "center",
         alignItems: "flex-start",
         padding: closingCompact ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
@@ -3227,7 +3226,7 @@ function MiniTypographyBar({
             background: "conic-gradient(from 0deg, #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)",
             boxShadow: "0 0 6px 1px rgba(255,255,255,0.18)",
           }}
-          title={isEs ? "Elegir cualquier color" : "Clique para escolher qualquer cor"}
+          title={isEs ? "Elegir qualquer color" : "Clique para escolher qualquer cor"}
         >
           {/* Centro: mostra a cor selecionada atualmente */}
           <div
@@ -4116,7 +4115,7 @@ export function F1CarouselBuilder({
       toast.error(
         error instanceof Error
           ? error.message
-          : String(error) || (isEs ? "No fue posible buscar fotos ahora." : "N�o foi poss�vel buscar fotos agora."),
+          : String(error) || (isEs ? "No foi possível buscar fotos agora." : "Não foi possível buscar fotos agora."),
       );
     } finally {
       if (photoSearchRequestRef.current === requestId) {
@@ -4213,7 +4212,7 @@ export function F1CarouselBuilder({
           toast.success(
             isEs
               ? "Foto aplicada temporalmente (offline)."
-              : "Foto aplicada temporariamente (salvamento na nuvem indispon�vel).",
+              : "Foto aplicada temporariamente (salvamento na nuvem indisponível).",
           );
         }
       } else {
@@ -4226,7 +4225,7 @@ export function F1CarouselBuilder({
       }
     } catch {
       if (uploadRequestRef.current.get(requestKey) === requestToken) {
-        toast.error(isEs ? "No fue posible preparar esta imagen." : "Não foi possível preparar esta imagem.");
+        toast.error(isEs ? "No foi posible preparar esta imagen." : "Não foi possível preparar esta imagem.");
       }
     } finally {
       if (uploadRequestRef.current.get(requestKey) === requestToken) {
@@ -4389,6 +4388,7 @@ export function F1CarouselBuilder({
         await downloadOriginalImage(coverToDownload, `carrossel-${slug}-01-capa.png`);
       }
       const { default: html2canvas } = await import("html2canvas");
+      await document.fonts.ready;
 
       for (let index = preserveOriginalCover ? 1 : 0; index < resolvedSlides.length; index += 1) {
         const node = exportRefs.current[index];
@@ -4410,17 +4410,20 @@ export function F1CarouselBuilder({
         // ── 2. Aguarda o browser re-renderizar com as data:URLs ──
         await new Promise((resolve) => window.setTimeout(resolve, 400));
 
-        // ── 3. Traz o nó pro viewport (necessário para html2canvas ver os pixels) ──
+        // ── 3. Traz o nó pro viewport ──
         const prevPosition = node.style.position;
         const prevPointerEvents = node.style.pointerEvents;
         const prevZIndex = node.style.zIndex;
+        const prevLeft = node.style.left;
+        const prevTop = node.style.top;
 
-        // Bring it into viewport just in case (the wrapper is offscreen so it's fine)
         node.style.position = "fixed";
         node.style.pointerEvents = "none";
         node.style.zIndex = "99999";
+        node.style.left = "0px";
+        node.style.top = "0px";
 
-        await new Promise((resolve) => window.setTimeout(resolve, 120));
+        await new Promise((resolve) => window.setTimeout(resolve, 300));
 
         // ── 4. Captura com html2canvas ──
         const canvas = await html2canvas(node, {
