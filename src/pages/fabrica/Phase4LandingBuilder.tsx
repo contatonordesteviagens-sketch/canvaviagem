@@ -3036,8 +3036,8 @@ const PublishSiteCard = ({
           <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
             Link do cliente:
           </label>
-          <div className="flex items-center mb-4">
-            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none shrink-0">
+          <div className="flex items-center mb-4 bg-white/[0.02] border border-white/10 rounded-lg focus-within:border-white/30 overflow-x-auto [&::-webkit-scrollbar]:hidden w-full">
+            <span className="pl-3 pr-1 py-2 text-[11px] sm:text-xs text-white/40 select-none shrink-0">
               https://
             </span>
             <input
@@ -3046,9 +3046,9 @@ const PublishSiteCard = ({
               onChange={(e) => setCanvaViagemSubdomain(buildSiteSlug(e.target.value))}
               maxLength={63}
               placeholder="nome-da-agencia"
-              className="min-w-0 w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
+              className="min-w-[120px] flex-1 bg-transparent py-2 text-sm text-white font-semibold outline-none placeholder:text-white/20"
             />
-            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-xs text-white/40 select-none shrink-0 break-all">
+            <span className="pr-3 pl-1 py-2 text-[11px] sm:text-xs text-white/40 select-none shrink-0">
               .canvaviagem.com
             </span>
           </div>

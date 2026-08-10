@@ -2692,8 +2692,8 @@ const PublishSiteCardES = ({
                 <span>Enlace personalizado</span>
                 {isPublished && <span className="text-emerald-400 text-[10px]">Alterar cambiará el enlace</span>}
               </label>
-              <div className="flex items-center mb-4">
-                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none shrink-0">
+              <div className="flex items-center mb-4 bg-white/[0.02] border border-white/10 rounded-lg focus-within:border-white/30 overflow-x-auto [&::-webkit-scrollbar]:hidden w-full">
+                <span className="pl-3 pr-1 py-2 text-[11px] sm:text-xs text-white/40 select-none shrink-0">
                   https://
                 </span>
                 <input
@@ -2702,9 +2702,9 @@ const PublishSiteCardES = ({
                   onChange={(e) => setSubdomain(buildSiteSlug(e.target.value))}
                   maxLength={63}
                   placeholder="nombre-de-tu-agencia"
-                  className="min-w-0 w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
+                  className="min-w-[120px] flex-1 bg-transparent py-2 text-sm text-white font-semibold outline-none placeholder:text-white/20"
                 />
-                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 rounded-r-lg border-l-0 text-xs text-white/40 select-none shrink-0 break-all">
+                <span className="pr-3 pl-1 py-2 text-[11px] sm:text-xs text-white/40 select-none shrink-0">
                   .canvaviagem.com
                 </span>
               </div>
