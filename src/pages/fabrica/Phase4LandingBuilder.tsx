@@ -1370,6 +1370,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
+          <div className="space-y-6">
             <FabricaCard title="Paleta da marca">
               <BrandPaletteEditor
                 primaryColor={state.primaryColor}
