@@ -1812,6 +1812,15 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 />
               </div>
             </FabricaCard>
+
+            <div className="pt-6 pb-12">
+              <button
+                onClick={onNext}
+                className="w-full py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-[1.02]"
+              >
+                Avançar para CRM <Rocket className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
 

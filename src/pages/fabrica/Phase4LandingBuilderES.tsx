@@ -1463,6 +1463,21 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 />
               </div>
             </FabricaCard>
+
+            <div className="pt-6 pb-12">
+              <button
+                onClick={onNext}
+                className="w-full py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:brightness-110 transition-all hover:scale-[1.02]"
+                style={{ 
+                  background: UI_ACCENT,
+                  color: "#000000",
+                  border: "none",
+                  boxShadow: `0 0 20px ${UI_ACCENT_SHADOW}`
+                }}
+              >
+                Siguiente Paso: Diagnóstico <Rocket className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
 
