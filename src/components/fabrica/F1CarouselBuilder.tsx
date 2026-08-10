@@ -1345,7 +1345,7 @@ function CarouselCanvas({
     );
   };
 
-  const safeClamp = (lines: number): CSSProperties => exportMode ? {} : { display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden" };
+  const safeClamp = (lines: number): CSSProperties => ({ display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden" });
   const safeTextWrap: CSSProperties = {
     overflowWrap: "break-word",
     wordBreak: "normal",
@@ -1369,18 +1369,13 @@ function CarouselCanvas({
       slide.labelAlignment && slide.labelAlignment !== "auto"
         ? slide.labelAlignment
         : alignment;
-    const alignmentMargins =
-      resolvedAlignment === "center"
-        ? { marginLeft: "auto", marginRight: "auto" }
-        : resolvedAlignment === "right"
-          ? { marginLeft: "auto", marginRight: 0 }
-          : { marginLeft: 0, marginRight: "auto" };
+                  : { marginLeft: 0, marginRight: "auto" };
 
     const style = slide.labelStyle || "filled";
     const commonStyle: React.CSSProperties = {
-      display: exportMode ? "inline-block" : "inline-flex",
-      alignItems: exportMode ? undefined : "center",
-      justifyContent: exportMode ? undefined : "center",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
       textAlign: "center",
       minHeight: Math.round(20 * Z),
       minWidth: Math.round(20 * Z),
@@ -1390,7 +1385,7 @@ function CarouselCanvas({
         ? `${Math.round(4 * Z)}px ${Math.round(9 * Z)}px ${Math.round(6 * Z)}px`
         : `${Math.round(5 * Z)}px ${Math.round(9 * Z)}px`,
       fontSize: Math.round(8 * Z),
-      lineHeight: exportMode ? 1.05 : 1.15,
+      lineHeight: 1.15,
       fontWeight: 900,
       letterSpacing: ".08em",
       textTransform: "uppercase",
@@ -1402,35 +1397,35 @@ function CarouselCanvas({
 
     if (style === "outline-thin") {
       return (
-        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.max(1, Math.round(1 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: exportMode ? `${Math.round(5 * Z)}px ${Math.round(12 * Z)}px ${Math.round(7 * Z)}px` : `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.max(1, Math.round(1 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
     }
     if (style === "outline-thick") {
       return (
-        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.round(2.5 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.60)", color: fg, padding: exportMode ? `${Math.round(5 * Z)}px ${Math.round(12 * Z)}px ${Math.round(7 * Z)}px` : `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px` }}>
+        <div style={{ ...commonStyle, borderRadius: Math.round(999 * Z), border: `${Math.round(2.5 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.60)", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px` }}>
           {label}
         </div>
       );
     }
     if (style === "stripe-left") {
       return (
-        <div style={{ ...commonStyle, borderLeft: `${Math.round(4 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.55)", color: fg, padding: exportMode ? `${Math.round(5 * Z)}px ${Math.round(12 * Z)}px ${Math.round(7 * Z)}px` : `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
+        <div style={{ ...commonStyle, borderLeft: `${Math.round(4 * Z)}px solid ${bg}`, background: "rgba(0, 0, 0, 0.55)", color: fg, padding: `${Math.round(6 * Z)}px ${Math.round(12 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
     }
     if (style === "line-top") {
       return (
-        <div style={{ ...commonStyle, borderTop: `${Math.max(2, Math.round(3 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: exportMode ? `${Math.round(6 * Z)}px ${Math.round(2 * Z)}px ${Math.round(4 * Z)}px` : `${Math.round(7 * Z)}px ${Math.round(2 * Z)}px ${Math.round(3 * Z)}px`, fontWeight: 800 }}>
+        <div style={{ ...commonStyle, borderTop: `${Math.max(2, Math.round(3 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: `${Math.round(7 * Z)}px ${Math.round(2 * Z)}px ${Math.round(3 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
     }
     if (style === "line-bottom") {
       return (
-        <div style={{ ...commonStyle, borderBottom: `${Math.max(2, Math.round(3 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: exportMode ? `${Math.round(2 * Z)}px ${Math.round(2 * Z)}px ${Math.round(8 * Z)}px` : `${Math.round(3 * Z)}px ${Math.round(2 * Z)}px ${Math.round(7 * Z)}px`, fontWeight: 800 }}>
+        <div style={{ ...commonStyle, borderBottom: `${Math.max(2, Math.round(3 * Z))}px solid ${bg}`, background: "transparent", color: fg, padding: `${Math.round(3 * Z)}px ${Math.round(2 * Z)}px ${Math.round(7 * Z)}px`, fontWeight: 800 }}>
           {label}
         </div>
       );
@@ -1637,7 +1632,7 @@ function CarouselCanvas({
         top: storyMode ? "40%" : "36%",
         left: 0,
         right: 0,
-        bottom: storyMode ? "20%" : "36%",
+        bottom: storyMode ? "20%" : 0,
         justifyContent: "center",
         alignItems: "flex-start",
         padding: "8% 9% 10% 9%",
@@ -1650,7 +1645,7 @@ function CarouselCanvas({
       contentStyle = {
         ...panelStyle,
         top: storyMode ? "38%" : "34%",
-        bottom: storyMode ? "20%" : "34%",
+        bottom: storyMode ? "20%" : 0,
         left: 0,
         right: 0,
         justifyContent: "center",
@@ -1688,7 +1683,7 @@ function CarouselCanvas({
         top: storyMode ? "38%" : "34%",
         left: 0,
         right: 0,
-        bottom: storyMode ? "20%" : "34%",
+        bottom: storyMode ? "20%" : 0,
         justifyContent: "center",
         alignItems: "flex-start",
         padding: closingCompact ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
@@ -1705,7 +1700,7 @@ function CarouselCanvas({
       contentStyle = {
         ...panelStyle,
         top: storyMode ? "38%" : "34%",
-        bottom: storyMode ? "20%" : "34%",
+        bottom: storyMode ? "20%" : 0,
         left: 0,
         right: 0,
         justifyContent: "center",
@@ -1725,7 +1720,7 @@ function CarouselCanvas({
         top: storyMode ? "38%" : "34%",
         left: 0,
         right: 0,
-        bottom: storyMode ? "20%" : "34%",
+        bottom: storyMode ? "20%" : 0,
         justifyContent: "center",
         alignItems: "flex-start",
         padding: closingCompact ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
