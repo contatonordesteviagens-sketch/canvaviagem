@@ -1851,10 +1851,14 @@ function CarouselCanvas({
           style={{
             ...contentStyle,
             background: panelBackground,
-            border: accentPlacement === "top" ? "none" : panelBorder,
-            borderTop: accentPlacement === "top" ? panelBorder : undefined,
+            border: exportMode ? "none" : (accentPlacement === "top" ? "none" : panelBorder),
+            borderTop: exportMode ? "none" : (accentPlacement === "top" ? panelBorder : undefined),
             borderRadius: panelRadius,
-            boxShadow: panelShadow,
+            boxShadow: exportMode && panelBorder !== "none"
+              ? (accentPlacement === "top"
+                  ? `inset 0 ${panelBorder.split(" ")[0]} 0 0 ${panelBorder.split(" ").slice(2).join(" ")}, ${panelShadow}`
+                  : `inset 0 0 0 ${panelBorder.split(" ")[0]} ${panelBorder.split(" ").slice(2).join(" ")}, ${panelShadow}`)
+              : panelShadow,
             color: panelForeground,
           }}
         >
