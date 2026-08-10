@@ -54,7 +54,7 @@ remove_*
 rename_*
 replace_*
 scratch_*
-script*
+script*.*
 sync_*
 temp_*
 test*
