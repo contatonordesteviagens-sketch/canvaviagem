@@ -9,8 +9,17 @@ import { MetaPixelNew } from "@/components/MetaPixelNew";
 import { MetaPixel916689227676142 } from "@/components/MetaPixel916689227676142";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 
-const safeInternalPath = (value: string | null) =>
-  value?.startsWith("/") && !value.startsWith("//") ? value : null;
+const safeInternalPath = (value: string | null) => {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
+  if (value.includes("\\") || /[\u0000-\u001F\u007F]/.test(value)) return null;
+  try {
+    const parsed = new URL(value, window.location.origin);
+    if (parsed.origin !== window.location.origin) return null;
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return null;
+  }
+};
 
 // Pixel IDs that should receive Purchase event on PT thank you page
 const PT_PIXEL_IDS = [
@@ -27,27 +36,18 @@ declare global {
   }
 }
 
-const trackPurchaseOnAllPixels = (value: number, currency: string, eventID: string) => {
+const trackStartTrialOnAllPixels = (predictedLtv: number, currency: string, eventID: string) => {
   if (typeof window === 'undefined' || !window.fbq) return false;
   PT_PIXEL_IDS.forEach((pixelId) => {
     try {
-      window.fbq('trackSingle', pixelId, 'Purchase', { value, currency }, { eventID });
-      console.log(`[Meta Pixel] Purchase → ${pixelId} (eventID: ${eventID})`);
+      window.fbq('trackSingle', pixelId, 'StartTrial', {
+        value: 0,
+        currency,
+        predicted_ltv: predictedLtv,
+      }, { eventID });
+      console.log(`[Meta Pixel] StartTrial → ${pixelId} (eventID: ${eventID})`);
     } catch (e) {
-      console.warn(`[Meta Pixel] Purchase fail ${pixelId}:`, e);
-    }
-  });
-  return true;
-};
-
-const trackSubscribeOnAllPixels = (value: number, currency: string, predictedLtv: number, eventID: string) => {
-  if (typeof window === 'undefined' || !window.fbq) return false;
-  PT_PIXEL_IDS.forEach((pixelId) => {
-    try {
-      window.fbq('trackSingle', pixelId, 'Subscribe', { value, currency, predicted_ltv: predictedLtv }, { eventID });
-      console.log(`[Meta Pixel] Subscribe → ${pixelId} (eventID: ${eventID})`);
-    } catch (e) {
-      console.warn(`[Meta Pixel] Subscribe fail ${pixelId}:`, e);
+      console.warn(`[Meta Pixel] StartTrial fail ${pixelId}:`, e);
     }
   });
   return true;
@@ -145,10 +145,12 @@ const Obrigado = () => {
   const emailFromUrl = searchParams.get("email");
   const sourceFromUrl = searchParams.get("source");
   const billingCycle = searchParams.get("billingCycle");
+  const checkoutSessionId = searchParams.get("session_id");
+  const trialStarted = searchParams.get("trial") === "started";
+  const offerVariant = searchParams.get("offer") || "general";
   const returnTo = safeInternalPath(searchParams.get("returnTo"));
   const upgradeFeature = searchParams.get("upgrade") || "general";
-  const purchaseValue = billingCycle === "annual" ? 482 : billingCycle === "semiannual" ? 347 : 97;
-  const predictedLtv = billingCycle === "annual" ? 482 : billingCycle === "semiannual" ? 694 : 1164;
+  const predictedLtv = billingCycle === "annual" ? 482 : billingCycle === "semiannual" ? 347 : 97;
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
@@ -164,70 +166,43 @@ const Obrigado = () => {
       billing_cycle: billingCycle || "monthly",
       tier,
       return_to: returnTo,
+      offer_variant: offerVariant,
     });
-  }, [billingCycle, returnTo, sourceFromUrl, tier, track, upgradeFeature]);
+  }, [billingCycle, offerVariant, returnTo, sourceFromUrl, tier, track, upgradeFeature]);
 
   useEffect(() => {
     if (emailFromUrl) setEmail(decodeURIComponent(emailFromUrl));
   }, [emailFromUrl]);
 
   useEffect(() => {
-    if (tracked) return;
-    // Generate a stable eventID per page load for dedup (CAPI + Pixel)
-    const eventID = `obrigado_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    // Idempotency guard against double-fire on the same browser session
-    const sessionKey = `purchase_fired_${eventID.slice(0, 20)}`;
+    if (sourceFromUrl !== "checkout" || !trialStarted || !checkoutSessionId || tracked) return;
+    const stableSessionId = checkoutSessionId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 180);
+    if (!stableSessionId) return;
+    const eventID = `trial_${stableSessionId}`;
+    const storageKey = `trial_started_${stableSessionId}`;
+    if (localStorage.getItem(storageKey)) {
+      setTracked(true);
+      return;
+    }
     let cancelled = false;
     let attempts = 0;
-    const maxAttempts = 30; // 30 × 500ms = 15s
+    const maxAttempts = 30;
 
     const tryFire = () => {
       if (cancelled || tracked) return;
       attempts++;
       const fbqReady = typeof window !== 'undefined' && typeof window.fbq === 'function';
       if (fbqReady) {
-        console.log(`[Meta Pixel] fbq ready after ${attempts} attempt(s) — firing Purchase/Subscribe`);
-        const okP = trackPurchaseOnAllPixels(purchaseValue, 'BRL', `${eventID}_p`);
-        const okS = trackSubscribeOnAllPixels(purchaseValue, 'BRL', predictedLtv, `${eventID}_s`);
-        // Google Ads conversion
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-          (window as any).gtag('event', 'conversion', {
-            send_to: 'AW-18034387036/QeQUCJ-g7Y0cENzQu5dD',
-            value: purchaseValue,
-            currency: 'BRL',
-            transaction_id: eventID,
-          });
-        }
-        if (okP && okS) {
-          sessionStorage.setItem(sessionKey, '1');
+        console.log(`[Meta Pixel] fbq ready after ${attempts} attempt(s) — firing StartTrial`);
+        const trackedTrial = trackStartTrialOnAllPixels(predictedLtv, 'BRL', eventID);
+        if (trackedTrial) {
+          localStorage.setItem(storageKey, '1');
           setTracked(true);
-
-          // Server-side Conversions API for pixel 2120347238758199 (dedup via event_id)
-          try {
-            const fbp = document.cookie.match(/_fbp=([^;]+)/)?.[1];
-            const fbc = document.cookie.match(/_fbc=([^;]+)/)?.[1];
-            supabase.functions.invoke('meta-capi-obrigado', {
-              body: {
-                event_id: `${eventID}_p`,
-                event_source_url: window.location.href,
-                value: purchaseValue,
-                currency: 'BRL',
-                email: email || emailFromUrl || undefined,
-                fbp,
-                fbc,
-              },
-            }).then(({ error }) => {
-              if (error) console.warn('[Meta CAPI 2120347238758199] invoke error:', error);
-              else console.log('[Meta CAPI 2120347238758199] Purchase server-side OK');
-            });
-          } catch (e) {
-            console.warn('[Meta CAPI 2120347238758199] failed:', e);
-          }
           return;
         }
       }
       if (attempts >= maxAttempts) {
-        console.error('[Meta Pixel] fbq NUNCA ficou disponível após 15s. Purchase NÃO disparou.');
+        console.error('[Meta Pixel] fbq não ficou disponível após 15s. StartTrial não disparou.');
         return;
       }
       setTimeout(tryFire, 500);
@@ -239,7 +214,7 @@ const Obrigado = () => {
       cancelled = true;
       clearTimeout(startTimer);
     };
-  }, [email, emailFromUrl, predictedLtv, purchaseValue, tracked]);
+  }, [checkoutSessionId, predictedLtv, sourceFromUrl, tracked, trialStarted]);
 
   useEffect(() => {
     const t = setTimeout(() => setShowConfetti(false), 10500);
@@ -314,8 +289,8 @@ const Obrigado = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-cyan-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/5 blur-[100px] pointer-events-none" />
 
-      <MetaPixelNew isPurchasePage={true} />
-      <MetaPixel916689227676142 isPurchase={true} />
+      <MetaPixelNew isPurchasePage={false} />
+      <MetaPixel916689227676142 isPurchase={false} />
       {showConfetti && <ConfettiCanvas />}
 
       <div className="w-full max-w-md flex flex-col items-center relative z-10 gap-8">

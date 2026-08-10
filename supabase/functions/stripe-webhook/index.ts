@@ -24,6 +24,162 @@ function redactEmail(email: string | null | undefined): string {
   return `${redacted}@${parts[1]}`;
 }
 
+async function sha256Hex(input: string): Promise<string> {
+  const bytes = new TextEncoder().encode(input.trim().toLowerCase());
+  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(hash))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function trackPaidInvoiceConversion(invoice: Stripe.Invoice, supabase: any, stripe: Stripe): Promise<boolean> {
+  const amountPaid = Number(invoice.amount_paid || 0);
+  if (!invoice.id || amountPaid <= 0) return true;
+
+  const { data: existingEvents, error: lookupError } = await supabase
+    .from("analytics_events")
+    .select("id,event_type,event_data")
+    .in("event_type", ["purchase_paid_pending", "purchase_paid"])
+    .contains("event_data", { invoice_id: invoice.id })
+    .limit(2);
+  if (lookupError) {
+    logStep("WARN: paid conversion idempotency lookup failed", { invoiceId: invoice.id, error: lookupError.message });
+  }
+  if (existingEvents?.some((event: any) => event.event_type === "purchase_paid")) {
+    logStep("Paid conversion already recorded", { invoiceId: invoice.id });
+    return true;
+  }
+
+  let landingVariant = "general";
+  const subscriptionId = invoice.subscription as string | null;
+  if (subscriptionId) {
+    try {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      landingVariant = subscription.metadata?.landing_variant || "general";
+    } catch (error: any) {
+      logStep("WARN: subscription metadata unavailable for conversion", { invoiceId: invoice.id, error: error.message });
+    }
+  }
+
+  const value = amountPaid / 100;
+  const currency = (invoice.currency || "brl").toUpperCase();
+  const eventId = `stripe_invoice_${invoice.id}`;
+  const email = invoice.customer_email;
+  const eventData = {
+    invoice_id: invoice.id,
+    stripe_customer_id: invoice.customer,
+    subscription_id: subscriptionId,
+    billing_reason: invoice.billing_reason,
+    offer_variant: landingVariant,
+    value,
+    currency,
+    meta_event_id: eventId,
+    status: "pending",
+  };
+  let pendingEventId = existingEvents?.find((event: any) => event.event_type === "purchase_paid_pending")?.id;
+  if (!pendingEventId) {
+    const { data: pendingEvent, error: pendingError } = await supabase
+      .from("analytics_events")
+      .insert({
+        user_id: null,
+        session_id: `stripe:${invoice.id}`,
+        event_type: "purchase_paid_pending",
+        event_data: eventData,
+        url_path: "/stripe-webhook",
+      })
+      .select("id")
+      .single();
+    if (pendingError) {
+      logStep("WARN: unable to persist pending paid conversion", { invoiceId: invoice.id, error: pendingError.message });
+    } else {
+      pendingEventId = pendingEvent?.id;
+    }
+  }
+
+  const accessToken = Deno.env.get("META_CAPI_TOKEN_2120347238758199");
+  let metaSent = false;
+  if (accessToken) {
+    try {
+      const userData: Record<string, unknown> = {};
+      if (isValidEmail(email)) userData.em = [await sha256Hex(email)];
+      const response = await fetch("https://graph.facebook.com/v18.0/2120347238758199/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(8000),
+        body: JSON.stringify({
+          access_token: accessToken,
+          data: [{
+            event_name: "Purchase",
+            event_time: Math.floor(Date.now() / 1000),
+            event_id: eventId,
+            event_source_url: "https://canvaviagem.com/obrigado",
+            action_source: "website",
+            user_data: userData,
+            custom_data: { value, currency },
+          }],
+        }),
+      });
+      metaSent = response.ok;
+      if (!response.ok) {
+        logStep("WARN: Meta CAPI paid conversion failed", { invoiceId: invoice.id, status: response.status });
+      }
+    } catch (error: any) {
+      logStep("WARN: Meta CAPI paid conversion request failed", { invoiceId: invoice.id, error: error.message });
+    }
+  } else {
+    logStep("WARN: Meta CAPI token not configured for paid conversion", { invoiceId: invoice.id });
+    metaSent = true;
+  }
+
+  if (!metaSent) {
+    logStep("Paid conversion remains pending", { invoiceId: invoice.id, value, currency, landingVariant });
+    return false;
+  }
+
+  const sentEventData = { ...eventData, status: "sent", sent_at: new Date().toISOString() };
+  const { error: saveError } = pendingEventId
+    ? await supabase
+      .from("analytics_events")
+      .update({ event_type: "purchase_paid", event_data: sentEventData })
+      .eq("id", pendingEventId)
+    : await supabase.from("analytics_events").insert({
+      user_id: null,
+      session_id: `stripe:${invoice.id}`,
+      event_type: "purchase_paid",
+      event_data: sentEventData,
+      url_path: "/stripe-webhook",
+    });
+  if (saveError) {
+    logStep("ERROR recording paid conversion", { invoiceId: invoice.id, error: saveError.message });
+    return false;
+  }
+  logStep("Paid conversion recorded", { invoiceId: invoice.id, value, currency, landingVariant });
+  return true;
+}
+
+async function trackPaidInvoiceConversionSafely(invoice: Stripe.Invoice, supabase: any, stripe: Stripe): Promise<boolean> {
+  try {
+    return await trackPaidInvoiceConversion(invoice, supabase, stripe);
+  } catch (error: any) {
+    logStep("WARN: paid conversion tracking isolated from provisioning", { invoiceId: invoice.id, error: error.message });
+    return false;
+  }
+}
+
+async function hasPendingPaidConversion(invoiceId: string, supabase: any): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("analytics_events")
+    .select("id")
+    .eq("event_type", "purchase_paid_pending")
+    .contains("event_data", { invoice_id: invoiceId })
+    .limit(1);
+  if (error) {
+    logStep("WARN: pending conversion lookup failed", { invoiceId, error: error.message });
+    return false;
+  }
+  return Boolean(data?.length);
+}
+
 const GENERIC_ERRORS = {
   badRequest: "Bad request",
   serviceError: "Service temporarily unavailable",
@@ -405,6 +561,12 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supa
 async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, resend: any, stripe: Stripe) {
   logStep("Processing invoice.payment_succeeded", { invoiceId: invoice.id });
   const stripeCustomerId = invoice.customer as string;
+  if (invoice.id && await hasPendingPaidConversion(invoice.id, supabase)) {
+    logStep("Retrying paid conversion without repeating provisioning", { invoiceId: invoice.id });
+    const conversionTracked = await trackPaidInvoiceConversionSafely(invoice, supabase, stripe);
+    if (!conversionTracked) throw new Error(`Paid conversion still pending for invoice ${invoice.id}`);
+    return;
+  }
 
   // Check if this is the first payment (Subscription Creation)
   if (invoice.billing_reason === 'subscription_create') {
@@ -449,6 +611,8 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
         productId,
         accessDetails,
       );
+      const conversionTracked = await trackPaidInvoiceConversionSafely(invoice, supabase, stripe);
+      if (!conversionTracked) throw new Error(`Paid conversion pending for invoice ${invoice.id}`);
       return; // ensureUserAndOnboarding also upserts subscription, so we can return or continue. 
     } else {
       logStep("No email in invoice for subscription_create", { invoiceId: invoice.id });
@@ -460,6 +624,8 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
     updated_at: new Date().toISOString(),
   }).eq("stripe_customer_id", stripeCustomerId);
   if (error) logStep("ERROR reactivating subscription", { error: error.message });
+  const conversionTracked = await trackPaidInvoiceConversionSafely(invoice, supabase, stripe);
+  if (!conversionTracked) throw new Error(`Paid conversion pending for invoice ${invoice.id}`);
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resend: any) {

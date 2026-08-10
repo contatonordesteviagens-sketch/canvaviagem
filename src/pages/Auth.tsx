@@ -14,6 +14,42 @@ import { trackEvent, ANALYTICS_EVENTS } from "@/hooks/useAnalyticsEvents";
 import { formatPhoneBR, cleanPhone } from "@/lib/phone-utils";
 import logoImage from "@/assets/logo.png";
 
+const pendingAuthStateKey = "cv:pending-auth-checkout";
+
+const hashNormalizedEmail = async (email: string) => {
+  if (!globalThis.crypto?.subtle) return null;
+  const digest = await globalThis.crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(email.trim().toLowerCase()),
+  );
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+};
+
+const bindPendingCheckoutToEmail = async (email: string) => {
+  try {
+    const pendingState = JSON.parse(localStorage.getItem(pendingAuthStateKey) || "null") as {
+      path?: string;
+      cycle?: string;
+      createdAt?: number;
+    } | null;
+    const isFresh = Boolean(
+      pendingState?.createdAt && Date.now() - pendingState.createdAt <= 30 * 60 * 1000,
+    );
+    if (!isFresh || !pendingState?.path) {
+      localStorage.removeItem(pendingAuthStateKey);
+      return;
+    }
+    const emailHash = await hashNormalizedEmail(email);
+    if (!emailHash) {
+      localStorage.removeItem(pendingAuthStateKey);
+      return;
+    }
+    localStorage.setItem(pendingAuthStateKey, JSON.stringify({ ...pendingState, emailHash }));
+  } catch {
+    localStorage.removeItem(pendingAuthStateKey);
+  }
+};
+
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -26,17 +62,20 @@ const Auth = () => {
   const [showExtras, setShowExtras] = useState(false);
 
   // Validate redirect parameter
-  const isValidRedirect = (path: string | null): boolean => {
-    if (!path) return false;
-    if (!path.startsWith('/')) return false;
-    if (path.startsWith('//')) return false;
-    if (path.match(/^\/?(data|javascript):/i)) return false;
-    if (path.includes('%')) return false;
-    return true;
+  const getSafeRedirect = (path: string | null): string | null => {
+    if (!path || !path.startsWith('/') || path.startsWith('//')) return null;
+    if (path.includes('\\') || /[\u0000-\u001F\u007F]/.test(path)) return null;
+    try {
+      const parsed = new URL(path, window.location.origin);
+      if (parsed.origin !== window.location.origin) return null;
+      return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    } catch {
+      return null;
+    }
   };
 
   const rawRedirect = searchParams.get("redirect");
-  const redirectTo = isValidRedirect(rawRedirect) ? rawRedirect : null;
+  const redirectTo = getSafeRedirect(rawRedirect);
 
   useEffect(() => {
     trackViewContent('Página de Login');
@@ -101,12 +140,15 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
+      const normalizedEmail = email.toLowerCase().trim();
+      await bindPendingCheckoutToEmail(normalizedEmail);
       const { data, error } = await supabase.functions.invoke("send-magic-link", {
         body: {
-          email: email.toLowerCase().trim(),
+          email: normalizedEmail,
           name: name.trim() || null,
           phone: phone ? cleanPhone(phone) : null,
-          siteUrl: window.location.origin // CRITICAL FIX: Add siteUrl
+          siteUrl: window.location.origin, // CRITICAL FIX: Add siteUrl
+          redirect: redirectTo,
         },
       });
 
@@ -133,12 +175,15 @@ const Auth = () => {
   const handleResendLink = async () => {
     setIsLoading(true);
     try {
+      const normalizedEmail = email.toLowerCase().trim();
+      await bindPendingCheckoutToEmail(normalizedEmail);
       const { data, error } = await supabase.functions.invoke("send-magic-link", {
         body: {
-          email: email.toLowerCase().trim(),
+          email: normalizedEmail,
           name: name.trim() || null,
           phone: phone ? cleanPhone(phone) : null,
-          siteUrl: window.location.origin
+          siteUrl: window.location.origin,
+          redirect: redirectTo,
         },
       });
 

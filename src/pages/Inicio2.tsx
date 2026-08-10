@@ -102,7 +102,15 @@ const upgradeLandingCopy: Record<UpgradeFeature, { eyebrow: string; title: strin
 };
 
 function safeInternalPath(value: string | null) {
-  return value?.startsWith("/") && !value.startsWith("//") ? value : null;
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
+  if (value.includes("\\") || /[\u0000-\u001F\u007F]/.test(value)) return null;
+  try {
+    const parsed = new URL(value, window.location.origin);
+    if (parsed.origin !== window.location.origin) return null;
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return null;
+  }
 }
 const reelsMainGifUrl =
   "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm5kcmcybmE2aTFkOTU3ZDNqYmZkbHQ2YjRibjB1NjFtN2RoNWdrMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6osnZ6joYcPfERZsaE/giphy.gif";
@@ -316,6 +324,59 @@ export default function Inicio2() {
   const contextualCopy = upgradeFeature ? upgradeLandingCopy[upgradeFeature] : null;
   const isStartUpgrade = tier === "start_legacy";
   const isFreeAccount = tier === "free";
+
+  useEffect(() => {
+    if (searchParams.get("checkout") !== "canceled") return;
+    const lastOfferStateKey = "cv:last-offer-checkout";
+    let offerStatePath: string | null = null;
+    try {
+      const lastOfferState = JSON.parse(localStorage.getItem(lastOfferStateKey) || "null") as {
+        path?: string;
+        createdAt?: number;
+      } | null;
+      const isFresh = Boolean(
+        lastOfferState?.createdAt && Date.now() - lastOfferState.createdAt <= 2 * 60 * 60 * 1000,
+      );
+      if (isFresh) offerStatePath = lastOfferState?.path || null;
+      else localStorage.removeItem(lastOfferStateKey);
+    } catch {
+      localStorage.removeItem(lastOfferStateKey);
+    }
+    const validOfferPaths = new Set([
+      "/anuncios-para-agencia-de-viagens",
+      "/site-para-agencia-de-viagens",
+      "/equipe-de-marketing-para-agencia-de-viagens",
+    ]);
+    if (!offerStatePath) return;
+    let offerUrl: URL;
+    try {
+      offerUrl = new URL(offerStatePath, window.location.origin);
+    } catch {
+      localStorage.removeItem(lastOfferStateKey);
+      return;
+    }
+    if (offerUrl.origin !== window.location.origin || !validOfferPaths.has(offerUrl.pathname)) {
+      localStorage.removeItem(lastOfferStateKey);
+      return;
+    }
+
+    const destinationParams = new URLSearchParams();
+    const preservedReturnTo = safeInternalPath(offerUrl.searchParams.get("returnTo"));
+    if (preservedReturnTo) destinationParams.set("returnTo", preservedReturnTo);
+    const preservedUpgrade = offerUrl.searchParams.get("upgrade");
+    if (upgradeFeatures.includes(preservedUpgrade as UpgradeFeature)) {
+      destinationParams.set("upgrade", preservedUpgrade as UpgradeFeature);
+    }
+    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach((key) => {
+      const value = offerUrl.searchParams.get(key)?.trim();
+      if (value && value.length <= 200 && !/[\u0000-\u001F\u007F]/.test(value)) {
+        destinationParams.set(key, value);
+      }
+    });
+    destinationParams.set("checkout", "canceled");
+    localStorage.removeItem(lastOfferStateKey);
+    window.location.replace(`${offerUrl.pathname}?${destinationParams.toString()}`);
+  }, [searchParams]);
 
   useEffect(() => {
     if (landingTrackedRef.current || entitlementsLoading) return;

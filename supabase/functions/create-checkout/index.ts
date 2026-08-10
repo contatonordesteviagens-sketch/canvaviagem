@@ -33,10 +33,29 @@ const validUpgradeFeatures = new Set([
   "premium_content",
   "fabrica",
 ]);
+const validLandingPaths = new Set([
+  "/inicio",
+  "/anuncios-para-agencia-de-viagens",
+  "/site-para-agencia-de-viagens",
+  "/equipe-de-marketing-para-agencia-de-viagens",
+]);
 
 const sanitizeInternalPath = (value: unknown) => {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return "";
-  return value.slice(0, 480);
+  if (
+    typeof value !== "string"
+    || !value.startsWith("/")
+    || value.startsWith("//")
+    || value.includes("\\")
+    || /[\u0000-\u001F\u007F]/.test(value)
+  ) return "";
+  try {
+    const pathBase = "https://canvaviagem.invalid";
+    const parsed = new URL(value.slice(0, 480), pathBase);
+    if (parsed.origin !== pathBase) return "";
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return "";
+  }
 };
 
 const getPriceId = (billingCycle: BillingCycle) => {
@@ -129,6 +148,9 @@ serve(async (req) => {
     let requestedCycle: BillingCycle = "monthly";
     let returnTo = "";
     let upgradeFeature = "";
+    let landingPath = "/inicio";
+    let landingVariant = "general";
+    let trialEligible = true;
     try {
       const body = await req.json();
       if (body?.billing_cycle === "semiannual" || body?.billing_cycle === "annual") {
@@ -137,6 +159,11 @@ serve(async (req) => {
       returnTo = sanitizeInternalPath(body?.return_to);
       if (typeof body?.upgrade === "string" && validUpgradeFeatures.has(body.upgrade)) {
         upgradeFeature = body.upgrade;
+      }
+      const requestedLandingPath = sanitizeInternalPath(body?.landing_path);
+      if (validLandingPaths.has(requestedLandingPath)) landingPath = requestedLandingPath;
+      if (typeof body?.landing_variant === "string" && ["ads", "site", "team"].includes(body.landing_variant)) {
+        landingVariant = body.landing_variant;
       }
     } catch {
       // Empty request bodies use the canonical monthly offer.
@@ -163,7 +190,7 @@ serve(async (req) => {
       const [{ data: localSubscription }, { data: adminRole }] = await Promise.all([
         dbClient
           .from("subscriptions")
-          .select("product_id,status,current_period_end,trial_ends_at")
+          .select("product_id,status,current_period_end,trial_started_at,trial_ends_at")
           .eq("user_id", user.id)
           .maybeSingle(),
         dbClient
@@ -173,6 +200,10 @@ serve(async (req) => {
           .eq("role", "admin")
           .maybeSingle(),
       ]);
+
+      if (localSubscription?.trial_started_at || localSubscription?.trial_ends_at) {
+        trialEligible = false;
+      }
 
       if (
         adminRole
@@ -197,6 +228,11 @@ serve(async (req) => {
         status: "all",
         limit: 20,
       });
+      const historicalEliteTrial = subscriptions.data.some((subscription) =>
+        isEliteProduct(stripeProductId(subscription))
+        && Boolean(subscription.trial_start || subscription.trial_end)
+      );
+      if (historicalEliteTrial) trialEligible = false;
       const existingElite = subscriptions.data.some((subscription) =>
         ["active", "trialing"].includes(subscription.status)
         && isEliteProduct(stripeProductId(subscription))
@@ -221,6 +257,7 @@ serve(async (req) => {
     const successParams = new URLSearchParams({
       source: "checkout",
       billingCycle: requestedCycle,
+      trial: trialEligible ? "started" : "not_eligible",
     });
     const cancelParams = new URLSearchParams({ checkout: "canceled" });
     if (returnTo) {
@@ -231,6 +268,22 @@ serve(async (req) => {
       successParams.set("upgrade", upgradeFeature);
       cancelParams.set("upgrade", upgradeFeature);
     }
+    if (landingVariant !== "general") {
+      successParams.set("offer", landingVariant);
+      cancelParams.set("offer", landingVariant);
+    }
+
+    const subscriptionData = {
+      ...(trialEligible ? { trial_period_days: 3 } : {}),
+      metadata: {
+        user_id: user.id,
+        billing_cycle: requestedCycle,
+        upgrade: upgradeFeature,
+        return_to: returnTo,
+        landing_path: landingPath,
+        landing_variant: landingVariant,
+      },
+    };
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -242,23 +295,16 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      // 3-day free trial period
-      subscription_data: {
-        trial_period_days: 3,
-        metadata: {
-          user_id: user.id,
-          billing_cycle: requestedCycle,
-          upgrade: upgradeFeature,
-          return_to: returnTo,
-        },
-      },
-      success_url: `${origin}/obrigado?${successParams.toString()}`,
-      cancel_url: `${origin}/inicio?${cancelParams.toString()}`,
+      subscription_data: subscriptionData,
+      success_url: `${origin}/obrigado?${successParams.toString()}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}${landingPath}?${cancelParams.toString()}`,
       metadata: {
         user_id: user.id,
         billing_cycle: requestedCycle,
         upgrade: upgradeFeature,
         return_to: returnTo,
+        landing_path: landingPath,
+        landing_variant: landingVariant,
       },
       // Enable abandoned cart recovery
       after_expiration: {

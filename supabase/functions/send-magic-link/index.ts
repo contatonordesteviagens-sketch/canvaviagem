@@ -98,7 +98,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, name, phone } = await req.json();
+    const { email, name, phone, redirect } = await req.json();
 
     console.log("[MAGIC-LINK] Processing request:", {
       email: email ? email.substring(0, 5) + "***" : "missing",
@@ -152,6 +152,24 @@ serve(async (req) => {
 
     // Clean phone if provided
     const cleanPhone = phone ? phone.replace(/\D/g, '') : null;
+    let safeRedirect = "";
+    if (
+      typeof redirect === "string"
+      && redirect.startsWith("/")
+      && !redirect.startsWith("//")
+      && !redirect.includes("\\")
+      && !/[\u0000-\u001F\u007F]/.test(redirect)
+    ) {
+      try {
+        const redirectBase = "https://canvaviagem.invalid";
+        const parsedRedirect = new URL(redirect.slice(0, 480), redirectBase);
+        if (parsedRedirect.origin === redirectBase) {
+          safeRedirect = `${parsedRedirect.pathname}${parsedRedirect.search}${parsedRedirect.hash}`;
+        }
+      } catch {
+        safeRedirect = "";
+      }
+    }
 
     // Salvar token no banco com nome e telefone
     const { error: insertError } = await supabaseAdmin
@@ -175,7 +193,9 @@ serve(async (req) => {
     // Criar link de verificação - SEMPRE usar SITE_URL do servidor (nunca aceitar do cliente)
     // para evitar open redirect / phishing via siteUrl controlado pelo atacante.
     const baseUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
-    const magicLink = `${baseUrl}/auth/verify?token=${token}`;
+    const magicLinkParams = new URLSearchParams({ token });
+    if (safeRedirect) magicLinkParams.set("redirect", safeRedirect);
+    const magicLink = `${baseUrl}/auth/verify?${magicLinkParams.toString()}`;
     console.log("[MAGIC-LINK] Magic link generated successfully");
 
     // Enviar email via Resend

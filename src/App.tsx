@@ -24,15 +24,20 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
   const hideSidebarPaths = [
     '/planos', '/pt/planos', '/es/planos', '/auth', '/auth/verify', '/sucesso', '/obrigado', '/es/obrigado',
     '/pos-pagamento', '/canva', '/termos', '/privacidade', '/exclusao-de-dados',
-    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/inicio2', '/es/inicio', '/.lovable/oauth/consent'
+    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/inicio2', '/es/inicio',
+    '/anuncios-para-agencia-de-viagens', '/site-para-agencia-de-viagens',
+    '/equipe-de-marketing-para-agencia-de-viagens', '/.lovable/oauth/consent'
   ];
+  const normalizedPathname = location.pathname.length > 1
+    ? location.pathname.replace(/\/+$/, '')
+    : location.pathname;
 
   const shouldHideSidebar = hideSidebarPaths.some(path => 
-    location.pathname === path || 
-    location.pathname.startsWith('/auth/') || 
-    location.pathname.startsWith('/view/') ||
-    location.pathname.startsWith('/fabrica') ||
-    location.pathname.startsWith('/es/fabrica')
+    normalizedPathname === path ||
+    normalizedPathname.startsWith('/auth/') ||
+    normalizedPathname.startsWith('/view/') ||
+    normalizedPathname.startsWith('/fabrica') ||
+    normalizedPathname.startsWith('/es/fabrica')
   );
 
   if (shouldHideSidebar) {
@@ -135,6 +140,7 @@ const BlogPost50 = lazy(() => import("./pages/BlogPost50"));
 const Blog = lazy(() => import("./pages/Blog"));
 const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
 const Inicio2 = lazy(() => import("./pages/Inicio2"));
+const OfferLanding = lazy(() => import("./pages/OfferLanding"));
 const InicioES = lazy(() => import("./pages/InicioES"));
 const CanvaClone = lazy(() => import("./pages/CanvaClone"));
 const Diferencas = lazy(() => import("./pages/Diferencas"));
@@ -233,6 +239,9 @@ const App = () => {
                     <Route path="/planos" element={<Navigate to="/inicio" replace />} />
                     <Route path="/pt/planos" element={<Navigate to="/inicio" replace />} />
                     <Route path="/inicio" element={<Inicio2 />} />
+                    <Route path="/anuncios-para-agencia-de-viagens" element={<OfferLanding variant="ads" />} />
+                    <Route path="/site-para-agencia-de-viagens" element={<OfferLanding variant="site" />} />
+                    <Route path="/equipe-de-marketing-para-agencia-de-viagens" element={<OfferLanding variant="team" />} />
                     <Route path="/inicio2" element={<Navigate to="/inicio" replace />} />
                     <Route path="/canva" element={<CanvaClone />} />
                     <Route path="/diferencas" element={<Diferencas />} />
