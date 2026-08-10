@@ -1982,7 +1982,7 @@ const PacoteEditor = ({
           )}
         </button>
 
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 min-w-0 space-y-2">
           <div className="flex gap-2">
             <input
               value={pacote.title}
@@ -1993,7 +1993,7 @@ const PacoteEditor = ({
                 }
               }}
               placeholder="Ej: Cancún 5 días"
-              className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm font-bold text-white placeholder:text-white/30 outline-none focus:border-white/40"
+              className="flex-1 min-w-0 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm font-bold text-white placeholder:text-white/30 outline-none focus:border-white/40"
             />
             <button
               onClick={onDelete}
@@ -2006,14 +2006,14 @@ const PacoteEditor = ({
             value={pacote.price}
             onChange={(e) => onChange({ price: e.target.value })}
             placeholder="$ 1.997 / persona"
-            className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
+            className="w-full min-w-0 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
           />
           <input
             value={pacote.badge || ""}
             onChange={(e) => onChange({ badge: e.target.value })}
             placeholder="Sello de la tarjeta (ej.: Oferta, Grupo, Playa)"
             maxLength={32}
-            className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
+            className="w-full min-w-0 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
           />
         </div>
       </div>
@@ -2023,18 +2023,18 @@ const PacoteEditor = ({
         onChange={(e) => onChange({ description: e.target.value })}
         placeholder="Descripción (lo que está incluido)"
         rows={2}
-        className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
+        className="w-full min-w-0 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
       />
 
       <div className="flex gap-2 items-center">
-        <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Botón:</span>
+        <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider flex-shrink-0">Botón:</span>
         <input
           value={pacote.ctaLabel || ""}
           onChange={(e) => onChange({ ctaLabel: e.target.value })}
           placeholder="Quiero este"
-          className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/40"
+          className="flex-1 min-w-0 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/40"
         />
-        <span className="text-[10px] text-white/40 italic">→ "Hola, tengo interés en {pacote.title || "..."}"</span>
+        <span className="text-[10px] text-white/40 italic flex-shrink-0 truncate max-w-[120px]">→ "Hola, tengo interés en {pacote.title || "..."}"</span>
       </div>
 
       <details className="group rounded-xl border border-white/10 bg-white/[0.025] open:bg-black/20">
