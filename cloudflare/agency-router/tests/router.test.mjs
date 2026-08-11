@@ -5,6 +5,7 @@ import worker, {
   isLikelyAssetPath,
   isReservedSubdomain,
   rewriteApexRedirect,
+  upgradePublishedSiteWhatsApp,
 } from "../src/index.js";
 
 const TEST_ENV = {
@@ -89,6 +90,18 @@ test("busca somente o HTML público da agência no Supabase", async () => {
   assert.equal(upstreamUrl.searchParams.get("id"), "eq.minha-agencia");
   assert.equal(upstreamRequest.headers.get("apikey"), TEST_ENV.SUPABASE_ANON_KEY);
   assert.equal(upstreamRequest.headers.get("x-canva-viagem-agency"), null);
+});
+
+test("corrige o WhatsApp de publicações antigas sem regravar o HTML", () => {
+  const legacyHtml = `<!doctype html><html><head><title>Agência</title></head><body><a href="#" class="wpp-float" aria-label="WhatsApp">💬</a></body></html>`;
+  const upgraded = upgradePublishedSiteWhatsApp(legacyHtml);
+  assert.match(upgraded, /id="cv-whatsapp-edge-fix"/);
+  assert.match(upgraded, /class="wpp-float"/);
+  assert.match(upgraded, /<svg viewBox="0 0 24 24"/);
+  assert.doesNotMatch(upgraded, />💬<\/a>/);
+  assert.match(upgraded, /left:auto!important/);
+  assert.match(upgraded, /right:max\(20px,env\(safe-area-inset-right\)\)!important/);
+  assert.equal(upgradePublishedSiteWhatsApp(upgraded), upgraded);
 });
 
 test("retorna 404 quando o site público não existe", async () => {
