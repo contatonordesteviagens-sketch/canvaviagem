@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-labelledby="title">
+  <title id="title">Viva Ceara Receptivo</title>
+  <rect width="180" height="180" rx="42" fill="#073B3A"/>
+  <circle cx="91" cy="70" r="31" fill="#FFC857"/>
+  <path d="M26 123c25-26 50-26 75 0 19 20 36 19 53-2v33H26z" fill="#13B8A6"/>
+  <path d="M28 137c22-16 44-16 66 0 22 17 42 16 60-2" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+  <path d="M65 99c8-10 17-15 27-15 11 0 20 5 28 15" fill="none" stroke="#F4F1DE" stroke-width="9" stroke-linecap="round"/>
+</svg>

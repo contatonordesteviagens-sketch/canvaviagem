@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-labelledby="title">
+  <title id="title">Atlas Mundo</title>
+  <rect width="180" height="180" rx="42" fill="#10233F"/>
+  <circle cx="90" cy="90" r="51" fill="none" stroke="#D9B86C" stroke-width="8"/>
+  <path d="M39 90h102M90 39c19 17 28 34 28 51s-9 34-28 51M90 39C71 56 62 73 62 90s9 34 28 51" fill="none" stroke="#F8F2E6" stroke-width="7" stroke-linecap="round"/>
+  <path d="m112 52 27-11-11 27-7-9z" fill="#D9B86C"/>
+</svg>

@@ -11,9 +11,11 @@ import {
   LayoutTemplate,
   Link2,
   MessageCircle,
+  Monitor,
   MousePointerClick,
   PanelsTopLeft,
   ShieldCheck,
+  Smartphone,
   X,
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
@@ -22,8 +24,11 @@ import paginaRoteiro from "@/assets/pagina_venda_roteiro.png";
 import lucasPortrait from "@/assets/lucas-ferrari-portrait.webp";
 import { trackEvent } from "@/hooks/useAnalyticsEvents";
 import { ELITE_OFFER } from "@/lib/eliteOffer";
+import { siteOfferDemos } from "@/lib/site-offer-demos";
+import { SITE_TEMPLATE_CATALOG } from "@/lib/site-template-catalog";
 
 type BillingCycle = "monthly" | "semiannual" | "annual";
+type PreviewMode = "desktop" | "mobile";
 
 const metaPixelId = "916689227676142";
 const supportWhatsAppUrl =
@@ -83,24 +88,6 @@ const faqItems = [
   },
 ];
 
-const liveSites = [
-  {
-    name: "Tripia Travel",
-    url: "https://tripia-travel.canvaviagem.com",
-    address: "tripia-travel.canvaviagem.com",
-  },
-  {
-    name: "Vicele Viagens",
-    url: "https://viceleviagens.canvaviagem.com",
-    address: "viceleviagens.canvaviagem.com",
-  },
-  {
-    name: "Correia Tur",
-    url: "https://correiatur.canvaviagem.com",
-    address: "correiatur.canvaviagem.com",
-  },
-];
-
 const comparisonRows = [
   ["Começar", "Configurar tema, páginas e plugins", "Enviar briefing e aguardar", "Preencher a estrutura da agência"],
   ["Foco em viagens", "Ferramenta para qualquer negócio", "Depende do profissional", "Pacotes, orçamento e WhatsApp"],
@@ -140,8 +127,11 @@ export default function SiteOfferLanding() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [checkoutLoading, setCheckoutLoading] = useState<BillingCycle | null>(null);
   const [exitOfferOpen, setExitOfferOpen] = useState(false);
+  const [activeDemoId, setActiveDemoId] = useState(siteOfferDemos[0].id);
+  const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
   const pageTrackedRef = useRef(false);
   const exitDialogRef = useRef<HTMLDivElement>(null);
+  const activeDemo = siteOfferDemos.find((demo) => demo.id === activeDemoId) || siteOfferDemos[0];
 
   const recordEvent = useCallback((eventType: string, data: Record<string, unknown> = {}) => {
     return trackEvent(eventType, {
@@ -391,56 +381,103 @@ export default function SiteOfferLanding() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid items-end gap-6 md:grid-cols-[1fr_auto]">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">Veja um site real, não apenas uma imagem</p>
-                <h2 className="mt-4 max-w-[19ch] text-3xl font-black leading-tight tracking-tight md:text-5xl">
-                  Este site está publicado por uma agência usando o Canva Viagem.
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">3 demonstrações oficiais para explorar</p>
+                <h2 className="mt-4 max-w-[20ch] text-3xl font-black leading-tight tracking-tight md:text-5xl">
+                  Troque o tipo de agência. Veja o site mudar de verdade.
                 </h2>
               </div>
               <p className="max-w-md text-base leading-relaxed text-slate-600 md:text-lg">
-                Navegue pela página abaixo. Abra os pacotes, confira os botões e julgue a experiência antes de escolher um plano.
+                Cada demonstração usa um modelo real do construtor, uma marca própria e três pacotes completos com fotos, valores e detalhes.
               </p>
             </div>
 
-            <div className="mt-10 grid gap-5 lg:grid-cols-[0.72fr_1.28fr]">
-              <div className="rounded-[1.5rem] bg-[#0B1324] p-6 text-white md:p-8">
-                {[
-                  ["01", "Cadastre", "Adicione nome, logo, contatos e identidade da agência."],
-                  ["02", "Adicione", "Publique pacotes com fotos, condições e detalhes."],
-                  ["03", "Personalize", "Organize seções, textos, imagens e cores."],
-                  ["04", "Publique", "Receba um endereço online dentro do Canva Viagem."],
-                ].map(([number, title, copy], index) => (
-                  <div key={number} className={`grid grid-cols-[44px_1fr] gap-4 py-5 ${index ? "border-t border-white/10" : ""}`}>
-                    <span className="font-mono text-sm font-black text-cyan-300">{number}</span>
-                    <div>
-                      <p className="text-lg font-black">{title}</p>
-                      <p className="mt-1 leading-relaxed text-slate-400">{copy}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="overflow-hidden rounded-[1.5rem] border border-slate-300 bg-white shadow-[0_24px_60px_-30px_rgba(15,23,42,0.45)]">
-                <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-100 px-4 py-3">
-                  <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                  <span className="ml-2 truncate rounded-md bg-white px-3 py-1 text-xs font-semibold text-slate-500">tripia-travel.canvaviagem.com</span>
+            <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-relaxed text-amber-950">
+              <strong>Transparência:</strong> estas três agências, logos, pacotes e valores são fictícios. Foram criados como modelos oficiais para mostrar o que a plataforma consegue montar — não são clientes nem resultados alegados.
+            </div>
+
+            <div className="mt-8 grid gap-3 md:grid-cols-3">
+              {siteOfferDemos.map((demo) => {
+                const isActive = demo.id === activeDemo.id;
+                return (
+                  <button
+                    key={demo.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveDemoId(demo.id);
+                      recordEvent("official_demo_selected", { demo: demo.id, template: demo.templateId });
+                    }}
+                    aria-pressed={isActive}
+                    className={`min-h-[118px] rounded-[1.25rem] border p-5 text-left transition ${
+                      isActive
+                        ? "border-slate-950 bg-[#0B1324] text-white shadow-[0_18px_45px_-28px_rgba(15,23,42,0.65)]"
+                        : "border-slate-300 bg-white text-slate-950 hover:border-cyan-500"
+                    }`}
+                  >
+                    <span className={`text-xs font-black uppercase tracking-[0.16em] ${isActive ? "text-cyan-300" : "text-cyan-700"}`}>
+                      Modelo {demo.templateLabel}
+                    </span>
+                    <span className="mt-2 block text-lg font-black">{demo.agencyName}</span>
+                    <span className={`mt-1 block text-sm ${isActive ? "text-slate-300" : "text-slate-500"}`}>{demo.category}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-5 rounded-[1.75rem] border border-slate-300 bg-[#0B1324] p-3 shadow-[0_28px_70px_-35px_rgba(15,23,42,0.7)] sm:p-5">
+              <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 text-white sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="truncate font-black">{activeDemo.agencyName}</p>
+                  <p className="text-xs text-slate-400">Modelo {activeDemo.templateLabel} • {activeDemo.packageNames.length} pacotes preenchidos</p>
                 </div>
-                <iframe
-                  className="h-[520px] w-full bg-white md:h-[620px]"
-                  src="https://tripia-travel.canvaviagem.com"
-                  title="Site público da Tripia Travel criado no Canva Viagem"
-                  loading="lazy"
-                />
-                <a
-                  href="https://tripia-travel.canvaviagem.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => recordEvent("demo_site_opened", { site: "tripia-travel" })}
-                  className="flex min-h-12 items-center justify-center gap-2 border-t border-slate-200 px-5 text-sm font-black text-cyan-800 transition hover:bg-cyan-50"
-                >
-                  Abrir este site em uma nova aba
-                  <ArrowRight className="h-4 w-4" />
-                </a>
+                <div className="flex rounded-xl border border-white/10 bg-black/20 p-1" aria-label="Formato da demonstração">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewMode("desktop")}
+                    className={`flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg px-4 text-xs font-black transition ${previewMode === "desktop" ? "bg-white text-slate-950" : "text-slate-300 hover:text-white"}`}
+                    aria-pressed={previewMode === "desktop"}
+                  >
+                    <Monitor className="h-4 w-4" /> Computador
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewMode("mobile")}
+                    className={`flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg px-4 text-xs font-black transition ${previewMode === "mobile" ? "bg-white text-slate-950" : "text-slate-300 hover:text-white"}`}
+                    aria-pressed={previewMode === "mobile"}
+                  >
+                    <Smartphone className="h-4 w-4" /> Celular
+                  </button>
+                </div>
+              </div>
+
+              <div className={`mx-auto transition-[max-width] duration-300 ${previewMode === "mobile" ? "max-w-[430px]" : "max-w-none"}`}>
+                <div className={`overflow-hidden bg-white ${previewMode === "mobile" ? "rounded-[2.25rem] border-[10px] border-slate-800 shadow-2xl" : "rounded-2xl border border-slate-700"}`}>
+                  <div className={`flex items-center gap-2 border-b border-slate-200 bg-slate-100 px-4 py-3 ${previewMode === "mobile" ? "justify-center" : ""}`}>
+                    {previewMode === "desktop" && (
+                      <>
+                        <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                      </>
+                    )}
+                    <span className="truncate rounded-md bg-white px-3 py-1 text-xs font-semibold text-slate-500">
+                      modelo-{activeDemo.id}.canvaviagem.com
+                    </span>
+                  </div>
+                  <iframe
+                    key={`${activeDemo.id}-${previewMode}`}
+                    className={`w-full bg-white ${previewMode === "mobile" ? "h-[800px]" : "h-[690px] md:h-[780px]"}`}
+                    srcDoc={activeDemo.html}
+                    title={`Modelo demonstrativo ${activeDemo.agencyName} no formato ${previewMode === "mobile" ? "celular" : "computador"}`}
+                    loading="lazy"
+                    sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-2 text-xs text-slate-300 sm:grid-cols-3">
+                {activeDemo.packageNames.map((packageName) => (
+                  <span key={packageName} className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 font-semibold">✓ {packageName}</span>
+                ))}
               </div>
             </div>
           </div>
@@ -539,36 +576,37 @@ export default function SiteOfferLanding() {
 
         <section className="border-y border-slate-200 bg-[#EEF3F6] py-16 md:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-10 max-w-3xl">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">Sites públicos</p>
-              <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight md:text-5xl">
-                Abra, navegue e julgue com seus próprios olhos.
-              </h2>
-              <p className="mt-5 text-lg leading-relaxed text-slate-600">
-                Estes endereços estão online e foram publicados por agências dentro da estrutura do Canva Viagem. Clique para conferir a experiência real.
+            <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">Não é um site engessado</p>
+                <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight md:text-5xl">
+                  Sua agência escolhe entre 6 modelos de site.
+                </h2>
+              </div>
+              <p className="text-lg leading-relaxed text-slate-600">
+                Cada modelo dá prioridade a um jeito diferente de vender viagens. Você escolhe a estrutura, troca a identidade visual e preenche com os seus próprios pacotes.
               </p>
             </div>
-            <div className="grid gap-5 md:grid-cols-3">
-              {liveSites.map((site) => (
-                <a
-                  key={site.url}
-                  href={site.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => recordEvent("public_site_opened", { site: site.address })}
-                  className="group rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_-35px_rgba(15,23,42,0.3)] transition hover:-translate-y-1 hover:border-cyan-400 hover:shadow-[0_24px_55px_-30px_rgba(8,145,178,0.35)]"
-                >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-100 text-cyan-800"><Globe2 className="h-5 w-5" /></span>
-                  <p className="mt-6 text-xl font-black text-slate-950">{site.name}</p>
-                  <p className="mt-2 break-all text-sm text-slate-500">{site.address}</p>
-                  <span className="mt-6 inline-flex items-center gap-2 font-black text-cyan-800">
-                    Abrir site <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </a>
-              ))}
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {SITE_TEMPLATE_CATALOG.map((template, index) => {
+                const isShownAbove = siteOfferDemos.some((demo) => demo.templateId === template.id);
+                return (
+                  <div key={template.id} className="rounded-[1.35rem] border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-36px_rgba(15,23,42,0.35)]">
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-100 font-mono text-sm font-black text-cyan-900">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      {isShownAbove && <span className="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-800">Demo acima</span>}
+                    </div>
+                    <h3 className="mt-5 text-xl font-black text-slate-950">{template.copy.pt.label}</h3>
+                    <p className="mt-1 text-sm font-bold text-cyan-800">{template.copy.pt.audience}</p>
+                    <p className="mt-3 leading-relaxed text-slate-600">{template.copy.pt.summary}</p>
+                  </div>
+                );
+              })}
             </div>
             <p className="mt-5 text-sm leading-relaxed text-slate-500">
-              Os conteúdos, marcas e ofertas pertencem às respectivas agências. Estes exemplos comprovam a publicação da estrutura, não resultados de venda.
+              As demonstrações acima usam Ofertas, Horizonte e Experiências. Padrão, Expedições e Excursões também estão disponíveis no construtor.
             </p>
           </div>
         </section>

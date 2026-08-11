@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import { upgradePublishedSiteWhatsApp } from "@/lib/published-site-whatsapp";
 
 const readPackageSlugFromLocation = () => {
   const pathMatch = window.location.pathname.match(/^\/pacotes?\/([^/]+)/i);
@@ -61,7 +62,7 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
           throw new Error("Site não encontrado ou aguardando processamento.");
         }
 
-        const html = data.html;
+        const html = upgradePublishedSiteWhatsApp(data.html);
 
         if (isSubscribed) {
           setHtmlContent(html);
