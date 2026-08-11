@@ -4399,11 +4399,38 @@ export function F1CarouselBuilder({
       await document.fonts.ready;
 
       for (let index = preserveOriginalCover ? 1 : 0; index < resolvedSlides.length; index += 1) {
-        const node = exportRefs.current[index];
-        if (!node) throw new Error("missing-export-node");
+        const sourceNode = exportRefs.current[index];
+        if (!sourceNode) throw new Error("missing-export-node");
 
-        // ── 1. Pré-carrega TODAS as imagens como data: URL no nó original ──
-        const imgNodes = node.querySelectorAll("img");
+        const nodeW = sourceNode.offsetWidth || 432;
+        const nodeH = sourceNode.offsetHeight || Math.round(432 / (carouselRatio || 0.8));
+
+        // ── 1. Clona o nó para um container VISÍVEL temporário ──
+        // O browser só carrega imagens de elementos visíveis. Por isso clonamos o nó
+        // para um container fixo em 0,0 antes de pré-carregar e capturar.
+        const tempWrapper = document.createElement("div");
+        tempWrapper.style.cssText = [
+          "position:fixed",
+          "left:0",
+          "top:0",
+          `width:${nodeW}px`,
+          `height:${nodeH}px`,
+          "overflow:hidden",
+          "pointer-events:none",
+          "z-index:-9999",
+          "background:#08090B",
+        ].join(";");
+
+        const clonedNode = sourceNode.cloneNode(true) as HTMLDivElement;
+        clonedNode.style.position = "relative";
+        clonedNode.style.left = "0";
+        clonedNode.style.top = "0";
+        clonedNode.style.visibility = "visible";
+        tempWrapper.appendChild(clonedNode);
+        document.body.appendChild(tempWrapper);
+
+        // ── 2. Pré-carrega TODAS as imagens como data:URL no clone ──
+        const imgNodes = clonedNode.querySelectorAll("img");
         await Promise.all(
           Array.from(imgNodes).map(async (img) => {
             const src = img.getAttribute("src");
@@ -4415,34 +4442,31 @@ export function F1CarouselBuilder({
           })
         );
 
-        // ── 2. Aguarda o browser re-renderizar com as data:URLs ──
+        // ── 3. Aguarda o browser renderizar as imagens no clone ──
         await new Promise((resolve) => window.setTimeout(resolve, 400));
 
-        // ── 3. Captura com html2canvas usando onclone para corrigir posição no clone ──
-        const nodeW = node.offsetWidth;
-        const nodeH = node.offsetHeight;
-        const canvas = await html2canvas(node, {
+        // ── 4. Captura o clone com html2canvas ──
+        const canvas = await html2canvas(clonedNode, {
           backgroundColor: "#08090B",
           useCORS: true,
           allowTaint: true,
           scale: 2.5,
           logging: false,
           imageTimeout: 15000,
+          x: 0,
+          y: 0,
+          scrollX: 0,
+          scrollY: 0,
           width: nodeW,
           height: nodeH,
           windowWidth: nodeW,
           windowHeight: nodeH,
-          onclone: (_clonedDoc, clonedNode) => {
-            // Garante que o nó clonado está visível e no topo-esquerdo do documento clonado
-            clonedNode.style.position = "fixed";
-            clonedNode.style.left = "0px";
-            clonedNode.style.top = "0px";
-            clonedNode.style.visibility = "visible";
-            clonedNode.style.transform = "none";
-          },
         });
 
-        // ── 4. Baixa a imagem ──
+        // ── 5. Remove o container temporário ──
+        document.body.removeChild(tempWrapper);
+
+        // ── 6. Baixa a imagem ──
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png", 1);
         link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
@@ -4451,6 +4475,7 @@ export function F1CarouselBuilder({
         link.remove();
         await new Promise((resolve) => window.setTimeout(resolve, 200));
       }
+
 
       track("free_export_completed", {
         feature: "carousel_export",
