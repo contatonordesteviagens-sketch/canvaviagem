@@ -1345,7 +1345,7 @@ function CarouselCanvas({
     );
   };
 
-  const safeClamp = (lines: number): CSSProperties => ({ display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden" });
+  const safeClamp = (lines: number): CSSProperties => exportMode ? { overflow: "hidden" } : { display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden" };
   const safeTextWrap: CSSProperties = {
     overflowWrap: "break-word",
     wordBreak: "normal",
@@ -1870,7 +1870,9 @@ function CarouselCanvas({
                 top: "10%",
                 bottom: "10%",
                 right: "20%",
-                borderRight: `${Math.max(1, Math.round(2 * Z))}px dashed ${safeHexToRgba(primary, 0.45)}`,
+                width: Math.max(1, Math.round(2 * Z)),
+                background: `url("data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='10' height='14'><rect width='100%' height='7' fill='${primary}' opacity='0.45'/></svg>`)}") repeat-y right`,
+                backgroundSize: `100% ${Math.round(14 * Z)}px`,
               }}
             />
           )}
@@ -2694,7 +2696,7 @@ function CarouselCanvas({
                           {renderBodyText(slide.body)}
                         </p>
                       )}
-                      {renderBullets({ color: bulletColor, max: 4, columns: 1, textShadow: bulletShadow, align: alignRight ? "right" : "left" })}
+                      {renderBullets({ color: bulletColor, max: 4, columns: 1, textShadow: bodyShadow, align: alignRight ? "right" : "left" })}
                     </div>
                   </div>
                 </div>
@@ -2918,7 +2920,9 @@ function CarouselCanvas({
                         top: "9%",
                         bottom: "9%",
                         right: "20%",
-                        borderRight: `${Math.max(1, Math.round(2 * Z))}px dashed ${safeHexToRgba(primary, 0.48)}`,
+                        width: Math.max(1, Math.round(2 * Z)),
+                        background: `url("data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='10' height='14'><rect width='100%' height='7' fill='${primary}' opacity='0.48'/></svg>`)}") repeat-y right`,
+                        backgroundSize: `100% ${Math.round(14 * Z)}px`,
                       }}
                     />
                     <div
@@ -2930,7 +2934,7 @@ function CarouselCanvas({
                         bottom: "12%",
                         width: "8%",
                         borderRadius: Math.round(4 * Z),
-                        background: `repeating-linear-gradient(90deg, ${primary} 0 ${Math.round(2 * Z)}px, transparent ${Math.round(2 * Z)}px ${Math.round(4 * Z)}px)`,
+                        background: `url("data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='${Math.round(4 * Z)}' height='10'><rect width='${Math.round(2 * Z)}' height='10' fill='${primary}'/></svg>`)}") repeat`,
                         opacity: 0.72,
                       }}
                     />
