@@ -4418,22 +4418,9 @@ export function F1CarouselBuilder({
         // ── 2. Aguarda o browser re-renderizar com as data:URLs ──
         await new Promise((resolve) => window.setTimeout(resolve, 400));
 
-        // ── 3. Traz o nó pro viewport ──
-        const prevPosition = node.style.position;
-        const prevPointerEvents = node.style.pointerEvents;
-        const prevZIndex = node.style.zIndex;
-        const prevLeft = node.style.left;
-        const prevTop = node.style.top;
-
-        node.style.position = "fixed";
-        node.style.pointerEvents = "none";
-        node.style.zIndex = "1";
-        node.style.left = "0px";
-        node.style.top = "0px";
-
-        await new Promise((resolve) => window.setTimeout(resolve, 300));
-
-        // ── 4. Captura com html2canvas ──
+        // ── 3. Captura com html2canvas usando onclone para corrigir posição no clone ──
+        const nodeW = node.offsetWidth;
+        const nodeH = node.offsetHeight;
         const canvas = await html2canvas(node, {
           backgroundColor: "#08090B",
           useCORS: true,
@@ -4441,22 +4428,21 @@ export function F1CarouselBuilder({
           scale: 2.5,
           logging: false,
           imageTimeout: 15000,
-          x: 0,
-          y: 0,
-          scrollX: 0,
-          scrollY: 0,
-          width: node.offsetWidth,
-          height: node.offsetHeight,
-          windowWidth: node.offsetWidth,
-          windowHeight: node.offsetHeight,
+          width: nodeW,
+          height: nodeH,
+          windowWidth: nodeW,
+          windowHeight: nodeH,
+          onclone: (_clonedDoc, clonedNode) => {
+            // Garante que o nó clonado está visível e no topo-esquerdo do documento clonado
+            clonedNode.style.position = "fixed";
+            clonedNode.style.left = "0px";
+            clonedNode.style.top = "0px";
+            clonedNode.style.visibility = "visible";
+            clonedNode.style.transform = "none";
+          },
         });
 
-        // ── 5. Restaura posição original ──
-        node.style.position = prevPosition;
-        node.style.pointerEvents = prevPointerEvents;
-        node.style.zIndex = prevZIndex;
-
-        // ── 6. Baixa a imagem ──
+        // ── 4. Baixa a imagem ──
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png", 1);
         link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
@@ -6627,14 +6613,12 @@ export function F1CarouselBuilder({
       <div
         aria-hidden="true"
         style={{
-          position: "fixed",
-          left: "-9999px",
-          top: "-9999px",
-          width: "1px",
-          height: "1px",
+          position: "absolute",
+          left: "-99999px",
+          top: 0,
           pointerEvents: "none",
           overflow: "visible",
-          zIndex: -1,
+          visibility: "hidden",
         }}
       >
         {slides.map((slide, index) => (
