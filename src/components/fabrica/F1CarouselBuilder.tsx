@@ -4398,39 +4398,60 @@ export function F1CarouselBuilder({
       const { default: html2canvas } = await import("html2canvas");
       await document.fonts.ready;
 
+      const { createRoot } = await import("react-dom/client");
+      const ReactLib = await import("react");
+
       for (let index = preserveOriginalCover ? 1 : 0; index < resolvedSlides.length; index += 1) {
-        const sourceNode = exportRefs.current[index];
-        if (!sourceNode) throw new Error("missing-export-node");
+        const slide = resolvedSlides[index];
+        const baseW = 432;
+        const baseH = Math.round(baseW / (carouselRatio || 0.8));
 
-        const nodeW = sourceNode.offsetWidth || 432;
-        const nodeH = sourceNode.offsetHeight || Math.round(432 / (carouselRatio || 0.8));
-
-        // ── 1. Clona o nó para um container VISÍVEL temporário ──
-        // O browser só carrega imagens de elementos visíveis. Por isso clonamos o nó
-        // para um container fixo em 0,0 antes de pré-carregar e capturar.
-        const tempWrapper = document.createElement("div");
-        tempWrapper.style.cssText = [
+        // ── 1. Cria container isolado e visível para renderizar o slide ──
+        const tempContainer = document.createElement("div");
+        tempContainer.style.cssText = [
           "position:fixed",
           "left:0",
           "top:0",
-          `width:${nodeW}px`,
-          `height:${nodeH}px`,
+          `width:${baseW}px`,
+          `height:${baseH}px`,
           "overflow:hidden",
           "pointer-events:none",
           "z-index:-9999",
           "background:#08090B",
         ].join(";");
+        document.body.appendChild(tempContainer);
 
-        const clonedNode = sourceNode.cloneNode(true) as HTMLDivElement;
-        clonedNode.style.position = "relative";
-        clonedNode.style.left = "0";
-        clonedNode.style.top = "0";
-        clonedNode.style.visibility = "visible";
-        tempWrapper.appendChild(clonedNode);
-        document.body.appendChild(tempWrapper);
+        // ── 2. Renderiza o slide SEM exportMode (idêntico ao preview) ──
+        let resolveRef!: (n: HTMLDivElement) => void;
+        const refReady = new Promise<HTMLDivElement>((res) => { resolveRef = res; });
 
-        // ── 2. Pré-carrega TODAS as imagens como data:URL no clone ──
-        const imgNodes = clonedNode.querySelectorAll("img");
+        const root = createRoot(tempContainer);
+        root.render(
+          ReactLib.createElement(CarouselCanvas, {
+            slide,
+            index,
+            total: resolvedSlides.length,
+            ratio: carouselRatio,
+            logo: renderedLogo,
+            logoPosition,
+            primary: state.primaryColor,
+            secondary: state.secondaryColor,
+            showPixBanner: (state as any).showPixBanner,
+            pixBannerHighlight: (state as any).pixBannerHighlight,
+            pixBannerText: (state as any).pixBannerText,
+            pixBannerHighlightColor: (state as any).pixBannerHighlightColor,
+            pixBannerTextColor: (state as any).pixBannerTextColor,
+            // SEM exportMode → renderização idêntica ao preview
+            canvasRef: (node: HTMLDivElement | null) => { if (node) resolveRef(node); },
+          })
+        );
+
+        // ── 3. Aguarda o React montar o nó ──
+        const node = await refReady;
+        await new Promise((resolve) => window.setTimeout(resolve, 300));
+
+        // ── 4. Pré-carrega todas as imagens como data:URL ──
+        const imgNodes = node.querySelectorAll("img");
         await Promise.all(
           Array.from(imgNodes).map(async (img) => {
             const src = img.getAttribute("src");
@@ -4442,11 +4463,11 @@ export function F1CarouselBuilder({
           })
         );
 
-        // ── 3. Aguarda o browser renderizar as imagens no clone ──
-        await new Promise((resolve) => window.setTimeout(resolve, 400));
+        // ── 5. Aguarda browser pintar as imagens ──
+        await new Promise((resolve) => window.setTimeout(resolve, 300));
 
-        // ── 4. Captura o clone com html2canvas ──
-        const canvas = await html2canvas(clonedNode, {
+        // ── 6. Captura com html2canvas ──
+        const canvas = await html2canvas(node, {
           backgroundColor: "#08090B",
           useCORS: true,
           allowTaint: true,
@@ -4457,16 +4478,17 @@ export function F1CarouselBuilder({
           y: 0,
           scrollX: 0,
           scrollY: 0,
-          width: nodeW,
-          height: nodeH,
-          windowWidth: nodeW,
-          windowHeight: nodeH,
+          width: baseW,
+          height: baseH,
+          windowWidth: baseW,
+          windowHeight: baseH,
         });
 
-        // ── 5. Remove o container temporário ──
-        document.body.removeChild(tempWrapper);
+        // ── 7. Desmonta e remove o container temporário ──
+        root.unmount();
+        document.body.removeChild(tempContainer);
 
-        // ── 6. Baixa a imagem ──
+        // ── 8. Baixa a imagem ──
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png", 1);
         link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
@@ -4475,6 +4497,7 @@ export function F1CarouselBuilder({
         link.remove();
         await new Promise((resolve) => window.setTimeout(resolve, 200));
       }
+
 
 
       track("free_export_completed", {
