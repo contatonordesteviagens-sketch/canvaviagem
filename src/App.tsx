@@ -142,6 +142,7 @@ const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
 const Inicio2 = lazy(() => import("./pages/Inicio2"));
 const OfferLanding = lazy(() => import("./pages/OfferLanding"));
 const AdsOfferLanding = lazy(() => import("./pages/AdsOfferLanding"));
+const SiteOfferLanding = lazy(() => import("./pages/SiteOfferLanding"));
 const InicioES = lazy(() => import("./pages/InicioES"));
 const CanvaClone = lazy(() => import("./pages/CanvaClone"));
 const Diferencas = lazy(() => import("./pages/Diferencas"));
@@ -241,7 +242,7 @@ const App = () => {
                     <Route path="/pt/planos" element={<Navigate to="/inicio" replace />} />
                     <Route path="/inicio" element={<Inicio2 />} />
                     <Route path="/anuncios-para-agencia-de-viagens" element={<AdsOfferLanding />} />
-                    <Route path="/site-para-agencia-de-viagens" element={<OfferLanding variant="site" />} />
+                    <Route path="/site-para-agencia-de-viagens" element={<SiteOfferLanding />} />
                     <Route path="/equipe-de-marketing-para-agencia-de-viagens" element={<OfferLanding variant="team" />} />
                     <Route path="/inicio2" element={<Navigate to="/inicio" replace />} />
                     <Route path="/canva" element={<CanvaClone />} />
