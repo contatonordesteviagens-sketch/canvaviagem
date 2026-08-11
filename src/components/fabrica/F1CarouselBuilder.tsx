@@ -419,6 +419,237 @@ interface CarouselTextBlock {
   cta?: string;
 }
 
+interface CarouselTextSuggestionPool {
+  title: string[];
+  body: string[];
+  bullets: string[][];
+}
+
+type CarouselEditableTextField = "title" | "body" | "bullets";
+
+const uniqueTextSuggestions = (values: string[]) =>
+  Array.from(new Set(values.map(cleanCarouselText).filter(Boolean)));
+
+function documentedTextSuggestionPool(
+  pacote: Pacote,
+  total: CarouselSize,
+  strategy: CarouselSlideVariant,
+  slideIndex: number,
+): CarouselTextSuggestionPool {
+  const destination = cleanCarouselText(pacote.title) || "seu próximo destino";
+  const isCover = slideIndex === 0;
+  const isClosing = slideIndex === total - 1;
+  const position = Math.max(1, slideIndex);
+  const contentItemCount = Math.max(1, total - 2);
+  const included = compact([...(pacote.included || []), ...(pacote.highlights || [])])
+    .map(cleanCarouselText)
+    .filter(Boolean)
+    .slice(0, 4);
+  const packageFacts = included.length
+    ? included
+    : [
+        "Consulte opções para sua viagem",
+        "Confira os detalhes com a equipe",
+        "Planeje cada etapa com antecedência",
+      ];
+
+  const coverTitles = [
+    `Já imaginou conhecer ${destination}?`,
+    `Será que ${destination} combina com você?`,
+    `Por que tanta gente quer conhecer ${destination}?`,
+    `Quanto você conhece sobre ${destination}?`,
+    contentItemCount === 1
+      ? `1 motivo para conhecer ${destination}`
+      : `${contentItemCount} motivos para conhecer ${destination}`,
+    contentItemCount === 1
+      ? `1 coisa para saber antes de viajar para ${destination}`
+      : `${contentItemCount} coisas para saber antes de viajar para ${destination}`,
+    contentItemCount === 1
+      ? `1 experiência para viver em ${destination}`
+      : `${contentItemCount} experiências para viver em ${destination}`,
+    contentItemCount === 1
+      ? `1 coisa que não pode faltar no seu roteiro de ${destination}`
+      : `${contentItemCount} coisas que não podem faltar no seu roteiro de ${destination}`,
+    "Talvez você tenha acabado de encontrar sua próxima viagem",
+    `Um destino que merece mais atenção: ${destination}`,
+    `Se você ainda não conhece ${destination}, salve este post`,
+    `Se você ama viajar, precisa conhecer ${destination}`,
+    `Salve isso antes de viajar para ${destination}`,
+    `Leia isso antes de montar seu roteiro de ${destination}`,
+  ];
+
+  let title: string[] = [];
+  let body: string[] = [];
+  let bullets: string[][] = [];
+
+  if (strategy === "oferta") {
+    const price = cleanCarouselText(pacote.price || "");
+    const duration = cleanCarouselText(pacote.duration || "");
+    const dates = cleanCarouselText(pacote.travelDates || "");
+    const payment = cleanCarouselText(pacote.paymentTerms || "");
+    title = isCover
+      ? [
+          price ? `${destination} a partir de ${price}` : `Sua próxima viagem: ${destination}`,
+          `Que tal viajar para ${destination}?`,
+          `${destination} pode ser sua próxima viagem`,
+          `Que tal trocar a rotina por ${destination}?`,
+          `${destination}: sua próxima viagem começa aqui`,
+        ]
+      : isClosing
+        ? [`Pronto para conhecer ${destination}?`, `Vamos transformar ${destination} em realidade?`, "Deu vontade de viajar?"]
+        : [
+            "Sua viagem pode incluir",
+            "Sua viagem organizada",
+            `Mais comodidade para aproveitar ${destination}`,
+            price ? `A partir de ${price}` : "Consulte valores e condições disponíveis",
+            dates || "Escolha a melhor data para embarcar",
+          ];
+    body = isCover
+      ? [
+          "Uma viagem para sair da rotina.",
+          "Uma oportunidade para viver novos momentos.",
+          "Encontre a opção que combina com sua viagem.",
+        ]
+      : isClosing
+        ? ["Receba todos os detalhes.", "Solicite uma cotação com nossa equipe.", "Consulte as opções disponíveis."]
+        : [
+            duration || "Uma viagem organizada para você aproveitar mais e se preocupar menos.",
+            dates || "Escolha a melhor data para viver essa experiência.",
+            payment || "Consulte as condições disponíveis.",
+            "Consulte as melhores condições para sua viagem.",
+          ];
+    bullets = [
+      packageFacts.slice(0, 4),
+      compact([dates, duration, cleanCarouselText(pacote.departureLocation || "")]).slice(0, 4),
+      compact([price, payment]).slice(0, 4),
+      ["Consulte valores", "Confira disponibilidade", "Fale com nossa equipe"],
+    ];
+  } else if (strategy === "editorial") {
+    title = isCover
+      ? [
+          `Primeira vez em ${destination}?`,
+          `Vai para ${destination}? Leia isso antes`,
+          `O mini-guia de ${destination} que você vai querer salvar`,
+          `Não planeje ${destination} antes de ler isso`,
+          ...coverTitles,
+        ]
+      : isClosing
+        ? ["Quer um roteiro feito para sua viagem?", "Quer uma viagem organizada para o seu perfil?", "Pronto para organizar sua viagem?"]
+        : [
+            "Defina quanto tempo você realmente terá",
+            "Escolha onde ficar pensando no seu roteiro",
+            "Priorize as experiências que mais combinam com você",
+            "Deixe espaço no roteiro para aproveitar sem pressa",
+            "Organize reservas e passeios",
+          ];
+    body = isCover
+      ? ["Salve este mini-guia.", "Veja o que organizar antes de embarcar.", "Informações rápidas para planejar melhor."]
+      : isClosing
+        ? ["Planeje cada etapa com mais tranquilidade.", "Fale com nossa equipe e monte seu roteiro.", "Salve este guia para consultar depois."]
+        : [
+            "Organize esse ponto antes de embarcar.",
+            "Uma escolha simples que facilita todo o roteiro.",
+            "Adapte essa dica ao seu tempo e perfil de viagem.",
+          ];
+    bullets = [
+      ["Defina quantos dias ficará", "Organize seu roteiro", "Escolha bem a hospedagem", "Reserve tempo para explorar"],
+      ["Tempo disponível", "Região da hospedagem", "Experiências prioritárias", "Reservas importantes"],
+      ["Planeje com antecedência", "Evite um roteiro apertado", "Deixe tempo livre"],
+    ];
+  } else if (strategy === "vibrant") {
+    title = isCover
+      ? [
+          `Vai para ${destination}? Dúvidas que sempre aparecem`,
+          `${destination}: dúvidas antes de viajar?`,
+          `Dúvidas comuns sobre viajar para ${destination}`,
+          `${destination}: o que saber antes da viagem`,
+          ...coverTitles,
+        ]
+      : isClosing
+        ? [`Ainda tem dúvidas sobre ${destination}?`, "Quer ajuda para organizar tudo?", "Quer ajuda para escolher?"]
+        : [
+            "Quanto tempo ficar?",
+            "Onde se hospedar?",
+            "O que reservar antes?",
+            "Vale a pena contratar um pacote?",
+            "Pacote ou viagem por conta própria?",
+          ];
+    body = isCover
+      ? ["Respostas rápidas para planejar melhor.", "O que considerar antes de decidir.", "Salve para consultar quando precisar."]
+      : isClosing
+        ? ["Fale com nossa equipe.", "Converse com a gente e tire suas dúvidas.", "Receba ajuda para planejar sua viagem."]
+        : [
+            "O ideal depende do roteiro que você quer fazer.",
+            "A melhor escolha depende do seu roteiro e perfil.",
+            "Comece pelos itens mais importantes da viagem.",
+            "Compare praticidade, flexibilidade e o que está incluso.",
+          ];
+    bullets = [
+      ["Quanto tempo ficar?", "Onde se hospedar?", "O que colocar no roteiro?"],
+      ["Seu perfil de viagem", "Seu tempo disponível", "As experiências desejadas"],
+      ["Planejamento", "Hospedagem", "Roteiro", "Reservas"],
+    ];
+  } else {
+    title = isCover
+      ? [
+          `Talvez esse seja o sinal que faltava para conhecer ${destination}`,
+          `${destination} merece entrar na sua próxima viagem`,
+          `Já imaginou seus próximos dias em ${destination}?`,
+          `Uma viagem para ${destination} pode estar mais perto do que você imagina`,
+          `Ainda não colocou ${destination} na sua lista?`,
+          ...coverTitles,
+        ]
+      : isClosing
+        ? [`Que tal transformar ${destination} na sua próxima história?`, `Pronto para conhecer ${destination}?`, `${destination} entrou para sua lista?`]
+        : [
+            "Um destino para viver novas experiências",
+            "Paisagens para sair completamente da rotina",
+            "Momentos que ficam muito além das fotos",
+            "Experiências que você não vive todos os dias",
+            "Histórias que você vai querer contar quando voltar",
+          ];
+    body = isCover
+      ? ["Uma viagem para sair da rotina e colecionar novas histórias.", "Novos lugares, novos sabores e experiências para lembrar.", "Dias diferentes começam quando você escolhe um novo destino."]
+      : isClosing
+        ? ["Sua próxima viagem pode começar aqui.", "Vamos planejar sua viagem.", "Fale com nossa equipe."]
+        : [
+            "Paisagens, experiências e momentos que fazem essa viagem valer a pena.",
+            "Um destino para sair da rotina e colecionar novas histórias.",
+            "Novos lugares, novos sabores e experiências para lembrar.",
+            "Dias diferentes começam quando você escolhe um novo destino.",
+          ];
+    bullets = [
+      ["Novas experiências", "Paisagens para recordar", "Momentos além das fotos"],
+      ["Sair da rotina", "Conhecer novos lugares", "Colecionar histórias"],
+      [`Motivo ${String(position).padStart(2, "0")}`, "Uma experiência para viver de perto"],
+    ];
+  }
+
+  const normalizedBullets = bullets
+    .map((items) => uniqueTextSuggestions(items).slice(0, 4))
+    .filter((items) => items.length > 0);
+  return {
+    title: uniqueTextSuggestions(title).map((text) => text.slice(0, 80)),
+    body: uniqueTextSuggestions(body).map((text) => text.slice(0, 260)),
+    bullets: normalizedBullets,
+  };
+}
+
+function documentedCtaSuggestions(pacote: Pacote): string[] {
+  const destination = cleanCarouselText(pacote.title) || "seu próximo destino";
+  return uniqueTextSuggestions([
+    "Fale com nossa equipe.",
+    "Solicite sua cotação.",
+    "Consulte disponibilidade.",
+    "Planeje sua viagem com a gente.",
+    "Quer receber todos os detalhes? Chame no WhatsApp.",
+    "Sua próxima viagem começa aqui. Fale com nossa equipe.",
+    "Salve este post para consultar depois.",
+    "Envie para quem viajaria com você.",
+    `Pronto para conhecer ${destination}? Vamos planejar sua viagem.`,
+  ]).map((text) => text.slice(0, 62));
+}
+
 function documentedCarouselTextSequence(
   pacote: Pacote,
   total: CarouselSize,
@@ -568,10 +799,28 @@ function documentedCarouselTextSequence(
     ],
   };
 
-  if (strategy === "oferta") return offer[total];
-  if (strategy === "editorial") return guide[total];
-  if (strategy === "vibrant") return faq[total];
-  return inspiring[total];
+  const sequence =
+    strategy === "oferta"
+      ? offer[total]
+      : strategy === "editorial"
+        ? guide[total]
+        : strategy === "vibrant"
+          ? faq[total]
+          : inspiring[total];
+
+  return sequence.map((textBlock, slideIndex) => {
+    if (slideIndex === total - 1) return textBlock;
+    const suggestions = documentedTextSuggestionPool(pacote, total, strategy, slideIndex);
+    return {
+      ...textBlock,
+      title: textBlock.title || suggestions.title[0] || destination,
+      body: textBlock.body || suggestions.body[0] || "Conteúdo pronto para sua viagem.",
+      bullets:
+        textBlock.bullets.length > 0
+          ? textBlock.bullets
+          : suggestions.bullets[0] || ["Planeje sua viagem com tranquilidade"],
+    };
+  });
 }
 
 function contentPresets(
@@ -4004,6 +4253,39 @@ export function F1CarouselBuilder({
   const currentStrategy =
     slides.find((slide) => slide.kind === "content")?.slideVariant || "impact";
 
+  const cycleActiveTextSuggestion = (field: CarouselEditableTextField) => {
+    if (!selectedPackage || !activeSlide || isEs || activeCoverIsProtected) return;
+    const pool = documentedTextSuggestionPool(
+      selectedPackage,
+      slideCount,
+      currentStrategy,
+      activeIndex,
+    );
+
+    if (field === "bullets") {
+      const currentValue = activeSlide.bullets.join("\n");
+      const currentIndex = pool.bullets.findIndex((option) => option.join("\n") === currentValue);
+      const nextValue = pool.bullets[(currentIndex + 1) % pool.bullets.length];
+      if (nextValue) patchActive({ bullets: nextValue });
+    } else {
+      const options = pool[field];
+      const currentIndex = options.findIndex((option) => option === activeSlide[field]);
+      const nextValue = options[(currentIndex + 1) % options.length];
+      if (nextValue) patchActive({ [field]: nextValue });
+    }
+
+    toast.success("Nova sugestão aplicada somente neste campo.");
+  };
+
+  const cycleActiveCtaSuggestion = () => {
+    if (!selectedPackage || !activeSlide || isEs || activeCoverIsProtected) return;
+    const options = documentedCtaSuggestions(selectedPackage);
+    const currentIndex = options.findIndex((option) => option === activeSlide.cta);
+    const nextValue = options[(currentIndex + 1) % options.length];
+    if (nextValue) patchActive({ cta: nextValue });
+    toast.success("Nova chamada aplicada somente neste campo.");
+  };
+
   const applyCarouselStrategy = (strategy: CarouselSlideVariant) => {
     if (!selectedPackage) return;
     const destImages = uniqueImages([...availableImages, ...photoResults.map((p) => p.url)]);
@@ -6126,6 +6408,22 @@ export function F1CarouselBuilder({
                             {isEs ? "Título" : "Título"}
                           </p>
                         </div>
+                        {!isEs && selectedPackage && (
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              cycleActiveTextSuggestion("title");
+                            }}
+                            disabled={activeCoverIsProtected}
+                            className="grid h-7 w-7 place-items-center rounded-full border border-[#F5F906]/35 bg-[#F5F906]/[0.08] text-[#F5F906] transition-all hover:rotate-45 hover:border-[#F5F906] hover:bg-[#F5F906]/15 disabled:cursor-not-allowed disabled:opacity-30"
+                            title="Mostrar outra sugestão de título"
+                            aria-label="Mostrar outra sugestão de título"
+                          >
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </summary>
                       <div className="mt-3 space-y-2">
                         <div className="flex flex-col gap-1.5 mb-1.5">
@@ -6183,16 +6481,34 @@ export function F1CarouselBuilder({
                         {isEs ? "Cuerpo de texto" : "Corpo de texto"}
                       </p>
                     </div>
-                    {activeSlide.body && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); patchActive({ body: "" }); }}
-                        className="grid h-4 w-4 place-items-center rounded-full text-white/30 hover:bg-white/10 hover:text-white transition-all"
-                        title="Remover"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {!isEs && selectedPackage && (
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            cycleActiveTextSuggestion("body");
+                          }}
+                          disabled={activeCoverIsProtected}
+                          className="grid h-7 w-7 place-items-center rounded-full border border-[#F5F906]/35 bg-[#F5F906]/[0.08] text-[#F5F906] transition-all hover:rotate-45 hover:border-[#F5F906] hover:bg-[#F5F906]/15 disabled:cursor-not-allowed disabled:opacity-30"
+                          title="Mostrar outra sugestão para o corpo do texto"
+                          aria-label="Mostrar outra sugestão para o corpo do texto"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      {activeSlide.body && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); patchActive({ body: "" }); }}
+                          className="grid h-4 w-4 place-items-center rounded-full text-white/30 hover:bg-white/10 hover:text-white transition-all"
+                          title="Remover"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                   </summary>
                   <div className="mt-3 space-y-2">
                     <div className="flex flex-col gap-1.5 mb-1.5">
@@ -6227,16 +6543,34 @@ export function F1CarouselBuilder({
                         {isEs ? "Texto opcional / Detalles extra" : "Texto opcional / Informações extras"}
                       </p>
                     </div>
-                    {activeSlide.bullets.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); patchActive({ bullets: [] }); }}
-                        className="grid h-4 w-4 place-items-center rounded-full text-white/30 hover:bg-white/10 hover:text-white transition-all"
-                        title="Remover"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {!isEs && selectedPackage && (
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            cycleActiveTextSuggestion("bullets");
+                          }}
+                          disabled={activeCoverIsProtected}
+                          className="grid h-7 w-7 place-items-center rounded-full border border-[#F5F906]/35 bg-[#F5F906]/[0.08] text-[#F5F906] transition-all hover:rotate-45 hover:border-[#F5F906] hover:bg-[#F5F906]/15 disabled:cursor-not-allowed disabled:opacity-30"
+                          title="Mostrar outra sugestão de informações extras"
+                          aria-label="Mostrar outra sugestão de informações extras"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      {activeSlide.bullets.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); patchActive({ bullets: [] }); }}
+                          className="grid h-4 w-4 place-items-center rounded-full text-white/30 hover:bg-white/10 hover:text-white transition-all"
+                          title="Remover"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                   </summary>
                   <div className="mt-3 space-y-2">
                     <div className="flex flex-col gap-1.5 mb-1.5">
@@ -6282,6 +6616,21 @@ export function F1CarouselBuilder({
                             {isEs ? "Llamada a la acción" : "Chamada para Ação"}
                           </p>
                         </div>
+                        {!isEs && selectedPackage && (
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              cycleActiveCtaSuggestion();
+                            }}
+                            className="grid h-7 w-7 place-items-center rounded-full border border-[#F5F906]/35 bg-[#F5F906]/[0.08] text-[#F5F906] transition-all hover:rotate-45 hover:border-[#F5F906] hover:bg-[#F5F906]/15"
+                            title="Mostrar outra sugestão de chamada"
+                            aria-label="Mostrar outra sugestão de chamada"
+                          >
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </summary>
                       <div className="mt-3 space-y-2">
                         <input
@@ -6292,7 +6641,10 @@ export function F1CarouselBuilder({
                         placeholder="RESERVE SUA VAGA"
                       />
                       <div className="flex flex-wrap gap-1.5">
-                        {["RESERVE SUA VAGA", "FALE CONOSCO", "SAIBA MAIS", "GARANTA SEU LUGAR"].map(suggestion => (
+                        {(selectedPackage && !isEs
+                          ? documentedCtaSuggestions(selectedPackage).slice(0, 5)
+                          : ["RESERVE SUA VAGA", "FALE CONOSCO", "SAIBA MAIS", "GARANTA SEU LUGAR"]
+                        ).map(suggestion => (
                           <button
                             key={suggestion}
                             type="button"
