@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
   Check,
@@ -22,12 +21,8 @@ import paginaRoteiro from "@/assets/pagina_venda_roteiro.png";
 import showcaseAdCreation from "@/assets/images/showcase-ad-creation.png";
 import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
 import showcaseCrm from "@/assets/images/showcase-crm.png";
-import { useAuth } from "@/contexts/AuthContext";
-import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { trackEvent } from "@/hooks/useAnalyticsEvents";
 import { ELITE_OFFER, type UpgradeFeature } from "@/lib/eliteOffer";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 export type OfferVariant = "ads" | "site" | "team";
 type BillingCycle = "monthly" | "semiannual" | "annual";
@@ -319,44 +314,19 @@ const plans: Array<{
 ];
 
 const metaPixelId = "916689227676142";
-const pendingAuthStateKey = "cv:pending-auth-checkout";
-const lastOfferStateKey = "cv:last-offer-checkout";
 
-const safeInternalPath = (value: string | null) => {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
-  if (value.includes("\\") || /[\u0000-\u001F\u007F]/.test(value)) return null;
-  try {
-    const parsed = new URL(value, window.location.origin);
-    if (parsed.origin !== window.location.origin) return null;
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-  } catch {
-    return null;
-  }
+const checkoutUrls: Record<BillingCycle, string> = {
+  monthly: ELITE_OFFER.monthlyCheckoutUrl,
+  semiannual: ELITE_OFFER.semiannualCheckoutUrl,
+  annual: ELITE_OFFER.annualCheckoutUrl,
 };
 
 export default function OfferLanding({ variant }: { variant: OfferVariant }) {
   const config = offerConfigs[variant];
-  const [searchParams] = useSearchParams();
-  const { user, session } = useAuth();
-  const { can, loading: entitlementsLoading } = useEntitlements();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [exitOfferOpen, setExitOfferOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<BillingCycle | null>(null);
-  const resumedCheckoutRef = useRef(false);
   const pageTrackedRef = useRef(false);
-  const returnTo = safeInternalPath(searchParams.get("returnTo")) || "/fabrica";
-  const offerContextPath = useMemo(() => {
-    const params = new URLSearchParams();
-    const explicitReturnTo = safeInternalPath(searchParams.get("returnTo"));
-    if (explicitReturnTo) params.set("returnTo", explicitReturnTo);
-    if (searchParams.get("upgrade") === config.feature) params.set("upgrade", config.feature);
-    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach((key) => {
-      const value = searchParams.get(key)?.trim();
-      if (value && value.length <= 200 && !/[\u0000-\u001F\u007F]/.test(value)) params.set(key, value);
-    });
-    const query = params.toString();
-    return query ? `${config.path}?${query}` : config.path;
-  }, [config.feature, config.path, searchParams]);
 
   const recordEvent = useCallback((eventType: string, data: Record<string, unknown> = {}) => {
     void trackEvent(eventType, {
@@ -407,7 +377,7 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [exitOfferOpen, recordEvent]);
 
-  const startCheckout = useCallback(async (cycle: BillingCycle, trackValue: number) => {
+  const startCheckout = useCallback((cycle: BillingCycle, trackValue: number) => {
     recordEvent("plan_selected", { billing_cycle: cycle, value: trackValue });
     const pixelPlan = cycle === "monthly" ? "mensal" : cycle === "semiannual" ? "semestral" : "anual";
     const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
@@ -418,85 +388,10 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
       content_category: `landing_${variant}_${pixelPlan}`,
     });
 
-    if (!user || !session?.access_token) {
-      const contextUrl = new URL(offerContextPath, window.location.origin);
-      const params = new URLSearchParams(contextUrl.search);
-      params.set("checkout", cycle);
-      const landingReturn = `${config.path}?${params.toString()}`;
-      const createdAt = Date.now();
-      localStorage.setItem(pendingAuthStateKey, JSON.stringify({ path: landingReturn, cycle, createdAt }));
-      localStorage.setItem(lastOfferStateKey, JSON.stringify({ path: offerContextPath, createdAt }));
-      recordEvent("auth_started", { billing_cycle: cycle });
-      window.location.assign(`/auth?redirect=${encodeURIComponent(landingReturn)}`);
-      return;
-    }
-
-    if (!entitlementsLoading && can("site.publish")) {
-      localStorage.removeItem(pendingAuthStateKey);
-      toast.success("Seu acesso Elite já está ativo.");
-      window.location.assign("/fabrica");
-      return;
-    }
-
     setCheckoutLoading(cycle);
-    try {
-      recordEvent("checkout_started", { billing_cycle: cycle, value: trackValue });
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: {
-          billing_cycle: cycle,
-          upgrade: config.feature,
-          return_to: returnTo,
-          landing_path: config.path,
-          landing_variant: variant,
-        },
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (data?.already_subscribed) {
-        localStorage.removeItem(pendingAuthStateKey);
-        toast.success("Seu acesso Elite já está ativo.");
-        window.location.assign("/fabrica");
-        return;
-      }
-      if (error || !data?.url) throw error || new Error("Checkout indisponível");
-      localStorage.removeItem(pendingAuthStateKey);
-      localStorage.setItem(lastOfferStateKey, JSON.stringify({ path: offerContextPath, createdAt: Date.now() }));
-      window.location.assign(data.url);
-    } catch (error) {
-      console.error("[OfferLanding] Falha ao criar checkout:", error);
-      toast.error("Não foi possível iniciar o checkout seguro agora. Tente novamente em instantes.");
-    } finally {
-      setCheckoutLoading(null);
-    }
-  }, [can, config.feature, config.mechanismName, config.path, entitlementsLoading, offerContextPath, recordEvent, returnTo, session?.access_token, user, variant]);
-
-  useEffect(() => {
-    if (!user || !session?.access_token || resumedCheckoutRef.current) return;
-    const queryCycle = searchParams.get("checkout");
-    let storedCycle: string | null = null;
-    try {
-      const pendingState = JSON.parse(localStorage.getItem(pendingAuthStateKey) || "null") as {
-        path?: string;
-        cycle?: string;
-        createdAt?: number;
-      } | null;
-      const isFresh = pendingState?.createdAt && Date.now() - pendingState.createdAt <= 30 * 60 * 1000;
-      if (isFresh && pendingState?.path?.startsWith(config.path)) storedCycle = pendingState.cycle || null;
-      else localStorage.removeItem(pendingAuthStateKey);
-    } catch {
-      localStorage.removeItem(pendingAuthStateKey);
-    }
-    const requestedCycle = queryCycle || storedCycle;
-    if (!requestedCycle || !["monthly", "semiannual", "annual"].includes(requestedCycle)) return;
-
-    resumedCheckoutRef.current = true;
-    localStorage.removeItem(pendingAuthStateKey);
-    const cleanParams = new URLSearchParams(searchParams);
-    cleanParams.delete("checkout");
-    const cleanQuery = cleanParams.toString();
-    window.history.replaceState({}, "", cleanQuery ? `${config.path}?${cleanQuery}` : config.path);
-    const selectedPlan = plans.find((plan) => plan.cycle === requestedCycle);
-    if (selectedPlan) void startCheckout(selectedPlan.cycle, selectedPlan.trackValue);
-  }, [config.path, searchParams, session?.access_token, startCheckout, user]);
+    recordEvent("checkout_started", { billing_cycle: cycle, value: trackValue });
+    window.location.assign(checkoutUrls[cycle]);
+  }, [config.mechanismName, recordEvent, variant]);
 
   const pageDescription = useMemo(
     () => `${config.description} Teste o Canva Viagem Elite por 3 dias.`,
