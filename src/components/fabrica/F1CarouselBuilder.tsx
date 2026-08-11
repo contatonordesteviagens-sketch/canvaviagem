@@ -4797,14 +4797,51 @@ export function F1CarouselBuilder({
       .replace(/^-|-$/g, "");
 
     try {
-      const { default: html2canvas } = await import("html2canvas");
+      const { toPng } = await import("html-to-image");
       await document.fonts.ready;
 
       const { createRoot } = await import("react-dom/client");
       const ReactLib = await import("react");
 
+      const ensureExportFontLoaded = async (fontFamily: string) => {
+        if (!fontFamily || fontFamily === "Inter") return;
+        const id = `gf-${fontFamily.replace(/\s+/g, "-").toLowerCase()}`;
+        let link = document.getElementById(id) as HTMLLinkElement | null;
+        let stylesheetReady: Promise<void> = Promise.resolve();
+        if (!link?.sheet) {
+          link?.remove();
+          link = document.createElement("link");
+          link.id = id;
+          link.rel = "stylesheet";
+          link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;600;700;800;900&display=swap`;
+          stylesheetReady = new Promise<void>((resolve, reject) => {
+            const timeout = window.setTimeout(
+              () => reject(new Error(`font-load-timeout:${fontFamily}`)),
+              15000,
+            );
+            link!.addEventListener("load", () => {
+              window.clearTimeout(timeout);
+              resolve();
+            }, { once: true });
+            link!.addEventListener("error", () => {
+              window.clearTimeout(timeout);
+              reject(new Error(`font-load:${fontFamily}`));
+            }, { once: true });
+          });
+          document.head.appendChild(link);
+        }
+        await stylesheetReady;
+        await Promise.all(
+          [400, 500, 600, 700, 800, 900].map((weight) =>
+            document.fonts.load(`${weight} 16px "${fontFamily}"`),
+          ),
+        );
+        await document.fonts.ready;
+      };
+
       for (let index = 0; index < resolvedSlides.length; index += 1) {
         const slide = resolvedSlides[index];
+        await ensureExportFontLoaded(slide.fontFamily || "Inter");
         const baseW = 432;
         const baseH = Math.round(baseW / (carouselRatio || 0.8));
 
@@ -4812,13 +4849,13 @@ export function F1CarouselBuilder({
         const tempContainer = document.createElement("div");
         tempContainer.style.cssText = [
           "position:fixed",
-          "left:0",
+          "left:-10000px",
           "top:0",
           `width:${baseW}px`,
           `height:${baseH}px`,
           "overflow:hidden",
           "pointer-events:none",
-          "z-index:-9999",
+          "z-index:2147483647",
           "background:#08090B",
         ].join(";");
         document.body.appendChild(tempContainer);
@@ -4828,6 +4865,8 @@ export function F1CarouselBuilder({
         const refReady = new Promise<HTMLDivElement>((res) => { resolveRef = res; });
 
         const root = createRoot(tempContainer);
+        let pngDataUrl = "";
+        try {
         root.render(
           ReactLib.createElement(CarouselCanvas, {
             slide,
@@ -4858,40 +4897,41 @@ export function F1CarouselBuilder({
             const src = img.getAttribute("src");
             if (src && !src.startsWith("data:") && !src.startsWith("blob:")) {
               const dataUrl = await prepareImageForCanvas(src);
+              if (!dataUrl.startsWith("data:") && !dataUrl.startsWith("blob:")) {
+                throw new Error(`image-export-cors:${src}`);
+              }
               img.setAttribute("src", dataUrl);
               img.removeAttribute("crossorigin");
+            }
+            if (typeof img.decode === "function") {
+              await img.decode();
+            }
+            if (!img.complete || img.naturalWidth === 0) {
+              throw new Error(`image-export-unreadable:${src || "empty"}`);
             }
           })
         );
 
-        // Wait for the browser to paint the images.
-        await new Promise((resolve) => window.setTimeout(resolve, 300));
-
-        // Capture the preview-equivalent DOM at production resolution.
-        const canvas = await html2canvas(node, {
+        // Capture through the browser's native SVG/foreignObject renderer.
+        // Unlike html2canvas, this preserves the exact computed text metrics
+        // and flex layout used by the preview.
+        pngDataUrl = await toPng(node, {
           backgroundColor: "#08090B",
-          useCORS: true,
-          allowTaint: true,
-          scale: 2.5,
-          logging: false,
-          imageTimeout: 15000,
-          x: 0,
-          y: 0,
-          scrollX: 0,
-          scrollY: 0,
           width: baseW,
           height: baseH,
-          windowWidth: baseW,
-          windowHeight: baseH,
+          pixelRatio: 2.5,
+          cacheBust: false,
+          skipAutoScale: true,
         });
 
-        // Unmount and remove the temporary container.
-        root.unmount();
-        document.body.removeChild(tempContainer);
+        } finally {
+          root.unmount();
+          tempContainer.remove();
+        }
 
         // Download the captured slide.
         const link = document.createElement("a");
-        link.href = canvas.toDataURL("image/png", 1);
+        link.href = pngDataUrl;
         link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
         document.body.appendChild(link);
         link.click();
