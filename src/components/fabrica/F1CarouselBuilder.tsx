@@ -4421,7 +4421,9 @@ export function F1CarouselBuilder({
         ].join(";");
         document.body.appendChild(tempContainer);
 
-        // ── 2. Renderiza o slide SEM exportMode (idêntico ao preview) ──
+        // ── 2. Renderiza o slide COM exportMode=true ──
+        // exportMode=true usa overflow:hidden em vez de -webkit-box (que html2canvas não renderiza)
+        // evitando títulos cortados e layouts quebrados na captura.
         let resolveRef!: (n: HTMLDivElement) => void;
         const refReady = new Promise<HTMLDivElement>((res) => { resolveRef = res; });
 
@@ -4441,8 +4443,8 @@ export function F1CarouselBuilder({
             pixBannerText: (state as any).pixBannerText,
             pixBannerHighlightColor: (state as any).pixBannerHighlightColor,
             pixBannerTextColor: (state as any).pixBannerTextColor,
-            // SEM exportMode → renderização idêntica ao preview
-            canvasRef: (node: HTMLDivElement | null) => { if (node) resolveRef(node); },
+            exportMode: true,
+            canvasRef: (n: HTMLDivElement | null) => { if (n) resolveRef(n); },
           })
         );
 
@@ -4450,7 +4452,25 @@ export function F1CarouselBuilder({
         const node = await refReady;
         await new Promise((resolve) => window.setTimeout(resolve, 300));
 
-        // ── 4. Pré-carrega todas as imagens como data:URL ──
+        // ── 4. Patch DOM: remove paddingBottom de inline-flex (desalinha ícones no html2canvas)
+        //      e remove qualquer -webkit-box residual que o html2canvas não suporta ──
+        node.querySelectorAll<HTMLElement>("*").forEach((el) => {
+          const cs = window.getComputedStyle(el);
+          // Remove paddingBottom de containers inline-flex (ícone + texto)
+          if (cs.display === "inline-flex" || el.style.display === "inline-flex") {
+            el.style.paddingBottom = "0";
+            el.style.alignItems = "center";
+          }
+          // Remove webkit-box line clamp residual
+          if (el.style.webkitLineClamp || (el.style as any).WebkitLineClamp) {
+            el.style.webkitLineClamp = "unset";
+            (el.style as any).WebkitLineClamp = "";
+            el.style.display = "block";
+            el.style.overflow = "visible";
+          }
+        });
+
+        // ── 5. Pré-carrega todas as imagens como data:URL ──
         const imgNodes = node.querySelectorAll("img");
         await Promise.all(
           Array.from(imgNodes).map(async (img) => {
@@ -4463,10 +4483,10 @@ export function F1CarouselBuilder({
           })
         );
 
-        // ── 5. Aguarda browser pintar as imagens ──
+        // ── 6. Aguarda browser pintar as imagens ──
         await new Promise((resolve) => window.setTimeout(resolve, 300));
 
-        // ── 6. Captura com html2canvas ──
+        // ── 7. Captura com html2canvas ──
         const canvas = await html2canvas(node, {
           backgroundColor: "#08090B",
           useCORS: true,
@@ -4484,11 +4504,11 @@ export function F1CarouselBuilder({
           windowHeight: baseH,
         });
 
-        // ── 7. Desmonta e remove o container temporário ──
+        // ── 8. Desmonta e remove o container temporário ──
         root.unmount();
         document.body.removeChild(tempContainer);
 
-        // ── 8. Baixa a imagem ──
+        // ── 9. Baixa a imagem ──
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png", 1);
         link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
@@ -4497,6 +4517,7 @@ export function F1CarouselBuilder({
         link.remove();
         await new Promise((resolve) => window.setTimeout(resolve, 200));
       }
+
 
 
 
