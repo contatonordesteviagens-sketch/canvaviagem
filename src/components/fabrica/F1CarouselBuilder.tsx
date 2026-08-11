@@ -399,16 +399,179 @@ function coverTitleSuggestions(pacote: Pacote, isEs: boolean): string[] {
         `${destination} como siempre lo soñaste`,
       ]
     : [
-        `Descubra ${destination}`,
-        `${destination}: a viagem que você merece`,
-        `Sua próxima história começa em ${destination}`,
-        `Viva dias inesquecíveis em ${destination}`,
-        `${destination} do jeito que você sempre sonhou`,
+        `Já imaginou conhecer ${destination}?`,
+        `Será que ${destination} combina com você?`,
+        `Por que tanta gente quer conhecer ${destination}?`,
+        `5 motivos para conhecer ${destination}`,
+        `Salve isso antes de viajar para ${destination}`,
       ];
 
   return suggestions.map((title) =>
     title.length > 80 ? `${title.slice(0, 77).replace(/\s+\S*$/, "")}...` : title,
   );
+}
+
+interface CarouselTextBlock {
+  label: string;
+  title: string;
+  body: string;
+  bullets: string[];
+  cta?: string;
+}
+
+function documentedCarouselTextSequence(
+  pacote: Pacote,
+  total: CarouselSize,
+  isEs: boolean,
+  strategy: CarouselSlideVariant,
+): CarouselTextBlock[] | null {
+  if (isEs || !["impact", "oferta", "editorial", "vibrant"].includes(strategy)) {
+    return null;
+  }
+
+  const destination = cleanCarouselText(pacote.title) || "seu próximo destino";
+  const included = compact([...(pacote.included || []), ...(pacote.highlights || [])])
+    .map(cleanCarouselText)
+    .filter(Boolean);
+  const price = cleanCarouselText(pacote.price || "");
+  const payment = cleanCarouselText(pacote.paymentTerms || "");
+  const duration = cleanCarouselText(pacote.duration || "");
+  const dates = cleanCarouselText(pacote.travelDates || "");
+  const origin = cleanCarouselText(pacote.departureLocation || "");
+  const block = (
+    title: string,
+    body = "",
+    bullets: string[] = [],
+    label = "",
+    cta?: string,
+  ): CarouselTextBlock => ({ label, title, body, bullets, cta });
+
+  const inspiring: Record<CarouselSize, CarouselTextBlock[]> = {
+    3: [
+      block(`Talvez esse seja o sinal que faltava para conhecer ${destination}`, "", [], "INSPIRE-SE"),
+      block("Paisagens, experiências e momentos que fazem essa viagem valer a pena."),
+      block(`Que tal transformar ${destination} na sua próxima história?`, "", [], "", "Fale com a gente."),
+    ],
+    4: [
+      block(`Motivos para colocar ${destination} na sua lista`, "", [], "INSPIRE-SE"),
+      block("Experiências que fazem você esquecer da rotina", "", [], "01"),
+      block("Lugares que merecem mais do que uma foto", "", [], "02"),
+      block(`O próximo destino pode ser ${destination}.`, "", [], "", "Planeje sua viagem com a gente."),
+    ],
+    5: [
+      block(`Motivos para conhecer ${destination}`, "", [], "INSPIRE-SE"),
+      block("Um destino para viver novas experiências", "", [], "01"),
+      block("Paisagens para sair completamente da rotina", "", [], "02"),
+      block("Momentos que ficam muito além das fotos", "", [], "03"),
+      block(`Talvez sua próxima história comece em ${destination}.`, "", [], "", "Fale com nossa equipe."),
+    ],
+    6: [
+      block(`Motivos para colocar ${destination} na sua lista`, "", [], "INSPIRE-SE"),
+      block("Uma viagem para quebrar completamente a rotina", "", [], "01"),
+      block("Experiências que você não vive todos os dias", "", [], "02"),
+      block("Cenários que merecem ser vistos de perto", "", [], "03"),
+      block("Histórias que você vai querer contar quando voltar", "", [], "04"),
+      block(`${destination} entrou para sua lista?`, "", [], "E AÍ?", "Planeje sua viagem com a gente."),
+    ],
+  };
+
+  const offerDetails = included.slice(0, 4);
+  const offer: Record<CarouselSize, CarouselTextBlock[]> = {
+    3: [
+      block(price ? `${destination} a partir de ${price}` : `Sua próxima viagem: ${destination}`, "", [], "OFERTA"),
+      block(
+        duration || "Uma viagem organizada para você aproveitar mais e se preocupar menos.",
+        "",
+        duration ? offerDetails.slice(0, 3) : [],
+        duration ? "DURAÇÃO" : "",
+      ),
+      block(`Pronto para conhecer ${destination}?`, "", [], "", "Solicite sua cotação."),
+    ],
+    4: [
+      block(destination, "Uma viagem para sair da rotina", [], "OFERTA"),
+      block("Sua viagem pode incluir", "", offerDetails.slice(0, 3), "INCLUSO"),
+      block(price ? `A partir de ${price}` : "Condições personalizadas para sua viagem", payment, [], "CONDIÇÕES"),
+      block(`Quer conhecer ${destination}?`, "", [], "", "Solicite sua cotação com nossa equipe."),
+    ],
+    5: [
+      block(`${destination} pode ser sua próxima viagem`, "", [], "OFERTA"),
+      block(dates || "Escolha a melhor data para viver essa experiência.", duration, [], dates ? "DATA" : ""),
+      block("Sua viagem inclui", "", offerDetails.slice(0, 3), "INCLUSO"),
+      block(price ? `A partir de ${price}` : "Consulte as melhores condições para sua viagem.", payment, [], "CONDIÇÕES"),
+      block("Deu vontade de viajar?", "", [], "", "Fale com nossa equipe e receba todos os detalhes."),
+    ],
+    6: [
+      block(destination, "Sua próxima viagem começa aqui", [], "OFERTA"),
+      block(dates || "Escolha a melhor data para embarcar.", "", compact([duration, origin]), dates ? "DATA DA VIAGEM" : ""),
+      block("Sua viagem organizada", "", offerDetails.slice(0, 2), "INCLUSO"),
+      block(`Mais comodidade para aproveitar ${destination}`, "", offerDetails.slice(2, 4), "VANTAGENS"),
+      block(price ? `A partir de ${price}` : "Consulte valores e condições disponíveis", payment, [], "CONDIÇÕES"),
+      block(`Vamos transformar ${destination} em realidade?`, "", [], "", "Fale com nossa equipe."),
+    ],
+  };
+
+  const guide: Record<CarouselSize, CarouselTextBlock[]> = {
+    3: [
+      block(`Primeira vez em ${destination}?`, "Salve este mini-guia.", [], "GUIA DE VIAGEM"),
+      block("Antes de viajar", "", ["Defina quantos dias ficará", "Organize seu roteiro", "Escolha bem a hospedagem", "Reserve tempo para explorar"]),
+      block("Quer um roteiro feito para sua viagem?", "", [], "", "Fale com nossa equipe."),
+    ],
+    4: [
+      block(`Vai para ${destination}?`, "O que organizar antes da viagem", [], "GUIA DE VIAGEM"),
+      block("Escolha a região onde pretende ficar", "", [], "01"),
+      block("Monte um roteiro que combine com seu tempo", "", [], "02"),
+      block("Organize reservas e passeios", "", [], "03", "Salve este guia."),
+    ],
+    5: [
+      block(`Primeira vez em ${destination}?`, "Veja o que organizar antes de embarcar", [], "GUIA DE VIAGEM"),
+      block("Defina quantos dias você terá no destino", "", [], "01"),
+      block("Escolha a hospedagem pensando no seu roteiro", "", [], "02"),
+      block("Separe os lugares que você realmente quer conhecer", "", [], "03"),
+      block("Depois disso, fica muito mais fácil viajar.", "", [], "", "Salve este guia."),
+    ],
+    6: [
+      block(`Primeira vez em ${destination}?`, "O que saber antes de viajar", [], "GUIA DE VIAGEM"),
+      block("Defina quanto tempo você realmente terá", "", [], "01"),
+      block("Escolha onde ficar pensando no seu roteiro", "", [], "02"),
+      block("Priorize as experiências que mais combinam com você", "", [], "03"),
+      block("Deixe espaço no roteiro para aproveitar sem pressa", "", [], "04"),
+      block("Quer uma viagem organizada para o seu perfil?", "", [], "", "Fale com nossa equipe."),
+    ],
+  };
+
+  const faq: Record<CarouselSize, CarouselTextBlock[]> = {
+    3: [
+      block(`Vai para ${destination}?`, "3 dúvidas que sempre aparecem", [], "FAQ"),
+      block("Dúvidas frequentes", "Tudo depende do seu perfil de viagem.", ["Quanto tempo ficar?", "Onde se hospedar?", "O que colocar no roteiro?"]),
+      block(`Ainda tem dúvidas sobre ${destination}?`, "", [], "", "Fale com nossa equipe."),
+    ],
+    4: [
+      block(destination, "Dúvidas antes de viajar?", [], "FAQ"),
+      block("Quanto tempo ficar?", "Depende das experiências que você quer incluir."),
+      block("Onde se hospedar?", "A melhor região depende do seu roteiro e perfil."),
+      block("Quer ajuda para organizar tudo?", "", [], "", "Fale com nossa equipe."),
+    ],
+    5: [
+      block(`Dúvidas comuns sobre viajar para ${destination}`, "", [], "FAQ"),
+      block("Quanto tempo ficar?", "Monte o roteiro antes de decidir a duração."),
+      block("Onde se hospedar?", "Escolha pensando nos lugares que quer conhecer."),
+      block("Vale a pena contratar um pacote?", "Compare preço, praticidade, flexibilidade e o que está incluso."),
+      block("Quer ajuda para escolher?", "", [], "", "Converse com nossa equipe."),
+    ],
+    6: [
+      block(destination, "Dúvidas respondidas antes da sua viagem", [], "FAQ"),
+      block("Quanto tempo ficar?", "O ideal depende do roteiro que você quer fazer."),
+      block("Onde se hospedar?", "Priorize localização e facilidade para seu roteiro."),
+      block("O que reservar antes?", "Comece pelos itens mais importantes da viagem."),
+      block("Pacote ou viagem por conta própria?", "Compare o conjunto da viagem, não apenas um preço isolado."),
+      block(`Ainda tem alguma dúvida sobre ${destination}?`, "", [], "", "Fale com a gente."),
+    ],
+  };
+
+  if (strategy === "oferta") return offer[total];
+  if (strategy === "editorial") return guide[total];
+  if (strategy === "vibrant") return faq[total];
+  return inspiring[total];
 }
 
 function contentPresets(
@@ -770,9 +933,12 @@ function createSlides(
     return validImages[idx % validImages.length] || "";
   };
   const presets = contentPresets(pacote, isEs, strategy);
+  const documentedSequence = documentedCarouselTextSequence(pacote, total, isEs, strategy);
   const contentCount = total - 2;
   const selectedPresets =
-    contentCount === 1
+    documentedSequence
+      ? documentedSequence.slice(1, -1)
+      : contentCount === 1
       ? [
           {
             ...presets[0],
@@ -792,21 +958,24 @@ function createSlides(
     {
       id: createId(),
       kind: "cover",
-      label: isEs ? "DESCUBRE" : "DESCUBRA",
-      title: pacote.title,
-      body:
-        pacote.description ||
-        (pacote.price
-          ? isEs
-            ? `Viaja desde ${pacote.price}`
-            : `Viaje a partir de ${pacote.price}`
-          : isEs
-            ? "Una experiencia pensada para recordar."
-            : "Uma experiência feita para lembrar."),
-      bullets: compact([...(pacote.highlights || []), ...(pacote.included || [])])
-        .map(cleanCarouselText)
-        .filter(Boolean)
-        .slice(0, 2),
+      label: documentedSequence ? documentedSequence[0].label : (isEs ? "DESCUBRE" : "DESCUBRA"),
+      title: documentedSequence ? documentedSequence[0].title : pacote.title,
+      body: documentedSequence
+        ? documentedSequence[0].body
+        : pacote.description ||
+          (pacote.price
+            ? isEs
+              ? `Viaja desde ${pacote.price}`
+              : `Viaje a partir de ${pacote.price}`
+            : isEs
+              ? "Una experiencia pensada para recordar."
+              : "Uma experiência feita para lembrar."),
+      bullets: documentedSequence
+        ? documentedSequence[0].bullets
+        : compact([...(pacote.highlights || []), ...(pacote.included || [])])
+            .map(cleanCarouselText)
+            .filter(Boolean)
+            .slice(0, 2),
       imageUrl: coverImage,
       textColor: "#FFFFFF",
       cta: "",
@@ -852,15 +1021,21 @@ function createSlides(
   slides.push({
     id: createId(),
     kind: "closing",
-    label: "",
-    title: isEs ? "Da el siguiente paso hacia tu viaje" : "Dê o próximo passo para a sua viagem",
-    body: isEs
-      ? "Habla con nuestro equipo y recibe una propuesta personalizada."
-      : "Fale com nossa equipe e receba uma proposta personalizada.",
-    bullets: [],
+    label: documentedSequence ? documentedSequence[documentedSequence.length - 1].label : "",
+    title: documentedSequence
+      ? documentedSequence[documentedSequence.length - 1].title
+      : (isEs ? "Da el siguiente paso hacia tu viaje" : "Dê o próximo passo para a sua viagem"),
+    body: documentedSequence
+      ? documentedSequence[documentedSequence.length - 1].body
+      : (isEs
+          ? "Habla con nuestro equipo y recibe una propuesta personalizada."
+          : "Fale com nossa equipe e receba uma proposta personalizada."),
+    bullets: documentedSequence ? documentedSequence[documentedSequence.length - 1].bullets : [],
     imageUrl: getImg(selectedPresets.length),
     textColor: "#FFFFFF",
-    cta: pacote.ctaLabel || (isEs ? "Reserva tu viaje por WhatsApp" : "Reserve sua viagem pelo WhatsApp"),
+    cta: documentedSequence
+      ? documentedSequence[documentedSequence.length - 1].cta || ""
+      : pacote.ctaLabel || (isEs ? "Reserva tu viaje por WhatsApp" : "Reserve sua viagem pelo WhatsApp"),
     phone,
     slideVariant: strategy,
     bulletIcon: "none",
@@ -928,6 +1103,24 @@ function mergeSlidesForSize(
     const existing = currentContent[contentIndex];
     if (!existing) return slide;
     return carrySlidePresentation(slide, existing);
+  });
+}
+
+function mergeSlidesForSizeWithFreshText(
+  current: CarouselSlide[],
+  generated: CarouselSlide[],
+): CarouselSlide[] {
+  return mergeSlidesForSize(current, generated).map((merged, index) => {
+    const fresh = generated[index];
+    if (!fresh) return merged;
+    return {
+      ...merged,
+      label: fresh.label,
+      title: fresh.title,
+      body: fresh.body,
+      bullets: fresh.bullets,
+      cta: fresh.cta,
+    };
   });
 }
 
@@ -1073,40 +1266,6 @@ async function prepareImageForCanvas(source: string): Promise<string> {
   }
 }
 
-async function downloadOriginalImage(source: string, filename: string) {
-  if (source.startsWith("data:") || source.startsWith("blob:")) {
-    const link = document.createElement("a");
-    link.href = source;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    return;
-  }
-
-  try {
-    const response = await fetch(source, { mode: "cors", cache: "no-cache" });
-    if (!response.ok) throw new Error("cover-download");
-    const objectUrl = URL.createObjectURL(await response.blob());
-    const link = document.createElement("a");
-    link.href = objectUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1_000);
-  } catch {
-    const link = document.createElement("a");
-    link.href = source;
-    link.download = filename;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  }
-}
-
 async function assertExportImageReadable(source: string) {
   if (!source || source.startsWith("data:") || source.startsWith("blob:")) return;
   await prepareImageForCanvas(source);
@@ -1122,7 +1281,6 @@ function CarouselCanvas({
   primary,
   secondary,
   canvasRef,
-  exportMode = false,
   showPixBanner = false,
   pixBannerHighlight = "",
   pixBannerText = "",
@@ -1138,7 +1296,6 @@ function CarouselCanvas({
   primary: string;
   secondary: string;
   canvasRef?: (node: HTMLDivElement | null) => void;
-  exportMode?: boolean;
   showPixBanner?: boolean;
   pixBannerHighlight?: string;
   pixBannerText?: string;
@@ -1146,11 +1303,7 @@ function CarouselCanvas({
   pixBannerTextColor?: string;
 }) {
   const Z = 1;
-  const baseWidth = Math.round(432 * Z);
-  const computedHeight = Math.round((432 / (ratio || 0.8)) * Z);
-  const dimensions: CSSProperties = exportMode
-    ? { width: baseWidth, height: computedHeight }
-    : { width: "100%", aspectRatio: `${ratio}` };
+  const dimensions: CSSProperties = { width: "100%", aspectRatio: `${ratio}` };
 
   if (slide.kind === "cover" && slide.coverSource === "ad") {
     return (
@@ -1345,7 +1498,11 @@ function CarouselCanvas({
     );
   };
 
-  const safeClamp = (lines: number): CSSProperties => exportMode ? { overflow: "hidden" } : { display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden" };
+  const safeClamp = (lines: number, lineHeight: number): CSSProperties => ({
+    maxHeight: `${lines * lineHeight}em`,
+    overflow: "hidden",
+    paddingBottom: 0,
+  });
   const safeTextWrap: CSSProperties = {
     overflowWrap: "break-word",
     wordBreak: "normal",
@@ -1386,9 +1543,7 @@ function CarouselCanvas({
       minWidth: Math.round(20 * Z),
       marginBottom: Math.round(10 * Z),
       ...alignmentMargins,
-      padding: exportMode 
-        ? `${Math.round(4 * Z)}px ${Math.round(9 * Z)}px ${Math.round(6 * Z)}px`
-        : `${Math.round(5 * Z)}px ${Math.round(9 * Z)}px`,
+      padding: `${Math.round(5 * Z)}px ${Math.round(9 * Z)}px`,
       fontSize: Math.round(8 * Z),
       lineHeight: 1.15,
       fontWeight: 900,
@@ -1851,14 +2006,10 @@ function CarouselCanvas({
           style={{
             ...contentStyle,
             background: panelBackground,
-            border: exportMode ? "none" : (accentPlacement === "top" ? "none" : panelBorder),
-            borderTop: exportMode ? "none" : (accentPlacement === "top" ? panelBorder : undefined),
+            border: accentPlacement === "top" ? "none" : panelBorder,
+            borderTop: accentPlacement === "top" ? panelBorder : undefined,
             borderRadius: panelRadius,
-            boxShadow: exportMode && panelBorder !== "none"
-              ? (accentPlacement === "top"
-                  ? `inset 0 ${panelBorder.split(" ")[0]} 0 0 ${panelBorder.split(" ").slice(2).join(" ")}, ${panelShadow}`
-                  : `inset 0 0 0 ${panelBorder.split(" ")[0]} ${panelBorder.split(" ").slice(2).join(" ")}, ${panelShadow}`)
-              : panelShadow,
+            boxShadow: panelShadow,
             color: panelForeground,
           }}
         >
@@ -2351,7 +2502,7 @@ function CarouselCanvas({
                 <div style={{ position: "absolute", left: "8%", right: "8%", bottom: "14%" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), textShadow }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04), textShadow }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2392,7 +2543,7 @@ function CarouselCanvas({
                 >
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), textShadow }}>
+                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.06), textShadow }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2427,7 +2578,7 @@ function CarouselCanvas({
                 >
                   {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 20 : 23) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
+                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 20 : 23) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.06) }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2498,7 +2649,7 @@ function CarouselCanvas({
                       {renderLabel(slide.label, "center")}
                     </div>
                     {slide.title && (
-                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
+                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
                         {slide.title}
                       </h3>
                     )}
@@ -2536,7 +2687,7 @@ function CarouselCanvas({
                 <div style={{ background: "rgba(248,248,246,0.98)", color: titleColor, padding: isDenseSlide ? "4.5% 8% 7% 8%" : "6.5% 8% 10% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2583,7 +2734,7 @@ function CarouselCanvas({
                   >
                     {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                     {slide.title && (
-                      <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round(faqTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
+                      <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round(faqTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.05) }}>
                         {slide.title}
                       </h3>
                     )}
@@ -2640,7 +2791,7 @@ function CarouselCanvas({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
                       {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
-                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
+                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
                           {slide.title}
                         </h3>
                       )}
@@ -2687,7 +2838,7 @@ function CarouselCanvas({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
                       {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
-                        <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow, ...safeTextWrap, ...safeClamp(3) }}>
+                        <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow, ...safeTextWrap, ...safeClamp(3, 1.05) }}>
                           {slide.title}
                         </h3>
                       )}
@@ -2940,7 +3091,7 @@ function CarouselCanvas({
                     />
                     {renderLabel(slide.label)}
                     {slide.title && (
-                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3) }}>
+                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
                         {slide.title}
                       </h3>
                     )}
@@ -3429,7 +3580,6 @@ export function F1CarouselBuilder({
   const [captionEdited, setCaptionEdited] = useState(false);
   const [generatingCaption, setGeneratingCaption] = useState(false);
   const [photoPanelOpen, setPhotoPanelOpen] = useState(true);
-  const exportRefs = useRef<Array<HTMLDivElement | null>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadRequestRef = useRef(new Map<string, symbol>());
   const autoPhotoSyncRef = useRef("");
@@ -3872,13 +4022,13 @@ export function F1CarouselBuilder({
       strategy,
       effectiveCoverSource,
     ).map((slide) => {
-      if (slide.kind === "cover") return carrySlidePresentation(slide, currentCover);
-      if (slide.kind === "closing") return carrySlidePresentation(slide, currentClosing);
+      if (slide.kind === "cover") return mergeSlidesForSizeWithFreshText(currentCover ? [currentCover] : [], [slide])[0];
+      if (slide.kind === "closing") return mergeSlidesForSizeWithFreshText(currentClosing ? [currentClosing] : [], [slide])[0];
       const current = currentContent[contentIndex];
       contentIndex += 1;
       return carrySlidePresentation(slide, current);
     });
-    const generated = mergeSlidesForSize(
+    const generated = mergeSlidesForSizeWithFreshText(
       generatedArchive,
       createSlides(
         selectedPackage,
@@ -3961,7 +4111,7 @@ export function F1CarouselBuilder({
       );
       const archive = mergeActiveIntoArchive(current, archiveBase);
       slideArchiveRef.current = archive;
-      return mergeSlidesForSize(archive, generated);
+      return mergeSlidesForSizeWithFreshText(archive, generated);
     });
     setSlideCount(nextCount);
     setActiveIndex((current) => Math.min(current, nextCount - 1));
@@ -4308,36 +4458,10 @@ export function F1CarouselBuilder({
       return;
     }
 
-    const availablePool = uniqueImages([
-      ...(selectedPackage.galleryImages || []),
-      ...(selectedPackage.imageUrl ? [selectedPackage.imageUrl] : []),
-      ...(state.siteContent.galleryImages || []),
-      ...photoResults.map((p) => p.url),
-      ...slides.map((s) => s.imageUrl),
-    ]).filter(Boolean);
-
-    const used = new Set<string>();
-    const resolvedSlides = slides.map((slide, idx) => {
-      if (idx === 0) {
-        used.add(slide.imageUrl);
-        return slide;
-      }
-      let img = slide.imageUrl.trim();
-      if (!img || used.has(img)) {
-        const replacement = availablePool.find((candidate) => !used.has(candidate));
-        if (replacement) {
-          img = replacement;
-        }
-      }
-      used.add(img);
-      return { ...slide, imageUrl: img };
-    });
-    setSlides(resolvedSlides);
-
-    const preserveOriginalCover =
-      resolvedSlides[0]?.coverSource === "ad" && carouselFormat === "feed";
-    const validationStartIndex = preserveOriginalCover ? 1 : 0;
-    for (let index = validationStartIndex; index < resolvedSlides.length; index += 1) {
+    // Export exactly the sequence currently shown. Never replace photos or bypass
+    // the rendered cover during download.
+    const resolvedSlides = slides;
+    for (let index = 0; index < resolvedSlides.length; index += 1) {
       try {
         await assertExportImageReadable(resolvedSlides[index].imageUrl);
       } catch {
@@ -4391,17 +4515,13 @@ export function F1CarouselBuilder({
       .replace(/^-|-$/g, "");
 
     try {
-      if (preserveOriginalCover) {
-        const coverToDownload = resolvedSlides[0]?.imageUrl || coverImage;
-        await downloadOriginalImage(coverToDownload, `carrossel-${slug}-01-capa.png`);
-      }
       const { default: html2canvas } = await import("html2canvas");
       await document.fonts.ready;
 
       const { createRoot } = await import("react-dom/client");
       const ReactLib = await import("react");
 
-      for (let index = preserveOriginalCover ? 1 : 0; index < resolvedSlides.length; index += 1) {
+      for (let index = 0; index < resolvedSlides.length; index += 1) {
         const slide = resolvedSlides[index];
         const baseW = 432;
         const baseH = Math.round(baseW / (carouselRatio || 0.8));
@@ -4421,9 +4541,7 @@ export function F1CarouselBuilder({
         ].join(";");
         document.body.appendChild(tempContainer);
 
-        // ── 2. Renderiza o slide COM exportMode=true ──
-        // exportMode=true usa overflow:hidden em vez de -webkit-box (que html2canvas não renderiza)
-        // evitando títulos cortados e layouts quebrados na captura.
+        // Render the same component, dimensions and mode used by the preview.
         let resolveRef!: (n: HTMLDivElement) => void;
         const refReady = new Promise<HTMLDivElement>((res) => { resolveRef = res; });
 
@@ -4443,7 +4561,6 @@ export function F1CarouselBuilder({
             pixBannerText: (state as any).pixBannerText,
             pixBannerHighlightColor: (state as any).pixBannerHighlightColor,
             pixBannerTextColor: (state as any).pixBannerTextColor,
-            exportMode: true,
             canvasRef: (n: HTMLDivElement | null) => { if (n) resolveRef(n); },
           })
         );
@@ -4452,25 +4569,7 @@ export function F1CarouselBuilder({
         const node = await refReady;
         await new Promise((resolve) => window.setTimeout(resolve, 300));
 
-        // ── 4. Patch DOM: remove paddingBottom de inline-flex (desalinha ícones no html2canvas)
-        //      e remove qualquer -webkit-box residual que o html2canvas não suporta ──
-        node.querySelectorAll<HTMLElement>("*").forEach((el) => {
-          const cs = window.getComputedStyle(el);
-          // Remove paddingBottom de containers inline-flex (ícone + texto)
-          if (cs.display === "inline-flex" || el.style.display === "inline-flex") {
-            el.style.paddingBottom = "0";
-            el.style.alignItems = "center";
-          }
-          // Remove webkit-box line clamp residual
-          if (el.style.webkitLineClamp || (el.style as any).WebkitLineClamp) {
-            el.style.webkitLineClamp = "unset";
-            (el.style as any).WebkitLineClamp = "";
-            el.style.display = "block";
-            el.style.overflow = "visible";
-          }
-        });
-
-        // ── 5. Pré-carrega todas as imagens como data:URL ──
+        // Preload all images as data URLs without changing layout styles.
         const imgNodes = node.querySelectorAll("img");
         await Promise.all(
           Array.from(imgNodes).map(async (img) => {
@@ -4483,10 +4582,10 @@ export function F1CarouselBuilder({
           })
         );
 
-        // ── 6. Aguarda browser pintar as imagens ──
+        // Wait for the browser to paint the images.
         await new Promise((resolve) => window.setTimeout(resolve, 300));
 
-        // ── 7. Captura com html2canvas ──
+        // Capture the preview-equivalent DOM at production resolution.
         const canvas = await html2canvas(node, {
           backgroundColor: "#08090B",
           useCORS: true,
@@ -4504,11 +4603,11 @@ export function F1CarouselBuilder({
           windowHeight: baseH,
         });
 
-        // ── 8. Desmonta e remove o container temporário ──
+        // Unmount and remove the temporary container.
         root.unmount();
         document.body.removeChild(tempContainer);
 
-        // ── 9. Baixa a imagem ──
+        // Download the captured slide.
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png", 1);
         link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
@@ -4529,12 +4628,8 @@ export function F1CarouselBuilder({
       });
       toast.success(
         isEs
-          ? preserveOriginalCover
-            ? `${slides.length} imágenes listas. La portada del anuncio fue preservada.`
-            : `${slides.length} imágenes listas para publicar.`
-          : preserveOriginalCover
-            ? `${slides.length} imagens prontas. A capa do anúncio foi preservada.`
-            : `${slides.length} imagens prontas para publicar.`,
+          ? `${slides.length} imágenes listas para publicar.`
+          : `${slides.length} imagens prontas para publicar.`,
       );
     } catch (error) {
       console.error("Falha ao exportar carrossel:", error);
@@ -6678,36 +6773,6 @@ export function F1CarouselBuilder({
             : "Seu projeto continua salvo. Ative o Elite para baixar novos carrosséis sem limite."
         }
       />
-
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          left: "-99999px",
-          top: 0,
-          pointerEvents: "none",
-          overflow: "visible",
-          visibility: "hidden",
-        }}
-      >
-        {slides.map((slide, index) => (
-          <CarouselCanvas
-            key={`export-${slide.id}`}
-            slide={slide}
-            index={index}
-            total={slides.length}
-            ratio={carouselRatio}
-            logo={renderedLogo}
-            logoPosition={logoPosition}
-            primary={state.primaryColor}
-            secondary={state.secondaryColor}
-            canvasRef={(node) => {
-              exportRefs.current[index] = node;
-            }}
-            exportMode
-          />
-        ))}
-      </div>
 
       {/* Maximize Image Modal */}
       {maximizedSlide && (
