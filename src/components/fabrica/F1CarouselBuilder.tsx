@@ -1369,7 +1369,12 @@ function CarouselCanvas({
       slide.labelAlignment && slide.labelAlignment !== "auto"
         ? slide.labelAlignment
         : alignment;
-                  : { marginLeft: 0, marginRight: "auto" };
+    const alignmentMargins: React.CSSProperties =
+      resolvedAlignment === "center"
+        ? { marginLeft: "auto", marginRight: "auto" }
+        : resolvedAlignment === "right"
+          ? { marginLeft: "auto", marginRight: 0 }
+          : { marginLeft: 0, marginRight: "auto" };
 
     const style = slide.labelStyle || "filled";
     const commonStyle: React.CSSProperties = {
