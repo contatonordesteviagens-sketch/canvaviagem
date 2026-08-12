@@ -3835,6 +3835,8 @@ export function F1CarouselBuilder({
   const [downloading, setDownloading] = useState(false);
   const [showNewCarouselModal, setShowNewCarouselModal] = useState(false);
   const [showExportPaywall, setShowExportPaywall] = useState(false);
+  const guestPaywallTimerRef = useRef<number | null>(null);
+  const guestPreviewShownRef = useRef<string>("");
   const [captionText, setCaptionText] = useState("");
   const [captionEdited, setCaptionEdited] = useState(false);
   const [generatingCaption, setGeneratingCaption] = useState(false);
@@ -4147,6 +4149,23 @@ export function F1CarouselBuilder({
     setSlides(generated);
     setActiveIndex(generated.length > 1 ? 1 : 0);
   }, [agencyPhone, availableImages, coverImage, coverSource, isEs, selectedPackage, storageKey]);
+
+  useEffect(() => {
+    if (tier !== "guest" || !selectedPackage || slides.length === 0) return;
+    const previewKey = `${selectedPackage.id}:${carouselFormat}:${slides.length}`;
+    if (guestPreviewShownRef.current === previewKey) return;
+    guestPreviewShownRef.current = previewKey;
+    track("carousel_preview_generated", {
+      package_id: selectedPackage.id,
+      slide_count: slides.length,
+      format: carouselFormat,
+    });
+    if (guestPaywallTimerRef.current) window.clearTimeout(guestPaywallTimerRef.current);
+    guestPaywallTimerRef.current = window.setTimeout(() => setShowExportPaywall(true), 10_000);
+    return () => {
+      if (guestPaywallTimerRef.current) window.clearTimeout(guestPaywallTimerRef.current);
+    };
+  }, [carouselFormat, selectedPackage, slides.length, tier, track]);
 
   useEffect(() => {
     const defaultChannels = [
@@ -4496,11 +4515,6 @@ export function F1CarouselBuilder({
     silent?: boolean;
     pageOverride?: number;
   } = {}) => {
-    if (!user) {
-      if (!silent) setShowExportPaywall(true);
-      return;
-    }
-
     const requestId = photoSearchRequestRef.current + 1;
     photoSearchRequestRef.current = requestId;
     const targetPackageId = selectedPackage?.id || "";
@@ -4799,8 +4813,19 @@ export function F1CarouselBuilder({
         })),
       }),
     );
-    // O usuário solicitou remoção da validação de créditos para baixar as imagens.
-    // Nenhuma reserva de crédito é necessária.
+    const reservation = await reserve("carousel_export", exportIdentity, {
+      projectId: state.projectId,
+      metadata: {
+        package_id: selectedPackage.id,
+        slide_count: resolvedSlides.length,
+        format: carouselFormat,
+      },
+    });
+    if (!reservation.allowed) {
+      track("free_limit_reached", { capability: "carousel_export" });
+      setShowExportPaywall(true);
+      return;
+    }
 
     setDownloading(true);
     const slug = (selectedPackage.slug || selectedPackage.title || "pacote")
@@ -4813,6 +4838,7 @@ export function F1CarouselBuilder({
     try {
       const { toPng } = await import("html-to-image");
       await document.fonts.ready;
+      const generatedExports: Array<{ dataUrl: string; fileName: string }> = [];
 
       const { createRoot } = await import("react-dom/client");
       const ReactLib = await import("react");
@@ -4944,24 +4970,27 @@ export function F1CarouselBuilder({
           tempContainer.remove();
         }
 
-        // Download the captured slide.
+        generatedExports.push({
+          dataUrl: pngDataUrl,
+          fileName: `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`,
+        });
+      }
+
+      await commit(reservation.reservationId);
+      for (const generatedExport of generatedExports) {
         const link = document.createElement("a");
-        link.href = pngDataUrl;
-        link.download = `carrossel-${slug}-${String(index + 1).padStart(2, "0")}.png`;
+        link.href = generatedExport.dataUrl;
+        link.download = generatedExport.fileName;
         document.body.appendChild(link);
         link.click();
         link.remove();
         await new Promise((resolve) => window.setTimeout(resolve, 200));
       }
 
-
-
-
-      track("free_export_completed", {
-        feature: "carousel_export",
+      track("carousel_export_completed", {
+        capability: "carousel_export",
         package_id: selectedPackage.id,
         slide_count: resolvedSlides.length,
-        duplicate: false,
       });
       toast.success(
         isEs
@@ -4969,6 +4998,7 @@ export function F1CarouselBuilder({
           : `${slides.length} imagens prontas para publicar.`,
       );
     } catch (error) {
+      await release(reservation.reservationId).catch(() => undefined);
       console.error("Falha ao exportar carrossel:", error);
       toast.error(
         isEs

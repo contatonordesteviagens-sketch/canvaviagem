@@ -10,7 +10,7 @@ const corsHeaders = {
 
 const FREE_LIMITS = {
   ad_export: 3,
-  carousel_export: 2,
+  carousel_export: 1,
   projects: 1,
 } as const;
 
@@ -29,6 +29,12 @@ const TRACKED_EVENTS = new Set([
   "checkout_started",
   "checkout_completed",
   "returned_to_feature",
+  "ad_preview_generated",
+  "carousel_preview_generated",
+  "site_preview_generated",
+  "ad_export_completed",
+  "carousel_export_completed",
+  "site_published",
 ]);
 
 type Tier =

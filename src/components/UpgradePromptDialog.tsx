@@ -45,7 +45,7 @@ export function UpgradePromptDialog({
       : "Recurso exclusivo do Plano Elite");
 
   const promptDescription = isGuest && !isPremiumOnlyFeature
-    ? "Sua conta gratuita libera 3 anúncios e 2 carrosséis para baixar. Seu projeto continua aqui depois do cadastro."
+    ? "Sua conta gratuita libera 3 anúncios e 1 carrossel para baixar. Seu projeto continua aqui depois do cadastro."
     : description ?? (isGuest && isPremiumOnlyFeature
       ? `Você pode conhecer e configurar este recurso gratuitamente. Para concluir esta ação, teste o Plano Elite por ${ELITE_OFFER.freeTrialDays} dias.`
       : `Desbloqueie este recurso agora e teste ${ELITE_OFFER.freeTrialDays} dias grátis.`);

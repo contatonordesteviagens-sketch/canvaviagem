@@ -507,9 +507,13 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
   const { user } = useAuth();
   const { reserve, commit, release, track, can, tier, remaining } = useEntitlements();
   const [showExportPaywall, setShowExportPaywall] = useState(false);
+  const guestPaywallTimerRef = useRef<number | null>(null);
   const isAdPreviewLocked = tier === "guest"
     || (!can("ad.export") && remaining?.ad_export === 0);
   const { data: savedProjects } = useDiagnosticos();
+  useEffect(() => () => {
+    if (guestPaywallTimerRef.current) window.clearTimeout(guestPaywallTimerRef.current);
+  }, []);
   const [creativeMode, setCreativeMode] = useState<"ad" | "carousel">(initialMode);
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
   
@@ -1044,11 +1048,6 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
   ];
 
   const searchPhotos = async (overrideQuery?: string) => {
-    if (!user) {
-      setShowExportPaywall(true);
-      return;
-    }
-
     const q = (overrideQuery ?? photoQuery ?? destination).trim();
     if (!q) {
       toast.error("Digite o destino para buscar fotos");
@@ -1254,6 +1253,15 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
         const nextSeed = generationSeed + amount;
         setVariationCounter(nextSeed);
         localStorage.setItem(cycleKey, String(nextSeed));
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("cv:guest-has-generated", "true");
+          window.dispatchEvent(new Event("fabrica:generated"));
+          if (!user) {
+            if (guestPaywallTimerRef.current) window.clearTimeout(guestPaywallTimerRef.current);
+            guestPaywallTimerRef.current = window.setTimeout(() => setShowExportPaywall(true), 10_000);
+          }
+        }
+        track("ad_preview_generated", { amount, mode: genMode, format, locale: "es" });
       };
 
       const buildComposeOptions = (
@@ -1728,13 +1736,20 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
         format,
       ].join(":"),
     );
-    // O usuário solicitou remoção da validação de créditos para baixar as imagens.
-    // Nenhuma reserva de crédito é necessária.
+    const reservation = await reserve("ad_export", exportIdentity, {
+      projectId: state.projectId,
+      metadata: { destination, format, batch: isBatchMode, locale: "es" },
+    });
+    if (!reservation.allowed) {
+      track("free_limit_reached", { capability: "ad_export", locale: "es" });
+      setShowExportPaywall(true);
+      return;
+    }
 
     try {
       const downloadedBatch = can("ad.export") && isBatchMode;
       const toDownload = downloadedBatch ? generatedImages.map(i => i.url) : [generatedImage?.url || ""];
-      
+      await commit(reservation.reservationId);
       toDownload.forEach((img, idx) => {
         const a = document.createElement("a");
         a.href = img;
@@ -1745,12 +1760,14 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
         a.remove();
       });
       
-      track("free_export_completed", {
+      track("ad_export_completed", {
         capability: "ad_export",
+        amount: toDownload.length,
         locale: "es",
       });
       toast.success(downloadedBatch ? "Todas las imágenes fueron descargadas." : "Imagen descargada.");
     } catch {
+      await release(reservation.reservationId).catch(() => undefined);
       toast.error("No fue posible descargar la imagen.");
     }
   };

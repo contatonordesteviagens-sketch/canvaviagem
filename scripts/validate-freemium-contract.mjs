@@ -45,8 +45,8 @@ if (JSON.stringify(frontendStart) !== JSON.stringify(serverStart)) {
 
 requireText(
   "src/contexts/EntitlementsContext.tsx",
-  "const FREE_LIMITS = { ad_export: 3, carousel_export: 2, projects: 1 };",
-  "browser fallback must expose 3 ad exports, 2 carousel exports and 1 project.",
+  "const FREE_LIMITS = { ad_export: 3, carousel_export: 1, projects: 1 };",
+  "browser fallback must expose 3 ad exports, 1 carousel export and 1 project.",
 );
 for (const capability of [
   '"library.premium.open"',
@@ -106,7 +106,7 @@ requireText(
 );
 for (const [needle, label] of [
   ["ad_export: 3", "3 ad exports"],
-  ["carousel_export: 2", "2 carousel exports"],
+  ["carousel_export: 1", "1 carousel export"],
   ["projects: 1", "1 saved project"],
 ]) {
   requireText("supabase/functions/fabrica-entitlements/index.ts", needle, `server limit must be ${label}.`);
@@ -181,12 +181,16 @@ rejectText(
   "freemium migration must never delete captured leads.",
 );
 
-for (const path of [
+requireText(
   "supabase/functions/fabrica-search-photos/index.ts",
+  "access.ok ? 30 : 8",
+  "guest preview photo search must have a stricter server-side rate limit.",
+);
+requireText(
   "supabase/functions/fabrica-pexels-search/index.ts",
-]) {
-  requireText(path, "verifyFabricaAuthenticatedAccess", "photo APIs must require an authenticated account.");
-}
+  "verifyFabricaAuthenticatedAccess",
+  "the authenticated-only photo endpoint must remain protected.",
+);
 requireText(
   "supabase/functions/vendedor-generate-response/index.ts",
   "verifyFabricaEliteAccess",
@@ -295,12 +299,17 @@ for (const path of [
   "src/pages/fabrica/Phase3ArtFactoryES.tsx",
 ]) {
   requireText(path, "isAdPreviewLocked", "guest and exhausted ad previews must be protected.");
+  requireText(path, 'reserve("ad_export"', "ad downloads must reserve server-side quota.");
+  requireText(path, "await commit(reservation.reservationId)", "ad downloads must commit server-side quota.");
+  requireText(path, "release(reservation.reservationId)", "failed ad downloads must release reservations.");
 }
 requireText(
   "src/components/fabrica/F1CarouselBuilder.tsx",
   "isCarouselPreviewLocked",
   "guest and exhausted carousel previews must be protected.",
 );
+requireText("src/components/fabrica/F1CarouselBuilder.tsx", 'reserve("carousel_export"', "carousel downloads must reserve server-side quota.");
+requireText("src/components/fabrica/F1CarouselBuilder.tsx", "await commit(reservation.reservationId)", "carousel downloads must commit server-side quota.");
 requireText(
   "supabase/functions/fabrica-generate-ad/index.ts",
   "verifyFabricaEliteAccess",
@@ -332,4 +341,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("Freemium contract OK: 1 project, 3 ad exports, 2 carousel exports, exact plans, protected APIs.");
+console.log("Freemium contract OK: 1 project, 3 ad exports, 1 carousel export, exact plans, protected APIs.");

@@ -34,10 +34,14 @@ const metaPixelId = "916689227676142";
 const supportWhatsAppUrl =
   "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20quero%20entender%20melhor%20o%20criador%20de%20sites%20do%20Canva%20Viagem";
 
-const checkoutUrls: Record<BillingCycle, string> = {
-  monthly: ELITE_OFFER.monthlyCheckoutUrl,
-  semiannual: ELITE_OFFER.semiannualCheckoutUrl,
-  annual: ELITE_OFFER.annualCheckoutUrl,
+const secureCheckoutPath = (cycle: BillingCycle) => {
+  const params = new URLSearchParams({
+    checkout: cycle,
+    upgrade: "site_publish",
+    returnTo: "/fabrica/site",
+    offer: "site",
+  });
+  return `/inicio?${params.toString()}`;
 };
 
 const faqItems = [
@@ -229,7 +233,7 @@ export default function SiteOfferLanding() {
       analyticsRequest,
       new Promise<void>((resolve) => window.setTimeout(resolve, 1200)),
     ]);
-    window.location.assign(checkoutUrls[cycle]);
+    window.location.assign(secureCheckoutPath(cycle));
   };
 
   return (

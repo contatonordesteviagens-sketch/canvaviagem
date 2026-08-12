@@ -22,14 +22,14 @@ type PhotoOrientation = "landscape" | "portrait" | "square";
 const requestWindows = new Map<string, { count: number; resetsAt: number }>();
 const photoCache = new Map<string, { photos: PhotoOut[]; expiresAt: number }>();
 
-function allowPhotoSearch(userId: string) {
+function allowPhotoSearch(requesterId: string, limit = 30) {
   const now = Date.now();
-  const current = requestWindows.get(userId);
+  const current = requestWindows.get(requesterId);
   if (!current || current.resetsAt <= now) {
-    requestWindows.set(userId, { count: 1, resetsAt: now + 60_000 });
+    requestWindows.set(requesterId, { count: 1, resetsAt: now + 60_000 });
     return true;
   }
-  if (current.count >= 30) return false;
+  if (current.count >= limit) return false;
   current.count += 1;
   return true;
 }
@@ -108,8 +108,14 @@ serve(async (req) => {
 
   try {
     const access = await verifyFabricaAuthenticatedAccess(req, corsHeaders);
-    if (!access.ok) return access.response;
-    if (!allowPhotoSearch(access.userId)) {
+    const forwardedIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+      || req.headers.get("cf-connecting-ip")
+      || "unknown";
+    const guestKey = `guest:${forwardedIp}:${(req.headers.get("user-agent") || "unknown").slice(0, 80)}`;
+    const requesterKey = access.ok ? `user:${access.userId}` : guestKey;
+    // Guests may search while building their first preview, but at a much
+    // tighter rate than authenticated accounts to protect provider credits.
+    if (!allowPhotoSearch(requesterKey, access.ok ? 30 : 8)) {
       return new Response(JSON.stringify({ error: "Muitas buscas seguidas. Aguarde um minuto." }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

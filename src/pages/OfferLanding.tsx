@@ -315,12 +315,6 @@ const plans: Array<{
 
 const metaPixelId = "916689227676142";
 
-const checkoutUrls: Record<BillingCycle, string> = {
-  monthly: ELITE_OFFER.monthlyCheckoutUrl,
-  semiannual: ELITE_OFFER.semiannualCheckoutUrl,
-  annual: ELITE_OFFER.annualCheckoutUrl,
-};
-
 export default function OfferLanding({ variant }: { variant: OfferVariant }) {
   const config = offerConfigs[variant];
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -390,8 +384,14 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
 
     setCheckoutLoading(cycle);
     recordEvent("checkout_started", { billing_cycle: cycle, value: trackValue });
-    window.location.assign(checkoutUrls[cycle]);
-  }, [config.mechanismName, recordEvent, variant]);
+    const params = new URLSearchParams({
+      checkout: cycle,
+      upgrade: config.feature,
+      returnTo: config.feature === "site_publish" ? "/fabrica/site" : "/fabrica",
+      offer: variant,
+    });
+    window.location.assign(`/inicio?${params.toString()}`);
+  }, [config.feature, config.mechanismName, recordEvent, variant]);
 
   const pageDescription = useMemo(
     () => `${config.description} Teste o Canva Viagem Elite por 3 dias.`,

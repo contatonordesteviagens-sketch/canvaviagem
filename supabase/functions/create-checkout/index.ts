@@ -288,6 +288,8 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
+      client_reference_id: user.id,
+      payment_method_collection: "always",
       line_items: [
         {
           price: priceId,
@@ -317,6 +319,10 @@ serve(async (req) => {
         promotions: 'auto',
       },
       expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 minutes
+    }, {
+      // Repeated clicks within the same ten-minute window reuse the same Stripe
+      // operation instead of creating parallel trial sessions.
+      idempotencyKey: `elite-checkout:${user.id}:${requestedCycle}:${Math.floor(Date.now() / 600000)}`,
     });
 
     logStep("Checkout session created", { sessionId: session.id });

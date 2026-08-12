@@ -33,10 +33,14 @@ const metaPixelId = "916689227676142";
 const supportWhatsAppUrl =
   "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20quero%20entender%20melhor%20a%20F%C3%A1brica%20de%20An%C3%BAncios%20do%20Canva%20Viagem";
 
-const checkoutUrls: Record<BillingCycle, string> = {
-  monthly: ELITE_OFFER.monthlyCheckoutUrl,
-  semiannual: ELITE_OFFER.semiannualCheckoutUrl,
-  annual: ELITE_OFFER.annualCheckoutUrl,
+const secureCheckoutPath = (cycle: BillingCycle) => {
+  const params = new URLSearchParams({
+    checkout: cycle,
+    upgrade: "ad_export",
+    returnTo: "/fabrica/anuncio",
+    offer: "ads",
+  });
+  return `/inicio?${params.toString()}`;
 };
 
 const faqItems = [
@@ -232,7 +236,7 @@ export default function AdsOfferLanding() {
       content_category: `landing_ads_${cycle}`,
     });
     setCheckoutLoading(cycle);
-    window.location.assign(checkoutUrls[cycle]);
+    window.location.assign(secureCheckoutPath(cycle));
   };
 
   return (

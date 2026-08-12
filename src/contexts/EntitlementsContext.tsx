@@ -95,7 +95,7 @@ type EntitlementsContextValue = EntitlementsSnapshot & {
 };
 
 const EMPTY_USAGE: UsageCounts = { ad_export: 0, carousel_export: 0 };
-const FREE_LIMITS = { ad_export: 3, carousel_export: 2, projects: 1 };
+const FREE_LIMITS = { ad_export: 3, carousel_export: 1, projects: 1 };
 
 const buildGuestSnapshot = (): EntitlementsSnapshot => ({
   tier: "guest",
@@ -121,7 +121,7 @@ const buildGuestSnapshot = (): EntitlementsSnapshot => ({
   },
   limits: FREE_LIMITS,
   used: EMPTY_USAGE,
-  remaining: { ad_export: 3, carousel_export: 2 },
+  remaining: { ad_export: 3, carousel_export: 1 },
   needsReview: false,
 });
 
@@ -168,7 +168,7 @@ const buildFallbackSnapshot = (
     },
     limits: elite ? null : FREE_LIMITS,
     used: EMPTY_USAGE,
-    remaining: elite ? null : { ad_export: 3, carousel_export: 2 },
+    remaining: elite ? null : { ad_export: 3, carousel_export: 1 },
     needsReview: unknownPaid,
   };
 };

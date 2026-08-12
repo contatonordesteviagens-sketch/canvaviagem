@@ -67,7 +67,7 @@ const upgradeLandingCopy: Record<UpgradeFeature, { eyebrow: string; title: strin
   carousel_export: {
     eyebrow: "Seu carrossel continua salvo",
     title: "Baixe novas sequencias e continue criando conteudo para vender.",
-    description: "O gratuito inclui 2 carrosseis. O Elite libera novas geracoes e downloads sem limite.",
+    description: "O gratuito inclui 1 carrossel. O Elite libera novas geracoes e downloads sem limite.",
   },
   site_publish: {
     eyebrow: "Seu site esta pronto",
@@ -321,6 +321,9 @@ export default function Inicio2() {
     ? requestedUpgrade as UpgradeFeature
     : null;
   const returnTo = safeInternalPath(searchParams.get("returnTo"));
+  const offerVariant = ["ads", "site", "team"].includes(searchParams.get("offer") || "")
+    ? searchParams.get("offer")!
+    : "general";
   const contextualCopy = upgradeFeature ? upgradeLandingCopy[upgradeFeature] : null;
   const isStartUpgrade = tier === "start_legacy";
   const isFreeAccount = tier === "free";
@@ -409,7 +412,7 @@ export default function Inicio2() {
   const heroTitle = contextualCopy?.title
     || "Crie campanhas para sua agencia antes de decidir assinar.";
   const heroDescription = contextualCopy?.description
-    || "Cadastre sua agencia e seus pacotes, salve 1 projeto e experimente 3 anuncios e 2 carrosseis. O Elite libera site, CRM, automacoes e uso ilimitado.";
+    || "Cadastre sua agencia e seus pacotes, salve 1 projeto e experimente 3 anuncios e 1 carrossel. O Elite libera site, CRM, automacoes e uso ilimitado.";
   const workspaceCta = user ? "Continuar no meu projeto" : "Criar gratuitamente";
 
   const plans = [
@@ -516,6 +519,14 @@ export default function Inicio2() {
           billing_cycle: billingCycle,
           upgrade: upgradeFeature,
           return_to: returnTo,
+          landing_variant: offerVariant,
+          landing_path: offerVariant === "ads"
+            ? "/anuncios-para-agencia-de-viagens"
+            : offerVariant === "site"
+              ? "/site-para-agencia-de-viagens"
+              : offerVariant === "team"
+                ? "/equipe-de-marketing-para-agencia-de-viagens"
+                : "/inicio",
         },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
@@ -534,7 +545,7 @@ export default function Inicio2() {
     } finally {
       setCheckoutLoading(false);
     }
-  }, [can, entitlementsLoading, returnTo, searchParams, session?.access_token, tier, track, trackCheckoutClick, upgradeFeature, user]);
+  }, [can, entitlementsLoading, offerVariant, returnTo, searchParams, session?.access_token, tier, track, trackCheckoutClick, upgradeFeature, user]);
 
   useEffect(() => {
     if (!user || !session?.access_token || resumedCheckoutRef.current) return;
@@ -647,7 +658,7 @@ export default function Inicio2() {
                   <span className="hidden md:inline">·</span>
                   <span className="whitespace-nowrap">✓ 3 anuncios gratuitos</span>
                   <span className="hidden md:inline">·</span>
-                  <span className="whitespace-nowrap">✓ 2 carrosseis gratuitos</span>
+                  <span className="whitespace-nowrap">✓ 1 carrossel gratuito</span>
                   <span className="hidden md:inline">·</span>
                   <span className="whitespace-nowrap">✓ Sem cartao</span>
                   <span className="hidden md:inline">·</span>
@@ -723,7 +734,7 @@ export default function Inicio2() {
         <div className="w-full bg-white pt-8">
           <div className="inicio-container">
             <div className="bg-[#7C3AED] text-white text-center text-[14px] font-medium py-[12px] px-[24px] rounded-[8px] mx-auto max-w-[720px]">
-              Comece sem pagar: 1 projeto, 3 anúncios e 2 carrosséis. Vídeos editáveis, downloads premium, site, CRM e recursos de IA avançados são liberados conforme o plano.
+              Comece sem pagar: 1 projeto, 3 anúncios e 1 carrossel. Vídeos editáveis, downloads premium, site, CRM e recursos de IA avançados são liberados conforme o plano.
             </div>
           </div>
         </div>
@@ -1344,7 +1355,7 @@ export default function Inicio2() {
                   <p className="text-slate-950 font-black text-lg mb-1">Quer conhecer antes sem cadastrar cartão?</p>
                   <p className="text-slate-600 text-sm leading-relaxed">
                     O acesso grátis permanente inclui conteúdos selecionados e, com uma conta gratuita,
-                    1 projeto salvo, 3 anúncios e 2 carrosséis completos. Site publicado, CRM, voz e IA
+                    1 projeto salvo, 3 anúncios e 1 carrossel completo. Site publicado, CRM, voz e IA
                     avançada ficam disponíveis no Elite.
                   </p>
                 </div>

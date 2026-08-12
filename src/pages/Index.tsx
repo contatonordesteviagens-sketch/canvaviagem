@@ -584,7 +584,7 @@ const Index = () => {
                       <h3 className="text-lg font-extrabold text-foreground mt-2 mb-3">O que você pode usar agora, de graça</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                         <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>3 anúncios</strong> com sua logo e pacotes</span></span>
-                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>2 carrosséis</strong> prontos para postar</span></span>
+                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>1 carrossel</strong> pronto para postar</span></span>
                         <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Artes</strong> para agência de viagem</span></span>
                         <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Legendas</strong> prontas para Instagram</span></span>
                         <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Videoaulas</strong> de marketing para agências</span></span>

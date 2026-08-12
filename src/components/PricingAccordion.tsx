@@ -90,7 +90,7 @@ export function PricingAccordion() {
                     </div>
 
                     <a
-                      href={ELITE_OFFER.annualCheckoutUrl}
+                      href="/inicio?checkout=annual&upgrade=fabrica&returnTo=%2Ffabrica&offer=general"
                       className="w-full text-center py-3.5 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 flex items-center justify-center"
                       style={{ background: '#7C3AED' }}
                     >
@@ -165,7 +165,7 @@ export function PricingAccordion() {
                     </div>
 
                     <a
-                      href={ELITE_OFFER.monthlyCheckoutUrl}
+                      href="/inicio?checkout=monthly&upgrade=fabrica&returnTo=%2Ffabrica&offer=general"
                       className="w-full text-center py-3.5 rounded-xl font-bold border-2 transition-transform active:scale-95 flex items-center justify-center"
                       style={{ borderColor: '#3B82F6', color: '#3B82F6' }}
                     >
