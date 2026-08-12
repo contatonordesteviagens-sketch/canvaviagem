@@ -91,7 +91,7 @@ const publishSiteRecord = async ({
       is_active: true,
       suspended_at: null,
       suspension_reason: null,
-    }),
+    } as never),
     userId,
   );
   // Se o índice atômico já estiver ativo, mas a RPC ainda não tiver chegado
