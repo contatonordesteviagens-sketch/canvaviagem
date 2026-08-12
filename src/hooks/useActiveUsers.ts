@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { isEliteProduct } from "@/lib/planAccess";
+import { isEliteProduct, getPlanLabel, getPlanValue } from "@/lib/planAccess";
 
 export interface ActiveUser {
   user_id: string;
@@ -97,12 +97,13 @@ export const useActiveUsers = () => {
         if (sub) {
             status = sub.status as ActiveUser["status"];
             const isElite = isEliteProduct(sub.product_id);
-            plan_name = isElite ? "Plano Elite" : "Plano Start";
-            plan_value = isElite ? "R$ 90,00" : "R$ 39,00";
+            const planKey = isElite ? "elite" : "start";
+            plan_name = getPlanLabel(planKey);
+            // Prioridade: plan_amount real do Stripe > billing_cycle > fallback
+            plan_value = getPlanValue(planKey, (sub as any).billing_cycle, (sub as any).plan_amount);
 
             if ((sub as any).plan_name) plan_name = (sub as any).plan_name;
-            if ((sub as any).plan_amount) plan_value = `R$ ${((sub as any).plan_amount / 100).toFixed(2).replace('.', ',')}`;
-            
+
             origem = sub.stripe_subscription_id ? "Stripe" : "Orgânico";
         }
 
@@ -142,13 +143,11 @@ export const useActiveUsers = () => {
       orphanSubs.forEach((sub) => {
         const emailRecord = emailMap.get(sub.user_id);
         const isElite = isEliteProduct(sub.product_id);
-        let plan_name = isElite ? "Plano Elite" : "Plano Start";
-        let plan_value = isElite ? "R$ 90,00" : "R$ 39,00";
+        let plan_name = getPlanLabel(isElite ? "elite" : "start");
+        let plan_value = getPlanValue(isElite ? "elite" : "start", (sub as any).billing_cycle, (sub as any).plan_amount);
         let origem = sub.stripe_subscription_id ? "Stripe" : "Orgânico";
 
         if ((sub as any).plan_name) plan_name = (sub as any).plan_name;
-        if ((sub as any).plan_amount) plan_value = `R$ ${((sub as any).plan_amount / 100).toFixed(2).replace('.', ',')}`;
-
         users.push({
           user_id: sub.user_id,
           email: emailRecord?.email || "Email não disponível",

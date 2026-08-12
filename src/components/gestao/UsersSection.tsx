@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Users, CheckCircle, XCircle, Clock, AlertTriangle, Download, Copy } from "lucide-react";
-import { useActiveUsers, ActiveUser } from "@/hooks/useActiveUsers";
+import { useAdminUserIntelligence, AdminUserIntelligence } from "@/hooks/useAdminUserIntelligence";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -15,36 +15,47 @@ import { UserDetailsModal } from "./UserDetailsModal";
 
 type StatusFilter = "all" | "active" | "canceled" | "past_due" | "trialing" | "inactive";
 
+const STATUS_LABELS: Record<string, string> = {
+  active: "Ativo",
+  canceled: "Cancelado",
+  past_due: "Inadimplente",
+  trialing: "Trial",
+  inactive: "Inativo",
+  none: "Inativo",
+};
+
 export const UsersSection = () => {
-  const { data: users, isLoading } = useActiveUsers();
+  const { data: users, isLoading } = useAdminUserIntelligence();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [planFilter, setPlanFilter] = useState<string>("all");
-  const [selectedUser, setSelectedUser] = useState<ActiveUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<AdminUserIntelligence | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];
-
     return users.filter((user) => {
-      // Filtro por busca
-      const matchesSearch = user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      const q = searchQuery.toLowerCase();
+      const matchesSearch =
+        (user.email || "").toLowerCase().includes(q) ||
+        (user.name || "").toLowerCase().includes(q);
 
-      // Filtro por status
-      const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+      const status = user.subscription_status;
+      const matchesStatus =
+        statusFilter === "all" ||
+        status === statusFilter ||
+        (statusFilter === "inactive" && (status === "none" || status === "inactive"));
 
-      // Filtro por plano
-      const matchesPlan = planFilter === "all" || 
-        (planFilter === "elite" && user.plan_name.toLowerCase().includes("elite")) ||
-        (planFilter === "start" && user.plan_name.toLowerCase().includes("start")) ||
-        (planFilter === "free" && user.plan_name.toLowerCase().includes("gratuito"));
+      const matchesPlan =
+        planFilter === "all" ||
+        user.plan === planFilter;
 
       return matchesSearch && matchesStatus && matchesPlan;
     });
   }, [users, searchQuery, statusFilter, planFilter]);
 
-  const getStatusBadge = (status: ActiveUser["status"]) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
         return (
@@ -89,50 +100,30 @@ export const UsersSection = () => {
     return format(new Date(dateString), "dd/MM/yyyy", { locale: ptBR });
   };
 
-  const getStatusText = (status: ActiveUser["status"]) => {
-    const statusMap: Record<string, string> = {
-      active: "Ativo",
-      canceled: "Cancelado",
-      past_due: "Inadimplente",
-      trialing: "Trial",
-      inactive: "Inativo",
-    };
-    return statusMap[status] || status;
-  };
-
-  const handleExportUsersCSV = () => {
-    const usersToExport = filteredUsers;
-
-    if (!usersToExport?.length) {
-      toast({
-        title: "Nada para exportar",
-        description: "Não há usuários para exportar.",
-        variant: "destructive",
-      });
+  const handleExportCSV = () => {
+    if (!filteredUsers.length) {
+      toast({ title: "Nada para exportar", description: "Nenhum usuário encontrado.", variant: "destructive" });
       return;
     }
 
-    const headers = ["Email", "Status", "Plano", "Origem", "Valor", "Inscrito em", "Válido até", "Stripe Customer ID"];
-
-    const rows = usersToExport.map((user) => [
-      user.email,
-      getStatusText(user.status),
-      user.plan_name,
-      user.origem || "-",
-      user.plan_value,
-      formatDate(user.created_at),
-      formatDate(user.current_period_end),
-      user.stripe_customer_id || "-",
+    const headers = ["Email", "Nome", "Status", "Plano", "Ciclo", "Valor", "Sites", "Leads", "Origem", "Válido até"];
+    const rows = filteredUsers.map((u) => [
+      u.email || "",
+      u.name || "",
+      STATUS_LABELS[u.subscription_status] || u.subscription_status,
+      u.plan_name,
+      u.billing_cycle || "-",
+      u.plan_value,
+      u.site_count,
+      u.leads,
+      u.origem,
+      formatDate(u.current_period_end),
     ]);
 
-    // BOM for Excel UTF-8 compatibility
     const BOM = "\uFEFF";
     const csvContent =
       BOM +
-      [
-        headers.join(";"),
-        ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(";")),
-      ].join("\n");
+      [headers.join(";"), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";"))].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -141,21 +132,17 @@ export const UsersSection = () => {
     link.download = `usuarios_${format(new Date(), "yyyy-MM-dd")}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-
-    toast({
-      title: "CSV exportado!",
-      description: `${usersToExport.length} usuário(s) exportado(s).`,
-    });
+    toast({ title: "CSV exportado!", description: `${filteredUsers.length} usuário(s) exportado(s).` });
   };
 
-  // Contadores
+  // Contadores rápidos
   const counts = useMemo(() => {
     if (!users) return { total: 0, active: 0, canceled: 0, pastDue: 0 };
     return {
       total: users.length,
-      active: users.filter((u) => u.status === "active").length,
-      canceled: users.filter((u) => u.status === "canceled").length,
-      pastDue: users.filter((u) => u.status === "past_due").length,
+      active: users.filter((u) => u.subscription_status === "active").length,
+      canceled: users.filter((u) => u.subscription_status === "canceled").length,
+      pastDue: users.filter((u) => u.subscription_status === "past_due").length,
     };
   }, [users]);
 
@@ -197,7 +184,7 @@ export const UsersSection = () => {
         </Card>
       </div>
 
-      {/* Filters */}
+      {/* Tabela */}
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -205,18 +192,19 @@ export const UsersSection = () => {
               <Users className="h-5 w-5" />
               Usuários ({filteredUsers.length})
             </CardTitle>
-            <Button variant="outline" size="sm" onClick={handleExportUsersCSV}>
+            <Button variant="outline" size="sm" onClick={handleExportCSV}>
               <Download className="h-4 w-4 mr-2" />
               Exportar CSV
             </Button>
           </div>
         </CardHeader>
         <CardContent>
+          {/* Filtros */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por email..."
+                placeholder="Buscar por email ou nome..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -235,7 +223,6 @@ export const UsersSection = () => {
                 <SelectItem value="inactive">Inativos</SelectItem>
               </SelectContent>
             </Select>
-
             <Select value={planFilter} onValueChange={(v) => setPlanFilter(v)}>
               <SelectTrigger className="w-full md:w-48">
                 <SelectValue placeholder="Filtrar por plano" />
@@ -244,7 +231,7 @@ export const UsersSection = () => {
                 <SelectItem value="all">Todos os planos</SelectItem>
                 <SelectItem value="elite">Plano Elite</SelectItem>
                 <SelectItem value="start">Plano Start</SelectItem>
-                <SelectItem value="free">Gratuito</SelectItem>
+                <SelectItem value="inactive">Gratuito/Inativo</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -268,90 +255,70 @@ export const UsersSection = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Plano</TableHead>
-                    <TableHead>Sites</TableHead>
-                    <TableHead>Origem</TableHead>
                     <TableHead>Valor</TableHead>
-                    <TableHead>Avisos</TableHead>
-                    <TableHead>Inscrito em</TableHead>
+                    <TableHead>Sites</TableHead>
+                    <TableHead>Leads</TableHead>
+                    <TableHead>Válido até</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredUsers.map((user) => (
-                    <TableRow 
-                    key={user.user_id} 
-                    className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setIsModalOpen(true);
-                    }}
-                  >
-                    <TableCell 
-                      className="font-medium text-gray-900 group relative"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigator.clipboard.writeText(user.email);
-                        toast({ title: "Email copiado!", description: user.email });
+                    <TableRow
+                      key={user.user_id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setIsModalOpen(true);
                       }}
                     >
-                      <div className="flex items-center gap-2" title="Clique para copiar">
-                        {user.email}
-                        <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(user.status)}
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        {user.plan_name}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {user.sites && user.sites.length > 0 ? (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                          {user.sites.length} Gerado{user.sites.length > 1 ? 's' : ''}
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-400 text-xs">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.origem === 'Stripe' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {user.origem}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm font-semibold text-emerald-600">
-                        {user.plan_value}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {user.status === "canceled" && user.canceled_at ? (() => {
-                        const daysSinceCancel = Math.floor((new Date().getTime() - new Date(user.canceled_at).getTime()) / (1000 * 3600 * 24));
-                        if (daysSinceCancel >= 7 && daysSinceCancel <= 29) {
-                          return (
-                            <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 cursor-pointer border-yellow-300">
-                              <AlertTriangle className="w-3 h-3 mr-1" />
-                              Contatar ({daysSinceCancel}d)
-                            </Badge>
-                          );
-                        } else if (daysSinceCancel >= 30 && user.sites && user.sites.length > 0) {
-                          return (
-                            <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer border-red-300">
-                              <AlertTriangle className="w-3 h-3 mr-1" />
-                              Lixo Limpar ({daysSinceCancel}d)
-                            </Badge>
-                          );
-                        } else if (daysSinceCancel >= 30) {
-                          return <span className="text-gray-400 text-xs">Fantasma ({daysSinceCancel}d)</span>;
-                        }
-                        return <span className="text-gray-400 text-xs">Recente ({daysSinceCancel}d)</span>;
-                      })() : "-"}
-                    </TableCell>
-                    <TableCell className="text-gray-500">
-                      {formatDate(user.created_at)}
-                    </TableCell>
-                  </TableRow>))}
+                      <TableCell
+                        className="font-medium group relative"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(user.email || "");
+                          toast({ title: "Email copiado!", description: user.email || "" });
+                        }}
+                      >
+                        <div className="flex flex-col" title="Clique para copiar">
+                          <span className="flex items-center gap-1">
+                            {user.email}
+                            <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
+                          </span>
+                          {user.name && (
+                            <span className="text-xs text-muted-foreground">{user.name}</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(user.subscription_status)}</TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground">
+                          {user.plan_name}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm font-semibold text-emerald-600">{user.plan_value}</span>
+                      </TableCell>
+                      <TableCell>
+                        {user.site_count > 0 ? (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            {user.site_count} Gerado{user.site_count > 1 ? "s" : ""}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {user.leads > 0 ? (
+                          <span className="text-sm font-medium text-purple-600">{user.leads}</span>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {formatDate(user.current_period_end)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
@@ -359,7 +326,7 @@ export const UsersSection = () => {
         </CardContent>
       </Card>
 
-      <UserDetailsModal 
+      <UserDetailsModal
         user={selectedUser}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
