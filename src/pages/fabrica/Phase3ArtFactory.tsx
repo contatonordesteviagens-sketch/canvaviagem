@@ -29,6 +29,45 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 type GenMode = "ai" | "photo" | "custom";
 type CustomSource = "upload" | "link";
 
+const createGuestPreviewArt = async (art: GeneratedArt): Promise<GeneratedArt> => {
+  try {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error("preview_image_load_failed"));
+      image.src = art.url;
+    });
+    const maxWidth = 420;
+    const scale = Math.min(1, maxWidth / Math.max(image.naturalWidth, 1));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("preview_canvas_unavailable");
+    context.filter = "blur(9px)";
+    context.drawImage(image, -8, -8, canvas.width + 16, canvas.height + 16);
+    context.filter = "none";
+    context.fillStyle = "rgba(7, 10, 20, 0.38)";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.save();
+    context.translate(canvas.width / 2, canvas.height / 2);
+    context.rotate(-Math.PI / 8);
+    context.fillStyle = "rgba(255,255,255,0.9)";
+    context.font = `900 ${Math.max(18, Math.round(canvas.width / 15))}px sans-serif`;
+    context.textAlign = "center";
+    context.fillText("PRÉVIA • CRIE SUA CONTA", 0, 0);
+    context.restore();
+    return { ...art, url: canvas.toDataURL("image/jpeg", 0.62) };
+  } catch {
+    const fallback = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="525"><rect width="100%" height="100%" fill="#111827"/><text x="50%" y="47%" fill="white" text-anchor="middle" font-family="Arial" font-size="24" font-weight="700">Sua arte está pronta</text><text x="50%" y="54%" fill="#a78bfa" text-anchor="middle" font-family="Arial" font-size="17">Crie sua conta para visualizar</text></svg>`;
+    return { ...art, url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(fallback)}` };
+  }
+};
+
+const protectGuestPreviewArts = async (arts: GeneratedArt[], authenticated: boolean) =>
+  authenticated ? arts : Promise.all(arts.map(createGuestPreviewArt));
+
 const CONTACT_OPTIONS = [
   { value: "whatsapp", label: "WhatsApp", img: "/social-icons/whatsapp.png" },
   { value: "whatsapp_alt", label: "WhatsApp Alt", img: "/social-icons/whatsapp_alt.png" },
@@ -1208,7 +1247,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             const usedVariant = typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % TOTAL_VARIANTS_PHOTO : undefined;
             const opts = buildComposeOptions(photoRefs[idx], localStrategy, freshSeedPhoto + idx, usedVariant, palette);
             let res = await composeTravelAd(opts);
-            if (typeof usedVariant === "number") {
+            if (user && typeof usedVariant === "number") {
               artMetaRef.current.set(res.url, {
                 options: opts,
                 variant: usedVariant,
@@ -1229,6 +1268,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             } as GeneratedArt;
           })
         );
+        const visibleComposed = await protectGuestPreviewArts(composed, Boolean(user));
         registerGeneration(categoria, "photo", format, {
           layoutId: chosen[0],
           headline: promoName || "OFERTA ESPECIAL",
@@ -1236,16 +1276,16 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           secondary: palette.secondary,
         });
         const MAX_VARIATIONS_PHOTO = 3;
-        setGeneratedImages((prev) => [...prev, ...composed].slice(-MAX_VARIATIONS_PHOTO));
-        setGeneratedImage(composed[composed.length - 1]);
+        setGeneratedImages((prev) => [...prev, ...visibleComposed].slice(-MAX_VARIATIONS_PHOTO));
+        setGeneratedImage(visibleComposed[visibleComposed.length - 1]);
         const currentGenerated = state.allGeneratedAdImages || [];
-        const updatedGenerated = [composed[composed.length - 1].url, ...currentGenerated].slice(0, 10);
+        const updatedGenerated = [visibleComposed[visibleComposed.length - 1].url, ...currentGenerated].slice(0, 10);
         update({ 
-          generatedAdImage: composed[composed.length - 1].url, 
+          generatedAdImage: visibleComposed[visibleComposed.length - 1].url,
           primaryColor: palette.primary,
           allGeneratedAdImages: updatedGenerated
         });
-        await syncGeneratedPackageToSite(composed[composed.length - 1].url, refImage);
+        if (user) await syncGeneratedPackageToSite(composed[composed.length - 1].url, refImage);
         const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
@@ -1373,18 +1413,19 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 createdAt: Date.now()
               } as GeneratedArt);
           }
+          const visibleFinalImages = await protectGuestPreviewArts(finalImages, Boolean(user));
           setGeneratedImages((prev) => {
-            const merged = isBatchMode ? finalImages : [...prev, ...finalImages].slice(-3);
+            const merged = isBatchMode ? visibleFinalImages : [...prev, ...visibleFinalImages].slice(-3);
             return merged;
           });
-          setGeneratedImage(finalImages[finalImages.length - 1]);
+          setGeneratedImage(visibleFinalImages[visibleFinalImages.length - 1]);
           const currentGenerated = state.allGeneratedAdImages || [];
-          const updatedGenerated = [...finalImages.map(a => a.url).reverse(), ...currentGenerated].slice(0, 10);
+          const updatedGenerated = [...visibleFinalImages.map(a => a.url).reverse(), ...currentGenerated].slice(0, 10);
           update({
-            generatedAdImage: finalImages[finalImages.length - 1].url,
+            generatedAdImage: visibleFinalImages[visibleFinalImages.length - 1].url,
             allGeneratedAdImages: updatedGenerated
           });
-          await syncGeneratedPackageToSite(finalImages[0].url, refImage);
+          if (user) await syncGeneratedPackageToSite(finalImages[0].url, refImage);
           toast.success(`${finalImages.length} ${finalImages.length === 1 ? "Design Dinâmico gerado" : "Designs Dinâmicos gerados"} com sucesso pela IA!`);
           const nextAiPureCount = incrementAiPureDailyCount(finalImages.length);
           setAiPureCount(nextAiPureCount);
@@ -1450,7 +1491,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           const usedVariant = typeof nextVariant === "number" ? (nextVariant + idx) % TOTAL_VARIANTS : undefined;
           const opts = buildComposeOptions(refImage, localStrategy, freshSeedCustom + idx, usedVariant, palette);
           let res = await composeTravelAd(opts);
-          if (typeof usedVariant === "number") {
+          if (user && typeof usedVariant === "number") {
             artMetaRef.current.set(res.url, {
               options: opts,
               variant: usedVariant,
@@ -1471,6 +1512,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           } as GeneratedArt;
         })
       );
+      const visibleCustomImages = await protectGuestPreviewArts(imagesCustom, Boolean(user));
       registerGeneration(categoria, "custom", format, {
         layoutId: chosen[0],
         headline: promoName || "OFERTA ESPECIAL",
@@ -1479,18 +1521,18 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       });
       const MAX_VARIATIONS = 3;
       setGeneratedImages((prev) => {
-        const merged = [...prev, ...imagesCustom].slice(-MAX_VARIATIONS);
+        const merged = [...prev, ...visibleCustomImages].slice(-MAX_VARIATIONS);
         return merged;
       });
-      setGeneratedImage(imagesCustom[imagesCustom.length - 1]);
+      setGeneratedImage(visibleCustomImages[visibleCustomImages.length - 1]);
       const currentGenerated = state.allGeneratedAdImages || [];
-      const updatedGenerated = [imagesCustom[imagesCustom.length - 1].url, ...currentGenerated].slice(0, 10);
+      const updatedGenerated = [visibleCustomImages[visibleCustomImages.length - 1].url, ...currentGenerated].slice(0, 10);
       update({ 
-        generatedAdImage: imagesCustom[imagesCustom.length - 1].url, 
+        generatedAdImage: visibleCustomImages[visibleCustomImages.length - 1].url,
         primaryColor: palette.primary,
         allGeneratedAdImages: updatedGenerated
       });
-      await syncGeneratedPackageToSite(imagesCustom[imagesCustom.length - 1].url, refImage);
+      if (user) await syncGeneratedPackageToSite(imagesCustom[imagesCustom.length - 1].url, refImage);
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);
       localStorage.setItem("fabrica_gen_count", String(newCount));
@@ -1586,6 +1628,14 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       await release(reservation.reservationId).catch(() => undefined);
       toast.error("Erro ao baixar imagem");
     }
+  };
+
+  const openGeneratedPreview = (url: string) => {
+    if (isAdPreviewLocked) {
+      setShowExportPaywall(true);
+      return;
+    }
+    setMaximizedImage(url);
   };
 
   const handleOpenCarousel = () => {
@@ -2797,7 +2847,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setMaximizedImage(img.url);
+                          openGeneratedPreview(img.url);
                         }}
                         className="absolute top-2 right-12 p-2 bg-black/60 text-white rounded-lg md:opacity-0 md:group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-black/90 backdrop-blur-md"
                         title="Maximizar imagem"

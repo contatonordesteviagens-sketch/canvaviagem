@@ -62,7 +62,7 @@ export function PricingAccordionES() {
 
             <div className="mt-auto pt-4">
               <a
-                href="https://buy.stripe.com/eVqeVe61Q3Es9mPbF28so0h"
+                href="/inicio?checkout=monthly&upgrade=fabrica&returnTo=%2Fes%2Ffabrica&offer=general"
                 className="w-full text-center py-3.5 rounded-xl font-bold border-2 transition-all hover:bg-slate-50 active:scale-95 flex items-center justify-center text-[15px]"
                 style={{ borderColor: '#CBD5E1', color: '#64748B' }}
               >
@@ -147,7 +147,7 @@ export function PricingAccordionES() {
 
             <div className="mt-auto">
               <a
-                href="https://buy.stripe.com/aFaaEY61Q2AoeH94cA8so0g"
+                href="/inicio?checkout=annual&upgrade=fabrica&returnTo=%2Fes%2Ffabrica&offer=general"
                 className="w-full text-center py-5 rounded-2xl font-black text-white shadow-[0_15px_30px_-10px_rgba(124,58,237,0.7)] hover:bg-[#6D28D9] transition-all active:scale-95 flex items-center justify-center text-[19px] bg-gradient-to-r from-[#7C3AED] to-[#6D28D9]"
               >
                 Elegir anual y ahorrar US$350

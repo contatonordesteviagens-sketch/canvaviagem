@@ -51,6 +51,13 @@ const jsonResponse = (body: Record<string, unknown>, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
+const sha256 = async (value: string) => {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+};
+
 const isCurrent = (end?: string | null) => !end || new Date(end).getTime() > Date.now();
 
 function classifyTier(
@@ -196,6 +203,12 @@ serve(async (req) => {
 
       const idempotencyKey = typeof body.idempotency_key === "string" ? body.idempotency_key : "";
       const limit = FREE_LIMITS[capability];
+      const forwardedIp = req.headers.get("cf-connecting-ip")
+        || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+        || "unknown";
+      const serverFingerprint = await sha256(
+        `${forwardedIp}|${(req.headers.get("user-agent") || "unknown").slice(0, 240)}`,
+      );
       const { data, error } = await db.rpc("reserve_fabrica_usage", {
         p_user_id: userId,
         p_capability: capability,
@@ -204,6 +217,7 @@ serve(async (req) => {
         p_metadata: typeof body.metadata === "object" && body.metadata ? body.metadata : {},
         p_limit: limit,
         p_fingerprint: typeof body.fingerprint === "string" ? body.fingerprint : null,
+        p_server_fingerprint: serverFingerprint,
       });
       if (error) throw error;
       const reservation = data && typeof data === "object" && !Array.isArray(data)

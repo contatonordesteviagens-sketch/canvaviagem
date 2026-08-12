@@ -454,19 +454,19 @@ serve(async (req) => {
         await handleCheckoutCompleted(event.data.object, supabaseAdmin, resend, stripe);
         break;
       case "customer.subscription.created":
-        await handleSubscriptionCreated(event.data.object, supabaseAdmin);
+        await handleSubscriptionCreated(event.data.object, supabaseAdmin, stripe);
         break;
       case "customer.subscription.updated":
-        await handleSubscriptionUpdated(event.data.object, supabaseAdmin);
+        await handleSubscriptionUpdated(event.data.object, supabaseAdmin, stripe);
         break;
       case "customer.subscription.deleted":
-        await handleSubscriptionDeleted(event.data.object, supabaseAdmin, resend);
+        await handleSubscriptionDeleted(event.data.object, supabaseAdmin, resend, stripe);
         break;
       case "invoice.payment_succeeded":
         await handlePaymentSucceeded(event.data.object, supabaseAdmin, resend, stripe);
         break;
       case "invoice.payment_failed":
-        await handlePaymentFailed(event.data.object, supabaseAdmin, resend);
+        await handlePaymentFailed(event.data.object, supabaseAdmin, resend, stripe);
         break;
       case "checkout.session.expired":
         await handleCheckoutExpired(event.data.object, supabaseAdmin, resend);
@@ -548,13 +548,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
   );
 }
 
-async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabase: any) {
+async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabase: any, stripe: Stripe) {
   logStep("Processing customer.subscription.created", { subscriptionId: subscription.id });
-  await handleSubscriptionUpdated(subscription, supabase);
+  await handleSubscriptionUpdated(subscription, supabase, stripe);
 }
 
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supabase: any) {
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supabase: any, stripe: Stripe) {
   logStep("Processing customer.subscription.updated", { subscriptionId: subscription.id });
+  // Stripe doesn't guarantee webhook order. Re-read the authoritative object
+  // before mutating access so an older event cannot reactivate a canceled user.
+  subscription = await stripe.subscriptions.retrieve(subscription.id);
   const stripeCustomerId = subscription.customer as string;
   const productId = subscription.items.data[0]?.price?.product as string | undefined;
   const accessDetails = getSubscriptionAccessDetails(subscription);
@@ -584,7 +587,12 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supa
   }
 }
 
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supabase: any, resend: any) {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supabase: any, resend: any, stripe: Stripe) {
+  try {
+    subscription = await stripe.subscriptions.retrieve(subscription.id);
+  } catch (error: any) {
+    if (error?.statusCode !== 404 && error?.code !== "resource_missing") throw error;
+  }
   const stripeCustomerId = subscription.customer as string;
   const { data: profile } = await supabase.from("profiles").select("email, name").eq("stripe_customer_id", stripeCustomerId).single();
   const { error: cancellationError } = await supabase.from("subscriptions").update({ status: "canceled", updated_at: new Date().toISOString() }).eq("stripe_customer_id", stripeCustomerId);
@@ -664,19 +672,55 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
     }
   }
 
+  const subscriptionId = invoice.subscription as string | null;
+  if (subscriptionId) {
+    const authoritativeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const authoritativeAccess = getSubscriptionAccessDetails(authoritativeSubscription);
+    const authoritativeProductId = authoritativeSubscription.items.data[0]?.price?.product as string | undefined;
+    const { error: authoritativeUpdateError } = await supabase.from("subscriptions").update({
+      status: authoritativeAccess.status,
+      current_period_end: authoritativeAccess.currentPeriodEnd,
+      trial_started_at: authoritativeAccess.trialStartedAt,
+      trial_ends_at: authoritativeAccess.trialEndsAt,
+      product_id: authoritativeProductId ?? null,
+      stripe_subscription_id: authoritativeSubscription.id,
+      updated_at: new Date().toISOString(),
+    }).eq("stripe_customer_id", stripeCustomerId);
+    if (authoritativeUpdateError) throw authoritativeUpdateError;
+  } else {
   const { error } = await supabase.from("subscriptions").update({
     status: "active",
     updated_at: new Date().toISOString(),
   }).eq("stripe_customer_id", stripeCustomerId);
-  if (error) logStep("ERROR reactivating subscription", { error: error.message });
+  if (error) throw error;
+  }
   const conversionTracked = await trackPaidInvoiceConversionSafely(invoice, supabase, stripe);
   if (!conversionTracked) throw new Error(`Paid conversion pending for invoice ${invoice.id}`);
 }
 
-async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resend: any) {
+async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resend: any, stripe: Stripe) {
   const stripeCustomerId = invoice.customer as string;
   const { data: profile } = await supabase.from("profiles").select("email, name").eq("stripe_customer_id", stripeCustomerId).single();
-  const { error: paymentStatusError } = await supabase.from("subscriptions").update({ status: "past_due", updated_at: new Date().toISOString() }).eq("stripe_customer_id", stripeCustomerId);
+  const subscriptionId = invoice.subscription as string | null;
+  let nextStatus = "past_due";
+  let authoritativeFields: Record<string, unknown> = {};
+  if (subscriptionId) {
+    const authoritativeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const access = getSubscriptionAccessDetails(authoritativeSubscription);
+    nextStatus = access.status;
+    authoritativeFields = {
+      current_period_end: access.currentPeriodEnd,
+      trial_started_at: access.trialStartedAt,
+      trial_ends_at: access.trialEndsAt,
+      product_id: authoritativeSubscription.items.data[0]?.price?.product ?? null,
+      stripe_subscription_id: authoritativeSubscription.id,
+    };
+  }
+  const { error: paymentStatusError } = await supabase.from("subscriptions").update({
+    status: nextStatus,
+    ...authoritativeFields,
+    updated_at: new Date().toISOString(),
+  }).eq("stripe_customer_id", stripeCustomerId);
   if (paymentStatusError) throw paymentStatusError;
   const { data: failedSubscription, error: failedLookupError } = await supabase
     .from("subscriptions")

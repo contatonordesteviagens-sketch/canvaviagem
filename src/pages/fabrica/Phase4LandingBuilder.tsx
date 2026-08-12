@@ -2701,7 +2701,17 @@ const ImageGallery = ({
 
   const handleFile = async (file: File) => {
     if (!user?.id) {
-      toast.error("Faça login para enviar uma imagem do computador.");
+      if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+        toast.error("Envie uma imagem de até 5 MB.");
+        return;
+      }
+      const localReader = new FileReader();
+      localReader.onload = () => {
+        const dataUrl = String(localReader.result || "");
+        if (dataUrl) onAdd(dataUrl);
+      };
+      localReader.onerror = () => toast.error("Não foi possível ler essa imagem.");
+      localReader.readAsDataURL(file);
       return;
     }
     if (file.size > 12 * 1024 * 1024) {
@@ -2847,6 +2857,16 @@ const PublishSiteCard = ({
   const { user } = useAuth();
   const { can, track } = useEntitlements();
   const [showPublishPaywall, setShowPublishPaywall] = useState(false);
+  const sitePreviewTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (user?.id || !html) return;
+    track("site_preview_generated", { source: "site_builder" });
+    sitePreviewTimerRef.current = window.setTimeout(() => setShowPublishPaywall(true), 10_000);
+    return () => {
+      if (sitePreviewTimerRef.current) window.clearTimeout(sitePreviewTimerRef.current);
+    };
+  }, [html, track, user?.id]);
 
   const handleDownload = () => {
     if (!can("site.publish")) {

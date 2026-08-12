@@ -103,7 +103,7 @@ const buildGuestSnapshot = (): EntitlementsSnapshot => ({
     "fabrica.open": true,
     "fabrica.configure": true,
     "fabrica.save": false,
-    "photos.search": false,
+    "photos.search": true,
     "ad.preview": true,
     "carousel.preview": true,
     "site.preview": true,

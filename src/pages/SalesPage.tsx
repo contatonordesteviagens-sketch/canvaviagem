@@ -342,17 +342,13 @@ export default function SalesPage() {
     else if (plan === "smart_annual") priceVal = 482;
     trackInitiateCheckout(priceVal);
     
-    const baseUrl = STRIPE[plan];
-    if (baseUrl) {
-      try {
-        const url = new URL(baseUrl);
-        const params = new URLSearchParams(window.location.search);
-        params.forEach((value, key) => url.searchParams.append(key, value));
-        window.open(url.toString(), "_blank");
-      } catch (e) {
-        window.open(baseUrl, "_blank");
-      }
+    if (plan.startsWith("elite_")) {
+      const cycle = plan.endsWith("annual") ? "annual" : "monthly";
+      window.location.assign(`/inicio?checkout=${cycle}&upgrade=fabrica&returnTo=%2Ffabrica&offer=general`);
+      return;
     }
+    const baseUrl = STRIPE[plan];
+    if (baseUrl) window.open(baseUrl, "_blank", "noopener,noreferrer");
   };
 
   return (

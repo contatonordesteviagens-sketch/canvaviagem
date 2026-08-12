@@ -38,6 +38,7 @@ type UserIntelligence = {
   leads: number;
   conversion_rate: number;
   last_activity: string | null;
+  abuse_related_accounts: number;
   alert: string | null;
 };
 
@@ -53,9 +54,14 @@ const alertLabels: Record<string, string> = {
   TRAFEGO_EM_SITE_SEM_ELITE: "Tráfego em site sem Elite",
   LEADS_EM_CONTA_SEM_ELITE: "Leads em conta sem Elite",
   PAGAMENTO_PENDENTE: "Pagamento pendente",
+  MULTIPLAS_CONTAS_SINAL: "Possível repetição do teste em várias contas",
 };
 
-const csvValue = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+const csvValue = (value: unknown) => {
+  const raw = String(value ?? "");
+  const safe = /^[=+\-@]/.test(raw) ? `'${raw}` : raw;
+  return `"${safe.replace(/"/g, '""')}"`;
+};
 
 export default function UserIntelligencePage() {
   const [rows, setRows] = useState<UserIntelligence[]>([]);
@@ -131,7 +137,7 @@ export default function UserIntelligencePage() {
           <div>
             <p className="text-xs font-black uppercase tracking-[0.22em] text-violet-400">Controle de receita e uso</p>
             <h1 className="mt-2 text-3xl font-black">Inteligência de usuários</h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-400">Dados reais de assinatura, sites, uso, visitas e leads. Métricas futuras passam a ser registradas no momento da geração e do download.</p>
+            <p className="mt-2 max-w-3xl text-sm text-slate-400">Assinaturas, sites e leads vêm do servidor. Gerações e downloads são telemetria operacional e servem para acompanhamento, não como registro financeiro.</p>
           </div>
           <div className="flex gap-2">
             <button onClick={() => void load()} className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm font-bold hover:bg-white/5"><RefreshCw className="h-4 w-4" />Atualizar</button>
@@ -160,7 +166,7 @@ export default function UserIntelligencePage() {
                 <td className="px-4 py-4"><p className="font-bold">{row.name || "Sem nome"}</p><p className="text-xs text-slate-400">{row.email || "Sem email"}</p><p className="text-xs text-slate-600">{row.phone || ""}</p>{expanded === row.user_id && <div className="mt-4 min-w-[980px] space-y-3" onClick={(event) => event.stopPropagation()}><p className="text-xs font-black uppercase tracking-wider text-slate-500">Sites do usuário</p>{row.sites.length === 0 ? <p className="text-slate-500">Nenhum site publicado.</p> : row.sites.map((site) => <div key={site.id} className="flex items-center justify-between rounded-xl border border-white/8 bg-black/20 p-3"><div><p className="font-bold">{site.id}.canvaviagem.com</p><p className="text-xs text-slate-500">{site.active ? "Ativo" : `Suspenso: ${site.suspension_reason || "sem motivo"}`}</p></div><div className="flex gap-2"><a href={`https://${site.id}.canvaviagem.com`} target="_blank" rel="noreferrer" className="rounded-lg border border-white/10 p-2"><ExternalLink className="h-4 w-4" /></a><button onClick={() => void setSiteStatus(site, !site.active)} className={`rounded-lg px-3 py-2 text-xs font-black ${site.active ? "bg-red-500/15 text-red-300" : "bg-emerald-500/15 text-emerald-300"}`}>{site.active ? "Suspender" : "Reativar"}</button></div></div>)}</div>}</td>
                 <td className="px-4 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-black ${row.plan === "elite" ? "bg-violet-500/20 text-violet-300" : row.plan === "start" ? "bg-blue-500/20 text-blue-300" : "bg-slate-500/15 text-slate-400"}`}>{planLabels[row.plan]}</span><p className="mt-2 text-xs text-slate-500">{row.subscription_status}</p></td>
                 <td className="px-4 py-4"><p className="font-black">{row.active_site_count} ativo(s)</p><p className="text-xs text-slate-500">{row.site_count} total</p></td>
-                <td className="px-4 py-4"><p>{row.ad_generations} anúncios gerados · {row.ad_downloads} baixados</p><p className="text-xs text-slate-500">{row.carousel_generations} carrosséis gerados · {row.carousel_downloads} baixados</p></td>
+                <td className="px-4 py-4"><p>{row.ad_generations} anúncios gerados · {row.ad_downloads} baixados</p><p className="text-xs text-slate-500">{row.carousel_generations} carrosséis gerados · {row.carousel_downloads} baixados</p>{row.abuse_related_accounts > 0 && <p className="mt-1 text-xs font-bold text-amber-300">Sinal compartilhado com {row.abuse_related_accounts} conta(s)</p>}</td>
                 <td className="px-4 py-4 font-black">{row.site_visits.toLocaleString("pt-BR")}<p className="text-xs font-normal text-slate-500">{row.site_clicks} cliques</p></td>
                 <td className="px-4 py-4 font-black">{row.leads}</td><td className="px-4 py-4 font-black">{row.conversion_rate}%</td>
                 <td className="px-4 py-4">{row.alert ? <span className="inline-flex items-center gap-1 rounded-lg bg-amber-400/12 px-2 py-1 text-xs font-bold text-amber-300"><AlertTriangle className="h-3.5 w-3.5" />{alertLabels[row.alert] || row.alert}</span> : <span className="text-xs text-emerald-400">Sem alerta</span>}</td>

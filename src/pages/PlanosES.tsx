@@ -289,8 +289,7 @@ const PlanosES = () => {
     setCtaClicked(true);
     const amount = billingCycle === "annual" ? 697 : 97;
     trackInitiateCheckout(amount);
-    const url = billingCycle === "annual" ? STRIPE.elite_annual : STRIPE.elite_monthly;
-    window.open(url, "_blank");
+    window.location.assign(`/inicio?checkout=${billingCycle}&upgrade=fabrica&returnTo=%2Fes%2Ffabrica&offer=general`);
   };
 
   const handleCreatePix = async () => {
@@ -383,7 +382,7 @@ const PlanosES = () => {
                 Haz upgrade y obtén acceso a la Fábrica de Viajes, ofertas prontas para Meta Ads e site, e muito mais.
               </p>
               <button
-                onClick={() => { trackInitiateCheckout(697); window.open(STRIPE.elite_annual, "_blank"); }}
+                onClick={() => { trackInitiateCheckout(482); window.location.assign("/inicio?checkout=annual&upgrade=fabrica&returnTo=%2Fes%2Ffabrica&offer=general"); }}
                 className="w-full bg-black text-white text-sm font-black py-3 rounded-xl hover:bg-zinc-800 transition-all"
               >
                 Hacer Upgrade a Elite →

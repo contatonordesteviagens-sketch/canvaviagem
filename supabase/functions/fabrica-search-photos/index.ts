@@ -1,6 +1,7 @@
 // Edge function: fabrica-search-photos
 // Busca fotos turísticas usando Pexels (principal) e Google Custom Search (alternativo).
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { verifyFabricaAuthenticatedAccess } from "../_shared/fabricaAccess.ts";
 
 const corsHeaders = {
@@ -21,6 +22,12 @@ type PhotoOrientation = "landscape" | "portrait" | "square";
 
 const requestWindows = new Map<string, { count: number; resetsAt: number }>();
 const photoCache = new Map<string, { photos: PhotoOut[]; expiresAt: number }>();
+
+async function sha256(value: string) {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
 
 function allowPhotoSearch(requesterId: string, limit = 30) {
   const now = Date.now();
@@ -115,7 +122,18 @@ serve(async (req) => {
     const requesterKey = access.ok ? `user:${access.userId}` : guestKey;
     // Guests may search while building their first preview, but at a much
     // tighter rate than authenticated accounts to protect provider credits.
-    if (!allowPhotoSearch(requesterKey, access.ok ? 30 : 8)) {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const db = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    const requesterHash = await sha256(requesterKey);
+    const { data: persistentAllowed, error: rateError } = await db.rpc("consume_fabrica_rate_limit", {
+      p_requester_hash: requesterHash,
+      p_action: "photo_search",
+      p_limit: access.ok ? 30 : 8,
+      p_window_seconds: 60,
+    });
+    if (rateError) console.error("persistent photo rate limit failed", rateError.message);
+    if (!allowPhotoSearch(requesterKey, access.ok ? 30 : 8) || persistentAllowed !== true) {
       return new Response(JSON.stringify({ error: "Muitas buscas seguidas. Aguarde um minuto." }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
