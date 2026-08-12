@@ -52,7 +52,7 @@ const Gestao = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
-  
+
   useEffect(() => {
     insertMissingCaptions();
   }, []);
@@ -75,7 +75,6 @@ const Gestao = () => {
   const deleteCaptionMutation = useDeleteCaption();
   const deleteTool = useDeleteMarketingTool();
 
-  // Loading state - wait for both auth and admin check
   if (authLoading || adminLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -87,12 +86,10 @@ const Gestao = () => {
     );
   }
 
-  // Redirect if not authenticated - go to admin login
   if (!user) {
     return <Navigate to="/admin-login" replace />;
   }
 
-  // Redirect if not admin (only after loading is complete)
   if (!isAdmin) {
     return <Navigate to="/" replace />;
   }
@@ -215,13 +212,13 @@ const Gestao = () => {
               <Users className="h-4 w-4" />
               Usuários
             </TabsTrigger>
-            <TabsTrigger value="live-chat" className="flex items-center gap-2 flex-1 min-w-[120px]">
-              <MessageSquare className="h-4 w-4" />
-              Comentários Live
-            </TabsTrigger>
             <TabsTrigger value="sites" className="flex items-center gap-2 flex-1 min-w-[120px]">
               <Globe className="h-4 w-4" />
               Sites Gerados
+            </TabsTrigger>
+            <TabsTrigger value="live-chat" className="flex items-center gap-2 flex-1 min-w-[120px]">
+              <MessageSquare className="h-4 w-4" />
+              Comentários Live
             </TabsTrigger>
           </TabsList>
 
@@ -265,14 +262,14 @@ const Gestao = () => {
             <UsersSection />
           </TabsContent>
 
-          {/* Live Comments Tab */}
-          <TabsContent value="live-chat" className="mt-0">
-            <LiveCommentsSection />
-          </TabsContent>
-
           {/* Sites Tab */}
           <TabsContent value="sites" className="mt-0">
             <SitesSection />
+          </TabsContent>
+
+          {/* Live Comments Tab — last */}
+          <TabsContent value="live-chat" className="mt-0">
+            <LiveCommentsSection />
           </TabsContent>
         </Tabs>
       </div>
