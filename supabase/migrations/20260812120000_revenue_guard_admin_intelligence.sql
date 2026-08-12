@@ -268,7 +268,7 @@ FROM LATERAL (
     'abuse_related_accounts', COALESCE(am.related_accounts, 0),
     'alert', CASE
       WHEN s.status IN ('past_due','unpaid') THEN 'PAGAMENTO_PENDENTE'
-      WHEN COALESCE(am.related_accounts, 0) >= 2 THEN 'MULTIPLAS_CONTAS_SINAL'
+      WHEN COALESCE(am.related_accounts, 0) >= 1 THEN 'MULTIPLAS_CONTAS_SINAL'
       WHEN COALESCE(sm.active_site_count, 0) > 0 AND NOT public.fabrica_full_access_internal(p.user_id)
         THEN 'SITE_ATIVO_SEM_ELITE'
       WHEN NOT public.fabrica_full_access_internal(p.user_id)
@@ -300,20 +300,6 @@ ALTER TABLE public.fabrica_usage_ledger
   ADD COLUMN IF NOT EXISTS server_fingerprint text;
 CREATE INDEX IF NOT EXISTS idx_fabrica_usage_server_fingerprint
   ON public.fabrica_usage_ledger(server_fingerprint, capability, status);
-
-CREATE TABLE IF NOT EXISTS public.fabrica_abuse_signals (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  signal_type text NOT NULL,
-  signal_hash text NOT NULL,
-  related_accounts int NOT NULL DEFAULT 0,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  last_seen_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE(user_id, signal_type, signal_hash)
-);
-ALTER TABLE public.fabrica_abuse_signals ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.fabrica_abuse_signals FROM anon, authenticated;
-GRANT ALL ON public.fabrica_abuse_signals TO service_role;
 
 CREATE TABLE IF NOT EXISTS public.fabrica_rate_limits (
   requester_hash text NOT NULL,
@@ -357,6 +343,45 @@ $$;
 
 REVOKE ALL ON FUNCTION public.consume_fabrica_rate_limit(text,text,int,int) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.consume_fabrica_rate_limit(text,text,int,int) TO service_role;
+
+CREATE TABLE IF NOT EXISTS public.fabrica_trial_claims (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  email_hash text NOT NULL UNIQUE,
+  payment_fingerprint text UNIQUE,
+  stripe_customer_id text NOT NULL,
+  stripe_subscription_id text NOT NULL UNIQUE,
+  claimed_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.fabrica_trial_claims ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.fabrica_trial_claims FROM anon, authenticated;
+GRANT ALL ON public.fabrica_trial_claims TO service_role;
+
+CREATE OR REPLACE FUNCTION public.claim_fabrica_trial(
+  p_user_id uuid,
+  p_email_hash text,
+  p_payment_fingerprint text,
+  p_stripe_customer_id text,
+  p_stripe_subscription_id text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.fabrica_trial_claims(
+    user_id, email_hash, payment_fingerprint, stripe_customer_id, stripe_subscription_id
+  ) VALUES (
+    p_user_id, p_email_hash, NULLIF(p_payment_fingerprint, ''), p_stripe_customer_id, p_stripe_subscription_id
+  );
+  RETURN true;
+EXCEPTION WHEN unique_violation THEN
+  RETURN false;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.claim_fabrica_trial(uuid,text,text,text,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.claim_fabrica_trial(uuid,text,text,text,text) TO service_role;
 
 CREATE OR REPLACE FUNCTION public.reserve_fabrica_usage(
   p_user_id uuid,
@@ -406,12 +431,16 @@ BEGIN
 
   UPDATE public.fabrica_usage_ledger SET status = 'released', updated_at = now()
   WHERE capability = p_capability AND status = 'reserved' AND expires_at <= now()
-    AND (user_id = p_user_id OR (NULLIF(p_fingerprint, '') IS NOT NULL AND fingerprint = p_fingerprint));
+    AND (user_id = p_user_id
+      OR (NULLIF(p_fingerprint, '') IS NOT NULL AND fingerprint = p_fingerprint)
+      OR (NULLIF(p_server_fingerprint, '') IS NOT NULL AND server_fingerprint = p_server_fingerprint));
 
   SELECT count(*)::integer INTO active_count FROM public.fabrica_usage_ledger
   WHERE capability = p_capability
     AND (status = 'committed' OR (status = 'reserved' AND expires_at > now()))
-    AND (user_id = p_user_id OR (NULLIF(p_fingerprint, '') IS NOT NULL AND fingerprint = p_fingerprint));
+    AND (user_id = p_user_id
+      OR (NULLIF(p_fingerprint, '') IS NOT NULL AND fingerprint = p_fingerprint)
+      OR (NULLIF(p_server_fingerprint, '') IS NOT NULL AND server_fingerprint = p_server_fingerprint));
   IF active_count >= p_limit THEN RETURN jsonb_build_object('allowed', false, 'remaining', 0); END IF;
 
   INSERT INTO public.fabrica_usage_ledger(
@@ -429,8 +458,15 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.reserve_fabrica_usage(uuid,text,text,text,jsonb,integer,text);
 REVOKE ALL ON FUNCTION public.reserve_fabrica_usage(uuid,text,text,text,jsonb,integer,text,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.reserve_fabrica_usage(uuid,text,text,text,jsonb,integer,text,text) TO service_role;
+
+-- Keep this public bucket image-only. Website HTML is published through the
+-- Elite-only public_sites pipeline, never through a raw storage write.
+UPDATE storage.buckets
+SET allowed_mime_types = ARRAY['image/png', 'image/jpeg', 'image/webp']::text[]
+WHERE id = 'thumbnails';
 
 CREATE TABLE IF NOT EXISTS public.stripe_webhook_events (
   event_id text PRIMARY KEY,

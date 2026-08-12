@@ -237,7 +237,7 @@ const LiveStream = () => {
     title: "🔥 OFERTA EXCLUSIVA DA LIVE LIBERADA!",
     description: "Adquira o Canva Viagem Vitalício + Fábrica de Anúncios I.A com Desconto!",
     price: "Apenas 12x de R$ 28,91 ou R$ 347 à vista",
-    checkoutUrl: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
+    checkoutUrl: "/inicio?checkout=annual&upgrade=fabrica&returnTo=%2Ffabrica&offer=team",
     bannerUrl: ""
   });
   const [showOfferBanner, setShowOfferBanner] = useState(false);
@@ -1776,9 +1776,7 @@ const LiveStream = () => {
                       </div>
                     </div>
                     <a
-                      href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href="/inicio?checkout=annual&upgrade=fabrica&returnTo=%2Ffabrica&offer=team"
                       onClick={(e) => { e.stopPropagation(); trackCheckoutClick(); }}
                       className="flex-shrink-0"
                     >
@@ -1811,9 +1809,7 @@ const LiveStream = () => {
                     <p className="text-[10px] text-zinc-400 leading-tight line-clamp-1 mt-0.5">{offerSettings.description}</p>
                   </div>
                   <a
-                    href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="/inicio?checkout=annual&upgrade=fabrica&returnTo=%2Ffabrica&offer=team"
                     onClick={(e) => { e.stopPropagation(); trackCheckoutClick(); }}
                     className="flex-shrink-0"
                   >
@@ -1982,9 +1978,7 @@ const LiveStream = () => {
 
                       {/* BOTÃO GRANDE VERDE */}
                       <a
-                        href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href="/inicio?checkout=annual&upgrade=fabrica&returnTo=%2Ffabrica&offer=team"
                         className="w-full block flex-shrink-0"
                         onClick={trackCheckoutClick}
                       >

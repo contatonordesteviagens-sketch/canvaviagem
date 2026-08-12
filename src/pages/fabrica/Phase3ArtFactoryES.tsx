@@ -1303,6 +1303,26 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
         }
         track("ad_preview_generated", { amount, mode: genMode, format, locale: "es" });
       };
+      if (!user) {
+        const source = refImage || selectedPhotoUrl || customImageData;
+        const teaser = await createGuestPreviewArt({
+          url: source,
+          variant: null,
+          engine: genMode === "ai" ? "ia" : genMode,
+          categoria: categoria as any,
+          format: format as any,
+          strategyId: "guest-preview",
+          seed: generationSeed,
+          createdAt: Date.now(),
+        } as GeneratedArt);
+        setGeneratedImages([teaser]);
+        setGeneratedImage(teaser);
+        update({ generatedAdImage: teaser.url, allGeneratedAdImages: [teaser.url] });
+        finishCycle(1);
+        toast.success("Tu vista previa está lista. Crea tu cuenta para generar el anuncio final.");
+        requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+        return;
+      }
 
       const buildComposeOptions = (
         imgUrl: string,

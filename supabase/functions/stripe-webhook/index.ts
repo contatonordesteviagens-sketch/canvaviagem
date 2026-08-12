@@ -506,9 +506,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
 
   let productId: string | undefined = undefined;
   let accessDetails: SubscriptionAccessDetails | undefined;
+  let authoritativeSubscription: Stripe.Subscription | undefined;
   if (stripeSubscriptionId) {
     try {
       const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+      authoritativeSubscription = subscription;
       const retrievedProductId = subscription.items.data[0]?.price?.product as string;
       accessDetails = getSubscriptionAccessDetails(subscription);
       if (retrievedProductId) {
@@ -584,6 +586,31 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supa
       p_user_id: localSubscription.user_id,
     });
     if (siteAccessError) throw siteAccessError;
+  }
+
+  if (accessDetails?.status === "trialing" && authoritativeSubscription) {
+    const referencedUserId = session.client_reference_id || session.metadata?.user_id || "";
+    const paymentMethodRef = authoritativeSubscription.default_payment_method;
+    let paymentFingerprint = "";
+    if (paymentMethodRef) {
+      const paymentMethod = typeof paymentMethodRef === "string"
+        ? await stripe.paymentMethods.retrieve(paymentMethodRef)
+        : paymentMethodRef;
+      paymentFingerprint = paymentMethod.card?.fingerprint || "";
+    }
+    const { data: trialClaimed, error: trialClaimError } = await supabase.rpc("claim_fabrica_trial", {
+      p_user_id: referencedUserId,
+      p_email_hash: await sha256Hex(email),
+      p_payment_fingerprint: paymentFingerprint,
+      p_stripe_customer_id: stripeCustomerId,
+      p_stripe_subscription_id: stripeSubscriptionId,
+    });
+    if (trialClaimError) throw trialClaimError;
+    if (!trialClaimed) {
+      await stripe.subscriptions.cancel(stripeSubscriptionId);
+      logStep("Duplicate trial blocked", { sessionId: session.id, userId: referencedUserId });
+      return;
+    }
   }
 }
 

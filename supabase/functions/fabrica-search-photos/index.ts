@@ -115,8 +115,9 @@ serve(async (req) => {
 
   try {
     const access = await verifyFabricaAuthenticatedAccess(req, corsHeaders);
-    const forwardedIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-      || req.headers.get("cf-connecting-ip")
+    const forwardedIp = req.headers.get("cf-connecting-ip")
+      || req.headers.get("x-real-ip")
+      || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       || "unknown";
     const guestKey = `guest:${forwardedIp}:${(req.headers.get("user-agent") || "unknown").slice(0, 80)}`;
     const requesterKey = access.ok ? `user:${access.userId}` : guestKey;

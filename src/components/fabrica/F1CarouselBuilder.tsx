@@ -7086,7 +7086,7 @@ export function F1CarouselBuilder({
             </div>
             
             <div className="relative mx-auto flex w-full max-w-[340px] justify-center overflow-hidden rounded-[32px] border border-white/[0.08] bg-zinc-950 shadow-2xl transition-all duration-300">
-              {activeSlide && (
+              {activeSlide && tier !== "guest" && (
                 <div className={`w-full flex justify-center transition ${isCarouselPreviewLocked ? "blur-md" : ""}`}>
                   <ScaledSlidePreview
                       showPixBanner={(state as any).showPixBanner}
@@ -7105,6 +7105,15 @@ export function F1CarouselBuilder({
                     background={state.backgroundColor || "#F4F6F9"}
                     width={340}
                   />
+                </div>
+              )}
+              {activeSlide && tier === "guest" && (
+                <div className="aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-violet-700 via-fuchsia-600 to-amber-400 p-7 blur-[2px]">
+                  <div className="h-4 w-24 rounded-full bg-white/80" />
+                  <div className="mt-10 h-10 w-4/5 rounded-xl bg-white/85" />
+                  <div className="mt-3 h-5 w-3/5 rounded-lg bg-white/60" />
+                  <div className="mt-10 h-40 rounded-3xl bg-white/35" />
+                  <div className="mt-6 h-12 rounded-2xl bg-zinc-950/75" />
                 </div>
               )}
               {activeSlide && isCarouselPreviewLocked && (
