@@ -98,7 +98,7 @@ export async function sendUnifiedWelcomeEmail(
         type: "failed",
         email_type: emailType,
         recipient_email: email,
-        metadata: { token_id: token, product_id: productId, gateway, provider_error: emailResponse.error },
+        metadata: { token_id: token, product_id: productId, gateway: "resend", provider_error: emailResponse.error },
       });
       return;
     }
@@ -108,9 +108,9 @@ export async function sendUnifiedWelcomeEmail(
       type: "sent",
       email_type: emailType,
       recipient_email: email,
-      metadata: { token_id: token, product_id: productId, gateway },
+      metadata: { token_id: token, product_id: productId, gateway: "resend" },
     });
-    console.log("[WELCOME-UTIL] Unified welcome enviado", { email: redactEmail(email), plan, gateway });
+    console.log("[WELCOME-UTIL] Unified welcome enviado", { email: redactEmail(email), plan, gateway: "resend" });
   } catch (e: any) {
     console.log("[WELCOME-UTIL] EXC unified welcome", { error: e.message });
   }
