@@ -476,7 +476,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     update({ destinos: v.trim() ? [v, ...rest] : rest });
   };
   const [price, setPriceState] = useState(state.lastPrice || "149,90");
-  const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
+  const setPrice = (p: string | ((prev: string) => string)) => { setPriceState((prev) => { const next = typeof p === "function" ? p(prev) : p; update({ lastPrice: next }); return next; }); };
   const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
   const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
   const [hideCents, setHideCentsState] = useState<boolean>(!!state.hideCents);

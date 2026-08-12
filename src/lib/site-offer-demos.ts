@@ -71,7 +71,7 @@ const definitions: DemoDefinition[] = [
     packages: [
       packageItem("brisa-jeri", "Jericoacoara Essencial — 5 dias", "10x de R$ 289", image("photo-1598515214211-89d3c73ae83b"), {
         badge: "Mais procurado",
-        segment: "lazer",
+        segment: "pacote",
         subtitle: "Vila de Jeri, Lagoa do Paraíso e passeio pelo litoral leste",
         longDescription: "Uma viagem completa para conhecer os cartões-postais de Jericoacoara sem perder tempo organizando cada etapa separadamente.",
         travelDates: "Saídas semanais de agosto a dezembro",
@@ -86,7 +86,7 @@ const definitions: DemoDefinition[] = [
       }),
       packageItem("brisa-porto", "Porto de Galinhas em Família", "12x de R$ 319", image("photo-1507525428034-b723cf961d3e"), {
         badge: "Família",
-        segment: "lazer",
+        segment: "pacote",
         subtitle: "Piscinas naturais, resort e tempo livre para toda a família",
         travelDates: "Setembro e outubro",
         duration: "6 dias e 5 noites",
@@ -126,7 +126,7 @@ const definitions: DemoDefinition[] = [
     packages: [
       packageItem("atlas-paris", "Paris Romântica — 6 noites", "12x de R$ 799", image("photo-1502602898657-3e91760cbb34"), {
         badge: "Lua de mel",
-        segment: "lua-de-mel",
+        segment: "sob-medida",
         subtitle: "Hotel central, passeio pelo Sena e experiências para dois",
         longDescription: "Uma seleção de experiências clássicas de Paris com tempo livre para o casal viver a cidade no próprio ritmo.",
         travelDates: "Março, abril e maio",
@@ -148,7 +148,7 @@ const definitions: DemoDefinition[] = [
       }),
       packageItem("atlas-dubai", "Dubai para Toda a Família", "12x de R$ 1.089", image("photo-1512453979798-5ea266f8880c"), {
         badge: "Férias escolares",
-        segment: "lazer",
+        segment: "pacote",
         subtitle: "Cidade, deserto e atrações para adultos e crianças",
         travelDates: "Janeiro e julho",
         duration: "7 dias e 6 noites",
