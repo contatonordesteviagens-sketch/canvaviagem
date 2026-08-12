@@ -207,10 +207,11 @@ const formatPriceValue = (raw: string, currency: Currency, assumeCents = false, 
 
   const preset = CURRENCY_PRESETS.find((c) => c.id === currency)!;
   try {
+    const finalNum = noCents ? Math.trunc(num) : num;
     return new Intl.NumberFormat(preset.locale, {
       minimumFractionDigits: noCents ? 0 : 2,
       maximumFractionDigits: noCents ? 0 : 2,
-    }).format(num);
+    }).format(finalNum);
   } catch {
     return value;
   }

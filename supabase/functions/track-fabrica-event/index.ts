@@ -101,6 +101,7 @@ Deno.serve(async (request) => {
       .select("owner_id, project_id")
       .eq("id", siteId)
       .eq("project_id", projectId)
+      .eq("is_active", true)
       .maybeSingle();
     if (siteError) throw siteError;
     if (!site?.owner_id || site.project_id !== projectId) {

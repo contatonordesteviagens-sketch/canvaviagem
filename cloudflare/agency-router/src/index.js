@@ -115,6 +115,7 @@ async function fetchPublishedSite(request, env, slug) {
     return new Response("Canva Viagem: roteador não configurado.", { status: 503 });
   }
   endpoint.searchParams.set("id", `eq.${slug}`);
+  endpoint.searchParams.set("is_active", "eq.true");
   endpoint.searchParams.set("select", "html,locale");
   endpoint.searchParams.set("limit", "1");
 

@@ -88,6 +88,9 @@ const publishSiteRecord = async ({
       project_id: projectId,
       html,
       locale,
+      is_active: true,
+      suspended_at: null,
+      suspension_reason: null,
     }),
     userId,
   );

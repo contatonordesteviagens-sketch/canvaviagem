@@ -431,6 +431,7 @@ serve(async (req) => {
   const resend = resendKey ? new Resend(resendKey) : null;
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, { auth: { autoRefreshToken: false, persistSession: false } });
 
+  let claimedEventId = "";
   try {
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
@@ -438,6 +439,15 @@ serve(async (req) => {
 
     const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     logStep("Event received", { type: event.type, id: event.id });
+    const { data: claimed, error: claimError } = await supabaseAdmin.rpc("claim_stripe_webhook_event", {
+      p_event_id: event.id,
+      p_event_type: event.type,
+    });
+    if (claimError) throw claimError;
+    if (!claimed) {
+      return new Response(JSON.stringify({ received: true, duplicate: true }), { headers: corsHeaders, status: 200 });
+    }
+    claimedEventId = event.id;
 
     switch (event.type) {
       case "checkout.session.completed":
@@ -465,8 +475,20 @@ serve(async (req) => {
         logStep("Unhandled event type", { type: event.type });
     }
 
+    const { error: completionError } = await supabaseAdmin
+      .from("stripe_webhook_events")
+      .update({ status: "completed", completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("event_id", event.id);
+    if (completionError) throw completionError;
+
     return new Response(JSON.stringify({ received: true }), { headers: corsHeaders, status: 200 });
   } catch (err: any) {
+    if (claimedEventId) {
+      await supabaseAdmin
+        .from("stripe_webhook_events")
+        .update({ status: "failed", last_error: String(err?.message || err).slice(0, 1000), updated_at: new Date().toISOString() })
+        .eq("event_id", claimedEventId);
+    }
     logStep("ERROR in stripe-webhook", { message: err.message });
     return new Response(JSON.stringify({ error: GENERIC_ERRORS.serviceError }), { headers: corsHeaders, status: 500 });
   }
@@ -547,13 +569,36 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supa
     stripe_subscription_id: subscription.id,
     updated_at: new Date().toISOString(),
   }).eq("stripe_customer_id", stripeCustomerId);
-  if (error) logStep("ERROR updating subscription", { error: error.message });
+  if (error) throw error;
+  const { data: localSubscription, error: localError } = await supabase
+    .from("subscriptions")
+    .select("user_id")
+    .eq("stripe_customer_id", stripeCustomerId)
+    .maybeSingle();
+  if (localError) throw localError;
+  if (localSubscription?.user_id) {
+    const { error: siteAccessError } = await supabase.rpc("sync_user_public_site_access", {
+      p_user_id: localSubscription.user_id,
+    });
+    if (siteAccessError) throw siteAccessError;
+  }
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supabase: any, resend: any) {
   const stripeCustomerId = subscription.customer as string;
   const { data: profile } = await supabase.from("profiles").select("email, name").eq("stripe_customer_id", stripeCustomerId).single();
-  await supabase.from("subscriptions").update({ status: "canceled", updated_at: new Date().toISOString() }).eq("stripe_customer_id", stripeCustomerId);
+  const { error: cancellationError } = await supabase.from("subscriptions").update({ status: "canceled", updated_at: new Date().toISOString() }).eq("stripe_customer_id", stripeCustomerId);
+  if (cancellationError) throw cancellationError;
+  const { data: canceledSubscription, error: canceledLookupError } = await supabase
+    .from("subscriptions")
+    .select("user_id")
+    .eq("stripe_customer_id", stripeCustomerId)
+    .maybeSingle();
+  if (canceledLookupError) throw canceledLookupError;
+  if (canceledSubscription?.user_id) {
+    const { error: siteAccessError } = await supabase.rpc("sync_user_public_site_access", { p_user_id: canceledSubscription.user_id });
+    if (siteAccessError) throw siteAccessError;
+  }
   if (resend && profile?.email) await sendCancellationEmail(resend, profile.email);
   if (profile?.email) await triggerZaiaWebhook("ZAIA_WEBHOOK_CANCELLATION", { email: profile.email, name: profile.name });
 }

@@ -189,10 +189,11 @@ const formatPriceValue = (raw: string, currency: Currency, assumeCents = false, 
 
   const preset = CURRENCY_PRESETS.find((c) => c.id === currency)!;
   try {
+    const finalNum = noCents ? Math.trunc(num) : num;
     return new Intl.NumberFormat(preset.locale, {
       minimumFractionDigits: noCents ? 0 : 2,
       maximumFractionDigits: noCents ? 0 : 2,
-    }).format(num);
+    }).format(finalNum);
   } catch {
     return value;
   }
@@ -2284,7 +2285,15 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               {priceOptionsOpen && (
                 <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/10">
                   <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">
-                    <input type="checkbox" checked={!hideCents} onChange={(e) => setHideCents(!e.target.checked)} className="accent-yellow-400" />
+                    <input type="checkbox" checked={!hideCents} onChange={(e) => {
+                      const show = e.target.checked;
+                      setHideCents(!show);
+                      if (!show) {
+                        setPrice(prev => prev.replace(/,\d{1,2}$/, ""));
+                      } else if (!price.includes(",")) {
+                        setPrice(prev => prev + ",00");
+                      }
+                    }} className="accent-yellow-400" />
                     Mostrar centavos
                   </label>
                   <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">

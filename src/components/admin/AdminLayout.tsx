@@ -12,13 +12,15 @@ import {
   Loader2,
   TrendingUp,
   ShoppingBag,
-  PlaySquare
+  PlaySquare,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/admin/users", label: "Usuários e sites", icon: Users },
   { path: "/admin/live", label: "Gestão Live", icon: PlaySquare },
   { path: "/admin/marketing", label: "Marketing", icon: TrendingUp },
   { path: "/admin/content", label: "Conteúdos", icon: FileText },
