@@ -396,7 +396,7 @@ export default function SiteOfferLanding() {
             </div>
 
             <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-relaxed text-amber-950">
-              <strong>Transparência:</strong> estas três agências, logos, pacotes e valores são fictícios. Foram criados como modelos oficiais para mostrar o que a plataforma consegue montar — não são clientes nem resultados alegados.
+              <strong>Transparência:</strong> estas três agências, logos, pacotes e valores são fictícios. Foram criados como demonstrações oficiais para mostrar o que a plataforma consegue montar. Não são clientes nem resultados alegados.
             </div>
 
             <div className="mt-8 grid gap-3 md:grid-cols-3">

@@ -69,7 +69,7 @@ const definitions: DemoDefinition[] = [
     headline: "O Brasil que você sonha, com tudo organizado para embarcar.",
     subheadline: "Pacotes nacionais com hospedagem, traslados e atendimento do primeiro orçamento até a volta para casa.",
     packages: [
-      packageItem("brisa-jeri", "Jericoacoara Essencial — 5 dias", "10x de R$ 289", image("photo-1598515214211-89d3c73ae83b"), {
+      packageItem("brisa-jeri", "Jericoacoara Essencial, 5 dias", "10x de R$ 289", image("photo-1509316785289-025f5b846b35"), {
         badge: "Mais procurado",
         segment: "pacote",
         subtitle: "Vila de Jeri, Lagoa do Paraíso e passeio pelo litoral leste",
@@ -95,7 +95,7 @@ const definitions: DemoDefinition[] = [
         highlights: ["Piscinas naturais", "Praia de Muro Alto", "Estrutura para crianças"],
         included: ["Hospedagem", "Café da manhã", "Traslados", "Passeio de jangada"],
       }),
-      packageItem("brisa-noronha", "Fernando de Noronha Exclusivo", "12x de R$ 649", image("photo-1544550285-f813152fb2fd"), {
+      packageItem("brisa-noronha", "Fernando de Noronha Exclusivo", "12x de R$ 649", image("photo-1507525428034-b723cf961d3e"), {
         badge: "Experiência premium",
         segment: "sob-medida",
         subtitle: "Praias preservadas, barco e roteiro pensado para o casal",
@@ -171,10 +171,10 @@ const definitions: DemoDefinition[] = [
     secondaryColor: "#FFC857",
     backgroundColor: "#F2FAF8",
     heroImageUrl: image("photo-1500534623283-312aade485b7"),
-    headline: "Viva o Ceará além do cartão-postal.",
+    headline: "Conheça o Ceará de verdade.",
     subheadline: "Passeios locais com guia, transporte e informação clara para você aproveitar cada dia sem improviso.",
     packages: [
-      packageItem("viva-jeri", "Jericoacoara — Litoral Leste", "R$ 189 por pessoa", image("photo-1598515214211-89d3c73ae83b"), {
+      packageItem("viva-jeri", "Jericoacoara, Litoral Leste", "R$ 189 por pessoa", image("photo-1509316785289-025f5b846b35"), {
         badge: "Saída diária",
         segment: "passeio",
         subtitle: "Árvore da Preguiça, Buraco Azul e Lagoa do Paraíso",
@@ -197,7 +197,7 @@ const definitions: DemoDefinition[] = [
         highlights: ["Passeio de buggy", "Lagoa do Banana", "Dunas do Cumbuco"],
         included: ["Transporte ida e volta", "Buggy compartilhado", "Guia local"],
       }),
-      packageItem("viva-fortaleza", "Fortaleza Essencial — City Tour", "R$ 89 por pessoa", image("photo-1500534623283-312aade485b7"), {
+      packageItem("viva-fortaleza", "Fortaleza Essencial, City Tour", "R$ 89 por pessoa", image("photo-1500534623283-312aade485b7"), {
         badge: "Primeira visita",
         segment: "passeio",
         subtitle: "História, cultura, orla e os pontos mais conhecidos da capital",
@@ -251,7 +251,7 @@ const createDemoState = (demo: DemoDefinition): FabricaState => ({
     equipeBadge: "MODELO OFICIAL CANVA VIAGEM",
     equipeEyebrow: "Atendimento",
     equipeTitle: "Informação clara antes de você decidir",
-    equipeIntro: "Este é um modelo demonstrativo: marca, textos, valores e pacotes foram criados para mostrar como uma agência pode preencher e personalizar o próprio site.",
+    equipeIntro: "Marca, textos, valores e pacotes desta demonstração foram preenchidos para mostrar uma experiência completa ao viajante.",
     equipeFeatures: [
       { icon: "✓", title: "Pacotes completos", desc: "Fotos, datas, condições, inclusões e roteiro em uma única página." },
       { icon: "✓", title: "Contato direto", desc: "Formulário e WhatsApp sempre visíveis para facilitar o pedido de orçamento." },
@@ -290,15 +290,19 @@ const createDemoState = (demo: DemoDefinition): FabricaState => ({
     animationLocation: "all",
     animationDuration: "always",
     stats: [
-      { num: "3", label: "Pacotes completos" },
-      { num: "6", label: "Modelos disponíveis" },
-      { num: "100%", label: "Editável" },
-      { num: "1 clique", label: "Para o WhatsApp" },
+      { num: "3", label: "Roteiros selecionados" },
+      { num: "Atendimento", label: "Antes e durante a viagem" },
+      { num: "Compra segura", label: "Condições transparentes" },
+      { num: "Suporte", label: "Fale com nossa equipe" },
     ],
   },
 } as FabricaState);
 
-export const siteOfferDemos: SiteOfferDemo[] = definitions.map((demo) => ({
+const demoOrder = ["atlas-mundo", "viva-ceara", "brisa-brasil"];
+
+export const siteOfferDemos: SiteOfferDemo[] = [...definitions]
+  .sort((a, b) => demoOrder.indexOf(a.id) - demoOrder.indexOf(b.id))
+  .map((demo) => ({
   id: demo.id,
   agencyName: demo.agencyName,
   category: demo.category,
@@ -306,5 +310,8 @@ export const siteOfferDemos: SiteOfferDemo[] = definitions.map((demo) => ({
   templateLabel: demo.templateLabel,
   accent: demo.accent,
   packageNames: demo.packages.map((item) => item.title),
-  html: buildLandingHTML(createDemoState(demo)),
+  html: buildLandingHTML(createDemoState(demo)).replace(
+    "</head>",
+    `<style>#por-que.equipe{background:#0b1324!important}#por-que .equipe-left h2,#por-que .equipe-left .intro,#por-que .feat h4,#por-que .feat p{color:#fff!important}#por-que .equipe-left .intro,#por-que .feat p{opacity:.82}</style></head>`,
+  ),
 }));
