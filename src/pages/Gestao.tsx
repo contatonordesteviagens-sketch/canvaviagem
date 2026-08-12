@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, LayoutDashboard, FolderOpen, Upload, History, Users, MessageSquare, Globe } from "lucide-react";
@@ -49,6 +49,7 @@ type EditableCaption = {
 };
 
 const Gestao = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
   
@@ -192,7 +193,7 @@ const Gestao = () => {
 
       {/* Main Content with Tabs */}
       <div className="container mx-auto px-4 py-6">
-        <Tabs defaultValue="dashboard" className="w-full">
+        <Tabs value={searchParams.get("tab") || "dashboard"} onValueChange={(tab) => setSearchParams({ tab })} className="w-full">
           <TabsList className="w-full flex-wrap h-auto gap-2 bg-muted/50 p-2 mb-6">
             <TabsTrigger value="dashboard" className="flex items-center gap-2 flex-1 min-w-[120px]">
               <LayoutDashboard className="h-4 w-4" />

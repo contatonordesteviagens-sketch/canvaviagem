@@ -75,7 +75,6 @@ const Gestao = lazy(() => import("./pages/Gestao"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
-const AdminUserIntelligence = lazy(() => import("./pages/admin/UserIntelligence"));
 const ContentManager = lazy(() => import("./pages/admin/ContentManager"));
 const CaptionsManager = lazy(() => import("./pages/admin/CaptionsManager"));
 const ToolsManager = lazy(() => import("./pages/admin/ToolsManager"));
@@ -328,7 +327,7 @@ const App = () => {
                       </ProtectedRoute>
                     }>
                       <Route path="dashboard" element={<AdminDashboard />} />
-                      <Route path="users" element={<AdminUserIntelligence />} />
+                      <Route path="users" element={<Navigate to="/gestao?tab=users" replace />} />
                       <Route path="marketing" element={<Marketing />} />
                       <Route path="content" element={<ContentManager />} />
                       <Route path="captions" element={<CaptionsManager />} />

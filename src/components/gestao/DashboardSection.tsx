@@ -27,6 +27,7 @@ import { DateRangeFilter } from "./DateRangeFilter";
 import { subDays, endOfDay, startOfDay } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
+import { useAdminUserIntelligence } from "@/hooks/useAdminUserIntelligence";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -40,6 +41,7 @@ const OverviewTab = ({ dateRange }: OverviewTabProps) => {
   const { data: pageViews } = usePageViews(dateRange);
   const { metrics: emailStats, isLoading: emailLoading } = useEmailDashboard(dateRange);
   const { data: stripeData, isLoading: stripeLoading } = useStripeDashboard(dateRange);
+  const { data: intelligence, isLoading: intelligenceLoading } = useAdminUserIntelligence();
   const { data: funnel } = useMarketingFunnel(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
 
   if (isLoading) {
@@ -65,6 +67,10 @@ const OverviewTab = ({ dateRange }: OverviewTabProps) => {
       currency: 'BRL',
     }).format(value);
   };
+  const realUsers = intelligence || [];
+  const activeSubscribers = realUsers.filter((row) => ["active", "trialing"].includes(row.subscription_status)).length;
+  const canceledSubscribers = realUsers.filter((row) => ["canceled", "cancelled"].includes(row.subscription_status)).length;
+  const overdueSubscribers = realUsers.filter((row) => ["past_due", "unpaid", "incomplete"].includes(row.subscription_status)).length;
 
   return (
     <div className="space-y-6">
@@ -91,7 +97,7 @@ const OverviewTab = ({ dateRange }: OverviewTabProps) => {
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Ativos</span>
               </div>
               <p className="text-xl font-bold">
-                {stripeLoading ? "..." : stripeData?.activeSubscribers || stats?.activeSubscribers || 0}
+                {intelligenceLoading ? "..." : activeSubscribers}
               </p>
             </div>
           </CardContent>
@@ -130,10 +136,10 @@ const OverviewTab = ({ dateRange }: OverviewTabProps) => {
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-amber-600" />
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">LTV</span>
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Cancelados</span>
               </div>
               <p className="text-xl font-bold">
-                {stripeLoading ? "..." : formatCurrency(stripeData?.estimatedLTV || 0)}
+                {intelligenceLoading ? "..." : canceledSubscribers}
               </p>
             </div>
           </CardContent>
@@ -144,10 +150,10 @@ const OverviewTab = ({ dateRange }: OverviewTabProps) => {
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <Wallet className="h-4 w-4 text-emerald-600" />
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total</span>
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Inadimplentes</span>
               </div>
               <p className="text-xl font-bold">
-                {stripeLoading ? "..." : formatCurrency(stripeData?.totalRevenue || 0)}
+                {intelligenceLoading ? "..." : overdueSubscribers}
               </p>
             </div>
           </CardContent>
