@@ -215,6 +215,78 @@ export function BrandPaletteEditor({
   );
 }
 
+export function CompactBrandPaletteEditor({
+  primaryColor,
+  secondaryColor,
+  backgroundColor,
+  onChange,
+  locale = "pt",
+}: Omit<BrandPaletteEditorProps, "compact">) {
+  const current = { primaryColor, secondaryColor, backgroundColor };
+  const copy = COPY[locale];
+  const roles = copy.roles as readonly ColorRole[];
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          {roles.map((role) => (
+            <label
+              key={role.key}
+              className="group relative flex cursor-pointer flex-col items-center gap-1"
+              title={`${role.label}: ${current[role.key]}`}
+            >
+              <span
+                className="h-7 w-7 rounded-full border-2 border-white/25 shadow-md shadow-black/30 transition-transform group-hover:scale-110 group-hover:border-white/60"
+                style={{ backgroundColor: current[role.key] }}
+              />
+              <span className="max-w-14 truncate text-[8px] font-semibold text-white/45">
+                {role.label.replace("Marca ", "").replace("Fundo da ", "")}
+              </span>
+              <input
+                type="color"
+                value={current[role.key]}
+                onChange={(event) => onChange({ [role.key]: event.target.value.toUpperCase() })}
+                aria-label={`${copy.select} ${role.label.toLowerCase()}`}
+                className="absolute inset-x-0 top-0 h-7 cursor-pointer opacity-0"
+              />
+            </label>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          {PALETTES.map((palette) => {
+            const active = roles.every(
+              (role) => current[role.key].toUpperCase() === palette.colors[role.key].toUpperCase(),
+            );
+            return (
+              <button
+                key={palette.name}
+                type="button"
+                title={copy.paletteNames[palette.name as keyof typeof copy.paletteNames]}
+                aria-label={`${copy.select} ${copy.paletteNames[palette.name as keyof typeof copy.paletteNames]}`}
+                aria-pressed={active}
+                onClick={() => onChange(palette.colors)}
+                className={`flex h-5 w-8 overflow-hidden rounded-full border transition-all hover:scale-110 ${
+                  active ? "border-white ring-2 ring-[#F5F906]/70" : "border-white/20 hover:border-white/60"
+                }`}
+              >
+                {roles.map((role) => (
+                  <span
+                    key={role.key}
+                    className="h-full flex-1"
+                    style={{ backgroundColor: palette.colors[role.key] }}
+                  />
+                ))}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function SectionBackgroundEditor({
   label,
   value,

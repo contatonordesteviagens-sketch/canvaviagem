@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { FabricaPaywallDialog } from "@/components/fabrica/FabricaPaywallDialog";
+import { CompactBrandPaletteEditor } from "@/components/fabrica/BrandPaletteEditor";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
@@ -299,14 +300,18 @@ const isHeadlineVariant = (variant: CarouselSlideVariant) =>
   variant === "headline-center" ||
   variant === "headline-footer";
 
-const defaultContentTextColor = (variant: CarouselSlideVariant, primary: string) => {
+const defaultContentTextColor = (
+  variant: CarouselSlideVariant,
+  primary: string,
+  background = "#F4F6F9",
+) => {
   if (
     variant === "editorial" ||
     variant === "minimalist" ||
     variant === "organic" ||
     variant === "ticket"
   ) {
-    return "#17191D";
+    return readableText(background);
   }
   if (variant === "vibrant") return readableText(primary);
   return "#F8FAFC";
@@ -1529,6 +1534,7 @@ function CarouselCanvas({
   logoPosition,
   primary,
   secondary,
+  background = "#F4F6F9",
   canvasRef,
   showPixBanner = false,
   pixBannerHighlight = "",
@@ -1544,6 +1550,7 @@ function CarouselCanvas({
   logoPosition: LogoPosition;
   primary: string;
   secondary: string;
+  background?: string;
   canvasRef?: (node: HTMLDivElement | null) => void;
   showPixBanner?: boolean;
   pixBannerHighlight?: string;
@@ -1673,7 +1680,7 @@ function CarouselCanvas({
   const titleWeight = titleBold ? 950 : 600;
   const titleStyleAttr = (slide.titleStyle?.italic !== undefined ? slide.titleStyle.italic : slide.fontStyle === "italic") ? "italic" : "normal";
   const titleDecAttr = (slide.titleStyle?.underline !== undefined ? slide.titleStyle.underline : slide.textDecoration === "underline") ? "underline" : "none";
-  const contentTextFallback = defaultContentTextColor(slide.slideVariant, primary);
+  const contentTextFallback = defaultContentTextColor(slide.slideVariant, primary, background);
   const titleColor = editableColor(
     slide.titleStyle?.color,
     isClosing ? slide.textColor || "#F8FAFC" : contentTextFallback,
@@ -1993,7 +2000,7 @@ function CarouselCanvas({
     const brandForeground = readableText(primary);
     const lightPanel = ["editorial", "minimalist", "organic", "ticket"].includes(variant);
     const panelForeground = lightPanel
-      ? "#17191D"
+      ? readableText(background)
       : variant === "vibrant"
         ? readableText(primary)
         : "#F8FAFC";
@@ -2062,7 +2069,7 @@ function CarouselCanvas({
         padding: closingCompact ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
         textAlign: "left",
       };
-      panelBackground = "#F3F2EE";
+      panelBackground = background;
       panelBorder = `${Math.max(3, Math.round(5 * Z))}px solid ${secondary}`;
       accentPlacement = "top";
       ctaBackground = secondary;
@@ -2098,7 +2105,7 @@ function CarouselCanvas({
         padding: closingCompact ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
         textAlign: "left",
       };
-      panelBackground = "rgba(248,248,246,.98)";
+      panelBackground = background;
       panelBorder = `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`;
       accentPlacement = "top";
       ctaBackground = "transparent";
@@ -2135,7 +2142,7 @@ function CarouselCanvas({
         padding: closingCompact ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
         textAlign: "left",
       };
-      panelBackground = "rgba(248,248,246,.98)";
+      panelBackground = background;
       panelBorder = `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`;
       panelRadius = `0 ${Math.round(90 * Z)}px 0 0`;
       ctaBackground = primary;
@@ -2194,7 +2201,7 @@ function CarouselCanvas({
         padding: "8% 9%",
         textAlign: "left",
       };
-      panelBackground = "#F6F2E9";
+      panelBackground = background;
       panelBorder = `${Math.max(1, Math.round(2 * Z))}px solid ${primary}`;
       panelRadius = Math.round(14 * Z);
       panelShadow = `0 ${Math.round(18 * Z)}px ${Math.round(44 * Z)}px rgba(0,0,0,.32)`;
@@ -2813,7 +2820,7 @@ function CarouselCanvas({
                   style={{
                     width: ratio < 0.68 ? "58%" : "52%",
                     minWidth: 0,
-                    background: "#F3F2EE",
+                    background,
                     padding: "8% 6% 12% 6%",
                     boxSizing: "border-box",
                     display: "flex",
@@ -2933,7 +2940,7 @@ function CarouselCanvas({
                     style={{ position: "absolute", right: "7%", top: "7%", width: Math.round(38 * Z), height: Math.round(38 * Z), borderRadius: Math.round(9 * Z), objectFit: "contain", background: "rgba(255,255,255,.94)", padding: Math.round(4 * Z), boxShadow: `0 ${Math.round(6 * Z)}px ${Math.round(18 * Z)}px rgba(0,0,0,.22)` }}
                   />
                 )}
-                <div style={{ background: "rgba(248,248,246,0.98)", color: titleColor, padding: isDenseSlide ? "4.5% 8% 7% 8%" : "6.5% 8% 10% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
+                <div style={{ background, color: titleColor, padding: isDenseSlide ? "4.5% 8% 7% 8%" : "6.5% 8% 10% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
                     <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
@@ -3028,7 +3035,7 @@ function CarouselCanvas({
                       bottom: 0,
                       width: "91%",
                       padding: isDenseSlide ? "5% 8% 7% 8%" : "7% 8% 10% 8%",
-                      background: "rgba(248,248,246,.97)",
+                      background,
                       borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`,
                       borderTopLeftRadius: alignRight ? Math.round(118 * Z) : 0,
                       borderTopRightRadius: alignRight ? 0 : Math.round(118 * Z),
@@ -3305,8 +3312,8 @@ function CarouselCanvas({
                       right: "7%",
                       bottom: storyMode ? 0 : "8%",
                       padding: isDenseSlide ? "5% 25% 5% 8%" : "7% 25% 7% 8%",
-                      background: "#F6F2E9",
-                      color: "#17191D",
+                      background,
+                      color: readableText(background),
                       border: `${Math.max(1, Math.round(2 * Z))}px solid ${primary}`,
                       borderRadius: Math.round(14 * Z),
                       boxShadow: `0 ${Math.round(18 * Z)}px ${Math.round(44 * Z)}px rgba(0,0,0,.3)`,
@@ -3376,6 +3383,7 @@ function ScaledSlidePreview({
   logoPosition,
   primary,
   secondary,
+  background,
   width,
 }: {
   showPixBanner?: boolean;
@@ -3391,6 +3399,7 @@ function ScaledSlidePreview({
   logoPosition: LogoPosition;
   primary: string;
   secondary: string;
+  background: string;
   width: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -3454,6 +3463,7 @@ function ScaledSlidePreview({
           logoPosition={logoPosition}
           primary={primary}
           secondary={secondary}
+          background={background}
         />
       </div>
     </div>
@@ -3840,7 +3850,11 @@ export function F1CarouselBuilder({
   const renderedLogo = showLogo ? state.logoBase64 : "";
   const activeFieldFallback =
     activeSlide && activeSlide.kind !== "closing"
-      ? defaultContentTextColor(activeSlide.slideVariant, state.primaryColor)
+      ? defaultContentTextColor(
+          activeSlide.slideVariant,
+          state.primaryColor,
+          state.backgroundColor || "#F4F6F9",
+        )
       : activeSlide?.textColor || "#FFFFFF";
   const qualityIssues = useMemo(() => {
     const issues: string[] = [];
@@ -4877,6 +4891,7 @@ export function F1CarouselBuilder({
             logoPosition,
             primary: state.primaryColor,
             secondary: state.secondaryColor,
+            background: state.backgroundColor || "#F4F6F9",
             showPixBanner: (state as any).showPixBanner,
             pixBannerHighlight: (state as any).pixBannerHighlight,
             pixBannerText: (state as any).pixBannerText,
@@ -5524,6 +5539,20 @@ export function F1CarouselBuilder({
                 })}
               </div>
             </fieldset>
+            <fieldset className="mt-3">
+              <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+                {isEs ? "Colores del carrusel" : "Cores do carrossel"}
+              </legend>
+              <div className="mt-1.5">
+                <CompactBrandPaletteEditor
+                  primaryColor={state.primaryColor}
+                  secondaryColor={state.secondaryColor}
+                  backgroundColor={state.backgroundColor || "#F4F6F9"}
+                  locale={locale}
+                  onChange={(patch) => update(patch)}
+                />
+              </div>
+            </fieldset>
             </div>
 
             <fieldset className="min-w-0 lg:col-span-2">
@@ -5763,6 +5792,7 @@ export function F1CarouselBuilder({
                         logoPosition={logoPosition}
                         primary={state.primaryColor}
                         secondary={state.secondaryColor}
+                        background={state.backgroundColor || "#F4F6F9"}
                         width={thumbWidth}
                       />
                       <button
@@ -5900,6 +5930,7 @@ export function F1CarouselBuilder({
                       logoPosition={logoPosition}
                       primary={state.primaryColor}
                       secondary={state.secondaryColor}
+                      background={state.backgroundColor || "#F4F6F9"}
                       width={thumbWidth}
                     />
                     <button
@@ -6035,6 +6066,7 @@ export function F1CarouselBuilder({
                         logoPosition={logoPosition}
                         primary={state.primaryColor}
                         secondary={state.secondaryColor}
+                        background={state.backgroundColor || "#F4F6F9"}
                         width={thumbWidth}
                       />
                       <button
@@ -7040,6 +7072,7 @@ export function F1CarouselBuilder({
                     logoPosition={logoPosition}
                     primary={state.primaryColor}
                     secondary={state.secondaryColor}
+                    background={state.backgroundColor || "#F4F6F9"}
                     width={340}
                   />
                 </div>
@@ -7198,6 +7231,7 @@ export function F1CarouselBuilder({
               logoPosition={logoPosition}
               primary={state.primaryColor}
               secondary={state.secondaryColor}
+              background={state.backgroundColor || "#F4F6F9"}
               width={Math.min(window.innerWidth - 64, (window.innerHeight - 64) * carouselRatio, carouselFormat === "feed" ? 800 : 500)}
             />
           </div>
