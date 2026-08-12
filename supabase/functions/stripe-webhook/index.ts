@@ -676,7 +676,18 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
 async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resend: any) {
   const stripeCustomerId = invoice.customer as string;
   const { data: profile } = await supabase.from("profiles").select("email, name").eq("stripe_customer_id", stripeCustomerId).single();
-  await supabase.from("subscriptions").update({ status: "past_due", updated_at: new Date().toISOString() }).eq("stripe_customer_id", stripeCustomerId);
+  const { error: paymentStatusError } = await supabase.from("subscriptions").update({ status: "past_due", updated_at: new Date().toISOString() }).eq("stripe_customer_id", stripeCustomerId);
+  if (paymentStatusError) throw paymentStatusError;
+  const { data: failedSubscription, error: failedLookupError } = await supabase
+    .from("subscriptions")
+    .select("user_id")
+    .eq("stripe_customer_id", stripeCustomerId)
+    .maybeSingle();
+  if (failedLookupError) throw failedLookupError;
+  if (failedSubscription?.user_id) {
+    const { error: siteAccessError } = await supabase.rpc("sync_user_public_site_access", { p_user_id: failedSubscription.user_id });
+    if (siteAccessError) throw siteAccessError;
+  }
   if (resend && profile?.email) await sendPaymentFailedEmail(resend, profile.email);
   if (profile?.email) await triggerZaiaWebhook("ZAIA_WEBHOOK_PAYMENT_FAILED", { email: profile.email, name: profile.name });
 }

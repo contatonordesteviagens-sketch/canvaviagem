@@ -2289,9 +2289,14 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                       const show = e.target.checked;
                       setHideCents(!show);
                       if (!show) {
-                        setPrice(prev => prev.replace(/,\d{1,2}$/, ""));
-                      } else if (!price.includes(",")) {
-                        setPrice(prev => prev + ",00");
+                        setPrice(prev => prev.replace(/[.,]\d*$/, "").trim());
+                      } else {
+                        setPrice(prev => {
+                          const p = prev.trim();
+                          if (!p || p.match(/[.,]\d{1,2}$/)) return p;
+                          if (p.endsWith(",") || p.endsWith(".")) return p + "00";
+                          return p + ",00";
+                        });
                       }
                     }} className="accent-yellow-400" />
                     Mostrar centavos

@@ -8,6 +8,9 @@ ALTER TABLE public.public_sites
 CREATE INDEX IF NOT EXISTS idx_public_sites_owner_active
   ON public.public_sites(owner_id, is_active);
 
+REVOKE SELECT ON public.public_sites FROM anon;
+GRANT SELECT (id, html, locale, created_at, updated_at, is_active) ON public.public_sites TO anon;
+
 CREATE OR REPLACE FUNCTION public.activate_site_on_eligible_publish()
 RETURNS trigger
 LANGUAGE plpgsql

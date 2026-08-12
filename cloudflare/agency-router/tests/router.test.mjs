@@ -88,6 +88,7 @@ test("busca somente o HTML público da agência no Supabase", async () => {
   assert.equal(upstreamUrl.hostname, "project.supabase.co");
   assert.equal(upstreamUrl.pathname, "/rest/v1/public_sites");
   assert.equal(upstreamUrl.searchParams.get("id"), "eq.minha-agencia");
+  assert.equal(upstreamUrl.searchParams.get("is_active"), "eq.true");
   assert.equal(upstreamRequest.headers.get("apikey"), TEST_ENV.SUPABASE_ANON_KEY);
   assert.equal(upstreamRequest.headers.get("x-canva-viagem-agency"), null);
 });
