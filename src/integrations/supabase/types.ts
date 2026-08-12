@@ -459,6 +459,36 @@ export type Database = {
         }
         Relationships: []
       }
+      fabrica_abuse_signals: {
+        Row: {
+          id: string
+          last_seen_at: string
+          metadata: Json
+          related_accounts: number
+          signal_hash: string
+          signal_type: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          last_seen_at?: string
+          metadata?: Json
+          related_accounts?: number
+          signal_hash: string
+          signal_type: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          last_seen_at?: string
+          metadata?: Json
+          related_accounts?: number
+          signal_hash?: string
+          signal_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fabrica_art_tweak_presets: {
         Row: {
           category: string
@@ -531,6 +561,57 @@ export type Database = {
         }
         Relationships: []
       }
+      fabrica_rate_limits: {
+        Row: {
+          action: string
+          request_count: number
+          requester_hash: string
+          window_start: string
+        }
+        Insert: {
+          action: string
+          request_count?: number
+          requester_hash: string
+          window_start: string
+        }
+        Update: {
+          action?: string
+          request_count?: number
+          requester_hash?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      fabrica_trial_claims: {
+        Row: {
+          claimed_at: string
+          email_hash: string
+          id: string
+          payment_fingerprint: string | null
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          email_hash: string
+          id?: string
+          payment_fingerprint?: string | null
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          email_hash?: string
+          id?: string
+          payment_fingerprint?: string | null
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fabrica_usage_ledger: {
         Row: {
           capability: string
@@ -540,6 +621,7 @@ export type Database = {
           idempotency_key: string
           metadata: Json
           project_id: string | null
+          server_fingerprint: string | null
           status: string
           updated_at: string
           user_id: string
@@ -552,6 +634,7 @@ export type Database = {
           idempotency_key: string
           metadata?: Json
           project_id?: string | null
+          server_fingerprint?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -564,6 +647,7 @@ export type Database = {
           idempotency_key?: string
           metadata?: Json
           project_id?: string | null
+          server_fingerprint?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -791,27 +875,69 @@ export type Database = {
           created_at: string
           html: string
           id: string
+          is_active: boolean
           locale: string
           owner_id: string | null
           project_id: string | null
+          suspended_at: string | null
+          suspension_reason: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           html: string
           id: string
+          is_active?: boolean
           locale?: string
           owner_id?: string | null
           project_id?: string | null
+          suspended_at?: string | null
+          suspension_reason?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           html?: string
           id?: string
+          is_active?: boolean
           locale?: string
           owner_id?: string | null
           project_id?: string | null
+          suspended_at?: string | null
+          suspension_reason?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stripe_webhook_events: {
+        Row: {
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          event_id: string
+          event_type: string
+          last_error: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          event_id: string
+          event_type: string
+          last_error?: string | null
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          event_id?: string
+          event_type?: string
+          last_error?: string | null
+          status?: string
           updated_at?: string
         }
         Relationships: []
@@ -1219,6 +1345,11 @@ export type Database = {
       }
     }
     Functions: {
+      admin_set_public_site_status: {
+        Args: { p_active: boolean; p_reason?: string; p_site_id: string }
+        Returns: boolean
+      }
+      admin_user_intelligence: { Args: never; Returns: Json }
       append_webinar_lead_comment: {
         Args: {
           p_message: string
@@ -1227,6 +1358,33 @@ export type Database = {
           p_whatsapp: string
         }
         Returns: undefined
+      }
+      claim_fabrica_trial: {
+        Args: {
+          p_email_hash: string
+          p_payment_fingerprint: string
+          p_stripe_customer_id: string
+          p_stripe_subscription_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      claim_stripe_webhook_event: {
+        Args: { p_event_id: string; p_event_type: string }
+        Returns: boolean
+      }
+      consume_fabrica_rate_limit: {
+        Args: {
+          p_action: string
+          p_limit: number
+          p_requester_hash: string
+          p_window_seconds?: number
+        }
+        Returns: boolean
+      }
+      fabrica_full_access_internal: {
+        Args: { p_user_id: string }
+        Returns: boolean
       }
       get_customer_email_audited: {
         Args: { p_reason: string; p_record_id: string; p_table_name: string }
@@ -1269,16 +1427,34 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      reserve_fabrica_usage: {
-        Args: {
-          p_capability: string
-          p_idempotency_key: string
-          p_limit: number
-          p_metadata: Json
-          p_project_id: string
-          p_user_id: string
-        }
-        Returns: Json
+      reserve_fabrica_usage:
+        | {
+            Args: {
+              p_capability: string
+              p_idempotency_key: string
+              p_limit: number
+              p_metadata: Json
+              p_project_id: string
+              p_user_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_capability: string
+              p_fingerprint?: string
+              p_idempotency_key: string
+              p_limit: number
+              p_metadata: Json
+              p_project_id: string
+              p_server_fingerprint?: string
+              p_user_id: string
+            }
+            Returns: Json
+          }
+      sync_user_public_site_access: {
+        Args: { p_user_id: string }
+        Returns: undefined
       }
       update_webinar_lead_session: {
         Args: {
