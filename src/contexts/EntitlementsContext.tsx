@@ -270,12 +270,23 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const can = useCallback(
-    (capability: EntitlementCapability) => Boolean(snapshot.capabilities[capability]),
-    [snapshot.capabilities],
+    (capability: EntitlementCapability) => isAdmin || Boolean(snapshot.capabilities[capability]),
+    [isAdmin, snapshot.capabilities],
   );
 
   const reserve = useCallback<EntitlementsContextValue["reserve"]>(
     async (capability, idempotencyKey, options) => {
+      // Administrator access must never become a paywall because the metering
+      // service is unavailable. Privileged APIs still authorize server-side.
+      if (isAdmin) {
+        return {
+          allowed: true,
+          unlimited: true,
+          duplicate: false,
+          reservationId: null,
+          remaining: null,
+        };
+      }
       try {
         const fingerprint = await getVisitorId();
         const data = await invoke({
@@ -301,7 +312,7 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
         };
       }
     },
-    [invoke],
+    [invoke, isAdmin],
   );
 
   const updateReservation = useCallback(async (

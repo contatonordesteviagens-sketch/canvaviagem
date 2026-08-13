@@ -299,6 +299,16 @@ rejectText(
   "usage reservations must always be confirmed by the server.",
 );
 requireText(
+  "src/contexts/EntitlementsContext.tsx",
+  "if (isAdmin) {",
+  "administrator exports must bypass free-tier metering failures.",
+);
+requireText(
+  "src/contexts/EntitlementsContext.tsx",
+  "isAdmin || Boolean(snapshot.capabilities[capability])",
+  "administrator capabilities must remain fully enabled in the browser.",
+);
+requireText(
   "src/hooks/useFabricaContext.tsx",
   'const GUEST_USER_ID = "__canva_viagem_guest__";',
   "guest drafts must use an isolated local namespace.",
