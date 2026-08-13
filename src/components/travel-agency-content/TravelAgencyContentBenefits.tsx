@@ -1,5 +1,3 @@
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
-
 const reasons = [
   ["01", "Turismo desde o início", "Modelos que organizam destino, preço, condições e informações da viagem."],
   ["02", "Sequência pronta", "Slides estruturados para abrir, desenvolver e concluir a ideia."],
@@ -8,10 +6,10 @@ const reasons = [
 ] as const;
 
 const outcomes = [
-  ["+ frequência", "Mais viagens transformadas em conteúdo pronto para revisar."],
-  ["+ variedade", "+12 modelos para alternar formatos e estruturas."],
-  ["− tempo", "Menos trabalho repetitivo em cada slide e adaptação."],
-  ["+ consistência", "A mesma identidade entre Feed, carrosséis e Stories."],
+  ["+ seguidores", "Conteúdo de turismo feito para chamar atenção, gerar alcance e atrair novos viajantes."],
+  ["+ vendas", "Apresente destinos e ofertas com clareza para transformar interesse em pedidos de orçamento."],
+  ["− tempo", "Do pacote ao carrossel pronto em cerca de 1 minuto, sem passar a tarde inteira no Canva."],
+  ["− custo", "Produza quantos conteúdos precisar por menos que o custo de uma única arte de designer."],
 ] as const;
 
 export default function TravelAgencyContentBenefits() {
@@ -37,20 +35,14 @@ export default function TravelAgencyContentBenefits() {
 
       <section className="border-t border-white/[0.05] bg-[#08080b] px-5 py-20 text-[#f5f5f7] sm:px-8 lg:py-[108px]">
         <div className="mx-auto max-w-[1200px]">
-          <div className="grid gap-10 lg:grid-cols-[0.62fr_1.38fr]">
-            <p className="qorvo-reveal font-mono text-[11px] uppercase tracking-[0.22em] text-[#22d3a8]">05 — O QUE VOCÊ GANHA</p>
-            <h2 className="qorvo-reveal max-w-[790px] text-[clamp(2.5rem,4.2vw,3.375rem)] font-[560] leading-[1.04] tracking-[-0.045em]">Mais conteúdo pronto. Menos tempo começando do zero.</h2>
-          </div>
-          <div className="mt-16 grid border-y border-white/[0.09] sm:grid-cols-2">
-            {outcomes.map(([value, copy], index) => {
-              const Icon = index === 2 ? ArrowDownRight : ArrowUpRight;
-              return (
-                <article key={value} className={`qorvo-reveal flex min-h-[170px] items-center gap-8 p-7 sm:p-9 ${index % 2 ? "sm:border-l" : ""} ${index > 1 ? "border-t" : ""} border-white/[0.09]`}>
-                  <div className="min-w-0 flex-1"><p className={`text-[28px] font-[600] tracking-[-0.04em] ${index < 2 ? "text-[#22d3a8]" : "text-[#8f70ff]"}`}>{value}</p><p className="mt-3 text-[15px] leading-6 text-white/55">{copy}</p></div>
-                  <Icon aria-hidden="true" className="size-5 shrink-0 text-white/25" strokeWidth={1.4} />
-                </article>
-              );
-            })}
+          <p className="qorvo-reveal font-mono text-[10px] uppercase tracking-[0.22em] text-white/42"><span className="text-[#8f70ff]">05</span> &nbsp;—&nbsp; O QUE VOCÊ GANHA</p>
+          <div className="mt-7 border-t border-white/[0.12]">
+            {outcomes.map(([value, copy]) => (
+              <article key={value} className="qorvo-reveal border-b border-white/[0.1] px-6 py-10 sm:px-8 sm:py-12">
+                <h2 className="text-[27px] font-[450] leading-none tracking-[-0.045em] text-[#22d3b6] sm:text-[31px]">{value}</h2>
+                <p className="mt-6 max-w-[420px] text-[14px] leading-[1.65] text-white/70 sm:text-[15px]">{copy}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>
