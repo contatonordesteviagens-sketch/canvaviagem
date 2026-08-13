@@ -1810,7 +1810,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
     }
 
     try {
-      const downloadedBatch = can("ad.export") && isBatchMode;
+      const downloadedBatch = Boolean(reservation.unlimited) && isBatchMode;
       const toDownload = downloadedBatch ? generatedImages.map(i => i.url) : [generatedImage?.url || ""];
       await commit(reservation.reservationId);
       toDownload.forEach((img, idx) => {

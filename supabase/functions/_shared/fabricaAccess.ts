@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "./officialProjectGuard.ts";
-import { isEliteProduct } from "./planAccess.ts";
+import { isEliteProduct, isPrimaryAdminEmail } from "./planAccess.ts";
 
 type HeadersMap = Record<string, string>;
 
@@ -65,6 +65,7 @@ export async function verifyFabricaEliteAccess(req: Request, corsHeaders: Header
 
   const { data: userData, error: userError } = await authClient.auth.getUser();
   const userId = userData?.user?.id;
+  const userEmail = userData?.user?.email;
   if (userError || !userId) {
     return { ok: false as const, response: jsonResponse({ error: "Sessão inválida" }, 401, corsHeaders) };
   }
@@ -81,7 +82,7 @@ export async function verifyFabricaEliteAccess(req: Request, corsHeaders: Header
     .limit(1)
     .maybeSingle();
 
-  if (adminRole) return { ok: true as const, userId };
+  if (adminRole || isPrimaryAdminEmail(userEmail)) return { ok: true as const, userId };
 
   const { data: subscription } = await dbClient
     .from("subscriptions")

@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
-import { isEliteProduct, isStartProduct } from "../_shared/planAccess.ts";
+import { isEliteProduct, isPrimaryAdminEmail, isStartProduct } from "../_shared/planAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -134,10 +134,12 @@ serve(async (req) => {
 
     const token = authHeader.slice("Bearer ".length).trim();
     let userId: string | null = null;
+    let userEmail: string | null = null;
     try {
       const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
       if (!claimsError && typeof claimsData?.claims?.sub === "string") {
         userId = claimsData.claims.sub;
+        userEmail = typeof claimsData.claims.email === "string" ? claimsData.claims.email : null;
       }
     } catch (_authError) {
       userId = null;
@@ -157,7 +159,7 @@ serve(async (req) => {
         .maybeSingle(),
     ]);
 
-    const tier = classifyTier(subscription, Boolean(adminRole));
+    const tier = classifyTier(subscription, Boolean(adminRole) || isPrimaryAdminEmail(userEmail));
     const capabilities = buildCapabilities(tier);
     const unlimited = capabilities.unlimited;
 

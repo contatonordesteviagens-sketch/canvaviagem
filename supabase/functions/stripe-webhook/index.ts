@@ -537,6 +537,34 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
     }
   }
 
+  if (accessDetails?.status === "trialing" && authoritativeSubscription) {
+    const referencedUserId = session.client_reference_id || session.metadata?.user_id || "";
+    if (!referencedUserId) throw new Error(`Trial checkout ${session.id} is missing user_id`);
+
+    const paymentMethodRef = authoritativeSubscription.default_payment_method;
+    let paymentFingerprint = "";
+    if (paymentMethodRef) {
+      const paymentMethod = typeof paymentMethodRef === "string"
+        ? await stripe.paymentMethods.retrieve(paymentMethodRef)
+        : paymentMethodRef;
+      paymentFingerprint = paymentMethod.card?.fingerprint || "";
+    }
+
+    const { data: trialClaimed, error: trialClaimError } = await supabase.rpc("claim_fabrica_trial", {
+      p_user_id: referencedUserId,
+      p_email_hash: await sha256Hex(email),
+      p_payment_fingerprint: paymentFingerprint,
+      p_stripe_customer_id: stripeCustomerId,
+      p_stripe_subscription_id: stripeSubscriptionId,
+    });
+    if (trialClaimError) throw trialClaimError;
+    if (!trialClaimed) {
+      await stripe.subscriptions.cancel(stripeSubscriptionId);
+      logStep("Duplicate trial blocked", { sessionId: session.id, userId: referencedUserId });
+      return;
+    }
+  }
+
   await ensureUserAndOnboarding(
     supabase,
     resend,
@@ -588,30 +616,6 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supa
     if (siteAccessError) throw siteAccessError;
   }
 
-  if (accessDetails?.status === "trialing" && authoritativeSubscription) {
-    const referencedUserId = session.client_reference_id || session.metadata?.user_id || "";
-    const paymentMethodRef = authoritativeSubscription.default_payment_method;
-    let paymentFingerprint = "";
-    if (paymentMethodRef) {
-      const paymentMethod = typeof paymentMethodRef === "string"
-        ? await stripe.paymentMethods.retrieve(paymentMethodRef)
-        : paymentMethodRef;
-      paymentFingerprint = paymentMethod.card?.fingerprint || "";
-    }
-    const { data: trialClaimed, error: trialClaimError } = await supabase.rpc("claim_fabrica_trial", {
-      p_user_id: referencedUserId,
-      p_email_hash: await sha256Hex(email),
-      p_payment_fingerprint: paymentFingerprint,
-      p_stripe_customer_id: stripeCustomerId,
-      p_stripe_subscription_id: stripeSubscriptionId,
-    });
-    if (trialClaimError) throw trialClaimError;
-    if (!trialClaimed) {
-      await stripe.subscriptions.cancel(stripeSubscriptionId);
-      logStep("Duplicate trial blocked", { sessionId: session.id, userId: referencedUserId });
-      return;
-    }
-  }
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supabase: any, resend: any, stripe: Stripe) {
@@ -734,7 +738,11 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resen
   if (subscriptionId) {
     const authoritativeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
     const access = getSubscriptionAccessDetails(authoritativeSubscription);
-    nextStatus = access.status;
+    // A failed invoice must revoke paid access immediately. Never keep an
+    // active/trialing snapshot just because subscription.updated arrived late.
+    nextStatus = ["canceled", "unpaid", "paused", "incomplete_expired"].includes(access.status)
+      ? access.status
+      : "past_due";
     authoritativeFields = {
       current_period_end: access.currentPeriodEnd,
       trial_started_at: access.trialStartedAt,

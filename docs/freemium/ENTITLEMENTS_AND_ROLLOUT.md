@@ -30,10 +30,10 @@ forms first and never deletes captured leads.
 | View permanent free content | Yes | Yes | Yes | Yes | Yes | Yes |
 | Open and configure Fabrica | Yes, local | Yes | Yes | Yes | Yes | Yes |
 | Save projects | Local draft | 1 cloud project | 1 cloud project | Unlimited | Unlimited | Unlimited |
-| Search real destination photos | No | Yes | Yes | Yes | Yes | Yes |
+| Search real destination photos | Yes, limited | Yes | Yes | Yes | Yes | Yes |
 | Preview ads and carousels | Protected preview | Yes while quota remains | Yes while quota remains | Yes | Yes | Yes |
 | Export ads | No | 3 lifetime | 3 lifetime | Unlimited | Unlimited | Unlimited |
-| Export carousels | No | 2 lifetime | 2 lifetime | Unlimited | Unlimited | Unlimited |
+| Export carousels | No | 1 lifetime | 1 lifetime | Unlimited | Unlimited | Unlimited |
 | Preview site and CRM | Yes, sample only | Yes, sample only | Yes, sample only | Yes | Yes | Yes |
 | Publish site | No | No | No | Yes | Yes | Yes |
 | Read and manage real CRM data | No | No | No | Yes | Yes | Yes |
@@ -59,8 +59,8 @@ paywall. The server ledger, not the visual lock, remains the authority.
 These are different offers and the UI must keep them explicit:
 
 - Permanent free access requires no payment card. It includes selected content
-  and, after account creation, one saved project, three ad exports and two
-  carousel exports.
+  and, after account creation, one saved project, three ad exports and one
+  carousel export.
 - The Elite trial is three days of full access through Stripe checkout. It
   requires the checkout flow and has no charge on the first day.
 - The public Start offer remains hidden. Start is supported only for historical
@@ -172,7 +172,7 @@ Free account:
 - A guest can configure a local draft; signing up imports it only after the
   account is confirmed empty.
 - Cannot create a second project.
-- Can export exactly three ads and two carousels.
+- Can export exactly three ads and one carousel.
 - A failed export does not consume a credit.
 - Site preview works; publish opens the contextual Elite paywall.
 - CRM preview works; real leads are hidden but remain in the database.

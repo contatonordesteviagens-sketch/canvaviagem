@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { isPrimaryAdminEmail } from '@/lib/planAccess';
 
 type JwtPayload = {
   exp?: number;
@@ -152,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
     
-    if (currentUser.email === "lucashenriquephd@gmail.com") {
+    if (isPrimaryAdminEmail(currentUser.email)) {
       setIsAdmin(true);
       return true;
     }
@@ -166,7 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('role', 'admin')
         .maybeSingle();
       
-      const dbIsAdmin = !!data || currentUser.email === "lucashenriquephd@gmail.com";
+      const dbIsAdmin = !!data || isPrimaryAdminEmail(currentUser.email);
       setIsAdmin(dbIsAdmin);
       
       if (dbIsAdmin) {
@@ -424,7 +425,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (currentSession) {
           setSession(currentSession);
           setUser(currentSession.user ?? null);
-          if (currentSession.user?.email === "lucashenriquephd@gmail.com") {
+          if (isPrimaryAdminEmail(currentSession.user?.email)) {
             setIsAdmin(true);
           }
         } else if (isResolvingEvent) {
@@ -509,12 +510,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (cached) {
           setSubscription({ ...cached, loading: false });
-          if (cached.productId === 'admin_bypass' || existingSession.user?.email === "lucashenriquephd@gmail.com") {
+          if (cached.productId === 'admin_bypass' || isPrimaryAdminEmail(existingSession.user?.email)) {
             setIsAdmin(true);
           }
           checkSubscription(existingSession.access_token, existingSession.user, false);
         } else {
-          if (existingSession.user?.email === "lucashenriquephd@gmail.com") {
+          if (isPrimaryAdminEmail(existingSession.user?.email)) {
             setIsAdmin(true);
           }
           checkSubscription(existingSession.access_token, existingSession?.user ?? null);

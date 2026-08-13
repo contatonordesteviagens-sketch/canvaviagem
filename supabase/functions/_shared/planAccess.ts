@@ -14,6 +14,12 @@ export const ELITE_PRODUCT_IDS = new Set([
   "annual_access_pix",
 ]);
 
+export const PRIMARY_ADMIN_EMAIL = "lucashenriquephd@gmail.com";
+
+export function isPrimaryAdminEmail(email?: string | null) {
+  return email?.trim().toLowerCase() === PRIMARY_ADMIN_EMAIL;
+}
+
 export function isEliteProduct(productId?: string | null) {
   if (!productId) return false;
   return ELITE_PRODUCT_IDS.has(productId.trim());

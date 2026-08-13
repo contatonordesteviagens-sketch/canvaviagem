@@ -248,21 +248,22 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const data = await invoke({ action: "status" });
-      setSnapshot({
+      const serverSnapshot: EntitlementsSnapshot = {
         tier: data.tier,
         capabilities: data.capabilities ?? fallback.capabilities,
         limits: data.limits,
         used: data.used ?? EMPTY_USAGE,
         remaining: data.remaining,
         needsReview: Boolean(data.needs_review),
-      });
+      };
+      setSnapshot(isAdmin ? fallback : serverSnapshot);
     } catch (error) {
       console.error("[Entitlements] Falha ao carregar permissões:", error);
       setSnapshot(fallback);
     } finally {
       setLoading(false);
     }
-  }, [fallback, invoke, session?.access_token, user]);
+  }, [fallback, invoke, isAdmin, session?.access_token, user]);
 
   useEffect(() => {
     void refresh();

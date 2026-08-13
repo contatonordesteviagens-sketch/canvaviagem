@@ -1625,7 +1625,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       return;
     }
     try {
-      const downloadedBatch = can("ad.export") && isBatchMode;
+      const downloadedBatch = Boolean(reservation.unlimited) && isBatchMode;
       const toDownload = downloadedBatch ? generatedImages.map(i => i.url) : [generatedImage?.url || ""];
       // The quota is confirmed before any file is delivered. Otherwise a failed
       // commit after the click would create a free, unmetered export.

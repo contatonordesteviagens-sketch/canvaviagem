@@ -42,6 +42,24 @@ if (JSON.stringify(frontendElite) !== JSON.stringify(serverElite)) {
 if (JSON.stringify(frontendStart) !== JSON.stringify(serverStart)) {
   failures.push("Start product IDs differ between browser and server.");
 }
+for (const path of ["src/lib/planAccess.ts", "supabase/functions/_shared/planAccess.ts"]) {
+  requireText(path, "isPrimaryAdminEmail", "primary administrator identity must be centralized.");
+}
+requireText(
+  "supabase/functions/fabrica-entitlements/index.ts",
+  "Boolean(adminRole) || isPrimaryAdminEmail(userEmail)",
+  "server entitlements must preserve primary administrator access.",
+);
+requireText(
+  "supabase/functions/_shared/fabricaAccess.ts",
+  "adminRole || isPrimaryAdminEmail(userEmail)",
+  "Elite-only Fabrica APIs must preserve primary administrator access.",
+);
+requireText(
+  "supabase/migrations/20260813153000_align_primary_admin_fabrica_access.sql",
+  "INSERT INTO public.user_roles",
+  "primary administrator role must be repaired in the database.",
+);
 
 requireText(
   "src/contexts/EntitlementsContext.tsx",
@@ -227,6 +245,25 @@ requireText(
   "checkout confirmation must preserve the purchased billing cycle for accurate analytics.",
 );
 requireText(
+  "supabase/functions/create-checkout/index.ts",
+  'end_behavior: { missing_payment_method: "cancel" as const }',
+  "trials without an attached payment method must cancel at trial end.",
+);
+requireText(
+  "supabase/functions/stripe-webhook/index.ts",
+  ': "past_due";',
+  "failed subscription invoices must revoke Elite access immediately.",
+);
+const stripeWebhookSource = read("supabase/functions/stripe-webhook/index.ts");
+const subscriptionUpdatedHandler = stripeWebhookSource.match(
+  /async function handleSubscriptionUpdated[\s\S]*?(?=async function handleSubscriptionDeleted)/,
+)?.[0] ?? "";
+for (const checkoutOnlyIdentifier of ["authoritativeSubscription", "session.", "stripeSubscriptionId", "sha256Hex(email)"]) {
+  if (subscriptionUpdatedHandler.includes(checkoutOnlyIdentifier)) {
+    failures.push(`stripe-webhook: subscription.updated references checkout-only identifier ${checkoutOnlyIdentifier}.`);
+  }
+}
+requireText(
   "src/pages/Inicio2.tsx",
   'searchParams.get("upgrade")',
   "the sales page must adapt its message to the blocked feature.",
@@ -302,6 +339,11 @@ for (const path of [
   requireText(path, 'reserve("ad_export"', "ad downloads must reserve server-side quota.");
   requireText(path, "await commit(reservation.reservationId)", "ad downloads must commit server-side quota.");
   requireText(path, "release(reservation.reservationId)", "failed ad downloads must release reservations.");
+  requireText(
+    path,
+    "Boolean(reservation.unlimited) && isBatchMode",
+    "batch downloads must use the current server entitlement, never a stale browser snapshot.",
+  );
 }
 requireText(
   "src/components/fabrica/F1CarouselBuilder.tsx",

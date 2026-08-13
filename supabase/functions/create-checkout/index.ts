@@ -274,7 +274,12 @@ serve(async (req) => {
     }
 
     const subscriptionData = {
-      ...(trialEligible ? { trial_period_days: 3 } : {}),
+      ...(trialEligible ? {
+        trial_period_days: 3,
+        trial_settings: {
+          end_behavior: { missing_payment_method: "cancel" as const },
+        },
+      } : {}),
       metadata: {
         user_id: user.id,
         billing_cycle: requestedCycle,
