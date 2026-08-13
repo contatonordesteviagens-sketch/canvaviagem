@@ -1390,6 +1390,7 @@ export type Database = {
         Args: { p_reason: string; p_record_id: string; p_table_name: string }
         Returns: string
       }
+      has_fabrica_full_access: { Args: { p_user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
