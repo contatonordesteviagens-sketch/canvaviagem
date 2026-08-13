@@ -1,70 +1,28 @@
-# Editor de Artes (Admin) — arrastar no canvas + presets globais
+# Diagnóstico: HTTP 500 em fabrica-entitlements (13/08 20:02 UTC)
 
-## O que você vai poder fazer
+## O que foi verificado (somente leitura)
 
-1. Gerar a arte normalmente na Fábrica.
-2. Como admin, aparece um botão **"Ajustar arte"** no card (invisível para os outros usuários).
-3. Abre um editor em tela cheia com a arte. Cada elemento (título, preço, ícone, rodapé, faixa PIX, logo, badge...) fica selecionável: clica e arrasta para mover, alças nos cantos para aumentar/diminuir.
-4. Dois botões de salvar:
-   - **Salvar só nesta arte** — muda apenas aquela imagem.
-   - **Definir como padrão desta variação** — a partir daí, toda arte gerada naquela variação/categoria/formato já sai ajustada, para todos os usuários.
-5. Um selo discreto no card mostra qual variação gerou a arte (ex: `V3 · Oferta · 1:1`) — só o admin vê.
+1. **Logs da função** — a consulta de logs de `fabrica-entitlements` retornou **vazia** (nenhum evento, nem boot/shutdown). Ou seja: não há stack/mensagem registrada para 20:02 UTC. Isso é relevante por si só: significa que **não existe execução recente registrada dessa função** no runtime — comportamento compatível com uma função que não está respondendo/instanciando, ou com logs não retidos para esse intervalo.
 
-## Como isso funciona por baixo (resumo técnico)
+2. **Conta `debc503c-...0f64`**
+   - `user_roles`: possui `admin`.
+   - `subscriptions`: 1 linha (`active`, `prod_UTSmPe3GPt8iHt` = Elite), sem duplicidade — não há erro de `maybeSingle`.
+   - `fabrica_usage_ledger`: 0 linhas para esse usuário.
 
-O motor de artes hoje desenha tudo com coordenadas fixas no código, e não "sabe" que existe um título ou um preço — só pinta pixels. Para permitir arrastar, precisamos ensinar o motor a **registrar cada elemento que desenha**.
+3. **Coluna `fingerprint` — confirmado o problema.** A tabela `public.fabrica_usage_ledger` tem hoje: `id, user_id, capability, idempotency_key, project_id, status, metadata, expires_at, created_at, updated_at, server_fingerprint`. **Não existe a coluna `fingerprint`.**
+   Existem duas versões da função:
+   - `reserve_fabrica_usage(uuid,text,text,text,jsonb,integer)` — antiga, não usa `fingerprint`.
+   - `reserve_fabrica_usage(uuid,text,text,text,jsonb,integer,text,text)` — a que a Edge Function chama; ela **lê e grava a coluna `fingerprint`** (no `UPDATE ... fingerprint = p_fingerprint`, no `SELECT count(*)` e no `INSERT`).
+   Conclusão: qualquer chamada de `reserve` que chegue ao RPC falha com erro Postgres `42703 column "fingerprint" does not exist`, que a função converte em HTTP 500 `{"error":"Serviço temporariamente indisponível"}`.
 
-A ideia é uma camada fina de ajustes, sem reescrever o motor:
+4. **Ressalva importante sobre esta conta específica:** no código-fonte atual, um usuário admin recebe `unlimited = true` e o `reserve` retorna antes de chamar o RPC. Portanto, se a versão publicada fosse idêntica ao código do repositório, esse admin não deveria atingir o erro de `fingerprint`. Isso aponta para uma das duas hipóteses (ainda **não confirmada**, pois não há logs): a versão publicada é mais antiga que a do repositório, ou o 500 vem de outra origem (ex.: falha de env/guard `assertOfficialSupabaseProject`, que também lança 500 genérico). O 500 em `action=status` reforça essa segunda hipótese, já que `status` nunca toca o RPC.
 
-```text
-Motor desenha  →  registra { id: "price", x, y, w, h }  →  Editor mostra caixas arrastáveis
-Editor salva   →  { price: { dx: -20, dy: 14, scale: 1.15 } }
-Motor redesenha aplicando os deslocamentos antes de pintar
-```
+5. **Commit publicado a37a8a17:** não é possível confirmar. Não há endpoint que exponha o commit/bundle da função implantada. O que dá para afirmar: no workspace, o último commit que tocou `fabrica-entitlements` / `_shared` é `dd2cb61f`, ou seja **posterior** a `a37a8a17` — se a função publicada for de `a37a8a17`, ela está desatualizada em relação ao código atual.
 
-Ou seja: nada de coordenada nova hardcoded. Cada ponto de desenho passa a consultar um helper `tweak("price", x, y, size)` que devolve a posição já corrigida, e ao mesmo tempo reporta a caixa do elemento para o editor.
+## Correções recomendadas (nada aplicado)
 
-### Escopo de instrumentação
+1. **Migration** para alinhar o schema com a função: adicionar `fingerprint text` em `public.fabrica_usage_ledger` (+ índice em `(capability, fingerprint)`), ou, alternativamente, reescrever `reserve_fabrica_usage` de 8 args para usar apenas `server_fingerprint`. Recomendo adicionar a coluna, pois a função já foi escrita com anti-abuso por dispositivo.
+2. **Remover a sobrecarga antiga** de 6 argumentos para evitar ambiguidade futura.
+3. **Republicar `fabrica-entitlements`** a partir do commit atual e, imediatamente após, disparar uma chamada de teste para gerar logs — assim confirmamos se o 500 de `action=status` some (o que provaria versão defasada) ou persiste (o que apontaria para env/guard).
 
-O motor tem ~5.500 linhas e 9 variações de Oferta + 5 de Experiência. Instrumentar tudo de uma vez é arriscado. Proposta em etapas:
-
-- **Etapa 1:** infra (registro de elementos + aplicação de ajustes) + editor + persistência, instrumentando **uma variação piloto** (sugiro V0 Oferta).
-- **Etapa 2:** você valida o editor no piloto e eu replico a instrumentação nas demais variações, uma a uma, sem tocar na lógica de layout existente.
-
-Isso respeita a regra de ouro do projeto: nunca refatorar V0–V5 para atender variação nova.
-
-## Onde os ajustes ficam guardados
-
-Nova tabela no banco:
-
-| Campo | Uso |
-|---|---|
-| `variant`, `category`, `format` | identifica a variação (ex: 3 / oferta / 1:1) |
-| `tweaks` (jsonb) | mapa `{ elementId: { dx, dy, scale } }` |
-
-- **Leitura:** liberada para todo mundo (é o que faz o ajuste valer para os usuários).
-- **Escrita:** somente para quem tem role `admin` no banco — não é checagem só de front-end.
-
-Ajustes "só nesta arte" ficam junto do registro da arte gerada no projeto, sem ir para a tabela global.
-
-## Controle de acesso
-
-- Botão e editor só renderizam quando `isAdmin` do contexto de autenticação é verdadeiro (a conta `lucashenriquephd@gmail.com` já é reconhecida como admin).
-- A proteção real está na política do banco: mesmo que alguém force o front, não consegue gravar preset.
-
-## Arquivos envolvidos
-
-| Arquivo | Mudança |
-|---|---|
-| `src/lib/fabrica-art-tweaks.ts` (novo) | tipos dos ajustes, helper `tweak()`, registro de elementos |
-| `src/lib/fabrica-compose-art.ts` | aceitar `tweaks` + `onElement` nas opções; instrumentar a variação piloto |
-| `src/components/fabrica/ArtTweakEditor.tsx` (novo) | editor com arrastar/redimensionar, preview ao vivo, undo/reset |
-| `src/pages/fabrica/Phase3ArtFactory.tsx` | guardar a variação junto da arte, selo admin, botão "Ajustar arte" |
-| `src/hooks/useArtTweakPresets.ts` (novo) | carregar/salvar presets do banco com cache |
-| Migration | tabela de presets + RLS admin-only para escrita |
-
-## Fora do escopo desta etapa
-
-- Editar texto/conteúdo dentro do editor (só posição e tamanho).
-- Adicionar ou remover elementos novos na arte.
-- Instrumentar todas as variações (fica para a etapa 2, após sua validação do piloto).
+Nada foi alterado, publicado ou commitado neste diagnóstico.
