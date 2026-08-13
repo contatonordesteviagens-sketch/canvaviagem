@@ -51,7 +51,7 @@ function TourismMedia({ type, badge }: { type: (typeof steps)[number]["media"]; 
     return (
       <div className="relative aspect-square overflow-hidden rounded-[30px] border border-[#7c5cff]/30 bg-[#11101b] shadow-[0_25px_90px_rgba(74,45,180,.28)]">
         <video className="h-full w-full object-cover" autoPlay muted loop playsInline preload="metadata" aria-label="Animação visual do processo de criação">
-          <source src="/travel-carousel-assets/qorvo-morph.mp4" type="video/mp4" />
+          <source src="/travel-carousel-assets/carousel-morph.mp4" type="video/mp4" />
         </video>
         <span className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-[#7c5cff]/45 bg-[#241241]/90 px-5 py-2 font-mono text-[10px] font-semibold tracking-[0.18em] text-white backdrop-blur">{badge}</span>
       </div>
@@ -59,8 +59,8 @@ function TourismMedia({ type, badge }: { type: (typeof steps)[number]["media"]; 
   }
 
   const images = type === "cancun"
-    ? ["cancun-card-01.png", "cancun-card-02.png", "cancun-card-03.png"]
-    : ["gramado-offer-01.png", "gramado-offer-02.png", "gramado-offer-05.png"];
+    ? ["cancun-card-01.webp", "cancun-card-02.webp", "cancun-card-03.webp"]
+    : ["gramado-offer-01.webp", "gramado-offer-02.webp", "gramado-offer-05.webp"];
   const ratio = type === "cancun" ? "aspect-[4/5]" : "aspect-square";
 
   return (
@@ -79,18 +79,18 @@ export default function TravelAgencyContentMechanism() {
   return (
     <>
       <style>{`
-        .qorvo-reveal { opacity: 1; transform: none; }
+        .travel-reveal { opacity: 1; transform: none; }
         @supports (animation-timeline: view()) {
           @media (prefers-reduced-motion: no-preference) {
-            .qorvo-reveal { opacity: 0; transform: translateY(16px); animation: qorvo-reveal linear both; animation-timeline: view(); animation-range: entry 5% cover 23%; }
+            .travel-reveal { opacity: 0; transform: translateY(16px); animation: travel-reveal linear both; animation-timeline: view(); animation-range: entry 5% cover 23%; }
           }
         }
-        @keyframes qorvo-reveal { to { opacity: 1; transform: translateY(0); } }
+        @keyframes travel-reveal { to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       <section id="como-funciona" className="relative overflow-hidden bg-[#08080b] px-5 py-20 text-[#f5f5f7] sm:px-8 lg:py-[58px]">
         <div className="mx-auto max-w-[1200px]">
-          <header className="qorvo-reveal mx-auto max-w-[1000px]">
+          <header className="travel-reveal mx-auto max-w-[1000px]">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/35"><span className="text-[#7c5cff]">02</span> — &nbsp; COMO FUNCIONA</p>
             <h2 className="mt-7 max-w-[920px] text-[clamp(2.75rem,4.5vw,3.75rem)] font-[560] leading-[1.03] tracking-[-0.045em]">
               Do pacote ao carrossel pronto em<br className="hidden sm:block" /> <span className="font-serif font-normal italic text-[#8f70ff]">3 passos</span>.
@@ -99,7 +99,7 @@ export default function TravelAgencyContentMechanism() {
 
           <div className="mt-10">
             {steps.map((step) => (
-              <article key={step.number} className="qorvo-reveal grid min-h-[690px] items-center gap-14 border-b border-white/[0.05] py-20 lg:grid-cols-[0.95fr_1.05fr] lg:gap-24">
+              <article key={step.number} className="travel-reveal grid min-h-[690px] items-center gap-14 border-b border-white/[0.05] py-20 lg:grid-cols-[0.95fr_1.05fr] lg:gap-24">
                 <div className="max-w-[490px] lg:pl-1">
                   <div className="mb-[72px] flex w-[194px] gap-2">
                     {steps.map((item) => <span key={item.number} className={`h-[2px] flex-1 ${item.number === step.number ? "bg-[#7c5cff]" : "bg-white/15"}`} />)}
@@ -118,7 +118,7 @@ export default function TravelAgencyContentMechanism() {
       <section id="formatos" className="relative overflow-hidden border-t border-white/[0.04] bg-[#08080b] px-5 py-20 text-[#f5f5f7] sm:px-8 lg:py-[92px]">
         <div className="mx-auto max-w-[1280px]">
           <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
-            <header className="qorvo-reveal">
+            <header className="travel-reveal">
               <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#22d3a8]">03 &nbsp;—&nbsp; AGORA TAMBÉM</p>
               <h2 className="mt-8 max-w-[760px] text-[clamp(2.75rem,4.6vw,3.75rem)] font-[560] leading-[1.03] tracking-[-0.05em]">
                 Uma assinatura. <span className="font-serif font-normal italic text-[#8f70ff]">Três formatos</span><br className="hidden sm:block" /> prontos pra postar.
@@ -127,9 +127,9 @@ export default function TravelAgencyContentMechanism() {
                 Um fluxo só para transformar os dados da viagem em carrosséis, artes para Feed e Stories. Você personaliza, revisa e exporta cada peça.
               </p>
             </header>
-            <div className="qorvo-reveal relative hidden h-[300px] lg:block">
+            <div className="travel-reveal relative hidden h-[300px] lg:block">
               <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(124,92,255,.28),transparent_65%)]" />
-              {["cancun-editorial-03.png", "cancun-editorial-02.png", "cancun-editorial-01.png"].map((image, index) => (
+              {["cancun-editorial-03.webp", "cancun-editorial-02.webp", "cancun-editorial-01.webp"].map((image, index) => (
                 <img key={image} src={`/travel-carousel-assets/${image}`} alt="Exemplo de carrossel de viagem" loading="lazy" decoding="async" className={`absolute left-1/2 top-1/2 w-[130px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-[#7c5cff]/35 shadow-2xl ${index === 0 ? "translate-x-[-110%] rotate-[-18deg]" : index === 1 ? "z-20" : "translate-x-[10%] rotate-[18deg]"}`} />
               ))}
             </div>
@@ -137,7 +137,7 @@ export default function TravelAgencyContentMechanism() {
 
           <div className="mt-20 grid gap-5 lg:grid-cols-3">
             {formats.map((format, index) => (
-              <article key={format.title} className={`qorvo-reveal relative min-h-[296px] rounded-[22px] border bg-white/[0.025] px-8 py-9 ${index === 0 ? "border-[#7c5cff]/65 bg-[linear-gradient(145deg,rgba(124,92,255,.08),transparent_55%)]" : "border-white/[0.1]"}`}>
+              <article key={format.title} className={`travel-reveal relative min-h-[296px] rounded-[22px] border bg-white/[0.025] px-8 py-9 ${index === 0 ? "border-[#7c5cff]/65 bg-[linear-gradient(145deg,rgba(124,92,255,.08),transparent_55%)]" : "border-white/[0.1]"}`}>
                 <span className={`absolute -top-3 left-7 rounded-full border px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] ${format.badgeTone === "purple" ? "border-[#7c5cff] bg-[#7c5cff] text-white" : "border-[#22d3a8]/50 bg-[#08231e] text-[#22d3a8]"}`}>{format.badge}</span>
                 <h3 className="text-[24px] font-[600] tracking-[-0.035em]">{format.title}</h3>
                 <p className="mt-5 text-[16px] leading-[1.6] text-[#f5f5f7]/65">{format.copy}</p>

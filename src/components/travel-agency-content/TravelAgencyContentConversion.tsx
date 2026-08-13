@@ -25,19 +25,19 @@ type Plan = {
 const asset = (name: string) => `/travel-carousel-assets/${name}`;
 
 const tourismWorks = [
-  ["cancun-glass-01.png", "Primeiro slide do carrossel sobre o que fazer em Cancún"],
-  ["cancun-glass-02.png", "Segundo slide do carrossel apresentando Cancún"],
-  ["cancun-glass-03.png", "Terceiro slide do carrossel com detalhes da viagem para Cancún"],
-  ["cancun-glass-04.png", "Quarto slide do carrossel com chamada para reservar a viagem"],
-  ["cancun-card-01.png", "Capa de carrossel de viagem sobre Cancún"],
-  ["cancun-card-02.png", "Segundo slide de carrossel sobre Cancún"],
-  ["cancun-card-03.png", "Terceiro slide de carrossel sobre Cancún"],
-  ["cancun-editorial-01.png", "Capa de conteúdo editorial sobre Cancún"],
-  ["cancun-editorial-02.png", "Slide editorial com informações sobre Cancún"],
-  ["cancun-editorial-03.png", "Slide final de conteúdo editorial sobre Cancún"],
-  ["gramado-offer-01.png", "Primeira arte de oferta de viagem para Gramado"],
-  ["gramado-offer-02.png", "Segunda arte de oferta de viagem para Gramado"],
-  ["gramado-offer-05.png", "Arte vertical de oferta de viagem para Gramado"],
+  ["cancun-glass-01.webp", "Primeiro slide do carrossel sobre o que fazer em Cancún"],
+  ["cancun-glass-02.webp", "Segundo slide do carrossel apresentando Cancún"],
+  ["cancun-glass-03.webp", "Terceiro slide do carrossel com detalhes da viagem para Cancún"],
+  ["cancun-glass-04.webp", "Quarto slide do carrossel com chamada para reservar a viagem"],
+  ["cancun-card-01.webp", "Capa de carrossel de viagem sobre Cancún"],
+  ["cancun-card-02.webp", "Segundo slide de carrossel sobre Cancún"],
+  ["cancun-card-03.webp", "Terceiro slide de carrossel sobre Cancún"],
+  ["cancun-editorial-01.webp", "Capa de conteúdo editorial sobre Cancún"],
+  ["cancun-editorial-02.webp", "Slide editorial com informações sobre Cancún"],
+  ["cancun-editorial-03.webp", "Slide final de conteúdo editorial sobre Cancún"],
+  ["gramado-offer-01.webp", "Primeira arte de oferta de viagem para Gramado"],
+  ["gramado-offer-02.webp", "Segunda arte de oferta de viagem para Gramado"],
+  ["gramado-offer-05.webp", "Arte vertical de oferta de viagem para Gramado"],
 ] as const;
 
 const plans: Plan[] = [
@@ -117,11 +117,11 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
         <div className="mx-auto max-w-[1200px]">
           <article className="mx-auto max-w-[760px] overflow-hidden rounded-[28px] border border-[#7c5cff]/35 bg-[linear-gradient(145deg,#1c1538,#0d0c13_70%)] px-7 pt-8 shadow-[0_32px_90px_rgba(0,0,0,.45)] sm:px-12 sm:pt-11">
             <Label number="07" text="Resultado real" />
-            <h2 className="mt-8 max-w-[610px] text-[32px] font-[550] leading-[1.02] tracking-[-.045em] sm:text-[50px]">Um carrossel publicado pela Qorvo passou de <span className="font-normal italic text-[#9b82ff] [font-family:'Instrument_Serif',Georgia,serif]">1 milhão</span> de visualizações.</h2>
+            <h2 className="mt-8 max-w-[610px] text-[32px] font-[550] leading-[1.02] tracking-[-.045em] sm:text-[50px]">Um carrossel publicado passou de <span className="font-normal italic text-[#9b82ff] [font-family:'Instrument_Serif',Georgia,serif]">1 milhão</span> de visualizações.</h2>
             <p className="mt-8 font-mono text-[32px] tracking-[.04em] text-[#22d3b6] sm:text-[46px]">1.018.185 <span className="align-middle text-[9px] font-bold uppercase tracking-[.22em]">visualizações</span></p>
-            <p className="mt-8 max-w-[590px] text-[14px] leading-7 text-white/62 sm:text-[16px]">O conteúdo atingiu mais de um milhão de visualizações no Instagram. Este é um resultado publicado pela Qorvo, usado como referência do mecanismo original, e não representa promessa de desempenho do Canva Viagem.</p>
+            <p className="mt-8 max-w-[590px] text-[14px] leading-7 text-white/62 sm:text-[16px]">Este é um resultado publicado, usado como referência do mecanismo original, e não representa promessa de desempenho do Canva Viagem.</p>
             <div className="mx-auto mt-10 max-h-[610px] max-w-[420px] overflow-hidden rounded-t-[25px] border border-white/15 bg-black">
-              <img src={asset("instagram-insights.png")} alt="Insights publicados pela Qorvo com 1.018.185 visualizações" loading="lazy" className="h-auto w-full" />
+              <img src={asset("instagram-result-cancun.webp")} alt="Insights de um carrossel de turismo com 1.018.185 visualizações" loading="lazy" decoding="async" width="840" height="1493" className="h-auto w-full" />
             </div>
           </article>
 
@@ -135,7 +135,7 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
           <div className="travel-mobile-marquee flex w-max gap-4 px-2 sm:mx-auto sm:min-w-full sm:justify-center sm:gap-5 sm:px-[max(2rem,calc((100vw-1200px)/2))]">
             {[...tourismWorks, ...tourismWorks].map(([file, alt], index) => (
               <figure key={`${file}-${index}`} className={`w-[220px] shrink-0 overflow-hidden rounded-xl border border-white/10 sm:w-[250px] ${index >= tourismWorks.length ? "sm:hidden" : ""}`}>
-                <img src={asset(file)} alt={index < tourismWorks.length ? alt : ""} aria-hidden={index >= tourismWorks.length || undefined} loading="lazy" className="h-auto w-full" />
+                <img src={asset(file)} alt={index < tourismWorks.length ? alt : ""} aria-hidden={index >= tourismWorks.length || undefined} loading="lazy" decoding="async" className="h-auto w-full" />
               </figure>
             ))}
           </div>

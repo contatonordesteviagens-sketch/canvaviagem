@@ -82,20 +82,20 @@ export default function TravelAgencyContentHero({ onScrollToPlans, onRecordEvent
             <div className={`relative aspect-video min-h-0 transition-[opacity,transform] delay-150 duration-1000 sm:min-h-[570px] lg:min-h-[610px] ${visible ? "translate-y-0 opacity-100" : "translate-y-7 opacity-0"}`}>
               <div className="absolute inset-0 overflow-hidden rounded-[24px] border border-[#9b82ff]/20 bg-[#0a0912] shadow-[0_24px_70px_rgba(0,0,0,.62),0_0_45px_rgba(124,92,255,.13)] sm:inset-x-[2%] sm:top-[9%] sm:h-[68%] sm:rounded-[32px] sm:shadow-[0_38px_110px_rgba(0,0,0,.7),0_0_70px_rgba(124,92,255,.18)]">
                 <video autoPlay muted loop playsInline preload="metadata" aria-label="Demonstração visual da criação de carrosséis" className="h-full w-full object-cover">
-                  <source src={`${A}qorvo-hero.mp4`} type="video/mp4" />
+                  <source src={`${A}carousel-hero.mp4`} type="video/mp4" />
                 </video>
                 <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_68%,rgba(8,8,11,.48))]" />
               </div>
-              <img src={`${A}cancun-card-02.png`} alt="Carrossel de viagem criado para Cancún" className="absolute left-0 top-[2%] hidden aspect-[4/5] w-[25%] -rotate-[7deg] rounded-xl border border-white/15 object-cover shadow-2xl sm:block" />
-              <img src={`${A}gramado-offer-05.png`} alt="Arte vertical de turismo para Stories" className="absolute bottom-[1%] right-0 hidden aspect-[4/5] w-[24%] rotate-[7deg] rounded-xl border border-white/15 object-cover shadow-2xl sm:block" />
+              <img src={`${A}cancun-card-02.webp`} alt="Carrossel de viagem criado para Cancún" loading="eager" decoding="async" className="absolute left-0 top-[2%] hidden aspect-[4/5] w-[25%] -rotate-[7deg] rounded-xl border border-white/15 object-cover shadow-2xl sm:block" />
+              <img src={`${A}gramado-offer-05.webp`} alt="Arte vertical de turismo para Stories" loading="eager" decoding="async" className="absolute bottom-[1%] right-0 hidden aspect-[4/5] w-[24%] rotate-[7deg] rounded-xl border border-white/15 object-cover shadow-2xl sm:block" />
               <p className="absolute bottom-[12%] left-[12%] hidden rounded-full border border-[#22d3a8]/25 bg-[#09090dcc] px-4 py-2 font-mono text-[9px] uppercase tracking-[.16em] text-[#22d3a8] backdrop-blur sm:block">do destino ao post em poucos cliques</p>
             </div>
           </div>
 
           <div className="relative mt-8 hidden h-[570px] overflow-hidden border-y border-white/[.07] sm:block">
             <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(124,92,255,.22),transparent_46%)]" />
-            {["cancun-editorial-01.png","cancun-editorial-02.png","cancun-editorial-03.png","cancun-card-01.png","cancun-card-02.png","cancun-card-03.png","gramado-offer-01.png"].map((src, i) => (
-              <img key={src} src={`${A}${src}`} alt="" aria-hidden="true" className="absolute bottom-[-5%] aspect-[4/5] w-[22%] rounded-2xl border border-white/10 object-cover shadow-[0_25px_70px_rgba(0,0,0,.65)]" style={{ left: `${2 + i * 13.2}%`, transform: `rotate(${(i - 3) * 2.7}deg) translateY(${Math.abs(i - 3) * 17}px)`, zIndex: 10 - Math.abs(i - 3) }} />
+            {["cancun-editorial-01.webp","cancun-editorial-02.webp","cancun-editorial-03.webp","cancun-card-01.webp","cancun-card-02.webp","cancun-card-03.webp","gramado-offer-01.webp"].map((src, i) => (
+              <img key={src} src={`${A}${src}`} alt="" aria-hidden="true" loading="lazy" decoding="async" className="absolute bottom-[-5%] aspect-[4/5] w-[22%] rounded-2xl border border-white/10 object-cover shadow-[0_25px_70px_rgba(0,0,0,.65)]" style={{ left: `${2 + i * 13.2}%`, transform: `rotate(${(i - 3) * 2.7}deg) translateY(${Math.abs(i - 3) * 17}px)`, zIndex: 10 - Math.abs(i - 3) }} />
             ))}
           </div>
 
