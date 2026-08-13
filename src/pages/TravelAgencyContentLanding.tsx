@@ -74,13 +74,13 @@ export default function TravelAgencyContentLanding() {
         <title>Carrosséis para agência de viagens | Canva Viagem</title>
         <meta
           name="description"
-          content="Crie artes, carrosséis para Feed e versões para Stories com 10 modelos feitos especialmente para agências de viagens."
+          content="Crie artes, carrosséis para Feed e versões para Stories com +12 modelos feitos especialmente para agências de viagens."
         />
         <link rel="canonical" href={`https://canvaviagem.com${landingPath}`} />
         <meta property="og:title" content="Carrosséis de turismo prontos para personalizar | Canva Viagem" />
         <meta
           property="og:description"
-          content="10 modelos de carrosséis, artes para Feed e versões para Stories feitos para agências de viagens."
+          content="+12 modelos de carrosséis, artes para Feed e versões para Stories feitos para agências de viagens."
         />
         <meta property="og:url" content={`https://canvaviagem.com${landingPath}`} />
         <meta name="theme-color" content="#08080b" />

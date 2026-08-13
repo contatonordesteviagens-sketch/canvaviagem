@@ -9,7 +9,7 @@ const reasons = [
 
 const outcomes = [
   ["+ frequência", "Mais viagens transformadas em conteúdo pronto para revisar."],
-  ["+ variedade", "Dez modelos para alternar formatos e estruturas."],
+  ["+ variedade", "+12 modelos para alternar formatos e estruturas."],
   ["− tempo", "Menos trabalho repetitivo em cada slide e adaptação."],
   ["+ consistência", "A mesma identidade entre Feed, carrosséis e Stories."],
 ] as const;
@@ -61,7 +61,7 @@ export default function TravelAgencyContentBenefits() {
           <p className="qorvo-reveal font-mono text-[11px] uppercase tracking-[0.22em] text-white/45"><span className="text-[#8f70ff]">06</span> — &nbsp; O QUE O CANVA VIAGEM NÃO É</p>
           <div className="mt-10 space-y-10 sm:space-y-11">
             <p className="qorvo-reveal max-w-[1160px] text-[clamp(2rem,3vw,2.45rem)] font-[650] leading-[1.24] tracking-[-0.035em]">Não é <span className="inline-block rounded-[11px] border border-[#7c5cff]/55 bg-[#7c5cff]/10 px-3 py-0.5 text-[#987cff]">agência</span>. A ferramenta prepara as peças — sua equipe revisa e publica.</p>
-            <p className="qorvo-reveal max-w-[1100px] text-[clamp(2rem,3vw,2.45rem)] font-[650] leading-[1.24] tracking-[-0.035em]">Não é <span className="inline-block rounded-[11px] border border-[#7c5cff]/55 bg-[#7c5cff]/10 px-3 py-0.5 text-[#987cff]">template genérico</span>. Os 10 modelos foram estruturados para turismo.</p>
+            <p className="qorvo-reveal max-w-[1100px] text-[clamp(2rem,3vw,2.45rem)] font-[650] leading-[1.24] tracking-[-0.035em]">Não é <span className="inline-block rounded-[11px] border border-[#7c5cff]/55 bg-[#7c5cff]/10 px-3 py-0.5 text-[#987cff]">template genérico</span>. Os +12 modelos foram estruturados para turismo.</p>
             <p className="qorvo-reveal max-w-[1080px] text-[clamp(2rem,3vw,2.45rem)] font-[650] leading-[1.24] tracking-[-0.035em]">Não <span className="inline-block rounded-[11px] border border-[#7c5cff]/55 bg-[#7c5cff]/10 px-3 py-0.5 text-[#987cff]">publica sozinha</span>. Você exporta e escolhe quando colocar no Feed ou nos Stories.</p>
             <p className="qorvo-reveal max-w-[1180px] text-[clamp(2rem,3vw,2.45rem)] font-[650] leading-[1.24] tracking-[-0.035em]">Não exige <span className="inline-block rounded-[11px] border border-[#7c5cff]/55 bg-[#7c5cff]/10 px-3 py-0.5 text-[#987cff]">começar do zero</span>. Você escolhe, personaliza a viagem e exporta.</p>
           </div>

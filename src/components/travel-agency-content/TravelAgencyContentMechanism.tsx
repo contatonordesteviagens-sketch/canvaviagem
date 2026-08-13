@@ -2,8 +2,8 @@ const steps = [
   {
     number: "01",
     title: "Escolha o modelo.",
-    copy: "Selecione um dos 10 modelos criados para turismo — com estruturas para oferta, destino, roteiro, dicas e conteúdo editorial.",
-    badge: "10 MODELOS PARA TURISMO",
+    copy: "Selecione um dos +12 modelos criados para turismo — com estruturas para oferta, destino, roteiro, dicas e conteúdo editorial.",
+    badge: "+12 MODELOS PARA TURISMO",
     media: "video",
   },
   {

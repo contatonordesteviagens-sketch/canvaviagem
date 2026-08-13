@@ -73,7 +73,7 @@ const plans: Plan[] = [
 ];
 
 const features = [
-  "10 modelos criados para turismo",
+  "+12 modelos criados para turismo",
   "Carrosséis em Feed 4:5",
   "Artes quadradas em 1:1",
   "Stories verticais em 9:16",
@@ -83,7 +83,7 @@ const features = [
 ];
 
 const faqs = [
-  ["Quantos modelos estão disponíveis?", "São 10 modelos criados para turismo, com estruturas para ofertas, destinos, dicas, roteiros e conteúdo editorial."],
+  ["Quantos modelos estão disponíveis?", "São +12 modelos criados para turismo, com estruturas para ofertas, destinos, dicas, roteiros e conteúdo editorial."],
   ["Quais formatos posso criar?", "Carrosséis em Feed 4:5, artes quadradas em 1:1 e Stories verticais em 9:16, com vários slides e variações."],
   ["Preciso dominar design ou Canva?", "Não. Você escolhe um modelo, troca as informações da viagem e personaliza os elementos sem começar do zero."],
   ["Posso usar a identidade da agência?", "Sim. Você pode adaptar destino, oferta, preço, informações e identidade visual antes de exportar."],
@@ -126,7 +126,7 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
         <div className="mx-auto max-w-[1200px]">
           <div className="grid gap-10 lg:grid-cols-[1fr_480px]">
             <div><Label number="09" text="Planos" /><h2 className="mt-10 text-[47px] font-semibold leading-none tracking-[-.05em] sm:text-[62px] [font-family:Archivo,system-ui,sans-serif]">Comece <span className="font-normal italic text-[#7c5cff] [font-family:'Instrument_Serif',Georgia,serif]">hoje.</span></h2></div>
-            <p className="self-end text-[15px] leading-7 text-white/60">Uma única peça com designer pode custar caro. Aqui você acessa 10 modelos para artes, carrosséis e Stories, personaliza quantas peças precisar dentro do seu uso e escolhe o ciclo que combina com sua agência.</p>
+            <p className="self-end text-[15px] leading-7 text-white/60">Uma única peça com designer pode custar caro. Aqui você acessa +12 modelos para artes, carrosséis e Stories, personaliza quantas peças precisar dentro do seu uso e escolhe o ciclo que combina com sua agência.</p>
           </div>
 
           <div className="mt-12 grid items-center gap-6 rounded-[20px] border border-[#7c5cff]/55 bg-[linear-gradient(90deg,rgba(124,92,255,.11),rgba(124,92,255,.03))] px-6 py-7 sm:px-8 lg:grid-cols-[1fr_auto]">

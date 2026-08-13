@@ -5,7 +5,7 @@ import type { LandingSectionActions } from "@/types/travel-agency-content";
 const A = "/travel-carousel-assets/";
 
 const metrics = [
-  ["12 modelos e estilos", "CARROSSÉIS PARA TURISMO"],
+  ["+12 modelos", "CARROSSÉIS PARA TURISMO"],
   ["3 formatos", "FEED, QUADRADO E STORIES"],
   ["6 slides diferentes", "CAPAS, CONTEÚDO E CHAMADAS"],
   ["1 minuto", "DO CLIQUE AO POST PRONTO"],
@@ -71,7 +71,7 @@ export default function TravelAgencyContentHero({ onScrollToPlans, onRecordEvent
                 <span className="bg-[linear-gradient(transparent_76%,rgba(124,92,255,.42)_76%)]">1 clique.</span>
               </h1>
               <p className="mt-8 text-[21px] font-medium text-white/78">Agora com <em className="font-serif text-[27px] font-normal text-[#b6a5ff]">Feed e Stories</em>, na mesma assinatura.</p>
-              <p className="mt-7 max-w-[585px] text-[15px] leading-[1.75] text-white/58">O Canva Viagem transforma destino, oferta e identidade da sua agência em carrosséis com vários slides, artes para o Feed e versões verticais para Stories. Você escolhe entre 10 modelos feitos para turismo, troca as informações, baixa e publica. Sem começar do zero, sem esperar designer.</p>
+              <p className="mt-7 max-w-[585px] text-[15px] leading-[1.75] text-white/58">O Canva Viagem transforma destino, oferta e identidade da sua agência em carrosséis com vários slides, artes para o Feed e versões verticais para Stories. Você escolhe entre +12 modelos feitos para turismo, troca as informações, baixa e publica. Sem começar do zero, sem esperar designer.</p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <button type="button" onClick={() => onScrollToPlans("hero_primary")} className="group inline-flex min-h-[58px] items-center justify-center gap-3 rounded-xl bg-[#7c5cff] px-8 text-[15px] font-semibold text-white shadow-[0_14px_38px_rgba(124,92,255,.28)] transition hover:-translate-y-0.5 hover:bg-[#896dff] motion-reduce:transform-none">Criar meus carrosséis <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></button>
                 <button type="button" onClick={() => onScrollToPlans("hero_secondary")} className="min-h-[58px] rounded-xl border border-white/15 px-8 text-[15px] font-semibold text-white transition hover:border-white/30 hover:bg-white/[.04]">Ver planos</button>
