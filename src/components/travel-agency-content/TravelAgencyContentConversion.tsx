@@ -25,6 +25,10 @@ type Plan = {
 const asset = (name: string) => `/travel-carousel-assets/${name}`;
 
 const tourismWorks = [
+  ["cancun-glass-01.png", "Primeiro slide do carrossel sobre o que fazer em Cancún"],
+  ["cancun-glass-02.png", "Segundo slide do carrossel apresentando Cancún"],
+  ["cancun-glass-03.png", "Terceiro slide do carrossel com detalhes da viagem para Cancún"],
+  ["cancun-glass-04.png", "Quarto slide do carrossel com chamada para reservar a viagem"],
   ["cancun-card-01.png", "Capa de carrossel de viagem sobre Cancún"],
   ["cancun-card-02.png", "Segundo slide de carrossel sobre Cancún"],
   ["cancun-card-03.png", "Terceiro slide de carrossel sobre Cancún"],
