@@ -321,7 +321,7 @@ export default function Inicio2() {
     ? requestedUpgrade as UpgradeFeature
     : null;
   const returnTo = safeInternalPath(searchParams.get("returnTo"));
-  const offerVariant = ["ads", "site", "team"].includes(searchParams.get("offer") || "")
+  const offerVariant = ["ads", "site", "team", "content"].includes(searchParams.get("offer") || "")
     ? searchParams.get("offer")!
     : "general";
   const contextualCopy = upgradeFeature ? upgradeLandingCopy[upgradeFeature] : null;
@@ -348,6 +348,7 @@ export default function Inicio2() {
     const validOfferPaths = new Set([
       "/anuncios-para-agencia-de-viagens",
       "/site-para-agencia-de-viagens",
+      "/carrosseis-para-agencia-de-viagens",
       "/equipe-de-marketing-para-agencia-de-viagens",
     ]);
     if (!offerStatePath) return;
@@ -524,6 +525,8 @@ export default function Inicio2() {
             ? "/anuncios-para-agencia-de-viagens"
             : offerVariant === "site"
               ? "/site-para-agencia-de-viagens"
+              : offerVariant === "content"
+                ? "/carrosseis-para-agencia-de-viagens"
               : offerVariant === "team"
                 ? "/equipe-de-marketing-para-agencia-de-viagens"
                 : "/inicio",

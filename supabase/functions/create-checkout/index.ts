@@ -36,6 +36,7 @@ const validUpgradeFeatures = new Set([
 const validLandingPaths = new Set([
   "/inicio",
   "/anuncios-para-agencia-de-viagens",
+  "/carrosseis-para-agencia-de-viagens",
   "/site-para-agencia-de-viagens",
   "/equipe-de-marketing-para-agencia-de-viagens",
 ]);
@@ -162,9 +163,11 @@ serve(async (req) => {
       }
       const requestedLandingPath = sanitizeInternalPath(body?.landing_path);
       if (validLandingPaths.has(requestedLandingPath)) landingPath = requestedLandingPath;
-      if (typeof body?.landing_variant === "string" && ["ads", "site", "team"].includes(body.landing_variant)) {
+      if (typeof body?.landing_variant === "string" && ["ads", "content", "site", "team"].includes(body.landing_variant)) {
         landingVariant = body.landing_variant;
       }
+      // A oferta de carrosséis é uma compra direta, sem período de teste.
+      if (landingVariant === "content") trialEligible = false;
     } catch {
       // Empty request bodies use the canonical monthly offer.
     }
@@ -257,7 +260,7 @@ serve(async (req) => {
     const successParams = new URLSearchParams({
       source: "checkout",
       billingCycle: requestedCycle,
-      trial: trialEligible ? "started" : "not_eligible",
+      trial: landingVariant === "content" ? "not_offered" : trialEligible ? "started" : "not_eligible",
     });
     const cancelParams = new URLSearchParams({ checkout: "canceled" });
     if (returnTo) {
