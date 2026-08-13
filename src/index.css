@@ -114,6 +114,28 @@
   to { transform: translateY(0); }
 }
 
+@keyframes travel-mobile-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(calc(-50% - 0.5rem), 0, 0); }
+}
+
+@media (max-width: 639px) {
+  .travel-mobile-marquee {
+    animation: travel-mobile-marquee 34s linear infinite;
+    will-change: transform;
+  }
+
+  .travel-mobile-marquee:active {
+    animation-play-state: paused;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .travel-mobile-marquee {
+    animation: none;
+  }
+}
+
 .animate-slide-up {
   animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }

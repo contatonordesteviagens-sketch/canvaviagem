@@ -111,15 +111,31 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
     <div className="bg-[#08080b] text-[#f5f5f7] [font-family:Geist,system-ui,sans-serif]">
       <section id="resultados" className="overflow-hidden border-b border-white/[0.08] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-[1200px]">
-          <Label number="07" text="Resultados publicados pela Qorvo" />
-          <div className="mt-11 grid items-start gap-12 lg:grid-cols-[.7fr_1.3fr]">
-            <div><h2 className="text-[40px] font-semibold leading-[1.04] tracking-[-0.045em] sm:text-[54px] [font-family:Archivo,system-ui,sans-serif]">A referência do <span className="font-normal italic text-[#7c5cff] [font-family:'Instrument_Serif',Georgia,serif]">mecanismo original.</span></h2><p className="mt-7 text-[15px] leading-7 text-white/52">Os prints abaixo foram publicados pela Qorvo e pertencem à referência original desta página. Eles não são resultados do Canva Viagem e não constituem promessa ou garantia de desempenho.</p></div>
-            <div className="grid gap-5 sm:grid-cols-2"><ProofImage file="qorvo-insights-975k.png" alt="Insights publicados pela Qorvo com 975.611 visualizações" /><ProofImage file="qorvo-insights-1m2.png" alt="Insights publicados pela Qorvo com 1.226.844 visualizações" /></div>
-          </div>
+          <article className="mx-auto max-w-[760px] overflow-hidden rounded-[28px] border border-[#7c5cff]/35 bg-[linear-gradient(145deg,#1c1538,#0d0c13_70%)] px-7 pt-8 shadow-[0_32px_90px_rgba(0,0,0,.45)] sm:px-12 sm:pt-11">
+            <Label number="07" text="Resultado real" />
+            <h2 className="mt-8 max-w-[610px] text-[32px] font-[550] leading-[1.02] tracking-[-.045em] sm:text-[50px]">Um carrossel publicado pela Qorvo passou de <span className="font-normal italic text-[#9b82ff] [font-family:'Instrument_Serif',Georgia,serif]">1 milhão</span> de visualizações.</h2>
+            <p className="mt-8 font-mono text-[32px] tracking-[.04em] text-[#22d3b6] sm:text-[46px]">1.018.185 <span className="align-middle text-[9px] font-bold uppercase tracking-[.22em]">visualizações</span></p>
+            <p className="mt-8 max-w-[590px] text-[14px] leading-7 text-white/62 sm:text-[16px]">O conteúdo atingiu mais de um milhão de visualizações no Instagram. Este é um resultado publicado pela Qorvo, usado como referência do mecanismo original, e não representa promessa de desempenho do Canva Viagem.</p>
+            <div className="mx-auto mt-10 max-h-[610px] max-w-[420px] overflow-hidden rounded-t-[25px] border border-white/15 bg-black">
+              <img src={asset("instagram-insights.png")} alt="Insights publicados pela Qorvo com 1.018.185 visualizações" loading="lazy" className="h-auto w-full" />
+            </div>
+          </article>
 
-          <div className="mt-20 flex items-end justify-between gap-8"><div><Label number="08" text="Feitos no Canva Viagem" /><h3 className="mt-7 max-w-[760px] text-[34px] font-semibold leading-[1.08] tracking-[-.04em] sm:text-[48px]">Peças de turismo em <span className="font-normal italic text-[#7c5cff] [font-family:'Instrument_Serif',Georgia,serif]">diferentes narrativas.</span></h3></div><p className="hidden max-w-[260px] text-right text-sm leading-6 text-white/42 lg:block">Exemplos visuais do produto para destinos, ofertas e conteúdo editorial.</p></div>
+          <div className="mt-24 max-w-[760px] sm:mt-32">
+            <Label number="08" text="Feitos no Canva Viagem" />
+            <h3 className="mt-8 text-[30px] font-[560] leading-[1.08] tracking-[-.04em] sm:text-[48px]">Não é só inspiração. São peças de turismo prontas para adaptar à sua agência.</h3>
+            <p className="mt-6 max-w-[650px] text-[15px] leading-7 text-white/55">Carrosséis para destinos, ofertas e conteúdo editorial, com Feed, formato quadrado e Stories no mesmo fluxo.</p>
+          </div>
         </div>
-        <div className="mt-12 overflow-x-auto pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"><div className="mx-auto flex w-max min-w-full gap-5 px-5 sm:px-[max(2rem,calc((100vw-1200px)/2))]">{tourismWorks.map(([file, alt], index) => <figure key={file} className={`w-[230px] shrink-0 overflow-hidden rounded-xl border border-white/10 sm:w-[285px] ${index % 2 ? "sm:translate-y-3" : "sm:-translate-y-2"}`}><img src={asset(file)} alt={alt} loading="lazy" className="h-auto w-full transition-transform duration-500 motion-reduce:transition-none hover:scale-[1.015]" /></figure>)}</div></div>
+        <div className="mt-12 overflow-hidden pb-6">
+          <div className="travel-mobile-marquee flex w-max gap-4 px-2 sm:mx-auto sm:min-w-full sm:justify-center sm:gap-5 sm:px-[max(2rem,calc((100vw-1200px)/2))]">
+            {[...tourismWorks, ...tourismWorks].map(([file, alt], index) => (
+              <figure key={`${file}-${index}`} className={`w-[220px] shrink-0 overflow-hidden rounded-xl border border-white/10 sm:w-[250px] ${index >= tourismWorks.length ? "sm:hidden" : ""}`}>
+                <img src={asset(file)} alt={index < tourismWorks.length ? alt : ""} aria-hidden={index >= tourismWorks.length || undefined} loading="lazy" className="h-auto w-full" />
+              </figure>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section id="planos" className="relative overflow-hidden border-b border-white/[0.08] px-5 py-20 sm:px-8 sm:py-28">
@@ -171,8 +187,4 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
 
 function Label({ number, text }: { number: string; text: string }) {
   return <p className="font-mono text-[10px] font-bold uppercase tracking-[.2em] text-white/32"><span className="text-[#7c5cff]">{number}</span> — &nbsp;{text}</p>;
-}
-
-function ProofImage({ file, alt }: { file: string; alt: string }) {
-  return <figure className="overflow-hidden rounded-[22px] border border-white/10 bg-white shadow-[0_35px_90px_rgba(0,0,0,.55)]"><img src={asset(file)} alt={alt} loading="lazy" className="h-auto w-full" /><figcaption className="bg-[#111116] px-4 py-3 font-mono text-[8px] font-bold uppercase tracking-[.12em] text-white/35">Qorvo — referência original</figcaption></figure>;
 }
