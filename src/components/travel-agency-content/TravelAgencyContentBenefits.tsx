@@ -1,6 +1,6 @@
 const reasons = [
   ["01", "Turismo desde o início", "Modelos que organizam destino, preço, condições e informações da viagem."],
-  ["02", "Sequência pronta", "Slides estruturados para abrir, desenvolver e concluir a ideia."],
+  ["02", "Gerações ilimitadas", "Crie quantos carrosséis precisar, sem pacote de créditos ou franquia mensal."],
   ["03", "Três formatos", "Carrosséis e artes em 4:5 e 1:1, além de Stories em 9:16."],
   ["04", "Sua identidade", "Cores, logo e estilo da agência aplicados às peças e variações."],
 ] as const;
@@ -9,7 +9,7 @@ const outcomes = [
   ["+ seguidores", "Conteúdo de turismo feito para chamar atenção, gerar alcance e atrair novos viajantes."],
   ["+ vendas", "Apresente destinos e ofertas com clareza para transformar interesse em pedidos de orçamento."],
   ["− tempo", "Do pacote ao carrossel pronto em cerca de 1 minuto, sem passar a tarde inteira no Canva."],
-  ["− custo", "Produza quantos conteúdos precisar por menos que o custo de uma única arte de designer."],
+  ["− custo", "Produza carrosséis ilimitados sem pagar por geração, crédito ou peça criada."],
 ] as const;
 
 export default function TravelAgencyContentBenefits() {
@@ -55,6 +55,7 @@ export default function TravelAgencyContentBenefits() {
             <p className="travel-reveal max-w-[1160px] text-[clamp(1.55rem,2.55vw,2.15rem)] font-[650] leading-[1.28] tracking-[-0.035em]">Não é o <span className="inline-block rounded-[9px] border border-[#7c5cff]/55 bg-[#7c5cff]/10 px-2.5 py-0.5 text-[#987cff]">Canva</span>. Você não arrasta nada. Escolhe o modelo, informa a viagem e recebe o carrossel pronto para revisar.</p>
             <p className="travel-reveal max-w-[1160px] text-[clamp(1.55rem,2.55vw,2.15rem)] font-[650] leading-[1.28] tracking-[-0.035em]">Não é <span className="inline-block rounded-[9px] border border-[#7c5cff]/55 bg-[#7c5cff]/10 px-2.5 py-0.5 text-[#987cff]">agência</span>. A ferramenta prepara as peças; sua equipe revisa e publica.</p>
             <p className="travel-reveal max-w-[1100px] text-[clamp(1.55rem,2.55vw,2.15rem)] font-[650] leading-[1.28] tracking-[-0.035em]">Não é <span className="inline-block rounded-[9px] border border-[#7c5cff]/55 bg-[#7c5cff]/10 px-2.5 py-0.5 text-[#987cff]">template genérico</span>. Os +12 modelos foram estruturados para turismo.</p>
+            <p className="travel-reveal max-w-[1120px] text-[clamp(1.55rem,2.55vw,2.15rem)] font-[650] leading-[1.28] tracking-[-0.035em]">Não é <span className="inline-block rounded-[9px] border border-[#22d3a8]/55 bg-[#22d3a8]/10 px-2.5 py-0.5 text-[#22d3a8]">pacote de créditos</span>. Assinando hoje, você gera carrosséis sem limite enquanto sua assinatura estiver ativa.</p>
             <p className="travel-reveal max-w-[1080px] text-[clamp(1.55rem,2.55vw,2.15rem)] font-[650] leading-[1.28] tracking-[-0.035em]">Não <span className="inline-block rounded-[9px] border border-[#7c5cff]/55 bg-[#7c5cff]/10 px-2.5 py-0.5 text-[#987cff]">publica sozinha</span>. Você exporta e escolhe quando colocar no Feed ou nos Stories.</p>
           </div>
         </div>

@@ -7,7 +7,7 @@ const A = "/travel-carousel-assets/";
 const metrics = [
   ["+12 modelos", "CARROSSÉIS PARA TURISMO"],
   ["3 formatos", "FEED, QUADRADO E STORIES"],
-  ["6 slides diferentes", "CAPAS, CONTEÚDO E CHAMADAS"],
+  ["Ilimitados", "SEM CRÉDITOS OU FRANQUIA"],
   ["1 minuto", "DO CLIQUE AO POST PRONTO"],
 ] as const;
 
@@ -52,7 +52,7 @@ export default function TravelAgencyContentHero({ onScrollToPlans, onRecordEvent
             <a href="#planos" onClick={(e) => { e.preventDefault(); onScrollToPlans("nav_plans"); }} className="hover:text-white">Planos</a>
             <a href="#faq" onClick={() => track("nav_faq", "#faq")} className="hover:text-white">FAQ</a>
           </div>
-          <button type="button" onClick={() => onScrollToPlans("nav_primary")} className="rounded-xl bg-[#7c5cff] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_10px_30px_rgba(124,92,255,.28)] transition hover:bg-[#896dff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Ver planos</button>
+          <button type="button" onClick={() => onScrollToPlans("nav_primary")} className="rounded-xl bg-[#7c5cff] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_10px_30px_rgba(124,92,255,.28)] transition hover:bg-[#896dff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Liberar ilimitado</button>
         </nav>
       </header>
 
@@ -63,20 +63,20 @@ export default function TravelAgencyContentHero({ onScrollToPlans, onRecordEvent
         <div className="mx-auto max-w-[1200px] px-5 pb-6 pt-[150px] sm:px-7 lg:pt-[164px]">
           <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,.96fr)_minmax(0,1.04fr)] lg:gap-16 xl:gap-20">
             <div className={`relative z-10 min-w-0 transition-[opacity,transform] duration-700 ${visible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"}`}>
-              <p className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-4 py-2 font-mono text-[10px] font-semibold uppercase tracking-[.18em] text-[#22d3a8]"><span className="h-1.5 w-1.5 rounded-full bg-[#22d3a8] shadow-[0_0_12px_#22d3a8]" />Carrosséis · Artes · Stories · só para turismo</p>
+              <p className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#22d3a8]/30 bg-[#08231e]/55 px-4 py-2 font-mono text-[10px] font-semibold uppercase tracking-[.18em] text-[#22d3a8]"><span className="h-1.5 w-1.5 rounded-full bg-[#22d3a8] shadow-[0_0_12px_#22d3a8]" />Válido somente hoje · carrosséis ilimitados</p>
               <h1 id="travel-agency-hero-title" className="max-w-[590px] text-[42px] font-[590] leading-[.99] tracking-[-.035em] sm:text-[60px] lg:text-[68px] xl:text-[74px]">
                 <span className="block">Carrosséis que</span>
                 <em className="block font-serif font-normal text-[#9b82ff]">vendem viagens</em>
                 <span className="block">e viralizam, em</span>
                 <span className="bg-[linear-gradient(transparent_76%,rgba(124,92,255,.42)_76%)]">1 clique.</span>
               </h1>
-              <p className="mt-8 text-[21px] font-medium text-white/78">Agora com <em className="font-serif text-[27px] font-normal text-[#b6a5ff]">Feed e Stories</em>, na mesma assinatura.</p>
-              <p className="mt-7 max-w-[585px] text-[15px] leading-[1.75] text-white/58">O Canva Viagem transforma destino, oferta e identidade da sua agência em carrosséis com vários slides, artes para o Feed e versões verticais para Stories. Você escolhe entre +12 modelos feitos para turismo, troca as informações, baixa e publica. Sem começar do zero, sem esperar designer.</p>
+              <p className="mt-8 text-[21px] font-medium text-white/78">Crie quantos carrosséis quiser: <em className="font-serif text-[27px] font-normal text-[#b6a5ff]">sem créditos e sem limites.</em></p>
+              <p className="mt-7 max-w-[585px] text-[15px] leading-[1.75] text-white/58">O Canva Viagem transforma destino, oferta e identidade da sua agência em carrosséis com vários slides, artes para o Feed e versões verticais para Stories. Você escolhe entre +12 modelos feitos para turismo, personaliza, baixa e publica quantas vezes precisar. Ao assinar hoje, o uso fica ilimitado enquanto sua assinatura estiver ativa.</p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <button type="button" onClick={() => onScrollToPlans("hero_primary")} className="group inline-flex min-h-[58px] items-center justify-center gap-3 rounded-xl bg-[#7c5cff] px-8 text-[15px] font-semibold text-white shadow-[0_14px_38px_rgba(124,92,255,.28)] transition hover:-translate-y-0.5 hover:bg-[#896dff] motion-reduce:transform-none">Criar meus carrosséis <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></button>
+                <button type="button" onClick={() => onScrollToPlans("hero_primary")} className="group inline-flex min-h-[58px] items-center justify-center gap-3 rounded-xl bg-[#7c5cff] px-8 text-[15px] font-semibold text-white shadow-[0_14px_38px_rgba(124,92,255,.28)] transition hover:-translate-y-0.5 hover:bg-[#896dff] motion-reduce:transform-none">Liberar carrosséis ilimitados <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></button>
                 <button type="button" onClick={() => onScrollToPlans("hero_secondary")} className="min-h-[58px] rounded-xl border border-white/15 px-8 text-[15px] font-semibold text-white transition hover:border-white/30 hover:bg-white/[.04]">Ver planos</button>
               </div>
-              <p className="mt-5 font-mono text-[10px] uppercase tracking-[.15em] text-white/28">Acesso liberado após a confirmação do pagamento</p>
+              <p className="mt-5 font-mono text-[10px] uppercase tracking-[.15em] text-white/35">Oferta válida somente hoje · sem créditos · sem limite de gerações</p>
             </div>
 
             <div className={`relative min-w-0 aspect-video transition-[opacity,transform] delay-150 duration-1000 ${visible ? "translate-y-0 opacity-100" : "translate-y-7 opacity-0"}`}>

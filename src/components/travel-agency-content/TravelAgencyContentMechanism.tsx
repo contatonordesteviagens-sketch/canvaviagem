@@ -16,8 +16,8 @@ const steps = [
   {
     number: "03",
     title: "Exporte e publique.",
-    copy: "Gere vários slides e versões em 4:5, 1:1 e 9:16. Revise as informações, exporte as peças e publique nos seus canais.",
-    badge: "FEED · CARROSSEL · STORIES",
+    copy: "Gere quantos carrosséis quiser em 4:5, 1:1 e 9:16. Revise, exporte e publique sem comprar créditos e sem esbarrar em limite de gerações.",
+    badge: "GERAÇÕES ILIMITADAS",
     media: "gramado",
   },
 ] as const;
@@ -124,7 +124,7 @@ export default function TravelAgencyContentMechanism() {
                 Uma assinatura. <span className="font-serif font-normal italic text-[#8f70ff]">Três formatos</span><br className="hidden sm:block" /> prontos pra postar.
               </h2>
               <p className="mt-7 max-w-[650px] text-[17px] leading-7 text-[#f5f5f7]/65">
-                Um fluxo só para transformar os dados da viagem em carrosséis, artes para Feed e Stories. Você personaliza, revisa e exporta cada peça.
+                Um fluxo só para transformar os dados da viagem em carrosséis, artes para Feed e Stories. Assinando hoje, você personaliza e exporta sem créditos e sem limite de gerações.
               </p>
             </header>
           </div>

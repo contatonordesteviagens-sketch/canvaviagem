@@ -77,6 +77,7 @@ const plans: Plan[] = [
 ];
 
 const features = [
+  "Carrosséis ilimitados, sem créditos",
   "+12 modelos criados para turismo",
   "Carrosséis em Feed 4:5",
   "Artes quadradas em 1:1",
@@ -87,6 +88,7 @@ const features = [
 ];
 
 const faqs = [
+  ["Existe limite de carrosséis ou créditos?", "Na condição válida somente hoje, não. Ao assinar, você pode gerar e baixar quantos carrosséis precisar, sem comprar créditos e sem limite de gerações, enquanto sua assinatura estiver ativa."],
   ["Quantos modelos estão disponíveis?", "São +12 modelos criados para turismo, com estruturas para ofertas, destinos, dicas, roteiros e conteúdo editorial."],
   ["Quais formatos posso criar?", "Carrosséis em Feed 4:5, artes quadradas em 1:1 e Stories verticais em 9:16, com vários slides e variações."],
   ["Preciso dominar design ou Canva?", "Não. Você escolhe um modelo, troca as informações da viagem e personaliza os elementos sem começar do zero."],
@@ -146,10 +148,15 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
         <div className="mx-auto max-w-[1200px]">
           <div className="grid gap-10 lg:grid-cols-[1fr_480px]">
             <div><Label number="09" text="Planos" /><h2 className="mt-10 text-[47px] font-semibold leading-none tracking-[-.05em] sm:text-[62px] [font-family:Archivo,system-ui,sans-serif]">Comece <span className="font-normal italic text-[#7c5cff] [font-family:'Instrument_Serif',Georgia,serif]">hoje.</span></h2></div>
-            <p className="self-end text-[15px] leading-7 text-white/60">Uma única peça com designer pode custar caro. Aqui você acessa +12 modelos para artes, carrosséis e Stories, personaliza quantas peças precisar dentro do seu uso e escolhe o ciclo que combina com sua agência.</p>
+            <p className="self-end text-[15px] leading-7 text-white/60">Uma única peça com designer pode custar caro. Assinando hoje, você acessa +12 modelos para artes, carrosséis e Stories e gera quantos carrosséis precisar — sem créditos e sem limite — durante toda a assinatura.</p>
           </div>
 
-          <div className="mt-12 grid items-center gap-6 rounded-[20px] border border-[#7c5cff]/55 bg-[linear-gradient(90deg,rgba(124,92,255,.11),rgba(124,92,255,.03))] px-6 py-7 sm:px-8 lg:grid-cols-[1fr_auto]">
+          <div className="mt-12 rounded-[20px] border border-[#22d3a8]/55 bg-[linear-gradient(90deg,rgba(34,211,168,.13),rgba(34,211,168,.025))] px-6 py-6 sm:px-8">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[.2em] text-[#22d3a8]">Válido somente hoje</p>
+            <p className="mt-3 text-[21px] font-semibold tracking-[-.025em] text-white sm:text-[25px]">Carrosséis ilimitados em qualquer ciclo — sem créditos, sem franquia e sem limite de gerações.</p>
+          </div>
+
+          <div className="mt-6 grid items-center gap-6 rounded-[20px] border border-[#7c5cff]/55 bg-[linear-gradient(90deg,rgba(124,92,255,.11),rgba(124,92,255,.03))] px-6 py-7 sm:px-8 lg:grid-cols-[1fr_auto]">
             <p className="text-base font-semibold"><span aria-hidden="true">✦</span> Plano anual: economize <span className="text-[#a990ff]">{ELITE_OFFER.annualSavings}</span> comparado a 12 mensalidades</p>
             <div className="flex flex-wrap items-stretch gap-3" aria-label="Resumo estático da condição anual">
               {[["12", "MESES"], ["R$40,16", "POR MÊS"], ["59%", "OFF"]].map(([value, label]) => <div key={label} className="min-w-[82px] rounded-xl border border-white/15 bg-black/25 px-3 py-3 text-center"><p className="font-mono text-base font-bold">{value}</p><p className="mt-1 font-mono text-[7px] font-bold tracking-[.18em] text-white/30">{label}</p></div>)}
@@ -169,13 +176,14 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
                 <span className={`absolute -top-3 left-7 rounded-full border px-4 py-1.5 font-mono text-[8px] font-bold tracking-[.16em] ${green ? "border-[#22d3a8] bg-[#09231e] text-[#22d3a8]" : "border-[#7c5cff] bg-[#211746] text-white"}`}>{plan.badge}</span>
                 <div className="flex items-end justify-between gap-3"><p className="font-mono text-[11px] font-bold tracking-[.2em]" style={{ color }}>{plan.eyebrow}</p><div className="text-right"><span className="text-sm text-white/65">R$ </span><span className="text-[46px] font-semibold leading-none tracking-[-.06em]">{plan.price.replace("R$ ", "")}</span><span className="text-sm">{plan.suffix}</span></div></div>
                 <p className="mt-5 font-mono text-[9px] font-bold uppercase leading-5 tracking-[.08em] text-white/55">{plan.charge}</p>
+                <p className="mt-4 rounded-lg border border-[#22d3a8]/30 bg-[#22d3a8]/[.07] px-3 py-2 font-mono text-[8px] font-bold uppercase tracking-[.12em] text-[#22d3a8]">Hoje: carrosséis ilimitados</p>
                 {plan.cycle === "annual" && <div className="mt-5 rounded-2xl border border-dashed border-[#7c5cff]/60 bg-[#7c5cff]/[.06] p-4"><p className="font-mono text-[8px] font-bold tracking-[.15em] text-[#a990ff]">ECONOMIA ANUAL</p><p className="mt-2 text-sm font-semibold">Pague o equivalente a 5 mensalidades e use por 12 meses.</p></div>}
                 <div className="my-6 h-px bg-white/10" /><ul className="space-y-3 text-[13px] leading-5 text-white/65">{features.map((feature) => <li key={feature} className="flex gap-2.5"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color }} aria-hidden="true" />{feature}</li>)}</ul>
                 <button type="button" disabled={checkoutLoading !== null} onClick={() => checkout(plan)} className={`mt-8 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border text-sm font-semibold transition-transform motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 disabled:cursor-wait disabled:opacity-55 ${green ? "border-[#22d3a8] bg-[#22d3a8] text-[#052019]" : "border-[#7c5cff] bg-[#7c5cff] text-white"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080b]`}>{checkoutLoading === plan.cycle ? "Abrindo checkout..." : `Escolher ${plan.name.toLowerCase()}`}<ArrowRight className="h-4 w-4" aria-hidden="true" /></button>
               </article>;
             })}
           </div>
-          <p className="mx-auto mt-8 max-w-[760px] text-center text-xs leading-6 text-white/38">A cobrança do ciclo escolhido é feita no checkout e o acesso é liberado após a confirmação do pagamento.</p>
+          <p className="mx-auto mt-8 max-w-[760px] text-center text-xs leading-6 text-white/38">A cobrança do ciclo escolhido é feita no checkout. A condição de carrosséis ilimitados permanece enquanto a assinatura estiver ativa.</p>
           <div className="mt-4 flex flex-wrap justify-center gap-6 font-mono text-[9px] uppercase tracking-[.12em] text-white/30"><span className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5" /> Checkout seguro Stripe</span><span className="flex items-center gap-2"><CreditCard className="h-3.5 w-3.5" /> Total exibido antes de pagar</span></div>
         </div>
       </section>
@@ -184,7 +192,7 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
         <div className="mx-auto max-w-[1200px]"><Label number="10" text="Antes de você perguntar" /><div className="mt-12 grid gap-14 lg:grid-cols-[.7fr_1.3fr]"><h2 className="text-[42px] font-semibold leading-[1.04] tracking-[-.045em] sm:text-[56px] [font-family:Archivo,system-ui,sans-serif]">Perguntas <span className="block font-normal italic text-[#7c5cff] [font-family:'Instrument_Serif',Georgia,serif]">frequentes.</span></h2><div className="border-t border-white/10">{faqs.map(([question, answer], index) => { const open = openFaq === index; const panelId = `carousel-faq-panel-${index}`; const buttonId = `carousel-faq-button-${index}`; return <div key={question} className="border-b border-white/10"><h3><button id={buttonId} type="button" aria-expanded={open} aria-controls={panelId} onClick={() => { setOpenFaq(open ? null : index); onRecordEvent("faq_toggled", { question, open: !open }); }} className="flex w-full items-center justify-between gap-5 py-6 text-left text-[15px] font-semibold text-white/82 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#7c5cff]">{question}<ChevronDown className={`h-4 w-4 shrink-0 text-[#7c5cff] transition-transform motion-reduce:transition-none ${open ? "rotate-180" : ""}`} /></button></h3><div id={panelId} role="region" aria-labelledby={buttonId} hidden={!open} className="pb-7 pr-10 text-sm leading-7 text-white/48">{answer}</div></div>; })}</div></div></div>
       </section>
 
-      <section className="relative grid min-h-[760px] place-items-center overflow-hidden px-5 py-28 text-center sm:min-h-[880px]"><div className="absolute inset-0 bg-[radial-gradient(circle,rgba(124,92,255,.18),transparent_36%)]" /><div className="relative mx-auto max-w-[900px]"><p className="font-mono text-[10px] font-bold tracking-[.2em] text-[#22d3a8]">COMECE COM O PRÓXIMO DESTINO</p><h2 className="mt-8 text-[43px] font-semibold leading-[1.02] tracking-[-.05em] sm:text-[72px] [font-family:Archivo,system-ui,sans-serif]">Transforme a viagem em um carrossel <span className="block font-normal italic text-[#7c5cff] [font-family:'Instrument_Serif',Georgia,serif]">pronto para publicar.</span></h2><button type="button" onClick={() => { onRecordEvent("final_cta_clicked", { destination: "plans" }); onScrollToPlans("final_cta"); }} className="mt-11 inline-flex min-h-14 items-center gap-3 rounded-xl bg-[#7c5cff] px-8 text-sm font-semibold shadow-[0_20px_60px_rgba(124,92,255,.3)] transition-transform motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22d3a8] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080b]">Quero criar meus carrosséis <ArrowRight className="h-4 w-4" /></button></div></section>
+      <section className="relative grid min-h-[760px] place-items-center overflow-hidden px-5 py-28 text-center sm:min-h-[880px]"><div className="absolute inset-0 bg-[radial-gradient(circle,rgba(124,92,255,.18),transparent_36%)]" /><div className="relative mx-auto max-w-[900px]"><p className="font-mono text-[10px] font-bold tracking-[.2em] text-[#22d3a8]">VÁLIDO SOMENTE HOJE · SEM CRÉDITOS</p><h2 className="mt-8 text-[43px] font-semibold leading-[1.02] tracking-[-.05em] sm:text-[72px] [font-family:Archivo,system-ui,sans-serif]">Crie todos os carrosséis que sua agência precisar. <span className="block font-normal italic text-[#7c5cff] [font-family:'Instrument_Serif',Georgia,serif]">Sem limite de gerações.</span></h2><button type="button" onClick={() => { onRecordEvent("final_cta_clicked", { destination: "plans" }); onScrollToPlans("final_cta"); }} className="mt-11 inline-flex min-h-14 items-center gap-3 rounded-xl bg-[#7c5cff] px-8 text-sm font-semibold shadow-[0_20px_60px_rgba(124,92,255,.3)] transition-transform motion-reduce:transition-none hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22d3a8] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080b]">Quero carrosséis ilimitados <ArrowRight className="h-4 w-4" /></button></div></section>
     </div>
   );
 }
