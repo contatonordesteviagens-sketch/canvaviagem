@@ -119,14 +119,19 @@
   to { transform: translate3d(calc(-50% - 0.5rem), 0, 0); }
 }
 
+.travel-mobile-marquee {
+  animation: travel-mobile-marquee 46s linear infinite;
+  will-change: transform;
+}
+
+.travel-mobile-marquee:active,
+.travel-mobile-marquee:hover {
+  animation-play-state: paused;
+}
+
 @media (max-width: 639px) {
   .travel-mobile-marquee {
-    animation: travel-mobile-marquee 34s linear infinite;
-    will-change: transform;
-  }
-
-  .travel-mobile-marquee:active {
-    animation-play-state: paused;
+    animation-duration: 34s;
   }
 }
 

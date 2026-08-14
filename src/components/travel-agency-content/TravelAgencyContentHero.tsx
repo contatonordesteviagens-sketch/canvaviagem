@@ -60,11 +60,11 @@ export default function TravelAgencyContentHero({ onScrollToPlans, onRecordEvent
         <div aria-hidden="true" className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_78%_10%,rgba(124,92,255,.26),transparent_35%),radial-gradient(circle_at_60%_42%,rgba(72,42,160,.12),transparent_34%)]" />
         <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-35 [background-image:radial-gradient(rgba(157,132,255,.7)_.7px,transparent_.7px)] [background-size:91px_91px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
 
-        <div className="mx-auto max-w-[1200px] px-5 pb-6 pt-[150px] sm:px-7 lg:pt-[178px]">
-          <div className="grid items-center gap-14 lg:grid-cols-[.98fr_1.02fr] lg:gap-12">
-            <div className={`relative z-10 transition-[opacity,transform] duration-700 ${visible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"}`}>
+        <div className="mx-auto max-w-[1200px] px-5 pb-6 pt-[150px] sm:px-7 lg:pt-[164px]">
+          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,.96fr)_minmax(0,1.04fr)] lg:gap-16 xl:gap-20">
+            <div className={`relative z-10 min-w-0 transition-[opacity,transform] duration-700 ${visible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"}`}>
               <p className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-4 py-2 font-mono text-[10px] font-semibold uppercase tracking-[.18em] text-[#22d3a8]"><span className="h-1.5 w-1.5 rounded-full bg-[#22d3a8] shadow-[0_0_12px_#22d3a8]" />Carrosséis · Artes · Stories · só para turismo</p>
-              <h1 id="travel-agency-hero-title" className="max-w-[590px] text-[42px] font-[590] leading-[.99] tracking-[-.035em] sm:text-[60px] lg:text-[78px]">
+              <h1 id="travel-agency-hero-title" className="max-w-[590px] text-[42px] font-[590] leading-[.99] tracking-[-.035em] sm:text-[60px] lg:text-[68px] xl:text-[74px]">
                 <span className="block">Carrosséis que</span>
                 <em className="block font-serif font-normal text-[#9b82ff]">vendem viagens</em>
                 <span className="block">e viralizam, em</span>
@@ -79,27 +79,17 @@ export default function TravelAgencyContentHero({ onScrollToPlans, onRecordEvent
               <p className="mt-5 font-mono text-[10px] uppercase tracking-[.15em] text-white/28">Acesso liberado após a confirmação do pagamento</p>
             </div>
 
-            <div className={`relative aspect-video min-h-0 transition-[opacity,transform] delay-150 duration-1000 sm:min-h-[570px] lg:min-h-[610px] ${visible ? "translate-y-0 opacity-100" : "translate-y-7 opacity-0"}`}>
-              <div className="absolute inset-0 overflow-hidden rounded-[24px] border border-[#9b82ff]/20 bg-[#0a0912] shadow-[0_24px_70px_rgba(0,0,0,.62),0_0_45px_rgba(124,92,255,.13)] sm:inset-x-[2%] sm:top-[9%] sm:h-[68%] sm:rounded-[32px] sm:shadow-[0_38px_110px_rgba(0,0,0,.7),0_0_70px_rgba(124,92,255,.18)]">
+            <div className={`relative min-w-0 aspect-video transition-[opacity,transform] delay-150 duration-1000 ${visible ? "translate-y-0 opacity-100" : "translate-y-7 opacity-0"}`}>
+              <div className="absolute inset-0 overflow-hidden rounded-[24px] border border-[#9b82ff]/20 bg-[#0a0912] shadow-[0_24px_70px_rgba(0,0,0,.62),0_0_45px_rgba(124,92,255,.13)] sm:rounded-[30px] lg:shadow-[0_32px_90px_rgba(0,0,0,.68),0_0_60px_rgba(124,92,255,.16)]">
                 <video autoPlay muted loop playsInline preload="metadata" aria-label="Demonstração visual da criação de carrosséis" className="h-full w-full object-cover">
                   <source src={`${A}carousel-hero.mp4`} type="video/mp4" />
                 </video>
                 <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_68%,rgba(8,8,11,.48))]" />
               </div>
-              <img src={`${A}cancun-card-02.webp`} alt="Carrossel de viagem criado para Cancún" loading="eager" decoding="async" className="absolute left-0 top-[2%] hidden aspect-[4/5] w-[25%] -rotate-[7deg] rounded-xl border border-white/15 object-cover shadow-2xl sm:block" />
-              <img src={`${A}gramado-offer-05.webp`} alt="Arte vertical de turismo para Stories" loading="eager" decoding="async" className="absolute bottom-[1%] right-0 hidden aspect-[4/5] w-[24%] rotate-[7deg] rounded-xl border border-white/15 object-cover shadow-2xl sm:block" />
-              <p className="absolute bottom-[12%] left-[12%] hidden rounded-full border border-[#22d3a8]/25 bg-[#09090dcc] px-4 py-2 font-mono text-[9px] uppercase tracking-[.16em] text-[#22d3a8] backdrop-blur sm:block">do destino ao post em poucos cliques</p>
             </div>
           </div>
 
-          <div className="relative mt-8 hidden h-[570px] overflow-hidden border-y border-white/[.07] sm:block">
-            <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(124,92,255,.22),transparent_46%)]" />
-            {["cancun-editorial-01.webp","cancun-editorial-02.webp","cancun-editorial-03.webp","cancun-card-01.webp","cancun-card-02.webp","cancun-card-03.webp","gramado-offer-01.webp"].map((src, i) => (
-              <img key={src} src={`${A}${src}`} alt="" aria-hidden="true" loading="lazy" decoding="async" className="absolute bottom-[-5%] aspect-[4/5] w-[22%] rounded-2xl border border-white/10 object-cover shadow-[0_25px_70px_rgba(0,0,0,.65)]" style={{ left: `${2 + i * 13.2}%`, transform: `rotate(${(i - 3) * 2.7}deg) translateY(${Math.abs(i - 3) * 17}px)`, zIndex: 10 - Math.abs(i - 3) }} />
-            ))}
-          </div>
-
-          <dl className="grid grid-cols-2 border-y border-white/[.08] py-8 lg:grid-cols-4 lg:py-12">
+          <dl className="mt-16 grid grid-cols-2 border-y border-white/[.08] py-8 lg:mt-24 lg:grid-cols-4 lg:py-10">
             {metrics.map(([value,label]) => <div key={label} className="px-4 py-5 text-left sm:px-7"><dd className="text-[38px] font-semibold leading-none tracking-[-.045em] text-white sm:text-[50px]">{value}</dd><dt className="mt-5 max-w-[210px] font-mono text-[10px] font-medium uppercase leading-5 tracking-[.17em] text-white/35 sm:text-[12px]">{label}</dt></div>)}
           </dl>
         </div>

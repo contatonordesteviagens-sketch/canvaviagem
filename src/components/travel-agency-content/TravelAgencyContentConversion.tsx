@@ -113,7 +113,7 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
 
   return (
     <div className="bg-[#08080b] text-[#f5f5f7] [font-family:Geist,system-ui,sans-serif]">
-      <section id="resultados" className="overflow-hidden border-b border-white/[0.08] px-5 py-20 sm:px-8 sm:py-28">
+      <section id="resultados" className="scroll-mt-24 overflow-hidden border-b border-white/[0.08] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-[1200px]">
           <article className="mx-auto max-w-[760px] overflow-hidden rounded-[28px] border border-[#7c5cff]/35 bg-[linear-gradient(145deg,#1c1538,#0d0c13_70%)] px-7 pt-8 shadow-[0_32px_90px_rgba(0,0,0,.45)] sm:px-12 sm:pt-11">
             <Label number="07" text="Resultado real" />
@@ -132,9 +132,9 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
           </div>
         </div>
         <div className="mt-12 overflow-hidden pb-6">
-          <div className="travel-mobile-marquee flex w-max gap-4 px-2 sm:mx-auto sm:min-w-full sm:justify-center sm:gap-5 sm:px-[max(2rem,calc((100vw-1200px)/2))]">
+          <div className="travel-mobile-marquee flex w-max gap-4 px-2 sm:gap-5">
             {[...tourismWorks, ...tourismWorks].map(([file, alt], index) => (
-              <figure key={`${file}-${index}`} className={`w-[220px] shrink-0 overflow-hidden rounded-xl border border-white/10 sm:w-[250px] ${index >= tourismWorks.length ? "sm:hidden" : ""}`}>
+              <figure key={`${file}-${index}`} className="w-[220px] shrink-0 overflow-hidden rounded-xl border border-white/10 sm:w-[250px]">
                 <img src={asset(file)} alt={index < tourismWorks.length ? alt : ""} aria-hidden={index >= tourismWorks.length || undefined} loading="lazy" decoding="async" className="h-auto w-full" />
               </figure>
             ))}
@@ -142,7 +142,7 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
         </div>
       </section>
 
-      <section id="planos" className="relative overflow-hidden border-b border-white/[0.08] px-5 py-20 sm:px-8 sm:py-28">
+      <section id="planos" className="relative scroll-mt-24 overflow-hidden border-b border-white/[0.08] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-[1200px]">
           <div className="grid gap-10 lg:grid-cols-[1fr_480px]">
             <div><Label number="09" text="Planos" /><h2 className="mt-10 text-[47px] font-semibold leading-none tracking-[-.05em] sm:text-[62px] [font-family:Archivo,system-ui,sans-serif]">Comece <span className="font-normal italic text-[#7c5cff] [font-family:'Instrument_Serif',Georgia,serif]">hoje.</span></h2></div>
@@ -180,7 +180,7 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
         </div>
       </section>
 
-      <section id="faq" className="border-b border-white/[0.08] px-5 py-20 sm:px-8 sm:py-28">
+      <section id="faq" className="scroll-mt-24 border-b border-white/[0.08] px-5 py-20 sm:px-8 sm:py-28">
         <div className="mx-auto max-w-[1200px]"><Label number="10" text="Antes de você perguntar" /><div className="mt-12 grid gap-14 lg:grid-cols-[.7fr_1.3fr]"><h2 className="text-[42px] font-semibold leading-[1.04] tracking-[-.045em] sm:text-[56px] [font-family:Archivo,system-ui,sans-serif]">Perguntas <span className="block font-normal italic text-[#7c5cff] [font-family:'Instrument_Serif',Georgia,serif]">frequentes.</span></h2><div className="border-t border-white/10">{faqs.map(([question, answer], index) => { const open = openFaq === index; const panelId = `carousel-faq-panel-${index}`; const buttonId = `carousel-faq-button-${index}`; return <div key={question} className="border-b border-white/10"><h3><button id={buttonId} type="button" aria-expanded={open} aria-controls={panelId} onClick={() => { setOpenFaq(open ? null : index); onRecordEvent("faq_toggled", { question, open: !open }); }} className="flex w-full items-center justify-between gap-5 py-6 text-left text-[15px] font-semibold text-white/82 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#7c5cff]">{question}<ChevronDown className={`h-4 w-4 shrink-0 text-[#7c5cff] transition-transform motion-reduce:transition-none ${open ? "rotate-180" : ""}`} /></button></h3><div id={panelId} role="region" aria-labelledby={buttonId} hidden={!open} className="pb-7 pr-10 text-sm leading-7 text-white/48">{answer}</div></div>; })}</div></div></div>
       </section>
 

@@ -88,7 +88,7 @@ export default function TravelAgencyContentMechanism() {
         @keyframes travel-reveal { to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
-      <section id="como-funciona" className="relative overflow-hidden bg-[#08080b] px-5 py-20 text-[#f5f5f7] sm:px-8 lg:py-[58px]">
+      <section id="como-funciona" className="relative scroll-mt-24 overflow-hidden bg-[#08080b] px-5 py-20 text-[#f5f5f7] sm:px-8 lg:py-24">
         <div className="mx-auto max-w-[1200px]">
           <header className="travel-reveal mx-auto max-w-[1000px]">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/35"><span className="text-[#7c5cff]">02</span> — &nbsp; COMO FUNCIONA</p>
@@ -99,7 +99,7 @@ export default function TravelAgencyContentMechanism() {
 
           <div className="mt-10">
             {steps.map((step) => (
-              <article key={step.number} className="travel-reveal grid min-h-[690px] items-center gap-14 border-b border-white/[0.05] py-20 lg:grid-cols-[0.95fr_1.05fr] lg:gap-24">
+              <article key={step.number} className="travel-reveal grid min-h-[690px] items-center gap-14 border-b border-white/[0.05] py-20 lg:min-h-[620px] lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:gap-20 lg:py-16">
                 <div className="max-w-[490px] lg:pl-1">
                   <div className="mb-[72px] flex w-[194px] gap-2">
                     {steps.map((item) => <span key={item.number} className={`h-[2px] flex-1 ${item.number === step.number ? "bg-[#7c5cff]" : "bg-white/15"}`} />)}
@@ -115,10 +115,10 @@ export default function TravelAgencyContentMechanism() {
         </div>
       </section>
 
-      <section id="formatos" className="relative overflow-hidden border-t border-white/[0.04] bg-[#08080b] px-5 py-20 text-[#f5f5f7] sm:px-8 lg:py-[92px]">
-        <div className="mx-auto max-w-[1280px]">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
-            <header className="travel-reveal">
+      <section id="formatos" className="relative scroll-mt-24 overflow-hidden border-t border-white/[0.04] bg-[#08080b] px-5 py-20 text-[#f5f5f7] sm:px-8 lg:py-24">
+        <div className="mx-auto max-w-[1200px]">
+          <div>
+            <header className="travel-reveal max-w-[860px]">
               <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#22d3a8]">03 &nbsp;—&nbsp; AGORA TAMBÉM</p>
               <h2 className="mt-8 max-w-[760px] text-[clamp(2.75rem,4.6vw,3.75rem)] font-[560] leading-[1.03] tracking-[-0.05em]">
                 Uma assinatura. <span className="font-serif font-normal italic text-[#8f70ff]">Três formatos</span><br className="hidden sm:block" /> prontos pra postar.
@@ -127,12 +127,6 @@ export default function TravelAgencyContentMechanism() {
                 Um fluxo só para transformar os dados da viagem em carrosséis, artes para Feed e Stories. Você personaliza, revisa e exporta cada peça.
               </p>
             </header>
-            <div className="travel-reveal relative hidden h-[300px] lg:block">
-              <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(124,92,255,.28),transparent_65%)]" />
-              {["cancun-editorial-03.webp", "cancun-editorial-02.webp", "cancun-editorial-01.webp"].map((image, index) => (
-                <img key={image} src={`/travel-carousel-assets/${image}`} alt="Exemplo de carrossel de viagem" loading="lazy" decoding="async" className={`absolute left-1/2 top-1/2 w-[130px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-[#7c5cff]/35 shadow-2xl ${index === 0 ? "translate-x-[-110%] rotate-[-18deg]" : index === 1 ? "z-20" : "translate-x-[10%] rotate-[18deg]"}`} />
-              ))}
-            </div>
           </div>
 
           <div className="mt-20 grid gap-5 lg:grid-cols-3">
