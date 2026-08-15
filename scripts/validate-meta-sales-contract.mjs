@@ -26,15 +26,25 @@ for (const path of [
   requireText(path, 'trackMetaEvent("InitiateCheckout"', "checkout CTA must emit InitiateCheckout.");
 }
 
-rejectText(
+requireText(
   "src/pages/TravelAgencyContentLanding.tsx",
-  "buy.stripe.com",
-  "carousel entry must use the canonical authenticated Stripe checkout.",
+  "monthly: ELITE_OFFER.monthlyCheckoutUrl",
+  "carousel monthly CTA must use the direct Stripe checkout.",
 );
 requireText(
   "src/pages/TravelAgencyContentLanding.tsx",
-  'offer: "content"',
-  "carousel checkout must preserve its offer attribution.",
+  "semiannual: ELITE_OFFER.semiannualCheckoutUrl",
+  "carousel semiannual CTA must use the direct Stripe checkout.",
+);
+requireText(
+  "src/pages/TravelAgencyContentLanding.tsx",
+  "annual: ELITE_OFFER.annualCheckoutUrl",
+  "carousel annual CTA must use the direct Stripe checkout.",
+);
+rejectText(
+  "src/pages/TravelAgencyContentLanding.tsx",
+  "return `/inicio?",
+  "carousel checkout must not pass through /inicio.",
 );
 requireText(
   "src/pages/Obrigado.tsx",

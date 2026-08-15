@@ -52,7 +52,7 @@ function TourismMedia({ type, badge }: { type: (typeof steps)[number]["media"]; 
   if (type === "video") {
     return (
       <div className="relative aspect-square overflow-hidden rounded-[30px] border border-[#7c5cff]/30 bg-[#11101b] shadow-[0_25px_90px_rgba(74,45,180,.28)]">
-        <AutoplayLoopVideo src="/travel-carousel-assets/carousel-morph.mp4" label="Animação visual do processo de criação" className="h-full w-full object-cover" />
+        <AutoplayLoopVideo src="/travel-carousel-assets/carousel-morph.mp4" mobileAnimationSrc="/travel-carousel-assets/carousel-morph-mobile.webp" label="Animação visual do processo de criação" className="h-full w-full object-cover" />
         <span className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-[#7c5cff]/45 bg-[#241241]/90 px-5 py-2 font-mono text-[10px] font-semibold tracking-[0.18em] text-white backdrop-blur">{badge}</span>
       </div>
     );

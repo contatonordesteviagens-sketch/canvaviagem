@@ -5,10 +5,11 @@ type AutoplayLoopVideoProps = {
   src: string;
   label: string;
   className?: string;
+  mobileAnimationSrc?: string;
   onError?: ReactEventHandler<HTMLVideoElement>;
 };
 
-export default function AutoplayLoopVideo({ src, label, className = "", onError }: AutoplayLoopVideoProps) {
+export default function AutoplayLoopVideo({ src, label, className = "", mobileAnimationSrc, onError }: AutoplayLoopVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const resumePlayback = useCallback(() => {
@@ -58,27 +59,37 @@ export default function AutoplayLoopVideo({ src, label, className = "", onError 
   }, [resumePlayback]);
 
   return (
-    <video
-      ref={videoRef}
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="auto"
-      controls={false}
-      disablePictureInPicture
-      controlsList="nodownload nofullscreen noplaybackrate noremoteplayback"
-      tabIndex={-1}
-      draggable={false}
-      aria-label={label}
-      onPause={resumePlayback}
-      onEnded={resumePlayback}
-      onError={onError}
-      onContextMenu={(event) => event.preventDefault()}
-      onDragStart={(event) => event.preventDefault()}
-      className={`pointer-events-none select-none ${className}`}
-    >
-      <source src={src} type="video/mp4" />
-    </video>
+    <>
+      {mobileAnimationSrc && (
+        <img
+          src={mobileAnimationSrc}
+          alt={label}
+          draggable={false}
+          className={`pointer-events-none block select-none lg:hidden ${className}`}
+        />
+      )}
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        controls={false}
+        disablePictureInPicture
+        controlsList="nodownload nofullscreen noplaybackrate noremoteplayback"
+        tabIndex={-1}
+        draggable={false}
+        aria-label={label}
+        onPause={resumePlayback}
+        onEnded={resumePlayback}
+        onError={onError}
+        onContextMenu={(event) => event.preventDefault()}
+        onDragStart={(event) => event.preventDefault()}
+        className={`pointer-events-none select-none ${mobileAnimationSrc ? "hidden lg:block" : ""} ${className}`}
+      >
+        <source src={src} type="video/mp4" />
+      </video>
+    </>
   );
 }

@@ -9,19 +9,16 @@ import TravelAgencyContentConversion from "@/components/travel-agency-content/Tr
 import { trackEvent } from "@/hooks/useAnalyticsEvents";
 import type { TravelAgencyBillingCycle } from "@/types/travel-agency-content";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
+import { ELITE_OFFER } from "@/lib/eliteOffer";
 
 const landingPath = "/carrosseis-para-agencia-de-viagens";
 const supportWhatsAppUrl =
   "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20quero%20entender%20melhor%20os%20modelos%20de%20carross%C3%A9is%20para%20ag%C3%AAncias%20de%20viagens";
 
-const secureCheckoutPath = (cycle: TravelAgencyBillingCycle) => {
-  const params = new URLSearchParams({
-    checkout: cycle,
-    upgrade: "carousel_export",
-    returnTo: "/fabrica/carrossel",
-    offer: "content",
-  });
-  return `/inicio?${params.toString()}`;
+const checkoutUrlByCycle: Record<TravelAgencyBillingCycle, string> = {
+  monthly: ELITE_OFFER.monthlyCheckoutUrl,
+  semiannual: ELITE_OFFER.semiannualCheckoutUrl,
+  annual: ELITE_OFFER.annualCheckoutUrl,
 };
 
 export default function TravelAgencyContentLanding() {
@@ -73,7 +70,7 @@ export default function TravelAgencyContentLanding() {
     });
 
     setCheckoutLoading(cycle);
-    window.location.assign(secureCheckoutPath(cycle));
+    window.location.assign(checkoutUrlByCycle[cycle]);
   }, [recordEvent]);
 
   return (
