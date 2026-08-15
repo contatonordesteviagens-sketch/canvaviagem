@@ -41,11 +41,19 @@ requireText(
   "annual: ELITE_OFFER.annualCheckoutUrl",
   "carousel annual CTA must use the direct Stripe checkout.",
 );
-rejectText(
+for (const path of [
   "src/pages/TravelAgencyContentLanding.tsx",
-  "return `/inicio?",
-  "carousel checkout must not pass through /inicio.",
-);
+  "src/components/travel-agency-content/TravelAgencyContentHero.tsx",
+  "src/components/travel-agency-content/TravelAgencyContentMechanism.tsx",
+  "src/components/travel-agency-content/TravelAgencyContentBenefits.tsx",
+  "src/components/travel-agency-content/TravelAgencyContentConversion.tsx",
+]) {
+  rejectText(
+    path,
+    '"/inicio',
+    "carousel landing buttons and links must never redirect to /inicio.",
+  );
+}
 requireText(
   "src/pages/Obrigado.tsx",
   'supabase.functions.invoke("verify-checkout-conversion"',
