@@ -53,7 +53,7 @@ export default function TravelAgencyContentHero({ onScrollToPlans, onRecordEvent
             <a href="#planos" onClick={(e) => { e.preventDefault(); onScrollToPlans("nav_plans"); }} className="hover:text-white">Planos</a>
             <a href="#faq" onClick={() => track("nav_faq", "#faq")} className="hover:text-white">FAQ</a>
           </div>
-          <button type="button" onClick={() => onScrollToPlans("nav_primary")} className="rounded-xl bg-[#7c5cff] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_10px_30px_rgba(124,92,255,.28)] transition hover:bg-[#896dff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Liberar ilimitado</button>
+          <button type="button" onClick={() => onScrollToPlans("nav_primary")} className="rounded-xl bg-[#7c5cff] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_10px_30px_rgba(124,92,255,.28)] transition hover:bg-[#896dff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Começar agora</button>
         </nav>
       </header>
 

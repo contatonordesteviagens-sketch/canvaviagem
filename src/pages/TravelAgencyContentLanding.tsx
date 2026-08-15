@@ -55,6 +55,12 @@ export default function TravelAgencyContentLanding() {
 
   }, [recordEvent]);
 
+  useEffect(() => {
+    const releaseCheckoutButtons = () => setCheckoutLoading(null);
+    window.addEventListener("pageshow", releaseCheckoutButtons);
+    return () => window.removeEventListener("pageshow", releaseCheckoutButtons);
+  }, []);
+
   const startCheckout = useCallback((cycle: TravelAgencyBillingCycle, value: number) => {
     recordEvent("plan_selected", { billing_cycle: cycle, value });
     recordEvent("checkout_started", { billing_cycle: cycle, value });

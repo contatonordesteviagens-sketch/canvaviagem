@@ -15,6 +15,9 @@ export default function AutoplayLoopVideo({ src, label, className = "", onError 
     const video = videoRef.current;
     if (!video || document.visibilityState === "hidden") return;
 
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "true");
     video.defaultMuted = true;
     video.muted = true;
     video.loop = true;
@@ -28,18 +31,29 @@ export default function AutoplayLoopVideo({ src, label, className = "", onError 
     if (!video) return;
 
     const resumeWhenVisible = () => resumePlayback();
+    const retryTimers = [250, 1000, 2500].map((delay) => window.setTimeout(resumePlayback, delay));
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) resumePlayback();
+    }, { threshold: 0.05 });
 
+    video.addEventListener("loadedmetadata", resumePlayback);
     video.addEventListener("loadeddata", resumePlayback);
     video.addEventListener("canplay", resumePlayback);
     document.addEventListener("visibilitychange", resumeWhenVisible);
     window.addEventListener("pageshow", resumeWhenVisible);
+    window.addEventListener("focus", resumeWhenVisible);
+    observer.observe(video);
     resumePlayback();
 
     return () => {
+      retryTimers.forEach((timer) => window.clearTimeout(timer));
+      observer.disconnect();
+      video.removeEventListener("loadedmetadata", resumePlayback);
       video.removeEventListener("loadeddata", resumePlayback);
       video.removeEventListener("canplay", resumePlayback);
       document.removeEventListener("visibilitychange", resumeWhenVisible);
       window.removeEventListener("pageshow", resumeWhenVisible);
+      window.removeEventListener("focus", resumeWhenVisible);
     };
   }, [resumePlayback]);
 
@@ -58,6 +72,7 @@ export default function AutoplayLoopVideo({ src, label, className = "", onError 
       draggable={false}
       aria-label={label}
       onPause={resumePlayback}
+      onEnded={resumePlayback}
       onError={onError}
       onContextMenu={(event) => event.preventDefault()}
       onDragStart={(event) => event.preventDefault()}
