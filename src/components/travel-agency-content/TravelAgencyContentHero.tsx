@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import type { LandingSectionActions } from "@/types/travel-agency-content";
+import AutoplayLoopVideo from "./AutoplayLoopVideo";
 
 const A = "/travel-carousel-assets/";
 
@@ -81,9 +82,7 @@ export default function TravelAgencyContentHero({ onScrollToPlans, onRecordEvent
 
             <div className={`relative min-w-0 aspect-video transition-[opacity,transform] delay-150 duration-1000 ${visible ? "translate-y-0 opacity-100" : "translate-y-7 opacity-0"}`}>
               <div className="absolute inset-0 overflow-hidden rounded-[24px] border border-[#9b82ff]/20 bg-[#0a0912] shadow-[0_24px_70px_rgba(0,0,0,.62),0_0_45px_rgba(124,92,255,.13)] sm:rounded-[30px] lg:shadow-[0_32px_90px_rgba(0,0,0,.68),0_0_60px_rgba(124,92,255,.16)]">
-                <video autoPlay muted loop playsInline preload="metadata" aria-label="Demonstração visual da criação de carrosséis" className="h-full w-full object-cover">
-                  <source src={`${A}carousel-hero.mp4`} type="video/mp4" />
-                </video>
+                <AutoplayLoopVideo src={`${A}carousel-hero.mp4`} label="Demonstração visual da criação de carrosséis" className="h-full w-full object-cover" />
                 <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_68%,rgba(8,8,11,.48))]" />
               </div>
             </div>
