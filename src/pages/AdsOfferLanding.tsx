@@ -26,10 +26,10 @@ import depoimento3 from "@/assets/depoimento3.jpg";
 import lucasPortrait from "@/assets/lucas-ferrari-portrait.webp";
 import { trackEvent } from "@/hooks/useAnalyticsEvents";
 import { ELITE_OFFER } from "@/lib/eliteOffer";
+import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 
 type BillingCycle = "monthly" | "semiannual" | "annual";
 
-const metaPixelId = "916689227676142";
 const supportWhatsAppUrl =
   "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20quero%20entender%20melhor%20a%20F%C3%A1brica%20de%20An%C3%BAncios%20do%20Canva%20Viagem";
 
@@ -159,6 +159,11 @@ export default function AdsOfferLanding() {
     if (pageTrackedRef.current) return;
     pageTrackedRef.current = true;
     recordEvent("landing_viewed");
+    trackMetaEvent("ViewContent", {
+      content_name: "Canva Viagem - Anúncios para Agências",
+      content_category: "landing_ads",
+      content_type: "product",
+    });
   }, [recordEvent]);
 
   useEffect(() => {
@@ -228,8 +233,7 @@ export default function AdsOfferLanding() {
   const startCheckout = (cycle: BillingCycle, value: number) => {
     recordEvent("plan_selected", { billing_cycle: cycle, value });
     recordEvent("checkout_started", { billing_cycle: cycle, value });
-    const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
-    fbq?.("trackSingle", metaPixelId, "InitiateCheckout", {
+    trackMetaEvent("InitiateCheckout", {
       value,
       currency: "BRL",
       content_name: "Canva Viagem - Fábrica de Anúncios",

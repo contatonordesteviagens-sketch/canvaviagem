@@ -26,11 +26,11 @@ import { trackEvent } from "@/hooks/useAnalyticsEvents";
 import { ELITE_OFFER } from "@/lib/eliteOffer";
 import { siteOfferDemos } from "@/lib/site-offer-demos";
 import { SITE_TEMPLATE_CATALOG } from "@/lib/site-template-catalog";
+import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 
 type BillingCycle = "monthly" | "semiannual" | "annual";
 type PreviewMode = "desktop" | "mobile";
 
-const metaPixelId = "916689227676142";
 const supportWhatsAppUrl =
   "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20quero%20entender%20melhor%20o%20criador%20de%20sites%20do%20Canva%20Viagem";
 
@@ -150,6 +150,11 @@ export default function SiteOfferLanding() {
     if (pageTrackedRef.current) return;
     pageTrackedRef.current = true;
     recordEvent("landing_viewed");
+    trackMetaEvent("ViewContent", {
+      content_name: "Canva Viagem - Site para Agência de Viagens",
+      content_category: "landing_site",
+      content_type: "product",
+    });
   }, [recordEvent]);
 
   useEffect(() => {
@@ -222,8 +227,7 @@ export default function SiteOfferLanding() {
       recordEvent("plan_selected", { billing_cycle: cycle, value }),
       recordEvent("checkout_started", { billing_cycle: cycle, value }),
     ]);
-    const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
-    fbq?.("trackSingle", metaPixelId, "InitiateCheckout", {
+    trackMetaEvent("InitiateCheckout", {
       value,
       currency: "BRL",
       content_name: "Canva Viagem - Site Pronto da Agência",
@@ -732,7 +736,7 @@ export default function SiteOfferLanding() {
               <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">Antes de colocar o cartão</p>
               <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight md:text-5xl">Perguntas de quem chegou aqui pela primeira vez.</h2>
               <p className="mt-5 leading-relaxed text-slate-600">Sem esconder as limitações e sem prometer o que uma ferramenta não pode controlar.</p>
-              <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl border border-slate-300 px-5 font-black text-slate-800 transition hover:border-cyan-700 hover:text-cyan-800">
+              <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackMetaEvent("Contact", { content_name: "Suporte - Site para Agência" })} className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl border border-slate-300 px-5 font-black text-slate-800 transition hover:border-cyan-700 hover:text-cyan-800">
                 <MessageCircle className="h-5 w-5" />
                 Tirar dúvida no WhatsApp
               </a>
@@ -786,7 +790,7 @@ export default function SiteOfferLanding() {
           <div className="flex flex-wrap justify-center gap-5">
             <a href="/termos" className="hover:text-white">Termos</a>
             <a href="/privacidade" className="hover:text-white">Privacidade</a>
-            <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white">Falar com o suporte</a>
+            <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackMetaEvent("Contact", { content_name: "Suporte - Site para Agência" })} className="hover:text-white">Falar com o suporte</a>
           </div>
         </div>
       </footer>

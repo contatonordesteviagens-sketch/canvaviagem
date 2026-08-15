@@ -23,6 +23,7 @@ import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
 import showcaseCrm from "@/assets/images/showcase-crm.png";
 import { trackEvent } from "@/hooks/useAnalyticsEvents";
 import { ELITE_OFFER, type UpgradeFeature } from "@/lib/eliteOffer";
+import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 
 export type OfferVariant = "ads" | "site" | "team";
 type BillingCycle = "monthly" | "semiannual" | "annual";
@@ -313,7 +314,6 @@ const plans: Array<{
   },
 ];
 
-const metaPixelId = "916689227676142";
 
 export default function OfferLanding({ variant }: { variant: OfferVariant }) {
   const config = offerConfigs[variant];
@@ -335,7 +335,12 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
     if (pageTrackedRef.current) return;
     pageTrackedRef.current = true;
     recordEvent("landing_viewed");
-  }, [recordEvent]);
+    trackMetaEvent("ViewContent", {
+      content_name: `Canva Viagem - ${config.mechanismName}`,
+      content_category: `landing_${variant}`,
+      content_type: "product",
+    });
+  }, [config.mechanismName, recordEvent, variant]);
 
   useEffect(() => {
     const storageKey = `cv:exit-offer-shown:${variant}`;
@@ -374,8 +379,7 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
   const startCheckout = useCallback((cycle: BillingCycle, trackValue: number) => {
     recordEvent("plan_selected", { billing_cycle: cycle, value: trackValue });
     const pixelPlan = cycle === "monthly" ? "mensal" : cycle === "semiannual" ? "semestral" : "anual";
-    const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
-    fbq?.("trackSingle", metaPixelId, "InitiateCheckout", {
+    trackMetaEvent("InitiateCheckout", {
       value: trackValue,
       currency: "BRL",
       content_name: `Canva Viagem - ${config.mechanismName}`,

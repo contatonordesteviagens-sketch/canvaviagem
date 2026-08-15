@@ -5,9 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Mail, Loader2, ArrowRight, MessageCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MetaPixelNew } from "@/components/MetaPixelNew";
-import { MetaPixel916689227676142 } from "@/components/MetaPixel916689227676142";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
+import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 
 const safeInternalPath = (value: string | null) => {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
@@ -119,6 +118,7 @@ const Obrigado = () => {
   const emailFromUrl = searchParams.get("email");
   const sourceFromUrl = searchParams.get("source");
   const billingCycle = searchParams.get("billingCycle");
+  const checkoutSessionId = searchParams.get("session_id");
   const offerVariant = searchParams.get("offer") || "general";
   const returnTo = safeInternalPath(searchParams.get("returnTo"));
   const upgradeFeature = searchParams.get("upgrade") || "general";
@@ -129,16 +129,56 @@ const Obrigado = () => {
   const checkoutTrackedRef = useRef(false);
 
   useEffect(() => {
-    if (sourceFromUrl !== "checkout" || checkoutTrackedRef.current) return;
+    if (sourceFromUrl !== "checkout" || checkoutTrackedRef.current || !checkoutSessionId) return;
+    const stableSessionId = checkoutSessionId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 180);
+    if (!stableSessionId.startsWith("cs_")) return;
     checkoutTrackedRef.current = true;
-    track("checkout_completed", {
-      feature: upgradeFeature,
-      billing_cycle: billingCycle || "monthly",
-      tier,
-      return_to: returnTo,
-      offer_variant: offerVariant,
-    });
-  }, [billingCycle, offerVariant, returnTo, sourceFromUrl, tier, track, upgradeFeature]);
+
+    const storageKey = `cv:meta-purchase:${stableSessionId}`;
+    if (localStorage.getItem(storageKey)) return;
+
+    let cancelled = false;
+    const verifyAndTrackPurchase = async () => {
+      const { data, error } = await supabase.functions.invoke("verify-checkout-conversion", {
+        body: { session_id: stableSessionId },
+      });
+      if (cancelled || error || !data?.verified) return;
+
+      const value = Number(data.value);
+      const currency = typeof data.currency === "string" ? data.currency.toUpperCase() : "BRL";
+      if (!Number.isFinite(value) || value <= 0) return;
+
+      const purchaseEventId = `purchase_${stableSessionId}`;
+      trackMetaEvent("Purchase", {
+        value,
+        currency,
+        content_name: "Canva Viagem Elite",
+        content_category: `checkout_${data.billing_cycle || billingCycle || "unknown"}`,
+        content_type: "product",
+      }, undefined, purchaseEventId);
+      trackMetaEvent("Subscribe", {
+        value,
+        currency,
+        predicted_ltv: value,
+        content_name: "Canva Viagem Elite",
+      }, undefined, `subscribe_${stableSessionId}`);
+
+      localStorage.setItem(storageKey, "1");
+      track("checkout_completed", {
+        feature: upgradeFeature,
+        billing_cycle: data.billing_cycle || billingCycle || "monthly",
+        tier,
+        return_to: returnTo,
+        offer_variant: data.offer_variant || offerVariant,
+        stripe_session_verified: true,
+      });
+    };
+
+    void verifyAndTrackPurchase();
+    return () => {
+      cancelled = true;
+    };
+  }, [billingCycle, checkoutSessionId, offerVariant, returnTo, sourceFromUrl, tier, track, upgradeFeature]);
 
   useEffect(() => {
     if (emailFromUrl) setEmail(decodeURIComponent(emailFromUrl));
@@ -213,16 +253,12 @@ const Obrigado = () => {
 
   return (
     <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center p-6 md:p-8 relative overflow-hidden" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-      {/* Rich Background Effects to match SalesPage */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-cyan-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/5 blur-[100px] pointer-events-none" />
 
-      <MetaPixelNew isPurchasePage={false} />
-      <MetaPixel916689227676142 isPurchase={false} />
       {showConfetti && <ConfettiCanvas />}
 
       <div className="w-full max-w-md flex flex-col items-center relative z-10 gap-8">
-        {/* Celebration header with matching Typography and Palette */}
         <div className="text-center space-y-6 animate-fade-in" style={{ animationDuration: '1.2s' }}>
           <div className="flex justify-center">
             <div className="relative group">

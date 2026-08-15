@@ -38,6 +38,7 @@ import showcaseCrm from "@/assets/images/showcase-crm.png";
 import showcaseScheduler from "@/assets/images/showcase-scheduler.png";
 import showcasePremiumMedias from "@/assets/images/showcase-premium-medias.png";
 import { ELITE_OFFER, type UpgradeFeature } from "@/lib/eliteOffer";
+import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,7 +47,6 @@ import { toast } from "sonner";
 const supportWhatsAppUrl =
   "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20sobre%20o%20Canva%20Viagem";
 const instagramUrl = "https://www.instagram.com/lucasferrari.pro/";
-const metaPixelId = "916689227676142";
 const pendingCheckoutKey = "cv:pending-elite-checkout";
 const upgradeFeatures: UpgradeFeature[] = [
   "ad_export",
@@ -390,6 +390,11 @@ export default function Inicio2() {
       tier,
       return_to: returnTo,
     });
+    trackMetaEvent("ViewContent", {
+      content_name: "Canva Viagem - Plataforma para Agências",
+      content_category: upgradeFeature ? `inicio_${upgradeFeature}` : "inicio_general",
+      content_type: "product",
+    });
   }, [entitlementsLoading, returnTo, tier, track, upgradeFeature]);
 
   useEffect(() => {
@@ -461,10 +466,7 @@ export default function Inicio2() {
   ];
 
   const trackCheckoutClick = useCallback((value: number, plan: "anual" | "semestral" | "mensal") => {
-    const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
-    if (!fbq) return;
-
-    fbq("trackSingle", metaPixelId, "InitiateCheckout", {
+    trackMetaEvent("InitiateCheckout", {
       value,
       currency: "BRL",
       content_name: `Canva Viagem ${plan}`,

@@ -7,18 +7,21 @@ import TravelAgencyContentMechanism from "@/components/travel-agency-content/Tra
 import TravelAgencyContentBenefits from "@/components/travel-agency-content/TravelAgencyContentBenefits";
 import TravelAgencyContentConversion from "@/components/travel-agency-content/TravelAgencyContentConversion";
 import { trackEvent } from "@/hooks/useAnalyticsEvents";
-import { ELITE_OFFER } from "@/lib/eliteOffer";
 import type { TravelAgencyBillingCycle } from "@/types/travel-agency-content";
+import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 
 const landingPath = "/carrosseis-para-agencia-de-viagens";
-const metaPixelId = "916689227676142";
 const supportWhatsAppUrl =
   "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20quero%20entender%20melhor%20os%20modelos%20de%20carross%C3%A9is%20para%20ag%C3%AAncias%20de%20viagens";
 
-const stripeCheckoutUrls: Record<TravelAgencyBillingCycle, string> = {
-  monthly: ELITE_OFFER.monthlyCheckoutUrl,
-  semiannual: ELITE_OFFER.semiannualCheckoutUrl,
-  annual: ELITE_OFFER.annualCheckoutUrl,
+const secureCheckoutPath = (cycle: TravelAgencyBillingCycle) => {
+  const params = new URLSearchParams({
+    checkout: cycle,
+    upgrade: "carousel_export",
+    returnTo: "/fabrica/carrossel",
+    offer: "content",
+  });
+  return `/inicio?${params.toString()}`;
 };
 
 export default function TravelAgencyContentLanding() {
@@ -38,19 +41,25 @@ export default function TravelAgencyContentLanding() {
     if (pageTrackedRef.current) return;
     pageTrackedRef.current = true;
     recordEvent("landing_viewed");
+    trackMetaEvent("ViewContent", {
+      content_name: "Canva Viagem - Carrosséis para Agências",
+      content_category: "landing_content",
+      content_type: "product",
+    });
   }, [recordEvent]);
 
   const scrollToPlans = useCallback((source: string) => {
     recordEvent("cta_clicked", { source });
     document.getElementById("planos")?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+
   }, [recordEvent]);
 
   const startCheckout = useCallback((cycle: TravelAgencyBillingCycle, value: number) => {
     recordEvent("plan_selected", { billing_cycle: cycle, value });
     recordEvent("checkout_started", { billing_cycle: cycle, value });
 
-    const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
-    fbq?.("trackSingle", metaPixelId, "InitiateCheckout", {
+    trackMetaEvent("InitiateCheckout", {
       value,
       currency: "BRL",
       content_name: "Canva Viagem - Conteúdo para Agências",
@@ -58,7 +67,7 @@ export default function TravelAgencyContentLanding() {
     });
 
     setCheckoutLoading(cycle);
-    window.location.assign(stripeCheckoutUrls[cycle]);
+    window.location.assign(secureCheckoutPath(cycle));
   }, [recordEvent]);
 
   return (
@@ -107,7 +116,7 @@ export default function TravelAgencyContentLanding() {
           </div>
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[.18em] text-white/75">Contato</p>
-            <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 hover:text-white" onClick={() => recordEvent("support_clicked", { source: "footer" })}><MessageCircle className="h-4 w-4" /> Falar no WhatsApp</a>
+            <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 hover:text-white" onClick={() => { recordEvent("support_clicked", { source: "footer" }); trackMetaEvent("Contact", { content_name: "Suporte - Carrosséis" }); }}><MessageCircle className="h-4 w-4" /> Falar no WhatsApp</a>
           </div>
         </div>
         <div className="mx-auto mt-14 flex max-w-[1200px] flex-col gap-4 border-t border-white/[.08] px-5 pt-7 text-xs sm:px-8 md:flex-row md:items-center md:justify-between"><p>Canva Viagem · 2026</p><div className="flex gap-6"><a href="/privacidade" className="hover:text-white">Privacidade</a><a href="/termos" className="hover:text-white">Termos e reembolso</a></div></div>

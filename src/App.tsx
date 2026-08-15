@@ -16,6 +16,7 @@ import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { SidebarNav } from "@/components/SidebarNav";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { MetaPixelRouteTracker } from "@/components/MetaPixelRouteTracker";
 
 const PlatformLayoutController = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -218,6 +219,7 @@ const App = () => {
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
+                  <MetaPixelRouteTracker />
                   <UtmTracker />
 
                   <Suspense fallback={<PageLoader />}>

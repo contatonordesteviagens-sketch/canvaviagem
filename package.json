@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "safety:paid-access": "node scripts/validate-paid-access-contract.mjs && node scripts/validate-official-supabase.mjs --skip-cli-link",
+    "safety:meta-sales": "node scripts/validate-meta-sales-contract.mjs && node scripts/validate-official-supabase.mjs --skip-cli-link",
     "safety:hotmart": "node scripts/validate-official-supabase.mjs",
     "safety:supabase": "node scripts/validate-official-supabase.mjs",
     "deploy:supabase:functions": "npm run safety:supabase && npx supabase functions deploy --project-ref zdjtcwtakgizbsbbwtgc"
