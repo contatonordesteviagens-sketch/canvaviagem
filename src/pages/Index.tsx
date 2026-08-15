@@ -26,6 +26,7 @@ import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Info, Bot, Image, Video, Zap, ShieldCheck, Layout } from "lucide-react";
 import { ELITE_OFFER } from "@/lib/eliteOffer";
+import AutoplayLoopVideo from "@/components/travel-agency-content/AutoplayLoopVideo";
 
 // Lazy load non-critical components
 const PremiumGateModal = lazy(() => import("@/components/PremiumGateModal").then(module => ({ default: module.PremiumGateModal })));
@@ -573,18 +574,18 @@ const Index = () => {
               // Stable public catalog plus the free creation allowance.
               <div className="space-y-4">
 
-                {/* Banner: O que é grátis — mais claro e orientado a conversão */}
+                {/* Conteúdo incluído na assinatura */}
                 <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800/50 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/30 p-5 md:p-6 shadow-sm">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/50 px-2.5 py-1 rounded-full">✦ 100% Grátis</span>
-                        <span className="text-xs text-muted-foreground">Sem cartão de crédito</span>
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/50 px-2.5 py-1 rounded-full">✦ Incluído no plano</span>
+                        <span className="text-xs text-muted-foreground">Acesso exclusivo para assinantes</span>
                       </div>
-                      <h3 className="text-lg font-extrabold text-foreground mt-2 mb-3">O que você pode usar agora, de graça</h3>
+                      <h3 className="text-lg font-extrabold text-foreground mt-2 mb-3">Tudo o que sua assinatura libera</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>3 anúncios</strong> com sua logo e pacotes</span></span>
-                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>1 carrossel</strong> pronto para postar</span></span>
+                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Anúncios ilimitados</strong> com sua logo e pacotes</span></span>
+                        <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Carrosséis ilimitados</strong> prontos para postar</span></span>
                         <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Artes</strong> para agência de viagem</span></span>
                         <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Legendas</strong> prontas para Instagram</span></span>
                         <span className="flex items-center gap-2 text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /><span><strong>Videoaulas</strong> de marketing para agências</span></span>
@@ -593,10 +594,10 @@ const Index = () => {
                     </div>
                     <div className="flex flex-col gap-2 lg:ml-6 shrink-0">
                       <Button onClick={() => navigate("/fabrica")} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md">
-                        Criar anúncio grátis
+                        Abrir a Fábrica
                       </Button>
                       <Button variant="outline" onClick={() => navigate("/inicio")} className="text-xs border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50">
-                        Ver plano Elite (3 dias grátis)
+                        Gerenciar assinatura
                       </Button>
                     </div>
                   </div>
@@ -917,12 +918,9 @@ const Index = () => {
                               }}
                             />
                           ) : (
-                            <video
+                            <AutoplayLoopVideo
                               src={item.media_url}
-                              autoPlay
-                              loop
-                              muted
-                              playsInline
+                              label={item.title}
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
@@ -1995,7 +1993,7 @@ const Index = () => {
                       </div>
 
                       <div className="mt-3.5 rounded-xl bg-[#F0FDF4] border border-[#86EFAC] p-2 text-[11px] font-bold text-[#15803D] text-center">
-                        Economia de {ELITE_OFFER.annualSavings} + 3 dias grátis
+                        Economia de {ELITE_OFFER.annualSavings} no plano anual
                       </div>
                     </div>
 

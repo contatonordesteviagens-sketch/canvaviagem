@@ -68,7 +68,7 @@ const AccessFilterComponent = ({
                 )}
             >
                 <Sparkles className={cn("w-3 h-3 sm:w-3.5 sm:h-3.5", selectedFilters.includes('gratis') ? "text-orange-500" : "text-muted-foreground/50")} />
-                Grátis
+                Incluído no plano
             </Button>
         </div>
     );

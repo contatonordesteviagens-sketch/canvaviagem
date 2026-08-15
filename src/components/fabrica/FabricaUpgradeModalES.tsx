@@ -112,7 +112,7 @@ export const FabricaUpgradeModalES = ({ open, onOpenChange }: FabricaUpgradeModa
                 </div>
 
                 <div className="mt-3.5 rounded-xl bg-[#F0FDF4] border border-[#86EFAC] p-2 text-[11px] font-bold text-[#15803D] text-center">
-                  Ahorro de {ELITE_OFFER.annualSavings} + 3 días gratis
+                  Ahorro de {ELITE_OFFER.annualSavings} con el plan anual
                 </div>
               </div>
 

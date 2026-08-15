@@ -227,8 +227,8 @@ const App = () => {
                     <PlatformLayoutController>
                       <Routes>
                     {/* ROTAS PORTUGUÊS */}
-                    <Route path="/" element={<Index />} />
-                    <Route path="/pt" element={<Index />} />
+                    <Route path="/" element={<ProtectedRoute requireSubscription><Index /></ProtectedRoute>} />
+                    <Route path="/pt" element={<ProtectedRoute requireSubscription><Index /></ProtectedRoute>} />
                     <Route path="/calendar" element={
                       <ProtectedRoute requireSubscription>
                         <Calendar />
@@ -247,11 +247,11 @@ const App = () => {
                     <Route path="/carrosseis-para-agencia-de-viagens" element={<TravelAgencyContentLanding />} />
                     <Route path="/equipe-de-marketing-para-agencia-de-viagens" element={<OfferLanding variant="team" />} />
                     <Route path="/inicio2" element={<Navigate to="/inicio" replace />} />
-                    <Route path="/canva" element={<CanvaClone />} />
+                    <Route path="/canva" element={<ProtectedRoute requireSubscription><CanvaClone /></ProtectedRoute>} />
                     <Route path="/diferencas" element={<Diferencas />} />
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />
-                    <Route path="/fabrica" element={<Fabrica />} />
-                    <Route path="/fabrica/*" element={<Fabrica />} />
+                    <Route path="/fabrica" element={<ProtectedRoute requireElite><Fabrica /></ProtectedRoute>} />
+                    <Route path="/fabrica/*" element={<ProtectedRoute requireElite><Fabrica /></ProtectedRoute>} />
                     <Route path="/vendedor-ia" element={
                       <ProtectedRoute requireElite>
                         <VendedorIA />
@@ -261,7 +261,7 @@ const App = () => {
                     <Route path="/aula-secreta" element={<Navigate to="/imersao-ao-vivo" replace />} />
 
                     {/* ROTAS ESPANHOL - PÁGINAS INDEPENDENTES */}
-                    <Route path="/es" element={<IndexES />} />
+                    <Route path="/es" element={<ProtectedRoute requireSubscription><IndexES /></ProtectedRoute>} />
                     <Route path="/es/calendar" element={
                       <ProtectedRoute requireSubscription>
                         <CalendarES />
@@ -269,8 +269,8 @@ const App = () => {
                     } />
                     <Route path="/es/planos" element={<SalesPageES />} />
                     <Route path="/es/obrigado" element={<ObrigadoES />} />
-                    <Route path="/es/fabrica" element={<FabricaES />} />
-                    <Route path="/es/fabrica/*" element={<FabricaES />} />
+                    <Route path="/es/fabrica" element={<ProtectedRoute requireElite><FabricaES /></ProtectedRoute>} />
+                    <Route path="/es/fabrica/*" element={<ProtectedRoute requireElite><FabricaES /></ProtectedRoute>} />
                     {/* Canonical Spanish landing page route. */}
                     <Route path="/es/inicio" caseSensitive={false} element={<InicioES />} />
 
@@ -305,18 +305,18 @@ const App = () => {
                       </ProtectedRoute>
                     } />
                     <Route path="/progresso" element={
-                      <ProtectedRoute>
+                      <ProtectedRoute requireSubscription>
                         <Progresso />
                       </ProtectedRoute>
                     } />
-                    <Route path="/sugestoes" element={<Sugestoes />} />
+                    <Route path="/sugestoes" element={<ProtectedRoute requireSubscription><Sugestoes /></ProtectedRoute>} />
                     <Route path="/minha-conta" element={
-                      <ProtectedRoute>
+                      <ProtectedRoute requireSubscription>
                         <MinhaConta />
                       </ProtectedRoute>
                     } />
                     <Route path="/tutorial" element={
-                      <ProtectedRoute>
+                      <ProtectedRoute requireSubscription>
                         <Tutorial />
                       </ProtectedRoute>
                     } />

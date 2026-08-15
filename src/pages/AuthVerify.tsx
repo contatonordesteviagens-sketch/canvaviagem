@@ -194,7 +194,7 @@ const AuthVerify = () => {
                 <p className="text-muted-foreground">
                   {isSubscribed
                     ? "Tudo pronto! Aproveite seus recursos exclusivos."
-                    : "Você entrou no Plano Grátis da plataforma."}
+                    : "Sua conta foi confirmada. Escolha uma assinatura para liberar a plataforma."}
                 </p>
                 {!isSubscribed && (
                   <div className="pt-4">
@@ -210,7 +210,7 @@ const AuthVerify = () => {
                 )}
                 <p className="text-[10px] text-muted-foreground mt-4 italic">
                   {hasOfferRedirect
-                    ? "Redirecionando para concluir seu teste..."
+                    ? "Redirecionando para concluir sua assinatura..."
                     : "Se você abriu o link em outro aparelho, escolha novamente a oferta na próxima tela."}
                 </p>
               </div>

@@ -909,7 +909,7 @@ export default function Inicio() {
                   O risco é 100% meu — não seu. Assine hoje. Use a nossa IA, baixe os criativos premium e poste nas suas redes. Se você não achar que o visual da sua agência subiu de nível, aperte um botão no painel e devolvemos 100% do seu dinheiro. Sem perguntas. Reembolso automático garantido pela Stripe.
                 </p>
                 <ul className="guarantee-list">
-                  <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Teste na prática por 7 dias</li>
+                  <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Garantia de reembolso por 7 dias</li>
                   <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Acesso imediato após o pagamento</li>
                   <li><CheckCircle2 size={16} color="#22C55E" style={{ flexShrink: 0 }} /> Reembolso com um clique (Garantia Stripe)</li>
                 </ul>

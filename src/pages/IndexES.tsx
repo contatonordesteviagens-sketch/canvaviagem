@@ -51,6 +51,7 @@ import { trackViewContent } from "@/lib/meta-pixel";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { contentLibraryES } from "@/data/content-library-es";
 import { isStartTool } from "@/lib/contentAccess";
+import AutoplayLoopVideo from "@/components/travel-agency-content/AutoplayLoopVideo";
 
 // ⭐ FORCE SPANISH LANGUAGE ⭐
 const FORCED_LANGUAGE = 'es' as const;
@@ -453,12 +454,9 @@ const IndexES = () => {
                               }}
                             />
                           ) : (
-                            <video
+                            <AutoplayLoopVideo
                               src={item.media_url}
-                              autoPlay
-                              loop
-                              muted
-                              playsInline
+                              label={item.title}
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';

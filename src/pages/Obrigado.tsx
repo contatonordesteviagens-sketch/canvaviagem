@@ -21,37 +21,11 @@ const safeInternalPath = (value: string | null) => {
   }
 };
 
-// Pixel IDs that should receive Purchase event on PT thank you page
-const PT_PIXEL_IDS = [
-  '1599242897762192',
-  '1152272353771099',
-  '4254631328136179',
-  '916689227676142',
-  '2120347238758199',
-];
-
 declare global {
   interface Window {
     fbq: (...args: unknown[]) => void;
   }
 }
-
-const trackStartTrialOnAllPixels = (predictedLtv: number, currency: string, eventID: string) => {
-  if (typeof window === 'undefined' || !window.fbq) return false;
-  PT_PIXEL_IDS.forEach((pixelId) => {
-    try {
-      window.fbq('trackSingle', pixelId, 'StartTrial', {
-        value: 0,
-        currency,
-        predicted_ltv: predictedLtv,
-      }, { eventID });
-      console.log(`[Meta Pixel] StartTrial → ${pixelId} (eventID: ${eventID})`);
-    } catch (e) {
-      console.warn(`[Meta Pixel] StartTrial fail ${pixelId}:`, e);
-    }
-  });
-  return true;
-};
 
 /**
  * Slow & Abundant Confetti Component
@@ -145,16 +119,12 @@ const Obrigado = () => {
   const emailFromUrl = searchParams.get("email");
   const sourceFromUrl = searchParams.get("source");
   const billingCycle = searchParams.get("billingCycle");
-  const checkoutSessionId = searchParams.get("session_id");
-  const trialStarted = searchParams.get("trial") === "started";
   const offerVariant = searchParams.get("offer") || "general";
   const returnTo = safeInternalPath(searchParams.get("returnTo"));
   const upgradeFeature = searchParams.get("upgrade") || "general";
-  const predictedLtv = billingCycle === "annual" ? 482 : billingCycle === "semiannual" ? 347 : 97;
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
-  const [tracked, setTracked] = useState(false);
   const [showConfetti, setShowConfetti] = useState(true);
   const checkoutTrackedRef = useRef(false);
 
@@ -173,48 +143,6 @@ const Obrigado = () => {
   useEffect(() => {
     if (emailFromUrl) setEmail(decodeURIComponent(emailFromUrl));
   }, [emailFromUrl]);
-
-  useEffect(() => {
-    if (sourceFromUrl !== "checkout" || !trialStarted || !checkoutSessionId || tracked) return;
-    const stableSessionId = checkoutSessionId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 180);
-    if (!stableSessionId) return;
-    const eventID = `trial_${stableSessionId}`;
-    const storageKey = `trial_started_${stableSessionId}`;
-    if (localStorage.getItem(storageKey)) {
-      setTracked(true);
-      return;
-    }
-    let cancelled = false;
-    let attempts = 0;
-    const maxAttempts = 30;
-
-    const tryFire = () => {
-      if (cancelled || tracked) return;
-      attempts++;
-      const fbqReady = typeof window !== 'undefined' && typeof window.fbq === 'function';
-      if (fbqReady) {
-        console.log(`[Meta Pixel] fbq ready after ${attempts} attempt(s) — firing StartTrial`);
-        const trackedTrial = trackStartTrialOnAllPixels(predictedLtv, 'BRL', eventID);
-        if (trackedTrial) {
-          localStorage.setItem(storageKey, '1');
-          setTracked(true);
-          return;
-        }
-      }
-      if (attempts >= maxAttempts) {
-        console.error('[Meta Pixel] fbq não ficou disponível após 15s. StartTrial não disparou.');
-        return;
-      }
-      setTimeout(tryFire, 500);
-    };
-
-    // Start after a short tick so index.html pixel snippet has a chance to inject fbq
-    const startTimer = setTimeout(tryFire, 300);
-    return () => {
-      cancelled = true;
-      clearTimeout(startTimer);
-    };
-  }, [checkoutSessionId, predictedLtv, sourceFromUrl, tracked, trialStarted]);
 
   useEffect(() => {
     const t = setTimeout(() => setShowConfetti(false), 10500);

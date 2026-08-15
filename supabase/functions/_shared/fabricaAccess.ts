@@ -11,39 +11,7 @@ const jsonResponse = (body: Record<string, unknown>, status: number, headers: He
   });
 
 export async function verifyFabricaAuthenticatedAccess(req: Request, corsHeaders: HeadersMap) {
-  assertOfficialSupabaseProject("fabrica-authenticated-access");
-
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return {
-      ok: false as const,
-      response: jsonResponse({ error: "Login necessario" }, 401, corsHeaders),
-    };
-  }
-
-  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return {
-      ok: false as const,
-      response: jsonResponse({ error: "Servico temporariamente indisponivel" }, 503, corsHeaders),
-    };
-  }
-
-  const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader } },
-    auth: { persistSession: false },
-  });
-  const { data: userData, error: userError } = await authClient.auth.getUser();
-  const userId = userData?.user?.id;
-  if (userError || !userId) {
-    return {
-      ok: false as const,
-      response: jsonResponse({ error: "Sessao invalida" }, 401, corsHeaders),
-    };
-  }
-
-  return { ok: true as const, userId };
+  return verifyFabricaEliteAccess(req, corsHeaders);
 }
 
 export async function verifyFabricaEliteAccess(req: Request, corsHeaders: HeadersMap) {
@@ -86,19 +54,14 @@ export async function verifyFabricaEliteAccess(req: Request, corsHeaders: Header
 
   const { data: subscription } = await dbClient
     .from("subscriptions")
-    .select("product_id,status,current_period_end,trial_ends_at")
+    .select("product_id,status,current_period_end")
     .eq("user_id", userId)
-    .in("status", ["active", "trialing"])
+    .eq("status", "active")
     .limit(1)
     .maybeSingle();
 
-  const entitlementEnd = subscription?.status === "trialing"
-    ? subscription?.trial_ends_at ?? subscription?.current_period_end
-    : subscription?.current_period_end;
-  const endDate = entitlementEnd ? new Date(entitlementEnd) : null;
-  const isCurrent = subscription?.status === "trialing"
-    ? Boolean(endDate && endDate > new Date())
-    : !endDate || endDate > new Date();
+  const endDate = subscription?.current_period_end ? new Date(subscription.current_period_end) : null;
+  const isCurrent = !endDate || endDate > new Date();
   const isElite = isEliteProduct(subscription?.product_id) && isCurrent;
 
   if (!isElite) {

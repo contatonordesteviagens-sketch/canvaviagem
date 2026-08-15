@@ -75,14 +75,14 @@ const faqItems = [
       "Não. Nenhuma ferramenta séria pode garantir vendas. A Fábrica resolve uma parte específica: transformar as informações do pacote em uma apresentação mais rápida, clara e profissional. Oferta, tráfego, atendimento e follow-up também influenciam o resultado.",
   },
   {
-    question: "O teste exige cartão? Quando acontece a cobrança?",
+    question: "Quando acontece a cobrança?",
     answer:
-      "Sim. Você cadastra o cartão no checkout seguro da Stripe. Os três primeiros dias são gratuitos e a cobrança do plano escolhido ocorre depois do período de teste.",
+      "A cobrança do ciclo escolhido acontece no checkout seguro da Stripe e o acesso é liberado após a confirmação do pagamento.",
   },
   {
     question: "Como faço para cancelar?",
     answer:
-      "O cancelamento é online. Você pode cancelar antes do fim dos três dias para evitar a primeira cobrança. Se tiver qualquer dificuldade, o suporte pelo WhatsApp pode orientar.",
+      "O cancelamento é online. Se tiver qualquer dificuldade, o suporte pelo WhatsApp pode orientar.",
   },
 ];
 
@@ -118,7 +118,7 @@ const planDetails = {
     name: "Plano Anual",
     price: ELITE_OFFER.annualMonthlyEquivalent,
     suffix: "por mês",
-    charge: `${ELITE_OFFER.annualPrice} cobrados uma vez, com 12 meses de acesso, após o teste`,
+    charge: `${ELITE_OFFER.annualPrice} cobrados uma vez, com 12 meses de acesso`,
     value: 482,
   },
   monthly: {
@@ -126,7 +126,7 @@ const planDetails = {
     name: "Plano Mensal",
     price: ELITE_OFFER.monthlyPrice,
     suffix: "por mês",
-    charge: "Cobrança mensal após o teste",
+    charge: "Cobrança mensal recorrente",
     value: 97,
   },
   semiannual: {
@@ -134,7 +134,7 @@ const planDetails = {
     name: "Plano Semestral",
     price: ELITE_OFFER.semiannualPrice,
     suffix: "por 6 meses",
-    charge: "R$ 347 cobrados uma vez, com 6 meses de acesso, após o teste",
+    charge: "R$ 347 cobrados uma vez, com 6 meses de acesso",
     value: 347,
   },
 };
@@ -270,7 +270,7 @@ export default function AdsOfferLanding() {
             onClick={() => scrollToPlans("header")}
             className="inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan-700 px-4 text-sm font-extrabold text-white transition hover:bg-cyan-800 active:scale-[0.98] sm:px-6"
           >
-            Testar por 3 dias
+            Ver planos
           </button>
         </div>
       </header>
@@ -308,8 +308,8 @@ export default function AdsOfferLanding() {
                 </a>
               </div>
               <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-slate-300">
-                <span className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-cyan-300" />3 dias gratuitos</span>
-                <span className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-cyan-300" />Sem cobrança hoje</span>
+                <span className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-cyan-300" />Acesso exclusivo para assinantes</span>
+                <span className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-cyan-300" />Liberação após o pagamento</span>
                 <span className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-cyan-300" />Cancelamento online</span>
               </div>
             </div>
@@ -394,7 +394,7 @@ export default function AdsOfferLanding() {
                 </h2>
               </div>
               <p className="max-w-md text-base leading-relaxed text-slate-600 md:text-lg">
-                Use um pacote real da sua agência durante o teste e veja se o processo cabe na sua rotina.
+                Use um pacote real da sua agência e veja como o processo cabe na sua rotina.
               </p>
             </div>
 
@@ -597,9 +597,9 @@ export default function AdsOfferLanding() {
         <section id="planos" className="scroll-mt-20 bg-[#0B1324] py-16 text-white md:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">Use um pacote real durante o teste</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">Use um pacote real desde o primeiro acesso</p>
               <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight md:text-5xl">Escolha apenas por quanto tempo quer acessar.</h2>
-              <p className="mt-5 text-lg leading-relaxed text-slate-300">Todos os planos liberam a mesma plataforma Elite. Os três primeiros dias são gratuitos e nada é cobrado hoje.</p>
+              <p className="mt-5 text-lg leading-relaxed text-slate-300">Todos os ciclos liberam a mesma plataforma Elite após a confirmação do pagamento.</p>
             </div>
 
             <div className="mt-12 overflow-hidden rounded-[2rem] border border-cyan-300/25 bg-white text-slate-950 shadow-[0_28px_80px_-38px_rgba(8,145,178,0.7)]">
@@ -618,7 +618,7 @@ export default function AdsOfferLanding() {
                     onClick={() => startCheckout(planDetails.annual.cycle, planDetails.annual.value)}
                     className="mt-7 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-700 px-6 font-black text-white transition hover:bg-cyan-800 active:scale-[0.98] disabled:cursor-wait disabled:opacity-70"
                   >
-                    {checkoutLoading === "annual" ? "Abrindo checkout..." : "Testar a Fábrica por 3 dias"}
+                    {checkoutLoading === "annual" ? "Abrindo checkout..." : "Assinar e liberar a Fábrica"}
                     <ArrowRight className="h-5 w-5" />
                   </button>
                 </div>
@@ -657,7 +657,7 @@ export default function AdsOfferLanding() {
 
             <div className="mt-8 grid gap-4 border-t border-white/10 pt-7 text-sm text-slate-300 sm:grid-cols-3">
               <div className="flex items-start gap-3"><ShieldCheck className="h-5 w-5 shrink-0 text-cyan-300" /><span>Pagamento processado com segurança pela Stripe.</span></div>
-              <div className="flex items-start gap-3"><Clock3 className="h-5 w-5 shrink-0 text-cyan-300" /><span>Primeira cobrança somente após os três dias.</span></div>
+              <div className="flex items-start gap-3"><Clock3 className="h-5 w-5 shrink-0 text-cyan-300" /><span>Acesso liberado após a confirmação do pagamento.</span></div>
               <div className="flex items-start gap-3"><MessageCircle className="h-5 w-5 shrink-0 text-cyan-300" /><span>Suporte pelo WhatsApp se precisar de orientação.</span></div>
             </div>
           </div>
@@ -698,9 +698,9 @@ export default function AdsOfferLanding() {
             <div>
               <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-800">O motivo para começar agora é simples</p>
               <h2 className="mt-4 max-w-3xl text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
-                Use o próximo pacote que chegar como seu teste real.
+                Use o próximo pacote que chegar como sua primeira campanha real.
               </h2>
-              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700">Em vez de imaginar se funciona para sua agência, coloque uma oferta real na Fábrica e avalie o resultado durante os três dias gratuitos.</p>
+              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700">Coloque uma oferta real na Fábrica e produza os anúncios da sua agência com a assinatura Elite.</p>
             </div>
             <button
               type="button"
@@ -733,7 +733,7 @@ export default function AdsOfferLanding() {
         onClick={() => scrollToPlans("mobile_sticky")}
         className="fixed bottom-3 left-3 right-3 z-30 inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-cyan-700 px-5 font-black text-white shadow-[0_20px_40px_-20px_rgba(8,145,178,0.9)] active:scale-[0.98] md:hidden"
       >
-        Testar por 3 dias
+        Ver planos
         <ArrowRight className="h-5 w-5" />
       </button>
 
@@ -753,16 +753,16 @@ export default function AdsOfferLanding() {
             </button>
             <BadgeCheck className="h-10 w-10 text-cyan-700" />
             <h2 id="exit-title" className="mt-5 pr-8 text-3xl font-black leading-tight tracking-tight text-slate-950">Ainda está em dúvida se serve para sua agência?</h2>
-            <p className="mt-4 leading-relaxed text-slate-600">Escolha um pacote real, teste a criação durante três dias e avalie o processo com seus próprios olhos. Nada é cobrado hoje.</p>
+            <p className="mt-4 leading-relaxed text-slate-600">Escolha um pacote real e produza seus anúncios com acesso completo à Fábrica Elite.</p>
             <button
               type="button"
               onClick={() => scrollToPlans("exit_popup")}
               className="mt-6 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-cyan-700 px-6 font-black text-white hover:bg-cyan-800 active:scale-[0.98]"
             >
-              Ver planos e testar
+              Ver planos e assinar
               <ArrowRight className="h-5 w-5" />
             </button>
-            <p className="mt-3 text-center text-xs text-slate-500">Cartão solicitado. Cancele online antes do fim do teste para evitar a cobrança.</p>
+            <p className="mt-3 text-center text-xs text-slate-500">Pagamento seguro pela Stripe e cancelamento online.</p>
           </div>
         </div>
       )}

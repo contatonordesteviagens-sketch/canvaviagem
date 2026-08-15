@@ -266,8 +266,7 @@ serve(async (req) => {
             const customerId = customer.id;
 
             const activeSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 });
-            const trialingSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 10 });
-            const subscription = [...activeSubscriptions.data, ...trialingSubscriptions.data][0];
+            const subscription = activeSubscriptions.data[0];
 
             if (subscription) {
               const productId = (subscription.items.data[0]?.price?.product as string | null) ?? null;

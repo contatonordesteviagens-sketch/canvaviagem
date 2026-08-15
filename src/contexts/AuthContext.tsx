@@ -53,13 +53,9 @@ const isSubscriptionSnapshotCurrent = (
   now = Date.now(),
 ) => {
   if (!value?.subscribed || value.productId === "admin_bypass") return true;
-  if (value.status !== "active" && value.status !== "trialing") return false;
+  if (value.status !== "active") return false;
 
-  const entitlementEnd = value.status === "trialing"
-    ? value.trialEnd ?? value.subscriptionEnd
-    : value.subscriptionEnd;
-
-  if (value.status === "trialing" && !entitlementEnd) return false;
+  const entitlementEnd = value.subscriptionEnd;
   if (!entitlementEnd) return true;
 
   const entitlementEndMs = Date.parse(entitlementEnd);

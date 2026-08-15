@@ -84,14 +84,9 @@ const getAppOrigin = () => {
 const isCurrentSubscription = (subscription?: {
   status?: string | null;
   current_period_end?: string | null;
-  trial_ends_at?: string | null;
 } | null) => {
-  if (!subscription || !["active", "trialing"].includes(subscription.status ?? "")) return false;
-  const entitlementEnd = subscription.status === "trialing"
-    ? subscription.trial_ends_at ?? subscription.current_period_end
-    : subscription.current_period_end;
-
-  if (subscription.status === "trialing" && !entitlementEnd) return false;
+  if (!subscription || subscription.status !== "active") return false;
+  const entitlementEnd = subscription.current_period_end;
   return !entitlementEnd || new Date(entitlementEnd) > new Date();
 };
 
@@ -151,7 +146,6 @@ serve(async (req) => {
     let upgradeFeature = "";
     let landingPath = "/inicio";
     let landingVariant = "general";
-    let trialEligible = true;
     try {
       const body = await req.json();
       if (body?.billing_cycle === "semiannual" || body?.billing_cycle === "annual") {
@@ -166,8 +160,6 @@ serve(async (req) => {
       if (typeof body?.landing_variant === "string" && ["ads", "content", "site", "team"].includes(body.landing_variant)) {
         landingVariant = body.landing_variant;
       }
-      // A oferta de carrosséis é uma compra direta, sem período de teste.
-      if (landingVariant === "content") trialEligible = false;
     } catch {
       // Empty request bodies use the canonical monthly offer.
     }
@@ -193,7 +185,7 @@ serve(async (req) => {
       const [{ data: localSubscription }, { data: adminRole }] = await Promise.all([
         dbClient
           .from("subscriptions")
-          .select("product_id,status,current_period_end,trial_started_at,trial_ends_at")
+          .select("product_id,status,current_period_end")
           .eq("user_id", user.id)
           .maybeSingle(),
         dbClient
@@ -203,10 +195,6 @@ serve(async (req) => {
           .eq("role", "admin")
           .maybeSingle(),
       ]);
-
-      if (localSubscription?.trial_started_at || localSubscription?.trial_ends_at) {
-        trialEligible = false;
-      }
 
       if (
         adminRole
@@ -231,13 +219,8 @@ serve(async (req) => {
         status: "all",
         limit: 20,
       });
-      const historicalEliteTrial = subscriptions.data.some((subscription) =>
-        isEliteProduct(stripeProductId(subscription))
-        && Boolean(subscription.trial_start || subscription.trial_end)
-      );
-      if (historicalEliteTrial) trialEligible = false;
       const existingElite = subscriptions.data.some((subscription) =>
-        ["active", "trialing"].includes(subscription.status)
+        subscription.status === "active"
         && isEliteProduct(stripeProductId(subscription))
       );
 
@@ -260,7 +243,6 @@ serve(async (req) => {
     const successParams = new URLSearchParams({
       source: "checkout",
       billingCycle: requestedCycle,
-      trial: landingVariant === "content" ? "not_offered" : trialEligible ? "started" : "not_eligible",
     });
     const cancelParams = new URLSearchParams({ checkout: "canceled" });
     if (returnTo) {
@@ -277,12 +259,6 @@ serve(async (req) => {
     }
 
     const subscriptionData = {
-      ...(trialEligible ? {
-        trial_period_days: 3,
-        trial_settings: {
-          end_behavior: { missing_payment_method: "cancel" as const },
-        },
-      } : {}),
       metadata: {
         user_id: user.id,
         billing_cycle: requestedCycle,
@@ -329,7 +305,7 @@ serve(async (req) => {
       expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 minutes
     }, {
       // Repeated clicks within the same ten-minute window reuse the same Stripe
-      // operation instead of creating parallel trial sessions.
+      // operation instead of creating parallel checkout sessions.
       idempotencyKey: `elite-checkout:${user.id}:${requestedCycle}:${Math.floor(Date.now() / 600000)}`,
     });
 

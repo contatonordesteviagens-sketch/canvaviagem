@@ -12,27 +12,12 @@ import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
 import {
   ensureFreshSupabaseSession,
 } from "@/lib/supabase-session";
-import fpPromise from "@fingerprintjs/fingerprintjs";
-
-let visitorIdPromise: Promise<string | null> | null = null;
-const getVisitorId = async () => {
-  if (typeof window === "undefined") return null;
-  if (!visitorIdPromise) {
-    visitorIdPromise = fpPromise
-      .load()
-      .then((fp) => fp.get())
-      .then((result) => result.visitorId)
-      .catch(() => null);
-  }
-  return await visitorIdPromise;
-};
 
 export type AccountTier =
   | "guest"
   | "free"
   | "start_legacy"
   | "unknown_paid"
-  | "elite_trial"
   | "elite"
   | "admin";
 
@@ -95,18 +80,16 @@ type EntitlementsContextValue = EntitlementsSnapshot & {
 };
 
 const EMPTY_USAGE: UsageCounts = { ad_export: 0, carousel_export: 0 };
-const FREE_LIMITS = { ad_export: 3, carousel_export: 1, projects: 1 };
-
 const buildGuestSnapshot = (): EntitlementsSnapshot => ({
   tier: "guest",
   capabilities: {
-    "fabrica.open": true,
-    "fabrica.configure": true,
+    "fabrica.open": false,
+    "fabrica.configure": false,
     "fabrica.save": false,
-    "photos.search": true,
-    "ad.preview": true,
-    "carousel.preview": true,
-    "site.preview": true,
+    "photos.search": false,
+    "ad.preview": false,
+    "carousel.preview": false,
+    "site.preview": false,
     "ad.export": false,
     "carousel.export": false,
     "site.publish": false,
@@ -119,9 +102,9 @@ const buildGuestSnapshot = (): EntitlementsSnapshot => ({
     "premium_content.open": false,
     unlimited: false,
   },
-  limits: FREE_LIMITS,
+  limits: null,
   used: EMPTY_USAGE,
-  remaining: { ad_export: 3, carousel_export: 1 },
+  remaining: null,
   needsReview: false,
 });
 
@@ -147,13 +130,13 @@ const buildFallbackSnapshot = (
   return {
     tier,
     capabilities: {
-      "fabrica.open": true,
-      "fabrica.configure": true,
-      "fabrica.save": true,
-      "photos.search": true,
-      "ad.preview": true,
-      "carousel.preview": true,
-      "site.preview": true,
+      "fabrica.open": elite,
+      "fabrica.configure": elite,
+      "fabrica.save": elite,
+      "photos.search": elite,
+      "ad.preview": elite,
+      "carousel.preview": elite,
+      "site.preview": elite,
       "ad.export": elite,
       "carousel.export": elite,
       "site.publish": elite,
@@ -166,9 +149,9 @@ const buildFallbackSnapshot = (
       "premium_content.open": elite || start,
       unlimited: elite,
     },
-    limits: elite ? null : FREE_LIMITS,
+    limits: null,
     used: EMPTY_USAGE,
-    remaining: elite ? null : { ad_export: 3, carousel_export: 1 },
+    remaining: null,
     needsReview: unknownPaid,
   };
 };
@@ -288,14 +271,12 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
         };
       }
       try {
-        const fingerprint = await getVisitorId();
         const data = await invoke({
           action: "reserve",
           capability,
           idempotency_key: idempotencyKey,
           project_id: options?.projectId ?? "",
           metadata: options?.metadata ?? {},
-          fingerprint,
         });
         return {
           allowed: Boolean(data.allowed),

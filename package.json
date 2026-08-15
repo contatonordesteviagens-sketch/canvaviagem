@@ -10,7 +10,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "safety:freemium": "node scripts/validate-freemium-contract.mjs && node scripts/validate-official-supabase.mjs --skip-cli-link",
+    "safety:paid-access": "node scripts/validate-paid-access-contract.mjs && node scripts/validate-official-supabase.mjs --skip-cli-link",
     "safety:hotmart": "node scripts/validate-official-supabase.mjs",
     "safety:supabase": "node scripts/validate-official-supabase.mjs",
     "deploy:supabase:functions": "npm run safety:supabase && npx supabase functions deploy --project-ref zdjtcwtakgizbsbbwtgc"

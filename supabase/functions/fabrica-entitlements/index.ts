@@ -8,20 +8,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const FREE_LIMITS = {
-  ad_export: 3,
-  carousel_export: 1,
-  projects: 1,
-} as const;
-
 const TRACKED_EVENTS = new Set([
   "fabrica_opened",
-  "free_quota_seen",
-  "free_export_reserved",
-  "free_export_completed",
-  "free_limit_reached",
   "paywall_viewed",
   "upgrade_clicked",
+  "subscription_required",
   "site_publish_blocked",
   "crm_preview_opened",
   "landing_viewed",
@@ -41,7 +32,6 @@ type Tier =
   | "free"
   | "start_legacy"
   | "unknown_paid"
-  | "elite_trial"
   | "elite"
   | "admin";
 
@@ -50,13 +40,6 @@ const jsonResponse = (body: Record<string, unknown>, status = 200) =>
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-
-const sha256 = async (value: string) => {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-};
 
 const isCurrent = (end?: string | null) => !end || new Date(end).getTime() > Date.now();
 
@@ -70,30 +53,25 @@ function classifyTier(
   isAdmin: boolean,
 ): Tier {
   if (isAdmin) return "admin";
-  if (!subscription || !["active", "trialing"].includes(subscription.status ?? "")) return "free";
-  if (subscription.status === "trialing") {
-    const trialEnd = subscription.trial_ends_at ?? subscription.current_period_end;
-    if (!trialEnd || !isCurrent(trialEnd)) return "free";
-  } else if (!isCurrent(subscription.current_period_end)) {
-    return "free";
-  }
+  if (!subscription || subscription.status !== "active") return "free";
+  if (!isCurrent(subscription.current_period_end)) return "free";
   if (isEliteProduct(subscription.product_id)) {
-    return subscription.status === "trialing" ? "elite_trial" : "elite";
+    return "elite";
   }
   if (isStartProduct(subscription.product_id)) return "start_legacy";
   return "unknown_paid";
 }
 
 function buildCapabilities(tier: Tier) {
-  const fullAccess = tier === "admin" || tier === "elite" || tier === "elite_trial";
+  const fullAccess = tier === "admin" || tier === "elite";
   return {
-    "fabrica.open": true,
-    "fabrica.configure": true,
-    "fabrica.save": true,
-    "photos.search": true,
-    "ad.preview": true,
-    "carousel.preview": true,
-    "site.preview": true,
+    "fabrica.open": fullAccess,
+    "fabrica.configure": fullAccess,
+    "fabrica.save": fullAccess,
+    "photos.search": fullAccess,
+    "ad.preview": fullAccess,
+    "carousel.preview": fullAccess,
+    "site.preview": fullAccess,
     "ad.export": fullAccess,
     "carousel.export": fullAccess,
     "site.publish": fullAccess,
@@ -180,14 +158,9 @@ serve(async (req) => {
       return jsonResponse({
         tier,
         capabilities,
-        limits: unlimited ? null : FREE_LIMITS,
+        limits: null,
         used,
-        remaining: unlimited
-          ? null
-          : {
-              ad_export: Math.max(FREE_LIMITS.ad_export - used.ad_export, 0),
-              carousel_export: Math.max(FREE_LIMITS.carousel_export - used.carousel_export, 0),
-            },
+        remaining: null,
         subscription: subscription ?? null,
         needs_review: tier === "unknown_paid",
       });
@@ -203,29 +176,7 @@ serve(async (req) => {
         return jsonResponse({ allowed: true, unlimited: true, reservation_id: null, remaining: null });
       }
 
-      const idempotencyKey = typeof body.idempotency_key === "string" ? body.idempotency_key : "";
-      const limit = FREE_LIMITS[capability];
-      const forwardedIp = req.headers.get("cf-connecting-ip")
-        || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-        || "unknown";
-      const serverFingerprint = await sha256(
-        `${forwardedIp}|${(req.headers.get("user-agent") || "unknown").slice(0, 240)}`,
-      );
-      const { data, error } = await db.rpc("reserve_fabrica_usage", {
-        p_user_id: userId,
-        p_capability: capability,
-        p_idempotency_key: idempotencyKey,
-        p_project_id: typeof body.project_id === "string" ? body.project_id : "",
-        p_metadata: typeof body.metadata === "object" && body.metadata ? body.metadata : {},
-        p_limit: limit,
-        p_fingerprint: typeof body.fingerprint === "string" ? body.fingerprint : null,
-        p_server_fingerprint: serverFingerprint,
-      });
-      if (error) throw error;
-      const reservation = data && typeof data === "object" && !Array.isArray(data)
-        ? data as Record<string, unknown>
-        : {};
-      return jsonResponse({ ...reservation, unlimited: false });
+      return jsonResponse({ allowed: false, error: "Plano Elite necessário", remaining: null }, 403);
     }
 
     if (action === "commit" || action === "release") {

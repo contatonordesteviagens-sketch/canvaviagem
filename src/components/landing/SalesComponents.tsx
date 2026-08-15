@@ -14,6 +14,7 @@ import {
   Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import AutoplayLoopVideo from '@/components/travel-agency-content/AutoplayLoopVideo';
 
 // --- 1. URGENCY BAR (CORREÇÃO 1 & MOBILE 2) ---
 export const UrgencyBar = () => {
@@ -248,13 +249,10 @@ export const ReelCard = ({ destination, videoUrl }: { destination: string; video
                     alt={destination}
                 />
             ) : videoUrl ? (
-                <video 
+                <AutoplayLoopVideo
                     src={videoUrl} 
+                    label={`Vídeo de ${destination}`}
                     className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700" 
-                    muted 
-                    autoPlay 
-                    loop 
-                    playsInline
                 />
             ) : (
                 <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">

@@ -718,8 +718,8 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
         open={showProjectPaywall}
         onOpenChange={setShowProjectPaywall}
         feature="fabrica"
-        title="Seu primeiro projeto continua salvo"
-        description="A conta gratuita inclui um projeto completo. No Elite, você cria e administra quantos projetos, marcas, pacotes e sites precisar."
+        title="Assinatura Elite necessária"
+        description="Assine o Plano Elite para criar e administrar quantos projetos, marcas, pacotes e sites precisar."
       />
 
       {/* Projetos Salvos */}

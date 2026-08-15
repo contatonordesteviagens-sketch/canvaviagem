@@ -49,7 +49,7 @@ export function PricingAccordion() {
                 Plano Anual
               </h3>
               <p className="text-sm text-slate-500 font-medium mt-1">
-                3 dias grátis + 12 meses com o maior desconto.
+                12 meses de acesso com o maior desconto.
               </p>
               
               <div className="mt-5 flex flex-col items-center w-full">
@@ -94,7 +94,7 @@ export function PricingAccordion() {
                       className="w-full text-center py-3.5 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 flex items-center justify-center"
                       style={{ background: '#7C3AED' }}
                     >
-                      Começar teste de 3 dias grátis
+                      Assinar plano anual
                     </a>
                     <div className="text-center text-xs font-semibold text-slate-400">
                       Acesso imediato • Garantia de 7 dias • Pagamento seguro
@@ -125,7 +125,7 @@ export function PricingAccordion() {
                 Plano Mensal
               </h3>
               <p className="text-sm text-slate-500 font-medium mt-1">
-                Teste por 3 dias grátis. Sem fidelidade.
+                Acesso mensal sem fidelidade.
               </p>
               
               <div className="mt-5 flex flex-col items-center w-full">
@@ -169,7 +169,7 @@ export function PricingAccordion() {
                       className="w-full text-center py-3.5 rounded-xl font-bold border-2 transition-transform active:scale-95 flex items-center justify-center"
                       style={{ borderColor: '#3B82F6', color: '#3B82F6' }}
                     >
-                      Começar teste de 3 dias grátis
+                      Assinar plano mensal
                     </a>
                   </div>
                 </motion.div>

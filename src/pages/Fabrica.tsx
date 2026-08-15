@@ -9,7 +9,6 @@ import { Phase5Dashboard } from "@/pages/fabrica/Phase5Dashboard";
 import { FabricaDashboard } from "@/pages/fabrica/FabricaDashboard";
 import { FabricaLibrary } from "@/pages/fabrica/FabricaLibrary";
 import { VoiceOnboarding } from "@/components/fabrica/VoiceOnboarding";
-import { FabricaAccessSummary } from "@/components/fabrica/FabricaAccessSummary";
 import { FabricaLockedFeature } from "@/components/fabrica/FabricaLockedFeature";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { 
@@ -327,7 +326,6 @@ const FabricaInner = () => {
 
       {/* ——— CONTEÚDO PRINCIPAL (ÁREA DE TRABALHO) ——— */}
       <main className="flex-1 min-w-0 pt-20 md:pt-8 px-4 md:px-8 pb-32 md:pb-12 bg-[#0A0A0B]">
-        <FabricaAccessSummary />
         {/* Top Bar with Voice AI and Phase Shortcuts */}
         <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-2xl bg-black border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 relative z-30">
             <div className="w-full sm:w-auto flex justify-center sm:justify-start shrink-0 min-w-0">

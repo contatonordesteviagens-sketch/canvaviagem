@@ -3,7 +3,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { Loader2 } from "lucide-react";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
-import { buildUpgradePath } from "@/lib/eliteOffer";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -48,6 +47,12 @@ export const ProtectedRoute = ({
         return <>{children}</>;
     }
 
+    // Paid areas never expose a free/authenticated preview. Visitors and
+    // accounts without an active plan return to the public sales page.
+    if ((requireSubscription || requireElite) && !user && !localPreview) {
+        return <Navigate to="/inicio" replace />;
+    }
+
     // 1. Check Login
     if (!user && !localPreview) {
         // Redirect to auth, saving the location they tried to access
@@ -62,11 +67,11 @@ export const ProtectedRoute = ({
     // 3. Check Subscription (if required)
     // Note: Admins bypass subscription checks ensuring they can access everything
     if (requireSubscription && !can("library.premium.open") && !isAdmin && !localPreview) {
-        return <Navigate to={buildUpgradePath("premium_content", location.pathname)} replace />;
+        return <Navigate to="/inicio" replace />;
     }
 
     if (requireElite && !can("vendedor.use") && !isAdmin && !localPreview) {
-        return <Navigate to={buildUpgradePath("vendedor", location.pathname)} replace />;
+        return <Navigate to="/inicio" replace />;
     }
 
     return <>{children}</>;

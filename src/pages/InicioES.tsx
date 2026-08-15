@@ -87,17 +87,17 @@ export default function InicioES() {
     ["Páginas de venta", "Envía paquetes con una presentación clara, visual y más confiable."],
     ["CRM de leads", "Acompaña interesados, cotizaciones y oportunidades después del primer contacto."],
     ["Materiales de apoyo", "Usa leyendas, itinerarios, textos de WhatsApp y recursos de campaña."],
-    ["Soporte y garantía", "Acceso inmediato, ayuda por WhatsApp y 7 días para probar sin riesgo."]
+    ["Soporte y garantía", "Acceso inmediato, ayuda por WhatsApp y garantía de reembolso de 7 días."]
   ];
 
   const trustProofMetrics = [
-    ["7 días", "para probar con garantía"],
+    ["7 días", "de garantía de reembolso"],
     ["12 meses", "de acceso en el plan anual"],
     ["US$350", "de ahorro frente a 12 meses pagando mensual"],
     ["1 lugar", "para IA, páginas, contenidos y CRM"]
   ];
 
-  const trialPlanSteps = [
+  const actionPlanSteps = [
     ["Día 1", "entra, revisa los módulos y crea tu primera campaña para un destino real"],
     ["Día 2", "arma una página de paquete y prepara el texto para enviar por WhatsApp"],
     ["Día 3", "organiza interesados y cotizaciones para ver si el flujo sirve para tu agencia"]
@@ -1326,7 +1326,7 @@ export default function InicioES() {
                   </span>
                   <h2 className="text-3xl md:text-4xl font-black text-white mb-4">Oferta de lanzamiento para agencias LATAM</h2>
                   <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-                    Entra con acceso inmediato, prueba la plataforma por 7 días y elige entre pagar mensual o ahorrar más con el plan anual.
+                    Elige tu suscripción y recibe acceso inmediato después de la confirmación del pago.
                   </p>
                 </div>
                 
@@ -1370,18 +1370,18 @@ export default function InicioES() {
           <div className="inicio-container">
             <div className="w-full flex flex-col items-center justify-center text-center mx-auto">
               <h2 className="section-title w-full text-center" style={{ textAlign: 'center' }}>Elige cómo quieres entrar</h2>
-              <p className="section-subtitle w-full text-center" style={{ textAlign: 'center', margin: '0 auto 32px' }}>El plan mensual es para probar pagando mes a mes. El plan anual es la mejor elección si quieres acceso por 12 meses y ahorrar US$350 frente a pagar mensual todo el año. Los precios están en dólares (USD).</p>
+              <p className="section-subtitle w-full text-center" style={{ textAlign: 'center', margin: '0 auto 32px' }}>El plan mensual ofrece acceso mes a mes. El plan anual es la mejor elección si quieres acceso por 12 meses y ahorrar US$350 frente a pagar mensual todo el año. Los precios están en dólares (USD).</p>
             </div>
 
             <div className="max-w-5xl mx-auto mb-10 bg-white border border-slate-200 rounded-3xl p-5 md:p-8 shadow-sm">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
                 <div className="md:max-w-[320px]">
-                  <p className="text-sm font-black uppercase tracking-[0.18em] text-purple-600 mb-2">Plan de prueba</p>
-                  <h3 className="text-2xl font-black text-slate-900 mb-3">No entres para mirar. Entra para validar una oferta real.</h3>
-                  <p className="text-slate-600 text-sm leading-relaxed">Durante los primeros días, usa un paquete que ya quieres vender. Si la plataforma no te ayuda a crear, presentar y organizar mejor esa oferta, la garantía reduce el riesgo de la decisión.</p>
+                  <p className="text-sm font-black uppercase tracking-[0.18em] text-purple-600 mb-2">Plan de acción</p>
+                  <h3 className="text-2xl font-black text-slate-900 mb-3">Entra para poner una oferta real en marcha.</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">Usa un paquete que ya quieres vender y sigue este plan para crear, presentar y organizar mejor la oferta desde el primer acceso.</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
-                  {trialPlanSteps.map(([day, action]) => (
+                  {actionPlanSteps.map(([day, action]) => (
                     <div key={day} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left">
                       <div className="text-purple-700 font-black text-sm mb-2">{day}</div>
                       <p className="text-slate-700 text-sm leading-relaxed">{action}</p>

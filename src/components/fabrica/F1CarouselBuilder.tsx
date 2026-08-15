@@ -4822,7 +4822,7 @@ export function F1CarouselBuilder({
       },
     });
     if (!reservation.allowed) {
-      track("free_limit_reached", { capability: "carousel_export" });
+      track("subscription_required", { capability: "carousel_export" });
       setShowExportPaywall(true);
       return;
     }

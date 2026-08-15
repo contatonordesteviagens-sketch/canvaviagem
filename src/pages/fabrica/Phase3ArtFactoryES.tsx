@@ -1804,7 +1804,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
       metadata: { destination, format, batch: isBatchMode, locale: "es" },
     });
     if (!reservation.allowed) {
-      track("free_limit_reached", { capability: "ad_export", locale: "es" });
+      track("subscription_required", { capability: "ad_export", locale: "es" });
       setShowExportPaywall(true);
       return;
     }

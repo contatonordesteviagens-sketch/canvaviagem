@@ -62,12 +62,12 @@ const upgradeLandingCopy: Record<UpgradeFeature, { eyebrow: string; title: strin
   ad_export: {
     eyebrow: "Seu anuncio continua salvo",
     title: "Libere novas exportacoes sem perder o trabalho que ja fez.",
-    description: "O gratuito inclui 3 anuncios. O Elite remove o limite e mantem seus projetos organizados.",
+    description: "A assinatura Elite libera anúncios sem limite e mantém seus projetos organizados.",
   },
   carousel_export: {
     eyebrow: "Seu carrossel continua salvo",
     title: "Baixe novas sequencias e continue criando conteudo para vender.",
-    description: "O gratuito inclui 1 carrossel. O Elite libera novas geracoes e downloads sem limite.",
+    description: "A assinatura Elite libera novas gerações e downloads de carrosséis sem limite.",
   },
   site_publish: {
     eyebrow: "Seu site esta pronto",
@@ -82,22 +82,22 @@ const upgradeLandingCopy: Record<UpgradeFeature, { eyebrow: string; title: strin
   voice: {
     eyebrow: "Recurso com processamento de IA",
     title: "Crie narracoes e audios para suas campanhas no Elite.",
-    description: "A geracao de voz usa processamento pago e fica disponivel no teste e na assinatura Elite.",
+    description: "A geração de voz usa processamento pago e fica disponível na assinatura Elite.",
   },
   vendedor: {
     eyebrow: "Atendimento inteligente",
     title: "Libere o Vendedor de Viagens IA para sua operacao.",
-    description: "Conheca a ferramenta e use o atendimento inteligente durante o teste de 3 dias do Elite.",
+    description: "Assine o Elite para usar o atendimento inteligente na sua operação.",
   },
   premium_content: {
     eyebrow: "Biblioteca para assinantes",
     title: "Libere videos editaveis, downloads e midias premium.",
-    description: "Conteudos gratuitos continuam abertos. Videos editaveis e arquivos premium sao exclusivos para assinantes Start ou Elite.",
+    description: "Vídeos editáveis e arquivos premium são exclusivos para assinantes Start ou Elite.",
   },
   fabrica: {
     eyebrow: "Sua operacao em um so lugar",
-    title: "Continue criando gratuitamente e libere a Fabrica completa quando precisar.",
-    description: "Monte sua agencia, cadastre pacotes e experimente as geracoes. Site, CRM, automacoes e uso ilimitado fazem parte do Elite.",
+    title: "Libere a Fábrica completa para criar sem limites.",
+    description: "A assinatura Elite libera agência, pacotes, anúncios, carrosséis, site, CRM e automações.",
   },
 };
 
@@ -326,7 +326,6 @@ export default function Inicio2() {
     : "general";
   const contextualCopy = upgradeFeature ? upgradeLandingCopy[upgradeFeature] : null;
   const isStartUpgrade = tier === "start_legacy";
-  const isFreeAccount = tier === "free";
 
   useEffect(() => {
     if (searchParams.get("checkout") !== "canceled") return;
@@ -407,14 +406,12 @@ export default function Inicio2() {
     return () => observer.disconnect();
   }, []);
 
-  const freeWorkspacePath = returnTo || "/fabrica";
   const heroEyebrow = contextualCopy?.eyebrow
-    || (isStartUpgrade ? "Seu Plano Start continua ativo" : isFreeAccount ? "Voce ja pode criar gratuitamente" : "Comece gratis, sem cartao");
+    || (isStartUpgrade ? "Seu Plano Start continua ativo" : "Plataforma exclusiva para assinantes");
   const heroTitle = contextualCopy?.title
-    || "Crie campanhas para sua agencia antes de decidir assinar.";
+    || "Crie campanhas completas para sua agência em um só lugar.";
   const heroDescription = contextualCopy?.description
-    || "Cadastre sua agencia e seus pacotes, salve 1 projeto e experimente 3 anuncios e 1 carrossel. O Elite libera site, CRM, automacoes e uso ilimitado.";
-  const workspaceCta = user ? "Continuar no meu projeto" : "Criar gratuitamente";
+    || "Assine o Elite para criar anúncios e carrosséis ilimitados, publicar sites, organizar leads e usar os recursos de IA.";
 
   const plans = [
     {
@@ -428,7 +425,7 @@ export default function Inicio2() {
         "Acesso a todos os recursos",
         "Cancele quando quiser",
         "Suporte via WhatsApp",
-        "3 dias grátis inclusos",
+        "Acesso liberado após o pagamento",
       ]
     },
     {
@@ -443,7 +440,7 @@ export default function Inicio2() {
         "6 meses de acesso garantido",
         "Suporte via WhatsApp",
         "Economia de R$235 vs mensal",
-        "3 dias grátis inclusos",
+        "Acesso liberado após o pagamento",
       ]
     },
     {
@@ -458,7 +455,7 @@ export default function Inicio2() {
         "12 meses de acesso completo",
         "Suporte via WhatsApp",
         "Suporte prioritário",
-        "3 dias grátis inclusos",
+        "Acesso liberado após o pagamento",
       ]
     }
   ];
@@ -601,8 +598,8 @@ export default function Inicio2() {
       <header className="site-header">
         <div className="header-inner">
           <img src={logoImage} alt="Canva Viagem" className="logo" />
-          <a href={upgradeFeature ? "#planos" : freeWorkspacePath} className="header-cta">
-            {upgradeFeature ? "Ver Plano Elite" : workspaceCta}
+          <a href="#planos" className="header-cta">
+            Ver Plano Elite
           </a>
         </div>
       </header>
@@ -630,7 +627,7 @@ export default function Inicio2() {
 
                 <div className="bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 md:px-5 md:py-2.5 rounded-lg md:rounded-xl mb-5 shadow-lg shadow-emerald-500/5 max-w-2xl backdrop-blur-sm">
                   <p className="font-semibold text-[11px] md:text-[13px] !text-emerald-300 leading-snug" style={{ color: '#6ee7b7' }}>
-                    Conteudos gratuitos nao pedem cartao. O teste de 3 dias libera os recursos Elite e so comeca quando voce escolhe um plano.
+                    Não existe plano gratuito ou teste. Escolha sua assinatura para liberar o acesso completo após a confirmação do pagamento.
                   </p>
                 </div>
 
@@ -648,24 +645,20 @@ export default function Inicio2() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2.5 md:gap-4 mb-6 w-full max-w-2xl">
-                  <a href={upgradeFeature ? "#planos" : freeWorkspacePath} className="w-full sm:w-auto min-h-[52px] bg-purple-600 hover:bg-purple-500 text-white text-sm md:text-base font-bold py-3 px-7 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1 flex items-center justify-center whitespace-nowrap active:scale-95 animate-[pulse_2.5s_ease-in-out_infinite]">
-                    {upgradeFeature ? "Liberar com o Plano Elite" : workspaceCta}
+                  <a href="#planos" className="w-full sm:w-auto min-h-[52px] bg-purple-600 hover:bg-purple-500 text-white text-sm md:text-base font-bold py-3 px-7 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1 flex items-center justify-center whitespace-nowrap active:scale-95 animate-[pulse_2.5s_ease-in-out_infinite]">
+                    Liberar com o Plano Elite
                   </a>
-                  <a href={upgradeFeature ? freeWorkspacePath : "#video-prova"} className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-3 px-6 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 whitespace-nowrap text-xs md:text-sm active:scale-95">
-                    <Play size={16} fill="currentColor" /> {upgradeFeature ? "Continuar no que e gratuito" : "Ver ferramenta funcionando"}
+                  <a href="#video-prova" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-3 px-6 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 whitespace-nowrap text-xs md:text-sm active:scale-95">
+                    <Play size={16} fill="currentColor" /> Ver ferramenta funcionando
                   </a>
                 </div>
 
                 <div className="flex flex-wrap justify-center lg:justify-start gap-x-3 gap-y-2 w-full max-w-[700px] text-slate-400 text-[11px] md:text-xs font-semibold">
-                  <span className="whitespace-nowrap">✓ 1 projeto salvo</span>
+                  <span className="whitespace-nowrap">✓ Anúncios ilimitados</span>
                   <span className="hidden md:inline">·</span>
-                  <span className="whitespace-nowrap">✓ 3 anuncios gratuitos</span>
+                  <span className="whitespace-nowrap">✓ Carrosséis ilimitados</span>
                   <span className="hidden md:inline">·</span>
-                  <span className="whitespace-nowrap">✓ 1 carrossel gratuito</span>
-                  <span className="hidden md:inline">·</span>
-                  <span className="whitespace-nowrap">✓ Sem cartao</span>
-                  <span className="hidden md:inline">·</span>
-                  <span className="whitespace-nowrap">✓ Elite com 3 dias de teste</span>
+                  <span className="whitespace-nowrap">✓ Acesso exclusivo para assinantes</span>
                 </div>
               </div>
 
@@ -737,7 +730,7 @@ export default function Inicio2() {
         <div className="w-full bg-white pt-8">
           <div className="inicio-container">
             <div className="bg-[#7C3AED] text-white text-center text-[14px] font-medium py-[12px] px-[24px] rounded-[8px] mx-auto max-w-[720px]">
-              Comece sem pagar: 1 projeto, 3 anúncios e 1 carrossel. Vídeos editáveis, downloads premium, site, CRM e recursos de IA avançados são liberados conforme o plano.
+              Todos os recursos da plataforma são exclusivos para assinantes. Escolha seu plano para liberar anúncios, carrosséis, vídeos, sites, CRM e recursos de IA.
             </div>
           </div>
         </div>
@@ -1125,7 +1118,7 @@ export default function Inicio2() {
                   ))}
                 </div>
 
-                <a href="#planos" className="btn btn-primary inline-flex text-lg px-8 py-4 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50">Liberar meus 250 Reels + Teste Grátis</a>
+                <a href="#planos" className="btn btn-primary inline-flex text-lg px-8 py-4 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50">Liberar meus 250 Reels</a>
               </div>
 
               <div className="space-y-6">
@@ -1192,8 +1185,8 @@ export default function Inicio2() {
               <div className="bg-green-50 border border-green-200 rounded-3xl p-6">
                 <h3 className="text-2xl font-black text-slate-950 mb-5">Com Canva Viagem</h3>
                 <div className="text-slate-700 space-y-4">
-                  <p><strong>Plano mensal:</strong> 3 dias grátis, depois R$ 97/mês, sem compromisso.</p>
-                  <p><strong>Plano anual:</strong> 3 dias grátis, depois R$ 482 por ano, com 12 meses de acesso.</p>
+                  <p><strong>Plano mensal:</strong> R$ 97/mês, com acesso liberado após o pagamento.</p>
+                  <p><strong>Plano anual:</strong> R$ 482 por ano, com 12 meses de acesso.</p>
                   <p><strong>Você recebe:</strong> IA, páginas, conteúdos, CRM, mídias, materiais de apoio, suporte e garantia.</p>
                 </div>
               <a href="#planos" className="btn btn-primary mt-8 inline-flex">Escolher meu plano</a>
@@ -1322,7 +1315,7 @@ export default function Inicio2() {
                 <div className="w-full max-w-2xl mt-4">
                   <div className="bg-[#F0FDF4] border-l-[4px] border-[#16A34A] rounded-[8px] p-[14px_18px] mb-[16px] shadow-sm">
                     <p className="text-[14px] text-[#15803D] font-bold m-0 text-left flex items-center gap-2">
-                      Teste Elite por 3 dias. Sem cobrança hoje e com cancelamento online.
+                      Assine o Elite e libere o acesso completo após a confirmação do pagamento.
                     </p>
                   </div>
                   <button
@@ -1348,26 +1341,9 @@ export default function Inicio2() {
                     {checkoutLoading ? "Abrindo checkout seguro..." : "Começar agora (Acesso em 2 minutos)"}
                   </button>
                   <p className="text-center text-[12px] font-bold text-[#64748B] mt-4 leading-relaxed px-2">
-                    Pagamento seguro via Stripe · Não cobraremos hoje · Cancele antes do fim do teste · Garantia de 7 dias após o teste
+                    Pagamento seguro via Stripe · Acesso após a confirmação · Cancelamento online · Garantia de 7 dias
                   </p>
                 </div>
-              </div>
-
-              <div className="w-full border border-slate-200 bg-slate-50 rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-                <div className="max-w-3xl">
-                  <p className="text-slate-950 font-black text-lg mb-1">Quer conhecer antes sem cadastrar cartão?</p>
-                  <p className="text-slate-600 text-sm leading-relaxed">
-                    O acesso grátis permanente inclui conteúdos selecionados e, com uma conta gratuita,
-                    1 projeto salvo, 3 anúncios e 1 carrossel completo. Site publicado, CRM, voz e IA
-                    avançada ficam disponíveis no Elite.
-                  </p>
-                </div>
-                <a
-                  href={freeWorkspacePath}
-                  className="shrink-0 inline-flex items-center justify-center min-h-11 px-5 rounded-lg border border-slate-300 bg-white text-slate-900 font-bold hover:border-purple-400 hover:text-purple-700 transition-colors"
-                >
-                  Continuar com acesso grátis
-                </a>
               </div>
 
               {/* Lista única de benefícios */}
@@ -1433,7 +1409,7 @@ export default function Inicio2() {
               <div className="bg-white rounded-3xl p-8 border border-green-200 text-center">
                 <ShieldCheck size={52} className="text-green-600 mx-auto mb-4" />
                 <h3 className="text-3xl font-black text-slate-950">7 dias de garantia</h3>
-                <p className="text-slate-600 mt-3">Teste com calma. Se não fizer sentido, solicite reembolso dentro do prazo.</p>
+                <p className="text-slate-600 mt-3">Use com calma. Se não fizer sentido, solicite reembolso dentro do prazo.</p>
               </div>
               <div>
                 <h2 className="text-3xl md:text-4xl font-black text-slate-950 mb-4">O risco fica do nosso lado.</h2>
@@ -1478,7 +1454,7 @@ export default function Inicio2() {
           <div className="inicio-container">
             <div className="max-w-[560px] mx-auto text-center flex flex-col items-center">
               <h2 className="text-[18px] font-[600] text-[#0F172A] mb-2">Ainda ficou alguma dúvida?</h2>
-              <p className="text-[14px] text-[#64748B] mb-6">Fale com nosso suporte antes de decidir ou continue usando os recursos gratuitos sem cadastrar cartão.</p>
+              <p className="text-[14px] text-[#64748B] mb-6">Fale com nosso suporte antes de escolher a assinatura ideal para sua agência.</p>
               
               <div className="w-full flex flex-col gap-3">
                 <a href="#planos" className="w-full max-w-[400px] mx-auto bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-[700] text-[16px] py-[14px] px-[32px] rounded-[8px] transition-colors">
@@ -1498,13 +1474,13 @@ export default function Inicio2() {
               Sua próxima oferta pode ter o visual de uma grande agência. E você pode criar agora mesmo.
             </h2>
             <p className="text-[#94A3B8] text-[16px] max-w-[520px] mx-auto mt-[16px] mb-[32px] leading-relaxed">
-              Continue criando gratuitamente ou escolha o Elite para liberar todos os recursos por 3 dias antes da primeira cobrança.
+              Escolha o Elite para liberar imediatamente todos os recursos da plataforma para sua agência.
             </p>
             <a href="#planos" className="bg-[#7C3AED] text-white px-[40px] py-[16px] rounded-[8px] text-[18px] font-[700] hover:bg-[#6D28D9] transition-colors inline-block">
               Liberar o Plano Elite
             </a>
             <p className="text-[#64748B] text-[13px] mt-[12px]">
-              Não cobraremos hoje. Cancele com 1 clique antes de 3 dias.
+              Pagamento seguro pela Stripe e cancelamento online.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-[24px] mt-[24px] text-[#94A3B8] text-[13px] font-medium">
               <span>🔒 Stripe</span>

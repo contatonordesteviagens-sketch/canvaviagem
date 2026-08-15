@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef } from "react";
+import type { ReactEventHandler } from "react";
 
 type AutoplayLoopVideoProps = {
   src: string;
   label: string;
   className?: string;
+  onError?: ReactEventHandler<HTMLVideoElement>;
 };
 
-export default function AutoplayLoopVideo({ src, label, className = "" }: AutoplayLoopVideoProps) {
+export default function AutoplayLoopVideo({ src, label, className = "", onError }: AutoplayLoopVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const resumePlayback = useCallback(() => {
@@ -56,6 +58,7 @@ export default function AutoplayLoopVideo({ src, label, className = "" }: Autopl
       draggable={false}
       aria-label={label}
       onPause={resumePlayback}
+      onError={onError}
       onContextMenu={(event) => event.preventDefault()}
       onDragStart={(event) => event.preventDefault()}
       className={`pointer-events-none select-none ${className}`}

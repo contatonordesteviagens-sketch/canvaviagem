@@ -1620,7 +1620,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       metadata: { destination, format, batch: isBatchMode },
     });
     if (!reservation.allowed) {
-      track("free_limit_reached", { capability: "ad_export" });
+      track("subscription_required", { capability: "ad_export" });
       setShowExportPaywall(true);
       return;
     }
@@ -3028,8 +3028,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         open={showExportPaywall}
         onOpenChange={setShowExportPaywall}
         feature="ad_export"
-        title="Seus 3 anúncios gratuitos já foram usados"
-        description="Você pode continuar editando e salvando este projeto. Para baixar novas artes sem limite, libere o Plano Elite."
+        title="Assinatura Elite necessária"
+        description="Assine o Plano Elite para criar, editar e baixar artes sem limites."
       />
 
       {maximizedImage && (

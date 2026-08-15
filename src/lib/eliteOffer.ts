@@ -10,8 +10,6 @@ export const ELITE_OFFER = {
   monthlyCheckoutUrl: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
   semiannualCheckoutUrl: "https://buy.stripe.com/8x2cN60HwgrefLb0Wk8so0h",
   annualCheckoutUrl: "https://buy.stripe.com/6oUdRa0Hwa2Qcz1dNa8so0i",
-  hasFreeTrial: true,
-  freeTrialDays: 3,
   startVideoCooldownMs: 30 * 60 * 1000,
 };
 

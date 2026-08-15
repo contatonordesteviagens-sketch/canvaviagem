@@ -108,15 +108,11 @@ serve(async (req) => {
       if (
         !localSubError &&
         localSub &&
-        ["active", "trialing"].includes(localSub.status) &&
+        localSub.status === "active" &&
         localSub.product_id
       ) {
-        const endDate = localSub.status === "trialing"
-          ? localSub.trial_ends_at ?? localSub.current_period_end
-          : localSub.current_period_end;
-        const isCurrent = localSub.status === "trialing"
-          ? Boolean(endDate && new Date(endDate) > new Date())
-          : !endDate || new Date(endDate) > new Date();
+        const endDate = localSub.current_period_end;
+        const isCurrent = !endDate || new Date(endDate) > new Date();
         if (isCurrent) {
           localActiveSub = localSub;
           if (isEliteProduct(localSub.product_id) && localSub.billing_provider !== 'stripe') {
@@ -151,8 +147,7 @@ serve(async (req) => {
 
         for (const customer of customers.data) {
           const activeSubscriptions = await stripe.subscriptions.list({ customer: customer.id, status: "active", limit: 10 });
-          const trialingSubscriptions = await stripe.subscriptions.list({ customer: customer.id, status: "trialing", limit: 10 });
-          const allSubscriptions = [...activeSubscriptions.data, ...trialingSubscriptions.data];
+          const allSubscriptions = activeSubscriptions.data;
 
           for (const candidate of allSubscriptions) {
             const productId = (candidate.items.data[0]?.price?.product as string | null) ?? null;

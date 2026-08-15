@@ -110,7 +110,7 @@ const offerConfigs: Record<OfferVariant, OfferConfig> = {
     closingTitle: "Seu próximo pacote já está pronto. Falta fazer ele parecer impossível de ignorar.",
     popupTitle: "Espere: transforme um pacote antes de ir embora.",
     popupText:
-      "Teste a Fábrica Elite por 3 dias e veja sua própria oferta virar anúncio profissional. Você não paga hoje e pode cancelar online antes da cobrança.",
+      "Assine a Fábrica Elite e transforme sua própria oferta em um anúncio profissional com acesso completo.",
     faqs: [
       {
         question: "É apenas um pacote de templates?",
@@ -126,7 +126,7 @@ const offerConfigs: Record<OfferVariant, OfferConfig> = {
       },
       {
         question: "Posso testar antes de pagar?",
-        answer: "Sim. Você escolhe um plano e cadastra a forma de pagamento, mas os 3 primeiros dias não são cobrados. Também existe um acesso gratuito limitado, sem cartão.",
+        answer: "Não. O acesso é exclusivo para assinantes e é liberado após a confirmação do pagamento.",
       },
     ],
   },
@@ -182,7 +182,7 @@ const offerConfigs: Record<OfferVariant, OfferConfig> = {
     closingTitle: "Se sua agência já vende viagens, ela merece um lugar profissional para apresentá-las.",
     popupTitle: "Seu site pode estar no ar antes do próximo orçamento.",
     popupText:
-      "Teste o Canva Viagem por 3 dias e publique uma apresentação profissional da sua agência. Você não paga hoje e pode cancelar online antes da cobrança.",
+      "Assine o Canva Viagem e publique uma apresentação profissional da sua agência com acesso completo.",
     faqs: [
       {
         question: "Preciso saber criar sites?",
@@ -255,7 +255,7 @@ const offerConfigs: Record<OfferVariant, OfferConfig> = {
     closingTitle: "Você pode continuar fazendo cinco trabalhos sozinho. Ou colocar uma equipe inteira dentro da sua agência.",
     popupTitle: "Ainda vai continuar fazendo cinco trabalhos sozinho?",
     popupText:
-      "Ative sua Equipe de Marketing 5 em 1 por 3 dias. Crie anúncios, publique seu site e organize seus contatos sem pagar nada hoje.",
+      "Ative sua Equipe de Marketing 5 em 1. Crie anúncios, publique seu site e organize seus contatos com acesso completo.",
     faqs: [
       {
         question: "O Canva Viagem realmente substitui uma equipe?",
@@ -270,8 +270,8 @@ const offerConfigs: Record<OfferVariant, OfferConfig> = {
         answer: "Sim. A proposta é dar estrutura profissional a agentes autônomos e equipes pequenas.",
       },
       {
-        question: "O teste é realmente grátis?",
-        answer: "Você escolhe um plano e cadastra a forma de pagamento, mas não há cobrança nos 3 primeiros dias. As condições completas aparecem no checkout.",
+        question: "Quando o acesso é liberado?",
+        answer: "O acesso é liberado após a confirmação do pagamento do ciclo escolhido. As condições completas aparecem no checkout.",
       },
     ],
   },
@@ -291,7 +291,7 @@ const plans: Array<{
     name: "Plano Mensal",
     cycle: "monthly",
     price: ELITE_OFFER.monthlyPrice,
-    detail: "por mês depois do teste",
+    detail: "cobrado mensalmente",
     trackValue: 97,
   },
   {
@@ -299,7 +299,7 @@ const plans: Array<{
     name: "Plano Semestral",
     cycle: "semiannual",
     price: ELITE_OFFER.semiannualPrice,
-    detail: "por 6 meses depois do teste",
+    detail: "cobrado a cada 6 meses",
     trackValue: 347,
   },
   {
@@ -307,7 +307,7 @@ const plans: Array<{
     name: "Plano Anual",
     cycle: "annual",
     price: ELITE_OFFER.annualMonthlyEquivalent,
-    detail: `${ELITE_OFFER.annualPrice} por 12 meses depois do teste`,
+    detail: `${ELITE_OFFER.annualPrice} por 12 meses de acesso`,
     trackValue: 482,
     popular: true,
   },
@@ -394,7 +394,7 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
   }, [config.feature, config.mechanismName, recordEvent, variant]);
 
   const pageDescription = useMemo(
-    () => `${config.description} Teste o Canva Viagem Elite por 3 dias.`,
+    () => `${config.description} Assine o Canva Viagem Elite para liberar o acesso completo.`,
     [config.description],
   );
 
@@ -421,7 +421,7 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
             <img src={logoImage} alt="Canva Viagem" className="logo" />
           </a>
           <button type="button" onClick={() => scrollToPlans("header")} className="header-cta">
-            Testar por 3 dias
+            Ver planos
           </button>
         </div>
       </header>
@@ -458,7 +458,7 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
                   </a>
                 </div>
                 <p className="text-xs font-semibold text-emerald-300 md:text-sm">
-                  ✓ 3 dias grátis no Elite &nbsp;·&nbsp; sem cobrança hoje &nbsp;·&nbsp; cancelamento online
+                  ✓ Acesso exclusivo para assinantes &nbsp;·&nbsp; pagamento seguro &nbsp;·&nbsp; cancelamento online
                 </p>
               </div>
 
@@ -582,7 +582,7 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
             <div className="mx-auto mb-12 max-w-3xl text-center">
               <p className="mb-4 text-xs font-black uppercase tracking-[0.25em] text-purple-300">ESCOLHA COMO COMEÇAR</p>
               <h2 className="mb-4 text-3xl font-black text-white md:text-5xl">Todos os planos liberam a plataforma Elite completa.</h2>
-              <p className="text-slate-300 md:text-lg">Você escolhe apenas o período. Os 3 primeiros dias são grátis e nada é cobrado hoje.</p>
+              <p className="text-slate-300 md:text-lg">Você escolhe o período e o acesso é liberado após a confirmação do pagamento.</p>
             </div>
             <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-3">
               {plans.map((plan) => (
@@ -599,7 +599,7 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
                   <p className="mt-5 text-4xl font-black text-slate-950">{plan.price}</p>
                   <p className="mt-1 min-h-10 text-sm font-semibold text-slate-500">{plan.detail}</p>
                   <div className="my-6 space-y-3 border-y border-slate-100 py-6">
-                    {["Plataforma Elite completa", "3 dias grátis", "Suporte pelo WhatsApp", "Cancelamento online"].map((item) => (
+                    {["Plataforma Elite completa", "Acesso após o pagamento", "Suporte pelo WhatsApp", "Cancelamento online"].map((item) => (
                       <div key={item} className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                         <CheckCircle2 size={18} className="text-emerald-500" /> {item}
                       </div>
@@ -611,16 +611,16 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
                     onClick={() => void startCheckout(plan.cycle, plan.trackValue)}
                     className={`mt-auto inline-flex min-h-[52px] items-center justify-center rounded-full px-5 py-3 text-sm font-black transition disabled:cursor-wait disabled:opacity-60 ${plan.popular ? "bg-purple-600 text-white hover:bg-purple-500" : "bg-slate-900 text-white hover:bg-slate-800"}`}
                   >
-                    {checkoutLoading === plan.cycle ? "Abrindo checkout..." : `Testar ${config.mechanismName} por 3 dias`}
+                    {checkoutLoading === plan.cycle ? "Abrindo checkout..." : `Assinar ${config.mechanismName}`}
                   </button>
-                  <p className="mt-3 text-center text-[11px] font-semibold text-slate-500">Cartão solicitado · cobrança só depois do teste</p>
+                  <p className="mt-3 text-center text-[11px] font-semibold text-slate-500">Pagamento seguro · acesso após a confirmação</p>
                 </article>
               ))}
             </div>
             <div className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-3 text-center text-xs font-semibold text-slate-300">
               <span className="flex items-center gap-2"><ShieldCheck size={17} className="text-emerald-400" /> Pagamento seguro pela Stripe</span>
-              <span>Sem cobrança hoje</span>
-              <span>Cancele online antes do fim do teste</span>
+              <span>Acesso após o pagamento</span>
+              <span>Cancelamento online</span>
             </div>
           </div>
         </section>
@@ -680,7 +680,7 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
         onClick={() => scrollToPlans("mobile_sticky")}
         className="fixed bottom-3 left-3 right-3 z-40 flex min-h-[52px] items-center justify-center rounded-full bg-purple-600 px-5 py-3 text-sm font-black text-white shadow-2xl md:hidden"
       >
-        Testar por 3 dias <ArrowRight className="ml-2" size={18} />
+        Ver planos <ArrowRight className="ml-2" size={18} />
       </button>
 
       {exitOfferOpen && (
@@ -710,7 +710,7 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
             <span className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-purple-100 text-purple-700">
               <Sparkles size={28} />
             </span>
-            <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-purple-600">3 dias grátis</p>
+            <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-purple-600">Acesso completo para assinantes</p>
             <h2 id="exit-offer-title" className="mb-4 text-3xl font-black leading-tight text-slate-950">{config.popupTitle}</h2>
             <p className="mb-7 leading-relaxed text-slate-600">{config.popupText}</p>
             <button
@@ -719,7 +719,7 @@ export default function OfferLanding({ variant }: { variant: OfferVariant }) {
               onClick={() => scrollToPlans("exit_popup")}
               className="flex min-h-[54px] w-full items-center justify-center rounded-full bg-purple-600 px-6 py-3 font-black text-white hover:bg-purple-500"
             >
-              Quero testar por 3 dias
+              Quero assinar agora
             </button>
             <button
               type="button"
