@@ -194,7 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Try to restore from localStorage if in-memory cache is empty
     if (!subscriptionCache.data && userId) {
       try {
-        const stored = localStorage.getItem(`cv-sub-cache-v2-${userId}`);
+        const stored = localStorage.getItem(`cv-sub-cache-v3-${userId}`);
         if (stored) {
           const parsed = JSON.parse(stored);
           if (
@@ -209,7 +209,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Instantly apply cached subscription without blocking
             setSubscription({ ...parsed.data, loading: false });
           } else {
-            localStorage.removeItem(`cv-sub-cache-v2-${userId}`);
+            localStorage.removeItem(`cv-sub-cache-v3-${userId}`);
           }
         }
       } catch {}
@@ -272,7 +272,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Persist admin bypass cache to localStorage
       if (userId) {
         try {
-          localStorage.setItem(`cv-sub-cache-v2-${userId}`, JSON.stringify({ data: adminStatus, timestamp: now }));
+          localStorage.setItem(`cv-sub-cache-v3-${userId}`, JSON.stringify({ data: adminStatus, timestamp: now }));
         } catch {}
       }
       return;
@@ -350,7 +350,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Persist cache in localStorage
       if (userId) {
         try {
-          localStorage.setItem(`cv-sub-cache-v2-${userId}`, JSON.stringify({ data: newStatus, timestamp: now }));
+          localStorage.setItem(`cv-sub-cache-v3-${userId}`, JSON.stringify({ data: newStatus, timestamp: now }));
         } catch {}
       }
 
@@ -374,6 +374,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     if (user?.id) {
       try {
+        localStorage.removeItem(`cv-sub-cache-v3-${user.id}`);
         localStorage.removeItem(`cv-sub-cache-v2-${user.id}`);
       } catch {}
     }
@@ -487,7 +488,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let cached = null;
         if (userId) {
           try {
-            const stored = localStorage.getItem(`cv-sub-cache-v2-${userId}`);
+            const stored = localStorage.getItem(`cv-sub-cache-v3-${userId}`);
             if (stored) {
               const parsed = JSON.parse(stored);
               if (
@@ -497,6 +498,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 cached = parsed.data;
                 subscriptionCache = { data: parsed.data, timestamp: parsed.timestamp, userId };
               } else {
+                localStorage.removeItem(`cv-sub-cache-v3-${userId}`);
                 localStorage.removeItem(`cv-sub-cache-v2-${userId}`);
                 localStorage.removeItem(`cv-sub-cache-${userId}`);
               }
