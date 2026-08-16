@@ -18,8 +18,11 @@ for (const [path, needle, message] of [
   ["src/App.tsx", '<ProtectedRoute requireElite><Fabrica /></ProtectedRoute>', "the Fabrica must require Elite."],
   ["src/components/ProtectedRoute.tsx", '<Navigate to="/inicio" replace />', "blocked accounts must return to the sales page."],
   ["src/contexts/EntitlementsContext.tsx", '"fabrica.open": false', "guests must not receive a Fabrica preview."],
+  ["src/contexts/EntitlementsContext.tsx", 'billingProvider === "stripe"', "active Stripe subscribers must receive full client access."],
   ["supabase/functions/fabrica-entitlements/index.ts", 'error: "Plano Elite necessário"', "the entitlement API must reject unpaid reservations."],
+  ["supabase/functions/fabrica-entitlements/index.ts", 'subscription.billing_provider === "stripe"', "active Stripe subscribers must receive full server entitlements."],
   ["supabase/functions/_shared/fabricaAccess.ts", "return verifyFabricaEliteAccess(req, corsHeaders);", "authenticated Fabrica APIs must enforce Elite access."],
+  ["supabase/functions/_shared/fabricaAccess.ts", 'subscription?.billing_provider === "stripe"', "active Stripe subscribers must pass protected Fabrica APIs."],
 ]) {
   requireText(path, needle, message);
 }

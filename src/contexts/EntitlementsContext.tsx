@@ -112,9 +112,11 @@ const buildFallbackSnapshot = (
   isAdmin: boolean,
   subscribed: boolean,
   productId: string | null,
+  billingProvider: string | null,
 ): EntitlementsSnapshot => {
   const subscription = { subscribed, productId };
-  const elite = isAdmin || hasEliteAccess(subscription);
+  const stripeSubscriber = subscribed && billingProvider === "stripe";
+  const elite = isAdmin || stripeSubscriber || hasEliteAccess(subscription);
   const start = hasStartAccess(subscription);
   const unknownPaid = subscribed && !elite && !start;
   const tier: AccountTier = isAdmin
@@ -161,8 +163,13 @@ const EntitlementsContext = createContext<EntitlementsContextValue | null>(null)
 export function EntitlementsProvider({ children }: { children: ReactNode }) {
   const { user, session, subscription, isAdmin } = useAuth();
   const fallback = useMemo(
-    () => buildFallbackSnapshot(isAdmin, subscription.subscribed, subscription.productId),
-    [isAdmin, subscription.productId, subscription.subscribed],
+    () => buildFallbackSnapshot(
+      isAdmin,
+      subscription.subscribed,
+      subscription.productId,
+      subscription.billingProvider,
+    ),
+    [isAdmin, subscription.billingProvider, subscription.productId, subscription.subscribed],
   );
   const [snapshot, setSnapshot] = useState<EntitlementsSnapshot>(
     () => user ? fallback : buildGuestSnapshot(),

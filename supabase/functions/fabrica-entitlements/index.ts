@@ -49,12 +49,14 @@ function classifyTier(
     status?: string | null;
     current_period_end?: string | null;
     trial_ends_at?: string | null;
+    billing_provider?: string | null;
   } | null,
   isAdmin: boolean,
 ): Tier {
   if (isAdmin) return "admin";
   if (!subscription || subscription.status !== "active") return "free";
   if (!isCurrent(subscription.current_period_end)) return "free";
+  if (subscription.billing_provider === "stripe") return "elite";
   if (isEliteProduct(subscription.product_id)) {
     return "elite";
   }
