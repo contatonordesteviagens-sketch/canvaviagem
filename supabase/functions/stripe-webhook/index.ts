@@ -291,12 +291,23 @@ async function ensureUserAndOnboarding(
   phone: string | null,
   productId?: string,
   accessDetails?: SubscriptionAccessDetails,
+  referencedUserId?: string,
 ) {
   const normalizedEmail = email.toLowerCase().trim();
   logStep("Starting onboarding for", { email: redactEmail(normalizedEmail), productId });
 
   // 1. Check/Create User sem getUserByEmail (não é suportado no runtime Deno)
-  const existingUserId = await findExistingUserIdByEmail(supabase, normalizedEmail);
+  let existingUserId: string | null = null;
+  if (referencedUserId) {
+    const { data: referencedUser, error: referencedUserError } = await supabase.auth.admin.getUserById(referencedUserId);
+    if (!referencedUserError && referencedUser?.user) {
+      existingUserId = referencedUser.user.id;
+      logStep("Authenticated checkout user found by ID", { userId: existingUserId });
+    }
+  }
+  if (!existingUserId) {
+    existingUserId = await findExistingUserIdByEmail(supabase, normalizedEmail);
+  }
   let userId: string;
 
   if (existingUserId) {
@@ -575,6 +586,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
     customerPhone,
     productId,
     accessDetails,
+    session.client_reference_id || session.metadata?.user_id || undefined,
   );
 }
 

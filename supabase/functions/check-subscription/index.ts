@@ -97,6 +97,7 @@ serve(async (req) => {
     // --- CHECK LOCAL DATABASE FIRST (Updated by Webhooks) ---
     // Elite can be trusted locally. Start/basic must still be verified against Stripe
     // so upgrades Start → Elite are never blocked by stale local data.
+    let localSubscriptionRecord: any = null;
     let localActiveSub: any = null;
     if (dbClient) {
       const { data: localSub, error: localSubError } = await dbClient
@@ -105,6 +106,10 @@ serve(async (req) => {
         .eq("user_id", userId)
         .single();
       
+      if (!localSubError && localSub) {
+        localSubscriptionRecord = localSub;
+      }
+
       if (
         !localSubError &&
         localSub &&
@@ -139,20 +144,27 @@ serve(async (req) => {
     if (stripeKey) {
       const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
       const customers = await stripe.customers.list({ email: email.toLowerCase(), limit: 10 });
+      const customerIds = Array.from(new Set([
+        localSubscriptionRecord?.stripe_customer_id,
+        ...customers.data.map((customer) => customer.id),
+      ].filter((customerId): customerId is string => Boolean(customerId))));
 
-      if (customers.data.length > 0) {
-        logStep("Found Stripe customers", { count: customers.data.length });
+      if (customerIds.length > 0) {
+        logStep("Found Stripe customer references", {
+          count: customerIds.length,
+          linkedCustomer: Boolean(localSubscriptionRecord?.stripe_customer_id),
+        });
 
         let selected: { customerId: string; subscription: Stripe.Subscription; productId: string | null } | null = null;
 
-        for (const customer of customers.data) {
-          const activeSubscriptions = await stripe.subscriptions.list({ customer: customer.id, status: "active", limit: 10 });
+        for (const customerId of customerIds) {
+          const activeSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 });
           const allSubscriptions = activeSubscriptions.data;
 
           for (const candidate of allSubscriptions) {
             const productId = (candidate.items.data[0]?.price?.product as string | null) ?? null;
             if (!selected || isEliteProduct(productId)) {
-              selected = { customerId: customer.id, subscription: candidate, productId };
+              selected = { customerId, subscription: candidate, productId };
             }
             if (isEliteProduct(productId)) break;
           }
@@ -211,9 +223,9 @@ serve(async (req) => {
 
         // --- FALLBACK: Verificação de Pagamentos Únicos (One-time) Recentes ---
         logStep("Checking fallback checkout sessions for one-time payments");
-        for (const customer of customers.data) {
+        for (const customerId of customerIds) {
           const checkoutSessions = await stripe.checkout.sessions.list({
-            customer: customer.id,
+            customer: customerId,
             status: 'complete',
             limit: 5,
           });
@@ -266,7 +278,7 @@ serve(async (req) => {
               await dbClient.from("subscriptions").upsert({
                 user_id: userId,
                 status: "active",
-                stripe_customer_id: customer.id,
+                stripe_customer_id: customerId,
                 stripe_subscription_id: null,
                 product_id: productId,
                 current_period_end: expiryDate,
