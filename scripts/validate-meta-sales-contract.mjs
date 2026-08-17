@@ -41,6 +41,26 @@ requireText(
   "annual: ELITE_OFFER.annualCheckoutUrl",
   "carousel annual CTA must use the direct Stripe checkout.",
 );
+requireText(
+  "src/pages/SiteOfferLanding.tsx",
+  "monthly: ELITE_OFFER.monthlyCheckoutUrl",
+  "site monthly CTA must use the direct Stripe checkout.",
+);
+requireText(
+  "src/pages/SiteOfferLanding.tsx",
+  "semiannual: ELITE_OFFER.semiannualCheckoutUrl",
+  "site semiannual CTA must use the direct Stripe checkout.",
+);
+requireText(
+  "src/pages/SiteOfferLanding.tsx",
+  "annual: ELITE_OFFER.annualCheckoutUrl",
+  "site annual CTA must use the direct Stripe checkout.",
+);
+rejectText(
+  "src/pages/SiteOfferLanding.tsx",
+  "secureCheckoutPath",
+  "site checkout must never route through an internal sales page.",
+);
 for (const path of [
   "src/pages/TravelAgencyContentLanding.tsx",
   "src/components/travel-agency-content/TravelAgencyContentHero.tsx",
