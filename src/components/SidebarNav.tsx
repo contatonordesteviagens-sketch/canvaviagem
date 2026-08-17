@@ -305,8 +305,8 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
           />
 
           <NavButton 
-            onClick={() => handleNavClick(undefined, !user ? "/auth" : "/minha-conta")}
-            isActive={location.pathname.includes('/minha-conta') || location.pathname.includes('/auth')}
+            onClick={() => handleNavClick(undefined, !user ? "/login" : "/minha-conta")}
+            isActive={location.pathname.includes('/minha-conta') || location.pathname.includes('/login')}
             icon={User}
             label="Minha Conta"
           />
@@ -337,7 +337,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
                   <Button
                     variant="default"
                     size="sm"
-                    onClick={() => navigate('/auth')}
+                    onClick={() => navigate('/login')}
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-lg h-8 px-3 text-xs"
                   >
                     Login
@@ -361,7 +361,7 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
                 <Button
                   variant="default"
                   size="icon"
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate('/login')}
                   title="Login"
                   className="w-full h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-lg"
                 >

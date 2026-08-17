@@ -233,7 +233,7 @@ const AuthVerify = () => {
 
               <div className="space-y-3 pt-4">
                 <Button
-                  onClick={() => navigate("/auth")}
+                  onClick={() => navigate("/login")}
                   className="w-full"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />

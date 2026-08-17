@@ -50,7 +50,7 @@ export default function MinhaConta() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/auth");
+    navigate("/login");
   };
 
   const saveProfileName = async () => {

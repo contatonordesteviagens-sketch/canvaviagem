@@ -52,7 +52,7 @@ export const ProtectedRoute = ({
     // 1. Check Login
     if (!user && !localPreview) {
         // Redirect to auth, saving the location they tried to access
-        return <Navigate to={`/auth?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+        return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
     }
 
     // 2. Check Admin (if required)

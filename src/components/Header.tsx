@@ -197,7 +197,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                 </Button>
               </div>
             ) : (
-              <Link to="/auth">
+              <Link to="/login">
                 <Button variant="outline" size="sm" className="ml-2">
                   <User className="h-4 w-4 mr-2" />
                   {t('header.login')}
