@@ -47,11 +47,7 @@ export const ProtectedRoute = ({
         return <>{children}</>;
     }
 
-    // Paid areas never expose a free/authenticated preview. Visitors and
-    // accounts without an active plan return to the public sales page.
-    if ((requireSubscription || requireElite) && !user && !localPreview) {
-        return <Navigate to="/inicio" replace />;
-    }
+
 
     // 1. Check Login
     if (!user && !localPreview) {
