@@ -1,6 +1,6 @@
 // Sincronização e verificação ativa pós-restauração: links de compra, preços e layouts 100% íntegros
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import {  useSearchParams , Link } from "react-router-dom";
 import {
   BookOpen,
   Calendar,
@@ -606,11 +606,11 @@ export default function Inicio2() {
                 Sair / Trocar Conta
               </button>
             ) : (
-              <a href="/login" className="text-xs md:text-sm font-semibold text-slate-300 hover:text-white px-3 py-2 transition-colors">
+              <Link to="/login" className="text-xs md:text-sm font-semibold text-slate-300 hover:text-white px-3 py-2 transition-colors">
                 Entrar
-              </a>
+              </Link>
             )}
-            <a href="#planos" className="header-cta !m-0">
+            <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="header-cta !m-0">
               Ver Plano Elite
             </a>
           </div>
@@ -658,10 +658,10 @@ export default function Inicio2() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2.5 md:gap-4 mb-6 w-full max-w-2xl">
-                  <a href="#planos" className="w-full sm:w-auto min-h-[52px] bg-purple-600 hover:bg-purple-500 text-white text-sm md:text-base font-bold py-3 px-7 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1 flex items-center justify-center whitespace-nowrap active:scale-95 animate-[pulse_2.5s_ease-in-out_infinite]">
+                  <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="w-full sm:w-auto min-h-[52px] bg-purple-600 hover:bg-purple-500 text-white text-sm md:text-base font-bold py-3 px-7 rounded-full shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1 flex items-center justify-center whitespace-nowrap active:scale-95 animate-[pulse_2.5s_ease-in-out_infinite]">
                     Liberar com o Plano Elite
                   </a>
-                  <a href="#video-prova" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-3 px-6 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 whitespace-nowrap text-xs md:text-sm active:scale-95">
+                  <a href="#video-prova" onClick={(e) => { e.preventDefault(); const el = document.getElementById("video-prova"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#video-prova"); }} className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-3 px-6 rounded-full font-bold transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 whitespace-nowrap text-xs md:text-sm active:scale-95">
                     <Play size={16} fill="currentColor" /> Ver ferramenta funcionando
                   </a>
                 </div>
@@ -789,7 +789,7 @@ export default function Inicio2() {
               </div>
             </div>
             <div className="text-center mt-10">
-              <a href="#planos" className="btn btn-primary inline-flex shadow-[0_0_20px_rgba(124,58,237,0.3)]">
+              <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="btn btn-primary inline-flex shadow-[0_0_20px_rgba(124,58,237,0.3)]">
                 Criar minha primeira oferta →
               </a>
             </div>
@@ -821,7 +821,7 @@ export default function Inicio2() {
               ))}
             </div>
             <div className="text-center mt-10">
-              <a href="#planos" className="btn btn-primary inline-flex shadow-[0_0_20px_rgba(124,58,237,0.3)]">
+              <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="btn btn-primary inline-flex shadow-[0_0_20px_rgba(124,58,237,0.3)]">
                 Quero usar essas ferramentas →
               </a>
             </div>
@@ -882,7 +882,7 @@ export default function Inicio2() {
               ))}
             </div>
             <div className="text-center mt-12">
-              <a href="#planos" className="btn btn-primary inline-flex shadow-[0_0_20px_rgba(124,58,237,0.3)] px-8 py-4 text-lg">
+              <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="btn btn-primary inline-flex shadow-[0_0_20px_rgba(124,58,237,0.3)] px-8 py-4 text-lg">
                 Garantir acesso a todas as ferramentas →
               </a>
             </div>
@@ -937,7 +937,7 @@ export default function Inicio2() {
                 <p className="text-[#C4B5FD] text-[15px]">Você sabe que precisa melhorar o marketing da sua agência. Mas entre atender cliente, montar roteiro e responder WhatsApp, o dia acaba antes de você criar uma arte sequer.</p>
                 <p className="text-[#E2E8F0] text-[15px] font-[600]">É exatamente para esse agente que o Canva Viagem foi construído.</p>
               </div>
-              <a href="#planos" className="btn btn-primary mt-10 inline-flex px-8 py-4 text-lg shadow-[0_0_30px_rgba(124,58,237,0.4)]">Criar ofertas mais profissionais</a>
+              <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="btn btn-primary mt-10 inline-flex px-8 py-4 text-lg shadow-[0_0_30px_rgba(124,58,237,0.4)]">Criar ofertas mais profissionais</a>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-5">
@@ -1131,7 +1131,7 @@ export default function Inicio2() {
                   ))}
                 </div>
 
-                <a href="#planos" className="btn btn-primary inline-flex text-lg px-8 py-4 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50">Liberar meus 250 Reels</a>
+                <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="btn btn-primary inline-flex text-lg px-8 py-4 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50">Liberar meus 250 Reels</a>
               </div>
 
               <div className="space-y-6">
@@ -1202,7 +1202,7 @@ export default function Inicio2() {
                   <p><strong>Plano anual:</strong> R$ 482 por ano, com 12 meses de acesso.</p>
                   <p><strong>Você recebe:</strong> IA, páginas, conteúdos, CRM, mídias, materiais de apoio, suporte e garantia.</p>
                 </div>
-              <a href="#planos" className="btn btn-primary mt-8 inline-flex">Escolher meu plano</a>
+              <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="btn btn-primary mt-8 inline-flex">Escolher meu plano</a>
               </div>
             </div>
           </div>
@@ -1411,7 +1411,7 @@ export default function Inicio2() {
               ))}
             </div>
             <div className="text-center mt-10">
-              <a href="#planos" className="btn btn-primary inline-flex">Quero escolher meu plano</a>
+              <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="btn btn-primary inline-flex">Quero escolher meu plano</a>
             </div>
           </div>
         </section>
@@ -1432,7 +1432,7 @@ export default function Inicio2() {
                 <p className="text-[13px] text-[#64748B] mt-[12px]">
                   Para pedir reembolso, acesse a Stripe, clique em Cancelar assinatura e solicite o reembolso. Processamos em até 5 dias úteis. Sem perguntas e sem burocracia.
                 </p>
-                <a href="#planos" className="btn btn-primary mt-6 inline-flex">Garantir acesso com 7 dias de garantia</a>
+                <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="btn btn-primary mt-6 inline-flex">Garantir acesso com 7 dias de garantia</a>
               </div>
             </div>
           </div>
@@ -1470,7 +1470,7 @@ export default function Inicio2() {
               <p className="text-[14px] text-[#64748B] mb-6">Fale com nosso suporte antes de escolher a assinatura ideal para sua agência.</p>
               
               <div className="w-full flex flex-col gap-3">
-                <a href="#planos" className="w-full max-w-[400px] mx-auto bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-[700] text-[16px] py-[14px] px-[32px] rounded-[8px] transition-colors">
+                <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="w-full max-w-[400px] mx-auto bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-[700] text-[16px] py-[14px] px-[32px] rounded-[8px] transition-colors">
                   Conhecer o Plano Elite →
                 </a>
                 <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="w-full max-w-[400px] mx-auto bg-transparent border-[1.5px] border-[#7C3AED] hover:bg-purple-50 text-[#7C3AED] font-[600] text-[15px] py-[12px] px-[32px] rounded-[8px] transition-colors">
@@ -1489,7 +1489,7 @@ export default function Inicio2() {
             <p className="text-[#94A3B8] text-[16px] max-w-[520px] mx-auto mt-[16px] mb-[32px] leading-relaxed">
               Escolha o Elite para liberar imediatamente todos os recursos da plataforma para sua agência.
             </p>
-            <a href="#planos" className="bg-[#7C3AED] text-white px-[40px] py-[16px] rounded-[8px] text-[18px] font-[700] hover:bg-[#6D28D9] transition-colors inline-block">
+            <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="bg-[#7C3AED] text-white px-[40px] py-[16px] rounded-[8px] text-[18px] font-[700] hover:bg-[#6D28D9] transition-colors inline-block">
               Liberar o Plano Elite
             </a>
             <p className="text-[#64748B] text-[13px] mt-[12px]">
@@ -1517,9 +1517,9 @@ export default function Inicio2() {
             </div>
           </div>
           <div className="footer-links">
-            <a href="/termos">Termos de Uso</a>
-            <a href="/privacidade">Política de Privacidade</a>
-            <a href="/termos">Política de Reembolso</a>
+            <Link to="/termos">Termos de Uso</Link>
+            <Link to="/privacidade">Política de Privacidade</Link>
+            <Link to="/termos">Política de Reembolso</Link>
             <a href="mailto:suporte@canvaviagem.com.br">Contato</a>
           </div>
         </div>
@@ -1529,7 +1529,7 @@ export default function Inicio2() {
       </footer>
 
       <div className={`md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#7C3AED] text-white font-[700] text-[15px] text-center rounded-t-[8px] transition-transform duration-300 ${isPricingVisible ? 'translate-y-full' : 'translate-y-0'}`}>
-        <a href="#planos" className="block w-full px-[24px] py-[14px]">
+        <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="block w-full px-[24px] py-[14px]">
           {upgradeFeature ? "Concluir meu upgrade →" : "Conhecer o Plano Elite →"}
         </a>
       </div>
