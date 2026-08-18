@@ -306,7 +306,7 @@ function ChatCard({ proof }: { proof: (typeof socialProofChats)[number] }) {
 
 export default function Inicio2() {
   const [searchParams] = useSearchParams();
-  const { user, session } = useAuth();
+  const { user, session, signOut } = useAuth();
   const { can, tier, track, loading: entitlementsLoading } = useEntitlements();
   const [activeToolTab, setActiveToolTab] = useState("featured");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
@@ -598,11 +598,22 @@ export default function Inicio2() {
   return (
     <div className="inicio-page" data-page-version="inicio2-pt-br-2026-06-23-reels">
       <header className="site-header">
-        <div className="header-inner">
-          <img src={logoImage} alt="Canva Viagem" className="logo" />
-          <a href="#planos" className="header-cta">
-            Ver Plano Elite
-          </a>
+        <div className="header-inner flex justify-between items-center w-full max-w-7xl mx-auto px-4 md:px-6">
+          <img src={logoImage} alt="Canva Viagem" className="logo m-0" style={{ margin: 0 }} />
+          <div className="flex items-center gap-3">
+            {user ? (
+              <button onClick={async () => { await signOut(); window.location.href = '/login'; }} className="text-xs md:text-sm font-semibold text-slate-300 hover:text-white px-3 py-2 transition-colors">
+                Sair / Trocar Conta
+              </button>
+            ) : (
+              <a href="/login" className="text-xs md:text-sm font-semibold text-slate-300 hover:text-white px-3 py-2 transition-colors">
+                Entrar
+              </a>
+            )}
+            <a href="#planos" className="header-cta !m-0">
+              Ver Plano Elite
+            </a>
+          </div>
         </div>
       </header>
 
