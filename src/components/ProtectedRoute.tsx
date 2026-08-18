@@ -20,7 +20,7 @@ export const ProtectedRoute = ({
     allowExternalBlog = false
 }: ProtectedRouteProps) => {
     const location = useLocation();
-    const { user, loading, isAdmin } = useAuth();
+    const { user, loading, isAdmin, subscription } = useAuth();
     const { can, loading: entitlementsLoading } = useEntitlements();
 
     // Liberar acesso público irrestrito ao Blog (/blog) e postagens para indexação e SEO do Google
@@ -33,7 +33,7 @@ export const ProtectedRoute = ({
 
     const needsSubscriptionState = requireSubscription || requireElite;
 
-    if (loading || (needsSubscriptionState && entitlementsLoading)) {
+    if (loading || (needsSubscriptionState && (entitlementsLoading || subscription.loading))) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />

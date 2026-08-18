@@ -113,7 +113,42 @@ const buildFallbackSnapshot = (
   subscribed: boolean,
   productId: string | null,
   billingProvider: string | null,
+  subscriptionLoading: boolean = false,
 ): EntitlementsSnapshot => {
+  // 🛡️ MODO OTIMISTA: enquanto o servidor ainda não respondeu com o status
+  // real da assinatura, tratamos o usuário logado como tendo acesso básico.
+  // A edge function fabrica-entitlements ainda valida no servidor.
+  // Sem isso, o ProtectedRoute redireciona para /inicio antes da resposta chegar.
+  if (subscriptionLoading && !isAdmin) {
+    return {
+      tier: "unknown_paid",
+      capabilities: {
+        "fabrica.open": true,
+        "fabrica.configure": true,
+        "fabrica.save": true,
+        "photos.search": true,
+        "ad.preview": true,
+        "carousel.preview": true,
+        "site.preview": true,
+        "ad.export": false,
+        "carousel.export": false,
+        "site.publish": false,
+        "crm.real_data": false,
+        "voice.use": false,
+        "vendedor.use": false,
+        "library.premium.open": true,
+        "tools.basic.use": true,
+        "tools.elite.use": false,
+        "premium_content.open": true,
+        unlimited: false,
+      },
+      limits: null,
+      used: EMPTY_USAGE,
+      remaining: null,
+      needsReview: false,
+    };
+  }
+
   const subscription = { subscribed, productId };
   const stripeSubscriber = subscribed && billingProvider === "stripe";
   const elite = isAdmin || stripeSubscriber || hasEliteAccess(subscription);
@@ -168,8 +203,9 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
       subscription.subscribed,
       subscription.productId,
       subscription.billingProvider,
+      subscription.loading,
     ),
-    [isAdmin, subscription.billingProvider, subscription.productId, subscription.subscribed],
+    [isAdmin, subscription.billingProvider, subscription.productId, subscription.subscribed, subscription.loading],
   );
   const [snapshot, setSnapshot] = useState<EntitlementsSnapshot>(
     () => user ? fallback : buildGuestSnapshot(),
