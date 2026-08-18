@@ -1,15 +1,15 @@
 export const START_PRODUCT_IDS = new Set([
-  "prod_TkvaozfpkAcbpM",
   "start_ticto",
-  "monthly_access_ticto",
 ]);
 
 export const ELITE_PRODUCT_IDS = new Set([
   "prod_UTFsXcKq8m0mol",
   "prod_UTSmPe3GPt8iHt",
   "prod_UTFlCWzNqvqSNx",
+  "prod_TkvaozfpkAcbpM",
   "hotmart_elite",
   "elite_ticto",
+  "monthly_access_ticto",
   "monthly_access_pix",
   "annual_access_pix",
 ]);

@@ -53,7 +53,7 @@ const isSubscriptionSnapshotCurrent = (
   now = Date.now(),
 ) => {
   if (!value?.subscribed || value.productId === "admin_bypass") return true;
-  if (value.status !== "active") return false;
+  if (value.status !== "active" && value.status !== "trialing") return false;
 
   const entitlementEnd = value.subscriptionEnd;
   if (!entitlementEnd) return true;

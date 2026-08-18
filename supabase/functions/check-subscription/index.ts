@@ -106,6 +106,12 @@ serve(async (req) => {
         .select("*")
         .eq("user_id", userId)
         .single();
+    if (dbClient) {
+      const { data: localSub, error: localSubError } = await dbClient
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
       
       if (!localSubError && localSub) {
         localSubscriptionRecord = localSub;
@@ -114,7 +120,7 @@ serve(async (req) => {
       if (
         !localSubError &&
         localSub &&
-        localSub.status === "active" &&
+        (localSub.status === "active" || localSub.status === "trialing") &&
         localSub.product_id
       ) {
         const endDate = localSub.current_period_end;
@@ -159,14 +165,13 @@ serve(async (req) => {
         let selected: { customerId: string; subscription: Stripe.Subscription; productId: string | null } | null = null;
 
         for (const customerId of customerIds) {
-          const activeSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 });
-          const allSubscriptions = activeSubscriptions.data;
+          const stripeSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 10 });
+          const allSubscriptions = stripeSubscriptions.data.filter(s => s.status === "active" || s.status === "trialing");
 
           for (const candidate of allSubscriptions) {
             const productId = (candidate.items.data[0]?.price?.product as string | null) ?? null;
             if (!selected || isEliteProduct(productId)) {
               selected = { customerId, subscription: candidate, productId };
-            }
             if (isEliteProduct(productId)) break;
           }
           if (isEliteProduct(selected?.productId)) break;

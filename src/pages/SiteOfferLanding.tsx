@@ -3,9 +3,7 @@ import { Helmet } from "react-helmet-async";
 import {
   ArrowRight,
   BadgeCheck,
-  Check,
   CheckCircle2,
-  ChevronDown,
   Clock3,
   Globe2,
   LayoutTemplate,
@@ -17,6 +15,11 @@ import {
   ShieldCheck,
   Smartphone,
   X,
+  ChevronRight,
+  SmartphoneNfc,
+  Check,
+  XCircle,
+  Image as ImageIcon
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
@@ -31,8 +34,7 @@ import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 type BillingCycle = "monthly" | "semiannual" | "annual";
 type PreviewMode = "desktop" | "mobile";
 
-const supportWhatsAppUrl =
-  "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20quero%20entender%20melhor%20o%20criador%20de%20sites%20do%20Canva%20Viagem";
+const supportWhatsAppUrl = "https://wa.me/5585998458995?text=Ol%C3%A1%2C%20quero%20entender%20melhor%20o%20criador%20de%20sites%20do%20Canva%20Viagem";
 
 const checkoutUrlByCycle: Record<BillingCycle, string> = {
   monthly: ELITE_OFFER.monthlyCheckoutUrl,
@@ -42,100 +44,71 @@ const checkoutUrlByCycle: Record<BillingCycle, string> = {
 
 const faqItems = [
   {
-    question: "É um site de verdade ou apenas uma imagem pronta?",
-    answer:
-      "É um site navegável. Você cadastra sua agência, adiciona seus pacotes, personaliza a apresentação e publica um endereço que pode ser enviado aos clientes.",
+    question: "É um site de verdade?",
+    answer: "É um site navegável. Você cadastra sua agência, adiciona seus pacotes, personaliza a apresentação e publica um endereço online para enviar aos clientes."
   },
   {
-    question: "Qual endereço meu site recebe? Posso usar domínio próprio?",
-    answer:
-      "A publicação usa um endereço dentro do domínio Canva Viagem, como suaagencia.canvaviagem.com. Esta oferta não promete conexão com domínio próprio. Se isso for indispensável para você, fale com o suporte antes de contratar.",
+    question: "Preciso saber programação?",
+    answer: "Não. A estrutura é pronta. Você trabalha apenas preenchendo as informações da agência e dos pacotes no Canva Viagem."
   },
   {
-    question: "Preciso saber programação ou contratar hospedagem?",
-    answer:
-      "Não. A estrutura e a publicação são feitas dentro do Canva Viagem. Você trabalha preenchendo as informações da sua agência e dos pacotes, sem configurar código ou comprar hospedagem separadamente.",
+    question: "Preciso contratar hospedagem?",
+    answer: "Não. A hospedagem para o funcionamento da plataforma está incluída, sem custo adicional, enquanto a assinatura estiver ativa."
   },
   {
-    question: "Consigo editar o site depois de publicar?",
-    answer:
-      "Sim. Você pode atualizar as informações, os pacotes e a apresentação e publicar novamente quando precisar.",
+    question: "Qual endereço recebo?",
+    answer: "A publicação usa um subdomínio dentro do Canva Viagem, como suaagencia.canvaviagem.com."
   },
   {
-    question: "Como os pedidos de orçamento chegam até mim?",
-    answer:
-      "O site pode apresentar formulários e botões de WhatsApp. Os interessados informam os dados e seguem para o contato da agência; os leads também podem ser acompanhados na estrutura da plataforma.",
+    question: "Posso usar domínio próprio?",
+    answer: "Nesta versão, a publicação é feita no subdomínio da plataforma. Se domínio próprio for essencial para você, fale com o suporte antes de contratar."
   },
   {
-    question: "O site aparece bem no celular?",
-    answer:
-      "Sim. Os sites são preparados para navegação no celular e no computador. Recomendamos sempre revisar textos, imagens e botões nos dois formatos antes de divulgar.",
+    question: "Posso editar depois?",
+    answer: "Sim, sempre que precisar. Basta alterar os pacotes ou informações e clicar em publicar novamente."
   },
   {
-    question: "O site garante que vou receber pedidos ou vender viagens?",
-    answer:
-      "Não. Nenhum site sério garante vendas. Ele organiza sua apresentação, facilita o acesso aos pacotes e cria caminhos para orçamento. Oferta, divulgação, tráfego, atendimento e follow-up continuam influenciando o resultado.",
+    question: "Como chegam os pedidos de orçamento?",
+    answer: "O site possui formulários onde o cliente deixa os dados, e botões diretos para o WhatsApp da sua agência."
   },
   {
-    question: "Quando acontece a cobrança?",
-    answer:
-      "A cobrança do ciclo escolhido acontece no checkout seguro da Stripe e o acesso é liberado após a confirmação do pagamento.",
+    question: "Existe WhatsApp?",
+    answer: "Sim, o botão flutuante de WhatsApp fica visível na página da agência e dentro das páginas de pacotes."
   },
   {
-    question: "Como faço para cancelar?",
-    answer:
-      "O cancelamento é online. Se tiver qualquer dificuldade, o suporte pelo WhatsApp pode orientar.",
+    question: "Funciona no celular?",
+    answer: "Sim, todos os modelos são desenvolvidos com tecnologia mobile-first e se adaptam perfeitamente a celulares e computadores."
   },
+  {
+    question: "O site garante vendas?",
+    answer: "Não. O Canva Viagem fornece a estrutura. Resultados dependem de fatores como divulgação, oferta, atendimento e demanda. Nenhum site sério promete vendas automáticas."
+  },
+  {
+    question: "Quando sou cobrado?",
+    answer: "A cobrança ocorre de forma segura através da Stripe, de acordo com o ciclo escolhido. O acesso é liberado logo após a confirmação."
+  },
+  {
+    question: "Como cancelar?",
+    answer: "O cancelamento é feito de forma totalmente online no seu painel de cobrança, sem multas ou taxas escondidas."
+  },
+  {
+    question: "Como funciona o suporte?",
+    answer: "Atendemos por WhatsApp para orientar sobre o uso do construtor ou resolver problemas técnicos na plataforma."
+  }
 ];
-
-const comparisonRows = [
-  ["Começar", "Configurar tema, páginas e plugins", "Enviar briefing e aguardar", "Preencher a estrutura da agência"],
-  ["Foco em viagens", "Ferramenta para qualquer negócio", "Depende do profissional", "Pacotes, orçamento e WhatsApp"],
-  ["Publicação", "Exige configuração de hospedagem", "Depende da entrega", "Endereço online dentro do Canva Viagem"],
-  ["Atualizações", "Você aprende e faz sozinho", "Solicita novas alterações", "Edita e publica novamente"],
-  ["Ferramentas extras", "Normalmente separadas", "Cobrança conforme o projeto", "Anúncios, conteúdo e CRM no Elite"],
-];
-
-const planDetails = {
-  annual: {
-    cycle: "annual" as const,
-    name: "Plano Anual",
-    price: ELITE_OFFER.annualMonthlyEquivalent,
-    suffix: "por mês",
-    charge: `${ELITE_OFFER.annualPrice} cobrados uma vez, com 12 meses de acesso`,
-    value: 482,
-  },
-  monthly: {
-    cycle: "monthly" as const,
-    name: "Plano Mensal",
-    price: ELITE_OFFER.monthlyPrice,
-    suffix: "por mês",
-    charge: "Cobrança mensal recorrente",
-    value: 97,
-  },
-  semiannual: {
-    cycle: "semiannual" as const,
-    name: "Plano Semestral",
-    price: ELITE_OFFER.semiannualPrice,
-    suffix: "por 6 meses",
-    charge: "R$ 347 cobrados uma vez, com 6 meses de acesso",
-    value: 347,
-  },
-};
 
 export default function SiteOfferLanding() {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [checkoutLoading, setCheckoutLoading] = useState<BillingCycle | null>(null);
-  const [exitOfferOpen, setExitOfferOpen] = useState(false);
   const [activeDemoId, setActiveDemoId] = useState(siteOfferDemos[0].id);
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
+  const [showStickyCTA, setShowStickyCTA] = useState(false);
   const pageTrackedRef = useRef(false);
-  const exitDialogRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
   const activeDemo = siteOfferDemos.find((demo) => demo.id === activeDemoId) || siteOfferDemos[0];
 
   const recordEvent = useCallback((eventType: string, data: Record<string, unknown> = {}) => {
     return trackEvent(eventType, {
-      offer_variant: "site_v2",
+      offer_variant: "site_direct_response",
       landing_path: "/site-para-agencia-de-viagens",
       feature: "site_publish",
       ...data,
@@ -154,65 +127,16 @@ export default function SiteOfferLanding() {
   }, [recordEvent]);
 
   useEffect(() => {
-    if (!exitOfferOpen) return;
-
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    const dialog = exitDialogRef.current;
-    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    const focusable = dialog ? Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector)) : [];
-    focusable[0]?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setExitOfferOpen(false);
-        recordEvent("exit_popup_dismissed", { method: "escape" });
-        return;
-      }
-      if (event.key !== "Tab" || focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
+    const handleScroll = () => {
+      if (!heroRef.current) return;
+      const heroBottom = heroRef.current.getBoundingClientRect().bottom;
+      setShowStickyCTA(heroBottom < 0);
     };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      previouslyFocused?.focus();
-    };
-  }, [exitOfferOpen, recordEvent]);
-
-  useEffect(() => {
-    const storageKey = "cv:exit-offer-shown:site-v2";
-    if (sessionStorage.getItem(storageKey)) return;
-
-    let armed = false;
-    const timer = window.setTimeout(() => {
-      armed = true;
-    }, 10000);
-    const handleMouseOut = (event: MouseEvent) => {
-      if (!armed || event.clientY > 4 || event.relatedTarget) return;
-      sessionStorage.setItem(storageKey, "1");
-      setExitOfferOpen(true);
-      recordEvent("exit_popup_shown");
-      document.removeEventListener("mouseout", handleMouseOut);
-    };
-
-    document.addEventListener("mouseout", handleMouseOut);
-    return () => {
-      window.clearTimeout(timer);
-      document.removeEventListener("mouseout", handleMouseOut);
-    };
-  }, [recordEvent]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const scrollToPlans = (source: string) => {
-    setExitOfferOpen(false);
     recordEvent("cta_clicked", { source });
     document.getElementById("planos")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -242,17 +166,12 @@ export default function SiteOfferLanding() {
         <title>Crie o site da sua agência de viagens | Canva Viagem</title>
         <meta
           name="description"
-          content="Crie e publique o site profissional da sua agência de viagens sem programador, com pacotes, orçamento e contato pelo WhatsApp."
+          content="Publique o site profissional da sua agência de viagens sem programador. Escolha um modelo para turismo e adicione pacotes."
         />
         <link rel="canonical" href="https://canvaviagem.com/site-para-agencia-de-viagens" />
-        <meta property="og:title" content="Crie o site profissional da sua agência de viagens" />
-        <meta
-          property="og:description"
-          content="Cadastre sua agência, adicione os pacotes e publique uma apresentação profissional sem programador ou hospedagem separada."
-        />
-        <meta property="og:url" content="https://canvaviagem.com/site-para-agencia-de-viagens" />
       </Helmet>
 
+      {/* HEADER */}
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur">
         <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <a href="/inicio" aria-label="Ir para a página inicial do Canva Viagem" className="shrink-0">
@@ -273,10 +192,10 @@ export default function SiteOfferLanding() {
       </header>
 
       <main>
-        <section className="relative overflow-hidden bg-[#0B1324] text-white">
+        {/* 1. HERO */}
+        <section ref={heroRef} className="relative overflow-hidden bg-[#0B1324] text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_20%,rgba(8,145,178,0.18),transparent_34%)]" />
           <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:px-8 lg:py-20">
-            {/* TEXT COLUMN */}
             <div className="mx-auto flex max-w-2xl flex-col lg:mx-0">
               <div className="mb-6 self-start inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-cyan-200">
                 <Globe2 className="h-4 w-4" />
@@ -291,7 +210,6 @@ export default function SiteOfferLanding() {
                 Escolha entre 6 modelos feitos para turismo, adicione sua marca e seus pacotes e publique um site navegável para apresentar sua agência, receber pedidos de orçamento e levar interessados ao WhatsApp.
               </p>
 
-              {/* MOCKUP MOBILE ONLY */}
               <div className="relative mt-8 w-full lg:hidden">
                 <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5 p-2 shadow-[0_20px_50px_-20px_rgba(8,145,178,0.5)]">
                   <img
@@ -304,14 +222,15 @@ export default function SiteOfferLanding() {
 
               <ul className="mt-8 space-y-3 text-base font-medium text-slate-200 sm:text-lg">
                 {[
-                  "Site para celular e computador",
-                  "Páginas individuais para seus pacotes",
+                  "6 modelos feitos para turismo",
+                  "Páginas individuais dos pacotes",
+                  "Celular e computador",
                   "Formulário de orçamento + WhatsApp",
                   "Publicação incluída",
-                  "Edite sempre que precisar",
+                  "Edite sempre que precisar"
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <CheckCircle2 className="h-6 w-6 shrink-0 text-cyan-400" />
+                    <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-cyan-400" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -319,7 +238,7 @@ export default function SiteOfferLanding() {
 
               <div className="mb-4 mt-8 w-max inline-flex items-center rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-2.5">
                 <span className="font-medium text-slate-300">
-                  A partir de <strong className="ml-1 text-lg text-white">R$40,16/mês</strong> no plano anual
+                  A partir de <strong className="ml-1 text-xl text-white">R$40,16/mês</strong> no plano anual
                 </span>
               </div>
 
@@ -327,14 +246,14 @@ export default function SiteOfferLanding() {
                 <button
                   type="button"
                   onClick={() => scrollToPlans("hero")}
-                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-8 text-base font-black text-white shadow-lg shadow-cyan-900/30 transition hover:bg-cyan-500 active:scale-[0.98] sm:w-auto"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-6 text-[15px] font-black text-white shadow-lg shadow-cyan-900/30 transition hover:bg-cyan-500 active:scale-[0.98] sm:w-auto"
                 >
                   PUBLICAR O SITE DA MINHA AGÊNCIA
                   <ArrowRight className="h-5 w-5" />
                 </button>
                 <a
                   href="#demonstracao"
-                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-8 text-base font-bold text-white transition hover:bg-white/10 active:scale-[0.98] sm:w-auto"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 text-[15px] font-bold text-white transition hover:bg-white/10 active:scale-[0.98] sm:w-auto"
                 >
                   <Monitor className="h-5 w-5" />
                   VER SITE REAL FUNCIONANDO
@@ -343,11 +262,10 @@ export default function SiteOfferLanding() {
 
               <div className="mt-5 flex items-center justify-center gap-2 text-xs font-semibold text-slate-400 sm:justify-start">
                 <ShieldCheck className="h-4 w-4" />
-                <span>Acesso liberado após o pagamento &middot; Cancelamento online</span>
+                <span>Acesso após o pagamento &middot; Cancelamento online</span>
               </div>
             </div>
 
-            {/* MOCKUP DESKTOP ONLY */}
             <div className="relative hidden lg:block">
               <div className="transform overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-3 shadow-[0_30px_80px_-35px_rgba(8,145,178,0.6)] transition-transform duration-500 hover:-translate-y-2">
                 <img
@@ -360,22 +278,22 @@ export default function SiteOfferLanding() {
           </div>
         </section>
 
-        <section id="demonstracao" className="border-y border-slate-200 bg-white py-16 md:py-24">
+        {/* 2. DEMONSTRAÇÃO IMEDIATA */}
+        <section id="demonstracao" className="border-b border-slate-200 bg-white py-16 md:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto mb-12 max-w-3xl text-center">
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-700">
-                NÃO IMAGINE. VEJA FUNCIONANDO.
-              </p>
-              <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
-                Abra um site criado com o Canva Viagem.
+            <div className="mx-auto mb-10 max-w-3xl text-center">
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
+                Não imagine. Veja funcionando.
               </h2>
-              <p className="mt-5 text-lg leading-relaxed text-slate-600">
-                Explore demonstrações reais da estrutura disponível para diferentes tipos de agência.
-              </p>
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
-              {siteOfferDemos.map((demo) => {
+              {[
+                { id: "1", demoName: "Atlas Mundo", modelName: "Horizonte", description: "Viagens internacionais" },
+                { id: "3", demoName: "Viva Ceará Receptivo", modelName: "Experiências", description: "Passeios e receptivo" },
+                { id: "2", demoName: "Brisa Brasil Viagens", modelName: "Ofertas", description: "Pacotes nacionais" }
+              ].map((item) => {
+                const demo = siteOfferDemos.find(d => d.id === item.id) || siteOfferDemos[0];
                 const isActive = demo.id === activeDemo.id;
                 return (
                   <button
@@ -393,10 +311,10 @@ export default function SiteOfferLanding() {
                     }`}
                   >
                     <span className={`text-xs font-black uppercase tracking-[0.16em] ${isActive ? "text-cyan-300" : "text-cyan-700"}`}>
-                      Modelo {demo.templateLabel}
+                      Modelo {item.modelName}
                     </span>
-                    <span className="mt-2 block text-lg font-black">{demo.agencyName}</span>
-                    <span className={`mt-1 block text-sm ${isActive ? "text-slate-300" : "text-slate-500"}`}>{demo.category}</span>
+                    <span className="mt-2 block text-lg font-black">{item.demoName}</span>
+                    <span className={`mt-1 block text-sm ${isActive ? "text-slate-300" : "text-slate-500"}`}>{item.description}</span>
                   </button>
                 );
               })}
@@ -406,7 +324,6 @@ export default function SiteOfferLanding() {
               <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 text-white sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <p className="truncate font-black">{activeDemo.agencyName}</p>
-                  <p className="text-xs text-slate-400">Modelo {activeDemo.templateLabel} • {activeDemo.packageNames.length} pacotes preenchidos</p>
                 </div>
                 <div className="flex rounded-xl border border-white/10 bg-black/20 p-1" aria-label="Formato da demonstração">
                   <button
@@ -446,137 +363,261 @@ export default function SiteOfferLanding() {
                     key={`${activeDemo.id}-${previewMode}`}
                     className={`w-full bg-white ${previewMode === "mobile" ? "h-[800px]" : "h-[690px] md:h-[780px]"}`}
                     srcDoc={activeDemo.html}
-                    title={`Modelo demonstrativo ${activeDemo.agencyName} no formato ${previewMode === "mobile" ? "celular" : "computador"}`}
+                    title={`Modelo demonstrativo ${activeDemo.agencyName}`}
                     loading="lazy"
                     sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="mt-4 grid gap-2 text-xs text-slate-300 sm:grid-cols-3">
-                {activeDemo.packageNames.map((packageName) => (
-                  <span key={packageName} className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 font-semibold">✓ {packageName}</span>
+            <p className="mt-6 text-center text-xs font-medium text-slate-400">
+              Demonstrações oficiais do Canva Viagem. As marcas, pacotes e valores são fictícios e foram criados exclusivamente para demonstrar a plataforma.
+            </p>
+          </div>
+        </section>
+
+        {/* 3. TRANSFORMAÇÃO */}
+        <section className="bg-[#EEF3F6] py-16 md:py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
+                Imagine enviar isso quando alguém perguntar pela sua agência.
+              </h2>
+            </div>
+            
+            <div className="mt-12 grid gap-6 md:grid-cols-2">
+              <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-xs font-black uppercase text-rose-800">
+                  <XCircle className="h-4 w-4" /> Antes
+                </div>
+                <ul className="space-y-3 text-slate-600 font-medium">
+                  <li className="line-through">Instagram</li>
+                  <li className="line-through">Destaques desatualizados</li>
+                  <li className="line-through">PDFs perdidos na conversa</li>
+                  <li className="line-through">Mensagens repetidas</li>
+                  <li className="line-through">Links separados</li>
+                  <li className="line-through">Informações espalhadas</li>
+                </ul>
+              </div>
+              <div className="rounded-[1.5rem] border border-cyan-200 bg-cyan-50/50 p-6 shadow-sm">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-black uppercase text-emerald-800">
+                  <CheckCircle2 className="h-4 w-4" /> Depois
+                </div>
+                <ul className="space-y-3 font-bold text-slate-900">
+                  <li>✓ Um endereço profissional</li>
+                  <li>✓ Sua marca e apresentação</li>
+                  <li>✓ Seus pacotes disponíveis</li>
+                  <li>✓ Informações organizadas</li>
+                  <li>✓ Pedido de orçamento claro</li>
+                  <li>✓ Canal direto para o WhatsApp</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-8 text-center">
+              <p className="inline-block border-l-4 border-cyan-700 bg-white py-3 pl-4 pr-6 text-left font-bold text-slate-800 shadow-sm md:text-lg">
+                O site não substitui Instagram ou WhatsApp. Ele organiza a apresentação da agência e cria um endereço profissional para compartilhar.
+              </p>
+            </div>
+
+            <div className="mt-12 mx-auto max-w-5xl">
+              <img
+                src={showcaseLandingPages}
+                alt="Agência depois com site"
+                className="w-full rounded-[2rem] border border-slate-200 shadow-xl"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* 4. PROBLEMA */}
+        <section className="bg-white py-16 md:py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+              <div>
+                <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
+                  O cliente encontrou sua agência. Agora ele precisa entender quem vocês são, o que vendem e como avançar.
+                </h2>
+                <div className="mt-8 flex flex-col gap-3 font-bold text-slate-700">
+                  <div className="flex items-center gap-3"><ChevronRight className="h-5 w-5 text-cyan-600" /> encontra a agência</div>
+                  <div className="flex items-center gap-3"><ChevronRight className="h-5 w-5 text-cyan-600" /> entra no Instagram</div>
+                  <div className="flex items-center gap-3"><ChevronRight className="h-5 w-5 text-cyan-600" /> procura pacotes</div>
+                  <div className="flex items-center gap-3"><ChevronRight className="h-5 w-5 text-cyan-600" /> abre destaques</div>
+                  <div className="flex items-center gap-3"><ChevronRight className="h-5 w-5 text-cyan-600" /> chama no WhatsApp</div>
+                  <div className="flex items-center gap-3"><ChevronRight className="h-5 w-5 text-cyan-600" /> pede novamente informações</div>
+                </div>
+              </div>
+              
+              <div className="grid gap-4 sm:grid-cols-2">
+                {[
+                  ["1. Informação espalhada", "O cliente precisa procurar o que vocês vendem em diferentes lugares."],
+                  ["2. Pacotes desaparecem", "Ofertas importantes se perdem rápido no feed."],
+                  ["3. Atendimento repetitivo", "Você precisa repetir a apresentação e os mesmos roteiros o tempo todo."],
+                  ["4. Falta endereço único", "Não há um único lugar organizado para apresentar a agência como um todo."]
+                ].map(([title, copy]) => (
+                  <div key={title} className="rounded-2xl border border-slate-200 bg-[#F7F8FA] p-6">
+                    <p className="text-lg font-black text-slate-950">{title}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{copy}</p>
+                  </div>
                 ))}
               </div>
             </div>
-
-            <p className="mt-6 text-center text-xs text-slate-400">
-              Demonstrações oficiais do Canva Viagem. As marcas, pacotes e valores apresentados são fictícios e foram criados exclusivamente para demonstrar a plataforma.
-            </p>
-
-            <div className="mt-12 flex flex-col items-center text-center">
-              <h3 className="mb-6 text-2xl font-black text-slate-950 sm:text-3xl">Quero criar isso para minha agência</h3>
-              <button
-                type="button"
-                onClick={() => scrollToPlans("demonstracao")}
-                className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-8 text-base font-black text-white shadow-lg shadow-cyan-900/20 transition hover:bg-cyan-500 active:scale-[0.98] sm:w-auto"
-              >
-                PUBLICAR O SITE DA MINHA AGÊNCIA
-                <ArrowRight className="h-5 w-5" />
-              </button>
-            </div>
           </div>
         </section>
 
-        <section className="border-y border-slate-200 bg-slate-50">
-          <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-y divide-slate-200 px-4 sm:px-6 md:grid-cols-4 md:divide-y-0 lg:px-8">
-            {[
-              ["Feito para turismo", "Estrutura pensada para vender viagens"],
-              ["Celular e computador", "Experiência adaptada aos dois formatos"],
-              ["Pedidos de orçamento", "Formulários e contato pelo WhatsApp"],
-              ["Publicação incluída", "Sem contratar hospedagem separada"],
-            ].map(([title, copy]) => (
-              <div key={title} className="px-3 py-6 text-center sm:px-5">
-                <p className="font-black text-slate-950">{title}</p>
-                <p className="mt-1 text-xs leading-relaxed text-slate-500 sm:text-sm">{copy}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="bg-white py-16 md:py-24">
-          <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[0.82fr_1.18fr] lg:px-8">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">O risco de parecer improvisado</p>
-              <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
-                Antes de pedir orçamento, o viajante precisa acreditar que encontrou uma agência real.
+        {/* 5. SOLUÇÃO & 3 PASSOS */}
+        <section className="border-y border-slate-200 bg-[#0B1324] py-16 text-white md:py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="text-2xl font-semibold leading-relaxed text-slate-300 md:text-3xl">
+                Em vez de obrigar o cliente a juntar essas informações, você reúne sua apresentação, seus pacotes e seus canais de contato em um único endereço.
               </h2>
-              <p className="mt-5 text-lg leading-relaxed text-slate-600">
-                Quando sua agência existe apenas em posts e conversas, o cliente precisa juntar as peças sozinho: quem vocês são, quais viagens vendem e como pedir uma proposta.
-              </p>
-              <p className="mt-4 border-l-4 border-cyan-700 pl-5 text-lg font-bold leading-relaxed text-slate-800">
-                O site não substitui Instagram nem atendimento. Ele dá ao viajante um endereço único para conhecer sua agência e avançar com mais segurança.
-              </p>
+              <p className="mt-10 text-3xl font-black text-white md:text-5xl">Seu site começa com 3 passos.</p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+
+            <div className="mt-12 grid gap-6 md:grid-cols-3">
               {[
-                ["Informação espalhada", "Perfil, destaques e conversas antigas obrigam o cliente a procurar o que precisa."],
-                ["Pacotes se perdem no feed", "Uma boa oferta desaparece entre publicações novas e conteúdos antigos."],
-                ["O WhatsApp repete tudo", "Sua equipe explica apresentação, condições e contatos para cada novo interessado."],
-                ["Falta um endereço profissional", "Sem uma página estável, a agência pode parecer menor ou menos organizada do que realmente é."],
-              ].map(([title, copy]) => (
-                <div key={title} className="border-t border-slate-300 py-5 sm:px-3">
-                  <p className="text-lg font-black text-slate-950">{title}</p>
-                  <p className="mt-2 leading-relaxed text-slate-600">{copy}</p>
+                { step: "1", title: "CADASTRE SUA AGÊNCIA", desc: "Marca, identidade visual, informações gerais e número do WhatsApp." },
+                { step: "2", title: "ADICIONE SUAS VIAGENS", desc: "Fotos, destino, descrição, datas, valores e condições do pacote." },
+                { step: "3", title: "PUBLIQUE", desc: "Receba um endereço online imediato para começar a divulgar." }
+              ].map((item) => (
+                <div key={item.step} className="rounded-[1.5rem] border border-white/10 bg-white/5 p-8 text-center shadow-lg">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-cyan-900/50 text-2xl font-black text-cyan-300">
+                    {item.step}
+                  </div>
+                  <h3 className="mt-6 text-lg font-black">{item.title}</h3>
+                  <p className="mt-3 text-slate-400 leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10 flex flex-wrap justify-center gap-4 text-sm font-bold text-cyan-200">
+              <span className="flex items-center gap-2"><X className="h-4 w-4" /> Sem instalar WordPress</span>
+              <span className="flex items-center gap-2"><X className="h-4 w-4" /> Sem configurar hospedagem</span>
+              <span className="flex items-center gap-2"><X className="h-4 w-4" /> Sem esperar programador</span>
+            </div>
+          </div>
+        </section>
+
+        {/* 6. JORNADA DO VIAJANTE */}
+        <section className="bg-white py-16 md:py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
+                O que acontece quando um viajante entra no seu site?
+              </h2>
+            </div>
+            
+            <div className="mt-12 flex flex-col items-center justify-center gap-4 text-sm font-bold uppercase text-slate-400 sm:flex-row sm:gap-6 md:text-base">
+              <span className="text-slate-900">HOME</span> <ArrowRight className="hidden sm:block h-4 w-4 text-cyan-500" />
+              <span className="text-slate-900">PACOTES</span> <ArrowRight className="hidden sm:block h-4 w-4 text-cyan-500" />
+              <span className="text-slate-900">PACOTE</span> <ArrowRight className="hidden sm:block h-4 w-4 text-cyan-500" />
+              <span className="text-slate-900">ORÇAMENTO</span> <ArrowRight className="hidden sm:block h-4 w-4 text-cyan-500" />
+              <span className="text-cyan-700">WHATSAPP</span>
+            </div>
+
+            <div className="mt-10 grid gap-6 md:grid-cols-5">
+              {[
+                { title: "Conhece sua agência", icon: Globe2 },
+                { title: "Explora seus pacotes", icon: LayoutTemplate },
+                { title: "Abre uma viagem", icon: MousePointerClick },
+                { title: "Vê info e condições", icon: PanelsTopLeft },
+                { title: "Continua no WhatsApp", icon: MessageCircle }
+              ].map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <div key={i} className="flex flex-col items-center text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700">
+                      <Icon className="h-8 w-8" />
+                    </div>
+                    <p className="mt-4 text-sm font-bold text-slate-900">{i + 1}. {item.title}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* 7. O QUE RECEBE (Produto Materializado) */}
+        <section className="bg-[#F7F8FA] py-16 md:py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="mb-12 text-center text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
+              Tudo que você precisa para publicar o site da sua agência.
+            </h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                { icon: Globe2, title: "Site da agência" },
+                { icon: LayoutTemplate, title: "6 modelos para turismo" },
+                { icon: PanelsTopLeft, title: "Páginas individuais dos pacotes" },
+                { icon: SmartphoneNfc, title: "Layout para celular e computador" },
+                { icon: MousePointerClick, title: "Formulário de orçamento" },
+                { icon: MessageCircle, title: "Botão de WhatsApp" },
+                { icon: Link2, title: "Publicação incluída" },
+                { icon: Clock3, title: "Possibilidade de editar novamente" }
+              ].map((feature, i) => (
+                <div key={i} className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-100 text-cyan-700">
+                    <feature.icon className="h-5 w-5" />
+                  </div>
+                  <p className="pt-2 font-black text-slate-900">{feature.title}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
+        {/* 8. 6 MODELOS */}
         <section className="bg-white py-16 md:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-10 max-w-3xl">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">O que o cliente encontra</p>
-              <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight md:text-5xl">
-                Sua agência, seus pacotes e um caminho claro para pedir orçamento.
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
+                Escolha um modelo para a forma como sua agência vende viagens.
               </h2>
-              <p className="mt-5 text-lg leading-relaxed text-slate-600">
-                A estrutura organiza a apresentação da agência e cria páginas individuais para as viagens que você quer divulgar.
+              <p className="mt-5 text-lg font-bold text-slate-600">
+                Você não começa de uma página em branco. Escolhe uma estrutura e adapta para sua agência.
               </p>
             </div>
-            <div className="grid gap-6 md:grid-cols-2">
-              <figure className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-50">
-                <img src={showcaseLandingPages} alt="Visão geral de um site de agência criado no Canva Viagem" loading="lazy" className="aspect-[4/3] w-full object-cover" />
-                <figcaption className="p-6">
-                  <p className="text-sm font-black uppercase tracking-[0.16em] text-cyan-800">Página da agência</p>
-                  <p className="mt-2 text-lg font-bold text-slate-900">Marca, contatos, destinos e apresentação reunidos em um só lugar.</p>
-                </figcaption>
-              </figure>
-              <figure className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-50">
-                <img src={paginaRoteiro} alt="Exemplo de página individual de pacote de Paris" loading="lazy" className="aspect-[4/3] w-full object-contain p-4" />
-                <figcaption className="p-6">
-                  <p className="text-sm font-black uppercase tracking-[0.16em] text-cyan-800">Página do pacote</p>
-                  <p className="mt-2 text-lg font-bold text-slate-900">Detalhes da viagem, condições e botões para o cliente pedir orçamento.</p>
-                </figcaption>
-              </figure>
+            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                { num: "01", title: "Padrão", desc: "Portfólio variado" },
+                { num: "02", title: "Horizonte", desc: "Viagens premium" },
+                { num: "03", title: "Ofertas", desc: "Pacotes e promoções" },
+                { num: "04", title: "Experiências", desc: "Receptivo e passeios" },
+                { num: "05", title: "Expedições", desc: "Aventura e natureza" },
+                { num: "06", title: "Excursões", desc: "Grupos e saídas" }
+              ].map((m) => (
+                <div key={m.num} className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center">
+                  <p className="text-sm font-black text-cyan-600">{m.num}</p>
+                  <p className="mt-2 text-xl font-black text-slate-900">{m.title}</p>
+                  <p className="mt-1 text-slate-600">{m.desc}</p>
+                </div>
+              ))}
             </div>
-            <p className="mt-4 text-center text-sm text-slate-500">Exemplos visuais da estrutura disponível; textos, fotos e pacotes variam conforme cada agência.</p>
           </div>
         </section>
 
-        <section className="border-y border-slate-200 bg-[#F7F8FA] py-16 md:py-24">
+        {/* 9. COMPARAÇÃO */}
+        <section className="border-y border-slate-200 bg-[#0B1324] py-16 text-white md:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">Comparação honesta</p>
-              <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight md:text-5xl">
-                Instagram, site tradicional e Canva Viagem resolvem níveis diferentes do problema.
-              </h2>
-              <p className="mt-5 text-lg leading-relaxed text-slate-600">
-                O Canva Viagem não substitui divulgação, domínio próprio nem um projeto totalmente sob medida. Ele entrega uma estrutura pronta para turismo e um endereço publicado sem contratar programador ou hospedagem separada.
-              </p>
-            </div>
-            <div className="mt-10 overflow-x-auto rounded-[1.5rem] border border-slate-200 bg-white shadow-[0_24px_60px_-36px_rgba(15,23,42,0.25)]">
-              <div className="min-w-[860px]">
-                <div className="grid grid-cols-[1.15fr_1fr_1fr_1.1fr] bg-[#0B1324] text-white">
-                  {['Na prática', 'Wix ou WordPress', 'Programador ou agência', 'Canva Viagem'].map((label) => (
-                    <div key={label} className="border-r border-white/10 p-5 text-sm font-black last:border-0">{label}</div>
-                  ))}
+            <div className="overflow-x-auto rounded-[1.5rem] border border-slate-700 bg-slate-900 shadow-2xl">
+              <div className="min-w-[800px]">
+                <div className="grid grid-cols-[1fr_1fr_1fr_1fr] bg-black/40 text-sm font-black text-slate-400">
+                  <div className="p-5" />
+                  <div className="p-5">Wix / WordPress</div>
+                  <div className="p-5">Programador</div>
+                  <div className="p-5 text-cyan-300">Canva Viagem</div>
                 </div>
-                {comparisonRows.map((row) => (
-                  <div key={row[0]} className="grid grid-cols-[1.15fr_1fr_1fr_1.1fr] border-t border-slate-200 text-sm">
+                {[
+                  ["COMEÇAR", "Solução geral, configure do zero", "Projeto personalizado, aguarde", "Estrutura pronta e especializada"],
+                  ["FOCO EM TURISMO", "Não", "Depende do profissional", "Sim, feito para viagens"],
+                  ["PUBLICAÇÃO", "Hospedagem à parte", "Hospedagem à parte", "Incluída"],
+                  ["ALTERAÇÕES", "Aprender a ferramenta", "Pagar novas horas", "Editar pacotes e salvar"],
+                  ["PACOTES & ORÇAMENTO", "Configuração manual", "Configuração manual", "Integrado e direto"]
+                ].map((row, i) => (
+                  <div key={i} className="grid grid-cols-[1fr_1fr_1fr_1fr] border-t border-slate-800 text-sm">
                     {row.map((cell, index) => (
-                      <div key={cell} className={`border-r border-slate-200 p-5 leading-relaxed last:border-0 ${index === 0 ? 'font-black text-slate-900' : index === 3 ? 'bg-cyan-50 font-bold text-cyan-950' : 'text-slate-600'}`}>
+                      <div key={index} className={`p-5 leading-relaxed ${index === 0 ? 'font-black text-slate-300' : index === 3 ? 'bg-cyan-950/40 font-bold text-white' : 'text-slate-400'}`}>
                         {cell}
                       </div>
                     ))}
@@ -584,232 +625,219 @@ export default function SiteOfferLanding() {
                 ))}
               </div>
             </div>
-            <p className="mt-4 text-sm text-slate-500 md:hidden">Deslize a tabela para o lado para comparar todas as opções.</p>
-          </div>
-        </section>
-
-        <section className="bg-white py-16 md:py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid items-center gap-10 lg:grid-cols-[0.72fr_1.28fr]">
-              <div className="overflow-hidden rounded-[1.5rem] bg-[#0B1324] p-3">
-                <img src={lucasPortrait} alt="Lucas Ferrari, criador do Canva Viagem" loading="lazy" className="aspect-[4/5] w-full rounded-[1.1rem] object-cover" />
-              </div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">Quem está por trás</p>
-                <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight md:text-5xl">
-                  A ferramenta nasceu dentro da rotina de agências de viagens.
-                </h2>
-                <p className="mt-5 text-lg leading-relaxed text-slate-600">
-                  Antes de criar o Canva Viagem, Lucas Ferrari trabalhou com campanhas de tráfego pago para mais de 40 agências no Brasil. O mesmo problema aparecia repetidamente: muitas dependiam apenas do Instagram e do WhatsApp ou precisavam contratar um projeto caro para ter presença própria na internet.
-                </p>
-                <p className="mt-4 text-lg leading-relaxed text-slate-600">
-                  O construtor de sites foi criado para encurtar esse caminho: a agência preenche suas informações, organiza os pacotes e publica uma apresentação profissional sem começar um projeto técnico do zero.
-                </p>
-                <div className="mt-7 grid grid-cols-2 gap-4 border-t border-slate-200 pt-6 sm:grid-cols-3">
-                  <div><p className="text-2xl font-black text-cyan-800">40+</p><p className="text-sm text-slate-500">agências atendidas</p></div>
-                  <div><p className="text-2xl font-black text-cyan-800">Brasil</p><p className="text-sm text-slate-500">experiência prática</p></div>
-                  <div className="col-span-2 sm:col-span-1"><p className="text-2xl font-black text-cyan-800">Turismo</p><p className="text-sm text-slate-500">foco da plataforma</p></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-y border-slate-200 bg-[#EEF3F6] py-16 md:py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">Não é um site engessado</p>
-                <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight md:text-5xl">
-                  Sua agência escolhe entre 6 modelos de site.
-                </h2>
-              </div>
-              <p className="text-lg leading-relaxed text-slate-600">
-                Cada modelo dá prioridade a um jeito diferente de vender viagens. Você escolhe a estrutura, troca a identidade visual e preenche com os seus próprios pacotes.
-              </p>
-            </div>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {SITE_TEMPLATE_CATALOG.map((template, index) => {
-                const isShownAbove = siteOfferDemos.some((demo) => demo.templateId === template.id);
-                return (
-                  <div key={template.id} className="rounded-[1.35rem] border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-36px_rgba(15,23,42,0.35)]">
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-100 font-mono text-sm font-black text-cyan-900">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      {isShownAbove && <span className="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-800">Demo acima</span>}
-                    </div>
-                    <h3 className="mt-5 text-xl font-black text-slate-950">{template.copy.pt.label}</h3>
-                    <p className="mt-1 text-sm font-bold text-cyan-800">{template.copy.pt.audience}</p>
-                    <p className="mt-3 leading-relaxed text-slate-600">{template.copy.pt.summary}</p>
-                  </div>
-                );
-              })}
-            </div>
-            <p className="mt-5 text-sm leading-relaxed text-slate-500">
-              As demonstrações acima usam Ofertas, Horizonte e Experiências. Padrão, Expedições e Excursões também estão disponíveis no construtor.
+            <p className="mt-6 text-center text-lg font-bold text-slate-300">
+              Se sua necessidade é publicar uma estrutura feita para turismo sem começar um projeto técnico do zero, é exatamente aqui que o Canva Viagem se encaixa.
             </p>
           </div>
         </section>
 
+        {/* 10. AUTORIDADE */}
         <section className="bg-white py-16 md:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-              <div className="rounded-[1.75rem] bg-[#0B1324] p-7 text-white md:p-10">
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">O que você veio buscar</p>
-                <h2 className="mt-4 text-3xl font-black tracking-tight md:text-4xl">Site Pronto da Agência</h2>
-                <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-300">
-                  Uma estrutura editável e responsiva para apresentar sua agência, publicar pacotes e receber pedidos de orçamento em um endereço online.
-                </p>
-                <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                  {[
-                    [PanelsTopLeft, "Páginas da agência"],
-                    [LayoutTemplate, "Páginas para os pacotes"],
-                    [MousePointerClick, "Formulário e WhatsApp"],
-                    [Link2, "Endereço publicado"],
-                  ].map(([Icon, label]) => {
-                    const ItemIcon = Icon as typeof PanelsTopLeft;
-                    return (
-                      <div key={label as string} className="flex items-center gap-3 border-t border-white/10 pt-4">
-                        <ItemIcon className="h-5 w-5 shrink-0 text-cyan-300" />
-                        <span className="font-bold text-slate-100">{label as string}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+            <div className="grid items-center gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+              <div className="overflow-hidden rounded-[2rem] bg-[#0B1324] p-3 shadow-xl">
+                <img src={lucasPortrait} alt="Lucas Ferrari" className="w-full rounded-[1.5rem] object-cover aspect-square" />
               </div>
-              <div className="rounded-[1.75rem] border border-slate-200 bg-[#F7F8FA] p-7 md:p-10">
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">Também incluído no Elite</p>
-                <h3 className="mt-4 text-2xl font-black text-slate-950">Ferramentas complementares</h3>
-                <p className="mt-3 leading-relaxed text-slate-600">Elas ampliam a plataforma, mas não mudam a promessa desta página: publicar o site da sua agência.</p>
-                <ul className="mt-6 space-y-3 text-slate-700">
-                  {["Fábrica de anúncios", "Criador de carrosséis", "Legendas e textos de oferta", "Biblioteca de Reels e artes", "CRM para organizar interessados"].map((item) => (
-                    <li key={item} className="flex items-start gap-3"><CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-cyan-700" /><span className="font-semibold">{item}</span></li>
-                  ))}
-                </ul>
+              <div>
+                <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-4xl">
+                  Criado por quem entende o marketing de agências.
+                </h2>
+                <p className="mt-5 text-lg leading-relaxed text-slate-600">
+                  Lucas Ferrari desenhou a estrutura da plataforma após sua experiência prática com campanhas e estratégias de marketing para mais de 40 agências de viagens pelo Brasil.
+                </p>
+                <div className="mt-8 flex items-center gap-4 border-t border-slate-200 pt-6">
+                  <div className="text-3xl font-black text-cyan-700">40+</div>
+                  <div className="text-sm font-bold text-slate-600">agências atendidas em<br/>trabalhos de marketing</div>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
+        {/* 11. VALUE STACK */}
+        <section className="bg-[#EEF3F6] py-16 md:py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
+              Você entra pelo site. O restante da plataforma Elite vem junto.
+            </h2>
+            
+            <div className="mt-12 mx-auto max-w-3xl rounded-[2rem] border-2 border-cyan-500 bg-white p-8 shadow-2xl relative">
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 rounded-full bg-cyan-600 px-6 py-2 text-sm font-black uppercase text-white shadow-lg">
+                PRODUTO PRINCIPAL
+              </div>
+              <h3 className="mt-4 text-3xl font-black text-slate-900">Construtor de Sites</h3>
+              <p className="mt-2 text-slate-600">Publique sua agência em poucos passos.</p>
+              
+              <div className="mt-8 pt-8 border-t border-slate-200">
+                <p className="text-sm font-black uppercase text-slate-400 mb-6">+ FERRAMENTAS COMPLEMENTARES INCLUÍDAS</p>
+                <div className="grid gap-3 text-left sm:grid-cols-2">
+                  {[
+                    "Fábrica de anúncios",
+                    "Criador de carrosséis",
+                    "Textos e legendas",
+                    "Biblioteca de Reels e artes",
+                    "CRM para orçamentos"
+                  ].map(item => (
+                    <div key={item} className="flex items-center gap-3">
+                      <Check className="h-5 w-5 text-cyan-600" />
+                      <span className="font-bold text-slate-700">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 12. PLANOS & RISCO */}
         <section id="planos" className="scroll-mt-20 bg-[#0B1324] py-16 text-white md:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">Publique o site real da sua agência</p>
-              <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight md:text-5xl">Escolha apenas por quanto tempo quer acessar.</h2>
-              <p className="mt-5 text-lg leading-relaxed text-slate-300">Todos os ciclos liberam a mesma plataforma Elite após a confirmação do pagamento.</p>
+              <h2 className="text-3xl font-black leading-tight tracking-tight md:text-5xl">
+                Escolha o melhor plano para a sua agência.
+              </h2>
             </div>
 
-            <div className="mt-12 overflow-hidden rounded-[2rem] border border-cyan-300/25 bg-white text-slate-950 shadow-[0_28px_80px_-38px_rgba(8,145,178,0.7)]">
-              <div className="grid gap-8 p-7 md:grid-cols-[0.9fr_1.1fr] md:p-10">
+            {/* PLANO ANUAL DOMINANTE */}
+            <div className="mt-12 overflow-hidden rounded-[2rem] border border-cyan-400 bg-white text-slate-950 shadow-[0_0_60px_-15px_rgba(8,145,178,0.5)]">
+              <div className="grid gap-8 p-8 md:grid-cols-[1fr_1fr] md:p-12 items-center">
                 <div>
-                  <div className="inline-flex rounded-full bg-cyan-100 px-3 py-1 text-xs font-black uppercase tracking-[0.15em] text-cyan-900">Melhor custo mensal</div>
-                  <h3 className="mt-5 text-2xl font-black">{planDetails.annual.name}</h3>
-                  <div className="mt-3 flex items-end gap-2">
-                    <span className="text-5xl font-black tracking-tight">{planDetails.annual.price}</span>
-                    <span className="pb-2 font-semibold text-slate-500">{planDetails.annual.suffix}</span>
+                  <div className="inline-flex rounded-full bg-cyan-100 px-4 py-1.5 text-xs font-black uppercase tracking-[0.15em] text-cyan-900">Melhor custo mensal</div>
+                  <div className="mt-6">
+                    <span className="text-5xl font-black tracking-tight">R$40,16</span>
+                    <span className="text-xl font-bold text-slate-500">/mês</span>
                   </div>
-                  <p className="mt-2 text-sm font-semibold text-slate-600">{planDetails.annual.charge}</p>
+                  <p className="mt-2 text-sm font-bold text-slate-600">R$482 cobrados uma vez. 12 meses de acesso.</p>
+                  
+                  <div className="mt-6 rounded-xl bg-green-50 p-4 border border-green-200">
+                    <p className="text-sm font-black text-green-800">ECONOMIA REAL: R$682</p>
+                    <p className="mt-1 text-xs text-green-700">Calculada comparando o plano anual de R$482 com 12 mensalidades de R$97 (Total R$1.164).</p>
+                  </div>
+
                   <button
                     type="button"
-                    data-billing-cycle="annual"
                     disabled={checkoutLoading !== null}
-                    onClick={() => startCheckout(planDetails.annual.cycle, planDetails.annual.value)}
-                    className="mt-7 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-700 px-6 font-black text-white transition hover:bg-cyan-800 active:scale-[0.98] disabled:cursor-wait disabled:opacity-70"
+                    onClick={() => startCheckout("annual", 482)}
+                    className="mt-8 inline-flex min-h-[60px] w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-6 text-lg font-black text-white shadow-lg shadow-cyan-900/30 transition hover:bg-cyan-500 active:scale-[0.98] disabled:cursor-wait disabled:opacity-70"
                   >
-                    {checkoutLoading === "annual" ? "Abrindo checkout..." : "Assinar e publicar meu site"}
+                    PUBLICAR O SITE DA MINHA AGÊNCIA
                     <ArrowRight className="h-5 w-5" />
                   </button>
                 </div>
-                <div className="grid content-center gap-3 border-t border-slate-200 pt-7 md:border-l md:border-t-0 md:pl-9 md:pt-0">
-                  {["Site editável para celular e computador", "Páginas para apresentar seus pacotes", "Formulário de orçamento e botão de WhatsApp", "Endereço publicado dentro do Canva Viagem", "Ferramentas complementares da plataforma Elite", "Suporte e cancelamento online"].map((feature) => (
-                    <div key={feature} className="flex items-start gap-3">
-                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-cyan-700" />
-                      <span className="font-semibold text-slate-700">{feature}</span>
+                <div className="grid content-center gap-4 border-t border-slate-200 pt-8 md:border-l md:border-t-0 md:pl-10 md:pt-0">
+                  <p className="font-black text-slate-900 mb-2">No plano anual você recebe:</p>
+                  {[
+                    "Site", "6 modelos", "Pacotes", "Orçamento", "WhatsApp", "Publicação", "Ferramentas Elite", "Suporte"
+                  ].map((feature) => (
+                    <div key={feature} className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-cyan-600" />
+                      <span className="font-bold text-slate-700">{feature}</span>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
 
-            <div className="mt-5 grid gap-5 md:grid-cols-2">
-              {[planDetails.monthly, planDetails.semiannual].map((plan) => (
-                <div key={plan.cycle} className="rounded-[1.5rem] border border-white/10 bg-white/5 p-6">
-                  <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-                    <div>
-                      <h3 className="text-xl font-black">{plan.name}</h3>
-                      <p className="mt-2 text-3xl font-black">{plan.price} <span className="text-base font-semibold text-slate-400">{plan.suffix}</span></p>
-                      <p className="mt-1 text-sm text-slate-400">{plan.charge}</p>
-                    </div>
-                    <button
-                      type="button"
-                      data-billing-cycle={plan.cycle}
-                      disabled={checkoutLoading !== null}
-                      onClick={() => startCheckout(plan.cycle, plan.value)}
-                      className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white px-5 font-black text-slate-950 transition hover:bg-slate-100 active:scale-[0.98] disabled:cursor-wait disabled:opacity-70"
-                    >
-                      {checkoutLoading === plan.cycle ? "Abrindo..." : "Escolher este plano"}
-                    </button>
-                  </div>
+            <div className="mt-6 grid gap-5 md:grid-cols-2">
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-6 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-black">Mensal</h3>
+                  <p className="mt-2 text-3xl font-black">R$97 <span className="text-base font-semibold text-slate-400">/mês</span></p>
                 </div>
-              ))}
+                <button
+                  type="button"
+                  disabled={checkoutLoading !== null}
+                  onClick={() => startCheckout("monthly", 97)}
+                  className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-white/20 bg-white/10 px-5 font-black text-white transition hover:bg-white/20 active:scale-[0.98]"
+                >
+                  Assinar Mensal
+                </button>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-6 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-black">Semestral</h3>
+                  <p className="mt-2 text-3xl font-black">R$347 <span className="text-base font-semibold text-slate-400">/ 6 meses</span></p>
+                </div>
+                <button
+                  type="button"
+                  disabled={checkoutLoading !== null}
+                  onClick={() => startCheckout("semiannual", 347)}
+                  className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-white/20 bg-white/10 px-5 font-black text-white transition hover:bg-white/20 active:scale-[0.98]"
+                >
+                  Assinar Semestral
+                </button>
+              </div>
             </div>
 
-            <div className="mt-8 grid gap-4 border-t border-white/10 pt-7 text-sm text-slate-300 sm:grid-cols-3">
-              <div className="flex items-start gap-3"><ShieldCheck className="h-5 w-5 shrink-0 text-cyan-300" /><span>Pagamento processado com segurança pela Stripe.</span></div>
-              <div className="flex items-start gap-3"><Clock3 className="h-5 w-5 shrink-0 text-cyan-300" /><span>Acesso liberado após a confirmação do pagamento.</span></div>
-              <div className="flex items-start gap-3"><MessageCircle className="h-5 w-5 shrink-0 text-cyan-300" /><span>Suporte pelo WhatsApp se precisar de orientação.</span></div>
+            <div className="mt-12 flex flex-col items-center justify-center gap-6 rounded-2xl border border-white/10 bg-white/5 p-8 text-center sm:flex-row sm:text-left">
+              <ShieldCheck className="h-12 w-12 text-cyan-400" />
+              <div>
+                <p className="font-black text-lg">Sem pegadinhas.</p>
+                <p className="mt-1 text-slate-300">Acesso livre às demos antes da compra, cobrança segura pela Stripe e cancelamento 100% online.</p>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="bg-white py-16 md:py-24">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.7fr_1.3fr] lg:px-8">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">Antes de colocar o cartão</p>
-              <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight md:text-5xl">Perguntas de quem chegou aqui pela primeira vez.</h2>
-              <p className="mt-5 leading-relaxed text-slate-600">Sem esconder as limitações e sem prometer o que uma ferramenta não pode controlar.</p>
-              <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackMetaEvent("Contact", { content_name: "Suporte - Site para Agência" })} className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl border border-slate-300 px-5 font-black text-slate-800 transition hover:border-cyan-700 hover:text-cyan-800">
-                <MessageCircle className="h-5 w-5" />
-                Tirar dúvida no WhatsApp
+        {/* 13. FAQ */}
+        <section className="bg-[#F7F8FA] py-16 md:py-24">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-center text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-4xl mb-12">
+              Perguntas Frequentes
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {faqItems.map((item, i) => (
+                <div key={i} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <p className="font-black text-slate-900">{item.question}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.answer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 14. FECHAMENTO */}
+        <section className="border-t border-slate-200 bg-white py-16 md:py-24">
+          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+            <h2 className="text-4xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
+              Publique o site profissional da sua agência.
+            </h2>
+            <p className="mt-6 text-lg font-bold leading-relaxed text-slate-600">
+              Escolha um dos 6 modelos, adicione sua marca e seus pacotes e publique uma estrutura feita para turismo — sem começar um projeto técnico do zero.
+            </p>
+            
+            <div className="mt-10 flex flex-wrap justify-center gap-3 text-sm font-bold text-slate-700">
+              <span>✓ 6 modelos</span>
+              <span>✓ Página da agência</span>
+              <span>✓ Pacotes</span>
+              <span>✓ Mobile + desktop</span>
+              <span>✓ Orçamento</span>
+              <span>✓ WhatsApp</span>
+              <span>✓ Publicação</span>
+              <span>✓ Canva Viagem Elite</span>
+            </div>
+
+            <div className="mt-12">
+              <p className="text-2xl font-black text-slate-900">R$482 por 12 meses</p>
+              <p className="font-bold text-slate-500">equivalente a R$40,16/mês</p>
+            </div>
+
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => scrollToPlans("fechamento")}
+                className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-8 text-base font-black text-white shadow-lg shadow-cyan-900/30 transition hover:bg-cyan-500 active:scale-[0.98] sm:w-auto"
+              >
+                PUBLICAR O SITE DA MINHA AGÊNCIA
+                <ArrowRight className="h-5 w-5" />
+              </button>
+              <a
+                href="#demonstracao"
+                className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-200 bg-white px-8 text-base font-black text-slate-900 transition hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
+              >
+                VER SITE REAL FUNCIONANDO
               </a>
             </div>
-            <div className="divide-y divide-slate-200 border-y border-slate-200">
-              {faqItems.map((item, index) => (
-                <div key={item.question}>
-                  <button
-                    type="button"
-                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                    className="flex w-full items-center justify-between gap-5 py-5 text-left font-black text-slate-950"
-                    aria-expanded={openFaq === index}
-                  >
-                    <span>{item.question}</span>
-                    <ChevronDown className={`h-5 w-5 shrink-0 text-cyan-700 transition-transform ${openFaq === index ? "rotate-180" : ""}`} />
-                  </button>
-                  {openFaq === index && <p className="max-w-3xl pb-6 pr-8 leading-relaxed text-slate-600">{item.answer}</p>}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-t border-slate-200 bg-[#DCEEF2] py-16 md:py-20">
-          <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 sm:px-6 md:grid-cols-[1fr_auto] lg:px-8">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-800">O motivo para começar agora é simples</p>
-              <h2 className="mt-4 max-w-3xl text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
-                Use sua própria agência como o primeiro projeto real.
-              </h2>
-              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700">Cadastre sua identidade, adicione um pacote real e publique a estrutura com a sua própria marca.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => scrollToPlans("final")}
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#0B1324] px-7 font-black text-white transition hover:bg-slate-800 active:scale-[0.98]"
-            >
-              Publicar o site da minha agência
-              <ArrowRight className="h-5 w-5" />
-            </button>
           </div>
         </section>
       </main>
@@ -828,41 +856,20 @@ export default function SiteOfferLanding() {
         </div>
       </footer>
 
-      <button
-        type="button"
-        onClick={() => scrollToPlans("mobile_sticky")}
-        className="fixed bottom-3 left-3 right-3 z-30 inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-cyan-700 px-5 font-black text-white shadow-[0_20px_40px_-20px_rgba(8,145,178,0.9)] active:scale-[0.98] md:hidden"
-      >
-        Ver planos
-        <ArrowRight className="h-5 w-5" />
-      </button>
-
-      {exitOfferOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="exit-title">
-          <div ref={exitDialogRef} className="relative w-full max-w-lg rounded-[1.75rem] bg-white p-7 shadow-2xl md:p-9">
+      {showStickyCTA && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom-full duration-300 md:hidden bg-white border-t border-slate-200 p-3 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+          <div className="flex items-center justify-between gap-4 max-w-md mx-auto">
+            <div>
+              <p className="text-sm font-black text-slate-900">R$40,16/mês</p>
+              <p className="text-[10px] font-bold text-slate-500">No plano anual</p>
+            </div>
             <button
               type="button"
-              onClick={() => {
-                setExitOfferOpen(false);
-                recordEvent("exit_popup_dismissed", { method: "button" });
-              }}
-              className="absolute right-4 top-4 rounded-full border border-slate-200 p-2 text-slate-500 hover:bg-slate-100"
-              aria-label="Fechar"
+              onClick={() => scrollToPlans("mobile_sticky")}
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-cyan-600 px-4 text-sm font-black text-white shadow-md active:scale-[0.98]"
             >
-              <X className="h-5 w-5" />
+              PUBLICAR MEU SITE
             </button>
-            <BadgeCheck className="h-10 w-10 text-cyan-700" />
-            <h2 id="exit-title" className="mt-5 pr-8 text-3xl font-black leading-tight tracking-tight text-slate-950">Seu site pode estar no ar antes do próximo orçamento.</h2>
-            <p className="mt-4 leading-relaxed text-slate-600">Cadastre sua agência, publique um pacote e coloque sua apresentação profissional no ar.</p>
-            <button
-              type="button"
-              onClick={() => scrollToPlans("exit_popup")}
-              className="mt-6 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-cyan-700 px-6 font-black text-white hover:bg-cyan-800 active:scale-[0.98]"
-            >
-              Ver planos e assinar
-              <ArrowRight className="h-5 w-5" />
-            </button>
-            <p className="mt-3 text-center text-xs text-slate-500">Pagamento seguro pela Stripe e cancelamento online.</p>
           </div>
         </div>
       )}

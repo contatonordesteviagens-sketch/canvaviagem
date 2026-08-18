@@ -2758,7 +2758,7 @@ function CarouselCanvas({
                 <div style={{ position: "absolute", left: "8%", right: "8%", bottom: "14%" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04), textShadow }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), ...safeClamp(3, 1.04), textShadow }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2799,7 +2799,7 @@ function CarouselCanvas({
                 >
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.06), textShadow }}>
+                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), ...safeClamp(3, 1.06), textShadow }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2834,7 +2834,7 @@ function CarouselCanvas({
                 >
                   {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 20 : 23) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.06) }}>
+                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 20 : 23) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), ...safeClamp(3, 1.06) }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2905,7 +2905,7 @@ function CarouselCanvas({
                       {renderLabel(slide.label, "center")}
                     </div>
                     {slide.title && (
-                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
+                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), ...safeClamp(3, 1.04) }}>
                         {slide.title}
                       </h3>
                     )}
@@ -2943,7 +2943,7 @@ function CarouselCanvas({
                 <div style={{ background, color: titleColor, padding: isDenseSlide ? "4.5% 8% 7% 8%" : "6.5% 8% 10% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), ...safeClamp(3, 1.04) }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2990,7 +2990,7 @@ function CarouselCanvas({
                   >
                     {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                     {slide.title && (
-                      <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round(faqTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.05) }}>
+                      <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round(faqTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), ...safeClamp(3, 1.05) }}>
                         {slide.title}
                       </h3>
                     )}
@@ -3047,7 +3047,7 @@ function CarouselCanvas({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
                       {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
-                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
+                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), ...safeClamp(3, 1.04) }}>
                           {slide.title}
                         </h3>
                       )}
@@ -3094,7 +3094,7 @@ function CarouselCanvas({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
                       {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
-                        <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow, ...safeTextWrap, ...safeClamp(3, 1.05) }}>
+                        <h3 style={{ maxWidth: "94%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 29) * titleScale * Z), lineHeight: 1.05, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, textShadow, ...safeTextWrap, ...safeClamp(3), ...safeClamp(3, 1.05) }}>
                           {slide.title}
                         </h3>
                       )}
@@ -3347,7 +3347,7 @@ function CarouselCanvas({
                     />
                     {renderLabel(slide.label)}
                     {slide.title && (
-                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
+                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3), ...safeClamp(3, 1.04) }}>
                         {slide.title}
                       </h3>
                     )}

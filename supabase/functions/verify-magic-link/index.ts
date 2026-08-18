@@ -236,7 +236,7 @@ serve(async (req) => {
         .from("subscriptions")
         .select("status, product_id")
         .eq("user_id", userId)
-        .eq("status", "active")
+        .in("status", ["active", "trialing"])
         .maybeSingle();
 
       if (localSub) {
@@ -265,8 +265,8 @@ serve(async (req) => {
           for (const customer of customers.data) {
             const customerId = customer.id;
 
-            const activeSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 });
-            const subscription = activeSubscriptions.data[0];
+            const activeSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 10 });
+            const subscription = activeSubscriptions.data.find(s => s.status === "active" || s.status === "trialing");
 
             if (subscription) {
               const productId = (subscription.items.data[0]?.price?.product as string | null) ?? null;
