@@ -136,6 +136,34 @@ const AuthVerify = () => {
         return;
       }
 
+      // ─── ESCREVE SUBSCRIPTION NO CACHE DO AUTHCONTEXT ──────────────────
+      // verify-magic-link já confirmou o status da assinatura na Stripe.
+      // Escrevemos esse resultado no cache do AuthContext ANTES de navegar,
+      // para que o ProtectedRoute leia o cache instantaneamente e nunca
+      // precise esperar por uma chamada check-subscription que pode falhar.
+      const userId = sessionData.user?.id;
+      if (userId && data.subscribed) {
+        try {
+          const subscriptionSnapshot = {
+            subscribed: true,
+            productId: data.product_id || null,
+            subscriptionEnd: data.subscription_end || null,
+            status: "active",
+            trialEnd: data.trial_end || null,
+            billingCycle: data.billing_cycle || null,
+            billingProvider: data.billing_provider || "stripe",
+            loading: false,
+          };
+          localStorage.setItem(
+            `cv-sub-cache-v3-${userId}`,
+            JSON.stringify({ data: subscriptionSnapshot, timestamp: Date.now() }),
+          );
+        } catch {
+          // ignora erros de localStorage
+        }
+      }
+      // ────────────────────────────────────────────────────────────────────
+
       let verifiedRedirectTo = redirectTo;
       if (!safeRedirectFromUrl && pendingCheckoutState) {
         const authenticatedEmail = sessionData.user?.email;
@@ -148,17 +176,17 @@ const AuthVerify = () => {
         }
       }
 
-      if (verifiedRedirectTo === fallbackPath && data.subscribed) {
+      if (data.subscribed) {
         verifiedRedirectTo = "/";
       }
 
       setStatus("success");
 
-      // Redirecionar após 3 segundos (mais tempo para ler a mensagem)
+      // Redirecionar após 2 segundos
       setTimeout(() => {
         localStorage.removeItem(pendingAuthStateKey);
         navigate(verifiedRedirectTo, { replace: true });
-      }, 3000);
+      }, 2000);
     } catch (error) {
       console.error("Verify error:", error);
       setStatus("error");
