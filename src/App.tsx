@@ -17,6 +17,7 @@ import { SidebarNav } from "@/components/SidebarNav";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { MetaPixelRouteTracker } from "@/components/MetaPixelRouteTracker";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 const PlatformLayoutController = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -222,6 +223,7 @@ const App = () => {
                 <BrowserRouter>
                   <MetaPixelRouteTracker />
                   <UtmTracker />
+                  <InstallPrompt />
 
                   <Suspense fallback={<PageLoader />}>
                     {canvaViagemSiteSlug ? (
