@@ -1,10 +1,10 @@
 import { useRef, useState, useEffect, useCallback, memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight, Megaphone, Wand2, Calendar, Layers, Globe, MousePointerClick } from "lucide-react";
+import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight, Megaphone, Wand2, Calendar, Layers, Globe, MousePointerClick, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-export type CategoryType = 'all' | 'fabrica' | 'calendar' | 'videos' | 'feed' | 'stories' | 'offers' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'contracts' | 'favorites' | 'carrossel' | 'anuncio' | 'site';
+export type CategoryType = 'all' | 'fabrica' | 'calendar' | 'videos' | 'feed' | 'stories' | 'offers' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'contracts' | 'favorites' | 'carrossel' | 'anuncio' | 'site' | 'crm';
 
 interface CategoryNavProps {
   activeCategory: CategoryType;
@@ -23,12 +23,12 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
   const [hasAnimated, setHasAnimated] = useState(false);
 
   const categories: { id: CategoryType; label: string; icon: React.ReactNode; isNew?: boolean; color?: string; link?: string }[] = [
-    { id: 'all', label: 'Tudo', icon: <LayoutGrid className="w-6 h-6 text-slate-800 dark:text-slate-200" />, color: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700' },
+    { id: 'all', label: 'Destaques', icon: <LayoutGrid className="w-6 h-6 text-slate-800 dark:text-slate-200" />, color: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700' },
     { id: 'fabrica', label: 'Fábrica', icon: <Wand2 className="w-6 h-6 text-white" />, isNew: true, color: 'bg-gradient-to-br from-violet-600 to-fuchsia-600' },
     { id: 'carrossel', label: 'Carrossel', icon: <Layers className="w-6 h-6 text-white" />, color: 'bg-[#FF0090]', link: '/carrossel' },
     { id: 'anuncio', label: isESRoute ? 'Anuncios' : 'Anúncios', icon: <MousePointerClick className="w-6 h-6 text-white" />, color: 'bg-[#00D4FF]', link: '/anuncio' },
     { id: 'site', label: 'Sites', icon: <Globe className="w-6 h-6 text-white" />, color: 'bg-[#FF9900]', link: '/site' },
-    { id: 'calendar', label: isESRoute ? 'Calendario' : 'Calendário', icon: <Calendar className="w-6 h-6 text-white" />, color: 'bg-[#FF6B00]' },
+    { id: 'crm', label: 'CRM', icon: <Users className="w-6 h-6 text-white" />, color: 'bg-[#9333EA]', link: '/crm' },
     // Recursos PRO
     { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6 text-white" />, color: 'bg-[#FF005C]' },
     { id: 'feed', label: "Artes para Feed e Stories", icon: <Image className="w-6 h-6 text-white" />, color: 'bg-[#00C4CC]' },
@@ -41,6 +41,7 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
     { id: 'contracts', label: "Contratos", icon: <FileText className="w-6 h-6 text-white" />, color: 'bg-[#40576D]' },
 
     { id: 'favorites', label: t('category.favorites'), icon: <Heart className="w-6 h-6 text-white" />, color: 'bg-rose-500' },
+    { id: 'calendar', label: isESRoute ? 'Calendario' : 'Calendário', icon: <Calendar className="w-6 h-6 text-white" />, color: 'bg-[#FF6B00]' },
   ];
 
   const displayCategories = showFavorites
