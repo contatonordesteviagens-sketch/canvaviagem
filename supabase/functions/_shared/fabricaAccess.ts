@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "./officialProjectGuard.ts";
 import { isEliteProduct, isPrimaryAdminEmail } from "./planAccess.ts";
+import { isStaleSubscription, refreshSubscriptionFromStripe } from "./stripeRefresh.ts";
 
 type HeadersMap = Record<string, string>;
 
@@ -52,16 +53,21 @@ export async function verifyFabricaEliteAccess(req: Request, corsHeaders: Header
 
   if (adminRole || isPrimaryAdminEmail(userEmail)) return { ok: true as const, userId };
 
-  const { data: subscription } = await dbClient
+  const { data: subscriptionRow } = await dbClient
     .from("subscriptions")
-    .select("product_id,status,current_period_end,billing_provider")
+    .select("product_id,status,current_period_end,billing_provider,billing_cycle,stripe_customer_id,stripe_subscription_id")
     .eq("user_id", userId)
     .eq("status", "active")
     .limit(1)
     .maybeSingle();
 
+  // Missed webhook safety net: refresh straight from Stripe when the local period looks expired.
+  const subscription = isStaleSubscription(subscriptionRow)
+    ? await refreshSubscriptionFromStripe(dbClient, userId, subscriptionRow)
+    : subscriptionRow;
+
   const endDate = subscription?.current_period_end ? new Date(subscription.current_period_end) : null;
-  const isCurrent = !endDate || endDate > new Date();
+  const isCurrent = (!endDate || endDate > new Date()) && subscription?.status === "active";
   const isElite = (
     subscription?.billing_provider === "stripe"
     || isEliteProduct(subscription?.product_id)

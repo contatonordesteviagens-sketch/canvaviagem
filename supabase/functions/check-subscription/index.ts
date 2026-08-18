@@ -3,6 +3,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
 import { isEliteProduct, isStartProduct } from "../_shared/planAccess.ts";
+import { periodEndOf } from "../_shared/stripeRefresh.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -174,7 +175,7 @@ serve(async (req) => {
         if (selected) {
           const customerId = selected.customerId;
           const subscriptionId = selected.subscription.id;
-          const subscriptionEnd = selected.subscription.current_period_end ? new Date(selected.subscription.current_period_end * 1000).toISOString() : null;
+          const subscriptionEnd = periodEndOf(selected.subscription);
           const productId = selected.productId;
           const subscriptionStatus = selected.subscription.status;
           const trialStart = selected.subscription.trial_start
