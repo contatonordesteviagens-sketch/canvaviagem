@@ -617,6 +617,7 @@ export type Database = {
           capability: string
           created_at: string
           expires_at: string | null
+          fingerprint: string | null
           id: string
           idempotency_key: string
           metadata: Json
@@ -630,6 +631,7 @@ export type Database = {
           capability: string
           created_at?: string
           expires_at?: string | null
+          fingerprint?: string | null
           id?: string
           idempotency_key: string
           metadata?: Json
@@ -643,6 +645,7 @@ export type Database = {
           capability?: string
           created_at?: string
           expires_at?: string | null
+          fingerprint?: string | null
           id?: string
           idempotency_key?: string
           metadata?: Json

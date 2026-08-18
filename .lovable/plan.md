@@ -1,28 +1,41 @@
-# Diagnóstico: HTTP 500 em fabrica-entitlements (13/08 20:02 UTC)
+# Restaurar acesso dos assinantes
 
-## O que foi verificado (somente leitura)
+## O que eu verifiquei no banco (dados reais de hoje)
 
-1. **Logs da função** — a consulta de logs de `fabrica-entitlements` retornou **vazia** (nenhum evento, nem boot/shutdown). Ou seja: não há stack/mensagem registrada para 20:02 UTC. Isso é relevante por si só: significa que **não existe execução recente registrada dessa função** no runtime — comportamento compatível com uma função que não está respondendo/instanciando, ou com logs não retidos para esse intervalo.
+| Situação | Qtde | Efeito hoje |
+|---|---|---|
+| Assinaturas `active` com período vencido (`current_period_end` no passado) | **22** | **Bloqueadas** — o sistema trata como "grátis" |
+| Elite `prod_UTFsXcKq8m0mol` vencidas | 9 | Bloqueadas |
+| Elite `prod_UTSmPe3GPt8iHt` vencidas | 5 | Bloqueadas |
+| Start `prod_TkvaozfpkAcbpM` vencidas | 8 | Bloqueadas |
+| Tabela `stripe_webhook_events` | **0 registros** desde 12/08 | Nenhum evento do Stripe chegou/foi processado |
 
-2. **Conta `debc503c-...0f64`**
-   - `user_roles`: possui `admin`.
-   - `subscriptions`: 1 linha (`active`, `prod_UTSmPe3GPt8iHt` = Elite), sem duplicidade — não há erro de `maybeSingle`.
-   - `fabrica_usage_ledger`: 0 linhas para esse usuário.
+Datas de vencimento das 22 contas vão de 25/06 a 13/08 — ou seja, elas pararam de ser renovadas no banco, mesmo com a cobrança seguindo no Stripe.
 
-3. **Coluna `fingerprint` — confirmado o problema.** A tabela `public.fabrica_usage_ledger` tem hoje: `id, user_id, capability, idempotency_key, project_id, status, metadata, expires_at, created_at, updated_at, server_fingerprint`. **Não existe a coluna `fingerprint`.**
-   Existem duas versões da função:
-   - `reserve_fabrica_usage(uuid,text,text,text,jsonb,integer)` — antiga, não usa `fingerprint`.
-   - `reserve_fabrica_usage(uuid,text,text,text,jsonb,integer,text,text)` — a que a Edge Function chama; ela **lê e grava a coluna `fingerprint`** (no `UPDATE ... fingerprint = p_fingerprint`, no `SELECT count(*)` e no `INSERT`).
-   Conclusão: qualquer chamada de `reserve` que chegue ao RPC falha com erro Postgres `42703 column "fingerprint" does not exist`, que a função converte em HTTP 500 `{"error":"Serviço temporariamente indisponível"}`.
+## Causa provável (a confirmar no primeiro passo)
 
-4. **Ressalva importante sobre esta conta específica:** no código-fonte atual, um usuário admin recebe `unlimited = true` e o `reserve` retorna antes de chamar o RPC. Portanto, se a versão publicada fosse idêntica ao código do repositório, esse admin não deveria atingir o erro de `fingerprint`. Isso aponta para uma das duas hipóteses (ainda **não confirmada**, pois não há logs): a versão publicada é mais antiga que a do repositório, ou o 500 vem de outra origem (ex.: falha de env/guard `assertOfficialSupabaseProject`, que também lança 500 genérico). O 500 em `action=status` reforça essa segunda hipótese, já que `status` nunca toca o RPC.
+O webhook do Stripe não está registrando nenhum evento (`invoice.payment_succeeded`, `customer.subscription.updated`). Sem esses eventos, o `current_period_end` congela na data da última renovação registrada e, no dia seguinte, tanto o front (`EntitlementsContext`) quanto o backend (`fabrica-entitlements`, `fabricaAccess`) classificam o assinante como `free` e bloqueiam tudo.
 
-5. **Commit publicado a37a8a17:** não é possível confirmar. Não há endpoint que exponha o commit/bundle da função implantada. O que dá para afirmar: no workspace, o último commit que tocou `fabrica-entitlements` / `_shared` é `dd2cb61f`, ou seja **posterior** a `a37a8a17` — se a função publicada for de `a37a8a17`, ela está desatualizada em relação ao código atual.
+Ainda **não está confirmado** se as 22 contas continuam ativas no Stripe. Isso é o primeiro passo do trabalho — nenhuma liberação será dada a quem realmente cancelou.
 
-## Correções recomendadas (nada aplicado)
+## Planos e o que cada um deve liberar (regra atual, mantida)
 
-1. **Migration** para alinhar o schema com a função: adicionar `fingerprint text` em `public.fabrica_usage_ledger` (+ índice em `(capability, fingerprint)`), ou, alternativamente, reescrever `reserve_fabrica_usage` de 8 args para usar apenas `server_fingerprint`. Recomendo adicionar a coluna, pois a função já foi escrita com anti-abuso por dispositivo.
-2. **Remover a sobrecarga antiga** de 6 argumentos para evitar ambiguidade futura.
-3. **Republicar `fabrica-entitlements`** a partir do commit atual e, imediatamente após, disparar uma chamada de teste para gerar logs — assim confirmamos se o 500 de `action=status` some (o que provaria versão defasada) ou persiste (o que apontaria para env/guard).
+- **Elite** (`prod_UTFsXcKq8m0mol`, `prod_UTSmPe3GPt8iHt`, `prod_UTFlCWzNqvqSNx`, `hotmart_elite`, `elite_ticto`, `monthly_access_pix`, `annual_access_pix`): acesso total — Fábrica, anúncios, carrosséis, sites, CRM, vendedor, biblioteca premium, todas as ferramentas.
+- **Start** (`prod_TkvaozfpkAcbpM`, `start_ticto`, `monthly_access_ticto`): biblioteca premium + ferramentas básicas (Narração/Anúncio). Sem Fábrica.
+- **Admin**: acesso total.
+- **Cancelado / período vencido de verdade**: bloqueado (sem mudança).
 
-Nada foi alterado, publicado ou commitado neste diagnóstico.
+## Passos
+
+1. **Reconciliação com o Stripe (leitura)**: para cada uma das 22 contas vencidas, consultar o Stripe pelo `stripe_subscription_id`/`stripe_customer_id` e classificar em: ativa no Stripe (renovar dados) x realmente cancelada/inadimplente (manter bloqueio). Também revisar as `hotmart_elite`/Ticto sem `current_period_end`, que hoje já passam.
+2. **Correção dos dados**: atualizar `status`, `current_period_end`, `billing_provider` e `billing_cycle` apenas das assinaturas confirmadas como ativas no Stripe. Nada é cancelado e nenhum teste grátis é reativado.
+3. **Conserto do webhook**: diagnosticar por que `stripe_webhook_events` está vazio (assinatura/segredo, endpoint, eventos assinados) e garantir que `invoice.payment_succeeded` e `customer.subscription.updated` gravem a nova data de período. Sem isso, o problema volta no próximo ciclo.
+4. **Rede de segurança na renovação**: fazer o `check-subscription` reconciliar com o Stripe também quando a assinatura local estiver `active` porém vencida (hoje ele confia no local e, em alguns caminhos, retorna antes de checar). Assim, um único login já restaura o acesso do assinante mesmo que um evento se perca.
+5. **Reativar sites suspensos**: rodar `sync_user_public_site_access` para os usuários recuperados, para reativar sites que foram desativados por `subscription_inactive` durante o bloqueio.
+6. **Verificação**: reconsultar o banco (zero assinantes ativos no Stripe classificados como vencidos), e conferir uma conta Elite e uma Start recuperadas de ponta a ponta (entitlements + rota protegida).
+
+## Notas técnicas
+
+- Regras de bloqueio ficam em `src/contexts/EntitlementsContext.tsx`, `supabase/functions/fabrica-entitlements/index.ts`, `supabase/functions/_shared/fabricaAccess.ts` e `public.fabrica_full_access_internal` — todas exigem `status = 'active'` **e** período vigente. Não pretendo afrouxar essa regra; o problema é a data errada, não o critério.
+- Ajustes de código previstos: apenas `check-subscription` (passo 4) e o que o diagnóstico do webhook exigir (passo 3).
+- O cache `cv-sub-cache-v3` do `AuthContext` é invalidado no login, então não precisa de nova chave.
