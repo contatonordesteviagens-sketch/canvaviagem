@@ -79,6 +79,27 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
+    // Diagnostics: which webhook endpoints Stripe knows about and what it recently tried to send.
+    if (body?.action === "webhook_status") {
+      const endpoints = await stripe.webhookEndpoints.list({ limit: 20 });
+      const events = await stripe.events.list({ limit: 20 });
+      return json({
+        endpoints: endpoints.data.map((endpoint) => ({
+          id: endpoint.id,
+          url: endpoint.url,
+          status: endpoint.status,
+          api_version: endpoint.api_version,
+          enabled_events: endpoint.enabled_events,
+        })),
+        recent_events: events.data.map((event) => ({
+          id: event.id,
+          type: event.type,
+          created: new Date(event.created * 1000).toISOString(),
+          pending_webhooks: event.pending_webhooks,
+        })),
+      });
+    }
+
     let query = db
       .from("subscriptions")
       .select("user_id,status,product_id,current_period_end,stripe_customer_id,stripe_subscription_id,billing_provider,billing_cycle")
