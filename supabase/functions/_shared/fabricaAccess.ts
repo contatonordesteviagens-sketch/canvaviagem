@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "./officialProjectGuard.ts";
 import { isEliteProduct, isPrimaryAdminEmail } from "./planAccess.ts";
+import { isStaleSubscription, refreshSubscriptionFromStripe } from "./stripeRefresh.ts";
 
 type HeadersMap = Record<string, string>;
 
