@@ -1335,17 +1335,15 @@ export default function Inicio2() {
                     type="button"
                     disabled={checkoutLoading}
                     onClick={() => {
-                      if (checkoutLoading) return;
                       const selectedPlan = plans[activePlan];
-                      const billingCycle = selectedPlan.id === "mensal"
-                        ? "monthly"
-                        : selectedPlan.id === "semestral"
-                          ? "semiannual"
-                          : "annual";
-                      void startEliteCheckout(
-                        billingCycle,
-                        selectedPlan.trackValue,
-                      );
+                      if (selectedPlan.id === "mensal") {
+                        window.location.href = "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c";
+                      } else if (selectedPlan.id === "anual") {
+                        window.location.href = "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d";
+                      } else if (selectedPlan.id === "semestral") {
+                        // TODO: Update this link when the user provides the semestral stripe link
+                        alert("Link do plano semestral não configurado. Por favor, escolha mensal ou anual.");
+                      }
                     }}
                     className={`w-full bg-purple-600 hover:bg-purple-700 text-white font-black text-lg lg:text-xl rounded-2xl py-5 flex items-center justify-center shadow-lg shadow-purple-600/40 transition-all active:scale-95 animate-[pulse_2s_ease-in-out_infinite] ${
                       checkoutLoading ? "pointer-events-none opacity-70" : ""
