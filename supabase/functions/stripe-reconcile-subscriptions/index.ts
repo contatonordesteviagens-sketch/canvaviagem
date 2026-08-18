@@ -100,6 +100,40 @@ serve(async (req) => {
       });
     }
 
+    // Creates (once) the Stripe webhook endpoint that keeps renewals in sync.
+    // The signing secret is never returned or logged — only its last 4 characters,
+    // so the operator can confirm which secret to copy from the Stripe dashboard.
+    if (body?.action === "webhook_install") {
+      const targetUrl = `${supabaseUrl}/functions/v1/stripe-webhook`;
+      const existing = await stripe.webhookEndpoints.list({ limit: 50 });
+      const already = existing.data.find((endpoint) => endpoint.url === targetUrl);
+      if (already) {
+        return json({ created: false, endpoint_id: already.id, url: already.url, status: already.status });
+      }
+      const endpoint = await stripe.webhookEndpoints.create({
+        url: targetUrl,
+        enabled_events: [
+          "checkout.session.completed",
+          "checkout.session.expired",
+          "customer.subscription.created",
+          "customer.subscription.updated",
+          "customer.subscription.deleted",
+          "invoice.payment_succeeded",
+          "invoice.payment_failed",
+        ],
+        description: "Canva Viagem - sincronizacao de assinaturas",
+      });
+      return json({
+        created: true,
+        endpoint_id: endpoint.id,
+        url: endpoint.url,
+        status: endpoint.status,
+        signing_secret_last4: (endpoint.secret ?? "").slice(-4),
+      });
+    }
+
+
+
     let query = db
       .from("subscriptions")
       .select("user_id,status,product_id,current_period_end,stripe_customer_id,stripe_subscription_id,billing_provider,billing_cycle")
