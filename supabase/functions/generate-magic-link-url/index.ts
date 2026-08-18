@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { canonicalSiteUrl } from "../_shared/siteUrl.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
@@ -64,7 +65,7 @@ serve(async (req) => {
     }
 
     // Build magic link URL
-    const baseUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
+    const baseUrl = canonicalSiteUrl();
     const magicLink = `${baseUrl}/auth/verify?token=${token}`;
 
     console.log("[GENERATE-MAGIC-LINK-URL] Magic link generated successfully");

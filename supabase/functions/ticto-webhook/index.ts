@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { canonicalSiteUrl } from "../_shared/siteUrl.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
@@ -147,7 +148,7 @@ async function ensureUserAndOnboarding(
   if (subError) logStep("ERROR: Failed to upsert subscription", { error: subError.message });
 
   // 4. Generate Magic Link Token
-  const siteUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
+  const siteUrl = canonicalSiteUrl();
   const token = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
   let magicLink: string | undefined = undefined;

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { canonicalSiteUrl } from "../_shared/siteUrl.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 
@@ -192,7 +193,7 @@ serve(async (req) => {
 
     // Criar link de verificação - SEMPRE usar SITE_URL do servidor (nunca aceitar do cliente)
     // para evitar open redirect / phishing via siteUrl controlado pelo atacante.
-    const baseUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
+    const baseUrl = canonicalSiteUrl();
     const magicLinkParams = new URLSearchParams({ token });
     if (safeRedirect) magicLinkParams.set("redirect", safeRedirect);
     const magicLink = `${baseUrl}/auth/verify?${magicLinkParams.toString()}`;
