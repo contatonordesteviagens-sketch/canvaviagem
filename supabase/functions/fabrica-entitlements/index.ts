@@ -129,15 +129,20 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = typeof body.action === "string" ? body.action : "status";
 
-    const [{ data: adminRole }, { data: subscription }] = await Promise.all([
+    const [{ data: adminRole }, { data: subscriptionRow }] = await Promise.all([
       db.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").limit(1).maybeSingle(),
       db
         .from("subscriptions")
-        .select("product_id,status,current_period_end,trial_started_at,trial_ends_at,billing_provider,billing_cycle")
+        .select("product_id,status,current_period_end,trial_started_at,trial_ends_at,billing_provider,billing_cycle,stripe_customer_id,stripe_subscription_id")
         .eq("user_id", userId)
         .limit(1)
         .maybeSingle(),
     ]);
+
+    // Missed webhook safety net: a row still marked active but with an ended period is stale data.
+    const subscription = isStaleSubscription(subscriptionRow)
+      ? await refreshSubscriptionFromStripe(db, userId, subscriptionRow)
+      : subscriptionRow;
 
     const tier = classifyTier(subscription, Boolean(adminRole) || isPrimaryAdminEmail(userEmail));
     const capabilities = buildCapabilities(tier);
