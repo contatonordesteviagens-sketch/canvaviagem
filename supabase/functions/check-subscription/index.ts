@@ -3,6 +3,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
 import { isEliteProduct, isStartProduct } from "../_shared/planAccess.ts";
+import { periodEndOf } from "../_shared/stripeRefresh.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
