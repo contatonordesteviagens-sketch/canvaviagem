@@ -144,6 +144,24 @@ const LiveStream = () => {
     return `https://wa.me/5585998458995?text=${encodeURIComponent(text)}`;
   };
 
+  // Per-attendee session token (issued once at registration) required by the webinar RPCs
+  const getWebinarSessionToken = (phone: string): string | null => {
+    try {
+      const map = JSON.parse(localStorage.getItem("live_stream_session_tokens") || "{}");
+      return map[phone] || null;
+    } catch (_) {
+      return null;
+    }
+  };
+
+  const storeWebinarSessionToken = (phone: string, token: string) => {
+    try {
+      const map = JSON.parse(localStorage.getItem("live_stream_session_tokens") || "{}");
+      map[phone] = token;
+      localStorage.setItem("live_stream_session_tokens", JSON.stringify(map));
+    } catch (_) {}
+  };
+
   // Helper to sync watch progress via SECURITY DEFINER RPC (RLS blocks direct updates)
   const syncProgressToSupabase = async (currentSeconds: number, opts?: { left?: boolean }) => {
     try {
@@ -169,6 +187,7 @@ const LiveStream = () => {
         p_last_playback_time: currentSeconds,
         p_clicked_offer: null,
         p_left: !!opts?.left,
+        p_session_token: getWebinarSessionToken(cleanPhone),
       });
       if (error) console.error("Erro RPC update_webinar_lead_session:", error);
     } catch (err) {
@@ -191,6 +210,7 @@ const LiveStream = () => {
         p_last_playback_time: null,
         p_clicked_offer: true,
         p_left: false,
+        p_session_token: getWebinarSessionToken(cleanPhone),
       });
       if (error) console.error("Erro RPC clicked offer:", error);
     } catch (e) {
@@ -216,6 +236,7 @@ const LiveStream = () => {
         p_message: message,
         p_time: timeStr,
         p_playback_second: playbackSeconds,
+        p_session_token: getWebinarSessionToken(cleanPhone),
       });
       if (error) console.error("Erro RPC append_webinar_lead_comment:", error);
     } catch (e) {
@@ -1306,6 +1327,19 @@ const LiveStream = () => {
       
       localStorage.setItem("live_stream_leads", JSON.stringify(existingLeads));
       
+      // Claim the per-attendee session token (only issued on first registration)
+      if (!getWebinarSessionToken(cleanPhone)) {
+        try {
+          const { data: claimedToken } = await (supabase as any).rpc("claim_webinar_lead_session", {
+            p_whatsapp: cleanPhone,
+            p_name: name.trim(),
+          });
+          if (claimedToken) storeWebinarSessionToken(cleanPhone, claimedToken as string);
+        } catch (e) {
+          console.error("Erro ao obter token de sessão do webinar:", e);
+        }
+      }
+
       const activeSession = {
         phone: cleanPhone,
         name: name.trim(),
