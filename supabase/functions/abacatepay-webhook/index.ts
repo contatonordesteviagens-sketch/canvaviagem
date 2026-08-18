@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { canonicalSiteUrl } from "../_shared/siteUrl.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
@@ -147,7 +148,7 @@ serve(async (req) => {
           name,
         });
 
-        const siteUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.com.br";
+        const siteUrl = canonicalSiteUrl();
         const magicLink = `${siteUrl}/auth/verify?token=${token}`;
 
         await resend.emails.send({
