@@ -360,71 +360,21 @@ export default function SiteOfferLanding() {
           </div>
         </section>
 
-        <section className="border-b border-slate-200 bg-white">
-          <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-y divide-slate-200 px-4 sm:px-6 md:grid-cols-4 md:divide-y-0 lg:px-8">
-            {[
-              ["Feito para turismo", "Estrutura pensada para vender viagens"],
-              ["Celular e computador", "Experiência adaptada aos dois formatos"],
-              ["Pedidos de orçamento", "Formulários e contato pelo WhatsApp"],
-              ["Publicação incluída", "Sem contratar hospedagem separada"],
-            ].map(([title, copy]) => (
-              <div key={title} className="px-3 py-6 text-center sm:px-5">
-                <p className="font-black text-slate-950">{title}</p>
-                <p className="mt-1 text-xs leading-relaxed text-slate-500 sm:text-sm">{copy}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="bg-white py-16 md:py-24">
-          <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[0.82fr_1.18fr] lg:px-8">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">O risco de parecer improvisado</p>
+        <section id="demonstracao" className="border-y border-slate-200 bg-white py-16 md:py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto mb-12 max-w-3xl text-center">
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-700">
+                NÃO IMAGINE. VEJA FUNCIONANDO.
+              </p>
               <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
-                Antes de pedir orçamento, o viajante precisa acreditar que encontrou uma agência real.
+                Abra um site criado com o Canva Viagem.
               </h2>
               <p className="mt-5 text-lg leading-relaxed text-slate-600">
-                Quando sua agência existe apenas em posts e conversas, o cliente precisa juntar as peças sozinho: quem vocês são, quais viagens vendem e como pedir uma proposta.
-              </p>
-              <p className="mt-4 border-l-4 border-cyan-700 pl-5 text-lg font-bold leading-relaxed text-slate-800">
-                O site não substitui Instagram nem atendimento. Ele dá ao viajante um endereço único para conhecer sua agência e avançar com mais segurança.
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[
-                ["Informação espalhada", "Perfil, destaques e conversas antigas obrigam o cliente a procurar o que precisa."],
-                ["Pacotes se perdem no feed", "Uma boa oferta desaparece entre publicações novas e conteúdos antigos."],
-                ["O WhatsApp repete tudo", "Sua equipe explica apresentação, condições e contatos para cada novo interessado."],
-                ["Falta um endereço profissional", "Sem uma página estável, a agência pode parecer menor ou menos organizada do que realmente é."],
-              ].map(([title, copy]) => (
-                <div key={title} className="border-t border-slate-300 py-5 sm:px-3">
-                  <p className="text-lg font-black text-slate-950">{title}</p>
-                  <p className="mt-2 leading-relaxed text-slate-600">{copy}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="demonstracao" className="border-y border-slate-200 bg-[#EEF3F6] py-16 md:py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid items-end gap-6 md:grid-cols-[1fr_auto]">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">3 demonstrações oficiais para explorar</p>
-                <h2 className="mt-4 max-w-[20ch] text-3xl font-black leading-tight tracking-tight md:text-5xl">
-                  Troque o tipo de agência. Veja o site mudar de verdade.
-                </h2>
-              </div>
-              <p className="max-w-md text-base leading-relaxed text-slate-600 md:text-lg">
-                Cada demonstração usa um modelo real do construtor, uma marca própria e três pacotes completos com fotos, valores e detalhes.
+                Explore demonstrações reais da estrutura disponível para diferentes tipos de agência.
               </p>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-relaxed text-amber-950">
-              <strong>Transparência:</strong> estas três agências, logos, pacotes e valores são fictícios. Foram criados como demonstrações oficiais para mostrar o que a plataforma consegue montar. Não são clientes nem resultados alegados.
-            </div>
-
-            <div className="mt-8 grid gap-3 md:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-3">
               {siteOfferDemos.map((demo) => {
                 const isActive = demo.id === activeDemo.id;
                 return (
@@ -452,7 +402,7 @@ export default function SiteOfferLanding() {
               })}
             </div>
 
-            <div className="mt-5 rounded-[1.75rem] border border-slate-300 bg-[#0B1324] p-3 shadow-[0_28px_70px_-35px_rgba(15,23,42,0.7)] sm:p-5">
+            <div className="mt-6 rounded-[1.75rem] border border-slate-300 bg-[#0B1324] p-3 shadow-[0_28px_70px_-35px_rgba(15,23,42,0.7)] sm:p-5">
               <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 text-white sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <p className="truncate font-black">{activeDemo.agencyName}</p>
@@ -508,6 +458,68 @@ export default function SiteOfferLanding() {
                   <span key={packageName} className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 font-semibold">✓ {packageName}</span>
                 ))}
               </div>
+            </div>
+
+            <p className="mt-6 text-center text-xs text-slate-400">
+              Demonstrações oficiais do Canva Viagem. As marcas, pacotes e valores apresentados são fictícios e foram criados exclusivamente para demonstrar a plataforma.
+            </p>
+
+            <div className="mt-12 flex flex-col items-center text-center">
+              <h3 className="mb-6 text-2xl font-black text-slate-950 sm:text-3xl">Quero criar isso para minha agência</h3>
+              <button
+                type="button"
+                onClick={() => scrollToPlans("demonstracao")}
+                className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-8 text-base font-black text-white shadow-lg shadow-cyan-900/20 transition hover:bg-cyan-500 active:scale-[0.98] sm:w-auto"
+              >
+                PUBLICAR O SITE DA MINHA AGÊNCIA
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y border-slate-200 bg-slate-50">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-y divide-slate-200 px-4 sm:px-6 md:grid-cols-4 md:divide-y-0 lg:px-8">
+            {[
+              ["Feito para turismo", "Estrutura pensada para vender viagens"],
+              ["Celular e computador", "Experiência adaptada aos dois formatos"],
+              ["Pedidos de orçamento", "Formulários e contato pelo WhatsApp"],
+              ["Publicação incluída", "Sem contratar hospedagem separada"],
+            ].map(([title, copy]) => (
+              <div key={title} className="px-3 py-6 text-center sm:px-5">
+                <p className="font-black text-slate-950">{title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-500 sm:text-sm">{copy}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="bg-white py-16 md:py-24">
+          <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[0.82fr_1.18fr] lg:px-8">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">O risco de parecer improvisado</p>
+              <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
+                Antes de pedir orçamento, o viajante precisa acreditar que encontrou uma agência real.
+              </h2>
+              <p className="mt-5 text-lg leading-relaxed text-slate-600">
+                Quando sua agência existe apenas em posts e conversas, o cliente precisa juntar as peças sozinho: quem vocês são, quais viagens vendem e como pedir uma proposta.
+              </p>
+              <p className="mt-4 border-l-4 border-cyan-700 pl-5 text-lg font-bold leading-relaxed text-slate-800">
+                O site não substitui Instagram nem atendimento. Ele dá ao viajante um endereço único para conhecer sua agência e avançar com mais segurança.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                ["Informação espalhada", "Perfil, destaques e conversas antigas obrigam o cliente a procurar o que precisa."],
+                ["Pacotes se perdem no feed", "Uma boa oferta desaparece entre publicações novas e conteúdos antigos."],
+                ["O WhatsApp repete tudo", "Sua equipe explica apresentação, condições e contatos para cada novo interessado."],
+                ["Falta um endereço profissional", "Sem uma página estável, a agência pode parecer menor ou menos organizada do que realmente é."],
+              ].map(([title, copy]) => (
+                <div key={title} className="border-t border-slate-300 py-5 sm:px-3">
+                  <p className="text-lg font-black text-slate-950">{title}</p>
+                  <p className="mt-2 leading-relaxed text-slate-600">{copy}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
