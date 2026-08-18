@@ -172,7 +172,8 @@ serve(async (req) => {
             const productId = (candidate.items.data[0]?.price?.product as string | null) ?? null;
             if (!selected || isEliteProduct(productId)) {
               selected = { customerId, subscription: candidate, productId };
-            if (isEliteProduct(productId)) break;
+              if (isEliteProduct(productId)) break;
+            }
           }
           if (isEliteProduct(selected?.productId)) break;
         }
