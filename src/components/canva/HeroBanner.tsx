@@ -102,38 +102,40 @@ const HeroBannerComponent = ({ searchValue, onSearchChange, children }: HeroBann
       </div>
 
       {/* Banners isolados para não causarem layout shift no menu */}
-      <div className="w-full max-w-7xl mx-auto px-4 pb-8 md:pb-12">
-        {/* 2. Imagem Principal no Topo (~70% da tela, sozinha em 1 fileira) */}
-        <div 
-          onClick={() => navigate('/fabrica')}
-          className="w-full max-w-full sm:max-w-[82%] md:max-w-[70%] mx-auto relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.008] hover:border-blue-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.2)] group bg-slate-950/5 dark:bg-[#0F0F11]"
-        >
-          <img 
-            src="/capa-fabrica.webp" 
-            alt="Acesse a Fábrica de Destinos pra Vender Mais" 
-            className="w-full h-auto object-contain block mx-auto transition-transform duration-500 group-hover:scale-[1.01]"
-          />
-        </div>
+      {!searchValue.trim() && (
+        <div className="w-full max-w-7xl mx-auto px-4 pb-8 md:pb-12">
+          {/* 2. Imagem Principal no Topo (~70% da tela, sozinha em 1 fileira) */}
+          <div 
+            onClick={() => navigate('/fabrica')}
+            className="w-full max-w-full sm:max-w-[82%] md:max-w-[70%] mx-auto relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.008] hover:border-blue-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.2)] group bg-slate-950/5 dark:bg-[#0F0F11]"
+          >
+            <img 
+              src="/capa-fabrica.webp" 
+              alt="Acesse a Fábrica de Destinos pra Vender Mais" 
+              className="w-full h-auto object-contain block mx-auto transition-transform duration-500 group-hover:scale-[1.01]"
+            />
+          </div>
 
-        {/* 3. Grid 2x2 das 4 Outras Capas da Fábrica (15% menor) */}
-        <div className="w-full max-w-full sm:max-w-[76%] md:max-w-[70%] mx-auto grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-6 mt-4 sm:mt-6">
-          {fabricaCapasGrid.map((capa) => {
-            return (
-              <div 
-                key={capa.id}
-                onClick={() => navigate(capa.route)}
-                className="w-full relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.015] hover:border-amber-500/40 hover:shadow-[0_0_35px_rgba(245,158,11,0.18)] group bg-slate-950/5 dark:bg-[#0F0F11]"
-              >
-                <img 
-                  src={capa.src} 
-                  alt={capa.title} 
-                  className="w-full h-auto object-contain block mx-auto transition-transform duration-500 group-hover:scale-[1.025]"
-                />
-              </div>
-            );
-          })}
+          {/* 3. Grid 2x2 das 4 Outras Capas da Fábrica (15% menor) */}
+          <div className="w-full max-w-full sm:max-w-[76%] md:max-w-[70%] mx-auto grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-6 mt-4 sm:mt-6">
+            {fabricaCapasGrid.map((capa) => {
+              return (
+                <div 
+                  key={capa.id}
+                  onClick={() => navigate(capa.route)}
+                  className="w-full relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.015] hover:border-amber-500/40 hover:shadow-[0_0_35px_rgba(245,158,11,0.18)] group bg-slate-950/5 dark:bg-[#0F0F11]"
+                >
+                  <img 
+                    src={capa.src} 
+                    alt={capa.title} 
+                    className="w-full h-auto object-contain block mx-auto transition-transform duration-500 group-hover:scale-[1.025]"
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
