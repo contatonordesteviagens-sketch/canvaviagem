@@ -57,15 +57,27 @@ serve(async (req) => {
   });
 
   try {
+    // Fail-closed: sem segredo configurado nenhuma notificação é processada.
+    if (!webhookSecret) {
+      logStep("ERRO: ABACATEPAY_WEBHOOK_SECRET não configurado");
+      return new Response(JSON.stringify({ error: "Webhook not configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
     const rawBody = await req.text();
     const signature = req.headers.get("x-abacatepay-signature");
 
     logStep("Recebendo notificação", { hasSignature: !!signature });
 
     // Verificar segurança
-    if (webhookSecret && !await verifySignature(rawBody, signature, webhookSecret)) {
+    if (!await verifySignature(rawBody, signature, webhookSecret)) {
       logStep("ERRO: Assinatura inválida");
-      return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 401 });
+      return new Response(JSON.stringify({ error: "Invalid signature" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
     }
 
     const payload = JSON.parse(rawBody);
