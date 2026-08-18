@@ -148,6 +148,10 @@ const AuthVerify = () => {
         }
       }
 
+      if (verifiedRedirectTo === fallbackPath && data.subscribed) {
+        verifiedRedirectTo = "/";
+      }
+
       setStatus("success");
 
       // Redirecionar após 3 segundos (mais tempo para ler a mensagem)
