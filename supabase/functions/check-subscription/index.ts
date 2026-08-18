@@ -128,7 +128,7 @@ serve(async (req) => {
         if (isCurrent) {
           localActiveSub = localSub;
           if (isEliteProduct(localSub.product_id) && localSub.billing_provider !== 'stripe') {
-            logStep("Elite/Ticto subscription found in local database", { productId: localSub.product_id });
+            logStep("Elite subscription found in local database", { productId: localSub.product_id });
             return new Response(JSON.stringify({ 
               subscribed: true, 
               product_id: localSub.product_id, 

@@ -230,7 +230,7 @@ serve(async (req) => {
     // --- STRIPE SUBSCRIPTION CHECK + LOCAL SYNC ---
     let isSubscribed = false;
 
-    // Check local subscription first (for Ticto and existing users)
+    // Check local subscription first (for existing users)
     try {
       const { data: localSub } = await supabaseAdmin
         .from("subscriptions")

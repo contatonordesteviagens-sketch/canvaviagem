@@ -151,7 +151,7 @@ serve(async (req) => {
     let untouched = 0;
 
     for (const row of rows ?? []) {
-      // Only Stripe-backed records are reconcilable here. Hotmart/Ticto/PIX rows stay untouched.
+      // Only Stripe-backed records are reconcilable here. Hotmart/PIX rows stay untouched.
       if (!row.stripe_subscription_id && !row.stripe_customer_id) {
         untouched += 1;
         continue;
