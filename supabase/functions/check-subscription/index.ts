@@ -96,8 +96,9 @@ serve(async (req) => {
     logStep("User authenticated", { userId, email });
 
     // --- CHECK LOCAL DATABASE FIRST (Updated by Webhooks) ---
-    // Elite can be trusted locally. Start/basic must still be verified against Stripe
-    // so upgrades Start → Elite are never blocked by stale local data.
+    // We read local DB to get stripe_customer_id for the Stripe check below.
+    // If a non-Stripe Elite exists (Hotmart/PIX), we return immediately.
+    // All Stripe-backed subscriptions fall through to the Stripe verification.
     let localSubscriptionRecord: any = null;
     let localActiveSub: any = null;
     if (dbClient) {
@@ -105,14 +106,8 @@ serve(async (req) => {
         .from("subscriptions")
         .select("*")
         .eq("user_id", userId)
-        .single();
-    if (dbClient) {
-      const { data: localSub, error: localSubError } = await dbClient
-        .from("subscriptions")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
-      
+        .maybeSingle();
+
       if (!localSubError && localSub) {
         localSubscriptionRecord = localSub;
       }
@@ -127,11 +122,13 @@ serve(async (req) => {
         const isCurrent = !endDate || new Date(endDate) > new Date();
         if (isCurrent) {
           localActiveSub = localSub;
-          if (isEliteProduct(localSub.product_id) && localSub.billing_provider !== 'stripe') {
-            logStep("Elite subscription found in local database", { productId: localSub.product_id });
-            return new Response(JSON.stringify({ 
-              subscribed: true, 
-              product_id: localSub.product_id, 
+          // Early return ONLY for non-Stripe providers (Hotmart, PIX).
+          // Stripe subscribers must be verified live to catch upgrades/cancellations.
+          if (isEliteProduct(localSub.product_id) && localSub.billing_provider !== "stripe") {
+            logStep("Elite subscription found in local database (non-Stripe)", { productId: localSub.product_id });
+            return new Response(JSON.stringify({
+              subscribed: true,
+              product_id: localSub.product_id,
               subscription_end: endDate,
               status: localSub.status,
               trial_end: localSub.trial_ends_at ?? null,
@@ -142,7 +139,7 @@ serve(async (req) => {
               status: 200,
             });
           }
-          logStep("Local subscription is non-Elite; verifying Stripe for possible upgrade", { productId: localSub.product_id });
+          logStep("Local subscription found; verifying live against Stripe", { productId: localSub.product_id, provider: localSub.billing_provider });
         }
       }
     }
