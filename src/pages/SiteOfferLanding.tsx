@@ -275,61 +275,86 @@ export default function SiteOfferLanding() {
       <main>
         <section className="relative overflow-hidden bg-[#0B1324] text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_20%,rgba(8,145,178,0.18),transparent_34%)]" />
-          <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-[0.92fr_1.08fr] lg:px-8 lg:py-24">
-            <div className="max-w-2xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-cyan-200">
+          <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:px-8 lg:py-20">
+            {/* TEXT COLUMN */}
+            <div className="mx-auto flex max-w-2xl flex-col lg:mx-0">
+              <div className="mb-6 self-start inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-cyan-200">
                 <Globe2 className="h-4 w-4" />
-                Site profissional para agências de viagens
+                SITE PROFISSIONAL PARA AGÊNCIAS DE VIAGENS
               </div>
-              <h1 className="max-w-[14ch] text-4xl font-black leading-[0.98] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
-                Crie o site profissional da sua agência sem programador.
+
+              <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-5xl xl:text-6xl">
+                Publique o site profissional da sua agência de viagens sem programador.
               </h1>
-              <p className="mt-6 max-w-[62ch] text-lg leading-relaxed text-slate-300 sm:text-xl">
-                Cadastre sua marca, adicione seus pacotes e publique um endereço para apresentar a agência, receber pedidos de orçamento e levar o cliente ao WhatsApp.
+
+              <p className="mt-5 text-lg leading-relaxed text-slate-300 sm:text-xl">
+                Escolha entre 6 modelos feitos para turismo, adicione sua marca e seus pacotes e publique um site navegável para apresentar sua agência, receber pedidos de orçamento e levar interessados ao WhatsApp.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+
+              {/* MOCKUP MOBILE ONLY */}
+              <div className="relative mt-8 w-full lg:hidden">
+                <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5 p-2 shadow-[0_20px_50px_-20px_rgba(8,145,178,0.5)]">
+                  <img
+                    src={showcaseLandingPages}
+                    alt="Demonstração do site para agências de viagens"
+                    className="w-full rounded-[1rem] object-cover"
+                  />
+                </div>
+              </div>
+
+              <ul className="mt-8 space-y-3 text-base font-medium text-slate-200 sm:text-lg">
+                {[
+                  "Site para celular e computador",
+                  "Páginas individuais para seus pacotes",
+                  "Formulário de orçamento + WhatsApp",
+                  "Publicação incluída",
+                  "Edite sempre que precisar",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 shrink-0 text-cyan-400" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mb-4 mt-8 w-max inline-flex items-center rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-2.5">
+                <span className="font-medium text-slate-300">
+                  A partir de <strong className="ml-1 text-lg text-white">R$40,16/mês</strong> no plano anual
+                </span>
+              </div>
+
+              <div className="flex w-full flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => scrollToPlans("hero")}
-                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-cyan-600 px-7 text-base font-black text-white transition hover:bg-cyan-500 active:scale-[0.98]"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-8 text-base font-black text-white shadow-lg shadow-cyan-900/30 transition hover:bg-cyan-500 active:scale-[0.98] sm:w-auto"
                 >
-                  Publicar o site da minha agência
+                  PUBLICAR O SITE DA MINHA AGÊNCIA
                   <ArrowRight className="h-5 w-5" />
                 </button>
                 <a
                   href="#demonstracao"
-                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-7 text-base font-bold text-white transition hover:bg-white/10 active:scale-[0.98]"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-8 text-base font-bold text-white transition hover:bg-white/10 active:scale-[0.98] sm:w-auto"
                 >
-                  <Globe2 className="h-5 w-5" />
-                  Ver um site real
+                  <Monitor className="h-5 w-5" />
+                  VER SITE REAL FUNCIONANDO
                 </a>
               </div>
-              <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-slate-300">
-                <span className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-cyan-300" />Acesso exclusivo para assinantes</span>
-                <span className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-cyan-300" />Liberação após o pagamento</span>
-                <span className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-cyan-300" />Cancelamento online</span>
+
+              <div className="mt-5 flex items-center justify-center gap-2 text-xs font-semibold text-slate-400 sm:justify-start">
+                <ShieldCheck className="h-4 w-4" />
+                <span>Acesso liberado após o pagamento &middot; Cancelamento online</span>
               </div>
             </div>
 
-            <div className="relative">
-              <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-3 shadow-[0_30px_80px_-35px_rgba(8,145,178,0.6)]">
+            {/* MOCKUP DESKTOP ONLY */}
+            <div className="relative hidden lg:block">
+              <div className="transform overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-3 shadow-[0_30px_80px_-35px_rgba(8,145,178,0.6)] transition-transform duration-500 hover:-translate-y-2">
                 <img
                   src={showcaseLandingPages}
                   alt="Exemplos de sites para agências de viagens criados no Canva Viagem"
-                  className="aspect-[4/3] w-full rounded-[1.4rem] object-cover"
+                  className="w-full rounded-[1.4rem] object-cover"
                 />
-              </div>
-              <div className="mt-4 grid grid-cols-3 gap-2 sm:absolute sm:-bottom-6 sm:left-6 sm:right-6 sm:mt-0">
-                {[
-                  ["1", "Cadastre a agência"],
-                  ["2", "Adicione pacotes"],
-                  ["3", "Publique o endereço"],
-                ].map(([number, label]) => (
-                  <div key={number} className="rounded-xl border border-white/10 bg-[#111C31] px-3 py-3 text-center shadow-lg">
-                    <span className="mx-auto mb-1 flex h-6 w-6 items-center justify-center rounded-full bg-cyan-600 text-xs font-black">{number}</span>
-                    <span className="text-xs font-bold text-slate-200 sm:text-sm">{label}</span>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
