@@ -1298,7 +1298,19 @@ export default function Inicio2() {
                       } else if (plan.id === "semestral") {
                         window.location.href = ELITE_OFFER.semiannualCheckoutUrl;
                       }
-              </div>
+                    }}
+                    className={`w-full mt-auto text-center font-bold py-3 px-5 rounded-full transition-all ${
+                      plan.id === "anual"
+                        ? "bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/30"
+                        : "bg-slate-900 hover:bg-slate-800 text-white"
+                    }`}
+                  >
+                    Assinar {plan.id}
+                  </button>
+                </div>
+              ))}
+            </div>
+
 
               {/* Lista única de benefícios */}
               <div className="w-full bg-slate-50 border border-slate-200 rounded-[2rem] p-8 lg:p-10 flex flex-col items-center">
