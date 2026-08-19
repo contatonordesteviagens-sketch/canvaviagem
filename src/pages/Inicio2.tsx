@@ -1324,8 +1324,6 @@ export default function Inicio2() {
                   ))}
                 </div>
               </div>
-
-            </div>
             <div className="inicio2-after-purchase">
               <div className="inicio2-after-copy">
                 <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-2">depois da compra</p>
