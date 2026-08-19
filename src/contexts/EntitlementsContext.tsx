@@ -150,8 +150,7 @@ const buildFallbackSnapshot = (
   }
 
   const subscription = { subscribed, productId };
-  const stripeSubscriber = subscribed && billingProvider === "stripe";
-  const elite = isAdmin || stripeSubscriber || hasEliteAccess(subscription);
+  const elite = isAdmin || hasEliteAccess(subscription);
   const start = hasStartAccess(subscription);
   const unknownPaid = subscribed && !elite && !start;
   const tier: AccountTier = isAdmin

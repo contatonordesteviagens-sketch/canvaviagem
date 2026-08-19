@@ -78,11 +78,10 @@ function classifyTier(
   isAdmin: boolean,
 ): Tier {
   if (isAdmin) return "admin";
-  if (!subscription || (subscription.status !== "active" && subscription.status !== "trialing")) return "free";
+  if (!subscription || subscription.status !== "active") return "free";
   if (!isCurrent(subscription.current_period_end)) return "free";
-  if (subscription.billing_provider === "stripe") return "elite";
-  if (isEliteProduct(subscription.product_id)) {
-    return "elite";
+  if (isEliteProduct(subscription.product_id)) return "elite";
+  if (isStartProduct(subscription.product_id)) return "start_legacy";
   return "unknown_paid";
 }
 
