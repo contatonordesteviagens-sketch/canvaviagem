@@ -1234,6 +1234,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          session_token: string | null
           source: string | null
           whatsapp: string
         }
@@ -1241,6 +1242,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          session_token?: string | null
           source?: string | null
           whatsapp: string
         }
@@ -1248,6 +1250,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          session_token?: string | null
           source?: string | null
           whatsapp?: string
         }
@@ -1357,6 +1360,7 @@ export type Database = {
         Args: {
           p_message: string
           p_playback_second?: number
+          p_session_token?: string
           p_time: string
           p_whatsapp: string
         }
@@ -1375,6 +1379,10 @@ export type Database = {
       claim_stripe_webhook_event: {
         Args: { p_event_id: string; p_event_type: string }
         Returns: boolean
+      }
+      claim_webinar_lead_session: {
+        Args: { p_name?: string; p_whatsapp: string }
+        Returns: string
       }
       consume_fabrica_rate_limit: {
         Args: {
@@ -1465,6 +1473,7 @@ export type Database = {
           p_clicked_offer?: boolean
           p_last_playback_time?: number
           p_left?: boolean
+          p_session_token?: string
           p_watch_time?: number
           p_whatsapp: string
         }
