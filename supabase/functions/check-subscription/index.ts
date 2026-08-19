@@ -115,7 +115,7 @@ serve(async (req) => {
       if (
         !localSubError &&
         localSub &&
-        (localSub.status === "active" || localSub.status === "trialing") &&
+        localSub.status === "active" &&
         localSub.product_id
       ) {
         const endDate = localSub.current_period_end;
@@ -163,10 +163,11 @@ serve(async (req) => {
 
         for (const customerId of customerIds) {
           const stripeSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 10 });
-          const allSubscriptions = stripeSubscriptions.data.filter(s => s.status === "active" || s.status === "trialing");
+          const allSubscriptions = stripeSubscriptions.data.filter((subscription) => subscription.status === "active");
 
           for (const candidate of allSubscriptions) {
             const productId = (candidate.items.data[0]?.price?.product as string | null) ?? null;
+            if (!isEliteProduct(productId) && !isStartProduct(productId)) continue;
             if (!selected || isEliteProduct(productId)) {
               selected = { customerId, subscription: candidate, productId };
               if (isEliteProduct(productId)) break;

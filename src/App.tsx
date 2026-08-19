@@ -255,8 +255,8 @@ const App = () => {
                     <Route path="/canva" element={<ProtectedRoute requireSubscription><CanvaClone /></ProtectedRoute>} />
                     <Route path="/diferencas" element={<Diferencas />} />
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />
-                    <Route path="/fabrica" element={<ProtectedRoute requireSubscription><Fabrica /></ProtectedRoute>} />
-                    <Route path="/fabrica/*" element={<ProtectedRoute requireSubscription><Fabrica /></ProtectedRoute>} />
+                    <Route path="/fabrica" element={<ProtectedRoute requireElite><Fabrica /></ProtectedRoute>} />
+                    <Route path="/fabrica/*" element={<ProtectedRoute requireElite><Fabrica /></ProtectedRoute>} />
                     <Route path="/vendedor-ia" element={
                       <ProtectedRoute requireElite>
                         <VendedorIA />
@@ -274,8 +274,8 @@ const App = () => {
                     } />
                     <Route path="/es/planos" element={<SalesPageES />} />
                     <Route path="/es/obrigado" element={<ObrigadoES />} />
-                    <Route path="/es/fabrica" element={<ProtectedRoute requireSubscription><FabricaES /></ProtectedRoute>} />
-                    <Route path="/es/fabrica/*" element={<ProtectedRoute requireSubscription><FabricaES /></ProtectedRoute>} />
+                    <Route path="/es/fabrica" element={<ProtectedRoute requireElite><FabricaES /></ProtectedRoute>} />
+                    <Route path="/es/fabrica/*" element={<ProtectedRoute requireElite><FabricaES /></ProtectedRoute>} />
                     {/* Canonical Spanish landing page route. */}
                     <Route path="/es/inicio" caseSensitive={false} element={<InicioES />} />
 

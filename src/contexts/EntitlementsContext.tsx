@@ -112,7 +112,6 @@ const buildFallbackSnapshot = (
   isAdmin: boolean,
   subscribed: boolean,
   productId: string | null,
-  billingProvider: string | null,
   subscriptionLoading: boolean = false,
 ): EntitlementsSnapshot => {
   // 🛡️ MODO OTIMISTA: enquanto o servidor ainda não respondeu com o status
@@ -150,8 +149,7 @@ const buildFallbackSnapshot = (
   }
 
   const subscription = { subscribed, productId };
-  const stripeSubscriber = subscribed && billingProvider === "stripe";
-  const elite = isAdmin || stripeSubscriber || hasEliteAccess(subscription);
+  const elite = isAdmin || hasEliteAccess(subscription);
   const start = hasStartAccess(subscription);
   const unknownPaid = subscribed && !elite && !start;
   const tier: AccountTier = isAdmin
@@ -202,10 +200,9 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
       isAdmin,
       subscription.subscribed,
       subscription.productId,
-      subscription.billingProvider,
       subscription.loading,
     ),
-    [isAdmin, subscription.billingProvider, subscription.productId, subscription.subscribed, subscription.loading],
+    [isAdmin, subscription.productId, subscription.subscribed, subscription.loading],
   );
   const [snapshot, setSnapshot] = useState<EntitlementsSnapshot>(
     () => user ? fallback : buildGuestSnapshot(),

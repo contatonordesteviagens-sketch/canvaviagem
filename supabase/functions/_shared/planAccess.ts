@@ -1,11 +1,15 @@
-export const START_PRODUCT_IDS = new Set<string>();
+export const START_PRODUCT_IDS = new Set([
+  "prod_TkvaozfpkAcbpM",
+  "start_ticto",
+  "monthly_access_ticto",
+]);
 
 export const ELITE_PRODUCT_IDS = new Set([
   "prod_UTFsXcKq8m0mol",
   "prod_UTSmPe3GPt8iHt",
   "prod_UTFlCWzNqvqSNx",
-  "prod_TkvaozfpkAcbpM",
   "hotmart_elite",
+  "elite_ticto",
   "monthly_access_pix",
   "annual_access_pix",
 ]);
@@ -23,8 +27,5 @@ export function isEliteProduct(productId?: string | null) {
 
 export function isStartProduct(productId?: string | null) {
   if (!productId) return false;
-  if (START_PRODUCT_IDS.has(productId.trim())) return true;
-  // If it's not an Elite product, assume it's a Start product from Stripe
-  if (!isEliteProduct(productId)) return true;
-  return false;
+  return START_PRODUCT_IDS.has(productId.trim());
 }

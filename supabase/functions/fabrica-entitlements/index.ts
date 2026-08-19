@@ -38,29 +38,6 @@ type Tier =
 
 const jsonResponse = (body: Record<string, unknown>, status = 200) =>
   new Response(JSON.stringify(body), {
-  "crm_preview_opened",
-  "landing_viewed",
-  "plan_selected",
-  "checkout_started",
-  "checkout_completed",
-  "returned_to_feature",
-  "ad_preview_generated",
-  "carousel_preview_generated",
-  "site_preview_generated",
-  "ad_export_completed",
-  "carousel_export_completed",
-  "site_published",
-]);
-
-type Tier =
-  | "free"
-  | "start_legacy"
-  | "unknown_paid"
-  | "elite"
-  | "admin";
-
-const jsonResponse = (body: Record<string, unknown>, status = 200) =>
-  new Response(JSON.stringify(body), {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
@@ -78,11 +55,10 @@ function classifyTier(
   isAdmin: boolean,
 ): Tier {
   if (isAdmin) return "admin";
-  if (!subscription || (subscription.status !== "active" && subscription.status !== "trialing")) return "free";
+  if (!subscription || subscription.status !== "active") return "free";
   if (!isCurrent(subscription.current_period_end)) return "free";
-  if (subscription.billing_provider === "stripe") return "elite";
-  if (isEliteProduct(subscription.product_id)) {
-    return "elite";
+  if (isEliteProduct(subscription.product_id)) return "elite";
+  if (isStartProduct(subscription.product_id)) return "start_legacy";
   return "unknown_paid";
 }
 

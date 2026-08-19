@@ -68,10 +68,7 @@ export async function verifyFabricaEliteAccess(req: Request, corsHeaders: Header
 
   const endDate = subscription?.current_period_end ? new Date(subscription.current_period_end) : null;
   const isCurrent = (!endDate || endDate > new Date()) && subscription?.status === "active";
-  const isElite = (
-    subscription?.billing_provider === "stripe"
-    || isEliteProduct(subscription?.product_id)
-  ) && isCurrent;
+  const isElite = isEliteProduct(subscription?.product_id) && isCurrent;
 
   if (!isElite) {
     return { ok: false as const, response: jsonResponse({ error: "Plano Elite necessário" }, 403, corsHeaders) };
