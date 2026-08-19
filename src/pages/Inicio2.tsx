@@ -514,33 +514,17 @@ export default function Inicio2() {
         tier,
         return_to: returnTo,
       });
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: {
-          billing_cycle: billingCycle,
-          upgrade: upgradeFeature,
-          return_to: returnTo,
-          landing_variant: offerVariant,
-          landing_path: offerVariant === "ads"
-            ? "/anuncios-para-agencia-de-viagens"
-            : offerVariant === "site"
-              ? "/site-para-agencia-de-viagens"
-              : offerVariant === "content"
-                ? "/carrosseis-para-agencia-de-viagens"
-              : offerVariant === "team"
-                ? "/equipe-de-marketing-para-agencia-de-viagens"
-                : "/inicio",
-        },
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (data?.already_subscribed) {
-        sessionStorage.removeItem(pendingCheckoutKey);
-        toast.success("Seu acesso Elite já está ativo.");
-        window.location.assign("/fabrica");
-        return;
-      }
-      if (error || !data?.url) throw error || new Error("Checkout indisponível");
+      
       sessionStorage.removeItem(pendingCheckoutKey);
-      window.location.assign(data.url);
+      
+      let stripeUrl = ELITE_OFFER.annualCheckoutUrl;
+      if (billingCycle === "monthly") {
+        stripeUrl = ELITE_OFFER.monthlyCheckoutUrl;
+      } else if (billingCycle === "semiannual") {
+        stripeUrl = ELITE_OFFER.semiannualCheckoutUrl;
+      }
+      
+      window.location.href = stripeUrl;
     } catch (error) {
       console.error("[Inicio] Falha ao criar checkout:", error);
       toast.error("Não foi possível iniciar o checkout seguro agora. Tente novamente em instantes.");
@@ -1252,6 +1236,201 @@ export default function Inicio2() {
 
         <section id="planos" className="pricing inicio-section bg-white">
           <div className="inicio-container">
+                  <p className="text-slate-400 leading-relaxed text-base">{copy}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-5 lg:gap-6 mt-12">
+              {trustProofMetrics.map(([value, label]) => (
+                <div key={value} className="bg-white rounded-[2rem] p-6 lg:p-8 text-center shadow-xl shadow-slate-950/50">
+                  <div className="text-3xl lg:text-4xl font-black text-slate-950 mb-2">{value}</div>
+                  <div className="text-sm font-bold text-slate-500">{label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="demo" className="demo py-8 lg:py-12 bg-white">
+          <div className="inicio-container">
+            <div className="text-center max-w-3xl mx-auto mb-10">
+              <h2 className="section-title w-full text-center">Dashboard inteligente para quem vende viagens</h2>
+              <p className="section-subtitle w-full text-center mt-4">
+                Tudo que sua agência precisa em uma única tela, fácil de usar e direto ao ponto.
+              </p>
+            </div>
+
+            <div className="w-full max-w-[1000px] mx-auto mt-8 sm:mt-10 rounded-[24px] overflow-hidden border border-slate-100 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] transition-shadow">
+              <img src={heroDashboard} alt="Dashboard do Canva Viagem" className="w-full block" />
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mt-10 max-w-5xl mx-auto">
+              {[
+                ["1", "Digite o destino", "Exemplo: pacote para Maldivas, Disney, Gramado ou Jericoacoara."],
+                ["2", "A IA cria", "Receba anúncio, legenda, argumentos de venda e estrutura de página."],
+                ["3", "Publique e acompanhe", "Use no Instagram, WhatsApp, página de venda e CRM."],
+              ].map(([number, title, copy]) => (
+                <div key={title} className="bg-slate-50 border border-slate-100 rounded-[2rem] p-8 text-center relative overflow-hidden group hover:bg-white hover:border-purple-200 hover:shadow-xl transition-all duration-300">
+                  <div className="absolute top-0 right-0 text-[100px] font-black text-slate-900/5 -mt-8 -mr-4 group-hover:text-purple-600/5 transition-colors">{number}</div>
+                  <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white font-black text-xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-600/30 group-hover:scale-110 transition-transform">
+                    {number}
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900 mb-3">{title}</h3>
+                  <p className="text-slate-600 leading-relaxed text-base relative z-10">{copy}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white py-8 lg:py-12 border-b border-slate-100">
+          <div className="inicio-container">
+            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-center">
+              <div>
+                <p className="text-cyan-600 font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] mb-3">INCLUSO EM TODOS OS PLANOS</p>
+                <h2 className="text-2xl md:text-4xl font-black text-slate-950 leading-tight mb-4">
+                  1 ano de conteúdo pronto para postar sem precisar criar nada do zero.
+                </h2>
+                <p className="text-base md:text-lg text-slate-600 leading-relaxed mb-6">
+                  Você recebe todo o material do ano, é só colocar sua logo e publicar.
+                </p>
+
+                <div className="space-y-2.5 mb-8">
+                  {[
+                    "250 vídeos Reels focados em destinos de viagem",
+                    "400 artes e stories lindíssimos e de alta qualidade",
+                    "Templates fáceis e totalmente editáveis no Canva",
+                    "Calendário de postagens para saber exatamente o que postar",
+                  ].map((item) => (
+                    <div key={item} className="flex items-center gap-3 text-slate-800 font-semibold text-sm md:text-base bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-100">
+                      <CheckCircle2 size={20} className="text-emerald-500 shrink-0" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="btn btn-primary inline-flex text-lg px-8 py-4 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50">Liberar meus 250 Reels</a>
+              </div>
+
+              <div className="space-y-6">
+                <div className="rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] overflow-hidden border-4 border-white">
+                  <img
+                    src={reelsMainGifUrl}
+                    alt="Demonstração animada dos vídeos Reels entregues"
+                    loading="lazy"
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 md:mt-12">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <h3 className="text-xl md:text-2xl font-black text-slate-950">Exemplos do tipo de Reels que você recebe</h3>
+                <span className="hidden sm:inline text-sm font-black uppercase tracking-[0.18em] text-slate-400">publicar + adaptar + vender</span>
+              </div>
+              <div className="flex overflow-x-auto whitespace-nowrap sm:grid sm:grid-cols-3 gap-3 sm:gap-4 md:gap-5 pb-3 px-1 scrollbar-none">
+                {reelsPreviewGifs.map((gifUrl, index) => (
+                  <div key={gifUrl} className="w-[180px] sm:w-auto shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-lg shadow-slate-200/70">
+                    <img
+                      src={gifUrl}
+                      alt={`Exemplo de vídeo Reel de viagem ${index + 1}`}
+                      loading="lazy"
+                      className="aspect-[9/16] w-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white py-16 md:py-24">
+          <div className="inicio-container">
+            <div className="text-center max-w-3xl mx-auto mb-10">
+              <p className="text-purple-600 font-black uppercase tracking-[0.2em] text-xs mb-3">comparação honesta</p>
+              <h2 className="section-title w-full text-center">O custo de continuar improvisando também existe</h2>
+              <p className="section-subtitle w-full text-center">
+                Contratar cada peça separada custa mais, demora mais e ainda deixa sua operação espalhada.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 items-start">
+              <div className="bg-slate-950 rounded-3xl p-6 text-white">
+                <h3 className="text-2xl font-black mb-5">Fazendo por fora</h3>
+                {[
+                  ["Designer para artes", "R$ 150/mês ou mais"],
+                  ["Ferramenta de IA", "R$ 90/mês ou mais"],
+                  ["Social media", "R$ 1.500/mês"],
+                  ["Editor de vídeo", "R$ 1.500/mês"],
+                  ["Página de venda", "R$ 1.500 único"],
+                ].map(([label, price]) => (
+                  <div key={label} className="flex items-center justify-between gap-4 border-b border-white/10 py-4">
+                    <span className="text-slate-300">{label}</span>
+                    <span className="font-black text-white">{price}</span>
+                  </div>
+                ))}
+                <p className="mt-6 text-red-300 font-black">Pode passar de R$ 3.240/mês + implantação.</p>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-3xl p-6">
+                <h3 className="text-2xl font-black text-slate-950 mb-5">Com Canva Viagem</h3>
+                <div className="text-slate-700 space-y-4">
+                  <p><strong>Plano mensal:</strong> R$ 97/mês, com acesso liberado após o pagamento.</p>
+                  <p><strong>Plano anual:</strong> R$ 482 por ano, com 12 meses de acesso.</p>
+                  <p><strong>Você recebe:</strong> IA, páginas, conteúdos, CRM, mídias, materiais de apoio, suporte e garantia.</p>
+                </div>
+              <a href="#planos" onClick={(e) => { e.preventDefault(); const el = document.getElementById("planos"); if(el) el.scrollIntoView({behavior: "smooth"}); window.history.pushState(null, "", "#planos"); }} className="btn btn-primary mt-8 inline-flex">Escolher meu plano</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-[#F8FAFC] py-[64px] border-y border-slate-200">
+          <div className="inicio-container">
+            <h2 className="text-center text-[26px] font-bold text-[#0F172A] mb-2">Isso substitui o Canva Pro?</h2>
+            <p className="text-center text-[#64748B] text-[15px] max-w-[560px] mx-auto mb-6">Essa é a dúvida mais comum. A resposta direta:</p>
+            
+            <div className="md:hidden flex justify-center mb-3">
+              <span className="text-xs font-bold text-purple-600 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-full shadow-sm">
+                👉 Arraste para o lado para comparar →
+              </span>
+            </div>
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
+              <div className="grid grid-cols-[1.5fr_1fr_1fr] text-sm md:text-base min-w-[500px]">
+                {/* Header */}
+                <div className="p-4 md:p-6 font-bold text-slate-700 bg-white">Recurso</div>
+                <div className="p-4 md:p-6 font-bold text-center bg-[#E2E8F0] text-slate-700">Canva Pro</div>
+                <div className="p-4 md:p-6 font-bold text-center bg-[#7C3AED] text-white">Canva Viagem</div>
+                
+                {/* Rows */}
+                {[
+                  ["Templates genéricos", "✅ Muitos", "✅ 400 focados em viagem"],
+                  ["Vídeos de destinos prontos", "❌", "✅ 250 Reels 4K"],
+                  ["IA para criar ofertas de pacote", "❌", "✅"],
+                  ["Página de venda de pacote", "❌", "✅"],
+                  ["CRM de leads", "❌", "✅"],
+                  ["Suporte por WhatsApp", "❌", "✅"],
+                  ["Feito para agência de viagem", "❌", "✅"],
+                ].map(([feature, pro, viagem], idx) => (
+                  <div key={idx} className="contents">
+                    <div className="p-4 md:p-5 border-t border-slate-100 flex items-center font-medium text-slate-700">{feature}</div>
+                    <div className="p-4 md:p-5 border-t border-slate-100 bg-[#F8FAFC] text-center flex items-center justify-center">{pro}</div>
+                    <div className="p-4 md:p-5 border-t border-slate-100 bg-purple-50 font-bold text-center flex items-center justify-center text-purple-900">{viagem}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <p className="text-center text-[#64748B] text-[15px] max-w-[600px] mx-auto mt-6">
+              O Canva Pro é uma ferramenta de design genérica. O Canva Viagem é uma plataforma construída para quem vende viagens vender mais.
+            </p>
+          </div>
+        </section>
+
+        <section id="planos" className="pricing inicio-section bg-white">
+          <div className="inicio-container">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <h2 className="section-title w-full text-center">Escolha como acessar</h2>
               <p className="section-subtitle w-full text-center" style={{ textAlign: "center", margin: "0 auto" }}>
@@ -1259,102 +1438,61 @@ export default function Inicio2() {
               </p>
             </div>
 
-            <div className="max-w-5xl mx-auto w-full flex flex-col items-center gap-10">
-              
-              {/* Componente Interativo de Preços (3 Colunas) */}
-              <div className="w-full border-4 border-slate-100 rounded-[2rem] p-6 lg:p-8 shadow-xl shadow-slate-200/50 flex flex-col items-center gap-8 bg-white">
-                <div className="w-full grid md:grid-cols-3 gap-4">
-                  {plans.map((plan, index) => (
-                    <div
-                      key={plan.id}
-                      className={`w-full flex flex-col cursor-pointer border-2 p-5 rounded-2xl transition-all duration-300 relative ${
-                        plan.id === "anual" ? "order-first md:order-none " : ""
-                      }${
-                        activePlan === index ? "border-purple-600 bg-purple-50/50 shadow-md shadow-purple-500/10" : "border-slate-200 hover:border-purple-300 hover:bg-slate-50"
-                      }`}
-                      onClick={() => setActivePlan(index)}
-                    >
-                      {plan.popular && (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
-                          ★ Mais Popular
-                        </div>
-                      )}
-                      <div className="flex justify-between items-center mb-4">
-                        <p className="font-black text-lg text-slate-900 uppercase tracking-wide">
-                          {plan.id}
-                        </p>
-                        <div
-                          className={`border-2 size-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                            activePlan === index ? "border-purple-600" : "border-slate-300 bg-white"
-                          }`}
-                        >
-                          <div
-                            className={`size-2.5 bg-purple-600 rounded-full transition-opacity ${
-                              activePlan === index ? "opacity-100" : "opacity-0"
-                            }`}
-                          ></div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col mb-2">
-                        <span className="text-slate-900 font-black text-2xl lg:text-3xl">{plan.monthlyEquivalent || plan.price}/mês</span>
-                        {plan.id !== "mensal" && (
-                          <span className="text-slate-500 text-sm font-medium">({plan.price} total)</span>
-                        )}
-                      </div>
-
-                      <ul className="w-full border-t border-[#E2E8F0] my-[12px] pt-[12px] space-y-2 list-none p-0">
-                        {plan.features.map((feature, idx) => (
-                          <li key={idx} className="flex items-start text-[13px] text-[#475569] leading-[1.8]">
-                            <Check className="text-[#7C3AED] w-[16px] h-[16px] shrink-0 mr-2 mt-[2px]" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {plan.id === "anual" && (
-                        <div className="mt-auto pt-4 border-t border-purple-200/50">
-                          <div className="bg-[#F0FDF4] rounded-[6px] px-[12px] py-[8px]">
-                            <p className="text-[#16A34A] font-[700] text-[14px] leading-snug m-0">
-                              Você economiza {ELITE_OFFER.annualSavings} em relação ao mensal
-                            </p>
-                          </div>
-                        </div>
-                      )}
+            <div className="max-w-5xl mx-auto w-full grid md:grid-cols-3 gap-6">
+              {plans.map((plan, index) => (
+                <div
+                  key={plan.id}
+                  className={`w-full flex flex-col border-2 p-5 rounded-2xl relative bg-white ${
+                    plan.id === "anual" ? "order-first md:order-none border-purple-600 shadow-lg shadow-purple-500/10" : "border-slate-200"
+                  }`}
+                >
+                  {plan.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
+                      ★ Mais Popular
                     </div>
-                  ))}
-                </div>
-
-                <div className="w-full max-w-2xl mt-4">
-                  <div className="bg-[#F0FDF4] border-l-[4px] border-[#16A34A] rounded-[8px] p-[14px_18px] mb-[16px] shadow-sm">
-                    <p className="text-[14px] text-[#15803D] font-bold m-0 text-left flex items-center gap-2">
-                      Assine o Elite e libere o acesso completo após a confirmação do pagamento.
+                  )}
+                  <div className="flex justify-between items-center mb-4">
+                    <p className="font-black text-lg text-slate-900 uppercase tracking-wide">
+                      {plan.id}
                     </p>
                   </div>
+                  
+                  <div className="flex flex-col mb-2">
+                    <span className="text-slate-900 font-black text-2xl lg:text-3xl">{plan.monthlyEquivalent || plan.price}/mês</span>
+                    {plan.id !== "mensal" && (
+                      <span className="text-slate-500 text-sm font-medium">({plan.price} total)</span>
+                    )}
+                  </div>
+
+                  <ul className="w-full border-t border-[#E2E8F0] my-[12px] pt-[12px] space-y-2 list-none p-0 flex-grow">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start text-[13px] text-[#475569] leading-[1.8]">
+                        <Check className="text-[#7C3AED] w-[16px] h-[16px] shrink-0 mr-2 mt-[2px]" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {plan.id === "anual" && (
+                    <div className="mt-auto pt-4 border-t border-purple-200/50 mb-4">
+                      <div className="bg-[#F0FDF4] rounded-[6px] px-[12px] py-[8px]">
+                        <p className="text-[#16A34A] font-[700] text-[14px] leading-snug m-0">
+                          Você economiza {ELITE_OFFER.annualSavings} em relação ao mensal
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     type="button"
-                    disabled={checkoutLoading}
                     onClick={() => {
-                      const selectedPlan = plans[activePlan];
-                      if (selectedPlan.id === "mensal") {
-                        window.location.href = "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c";
-                      } else if (selectedPlan.id === "anual") {
-                        window.location.href = "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d";
-                      } else if (selectedPlan.id === "semestral") {
-                        // TODO: Update this link when the user provides the semestral stripe link
-                        alert("Link do plano semestral não configurado. Por favor, escolha mensal ou anual.");
+                      if (plan.id === "mensal") {
+                        window.location.href = ELITE_OFFER.monthlyCheckoutUrl;
+                      } else if (plan.id === "anual") {
+                        window.location.href = ELITE_OFFER.annualCheckoutUrl;
+                      } else if (plan.id === "semestral") {
+                        window.location.href = ELITE_OFFER.semiannualCheckoutUrl;
                       }
-                    }}
-                    className={`w-full bg-purple-600 hover:bg-purple-700 text-white font-black text-lg lg:text-xl rounded-2xl py-5 flex items-center justify-center shadow-lg shadow-purple-600/40 transition-all active:scale-95 animate-[pulse_2s_ease-in-out_infinite] ${
-                      checkoutLoading ? "pointer-events-none opacity-70" : ""
-                    }`}
-                  >
-                    {checkoutLoading ? "Abrindo checkout seguro..." : "Começar agora (Acesso em 2 minutos)"}
-                  </button>
-                  <p className="text-center text-[12px] font-bold text-[#64748B] mt-4 leading-relaxed px-2">
-                    Pagamento seguro via Stripe · Acesso após a confirmação · Cancelamento online · Garantia de 7 dias
-                  </p>
-                </div>
               </div>
 
               {/* Lista única de benefícios */}
