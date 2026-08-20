@@ -1881,10 +1881,10 @@ const Index = () => {
             className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-3 sm:p-4"
           >
             <motion.div 
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              className="bg-[#F8FAFC] border border-slate-200 rounded-3xl overflow-y-auto max-h-[92vh] w-[calc(100vw-24px)] max-w-[740px] relative shadow-2xl flex flex-col text-slate-900"
+              initial={{ scale: 0.95, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 15, opacity: 0 }}
+              className="bg-white border border-slate-200/60 rounded-3xl overflow-y-auto max-h-[92vh] w-[calc(100vw-24px)] max-w-[700px] relative shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] flex flex-col text-slate-900"
             >
               {/* Close Button */}
               <button 
@@ -1892,84 +1892,84 @@ const Index = () => {
                   localStorage.setItem("cv_festa_popup_seen_v3", "true");
                   setShowFestaPopup(false);
                 }}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer z-50 bg-white hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center border border-slate-200 shadow-sm font-bold"
+                className="absolute top-5 right-5 text-slate-400 hover:text-slate-900 transition-colors cursor-pointer z-50 bg-slate-50 hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center border border-slate-200/60 shadow-sm font-bold text-sm"
               >
                 ✕
               </button>
 
-              <div className="p-5 sm:p-7 md:p-8">
+              <div className="p-6 sm:p-10">
                 {/* Top Header / Title */}
                 <div className="text-center sm:text-left">
-                  <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-100 px-3.5 py-1 shadow-sm">
-                    <Crown className="h-3.5 w-3.5 text-purple-700" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-purple-900">Ecossistema #1 do Turismo</span>
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5">
+                    <Crown className="h-3.5 w-3.5 text-slate-600" />
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-700">Ecossistema #1 do Turismo</span>
                   </div>
 
-                  <h2 className="mt-3 text-2xl sm:text-3xl font-black leading-tight tracking-tight text-slate-900">
-                    A Fábrica de Anúncios Liberou! <span className="text-purple-600">🚀⚡</span>
+                  <h2 className="mt-4 text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+                    A Fábrica de Anúncios Liberou.
                   </h2>
-                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-600 font-medium">
-                    A ferramenta mais poderosa do mercado está pronta. Digite o destino e receba seu anúncio pronto em <strong className="text-slate-900 font-bold">5 segundos</strong>.
+                  <p className="mt-3 text-sm sm:text-base leading-relaxed text-slate-500 font-medium max-w-lg">
+                    A ferramenta mais poderosa do mercado está pronta. Digite o destino e receba seu anúncio pronto em 5 segundos.
                   </p>
                 </div>
 
-                {/* Prévia dos Entregáveis (O que você recebe no Plano Completo) */}
-                <div className="mt-6">
-                  <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 mb-3">
-                    <Sparkles className="h-4 w-4 text-purple-600 fill-purple-600" />
-                    <span>O que você recebe no Plano Completo:</span>
+                {/* Prévia dos Entregáveis */}
+                <div className="mt-10">
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>O que você recebe no Plano Completo</span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-                    <div className="flex items-start gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-700 mt-0.5">
-                        <Bot className="h-4 w-4" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100/50 hover:bg-slate-100/50 transition-colors">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm border border-slate-200/50 text-slate-700">
+                        <Bot className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-black text-slate-900">Fábrica de Anúncios IA</h4>
-                        <p className="text-[11px] text-slate-500 leading-tight mt-0.5">Gerador instantâneo de cards de oferta, fotos e preço com sua logo em 5s.</p>
+                        <h4 className="text-sm font-semibold text-slate-900">Fábrica de Anúncios IA</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed mt-1">Gerador instantâneo de cards de oferta com sua logo em 5s.</p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-100 text-cyan-700 mt-0.5">
-                        <Image className="h-4 w-4" />
+                    <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100/50 hover:bg-slate-100/50 transition-colors">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm border border-slate-200/50 text-slate-700">
+                        <Image className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-black text-slate-900">+3.000 Artes Editáveis</h4>
-                        <p className="text-[11px] text-slate-500 leading-tight mt-0.5">Maior acervo VIP do turismo para Feed, Stories, Reels e WhatsApp.</p>
+                        <h4 className="text-sm font-semibold text-slate-900">+3.000 Artes Editáveis</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed mt-1">Maior acervo VIP para Feed, Stories, Reels e WhatsApp.</p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 mt-0.5">
-                        <Layout className="h-4 w-4" />
+                    <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100/50 hover:bg-slate-100/50 transition-colors">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm border border-slate-200/50 text-slate-700">
+                        <Layout className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-black text-slate-900">Construtor de Sites</h4>
-                        <p className="text-[11px] text-slate-500 leading-tight mt-0.5">Páginas de pacote de viagem prontas, editáveis e de alta conversão.</p>
+                        <h4 className="text-sm font-semibold text-slate-900">Construtor de Sites</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed mt-1">Páginas de pacotes prontas e de alta conversão.</p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 mt-0.5">
-                        <Video className="h-4 w-4" />
+                    <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100/50 hover:bg-slate-100/50 transition-colors">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm border border-slate-200/50 text-slate-700">
+                        <Video className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-black text-slate-900">Canva Viagem Completo</h4>
-                        <p className="text-[11px] text-slate-500 leading-tight mt-0.5">Vídeos Reels, Vozes IA, roteiros automáticos e CRM de leads incluso.</p>
+                        <h4 className="text-sm font-semibold text-slate-900">Canva Viagem</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed mt-1">Roteiros automáticos, Vozes IA e CRM de leads incluso.</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Valores do Plano Completo */}
-                <div className="mt-6">
-                  <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 mb-3">
-                    <span>💳 Escolha seu plano de acesso:</span>
+                <div className="mt-10">
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
+                    <span>Escolha seu plano de acesso</span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Plano Anual */}
                     <div 
                       onClick={() => {
@@ -1977,23 +1977,23 @@ const Index = () => {
                         setShowFestaPopup(false);
                         navigate("/inicio");
                       }}
-                      className="relative rounded-2xl bg-white border-2 border-[#7C3AED] p-4.5 shadow-md hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between"
+                      className="relative rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:border-slate-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between ring-1 ring-slate-900/5"
                     >
-                      <div className="absolute -top-3 left-4 bg-gradient-to-r from-amber-500 to-red-500 text-white text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
-                        Melhor Valor • Mais Popular
+                      <div className="absolute -top-2.5 left-5 bg-slate-900 text-white text-[10px] font-semibold px-3 py-0.5 rounded-full uppercase tracking-widest shadow-sm">
+                        Recomendado
                       </div>
                       
                       <div className="pt-2">
-                        <span className="text-xs font-black text-slate-400 uppercase tracking-wide">Elite Anual</span>
-                        <div className="flex items-baseline gap-1 mt-1 text-[#7C3AED]">
-                          <span className="text-sm font-bold">12x</span>
-                          <span className="text-3xl font-black tracking-tight">{ELITE_OFFER.annualMonthlyEquivalent}</span>
+                        <span className="text-xs font-medium text-slate-500 uppercase tracking-widest">Elite Anual</span>
+                        <div className="flex items-baseline gap-1 mt-2 text-slate-900">
+                          <span className="text-sm font-semibold">12x</span>
+                          <span className="text-3xl font-bold tracking-tight">{ELITE_OFFER.annualMonthlyEquivalent}</span>
                         </div>
-                        <span className="text-[11px] font-bold text-slate-600 block mt-0.5">ou {ELITE_OFFER.annualPrice} à vista por 1 ano</span>
+                        <span className="text-[11px] font-medium text-slate-500 block mt-1">ou {ELITE_OFFER.annualPrice} à vista / 1 ano</span>
                       </div>
 
-                      <div className="mt-3.5 rounded-xl bg-[#F0FDF4] border border-[#86EFAC] p-2 text-[11px] font-bold text-[#15803D] text-center">
-                        Economia de {ELITE_OFFER.annualSavings} no plano anual
+                      <div className="mt-4 rounded-xl bg-slate-50 p-2.5 text-xs font-medium text-slate-600 text-center">
+                        Economia de {ELITE_OFFER.annualSavings}
                       </div>
                     </div>
 
@@ -2004,40 +2004,41 @@ const Index = () => {
                         setShowFestaPopup(false);
                         navigate("/inicio");
                       }}
-                      className="rounded-2xl bg-white border border-slate-200 p-4.5 shadow-sm hover:border-slate-300 transition-all cursor-pointer flex flex-col justify-between"
+                      className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:border-slate-300 transition-all cursor-pointer flex flex-col justify-between opacity-80 hover:opacity-100"
                     >
                       <div>
-                        <span className="text-xs font-black text-slate-400 uppercase tracking-wide">Elite Mensal</span>
-                        <div className="flex items-baseline gap-1 mt-1 text-slate-900">
-                          <span className="text-3xl font-black tracking-tight">{ELITE_OFFER.monthlyPrice}</span>
-                          <span className="text-xs font-bold text-slate-500">/mês</span>
+                        <span className="text-xs font-medium text-slate-400 uppercase tracking-widest">Elite Mensal</span>
+                        <div className="flex items-baseline gap-1 mt-2 text-slate-900">
+                          <span className="text-3xl font-bold tracking-tight">{ELITE_OFFER.monthlyPrice}</span>
+                          <span className="text-xs font-medium text-slate-500">/mês</span>
                         </div>
-                        <span className="text-[11px] font-semibold text-slate-500 block mt-0.5">Acesso contínuo ao sistema</span>
+                        <span className="text-[11px] font-medium text-slate-500 block mt-1">Acesso contínuo ao sistema</span>
                       </div>
 
-                      <div className="mt-3.5 rounded-xl bg-slate-100 border border-slate-200 p-2 text-[11px] font-semibold text-slate-600 text-center">
-                        Recorrente, sem fidelidade. Cancele quando quiser.
+                      <div className="mt-4 rounded-xl bg-transparent p-2.5 text-xs font-medium text-slate-400 text-center">
+                        Sem fidelidade. Cancele quando quiser.
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Botões de Ação */}
-                <div className="mt-7 space-y-3">
+                <div className="mt-10 space-y-4">
                   <Button
                     onClick={() => {
                       localStorage.setItem("cv_festa_popup_seen_v3", "true");
                       setShowFestaPopup(false);
                       navigate("/inicio");
                     }}
-                    className="w-full h-14 rounded-xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-purple-600/25 flex items-center justify-center gap-2 border-0 transition-all active:scale-[0.99]"
+                    className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm tracking-wide flex items-center justify-center gap-2 border-0 transition-all shadow-md shadow-slate-900/10 active:scale-[0.98]"
                   >
-                    <span>🔥 CONHECER OS PLANOS (ATIVAR FÁBRICA) →</span>
+                    Ativar Fábrica Agora
+                    <ArrowRight className="h-4 w-4" />
                   </Button>
 
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1 border-t border-slate-200/80 text-[11px] font-semibold text-slate-500">
-                    <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60">
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 pt-2 text-xs font-medium text-slate-400">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 shrink-0" />
                       <span>Garantia incondicional de 7 dias</span>
                     </div>
 
@@ -2047,7 +2048,7 @@ const Index = () => {
                         localStorage.setItem("cv_festa_popup_seen_v3", "true");
                         setShowFestaPopup(false);
                       }}
-                      className="text-slate-400 hover:text-slate-700 font-bold transition-colors underline underline-offset-2 cursor-pointer bg-transparent border-0"
+                      className="hover:text-slate-900 transition-colors cursor-pointer bg-transparent border-0 underline underline-offset-2"
                     >
                       Permanecer na página atual
                     </button>
