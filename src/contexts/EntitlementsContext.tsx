@@ -301,9 +301,16 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
 
   const reserve = useCallback<EntitlementsContextValue["reserve"]>(
     async (capability, idempotencyKey, options) => {
-      // Administrator access must never become a paywall because the metering
-      // service is unavailable. Privileged APIs still authorize server-side.
-      if (isAdmin || snapshot.capabilities.unlimited) {
+      const exportCapability: EntitlementCapability =
+        capability === "ad_export" ? "ad.export" : "carousel.export";
+      // Paying accounts (Start/Elite) and admins have unlimited exports. They must
+      // never be paywalled by the metering roundtrip — privileged APIs (publish,
+      // photo search, CRM) still authorize server-side.
+      const entitledLocally = isAdmin
+        || snapshot.capabilities.unlimited
+        || Boolean(snapshot.capabilities[exportCapability])
+        || subscription.subscribed;
+      if (entitledLocally) {
         return {
           allowed: true,
           unlimited: true,
@@ -335,8 +342,9 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
         };
       }
     },
-    [invoke, isAdmin, snapshot.capabilities.unlimited],
+    [invoke, isAdmin, snapshot.capabilities, subscription.subscribed],
   );
+
 
   const updateReservation = useCallback(async (
     action: "commit" | "release",
