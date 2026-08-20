@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "node scripts/validate-official-supabase.mjs --skip-cli-link",
-    "build": "vite build && node scripts/generate-seo-route-shells.mjs",
+    "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
