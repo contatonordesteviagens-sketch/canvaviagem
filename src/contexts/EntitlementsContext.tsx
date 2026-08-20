@@ -162,7 +162,7 @@ const buildFallbackSnapshot = (
           ? "unknown_paid"
           : "free";
 
-  const fabricaAccess = elite || start;
+  const fabricaAccess = elite || start || unknownPaid;
 
   return {
     tier,
@@ -303,7 +303,7 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
     async (capability, idempotencyKey, options) => {
       // Administrator access must never become a paywall because the metering
       // service is unavailable. Privileged APIs still authorize server-side.
-      if (isAdmin) {
+      if (isAdmin || snapshot.capabilities.unlimited) {
         return {
           allowed: true,
           unlimited: true,
@@ -335,7 +335,7 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
         };
       }
     },
-    [invoke, isAdmin],
+    [invoke, isAdmin, snapshot.capabilities.unlimited],
   );
 
   const updateReservation = useCallback(async (
