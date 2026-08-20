@@ -408,8 +408,11 @@ const FabricaInner = () => {
   );
 };
 
+import { FabricaUpgradeBlock } from "@/components/fabrica/FabricaUpgradeBlock";
+
 const FabricaContent = () => {
   const { loading: authLoading } = useAuth();
+  const { can } = useEntitlements();
   const localPreview = isLocalPreviewEnabled();
 
   // Spinner SÓ no primeiro carregamento real (sem user e sem acesso já concedido).
@@ -420,6 +423,17 @@ const FabricaContent = () => {
         <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-2" />
         <span className="text-sm text-white/60">Verificando permissões de acesso...</span>
       </div>
+    );
+  }
+
+  if (!localPreview && !can("fabrica.open")) {
+    return (
+      <>
+        <SeoMetadata title="Upgrade Necessário | Canva Viagem" description="Faça upgrade para acessar a Fábrica de Anúncios." />
+        <div className="flex w-full h-full min-h-screen">
+          <FabricaUpgradeBlock />
+        </div>
+      </>
     );
   }
 

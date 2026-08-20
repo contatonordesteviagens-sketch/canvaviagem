@@ -162,7 +162,7 @@ const buildFallbackSnapshot = (
           ? "unknown_paid"
           : "free";
 
-  const fabricaAccess = elite || start || unknownPaid;
+  const fabricaAccess = elite;
 
   return {
     tier,
