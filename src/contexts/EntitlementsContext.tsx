@@ -295,9 +295,15 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const can = useCallback(
-    (capability: EntitlementCapability) => isAdmin || Boolean(snapshot.capabilities[capability]),
-    [isAdmin, snapshot.capabilities],
+    (capability: EntitlementCapability) =>
+      isAdmin
+      || Boolean(snapshot.capabilities[capability])
+      // Stripe/Cloud says the account is a paying subscriber: never let a stale or
+      // failed entitlements snapshot downgrade an active plan in the UI.
+      || (subscription.subscribed && Boolean(fallback.capabilities[capability])),
+    [fallback.capabilities, isAdmin, snapshot.capabilities, subscription.subscribed],
   );
+
 
   const reserve = useCallback<EntitlementsContextValue["reserve"]>(
     async (capability, idempotencyKey, options) => {
