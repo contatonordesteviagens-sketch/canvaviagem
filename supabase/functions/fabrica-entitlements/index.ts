@@ -64,25 +64,26 @@ function classifyTier(
 
 function buildCapabilities(tier: Tier) {
   const fullAccess = tier === "admin" || tier === "elite";
+  const fabricaAccess = fullAccess || tier === "start_legacy" || tier === "unknown_paid";
   return {
-    "fabrica.open": fullAccess,
-    "fabrica.configure": fullAccess,
-    "fabrica.save": fullAccess,
-    "photos.search": fullAccess,
-    "ad.preview": fullAccess,
-    "carousel.preview": fullAccess,
-    "site.preview": fullAccess,
-    "ad.export": fullAccess,
-    "carousel.export": fullAccess,
-    "site.publish": fullAccess,
+    "fabrica.open": fabricaAccess,
+    "fabrica.configure": fabricaAccess,
+    "fabrica.save": fabricaAccess,
+    "photos.search": fabricaAccess,
+    "ad.preview": fabricaAccess,
+    "carousel.preview": fabricaAccess,
+    "site.preview": fabricaAccess,
+    "ad.export": fabricaAccess,
+    "carousel.export": fabricaAccess,
+    "site.publish": fabricaAccess,
     "crm.real_data": fullAccess,
     "voice.use": fullAccess,
     "vendedor.use": fullAccess,
-    "library.premium.open": fullAccess || tier === "start_legacy",
-    "tools.basic.use": fullAccess || tier === "start_legacy",
+    "library.premium.open": fabricaAccess,
+    "tools.basic.use": fabricaAccess,
     "tools.elite.use": fullAccess,
-    "premium_content.open": fullAccess || tier === "start_legacy",
-    unlimited: fullAccess,
+    "premium_content.open": fabricaAccess,
+    unlimited: fabricaAccess,
   };
 }
 

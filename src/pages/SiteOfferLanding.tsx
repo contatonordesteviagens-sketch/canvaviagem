@@ -169,6 +169,17 @@ export default function SiteOfferLanding() {
           content="Publique o site profissional da sua agência de viagens sem programador. Escolha um modelo para turismo e adicione pacotes."
         />
         <link rel="canonical" href="https://canvaviagem.com/site-para-agencia-de-viagens" />
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="pt_BR" />
+        <meta property="og:title" content="Site para agência de viagens | Canva Viagem" />
+        <meta property="og:description" content="Publique um site para sua agência com modelos de turismo, pacotes, formulário de orçamento e WhatsApp." />
+        <meta property="og:url" content="https://canvaviagem.com/site-para-agencia-de-viagens" />
+        <meta property="og:image" content="https://canvaviagem.com/site-canva-viagem.webp" />
+        <meta property="og:image:alt" content="Exemplo de site para agência de viagens criado no Canva Viagem" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Site para agência de viagens | Canva Viagem" />
+        <meta name="twitter:description" content="Site com modelos de turismo, pacotes, orçamento e WhatsApp para agências de viagens." />
+        <meta name="twitter:image" content="https://canvaviagem.com/site-canva-viagem.webp" />
       </Helmet>
 
       {/* HEADER */}

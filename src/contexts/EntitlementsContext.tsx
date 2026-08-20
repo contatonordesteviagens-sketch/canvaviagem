@@ -162,27 +162,29 @@ const buildFallbackSnapshot = (
           ? "unknown_paid"
           : "free";
 
+  const fabricaAccess = elite || start;
+
   return {
     tier,
     capabilities: {
-      "fabrica.open": elite,
-      "fabrica.configure": elite,
-      "fabrica.save": elite,
-      "photos.search": elite,
-      "ad.preview": elite,
-      "carousel.preview": elite,
-      "site.preview": elite,
-      "ad.export": elite,
-      "carousel.export": elite,
-      "site.publish": elite,
+      "fabrica.open": fabricaAccess,
+      "fabrica.configure": fabricaAccess,
+      "fabrica.save": fabricaAccess,
+      "photos.search": fabricaAccess,
+      "ad.preview": fabricaAccess,
+      "carousel.preview": fabricaAccess,
+      "site.preview": fabricaAccess,
+      "ad.export": fabricaAccess,
+      "carousel.export": fabricaAccess,
+      "site.publish": fabricaAccess,
       "crm.real_data": elite,
       "voice.use": elite,
       "vendedor.use": elite,
-      "library.premium.open": elite || start,
-      "tools.basic.use": elite || start,
+      "library.premium.open": fabricaAccess,
+      "tools.basic.use": fabricaAccess,
       "tools.elite.use": elite,
-      "premium_content.open": elite || start,
-      unlimited: elite,
+      "premium_content.open": fabricaAccess,
+      unlimited: fabricaAccess,
     },
     limits: null,
     used: EMPTY_USAGE,

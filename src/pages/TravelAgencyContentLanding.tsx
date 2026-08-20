@@ -92,6 +92,14 @@ export default function TravelAgencyContentLanding() {
           content="+12 modelos de carrosséis, artes para Feed e versões para Stories feitos para agências de viagens."
         />
         <meta property="og:url" content={`https://canvaviagem.com${landingPath}`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="pt_BR" />
+        <meta property="og:image" content="https://canvaviagem.com/travel-carousel-assets/cancun-card-01.webp" />
+        <meta property="og:image:alt" content="Exemplo de carrossel de turismo criado no Canva Viagem" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Carrosséis de turismo prontos para personalizar | Canva Viagem" />
+        <meta name="twitter:description" content="Carrosséis, artes para Feed e Stories feitos para agências de viagens." />
+        <meta name="twitter:image" content="https://canvaviagem.com/travel-carousel-assets/cancun-card-01.webp" />
         <meta name="theme-color" content="#08080b" />
       </Helmet>
 
