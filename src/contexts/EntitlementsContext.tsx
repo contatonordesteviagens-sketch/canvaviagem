@@ -133,7 +133,7 @@ const buildFallbackSnapshot = (
         "carousel.export": false,
         "site.publish": false,
         "crm.real_data": false,
-        "voice.use": false,
+        "voice.use": true,
         "vendedor.use": false,
         "library.premium.open": true,
         "tools.basic.use": true,
@@ -162,7 +162,9 @@ const buildFallbackSnapshot = (
           ? "unknown_paid"
           : "free";
 
-  const fabricaAccess = elite;
+  const fullAccess = elite;
+  const startAccess = fullAccess || start || unknownPaid;
+  const fabricaAccess = fullAccess;
 
   return {
     tier,
@@ -170,20 +172,20 @@ const buildFallbackSnapshot = (
       "fabrica.open": fabricaAccess,
       "fabrica.configure": fabricaAccess,
       "fabrica.save": fabricaAccess,
-      "photos.search": fabricaAccess,
+      "photos.search": startAccess,
       "ad.preview": fabricaAccess,
       "carousel.preview": fabricaAccess,
       "site.preview": fabricaAccess,
       "ad.export": fabricaAccess,
       "carousel.export": fabricaAccess,
       "site.publish": fabricaAccess,
-      "crm.real_data": elite,
-      "voice.use": elite,
-      "vendedor.use": elite,
-      "library.premium.open": fabricaAccess,
-      "tools.basic.use": fabricaAccess,
-      "tools.elite.use": elite,
-      "premium_content.open": fabricaAccess,
+      "crm.real_data": fullAccess,
+      "voice.use": startAccess,
+      "vendedor.use": fullAccess,
+      "library.premium.open": startAccess,
+      "tools.basic.use": startAccess,
+      "tools.elite.use": fullAccess,
+      "premium_content.open": startAccess,
       unlimited: fabricaAccess,
     },
     limits: null,

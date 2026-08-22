@@ -64,12 +64,13 @@ function classifyTier(
 
 function buildCapabilities(tier: Tier) {
   const fullAccess = tier === "admin" || tier === "elite";
-  const fabricaAccess = fullAccess || tier === "start_legacy" || tier === "unknown_paid";
+  const startAccess = fullAccess || tier === "start_legacy" || tier === "unknown_paid";
+  const fabricaAccess = fullAccess;
   return {
     "fabrica.open": fabricaAccess,
     "fabrica.configure": fabricaAccess,
     "fabrica.save": fabricaAccess,
-    "photos.search": fabricaAccess,
+    "photos.search": startAccess,
     "ad.preview": fabricaAccess,
     "carousel.preview": fabricaAccess,
     "site.preview": fabricaAccess,
@@ -77,12 +78,12 @@ function buildCapabilities(tier: Tier) {
     "carousel.export": fabricaAccess,
     "site.publish": fabricaAccess,
     "crm.real_data": fullAccess,
-    "voice.use": fullAccess,
+    "voice.use": startAccess,
     "vendedor.use": fullAccess,
-    "library.premium.open": fabricaAccess,
-    "tools.basic.use": fabricaAccess,
+    "library.premium.open": startAccess,
+    "tools.basic.use": startAccess,
     "tools.elite.use": fullAccess,
-    "premium_content.open": fabricaAccess,
+    "premium_content.open": startAccess,
     unlimited: fabricaAccess,
   };
 }
