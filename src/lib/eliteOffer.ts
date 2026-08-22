@@ -9,7 +9,7 @@ export const ELITE_OFFER = {
   videoId: "R2MyCdox--I",
   monthlyCheckoutUrl: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
   semiannualCheckoutUrl: "https://buy.stripe.com/8x2cN60HwcaY2Yr38w8so0j",
-  annualCheckoutUrl: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
+  annualCheckoutUrl: "https://buy.stripe.com/6oUdRa0Hwa2Qcz1dNa8so0i",
   startVideoCooldownMs: 30 * 60 * 1000,
 };
 

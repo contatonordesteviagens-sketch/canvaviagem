@@ -174,7 +174,28 @@ export default function TravelAgencyContentConversion({ checkoutLoading, onCheck
               const color = green ? "#22d3a8" : "#7c5cff";
               return <article key={plan.cycle} className={`relative flex min-w-0 flex-col rounded-[24px] border px-6 pb-7 pt-12 sm:px-7 ${green ? "border-[#22d3a8]/70 bg-[linear-gradient(145deg,rgba(34,211,168,.12),rgba(34,211,168,.02))]" : "border-[#7c5cff]/70 bg-[linear-gradient(145deg,rgba(124,92,255,.14),rgba(124,92,255,.02))]"} ${active ? "shadow-[0_20px_70px_-30px_rgba(124,92,255,.65)]" : "opacity-80"}`}>
                 <span className={`absolute -top-3 left-7 rounded-full border px-4 py-1.5 font-mono text-[8px] font-bold tracking-[.16em] ${green ? "border-[#22d3a8] bg-[#09231e] text-[#22d3a8]" : "border-[#7c5cff] bg-[#211746] text-white"}`}>{plan.badge}</span>
-                <div className="flex items-end justify-between gap-3"><p className="font-mono text-[11px] font-bold tracking-[.2em]" style={{ color }}>{plan.eyebrow}</p><div className="text-right"><span className="text-sm text-white/65">R$ </span><span className="text-[46px] font-semibold leading-none tracking-[-.06em]">{plan.price.replace("R$ ", "")}</span><span className="text-sm">{plan.suffix}</span></div></div>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-mono text-[11px] font-bold tracking-[.2em] mt-2" style={{ color }}>{plan.eyebrow}</p>
+                  <div className="text-right flex flex-col items-end">
+                    {plan.cycle !== "monthly" ? (
+                      <>
+                        <div className="flex items-baseline">
+                          <span className="text-[42px] font-semibold leading-none tracking-[-.06em]">R$ {plan.value}</span>
+                        </div>
+                        <div className="flex items-baseline mt-2">
+                          <span className="text-[20px] font-semibold leading-none tracking-[-.06em] text-white/80">{plan.price}</span>
+                          <span className="text-xs text-white/80 ml-1">{plan.suffix}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-baseline mt-1">
+                        <span className="text-sm text-white/65 mr-1">R$ </span>
+                        <span className="text-[46px] font-semibold leading-none tracking-[-.06em]">{plan.price.replace("R$ ", "")}</span>
+                        <span className="text-sm ml-1">{plan.suffix}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <p className="mt-5 font-mono text-[9px] font-bold uppercase leading-5 tracking-[.08em] text-white/55">{plan.charge}</p>
                 <p className="mt-4 rounded-lg border border-[#22d3a8]/30 bg-[#22d3a8]/[.07] px-3 py-2 font-mono text-[8px] font-bold uppercase tracking-[.12em] text-[#22d3a8]">Hoje: carrosséis ilimitados</p>
                 {plan.cycle === "annual" && <div className="mt-5 rounded-2xl border border-dashed border-[#7c5cff]/60 bg-[#7c5cff]/[.06] p-4"><p className="font-mono text-[8px] font-bold tracking-[.15em] text-[#a990ff]">ECONOMIA ANUAL</p><p className="mt-2 text-sm font-semibold">Pague o equivalente a 5 mensalidades e use por 12 meses.</p></div>}

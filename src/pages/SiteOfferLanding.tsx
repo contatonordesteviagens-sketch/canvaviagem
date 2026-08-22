@@ -767,7 +767,8 @@ export default function SiteOfferLanding() {
               <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-6 flex flex-col justify-between">
                 <div>
                   <h3 className="text-xl font-black">Semestral</h3>
-                  <p className="mt-2 text-3xl font-black">R$347 <span className="text-base font-semibold text-slate-400">/ 6 meses</span></p>
+                  <p className="mt-2 text-3xl font-black">R$ 347</p>
+                  <p className="text-base font-semibold text-slate-400">R$ 57,83/mês</p>
                 </div>
                 <button
                   type="button"

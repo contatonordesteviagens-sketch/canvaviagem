@@ -1263,9 +1263,13 @@ export default function Inicio2() {
                   </div>
                   
                   <div className="flex flex-col mb-2">
-                    <span className="text-slate-900 font-black text-2xl lg:text-3xl">{plan.monthlyEquivalent || plan.price}/mês</span>
-                    {plan.id !== "mensal" && (
-                      <span className="text-slate-500 text-sm font-medium">({plan.price} total)</span>
+                    {plan.id !== "mensal" ? (
+                      <>
+                        <span className="text-slate-900 font-black text-2xl lg:text-3xl">{plan.price}</span>
+                        <span className="text-slate-500 text-sm font-medium mt-1">{plan.monthlyEquivalent}/mês</span>
+                      </>
+                    ) : (
+                      <span className="text-slate-900 font-black text-2xl lg:text-3xl">{plan.price}/mês</span>
                     )}
                   </div>
 
