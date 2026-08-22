@@ -141,22 +141,18 @@ export default function SiteOfferLanding() {
     document.getElementById("planos")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const startCheckout = async (cycle: BillingCycle, value: number) => {
+  const startCheckout = (cycle: BillingCycle, value: number) => {
     setCheckoutLoading(cycle);
-    const analyticsRequest = Promise.all([
-      recordEvent("plan_selected", { billing_cycle: cycle, value }),
-      recordEvent("checkout_started", { billing_cycle: cycle, value }),
-    ]);
+    recordEvent("plan_selected", { billing_cycle: cycle, value });
+    recordEvent("checkout_started", { billing_cycle: cycle, value });
+    
     trackMetaEvent("InitiateCheckout", {
       value,
       currency: "BRL",
       content_name: "Canva Viagem - Site Pronto da Agência",
       content_category: `landing_site_${cycle}`,
     });
-    await Promise.race([
-      analyticsRequest,
-      new Promise<void>((resolve) => window.setTimeout(resolve, 1200)),
-    ]);
+    
     window.location.assign(checkoutUrlByCycle[cycle]);
   };
 
