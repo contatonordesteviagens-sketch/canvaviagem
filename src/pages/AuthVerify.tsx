@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { isEliteProduct, isStartProduct } from "@/lib/planAccess";
 
 const pendingAuthStateKey = "cv:pending-auth-checkout";
 const fallbackPath = "/inicio?auth=verified";
@@ -64,6 +65,7 @@ const AuthVerify = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [productId, setProductId] = useState<string | null>(null);
   const verificationTokenRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -120,6 +122,7 @@ const AuthVerify = () => {
 
       // Track subscription status for UI
       setIsSubscribed(!!data.subscribed);
+      setProductId(data.product_id || null);
 
       // Configurar sessão com os tokens recebidos
       const { access_token, refresh_token } = data.session;
@@ -221,7 +224,11 @@ const AuthVerify = () => {
               </div>
               <div className="space-y-2">
                 <h1 className="text-2xl font-bold text-primary">
-                  {isSubscribed ? "Acesso Premium Confirmado! ✨" : "Conta Acessada! 👋"}
+                  {isSubscribed ? (
+                    isEliteProduct(productId) ? "Acesso liberado ao Plano Elite! ✨" :
+                    isStartProduct(productId) ? "Acesso ao plano Start! ✨" :
+                    "Acesso Premium Confirmado! ✨"
+                  ) : "Conta Acessada! 👋"}
                 </h1>
                 <p className="text-muted-foreground">
                   {isSubscribed
