@@ -91,7 +91,7 @@ export default function Inicio() {
     },
     {
       question: "O que está incluso na assinatura?",
-      answer: "Artes ilimitadas, sites express, CRM de leads, recursos de IA e suporte prioritário via WhatsApp."
+      answer: "Anúncios ilimitados, 12 modelos de carrosséis automáticos (Impacto, Roteiro e Editorial), sites express, CRM de leads, recursos de IA, 250 Reels, 400 artes e suporte prioritário via WhatsApp."
     }
   ];
 
@@ -126,7 +126,7 @@ export default function Inicio() {
               
               <ul className="hero-bullets">
                 <li>400+ mídias prontas para turismo</li>
-                <li>Anúncios e legendas criados com IA</li>
+                <li>Anúncios, <strong>12 modelos de carrosséis</strong> e legendas com IA</li>
                 <li>Sites e páginas para pacotes</li>
                 <li>CRM para organizar leads</li>
                 <li>Acesso imediato e garantia de 7 dias</li>
@@ -187,12 +187,12 @@ export default function Inicio() {
             
             <div className="proof-mini-grid">
               <div className="proof-mini-card">
-                <h3>Dashboard</h3>
-                <p>Todas as ferramentas em um só lugar.</p>
+                <h3>IA de Anúncios</h3>
+                <p>Digite o destino e gere anúncio, texto de venda e legenda prontos.</p>
               </div>
               <div className="proof-mini-card">
-                <h3>IA de Anúncios</h3>
-                <p>Digite o destino e gere ideias, textos e campanhas.</p>
+                <h3>12 Modelos de Carrosséis</h3>
+                <p>Impacto, Roteiro e Editorial. A IA monta os slides do seu pacote — você só publica.</p>
               </div>
               <div className="proof-mini-card">
                 <h3>Sites Express</h3>
@@ -200,7 +200,7 @@ export default function Inicio() {
               </div>
               <div className="proof-mini-card">
                 <h3>CRM de Leads</h3>
-                <p>Organize contatos, orçamentos e oportunidades.</p>
+                <p>Organize contatos, orçamentos e oportunidades sem perder conversa quente.</p>
               </div>
             </div>
           </div>
@@ -376,8 +376,8 @@ export default function Inicio() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mt-8 md:mt-12 w-full max-w-[1000px] mx-auto px-4 sm:px-0">
               <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-6 text-left hover:bg-[#1e293b]/80 transition-colors">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3 md:mb-4"><Instagram size={20} className="md:w-[24px] md:h-[24px]" /></div>
-                <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">Posts e Carrosséis</h3>
-                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Formatos prontos para divulgar destinos e pacotes.</p>
+                <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">12 Modelos de Carrosséis</h3>
+                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Impacto, Roteiro e Editorial. Digite o pacote, a IA monta os slides prontos para postar.</p>
               </div>
               <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-6 text-left hover:bg-[#1e293b]/80 transition-colors">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3 md:mb-4"><Video size={20} className="md:w-[24px] md:h-[24px]" /></div>
@@ -392,17 +392,17 @@ export default function Inicio() {
               <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-6 text-left hover:bg-[#1e293b]/80 transition-colors">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3 md:mb-4"><LayoutDashboard size={20} className="md:w-[24px] md:h-[24px]" /></div>
                 <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">Sites Express</h3>
-                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Páginas de venda para pacotes prontas para envio.</p>
+                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Páginas de venda para pacotes prontas para envio no WhatsApp.</p>
               </div>
               <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-6 text-left hover:bg-[#1e293b]/80 transition-colors">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3 md:mb-4"><Calendar size={20} className="md:w-[24px] md:h-[24px]" /></div>
                 <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">CRM Integrado</h3>
-                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Organize leads, orçamentos e contatos.</p>
+                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Organize leads, orçamentos e contatos sem perder nenhuma conversa.</p>
               </div>
               <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-4 sm:p-6 text-left hover:bg-[#1e293b]/80 transition-colors">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4] flex items-center justify-center mb-3 md:mb-4"><Clock size={20} className="md:w-[24px] md:h-[24px]" /></div>
-                <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">Automação</h3>
-                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Recursos para acelerar sua rotina de conteúdo.</p>
+                <h3 className="text-white font-bold text-[14px] sm:text-[18px] mb-1 md:mb-2">Gerador de Anúncios com IA</h3>
+                <p className="text-white/60 text-[12px] sm:text-[15px] leading-snug">Digite destino, preço e condições — receba anúncio pronto para tráfego e Instagram.</p>
               </div>
             </div>
             
@@ -458,10 +458,10 @@ export default function Inicio() {
                         <img src={showcaseAdCreation} alt="Criação de anúncios com IA" className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
-                        <span className="text-[#8b3dff]">⚡</span> Criação de anúncios com IA
+                        <span className="text-[#8b3dff]">⚡</span> Criação de anúncios e carrosséis com IA
                       </h3>
                       <p className="text-[#64748b] text-sm text-left leading-relaxed">
-                        Crie campanhas e ofertas irresistíveis em segundos. Digite o destino, preço e parcelas, e nossa inteligência artificial gera o anúncio completo com a sua identidade visual pronta para atrair viajantes de alto padrão.
+                        Digite o destino, preço e condições. A IA gera o anúncio pronto <em>e</em> os <strong>12 modelos de carrossel</strong> (Impacto, Roteiro e Editorial) em menos de 3 minutos — sem arrastar um slide sequer.
                       </p>
                     </div>
                   </div>
@@ -841,6 +841,10 @@ export default function Inicio() {
                 </li>
                 <li className="flex justify-between items-center border-b border-[#E2E8F0] pb-3 sm:pb-4 gap-2">
                   <span className="text-[13px] sm:text-[15px] text-[#64748b] leading-tight flex-1">Construtor de Sites Express:</span>
+                  <span className="text-[13px] sm:text-[15px] font-bold text-[#0f172a] whitespace-nowrap text-right">R$ 90/mês</span>
+                </li>
+                <li className="flex justify-between items-center border-b border-[#E2E8F0] pb-3 sm:pb-4 gap-2">
+                  <span className="text-[13px] sm:text-[15px] text-[#64748b] leading-tight flex-1">Gerador de Carrosséis com IA (12 modelos):</span>
                   <span className="text-[13px] sm:text-[15px] font-bold text-[#0f172a] whitespace-nowrap text-right">R$ 90/mês</span>
                 </li>
                 <li className="flex justify-between items-center border-b border-[#E2E8F0] pb-3 sm:pb-4 gap-2">
