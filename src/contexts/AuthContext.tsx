@@ -403,11 +403,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 🛡️ SAFETY: nunca deixa o app travado em "Verificando sessão..." mesmo se
     // o Supabase pendurar o getSession() por falha de rede.
     const safetyTimeout = setTimeout(() => {
-      if (mounted && !authReadyRef.current) {
-        console.warn('[AuthContext] Safety timeout — forçando loading=false');
-        authReadyRef.current = true;
-        setLoading(false);
-        setSubscription(prev => ({ ...prev, loading: false }));
+      if (mounted) {
+        if (!authReadyRef.current) {
+          console.warn('[AuthContext] Safety timeout — forçando loading=false para auth');
+          authReadyRef.current = true;
+          setLoading(false);
+        }
+        // Sempre força o fim do loading da subscription se travar
+        setSubscription(prev => {
+          if (prev.loading) {
+            console.warn('[AuthContext] Safety timeout — forçando loading=false para subscription');
+            return { ...prev, loading: false };
+          }
+          return prev;
+        });
       }
     }, 2500);
 
