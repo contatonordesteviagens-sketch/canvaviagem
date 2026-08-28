@@ -122,16 +122,18 @@ const buildFallbackSnapshot = (
     return {
       tier: "unknown_paid",
       capabilities: {
-        "fabrica.open": true,
-        "fabrica.configure": true,
-        "fabrica.save": true,
+        // 🛡️ MODO OTIMISTA: durante o carregamento, libera apenas o que Start tem.
+        // Fabírica e exportações só abrem depois que o servidor confirmar Elite.
+        "fabrica.open": false,
+        "fabrica.configure": false,
+        "fabrica.save": false,
         "photos.search": true,
-        "ad.preview": true,
-        "carousel.preview": true,
-        "site.preview": true,
-        "ad.export": true,
-        "carousel.export": true,
-        "site.publish": true,
+        "ad.preview": false,
+        "carousel.preview": false,
+        "site.preview": false,
+        "ad.export": false,
+        "carousel.export": false,
+        "site.publish": false,
         "crm.real_data": false,
         "voice.use": true,
         "vendedor.use": false,
@@ -311,13 +313,12 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
     async (capability, idempotencyKey, options) => {
       const exportCapability: EntitlementCapability =
         capability === "ad_export" ? "ad.export" : "carousel.export";
-      // Paying accounts (Start/Elite) and admins have unlimited exports. They must
-      // never be paywalled by the metering roundtrip — privileged APIs (publish,
-      // photo search, CRM) still authorize server-side.
+      // Somente Elite e admin têm exportação ilimitada da Fábrica.
+      // Start pode acessar o Canva mas não exporta arte/carrossel.
       const entitledLocally = isAdmin
         || snapshot.capabilities.unlimited
         || Boolean(snapshot.capabilities[exportCapability])
-        || subscription.subscribed;
+        || hasEliteAccess({ subscribed: subscription.subscribed, productId: subscription.productId });
       if (entitledLocally) {
         return {
           allowed: true,
