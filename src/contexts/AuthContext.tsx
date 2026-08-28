@@ -324,15 +324,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error checking subscription:', error);
-        // Se havia cache, preserva (respeitando expiração)
-        if (subscriptionCache.data) {
-          setSubscription(withoutExpiredSubscription(subscriptionCache.data, now));
-        } else {
-          // Sem cache + erro na Edge Function: NÃO derruba para subscribed=false.
-          // Mantém o estado atual (loading continua true se for o caso) para que
-          // o ProtectedRoute aguarde em vez de redirecionar para /inicio.
-          setSubscription(prev => ({ ...prev, loading: false, subscribed: prev.subscribed }));
-        }
+        // Se havia cache válido, preserva (respeitando expiração da assinatura).
+        // Sem cache = usuário sem assinatura confirmada → não dá acesso.
+        const cached = subscriptionCache.data;
+        setSubscription(cached
+          ? withoutExpiredSubscription(cached, now)
+          : prev => ({ ...prev, loading: false }));
         return;
       }
 
