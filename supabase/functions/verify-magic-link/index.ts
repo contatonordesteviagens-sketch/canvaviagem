@@ -318,6 +318,10 @@ serve(async (req) => {
           }, { onConflict: "user_id" });
 
           if (subscriptionSyncError) console.error("[VERIFY-MAGIC-LINK] Subscription Stripe sync failed:", subscriptionSyncError);
+
+          resolvedProductId = stripeSync.productId ?? resolvedProductId;
+          resolvedPeriodEnd = stripeSync.subscriptionEnd ?? resolvedPeriodEnd;
+          resolvedBillingProvider = "stripe";
         }
       }
     } catch (stripeErr) {
@@ -329,11 +333,16 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         subscribed: isSubscribed,
+        product_id: resolvedProductId,
+        subscription_end: resolvedPeriodEnd,
+        billing_cycle: resolvedBillingCycle,
+        billing_provider: resolvedBillingProvider ?? "stripe",
         session: {
           access_token: accessToken,
           refresh_token: refreshToken,
         },
       }),
+
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
