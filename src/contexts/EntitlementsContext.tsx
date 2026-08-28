@@ -286,7 +286,12 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
       setSnapshot(isAdmin ? fallback : serverSnapshot);
     } catch (error) {
       console.error("[Entitlements] Falha ao carregar permissões:", error);
-      setSnapshot(fallback);
+      // Se o snapshot atual já concedia acesso (otimista ou anterior), preserva.
+      // Não regride para o fallback restritivo só porque o servidor falhou.
+      setSnapshot(current => {
+        if (current.capabilities["library.premium.open"]) return current;
+        return fallback;
+      });
     } finally {
       setLoading(false);
     }

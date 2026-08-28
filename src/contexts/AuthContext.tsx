@@ -324,9 +324,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error checking subscription:', error);
-        // Mantém acesso em uma queda de rede somente enquanto o período salvo
-        // ainda é válido. Trial ou assinatura vencida nunca sobrevive pelo cache.
-        setSubscription(prev => withoutExpiredSubscription(prev, now));
+        // Se havia cache, preserva (respeitando expiração)
+        if (subscriptionCache.data) {
+          setSubscription(withoutExpiredSubscription(subscriptionCache.data, now));
+        } else {
+          // Sem cache + erro na Edge Function: NÃO derruba para subscribed=false.
+          // Mantém o estado atual (loading continua true se for o caso) para que
+          // o ProtectedRoute aguarde em vez de redirecionar para /inicio.
+          setSubscription(prev => ({ ...prev, loading: false, subscribed: prev.subscribed }));
+        }
         return;
       }
 
@@ -402,6 +408,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // 🛡️ SAFETY: nunca deixa o app travado em "Verificando sessão..." mesmo se
     // o Supabase pendurar o getSession() por falha de rede.
+    // ⏱️ 6 segundos: Edge Functions de check-subscription podem levar até 4-5s em frio.
     const safetyTimeout = setTimeout(() => {
       if (mounted) {
         if (!authReadyRef.current) {
@@ -409,8 +416,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           authReadyRef.current = true;
           setLoading(false);
         }
-        // Sempre força o fim do loading da subscription se travar
+        // Força fim do loading SOMENTE se subscription.subscribed já for conhecido.
+        // Se ainda for false (check ainda correndo), mantém loading=true para não
+        // redirecionar o usuário para /inicio antes da resposta chegar.
         setSubscription(prev => {
+          if (prev.loading && !prev.subscribed) {
+            // Ainda sem resposta e sem cache — mantém loading para aguardar mais
+            // (o segundo timeout abaixo vai forçar em 10s caso realmente trave)
+            return prev;
+          }
           if (prev.loading) {
             console.warn('[AuthContext] Safety timeout — forçando loading=false para subscription');
             return { ...prev, loading: false };
@@ -418,7 +432,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return prev;
         });
       }
-    }, 2500);
+    }, 6000);
+
+    // Timeout absoluto de emergência: garante que nunca trava para sempre
+    const emergencyTimeout = setTimeout(() => {
+      if (mounted) {
+        setSubscription(prev => {
+          if (prev.loading) {
+            console.warn('[AuthContext] Emergency timeout — liberando loading=false (10s)');
+            return { ...prev, loading: false };
+          }
+          return prev;
+        });
+      }
+    }, 10000);
 
     // Set up auth state listener FIRST
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
@@ -564,6 +591,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       mounted = false;
       clearTimeout(safetyTimeout);
+      clearTimeout(emergencyTimeout);
       authSubscription.unsubscribe();
     };
   }, [checkSubscription]);
