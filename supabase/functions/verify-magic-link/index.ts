@@ -6,33 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const findExistingUserIdByEmail = async (supabaseAdmin: ReturnType<typeof createClient>, email: string) => {
-  const { data: profileUser, error: profileLookupError } = await supabaseAdmin
-    .from("profiles")
-    .select("user_id")
-    .eq("email", email)
-    .maybeSingle();
-
-  if (profileLookupError) {
-    console.warn("[VERIFY-MAGIC-LINK] Profile lookup failed, falling back to auth list:", profileLookupError);
-  }
-
-  if (profileUser?.user_id) return profileUser.user_id;
-
-  for (let page = 1; page <= 20; page++) {
-    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 });
-    if (error) {
-      console.warn("[VERIFY-MAGIC-LINK] Auth listUsers fallback failed:", error);
-      return null;
-    }
-
-    const matchedUser = data?.users?.find((user) => user.email?.toLowerCase().trim() === email);
-    if (matchedUser) return matchedUser.id;
-    if (!data?.users || data.users.length < 1000) break;
-  }
-
-  return null;
-};
+// Função findExistingUserIdByEmail removida por causar timeout com listUsers (paginação excessiva)
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -98,90 +72,19 @@ serve(async (req) => {
     const userName = tokenData.name;
     const userPhone = tokenData.phone;
 
-    // Verificar se o usuário existe sem usar getUserByEmail (não disponível no runtime Deno)
-    const existingUserId = await findExistingUserIdByEmail(supabaseAdmin, email);
-    const existingUser = existingUserId ? { id: existingUserId } : null;
-
-    let userId: string;
-
-    if (existingUser) {
-      userId = existingUser.id;
-
-      // Atualizar nome e telefone no perfil se fornecidos
-      const profileUpdates: Record<string, string> = {};
-      if (userName) profileUpdates.name = userName;
-      if (userPhone) profileUpdates.phone = userPhone;
-
-      if (Object.keys(profileUpdates).length > 0) {
-        // Tentar atualizar com retry para garantir que o profile existe
-        let attempts = 0;
-        let updated = false;
-        while (!updated && attempts < 3) {
-          const { error } = await supabaseAdmin
-            .from("profiles")
-            .update(profileUpdates)
-            .eq("user_id", userId);
-
-          if (!error) {
-            updated = true;
-            console.log("[VERIFY-MAGIC-LINK] Profile updated with name:", userName);
-          } else {
-            attempts++;
-            console.log("[VERIFY-MAGIC-LINK] Retry attempt", attempts, "for profile update");
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
-        }
-      }
-    } else {
-      // Criar novo usuário
-      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email: email,
-        email_confirm: true,
-      });
-
-      if (createError || !newUser.user) {
-        console.error("Error creating user:", createError);
-        return new Response(
-          JSON.stringify({ error: "Erro ao criar conta" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      userId = newUser.user.id;
-
-      // Salvar nome e telefone no perfil do novo usuário
-      const newProfileUpdates: Record<string, string> = {};
-      if (userName) newProfileUpdates.name = userName;
-      if (userPhone) newProfileUpdates.phone = userPhone;
-
-      if (Object.keys(newProfileUpdates).length > 0) {
-        // Aguardar um momento para o trigger criar o perfil
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Tentar atualizar com retry
-        let attempts = 0;
-        let updated = false;
-        while (!updated && attempts < 3) {
-          const { error } = await supabaseAdmin
-            .from("profiles")
-            .update(newProfileUpdates)
-            .eq("user_id", userId);
-
-          if (!error) {
-            updated = true;
-            console.log("[VERIFY-MAGIC-LINK] New user profile updated with name:", userName);
-          } else {
-            attempts++;
-            console.log("[VERIFY-MAGIC-LINK] Retry attempt", attempts, "for new user profile update");
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
-        }
-      }
-    }
-
     console.log("[VERIFY-MAGIC-LINK] Processing token verification for:", email);
 
-    // Gerar link de login para o usuário
+    // 1. Garantir que o usuário existe no Auth (se já existir, vai dar erro que ignoraremos)
+    const { error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email: email,
+      email_confirm: true,
+    });
+
+    if (createError && !createError.message.includes("already exists") && !createError.message.includes("already registered")) {
+      console.warn("[VERIFY-MAGIC-LINK] Unexpected error creating user (continuing anyway):", createError);
+    }
+
+    // 2. Gerar link de login para o usuário (isso retorna o objeto user completo com o ID)
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "magiclink",
       email: email,
@@ -193,6 +96,38 @@ serve(async (req) => {
         JSON.stringify({ error: "Erro ao gerar sessão" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    const userId = linkData.user.id;
+
+    // 3. Atualizar perfil com nome e telefone se fornecidos
+    const profileUpdates: Record<string, string> = {};
+    if (userName) profileUpdates.name = userName;
+    if (userPhone) profileUpdates.phone = userPhone;
+
+    if (Object.keys(profileUpdates).length > 0) {
+      // Aguardar um momento para o trigger criar o perfil (se for usuário novo)
+      if (!createError) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      let attempts = 0;
+      let updated = false;
+      while (!updated && attempts < 3) {
+        const { error } = await supabaseAdmin
+          .from("profiles")
+          .update(profileUpdates)
+          .eq("user_id", userId);
+
+        if (!error) {
+          updated = true;
+          console.log("[VERIFY-MAGIC-LINK] Profile updated with name:", userName);
+        } else {
+          attempts++;
+          console.log("[VERIFY-MAGIC-LINK] Retry attempt", attempts, "for profile update");
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
     }
 
     // Extrair hashed_token das propriedades (novo fluxo PKCE)
