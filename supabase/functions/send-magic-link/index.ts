@@ -63,7 +63,7 @@ const generateEmailTemplate = (magicLink: string) => `
                 <tr>
                   <td style="padding: 20px;">
                     <p style="margin: 0; color: #667eea; font-size: 14px; text-align: center;">
-                      ⏱️ Este link expira em <strong>24 horas</strong>
+                      ⏱️ Este link expira em <strong>7 dias</strong>
                     </p>
                   </td>
                 </tr>
@@ -149,7 +149,7 @@ serve(async (req) => {
 
     // Gerar token único
     const token = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 dias
 
     // Clean phone if provided
     const cleanPhone = phone ? phone.replace(/\D/g, '') : null;
