@@ -33,25 +33,63 @@ serve(async (req) => {
     // Token fetch: allow reuse while the purchase access link is still valid.
     // Email/security scanners can pre-open links before the buyer clicks them.
     const now = new Date();
-    const { data: tokenData, error: fetchError } = await supabaseAdmin
+    const { data: tokenRow, error: fetchError } = await supabaseAdmin
       .from("magic_link_tokens")
       .select("*")
       .eq("token", token)
-      .gt("expires_at", now.toISOString())  // Only select non-expired tokens
       .maybeSingle();
 
-    // --- MECANISMO DE RESILIÊNCIA CONTRA SCANNER DE E-MAIL ---
-    // Permitir reuso do token durante toda sua validade (1h).
-    // O token já expira naturalmente via expires_at, então não precisamos
-    // travar por used_at — isso evita falha quando antivírus/prefetch abre
-    // o link antes do usuário clicar de fato.
-    if (fetchError || !tokenData) {
-      console.error("[VERIFY] Token não encontrado ou expirado:", fetchError);
+    if (fetchError || !tokenRow) {
+      console.error("[VERIFY] Token não encontrado:", fetchError);
       return new Response(
-        JSON.stringify({ error: "Link inválido ou expirado. Solicite um novo link de acesso." }),
+        JSON.stringify({ error: "Link inválido. Solicite um novo link de acesso." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Link expirado: em vez de travar o assinante, reenviamos automaticamente
+    // um link novo para o mesmo e-mail (nenhum risco: vai para a mesma caixa).
+    if (new Date(tokenRow.expires_at).getTime() <= now.getTime()) {
+      const expiredEmail = String(tokenRow.email).toLowerCase().trim();
+      let resent = false;
+      try {
+        const resendResponse = await fetch(
+          `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-magic-link`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            },
+            body: JSON.stringify({
+              email: expiredEmail,
+              name: tokenRow.name ?? undefined,
+              phone: tokenRow.phone ?? undefined,
+            }),
+          },
+        );
+        resent = resendResponse.ok;
+      } catch (resendError) {
+        console.error("[VERIFY] Falha ao reenviar link expirado:", resendError);
+      }
+
+      const [localPart, domainPart] = expiredEmail.split("@");
+      const maskedEmail = `${localPart.slice(0, 2)}***@${domainPart ?? ""}`;
+
+      return new Response(
+        JSON.stringify({
+          error: resent
+            ? `Este link expirou. Acabamos de enviar um link novo para ${maskedEmail}. Confira seu e-mail.`
+            : "Este link expirou. Solicite um novo link de acesso.",
+          expired: true,
+          resent,
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const tokenData = tokenRow;
+
 
     // Best-effort audit only. Do not block login if another request/scanner
     // already marked used_at, as long as expires_at is still valid.
