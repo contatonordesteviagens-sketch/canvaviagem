@@ -451,10 +451,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Only check subscription on specific events, not every state change
         if (currentSession?.access_token && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
-          // SIGNED_IN always forces a fresh server check to prevent stale Elite cache on free accounts
-          const force = event === 'SIGNED_IN';
+          // 🛡️ SIGNED_IN: NÃO forçar refresh se o AuthVerify acabou de escrever um cache válido.
+          // O AuthVerify já verificou o Stripe diretamente. Forçar refresh aqui sobrescreve
+          // um dado correto com uma chamada ao servidor que pode falhar e mandar o user para /inicio.
+          let forceSignedIn = false;
+          if (event === 'SIGNED_IN') {
+            const uid = currentSession.user?.id;
+            if (uid) {
+              try {
+                const stored = localStorage.getItem(`cv-sub-cache-v3-${uid}`);
+                if (stored) {
+                  const parsed = JSON.parse(stored);
+                  // Se o cache foi escrito há menos de 5 minutos, confiar nele
+                  const isFreshCache = Date.now() - parsed.timestamp < 5 * 60 * 1000;
+                  forceSignedIn = !isFreshCache;
+                } else {
+                  // Sem cache = pode ser conta free tentando acessar, checar servidor
+                  forceSignedIn = true;
+                }
+              } catch {
+                forceSignedIn = true;
+              }
+            }
+          }
           setTimeout(() => {
-            checkSubscription(currentSession.access_token, currentSession?.user ?? null, force);
+            checkSubscription(currentSession.access_token, currentSession?.user ?? null, forceSignedIn);
           }, 100);
         } else if (event === 'SIGNED_OUT') {
           setIsAdmin(false);
