@@ -863,7 +863,7 @@ export default function Inicio() {
               
               <div className="mt-5 sm:mt-6 text-center bg-[#FEF2F2] p-4 sm:p-5 rounded-[16px] border border-[#FECACA]">
                 <p className="text-[#DC2626] text-[12px] sm:text-[13px] mb-1 sm:mb-2 font-bold px-2">Custo total no mercado tradicional:</p>
-                <div className="text-[16px] sm:text-[20px] font-black text-[#DC2626] line-through px-2">R$ 3.240/mês + R$ 1.500 único</div>
+                <div className="text-[16px] sm:text-[20px] font-black text-[#DC2626] line-through px-2">R$ 3.330/mês + R$ 1.500 único</div>
               </div>
               
               <div className="mt-4 sm:mt-5 text-center bg-[#F8FAFC] py-8 px-4 sm:p-8 rounded-[16px] border-2 border-[#7C3AED] shadow-[0_12px_40px_rgba(124,58,237,0.12)] relative overflow-hidden flex flex-col items-center justify-center">
