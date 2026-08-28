@@ -202,12 +202,16 @@ serve(async (req) => {
 
     // --- STRIPE SUBSCRIPTION CHECK + LOCAL SYNC ---
     let isSubscribed = false;
+    let resolvedProductId: string | null = null;
+    let resolvedPeriodEnd: string | null = null;
+    let resolvedBillingCycle: string | null = null;
+    let resolvedBillingProvider: string | null = null;
 
     // Check local subscription first (for existing users)
     try {
       const { data: localSub } = await supabaseAdmin
         .from("subscriptions")
-        .select("status, product_id")
+        .select("status, product_id, current_period_end, billing_cycle, billing_provider")
         .eq("user_id", userId)
         .in("status", ["active", "trialing"])
         .maybeSingle();
@@ -215,10 +219,15 @@ serve(async (req) => {
       if (localSub) {
         console.log("[VERIFY-MAGIC-LINK] Found active local subscription:", localSub.product_id);
         isSubscribed = true;
+        resolvedProductId = localSub.product_id ?? null;
+        resolvedPeriodEnd = localSub.current_period_end ?? null;
+        resolvedBillingCycle = localSub.billing_cycle ?? null;
+        resolvedBillingProvider = localSub.billing_provider ?? null;
       }
     } catch (localSubErr) {
       console.warn("[VERIFY-MAGIC-LINK] Local sub check failed:", localSubErr);
     }
+
 
     let stripeSync: {
       customerId: string;
