@@ -98,15 +98,21 @@ const AuthVerify = () => {
       });
 
       if (error) {
-        let detailedError = "Erro ao verificar token";
-        try {
-          // If error message is a JSON string from Edge Function
-          const errorBody = typeof error.message === 'string' && error.message.startsWith('{')
-            ? JSON.parse(error.message)
-            : error;
-          detailedError = errorBody.error || error.message || detailedError;
-        } catch {
-          detailedError = error.message;
+        let detailedError = "Ocorreu um erro ao verificar seu link.";
+        
+        // O Supabase JS esconde o body do erro em caso de 400/500 nas Edge Functions
+        // e retorna essa string genérica. Vamos interceptar para dar uma resposta melhor.
+        if (error.message?.includes("non-2xx status code")) {
+          detailedError = "Este link é inválido, expirou ou já foi utilizado. Por favor, solicite um novo acesso.";
+        } else {
+          try {
+            const errorBody = typeof error.message === 'string' && error.message.startsWith('{')
+              ? JSON.parse(error.message)
+              : error;
+            detailedError = errorBody.error || error.message || detailedError;
+          } catch {
+            detailedError = error.message;
+          }
         }
 
         setStatus("error");
