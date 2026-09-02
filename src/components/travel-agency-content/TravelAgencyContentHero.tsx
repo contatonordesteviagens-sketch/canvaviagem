@@ -61,34 +61,54 @@ export default function TravelAgencyContentHero({ onScrollToPlans, onRecordEvent
         <div aria-hidden="true" className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_78%_10%,rgba(124,92,255,.26),transparent_35%),radial-gradient(circle_at_60%_42%,rgba(72,42,160,.12),transparent_34%)]" />
         <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-35 [background-image:radial-gradient(rgba(157,132,255,.7)_.7px,transparent_.7px)] [background-size:91px_91px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
 
-        <div className="mx-auto max-w-[1200px] px-5 pb-6 pt-[150px] sm:px-7 lg:pt-[164px]">
-          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,.96fr)_minmax(0,1.04fr)] lg:gap-16 xl:gap-20">
+        <div className="mx-auto max-w-[1200px] px-5 pb-6 pt-[100px] sm:px-7 lg:pt-[164px]">
+          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 xl:gap-20">
             <div className={`relative z-10 min-w-0 transition-[opacity,transform] duration-700 ${visible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"}`}>
-              <p className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#22d3a8]/30 bg-[#08231e]/55 px-4 py-2 font-mono text-[10px] font-semibold uppercase tracking-[.18em] text-[#22d3a8]"><span className="h-1.5 w-1.5 rounded-full bg-[#22d3a8] shadow-[0_0_12px_#22d3a8]" />Válido somente hoje · carrosséis ilimitados</p>
-              <h1 id="travel-agency-hero-title" className="max-w-[590px] text-[42px] font-[590] leading-[.99] tracking-[-.035em] sm:text-[60px] lg:text-[68px] xl:text-[74px]">
-                <span className="block">Carrosséis que</span>
-                <em className="block font-serif font-normal text-[#9b82ff]">vendem viagens</em>
-                <span className="block">e viralizam, em</span>
-                <span className="bg-[linear-gradient(transparent_76%,rgba(124,92,255,.42)_76%)]">1 clique.</span>
+              <p className="mb-4 sm:mb-8 inline-flex items-center gap-2 rounded-full border border-[#22d3a8]/30 bg-[#08231e]/55 px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-[9px] sm:text-[10px] font-semibold uppercase tracking-[.15em] sm:tracking-[.18em] text-[#22d3a8]"><span className="h-1.5 w-1.5 rounded-full bg-[#22d3a8] shadow-[0_0_12px_#22d3a8]" />Uso ilimitado para vender viagens</p>
+              
+              <h1 id="travel-agency-hero-title" className="max-w-[590px] text-[36px] font-[590] leading-[1.05] tracking-[-.04em] sm:text-[60px] lg:text-[68px] xl:text-[74px]">
+                <span className="block">Carrosséis que vendem</span>
+                <em className="block font-serif font-normal text-[#9b82ff] mt-1 sm:mt-0">viagens e viralizam</em>
+                <span className="block mt-1 sm:mt-0"><span className="bg-[linear-gradient(transparent_76%,rgba(124,92,255,.42)_76%)]">em 1 clique.</span></span>
               </h1>
-              <p className="mt-8 text-[21px] font-medium text-white/78">Crie quantos carrosséis quiser: <em className="font-serif text-[27px] font-normal text-[#b6a5ff]">sem créditos e sem limites.</em></p>
-              <p className="mt-7 max-w-[585px] text-[15px] leading-[1.75] text-white/58">O Canva Viagem transforma destino, oferta e identidade da sua agência em carrosséis com vários slides, artes para o Feed e versões verticais para Stories. Você escolhe entre +12 modelos feitos para turismo, personaliza, baixa e publica quantas vezes precisar. Ao assinar hoje, o uso fica ilimitado enquanto sua assinatura estiver ativa.</p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <button type="button" onClick={() => onScrollToPlans("hero_primary")} className="group inline-flex min-h-[58px] items-center justify-center gap-3 rounded-xl bg-[#7c5cff] px-8 text-[15px] font-semibold text-white shadow-[0_14px_38px_rgba(124,92,255,.28)] transition hover:-translate-y-0.5 hover:bg-[#896dff] motion-reduce:transform-none">Liberar carrosséis ilimitados <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></button>
-                <button type="button" onClick={() => onScrollToPlans("hero_secondary")} className="min-h-[58px] rounded-xl border border-white/15 px-8 text-[15px] font-semibold text-white transition hover:border-white/30 hover:bg-white/[.04]">Ver planos</button>
+              
+              <p className="mt-4 sm:mt-8 text-[18px] sm:text-[21px] font-medium text-white/78 leading-snug">Crie quantos carrosséis quiser: <em className="font-serif text-[22px] sm:text-[27px] font-normal text-[#b6a5ff]">sem créditos e sem limites.</em></p>
+              
+              {/* VIDEO NO MOBILE: Aparece abaixo do subtítulo para otimizar o espaço e funcionar como VSL */}
+              <div className="mt-5 relative w-full aspect-video rounded-[16px] overflow-hidden border border-white/10 shadow-[0_10px_40px_rgba(124,92,255,.15)] lg:hidden">
+                <iframe
+                  className="absolute inset-0 w-full h-full pointer-events-none scale-[1.05]"
+                  src="https://www.youtube.com/embed/Z25JiB09jsY?autoplay=1&mute=1&loop=1&playlist=Z25JiB09jsY&controls=0&modestbranding=1&showinfo=0&rel=0&disablekb=1&fs=0&iv_load_policy=3"
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                ></iframe>
               </div>
-              <p className="mt-5 font-mono text-[10px] uppercase tracking-[.15em] text-white/35">Oferta válida somente hoje · sem créditos · sem limite de gerações</p>
+
+              <p className="mt-5 sm:mt-7 max-w-[585px] text-[14px] sm:text-[15px] leading-[1.65] sm:leading-[1.75] text-white/60">Transforme seu pacote de viagens em conteúdos ou anúncios com a marca da sua agência, são carrosséis com vários estilos diferentes de slides, formato Feed e Stories. Você escolhe entre +12 modelos feitos exclusivamente para turismo, você apenas escolhe o modelo, baixa e publica quantas vezes precisar. <em className="not-italic font-semibold text-white/80">Ao assinar hoje, o uso fica ilimitado enquanto sua assinatura estiver ativa.</em></p>
+              
+              <div className="mt-6 sm:mt-9 flex flex-col gap-3 sm:flex-row">
+                <button type="button" onClick={() => onScrollToPlans("hero_primary")} className="group inline-flex min-h-[52px] sm:min-h-[58px] items-center justify-center gap-3 rounded-xl bg-[#7c5cff] px-6 sm:px-8 text-[15px] font-semibold text-white shadow-[0_14px_38px_rgba(124,92,255,.28)] transition hover:-translate-y-0.5 hover:bg-[#896dff] motion-reduce:transform-none">Liberar carrosséis ilimitados <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></button>
+                <button type="button" onClick={() => onScrollToPlans("hero_secondary")} className="min-h-[52px] sm:min-h-[58px] rounded-xl border border-white/15 px-6 sm:px-8 text-[15px] font-semibold text-white transition hover:border-white/30 hover:bg-white/[.04] hidden sm:flex items-center justify-center">Ver planos</button>
+              </div>
             </div>
 
-            <div className={`relative min-w-0 aspect-video transition-[opacity,transform] delay-150 duration-1000 ${visible ? "translate-y-0 opacity-100" : "translate-y-7 opacity-0"}`}>
+            {/* VIDEO NO DESKTOP: Substitui a animação antiga para manter o estilo VSL na coluna da direita */}
+            <div className={`relative min-w-0 aspect-video transition-[opacity,transform] delay-150 duration-1000 hidden lg:block ${visible ? "translate-y-0 opacity-100" : "translate-y-7 opacity-0"}`}>
               <div className="absolute inset-0 overflow-hidden rounded-[24px] border border-[#9b82ff]/20 bg-[#0a0912] shadow-[0_24px_70px_rgba(0,0,0,.62),0_0_45px_rgba(124,92,255,.13)] sm:rounded-[30px] lg:shadow-[0_32px_90px_rgba(0,0,0,.68),0_0_60px_rgba(124,92,255,.16)]">
-                <AutoplayLoopVideo src={`${A}carousel-hero.mp4`} mobileAnimationSrc={`${A}carousel-hero-mobile.webp`} label="Demonstração visual da criação de carrosséis" className="h-full w-full object-cover" />
+                <iframe
+                  className="absolute inset-0 w-full h-full pointer-events-none scale-[1.05]"
+                  src="https://www.youtube.com/embed/Z25JiB09jsY?autoplay=1&mute=1&loop=1&playlist=Z25JiB09jsY&controls=0&modestbranding=1&showinfo=0&rel=0&disablekb=1&fs=0&iv_load_policy=3"
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                ></iframe>
                 <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_68%,rgba(8,8,11,.48))]" />
               </div>
             </div>
           </div>
 
-          <dl className="mt-16 grid grid-cols-2 border-y border-white/[.08] py-8 lg:mt-24 lg:grid-cols-4 lg:py-10">
+          <dl className="mt-12 sm:mt-16 grid grid-cols-2 border-y border-white/[.08] py-8 lg:mt-24 lg:grid-cols-4 lg:py-10">
             {metrics.map(([value,label]) => <div key={label} className="px-4 py-5 text-left sm:px-7"><dd className="text-[38px] font-semibold leading-none tracking-[-.045em] text-white sm:text-[50px]">{value}</dd><dt className="mt-5 max-w-[210px] font-mono text-[10px] font-medium uppercase leading-5 tracking-[.17em] text-white/35 sm:text-[12px]">{label}</dt></div>)}
           </dl>
         </div>
