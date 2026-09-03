@@ -728,14 +728,15 @@ export default function SiteOfferLanding() {
               <p className="mt-2 text-slate-600">Publique sua agência em poucos passos.</p>
               
               <div className="mt-8 pt-8 border-t border-slate-200">
-                <p className="text-sm font-black uppercase text-slate-400 mb-6">+ FERRAMENTAS COMPLEMENTARES INCLUÍDAS</p>
+                <p className="text-sm font-black uppercase text-slate-400 mb-6">+ BÔNUS INCLUSOS PARA DIVULGAR SEU SITE</p>
                 <div className="grid gap-3 text-left sm:grid-cols-2">
                   {[
-                    "Fábrica de anúncios",
+                    "Gerador de anúncios",
                     "Criador de carrosséis",
                     "Textos e legendas",
                     "Biblioteca de Reels e artes",
-                    "CRM para orçamentos"
+                    "CRM para orçamentos",
+                    "Agentes de IA para turismo"
                   ].map(item => (
                     <div key={item} className="flex items-center gap-3">
                       <Check className="h-5 w-5 text-cyan-600" />
@@ -786,7 +787,12 @@ export default function SiteOfferLanding() {
                 <div className="grid content-center gap-4 border-t border-slate-200 pt-8 md:border-l md:border-t-0 md:pl-10 md:pt-0">
                   <p className="font-black text-slate-900 mb-2">No plano anual você recebe:</p>
                   {[
-                    "Site", "6 modelos", "Pacotes", "Orçamento", "WhatsApp", "Publicação", "Ferramentas Elite", "Suporte"
+                    "Site com domínio e hospedagem", 
+                    "6 modelos pra escolher ou mudar", 
+                    "Páginas de Seus Pacotes", 
+                    "Formulário para Orçamento", 
+                    "Botão para seu WhatsApp", 
+                    "Acesso completo do canva viagem"
                   ].map((feature) => (
                     <div key={feature} className="flex items-center gap-3">
                       <CheckCircle2 className="h-5 w-5 shrink-0 text-cyan-600" />
