@@ -721,19 +721,19 @@ export default function SiteOfferLanding() {
               Você entra pelo site. O restante da plataforma Elite vem junto.
             </h2>
             
-            <div className="mt-12 mx-auto max-w-3xl rounded-[2rem] border-2 border-cyan-500 bg-white p-8 shadow-2xl relative">
-              <div className="absolute -top-5 left-1/2 -translate-x-1/2 rounded-full bg-cyan-600 px-6 py-2 text-sm font-black uppercase text-white shadow-lg">
+            <div className="mt-12 mx-auto max-w-3xl rounded-[2rem] border-2 border-cyan-500 bg-white p-6 sm:p-8 shadow-2xl relative">
+              <div className="absolute -top-4 sm:-top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-cyan-600 px-5 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm font-black uppercase tracking-wider text-white shadow-lg">
                 PRODUTO PRINCIPAL
               </div>
-              <h3 className="mt-4 text-3xl font-black text-slate-900">Construtor de Sites</h3>
-              <p className="mt-2 text-slate-600">Publique sua agência em poucos passos.</p>
+              <h3 className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-black text-slate-900">Construtor de Sites</h3>
+              <p className="mt-1 sm:mt-2 text-sm sm:text-base text-slate-600">Publique sua agência em poucos passos.</p>
               
-              <div className="mt-8 pt-8 border-t border-slate-200">
-                <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-red-600 px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(220,38,38,0.6)] ring-2 ring-red-400 ring-offset-2 animate-pulse">
-                  <Gift className="h-4 w-4 shrink-0" />
-                  Assinando hoje você ganha isso tudo de bônus:
+              <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-slate-100">
+                <div className="mb-6 flex w-full flex-col sm:flex-row items-center justify-center gap-2 rounded-2xl sm:rounded-full bg-red-600 p-3 sm:px-5 sm:py-2 text-center text-[11px] sm:text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(220,38,38,0.4)] ring-2 ring-red-400 ring-offset-2 animate-pulse">
+                  <Gift className="h-5 w-5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>Assinando hoje você ganha isso tudo de bônus:</span>
                 </div>
-                <div className="grid gap-3 text-left sm:grid-cols-2">
+                <div className="mx-auto grid max-w-xl gap-3 sm:gap-4 text-left sm:grid-cols-2">
                   {[
                     "Gerador de anúncios",
                     "Criador de carrosséis",
@@ -742,9 +742,9 @@ export default function SiteOfferLanding() {
                     "CRM para orçamentos",
                     "Agentes de IA para turismo"
                   ].map(item => (
-                    <div key={item} className="flex items-center gap-3">
-                      <Check className="h-5 w-5 text-cyan-600" />
-                      <span className="font-bold text-slate-700">{item}</span>
+                    <div key={item} className="flex items-center gap-2.5 sm:gap-3">
+                      <Check className="h-5 w-5 shrink-0 text-cyan-600" />
+                      <span className="text-[13px] sm:text-[15px] font-bold text-slate-700">{item}</span>
                     </div>
                   ))}
                 </div>
