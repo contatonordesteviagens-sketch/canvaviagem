@@ -21,7 +21,8 @@ import {
   XCircle,
   Image as ImageIcon,
   Volume2,
-  VolumeX
+  VolumeX,
+  Gift
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
@@ -728,7 +729,10 @@ export default function SiteOfferLanding() {
               <p className="mt-2 text-slate-600">Publique sua agência em poucos passos.</p>
               
               <div className="mt-8 pt-8 border-t border-slate-200">
-                <p className="text-sm font-black uppercase text-slate-400 mb-6">+ BÔNUS INCLUSOS PARA DIVULGAR SEU SITE</p>
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-red-600 px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(220,38,38,0.6)] ring-2 ring-red-400 ring-offset-2 animate-pulse">
+                  <Gift className="h-4 w-4 shrink-0" />
+                  Assinando hoje você ganha isso tudo de bônus:
+                </div>
                 <div className="grid gap-3 text-left sm:grid-cols-2">
                   {[
                     "Gerador de anúncios",
