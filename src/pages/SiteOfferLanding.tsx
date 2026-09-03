@@ -117,7 +117,7 @@ function VslPlayer() {
     <div className="relative w-full aspect-video rounded-[1rem] overflow-hidden bg-slate-900 group">
       <iframe
         ref={iframeRef}
-        src="https://www.youtube.com/embed/aprUHzZyJxw?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=aprUHzZyJxw&controls=0&modestbranding=1&showinfo=0&rel=0&disablekb=1&fs=0&iv_load_policy=3&cc_load_policy=0"
+        src="https://www.youtube.com/embed/aprUHzZyJxw?enablejsapi=1&autoplay=1&mute=1&loop=1&playsinline=1&playlist=aprUHzZyJxw&controls=0&modestbranding=1&showinfo=0&rel=0&disablekb=1&fs=0&iv_load_policy=3&cc_load_policy=0"
         className={`absolute inset-0 w-full h-full scale-[1.02] ${isMuted ? "pointer-events-none" : ""}`}
         allow="autoplay; encrypted-media"
         frameBorder="0"
