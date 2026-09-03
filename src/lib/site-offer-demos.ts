@@ -69,7 +69,7 @@ const definitions: DemoDefinition[] = [
     headline: "O Brasil que você sonha, com tudo organizado para embarcar.",
     subheadline: "Pacotes nacionais com hospedagem, traslados e atendimento do primeiro orçamento até a volta para casa.",
     packages: [
-      packageItem("brisa-jeri", "Jericoacoara Essencial, 5 dias", "10x de R$ 289", image("photo-1509316785289-025f5b846b35"), {
+      packageItem("brisa-jeri", "Jericoacoara Essencial, 5 dias", "10x de R$ 289", "https://veja.abril.com.br/wp-content/uploads/2016/06/economia-cidades-jericoacoara-ceara-20120816-002-original.jpeg?crop=1&resize=1212,909", {
         badge: "Mais procurado",
         segment: "pacote",
         subtitle: "Vila de Jeri, Lagoa do Paraíso e passeio pelo litoral leste",
@@ -79,32 +79,37 @@ const definitions: DemoDefinition[] = [
         departureLocation: "Fortaleza",
         accommodation: "Pousada selecionada com café da manhã",
         paymentTerms: "Entrada + saldo em até 10x no cartão",
-        highlights: ["Lagoa do Paraíso", "Pedra Furada", "Pôr do sol na duna"],
-        included: ["Hospedagem", "Café da manhã", "Traslado Fortaleza–Jeri", "Passeio litoral leste"],
-        notIncluded: ["Passagem aérea", "Alimentação não mencionada"],
         itinerary: ["Dia 1: chegada e traslado", "Dia 2: litoral leste", "Dia 3: dia livre", "Dia 4: vila e pôr do sol", "Dia 5: retorno"],
       }),
-      packageItem("brisa-porto", "Porto de Galinhas em Família", "12x de R$ 319", image("photo-1507525428034-b723cf961d3e"), {
+      packageItem("brisa-porto", "Porto de Galinhas em Família", "12x de R$ 319", "https://samoaresort.com.br/wp-content/uploads/2020/08/portodegalinhas.jpg", {
         badge: "Família",
         segment: "pacote",
         subtitle: "Piscinas naturais, resort e tempo livre para toda a família",
         travelDates: "Setembro e outubro",
         duration: "6 dias e 5 noites",
         accommodation: "Resort 4 estrelas com café da manhã",
-        paymentTerms: "Até 12x no cartão",
         highlights: ["Piscinas naturais", "Praia de Muro Alto", "Estrutura para crianças"],
         included: ["Hospedagem", "Café da manhã", "Traslados", "Passeio de jangada"],
       }),
-      packageItem("brisa-noronha", "Fernando de Noronha Exclusivo", "12x de R$ 649", image("photo-1507525428034-b723cf961d3e"), {
+      packageItem("brisa-noronha", "Fernando de Noronha Exclusivo", "12x de R$ 649", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjeaTOcUEaJWECgRCn8eUga3xyK62uTKx5qb5NiQAl78Z4ni1chW-gR-I&s=10", {
         badge: "Experiência premium",
         segment: "sob-medida",
         subtitle: "Praias preservadas, barco e roteiro pensado para o casal",
         travelDates: "Datas sob consulta",
         duration: "5 dias e 4 noites",
         accommodation: "Pousada boutique com café da manhã",
-        availability: "sob-consulta",
         highlights: ["Baía do Sancho", "Passeio de barco", "Pôr do sol no Boldró"],
         included: ["Hospedagem", "Transfers", "Ilha tour", "Passeio de barco"],
+      }),
+      packageItem("brisa-maragogi", "Maragogi, o Caribe Brasileiro", "10x de R$ 299", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8Z6pybcsqn4nnESy-gAz6v7ANKowgDLX1-B5DLNzW6tro4Xbzj_nWpqQ&s=10", {
+        badge: "Praia",
+        segment: "pacote",
+        subtitle: "Piscinas naturais cristalinas e muito sol",
+        travelDates: "Novembro a Janeiro",
+        duration: "5 dias e 4 noites",
+        accommodation: "Pousada pé na areia com café da manhã",
+        highlights: ["Passeio de Catamarã", "Piscinas Naturais", "Praia de Antunes"],
+        included: ["Hospedagem", "Transfers", "Passeio às piscinas", "Café da manhã"],
       }),
     ],
   },
@@ -170,14 +175,15 @@ const definitions: DemoDefinition[] = [
     primaryColor: "#073B3A",
     secondaryColor: "#FFC857",
     backgroundColor: "#F2FAF8",
-    heroImageUrl: image("photo-1500534623283-312aade485b7"),
+    heroImageUrl: "https://imagens.portalzuk.com.br/blog/606/63347e5439ee1.jpg",
     headline: "Conheça o Ceará de verdade.",
     subheadline: "Passeios locais com guia, transporte e informação clara para você aproveitar cada dia sem improviso.",
     packages: [
-      packageItem("viva-jeri", "Jericoacoara, Litoral Leste", "R$ 189 por pessoa", image("photo-1509316785289-025f5b846b35"), {
+      packageItem("viva-jeri", "Jericoacoara, Litoral Leste", "R$ 189 por pessoa", "https://veja.abril.com.br/wp-content/uploads/2016/06/economia-cidades-jericoacoara-ceara-20120816-002-original.jpeg?crop=1&resize=1212,909", {
         badge: "Saída diária",
         segment: "passeio",
         subtitle: "Árvore da Preguiça, Buraco Azul e Lagoa do Paraíso",
+        description: "Incluso transporte, passeios e suporte 24h",
         longDescription: "Um dia inteiro para conhecer as paisagens mais famosas do litoral leste de Jericoacoara com transporte e acompanhamento local.",
         travelDates: "Todos os dias, saída às 8h",
         duration: "8 horas",
@@ -187,25 +193,39 @@ const definitions: DemoDefinition[] = [
         included: ["Transporte 4x4", "Motorista credenciado", "Busca na pousada"],
         notIncluded: ["Almoço", "Ingressos e taxas ambientais"],
       }),
-      packageItem("viva-cumbuco", "Cumbuco com Passeio de Buggy", "R$ 159 por pessoa", image("photo-1509316785289-025f5b846b35"), {
-        badge: "Aventura",
+      packageItem("viva-cumbuco", "Cumbuco com Passeio de Buggy", "R$ 159 por pessoa", "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/14/5d/88/46/img-20180827-120743-840.jpg?w=1200&h=-1&s=1", {
+        badge: "Saída diária",
         segment: "passeio",
         subtitle: "Dunas, lagoas e emoção com ou sem adrenalina",
+        description: "Incluso transporte ida e volta, passeio de buggy, guia e suporte 24h",
         travelDates: "Terça a domingo",
         duration: "6 horas",
         departureLocation: "Hotéis de Fortaleza",
         highlights: ["Passeio de buggy", "Lagoa do Banana", "Dunas do Cumbuco"],
         included: ["Transporte ida e volta", "Buggy compartilhado", "Guia local"],
       }),
-      packageItem("viva-fortaleza", "Fortaleza Essencial, City Tour", "R$ 89 por pessoa", image("photo-1500534623283-312aade485b7"), {
+      packageItem("viva-fortaleza", "Fortaleza, City Tour", "R$ 89 por pessoa", "https://imagens.portalzuk.com.br/blog/606/63347e5439ee1.jpg", {
         badge: "Primeira visita",
         segment: "passeio",
         subtitle: "História, cultura, orla e os pontos mais conhecidos da capital",
+        description: "Incluso transporte climatizado, guia credenciado e suporte 24h",
         travelDates: "Segundas, quartas e sextas",
         duration: "4 horas",
         meetingPoint: "Busca nos hotéis da orla",
+        meetingPoint: "Busca nos hotéis da orla",
         highlights: ["Praia de Iracema", "Mercado Central", "Centro Dragão do Mar"],
         included: ["Transporte climatizado", "Guia credenciado", "Seguro passageiro"],
+      }),
+      packageItem("viva-canoa", "Canoa Quebrada, Litoral Leste", "R$ 139 por pessoa", "https://media-cdn.tripadvisor.com/media/photo-c/1280x250/09/ab/43/3d/praia-de-canoa-quebrada.jpg", {
+        badge: "Saída diária",
+        segment: "passeio",
+        subtitle: "Falésias coloridas e a famosa Broadway",
+        description: "Incluso transporte, guia credenciado e suporte 24h",
+        travelDates: "Todos os dias, saída às 7h30",
+        duration: "9 horas",
+        meetingPoint: "Busca nos hotéis da orla de Fortaleza",
+        highlights: ["Falésias Vermelhas", "Praia de Canoa Quebrada", "Broadway"],
+        included: ["Transporte climatizado", "Guia de turismo credenciado"],
       }),
     ],
   },
@@ -228,7 +248,7 @@ const createDemoState = (demo: DemoDefinition): FabricaState => ({
   selectedPackages: demo.packages,
   destinos: demo.packages.map((item) => item.title.split("—")[0].trim()),
   depoimentos: [],
-  sectionOrder: ["hero", "processo", "destinos", "porQue", "orcamento", "faq", "finalCta"],
+  sectionOrder: ["hero", "destinos", "processo", "porQue", "orcamento", "faq", "finalCta"],
   metaPixelId: "",
   ga4Id: "",
   siteContent: {
@@ -261,11 +281,17 @@ const createDemoState = (demo: DemoDefinition): FabricaState => ({
     depoimentosTitle: "Quem viajou recomenda",
     faqTitle: "Dúvidas antes de pedir orçamento",
     faqEyebrow: "Perguntas frequentes",
-    faq: [
-      { q: "Posso personalizar este modelo?", a: "Sim. Nome, logo, cores, imagens, textos, pacotes e contatos podem ser alterados." },
-      { q: "Este pacote é uma oferta real?", a: "Não. Esta é uma demonstração oficial do Canva Viagem; nomes, preços e condições são exemplos visuais." },
-      { q: "O site funciona no celular?", a: "Sim. O modelo foi preparado para computador e celular." },
-    ],
+    faq: demo.id === "viva-ceara" 
+      ? [
+          { q: "Onde é o ponto de encontro?", a: "Buscamos você na recepção do seu hotel ou pousada. O horário exato será confirmado um dia antes do passeio." },
+          { q: "O que preciso levar?", a: "Recomendamos roupas leves, protetor solar, óculos de sol, boné e uma garrafa de água." },
+          { q: "Como funciona o pagamento?", a: "Você pode reservar com um sinal e pagar o restante no dia do passeio, via PIX ou cartão de crédito." },
+        ]
+      : [
+          { q: "Posso personalizar este modelo?", a: "Sim. Nome, logo, cores, imagens, textos, pacotes e contatos podem ser alterados." },
+          { q: "Este pacote é uma oferta real?", a: "Não. Esta é uma demonstração oficial do Canva Viagem; nomes, preços e condições são exemplos visuais." },
+          { q: "O site funciona no celular?", a: "Sim. O modelo foi preparado para computador e celular." },
+        ],
     orcamentoEyebrow: "Peça uma proposta",
     orcamentoTitle: "Quer montar uma viagem como esta?",
     orcamentoText: "Esta é uma demonstração. Ao enviar, você abre o atendimento oficial do Canva Viagem no WhatsApp.",
@@ -289,12 +315,19 @@ const createDemoState = (demo: DemoDefinition): FabricaState => ({
     animationEffect: "none",
     animationLocation: "all",
     animationDuration: "always",
-    stats: [
-      { num: "3", label: "Roteiros selecionados" },
-      { num: "Atendimento", label: "Antes e durante a viagem" },
-      { num: "Compra segura", label: "Condições transparentes" },
-      { num: "Suporte", label: "Fale com nossa equipe" },
-    ],
+    stats: demo.id === "viva-ceara"
+      ? [
+          { num: "3", label: "Passeios" },
+          { num: "100%", label: "Segurança e conforto" },
+          { num: "Guias", label: "Especializados locais" },
+          { num: "24h", label: "Suporte na viagem" },
+        ]
+      : [
+          { num: "100%", label: "Segurança" },
+          { num: "VIP", label: "Atendimento Local" },
+          { num: "24h", label: "Suporte Direto" },
+          { num: "Fácil", label: "Compra online" },
+        ],
   },
 } as FabricaState);
 
@@ -312,6 +345,6 @@ export const siteOfferDemos: SiteOfferDemo[] = [...definitions]
   packageNames: demo.packages.map((item) => item.title),
   html: buildLandingHTML(createDemoState(demo)).replace(
     "</head>",
-    `<style>#por-que.equipe{background:#0b1324!important}#por-que .equipe-left h2,#por-que .equipe-left .intro,#por-que .feat h4,#por-que .feat p{color:#fff!important}#por-que .equipe-left .intro,#por-que .feat p{opacity:.82}</style></head>`,
+    `<style>#por-que.equipe{background:#0b1324!important}#por-que .equipe-left h2,#por-que .equipe-left .intro,#por-que .feat h4,#por-que .feat p{color:#fff!important}#por-que .equipe-left .intro,#por-que .feat p{opacity:.82}</style>${demo.id === 'viva-ceara' ? `<style>.hero::before { background-position: bottom center !important; opacity: 0.1 !important; } .hero h1 { line-height: 1.15 !important; } .price-stack .price-symbol, .price-stack .price-value { color: ${demo.secondaryColor} !important; }</style>` : ''}</head>`,
   ),
 }));

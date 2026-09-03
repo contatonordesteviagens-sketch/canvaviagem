@@ -19,7 +19,9 @@ import {
   SmartphoneNfc,
   Check,
   XCircle,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
@@ -97,10 +99,53 @@ const faqItems = [
   }
 ];
 
+function VslPlayer() {
+  const [isMuted, setIsMuted] = useState(true);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const handleUnmute = () => {
+    setIsMuted(false);
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: "command", func: "seekTo", args: [0, true] }), "*");
+      iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: "command", func: "unMute", args: [] }), "*");
+      iframeRef.current.contentWindow.postMessage(JSON.stringify({ event: "command", func: "setVolume", args: [100] }), "*");
+    }
+  };
+
+  return (
+    <div className="relative w-full aspect-video rounded-[1rem] overflow-hidden bg-slate-900 group">
+      <iframe
+        ref={iframeRef}
+        src="https://www.youtube.com/embed/aprUHzZyJxw?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=aprUHzZyJxw&controls=0&modestbranding=1&showinfo=0&rel=0&disablekb=1&fs=0&iv_load_policy=3&cc_load_policy=0"
+        className={`absolute inset-0 w-full h-full scale-[1.02] ${isMuted ? "pointer-events-none" : ""}`}
+        allow="autoplay; encrypted-media"
+        frameBorder="0"
+        tabIndex={-1}
+      />
+      {isMuted && (
+        <div 
+          className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center bg-black/40 transition-colors hover:bg-black/20"
+          onClick={handleUnmute}
+        >
+          <div className="absolute top-3 md:top-4 flex items-center gap-1.5 md:gap-2 rounded-full bg-red-600/95 px-2.5 py-1 md:px-4 md:py-2 text-[9px] sm:text-[13px] font-bold text-white shadow-xl animate-pulse">
+            <VolumeX className="h-3 w-3 md:h-4 md:w-4 shrink-0" />
+            SEU VÍDEO JÁ COMEÇOU, CLIQUE PARA ATIVAR O SOM
+          </div>
+          <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-cyan-600/90 shadow-[0_0_30px_rgba(8,145,178,0.6)] backdrop-blur-sm transition-transform group-hover:scale-110">
+            <Volume2 className="h-7 w-7 sm:h-10 sm:w-10 text-white drop-shadow-md" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SiteOfferLanding() {
   const [checkoutLoading, setCheckoutLoading] = useState<BillingCycle | null>(null);
   const [activeDemoId, setActiveDemoId] = useState(siteOfferDemos[0].id);
-  const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
+  const [previewMode, setPreviewMode] = useState<PreviewMode>(
+    typeof window !== "undefined" && window.innerWidth < 768 ? "mobile" : "desktop"
+  );
   const [showStickyCTA, setShowStickyCTA] = useState(false);
   const pageTrackedRef = useRef(false);
   const heroRef = useRef<HTMLElement>(null);
@@ -180,9 +225,9 @@ export default function SiteOfferLanding() {
 
       {/* HEADER */}
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-12 md:min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <a href="/inicio" aria-label="Ir para a página inicial do Canva Viagem" className="shrink-0">
-            <img src={logoImage} alt="Canva Viagem" className="h-8 w-auto" />
+            <img src={logoImage} alt="Canva Viagem" className="h-6 md:h-8 w-auto" />
           </a>
           <div className="hidden items-center gap-2 text-sm font-semibold text-slate-600 md:flex">
             <ShieldCheck className="h-4 w-4 text-cyan-700" />
@@ -191,7 +236,7 @@ export default function SiteOfferLanding() {
           <button
             type="button"
             onClick={() => scrollToPlans("header")}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan-700 px-4 text-sm font-extrabold text-white transition hover:bg-cyan-800 active:scale-[0.98] sm:px-6"
+            className="inline-flex min-h-9 md:min-h-11 items-center justify-center rounded-xl bg-cyan-700 px-3 md:px-4 text-[13px] md:text-sm font-extrabold text-white transition hover:bg-cyan-800 active:scale-[0.98] sm:px-6"
           >
             Ver planos
           </button>
@@ -202,91 +247,85 @@ export default function SiteOfferLanding() {
         {/* 1. HERO */}
         <section ref={heroRef} className="relative overflow-hidden bg-[#0B1324] text-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_20%,rgba(8,145,178,0.18),transparent_34%)]" />
-          <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:px-8 lg:py-20">
+          <div className="relative mx-auto grid max-w-7xl items-center gap-5 px-4 pt-3 pb-6 sm:px-6 md:py-8 lg:grid-cols-[1fr_1.3fr] lg:gap-12 xl:gap-16 lg:px-8 lg:py-10 xl:py-12">
             <div className="mx-auto flex max-w-2xl flex-col lg:mx-0">
-              <div className="mb-6 self-start inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-cyan-200">
-                <Globe2 className="h-4 w-4" />
-                SITE PROFISSIONAL PARA AGÊNCIAS DE VIAGENS
+              <div className="mb-3 self-start inline-flex items-center gap-1.5 md:gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 md:px-4 md:py-1.5 text-[9px] sm:text-xs font-extrabold uppercase tracking-[0.18em] text-cyan-200">
+                <Globe2 className="h-3 w-3 md:h-4 md:w-4 shrink-0" />
+                SITE PARA AGÊNCIAS DE VIAGENS
               </div>
 
-              <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl lg:text-5xl xl:text-6xl">
-                Publique o site profissional da sua agência de viagens sem programador.
+              <h1 className="text-[1.75rem] font-black leading-tight tracking-tight sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl">
+                Publique o site profissional da sua agência de viagens em 5 minutos.
               </h1>
 
-              <p className="mt-5 text-lg leading-relaxed text-slate-300 sm:text-xl">
-                Escolha entre 6 modelos feitos para turismo, adicione sua marca e seus pacotes e publique um site navegável para apresentar sua agência, receber pedidos de orçamento e levar interessados ao WhatsApp.
+              <p className="mt-2 text-[13px] leading-snug text-slate-300 sm:text-base md:text-lg lg:text-lg lg:mt-3 lg:leading-snug">
+                Escolha entre 6 modelos feitos para vender viagens e turismo, adicione sua marca e seus pacotes e publique sem precisar de programador. Navegável no celular e computador para gerar credibilidade, autoridade e receber muitos pedidos de orçamento direto no seu WhatsApp.
               </p>
 
-              <div className="relative mt-8 w-full lg:hidden">
-                <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5 p-2 shadow-[0_20px_50px_-20px_rgba(8,145,178,0.5)]">
-                  <img
-                    src={showcaseLandingPages}
-                    alt="Demonstração do site para agências de viagens"
-                    className="w-full rounded-[1rem] object-cover"
-                  />
+              <div className="relative mt-3 w-full lg:hidden">
+                <div className="overflow-hidden rounded-[1.25rem] border border-white/10 bg-white/5 p-1 shadow-[0_20px_50px_-20px_rgba(8,145,178,0.5)]">
+                  <VslPlayer />
                 </div>
               </div>
 
-              <ul className="mt-8 space-y-3 text-base font-medium text-slate-200 sm:text-lg">
+              <ul className="mt-3 grid grid-cols-2 gap-x-1.5 gap-y-2 text-[11.5px] font-medium text-slate-200 sm:gap-x-4 sm:gap-y-3 sm:text-[14px] md:text-[15px]">
                 {[
-                  "6 modelos feitos para turismo",
-                  "Páginas individuais dos pacotes",
+                  "6 modelos de sites",
+                  "Domínio personalizado",
+                  "Páginas de cada pacote",
                   "Celular e computador",
-                  "Formulário de orçamento + WhatsApp",
-                  "Publicação incluída",
-                  "Edite sempre que precisar"
+                  "Pedidos via WhatsApp",
+                  "Edições ilimitadas sem custos"
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-cyan-400" />
-                    <span>{item}</span>
+                  <li key={i} className="flex items-start gap-1.5 sm:gap-2.5">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400 sm:h-5 sm:w-5" />
+                    <span className="leading-tight">{item}</span>
                   </li>
                 ))}
               </ul>
 
-              <div className="mb-4 mt-8 w-max inline-flex items-center rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-2.5">
-                <span className="font-medium text-slate-300">
-                  A partir de <strong className="ml-1 text-xl text-white">R$40,16/mês</strong> no plano anual
+              <div className="mb-3 mt-3 w-max inline-flex items-center rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-1.5 sm:px-4 sm:py-2">
+                <span className="text-[12px] font-medium text-slate-300 sm:text-[14px]">
+                  Por apenas <strong className="text-sm text-white sm:text-lg">R$40,16/mês</strong> (anual)
                 </span>
               </div>
 
-              <div className="flex w-full flex-col gap-3 sm:flex-row">
+              <div className="flex w-full flex-col gap-2 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => scrollToPlans("hero")}
-                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-6 text-[15px] font-black text-white shadow-lg shadow-cyan-900/30 transition hover:bg-cyan-500 active:scale-[0.98] sm:w-auto"
+                  className="inline-flex min-h-11 md:min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-4 md:px-6 text-[13px] md:text-[14px] font-black text-white shadow-lg shadow-cyan-900/30 transition hover:bg-cyan-500 active:scale-[0.98] sm:w-auto"
                 >
-                  PUBLICAR O SITE DA MINHA AGÊNCIA
-                  <ArrowRight className="h-5 w-5" />
+                  PUBLICAR MEU SITE
+                  <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
                 </button>
                 <a
                   href="#demonstracao"
-                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 text-[15px] font-bold text-white transition hover:bg-white/10 active:scale-[0.98] sm:w-auto"
+                  className="inline-flex min-h-11 md:min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 md:px-6 text-[13px] md:text-[14px] font-bold text-white transition hover:bg-white/10 active:scale-[0.98] sm:w-auto"
                 >
-                  <Monitor className="h-5 w-5" />
-                  VER SITE REAL FUNCIONANDO
+                  <Monitor className="h-4 w-4 md:h-5 md:w-5" />
+                  VER DEMONSTRAÇÃO
                 </a>
               </div>
 
-              <div className="mt-5 flex items-center justify-center gap-2 text-xs font-semibold text-slate-400 sm:justify-start">
-                <ShieldCheck className="h-4 w-4" />
+              <div className="mt-3 flex items-center justify-center gap-2 text-[10px] md:text-xs font-semibold text-slate-400 sm:justify-start">
+                <ShieldCheck className="h-3 w-3 md:h-4 md:w-4 shrink-0" />
                 <span>Acesso após o pagamento &middot; Cancelamento online</span>
               </div>
             </div>
 
             <div className="relative hidden lg:block">
               <div className="transform overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-3 shadow-[0_30px_80px_-35px_rgba(8,145,178,0.6)] transition-transform duration-500 hover:-translate-y-2">
-                <img
-                  src={showcaseLandingPages}
-                  alt="Exemplos de sites para agências de viagens criados no Canva Viagem"
-                  className="w-full rounded-[1.4rem] object-cover"
-                />
+                <div className="relative w-full aspect-video rounded-[1.4rem] overflow-hidden">
+                  <VslPlayer />
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* 2. DEMONSTRAÇÃO IMEDIATA */}
-        <section id="demonstracao" className="border-b border-slate-200 bg-white py-16 md:py-24">
+        <section id="demonstracao" className="border-b border-slate-200 bg-white py-10 md:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto mb-10 max-w-3xl text-center">
               <h2 className="text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
@@ -296,9 +335,9 @@ export default function SiteOfferLanding() {
 
             <div className="grid gap-3 md:grid-cols-3">
               {[
-                { id: "1", demoName: "Atlas Mundo", modelName: "Horizonte", description: "Viagens internacionais" },
-                { id: "3", demoName: "Viva Ceará Receptivo", modelName: "Experiências", description: "Passeios e receptivo" },
-                { id: "2", demoName: "Brisa Brasil Viagens", modelName: "Ofertas", description: "Pacotes nacionais" }
+                { id: "atlas-mundo", demoName: "Atlas Mundo", modelName: "Horizonte", description: "Viagens internacionais" },
+                { id: "viva-ceara", demoName: "Viva Ceará Receptivo", modelName: "Experiências", description: "Passeios e receptivo" },
+                { id: "brisa-brasil", demoName: "Brisa Brasil Viagens", modelName: "Ofertas", description: "Pacotes nacionais" }
               ].map((item) => {
                 const demo = siteOfferDemos.find(d => d.id === item.id) || siteOfferDemos[0];
                 const isActive = demo.id === activeDemo.id;
@@ -311,17 +350,30 @@ export default function SiteOfferLanding() {
                       recordEvent("official_demo_selected", { demo: demo.id, template: demo.templateId });
                     }}
                     aria-pressed={isActive}
-                    className={`min-h-[118px] rounded-[1.25rem] border p-5 text-left transition ${
+                    className={`relative min-h-[118px] rounded-[1.25rem] border-2 p-4 sm:p-5 text-left transition-all duration-300 ${
                       isActive
-                        ? "border-slate-950 bg-[#0B1324] text-white shadow-[0_18px_45px_-28px_rgba(15,23,42,0.65)]"
-                        : "border-slate-300 bg-white text-slate-950 hover:border-cyan-500"
+                        ? "border-slate-950 bg-[#0B1324] text-white shadow-[0_18px_45px_-28px_rgba(15,23,42,0.65)] scale-[1.02]"
+                        : "border-slate-200 bg-white text-slate-950 hover:border-cyan-400 hover:shadow-lg hover:-translate-y-1"
                     }`}
                   >
-                    <span className={`text-xs font-black uppercase tracking-[0.16em] ${isActive ? "text-cyan-300" : "text-cyan-700"}`}>
+                    <span className={`text-[10px] sm:text-xs font-black uppercase tracking-[0.16em] ${isActive ? "text-cyan-300" : "text-cyan-700"}`}>
                       Modelo {item.modelName}
                     </span>
-                    <span className="mt-2 block text-lg font-black">{item.demoName}</span>
-                    <span className={`mt-1 block text-sm ${isActive ? "text-slate-300" : "text-slate-500"}`}>{item.description}</span>
+                    <span className="mt-1 block text-lg font-black">{item.demoName}</span>
+                    <span className={`mt-0.5 block text-xs sm:text-sm ${isActive ? "text-slate-300" : "text-slate-500"}`}>{item.description}</span>
+                    
+                    {!isActive && (
+                      <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-cyan-100/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-800 transition-colors">
+                        <MousePointerClick className="h-3.5 w-3.5 animate-bounce" />
+                        Clique para ver site
+                      </div>
+                    )}
+                    {isActive && (
+                      <div className="absolute top-4 right-4 flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                        <Check className="h-3 w-3" />
+                        Selecionado
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -368,7 +420,7 @@ export default function SiteOfferLanding() {
                   </div>
                   <iframe
                     key={`${activeDemo.id}-${previewMode}`}
-                    className={`w-full bg-white ${previewMode === "mobile" ? "h-[800px]" : "h-[690px] md:h-[780px]"}`}
+                    className={`w-full bg-white ${previewMode === "mobile" ? "h-[540px]" : "h-[690px] md:h-[780px]"}`}
                     srcDoc={activeDemo.html}
                     title={`Modelo demonstrativo ${activeDemo.agencyName}`}
                     loading="lazy"
