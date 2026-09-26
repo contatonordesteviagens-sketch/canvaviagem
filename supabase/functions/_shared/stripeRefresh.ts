@@ -1,4 +1,5 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { isPaidSubscriptionCurrent, resolveStripePlanProduct } from "./planAccess.ts";
 
 export type SubscriptionRow = {
   user_id?: string | null;
@@ -16,7 +17,7 @@ export const isPeriodCurrent = (end?: string | null) => !end || new Date(end).ge
 
 /** A local row that says "active" but whose paid period already ended is stale data, not a real block. */
 export const isStaleSubscription = (row: SubscriptionRow | null) =>
-  Boolean(row && row.status === "active" && row.current_period_end && !isPeriodCurrent(row.current_period_end));
+  Boolean(row && ["active", "trialing"].includes(row.status ?? "") && !isPaidSubscriptionCurrent(row));
 
 const cycleOf = (subscription: Stripe.Subscription) => {
   const recurring = subscription.items.data[0]?.price?.recurring;
@@ -60,9 +61,9 @@ export async function refreshSubscriptionFromStripe(
         status: "all",
         limit: 20,
       });
-      const live = list.data.find((candidate) =>
-        candidate.status === "active" || candidate.status === "trialing"
-      );
+       const live = list.data.find((candidate) =>
+         isPaidSubscriptionCurrent(candidate) && Boolean(resolveStripePlanProduct(candidate.items.data))
+       );
       if (live) subscription = live;
     }
     if (!subscription) return row;
@@ -70,7 +71,7 @@ export async function refreshSubscriptionFromStripe(
     const refreshed: SubscriptionRow = {
       ...row,
       status: subscription.status,
-      product_id: (subscription.items.data[0]?.price?.product as string | null) ?? row.product_id ?? null,
+      product_id: resolveStripePlanProduct(subscription.items.data) ?? row.product_id ?? null,
       current_period_end: periodEndOf(subscription),
       stripe_subscription_id: subscription.id,
       stripe_customer_id: typeof subscription.customer === "string"

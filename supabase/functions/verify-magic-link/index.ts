@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { isPaidSubscriptionCurrent, resolveStripePlanProduct } from "../_shared/planAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -206,23 +207,27 @@ serve(async (req) => {
     let resolvedPeriodEnd: string | null = null;
     let resolvedBillingCycle: string | null = null;
     let resolvedBillingProvider: string | null = null;
+    let resolvedStatus: string | null = null;
+    let resolvedTrialEnd: string | null = null;
 
     // Check local subscription first (for existing users)
     try {
       const { data: localSub } = await supabaseAdmin
         .from("subscriptions")
-        .select("status, product_id, current_period_end, billing_cycle, billing_provider")
+        .select("status, product_id, current_period_end, trial_ends_at, billing_cycle, billing_provider")
         .eq("user_id", userId)
         .in("status", ["active", "trialing"])
         .maybeSingle();
 
-      if (localSub) {
+      if (localSub && localSub.product_id && isPaidSubscriptionCurrent(localSub)) {
         console.log("[VERIFY-MAGIC-LINK] Found active local subscription:", localSub.product_id);
         isSubscribed = true;
         resolvedProductId = localSub.product_id ?? null;
         resolvedPeriodEnd = localSub.current_period_end ?? null;
         resolvedBillingCycle = localSub.billing_cycle ?? null;
         resolvedBillingProvider = localSub.billing_provider ?? null;
+        resolvedStatus = localSub.status ?? null;
+        resolvedTrialEnd = localSub.trial_ends_at ?? null;
       }
     } catch (localSubErr) {
       console.warn("[VERIFY-MAGIC-LINK] Local sub check failed:", localSubErr);
@@ -234,6 +239,8 @@ serve(async (req) => {
       subscriptionId: string | null;
       productId: string | null;
       subscriptionEnd: string | null;
+      status: string;
+      trialEnd: string | null;
     } | null = null;
     try {
       const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -248,15 +255,20 @@ serve(async (req) => {
             const customerId = customer.id;
 
             const activeSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 10 });
-            const subscription = activeSubscriptions.data.find(s => s.status === "active" || s.status === "trialing");
+            const subscription = activeSubscriptions.data.find((candidate) =>
+              isPaidSubscriptionCurrent(candidate)
+              && Boolean(resolveStripePlanProduct(candidate.items.data))
+            );
 
             if (subscription) {
-              const productId = (subscription.items.data[0]?.price?.product as string | null) ?? null;
+              const productId = resolveStripePlanProduct(subscription.items.data);
               stripeSync = {
                 customerId,
                 subscriptionId: subscription.id,
                 productId,
                 subscriptionEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null,
+                status: subscription.status,
+                trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
               };
               isSubscribed = true;
             }
@@ -280,13 +292,16 @@ serve(async (req) => {
 
             if (validSession) {
               const lineItems = await stripe.checkout.sessions.listLineItems(validSession.id, { limit: 1 });
-              const productId = (lineItems.data[0]?.price?.product as string | null) ?? null;
+              const productId = resolveStripePlanProduct(lineItems.data);
+              if (!productId) continue;
               isSubscribed = true;
               stripeSync = {
                 customerId,
                 subscriptionId: null,
                 productId,
                 subscriptionEnd: new Date((validSession.created + (365 * 24 * 60 * 60)) * 1000).toISOString(),
+                status: "active",
+                trialEnd: null,
               };
             }
           }
@@ -311,9 +326,11 @@ serve(async (req) => {
             user_id: userId,
             stripe_customer_id: stripeSync.customerId,
             stripe_subscription_id: stripeSync.subscriptionId,
-            status: "active",
+            status: stripeSync.status,
             product_id: stripeSync.productId,
             current_period_end: stripeSync.subscriptionEnd,
+            trial_ends_at: stripeSync.trialEnd,
+            billing_provider: "stripe",
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
 
@@ -322,6 +339,8 @@ serve(async (req) => {
           resolvedProductId = stripeSync.productId ?? resolvedProductId;
           resolvedPeriodEnd = stripeSync.subscriptionEnd ?? resolvedPeriodEnd;
           resolvedBillingProvider = "stripe";
+          resolvedStatus = stripeSync.status;
+          resolvedTrialEnd = stripeSync.trialEnd;
         }
       }
     } catch (stripeErr) {
@@ -335,6 +354,8 @@ serve(async (req) => {
         subscribed: isSubscribed,
         product_id: resolvedProductId,
         subscription_end: resolvedPeriodEnd,
+        status: resolvedStatus,
+        trial_end: resolvedTrialEnd,
         billing_cycle: resolvedBillingCycle,
         billing_provider: resolvedBillingProvider ?? "stripe",
         session: {

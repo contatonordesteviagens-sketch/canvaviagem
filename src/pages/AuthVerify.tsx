@@ -161,7 +161,7 @@ const AuthVerify = () => {
             subscribed: true,
             productId: data.product_id || null,
             subscriptionEnd: data.subscription_end || null,
-            status: "active",
+            status: data.status || "active",
             trialEnd: data.trial_end || null,
             billingCycle: data.billing_cycle || null,
             billingProvider: data.billing_provider || "stripe",

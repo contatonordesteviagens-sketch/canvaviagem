@@ -25,12 +25,17 @@ for (const [path, needle, message] of [
   ["src/contexts/AuthContext.tsx", "cv-sub-cache-v3-", "the subscriber access fix must invalidate stale negative subscription caches."],
   ["supabase/functions/check-subscription/index.ts", "localSubscriptionRecord?.stripe_customer_id", "Stripe verification must prefer the customer ID already linked to the authenticated user."],
   ["supabase/functions/check-subscription/index.ts", "...customers.data.map((customer) => customer.id)", "Stripe verification must retain email lookup as a recovery path for legacy subscribers."],
+  ["supabase/functions/check-subscription/index.ts", "isPaidSubscriptionCurrent(subscription)", "Stripe verification must support current active and trialing subscriptions."],
+  ["supabase/functions/check-subscription/index.ts", "resolveStripePlanProduct(candidate.items.data)", "Stripe verification must inspect every subscription item."],
+  ["supabase/functions/verify-magic-link/index.ts", "status: stripeSync.status", "magic-link verification must preserve the authoritative Stripe status."],
+  ["supabase/functions/stripe-webhook/index.ts", "resolveStripePlanProduct(subscription.items.data)", "Stripe webhooks must inspect every subscription item."],
+  ["supabase/functions/_shared/fabricaAccess.ts", '.in("status", ["active", "trialing"])', "protected Fabrica APIs must recognize current Stripe trials."],
   ["supabase/functions/create-checkout/index.ts", "client_reference_id: user.id", "checkout must bind the Stripe session to the authenticated user."],
   ["supabase/functions/stripe-webhook/index.ts", "getUserById(referencedUserId)", "the signed Stripe webhook must provision the authenticated checkout user by stable ID."],
   ["supabase/functions/fabrica-entitlements/index.ts", 'error: "Plano Elite necessário"', "the entitlement API must reject unpaid reservations."],
   ["supabase/functions/fabrica-entitlements/index.ts", 'if (isStartProduct(subscription.product_id)) return "start_legacy";', "Start subscribers must receive Start capabilities."],
   ["supabase/functions/_shared/fabricaAccess.ts", "return verifyFabricaEliteAccess(req, corsHeaders);", "authenticated Fabrica APIs must enforce Elite access."],
-  ["supabase/functions/_shared/fabricaAccess.ts", "isEliteProduct(subscription?.product_id) && isCurrent", "protected Fabrica APIs must require an explicit Elite product."],
+  ["supabase/functions/_shared/fabricaAccess.ts", "isEliteProduct(subscription?.product_id)", "protected Fabrica APIs must require an explicit Elite product."],
 ]) {
   requireText(path, needle, message);
 }
@@ -47,8 +52,20 @@ for (const [path, needle, message] of [
   ["src/contexts/EntitlementsContext.tsx", 'billingProvider === "stripe"', "the browser must not promote every Stripe product to Elite."],
   ["supabase/functions/fabrica-entitlements/index.ts", 'subscription.billing_provider === "stripe"', "the entitlement API must not promote every Stripe product to Elite."],
   ["supabase/functions/_shared/fabricaAccess.ts", 'subscription?.billing_provider === "stripe"', "protected APIs must not promote every Stripe product to Elite."],
+  ["supabase/functions/verify-magic-link/index.ts", 'status: "active",\n            product_id: stripeSync.productId', "magic-link verification must not rewrite every Stripe status as active."],
 ]) {
   rejectText(path, needle, message);
+}
+
+const sharedPlanAccess = read("supabase/functions/_shared/planAccess.ts");
+for (const required of [
+  'subscription.status === "trialing"',
+  'subscription.status !== "active"',
+  "productIds.find(isEliteProduct) ?? productIds.find(isStartProduct) ?? null",
+]) {
+  if (!sharedPlanAccess.includes(required)) {
+    failures.push(`supabase/functions/_shared/planAccess.ts: missing paid-access invariant ${required}`);
+  }
 }
 
 const salesFiles = [
