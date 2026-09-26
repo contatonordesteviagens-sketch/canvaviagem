@@ -214,7 +214,7 @@ serve(async (req) => {
     try {
       const { data: localSub } = await supabaseAdmin
         .from("subscriptions")
-        .select("status, product_id, current_period_end, billing_cycle, billing_provider")
+        .select("status, product_id, current_period_end, trial_ends_at, billing_cycle, billing_provider")
         .eq("user_id", userId)
         .in("status", ["active", "trialing"])
         .maybeSingle();
