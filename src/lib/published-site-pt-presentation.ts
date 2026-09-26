@@ -12,7 +12,7 @@ export function improvePublishedPortugueseSite(html: string, locale: string | nu
     "#destinos .section-title", "#por-que .badge-counter", "#por-que .eyebrow",
     "#por-que .equipe-left h2", "#por-que .equipe-left .intro", "#por-que .feat h4", "#por-que .feat p",
     "#orcamento .eyebrow", "#orcamento h2", "#orcamento .orc-info p", ".orc-form .form-submit",
-    ".depoimentos .section-title", ".faq .section-title", ".faq-item .faq-q", ".faq-item .faq-a",
+    ".depo-bg .section-title", "#faq .section-title", ".faq-item summary", ".faq-item p",
     ".final-cta h2", ".final-cta .btn", ".foot-desc", ".foot-bottom", ".site-header .nav-links a",
   ];
   for (const element of doc.querySelectorAll<HTMLElement>(selectors.join(","))) {
