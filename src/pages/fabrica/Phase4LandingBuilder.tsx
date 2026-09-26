@@ -3091,7 +3091,7 @@ const PublishSiteCard = ({
                   Publicando...
                 </>
               ) : (
-                <>Publicar no Canva Viagem</>
+                <>Publicar Site</>
               )}
             </button>
 
