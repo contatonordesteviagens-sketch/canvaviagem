@@ -292,7 +292,8 @@ serve(async (req) => {
 
             if (validSession) {
               const lineItems = await stripe.checkout.sessions.listLineItems(validSession.id, { limit: 1 });
-              const productId = (lineItems.data[0]?.price?.product as string | null) ?? null;
+              const productId = resolveStripePlanProduct(lineItems.data);
+              if (!productId) continue;
               isSubscribed = true;
               stripeSync = {
                 customerId,

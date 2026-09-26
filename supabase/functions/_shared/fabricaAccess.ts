@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "./officialProjectGuard.ts";
-import { isEliteProduct, isPrimaryAdminEmail } from "./planAccess.ts";
+import { isEliteProduct, isPaidSubscriptionCurrent, isPrimaryAdminEmail } from "./planAccess.ts";
 import { isStaleSubscription, refreshSubscriptionFromStripe } from "./stripeRefresh.ts";
 
 type HeadersMap = Record<string, string>;
@@ -57,7 +57,7 @@ export async function verifyFabricaEliteAccess(req: Request, corsHeaders: Header
     .from("subscriptions")
     .select("product_id,status,current_period_end,billing_provider,billing_cycle,stripe_customer_id,stripe_subscription_id")
     .eq("user_id", userId)
-    .eq("status", "active")
+    .in("status", ["active", "trialing"])
     .limit(1)
     .maybeSingle();
 
@@ -66,9 +66,8 @@ export async function verifyFabricaEliteAccess(req: Request, corsHeaders: Header
     ? await refreshSubscriptionFromStripe(dbClient, userId, subscriptionRow)
     : subscriptionRow;
 
-  const endDate = subscription?.current_period_end ? new Date(subscription.current_period_end) : null;
-  const isCurrent = (!endDate || endDate > new Date()) && subscription?.status === "active";
-  const isElite = isEliteProduct(subscription?.product_id) && isCurrent;
+  const isElite = isEliteProduct(subscription?.product_id)
+    && Boolean(subscription && isPaidSubscriptionCurrent(subscription));
 
   if (!isElite) {
     return { ok: false as const, response: jsonResponse({ error: "Plano Elite necessário" }, 403, corsHeaders) };

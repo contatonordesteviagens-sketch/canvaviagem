@@ -42,8 +42,6 @@ const jsonResponse = (body: Record<string, unknown>, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-const isCurrent = (end?: string | null) => !end || new Date(end).getTime() > Date.now();
-
 function classifyTier(
   subscription: {
     product_id?: string | null;

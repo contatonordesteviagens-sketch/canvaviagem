@@ -5,6 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { sendUnifiedWelcomeEmail } from "../_shared/welcomeEmail.ts";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
+import { resolveStripePlanProduct } from "../_shared/planAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -523,7 +524,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
     try {
       const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
       authoritativeSubscription = subscription;
-      const retrievedProductId = subscription.items.data[0]?.price?.product as string;
+      const retrievedProductId = resolveStripePlanProduct(subscription.items.data);
       accessDetails = getSubscriptionAccessDetails(subscription);
       if (retrievedProductId) {
         productId = retrievedProductId;
@@ -538,8 +539,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
   if (!productId) {
     try {
       logStep("Attempting fallback product ID fetch from session line items", { sessionId: session.id });
-      const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 });
-      const lineProductId = lineItems.data[0]?.price?.product as string;
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
+      const lineProductId = resolveStripePlanProduct(lineItems.data);
       if (lineProductId) {
         productId = lineProductId;
         logStep("Retrieved product ID from line items backup", { productId });
@@ -602,7 +603,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supa
   // before mutating access so an older event cannot reactivate a canceled user.
   subscription = await stripe.subscriptions.retrieve(subscription.id);
   const stripeCustomerId = subscription.customer as string;
-  const productId = subscription.items.data[0]?.price?.product as string | undefined;
+  const productId = resolveStripePlanProduct(subscription.items.data) ?? undefined;
   const accessDetails = getSubscriptionAccessDetails(subscription);
   const { error } = await supabase.from("subscriptions").update({
     status: accessDetails.status,
@@ -677,7 +678,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
       if (subscriptionId) {
         try {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-          const retrievedProductId = subscription.items.data[0]?.price?.product as string;
+          const retrievedProductId = resolveStripePlanProduct(subscription.items.data);
           accessDetails = getSubscriptionAccessDetails(subscription);
           if (retrievedProductId) {
             productId = retrievedProductId;
@@ -690,7 +691,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
 
       // Backup: line items do invoice
       if (!productId) {
-        const lineProductId = invoice.lines?.data?.[0]?.price?.product as string;
+        const lineProductId = resolveStripePlanProduct(invoice.lines?.data);
         if (lineProductId) {
           productId = lineProductId;
           logStep("Retrieved product ID from invoice lines data", { productId });
@@ -720,7 +721,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
   if (subscriptionId) {
     const authoritativeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
     const authoritativeAccess = getSubscriptionAccessDetails(authoritativeSubscription);
-    const authoritativeProductId = authoritativeSubscription.items.data[0]?.price?.product as string | undefined;
+    const authoritativeProductId = resolveStripePlanProduct(authoritativeSubscription.items.data) ?? undefined;
     const { error: authoritativeUpdateError } = await supabase.from("subscriptions").update({
       status: authoritativeAccess.status,
       current_period_end: authoritativeAccess.currentPeriodEnd,
@@ -760,7 +761,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resen
       current_period_end: access.currentPeriodEnd,
       trial_started_at: access.trialStartedAt,
       trial_ends_at: access.trialEndsAt,
-      product_id: authoritativeSubscription.items.data[0]?.price?.product ?? null,
+      product_id: resolveStripePlanProduct(authoritativeSubscription.items.data),
       stripe_subscription_id: authoritativeSubscription.id,
     };
   }

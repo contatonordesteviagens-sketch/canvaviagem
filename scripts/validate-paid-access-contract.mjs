@@ -28,6 +28,8 @@ for (const [path, needle, message] of [
   ["supabase/functions/check-subscription/index.ts", "isPaidSubscriptionCurrent(subscription)", "Stripe verification must support current active and trialing subscriptions."],
   ["supabase/functions/check-subscription/index.ts", "resolveStripePlanProduct(candidate.items.data)", "Stripe verification must inspect every subscription item."],
   ["supabase/functions/verify-magic-link/index.ts", "status: stripeSync.status", "magic-link verification must preserve the authoritative Stripe status."],
+  ["supabase/functions/stripe-webhook/index.ts", "resolveStripePlanProduct(subscription.items.data)", "Stripe webhooks must inspect every subscription item."],
+  ["supabase/functions/_shared/fabricaAccess.ts", '.in("status", ["active", "trialing"])', "protected Fabrica APIs must recognize current Stripe trials."],
   ["supabase/functions/create-checkout/index.ts", "client_reference_id: user.id", "checkout must bind the Stripe session to the authenticated user."],
   ["supabase/functions/stripe-webhook/index.ts", "getUserById(referencedUserId)", "the signed Stripe webhook must provision the authenticated checkout user by stable ID."],
   ["supabase/functions/fabrica-entitlements/index.ts", 'error: "Plano Elite necessário"', "the entitlement API must reject unpaid reservations."],
