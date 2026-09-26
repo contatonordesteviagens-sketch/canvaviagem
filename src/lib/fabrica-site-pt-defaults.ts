@@ -68,12 +68,16 @@ export function normalizePortugueseSiteDefaults(content: SiteContent): SiteConte
   const normalized = { ...content };
   const fields = [
     "heroEyebrow", "heroCtaLabel", "heroSecondaryCtaLabel", "pacotesTitle", "depoimentosTitle", "faqTitle",
-    "finalCtaTitle", "finalCtaLabel", "processoEyebrow", "processoTitle",
+    "finalCtaTitle", "finalCtaLabel", "processoEyebrow", "processoTitle", "destinosEyebrow",
+    "depoimentosEyebrow", "depoVerifiedLabel", "faqEyebrow",
     "equipeBadge", "equipeEyebrow", "equipeTitle", "equipeIntro", "orcamentoEyebrow",
     "orcamentoTitle", "orcamentoText", "atendimentoText", "equipeCtaLabel",
     "formSubmitLabel", "footerText", "footerHoursLabel", "navHomeLabel", "navDestinationsLabel",
     "navAboutLabel", "navBudgetLabel", "navWhatsAppLabel", "footerAboutLabel",
     "footerProcessLabel", "footerTestimonialsLabel", "footerContactLabel",
+    "footerDestinationsTitle", "footerCompanyTitle", "footerContactTitle", "contactWhatsappLabel",
+    "contactEmailLabel", "contactHoursLabel", "contactLocationLabel", "packageOverlayLabel",
+    "mapEyebrow", "mapTitle",
   ] as const;
   for (const field of fields) {
     const value = normalized[field];

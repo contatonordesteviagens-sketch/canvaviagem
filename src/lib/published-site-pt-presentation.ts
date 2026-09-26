@@ -9,11 +9,11 @@ export function improvePublishedPortugueseSite(html: string, locale: string | nu
   const selectors = [
     ".hero .eyebrow", ".hero .hero-actions .btn", ".stats-bar .stat-label",
     ".processo .section-eyebrow", ".processo .section-title", ".proc-card h3", ".proc-card p",
-    "#destinos .section-title", "#por-que .badge-counter", "#por-que .eyebrow",
+    "#destinos .section-eyebrow", "#destinos .section-title", "#por-que .badge-counter", "#por-que .eyebrow",
     "#por-que .equipe-left h2", "#por-que .equipe-left .intro", "#por-que .feat h4", "#por-que .feat p",
     "#orcamento .eyebrow", "#orcamento h2", "#orcamento .orc-info > p", "#orcamento .contact-item span", ".orc-form .form-submit",
-    ".depo-bg .section-title", "#faq .section-title", ".faq-item summary", ".faq-item p",
-    ".final-cta h2", ".final-cta .btn", ".foot-desc", ".foot-grid li", ".foot-grid a", ".foot-bottom [data-site-edit-key]", ".site-header .nav-links a",
+    ".depo-bg .section-eyebrow", ".depo-bg .section-title", ".depo-verified", "#faq .section-eyebrow", "#faq .section-title", ".faq-item summary", ".faq-item p",
+    ".final-cta h2", ".final-cta .btn", ".foot-desc", ".foot-grid h4", ".foot-grid li", ".foot-grid a", ".foot-bottom [data-site-edit-key]", ".site-header .nav-links a",
   ];
   for (const element of doc.querySelectorAll<HTMLElement>(selectors.join(","))) {
     if (element.children.length) continue;
