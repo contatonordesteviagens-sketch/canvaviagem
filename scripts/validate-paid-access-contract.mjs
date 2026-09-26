@@ -25,6 +25,9 @@ for (const [path, needle, message] of [
   ["src/contexts/AuthContext.tsx", "cv-sub-cache-v3-", "the subscriber access fix must invalidate stale negative subscription caches."],
   ["supabase/functions/check-subscription/index.ts", "localSubscriptionRecord?.stripe_customer_id", "Stripe verification must prefer the customer ID already linked to the authenticated user."],
   ["supabase/functions/check-subscription/index.ts", "...customers.data.map((customer) => customer.id)", "Stripe verification must retain email lookup as a recovery path for legacy subscribers."],
+  ["supabase/functions/check-subscription/index.ts", "isPaidSubscriptionCurrent(subscription)", "Stripe verification must support current active and trialing subscriptions."],
+  ["supabase/functions/check-subscription/index.ts", "resolveStripePlanProduct(candidate.items.data)", "Stripe verification must inspect every subscription item."],
+  ["supabase/functions/verify-magic-link/index.ts", "status: stripeSync.status", "magic-link verification must preserve the authoritative Stripe status."],
   ["supabase/functions/create-checkout/index.ts", "client_reference_id: user.id", "checkout must bind the Stripe session to the authenticated user."],
   ["supabase/functions/stripe-webhook/index.ts", "getUserById(referencedUserId)", "the signed Stripe webhook must provision the authenticated checkout user by stable ID."],
   ["supabase/functions/fabrica-entitlements/index.ts", 'error: "Plano Elite necessário"', "the entitlement API must reject unpaid reservations."],
@@ -47,8 +50,20 @@ for (const [path, needle, message] of [
   ["src/contexts/EntitlementsContext.tsx", 'billingProvider === "stripe"', "the browser must not promote every Stripe product to Elite."],
   ["supabase/functions/fabrica-entitlements/index.ts", 'subscription.billing_provider === "stripe"', "the entitlement API must not promote every Stripe product to Elite."],
   ["supabase/functions/_shared/fabricaAccess.ts", 'subscription?.billing_provider === "stripe"', "protected APIs must not promote every Stripe product to Elite."],
+  ["supabase/functions/verify-magic-link/index.ts", 'status: "active",\n            product_id: stripeSync.productId', "magic-link verification must not rewrite every Stripe status as active."],
 ]) {
   rejectText(path, needle, message);
+}
+
+const sharedPlanAccess = read("supabase/functions/_shared/planAccess.ts");
+for (const required of [
+  'subscription.status === "trialing"',
+  'subscription.status !== "active"',
+  "productIds.find(isEliteProduct) ?? productIds.find(isStartProduct) ?? null",
+]) {
+  if (!sharedPlanAccess.includes(required)) {
+    failures.push(`supabase/functions/_shared/planAccess.ts: missing paid-access invariant ${required}`);
+  }
 }
 
 const salesFiles = [

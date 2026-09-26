@@ -2,7 +2,11 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
-import { isEliteProduct, isStartProduct } from "../_shared/planAccess.ts";
+import {
+  isEliteProduct,
+  isPaidSubscriptionCurrent,
+  resolveStripePlanProduct,
+} from "../_shared/planAccess.ts";
 import { periodEndOf } from "../_shared/stripeRefresh.ts";
 
 const corsHeaders = {
@@ -115,8 +119,8 @@ serve(async (req) => {
       if (
         !localSubError &&
         localSub &&
-        localSub.status === "active" &&
-        localSub.product_id
+        localSub.product_id &&
+        isPaidSubscriptionCurrent(localSub)
       ) {
         const endDate = localSub.current_period_end;
         const isCurrent = !endDate || new Date(endDate) > new Date();
@@ -163,11 +167,13 @@ serve(async (req) => {
 
         for (const customerId of customerIds) {
           const stripeSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 10 });
-          const allSubscriptions = stripeSubscriptions.data.filter((subscription) => subscription.status === "active");
+          const allSubscriptions = stripeSubscriptions.data.filter((subscription) =>
+            isPaidSubscriptionCurrent(subscription)
+          );
 
           for (const candidate of allSubscriptions) {
-            const productId = (candidate.items.data[0]?.price?.product as string | null) ?? null;
-            if (!isEliteProduct(productId) && !isStartProduct(productId)) continue;
+            const productId = resolveStripePlanProduct(candidate.items.data);
+            if (!productId) continue;
             if (!selected || isEliteProduct(productId)) {
               selected = { customerId, subscription: candidate, productId };
               if (isEliteProduct(productId)) break;
@@ -188,7 +194,13 @@ serve(async (req) => {
           const trialEnd = selected.subscription.trial_end
             ? new Date(selected.subscription.trial_end * 1000).toISOString()
             : null;
-          const recurring = selected.subscription.items.data[0]?.price?.recurring;
+          const selectedItem = selected.subscription.items.data.find((item) => {
+            const itemProduct = typeof item.price?.product === "string"
+              ? item.price.product
+              : item.price?.product?.id;
+            return itemProduct === productId;
+          });
+          const recurring = selectedItem?.price?.recurring;
           const billingCycle = recurring?.interval === "year"
             ? "annual"
             : recurring?.interval === "month" && recurring.interval_count === 6

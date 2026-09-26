@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
-import { isEliteProduct, isPrimaryAdminEmail, isStartProduct } from "../_shared/planAccess.ts";
+import { isEliteProduct, isPaidSubscriptionCurrent, isPrimaryAdminEmail, isStartProduct } from "../_shared/planAccess.ts";
 import { isStaleSubscription, refreshSubscriptionFromStripe } from "../_shared/stripeRefresh.ts";
 
 const corsHeaders = {
@@ -55,8 +55,7 @@ function classifyTier(
   isAdmin: boolean,
 ): Tier {
   if (isAdmin) return "admin";
-  if (!subscription || subscription.status !== "active") return "free";
-  if (!isCurrent(subscription.current_period_end)) return "free";
+  if (!subscription || !isPaidSubscriptionCurrent(subscription)) return "free";
   if (isEliteProduct(subscription.product_id)) return "elite";
   if (isStartProduct(subscription.product_id)) return "start_legacy";
   return "unknown_paid";
