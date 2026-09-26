@@ -1,75 +1,64 @@
-# Auditoria de liberação de acesso (Canva + Fábrica) e correções
+# Corrigir o acesso instável de assinantes Stripe sem abrir a plataforma
 
-## Resumo em linguagem simples
+## Diagnóstico confirmado
 
-O servidor está **certo**. Quem manda de verdade (as funções do backend) só libera a Fábrica para **Elite** e admin. Start e grátis são bloqueados lá.
+- O usuário `contatoadm@agenciafaroldocabo.com.br` existe e está autenticando normalmente.
+- O perfil está vinculado ao cliente Stripe `cus_VKKhPQfiWZLBZl`, mas não há uma assinatura persistida para esse usuário na tabela de assinaturas.
+- A imagem mostra uma assinatura Stripe em **avaliação até 25/10/2026**, com três itens de plano na mesma assinatura.
+- A verificação do link aceita Stripe com estado `active` **ou** `trialing`, libera a sessão e mostra a confirmação Elite.
+- Segundos depois, `check-subscription` revalida a conta, mas procura apenas assinaturas `active`. Como a assinatura real está `trialing`, ela não é encontrada; a função invalida o registro local e a proteção de rota envia o usuário para `/inicio`.
+- Há um segundo defeito relacionado: as rotinas do Stripe usam apenas o primeiro item da assinatura. Em uma assinatura com vários itens, isso pode classificar o plano errado, embora exista um produto Elite válido.
 
-O problema está no **navegador (frontend)**: existem 3 "portas destrancadas" que deixam o usuário ver e usar coisas antes/apesar do servidor dizer não. É por isso que parece que "está liberado pra todo mundo".
+## Correção proposta
 
-## Como está hoje (verificado no código)
+1. **Centralizar a classificação segura de assinaturas Stripe**
+   - Examinar todos os itens da assinatura, não apenas o primeiro.
+   - Aceitar somente IDs explicitamente conhecidos como Start ou Elite.
+   - Se houver mais de um produto reconhecido, escolher o maior direito válido: Elite antes de Start.
+   - Rejeitar produtos desconhecidos; nunca transformar “qualquer assinatura Stripe” em acesso pago.
 
-Regra de produto (`src/lib/planAccess.ts` + `supabase/functions/_shared/planAccess.ts`):
+2. **Unificar os estados que concedem acesso**
+   - Considerar `active` e `trialing` somente quando o produto for reconhecido e o período correspondente ainda estiver vigente.
+   - Para `trialing`, exigir `trial_end` futuro.
+   - Continuar bloqueando `canceled`, `past_due`, `unpaid`, `paused`, `incomplete` e períodos vencidos.
+   - Isso reconhece uma avaliação já existente no Stripe, mas não cria novos testes gratuitos nem libera contas sem assinatura.
 
-- **Start**: `prod_TkvaozfpkAcbpM`, `start_ticto`, `monthly_access_ticto`
-- **Elite**: `prod_UTFsXcKq8m0mol` (mensal), `prod_UTSmPe3GPt8iHt` (anual), `prod_UTFlCWzNqvqSNx`, `hotmart_elite`, `elite_ticto`, `monthly_access_pix`, `annual_access_pix`
+3. **Aplicar a mesma regra em toda a cadeia**
+   - `verify-magic-link`: gravar o estado real (`active` ou `trialing`), o produto reconhecido e as datas reais; remover o `status: "active"` artificial.
+   - `check-subscription`: localizar `active` ou `trialing`, classificar todos os itens e não cancelar uma assinatura local válida só porque o Stripe respondeu `trialing`.
+   - `stripe-webhook`: sincronizar o produto reconhecido entre todos os itens nos eventos de criação, atualização e pagamento.
+   - `fabrica-entitlements` e o cache do navegador: usar a mesma validade de estado/período, sem ampliar permissões por falha de rede.
 
-Servidor (`supabase/functions/fabrica-entitlements/index.ts:58-89`):
+4. **Preservar a separação dos planos**
+   - Start reconhecido: acesso ao Canva Viagem conforme as permissões Start, sem Fábrica.
+   - Elite reconhecido: acesso ao Canva Viagem e à Fábrica.
+   - Gratuito, produto desconhecido, assinatura vencida ou inadimplente: permanece bloqueado.
+   - Administrador mantém o bypass atual; nenhuma regra de segurança ou política de dados será afrouxada.
 
-```text
-admin ....... tudo
-elite ....... tudo (fabrica.open, ad/carousel export, site.publish, vendedor, crm real)
-start ....... só: library.premium.open, premium_content.open, tools.basic.use,
-              voice.use, photos.search   -> SEM Fábrica
-free/guest .. nada
-```
+5. **Recuperar esta conta de forma vinculada e auditável**
+   - Depois da correção, ressincronizar apenas o usuário autenticado pelo `user_id`, e-mail normalizado e cliente Stripe já ligado ao perfil.
+   - Confirmar que a assinatura Stripe válida foi persistida com produto, estado e vencimento corretos.
+   - Não realizar liberação manual genérica nem alterar outros usuários.
 
-Todas as 9 edge functions da Fábrica (`fabrica-generate-ad`, `fabrica-search-photos`, `fabrica-design-ai`, `fabrica-edit-photo`, `fabrica-transcribe-audio`, `fabrica-extract-business-info(-v2)`, `fabrica-pexels-search`, `vendedor-generate-response`) exigem Elite — inclusive `verifyFabricaAuthenticatedAccess`, que é apenas um apelido de `verifyFabricaEliteAccess` (`_shared/fabricaAccess.ts:14-16`).
+6. **Testes de regressão e validação real**
+   - Cobrir: Elite `active`, Elite `trialing` vigente, Start `active`, Start `trialing` vigente, produto desconhecido, trial vencido, cancelado e inadimplente.
+   - Cobrir assinatura com vários itens e garantir que Elite prevaleça sobre Start sem aceitar itens desconhecidos.
+   - Testar a sequência completa: link por e-mail → confirmação Elite → entrada na plataforma → espera/revalidação → permanência na área assinante → abertura da Fábrica.
+   - Testar Start e conta grátis para comprovar que a correção não abriu a Fábrica nem a plataforma para quem não tem direito.
 
-Rotas: `/fabrica`, `/fabrica/*`, `/es/fabrica*`, `/vendedor-ia` usam `requireElite`; o resto do Canva usa `requireSubscription` (`src/App.tsx:235-325`).
+## Arquivos previstos
 
-## Os 3 furos encontrados (frontend)
+- `supabase/functions/_shared/planAccess.ts`
+- `supabase/functions/check-subscription/index.ts`
+- `supabase/functions/verify-magic-link/index.ts`
+- `supabase/functions/stripe-webhook/index.ts`
+- `supabase/functions/fabrica-entitlements/index.ts`
+- `src/contexts/AuthContext.tsx`
+- `scripts/validate-paid-access-contract.mjs`
+- `AGENTS.md` para registrar a regra única de classificação e evitar regressões futuras
 
-### Furo 1 — Start baixa arte/carrossel sem limite
-`src/contexts/EntitlementsContext.tsx:317-320`
+## Publicação
 
-```ts
-const entitledLocally = isAdmin
-  || snapshot.capabilities.unlimited
-  || Boolean(snapshot.capabilities[exportCapability])
-  || subscription.subscribed;   // <- qualquer assinante, inclusive Start
-```
-
-Como `subscribed` é `true` para Start, o app libera o download **sem nem perguntar ao servidor**. O servidor responderia 403 "Plano Elite necessário".
-
-### Furo 2 — Janela "otimista" libera Fábrica para usuário grátis
-`src/contexts/EntitlementsContext.tsx:117-149`
-
-Enquanto a checagem de assinatura está carregando (pode levar 4-5s), **qualquer usuário logado** recebe `fabrica.open`, `ad.export`, `site.publish` = true. Nesse intervalo a Fábrica abre para quem nunca pagou.
-
-### Furo 3 — `can()` re-amplia permissões
-`src/contexts/EntitlementsContext.tsx:299-307`
-
-```ts
-|| (subscription.subscribed && Boolean(fallback.capabilities[capability]))
-```
-
-Qualquer assinante ativo passa a usar o cálculo local em vez do veredito do servidor. Junto com o Furo 2, isso mantém a porta aberta.
-
-Observação: `isLocalPreviewEnabled()` (localhost) ignora todos os guards, mas só funciona em `localhost` — não é furo em produção.
-
-## O que vou corrigir
-
-1. **`reserve()`**: trocar `|| subscription.subscribed` por checagem de Elite de verdade (`hasEliteAccess(subscription)` / `isAdmin`). Start passa a receber o modal de upgrade em vez do download.
-2. **Janela otimista**: no estado `subscription.loading`, manter apenas capacidades de nível Start (biblioteca, conteúdo premium, ferramentas básicas) e deixar **todas** as capacidades de Fábrica em `false`. Nada de Fábrica antes do servidor confirmar.
-3. **`can()`**: restringir a cláusula de fallback às capacidades compatíveis com o plano real (Elite → tudo; Start → só as de Start), em vez de aceitar qualquer `subscribed`.
-4. **Redirecionamento**: garantir que Start/grátis que tentam `/fabrica` caiam no bloqueio com upsell (`FabricaUpgradeBlock` / `UpgradePromptDialog`) em vez de redirecionar direto para `/inicio` sem explicação — `ProtectedRoute` com `requireElite` hoje manda para `/inicio` silenciosamente.
-5. **Teste de contrato**: estender `scripts/validate-paid-access-contract.mjs` com casos explícitos:
-   - Start `prod_TkvaozfpkAcbpM` → Canva sim, Fábrica não, export não
-   - Elite `prod_UTFsXcKq8m0mol` / `prod_UTSmPe3GPt8iHt` → tudo sim
-   - Grátis logado → nada
-
-## Detalhes técnicos
-
-- Arquivos alterados: `src/contexts/EntitlementsContext.tsx` (principal), `src/components/ProtectedRoute.tsx` (rota Elite → tela de upsell), `scripts/validate-paid-access-contract.mjs`.
-- Nenhuma mudança no backend é necessária: as regras do servidor já estão corretas. Nada de migration.
-- Nenhum assinante Elite perde acesso: `hasEliteAccess` cobre os 7 IDs Elite atuais, incluindo Hotmart/Ticto/PIX.
+- Publicar somente as funções alteradas após os testes.
+- Publicar o frontend somente se a correção do cache exigir alteração nele.
+- Validar a conta afetada e os cenários Start/Elite/grátis antes de considerar concluído.
