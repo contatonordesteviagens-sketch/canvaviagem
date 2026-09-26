@@ -1163,7 +1163,7 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
   );
 
   // Stats default ou personalizado
-  const stats = state.siteContent.stats || [
+  const stats = sc.stats || [
     { num: "12+", label: "Anos de Experiência" },
     { num: "15k+", label: "Viajantes Felizes" },
     { num: "25", label: "Países Atendidos" },
