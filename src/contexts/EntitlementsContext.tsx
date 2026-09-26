@@ -225,7 +225,7 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
   const invoke = useCallback(async (body: Record<string, unknown>) => {
     if (!user) throw new Error("Login necessário");
 
-    const functionsBaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const functionsBaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://zdjtcwtakgizbsbbwtgc.supabase.co";
     if (!functionsBaseUrl) throw new Error("Serviço temporariamente indisponível");
 
     const callWithToken = async (accessToken: string) => {
