@@ -51,7 +51,10 @@ const ptDefaults: Record<string, string> = {
   "Atención directa por WhatsApp, con respuesta en menos de 1h en horario comercial.": "Atendimento direto pelo WhatsApp, com resposta em até 1h em horário comercial.",
 };
 
-const replaceDefault = (value: string | undefined) => value ? ptDefaults[value] || value : value;
+export const replacePortugueseSiteDefault = (value: string | undefined) =>
+  value ? ptDefaults[value] || value : value;
+
+const replaceDefault = replacePortugueseSiteDefault;
 
 export function normalizePortugueseSiteDefaults(content: SiteContent): SiteContent {
   const normalized = { ...content };
