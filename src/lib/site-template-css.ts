@@ -106,6 +106,11 @@ body.template-ofertas .price-value,
 body.template-ofertas .price-main{font-family:'Sora',sans-serif;color:var(--brand-dark)}
 body.template-ofertas .dest-cta{border-top:1px solid var(--t-line);font-weight:800;color:var(--brand-dark)}
 body.template-ofertas .equipe{background:#fff}
+body.template-ofertas .equipe{color:var(--ink)}
+body.template-ofertas .equipe-left h2,
+body.template-ofertas .feat h4{color:var(--ink)}
+body.template-ofertas .equipe .eyebrow{color:var(--brand-dark)}
+body.template-ofertas .feat-icon{background:color-mix(in srgb,var(--brand) 10%,transparent)}
 body.template-ofertas .equipe-img{border-radius:10px}
 body.template-ofertas .depo-card,
 body.template-ofertas .orc-form,
@@ -334,6 +339,11 @@ body.template-excursoes .price-value,
 body.template-excursoes .price-main{color:var(--brand-dark)}
 body.template-excursoes .dest-cta{width:max-content;border:1px solid var(--brand);border-radius:999px;padding:9px 16px;color:var(--brand-dark)}
 body.template-excursoes .equipe{background:#fff}
+body.template-excursoes .equipe{color:var(--ink)}
+body.template-excursoes .equipe-left h2,
+body.template-excursoes .feat h4{color:var(--ink)}
+body.template-excursoes .equipe .eyebrow{color:var(--brand-dark)}
+body.template-excursoes .feat-icon{background:color-mix(in srgb,var(--brand) 10%,transparent)}
 body.template-excursoes .equipe-img{border-radius:28px}
 body.template-excursoes .depo-card,
 body.template-excursoes .orc-form,

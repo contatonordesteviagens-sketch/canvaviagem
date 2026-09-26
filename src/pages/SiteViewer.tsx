@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { upgradePublishedSiteWhatsApp } from "@/lib/published-site-whatsapp";
+import { improvePublishedPortugueseSite } from "@/lib/published-site-pt-presentation";
 
 const readPackageSlugFromLocation = () => {
   const pathMatch = window.location.pathname.match(/^\/pacotes?\/([^/]+)/i);
@@ -53,7 +54,7 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
 
         const { data, error } = await supabase
           .from('public_sites')
-          .select('html')
+          .select('html, locale')
           .eq('id', id)
           .abortSignal(controller.signal)
           .single();
@@ -62,7 +63,7 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
           throw new Error("Site não encontrado ou aguardando processamento.");
         }
 
-        const html = upgradePublishedSiteWhatsApp(data.html);
+        const html = upgradePublishedSiteWhatsApp(improvePublishedPortugueseSite(data.html, data.locale));
 
         if (isSubscribed) {
           setHtmlContent(html);

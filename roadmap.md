@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Corrigir textos em espanhol exibidos nos sites em português, incluindo os exemplos enviados.
+- [ ] Corrigir textos invisíveis por contraste e verificar outras seções dos sites gerados.
+- [ ] Validar sites em português e espanhol sem alterar permissões ou assinaturas.
+
 - [x] Confirm the affected user's auth, profile, and subscription records.
 - [x] Centralize recognized Stripe product selection across all subscription items.
 - [x] Align active/trialing validity across login, route access, and Fabrica APIs.
