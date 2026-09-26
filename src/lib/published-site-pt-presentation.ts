@@ -11,9 +11,9 @@ export function improvePublishedPortugueseSite(html: string, locale: string | nu
     ".processo .section-eyebrow", ".processo .section-title", ".proc-card h3", ".proc-card p",
     "#destinos .section-title", "#por-que .badge-counter", "#por-que .eyebrow",
     "#por-que .equipe-left h2", "#por-que .equipe-left .intro", "#por-que .feat h4", "#por-que .feat p",
-    "#orcamento .eyebrow", "#orcamento h2", "#orcamento .orc-info p", ".orc-form .form-submit",
+    "#orcamento .eyebrow", "#orcamento h2", "#orcamento .orc-info > p", "#orcamento .contact-item span", ".orc-form .form-submit",
     ".depo-bg .section-title", "#faq .section-title", ".faq-item summary", ".faq-item p",
-    ".final-cta h2", ".final-cta .btn", ".foot-desc", ".foot-bottom", ".site-header .nav-links a",
+    ".final-cta h2", ".final-cta .btn", ".foot-desc", ".foot-grid li", ".foot-grid a", ".foot-bottom [data-site-edit-key]", ".site-header .nav-links a",
   ];
   for (const element of doc.querySelectorAll<HTMLElement>(selectors.join(","))) {
     if (element.children.length) continue;
@@ -31,6 +31,7 @@ body:is(.template-ofertas,.template-excursoes) .equipe-left h2,
 body:is(.template-ofertas,.template-excursoes) .feat h4{color:var(--ink)}
 body:is(.template-ofertas,.template-excursoes) .equipe .eyebrow{color:var(--brand-dark)}
 body:is(.template-ofertas,.template-excursoes) .feat-icon{background:color-mix(in srgb,var(--brand) 10%,transparent)}
+footer[style*="--section-bg"] [data-protected-brand]{color:var(--section-contrast)!important}
 `;
   doc.head.appendChild(style);
   return `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;

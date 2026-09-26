@@ -1268,6 +1268,7 @@ body{font-family:'Inter',sans-serif;color:var(--ink);background:var(--brand-bg);
 #orcamento[style*="--section-bg"] :is(.orc-info>h2,.orc-info>p,.orc-info>.eyebrow){color:var(--section-contrast)!important}
 .final-cta[style*="--section-bg"] h2{color:var(--section-contrast)!important}
 footer[style*="--section-bg"] :is(.foot-brand,.foot-desc,h4,li,li>a:not(.social-icon),.foot-bottom){color:var(--section-contrast)!important}
+footer[style*="--section-bg"] [data-protected-brand]{color:var(--section-contrast)!important}
 h1,h2,h3,h4{font-family:'Playfair Display',serif;letter-spacing:-0.02em;line-height:1.15;color:var(--ink)}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}

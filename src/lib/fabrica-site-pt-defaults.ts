@@ -10,6 +10,13 @@ const ptDefaults: Record<string, string> = {
   "¿Listo para tu próximo viaje?": "Pronto para sua próxima viagem?",
   "Contactar por WhatsApp": "Chamar no WhatsApp",
   "Hablar por WhatsApp": "Falar no WhatsApp",
+  "Inicio": "Início",
+  "Sobre Nosotros": "Sobre Nós",
+  "Cómo Funciona": "Como Funciona",
+  "Testimonios": "Depoimentos",
+  "Contacto": "Contato",
+  "Ver Paquetes": "Ver Pacotes",
+  "Viajes": "Viagens",
   "Proceso": "Processo",
   "Tu viaje de ensueño en 3 pasos": "Sua viagem dos sonhos em 3 passos",
   "Tu viaje soñado en 3 pasos": "Sua viagem dos sonhos em 3 passos",
@@ -36,6 +43,7 @@ const ptDefaults: Record<string, string> = {
   "Lun–Vie 8h–20h": "Seg–Sex 8h–20h",
   "Hablar con un especialista": "Falar com um especialista",
   "Enviar por WhatsApp": "Enviar pelo WhatsApp",
+  "Cliente verificado": "Cliente verificado",
   "Tu socio ideal para viajes inolvidables. Cuidamos cada detalle para que tú solo disfrutes el momento.": "Sua parceira ideal para viagens inesquecíveis. Cuidamos de cada detalhe para que você apenas aproveite o momento.",
   "Años de Experiencia": "Anos de Experiência",
   "Viajeros Felices": "Viajantes Felizes",
@@ -59,11 +67,13 @@ const replaceDefault = replacePortugueseSiteDefault;
 export function normalizePortugueseSiteDefaults(content: SiteContent): SiteContent {
   const normalized = { ...content };
   const fields = [
-    "heroEyebrow", "heroCtaLabel", "pacotesTitle", "depoimentosTitle", "faqTitle",
+    "heroEyebrow", "heroCtaLabel", "heroSecondaryCtaLabel", "pacotesTitle", "depoimentosTitle", "faqTitle",
     "finalCtaTitle", "finalCtaLabel", "processoEyebrow", "processoTitle",
     "equipeBadge", "equipeEyebrow", "equipeTitle", "equipeIntro", "orcamentoEyebrow",
     "orcamentoTitle", "orcamentoText", "atendimentoText", "equipeCtaLabel",
-    "formSubmitLabel", "footerText", "footerHoursLabel",
+    "formSubmitLabel", "footerText", "footerHoursLabel", "navHomeLabel", "navDestinationsLabel",
+    "navAboutLabel", "navBudgetLabel", "navWhatsAppLabel", "footerAboutLabel",
+    "footerProcessLabel", "footerTestimonialsLabel", "footerContactLabel",
   ] as const;
   for (const field of fields) {
     const value = normalized[field];
