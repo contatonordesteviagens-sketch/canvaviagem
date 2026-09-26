@@ -122,7 +122,7 @@ const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { can } = useEntitlements();
+  const { can, loading: entitlementsLoading } = useEntitlements();
   const hasPremiumContent = can("library.premium.open");
   const { setLanguage, t } = useLanguage();
 
@@ -145,13 +145,20 @@ const Index = () => {
   const [showFestaPopup, setShowFestaPopup] = useState(false);
 
   useEffect(() => {
+    if (!user || entitlementsLoading) return;
+
+    if (can("fabrica.open")) {
+      setShowFestaPopup(false);
+      return;
+    }
+
     if (user) {
       const hasSeenPopup = localStorage.getItem("cv_festa_popup_seen_v3");
       if (!hasSeenPopup) {
         setShowFestaPopup(true);
       }
     }
-  }, [user]);
+  }, [can, entitlementsLoading, user]);
 
   // Database hooks
   const { data: videoTemplates, isLoading: videosLoading } = useContentItems(['video', 'seasonal']);
