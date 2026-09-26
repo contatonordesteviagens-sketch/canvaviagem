@@ -1880,7 +1880,7 @@ const Index = () => {
 
       {/* Startup Announcement Popup for subscribers - Mobile First */}
       <AnimatePresence>
-        {showFestaPopup && (
+        {showFestaPopup && !entitlementsLoading && !can("fabrica.open") && (
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
