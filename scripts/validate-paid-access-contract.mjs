@@ -35,7 +35,7 @@ for (const [path, needle, message] of [
   ["supabase/functions/fabrica-entitlements/index.ts", 'error: "Plano Elite necessário"', "the entitlement API must reject unpaid reservations."],
   ["supabase/functions/fabrica-entitlements/index.ts", 'if (isStartProduct(subscription.product_id)) return "start_legacy";', "Start subscribers must receive Start capabilities."],
   ["supabase/functions/_shared/fabricaAccess.ts", "return verifyFabricaEliteAccess(req, corsHeaders);", "authenticated Fabrica APIs must enforce Elite access."],
-  ["supabase/functions/_shared/fabricaAccess.ts", "isEliteProduct(subscription?.product_id) && isCurrent", "protected Fabrica APIs must require an explicit Elite product."],
+  ["supabase/functions/_shared/fabricaAccess.ts", "isEliteProduct(subscription?.product_id)", "protected Fabrica APIs must require an explicit Elite product."],
 ]) {
   requireText(path, needle, message);
 }

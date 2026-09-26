@@ -212,7 +212,6 @@ const definitions: DemoDefinition[] = [
         travelDates: "Segundas, quartas e sextas",
         duration: "4 horas",
         meetingPoint: "Busca nos hotéis da orla",
-        meetingPoint: "Busca nos hotéis da orla",
         highlights: ["Praia de Iracema", "Mercado Central", "Centro Dragão do Mar"],
         included: ["Transporte climatizado", "Guia credenciado", "Seguro passageiro"],
       }),
