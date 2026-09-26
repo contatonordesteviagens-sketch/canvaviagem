@@ -41,6 +41,14 @@ const ptDefaults: Record<string, string> = {
   "Viajeros Felices": "Viajantes Felizes",
   "Países Visitados": "Países Atendidos",
   "Satisfacción": "Satisfação",
+  "¿Se puede pagar en cuotas?": "Vocês parcelam?",
+  "¡Sí! Hasta 12 cuotas con tarjeta de crédito, sin intereses en condiciones seleccionadas.": "Sim! Em até 12x no cartão de crédito, sem juros em condições selecionadas.",
+  "¿Es seguro contratar con ustedes?": "É seguro contratar com vocês?",
+  "Somos una agencia regulada con registro activo y asociación directa con operadores.": "Somos uma agência regularizada com CNPJ ativo e parceria direta com operadoras.",
+  "¿Y si necesito cancelar?": "E se eu precisar cancelar?",
+  "Cada paquete tiene su política. Recibirás el contrato con todo claro antes de cerrar.": "Cada pacote tem sua política. Você recebe o contrato com tudo claro antes de fechar.",
+  "¿Cómo resolver dudas?": "Como tira dúvidas?",
+  "Atención directa por WhatsApp, con respuesta en menos de 1h en horario comercial.": "Atendimento direto pelo WhatsApp, com resposta em até 1h em horário comercial.",
 };
 
 const replaceDefault = (value: string | undefined) => value ? ptDefaults[value] || value : value;
@@ -66,6 +74,9 @@ export function normalizePortugueseSiteDefaults(content: SiteContent): SiteConte
   }));
   if (content.stats) normalized.stats = content.stats.map(stat => ({
     ...stat, label: replaceDefault(stat.label) || stat.label,
+  }));
+  if (content.faq) normalized.faq = content.faq.map(item => ({
+    ...item, q: replaceDefault(item.q) || item.q, a: replaceDefault(item.a) || item.a,
   }));
   return normalized;
 }
