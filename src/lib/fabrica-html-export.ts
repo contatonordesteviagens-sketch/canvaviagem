@@ -183,7 +183,22 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   // Usa o DDI salvo no estado (padrão Brasil +55)
   const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
   const wpp = rawWpp ? (rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`) : "";
-  const sc = state.siteContent;
+  // Legacy drafts can contain the stock ES copy after a template switch.
+  // Replace only exact template defaults; never translate user-authored content.
+  const portugueseDefaults: Record<string, string> = {
+    "Proceso": "Processo",
+    "Tu viaje de ensueño en 3 pasos": "Sua viagem dos sonhos em 3 passos",
+    "Tu viaje soñado en 3 pasos": "Sua viagem dos sonhos em 3 passos",
+    "+15k Clientes Satisfechos": "+15k Clientes Satisfeitos",
+    "Nuestro equipo": "Nossa equipe",
+    "Un equipo dedicado exclusivamente a ti": "Uma equipe dedicada exclusivamente a você",
+    "Cada viaje comienza con una conversación real. Nuestro equipo de expertos conoce los destinos de cerca — cada detalle pensado para tu perfil, tus sueños y tu momento.": "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.",
+  };
+  const sc = { ...state.siteContent };
+  for (const key of ["processoEyebrow", "processoTitle", "equipeBadge", "equipeEyebrow", "equipeTitle", "equipeIntro"] as const) {
+    const value = sc[key];
+    if (value && portugueseDefaults[value]) sc[key] = portugueseDefaults[value];
+  }
   const templateId = normalizeSiteTemplateId(sc.templateId);
   const sectionBackgroundAttr = (key: string) => {
     const value = sc.sectionColors?.[key];
@@ -1673,7 +1688,7 @@ ${sectionOrder
     <div class="equipe-grid" data-visual-removable="por-que-grid">
       <div class="equipe-left">
         ${!sc.hiddenElements?.includes('equipe-badge') ? `<span class="badge-counter" data-visual-removable="equipe-badge">${esc(sc.equipeBadge || "+15k Clientes Satisfeitos")}</span>` : ''}
-        ${!sc.hiddenElements?.includes('equipe-eyebrow') ? `<div class="eyebrow" style="color:#fff;opacity:.6" data-visual-removable="equipe-eyebrow">${esc(sc.equipeEyebrow || "Nossa equipe")}</div>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-eyebrow') ? `<div class="eyebrow" data-visual-removable="equipe-eyebrow">${esc(sc.equipeEyebrow || "Nossa equipe")}</div>` : ''}
         ${!sc.hiddenElements?.includes('equipe-title') ? `<h2 data-visual-removable="equipe-title">${esc(sc.equipeTitle || "Uma equipe dedicada exclusivamente a você")}</h2>` : ''}
         ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">${esc(sc.equipeIntro || "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>` : ''}
         <div class="equipe-features">
