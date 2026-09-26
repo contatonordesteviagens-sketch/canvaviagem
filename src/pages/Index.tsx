@@ -115,14 +115,18 @@ import { useGamification } from "@/hooks/useGamification";
 import { checkIfItemIsPremium } from "@/lib/premium-utils";
 import { FREE_CAPTIONS, FREE_FEED_TEMPLATE_IDS } from "@/data/free-content";
 import { isStartTool } from "@/lib/contentAccess";
+import { hasEliteAccess } from "@/lib/planAccess";
 
 
 
 const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, subscription, isAdmin } = useAuth();
   const { can, loading: entitlementsLoading } = useEntitlements();
+  const hasConfirmedFabricaAccess = isAdmin
+    || hasEliteAccess({ subscribed: subscription.subscribed, productId: subscription.productId })
+    || can("fabrica.open");
   const hasPremiumContent = can("library.premium.open");
   const { setLanguage, t } = useLanguage();
 
@@ -147,7 +151,7 @@ const Index = () => {
   useEffect(() => {
     if (!user || entitlementsLoading) return;
 
-    if (can("fabrica.open")) {
+    if (hasConfirmedFabricaAccess) {
       setShowFestaPopup(false);
       return;
     }
@@ -158,7 +162,7 @@ const Index = () => {
         setShowFestaPopup(true);
       }
     }
-  }, [can, entitlementsLoading, user]);
+  }, [entitlementsLoading, hasConfirmedFabricaAccess, user]);
 
   // Database hooks
   const { data: videoTemplates, isLoading: videosLoading } = useContentItems(['video', 'seasonal']);
@@ -1880,7 +1884,7 @@ const Index = () => {
 
       {/* Startup Announcement Popup for subscribers - Mobile First */}
       <AnimatePresence>
-        {showFestaPopup && !entitlementsLoading && !can("fabrica.open") && (
+        {showFestaPopup && !entitlementsLoading && !hasConfirmedFabricaAccess && (
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
