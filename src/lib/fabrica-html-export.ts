@@ -7,6 +7,7 @@ import {
 } from "@/lib/package-details";
 import { normalizeSiteTemplateId } from "@/lib/site-template-catalog";
 import { getSiteTemplateCss } from "@/lib/site-template-css";
+import { normalizePortugueseSiteDefaults } from "@/lib/fabrica-site-pt-defaults";
 import { resolveFabricaCrmFormId } from "@/lib/fabrica-crm-publication";
 
 const SB_URL = import.meta.env.VITE_SUPABASE_URL || "";

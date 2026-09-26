@@ -18,6 +18,7 @@ import {
   resolveFabricaProjectId,
 } from "@/lib/fabrica-project-persistence";
 import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
+import { normalizePortugueseSiteDefaults } from "@/lib/fabrica-site-pt-defaults";
 
 export type Niche = "nordeste" | "sul" | "internacional" | "cruzeiro" | "aventura" | "luademel" | "";
 
@@ -585,14 +586,21 @@ const normalizeStateSnapshot = (
     ...(snapshot || {}),
     projectId: resolvedProjectId,
     selectedPackages,
-    siteContent: {
+    siteContent: isEs() ? {
       ...base.siteContent,
       ...(snapshot?.siteContent || {}),
       sections: {
         ...base.siteContent.sections,
         ...(snapshot?.siteContent?.sections || {}),
       },
-    },
+    } : normalizePortugueseSiteDefaults({
+      ...base.siteContent,
+      ...(snapshot?.siteContent || {}),
+      sections: {
+        ...base.siteContent.sections,
+        ...(snapshot?.siteContent?.sections || {}),
+      },
+    }),
     crmForm: normalizeCrmFormConfig(snapshot?.crmForm, isEs() ? "es" : "pt-BR"),
   };
 };
