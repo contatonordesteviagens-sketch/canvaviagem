@@ -105,8 +105,9 @@ export function VoiceOnboarding() {
       
       setState("transcribing");
       
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://zdjtcwtakgizbsbbwtgc.supabase.co";
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fabrica-transcribe-audio?stream=false`,
+        `${supabaseUrl}/functions/v1/fabrica-transcribe-audio?stream=false`,
         {
           method: "POST",
           headers: {
@@ -132,7 +133,7 @@ export function VoiceOnboarding() {
       // 3. Extrair informações de negócios com LLM
       setState("extracting");
       const extractResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fabrica-extract-business-info-v2`,
+        `${supabaseUrl}/functions/v1/fabrica-extract-business-info-v2`,
         {
           method: "POST",
           headers: {

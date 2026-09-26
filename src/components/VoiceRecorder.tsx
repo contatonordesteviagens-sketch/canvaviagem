@@ -58,8 +58,9 @@ export function VoiceRecorder({ onTranscriptComplete }: Props) {
       // se quisermos suportar Streaming (SSE), ou lidar com JWT auth via URL diretamente.
       const { data: session } = await supabase.auth.getSession();
       
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://zdjtcwtakgizbsbbwtgc.supabase.co";
       const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fabrica-transcribe-audio`,
+        `${supabaseUrl}/functions/v1/fabrica-transcribe-audio`,
         {
           method: "POST",
           headers: {
