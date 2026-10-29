@@ -301,16 +301,20 @@ async function createMagicLink(db: SupabaseClient, email: string, name: string, 
     name,
     expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
   });
-  const next = path ? `&next=${encodeURIComponent(path)}` : "";
-  return `${canonicalSiteUrl()}/auth/verify?token=${token}${next}`;
+  // /auth/verify lê "redirect" (não "next").
+  const redirect = path ? `&redirect=${encodeURIComponent(path)}` : "";
+  return `${canonicalSiteUrl()}/auth/verify?token=${token}${redirect}`;
 }
+
+// canvaviagem.com não está verificado no Resend: usar o remetente verificado (igual ao send-magic-link).
+const FROM_EMAIL = () => Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>";
 
 async function sendPixConfirmationEmail(db: SupabaseClient, p: { email: string; name: string; planLabel: string; periodEnd: string }) {
   const resendKey = Deno.env.get("RESEND_API_KEY");
   if (!resendKey || !p.email) return;
   const link = await createMagicLink(db, p.email, p.name);
   await new Resend(resendKey).emails.send({
-    from: "Canva Viagem <contato@canvaviagem.com>",
+    from: FROM_EMAIL(),
     to: [p.email],
     subject: "✅ Pix confirmado — seu Elite está liberado",
     html: `
@@ -331,7 +335,7 @@ export async function sendPixRenewalReminder(db: SupabaseClient, p: { email: str
   if (!resendKey) throw new Error("RESEND_API_KEY não configurado");
   const link = `${canonicalSiteUrl()}/pix?plano=${p.plan}`;
   await new Resend(resendKey).emails.send({
-    from: "Canva Viagem <contato@canvaviagem.com>",
+    from: FROM_EMAIL(),
     to: [p.email],
     subject: `⏰ Seu acesso Elite vence em ${fmtDate(p.periodEnd)}`,
     html: `

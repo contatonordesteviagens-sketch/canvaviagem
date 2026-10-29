@@ -93,3 +93,6 @@ verify_jwt = false
 
 [functions.woovi-sync-charges]
 verify_jwt = false
+
+[functions.recovery-emails]
+verify_jwt = false

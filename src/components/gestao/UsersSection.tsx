@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { UserDetailsModal } from "./UserDetailsModal";
 import { EmailCapturesCard } from "./EmailCapturesCard";
+import { RecoveryCard } from "./RecoveryCard";
 
 type StatusFilter = "all" | "active" | "canceled" | "past_due" | "trialing" | "inactive";
 
@@ -185,6 +186,7 @@ export const UsersSection = () => {
         </Card>
       </div>
 
+      <RecoveryCard />
       <EmailCapturesCard />
 
       {/* Tabela */}

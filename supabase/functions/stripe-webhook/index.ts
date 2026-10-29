@@ -809,7 +809,9 @@ async function handleCheckoutExpired(session: Stripe.Checkout.Session, supabase:
   const email = session.customer_details?.email || session.customer_email;
   if (!isValidEmail(email)) return;
   await supabase.from("abandoned_checkouts").insert({ email, session_id: session.id, amount: session.amount_total });
-  if (resend) await sendRecoveryEmail(resend, email);
+  // O e-mail imediato antigo (link de pagamento fixo) saiu: a sequência de recuperação
+  // (recovery-emails: 1 h, 3º e 7º dia) cuida disso a partir de card_checkouts.
+  void resend;
   await triggerZaiaWebhook("ZAIA_WEBHOOK_RECOVERY", { email });
 }
 
