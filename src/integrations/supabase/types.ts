@@ -221,6 +221,45 @@ export type Database = {
         }
         Relationships: []
       }
+      card_checkouts: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          email: string | null
+          plan: string | null
+          recovery_url: string | null
+          session_id: string
+          status: string
+          ui_mode: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          email?: string | null
+          plan?: string | null
+          recovery_url?: string | null
+          session_id: string
+          status?: string
+          ui_mode?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          email?: string | null
+          plan?: string | null
+          recovery_url?: string | null
+          session_id?: string
+          status?: string
+          ui_mode?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       content_clicks: {
         Row: {
           clicked_at: string
@@ -429,6 +468,36 @@ export type Database = {
           },
         ]
       }
+      email_captures: {
+        Row: {
+          email: string
+          first_seen_at: string
+          hits: number
+          id: string
+          last_seen_at: string
+          metadata: Json
+          source: string
+        }
+        Insert: {
+          email: string
+          first_seen_at?: string
+          hits?: number
+          id?: string
+          last_seen_at?: string
+          metadata?: Json
+          source?: string
+        }
+        Update: {
+          email?: string
+          first_seen_at?: string
+          hits?: number
+          id?: string
+          last_seen_at?: string
+          metadata?: Json
+          source?: string
+        }
+        Relationships: []
+      }
       email_events: {
         Row: {
           created_at: string
@@ -456,6 +525,21 @@ export type Database = {
           metadata?: Json | null
           recipient_email?: string | null
           type?: string
+        }
+        Relationships: []
+      }
+      email_unsubscribes: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
         }
         Relationships: []
       }
@@ -684,6 +768,21 @@ export type Database = {
         }
         Relationships: []
       }
+      job_runs: {
+        Row: {
+          job: string
+          last_run_at: string
+        }
+        Insert: {
+          job: string
+          last_run_at?: string
+        }
+        Update: {
+          job?: string
+          last_run_at?: string
+        }
+        Relationships: []
+      }
       magic_link_tokens: {
         Row: {
           created_at: string | null
@@ -822,6 +921,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pix_charges: {
+        Row: {
+          correlation_id: string
+          created_at: string
+          email: string | null
+          expires_at: string | null
+          paid_at: string | null
+          payment_link_url: string | null
+          plan: string
+          status: string
+          updated_at: string
+          user_id: string | null
+          value_cents: number
+        }
+        Insert: {
+          correlation_id: string
+          created_at?: string
+          email?: string | null
+          expires_at?: string | null
+          paid_at?: string | null
+          payment_link_url?: string | null
+          plan: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          value_cents: number
+        }
+        Update: {
+          correlation_id?: string
+          created_at?: string
+          email?: string | null
+          expires_at?: string | null
+          paid_at?: string | null
+          payment_link_url?: string | null
+          plan?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          value_cents?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -909,6 +1050,24 @@ export type Database = {
           suspended_at?: string | null
           suspension_reason?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      recovery_email_log: {
+        Row: {
+          email: string
+          kind: string
+          sent_at: string
+        }
+        Insert: {
+          email: string
+          kind: string
+          sent_at?: string
+        }
+        Update: {
+          email?: string
+          kind?: string
+          sent_at?: string
         }
         Relationships: []
       }
@@ -1351,6 +1510,49 @@ export type Database = {
       }
     }
     Functions: {
+      admin_email_captures: {
+        Args: never
+        Returns: {
+          email: string
+          first_seen_at: string
+          has_account: boolean
+          hits: number
+          last_seen_at: string
+          source: string
+        }[]
+      }
+      admin_funnel_leads: {
+        Args: never
+        Returns: {
+          card_created_at: string
+          card_plan: string
+          card_recovery_url: string
+          card_status: string
+          email: string
+          first_seen_at: string
+          last_activity_at: string
+          pix_created_at: string
+          pix_link: string
+          pix_plan: string
+          pix_status: string
+          pix_value_cents: number
+          plan_selected: string
+          quiz_finished: boolean
+          quiz_steps: number
+          stage: string
+          subscribed: boolean
+          user_id: string
+        }[]
+      }
+      admin_recovery_emails: {
+        Args: never
+        Returns: {
+          email: string
+          kind: string
+          sent_at: string
+          unsubscribed: boolean
+        }[]
+      }
       admin_set_public_site_status: {
         Args: { p_active: boolean; p_reason?: string; p_site_id: string }
         Returns: boolean
@@ -1364,6 +1566,10 @@ export type Database = {
           p_time: string
           p_whatsapp: string
         }
+        Returns: undefined
+      }
+      capture_email: {
+        Args: { p_email: string; p_metadata?: Json; p_source?: string }
         Returns: undefined
       }
       claim_fabrica_trial: {

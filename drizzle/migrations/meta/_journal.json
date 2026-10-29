@@ -8,6 +8,34 @@
       "when": 1790442949970,
       "tag": "0000_allow_users_upload_own_site_assets",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793314925511,
+      "tag": "0001_email_captures",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793314950465,
+      "tag": "0002_sales_funnel",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793314963967,
+      "tag": "0003_recovery_emails",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793314980370,
+      "tag": "0004_scheduled_jobs",
+      "breakpoints": true
     }
   ]
 }
