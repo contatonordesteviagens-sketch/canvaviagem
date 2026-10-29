@@ -221,6 +221,45 @@ export type Database = {
         }
         Relationships: []
       }
+      card_checkouts: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          email: string | null
+          plan: string | null
+          recovery_url: string | null
+          session_id: string
+          status: string
+          ui_mode: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          email?: string | null
+          plan?: string | null
+          recovery_url?: string | null
+          session_id: string
+          status?: string
+          ui_mode?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          email?: string | null
+          plan?: string | null
+          recovery_url?: string | null
+          session_id?: string
+          status?: string
+          ui_mode?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       content_clicks: {
         Row: {
           clicked_at: string
@@ -852,6 +891,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pix_charges: {
+        Row: {
+          correlation_id: string
+          created_at: string
+          email: string | null
+          expires_at: string | null
+          paid_at: string | null
+          payment_link_url: string | null
+          plan: string
+          status: string
+          updated_at: string
+          user_id: string | null
+          value_cents: number
+        }
+        Insert: {
+          correlation_id: string
+          created_at?: string
+          email?: string | null
+          expires_at?: string | null
+          paid_at?: string | null
+          payment_link_url?: string | null
+          plan: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          value_cents: number
+        }
+        Update: {
+          correlation_id?: string
+          created_at?: string
+          email?: string | null
+          expires_at?: string | null
+          paid_at?: string | null
+          payment_link_url?: string | null
+          plan?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          value_cents?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1390,6 +1471,29 @@ export type Database = {
           hits: number
           last_seen_at: string
           source: string
+        }[]
+      }
+      admin_funnel_leads: {
+        Args: never
+        Returns: {
+          card_created_at: string
+          card_plan: string
+          card_recovery_url: string
+          card_status: string
+          email: string
+          first_seen_at: string
+          last_activity_at: string
+          pix_created_at: string
+          pix_link: string
+          pix_plan: string
+          pix_status: string
+          pix_value_cents: number
+          plan_selected: string
+          quiz_finished: boolean
+          quiz_steps: number
+          stage: string
+          subscribed: boolean
+          user_id: string
         }[]
       }
       admin_set_public_site_status: {

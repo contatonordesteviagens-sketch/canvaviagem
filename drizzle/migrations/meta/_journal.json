@@ -15,6 +15,13 @@
       "when": 1793314925511,
       "tag": "0001_email_captures",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793314950465,
+      "tag": "0002_sales_funnel",
+      "breakpoints": true
     }
   ]
 }
