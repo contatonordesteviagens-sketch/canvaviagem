@@ -223,10 +223,19 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
     setFilterFase("Todas");
   };
 
+  const userPickedLeadViewRef = useRef(false);
   const changeLeadView = (view: "project" | "account-history") => {
+    userPickedLeadViewRef.current = true;
     setLeadView(view);
     clearFilters();
   };
+
+  // Abrir numa aba vazia faz o cliente achar que perdeu os leads: se o projeto atual
+  // não tem nenhum e o histórico tem, mostramos o histórico primeiro (só troca a aba).
+  useEffect(() => {
+    if (loading || userPickedLeadViewRef.current) return;
+    if (leadsList.length === 0 && accountHistoryLeads.length > 0) setLeadView("account-history");
+  }, [loading, leadsList.length, accountHistoryLeads.length]);
 
   // Fechar modal com Escape
   useEffect(() => {
@@ -552,7 +561,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
                       : "border-transparent text-white/35 hover:text-white/60"
                   }`}
                 >
-                  Histórico sem projeto ({accountHistoryLeads.length})
+                  Leads antigos ({accountHistoryLeads.length})
                 </button>
               )}
             </div>
@@ -625,7 +634,66 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* No celular a tabela (716px) escondia o botão de WhatsApp fora da tela: cards com tudo visível. */}
+          <div className="md:hidden space-y-3 p-3">
+            {filteredLeads.map((l: any) => {
+              const rawDate = new Date(l.created_at);
+              const cleanPhone = String(l.whatsapp || "").replace(/\D/g, "");
+              const currentStatus = l.status || 'novo';
+              return (
+                <div key={`m-${l.id}`} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-bold text-white">{l.nome_completo || "Sem nome"}</div>
+                      <div className="truncate text-xs text-white/40">{l.email || l.whatsapp || "—"}</div>
+                    </div>
+                    <div className="shrink-0 text-right text-[11px] text-white/40">
+                      {rawDate.toLocaleDateString('pt-BR')}
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <span className="truncate text-xs text-white/60">📍 {l.destino_interesse || "Geral"}</span>
+                    <select
+                      value={currentStatus}
+                      onChange={(e) => handleStatusChange(l.id, e.target.value)}
+                      aria-label="Fase do atendimento"
+                      className={`min-h-9 appearance-none rounded-full border px-3 text-xs font-semibold outline-none ${getFaseColor(currentStatus)}`}
+                    >
+                      <option value="novo">Novo</option>
+                      <option value="contato">Em Contato</option>
+                      <option value="proposta">Proposta</option>
+                      <option value="venda">Venda</option>
+                      <option value="perda">Perda</option>
+                    </select>
+                  </div>
+                  <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
+                    {cleanPhone ? (
+                      <a
+                        href={`https://wa.me/${cleanPhone.startsWith('55') ? '' : '55'}${cleanPhone}?text=${encodeURIComponent(`Olá ${l.nome_completo || 'viajante'}! Vi seu interesse no destino ${l.destino_interesse || 'Geral'}. Como podemos ajudar com sua viagem?`)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#25D366] text-sm font-extrabold text-black"
+                      >
+                        Chamar no WhatsApp
+                      </a>
+                    ) : (
+                      <span className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 text-xs text-white/40">Sem WhatsApp</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLead(l)}
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-white/10 text-white/60"
+                      aria-label="Ver detalhes"
+                    >
+                      <Maximize2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-white/5">
@@ -689,7 +757,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
                               href={`https://wa.me/${cleanPhone.startsWith('55') ? '' : '55'}${cleanPhone}?text=${encodeURIComponent(`Olá ${l.nome_completo || 'viajante'}! Vi seu interesse no destino ${l.destino_interesse || 'Geral'}. Como podemos ajudar com sua viagem?`)}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] text-[10px] font-bold rounded-lg border border-[#25D366]/20 transition-colors"
+                              className="inline-flex items-center gap-1 px-3 py-2 bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] text-xs font-bold rounded-lg border border-[#25D366]/20 transition-colors"
                             >
                               WhatsApp
                             </a>
@@ -704,6 +772,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 
@@ -958,7 +1027,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
           )}
           {onNext && (
             <button onClick={onNext} className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 text-sm font-black text-zinc-950 hover:bg-amber-300 transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)]">
-              Avançar: Checkup
+              Avançar: Meus Pacotes
               <ArrowRight className="h-4 w-4" />
             </button>
           )}

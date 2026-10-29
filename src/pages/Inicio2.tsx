@@ -37,7 +37,7 @@ import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
 import showcaseCrm from "@/assets/images/showcase-crm.png";
 import showcaseScheduler from "@/assets/images/showcase-scheduler.png";
 import showcasePremiumMedias from "@/assets/images/showcase-premium-medias.png";
-import { ELITE_OFFER, type UpgradeFeature } from "@/lib/eliteOffer";
+import { ELITE_OFFER, withCheckoutIdentity, type UpgradeFeature } from "@/lib/eliteOffer";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
@@ -524,7 +524,7 @@ export default function Inicio2() {
         stripeUrl = ELITE_OFFER.semiannualCheckoutUrl;
       }
       
-      window.location.href = stripeUrl;
+      window.location.href = withCheckoutIdentity(stripeUrl, user);
     } catch (error) {
       console.error("[Inicio] Falha ao criar checkout:", error);
       toast.error("Não foi possível iniciar o checkout seguro agora. Tente novamente em instantes.");
@@ -1296,11 +1296,11 @@ export default function Inicio2() {
                     type="button"
                     onClick={() => {
                       if (plan.id === "mensal") {
-                        window.location.href = ELITE_OFFER.monthlyCheckoutUrl;
+                        window.location.href = withCheckoutIdentity(ELITE_OFFER.monthlyCheckoutUrl, user);
                       } else if (plan.id === "anual") {
-                        window.location.href = ELITE_OFFER.annualCheckoutUrl;
+                        window.location.href = withCheckoutIdentity(ELITE_OFFER.annualCheckoutUrl, user);
                       } else if (plan.id === "semestral") {
-                        window.location.href = ELITE_OFFER.semiannualCheckoutUrl;
+                        window.location.href = withCheckoutIdentity(ELITE_OFFER.semiannualCheckoutUrl, user);
                       }
                     }}
                     className={`w-full mt-auto text-center font-bold py-3 px-5 rounded-full transition-all ${

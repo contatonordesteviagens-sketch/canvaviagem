@@ -62,8 +62,13 @@ export function useFabricaMetrics(): FabricaMetrics {
         };
       });
 
-      // Combine unique leads
-      const allLeads = [...formLeads, ...legacyLeads].sort(
+      // Combine unique leads: o mesmo lead costuma existir no formulário e no evento legado
+      // (mesmo nome, segundos de diferença). Sem isso o badge do menu mostra o dobro.
+      const sameLead = (a: any, b: any) =>
+        String(a.normalized_name || "").trim().toLowerCase() === String(b.normalized_name || "").trim().toLowerCase()
+        && Math.abs(new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) < 5 * 60 * 1000;
+      const uniqueLegacyLeads = legacyLeads.filter((legacy) => !formLeads.some((form: any) => sameLead(form, legacy)));
+      const allLeads = [...formLeads, ...uniqueLegacyLeads].sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
 

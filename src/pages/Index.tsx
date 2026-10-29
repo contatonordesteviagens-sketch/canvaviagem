@@ -1,4 +1,6 @@
 import { aiTools } from "@/data/templates";
+import { hasPendingOnboarding } from "@/lib/onboarding-bridge";
+import { QuickStartActions } from "@/components/canva/QuickStartActions";
 import { useState, useEffect, useMemo, Suspense, lazy } from "react";
 // Build trigger: Freemium Transition - 2026-02-27
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -123,6 +125,12 @@ const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, subscription, isAdmin } = useAuth();
+
+  // Assinante recém-chegado do quiz: leva direto para a Fábrica, onde as respostas viram o primeiro anúncio.
+  useEffect(() => {
+    if (!user || !subscription.subscribed || !hasPendingOnboarding()) return;
+    navigate("/fabrica", { replace: true });
+  }, [user, subscription.subscribed, navigate]);
   const { can, loading: entitlementsLoading } = useEntitlements();
   const hasConfirmedFabricaAccess = isAdmin
     || hasEliteAccess({ subscribed: subscription.subscribed, productId: subscription.productId })
@@ -201,7 +209,8 @@ const Index = () => {
   useEffect(() => {
     const migrate = async () => {
       const isMigrated = localStorage.getItem('migrated_templates_v2');
-      if (isMigrated || !user) return;
+      // Só admin tem permissão (RLS) para atualizar content_items; assinantes não devem rodar isso.
+      if (isMigrated || !user || !isAdmin) return;
 
       console.log('🔄 Iniciando migração para o Supabase...');
       const allLocalTemplates = [
@@ -242,11 +251,11 @@ const Index = () => {
 
       console.log(`🎉 Migração concluída! ${updateCount} itens atualizados.`);
       localStorage.setItem('migrated_templates_v2', 'true');
-      toast.success(`Banco sincronizado! ${updateCount} legendas/links atualizados. Atualize a página para ver.`);
+      if (updateCount > 0) toast.success(`Banco sincronizado! ${updateCount} legendas/links atualizados. Atualize a página para ver.`);
     };
 
     migrate();
-  }, [user]);
+  }, [user, isAdmin]);
 
   // Note: Removed blocking loader for better LCP. 
   // We handle loading states within individual components or sections.
@@ -462,7 +471,10 @@ const Index = () => {
 
   // Top-level preparation for LCP and Sections
   const coveredVideos = useMemo(() => {
-    let videos = searchQuery.trim() !== "" ? sortedVideos : sortedVideos.filter(v => v.image_url);
+    // Na busca, vídeos com capa vêm primeiro: os sem capa viram cartões roxos vazios e parecem erro.
+    let videos = searchQuery.trim() !== ""
+      ? [...sortedVideos].sort((a, b) => (b.image_url ? 1 : 0) - (a.image_url ? 1 : 0))
+      : sortedVideos.filter(v => v.image_url);
     if (activeCategory === 'all' && !searchQuery.trim()) {
       const crossedOutTitles = [
         'japão mel', 'japão - mel',
@@ -572,9 +584,21 @@ const Index = () => {
         return (
           <section className="animate-fade-in">
             <SectionHeader
-              title="Tudo"
-              subtitle="Todo o conteúdo da plataforma em um lugar"
+              title={searchQuery.trim() ? `Resultados para "${searchQuery.trim()}"` : "Tudo"}
+              subtitle={searchQuery.trim()
+                ? `${coveredVideos.length} vídeo${coveredVideos.length === 1 ? "" : "s"} e ${filteredCaptions.length} legenda${filteredCaptions.length === 1 ? "" : "s"} encontrad${coveredVideos.length + filteredCaptions.length === 1 ? "o" : "os"}`
+                : "Todo o conteúdo da plataforma em um lugar"}
             />
+            {searchQuery.trim() && coveredVideos.length === 0 && filteredCaptions.length === 0 && (
+              <div className="mb-8 rounded-3xl border-2 border-dashed border-muted-foreground/20 bg-muted/30 p-10 text-center">
+                <div className="mb-3 text-4xl">🔎</div>
+                <h3 className="text-lg font-bold">Nada encontrado para "{searchQuery.trim()}"</h3>
+                <p className="mt-1 text-sm text-muted-foreground">Tente outro destino, ou crie um anúncio desse destino na Fábrica em 1 minuto.</p>
+                <button type="button" onClick={() => navigate("/fabrica/anuncio")} className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground">
+                  Criar anúncio de {searchQuery.trim()}
+                </button>
+              </div>
+            )}
             <div className="flex items-center mb-6 gap-4">
               <AccessFilter
                 selectedFilters={accessFilters}
@@ -745,7 +769,8 @@ const Index = () => {
                 </Suspense>
 
                 {/* Artes para Agência de Viagens (Feed) — 2 cols mobile, 4 cols desktop */}
-                {!feedLoading && (feedTemplates?.length ?? 0) > 0 && (
+                {/* Só artes com imagem: cards vazios ("Feed Arte 1-4" com emoji) passam impressão de produto quebrado. */}
+                {!feedLoading && (feedTemplates?.filter((t) => t.image_url).length ?? 0) > 0 && (
                   <div className="space-y-5 pt-8 mt-4 border-t border-border/40">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 shrink-0 shadow-sm border border-violet-200/50 dark:border-violet-500/20">
@@ -757,7 +782,7 @@ const Index = () => {
                       </div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                      {feedTemplates.slice(0, 4).map((template, index) => (
+                      {feedTemplates.filter((t) => t.image_url).slice(0, 4).map((template, index) => (
                         <PremiumCard
                           key={template.id || `home-feed-${index}`}
                           id={template.id || `home-feed-${index}`}
@@ -783,6 +808,8 @@ const Index = () => {
 
                 {/* Remaining videos — 2 cols mobile, 4 cols desktop */}
                 {!videosLoading && remainingVideos.length > 0 && (
+                  <div className="space-y-4 pt-8 mt-4 border-t border-border/40">
+                  <h3 className="font-bold text-lg tracking-tight text-foreground">Mais vídeos Reels</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                     {remainingVideos.map((template, index) => (
                       <PremiumCard
@@ -800,6 +827,7 @@ const Index = () => {
                         isPremium={checkIfItemIsPremium(template.type, template.title, undefined, template.id)}
                       />
                     ))}
+                  </div>
                   </div>
                 )}
 
@@ -1757,6 +1785,7 @@ const Index = () => {
             setSearchQuery(val);
           }}
         >
+          {user && <QuickStartActions onReadyContent={() => setActiveCategory('videos')} />}
           {categoryNavNode}
         </HeroBanner>
       ) : (
@@ -1792,10 +1821,10 @@ const Index = () => {
           "@context": "https://schema.org",
           "@type": "FAQPage",
           "mainEntity": [
-            { "@type": "Question", "name": "O que é o Canva Viagem?", "acceptedAnswer": { "@type": "Answer", "text": "Plataforma com 250+ vídeos prontos para agências de viagem postarem no Instagram. Editáveis no Canva. Planos a partir de R$29/mês." } },
+            { "@type": "Question", "name": "O que é o Canva Viagem?", "acceptedAnswer": { "@type": "Answer", "text": "Plataforma com 250+ vídeos prontos para agências de viagem postarem no Instagram. Editáveis no Canva. Planos a partir de R$97/mês." } },
             { "@type": "Question", "name": "Preciso saber editar vídeo?", "acceptedAnswer": { "@type": "Answer", "text": "Não. Os vídeos já estão prontos e editáveis no Canva, que é gratuito e fácil de usar." } },
             { "@type": "Question", "name": "Funcionam para qual rede social?", "acceptedAnswer": { "@type": "Answer", "text": "Instagram (Reels, Feed e Stories), TikTok e YouTube Shorts." } },
-            { "@type": "Question", "name": "Qual o preço?", "acceptedAnswer": { "@type": "Answer", "text": "Plano Anual R$482 (12x R$49,85) ou Mensal a partir de R$29." } }
+            { "@type": "Question", "name": "Qual o preço?", "acceptedAnswer": { "@type": "Answer", "text": "Plano Mensal R$97, Semestral R$347 ou Anual R$482 (equivale a R$40,16/mês)." } }
           ]
         })}</script>
       </Helmet>

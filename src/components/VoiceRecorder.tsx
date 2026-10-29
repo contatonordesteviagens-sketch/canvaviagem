@@ -60,7 +60,7 @@ export function VoiceRecorder({ onTranscriptComplete }: Props) {
       
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://zdjtcwtakgizbsbbwtgc.supabase.co";
       const res = await fetch(
-        `${supabaseUrl}/functions/v1/fabrica-transcribe-audio`,
+        `${supabaseUrl}/functions/v1/fabrica-transcribe-audio${window.location.pathname.startsWith("/es") ? "?language=es" : ""}`,
         {
           method: "POST",
           headers: {

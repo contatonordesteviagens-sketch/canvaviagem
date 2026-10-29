@@ -292,7 +292,7 @@ const PremiumCardComponent = ({
               >
                 <Copy className="w-3.5 h-3.5" />
                 <span className="hidden md:inline">Legenda</span>
-                <span className="md:hidden">Cópia</span>
+                <span className="md:hidden">Legenda</span>
               </button>
             )}
 
@@ -312,7 +312,7 @@ const PremiumCardComponent = ({
               >
                 <Download className="w-3.5 h-3.5" />
                 <span className="hidden md:inline">Baixar</span>
-                <span className="md:hidden">Drive</span>
+                <span className="md:hidden">Baixar</span>
               </button>
             )}
           </div>

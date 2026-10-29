@@ -1,3 +1,4 @@
+import { SUPABASE_PUBLIC_KEY, SUPABASE_PUBLIC_URL } from "@/lib/supabase-public";
 import {
   createContext,
   useCallback,
@@ -225,7 +226,7 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
   const invoke = useCallback(async (body: Record<string, unknown>) => {
     if (!user) throw new Error("Login necessário");
 
-    const functionsBaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://zdjtcwtakgizbsbbwtgc.supabase.co";
+    const functionsBaseUrl = SUPABASE_PUBLIC_URL;
     if (!functionsBaseUrl) throw new Error("Serviço temporariamente indisponível");
 
     const callWithToken = async (accessToken: string) => {
@@ -233,7 +234,7 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          apikey: SUPABASE_PUBLIC_KEY,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(body),

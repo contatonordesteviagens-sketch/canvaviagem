@@ -83,7 +83,7 @@ export function VoiceOnboarding() {
       setState("recording");
     } catch (err) {
       console.error(err);
-      setErrorMsg("Não foi possível acessar o microfone.");
+      setErrorMsg("Microfone bloqueado. Clique no cadeado ao lado do endereço do site, permita o microfone e tente de novo.");
       setState("error");
     }
   };
@@ -187,7 +187,8 @@ export function VoiceOnboarding() {
     const newStateUpdates = {
       agencyName: extractedData.agencyName || fabricaState.agencyName,
       niche: (extractedData.niche as any) || fabricaState.niche,
-      destinos: extractedData.destinos || fabricaState.destinos,
+      // Lista vazia da IA não pode apagar os destinos que o usuário já tinha.
+      destinos: extractedData.destinos?.length ? extractedData.destinos : fabricaState.destinos,
       selectedPackages: [...newPackages, ...fabricaState.selectedPackages],
     };
 
@@ -270,7 +271,7 @@ export function VoiceOnboarding() {
           <AlertCircle className="w-3.5 h-3.5" />
           <span className="font-bold text-[10px]">{errorMsg}</span>
           <button 
-            onClick={() => setState("idle")}
+            onClick={() => { setState("idle"); void startRecording(); }}
             className="text-[9px] text-white/50 hover:text-white underline ml-2 whitespace-nowrap"
           >
             Tentar novamente

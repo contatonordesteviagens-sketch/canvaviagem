@@ -1,3 +1,4 @@
+import { SUPABASE_PUBLIC_KEY, SUPABASE_PUBLIC_URL } from "@/lib/supabase-public";
 import type { FabricaState } from "@/hooks/useFabricaContext";
 import {
   PACKAGE_AVAILABILITY_OPTIONS,
@@ -9,8 +10,8 @@ import { normalizeSiteTemplateId } from "@/lib/site-template-catalog";
 import { getSiteTemplateCss } from "@/lib/site-template-css";
 import { resolveFabricaCrmFormId } from "@/lib/fabrica-crm-publication";
 
-const SB_URL = import.meta.env.VITE_SUPABASE_URL || "";
-const SB_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+const SB_URL = SUPABASE_PUBLIC_URL;
+const SB_KEY = SUPABASE_PUBLIC_KEY;
 
 const esc = (s: string) =>
   String(s ?? "")
@@ -168,7 +169,8 @@ const renderSocialIcons = (state: FabricaState, extraClass = "") => {
 };
 
 
-export function buildLandingHTML(state: FabricaState, trackingId?: string): string {
+/** `preview: true` = prévia dentro do editor: sem Pixel/GA, para não gerar visitas falsas nos anúncios da agência. */
+export function buildLandingHTML(state: FabricaState, trackingId?: string, options: { preview?: boolean } = {}): string {
   const projectId = resolveFabricaCrmFormId(state.projectId);
   const formId = projectId;
   const color = state.primaryColor || "#0F2742";
@@ -1161,13 +1163,19 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
     }),
   );
 
-  // Stats default ou personalizado
-  const stats = state.siteContent.stats || [
+  // Stats default ou personalizado. Os números de exemplo ("15k+ viajantes") nunca vão
+  // para o site publicado: só aparecem na prévia, marcados como exemplo, até a agência trocar.
+  const DEFAULT_STATS = [
     { num: "12+", label: "Anos de Experiência" },
     { num: "15k+", label: "Viajantes Felizes" },
     { num: "25", label: "Países Atendidos" },
     { num: "99%", label: "Satisfação" },
   ];
+  const rawStats = state.siteContent.stats || DEFAULT_STATS;
+  const statsAreExample = rawStats.every((s, i) => DEFAULT_STATS[i] && s.num === DEFAULT_STATS[i].num && s.label === DEFAULT_STATS[i].label);
+  const stats = statsAreExample && !options.preview ? [] : rawStats;
+  const DEFAULT_BADGE = "+15k Clientes Satisfeitos";
+  const equipeBadgeText = (sc.equipeBadge || DEFAULT_BADGE) === DEFAULT_BADGE && !options.preview ? "" : (sc.equipeBadge || DEFAULT_BADGE);
 
   // Avatar com inicial — gera SVG inline pra não depender de rede
   const avatarSvg = (nome: string, bg: string) => {
@@ -1207,7 +1215,7 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
         <button type="submit" class="btn form-submit">${esc(sc.formSubmitLabel || "Enviar pelo WhatsApp")}</button>
       </form>`;
   
-  const cleanPixelId = state.metaPixelId ? state.metaPixelId.replace(/\D/g, '') : '';
+  const cleanPixelId = state.metaPixelId && !options.preview ? state.metaPixelId.replace(/\D/g, '') : '';
   const pixelCode = cleanPixelId ? `
 <!-- Meta Pixel Code -->
 <script>
@@ -1227,7 +1235,7 @@ fbq('track', 'PageView');
 
   const rawGa4 = state.ga4Id || "";
   const matchGa4 = rawGa4.match(/G-[A-Z0-9]+/i);
-  const cleanGa4Id = matchGa4 ? matchGa4[0].toUpperCase() : "";
+  const cleanGa4Id = matchGa4 && !options.preview ? matchGa4[0].toUpperCase() : "";
 
   const ga4Code = cleanGa4Id ? `
 <!-- Google tag (gtag.js) -->
@@ -1614,6 +1622,7 @@ ${sectionOrder
     </div>
     ` : ''}
     ${stats.some((s, i) => !sc.hiddenElements?.includes(`stat-${i}`)) ? `
+    ${statsAreExample ? `<p style="text-align:center;margin:40px 0 -48px;font:700 11px/1.4 Inter,Arial,sans-serif;letter-spacing:.08em;color:#b45309;text-transform:uppercase">Números de exemplo: clique para colocar os seus. No site publicado eles ficam escondidos até você trocar.</p>` : ""}
     <div class="stats-bar">
       ${stats.map((s, i) => !sc.hiddenElements?.includes(`stat-${i}`) ? `<div data-visual-removable="stat-${i}"><div class="stat-num">${esc(s.num)}</div><div class="stat-label">${esc(s.label)}</div></div>` : '').join("")}
     </div>
@@ -1672,7 +1681,7 @@ ${sectionOrder
   <div class="container">
     <div class="equipe-grid" data-visual-removable="por-que-grid">
       <div class="equipe-left">
-        ${!sc.hiddenElements?.includes('equipe-badge') ? `<span class="badge-counter" data-visual-removable="equipe-badge">${esc(sc.equipeBadge || "+15k Clientes Satisfeitos")}</span>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-badge') && equipeBadgeText ? `<span class="badge-counter" data-visual-removable="equipe-badge">${esc(equipeBadgeText)}</span>` : ''}
         ${!sc.hiddenElements?.includes('equipe-eyebrow') ? `<div class="eyebrow" style="color:#fff;opacity:.6" data-visual-removable="equipe-eyebrow">${esc(sc.equipeEyebrow || "Nossa equipe")}</div>` : ''}
         ${!sc.hiddenElements?.includes('equipe-title') ? `<h2 data-visual-removable="equipe-title">${esc(sc.equipeTitle || "Uma equipe dedicada exclusivamente a você")}</h2>` : ''}
         ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">${esc(sc.equipeIntro || "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>` : ''}
@@ -2359,7 +2368,8 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
        return;
     }
 
-    document.getElementById("modal-subtitle").innerText = "Interesse: " + targetName;
+    // "Botão Flutuante" é rótulo interno de rastreio; o visitante vê uma frase normal.
+    document.getElementById("modal-subtitle").innerText = targetName === "Botão Flutuante" ? "Fale com a gente pelo WhatsApp" : "Interesse: " + targetName;
     const leadModal = document.getElementById("lead-modal");
     lastLeadTrigger = document.activeElement;
     leadModal.classList.add("active");

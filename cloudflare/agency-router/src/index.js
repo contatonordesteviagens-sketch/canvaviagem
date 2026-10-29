@@ -89,6 +89,16 @@ function isLikelyAssetPath(pathname) {
   return /\.[a-z0-9]{2,8}$/i.test(pathname) && !pathname.toLowerCase().endsWith(".html");
 }
 
+const SUSPENDED_SITE_REDIRECT = "https://canvaviagem.com/inicio";
+
+function suspendedSiteRedirectUrl(slug) {
+  const url = new URL(SUSPENDED_SITE_REDIRECT);
+  url.searchParams.set("utm_source", "site_suspenso");
+  url.searchParams.set("utm_medium", "agency_site");
+  url.searchParams.set("utm_campaign", slug);
+  return url.toString();
+}
+
 async function fetchPublishedSite(request, env, slug) {
   if (request.method !== "GET" && request.method !== "HEAD") {
     return new Response("Método não permitido.", {
@@ -143,10 +153,9 @@ async function fetchPublishedSite(request, env, slug) {
   }
   const publishedSite = Array.isArray(rows) ? rows[0] : null;
   if (!publishedSite || typeof publishedSite.html !== "string" || !publishedSite.html.trim()) {
-    return new Response("Site não encontrado.", {
-      status: 404,
-      headers: { "content-type": "text/plain; charset=utf-8" },
-    });
+    // Site suspenso (assinatura não paga) ou inexistente: em vez de um 404 seco, leva o
+    // visitante para o Canva Viagem. 302 (temporário) porque o site volta quando o dono pagar.
+    return Response.redirect(suspendedSiteRedirectUrl(slug), 302);
   }
 
   const responseHeaders = new Headers({
@@ -190,5 +199,6 @@ export {
   isLikelyAssetPath,
   isReservedSubdomain,
   rewriteApexRedirect,
+  suspendedSiteRedirectUrl,
   upgradePublishedSiteWhatsApp,
 };

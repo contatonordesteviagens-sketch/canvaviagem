@@ -442,7 +442,9 @@ interface CaptionVars {
 const buildAdCaptions = (v: CaptionVars): string[] => {
   const dest = v.destination.trim() || "o destino";
   const destUp = dest.toUpperCase();
-  const priceStr = v.price.trim();
+  const rawPriceStr = v.price.trim();
+  // "149,90" vira "R$ 149,90" na legenda; preço que já tem moeda fica como está.
+  const priceStr = /^\d/.test(rawPriceStr) ? `R$ ${rawPriceStr}` : rawPriceStr;
   const hasPrice = !!priceStr && v.paymentMode !== "free_quote";
   const hasInstall = !!v.installments.trim() && v.paymentMode === "installments";
   const period = v.travelPeriod.trim();
@@ -515,7 +517,18 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
     update({ destinos: v.trim() ? [v, ...rest] : rest });
   };
   const [price, setPriceState] = useState(state.lastPrice || "149,90");
-  const setPrice = (p: string | ((prev: string) => string)) => { setPriceState((prev) => { const next = typeof p === "function" ? p(prev) : p; update({ lastPrice: next }); return next; }); };
+  // Total digitado à mão fica errado quando o preço/parcelas mudam: volta para o cálculo automático.
+  const clearStaleTotal = () => { if (totalOverride) setTotalOverride(""); };
+  // update() do contexto não pode rodar dentro do updater do setState (erro "Cannot update a component while rendering").
+  const priceRef = useRef(price);
+  priceRef.current = price;
+  const setPrice = (p: string | ((prev: string) => string)) => {
+    if (typeof p === "string") clearStaleTotal();
+    const next = typeof p === "function" ? p(priceRef.current) : p;
+    priceRef.current = next;
+    setPriceState(next);
+    update({ lastPrice: next });
+  };
   const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
   const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
   const [hideCents, setHideCentsState] = useState<boolean>(!!state.hideCents);
@@ -575,7 +588,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
-  const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
+  const setInstallments = (i: string) => { clearStaleTotal(); setInstallmentsState(i); update({ lastInstallments: i }); };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -986,8 +999,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       if (data?.photos) {
         setPhotos(data.photos);
         setVisiblePhotoCount(3);
-        setSelectedPhotoUrl("");
-        toast.success(`Fotos de ${q} carregadas com sucesso!`);
+        // Já deixa a primeira foto escolhida para o botão "Gerar" funcionar de primeira.
+        setSelectedPhotoUrl(data.photos[0]?.url || "");
+        toast.success(data.photos.length ? `Fotos de ${q} prontas! Escolhemos a primeira, clique em outra se quiser trocar.` : `Nenhuma foto de ${q} encontrada. Tente outro nome.`);
       }
       } catch (err) {
         console.error("Erro ao buscar fotos:", err);
@@ -996,6 +1010,15 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       setSearchingPhotos(false);
     }
   };
+
+  // Ao abrir o Anúncio com um destino salvo, já busca as fotos para o cliente não começar numa tela vazia.
+  const autoPhotoSearchDoneRef = useRef(false);
+  useEffect(() => {
+    if (autoPhotoSearchDoneRef.current || photos.length || !destination.trim()) return;
+    autoPhotoSearchDoneRef.current = true;
+    void searchPhotos(destination);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destination]);
 
   const POPULAR_PHOTO_DESTINATIONS = [
     "Jericoacoara", "Maragogi", "Fernando de Noronha", "Gramado", "Bonito",
@@ -1738,7 +1761,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               <div className="flex flex-col gap-2">
                 <div className="relative group rounded-2xl overflow-hidden bg-white/[0.03] p-3 border border-white/10 h-[76px] flex items-center justify-center">
                   <img src={state.logoBase64} alt="Logo" className="max-w-full max-h-full object-contain" />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-black/60 opacity-100 md:opacity-0 md:group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
                     <label className="p-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Trocar Logo">
                       <RotateCcw className="w-4 h-4 text-white" />
                       <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
@@ -1857,6 +1880,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           <div className="sm:col-span-8 flex flex-col justify-end">
             <div>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">Formato</h3>
+          <p className="-mt-1 mb-2 text-[11px] normal-case tracking-normal text-white/40">Quadrado para o feed do Instagram. Stories para stories e status do WhatsApp.</p>
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setFormat("square")}
@@ -1890,7 +1914,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         </div>
       <div className={`${sectionCls} space-y-5`}>
         <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Criação</h3>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · De onde vem a foto</h3>
+          <p className="-mt-1 mb-2 text-[11px] normal-case tracking-normal text-white/40">"Foto Real" usa fotos grátis do destino. "Sua Imagem" usa uma foto enviada por você.</p>
           <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
             <button
               onClick={() => setGenMode("photo")}
@@ -1915,9 +1940,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
               className="w-full flex items-center justify-between text-[10px] font-bold text-white/40 hover:text-white/70 uppercase tracking-widest transition-colors py-1.5"
             >
               <span className="flex items-center gap-1.5">
-                Variações
+                Modelo da arte
                 {forcedVariant !== null && (
-                  <span className="text-amber-400 normal-case tracking-normal">· V{forcedVariant} fixada</span>
+                  <span className="text-amber-400 normal-case tracking-normal">· Modelo {forcedVariant + 1} escolhido</span>
                 )}
               </span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${variationsOpen ? "rotate-180" : ""}`} />
@@ -1928,9 +1953,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                   onClick={() => setForcedVariant(null)}
                   className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${forcedVariant === null ? "text-black shadow-sm" : "text-white/50 hover:text-white"}`}
                   style={forcedVariant === null ? { background: UI_ACCENT } : undefined}
-                  title="Rotação automática"
+                  title="A cada clique em Gerar, um modelo diferente"
                 >
-                  Auto
+                  Variar
                 </button>
                 {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((v) => (
                   <button
@@ -1938,12 +1963,15 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     onClick={() => setForcedVariant(v)}
                     className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${forcedVariant === v ? "text-black shadow-sm" : "text-white/50 hover:text-white"}`}
                     style={forcedVariant === v ? { background: UI_ACCENT } : undefined}
-                    title={`Forçar V${v}`}
+                    title={`Usar sempre o modelo ${v + 1}`}
                   >
-                    V{v}
+                    {v + 1}
                   </button>
                 ))}
               </div>
+            )}
+            {variationsOpen && (
+              <p className="mt-1.5 text-[11px] text-white/40">"Variar" troca o visual a cada arte gerada. Escolha um número para repetir sempre o mesmo modelo.</p>
             )}
           </div>
         </div>
@@ -1955,8 +1983,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       {(genMode === "photo" || genMode === "ai") && (
         <div className={sectionCls}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">1 · Escolha uma foto real</h3>
-            <span className="text-[9px] font-bold uppercase tracking-wider text-white/30 bg-white/5 px-2 py-1 rounded-md border border-white/10">Pexels (Top)</span>
+            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">2 · Escolha a foto</h3>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-white/30 bg-white/5 px-2 py-1 rounded-md border border-white/10">Fotos grátis</span>
           </div>
 
           <>
@@ -2011,8 +2039,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                         >
                           <img src={p.thumb} alt={p.alt} className="w-full h-full object-cover" />
                           {selectedPhotoUrl === p.url && (
-                            <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(245, 249, 6, 0.78)" }}>
-                              <Check className="w-8 h-8 text-black" />
+                            <div className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full shadow-lg" style={{ background: UI_ACCENT }}>
+                              <Check className="w-4 h-4 text-black" />
                             </div>
                           )}
                         </button>
@@ -2040,7 +2068,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
 
       {genMode === "custom" && (
         <div className={sectionCls}>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">1 · Sua imagem de referência</h3>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">2 · Envie sua foto</h3>
+          <p className="-mt-1 mb-4 text-[11px] normal-case tracking-normal text-white/40">Essa foto vira o fundo do anúncio. Use uma foto bonita e na horizontal.</p>
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => setCustomSource("upload")}
@@ -2115,7 +2144,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       )}
 
       <div className={`${sectionCls} space-y-3`}>
-        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 · Dados do anúncio</h3>
+        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 · Textos e preço</h3>
+        <p className="text-[11px] text-white/40">É o que vai escrito na arte. Se não souber o que mudar, pode deixar como está.</p>
 
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <div>
@@ -2192,7 +2222,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
 
           <div className="col-span-2">
-            <label className={labelCls}>Título do anúncio</label>
+            <label className={labelCls} title="{destino} é trocado automaticamente pelo nome do destino">Título do anúncio <span className="normal-case font-normal text-white/35">({"{destino}"} vira o nome do destino)</span></label>
             <div className="relative">
               <input
                 value={adTitleTemplate}
@@ -2378,7 +2408,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     {showTotal && (
                       <input
                         type="text"
-                        placeholder="Ex: Total: R$ 1.500,00"
+                        placeholder="Deixe vazio para calcular sozinho (parcelas × preço)"
                         className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-yellow-400 mt-1"
                         value={totalOverride}
                         onChange={(e) => setTotalOverride(e.target.value)}
@@ -2670,7 +2700,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     {categoria !== "experiencia_destino" && (
                       <button
                         onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
-                        className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
+                        className="w-9 h-9 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
                         style={{ color: UI_ACCENT }}
                         title="Trocar ícone"
                       >
@@ -2684,8 +2714,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     />
                     <button
                       onClick={() => removeHighlight(i)}
-                      className="text-white/40 hover:text-red-400 flex-shrink-0"
+                      className="grid h-9 w-9 place-items-center rounded text-white/40 hover:text-red-400 flex-shrink-0"
                       title="Remover"
+                      aria-label="Remover benefício"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -2754,13 +2785,13 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
 
             {generatedImages.length > 0 && (
               <>
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold text-white">Imagem gerada</h3>
-                    <p className="text-[11px] text-white/50">A última arte aparece abaixo e já está pronta para baixar.</p>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-[180px] flex-1">
+                    <h3 className="text-sm font-bold text-white">Sua arte está pronta</h3>
+                    <p className="text-[11px] text-white/50">A arte nova aparece ao lado das anteriores. Guardamos as 3 últimas.</p>
                   </div>
                   
-                  <div className="flex items-center gap-3 bg-white/[0.03] p-1.5 rounded-xl border border-white/5">
+                  <div className="flex flex-wrap items-center gap-2 bg-white/[0.03] p-1.5 rounded-xl border border-white/5 max-w-full">
                     {[
                       { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo" },
                       { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
@@ -2815,9 +2846,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                       onClick={() => generateNext()}
                       disabled={loading}
                       title="Aplicar cores"
-                      className="ml-2 grid h-7 w-7 place-items-center rounded-lg bg-[#F5F906] text-black hover:scale-105 transition-transform disabled:opacity-50 shrink-0"
+                      className="ml-2 inline-flex h-7 items-center gap-1.5 rounded-lg bg-[#F5F906] px-2.5 text-[11px] font-extrabold text-black hover:scale-105 transition-transform disabled:opacity-50 shrink-0"
                     >
                       <RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                      Aplicar cores
                     </button>
                   </div>
 
@@ -2828,7 +2860,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     className="shrink-0 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.08] px-4 py-2 text-xs font-bold text-white hover:bg-white/[0.12] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
                     <Download className="w-4 h-4" />
-                    Baixar imagens
+                    Baixar esta arte
                   </button>
                 </div>
 
@@ -2837,7 +2869,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     const img: any = typeof raw === "string" ? { url: raw, engine: "compose", variant: 0 } : (raw || { url: "" });
                     if (!img.url) return null;
                     return (
-                    <div key={`${String(img.url).slice(0, 48)}-${idx}`} className="relative group/img shrink-0 min-w-[75vw] md:min-w-0 snap-center">
+                    <div key={`${String(img.url).slice(0, 48)}-${idx}`} className="relative group/img shrink-0 w-[75vw] max-w-full md:w-auto md:min-w-0 snap-center">
                       <button
                         type="button"
                         onClick={() => setGeneratedImage(img)}
@@ -2869,23 +2901,26 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                           e.stopPropagation();
                           openGeneratedPreview(img.url);
                         }}
-                        className="absolute top-2 right-12 p-2 bg-black/60 text-white rounded-lg md:opacity-0 md:group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-black/90 backdrop-blur-md"
-                        title="Maximizar imagem"
+                        className="absolute top-2 right-12 p-3 bg-black/60 text-white rounded-lg md:opacity-0 md:group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-black/90 backdrop-blur-md"
+                        title="Ver em tela cheia"
+                        aria-label="Ver em tela cheia"
                       >
-                        <Maximize2 className="w-3.5 h-3.5" />
+                        <Maximize2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (!window.confirm("Apagar esta arte? Ela some da galeria.")) return;
                           const newList = generatedImages.filter((_, i) => i !== idx);
                           setGeneratedImages(newList);
                           if (generatedImage?.url === img.url) setGeneratedImage(newList[0] || null);
-                          toast.success("Variação removida");
+                          toast.success("Arte apagada");
                         }}
-                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg md:opacity-0 md:group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
-                        title="Excluir esta versão"
+                        className="absolute top-2 right-2 p-3 bg-black/60 text-white/80 rounded-lg md:opacity-0 md:group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600 hover:text-white"
+                        title="Apagar esta arte"
+                        aria-label="Apagar esta arte"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                       {isAdmin && artMetaRef.current.get(img.url) && (
                         <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1.5">

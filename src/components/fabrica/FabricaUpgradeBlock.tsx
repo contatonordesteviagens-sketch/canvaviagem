@@ -1,7 +1,9 @@
-import { ELITE_OFFER } from "@/lib/eliteOffer";
+import { ELITE_OFFER, withCheckoutIdentity } from "@/lib/eliteOffer";
+import { useAuth } from "@/contexts/AuthContext";
 import { Crown, ArrowRight, Zap, Bot, Layout, Video } from "lucide-react";
 
 export function FabricaUpgradeBlock() {
+  const { user } = useAuth();
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-white flex flex-col items-center justify-center p-6 sm:p-10 relative overflow-hidden w-full">
       {/* Background Glow */}
@@ -62,7 +64,7 @@ export function FabricaUpgradeBlock() {
               Sem fidelidade. Cancele quando quiser.
             </div>
             <a 
-              href={ELITE_OFFER.monthlyCheckoutUrl}
+              href={withCheckoutIdentity(ELITE_OFFER.monthlyCheckoutUrl, user)}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 h-12 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-colors"
@@ -90,7 +92,7 @@ export function FabricaUpgradeBlock() {
             </div>
 
             <a 
-              href={ELITE_OFFER.annualCheckoutUrl}
+              href={withCheckoutIdentity(ELITE_OFFER.annualCheckoutUrl, user)}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-auto w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 h-12 rounded-xl text-[11px] font-black uppercase tracking-wider transition-colors"
@@ -113,7 +115,7 @@ export function FabricaUpgradeBlock() {
               Um meio-termo perfeito para estruturar suas vendas.
             </div>
             <a 
-              href={ELITE_OFFER.semiannualCheckoutUrl}
+              href={withCheckoutIdentity(ELITE_OFFER.semiannualCheckoutUrl, user)}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 h-12 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-colors"

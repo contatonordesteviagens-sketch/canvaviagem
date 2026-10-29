@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback, memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight, Megaphone, Wand2, Calendar, Layers, Globe, MousePointerClick, Users } from "lucide-react";
+import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight, Megaphone, Wand2, Calendar, Layers, Globe, MousePointerClick, Users, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -21,6 +21,9 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
+  // 16 círculos de uma vez confundem: 8 principais (mesmos nomes do menu) e o resto atrás de "Mais".
+  const [showMore, setShowMore] = useState(false);
+  const PRIMARY: CategoryType[] = ['all', 'fabrica', 'videos', 'feed', 'offers', 'downloads', 'videoaula', 'favorites'];
 
   const categories: { id: CategoryType; label: string; icon: React.ReactNode; isNew?: boolean; color?: string; link?: string }[] = [
     { id: 'all', label: 'Destaques', icon: <LayoutGrid className="w-6 h-6 text-slate-800 dark:text-slate-200" />, color: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700' },
@@ -31,9 +34,9 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
     { id: 'crm', label: 'CRM', icon: <Users className="w-6 h-6 text-white" />, color: 'bg-[#9333EA]', link: '/crm' },
     // Recursos PRO
     { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6 text-white" />, color: 'bg-[#FF005C]' },
-    { id: 'feed', label: "Artes para Feed e Stories", icon: <Image className="w-6 h-6 text-white" />, color: 'bg-[#00C4CC]' },
-    { id: 'offers', label: "Ofertas e Legendas", icon: <Megaphone className="w-6 h-6 text-white" />, color: 'bg-[#8B3DFF]' },
-    { id: 'downloads', label: isESRoute ? "Paquetes de Videos (Drive)" : "Pacotes de Vídeos (Drive)", icon: <Download className="w-6 h-6 text-white" />, color: 'bg-[#00B259]' },
+    { id: 'feed', label: "Feed & Stories", icon: <Image className="w-6 h-6 text-white" />, color: 'bg-[#00C4CC]' },
+    { id: 'offers', label: "Ofertas & Legendas", icon: <Megaphone className="w-6 h-6 text-white" />, color: 'bg-[#8B3DFF]' },
+    { id: 'downloads', label: isESRoute ? "Paquetes de Videos" : "Pacotes de Vídeos", icon: <Download className="w-6 h-6 text-white" />, color: 'bg-[#00B259]' },
 
     // Ferramentas Gratuitas
     { id: 'tools', label: t('category.tools'), icon: <Bot className="w-6 h-6 text-white" />, color: 'bg-[#0085FF]' },
@@ -44,9 +47,14 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
     { id: 'calendar', label: isESRoute ? 'Calendario' : 'Calendário', icon: <Calendar className="w-6 h-6 text-white" />, color: 'bg-[#FF6B00]' },
   ];
 
-  const displayCategories = showFavorites
+  const allCategories = showFavorites
     ? categories
     : categories.filter(c => c.id !== 'favorites');
+  const activeIsHidden = !PRIMARY.includes(activeCategory);
+  const displayCategories = (showMore || activeIsHidden)
+    ? allCategories
+    : allCategories.filter((c) => PRIMARY.includes(c.id));
+  const hiddenCount = allCategories.length - displayCategories.length;
 
   // Check scroll position and update arrow visibility
   const checkScrollPosition = useCallback(() => {
@@ -172,7 +180,7 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
                       onCategoryChange(category.id);
                     }
                   }}
-                  className="flex flex-col items-center gap-2 snap-center w-[84px] sm:w-[96px] shrink-0 group relative"
+                  className="flex flex-col items-center gap-2 snap-center w-[88px] sm:w-[96px] shrink-0 group relative"
                 >
                   {/* "Novo" badge */}
                   {category.isNew && (
@@ -184,20 +192,20 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
                   {/* Circle Icon Container */}
                   <div
                     className={cn(
-                      "w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm",
+                      "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm",
                       category.color || "bg-secondary text-muted-foreground",
                       isActive
                         ? "ring-2 sm:ring-[3px] ring-primary ring-offset-2 scale-110 shadow-md"
                         : "hover:scale-105 hover:-translate-y-1 hover:shadow-md"
                     )}
                   >
-                    {category.icon && <div className="scale-75 sm:scale-100">{category.icon}</div>}
+                    {category.icon && <div className="scale-90 sm:scale-100">{category.icon}</div>}
                   </div>
 
                   {/* Label */}
                   <span
                     className={cn(
-                      "text-[10px] sm:text-xs font-medium text-center transition-colors leading-tight line-clamp-2",
+                      "text-[11px] sm:text-xs font-medium text-center transition-colors leading-tight line-clamp-2",
                       isActive ? "text-primary" : "text-muted-foreground"
                     )}
                   >
@@ -206,6 +214,21 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
                 </button>
               );
             })}
+            {!activeIsHidden && (
+              <button
+                type="button"
+                onClick={() => setShowMore((v) => !v)}
+                className="flex flex-col items-center gap-2 snap-center w-[88px] sm:w-[96px] shrink-0 group relative"
+                aria-expanded={showMore}
+              >
+                <div className="w-14 h-14 rounded-full flex items-center justify-center bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600 transition-all duration-300 group-hover:scale-105">
+                  <MoreHorizontal className="w-6 h-6 text-slate-600 dark:text-slate-300" />
+                </div>
+                <span className="text-[11px] sm:text-xs font-medium text-center text-muted-foreground leading-tight">
+                  {showMore ? "Menos" : `Mais (${hiddenCount})`}
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </div>

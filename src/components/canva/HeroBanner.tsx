@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Search, Sparkles, ArrowRight, Wand2, FileText, Users } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -10,52 +10,13 @@ interface HeroBannerProps {
   children?: React.ReactNode;
 }
 
+// Destinos mais buscados: um toque e a pesquisa acontece, sem digitar.
+const SEARCH_SUGGESTIONS = ["Maragogi", "Maldivas", "Gramado", "Porto de Galinhas", "Cancún", "Orlando", "Jericoacoara"];
+
 const HeroBannerComponent = ({ searchValue, onSearchChange, children }: HeroBannerProps) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
 
-  const fabricaCapasGrid = [
-    {
-      id: "anuncio",
-      title: "Anúncios Prontos & IA (F1)",
-      subtitle: "Gere copys e anúncios validados em segundos",
-      src: "/capa-2.webp",
-      route: "/fabrica/anuncio",
-      badge: "Anúncio (F1)",
-      icon: Sparkles,
-      badgeColor: "border-amber-500/40 text-amber-400 group-hover:bg-amber-600 group-hover:text-white"
-    },
-    {
-      id: "site",
-      title: "Sites & Landings (F3)",
-      subtitle: "Crie páginas completas de alta conversão",
-      src: "/capa-3.webp",
-      route: "/fabrica/site",
-      badge: "Site (F3)",
-      icon: FileText,
-      badgeColor: "border-emerald-500/40 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white"
-    },
-    {
-      id: "carrossel",
-      title: "Carrosséis Prontos (F2)",
-      subtitle: "Sequências persuasivas em segundos",
-      src: "/capa-4.png",
-      route: "/fabrica/carrossel",
-      badge: "Carrossel (F2)",
-      icon: Wand2,
-      badgeColor: "border-pink-500/40 text-pink-400 group-hover:bg-pink-600 group-hover:text-white"
-    },
-    {
-      id: "crm",
-      title: "CRM & Funil de Vendas (F4)",
-      subtitle: "Gerencie leads e feche mais viagens",
-      src: "/capa-5.webp",
-      route: "/fabrica/crm",
-      badge: "CRM (F4)",
-      icon: Users,
-      badgeColor: "border-purple-500/40 text-purple-400 group-hover:bg-purple-600 group-hover:text-white"
-    }
-  ];
 
   return (
     <div className="w-full flex flex-col">
@@ -91,6 +52,33 @@ const HeroBannerComponent = ({ searchValue, onSearchChange, children }: HeroBann
                   borderRadius: "20px"
                 }}
               />
+              {searchValue && (
+                <button
+                  type="button"
+                  onClick={() => onSearchChange("")}
+                  aria-label="Limpar busca"
+                  className="absolute right-3 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Mais buscados:</span>
+              {SEARCH_SUGGESTIONS.map((term) => (
+                <button
+                  key={term}
+                  type="button"
+                  onClick={() => onSearchChange(term)}
+                  className={`min-h-9 rounded-full border px-3.5 text-xs font-semibold transition-colors ${
+                    searchValue.trim().toLowerCase() === term.toLowerCase()
+                      ? "border-blue-500 bg-blue-600 text-white"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-blue-400 hover:text-blue-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+                  }`}
+                >
+                  {term}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -101,38 +89,22 @@ const HeroBannerComponent = ({ searchValue, onSearchChange, children }: HeroBann
         {children}
       </div>
 
-      {/* Banners isolados para não causarem layout shift no menu */}
+      {/* Um banner só: os outros quatro repetiam os círculos, o menu e os atalhos. */}
       {!searchValue.trim() && (
-        <div className="w-full max-w-7xl mx-auto px-4 pb-8 md:pb-12">
-          {/* 2. Imagem Principal no Topo (~70% da tela, sozinha em 1 fileira) */}
-          <div 
+        <div className="w-full max-w-7xl mx-auto px-4 pb-6 md:pb-10">
+          <div
             onClick={() => navigate('/fabrica')}
-            className="w-full max-w-full sm:max-w-[82%] md:max-w-[70%] mx-auto relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.008] hover:border-blue-500/40 hover:shadow-[0_0_35px_rgba(99,102,241,0.2)] group bg-slate-950/5 dark:bg-[#0F0F11]"
+            role="link"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && navigate('/fabrica')}
+            className="w-full sm:max-w-[82%] md:max-w-[70%] mx-auto relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.008] hover:border-blue-500/40 group bg-slate-950/5 dark:bg-[#0F0F11]"
           >
-            <img 
-              src="/capa-fabrica.webp" 
-              alt="Acesse a Fábrica de Destinos pra Vender Mais" 
+            <img
+              src="/capa-fabrica.webp"
+              alt="Fábrica de Destinos: anúncios, carrosséis, site e CRM em um lugar"
+              loading="lazy"
               className="w-full h-auto object-contain block mx-auto transition-transform duration-500 group-hover:scale-[1.01]"
             />
-          </div>
-
-          {/* 3. Grid 2x2 das 4 Outras Capas da Fábrica (15% menor) */}
-          <div className="w-full max-w-full sm:max-w-[76%] md:max-w-[70%] mx-auto grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-6 mt-4 sm:mt-6">
-            {fabricaCapasGrid.map((capa) => {
-              return (
-                <div 
-                  key={capa.id}
-                  onClick={() => navigate(capa.route)}
-                  className="w-full relative overflow-hidden rounded-2xl md:rounded-3xl border border-slate-200/60 dark:border-white/10 shadow-xl cursor-pointer transition-all duration-300 hover:scale-[1.015] hover:border-amber-500/40 hover:shadow-[0_0_35px_rgba(245,158,11,0.18)] group bg-slate-950/5 dark:bg-[#0F0F11]"
-                >
-                  <img 
-                    src={capa.src} 
-                    alt={capa.title} 
-                    className="w-full h-auto object-contain block mx-auto transition-transform duration-500 group-hover:scale-[1.025]"
-                  />
-                </div>
-              );
-            })}
           </div>
         </div>
       )}

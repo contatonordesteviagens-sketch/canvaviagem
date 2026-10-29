@@ -42,7 +42,7 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
                 whileTap={{ scale: 0.95 }}
                 onClick={onClick}
                 className={cn(
-                    "relative group p-3 rounded-lg flex flex-col items-center justify-center gap-1",
+                    "relative group min-h-[52px] min-w-[56px] px-2 py-1.5 rounded-lg flex flex-col items-center justify-center gap-1",
                     "hover:bg-secondary transition-colors",
                     className
                 )}
@@ -56,7 +56,7 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
                         </span>
                     )}
                 </div>
-                <span className="text-[9px] font-semibold">{label}</span>
+                <span className="text-[10px] font-semibold leading-none">{label}</span>
                 <span className={cn(
                     "absolute -top-8 left-1/2 -translate-x-1/2",
                     "px-2 py-1 rounded text-xs",

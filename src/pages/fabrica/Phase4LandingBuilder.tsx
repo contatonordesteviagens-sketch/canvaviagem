@@ -1177,7 +1177,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   const isVisible = (key: keyof SectionVisibility) => state.siteContent.sections[key] !== false;
 
   const previewHTML = user?.id
-    ? buildLandingHTML(state, user.id)
+    ? buildLandingHTML(state, user.id, { preview: true })
     : `<!doctype html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#fff;color:#111}.hero{height:440px;padding:60px 8%;background:linear-gradient(135deg,${state.primaryColor || "#7c3aed"},${state.secondaryColor || "#2563eb"});color:white}.tag{font-size:12px;font-weight:800;letter-spacing:2px}.title{font-size:48px;font-weight:900;max-width:650px;margin:22px 0}.cta{display:inline-block;padding:16px 24px;border-radius:14px;background:#fff;color:#111;font-weight:900}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:38px 8%}.card{height:210px;border-radius:22px;background:linear-gradient(145deg,#e5e7eb,#f8fafc);filter:blur(4px)}.lock{text-align:center;padding:28px;font-size:20px;font-weight:900}</style></head><body><section class="hero"><div class="tag">PRÉVIA DO SITE DA SUA AGÊNCIA</div><div class="title">${String(state.agencyName || "Sua Agência de Viagens").replace(/[<>&"']/g, "")}</div><div class="cta">Solicitar orçamento</div></section><section class="cards"><div class="card"></div><div class="card"></div><div class="card"></div></section><div class="lock">Assine o Plano Elite para montar e visualizar o site completo.</div></body></html>`;
   const activeSiteTemplate = getSiteTemplateDefinition(state.siteContent.templateId);
 
@@ -1193,7 +1193,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     }
   }, [previewHTML, removeMode]);
 
-  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  // No celular a prévia "Computador" não cabe: começa em "Celular".
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">(() => (typeof window !== "undefined" && window.innerWidth < 640 ? "mobile" : "desktop"));
 
   // Shortcut Shift+Ctrl+P to toggle Mobile Mode
   useEffect(() => {
@@ -1308,6 +1309,34 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         heroImageUrl={state.siteContent.heroImageUrl}
       />
 
+      {/* Pacotes em rascunho não vão para o site. Sem este aviso o cliente acha que o site "perdeu" pacotes. */}
+      {state.selectedPackages.some((p) => p.isDraft) && (
+        <div className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/[0.06] p-4">
+          <p className="text-sm font-bold text-amber-300">
+            {state.selectedPackages.filter((p) => p.isDraft).length === 1
+              ? "1 pacote ainda não aparece no seu site"
+              : `${state.selectedPackages.filter((p) => p.isDraft).length} pacotes ainda não aparecem no seu site`}
+          </p>
+          <p className="mt-1 text-xs text-white/60">Eles estão como rascunho. Clique em "Mostrar no site" nos que você quer vender.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {state.selectedPackages.filter((p) => p.isDraft).map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => {
+                  updPacote(p.id, { isDraft: false });
+                  toast.success(`${p.title || "Pacote"} agora aparece no site.`);
+                }}
+                className="inline-flex min-h-9 items-center gap-2 rounded-full border border-amber-400/40 bg-black/30 px-3 text-xs font-semibold text-white hover:bg-amber-400 hover:text-black transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                {p.title || "Pacote sem nome"} · Mostrar no site
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Banner de Auto-Sync (informativo, não bloqueia o seletor) ── */}
       {false && autoSyncDone && autoSyncFields.length > 0 && (
         <div className="rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/25 flex items-start gap-3 mb-4">
@@ -1336,7 +1365,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           <div className="border-b border-white/10 pb-4 pt-6">
             <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Palette className="w-5 h-5 text-amber-400" />
-              ⚙️ Ajustes Finos e Configurações Avançadas do Site:
+              Editar mais detalhes do site (opcional)
             </h4>
           </div>
 
@@ -1394,7 +1423,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-            <FabricaCard title="📊 Configurações de Rastreamento">
+            <FabricaCard title="📊 Pixel do Facebook e Google (para quem faz anúncio pago)">
               <div className="space-y-4">
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1815,21 +1844,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-            <div className="pt-6 pb-12 flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={onBack}
-                className="w-full flex-1 flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 border border-white/10 bg-white/[0.04] text-white/70 hover:bg-white/[0.08]"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span>Voltar: Carrossel</span>
-              </button>
-              <button
-                onClick={onNext}
-                className="w-full flex-[2] py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-[1.02]"
-              >
-                Avançar: CRM <Rocket className="w-5 h-5" />
-              </button>
-            </div>
+            {/* Voltar/Avançar ficam só no fim da página, depois do botão de publicar. */}
+            <div className="pb-12" />
           </div>
 
 
@@ -1842,7 +1858,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               
               <div className="flex items-center gap-2">
                 {/* Seletor Dispositivo */}
-                <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
+                <div className="hidden sm:flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
                   <button
                     onClick={() => setPreviewMode("desktop")}
                     className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all whitespace-nowrap ${
@@ -3075,46 +3091,45 @@ const PublishSiteCard = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
-            <button
-              onClick={handleCanvaViagemPublish}
-              disabled={isCanvaViagemPublishing}
-              className="py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
-              style={{
-                backgroundColor: UI_ACCENT,
-                color: "#000000"
-              }}
-            >
-              {isCanvaViagemPublishing ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  Publicando...
-                </>
-              ) : (
-                <>Publicar Site</>
-              )}
-            </button>
+          {(() => {
+            // Publicar e Atualizar faziam a mesma coisa; agora é um botão só, com o nome certo.
+            const publishedSlug = state.siteContent.canvaViagemUrl ? extractCanvaSiteSlug(state.siteContent.canvaViagemUrl) : "";
+            const isPublished = Boolean(publishedSlug);
+            const onPublishClick = () => {
+              if (
+                isPublished &&
+                canvaViagemSubdomain &&
+                canvaViagemSubdomain !== publishedSlug &&
+                !window.confirm(
+                  `Você mudou o endereço de ${publishedSlug}.canvaviagem.com para ${canvaViagemSubdomain}.canvaviagem.com.
 
-            <button
-              onClick={handleCanvaViagemPublish}
-              disabled={isCanvaViagemPublishing}
-              className="py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm border"
-              style={{
-                borderColor: UI_ACCENT_BORDER,
-                color: "#ffffff",
-                backgroundColor: "transparent"
-              }}
-            >
-              {isCanvaViagemPublishing ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  Atualizando...
-                </>
-              ) : (
-                <>Atualizar Site</>
-              )}
-            </button>
-          </div>
+O link antigo vai parar de funcionar para quem já recebeu. Quer continuar?`,
+                )
+              ) {
+                return;
+              }
+              void handleCanvaViagemPublish();
+            };
+            return (
+              <button
+                onClick={onPublishClick}
+                disabled={isCanvaViagemPublishing}
+                className="mt-5 w-full py-3.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
+                style={{ backgroundColor: UI_ACCENT, color: "#000000" }}
+              >
+                {isCanvaViagemPublishing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    {isPublished ? "Salvando alterações..." : "Publicando..."}
+                  </>
+                ) : isPublished ? (
+                  <>Salvar alterações no meu site</>
+                ) : (
+                  <>Publicar meu site</>
+                )}
+              </button>
+            );
+          })()}
 
 
         </div>
@@ -3143,7 +3158,7 @@ const PublishSiteCard = ({
             onClick={handleDownload}
             className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white font-bold hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2"
           >
-            <Download className="w-4 h-4" /> Baixar HTML
+            <Download className="w-4 h-4" /> Baixar arquivo do site (avançado)
           </button>
           <button
             onClick={onNext}

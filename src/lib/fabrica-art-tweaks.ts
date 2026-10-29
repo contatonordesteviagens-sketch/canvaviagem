@@ -151,5 +151,5 @@ export function isEmptyTweakMap(map?: ArtTweakMap): boolean {
 export function artVariantLabel(category: string, variant: number, format: string): string {
   const cat = category === "experiencia_destino" ? "Experiência" : "Oferta";
   const fmt = format === "story" ? "9:16" : "1:1";
-  return `V${variant} · ${cat} · ${fmt}`;
+  return `Modelo ${variant + 1} · ${cat} · ${fmt}`;
 }

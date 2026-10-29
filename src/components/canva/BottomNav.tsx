@@ -1,72 +1,71 @@
-import { Bot, Image, GraduationCap, Heart, Home, Calendar, Wand2 } from "lucide-react";
+import { Image, Home, Users, Video, Wand2 } from "lucide-react";
 import { CategoryType } from "./CategoryNav";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Dock } from "@/components/ui/Dock";
 import { useNavigate } from "react-router-dom";
+import { useFabricaMetrics } from "@/hooks/useFabricaMetrics";
 
 interface BottomNavProps {
   activeCategory: CategoryType;
   onCategoryChange: (category: CategoryType) => void;
 }
 
-export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) => {
+/**
+ * Barra do celular, por prioridade de uso: entrar, criar, pegar conteúdo pronto, ver clientes.
+ * Calendário e Favoritos continuam no menu lateral.
+ */
+export const BottomNav = ({ onCategoryChange }: BottomNavProps) => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
+  const { newLeadsCount } = useFabricaMetrics();
+  const isEs = language === "es";
 
-  const handleTabClick = (category: CategoryType | "home" | "calendar" | "fabrica" | "tutorial") => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    if (category === "home") {
-      onCategoryChange("videos");
-      navigate("/");
-    } else if (category === "calendar") {
-      navigate("/calendar");
-    } else if (category === "tutorial") {
-      navigate("/tutorial");
-    } else if (category === "fabrica") {
-      navigate(language === "es" ? "/es/fabrica" : "/fabrica");
-    } else {
-      onCategoryChange(category as CategoryType);
-      navigate("/"); // Ensure we are on home to see content
-    }
+  const goHomeCategory = (category: CategoryType) => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    onCategoryChange(category);
+    navigate(isEs ? "/es" : "/");
   };
 
   const navItems = [
     {
       icon: Home,
-      label: t('nav.home'),
-      onClick: () => handleTabClick("home")
+      label: t("nav.home"),
+      onClick: () => goHomeCategory("all"),
     },
     {
       icon: Wand2,
       label: "Fábrica",
-      onClick: () => handleTabClick("fabrica"),
-      showBadge: true
+      onClick: () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        navigate(isEs ? "/es/fabrica" : "/fabrica");
+      },
     },
     {
-      icon: Calendar,
-      label: "Datas",
-      onClick: () => handleTabClick("calendar")
+      icon: Video,
+      label: isEs ? "Videos" : "Vídeos",
+      onClick: () => goHomeCategory("videos"),
     },
     {
       icon: Image,
-      label: t('nav.arts'),
-      onClick: () => handleTabClick("feed")
+      label: t("nav.arts"),
+      onClick: () => goHomeCategory("feed"),
     },
     {
-      icon: Heart,
-      label: t('nav.favorites'),
-      onClick: () => handleTabClick("favorites")
+      icon: Users,
+      label: "Clientes",
+      onClick: () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        navigate(isEs ? "/es/fabrica/crm" : "/fabrica/crm");
+      },
+      showBadge: newLeadsCount > 0,
     },
   ];
 
   return (
-    <>
-      <div className="fixed bottom-4 left-0 right-0 z-[60] flex justify-center pointer-events-none md:hidden">
-        <div className="pointer-events-auto w-full max-w-lg px-4">
-          <Dock items={navItems} className="h-auto" />
-        </div>
+    <div className="fixed bottom-4 left-0 right-0 z-[60] flex justify-center pointer-events-none md:hidden">
+      <div className="pointer-events-auto w-full max-w-lg px-4">
+        <Dock items={navItems} className="h-auto" />
       </div>
-    </>
+    </div>
   );
 };

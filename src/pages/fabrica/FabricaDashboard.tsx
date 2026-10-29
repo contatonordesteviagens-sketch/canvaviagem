@@ -10,6 +10,8 @@ import { ProjectDeleteDialog } from "@/components/fabrica/ProjectDeleteDialog";
 import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
 import { FabricaPaywallDialog } from "@/components/fabrica/FabricaPaywallDialog";
 import { PackageAdvancedFields } from "@/components/fabrica/PackageAdvancedFields";
+import { FabricaFirstSteps } from "@/components/fabrica/FabricaFirstSteps";
+import { buildFabricaPatchFromOnboarding, hasPendingOnboarding, markOnboardingApplied, readOnboardingAnswers } from "@/lib/onboarding-bridge";
 
 import { 
   Upload, 
@@ -111,6 +113,64 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   const saveProject = useSaveDiagnostico();
   const queryClient = useQueryClient();
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
+  const [quickPackageText, setQuickPackageText] = useState("");
+
+  // Quem veio do quiz já disse o destino e o momento da agência: a Fábrica começa com isso preenchido.
+  const onboardingAppliedRef = useRef(false);
+  useEffect(() => {
+    if (onboardingAppliedRef.current || !hasPendingOnboarding()) return;
+    const answers = readOnboardingAnswers();
+    if (!answers) return;
+    onboardingAppliedRef.current = true;
+    const patch = buildFabricaPatchFromOnboarding(state, answers);
+    markOnboardingApplied();
+    if (Object.keys(patch).length === 0) return;
+    update(patch);
+    if (patch.destinos?.[0]) {
+      toast.success(`Trouxemos "${patch.destinos[0]}" do seu quiz. Seu primeiro anúncio já vai sair com esse destino.`, { duration: 7000 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // "Porto de Galinhas, 5 dias, R$ 1.997, hotel + transfer + passeios" vira um pacote pronto.
+  const createQuickPackage = () => {
+    const text = quickPackageText.trim();
+    if (!text) { toast.error("Escreva o pacote em uma frase. Ex: Porto de Galinhas, 5 dias, R$ 1.997, hotel e transfer"); return; }
+    const parts = text.split(/[,;|]+/).map((p) => p.trim()).filter(Boolean);
+    const title = parts.shift() || text;
+    let price = "";
+    let duration = "";
+    const included: string[] = [];
+    for (const part of parts) {
+      const priceMatch = part.match(/(?:R\$|US\$|€|\$)?\s*\d{1,3}(?:[.\s]\d{3})*(?:,\d{1,2})?/i);
+      const durationMatch = part.match(/\b(\d{1,2})\s*(dias?|noites?|di[aá]rias?)\b/i);
+      if (!price && priceMatch && /R\$|US\$|€|\$|reais|por pessoa/i.test(part)) {
+        const n = priceMatch[0].trim();
+        price = /^(R\$|US\$|€|\$)/.test(n) ? n : `R$ ${n}`;
+      } else if (!duration && durationMatch) {
+        duration = `${durationMatch[1]} ${durationMatch[2].toLowerCase()}`;
+      } else {
+        part.split(/\s+(?:\+|e)\s+|\s*\+\s*/).map((x) => x.trim()).filter(Boolean).forEach((x) => included.push(x.charAt(0).toUpperCase() + x.slice(1)));
+      }
+    }
+    const id = `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const usedSlugs = state.selectedPackages.map((item) => item.slug || buildPackageSlug(item.title, item.id));
+    const pkg: Pacote = {
+      id,
+      title,
+      slug: createUniquePackageSlug(title, usedSlugs, id),
+      description: [duration ? `${duration} em ${title}` : `Viagem para ${title}`, included.length ? `com ${included.slice(0, 3).join(", ").toLowerCase()}` : ""].filter(Boolean).join(" "),
+      price: price || "Consulte",
+      duration: duration || undefined,
+      included: included.length ? included : undefined,
+      imageUrl: "",
+      ctaLabel: "Reservar agora",
+      isDraft: false,
+    };
+    update({ selectedPackages: [pkg, ...state.selectedPackages] });
+    setQuickPackageText("");
+    toast.success(`Pacote "${title}" criado${price ? ` por ${price}` : ""}. Já aparece no site, no anúncio e no carrossel.`);
+  };
   const [isSaving, setIsSaving] = useState(false);
   const [pendingProjectSwitch, setPendingProjectSwitch] = useState<DiagnosticoSalvo | null>(null);
   const [isSwitchingProject, setIsSwitchingProject] = useState(false);
@@ -377,6 +437,15 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   const currentCountry: CountryDial =
     COUNTRIES_DIAL.find((c) => c.code === (state.whatsappCountryCode || "BR")) ||
     COUNTRIES_DIAL[0];
+  // Brasil precisa de DDD + número (10 ou 11 dígitos); número curto gera link de WhatsApp que não funciona.
+  // Celular BR tem 11 dígitos (DDD + 9 + número): "(82) 93700-010" com 10 dígitos fica sem um.
+  const whatsappRaw = (state.whatsapp || "").replace(/\D/g, "");
+  const whatsappDigits = whatsappRaw.length;
+  const whatsappIncomplete = whatsappDigits > 0 && (
+    currentCountry.code === "BR"
+      ? whatsappDigits < 10 || (whatsappDigits === 10 && whatsappRaw[2] === "9")
+      : whatsappDigits < 6
+  );
 
   const handleCountrySelect = (c: CountryDial) => {
     setPhoneDropOpen(false);
@@ -729,13 +798,13 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           <button
             type="button"
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
-            className="w-full flex flex-row items-center justify-between gap-2 text-[10px] text-white/50 font-medium outline-none text-left"
+            className="w-full min-h-11 flex flex-row items-center justify-between gap-2 py-2 text-xs text-white/60 font-medium outline-none text-left"
           >
             <span className="flex items-center gap-1.5 truncate">
               📂 Editando: {state.agencyName?.trim() || "Projeto sem nome"}
               {savedProjects && savedProjects.length > 0 && ` • ${savedProjects.length} salvo${savedProjects.length !== 1 ? "s" : ""}`}
             </span>
-            <span className="text-[9px] text-white/40 shrink-0">{projectsPanelOpen ? "▲ Recolher" : "▼ Expandir / Carregar"}</span>
+            <span className="text-[11px] text-white/50 shrink-0">{projectsPanelOpen ? "▲ Recolher" : "▼ Trocar de projeto"}</span>
           </button>
           
           {projectsPanelOpen && (
@@ -851,6 +920,21 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
 
 
+      <FabricaFirstSteps
+        onGo={(target) => {
+          if (target === "perfil") {
+            document.getElementById("fabrica-perfil")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+          }
+          if (target === "pacote") {
+            document.getElementById("fabrica-pacote-rapido")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            document.getElementById("fabrica-pacote-rapido-input")?.focus();
+            return;
+          }
+          onNavigate?.("phase", target === "anuncio" ? 1 : 3);
+        }}
+      />
+
       {/* Main Responsive Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Left Side: Agency Info & Brand (5 Cols) */}
@@ -858,7 +942,8 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           
           {/* CARD 1: IDENTIDADE & PERFIL DA AGÊNCIA */}
           <details 
-            open={!state.agencyName}
+            id="fabrica-perfil"
+            open={!state.agencyName || !state.whatsapp || whatsappIncomplete}
             className="group bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5 [&::-webkit-details-marker]:hidden"
           >
             <summary className="list-none outline-none cursor-pointer flex items-center justify-between">
@@ -866,6 +951,9 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 Dados do Perfil
               </h3>
+              {whatsappIncomplete && (
+                <span className="text-[10px] font-bold text-red-400">⚠ WhatsApp incompleto</span>
+              )}
               <div className="text-[10px] text-white/40 font-bold group-open:hidden">▼ EXPANDIR</div>
               <div className="text-[10px] text-white/40 font-bold hidden group-open:block">▲ RECOLHER</div>
             </summary>
@@ -1031,6 +1119,11 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                       className="flex-1 bg-transparent px-3 py-3 text-sm text-white placeholder-white/20 outline-none min-w-0"
                     />
                   </div>
+                  {whatsappIncomplete && (
+                    <p className="text-[11px] font-semibold text-red-400 mt-1 pl-1">
+                      Número incompleto: faltam dígitos. Use DDD + número, ex: (85) 99999-9999. Sem isso, os clientes do site não conseguem te chamar.
+                    </p>
+                  )}
                   {/* Preview do número completo para WhatsApp */}
                   {state.whatsapp && (
                     <p className="text-[9px] text-white/30 mt-1 pl-1">
@@ -1295,7 +1388,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 }}
                 className="w-full py-3 rounded-xl bg-white/[0.03] hover:bg-violet-500/10 border border-white/5 hover:border-violet-500/30 text-white/60 hover:text-violet-400 text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
               >
-                <Plus className="w-3.5 h-3.5" /> Começar Novo Projeto (Fase 1)
+                <Plus className="w-3.5 h-3.5" /> Começar Novo Projeto
               </button>
             </div>
           </div>
@@ -1318,9 +1411,36 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   Pacotes prontos para vender ({state.selectedPackages.length})
                 </h3>
-                <span className="text-[9px] text-white/30 uppercase font-semibold">Fase 2 / Integração Comercial</span>
+                <span className="text-[9px] text-white/30 uppercase font-semibold">Usados no anúncio, carrossel e site</span>
               </div>
             </div>
+
+            {/* Pacote em uma frase: o jeito mais rápido de começar */}
+            {!showAddForm && (
+              <div id="fabrica-pacote-rapido" className="mb-4 rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.05] p-3.5">
+                <label htmlFor="fabrica-pacote-rapido-input" className="block text-[11px] font-bold text-emerald-300">
+                  Criar pacote em uma frase
+                </label>
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                  <input
+                    id="fabrica-pacote-rapido-input"
+                    value={quickPackageText}
+                    onChange={(e) => setQuickPackageText(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && createQuickPackage()}
+                    placeholder="Ex: Porto de Galinhas, 5 dias, R$ 1.997, hotel + transfer + passeios"
+                    className="min-h-11 flex-1 rounded-xl border border-white/10 bg-black/40 px-3 text-sm text-white placeholder-white/30 outline-none focus:border-emerald-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={createQuickPackage}
+                    className="min-h-11 shrink-0 rounded-xl bg-emerald-400 px-4 text-xs font-black uppercase tracking-wide text-black hover:brightness-110"
+                  >
+                    Criar pacote
+                  </button>
+                </div>
+                <p className="mt-1.5 text-[10px] text-white/40">Separe por vírgula: destino, duração, preço e o que está incluso. Dá para editar tudo depois.</p>
+              </div>
+            )}
 
             {/* Adicionar novo pacote Form */}
             <div className="space-y-4">
@@ -1521,7 +1641,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                                   title="Aprovar e Enviar para o Site"
                                   className="h-7 px-2 flex items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 text-[10px] font-bold hover:bg-emerald-500/30 transition-all cursor-pointer mr-1"
                                 >
-                                  <Check className="w-3.5 h-3.5 mr-1" /> Aprovar para o Site
+                                  <Check className="w-3.5 h-3.5 mr-1" /> Mostrar no site
                                 </button>
                               ) : (
                                 <span className="h-7 px-2 flex items-center justify-center rounded-lg bg-white/5 text-white/50 text-[9px] font-bold mr-1 uppercase tracking-wider border border-white/10">
@@ -1555,7 +1675,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                             {pkg.imageUrl ? (
                               <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-[9px] font-bold text-emerald-400">
                                 <Check className="w-3 h-3" />
-                                Sincronizado com Anúncio & Foto da Fase 3
+                                Usando a foto do seu anúncio
                               </div>
                             ) : (
                               <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-amber-500/20 bg-amber-500/5 text-[9px] font-bold text-amber-400">
@@ -1573,7 +1693,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               {/* Banner indicator */}
               {state.selectedPackages.length > 0 && (
                 <div className="text-center py-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-[9px] uppercase font-black tracking-widest text-white/30">
-                  ⚡ {state.selectedPackages.length} pacote{state.selectedPackages.length !== 1 ? "s" : ""} selecionado{state.selectedPackages.length !== 1 ? "s" : ""}
+                  ⚡ {state.selectedPackages.filter((p) => !p.isDraft).length} no site · {state.selectedPackages.filter((p) => p.isDraft).length} em rascunho
                 </div>
               )}
 

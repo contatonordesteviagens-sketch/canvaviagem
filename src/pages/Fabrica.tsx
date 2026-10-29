@@ -10,6 +10,7 @@ import { FabricaDashboard } from "@/pages/fabrica/FabricaDashboard";
 import { FabricaLibrary } from "@/pages/fabrica/FabricaLibrary";
 import { VoiceOnboarding } from "@/components/fabrica/VoiceOnboarding";
 import { FabricaLockedFeature } from "@/components/fabrica/FabricaLockedFeature";
+import { FabricaStepGuide, type FabricaGuideKey } from "@/components/fabrica/FabricaStepGuide";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { 
   ArrowLeft, 
@@ -53,6 +54,17 @@ const FabricaInner = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileMenuOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileMenuOpen]);
+  // A pílula ativa precisa estar visível: no celular "Meus Pacotes" ficava fora da tela.
+  const activePillRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    activePillRef.current?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  }, [location.pathname]);
   const prefillSwitchInProgressRef = useRef(false);
 
   // ── ÚNICA FONTE DE VERDADE: a URL decide a fase e aba ativas ──
@@ -110,7 +122,7 @@ const FabricaInner = () => {
     if (activePhase === 2) return "Carrossel";
     if (activePhase === 3) return "Site";
     if (activePhase === 4) return "CRM";
-    if (activePhase === 5) return "Planos";
+    if (activePhase === 5) return "Meus Pacotes";
     return "";
   };
 
@@ -230,7 +242,7 @@ const FabricaInner = () => {
               >
                 <div className="flex items-center gap-3">
                   <Sliders className={`w-4 h-4 ${activePhase === 5 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Planos</span>
+                  <span>Meus Pacotes</span>
                 </div>
               </button>
             </div>
@@ -277,7 +289,7 @@ const FabricaInner = () => {
       {mobileMenuOpen && (
         <div 
           onClick={() => setMobileMenuOpen(false)}
-          className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[55] animate-fadeIn"
+          className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-40 animate-fadeIn"
         />
       )}
 
@@ -310,7 +322,7 @@ const FabricaInner = () => {
             <span>👥</span> CRM
           </button>
           <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/planos" : "/fabrica/planos"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
-            <span>⚙️</span> Planos
+            <span>🧳</span> Meus Pacotes
           </button>
 
           <div className="border-t border-white/5 pt-3">
@@ -334,10 +346,11 @@ const FabricaInner = () => {
 
             <div className="h-4 w-px bg-white/10 mx-1 hidden sm:block"></div>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 overflow-x-auto snap-x scroll-px-1 no-scrollbar pb-1 sm:pb-0 touch-pan-x">
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 overflow-x-auto snap-x scroll-px-1 no-scrollbar pb-1 sm:pb-0 touch-pan-x [mask-image:linear-gradient(to_right,black_92%,transparent)] sm:[mask-image:none]">
               <button
                 onClick={() => navigate(isES ? "/es/fabrica" : "/fabrica")}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap shrink-0 ${
+                ref={activeTab === "dashboard" ? activePillRef : undefined}
+                className={`px-3.5 py-2.5 sm:py-1.5 rounded-lg text-xs sm:text-[10px] font-bold border transition-colors whitespace-nowrap shrink-0 ${
                   activeTab === "dashboard" ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
                 }`}
               >
@@ -349,12 +362,13 @@ const FabricaInner = () => {
                 { name: 'Carrossel', path: '/carrossel', phase: 2 },
                 { name: 'Site', path: '/site', phase: 3 },
                 { name: 'CRM', path: '/crm', phase: 4 },
-                { name: 'Planos', path: '/planos', phase: 5 },
+                { name: 'Meus Pacotes', path: '/planos', phase: 5 },
               ] as const).map(({ name, path, phase }) => (
                 <button
                   key={phase}
                   onClick={() => navigate(isES ? `/es/fabrica${path}` : `/fabrica${path}`)}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors whitespace-nowrap shrink-0 ${
+                  ref={activeTab === "phase" && activePhase === phase ? activePillRef : undefined}
+                  className={`px-3.5 py-2.5 sm:py-1.5 rounded-lg text-xs sm:text-[10px] font-bold border transition-colors whitespace-nowrap shrink-0 ${
                     activePhase === phase ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
                   }`}
                 >
@@ -366,6 +380,11 @@ const FabricaInner = () => {
 
         {/* Dynamic Component Render */}
         <div className="transition-all duration-300">
+          {(() => {
+            const guideByPhase: Record<number, FabricaGuideKey> = { 1: "anuncio", 2: "carrossel", 3: "site", 4: "crm", 5: "pacotes" };
+            const guideKey = activeTab === "phase" ? guideByPhase[activePhase] : undefined; // no Painel, o checklist "Primeiros passos" faz esse papel
+            return guideKey ? <FabricaStepGuide key={guideKey} section={guideKey} /> : null;
+          })()}
           {activeTab === "dashboard" && (
             <FabricaDashboard
               onNavigate={(_tab, phase) => {

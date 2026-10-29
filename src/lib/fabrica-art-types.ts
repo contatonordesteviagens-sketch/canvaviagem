@@ -17,7 +17,7 @@ export function formatVariantLabel(art: GeneratedArt): string {
   if (art.engine === "ia") {
     return `IA Pura · ${art.categoria === "oferta" ? "Oferta" : "Exp."}`;
   }
-  const varLabel = art.variant !== null ? `V${art.variant}` : "Custom";
+  const varLabel = art.variant !== null ? `Modelo ${art.variant + 1}` : "Custom";
   const catLabel = art.categoria === "oferta" ? "Oferta" : "Exp.";
   return `${varLabel} · ${catLabel}`;
 }

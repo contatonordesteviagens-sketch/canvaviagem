@@ -36,13 +36,29 @@ export async function loadArtTweakPresets(force = false): Promise<void> {
   return inflight;
 }
 
+/**
+ * Preset global vale para TODOS os clientes, então só pode mexer em layout.
+ * Texto digitado no preset (ex: "PACOTE FERNANDO DE NORONHA", "10x de") vazaria
+ * para a arte de quem anuncia outro destino/preço. Texto vazio continua valendo
+ * como "esconder", que era a intenção de quem salvou.
+ */
+export function sanitizeGlobalArtTweaks(map?: ArtTweakMap): ArtTweakMap | undefined {
+  if (!map) return map;
+  const out: ArtTweakMap = {};
+  for (const [id, tweak] of Object.entries(map)) {
+    const { text, ...layout } = tweak || {};
+    out[id] = typeof text === "string" && text.trim() === "" ? { ...layout, hidden: true } : layout;
+  }
+  return out;
+}
+
 export function getArtTweakPreset(
   category: string,
   variant: number | undefined,
   format: string,
 ): ArtTweakMap | undefined {
   if (typeof variant !== "number") return undefined;
-  return cache[artTweakPresetKey(category, variant, format)];
+  return sanitizeGlobalArtTweaks(cache[artTweakPresetKey(category, variant, format)]);
 }
 
 export async function saveArtTweakPreset(

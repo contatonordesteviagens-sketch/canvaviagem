@@ -24,6 +24,15 @@ export const WelcomeTutorialPopup = () => {
     localStorage.setItem("canvaviagem_has_seen_tutorial", "true");
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") handleClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen]);
+
   const handleGoToTutorials = () => {
     handleClose();
     navigate("/tutorial");
@@ -54,7 +63,7 @@ export const WelcomeTutorialPopup = () => {
           </div>
           
           <h2 className="text-2xl font-black text-white tracking-tight">
-            Bem-vindo à Fábrica! 🚀
+            Bem-vindo ao Canva Viagem! 🚀
           </h2>
         </div>
 
@@ -78,7 +87,7 @@ export const WelcomeTutorialPopup = () => {
               onClick={handleClose}
               className="w-full text-zinc-500 hover:text-zinc-300 text-xs font-semibold py-3 transition-colors uppercase tracking-wider"
             >
-              Não mostrar mais este aviso
+              Agora não
             </button>
           </div>
         </div>

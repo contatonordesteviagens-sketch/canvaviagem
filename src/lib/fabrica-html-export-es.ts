@@ -1,11 +1,12 @@
+import { SUPABASE_PUBLIC_KEY, SUPABASE_PUBLIC_URL } from "@/lib/supabase-public";
 import type { FabricaState } from "@/hooks/useFabricaContext";
 import { normalizeSiteTemplateId } from "@/lib/site-template-catalog";
 import { getSiteTemplateCss } from "@/lib/site-template-css";
 import { resolveFabricaCrmFormId } from "@/lib/fabrica-crm-publication";
 import { createUniquePackageSlug, suggestPackageSegment } from "@/lib/package-details";
 
-const SB_URL = import.meta.env.VITE_SUPABASE_URL || "";
-const SB_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+const SB_URL = SUPABASE_PUBLIC_URL;
+const SB_KEY = SUPABASE_PUBLIC_KEY;
 
 const esc = (s: string) =>
   String(s ?? "")

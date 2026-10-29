@@ -408,7 +408,7 @@ export default function ArtTweakEditor({
     setSaving(true);
     try {
       await saveArtTweakPreset(category, variant, format, tweaks);
-      toast.success("Padrão salvo — todos os usuários passam a gerar essa variação ajustada.");
+      toast.success("Padrão salvo para todos os usuários. Posição e tamanho valem para todos; textos editados valem só nesta arte.");
       if (preview) onApply(preview, tweaks);
       onClose();
     } catch (err: any) {
@@ -458,7 +458,7 @@ export default function ArtTweakEditor({
               {showBoxes ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
               {showBoxes ? "Ocultar caixas" : "Mostrar caixas"}
             </Button>
-            <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
+            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Fechar"><X className="h-5 w-5" /></Button>
           </div>
         </div>
 
@@ -703,14 +703,13 @@ export default function ArtTweakEditor({
                 <RotateCcw className="mr-2 h-4 w-4" /> Zerar todos os ajustes
               </Button>
               <Button
-                variant="secondary"
                 className="w-full"
                 disabled={!preview || rendering}
                 onClick={() => { onApply(preview, tweaks); onClose(); }}
               >
                 Aplicar só nesta arte
               </Button>
-              <Button className="w-full" disabled={saving || rendering} onClick={handleSavePreset}>
+              <Button variant="outline" className="w-full" disabled={saving || rendering} onClick={handleSavePreset} title="Vale para todos os usuários da plataforma">
                 {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                 Salvar como padrão da variação
               </Button>

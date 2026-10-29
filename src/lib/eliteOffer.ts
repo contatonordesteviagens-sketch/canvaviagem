@@ -13,6 +13,18 @@ export const ELITE_OFFER = {
   startVideoCooldownMs: 30 * 60 * 1000,
 };
 
+/**
+ * Link da Stripe com a conta logada. Sem isso, quem entra com o Google num e-mail e paga
+ * digitando outro (ou com erro, tipo ".con") recebe o acesso numa conta que não é a dele.
+ * O stripe-webhook usa client_reference_id para achar o usuário certo.
+ */
+export function withCheckoutIdentity(checkoutUrl: string, user?: { id?: string | null; email?: string | null } | null) {
+  const url = new URL(checkoutUrl);
+  if (user?.id) url.searchParams.set("client_reference_id", user.id);
+  if (user?.email) url.searchParams.set("prefilled_email", user.email);
+  return url.toString();
+}
+
 export type UpgradeFeature =
   | "ad_export"
   | "carousel_export"

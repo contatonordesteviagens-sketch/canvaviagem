@@ -19,6 +19,7 @@ import {
   ArrowUpLeft,
   ArrowUpRight,
   Check,
+  Copy,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -346,7 +347,23 @@ const normalizeName = (value = "") =>
     .trim()
     .toLowerCase();
 
-const carouselCaption = (pacote: Pacote, brand: string, phone: string, isEs: boolean) => {
+const CAPTION_OPENERS_PT = [
+  (d: string) => `Pronto para viver ${d}?`,
+  (d: string) => `${d} está te esperando. ✈️`,
+  (d: string) => `Já imaginou suas próximas férias em ${d}?`,
+  (d: string) => `Salve este post: ${d} pode ser sua próxima viagem.`,
+];
+const CAPTION_OPENERS_ES = [
+  (d: string) => `¿Listo para vivir ${d}?`,
+  (d: string) => `${d} te está esperando. ✈️`,
+  (d: string) => `¿Ya imaginaste tus próximas vacaciones en ${d}?`,
+  (d: string) => `Guarda este post: ${d} puede ser tu próximo viaje.`,
+];
+
+// variant 0 mantém a legenda original; "Gerar outra legenda" alterna a frase de abertura.
+const carouselCaption = (pacote: Pacote, brand: string, phone: string, isEs: boolean, variant = 0) => {
+  const openers = isEs ? CAPTION_OPENERS_ES : CAPTION_OPENERS_PT;
+  const opener = openers[Math.abs(variant) % openers.length](pacote.title);
   const details = compact([...(pacote.highlights || []), ...(pacote.included || [])])
     .map(cleanCarouselText)
     .filter(Boolean)
@@ -354,7 +371,7 @@ const carouselCaption = (pacote: Pacote, brand: string, phone: string, isEs: boo
   const destinationTag = normalizeName(pacote.title).replace(/[^a-z0-9]+/g, "");
   const lines = isEs
     ? [
-        `¿Listo para vivir ${pacote.title}?`,
+        opener,
         pacote.description || "Preparamos una experiencia completa para que disfrutes cada momento.",
         ...details.map((item) => `• ${item}`),
         pacote.price ? `Inversión: ${pacote.price}` : "",
@@ -362,7 +379,7 @@ const carouselCaption = (pacote: Pacote, brand: string, phone: string, isEs: boo
         `#viajes #${destinationTag} #turismo #vacaciones`,
       ]
     : [
-        `Pronto para viver ${pacote.title}?`,
+        opener,
         pacote.description || "Preparamos uma experiência completa para você aproveitar cada momento.",
         ...details.map((item) => `• ${item}`),
         pacote.price ? `Investimento: ${pacote.price}` : "",
@@ -716,7 +733,7 @@ function documentedCarouselTextSequence(
     3: [
       block(price ? `${destination} a partir de ${price}` : `Sua próxima viagem: ${destination}`, "", [], "OFERTA"),
       block(
-        duration || "Uma viagem organizada para você aproveitar mais e se preocupar menos.",
+        duration || "Tudo organizado para você só curtir",
         "",
         duration ? offerDetails.slice(0, 3) : [],
         duration ? "DURAÇÃO" : "",
@@ -1754,10 +1771,14 @@ function CarouselCanvas({
     );
   };
 
+  // Line clamp com reticências: texto longo demais termina em "..." em vez de sumir no meio da palavra.
   const safeClamp = (lines: number, lineHeight: number): CSSProperties => ({
     maxHeight: `${lines * lineHeight}em`,
     overflow: "hidden",
     paddingBottom: 0,
+    display: "-webkit-box",
+    WebkitBoxOrient: "vertical",
+    WebkitLineClamp: lines,
   });
   const safeTextWrap: CSSProperties = {
     overflowWrap: "break-word",
@@ -3833,6 +3854,9 @@ export function F1CarouselBuilder({
   const [photoDestination, setPhotoDestination] = useState("");
   const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  // 12 formatos de uma vez travam o iniciante: mostramos 4 e o resto sob "Ver mais".
+  const [showAllFormats, setShowAllFormats] = useState(false);
   const [showNewCarouselModal, setShowNewCarouselModal] = useState(false);
   const [showExportPaywall, setShowExportPaywall] = useState(false);
   const guestPaywallTimerRef = useRef<number | null>(null);
@@ -3896,21 +3920,34 @@ export function F1CarouselBuilder({
   }, [isEs, selectedPackage?.title, showLogo, slides, state.logoBase64]);
   const qualityReady = qualityIssues.length === 0;
 
+  const captionVariantRef = useRef(0);
+  const copyCaption = async () => {
+    if (!captionText.trim()) return;
+    try {
+      await navigator.clipboard.writeText(captionText);
+      toast.success(isEs ? "Leyenda copiada. Pégala en Instagram." : "Legenda copiada! Agora é só colar no Instagram.");
+    } catch {
+      toast.error(isEs ? "No se pudo copiar. Selecciona el texto y cópialo." : "Não deu para copiar. Selecione o texto e copie manualmente.");
+    }
+  };
+
   const generateCaption = async () => {
     if (!selectedPackage) return;
     setGeneratingCaption(true);
     try {
       await Promise.resolve();
+      captionVariantRef.current += 1;
       setCaptionText(
         carouselCaption(
           selectedPackage,
           state.agencyName || (isEs ? "Agencia de Viajes" : "Agência de Viagens"),
           agencyPhone,
           isEs,
+          captionVariantRef.current,
         ),
       );
       setCaptionEdited(false);
-      toast.success(isEs ? "¡Leyenda generada!" : "Legenda gerada com sucesso!");
+      toast.success(isEs ? "¡Nueva leyenda lista!" : "Nova legenda pronta!");
     } finally {
       setGeneratingCaption(false);
     }
@@ -4265,8 +4302,22 @@ export function F1CarouselBuilder({
     }
   }, [activeSlide?.fontFamily]);
 
+  // Marca se o cliente digitou texto à mão, para avisar antes de trocar formato/quantidade.
+  const userEditedTextRef = useRef(false);
+  const confirmDiscardTextEdits = () => {
+    if (!userEditedTextRef.current) return true;
+    const ok = window.confirm(
+      isEs
+        ? "Esto cambia los textos de todas las imágenes y tus ediciones se pierden. ¿Continuar?"
+        : "Isso troca os textos de todas as imagens e as suas edições serão perdidas. Continuar?",
+    );
+    if (ok) userEditedTextRef.current = false;
+    return ok;
+  };
+
   const patchActive = (patch: Partial<CarouselSlide>) => {
     if (!activeSlide || activeCoverIsProtected) return;
+    if ("title" in patch || "body" in patch || "bullets" in patch || "cta" in patch) userEditedTextRef.current = true;
     setSlides((current) =>
       current.map((slide, index) => (index === activeIndex ? { ...slide, ...patch } : slide)),
     );
@@ -4321,6 +4372,7 @@ export function F1CarouselBuilder({
 
   const applyCarouselStrategy = (strategy: CarouselSlideVariant) => {
     if (!selectedPackage) return;
+    if (!confirmDiscardTextEdits()) return;
     const destImages = uniqueImages([...availableImages, ...photoResults.map((p) => p.url)]);
     const currentArchive = mergeActiveIntoArchive(slides, slideArchiveRef.current);
     const currentCover = currentArchive.find((slide) => slide.kind === "cover");
@@ -4398,6 +4450,7 @@ export function F1CarouselBuilder({
 
   const changeSlideCount = (nextCount: CarouselSize) => {
     if (!selectedPackage) return;
+    if (!confirmDiscardTextEdits()) return;
     const destImages = uniqueImages([...availableImages, ...photoResults.map((p) => p.url)]);
     const generated = createSlides(
       selectedPackage,
@@ -4531,7 +4584,9 @@ export function F1CarouselBuilder({
     }
 
     setPhotoQuery(query);
-    setPhotoDestination(query);
+    // Busca manual só atualiza a grade de resultados. Mudar o destino dispara a
+    // sincronização automática e trocaria a foto de todos os slides sem avisar.
+    if (syncAll) setPhotoDestination(query);
     setSearchingPhotos(true);
     setPhotoResults([]);
     try {
@@ -4880,6 +4935,7 @@ export function F1CarouselBuilder({
       };
 
       for (let index = 0; index < resolvedSlides.length; index += 1) {
+        setDownloadProgress(index + 1);
         const slide = resolvedSlides[index];
         await ensureExportFontLoaded(slide.fontFamily || "Inter");
         const baseW = 432;
@@ -4977,6 +5033,34 @@ export function F1CarouselBuilder({
       }
 
       await commit(reservation.reservationId);
+
+      // No celular, vários downloads seguidos costumam falhar. Quando o aparelho suporta
+      // compartilhar arquivos, oferecemos "Salvar no celular" (vai para a galeria/Instagram).
+      const shareFiles = await Promise.all(
+        generatedExports.map(async (item) => {
+          const blob = await (await fetch(item.dataUrl)).blob();
+          return new File([blob], item.fileName, { type: "image/png" });
+        }),
+      ).catch(() => [] as File[]);
+      const isTouchDevice = window.matchMedia?.("(pointer: coarse)").matches;
+      if (isTouchDevice && shareFiles.length && navigator.canShare?.({ files: shareFiles })) {
+        track("carousel_export_completed", {
+          capability: "carousel_export",
+          package_id: selectedPackage.id,
+          slide_count: resolvedSlides.length,
+        });
+        toast.success(isEs ? `${slides.length} imágenes listas.` : `${slides.length} imagens prontas!`, {
+          duration: 30000,
+          action: {
+            label: isEs ? "Guardar en el celular" : "Salvar no celular",
+            onClick: () => {
+              navigator.share({ files: shareFiles }).catch(() => undefined);
+            },
+          },
+        });
+        return;
+      }
+
       for (const generatedExport of generatedExports) {
         const link = document.createElement("a");
         link.href = generatedExport.dataUrl;
@@ -5119,18 +5203,22 @@ export function F1CarouselBuilder({
 
         <button
           type="button"
-          onClick={() =>
-            void searchPhotos({
-              syncAll: true,
-              queryOverride: photoQuery || photoDestination || selectedPackage.title,
-              pageOverride: 1,
-            })
-          }
+          onClick={() => {
+            const query = photoQuery || photoDestination || selectedPackage.title;
+            if (
+              !window.confirm(
+                isEs
+                  ? `¿Cambiar la foto de TODAS las imágenes por fotos de "${query}"?`
+                  : `Trocar a foto de TODAS as imagens por fotos de "${query}"?`,
+              )
+            ) return;
+            void searchPhotos({ syncAll: true, queryOverride: query, pageOverride: 1 });
+          }}
           disabled={searchingPhotos}
-          className="mt-2 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-lg border border-[#F5F906]/35 bg-[#F5F906]/[0.07] px-3 text-[10px] font-extrabold text-[#F5F906] transition-colors hover:bg-[#F5F906]/[0.12] disabled:opacity-50"
+          className="mt-2 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-transparent px-3 text-[10px] font-bold text-white/60 transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${searchingPhotos ? "animate-spin" : ""}`} />
-          {isEs ? "Sincronizar fotos del destino" : "Sincronizar fotos do destino"}
+          {isEs ? "Cambiar fotos de todas las láminas" : "Trocar as fotos de todos os slides"}
         </button>
 
         {state.destinos.length > 0 && (
@@ -5217,7 +5305,7 @@ export function F1CarouselBuilder({
                   <button
                     type="button"
                     disabled={searchingPhotos || photoPage <= 1}
-                    onClick={() => void searchPhotos({ queryOverride: photoDestination || photoQuery, pageOverride: Math.max(1, photoPage - 1) })}
+                    onClick={() => void searchPhotos({ queryOverride: photoQuery || photoDestination, pageOverride: Math.max(1, photoPage - 1) })}
                     className="min-h-8 rounded-lg border border-white/10 px-3 text-[9px] font-bold text-white/60 hover:bg-white/[0.05] disabled:opacity-30"
                   >
                     {isEs ? "Anterior" : "Anterior"}
@@ -5225,7 +5313,7 @@ export function F1CarouselBuilder({
                   <button
                     type="button"
                     disabled={searchingPhotos || !photoHasMore}
-                    onClick={() => void searchPhotos({ queryOverride: photoDestination || photoQuery, pageOverride: photoPage + 1 })}
+                    onClick={() => void searchPhotos({ queryOverride: photoQuery || photoDestination, pageOverride: photoPage + 1 })}
                     className="inline-flex min-h-8 items-center gap-1.5 rounded-lg border border-[#F5F906]/35 bg-[#F5F906]/[0.07] px-3 text-[9px] font-extrabold text-[#F5F906] hover:bg-[#F5F906]/[0.12] disabled:opacity-30"
                   >
                     {isEs ? "Ver más fotos" : "Ver mais fotos"}
@@ -5289,8 +5377,8 @@ export function F1CarouselBuilder({
               disabled={generatingCaption}
               className="rounded-lg bg-[#F5F906] px-3 py-1.5 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:opacity-50 transition-colors shadow-md flex items-center gap-1.5"
             >
-              {generatingCaption ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-              {isEs ? "Reescribir" : "Reescrever"}
+              {generatingCaption ? <RefreshCw className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+              {isEs ? "Otra leyenda" : "Gerar outra"}
             </button>
           </div>
           <div className="p-4 bg-black/40">
@@ -5304,6 +5392,15 @@ export function F1CarouselBuilder({
               rows={5}
               className="w-full rounded-xl border border-white/10 bg-[#121316] px-3 py-2.5 text-xs text-white outline-none focus:border-[#F5F906] focus:ring-1 focus:ring-[#F5F906]/30 transition-all resize-y"
             />
+            <button
+              type="button"
+              onClick={copyCaption}
+              disabled={!captionText.trim()}
+              className="mt-2 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#F5F906]/35 bg-[#F5F906]/[0.08] text-xs font-extrabold text-[#F5F906] transition-colors hover:bg-[#F5F906]/[0.14] disabled:opacity-40"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              {isEs ? "Copiar leyenda" : "Copiar legenda"}
+            </button>
           </div>
         </div>
 
@@ -5335,6 +5432,11 @@ export function F1CarouselBuilder({
           ))}
         </div>
       )}
+      {!qualityReady && qualityIssues.length > 0 && (
+        <p className="mb-2 text-xs font-semibold text-amber-300">
+          {isEs ? "Antes de descargar: " : "Antes de baixar: "}{qualityIssues[0]}
+        </p>
+      )}
       <div className="flex flex-col sm:flex-row gap-2.5">
         {onBackToAd && (
           <button type="button" onClick={onBackToAd} className="flex-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-xs font-extrabold text-white/70 hover:bg-white/[0.08] transition-colors">
@@ -5347,8 +5449,10 @@ export function F1CarouselBuilder({
           {isEs ? "Nueva variación" : "Nova variação"}
         </button>
         <button type="button" onClick={downloadAll} disabled={downloading || !qualityReady} title={!qualityReady ? qualityIssues.join(" • ") : undefined} className="flex-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:cursor-not-allowed disabled:opacity-40">
-          <Download className="h-4 w-4" />
-          {isEs ? `Descargar ${slides.length}` : `Baixar ${slides.length}`}
+          {downloading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          {downloading
+            ? `${isEs ? "Preparando" : "Preparando"} ${downloadProgress || 1}/${slides.length}...`
+            : (isEs ? `Descargar ${slides.length}` : `Baixar ${slides.length} imagens`)}
         </button>
         {onNext && (
           <button type="button" onClick={onNext} className="flex-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black px-3 text-xs font-extrabold shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-colors">
@@ -5603,7 +5707,7 @@ export function F1CarouselBuilder({
                   ["ticket", isEs ? "Billete" : "Bilhete", isEs ? "Estilo tarjeta de embarque" : "Estilo cartão de embarque"],
                   ["headline-center", isEs ? "Franjas centro" : "Faixas centrais", isEs ? "Informacion centrada abajo" : "Informacoes centralizadas abaixo"],
                   ["headline-footer", isEs ? "Franjas bajas" : "Faixas inferiores", isEs ? "Titulo e informacion en la base" : "Titulo e informacoes na base"],
-                ] as const).map(([variant, labelText, description]) => {
+                ] as const).filter(([variant], index) => showAllFormats || index < 4 || currentStrategy === variant).map(([variant, labelText, description]) => {
                   const isActiveVariant = currentStrategy === variant;
                   return (
                     <button
@@ -5613,7 +5717,7 @@ export function F1CarouselBuilder({
                       aria-label={`${labelText}: ${description}`}
                       title={description}
                       onClick={() => applyCarouselStrategy(variant)}
-                      className={`min-h-9 whitespace-nowrap rounded-lg border px-2 py-2 text-center transition-colors ${
+                      className={`min-h-9 min-w-0 rounded-lg border px-2 py-2 text-center transition-colors ${
                         isActiveVariant
                           ? "border-[#F5F906] bg-[#F5F906]/10"
                           : "border-white/10 bg-transparent hover:border-white/20 hover:bg-white/[0.03]"
@@ -5622,10 +5726,20 @@ export function F1CarouselBuilder({
                       <span className={`block text-[10px] font-extrabold ${isActiveVariant ? "text-[#F5F906]" : "text-white/75"}`}>
                         {labelText}
                       </span>
+                      <span className="block truncate text-[9px] font-medium text-white/40">{description}</span>
                     </button>
                   );
                 })}
               </div>
+              <button
+                type="button"
+                onClick={() => setShowAllFormats((v) => !v)}
+                className="mt-2 text-[11px] font-semibold text-white/50 underline-offset-2 hover:text-white hover:underline"
+              >
+                {showAllFormats
+                  ? (isEs ? "Ver menos formatos" : "Ver menos formatos")
+                  : (isEs ? "Ver más formatos (8)" : "Ver mais formatos (8)")}
+              </button>
             </fieldset>
         </div>
       </div>
@@ -5719,7 +5833,7 @@ export function F1CarouselBuilder({
 
             {/* Controles de Zoom (ocultos no modo focus pois já tem escala grande) */}
             {viewMode !== "focus" && (
-              <div className="flex items-center gap-1 rounded-xl border border-white/10 p-1">
+              <div className="hidden sm:flex items-center gap-1 rounded-xl border border-white/10 p-1">
                 <button
                   type="button"
                   onClick={zoomOut}
@@ -5831,7 +5945,7 @@ export function F1CarouselBuilder({
                           e.stopPropagation();
                           setMaximizedSlide(slide);
                         }}
-                        className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-black/90 backdrop-blur-md z-10"
+                        className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shadow-lg hover:bg-black/90 backdrop-blur-md z-10"
                         title={isEs ? "Ampliar imagen" : "Ampliar imagem"}
                       >
                         <Maximize2 className="w-3.5 h-3.5" />
@@ -5969,7 +6083,7 @@ export function F1CarouselBuilder({
                         e.stopPropagation();
                         setMaximizedSlide(slide);
                       }}
-                      className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-black/90 backdrop-blur-md z-10"
+                      className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shadow-lg hover:bg-black/90 backdrop-blur-md z-10"
                       title={isEs ? "Ampliar imagen" : "Ampliar imagem"}
                     >
                       <Maximize2 className="w-3.5 h-3.5" />
@@ -6548,6 +6662,11 @@ export function F1CarouselBuilder({
                     onChange={(event) => patchActive({ title: event.target.value })}
                     className="f1-carousel-input !py-2.5 text-sm resize-none w-full leading-snug"
                   />
+                  <p className={`text-right text-[10px] font-semibold ${activeSlide.title.length > 40 ? "text-amber-300" : "text-white/35"}`}>
+                    {activeSlide.title.length > 40
+                      ? (isEs ? `${activeSlide.title.length}/80 · título largo, puede cortarse en la imagen` : `${activeSlide.title.length}/80 · título longo: confira na prévia se não cortou`)
+                      : `${activeSlide.title.length}/80`}
+                  </p>
                   {activeSlide.kind === "cover" && selectedPackage && (
                     <div className="space-y-1.5">
                       <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/30">
@@ -7191,8 +7310,8 @@ export function F1CarouselBuilder({
             </div>
             <p className="text-xs leading-relaxed text-white/70">
               {isEs
-                ? "Se creará una nueva composición para el mismo destino. Puedes descargar la versión actual antes de continuar."
-                : "Será criada uma nova composição para o mesmo destino. Você pode baixar a versão atual antes de continuar."}
+                ? "Vamos crear el carrusel con otro estilo para el mismo destino. Tus textos y fotos editados serán reemplazados, así que descarga la versión actual si te gusta."
+                : "Vamos criar o carrossel com outro estilo para o mesmo destino. Os textos e fotos que você editou serão substituídos, então baixe a versão atual se gostou dela."}
             </p>
             <div className="flex flex-col gap-2.5 pt-2">
               <button
@@ -7212,7 +7331,7 @@ export function F1CarouselBuilder({
                 className="w-full min-h-11 rounded-xl border border-white/15 bg-white/[0.05] font-extrabold text-white/80 hover:bg-white/[0.09] transition-colors flex items-center justify-center gap-2"
               >
                 <RefreshCw className="h-4 w-4" />
-                {isEs ? "Generar otra variación" : "Gerar outra variação"}
+                {isEs ? "Crear con otro estilo (borra tus ediciones)" : "Criar com outro estilo (apaga suas edições)"}
               </button>
               <button
                 type="button"

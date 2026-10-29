@@ -1,3 +1,4 @@
+import { SUPABASE_PUBLIC_KEY, SUPABASE_PUBLIC_URL } from "@/lib/supabase-public";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "./useContent";
@@ -170,10 +171,10 @@ export const useAdminNotes = () => {
     queryFn: async (): Promise<AdminNote | null> => {
       // Query genérica para tabela nova
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/admin_notes?order=updated_at.desc&limit=1`,
+        `${SUPABASE_PUBLIC_URL}/rest/v1/admin_notes?order=updated_at.desc&limit=1`,
         {
           headers: {
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'apikey': SUPABASE_PUBLIC_KEY,
             'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
           },
         }
@@ -200,11 +201,11 @@ export const useSaveAdminNote = () => {
     if (noteId) {
       // Update existing note
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/admin_notes?id=eq.${noteId}`,
+        `${SUPABASE_PUBLIC_URL}/rest/v1/admin_notes?id=eq.${noteId}`,
         {
           method: 'PATCH',
           headers: {
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'apikey': SUPABASE_PUBLIC_KEY,
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
             'Prefer': 'return=minimal',
@@ -216,11 +217,11 @@ export const useSaveAdminNote = () => {
     } else {
       // Insert new note
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/admin_notes`,
+        `${SUPABASE_PUBLIC_URL}/rest/v1/admin_notes`,
         {
           method: 'POST',
           headers: {
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'apikey': SUPABASE_PUBLIC_KEY,
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
             'Prefer': 'return=minimal',
@@ -241,12 +242,12 @@ export const useTrackPageView = () => {
       const token = session.data.session?.access_token;
       
       await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/page_views`,
+        `${SUPABASE_PUBLIC_URL}/rest/v1/page_views`,
         {
           method: 'POST',
           headers: {
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            'Authorization': `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            'apikey': SUPABASE_PUBLIC_KEY,
+            'Authorization': `Bearer ${token || SUPABASE_PUBLIC_KEY}`,
             'Content-Type': 'application/json',
             'Prefer': 'return=minimal',
           },

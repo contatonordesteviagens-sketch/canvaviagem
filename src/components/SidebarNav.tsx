@@ -145,11 +145,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
             label="Início"
           />
 
+          <SidebarGroupTitle collapsed={activeIsCollapsed}>Criar com a Fábrica</SidebarGroupTitle>
+
           <NavButton 
             onClick={() => handleNavClick(undefined, isESRoute ? "/es/fabrica" : "/fabrica")}
             isActive={location.pathname === '/fabrica' || location.pathname === '/es/fabrica'}
             icon={Wand2}
-            label="Fábrica"
+            label="Painel da Fábrica"
           />
 
           <NavButton 
@@ -173,6 +175,8 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
             label="Construtor de Sites"
           />
 
+          <SidebarGroupTitle collapsed={activeIsCollapsed}>Clientes</SidebarGroupTitle>
+
           <NavButton 
             onClick={() => handleNavClick(undefined, "/fabrica/crm")}
             isActive={location.pathname.includes('/fabrica/crm')}
@@ -192,6 +196,15 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
               ) : null
             }
           />
+          
+          <NavButton 
+            onClick={() => handleNavClick(undefined, "/vendedor-ia")}
+            isActive={location.pathname.includes('/vendedor-ia')}
+            icon={MessageCircle}
+            label="Vendedor IA"
+          />
+
+          <SidebarGroupTitle collapsed={activeIsCollapsed}>Conteúdo pronto</SidebarGroupTitle>
 
           <NavButton 
             onClick={() => handleNavClick('videos')}
@@ -215,13 +228,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
           />
 
           <NavButton 
-            onClick={() => handleNavClick('videoaula')}
-            isActive={activeCategory === 'videoaula' && location.pathname === homeRoute}
-            icon={GraduationCap}
-            label="Videoaulas"
-          />
-
-          <NavButton 
             onClick={() => handleNavClick('downloads')}
             isActive={activeCategory === 'downloads' && location.pathname === homeRoute}
             icon={Video}
@@ -241,12 +247,21 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
             icon={Bot}
             label="Ferramentas de IA"
           />
-          
+
           <NavButton 
-            onClick={() => handleNavClick(undefined, "/vendedor-ia")}
-            isActive={location.pathname.includes('/vendedor-ia')}
-            icon={MessageCircle}
-            label="Vendedor IA"
+            onClick={() => handleNavClick('favorites')}
+            isActive={activeCategory === 'favorites' && location.pathname === homeRoute}
+            icon={Heart}
+            label="Favoritos"
+          />
+
+          <SidebarGroupTitle collapsed={activeIsCollapsed}>Aprender</SidebarGroupTitle>
+
+          <NavButton 
+            onClick={() => handleNavClick('videoaula')}
+            isActive={activeCategory === 'videoaula' && location.pathname === homeRoute}
+            icon={GraduationCap}
+            label="Videoaulas"
           />
 
           {language === 'pt' && (
@@ -268,11 +283,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
           />
 
           <NavButton 
-            onClick={() => handleNavClick('favorites')}
-            isActive={activeCategory === 'favorites' && location.pathname === homeRoute}
-            icon={Heart}
-            label="Favoritos"
+            onClick={() => handleNavClick(undefined, "/blog")}
+            isActive={location.pathname.includes('/blog')}
+            icon={BookmarkCheck}
+            label="Posts do Blog"
           />
+
+          <SidebarGroupTitle collapsed={activeIsCollapsed}>Minha conta</SidebarGroupTitle>
 
           {user && (
             <NavButton 
@@ -288,13 +305,6 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
             isActive={location.pathname === (isESRoute ? "/es/inicio" : "/inicio")}
             icon={CreditCard}
             label="Planos e Upgrade"
-          />
-
-          <NavButton 
-            onClick={() => handleNavClick(undefined, "/blog")}
-            isActive={location.pathname.includes('/blog')}
-            icon={BookmarkCheck}
-            label="Posts do Blog"
           />
 
           <NavButton 
@@ -389,3 +399,13 @@ const SidebarNavComponent = ({ activeCategory, onCategoryChange, isMobile, onMob
 };
 
 export const SidebarNav = memo(SidebarNavComponent);
+
+// Títulos de grupo do menu: com 20+ itens soltos o assinante não acha nada.
+function SidebarGroupTitle({ collapsed, children }: { collapsed: boolean; children: React.ReactNode }) {
+  if (collapsed) return <div className="mx-2 my-2 border-t border-slate-200 dark:border-white/[0.06]" />;
+  return (
+    <p className="px-3 pb-1 pt-4 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-white/35">
+      {children}
+    </p>
+  );
+}

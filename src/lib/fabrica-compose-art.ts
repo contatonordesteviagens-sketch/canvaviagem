@@ -1456,7 +1456,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
         : "";
       const titleLead = titleLeadRaw || (headline !== destinationText ? headline : promoText);
       const periodText = (travelPeriod || "").trim();
-      const priceLabel = (pricePrefix || paymentLabel || topLabel || "PRECO").toString().trim();
+      // Parcelado precisa mostrar "10x de", senão o valor da parcela parece o preço total.
+      const installmentLabelV8 = paymentMode === "installments" && installments
+        ? `${installments.toLowerCase().replace(/\s+/g, "")} de`
+        : "";
+      // A caixa do preço é estreita: no parcelado, "10x de" substitui o "a partir de".
+      const priceLabel = installmentLabelV8 || (pricePrefix || paymentLabel || topLabel || "PRECO").toString().trim();
       let priceText = mainPrice || `${curSym} ${price}`.trim();
       if (hideCents) priceText = priceText.replace(/[.,]\d{2}\s*$/, "");
       const suffixText = (paymentSuffix || bottomSuffix || "").trim();
@@ -1545,7 +1550,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const priceMain = (priceMatch?.[2] || priceText).trim();
       const priceCents = (priceMatch?.[3] || "").trim();
       const hasCents = !!priceCents && !hideCents;
-      const hasTotalLine = rawShowTotal !== false && !!totalOverride && totalOverride.trim() !== "";
+      const totalTextV8 = rawShowTotal !== false ? resolveTotalStr(installments, price || "", curSym, totalOverride?.trim()) : "";
+      const hasTotalLine = !!totalTextV8 && (paymentMode === "installments" || !!totalOverride?.trim());
       
       const priceMainSize = Math.round(width * (isStoryV8Luxury ? 0.075 : 0.072)); 
       const priceSmallSize = Math.round(priceMainSize * 0.46);
@@ -1698,7 +1704,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textAlign = "left";
         ctx.fillStyle = onAccent;
         ctx.font = `700 ${totalSize}px Inter, Arial, sans-serif`;
-        safeFillText(ctx, totalOverride.trim(), priceBoxX + 20, priceBaseY + 36 + suffixSize + 10, priceBoxW - 40, 10);
+        safeFillText(ctx, /^total\b/i.test(totalTextV8) ? totalTextV8 : `Total ${totalTextV8}`, priceBoxX + 20, priceBaseY + 36 + suffixSize + 10, priceBoxW - 40, 10);
       }
 
       ctx.font = `900 ${Math.round(width * (isStoryV8Luxury ? 0.034 : 0.034))}px Inter, Arial, sans-serif`;
@@ -4693,6 +4699,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
     if (variant === 7) {
       const isStoryV7 = format === "story";
+      // Total vazio = calcula sozinho (parcelas × preço), como a dica do campo promete.
+      const totalTextV7 = showTotal && (totalOverride?.trim() || paymentMode === "installments")
+        ? resolveTotalStr(installments, price || "", curSym, totalOverride?.trim())
+        : "";
       const scale = 0.85; // Diminuido em 15% a pedido do usuario
       const T = {
         cardW: Math.round(width * (isStoryV7 ? 0.9 : 0.85) * scale),
@@ -4724,7 +4734,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       requiredH += Math.round(T.subSize * 1.7); // Altura do bloco de icones/dias
       requiredH += 40; // Espaco suavemente reduzido ate o preco
       requiredH += T.priceSize; // Preco
-      if (showTotal && totalOverride) requiredH += T.labelSize + 5;
+      if (totalTextV7) requiredH += T.labelSize + 5;
       requiredH += T.suffixSize + 15;
       requiredH += 15; // Padding inferior suavemente reduzido
       
@@ -4922,12 +4932,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
       
       // 7. Total (Se ativo)
-      if (showTotal && totalOverride) {
+      if (totalTextV7) {
         currentY += T.labelSize + 5;
         ctx.fillStyle = "#333333";
         ctx.font = `600 ${T.labelSize}px Inter, Arial, sans-serif`;
         ctx.textAlign = "center";
-        const totalText = totalOverride.toLowerCase().includes("total") ? totalOverride : `Total: ${curSym} ${totalOverride}`;
+        const totalText = /total/i.test(totalTextV7) ? totalTextV7 : `Total: ${/\d/.test(totalTextV7.charAt(0)) ? `${curSym} ` : ""}${totalTextV7}`;
         ctx.fillText(totalText, pcx, currentY + pdy);
       }
       

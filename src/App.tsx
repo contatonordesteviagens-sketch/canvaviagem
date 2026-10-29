@@ -26,7 +26,7 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
   const hideSidebarPaths = [
     '/planos', '/pt/planos', '/es/planos', '/auth', '/login', '/auth/verify', '/sucesso', '/obrigado', '/es/obrigado',
     '/pos-pagamento', '/canva', '/termos', '/privacidade', '/exclusao-de-dados',
-    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/inicio2', '/es/inicio',
+    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/inicio2', '/es/inicio', '/onboarding',
     '/anuncios-para-agencia-de-viagens', '/site-para-agencia-de-viagens', '/carrosseis-para-agencia-de-viagens',
     '/equipe-de-marketing-para-agencia-de-viagens', '/.lovable/oauth/consent'
   ];
@@ -142,7 +142,8 @@ const BlogPost49 = lazy(() => import("./pages/BlogPost49"));
 const BlogPost50 = lazy(() => import("./pages/BlogPost50"));
 const Blog = lazy(() => import("./pages/Blog"));
 const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
-const Inicio2 = lazy(() => import("./pages/Inicio2"));
+const InicioEntry = lazy(() => import("./pages/InicioEntry"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OfferLanding = lazy(() => import("./pages/OfferLanding"));
 const AdsOfferLanding = lazy(() => import("./pages/AdsOfferLanding"));
 const SiteOfferLanding = lazy(() => import("./pages/SiteOfferLanding"));
@@ -246,7 +247,8 @@ const App = () => {
                     } />
                     <Route path="/planos" element={<Navigate to="/inicio" replace />} />
                     <Route path="/pt/planos" element={<Navigate to="/inicio" replace />} />
-                    <Route path="/inicio" element={<Inicio2 />} />
+                    <Route path="/inicio" element={<InicioEntry />} />
+                    <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                     <Route path="/anuncios-para-agencia-de-viagens" element={<AdsOfferLanding />} />
                     <Route path="/site-para-agencia-de-viagens" element={<SiteOfferLanding />} />
                     <Route path="/carrosseis-para-agencia-de-viagens" element={<TravelAgencyContentLanding />} />

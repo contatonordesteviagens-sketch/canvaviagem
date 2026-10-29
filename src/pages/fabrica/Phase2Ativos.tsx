@@ -347,7 +347,7 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
                             title="Aprovar e Enviar para o Site"
                             className="h-7 px-2 flex items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 text-[10px] font-bold hover:bg-emerald-500/30 transition-all cursor-pointer mr-1"
                           >
-                            <Check className="w-3 h-3 mr-1" /> Aprovar para o Site
+                            <Check className="w-3 h-3 mr-1" /> Mostrar no site
                           </button>
                         ) : (
                           <button
@@ -365,11 +365,11 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
                     </div>
                     {pkg.imageUrl ? (
                        <div className="text-[10px] text-emerald-400/80 flex items-center gap-1 mt-2 bg-emerald-500/5 py-1 px-2 rounded-md border border-emerald-500/10">
-                          <Check className="w-3 h-3" /> Vinculado com Foto da Fase 3
+                          <Check className="w-3 h-3" /> Usando a foto do seu anúncio
                        </div>
                     ) : (
                        <div className="text-[10px] text-amber-400/80 flex items-center gap-1 mt-2 bg-amber-500/5 py-1 px-2 rounded-md border border-amber-500/10">
-                          💡 Use a Fase 3 para criar o anúncio e imagem deste pacote
+                          💡 Crie o anúncio deste pacote na aba Anúncio para ganhar a foto
                        </div>
                     )}
                   </div>
@@ -380,7 +380,7 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
 
           {packages.length > 0 && (
             <div className="text-[10px] text-white/30 text-center pt-1 uppercase tracking-widest font-bold">
-              ✅ {packages.length} pacote{packages.length !== 1 ? "s" : ""} sincronizado{packages.length !== 1 ? "s" : ""} com seu site
+              ✅ {packages.filter((p) => !p.isDraft).length} no site · {packages.filter((p) => p.isDraft).length} em rascunho
             </div>
           )}
         </div>

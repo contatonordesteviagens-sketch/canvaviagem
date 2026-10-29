@@ -13,6 +13,7 @@ import { getMarketingAttribution, useAssociateUtmToUser } from "@/hooks/useTrack
 import { trackEvent, ANALYTICS_EVENTS } from "@/hooks/useAnalyticsEvents";
 import { formatPhoneBR, cleanPhone } from "@/lib/phone-utils";
 import logoImage from "@/assets/logo.png";
+import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
 
 const pendingAuthStateKey = "cv:pending-auth-checkout";
 
@@ -231,6 +232,11 @@ const Auth = () => {
                   <p className="text-muted-foreground text-sm">
                     Entrar sem senha usando seu e-mail
                   </p>
+                </div>
+
+                <div className="space-y-5">
+                  <GoogleSignInButton redirectTo={redirectTo} />
+                  <AuthDivider />
                 </div>
 
                 <form onSubmit={handleSendMagicLink} className="space-y-5">

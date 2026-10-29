@@ -77,6 +77,8 @@ Deno.serve(async (req) => {
     const upstream = new FormData();
     upstream.append("model", "openai/gpt-4o-mini-transcribe");
     upstream.append("file", file, filename);
+    // Sem idioma explícito, falas curtas vêm transcritas em inglês.
+    upstream.append("language", url.searchParams.get("language") === "es" ? "es" : "pt");
     if (wantStream) upstream.append("stream", "true");
 
     const response = await fetch(

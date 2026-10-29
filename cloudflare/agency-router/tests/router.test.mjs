@@ -105,12 +105,16 @@ test("corrige o WhatsApp de publicações antigas sem regravar o HTML", () => {
   assert.equal(upgradePublishedSiteWhatsApp(upgraded), upgraded);
 });
 
-test("retorna 404 quando o site público não existe", async () => {
+test("site suspenso ou inexistente redireciona para o Canva Viagem", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => Response.json([]);
   try {
     const response = await worker.fetch(new Request("https://sem-site.canvaviagem.com/"), TEST_ENV);
-    assert.equal(response.status, 404);
+    assert.equal(response.status, 302);
+    const location = new URL(response.headers.get("location"));
+    assert.equal(location.origin + location.pathname, "https://canvaviagem.com/inicio");
+    assert.equal(location.searchParams.get("utm_source"), "site_suspenso");
+    assert.equal(location.searchParams.get("utm_campaign"), "sem-site");
   } finally {
     globalThis.fetch = originalFetch;
   }

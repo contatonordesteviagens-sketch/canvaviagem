@@ -245,7 +245,7 @@ const safeApply = (ctx: CanvasRenderingContext2D, method: string, args: any[]) =
 };
 
 export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTweakMap): ArtRecorder {
-  const map = tweaks || {};
+  let map = tweaks || {};
   /**
    * Sem ajustes de admin não há motivo para adiar o desenho: desenhamos direto
    * (comportamento original do motor) e apenas gravamos as caixas dos elementos
@@ -476,6 +476,12 @@ export function createArtRecorder(real: CanvasRenderingContext2D, tweaks?: ArtTw
     if (replayedUpTo >= ops.length) return;
     const slice = ops.slice(replayedUpTo);
     replayedUpTo = ops.length;
+    // Os IDs (t1, t2...) dependem do conteúdo da arte. Se um ajuste salvo esconde o preço,
+    // ele foi feito para outra composição: usamos o layout original para o preço nunca sumir.
+    const hidesPrice = ops.some(
+      (op) => op.kind === "text" && map[op.id]?.hidden && /(R\$|US\$|€|\$)\s*\d/.test(op.text || ""),
+    );
+    if (hidesPrice) map = {};
     if (deferred) {
     const ordered = slice
       .map((op, i) => ({ op, i, z: Number.isFinite(map[op.id]?.z as number) ? (map[op.id]!.z as number) : 0 }))
