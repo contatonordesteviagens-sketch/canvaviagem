@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { UserDetailsModal } from "./UserDetailsModal";
+import { EmailCapturesCard } from "./EmailCapturesCard";
 
 type StatusFilter = "all" | "active" | "canceled" | "past_due" | "trialing" | "inactive";
 
@@ -183,6 +184,8 @@ export const UsersSection = () => {
           </CardContent>
         </Card>
       </div>
+
+      <EmailCapturesCard />
 
       {/* Tabela */}
       <Card>

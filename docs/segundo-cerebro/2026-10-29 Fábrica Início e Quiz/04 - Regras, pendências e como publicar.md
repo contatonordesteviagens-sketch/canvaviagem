@@ -13,9 +13,16 @@ criado: 2026-10-29
 - Antes de commit: `npx tsc --noEmit` (0 erros) e depois build.
 - Push na `main` = **produção** (Lovable). Commit e push só com autorização do Lucas. Nunca deploy pelo Vercel.
 
-## Estado do git (29/10/2026)
-- Branch `feat/inicio-quiz-onboarding`, 39 arquivos alterados, **nada commitado**.
-- `origin/main` está 19 commits à frente; só `src/pages/Index.tsx` se sobrepõe → fazer rebase antes do push.
+## Estado do git (29/10/2026) — PUBLICADO
+- Commit `a06f6a67` (58 arquivos, só o trabalho desta rodada) + merge `570e2dbe` com os 19 commits do Lovable (1 conflito em `fabrica-html-export.ts`, resolvido).
+- Push em `origin/main` às 06:20 UTC de 29/10 → Lovable publica em produção.
+- Testado antes do push, logado como admin no navegador: Gestão (293 usuários), home (busca, chips, Mais, atalhos, barra do celular), Fábrica (Primeiros passos, pacote em uma frase), anúncio gerado nos modelos 6 e 9 com preço/parcelas/total, carrossel (6 slides), site (aviso de rascunho, botão único, prévia), republicação do `breadi.canvaviagem.com` (contador de visitas saiu com a chave), CRM em cartões no celular, `/inicio` e `/onboarding`. Zero erros de console.
+
+### Ponto de retorno (versão publicada ANTES desta rodada)
+- Tag e branch `backup/producao-2026-10-29` = commit **`a22142a6`** ("Consolidou e publicou vídeos"), já no GitHub.
+- **Voltar tudo ao que era:** `git push origin a22142a6:main --force` (o Lovable republica a versão antiga em minutos).
+- **Voltar a testar a nova depois:** `git push origin 570e2dbe:main --force`.
+- O código novo continua salvo na branch `feat/inicio-quiz-onboarding`.
 - `npm run build` falha no `prebuild` (`validate-official-supabase.mjs`) porque o `.env` não tem `VITE_SUPABASE_PROJECT_ID`; usar `npx vite build` para validar.
 
 ## Pendências do Lucas (não dá para fazer pelo código)

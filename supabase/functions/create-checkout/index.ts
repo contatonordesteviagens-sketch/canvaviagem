@@ -146,8 +146,11 @@ serve(async (req) => {
     let upgradeFeature = "";
     let landingPath = "/inicio";
     let landingVariant = "general";
+    // "embedded": a página /checkout mostra o formulário da Stripe dentro do site e recebe client_secret.
+    let uiMode: "hosted" | "embedded" = "hosted";
     try {
       const body = await req.json();
+      if (body?.ui_mode === "embedded") uiMode = "embedded";
       if (body?.billing_cycle === "semiannual" || body?.billing_cycle === "annual") {
         requestedCycle = body.billing_cycle;
       }
@@ -269,6 +272,7 @@ serve(async (req) => {
       },
     };
 
+    const successUrl = `${origin}/obrigado?${successParams.toString()}&session_id={CHECKOUT_SESSION_ID}`;
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -282,8 +286,9 @@ serve(async (req) => {
       ],
       mode: "subscription",
       subscription_data: subscriptionData,
-      success_url: `${origin}/obrigado?${successParams.toString()}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}${landingPath}?${cancelParams.toString()}`,
+      ...(uiMode === "embedded"
+        ? { ui_mode: "embedded" as const, return_url: successUrl }
+        : { success_url: successUrl, cancel_url: `${origin}${landingPath}?${cancelParams.toString()}` }),
       metadata: {
         user_id: user.id,
         billing_cycle: requestedCycle,
@@ -292,13 +297,17 @@ serve(async (req) => {
         landing_path: landingPath,
         landing_variant: landingVariant,
       },
-      // Enable abandoned cart recovery
-      after_expiration: {
-        recovery: {
-          enabled: true,
-          allow_promotion_codes: true,
-        },
-      },
+      // Enable abandoned cart recovery (só no checkout hospedado)
+      ...(uiMode === "hosted"
+        ? {
+          after_expiration: {
+            recovery: {
+              enabled: true,
+              allow_promotion_codes: true,
+            },
+          },
+        }
+        : {}),
       consent_collection: {
         promotions: 'auto',
       },
@@ -306,12 +315,15 @@ serve(async (req) => {
     }, {
       // Repeated clicks within the same ten-minute window reuse the same Stripe
       // operation instead of creating parallel checkout sessions.
-      idempotencyKey: `elite-checkout:${user.id}:${requestedCycle}:${Math.floor(Date.now() / 600000)}`,
+      idempotencyKey: `elite-checkout:${uiMode}:${user.id}:${requestedCycle}:${Math.floor(Date.now() / 600000)}`,
     });
 
-    logStep("Checkout session created", { sessionId: session.id });
+    logStep("Checkout session created", { sessionId: session.id, uiMode });
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    const payload = uiMode === "embedded"
+      ? { clientSecret: session.client_secret }
+      : { url: session.url };
+    return new Response(JSON.stringify(payload), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

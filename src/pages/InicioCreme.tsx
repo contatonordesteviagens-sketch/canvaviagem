@@ -1,76 +1,105 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ComponentType, type DragEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
-  ArrowRight, Check, X, Plus, MapPin, Sparkles, Download, Link2,
-  Palette, PenLine, BadgeCheck, Compass, Instagram, MessageCircle, LayoutTemplate, Images, Globe,
+  ArrowRight, Check, X, Plus, MapPin, Sparkles, Download, Mic, Upload, Infinity as InfinityIcon,
+  Instagram, MessageCircle, LayoutTemplate, Images, Globe, Video, Users, Megaphone, Smartphone, Monitor,
+  CalendarDays, LayoutDashboard, Play, Lock, ShieldCheck, Palette, PenLine, BadgeCheck,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
+import { ELITE_OFFER } from "@/lib/eliteOffer";
 import { BrandMark, Eyebrow, delay, useReveal } from "@/components/cv-cream/shared";
+import { siteOfferDemos } from "@/lib/site-offer-demos";
+import AutoplayLoopVideo from "@/components/travel-agency-content/AutoplayLoopVideo";
 import antesAmador from "@/assets/antes_amador.png";
 import depoisPremium from "@/assets/depois_premium.png";
+import heroDashboard from "@/assets/hero_dashboard.jpg";
+import dashboardInterno from "@/assets/dashboard_interno.png";
+import showcaseAds from "@/assets/images/showcase-ad-creation.png";
+import showcasePages from "@/assets/images/showcase-landing-pages.png";
+import showcaseCrm from "@/assets/images/showcase-crm.png";
+import showcaseScheduler from "@/assets/images/showcase-scheduler.png";
+import showcaseMedia from "@/assets/images/showcase-premium-medias.png";
 
 export const ONBOARDING_PATH = "/onboarding";
 export const ONBOARDING_DESTINO_KEY = "cv-onboarding-destino";
+export const ONBOARDING_LOGO_KEY = "cv-onboarding-logo";
 
-const outputs = [
-  { src: "/travel-carousel-assets/cancun-card-01.webp", label: "Feed", icon: Instagram, rot: "-6deg" },
-  { src: "/travel-carousel-assets/cancun-editorial-01.webp", label: "Carrossel", icon: Images, rot: "3deg" },
-  { src: "/travel-carousel-assets/cancun-glass-01.webp", label: "Story", icon: LayoutTemplate, rot: "-2deg" },
-  { src: "/travel-carousel-assets/cancun-card-02.webp", label: "Página", icon: Globe, rot: "5deg" },
-];
+type Icon = ComponentType<{ className?: string }>;
 
-const builtFor = [
+// Peças reais saídas da Fábrica (mesma faixa da página de carrosséis).
+const STRIP = [
+  "cancun-glass-01", "cancun-card-01", "cancun-editorial-01", "gramado-offer-01", "cancun-glass-02", "cancun-card-02",
+  "cancun-editorial-02", "gramado-offer-02", "cancun-glass-03", "cancun-card-03", "cancun-editorial-03", "gramado-offer-05", "cancun-glass-04",
+].map((n) => `/travel-carousel-assets/${n}.webp`);
+
+const builtFor: { label: string; icon: Icon }[] = [
+  { label: "Anúncios", icon: Megaphone },
   { label: "Instagram Feed", icon: Instagram },
   { label: "Stories", icon: LayoutTemplate },
   { label: "Carrosséis", icon: Images },
+  { label: "Site", icon: Globe },
+  { label: "Vídeos", icon: Video },
   { label: "WhatsApp", icon: MessageCircle },
-  { label: "Página de vendas", icon: Globe },
 ];
 
 const steps = [
-  { n: "01", icon: Link2, title: "Escolha o destino", text: "Digite o destino, os dias e o valor do pacote." },
-  { n: "02", icon: Sparkles, title: "Receba tudo pronto", text: "A Fábrica de Artes monta posts, stories e carrosséis com a sua logo." },
-  { n: "03", icon: Download, title: "Publique e venda", text: "Baixe, poste no Instagram e mande a página no WhatsApp." },
+  { n: "01", icon: Mic, title: "Mande um áudio", text: "Fale o destino, os dias e o valor, do jeito que você fala com um cliente. Se preferir, digite." },
+  { n: "02", icon: Sparkles, title: "Receba tudo pronto", text: "Anúncio, carrossel, stories, a página do pacote e o vídeo saem montados, já com a sua logo." },
+  { n: "03", icon: Download, title: "Publique e venda", text: "Baixe, poste no Instagram, impulsione o anúncio e mande o site no WhatsApp." },
+];
+
+type ToolTab = "principais" | "videos" | "artes" | "sites" | "ia" | "venda";
+const TOOL_TABS: { id: ToolTab; label: string }[] = [
+  { id: "principais", label: "Principais" }, { id: "videos", label: "Vídeos" }, { id: "artes", label: "Artes" },
+  { id: "sites", label: "Sites" }, { id: "ia", label: "IA" }, { id: "venda", label: "Venda" },
+];
+const TOOLS: { img: string; title: string; text: string; icon: Icon; tags: ToolTab[] }[] = [
+  { img: showcaseAds, title: "Anúncios prontos para impulsionar", text: "Pacote, preço e condições viram anúncio de feed e stories em segundos, com a sua marca.", icon: Megaphone, tags: ["principais", "artes", "ia"] },
+  { img: showcasePages, title: "Site com a página de cada pacote", text: "Roteiro, fotos e valor organizados num link para mandar no WhatsApp e passar confiança.", icon: Globe, tags: ["principais", "sites", "venda"] },
+  { img: showcaseCrm, title: "Seus clientes organizados", text: "Quem pediu orçamento pelo site cai numa lista com nome, WhatsApp e destino. Nada se perde.", icon: Users, tags: ["principais", "venda"] },
+  { img: showcaseScheduler, title: "Calendário de postagens", text: "O que postar em cada dia da semana, já com as peças prontas. Chega de improviso.", icon: CalendarDays, tags: ["principais", "artes"] },
+  { img: showcaseMedia, title: "Vídeos e artes por destino", text: "Reels, stories e artes de turismo prontos para adaptar à sua agência e postar hoje.", icon: Video, tags: ["principais", "videos", "artes"] },
+  { img: dashboardInterno, title: "Tudo no mesmo painel", text: "Anúncios, carrosséis, site, vídeos e clientes sem trocar de ferramenta o tempo todo.", icon: LayoutDashboard, tags: ["principais", "ia", "sites", "videos"] },
 ];
 
 const compare = [
-  ["Artes de viagem prontas por destino", true, false],
+  ["Fala o pacote num áudio e recebe tudo pronto", true, false],
   ["Sua logo e cores aplicadas sozinhas", true, false],
-  ["Textos de venda escritos pela IA", true, false],
-  ["Carrosséis para feed e stories", true, true],
-  ["Página de vendas do pacote", true, false],
-  ["CRM para organizar os leads", true, false],
-  ["Calendário de conteúdo pronto", true, false],
-  ["Não precisa saber design", true, false],
+  ["Anúncios para feed e stories", true, false],
+  ["Carrosséis prontos por destino", true, true],
+  ["Site com a página de cada pacote", true, false],
+  ["Seus clientes organizados num só lugar", true, false],
+  ["Vídeos de destinos prontos para postar", true, false],
+  ["Sem limite: 1 ou 1.000 peças no mesmo dia", true, false],
   ["Funciona no celular", true, true],
   ["7 dias de garantia", true, false],
 ] as const;
 
-const proofs = [
-  { stat: "1ª venda em 24h", quote: "Em menos de 24 horas tive minha primeira venda para Disney usando os anúncios que a IA gerou.", name: "Maria S.", role: "agente autônoma, São Paulo", bg: "#fde4ef" },
-  { stat: "5 pacotes fechados", quote: "Com pouca verba apareceu muita gente interessada. Fiz 23 orçamentos só ontem e fechei 5 pacotes.", name: "Ricardo T.", role: "agência de viagens, Curitiba", bg: "#ebe5ff" },
-  { stat: "0 pedidos de desconto", quote: "Mandei a página com o roteiro organizado e a conversa mudou. O cliente entendeu o valor antes de perguntar o preço.", name: "Ana C.", role: "consultora de viagens, Rio de Janeiro", bg: "#f3e3d3" },
-];
-
 const faqs = [
-  { q: "Preciso saber design ou dominar o Canva?", a: "Não. A plataforma foi pensada para agência de viagem que precisa vender, não para designer. Você parte de modelos prontos, ajusta destino, preço e logo, e publica." },
-  { q: "Isso substitui o Canva Pro?", a: "Não é a mesma coisa. O Canva Pro é uma ferramenta genérica. O Canva Viagem entrega artes, IA, páginas, CRM e fluxos feitos para vender pacotes de viagem." },
-  { q: "Funciona pelo celular?", a: "Sim. Dá para criar e baixar tudo pelo celular. Para montar páginas e organizar campanhas, o computador deixa mais confortável." },
-  { q: "O pagamento é seguro?", a: "Sim. O pagamento é processado pela Stripe, com acesso imediato e garantia de 7 dias conforme as regras do checkout." },
+  { q: "É ilimitado mesmo?", a: "Sim. Não existe crédito, cota nem contador. Você pode gerar uma peça ou mil no mesmo dia: anúncios, carrosséis, stories, páginas e vídeos. O ilimitado fica travado para quem assina agora." },
+  { q: "Preciso saber design ou dominar o Canva?", a: "Não. Você fala ou digita o pacote e escolhe entre os modelos prontos. Destino, preço e logo entram sozinhos." },
+  { q: "Preciso gravar áudio?", a: "Não. O áudio é o caminho mais rápido, mas você pode digitar destino, dias e valor e o resultado é o mesmo." },
+  { q: "Funciona pelo celular?", a: "Sim. Dá para gravar o áudio, gerar e baixar tudo pelo celular. Para mexer no site com calma, o computador é mais confortável." },
   { q: "E se eu não gostar?", a: "Você tem 7 dias para testar com um pacote real da sua agência. Se não fizer sentido, peça o reembolso dentro do prazo da garantia." },
 ];
 
-const scoreBars = [22, 30, 26, 38, 44, 92, 52, 34, 28, 40, 58, 99, 66, 42, 30, 36, 48, 86, 54, 38, 30, 26];
-const peaks: Record<number, string> = { 5: "8.7", 11: "9.6", 17: "8.9" };
-
-const engine = [
-  { icon: MapPin, title: "Destino", text: "Cada destino com fotos, roteiro e argumentos próprios." },
-  { icon: Palette, title: "Design", text: "Layouts testados em agências que vendem todo dia." },
-  { icon: PenLine, title: "Copy", text: "Texto de venda escrito pela IA, no tom da sua agência." },
-  { icon: BadgeCheck, title: "Marca", text: "Sua logo, cores e contato em todas as peças." },
+const engine: { icon: Icon; title: string; text: string }[] = [
+  { icon: MapPin, title: "Entende o pacote", text: "Destino, dias, valor e o que está incluso, do seu áudio ou do que você digitou." },
+  { icon: Palette, title: "Monta em modelos testados", text: "Layouts que agências usam todo dia, para feed, stories, carrossel e site." },
+  { icon: PenLine, title: "Escreve o texto de venda", text: "Legenda, chamada do anúncio e descrição do pacote, no tom da sua agência." },
+  { icon: BadgeCheck, title: "Aplica a sua marca", text: "Logo, cores e WhatsApp em todas as peças. Troca a logo, troca tudo." },
 ];
+
+const yearGifs = {
+  main: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm5kcmcybmE2aTFkOTU3ZDNqYmZkbHQ2YjRibjB1NjFtN2RoNWdrMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6osnZ6joYcPfERZsaE/giphy.gif",
+  previews: [
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3J2anV0aTVkYWowbDl1ZXFtNnB4ZWUwcnVnZTVzOW91ZzNncGNvNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbylDFYWSU46XeLcsS/giphy.gif",
+    "https://media4.giphy.com/media/VVMI7dobalrJhKmQOZ/giphy.gif",
+    "https://media4.giphy.com/media/tJPdq4gvTvr8CgIyWI/giphy.gif",
+  ],
+};
 
 export default function InicioCreme() {
   const navigate = useNavigate();
@@ -84,11 +113,7 @@ export default function InicioCreme() {
   useEffect(() => {
     if (tracked.current) return;
     tracked.current = true;
-    trackMetaEvent("ViewContent", {
-      content_name: "Canva Viagem - Plataforma para Agências",
-      content_category: "inicio_creme",
-      content_type: "product",
-    });
+    trackMetaEvent("ViewContent", { content_name: "Canva Viagem - Plataforma para Agências", content_category: "inicio_creme", content_type: "product" });
   }, []);
 
   useEffect(() => {
@@ -98,6 +123,7 @@ export default function InicioCreme() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /** Todo caminho leva ao mesmo lugar: login (pega o e-mail) → quiz → pagamento. Assinante vai para a Fábrica. */
   const start = (source: string) => {
     const value = destino.trim();
     try {
@@ -116,11 +142,11 @@ export default function InicioCreme() {
   return (
     <div ref={pageRef} className="cv-cream min-h-screen overflow-x-hidden">
       <Helmet>
-        <title>Canva Viagem — Artes que vendem viagens, prontas em minutos</title>
-        <meta name="description" content="Digite um destino e receba posts, stories, carrosséis e uma página de vendas prontos com a cara da sua agência." />
+        <title>Canva Viagem — Mande um áudio e receba anúncios, carrosséis, site e vídeos prontos</title>
+        <meta name="description" content="Fale o destino, os dias e o valor do pacote. Em minutos saem anúncios, carrosséis, stories, o site e os vídeos, com a sua logo. Sem limite de quantidade." />
       </Helmet>
 
-      {/* Header flutuante */}
+      {/* Cabeçalho flutuante */}
       <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4">
         <div
           className="flex w-full max-w-5xl items-center justify-between rounded-full px-3 py-2 transition-all duration-300"
@@ -133,21 +159,21 @@ export default function InicioCreme() {
         >
           <a href="/inicio" aria-label="Canva Viagem" className="pr-2"><BrandMark size={44} /></a>
           <button onClick={() => start("header")} className="cv-btn h-11 px-5 text-[15px] sm:h-[52px] sm:px-7 sm:text-base">
-            <span className="sm:hidden">Começar grátis</span>
-            <span className="hidden sm:inline">Começar — é grátis</span>
+            Comece agora <ArrowRight className="hidden h-4 w-4 sm:block" />
           </button>
         </div>
       </header>
 
       <main>
         {/* 1. Hero */}
-        <section className="px-4 pb-10 pt-32 sm:pt-40">
+        <section className="px-4 pb-6 pt-28 sm:pt-36">
           <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-            <h1 className="cv-pop text-balance text-[2.6rem] font-extrabold leading-[1.02] tracking-[-0.025em] sm:text-6xl md:text-[4.5rem]">
-              Transforme qualquer destino em posts que <span style={{ color: "var(--cv-primary-ink)" }}>vendem viagens.</span>
+            <Eyebrow className="cv-pop">Para agências de viagens sem equipe de marketing</Eyebrow>
+            <h1 className="cv-pop mt-4 text-balance text-[2.5rem] font-extrabold leading-[1.02] tracking-[-0.025em] sm:text-6xl md:text-[4.4rem]" style={delay(60)}>
+              Mande um áudio. Receba sua agência <span style={{ color: "var(--cv-primary-ink)" }}>inteira pronta.</span>
             </h1>
-            <p className="cv-pop mt-6 max-w-lg text-lg leading-7" style={{ ...delay(120), color: "var(--cv-muted)" }}>
-              Digite um destino e receba artes, stories, carrosséis e uma página de vendas prontos, com a cara da sua agência, em minutos.
+            <p className="cv-pop mt-6 max-w-xl text-lg leading-7" style={{ ...delay(120), color: "var(--cv-muted)" }}>
+              Fale o destino, os dias e o valor, do jeito que você fala com um cliente. Em minutos saem o anúncio, o carrossel, os stories, a página do pacote e os vídeos, tudo com a sua logo.
             </p>
 
             <form onSubmit={onHeroSubmit} className="cv-pop mt-8 w-full max-w-xl" style={delay(220)}>
@@ -158,46 +184,46 @@ export default function InicioCreme() {
                     value={destino}
                     onChange={(e) => setDestino(e.target.value)}
                     placeholder="Digite um destino: Cancún, Gramado, Disney..."
-                    className="w-full bg-transparent text-[15px] outline-none placeholder:text-[#9b917d]"
+                    className="w-full bg-transparent text-[16px] outline-none placeholder:text-[#9b917d]"
                     aria-label="Destino do pacote"
                   />
                 </label>
                 <button type="submit" className="cv-btn h-12 px-7 text-[15px] sm:h-[52px]">
-                  Criar artes <ArrowRight className="h-4 w-4" />
+                  Criar agora <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             </form>
-            <a href="#como-funciona" className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold" style={{ color: "var(--cv-muted)" }}>
-              <Compass className="h-3.5 w-3.5" /> ou veja como funciona
-            </a>
+
+            <button
+              type="button"
+              onClick={() => start("hero_audio")}
+              className="cv-pop cv-mic mt-4 inline-flex min-h-14 items-center gap-3 rounded-full border bg-white pl-2 pr-6 text-left shadow-[0_14px_30px_-20px_rgba(32,28,19,.4)]"
+              style={{ ...delay(300), borderColor: "var(--cv-line)" }}
+            >
+              <span className="relative grid h-11 w-11 place-items-center rounded-full text-white" style={{ background: "var(--cv-accent)" }}>
+                <span className="cv-ping absolute inset-0 rounded-full" style={{ background: "var(--cv-accent)" }} />
+                <Mic className="relative h-5 w-5" />
+              </span>
+              <span>
+                <span className="block text-[15px] font-bold">Ou grave um áudio</span>
+                <span className="block text-[12px]" style={{ color: "var(--cv-muted)" }}>"Cancún, 7 dias, casal, 8.900 reais" já basta</span>
+              </span>
+            </button>
           </div>
 
-          {/* Demonstração: destino → artes prontas */}
-          <div className="cv-pop mx-auto mt-14 max-w-4xl rounded-[36px] bg-[#16130d] p-4 sm:p-6" style={delay(320)}>
-            <div className="flex flex-col items-center gap-3 rounded-[26px] bg-[#221d14] px-4 py-4 sm:flex-row sm:justify-between">
-              <div className="flex items-center gap-3 text-[14px] text-[#e9dfc4]">
-                <MapPin className="h-4 w-4 text-[#b9a8ff]" />
-                <span className="font-semibold">Cancún</span>
-                <span className="text-[#9b917d]">· 7 dias · casal · R$ 8.900</span>
-              </div>
-              <span className="cv-btn pointer-events-none h-10 px-5 text-[14px]">Criar artes <ArrowRight className="h-4 w-4" /></span>
+          {/* Faixa infinita de peças reais */}
+          <div className="cv-pop mx-auto mt-12 max-w-6xl" style={delay(380)}>
+            <div className="mx-auto mb-4 flex max-w-5xl flex-wrap items-center justify-center gap-2 px-2 text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white" style={{ background: "var(--cv-accent)" }}>
+                <InfinityIcon className="h-3.5 w-3.5" /> ILIMITADO · SEM CRÉDITOS
+              </span>
+              <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Carrosséis, anúncios e stories saindo da Fábrica agora. Pode fazer 1 ou 1.000 no mesmo dia.</p>
             </div>
-            <div className="grid grid-cols-2 gap-3 pt-6 sm:grid-cols-4 sm:gap-5 sm:pt-8">
-              {outputs.map((o, i) => (
-                <div key={o.label} className="cv-float" style={{ ...delay(i * 350), ["--cv-rot" as string]: o.rot }}>
-                  <div className="overflow-hidden rounded-[20px] border-4 border-[#2c261b] bg-black shadow-xl">
-                    <img src={o.src} alt={`Arte de ${o.label} gerada para Cancún`} className="aspect-[4/5] w-full object-cover" loading="lazy" />
-                  </div>
-                  <div className="mx-auto -mt-4 flex w-max items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[12px] font-bold shadow-md">
-                    <o.icon className="h-3.5 w-3.5" style={{ color: "var(--cv-accent)" }} /> {o.label}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Marquee />
           </div>
 
           <div className="mx-auto mt-8 flex max-w-5xl flex-wrap items-center justify-center gap-2 rounded-full border bg-white px-4 py-3" style={{ borderColor: "var(--cv-line)" }}>
-            <span className="mr-2 text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>FEITO PARA</span>
+            <span className="mr-2 text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>SAI PRONTO PARA</span>
             {builtFor.map((b) => (
               <span key={b.label} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold" style={{ background: "var(--cv-sand)" }}>
                 <b.icon className="h-3.5 w-3.5" /> {b.label}
@@ -211,8 +237,8 @@ export default function InicioCreme() {
           <div className="mx-auto max-w-5xl">
             <div className="cv-reveal mx-auto max-w-2xl text-center">
               <Eyebrow>Como funciona</Eyebrow>
-              <h2 className="cv-h2 mt-4">Três passos até o seu primeiro post vendendo</h2>
-              <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Escolha o destino → receba as artes → publique e venda. Só isso.</p>
+              <h2 className="cv-h2 mt-4">Um áudio. Três passos. A semana inteira resolvida.</h2>
+              <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Você fala → a Fábrica monta → você publica. O resto é cliente chamando.</p>
             </div>
             <div className="mt-12 grid gap-4 md:grid-cols-3">
               {steps.map((s, i) => (
@@ -229,31 +255,131 @@ export default function InicioCreme() {
                 </div>
               ))}
             </div>
+            <div className="cv-reveal mt-8 text-center">
+              <button onClick={() => start("steps_cta")} className="cv-btn h-13 min-h-[52px] px-7 text-[15px]">
+                <Mic className="h-4 w-4" /> Mandar meu primeiro áudio
+              </button>
+            </div>
           </div>
         </section>
 
-        {/* 3. Por que funciona */}
+        {/* 3. Ilimitado */}
+        <section className="px-4 py-16 sm:py-24">
+          <div className="mx-auto max-w-5xl overflow-hidden rounded-[36px] bg-[#16130d] px-6 py-12 text-[#f4ecd8] sm:px-12 sm:py-16">
+            <div className="grid items-center gap-10 md:grid-cols-[1.1fr_0.9fr]">
+              <div className="cv-reveal">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[12px] font-bold tracking-[0.6px]">
+                  <InfinityIcon className="h-4 w-4 text-[#ff8cbb]" /> SEM CRÉDITOS · SEM COTA · SEM CONTADOR
+                </span>
+                <h2 className="cv-h2 mt-5 text-white">Aqui não existe "acabou sua cota".</h2>
+                <p className="mt-5 text-lg leading-7 text-[#d9d0b8]">
+                  Outras ferramentas vendem por crédito: 50 artes por mês e tchau. Aqui você faz <strong className="text-white">1 ou 1.000 no mesmo dia.</strong>
+                </p>
+                <p className="mt-4 text-lg leading-7 text-[#d9d0b8]">
+                  Terça saem 30 stories de Gramado. Quarta, 12 anúncios de Cancún para testar qual chama mais. Sábado o site inteiro de novo, porque o preço mudou. Ninguém te cobra por isso.
+                </p>
+                <p className="mt-4 text-lg font-semibold leading-7 text-white">
+                  Quem posta mais, aparece mais. Quem aparece mais, fecha mais. Ganhe no volume.
+                </p>
+              </div>
+              <div className="cv-reveal rounded-[28px] border border-white/10 bg-white/[0.04] p-6" style={delay(140)}>
+                <p className="text-[11px] font-bold tracking-[1.2px] text-[#b9ae95]">UMA SEMANA DE FÁBRICA</p>
+                <ul className="mt-4 space-y-3 text-[15px]">
+                  {[
+                    ["Ter", "30 stories de Gramado", "0 créditos"],
+                    ["Qua", "12 anúncios de Cancún", "0 créditos"],
+                    ["Qui", "4 carrosséis de Noronha", "0 créditos"],
+                    ["Sáb", "Site republicado com preço novo", "0 créditos"],
+                  ].map(([d, t, c]) => (
+                    <li key={d} className="flex items-center gap-3 border-b border-white/10 pb-3 last:border-0 last:pb-0">
+                      <span className="w-9 text-[12px] font-bold text-[#b9ae95]">{d}</span>
+                      <span className="flex-1">{t}</span>
+                      <span className="rounded-full bg-[#2b2417] px-2.5 py-0.5 text-[12px] font-bold text-[#ff8cbb]">{c}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-5 rounded-2xl border border-[#ff8cbb]/30 bg-[#ff8cbb]/10 p-4 text-[13px] leading-5 text-[#ffd6e6]">
+                  <Lock className="mb-1 inline h-3.5 w-3.5" /> <strong>Ilimitado travado para quem assina agora.</strong> Planos novos podem vir com limite; quem já está dentro continua sem.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 4. Escolha o que criar hoje */}
+        <ToolsGrid onStart={() => start("tools_cta")} />
+
+        {/* 5. Equipe inteira */}
+        <section className="px-4 py-16 sm:py-24">
+          <div className="mx-auto max-w-5xl">
+            <div className="cv-reveal mx-auto max-w-2xl text-center">
+              <Eyebrow>Sem contratar ninguém</Eyebrow>
+              <h2 className="cv-h2 mt-4">Tudo o que uma equipe de marketing faria. Num só lugar.</h2>
+              <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Designer, social media, editor de vídeo e programador: a Fábrica faz o trabalho dos quatro enquanto você atende.</p>
+            </div>
+            <TeamImage />
+          </div>
+        </section>
+
+        {/* 6. Site pronto */}
+        <SiteDemo onStart={() => start("site_demo_cta")} />
+
+        {/* 7. Sua logo em tudo */}
+        <LogoDrop onDone={() => start("logo_upload")} />
+
+        {/* 8. 1 ano de conteúdo */}
+        <section className="px-4 py-16 sm:py-24">
+          <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2">
+            <div className="cv-reveal">
+              <Eyebrow>Conteúdo pronto</Eyebrow>
+              <h2 className="cv-h2 mt-4">1 ano de conteúdo para postar sem criar nada.</h2>
+              <p className="mt-4 text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
+                Nos dias em que você não quiser nem gravar um áudio, já tem o que postar: vídeos Reels e artes por destino, com calendário dizendo o que vai em cada dia.
+              </p>
+              <ul className="mt-6 space-y-2.5">
+                {["Vídeos Reels de destinos, prontos para o seu Instagram", "Artes e stories de alta qualidade, editáveis", "Sua logo e @ entram sozinhos", "Calendário com o que postar em cada dia"].map((f) => (
+                  <li key={f} className="flex items-center gap-3 rounded-2xl border bg-white px-4 py-3 text-[14px] font-semibold" style={{ borderColor: "var(--cv-line)" }}>
+                    <Check className="h-4 w-4 shrink-0 text-[#16a34a]" /> {f}
+                  </li>
+                ))}
+              </ul>
+              <button onClick={() => start("year_cta")} className="cv-btn mt-6 h-13 min-h-[52px] px-7 text-[15px]">Liberar meu conteúdo <ArrowRight className="h-4 w-4" /></button>
+            </div>
+            <div className="cv-reveal" style={delay(140)}>
+              <div className="overflow-hidden rounded-[28px] bg-white p-3 shadow-[0_24px_50px_-30px_rgba(32,28,19,.45)]">
+                <img src={yearGifs.main} alt="Vídeos Reels de destinos passando em celulares" className="w-full rounded-2xl object-cover" loading="lazy" />
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-3">
+                {yearGifs.previews.map((g, i) => (
+                  <img key={g} src={g} alt={`Exemplo de Reels ${i + 1}`} className="aspect-[9/16] w-full rounded-2xl object-cover shadow-md" loading="lazy" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 9. Antes × depois + comparação */}
         <section className="px-4 py-16 sm:py-24">
           <div className="mx-auto max-w-5xl">
             <div className="cv-reveal mx-auto max-w-2xl text-center">
               <Eyebrow>Por que funciona</Eyebrow>
               <h2 className="cv-h2 mt-4">Seu post vende. Sua agência parece grande.</h2>
               <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>
-                Cada arte sai com design profissional, texto de venda e a sua marca, enquanto o post feito às pressas passa batido no feed.
+                Cada peça sai com design profissional, texto de venda e a sua marca. O post feito às pressas passa batido no feed.
               </p>
             </div>
-            <div className="mt-12 grid gap-4 md:grid-cols-2">
+            <div className="mt-12 grid items-start gap-4 md:grid-cols-2">
               <div className="cv-reveal">
                 <span className="mb-2 inline-block rounded-full border bg-white px-3 py-1 text-[11px] font-semibold" style={{ borderColor: "var(--cv-line)", color: "var(--cv-muted)" }}>Post feito às pressas</span>
                 <div className="relative overflow-hidden rounded-[28px] bg-[#bdb7a7]">
-                  <img src={antesAmador} alt="Post amador de agência de viagens" className="aspect-[4/3] w-full object-cover opacity-80 grayscale-[35%]" loading="lazy" />
+                  <img src={antesAmador} alt="Post amador de agência de viagens" className="block h-auto w-full opacity-80 grayscale-[35%]" loading="lazy" />
                   <span className="absolute bottom-4 left-4 rounded-full bg-black/60 px-3 py-1 text-[13px] font-bold text-white">14 curtidas</span>
                 </div>
               </div>
               <div className="cv-reveal" style={delay(140)}>
                 <span className="mb-2 inline-block rounded-full px-3 py-1 text-[11px] font-semibold text-white" style={{ background: "var(--cv-primary)" }}>Feito no Canva Viagem</span>
-                <div className="relative overflow-hidden rounded-[28px] ring-2" style={{ ["--tw-ring-color" as string]: "var(--cv-primary)" }}>
-                  <img src={depoisPremium} alt="Post profissional criado no Canva Viagem" className="aspect-[4/3] w-full object-cover" loading="lazy" />
+                <div className="relative overflow-hidden rounded-[28px] bg-white ring-2" style={{ ["--tw-ring-color" as string]: "var(--cv-primary)" }}>
+                  <img src={depoisPremium} alt="Celular com posts profissionais criados no Canva Viagem" className="block h-auto w-full" loading="lazy" />
                   <span className="absolute bottom-4 left-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-bold text-white" style={{ background: "var(--cv-primary)" }}>
                     <MessageCircle className="h-3.5 w-3.5" /> chuva de orçamentos
                   </span>
@@ -265,13 +391,13 @@ export default function InicioCreme() {
               <table className="w-full text-left text-sm">
                 <thead style={{ background: "#f6edd2" }}>
                   <tr>
-                    <th className="px-4 py-4 font-medium sm:px-6" style={{ color: "var(--cv-muted)" }}>Recurso</th>
+                    <th className="px-4 py-4 font-medium sm:px-6" style={{ color: "var(--cv-muted)" }}>O que você recebe</th>
                     <th className="px-2 py-4 text-center font-bold sm:px-6">Canva Viagem</th>
                     <th className="px-2 py-4 text-center font-medium sm:px-6" style={{ color: "var(--cv-muted)" }}>Canva comum</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {compare.map(([label, us, them]) => (
+                  {compare.map(([label, , them]) => (
                     <tr key={label} className="border-t" style={{ borderColor: "var(--cv-line)" }}>
                       <td className="px-4 py-4 sm:px-6">{label}</td>
                       <td className="px-2 py-4 sm:px-6"><Check className="mx-auto h-4 w-4 text-[#16a34a]" /></td>
@@ -284,29 +410,44 @@ export default function InicioCreme() {
           </div>
         </section>
 
-        {/* 4. Prova */}
+        {/* 10. Como a Fábrica acerta */}
         <section className="px-4 py-16 sm:py-24">
           <div className="mx-auto max-w-5xl">
-            <div className="cv-reveal mx-auto max-w-2xl text-center">
-              <Eyebrow>Prova</Eyebrow>
-              <h2 className="cv-h2 mt-4">Agências já estão vendendo com isso</h2>
+            <div className="grid items-center gap-10 md:grid-cols-2">
+              <div className="cv-reveal">
+                <Eyebrow>Por dentro</Eyebrow>
+                <h2 className="cv-h2 mt-4">Como a Fábrica acerta a arte sem você mexer em nada</h2>
+                <p className="mt-4 text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
+                  Ela junta o seu pacote, um modelo testado, o texto de venda e a sua marca. Gera várias versões de uma vez. Você escolhe a que mais gostou, ou pega a primeira e posta.
+                </p>
+              </div>
+              <div className="cv-reveal overflow-hidden rounded-[28px] bg-[#16130d] shadow-[0_24px_50px_-30px_rgba(32,28,19,.6)]" style={delay(140)}>
+                <AutoplayLoopVideo
+                  src="/travel-carousel-assets/carousel-morph.mp4"
+                  mobileAnimationSrc="/travel-carousel-assets/carousel-morph-mobile.webp"
+                  label="Fábrica gerando variações de um carrossel"
+                  className="aspect-video w-full object-cover"
+                />
+              </div>
             </div>
-            <div className="mt-12 grid gap-4 md:grid-cols-3">
-              {proofs.map((p, i) => (
-                <figure key={p.name} className="cv-reveal flex flex-col rounded-[32px] p-8" style={{ ...delay(i * 120), background: p.bg }}>
-                  <span className="text-[32px] font-semibold tracking-[-0.02em]">{p.stat}</span>
-                  <blockquote className="mt-4 flex-1 text-[15px] leading-6">“{p.quote}”</blockquote>
-                  <figcaption className="mt-6">
-                    <p className="text-sm font-bold">{p.name}</p>
-                    <p className="text-[13px]" style={{ color: "var(--cv-muted)" }}>{p.role}</p>
-                  </figcaption>
-                </figure>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+              {engine.map((e, i) => (
+                <div key={e.title} className="cv-reveal cv-card p-5" style={delay(i * 90)}>
+                  <span className="grid h-11 w-11 place-items-center rounded-full" style={{ background: "var(--cv-accent-soft)", color: "var(--cv-accent)" }}>
+                    <e.icon className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-5 font-extrabold">{e.title}</h3>
+                  <p className="mt-1 text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>{e.text}</p>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* 5. FAQ */}
+        {/* 11. Vídeo */}
+        <VideoBlock />
+
+        {/* 12. FAQ */}
         <section className="px-4 py-16 sm:py-24">
           <div className="mx-auto max-w-2xl">
             <div className="cv-reveal text-center">
@@ -333,68 +474,22 @@ export default function InicioCreme() {
             </div>
           </div>
         </section>
-
-        {/* 6. Por dentro — Fábrica de Artes */}
-        <section className="px-4 py-16 sm:py-24">
-          <div className="mx-auto max-w-5xl">
-            <div className="grid items-center gap-10 md:grid-cols-2">
-              <div className="cv-reveal">
-                <Eyebrow>Por dentro</Eyebrow>
-                <h2 className="cv-h2 mt-4">Conheça a Fábrica de Artes</h2>
-                <p className="mt-4 text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
-                  É o motor do Canva Viagem. Ele junta <strong className="text-[var(--cv-fg)]">destino, design, texto de venda e a sua marca</strong> e gera dezenas de variações de cada pacote.
-                </p>
-                <p className="mt-4 text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
-                  As melhores vão para o seu feed. O resto nem precisa existir.
-                </p>
-              </div>
-              <div className="cv-reveal cv-card p-6 shadow-[0_20px_50px_-30px_rgba(32,28,19,.4)] sm:p-8" style={delay(140)}>
-                <div className="flex items-center justify-between">
-                  <span className="text-[12px] font-semibold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>NOTA DE CONVERSÃO</span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold" style={{ background: "var(--cv-accent-soft)", color: "var(--cv-accent)" }}>
-                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--cv-accent)" }} /> 3 artes campeãs
-                  </span>
-                </div>
-                <div className="mt-6 flex h-48 items-end gap-[6px]">
-                  {scoreBars.map((h, i) => (
-                    <div key={i} className="relative flex h-full flex-1 items-end">
-                      {peaks[i] && (
-                        <span className="absolute left-1/2 -translate-x-1/2 rounded-full bg-[#efe9ff] px-2 py-0.5 text-[11px] font-semibold text-[#6440e6]" style={{ bottom: `calc(${h}% + 8px)` }}>
-                          {peaks[i]}
-                        </span>
-                      )}
-                      <div className="cv-bar w-full rounded-full" style={{ ...delay(i * 30), height: `${h}%`, background: peaks[i] ? "#ff3d8b" : "#e9e1cc" }} />
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 flex justify-between text-[11px]" style={{ color: "var(--cv-muted)" }}>
-                  <span>variação 1</span><span>variação 22</span>
-                </div>
-              </div>
-            </div>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-              {engine.map((e, i) => (
-                <div key={e.title} className="cv-reveal cv-card p-5" style={delay(i * 90)}>
-                  <span className="grid h-11 w-11 place-items-center rounded-full" style={{ background: "var(--cv-accent-soft)", color: "var(--cv-accent)" }}>
-                    <e.icon className="h-5 w-5" />
-                  </span>
-                  <h3 className="mt-5 font-extrabold">{e.title}</h3>
-                  <p className="mt-1 text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>{e.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
       </main>
 
-      {/* 7. CTA final */}
+      {/* 13. CTA final */}
       <section className="px-4 pb-10 pt-24" style={{ background: "linear-gradient(180deg, var(--cv-bg) 0%, #e9defc 55%, #c9b8fb 100%)" }}>
         <div className="cv-reveal mx-auto max-w-2xl text-center">
-          <h2 className="cv-h2">Pare de postar no improviso.<br />Comece a vender.</h2>
-          <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Escolha o destino → receba as artes → publique e venda.</p>
-          <button onClick={() => start("final_cta")} className="cv-btn mt-8 h-14 px-8 text-base">
-            Criar minhas artes <ArrowRight className="h-4 w-4" />
-          </button>
+          <h2 className="cv-h2">Pare de postar no improviso.<br />Mande seu primeiro áudio.</h2>
+          <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Destino, dias e valor. A Fábrica devolve anúncio, carrossel, stories, site e vídeo com a sua logo.</p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <button onClick={() => start("final_audio")} className="cv-btn h-14 w-full px-8 text-base sm:w-auto">
+              <Mic className="h-4 w-4" /> Gravar um áudio
+            </button>
+            <button onClick={() => start("final_cta")} className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full border bg-white px-8 text-base font-semibold sm:w-auto" style={{ borderColor: "rgba(32,28,19,.15)" }}>
+              Comece agora <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+          <p className="mt-4 inline-flex items-center gap-1.5 text-[13px]" style={{ color: "var(--cv-muted)" }}><ShieldCheck className="h-4 w-4" /> 7 dias de garantia · cancele quando quiser</p>
         </div>
         <footer className="mx-auto mt-24 flex max-w-5xl flex-col items-center justify-between gap-4 border-t pt-6 text-[13px] sm:flex-row" style={{ borderColor: "rgba(32,28,19,.12)", color: "var(--cv-muted)" }}>
           <BrandMark size={32} withName={false} />
@@ -409,39 +504,328 @@ export default function InicioCreme() {
   );
 }
 
+/* ───────────────────────── blocos ───────────────────────── */
+
+function Marquee() {
+  const items = [...STRIP, ...STRIP];
+  return (
+    <div className="relative overflow-hidden rounded-[28px] py-2" style={{ maskImage: "linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)" }}>
+      <div className="travel-mobile-marquee flex w-max gap-3 sm:gap-4">
+        {items.map((src, i) => (
+          <img
+            key={`${src}-${i}`}
+            src={src}
+            alt=""
+            aria-hidden={i >= STRIP.length}
+            className="aspect-[4/5] w-[150px] shrink-0 rounded-2xl border-4 border-white object-cover shadow-md sm:w-[200px]"
+            loading={i < 8 ? "eager" : "lazy"}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Ilustrações animadas dos três passos: ouvir, montar, publicar. */
 function StepIllustration({ index }: { index: number }) {
   if (index === 0) {
+    const bars = [10, 18, 28, 16, 34, 22, 12, 26, 18, 30, 14, 20];
     return (
-      <div className="flex h-32 items-center justify-center">
-        <div className="flex w-44 items-center gap-2 rounded-full border px-3 py-2" style={{ background: "var(--cv-sand)", borderColor: "#e6dcc0" }}>
-          <MapPin className="h-3.5 w-3.5 text-[#8a8170]" />
-          <span className="h-1.5 flex-1 rounded-full bg-[#cfc4a6]" />
-          <span className="h-5 w-10 rounded-full" style={{ background: "var(--cv-primary)" }} />
+      <div className="flex h-32 items-center justify-center gap-4">
+        <span className="relative grid h-14 w-14 shrink-0 place-items-center rounded-full text-white" style={{ background: "var(--cv-accent)" }}>
+          <span className="cv-ping absolute inset-0 rounded-full" style={{ background: "var(--cv-accent)" }} />
+          <Mic className="relative h-6 w-6" />
+        </span>
+        <div className="flex h-12 items-center gap-[5px]">
+          {bars.map((h, i) => (
+            <span key={i} className="cv-wave w-[5px] rounded-full" style={{ ...delay(i * 90), height: h, background: i % 3 === 0 ? "var(--cv-primary)" : "#cfc4a6" }} />
+          ))}
         </div>
       </div>
     );
   }
   if (index === 1) {
+    const cards: { label: string; icon: Icon; bg: string }[] = [
+      { label: "Anúncio", icon: Megaphone, bg: "var(--cv-primary)" },
+      { label: "Carrossel", icon: Images, bg: "#ff3d8b" },
+      { label: "Site", icon: Globe, bg: "#0ea5a0" },
+      { label: "Vídeo", icon: Video, bg: "#f59e0b" },
+    ];
     return (
-      <div className="flex h-32 items-end justify-center gap-3 pb-4">
-        <span className="h-16 w-10 rounded-lg border" style={{ background: "var(--cv-sand)", borderColor: "#e6dcc0" }} />
-        <span className="grid h-20 w-10 place-items-center rounded-lg" style={{ background: "#ff3d8b" }}><Sparkles className="h-4 w-4 text-white" /></span>
-        <span className="h-12 w-10 rounded-lg border" style={{ background: "var(--cv-sand)", borderColor: "#e6dcc0" }} />
+      <div className="flex h-32 items-end justify-center gap-2 pb-3">
+        {cards.map((c, i) => (
+          <div key={c.label} className="cv-cascade relative flex h-[84px] w-14 flex-col items-center justify-end rounded-xl pb-2 text-white shadow-md" style={{ ...delay(i * 400), background: c.bg }}>
+            <span className="cv-badge absolute -top-2 left-1/2 grid h-5 w-5 -translate-x-1/2 place-items-center rounded-full bg-white shadow" style={delay(i * 400 + 500)}>
+              <BadgeCheck className="h-3.5 w-3.5 text-[#16a34a]" />
+            </span>
+            <c.icon className="mb-1 h-5 w-5" />
+            <span className="text-[9px] font-bold">{c.label}</span>
+          </div>
+        ))}
       </div>
     );
   }
   return (
-    <div className="flex h-32 flex-col items-center justify-center gap-3">
-      <span className="grid h-12 w-14 place-items-center rounded-lg border" style={{ background: "var(--cv-sand)", borderColor: "#e6dcc0" }}>
-        <Download className="h-5 w-5 text-[#e01e72]" />
-      </span>
-      <div className="flex items-center gap-2">
-        <span className="h-5 w-5 rounded-full" style={{ background: "var(--cv-primary)" }} />
-        <span className="h-px w-5 border-t border-dashed border-[#cfc4a6]" />
-        <span className="h-5 w-5 rounded-full bg-[#ff3d8b]" />
-        <span className="h-px w-5 border-t border-dashed border-[#cfc4a6]" />
-        <span className="h-5 w-5 rounded-full bg-[#25d366]" />
+    <div className="flex h-32 flex-col items-center justify-center gap-4">
+      <div className="relative flex items-center gap-5">
+        <span className="absolute left-5 right-5 top-1/2 h-px -translate-y-1/2 border-t border-dashed border-[#cfc4a6]" />
+        <span className="cv-travel absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full" style={{ background: "var(--cv-accent)" }} />
+        {[
+          { icon: Download, bg: "var(--cv-primary)" },
+          { icon: Instagram, bg: "#ff3d8b" },
+          { icon: Megaphone, bg: "#f59e0b" },
+          { icon: MessageCircle, bg: "#25d366" },
+        ].map((s, i) => (
+          <span key={i} className="cv-hop relative z-10 grid h-10 w-10 place-items-center rounded-full text-white shadow" style={{ ...delay(i * 650), background: s.bg }}>
+            <s.icon className="h-4 w-4" />
+          </span>
+        ))}
       </div>
+      <span className="rounded-full px-3 py-1 text-[11px] font-bold" style={{ background: "var(--cv-sand)", color: "var(--cv-muted)" }}>baixar → postar → impulsionar → WhatsApp</span>
     </div>
+  );
+}
+
+function ToolsGrid({ onStart }: { onStart: () => void }) {
+  const [tab, setTab] = useState<ToolTab>("principais");
+  const visible = useMemo(() => TOOLS.filter((t) => t.tags.includes(tab)), [tab]);
+  return (
+    <section className="px-4 py-16 sm:py-24">
+      <div className="mx-auto max-w-5xl">
+        <div className="cv-reveal mx-auto max-w-2xl text-center">
+          <Eyebrow>Ferramentas</Eyebrow>
+          <h2 className="cv-h2 mt-4">Escolha o que você precisa criar hoje para a sua agência</h2>
+        </div>
+        <div className="cv-reveal mt-8 flex gap-2 overflow-x-auto pb-1 sm:justify-center" style={{ scrollbarWidth: "none" }}>
+          {TOOL_TABS.map((t) => {
+            const on = t.id === tab;
+            return (
+              <button key={t.id} type="button" onClick={() => setTab(t.id)} aria-pressed={on} className="min-h-10 shrink-0 rounded-full border px-5 text-[14px] font-semibold transition-colors" style={{ background: on ? "var(--cv-fg)" : "#fff", color: on ? "#fff" : "var(--cv-fg)", borderColor: on ? "var(--cv-fg)" : "var(--cv-line)" }}>
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+        <div key={tab} className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((t, i) => (
+            <article key={t.title} className="cv-pop cv-card overflow-hidden" style={delay(i * 70)}>
+              <img src={t.img} alt={t.title} className="aspect-[16/10] w-full object-cover" loading="lazy" />
+              <div className="p-5">
+                <span className="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-[14px] font-bold" style={{ background: "#efe9ff" }}>
+                  <t.icon className="h-4 w-4 text-[#6440e6]" /> {t.title}
+                </span>
+                <p className="mt-3 text-[14px] leading-6" style={{ color: "var(--cv-muted)" }}>{t.text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="cv-reveal mt-8 text-center">
+          <button onClick={onStart} className="cv-btn min-h-[52px] px-7 text-[15px]">Quero tudo isso na minha agência <ArrowRight className="h-4 w-4" /></button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TeamImage() {
+  const chips: { label: string; icon: Icon; pos: string; rot: string; d: number }[] = [
+    { label: "Anúncios", icon: Megaphone, pos: "left-[-4%] top-[16%] sm:left-[-6%]", rot: "-6deg", d: 0 },
+    { label: "Vídeos", icon: Video, pos: "left-[-2%] bottom-[22%] sm:left-[-5%]", rot: "4deg", d: 600 },
+    { label: "Sites", icon: Globe, pos: "right-[-3%] top-[22%] sm:right-[-6%]", rot: "5deg", d: 1200 },
+    { label: "Clientes", icon: Users, pos: "right-[-2%] bottom-[18%] sm:right-[-5%]", rot: "-4deg", d: 1800 },
+  ];
+  return (
+    <div className="cv-reveal relative mx-auto mt-12 max-w-4xl px-6 sm:px-10">
+      <div className="overflow-hidden rounded-[32px] bg-[#0f172a] shadow-[0_30px_60px_-30px_rgba(15,23,42,.6)]">
+        <img src={heroDashboard} alt="Agente de viagens no notebook com o painel da Fábrica aberto" className="block h-auto w-full" loading="lazy" />
+      </div>
+      {chips.map((c) => (
+        <span key={c.label} className={`cv-float absolute inline-flex items-center gap-2 rounded-2xl border border-white/30 bg-white/80 px-3 py-2 text-[13px] font-bold shadow-xl backdrop-blur-md sm:px-4 sm:text-[15px] ${c.pos}`} style={{ ...delay(c.d), ["--cv-rot" as string]: c.rot }}>
+          <span className="grid h-7 w-7 place-items-center rounded-lg text-white" style={{ background: "var(--cv-primary)" }}><c.icon className="h-4 w-4" /></span>
+          {c.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function SiteDemo({ onStart }: { onStart: () => void }) {
+  const [activeId, setActiveId] = useState(siteOfferDemos[0]?.id ?? "");
+  const [mode, setMode] = useState<"desktop" | "mobile">(() => (typeof window !== "undefined" && window.innerWidth < 768 ? "mobile" : "desktop"));
+  const demo = siteOfferDemos.find((d) => d.id === activeId) ?? siteOfferDemos[0];
+  if (!demo) return null;
+  return (
+    <section id="demonstracao" className="scroll-mt-24 px-4 py-16 sm:py-24">
+      <div className="mx-auto max-w-5xl">
+        <div className="cv-reveal mx-auto max-w-2xl text-center">
+          <Eyebrow>Seu site</Eyebrow>
+          <h2 className="cv-h2 mt-4">Não imagine. Veja funcionando.</h2>
+          <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Três modelos reais, com a página de cada pacote e o botão do WhatsApp. O seu sai assim, com a sua logo e o seu endereço.</p>
+        </div>
+
+        <div className="cv-reveal mt-10 flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible" style={{ scrollbarWidth: "none" }}>
+          {siteOfferDemos.map((d) => {
+            const on = d.id === demo.id;
+            return (
+              <button key={d.id} type="button" onClick={() => setActiveId(d.id)} aria-pressed={on} className="min-w-[240px] flex-1 rounded-[22px] border p-4 text-left transition-colors" style={{ background: on ? "#16130d" : "#fff", color: on ? "#fff" : "var(--cv-fg)", borderColor: on ? "#16130d" : "var(--cv-line)" }}>
+                <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: on ? "#8fe3d9" : "#0ea5a0" }}>{d.templateLabel.toUpperCase()}</p>
+                <p className="mt-1 text-[15px] font-extrabold">{d.agencyName}</p>
+                <p className="text-[12px]" style={{ color: on ? "#cfc4a6" : "var(--cv-muted)" }}>{d.category}</p>
+                <span className="mt-2 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-[0.6px]" style={{ background: on ? "rgba(255,255,255,.12)" : "#e8f7f5", color: on ? "#fff" : "#0f766e" }}>{on ? "✓ SELECIONADO" : "CLIQUE PARA VER"}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="cv-reveal mt-4 overflow-hidden rounded-[32px] bg-[#16130d] p-3 sm:p-5" style={delay(120)}>
+          <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#221d14] px-4 py-3 text-white">
+            <span className="truncate text-[14px] font-bold">{demo.agencyName}</span>
+            <div className="flex shrink-0 rounded-full bg-black/40 p-1">
+              {(["desktop", "mobile"] as const).map((m) => (
+                <button key={m} type="button" onClick={() => setMode(m)} aria-pressed={mode === m} className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[12px] font-bold transition-colors" style={{ background: mode === m ? "#fff" : "transparent", color: mode === m ? "#16130d" : "#cfc4a6" }}>
+                  {m === "desktop" ? <Monitor className="h-3.5 w-3.5" /> : <Smartphone className="h-3.5 w-3.5" />}
+                  <span className="hidden sm:inline">{m === "desktop" ? "Computador" : "Celular"}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-3 flex justify-center">
+            <div className={mode === "mobile" ? "w-full max-w-[360px] overflow-hidden rounded-[32px] border-[6px] border-[#2c261b] bg-white" : "w-full overflow-hidden rounded-2xl bg-white"}>
+              <div className="flex items-center gap-2 border-b bg-[#f3f1ea] px-3 py-2" style={{ borderColor: "#e6e1d2" }}>
+                {mode === "desktop" && <span className="flex gap-1"><i className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" /><i className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" /><i className="h-2.5 w-2.5 rounded-full bg-[#28c840]" /></span>}
+                <span className="mx-auto truncate rounded-full bg-white px-3 py-0.5 text-[11px] text-[#6e6555]">modelo-{demo.id}.canvaviagem.com</span>
+              </div>
+              <iframe
+                key={`${demo.id}-${mode}`}
+                title={`Demonstração do site ${demo.agencyName}`}
+                srcDoc={demo.html}
+                sandbox="allow-scripts allow-same-origin"
+                loading="lazy"
+                className="block w-full border-0"
+                style={{ height: mode === "mobile" ? 600 : 560 }}
+              />
+            </div>
+          </div>
+          <p className="mt-3 text-center text-[11px] text-[#9b917d]">Demonstrações oficiais do Canva Viagem. Marcas, pacotes e valores são fictícios.</p>
+        </div>
+        <div className="cv-reveal mt-8 text-center">
+          <button onClick={onStart} className="cv-btn min-h-[52px] px-7 text-[15px]">Quero meu site assim <ArrowRight className="h-4 w-4" /></button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Envio da logo: guarda no navegador e segue para o login → quiz. */
+function LogoDrop({ onDone }: { onDone: () => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [over, setOver] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleFile = (file?: File | null) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || "");
+      setPreview(dataUrl);
+      try {
+        if (dataUrl.length < 1_500_000) sessionStorage.setItem(ONBOARDING_LOGO_KEY, dataUrl);
+      } catch { /* sem storage */ }
+      window.setTimeout(onDone, 900);
+    };
+    reader.readAsDataURL(file);
+  };
+  const onDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setOver(false);
+    handleFile(e.dataTransfer.files?.[0]);
+  };
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => handleFile(e.target.files?.[0]);
+
+  const places: { label: string; icon: Icon }[] = [
+    { label: "No anúncio", icon: Megaphone }, { label: "No carrossel", icon: Images }, { label: "No site", icon: Globe }, { label: "No vídeo", icon: Video },
+  ];
+
+  return (
+    <section className="px-4 py-16 sm:py-24">
+      <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2">
+        <div className="cv-reveal">
+          <Eyebrow>Sua marca</Eyebrow>
+          <h2 className="cv-h2 mt-4">Envie a logo uma vez. Ela entra em tudo.</h2>
+          <p className="mt-4 text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
+            Anúncio, carrossel, stories, site e vídeo saem com a sua logo, as suas cores e o seu WhatsApp. Trocou a logo? Troca em tudo.
+          </p>
+          <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {places.map((p, i) => (
+              <span key={p.label} className="cv-logo-spot flex flex-col items-center gap-2 rounded-2xl border bg-white p-3 text-[12px] font-semibold" style={{ ...delay(i * 500), borderColor: "var(--cv-line)" }}>
+                <span className="relative grid h-10 w-10 place-items-center rounded-xl" style={{ background: "var(--cv-sand)" }}>
+                  <p.icon className="h-5 w-5" />
+                  <span className="cv-badge absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full text-white" style={{ ...delay(i * 500 + 300), background: "var(--cv-primary)" }}>
+                    {preview ? <img src={preview} alt="" className="h-4 w-4 rounded-full object-cover" /> : <BadgeCheck className="h-3 w-3" />}
+                  </span>
+                </span>
+                {p.label}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div
+          className="cv-reveal"
+          style={delay(140)}
+          onDragOver={(e) => { e.preventDefault(); setOver(true); }}
+          onDragLeave={() => setOver(false)}
+          onDrop={onDrop}
+        >
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="flex min-h-[220px] w-full flex-col items-center justify-center gap-3 rounded-[32px] border-2 border-dashed bg-white p-8 text-center transition-colors"
+            style={{ borderColor: over ? "var(--cv-primary)" : "#d9cfb3", background: over ? "#f6f3ff" : "#fff" }}
+          >
+            {preview ? (
+              <img src={preview} alt="Sua logo" className="h-20 w-20 rounded-2xl object-contain" />
+            ) : (
+              <span className="grid h-14 w-14 place-items-center rounded-full text-white" style={{ background: "var(--cv-primary)" }}><Upload className="h-6 w-6" /></span>
+            )}
+            <span className="text-[17px] font-extrabold">{preview ? "Logo recebida! Vamos montar sua conta…" : "Arraste sua logo aqui ou toque para enviar"}</span>
+            <span className="text-[13px]" style={{ color: "var(--cv-muted)" }}>PNG, JPG ou SVG · do celular ou do computador</span>
+          </button>
+          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onChange} aria-label="Enviar logo" />
+          <p className="mt-3 text-center text-[12px]" style={{ color: "var(--cv-muted)" }}>Ainda não tem logo? Sem problema: dá para começar só com o nome da agência.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function VideoBlock() {
+  const [play, setPlay] = useState(false);
+  return (
+    <section className="px-4 py-10 sm:py-16">
+      <div className="mx-auto max-w-4xl">
+        <div className="cv-reveal mx-auto max-w-2xl text-center">
+          <Eyebrow>Em 1 minuto</Eyebrow>
+          <h2 className="cv-h2 mt-4">Veja a Fábrica funcionando</h2>
+        </div>
+        <div className="cv-reveal mt-8 overflow-hidden rounded-[28px] bg-black shadow-[0_24px_50px_-30px_rgba(32,28,19,.6)]" style={delay(120)}>
+          {play ? (
+            <iframe
+              className="aspect-video w-full"
+              src={`https://www.youtube-nocookie.com/embed/${ELITE_OFFER.videoId}?autoplay=1&rel=0&modestbranding=1`}
+              title="Apresentação do Canva Viagem"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <button type="button" onClick={() => setPlay(true)} className="group relative block aspect-video w-full" aria-label="Assistir ao vídeo">
+              <img src={`https://i.ytimg.com/vi/${ELITE_OFFER.videoId}/hqdefault.jpg`} alt="" className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100" loading="lazy" />
+              <span className="absolute inset-0 grid place-items-center">
+                <span className="grid h-16 w-16 place-items-center rounded-full text-white shadow-xl" style={{ background: "var(--cv-accent)" }}><Play className="ml-1 h-7 w-7 fill-current" /></span>
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }

@@ -5,15 +5,17 @@ import {
   ArrowRight, Check, ChevronLeft, Star, Wallet, Sprout, Briefcase, TrendingUp, Palette, UserRound,
   Images, EyeOff, Rocket, Users, Clock, MessageCircleOff, Sparkles, Waves, Mountain, Plane, Ship, Bus, Globe2,
   PenLine, Frown, Flame, CalendarDays, Leaf, Eye, Gift, ShieldCheck, Lock, CircleCheck, MapPin, Instagram,
-  LayoutTemplate, MessageCircle, Download,
+  LayoutTemplate, MessageCircle, Download, Megaphone, Mic, Video,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
-import { ELITE_OFFER, withCheckoutIdentity } from "@/lib/eliteOffer";
+import { ELITE_OFFER } from "@/lib/eliteOffer";
+import { checkoutPath } from "@/components/checkout/checkout-plans";
 import { PayWithPixButton } from "@/components/pix/PixCheckout";
 import { BrandMark, delay } from "@/components/cv-cream/shared";
 import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
+import { isLocalPreviewEnabled } from "@/lib/localPreview";
 
 type Icon = ComponentType<{ className?: string }>;
 type Option = { id: string; label: string; hint: string; icon: Icon };
@@ -123,11 +125,6 @@ const PLANS: { cycle: Cycle; name: string; hint: string; price: string; per: str
   { cycle: "annual", name: "Anual", hint: "Postando o ano inteiro", price: ELITE_OFFER.annualPrice, per: "/ano", note: `${ELITE_OFFER.annualMonthlyEquivalent} por mês · economia de ${ELITE_OFFER.annualSavings}`, value: 482, popular: true },
 ];
 
-const CHECKOUT_URL: Record<Cycle, string> = {
-  monthly: ELITE_OFFER.monthlyCheckoutUrl,
-  semiannual: ELITE_OFFER.semiannualCheckoutUrl,
-  annual: ELITE_OFFER.annualCheckoutUrl,
-};
 
 function loadState(): { step: number; answers: Answers } {
   try {
@@ -160,7 +157,7 @@ export default function Onboarding() {
 
   useEffect(() => {
     // Quem já assinou não precisa do quiz: vai direto para a Fábrica, que herda as respostas.
-    if (subscription.subscribed) navigate("/fabrica", { replace: true });
+    if (subscription.subscribed && !isLocalPreviewEnabled()) navigate("/fabrica", { replace: true });
   }, [subscription.subscribed, navigate]);
 
   useEffect(() => {
@@ -197,7 +194,7 @@ export default function Onboarding() {
     const selected = PLANS.find((p) => p.cycle === plan)!;
     track("plan_selected", { billing_cycle: plan, feature: "onboarding", answers });
     trackMetaEvent("InitiateCheckout", { value: selected.value, currency: "BRL", content_name: `Canva Viagem ${selected.name}`, content_category: "onboarding" });
-    window.location.href = withCheckoutIdentity(CHECKOUT_URL[plan], user);
+    navigate(checkoutPath(plan));
   };
 
   return (
@@ -336,10 +333,10 @@ function Intro({ onNext }: { onNext: () => void }) {
           Quiz de 2 minutos
         </span>
         <h1 className="cv-pop mt-5 text-balance text-[32px] font-extrabold leading-[1.05] tracking-[-0.025em]" style={delay(80)}>
-          Agências estão vendendo pacotes com posts que <Accent>nem precisaram criar.</Accent>
+          Fale o pacote num áudio. Receba anúncio, carrossel, site e vídeo <Accent>prontos, com a sua logo.</Accent>
         </h1>
         <p className="cv-pop mt-3 max-w-[300px] text-[15px] leading-6" style={{ ...delay(160), color: "var(--cv-muted)" }}>
-          Responda 7 perguntas e a gente monta a sua primeira semana de posts.
+          Responda 7 perguntas e a gente monta o seu primeiro pacote completo: do post ao site.
         </p>
       </div>
       <div className="relative mx-auto mt-10 flex h-64 w-full max-w-[340px] items-center justify-center">
@@ -350,12 +347,13 @@ function Intro({ onNext }: { onNext: () => void }) {
         ))}
       </div>
       <div className="mt-6 flex flex-col items-center gap-2">
-        <span className="rounded-full border bg-white px-3 py-1 text-[12px]" style={{ borderColor: "var(--cv-line)" }}>Um destino · dez posts</span>
+        <span className="rounded-full border bg-white px-3 py-1 text-[12px]" style={{ borderColor: "var(--cv-line)" }}>Um áudio · tudo pronto · sem limite</span>
         <div className="flex items-center gap-3 text-[12px] font-semibold" style={{ color: "var(--cv-muted)" }}>
           <span className="tracking-[1.2px]">PARA</span>
           <span className="inline-flex items-center gap-1"><Instagram className="h-3.5 w-3.5" /> Feed</span>
           <span className="inline-flex items-center gap-1"><LayoutTemplate className="h-3.5 w-3.5" /> Stories</span>
           <span className="inline-flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</span>
+          <span className="inline-flex items-center gap-1"><Globe2 className="h-3.5 w-3.5" /> Site</span>
         </div>
       </div>
       <BottomCta onClick={onNext}>Montar meu plano <ArrowRight className="h-4 w-4" /></BottomCta>
@@ -418,7 +416,7 @@ function Speed({ onNext }: { onNext: () => void }) {
         </div>
       </div>
       <p className="cv-pop mt-6 text-[15px] leading-6" style={{ ...delay(500), color: "var(--cv-muted)" }}>
-        Digite o destino e receba as artes prontas, com a sua logo. <strong className="text-[var(--cv-fg)]">Do zero ao post em uns 2 minutos.</strong>
+        Fale o pacote num áudio (ou digite) e receba tudo pronto, com a sua logo. <strong className="text-[var(--cv-fg)]">Do zero ao post em uns 2 minutos.</strong>
       </p>
       <BottomCta onClick={onNext}>Continuar</BottomCta>
     </>
@@ -454,12 +452,13 @@ function OneDestino({ destino, onNext }: { destino: string; onNext: () => void }
     { icon: Instagram, label: "Posts de feed", n: 3 },
     { icon: LayoutTemplate, label: "Stories", n: 3 },
     { icon: Images, label: "Carrossel", n: 2 },
-    { icon: Globe2, label: "Página do pacote", n: 1 },
+    { icon: Globe2, label: "Página do pacote no seu site", n: 1 },
+    { icon: Megaphone, label: "Anúncio pra impulsionar", n: 2 },
     { icon: MessageCircle, label: "Texto pro WhatsApp", n: 1 },
   ];
   return (
     <>
-      <Title sub="Cada pacote vira peças pra todos os lugares onde o seu cliente está.">Um destino. <Accent>Dez posts.</Accent></Title>
+      <Title sub="Um áudio com destino, dias e valor vira peças pra todos os lugares onde o seu cliente está.">Um áudio. <Accent>Tudo isso pronto.</Accent></Title>
       <div className="cv-pop mt-7 flex items-center justify-center gap-2 rounded-full border bg-white px-4 py-3 text-[15px] font-bold" style={{ ...delay(120), borderColor: "var(--cv-line)" }}>
         <MapPin className="h-4 w-4" style={{ color: "var(--cv-accent)" }} /> {destino}
       </div>
@@ -502,10 +501,10 @@ function Diagnosis({ answers, onNext }: { answers: Answers; onNext: () => void }
 function Sample({ destino, onNext }: { destino: string; onNext: () => void }) {
   return (
     <>
-      <Title sub="Arte 1 de 10 · texto e marca já aplicados">Essa arte levou 30 segundos. <Accent>Curtiu?</Accent></Title>
+      <Title sub="Anúncio de feed · texto de venda e marca já aplicados">Essa arte levou 30 segundos. <Accent>Curtiu?</Accent></Title>
       <div className="cv-pop relative mx-auto mt-6 w-full max-w-[300px]" style={delay(150)}>
         <img src="/travel-carousel-assets/cancun-card-01.webp" alt={`Arte de exemplo para ${destino}`} className="aspect-[4/5] w-full rounded-[28px] object-cover shadow-[0_24px_50px_-24px_rgba(32,28,19,.6)]" />
-        <span className="absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[12px] font-bold">NOTA <span className="text-[#6440e6]">9.7</span></span>
+        <span className="absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[12px] font-bold">Com a <span className="text-[#6440e6]">sua logo</span></span>
         <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/65 px-3 py-1 text-[12px] font-semibold text-white"><MapPin className="h-3.5 w-3.5" /> {destino}</span>
       </div>
       <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
@@ -521,9 +520,9 @@ function Building({ onDone }: { onDone: () => void }) {
   const [pct, setPct] = useState(0);
   const tasks = [
     { label: "Lendo suas respostas", done: "7 de 7", at: 25 },
-    { label: "Escolhendo modelos pros seus destinos", done: "pronto", at: 55 },
-    { label: "Escrevendo as legendas", done: "pronto", at: 80 },
-    { label: "Montando sua primeira semana", done: "7 posts", at: 100 },
+    { label: "Separando modelos de anúncio, carrossel e site", done: "pronto", at: 55 },
+    { label: "Escrevendo os textos de venda", done: "pronto", at: 80 },
+    { label: "Montando sua primeira semana", done: "7 peças", at: 100 },
   ];
   useEffect(() => {
     const id = window.setInterval(() => setPct((p) => Math.min(p + 2, 100)), 70);
@@ -560,16 +559,19 @@ function Building({ onDone }: { onDone: () => void }) {
           );
         })}
       </div>
-      <figure className="cv-card mt-8 w-full p-4">
-        <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-full bg-[#3cb07c] font-bold text-white">M</span>
-          <div>
-            <p className="flex items-center gap-2 text-[14px] font-bold">Maria S. <span className="flex text-[#ff3d8b]">{[0, 1, 2, 3, 4].map((i) => <Star key={i} className="h-3 w-3 fill-current" />)}</span></p>
-            <p className="text-[12px]" style={{ color: "var(--cv-muted)" }}>agente autônoma, São Paulo</p>
-          </div>
+      <div className="cv-card mt-8 w-full p-4">
+        <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>O QUE ESTÁ SAINDO</p>
+        <div className="mt-3 grid grid-cols-2 gap-2 text-[13px] font-semibold">
+          {[["Anúncio feed", Instagram], ["Stories", LayoutTemplate], ["Carrossel", Images], ["Site do pacote", Globe2], ["Vídeo do destino", Video], ["Texto pro WhatsApp", MessageCircle]].map(([label, Icon]) => {
+            const I = Icon as Icon;
+            return (
+              <span key={label as string} className="inline-flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "var(--cv-sand)" }}>
+                <I className="h-4 w-4 text-[#6440e6]" /> {label as string}
+              </span>
+            );
+          })}
         </div>
-        <blockquote className="mt-3 pl-[52px] text-[14px] leading-5" style={{ color: "var(--cv-muted)" }}>“Em menos de 24 horas tive minha primeira venda para Disney usando os anúncios que a IA gerou.”</blockquote>
-      </figure>
+      </div>
     </div>
   );
 }
@@ -654,8 +656,8 @@ function Result({ answers, destino, onNext }: { answers: Answers; destino: strin
 
 function Loop({ onNext }: { onNext: () => void }) {
   const steps = [
-    { icon: MapPin, title: "Escolha o destino", text: "Destino, dias e valor do pacote." },
-    { icon: Sparkles, title: "Receba as artes", text: "Feed, stories, carrossel e página, com a sua logo." },
+    { icon: Mic, title: "Mande um áudio", text: "Destino, dias e valor do pacote. Ou digite." },
+    { icon: Sparkles, title: "Receba tudo pronto", text: "Anúncio, stories, carrossel, site e vídeo, com a sua logo." },
     { icon: Download, title: "Publique", text: "Baixe e poste no Instagram em minutos." },
     { icon: MessageCircle, title: "Venda no WhatsApp", text: "Mande a página do pacote e feche a viagem." },
   ];
@@ -683,7 +685,7 @@ function Offer({ plan, setPlan, onCheckout }: { plan: Cycle; setPlan: (c: Cycle)
   const selected = PLANS.find((p) => p.cycle === plan)!;
   return (
     <>
-      <Title sub="Artes, stories, carrosséis, páginas de pacote e CRM. Tudo com a sua marca.">Sua semana está pronta. <Accent>Libere o acesso.</Accent></Title>
+      <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Sua semana está pronta. <Accent>Libere o acesso.</Accent></Title>
 
       <div className="cv-pop mt-5 flex items-center gap-3 rounded-[22px] border p-4" style={{ ...delay(100), background: "#efe9ff", borderColor: "#cbbcff" }}>
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white"><Gift className="h-5 w-5 text-[#6440e6]" /></span>
@@ -721,7 +723,7 @@ function Offer({ plan, setPlan, onCheckout }: { plan: Cycle; setPlan: (c: Cycle)
       </div>
 
       <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px]" style={{ color: "var(--cv-muted)" }}>
-        {["Artes ilimitadas", "Sua logo em tudo", "Página de vendas", "CRM de leads"].map((f) => (
+        {["Tudo ilimitado", "Sua logo em tudo", "Site da agência", "Clientes no WhatsApp"].map((f) => (
           <span key={f} className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-[#16a34a]" /> {f}</span>
         ))}
       </div>

@@ -26,7 +26,7 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
   const hideSidebarPaths = [
     '/planos', '/pt/planos', '/es/planos', '/auth', '/login', '/auth/verify', '/sucesso', '/obrigado', '/es/obrigado',
     '/pos-pagamento', '/canva', '/termos', '/privacidade', '/exclusao-de-dados',
-    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/inicio2', '/es/inicio', '/onboarding', '/pix',
+    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/inicio2', '/es/inicio', '/onboarding', '/pix', '/checkout',
     '/anuncios-para-agencia-de-viagens', '/site-para-agencia-de-viagens', '/carrosseis-para-agencia-de-viagens',
     '/equipe-de-marketing-para-agencia-de-viagens', '/.lovable/oauth/consent'
   ];
@@ -145,6 +145,8 @@ const Blog = lazy(() => import("./pages/Blog"));
 const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
 const InicioEntry = lazy(() => import("./pages/InicioEntry"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const Inicio2 = lazy(() => import("./pages/Inicio2"));
 const OfferLanding = lazy(() => import("./pages/OfferLanding"));
 const AdsOfferLanding = lazy(() => import("./pages/AdsOfferLanding"));
 const SiteOfferLanding = lazy(() => import("./pages/SiteOfferLanding"));
@@ -250,11 +252,12 @@ const App = () => {
                     <Route path="/pt/planos" element={<Navigate to="/inicio" replace />} />
                     <Route path="/inicio" element={<InicioEntry />} />
                     <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                    <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                     <Route path="/anuncios-para-agencia-de-viagens" element={<AdsOfferLanding />} />
                     <Route path="/site-para-agencia-de-viagens" element={<SiteOfferLanding />} />
                     <Route path="/carrosseis-para-agencia-de-viagens" element={<TravelAgencyContentLanding />} />
                     <Route path="/equipe-de-marketing-para-agencia-de-viagens" element={<OfferLanding variant="team" />} />
-                    <Route path="/inicio2" element={<Navigate to="/inicio" replace />} />
+                    <Route path="/inicio2" element={<Inicio2 />} />
                     <Route path="/canva" element={<ProtectedRoute requireSubscription><CanvaClone /></ProtectedRoute>} />
                     <Route path="/diferencas" element={<Diferencas />} />
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />

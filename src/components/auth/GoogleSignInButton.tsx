@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { SUPABASE_PUBLIC_KEY, SUPABASE_PUBLIC_URL } from "@/lib/supabase-public";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,8 +9,32 @@ import { supabase } from "@/integrations/supabase/client";
  * e a própria página de login redireciona para `redirectTo` (ou / ou /inicio).
  * Requer o provedor Google habilitado em Supabase → Authentication → Providers.
  */
+let googleEnabledCache: boolean | null = null;
+
+/** Pergunta ao projeto se o Google está ligado; se não estiver, o botão some em vez de abrir uma tela de erro. */
+async function isGoogleEnabled(): Promise<boolean> {
+  if (googleEnabledCache !== null) return googleEnabledCache;
+  try {
+    const res = await fetch(`${SUPABASE_PUBLIC_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_PUBLIC_KEY } });
+    const data = await res.json();
+    googleEnabledCache = Boolean(data?.external?.google);
+  } catch {
+    googleEnabledCache = false;
+  }
+  return googleEnabledCache;
+}
+
 export function GoogleSignInButton({ redirectTo }: { redirectTo?: string | null }) {
   const [loading, setLoading] = useState(false);
+  const [enabled, setEnabled] = useState<boolean | null>(googleEnabledCache);
+
+  useEffect(() => {
+    let alive = true;
+    isGoogleEnabled().then((ok) => { if (alive) setEnabled(ok); });
+    return () => { alive = false; };
+  }, []);
+
+  if (!enabled) return null;
 
   const handleClick = async () => {
     setLoading(true);

@@ -183,6 +183,17 @@ serve(async (req) => {
         phone: cleanPhone,
       });
 
+    // Base de e-mail marketing: todo e-mail digitado fica guardado, mesmo sem clicar no link.
+    try {
+      await supabaseAdmin.rpc("capture_email", {
+        p_email: normalizedEmail,
+        p_source: "login",
+        p_metadata: { redirect: typeof redirect === "string" ? redirect.slice(0, 200) : null },
+      });
+    } catch (captureErr) {
+      console.error("capture_email failed (ignored):", captureErr);
+    }
+
     if (insertError) {
       console.error("Error inserting token:", insertError);
       return new Response(

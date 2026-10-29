@@ -16,6 +16,7 @@ status: não commitado (aguardando aprovação do Lucas para rebase + push)
 5. [[05 - Contexto para nova conversa (Pix Woovi)]] — prompt para adicionar Pix pela Woovi
 6. [[06 - Contexto para nova conversa (acesso, assinatura e bloqueio)]] — prompt sobre liberação, vencimento, bloqueio e o erro "paguei e não recebi"
 7. [[07 - Sites de quem não paga e visitas na Gestão]] — site sai do ar sem pagamento, redireciona para o Canva Viagem; por que as visitas zeravam
+8. [[08 - Página de pagamento (cartão + Pix) e mensagem para o agente da Woovi]] — `/checkout` com abas Cartão (Stripe embutida) e Pix (Woovi), e a mensagem de coordenação
 
 ## Em 6 linhas
 - 39 arquivos alterados em `src/` + `supabase/functions`, **tudo sem commit** na branch `feat/inicio-quiz-onboarding`.
