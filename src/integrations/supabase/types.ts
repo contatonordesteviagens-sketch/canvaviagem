@@ -768,6 +768,21 @@ export type Database = {
         }
         Relationships: []
       }
+      job_runs: {
+        Row: {
+          job: string
+          last_run_at: string
+        }
+        Insert: {
+          job: string
+          last_run_at?: string
+        }
+        Update: {
+          job?: string
+          last_run_at?: string
+        }
+        Relationships: []
+      }
       magic_link_tokens: {
         Row: {
           created_at: string | null
