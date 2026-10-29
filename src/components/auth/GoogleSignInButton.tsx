@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { SUPABASE_PUBLIC_KEY, SUPABASE_PUBLIC_URL } from "@/lib/supabase-public";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 
 /**
- * Login com Google via Supabase OAuth. Depois do retorno, a sessão é detectada na URL
- * e a própria página de login redireciona para `redirectTo` (ou / ou /inicio).
- * Requer o provedor Google habilitado em Supabase → Authentication → Providers.
+ * Login com Google pelo Lovable Cloud (credenciais gerenciadas: o Supabase sozinho recusa com 400).
+ * Depois do retorno, a sessão entra no Supabase e a própria página de login redireciona para
+ * `redirectTo` (quiz, checkout...) ou / ou /inicio.
  */
 let googleEnabledCache: boolean | null = null;
 
@@ -44,15 +44,15 @@ export function GoogleSignInButton({ redirectTo }: { redirectTo?: string | null 
     setLoading(true);
     const back = new URL("/login", window.location.origin);
     if (redirectTo) back.searchParams.set("redirect", redirectTo);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: back.toString() },
-    });
-    if (error) {
-      console.error("Google OAuth error:", error);
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: back.toString() });
+    // Redirecionou para o Google: a página vai trocar sozinha.
+    if (result.redirected) return;
+    if (result.error) {
+      console.error("Google OAuth error:", result.error);
       toast.error("Não foi possível entrar com o Google agora. Use o e-mail abaixo.");
-      setLoading(false);
     }
+    // Sem erro e sem redirecionar: a sessão já entrou e a página de login segue sozinha.
+    setLoading(false);
   };
 
   return (
