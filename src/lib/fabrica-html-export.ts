@@ -8,6 +8,7 @@ import {
 } from "@/lib/package-details";
 import { normalizeSiteTemplateId } from "@/lib/site-template-catalog";
 import { getSiteTemplateCss } from "@/lib/site-template-css";
+import { normalizePortugueseSiteDefaults } from "@/lib/fabrica-site-pt-defaults";
 import { resolveFabricaCrmFormId } from "@/lib/fabrica-crm-publication";
 
 const SB_URL = SUPABASE_PUBLIC_URL;
@@ -185,7 +186,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string, optio
   // Usa o DDI salvo no estado (padrão Brasil +55)
   const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
   const wpp = rawWpp ? (rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`) : "";
-  const sc = state.siteContent;
+  const sc = normalizePortugueseSiteDefaults(state.siteContent);
   const templateId = normalizeSiteTemplateId(sc.templateId);
   const sectionBackgroundAttr = (key: string) => {
     const value = sc.sectionColors?.[key];
@@ -1171,7 +1172,7 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
     { num: "25", label: "Países Atendidos" },
     { num: "99%", label: "Satisfação" },
   ];
-  const rawStats = state.siteContent.stats || DEFAULT_STATS;
+  const rawStats = sc.stats || DEFAULT_STATS;
   const statsAreExample = rawStats.every((s, i) => DEFAULT_STATS[i] && s.num === DEFAULT_STATS[i].num && s.label === DEFAULT_STATS[i].label);
   const stats = statsAreExample && !options.preview ? [] : rawStats;
   const DEFAULT_BADGE = "+15k Clientes Satisfeitos";
@@ -1271,9 +1272,11 @@ body{font-family:'Inter',sans-serif;color:var(--ink);background:var(--brand-bg);
 .site-header[style*="--section-bg"] .nav-toggle span{background:var(--section-contrast)!important}
 .hero[style*="--section-bg"] :is(.hero-content,.hero-content h1,.hero-content .lead,.hero-content .eyebrow,.stat-num,.stat-label){color:var(--section-contrast)!important}
 #por-que[style*="--section-bg"] :is(.equipe-left>h2,.equipe-left>.eyebrow,.equipe-left>.intro,.feat h4,.feat p){color:var(--section-contrast)!important}
+#por-que[style*="--section-bg"] .feat-icon{background:color-mix(in srgb,var(--section-contrast) 10%,transparent)}
 #orcamento[style*="--section-bg"] :is(.orc-info>h2,.orc-info>p,.orc-info>.eyebrow){color:var(--section-contrast)!important}
 .final-cta[style*="--section-bg"] h2{color:var(--section-contrast)!important}
 footer[style*="--section-bg"] :is(.foot-brand,.foot-desc,h4,li,li>a:not(.social-icon),.foot-bottom){color:var(--section-contrast)!important}
+footer[style*="--section-bg"] [data-protected-brand]{color:var(--section-contrast)!important}
 h1,h2,h3,h4{font-family:'Playfair Display',serif;letter-spacing:-0.02em;line-height:1.15;color:var(--ink)}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
@@ -1682,7 +1685,7 @@ ${sectionOrder
     <div class="equipe-grid" data-visual-removable="por-que-grid">
       <div class="equipe-left">
         ${!sc.hiddenElements?.includes('equipe-badge') && equipeBadgeText ? `<span class="badge-counter" data-visual-removable="equipe-badge">${esc(equipeBadgeText)}</span>` : ''}
-        ${!sc.hiddenElements?.includes('equipe-eyebrow') ? `<div class="eyebrow" style="color:#fff;opacity:.6" data-visual-removable="equipe-eyebrow">${esc(sc.equipeEyebrow || "Nossa equipe")}</div>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-eyebrow') ? `<div class="eyebrow" data-visual-removable="equipe-eyebrow">${esc(sc.equipeEyebrow || "Nossa equipe")}</div>` : ''}
         ${!sc.hiddenElements?.includes('equipe-title') ? `<h2 data-visual-removable="equipe-title">${esc(sc.equipeTitle || "Uma equipe dedicada exclusivamente a você")}</h2>` : ''}
         ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">${esc(sc.equipeIntro || "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>` : ''}
         <div class="equipe-features">

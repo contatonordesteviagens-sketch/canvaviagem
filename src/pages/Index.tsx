@@ -722,7 +722,7 @@ const Index = () => {
                     {firstFourVideos.map((template, index) => (
                       <PremiumCard
                         key={template.id} id={template.id} title={template.title} url={template.url} driveUrl={template.drive_url}
-                        isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
+                        isNew={template.is_new || newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
                         imageUrl={template.image_url || undefined}
                         aspectRatio="9/16"
                         category={template.category}
@@ -814,7 +814,7 @@ const Index = () => {
                     {remainingVideos.map((template, index) => (
                       <PremiumCard
                         key={template.id} id={template.id} title={template.title} url={template.url} driveUrl={template.drive_url}
-                        isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
+                        isNew={template.is_new || newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
                         imageUrl={template.image_url || undefined}
                         aspectRatio={template.image_url ? "9/16" : "1/1"}
                         category={template.category}
@@ -1095,7 +1095,7 @@ const Index = () => {
                         id={template.id || `video-${index}`}
                         title={template.title}
                         url={template.url} driveUrl={template.drive_url}
-                        isNew={template.id ? newestIds.includes(template.id) : (template as any).is_new}
+                        isNew={Boolean(template.is_new || (template.id && newestIds.includes(template.id)))}
                         icon={getIcon(template.type, template.icon)}
                         imageUrl={template.image_url || undefined}
                         aspectRatio="9/16"
@@ -1236,7 +1236,7 @@ const Index = () => {
                         id={template.id}
                         title={template.title}
                         url={template.url} driveUrl={template.drive_url}
-                        isNew={newestIds.includes(template.id)}
+                        isNew={template.is_new || newestIds.includes(template.id)}
                         icon={getIcon(template.type, template.icon)}
                         aspectRatio="9/16"
                         contentType={template.type}
