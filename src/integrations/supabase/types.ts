@@ -528,6 +528,21 @@ export type Database = {
         }
         Relationships: []
       }
+      email_unsubscribes: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
       fabrica_abuse_signals: {
         Row: {
           id: string
@@ -1023,6 +1038,24 @@ export type Database = {
         }
         Relationships: []
       }
+      recovery_email_log: {
+        Row: {
+          email: string
+          kind: string
+          sent_at: string
+        }
+        Insert: {
+          email: string
+          kind: string
+          sent_at?: string
+        }
+        Update: {
+          email?: string
+          kind?: string
+          sent_at?: string
+        }
+        Relationships: []
+      }
       stripe_webhook_events: {
         Row: {
           attempts: number
@@ -1494,6 +1527,15 @@ export type Database = {
           stage: string
           subscribed: boolean
           user_id: string
+        }[]
+      }
+      admin_recovery_emails: {
+        Args: never
+        Returns: {
+          email: string
+          kind: string
+          sent_at: string
+          unsubscribed: boolean
         }[]
       }
       admin_set_public_site_status: {
