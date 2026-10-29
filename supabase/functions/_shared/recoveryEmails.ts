@@ -1,29 +1,32 @@
 // E-mails de recuperação de quem gerou o Pix / abriu o cartão e não pagou.
-// Segue o padrão do painel de e-mail marketing (PADRAO-EMAIL.md): corpo branco, sem logo,
-// "Fala, Nome.", botão largo, imagem abaixo do botão, assinatura do Lucas, rodapé escuro.
+// Padrão do painel de e-mail marketing (PADRAO-EMAIL.md): corpo branco, sem logo, sem imagem,
+// "Fala, Nome.", frases curtas, um botão, assinatura do Lucas, rodapé escuro. Sem valores.
 //
-// 1) lembrete  → 1 h e 24 h depois: link para gerar um Pix novo / pagar no cartão.
-// 2) desconto  → 3º dia: 20% de desconto fechado com o Lucas no WhatsApp do suporte.
+// 1) pronta    → 1 h depois: "sua conta está pronta, falta um clique" (link que abre o pagamento).
+// 2) desconto  → 3º dia: 20% por 24 horas, fechado com o Lucas no WhatsApp do suporte.
+// 3) contato   → 7º dia: "estou tentando falar com você", conversa no WhatsApp.
 
-export type RecoveryKind = "lembrete" | "desconto";
+export type RecoveryKind = "pronta" | "desconto" | "contato";
 
 export const RECOVERY_WHATSAPP = "5585986411294";
 export const RECOVERY_DISCOUNT = 20;
-
-const PLAN_LABEL: Record<string, string> = {
-  monthly: "Elite Mensal (R$ 97)",
-  semiannual: "Elite Semestral (R$ 347)",
-  annual: "Elite Anual (R$ 482)",
-};
+export const RECOVERY_SCHEDULE_HOURS: Record<RecoveryKind, number> = { pronta: 1, desconto: 72, contato: 168 };
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
 const FONT = "font-family:Arial,Helvetica,sans-serif;";
 const p = (html: string) => `<p style="margin:0 0 14px;font-size:16px;color:#1a1a2e;line-height:1.7;${FONT}">${html}</p>`;
+const small = (html: string) => `<p style="margin:18px 0 0;font-size:14px;color:#555;line-height:1.6;${FONT}">${html}</p>`;
 const btn = (label: string, url: string, bg: string) =>
-  `<a href="${url}" style="display:block;width:100%;background-color:${bg};color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:16px 20px;border-radius:9px;text-align:center;box-sizing:border-box;${FONT}">${label}</a>`;
+  `<a href="${url}" style="display:block;width:100%;background-color:${bg};color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:16px 20px;border-radius:9px;text-align:center;box-sizing:border-box;margin:8px 0 4px;${FONT}">${label}</a>`;
 const box = (html: string, bg: string, border: string) =>
   `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:6px 0 20px;"><tr><td style="background-color:${bg};border-left:4px solid ${border};border-radius:0 10px 10px 0;padding:16px 20px;"><p style="margin:0;font-size:15px;color:#1a1a2e;line-height:1.6;${FONT}">${html}</p></td></tr></table>`;
+const list = (items: string[]) =>
+  `<table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 18px;">${items
+    .map((t) => `<tr><td style="padding:3px 10px 3px 0;vertical-align:top;font-size:16px;color:#0a6080;${FONT}">✓</td><td style="padding:3px 0;font-size:16px;color:#1a1a2e;line-height:1.5;${FONT}">${t}</td></tr>`)
+    .join("")}</table>`;
+
+const whatsappUrl = (text: string) => `https://wa.me/${RECOVERY_WHATSAPP}?text=${encodeURIComponent(text)}`;
 
 function shell(body: string, preheader: string, unsubscribeUrl: string) {
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
@@ -38,55 +41,67 @@ ${body}
 </td></tr>
 <tr><td bgcolor="#0a1628" style="padding:20px 28px;text-align:center;">
 <p style="margin:0 0 6px;font-size:12px;color:#94a3b8;${FONT}">© 2026 RD TUR · Marketing Turístico · canvaviagem.com</p>
-<p style="margin:0;font-size:11px;color:#94a3b8;${FONT}">Você recebe este e-mail porque começou uma assinatura no Canva Viagem.<br><a href="${unsubscribeUrl}" style="color:#94a3b8;">Não quero mais receber</a></p>
+<p style="margin:0;font-size:11px;color:#94a3b8;${FONT}">Você recebe este e-mail porque começou a montar sua conta no Canva Viagem.<br><a href="${unsubscribeUrl}" style="color:#94a3b8;">Não quero mais receber</a></p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 }
 
 export function renderRecoveryEmail(kind: RecoveryKind, vars: {
   firstName: string;
-  plan?: string | null;
-  method?: "pix" | "cartao";
-  payUrl: string;          // lembrete: link que entra logado e abre o checkout
-  imageUrl?: string;
+  payUrl: string;          // e-mail 1: link que entra logado e abre o pagamento
   unsubscribeUrl: string;
 }): { subject: string; html: string } {
-  const name = esc(vars.firstName || "tudo bem");
-  const plan = PLAN_LABEL[vars.plan ?? ""] ?? "Elite";
-  const image = vars.imageUrl
-    ? `<img src="${vars.imageUrl}" width="504" alt="Anúncio de viagem feito na Fábrica do Canva Viagem" style="display:block;width:100%;height:auto;border-radius:8px;margin-top:20px;" />`
-    : "";
+  const first = (vars.firstName || "").trim();
+  const name = esc(first || "tudo bem");
 
-  if (kind === "lembrete") {
-    const metodo = vars.method === "cartao" ? "o pagamento no cartão" : "o seu Pix";
+  if (kind === "pronta") {
     const body = [
       p(`Fala, <strong>${name}</strong>.`),
-      p(`Vi que você montou o seu plano de 2 semanas, mas ${metodo} do <strong>${esc(plan)}</strong> ficou parado no meio do caminho.`),
-      p(`Acontece. O Pix expira em 1 hora e às vezes a gente se distrai com um cliente no WhatsApp.`),
-      box(`Seu plano continua salvo: anúncios, carrosséis, stories, o site do pacote e os seus clientes organizados no CRM. <strong>É só liberar o acesso.</strong>`, "#f0f7fa", "#0a6080"),
-      btn("Gerar meu Pix de novo →", vars.payUrl, "#0a6080"),
-      image,
-      `<p style="margin:18px 0 0;font-size:14px;color:#555;line-height:1.6;${FONT}">Prefere cartão? No mesmo link dá para trocar a forma de pagamento.</p>`,
+      p(`Sua conta já está criada. E o plano das suas 2 primeiras semanas também.`),
+      p(`Está tudo separado, esperando você:`),
+      list([
+        "o anúncio do seu pacote, para feed e stories",
+        "o carrossel com as dicas da viagem",
+        "a página do pacote no seu site, pronta para mandar no WhatsApp",
+        "os seus clientes organizados num lugar só",
+      ]),
+      p(`Ficou faltando só um passo: liberar o acesso.`),
+      btn("Liberar meu acesso →", vars.payUrl, "#0a6080"),
+      small(`Travou em alguma coisa no pagamento? Responda este e-mail que eu te ajudo.`),
     ].join("\n");
     return {
-      subject: `${vars.firstName || "ei"}, seu acesso ficou pela metade`,
-      html: shell(body, "Seu plano de 2 semanas continua salvo. Falta só liberar o acesso.", vars.unsubscribeUrl),
+      subject: `${first ? `${first}, s` : "S"}ua conta está pronta. Falta um clique.`,
+      html: shell(body, "O plano das suas 2 primeiras semanas já está separado.", vars.unsubscribeUrl),
     };
   }
 
-  const waText = encodeURIComponent(`Quero meu desconto de ${RECOVERY_DISCOUNT}% no Canva Viagem`);
-  const waUrl = `https://wa.me/${RECOVERY_WHATSAPP}?text=${waText}`;
+  if (kind === "desconto") {
+    const body = [
+      p(`Fala, <strong>${name}</strong>.`),
+      p(`Sua conta continua lá, com o plano das 2 semanas montado. Só não foi liberada.`),
+      p(`Às vezes o que segura é o momento. Então vou facilitar.`),
+      box(`<strong>${RECOVERY_DISCOUNT}% de desconto</strong> para liberar a sua conta. Vale só pelas próximas <strong>24 horas</strong>.`, "#effaf3", "#25D366"),
+      p(`É só me chamar no WhatsApp que eu te mando o link com o desconto aplicado.`),
+      btn(`Quero meu desconto de ${RECOVERY_DISCOUNT}% →`, whatsappUrl(`Quero meu desconto de ${RECOVERY_DISCOUNT}% no Canva Viagem`), "#25D366"),
+      small(`É o mesmo número do suporte. Depois de 24 horas, o desconto sai do ar.`),
+    ].join("\n");
+    return {
+      subject: `${first ? `${first}, l` : "L"}iberei um desconto até amanhã`,
+      html: shell(body, `${RECOVERY_DISCOUNT}% para liberar a sua conta. Só pelas próximas 24 horas.`, vars.unsubscribeUrl),
+    };
+  }
+
   const body = [
     p(`Fala, <strong>${name}</strong>.`),
-    p(`Faz alguns dias que você deixou o <strong>${esc(plan)}</strong> quase pronto e não finalizou.`),
-    p(`Então eu resolvi fazer uma coisa que não costumo fazer: liberar uma condição só pra quem chegou até o final do quiz.`),
-    box(`<strong>${RECOVERY_DISCOUNT}% de desconto</strong> em qualquer plano. Fala comigo no WhatsApp que eu te passo o link com o valor já com desconto.`, "#effaf3", "#25D366"),
-    btn(`Quero meu desconto de ${RECOVERY_DISCOUNT}% no WhatsApp →`, waUrl, "#25D366"),
-    image,
-    `<p style="margin:18px 0 0;font-size:14px;color:#555;line-height:1.6;${FONT}">É o mesmo número do suporte do Canva Viagem. Vale enquanto essa conversa estiver aberta.</p>`,
+    p(`Te mandei alguns e-mails nos últimos dias e não tive resposta.`),
+    p(`Pode ser que tenham caído no spam. Pode ser que não seja a hora. Tudo bem.`),
+    p(`Só queria entender uma coisa: o que fez você parar antes de liberar a sua conta?`),
+    box(`Foi o preço? Ficou alguma dúvida de como funciona? Faltou tempo agora? Me conta em uma frase, que eu respondo pessoalmente.`, "#f0f7fa", "#0a6080"),
+    btn("Falar comigo no WhatsApp →", whatsappUrl(`Oi, Lucas. Vi seu e-mail sobre a minha conta no Canva Viagem`), "#25D366"),
+    small(`Se preferir, é só responder este e-mail.`),
   ].join("\n");
   return {
-    subject: "uma condição que eu não vou repetir",
-    html: shell(body, `${RECOVERY_DISCOUNT}% de desconto para fechar o seu plano, direto comigo no WhatsApp.`, vars.unsubscribeUrl),
+    subject: `${first ? `${first}, e` : "E"}stou tentando falar com você`,
+    html: shell(body, "O que fez você parar antes de liberar a sua conta?", vars.unsubscribeUrl),
   };
 }
