@@ -1,5 +1,7 @@
 # Canva Viagem — Master Context & Project Unification
 
+- Use `moduleResolution: "Bundler"` in the app and Vite TypeScript configurations because current TypeScript no longer supports legacy Node resolution.
+
 > **IMPORTANTE PARA A INTELIGÊNCIA ARTIFICIAL:** Este arquivo unifica o projeto principal do Canva Viagem com o Painel de Marketing. Sempre que o usuário falar em "email marketing", "painel de mkt" ou "campanhas de e-mail", consulte os caminhos e regras listados aqui.
 
 ---
