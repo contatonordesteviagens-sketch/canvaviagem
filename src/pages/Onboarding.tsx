@@ -126,7 +126,10 @@ const FIXES: Record<string, { title: string; fix: string; icon: Icon }> = {
 const QUIZ_MEDIA = {
   intro: ["/quiz-media/anuncio-maragogi-1.webp", "/quiz-media/carrossel-noronha-01.webp", "/quiz-media/anuncio-rio-1.webp"],
   sample: "/quiz-media/anuncio-maragogi-1.webp",
-  carousel: ["/quiz-media/carrossel-noronha-01.webp", "/quiz-media/carrossel-noronha-02.webp", "/quiz-media/carrossel-noronha-03.webp", "/quiz-media/carrossel-noronha-04.webp"],
+  carousels: [
+    { name: "Fernando de Noronha", slides: ["01", "02", "03", "04"].map((n) => `/quiz-media/carrossel-noronha-${n}.webp`) },
+    { name: "Maragogi", slides: ["01", "02", "03", "04"].map((n) => `/quiz-media/carrossel-maragogi-${n}.webp`) },
+  ],
 };
 
 const DESTINO_LABEL: Record<string, string> = {
@@ -537,14 +540,16 @@ function Sample({ onNext }: { onNext: () => void }) {
       <div className="cv-pop mx-auto mt-6 w-full max-w-[320px]" style={delay(150)}>
         <img src={QUIZ_MEDIA.sample} alt="Anúncio de Maragogi feito na Fábrica do Canva Viagem" className="aspect-square w-full rounded-[28px] object-cover shadow-[0_24px_50px_-24px_rgba(32,28,19,.6)]" />
       </div>
-      <div className="cv-pop mx-auto mt-4 w-full max-w-[320px]" style={delay(300)}>
-        <p className="mb-2 text-[12px] font-semibold" style={{ color: "var(--cv-muted)" }}>+ carrossel do mesmo jeito</p>
-        <div className="grid grid-cols-4 gap-2">
-          {QUIZ_MEDIA.carousel.map((src, i) => (
-            <img key={src} src={src} alt={`Tela ${i + 1} do carrossel de Fernando de Noronha`} loading="lazy" className="aspect-[4/5] w-full rounded-xl object-cover shadow-md" />
-          ))}
+      {QUIZ_MEDIA.carousels.map((c, ci) => (
+        <div key={c.name} className="cv-pop mx-auto mt-4 w-full max-w-[320px]" style={delay(300 + ci * 150)}>
+          <p className="mb-2 text-[12px] font-semibold" style={{ color: "var(--cv-muted)" }}>+ carrossel de {c.name}</p>
+          <div className="grid grid-cols-4 gap-2">
+            {c.slides.map((src, i) => (
+              <img key={src} src={src} alt={`Tela ${i + 1} do carrossel de ${c.name}`} loading="lazy" className="aspect-[4/5] w-full rounded-xl object-cover shadow-md" />
+            ))}
+          </div>
         </div>
-      </div>      <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
+      ))}      <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
         <button onClick={onNext} className="h-14 rounded-full border bg-white text-[15px] font-semibold" style={{ borderColor: "var(--cv-line)" }}>Não é meu estilo</button>
         <button onClick={onNext} className="cv-btn h-14 text-[15px]">Postaria isso!</button>
       </div>
