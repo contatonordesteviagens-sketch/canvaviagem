@@ -38,6 +38,7 @@ import showcaseCrm from "@/assets/images/showcase-crm.png";
 import showcaseScheduler from "@/assets/images/showcase-scheduler.png";
 import showcasePremiumMedias from "@/assets/images/showcase-premium-medias.png";
 import { ELITE_OFFER, withCheckoutIdentity, type UpgradeFeature } from "@/lib/eliteOffer";
+import { PayWithPixButton } from "@/components/pix/PixCheckout";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
@@ -1311,6 +1312,10 @@ export default function Inicio2() {
                   >
                     Assinar {plan.id}
                   </button>
+                  <PayWithPixButton
+                    plan={plan.id === "mensal" ? "monthly" : plan.id === "semestral" ? "semiannual" : "annual"}
+                    className="mt-2 rounded-full"
+                  />
                 </div>
               ))}
             </div>

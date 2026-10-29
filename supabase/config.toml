@@ -78,3 +78,15 @@ verify_jwt = false
 
 [functions.meta-capi-obrigado]
 verify_jwt = false
+
+[functions.woovi-create-charge]
+verify_jwt = false
+
+[functions.woovi-charge-status]
+verify_jwt = false
+
+[functions.woovi-webhook]
+verify_jwt = false
+
+[functions.woovi-renewal-reminder]
+verify_jwt = false

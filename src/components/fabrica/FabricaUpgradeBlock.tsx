@@ -1,5 +1,6 @@
 import { ELITE_OFFER, withCheckoutIdentity } from "@/lib/eliteOffer";
 import { useAuth } from "@/contexts/AuthContext";
+import { PayWithPixButton } from "@/components/pix/PixCheckout";
 import { Crown, ArrowRight, Zap, Bot, Layout, Video } from "lucide-react";
 
 export function FabricaUpgradeBlock() {
@@ -71,6 +72,7 @@ export function FabricaUpgradeBlock() {
             >
               Assinar Mensal
             </a>
+            <PayWithPixButton plan="monthly" className="mt-2 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10" />
           </div>
 
           {/* Anual (Recomendado) */}
@@ -100,6 +102,7 @@ export function FabricaUpgradeBlock() {
               Assinar Anual Agora
               <ArrowRight className="h-4 w-4" />
             </a>
+            <PayWithPixButton plan="annual" className="mt-2 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10" />
           </div>
 
           {/* Semestral */}
@@ -122,6 +125,7 @@ export function FabricaUpgradeBlock() {
             >
               Assinar Semestral
             </a>
+            <PayWithPixButton plan="semiannual" className="mt-2 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10" />
           </div>
         </div>
       </div>

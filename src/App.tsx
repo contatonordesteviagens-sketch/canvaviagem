@@ -26,7 +26,7 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
   const hideSidebarPaths = [
     '/planos', '/pt/planos', '/es/planos', '/auth', '/login', '/auth/verify', '/sucesso', '/obrigado', '/es/obrigado',
     '/pos-pagamento', '/canva', '/termos', '/privacidade', '/exclusao-de-dados',
-    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/inicio2', '/es/inicio', '/onboarding',
+    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/inicio2', '/es/inicio', '/onboarding', '/pix',
     '/anuncios-para-agencia-de-viagens', '/site-para-agencia-de-viagens', '/carrosseis-para-agencia-de-viagens',
     '/equipe-de-marketing-para-agencia-de-viagens', '/.lovable/oauth/consent'
   ];
@@ -63,6 +63,7 @@ const Calendar = lazy(() => import("./pages/Calendar"));
 const CalendarES = lazy(() => import("./pages/CalendarES"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Login = lazy(() => import("./pages/Login"));
+const PixCheckout = lazy(() => import("./pages/PixCheckout"));
 const LiveStream = lazy(() => import("./pages/LiveStream"));
 
 
@@ -295,6 +296,7 @@ const App = () => {
                     {/* Auth e outras rotas compartilhadas */}
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/pix" element={<PixCheckout />} />
                     <Route path="/auth/verify" element={<AuthVerify />} />
                     <Route path="/sucesso" element={<Sucesso />} />
                     <Route path="/obrigado" element={<Obrigado />} />

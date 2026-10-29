@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { ELITE_OFFER, withCheckoutIdentity } from "@/lib/eliteOffer";
+import { PayWithPixButton } from "@/components/pix/PixCheckout";
 import { BrandMark, delay } from "@/components/cv-cream/shared";
 import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
 
@@ -727,6 +728,7 @@ function Offer({ plan, setPlan, onCheckout }: { plan: Cycle; setPlan: (c: Cycle)
 
       <BottomCta onClick={onCheckout}>Começar com o {selected.name}</BottomCta>
       <p className="mt-2 text-center text-[12px]" style={{ color: "var(--cv-muted)" }}>{selected.price}{selected.per} · {selected.note.toLowerCase()}</p>
+      <PayWithPixButton plan={plan} className="mt-3 rounded-full py-3 text-[13px]" />
       <div className="mt-3 flex justify-center gap-4 text-[12px]" style={{ color: "var(--cv-muted)" }}>
         <span className="inline-flex items-center gap-1"><Lock className="h-3.5 w-3.5" /> Pagamento seguro Stripe</span>
         <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" /> 7 dias de garantia</span>

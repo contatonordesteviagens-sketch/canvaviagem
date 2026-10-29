@@ -11,6 +11,7 @@ export const ELITE_PRODUCT_IDS = new Set([
   "hotmart_elite",
   "elite_ticto",
   "monthly_access_pix",
+  "semiannual_access_pix",
   "annual_access_pix",
 ]);
 

@@ -1,0 +1,260 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { CheckCircle2, Copy, ExternalLink, Loader2, QrCode, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { trackMetaEvent } from "@/lib/meta-pixel-sales";
+import { ELITE_OFFER } from "@/lib/eliteOffer";
+import { cn } from "@/lib/utils";
+
+export type PixPlan = "monthly" | "semiannual" | "annual";
+
+export const PIX_PLAN_INFO: Record<PixPlan, { label: string; price: string; value: number; period: string }> = {
+  monthly: { label: "Elite Mensal", price: ELITE_OFFER.monthlyPrice, value: 97, period: "30 dias de acesso" },
+  semiannual: { label: "Elite Semestral", price: ELITE_OFFER.semiannualPrice, value: 347, period: "6 meses de acesso" },
+  annual: { label: "Elite Anual", price: ELITE_OFFER.annualPrice, value: 482, period: "12 meses de acesso" },
+};
+
+export function isPixPlan(value: unknown): value is PixPlan {
+  return value === "monthly" || value === "semiannual" || value === "annual";
+}
+
+/** Caminho da página /pix (exige login; usado por quem não está logado e pelo e-mail de renovação). */
+export function pixCheckoutPath(plan: PixPlan) {
+  return `/pix?plano=${plan}`;
+}
+
+type Charge = {
+  correlationID: string;
+  brCode: string;
+  qrCodeImage: string | null;
+  paymentLinkUrl: string | null;
+  expiresDate: string | null;
+};
+
+const POLL_MS = 4000;
+
+/**
+ * Enquanto false, o botão "Pagar com Pix" só aparece para admins (fase de testes).
+ * Troque para true para liberar para todos os clientes.
+ */
+export const PIX_ENABLED_FOR_EVERYONE = true;
+
+function useCountdown(expiresDate: string | null) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!expiresDate) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [expiresDate]);
+  const remaining = expiresDate ? Math.max(0, Date.parse(expiresDate) - now) : null;
+  const label = remaining === null ? "" : `${String(Math.floor(remaining / 60000)).padStart(2, "0")}:${String(Math.floor((remaining % 60000) / 1000)).padStart(2, "0")}`;
+  return { remaining, label };
+}
+
+export function PixCheckoutModal({
+  open,
+  onOpenChange,
+  plan,
+  redirectTo = "/fabrica",
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  plan: PixPlan;
+  redirectTo?: string;
+}) {
+  const navigate = useNavigate();
+  const { refreshSubscription } = useAuth();
+  const info = PIX_PLAN_INFO[plan];
+  const [charge, setCharge] = useState<Charge | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [paid, setPaid] = useState(false);
+  const requestedRef = useRef<string | null>(null);
+  const { remaining, label } = useCountdown(charge?.expiresDate ?? null);
+  const expired = remaining === 0;
+
+  const createCharge = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setCharge(null);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("woovi-create-charge", { body: { plan } });
+      if (fnError || !data?.brCode) throw new Error(data?.error || fnError?.message || "Falha ao gerar o Pix");
+      setCharge(data as Charge);
+      trackMetaEvent("InitiateCheckout", { value: info.value, currency: "BRL", content_name: `Canva Viagem ${info.label}`, content_category: "pix" });
+    } catch (err) {
+      console.error("[Pix] Falha ao criar cobrança:", err);
+      setError("Não foi possível gerar o Pix agora. Tente de novo em instantes.");
+    } finally {
+      setLoading(false);
+    }
+  }, [plan, info.label, info.value]);
+
+  // Gera uma cobrança por abertura do modal (por plano).
+  useEffect(() => {
+    if (!open) {
+      requestedRef.current = null;
+      setPaid(false);
+      return;
+    }
+    if (requestedRef.current === plan) return;
+    requestedRef.current = plan;
+    void createCharge();
+  }, [open, plan, createCharge]);
+
+  // Confirmação automática: consulta a cada 4s enquanto o modal está aberto.
+  useEffect(() => {
+    if (!open || !charge || paid || expired) return;
+    let stopped = false;
+    const tick = async () => {
+      const { data } = await supabase.functions.invoke("woovi-charge-status", { body: { correlationID: charge.correlationID } });
+      if (stopped || data?.status !== "COMPLETED") return;
+      stopped = true;
+      setPaid(true);
+      trackMetaEvent("Purchase", { value: info.value, currency: "BRL", content_name: "Canva Viagem Elite", content_category: `pix_${plan}`, content_type: "product" }, undefined, `purchase_${charge.correlationID}`);
+      toast.success("Pix confirmado! Liberando sua Fábrica…");
+      await refreshSubscription().catch(() => undefined);
+      window.setTimeout(() => {
+        onOpenChange(false);
+        navigate(redirectTo);
+      }, 1500);
+    };
+    const id = window.setInterval(() => void tick(), POLL_MS);
+    return () => {
+      stopped = true;
+      window.clearInterval(id);
+    };
+  }, [open, charge, paid, expired, plan, info.value, refreshSubscription, onOpenChange, navigate, redirectTo]);
+
+  const copy = async () => {
+    if (!charge) return;
+    try {
+      await navigator.clipboard.writeText(charge.brCode);
+      toast.success("Código Pix copiado! Cole no app do seu banco.");
+    } catch {
+      toast.error("Não deu para copiar. Selecione o código e copie manualmente.");
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[400px] rounded-3xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <QrCode className="h-5 w-5 text-emerald-600" /> Pagar com Pix
+          </DialogTitle>
+          <DialogDescription>
+            {info.label} · <b>{info.price}</b> · {info.period}
+          </DialogDescription>
+        </DialogHeader>
+
+        {paid ? (
+          <div className="flex flex-col items-center gap-3 py-8 text-center">
+            <CheckCircle2 className="h-14 w-14 text-emerald-600" />
+            <p className="text-lg font-bold">Pagamento confirmado!</p>
+            <p className="text-sm text-muted-foreground">Abrindo a Fábrica…</p>
+          </div>
+        ) : loading ? (
+          <div className="flex flex-col items-center gap-3 py-12 text-sm text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin" /> Gerando seu Pix…
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center gap-4 py-8 text-center">
+            <p className="text-sm text-red-600">{error}</p>
+            <button type="button" onClick={() => void createCharge()} className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-bold text-white">
+              <RefreshCw className="h-4 w-4" /> Tentar de novo
+            </button>
+          </div>
+        ) : charge ? (
+          <div className="flex flex-col items-center gap-4">
+            <div className={cn("rounded-2xl border bg-white p-3", expired && "opacity-30")}>
+              {charge.qrCodeImage ? (
+                <img src={charge.qrCodeImage} alt="QR Code Pix" width={220} height={220} className="h-[220px] w-[220px]" />
+              ) : (
+                <div className="grid h-[220px] w-[220px] place-items-center text-xs text-muted-foreground">Use o código abaixo</div>
+              )}
+            </div>
+
+            {expired ? (
+              <div className="flex flex-col items-center gap-3 text-center">
+                <p className="text-sm font-semibold text-red-600">Este Pix expirou.</p>
+                <button type="button" onClick={() => void createCharge()} className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-bold text-white">
+                  <RefreshCw className="h-4 w-4" /> Gerar novo Pix
+                </button>
+              </div>
+            ) : (
+              <>
+                <button type="button" onClick={() => void copy()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-sm font-bold text-white transition-colors hover:bg-emerald-500">
+                  <Copy className="h-4 w-4" /> Copiar código Pix
+                </button>
+                <p className="w-full break-all rounded-lg bg-muted px-3 py-2 font-mono text-[10px] leading-snug text-muted-foreground">{charge.brCode}</p>
+                <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Aguardando pagamento…
+                  </span>
+                  {label && <span>Expira em <b className="tabular-nums">{label}</b></span>}
+                </div>
+                {charge.paymentLinkUrl && (
+                  <a href={charge.paymentLinkUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline">
+                    Abrir página de pagamento <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </>
+            )}
+            <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+              Abra o app do seu banco, escolha Pix → "Pix Copia e Cola" ou leia o QR Code. A liberação é automática em segundos. Pix não renova sozinho: avisamos por e-mail antes de vencer.
+            </p>
+          </div>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
+ * Botão "Pagar com Pix". Logado → abre o modal. Sem login → vai para /login e volta em /pix.
+ */
+export function PayWithPixButton({
+  plan,
+  className,
+  children,
+  redirectTo,
+}: {
+  plan: PixPlan;
+  className?: string;
+  children?: React.ReactNode;
+  redirectTo?: string;
+}) {
+  const { user, isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
+  if (!PIX_ENABLED_FOR_EVERYONE && !isAdmin) return null;
+
+  const onClick = () => {
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent(pixCheckoutPath(plan))}`);
+      return;
+    }
+    setOpen(true);
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          "inline-flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-600/40 py-2.5 text-[12px] font-bold text-emerald-700 transition-colors hover:bg-emerald-50",
+          className,
+        )}
+      >
+        {children ?? (<><QrCode className="h-4 w-4" /> Pagar com Pix</>)}
+      </button>
+      {user && <PixCheckoutModal open={open} onOpenChange={setOpen} plan={plan} redirectTo={redirectTo} />}
+    </>
+  );
+}
