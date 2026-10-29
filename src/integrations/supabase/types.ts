@@ -429,6 +429,36 @@ export type Database = {
           },
         ]
       }
+      email_captures: {
+        Row: {
+          email: string
+          first_seen_at: string
+          hits: number
+          id: string
+          last_seen_at: string
+          metadata: Json
+          source: string
+        }
+        Insert: {
+          email: string
+          first_seen_at?: string
+          hits?: number
+          id?: string
+          last_seen_at?: string
+          metadata?: Json
+          source?: string
+        }
+        Update: {
+          email?: string
+          first_seen_at?: string
+          hits?: number
+          id?: string
+          last_seen_at?: string
+          metadata?: Json
+          source?: string
+        }
+        Relationships: []
+      }
       email_events: {
         Row: {
           created_at: string
@@ -1351,6 +1381,17 @@ export type Database = {
       }
     }
     Functions: {
+      admin_email_captures: {
+        Args: never
+        Returns: {
+          email: string
+          first_seen_at: string
+          has_account: boolean
+          hits: number
+          last_seen_at: string
+          source: string
+        }[]
+      }
       admin_set_public_site_status: {
         Args: { p_active: boolean; p_reason?: string; p_site_id: string }
         Returns: boolean
@@ -1364,6 +1405,10 @@ export type Database = {
           p_time: string
           p_whatsapp: string
         }
+        Returns: undefined
+      }
+      capture_email: {
+        Args: { p_email: string; p_metadata?: Json; p_source?: string }
         Returns: undefined
       }
       claim_fabrica_trial: {
