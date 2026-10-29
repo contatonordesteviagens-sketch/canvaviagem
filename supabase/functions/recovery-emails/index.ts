@@ -9,6 +9,7 @@
 // GET ?sair=<email>&t=<assinatura>: descadastro (link do rodapé). Pública, assinada com HMAC.
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { adminClient, userFromRequest } from "../_shared/wooviAuth.ts";
+import { claimJobRun } from "../_shared/jobRuns.ts";
 import { canonicalSiteUrl } from "../_shared/siteUrl.ts";
 import { renderRecoveryEmail, RECOVERY_SCHEDULE_HOURS, type RecoveryKind } from "../_shared/recoveryEmails.ts";
 
@@ -110,19 +111,25 @@ Deno.serve(async (req) => {
   }
   if (req.method !== "POST") return json({ error: "Método não permitido" }, 405);
 
-  // ── Quem pode rodar: servidor (pg_cron) ou admin ──
+  // ── Quem pode rodar: servidor (service role), admin, ou o pg_cron com a chave pública ──
+  // Sem ser servidor nem admin, só a rodada normal (sem teste) e no máximo 1 vez a cada 20 min.
+  // Cada e-mail já é mandado 1 vez só por pessoa (recovery_email_log), então repetir não reenvia nada.
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const isServer = Boolean(serviceKey) && req.headers.get("Authorization") === `Bearer ${serviceKey}`;
   let adminEmail: string | null = null;
   if (!isServer) {
     const user = await userFromRequest(req, db);
-    if (!user) return json({ error: "Login necessário" }, 401);
-    const { data: role } = await db.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
-    if (!role) return json({ error: "Só admin" }, 403);
-    adminEmail = user.email?.toLowerCase() ?? null;
+    if (user) {
+      const { data: role } = await db.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
+      if (role) adminEmail = user.email?.toLowerCase() ?? null;
+    }
   }
 
   const body = await req.json().catch(() => ({}));
+  if (!isServer && !adminEmail) {
+    if (body?.test_to) return json({ error: "Só admin" }, 403);
+    if (!(await claimJobRun(db, "recovery-emails", 20 * 60 * 1000))) return json({ skipped: "já rodou nos últimos 20 min" });
+  }
 
   // ── Teste (admin): manda um modelo para um e-mail, sem registrar ──
   if (body?.test_to) {

@@ -2,14 +2,16 @@
 // Rodar 1x por dia (pg_cron). Manda e-mail para quem tem Elite via Pix vencendo daqui a ~3 dias
 // e outro no dia do vencimento. Não altera nenhuma assinatura.
 //
-// Protegido: aceita o header "x-cron-secret" = WOOVI_CRON_SECRET ou, como os outros crons do
-// projeto (drip, win-back), "Authorization: Bearer <service role>" lido do vault pelo pg_cron.
+// Quem pode rodar: header "x-cron-secret" = WOOVI_CRON_SECRET, Bearer service role, ou o pg_cron com a
+// chave pública (20261030120000_scheduled_jobs.sql). Sem segredo, roda no máximo 1 vez a cada 20 h
+// (job_runs), então chamar de novo não manda o aviso em dobro.
 import { adminClient } from "../_shared/wooviAuth.ts";
+import { claimJobRun } from "../_shared/jobRuns.ts";
 import { isPixPlan, json, sendPixRenewalReminder } from "../_shared/woovi.ts";
 
 const DAY = 24 * 60 * 60 * 1000;
 
-function isAuthorized(req: Request): boolean {
+function hasSecret(req: Request): boolean {
   const cronSecret = Deno.env.get("WOOVI_CRON_SECRET");
   if (cronSecret && req.headers.get("x-cron-secret") === cronSecret) return true;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -17,9 +19,12 @@ function isAuthorized(req: Request): boolean {
 }
 
 Deno.serve(async (req) => {
-  if (!isAuthorized(req)) return json({ error: "Não autorizado" }, 401);
-
+  if (req.method !== "POST") return json({ error: "Método não permitido" }, 405);
   const db = adminClient();
+  if (!hasSecret(req) && !(await claimJobRun(db, "woovi-renewal-reminder", 20 * 60 * 60 * 1000))) {
+    return json({ skipped: "já rodou nas últimas 20 h" });
+  }
+
   const now = Date.now();
   // Janelas de 24h: vence em 3 dias e vence hoje.
   const windows = [

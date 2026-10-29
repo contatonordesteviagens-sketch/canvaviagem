@@ -2,6 +2,21 @@
 -- para saber quem gerou Pix / abriu o cartão e não pagou (recuperação por e-mail).
 -- Só cria tabelas e uma função de leitura para admin. Não altera nem apaga dados existentes.
 
+-- Garantia de ordem: o funil lê email_captures (criada em 20261029150000_email_captures.sql).
+-- Se aquela migração ainda não rodou, cria a mesma tabela aqui; lá tudo é IF NOT EXISTS / OR REPLACE.
+CREATE TABLE IF NOT EXISTS public.email_captures (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL UNIQUE,
+  source text NOT NULL DEFAULT 'login',
+  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+  hits integer NOT NULL DEFAULT 1,
+  first_seen_at timestamptz NOT NULL DEFAULT now(),
+  last_seen_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.email_captures ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.email_captures FROM anon, authenticated;
+GRANT ALL ON public.email_captures TO service_role;
+
 -- ─── Pix (Woovi) ───────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.pix_charges (
   correlation_id text PRIMARY KEY,

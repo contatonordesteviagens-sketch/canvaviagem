@@ -36,30 +36,4 @@ $$;
 REVOKE ALL ON FUNCTION public.admin_recovery_emails() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.admin_recovery_emails() TO authenticated;
 
--- De hora em hora: e-mails de recuperação (mesmo padrão do drip: chave do vault).
-create extension if not exists pg_cron;
-create extension if not exists pg_net;
-
-select cron.unschedule('recovery-emails') where exists (
-  select 1 from cron.job where jobname = 'recovery-emails'
-);
-
-select cron.schedule(
-  'recovery-emails',
-  '15 * * * *',
-  $$
-  select net.http_post(
-    url := 'https://zdjtcwtakgizbsbbwtgc.supabase.co/functions/v1/recovery-emails',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || (
-        select decrypted_secret
-        from vault.decrypted_secrets
-        where name = 'SUPABASE_SERVICE_ROLE_KEY'
-        limit 1
-      )
-    ),
-    body := '{}'::jsonb
-  ) as request_id;
-  $$
-);
+-- O agendamento de hora em hora fica em 20261030120000_scheduled_jobs.sql (sem ler o vault).
