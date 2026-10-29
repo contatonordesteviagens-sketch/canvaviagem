@@ -130,6 +130,7 @@ const QUIZ_MEDIA = {
     { name: "Fernando de Noronha", slides: ["01", "02", "03", "04"].map((n) => `/quiz-media/carrossel-noronha-${n}.webp`) },
     { name: "Maragogi", slides: ["01", "02", "03", "04"].map((n) => `/quiz-media/carrossel-maragogi-${n}.webp`) },
   ],
+  site: { desktop: "/quiz-media/site-desktop.webp", mobile: "/quiz-media/site-mobile.webp" },
 };
 
 const DESTINO_LABEL: Record<string, string> = {
@@ -536,7 +537,7 @@ function Diagnosis({ answers, onNext }: { answers: Answers; onNext: () => void }
 function Sample({ onNext }: { onNext: () => void }) {
   return (
     <>
-      <Title sub="Anúncio de feed com preço, legenda e logo já aplicados. O carrossel sai junto.">Essa arte levou 30 segundos. <Accent>Curtiu?</Accent></Title>
+      <Title sub="Anúncio, carrossel, o site do pacote e os seus clientes organizados. Tudo sai junto.">Essa arte levou 30 segundos. <Accent>Curtiu?</Accent></Title>
       <div className="cv-pop mx-auto mt-6 w-full max-w-[320px]" style={delay(150)}>
         <img src={QUIZ_MEDIA.sample} alt="Anúncio de Maragogi feito na Fábrica do Canva Viagem" className="aspect-square w-full rounded-[28px] object-cover shadow-[0_24px_50px_-24px_rgba(32,28,19,.6)]" />
       </div>
@@ -549,12 +550,78 @@ function Sample({ onNext }: { onNext: () => void }) {
             ))}
           </div>
         </div>
-      ))}      <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
+      ))}
+      <div className="cv-pop mx-auto mt-5 w-full max-w-[320px]" style={delay(600)}>
+        <p className="mb-2 text-[12px] font-semibold" style={{ color: "var(--cv-muted)" }}>+ o site do pacote, no computador e no celular</p>
+        <SitePreview />
+      </div>
+      <div className="cv-pop mx-auto mt-5 w-full max-w-[320px]" style={delay(750)}>
+        <p className="mb-2 text-[12px] font-semibold" style={{ color: "var(--cv-muted)" }}>+ seus clientes organizados</p>
+        <CrmPreview />
+      </div>
+      <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
         <button onClick={onNext} className="h-14 rounded-full border bg-white text-[15px] font-semibold" style={{ borderColor: "var(--cv-line)" }}>Não é meu estilo</button>
         <button onClick={onNext} className="cv-btn h-14 text-[15px]">Postaria isso!</button>
       </div>
       <p className="mt-3 text-center text-[12px]" style={{ color: "var(--cv-muted)" }}>De qualquer jeito, a gente ajusta ao seu gosto</p>
     </>
+  );
+}
+
+/** Print real de um site de demonstração: navegador do computador com o celular por cima. */
+function SitePreview() {
+  return (
+    <div className="relative pb-6 pr-10">
+      <div className="overflow-hidden rounded-xl border bg-white shadow-md" style={{ borderColor: "var(--cv-line)" }}>
+        <div className="flex items-center gap-1 border-b bg-[#f3f1ea] px-2 py-1.5" style={{ borderColor: "#e6e1d2" }}>
+          <i className="h-1.5 w-1.5 rounded-full bg-[#ff5f57]" /><i className="h-1.5 w-1.5 rounded-full bg-[#febc2e]" /><i className="h-1.5 w-1.5 rounded-full bg-[#28c840]" />
+          <span className="mx-auto truncate rounded-full bg-white px-2 text-[8px] text-[#6e6555]">suaagencia.canvaviagem.com</span>
+        </div>
+        <img src={QUIZ_MEDIA.site.desktop} alt="Site de agência feito no Canva Viagem, no computador" loading="lazy" className="block aspect-[984/560] w-full object-cover" />
+      </div>
+      <div className="absolute bottom-0 right-0 w-[86px] overflow-hidden rounded-[16px] border-[4px] border-[#2c261b] bg-white shadow-xl">
+        <img src={QUIZ_MEDIA.site.mobile} alt="O mesmo site no celular" loading="lazy" className="block aspect-[348/600] w-full object-cover" />
+      </div>
+    </div>
+  );
+}
+
+const CRM_LEADS = [
+  { name: "Ana", destino: "Gramado" },
+  { name: "Carlos", destino: "Cancún" },
+  { name: "Júlia", destino: "Noronha" },
+  { name: "Pedro", destino: "Maragogi" },
+];
+const CRM_COLUMNS = ["Novo pedido", "Em conversa", "Fechou"];
+
+/** Quadro de clientes animado: pedidos de orçamento entram e andam até "Fechou". */
+function CrmPreview() {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => setTick((t) => t + 1), 1400);
+    return () => window.clearInterval(id);
+  }, []);
+  // Cada cliente entra num momento diferente e avança uma coluna a cada passo.
+  const placed = CRM_LEADS.map((lead, i) => ({ ...lead, col: Math.min(Math.max(((tick + i * 2) % 8) - 2, -1), 2) }));
+  return (
+    <div className="grid grid-cols-3 gap-1.5 rounded-xl border bg-white p-2 shadow-md" style={{ borderColor: "var(--cv-line)" }}>
+      {CRM_COLUMNS.map((title, col) => (
+        <div key={title} className="min-h-[112px] rounded-lg p-1.5" style={{ background: col === 2 ? "#e9f8ef" : "var(--cv-sand)" }}>
+          <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.5px]" style={{ color: col === 2 ? "#15803d" : "var(--cv-muted)" }}>{title}</p>
+          <div className="space-y-1">
+            {placed.filter((l) => l.col === col).map((l) => (
+              <div key={l.name} className="cv-pop rounded-md bg-white px-1.5 py-1 shadow-sm">
+                <p className="text-[10px] font-bold leading-tight">{l.name}</p>
+                <p className="flex items-center gap-0.5 text-[9px] leading-tight" style={{ color: "var(--cv-muted)" }}>
+                  <MessageCircle className="h-2.5 w-2.5 text-[#25D366]" /> {l.destino}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 

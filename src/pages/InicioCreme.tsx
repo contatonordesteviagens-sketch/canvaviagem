@@ -1,34 +1,34 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ComponentType, type DragEvent, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type ComponentType, type DragEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
-  ArrowRight, Check, X, Plus, MapPin, Sparkles, Download, Mic, Upload, Infinity as InfinityIcon,
+  ArrowRight, Check, X, MapPin, Sparkles, Download, Mic, Upload, Infinity as InfinityIcon,
   Instagram, MessageCircle, LayoutTemplate, Images, Globe, Video, Users, Megaphone, Smartphone, Monitor,
-  CalendarDays, LayoutDashboard, Play, Lock, ShieldCheck, Palette, PenLine, BadgeCheck,
+  CalendarDays, ShieldCheck, Palette, PenLine, BadgeCheck, Bot,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
-import { ELITE_OFFER } from "@/lib/eliteOffer";
 import { BrandMark, Eyebrow, delay, useReveal } from "@/components/cv-cream/shared";
 import { siteOfferDemos } from "@/lib/site-offer-demos";
-import AutoplayLoopVideo from "@/components/travel-agency-content/AutoplayLoopVideo";
-import antesAmador from "@/assets/antes_amador.png";
-import depoisPremium from "@/assets/depois_premium.png";
 import heroDashboard from "@/assets/hero_dashboard.jpg";
-import dashboardInterno from "@/assets/dashboard_interno.png";
-import showcaseAds from "@/assets/images/showcase-ad-creation.png";
-import showcasePages from "@/assets/images/showcase-landing-pages.png";
-import showcaseCrm from "@/assets/images/showcase-crm.png";
-import showcaseScheduler from "@/assets/images/showcase-scheduler.png";
-import showcaseMedia from "@/assets/images/showcase-premium-medias.png";
 
 export const ONBOARDING_PATH = "/onboarding";
 export const ONBOARDING_DESTINO_KEY = "cv-onboarding-destino";
 export const ONBOARDING_LOGO_KEY = "cv-onboarding-logo";
 
 type Icon = ComponentType<{ className?: string }>;
+type Piece = { src: string; w: number; h: number };
 
-// Peças reais saídas da Fábrica (mesma faixa da página de carrosséis).
+// Peças novas (anúncios e carrosséis feitos na plataforma): aparecem primeiro e maiores.
+const ad = (n: string): Piece => ({ src: `/quiz-media/${n}.webp`, w: 1080, h: 1080 });
+const slide = (n: string): Piece => ({ src: `/quiz-media/${n}.webp`, w: 1080, h: 1350 });
+const FEATURED: Piece[] = [
+  ad("anuncio-maragogi-1"), slide("carrossel-noronha-01"), slide("carrossel-maragogi-01"), ad("anuncio-rio-1"),
+  slide("carrossel-noronha-02"), slide("carrossel-maragogi-02"), ad("anuncio-maragogi-2"), slide("carrossel-noronha-03"),
+  slide("carrossel-maragogi-03"), ad("anuncio-rio-2"), slide("carrossel-noronha-04"), slide("carrossel-maragogi-04"), slide("carrossel-noronha-05"),
+];
+
+// Peças antigas: continuam, menores e mais discretas, numa segunda faixa.
 const STRIP = [
   "cancun-glass-01", "cancun-card-01", "cancun-editorial-01", "gramado-offer-01", "cancun-glass-02", "cancun-card-02",
   "cancun-editorial-02", "gramado-offer-02", "cancun-glass-03", "cancun-card-03", "cancun-editorial-03", "gramado-offer-05", "cancun-glass-04",
@@ -50,20 +50,6 @@ const steps = [
   { n: "03", icon: Download, title: "Publique e venda", text: "Baixe, poste no Instagram, impulsione o anúncio e mande o site no WhatsApp." },
 ];
 
-type ToolTab = "principais" | "videos" | "artes" | "sites" | "ia" | "venda";
-const TOOL_TABS: { id: ToolTab; label: string }[] = [
-  { id: "principais", label: "Principais" }, { id: "videos", label: "Vídeos" }, { id: "artes", label: "Artes" },
-  { id: "sites", label: "Sites" }, { id: "ia", label: "IA" }, { id: "venda", label: "Venda" },
-];
-const TOOLS: { img: string; title: string; text: string; icon: Icon; tags: ToolTab[] }[] = [
-  { img: showcaseAds, title: "Anúncios prontos para impulsionar", text: "Pacote, preço e condições viram anúncio de feed e stories em segundos, com a sua marca.", icon: Megaphone, tags: ["principais", "artes", "ia"] },
-  { img: showcasePages, title: "Site com a página de cada pacote", text: "Roteiro, fotos e valor organizados num link para mandar no WhatsApp e passar confiança.", icon: Globe, tags: ["principais", "sites", "venda"] },
-  { img: showcaseCrm, title: "Seus clientes organizados", text: "Quem pediu orçamento pelo site cai numa lista com nome, WhatsApp e destino. Nada se perde.", icon: Users, tags: ["principais", "venda"] },
-  { img: showcaseScheduler, title: "Calendário de postagens", text: "O que postar em cada dia da semana, já com as peças prontas. Chega de improviso.", icon: CalendarDays, tags: ["principais", "artes"] },
-  { img: showcaseMedia, title: "Vídeos e artes por destino", text: "Reels, stories e artes de turismo prontos para adaptar à sua agência e postar hoje.", icon: Video, tags: ["principais", "videos", "artes"] },
-  { img: dashboardInterno, title: "Tudo no mesmo painel", text: "Anúncios, carrosséis, site, vídeos e clientes sem trocar de ferramenta o tempo todo.", icon: LayoutDashboard, tags: ["principais", "ia", "sites", "videos"] },
-];
-
 const compare = [
   ["Fala o pacote num áudio e recebe tudo pronto", true, false],
   ["Sua logo e cores aplicadas sozinhas", true, false],
@@ -77,19 +63,11 @@ const compare = [
   ["7 dias de garantia", true, false],
 ] as const;
 
-const faqs = [
-  { q: "É ilimitado mesmo?", a: "Sim. Não existe crédito, cota nem contador. Você pode gerar uma peça ou mil no mesmo dia: anúncios, carrosséis, stories, páginas e vídeos. O ilimitado fica travado para quem assina agora." },
-  { q: "Preciso saber design ou dominar o Canva?", a: "Não. Você fala ou digita o pacote e escolhe entre os modelos prontos. Destino, preço e logo entram sozinhos." },
-  { q: "Preciso gravar áudio?", a: "Não. O áudio é o caminho mais rápido, mas você pode digitar destino, dias e valor e o resultado é o mesmo." },
-  { q: "Funciona pelo celular?", a: "Sim. Dá para gravar o áudio, gerar e baixar tudo pelo celular. Para mexer no site com calma, o computador é mais confortável." },
-  { q: "E se eu não gostar?", a: "Você tem 7 dias para testar com um pacote real da sua agência. Se não fizer sentido, peça o reembolso dentro do prazo da garantia." },
-];
-
-const engine: { icon: Icon; title: string; text: string }[] = [
-  { icon: MapPin, title: "Entende o pacote", text: "Destino, dias, valor e o que está incluso, do seu áudio ou do que você digitou." },
-  { icon: Palette, title: "Monta em modelos testados", text: "Layouts que agências usam todo dia, para feed, stories, carrossel e site." },
-  { icon: PenLine, title: "Escreve o texto de venda", text: "Legenda, chamada do anúncio e descrição do pacote, no tom da sua agência." },
-  { icon: BadgeCheck, title: "Aplica a sua marca", text: "Logo, cores e WhatsApp em todas as peças. Troca a logo, troca tudo." },
+const delivery: { icon: Icon; title: string; text: string }[] = [
+  { icon: MapPin, title: "Você fala o pacote", text: "Destino, dias e valor. Por áudio ou escrito." },
+  { icon: Palette, title: "Escolhe um modelo", text: "Layouts prontos para feed, stories, carrossel e site." },
+  { icon: PenLine, title: "Os textos já vêm prontos", text: "Legenda e chamada de venda, com a sua marca aplicada." },
+  { icon: Download, title: "Baixa e publica", text: "Posta no Instagram e manda no WhatsApp." },
 ];
 
 const yearGifs = {
@@ -106,7 +84,6 @@ export default function InicioCreme() {
   const { user, subscription } = useAuth();
   const [destino, setDestino] = useState("");
   const [scrolled, setScrolled] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const tracked = useRef(false);
   const pageRef = useReveal<HTMLDivElement>();
 
@@ -193,34 +170,19 @@ export default function InicioCreme() {
                 </button>
               </div>
             </form>
-
           </div>
 
-          {/* Faixa infinita de peças reais */}
+          {/* Faixas de peças reais: as novas em destaque, as antigas menores embaixo */}
           <div className="cv-pop mx-auto mt-12 max-w-6xl" style={delay(380)}>
             <div className="mx-auto mb-4 flex max-w-5xl flex-wrap items-center justify-center gap-2 px-2 text-center">
               <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white" style={{ background: "var(--cv-primary)" }}>
                 <InfinityIcon className="h-3.5 w-3.5" /> ILIMITADO · SEM CRÉDITOS
               </span>
-              <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Carrosséis, anúncios e stories saindo da Fábrica agora. Pode fazer 1 ou 1.000 no mesmo dia.</p>
+              <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Anúncios, carrosséis e stories saindo prontos agora. Pode fazer 1 ou 1.000 no mesmo dia.</p>
             </div>
+            <FeaturedMarquee />
             <Marquee />
           </div>
-          <button
-            type="button"
-            onClick={() => start("hero_audio")}
-            className="cv-pop cv-mic mx-auto mt-6 flex w-fit min-h-14 items-center gap-3 rounded-full border bg-white pl-2 pr-6 text-left shadow-[0_14px_30px_-20px_rgba(32,28,19,.4)]"
-            style={{ ...delay(440), borderColor: "var(--cv-line)" }}
-          >
-            <span className="relative grid h-11 w-11 place-items-center rounded-full text-white" style={{ background: "var(--cv-primary)" }}>
-              <span className="cv-ping absolute inset-0 rounded-full" style={{ background: "var(--cv-primary)" }} />
-              <Mic className="relative h-5 w-5" />
-            </span>
-            <span>
-              <span className="block text-[15px] font-bold">Ou grave um áudio</span>
-              <span className="block text-[12px]" style={{ color: "var(--cv-muted)" }}>"Cancún, 7 dias, casal, 8.900 reais" já basta</span>
-            </span>
-          </button>
 
           <div className="mx-auto mt-8 flex max-w-5xl flex-wrap items-center justify-center gap-2 rounded-full border bg-white px-4 py-3" style={{ borderColor: "var(--cv-line)" }}>
             <span className="mr-2 text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>SAI PRONTO PARA</span>
@@ -230,6 +192,27 @@ export default function InicioCreme() {
               </span>
             ))}
           </div>
+
+          {/* Áudio em destaque: tela dividida */}
+          <div className="cv-pop mx-auto mt-6 grid max-w-3xl overflow-hidden rounded-[28px] border bg-white shadow-[0_18px_40px_-26px_rgba(32,28,19,.35)] sm:grid-cols-2" style={{ ...delay(460), borderColor: "var(--cv-line)" }}>
+            <div className="p-6 text-center sm:text-left">
+              <p className="text-[12px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-primary-ink)" }}>PREFERE FALAR?</p>
+              <p className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.02em]">Grave um áudio de 20 segundos.</p>
+              <p className="mt-2 text-[14px] leading-6" style={{ color: "var(--cv-muted)" }}>"Cancún, 7 dias, casal, 8.900 reais" já basta. O resto sai pronto.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => start("hero_audio")}
+              className="cv-mic flex min-h-[150px] flex-col items-center justify-center gap-3 p-6 text-white"
+              style={{ background: "linear-gradient(135deg, #7c5cff 0%, #6440e6 100%)" }}
+            >
+              <span className="relative grid h-20 w-20 place-items-center rounded-full bg-white/15">
+                <span className="cv-ping absolute inset-0 rounded-full bg-white/30" />
+                <Mic className="relative h-9 w-9" />
+              </span>
+              <span className="text-[17px] font-bold">Gravar meu áudio</span>
+            </button>
+          </div>
         </section>
 
         {/* 2. Como funciona */}
@@ -238,7 +221,7 @@ export default function InicioCreme() {
             <div className="cv-reveal mx-auto max-w-2xl text-center">
               <Eyebrow>Como funciona</Eyebrow>
               <h2 className="cv-h2 mt-4">Um áudio. Três passos. A semana inteira resolvida.</h2>
-              <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Você fala → a Fábrica monta → você publica. O resto é cliente chamando.</p>
+              <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Você fala → a gente monta → você publica. O resto é cliente chamando.</p>
             </div>
             <div className="mt-12 grid gap-4 md:grid-cols-3">
               {steps.map((s, i) => (
@@ -263,71 +246,46 @@ export default function InicioCreme() {
           </div>
         </section>
 
-        {/* 3. Ilimitado */}
-        <section className="px-4 py-16 sm:py-24">
-          <div className="mx-auto max-w-5xl overflow-hidden rounded-[36px] bg-[#16130d] px-6 py-12 text-[#f4ecd8] sm:px-12 sm:py-16">
-            <div className="grid items-center gap-10 md:grid-cols-[1.1fr_0.9fr]">
-              <div className="cv-reveal">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[12px] font-bold tracking-[0.6px]">
-                  <InfinityIcon className="h-4 w-4 text-[#ff8cbb]" /> SEM CRÉDITOS · SEM COTA · SEM CONTADOR
+        {/* 3. Créditos infinitos */}
+        <section className="px-4 py-12 sm:py-16">
+          <div className="cv-reveal mx-auto max-w-4xl rounded-[36px] border px-6 py-10 text-center sm:px-12 sm:py-14" style={{ background: "linear-gradient(180deg, #f4f0ff 0%, #ebe4ff 100%)", borderColor: "#d9ccff" }}>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[12px] font-bold tracking-[0.6px]" style={{ color: "var(--cv-primary-ink)" }}>
+              <InfinityIcon className="h-4 w-4" /> CRÉDITOS INFINITOS
+            </span>
+            <h2 className="cv-h2 mx-auto mt-5 max-w-2xl">Aqui não existe "acabaram os créditos".</h2>
+            <p className="mx-auto mt-4 max-w-xl text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
+              Faça 1 ou 1.000 peças no mesmo dia. <strong style={{ color: "var(--cv-fg)" }}>Ninguém te cobra a mais.</strong>
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-2">
+              {["30 stories", "12 anúncios", "4 carrosséis", "1 site novo"].map((t) => (
+                <span key={t} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[14px] font-semibold shadow-sm">
+                  {t} <span className="rounded-full px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "var(--cv-primary)" }}>0 créditos</span>
                 </span>
-                <h2 className="cv-h2 mt-5 text-white">Aqui não existe "acabou sua cota".</h2>
-                <p className="mt-5 text-lg leading-7 text-[#d9d0b8]">
-                  Outras ferramentas vendem por crédito: 50 artes por mês e tchau. Aqui você faz <strong className="text-white">1 ou 1.000 no mesmo dia.</strong>
-                </p>
-                <p className="mt-4 text-lg leading-7 text-[#d9d0b8]">
-                  Terça saem 30 stories de Gramado. Quarta, 12 anúncios de Cancún para testar qual chama mais. Sábado o site inteiro de novo, porque o preço mudou. Ninguém te cobra por isso.
-                </p>
-                <p className="mt-4 text-lg font-semibold leading-7 text-white">
-                  Quem posta mais, aparece mais. Quem aparece mais, fecha mais. Ganhe no volume.
-                </p>
-              </div>
-              <div className="cv-reveal rounded-[28px] border border-white/10 bg-white/[0.04] p-6" style={delay(140)}>
-                <p className="text-[11px] font-bold tracking-[1.2px] text-[#b9ae95]">UMA SEMANA DE FÁBRICA</p>
-                <ul className="mt-4 space-y-3 text-[15px]">
-                  {[
-                    ["Ter", "30 stories de Gramado", "0 créditos"],
-                    ["Qua", "12 anúncios de Cancún", "0 créditos"],
-                    ["Qui", "4 carrosséis de Noronha", "0 créditos"],
-                    ["Sáb", "Site republicado com preço novo", "0 créditos"],
-                  ].map(([d, t, c]) => (
-                    <li key={d} className="flex items-center gap-3 border-b border-white/10 pb-3 last:border-0 last:pb-0">
-                      <span className="w-9 text-[12px] font-bold text-[#b9ae95]">{d}</span>
-                      <span className="flex-1">{t}</span>
-                      <span className="rounded-full bg-[#2b2417] px-2.5 py-0.5 text-[12px] font-bold text-[#ff8cbb]">{c}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-5 rounded-2xl border border-[#ff8cbb]/30 bg-[#ff8cbb]/10 p-4 text-[13px] leading-5 text-[#ffd6e6]">
-                  <Lock className="mb-1 inline h-3.5 w-3.5" /> <strong>Ilimitado travado para quem assina agora.</strong> Planos novos podem vir com limite; quem já está dentro continua sem.
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* 4. Escolha o que criar hoje */}
-        <ToolsGrid onStart={() => start("tools_cta")} />
-
-        {/* 5. Equipe inteira */}
+        {/* 4. Tudo num só lugar: ecossistema + equipe */}
         <section className="px-4 py-16 sm:py-24">
           <div className="mx-auto max-w-5xl">
             <div className="cv-reveal mx-auto max-w-2xl text-center">
-              <Eyebrow>Sem contratar ninguém</Eyebrow>
-              <h2 className="cv-h2 mt-4">Tudo o que uma equipe de marketing faria. Num só lugar.</h2>
-              <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Designer, social media, editor de vídeo e programador: a Fábrica faz o trabalho dos quatro enquanto você atende.</p>
+              <Eyebrow>Tudo num só lugar</Eyebrow>
+              <h2 className="cv-h2 mt-4">Tudo o que uma equipe de marketing faria. Aqui, num só lugar.</h2>
+              <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Cada parte conversa com a outra. Você só cuida de vender.</p>
             </div>
+            <Ecosystem />
             <TeamImage />
           </div>
         </section>
 
+        {/* 5. Sua logo em tudo (acima do site) */}
+        <LogoDrop onDone={() => start("logo_upload")} />
+
         {/* 6. Site pronto */}
         <SiteDemo onStart={() => start("site_demo_cta")} />
 
-        {/* 7. Sua logo em tudo */}
-        <LogoDrop onDone={() => start("logo_upload")} />
-
-        {/* 8. 1 ano de conteúdo */}
+        {/* 7. 1 ano de conteúdo */}
         <section className="px-4 py-16 sm:py-24">
           <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2">
             <div className="cv-reveal">
@@ -337,7 +295,7 @@ export default function InicioCreme() {
                 Nos dias em que você não quiser nem gravar um áudio, já tem o que postar: vídeos Reels e artes por destino, com calendário dizendo o que vai em cada dia.
               </p>
               <ul className="mt-6 space-y-2.5">
-                {["Vídeos Reels de destinos, prontos para o seu Instagram", "Artes e stories de alta qualidade, editáveis", "Sua logo e @ entram sozinhos", "Calendário com o que postar em cada dia"].map((f) => (
+                {["Vídeos Reels de destinos, prontos para o seu Instagram", "Artes e stories de alta qualidade, editáveis", "Sua logo e @ entram sozinhos nas artes e carrosséis", "Calendário com o que postar em cada dia"].map((f) => (
                   <li key={f} className="flex items-center gap-3 rounded-2xl border bg-white px-4 py-3 text-[14px] font-semibold" style={{ borderColor: "var(--cv-line)" }}>
                     <Check className="h-4 w-4 shrink-0 text-[#16a34a]" /> {f}
                   </li>
@@ -358,36 +316,14 @@ export default function InicioCreme() {
           </div>
         </section>
 
-        {/* 9. Antes × depois + comparação */}
+        {/* 8. Comparação */}
         <section className="px-4 py-16 sm:py-24">
           <div className="mx-auto max-w-5xl">
             <div className="cv-reveal mx-auto max-w-2xl text-center">
-              <Eyebrow>Por que funciona</Eyebrow>
-              <h2 className="cv-h2 mt-4">Seu post vende. Sua agência parece grande.</h2>
-              <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>
-                Cada peça sai com design profissional, texto de venda e a sua marca. O post feito às pressas passa batido no feed.
-              </p>
+              <Eyebrow>Comparação</Eyebrow>
+              <h2 className="cv-h2 mt-4">O que você recebe aqui e no Canva comum</h2>
             </div>
-            <div className="mt-12 grid items-start gap-4 md:grid-cols-2">
-              <div className="cv-reveal">
-                <span className="mb-2 inline-block rounded-full border bg-white px-3 py-1 text-[11px] font-semibold" style={{ borderColor: "var(--cv-line)", color: "var(--cv-muted)" }}>Post feito às pressas</span>
-                <div className="relative overflow-hidden rounded-[28px] bg-[#bdb7a7]">
-                  <img src={antesAmador} alt="Post amador de agência de viagens" className="block h-auto w-full opacity-80 grayscale-[35%]" loading="lazy" />
-                  <span className="absolute bottom-4 left-4 rounded-full bg-black/60 px-3 py-1 text-[13px] font-bold text-white">14 curtidas</span>
-                </div>
-              </div>
-              <div className="cv-reveal" style={delay(140)}>
-                <span className="mb-2 inline-block rounded-full px-3 py-1 text-[11px] font-semibold text-white" style={{ background: "var(--cv-primary)" }}>Feito no Canva Viagem</span>
-                <div className="relative overflow-hidden rounded-[28px] bg-white ring-2" style={{ ["--tw-ring-color" as string]: "var(--cv-primary)" }}>
-                  <img src={depoisPremium} alt="Celular com posts profissionais criados no Canva Viagem" className="block h-auto w-full" loading="lazy" />
-                  <span className="absolute bottom-4 left-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-bold text-white" style={{ background: "var(--cv-primary)" }}>
-                    <MessageCircle className="h-3.5 w-3.5" /> chuva de orçamentos
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="cv-reveal mt-6 overflow-hidden rounded-[32px] border" style={{ borderColor: "var(--cv-line)" }}>
+            <div className="cv-reveal mt-10 overflow-hidden rounded-[32px] border" style={{ borderColor: "var(--cv-line)" }}>
               <table className="w-full text-left text-sm">
                 <thead style={{ background: "#f6edd2" }}>
                   <tr>
@@ -410,32 +346,22 @@ export default function InicioCreme() {
           </div>
         </section>
 
-        {/* 10. Como a Fábrica acerta */}
+        {/* 9. Como te entregamos tudo pronto */}
         <section className="px-4 py-16 sm:py-24">
           <div className="mx-auto max-w-5xl">
-            <div className="grid items-center gap-10 md:grid-cols-2">
-              <div className="cv-reveal">
-                <Eyebrow>Por dentro</Eyebrow>
-                <h2 className="cv-h2 mt-4">Como a Fábrica acerta a arte sem você mexer em nada</h2>
-                <p className="mt-4 text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
-                  Ela junta o seu pacote, um modelo testado, o texto de venda e a sua marca. Gera várias versões de uma vez. Você escolhe a que mais gostou, ou pega a primeira e posta.
-                </p>
-              </div>
-              <div className="cv-reveal overflow-hidden rounded-[28px] bg-[#16130d] shadow-[0_24px_50px_-30px_rgba(32,28,19,.6)]" style={delay(140)}>
-                <AutoplayLoopVideo
-                  src="/travel-carousel-assets/carousel-morph.mp4"
-                  mobileAnimationSrc="/travel-carousel-assets/carousel-morph-mobile.webp"
-                  label="Fábrica gerando variações de um carrossel"
-                  className="aspect-video w-full object-cover"
-                />
-              </div>
+            <div className="cv-reveal mx-auto max-w-2xl text-center">
+              <Eyebrow>Sem mexer em nada</Eyebrow>
+              <h2 className="cv-h2 mt-4">Como te entregamos tudo pronto</h2>
             </div>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-              {engine.map((e, i) => (
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+              {delivery.map((e, i) => (
                 <div key={e.title} className="cv-reveal cv-card p-5" style={delay(i * 90)}>
-                  <span className="grid h-11 w-11 place-items-center rounded-full" style={{ background: "var(--cv-accent-soft)", color: "var(--cv-accent)" }}>
-                    <e.icon className="h-5 w-5" />
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="grid h-11 w-11 place-items-center rounded-full" style={{ background: "#efe9ff", color: "var(--cv-primary-ink)" }}>
+                      <e.icon className="h-5 w-5" />
+                    </span>
+                    <span className="text-lg font-extrabold text-[#e6dcc0]">{String(i + 1).padStart(2, "0")}</span>
+                  </div>
                   <h3 className="mt-5 font-extrabold">{e.title}</h3>
                   <p className="mt-1 text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>{e.text}</p>
                 </div>
@@ -443,44 +369,13 @@ export default function InicioCreme() {
             </div>
           </div>
         </section>
-
-        {/* 11. Vídeo */}
-        <VideoBlock />
-
-        {/* 12. FAQ */}
-        <section className="px-4 py-16 sm:py-24">
-          <div className="mx-auto max-w-2xl">
-            <div className="cv-reveal text-center">
-              <Eyebrow>Dúvidas</Eyebrow>
-              <h2 className="cv-h2 mt-4">Perguntas, respondidas</h2>
-            </div>
-            <div className="mt-10 space-y-3">
-              {faqs.map((f, i) => {
-                const open = openFaq === i;
-                return (
-                  <div key={f.q} className="cv-reveal rounded-[32px] border" style={{ ...delay(i * 60), borderColor: "var(--cv-line)", background: "rgba(255,255,255,.88)", backdropFilter: "blur(16px) saturate(1.4)" }}>
-                    <h3>
-                      <button onClick={() => setOpenFaq(open ? null : i)} aria-expanded={open} className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left text-[15px] font-semibold">
-                        {f.q}
-                        <Plus className="h-4 w-4 shrink-0 transition-transform duration-300" style={{ color: "var(--cv-muted)", transform: open ? "rotate(45deg)" : "none" }} />
-                      </button>
-                    </h3>
-                    <div className="grid transition-all duration-300" style={{ gridTemplateRows: open ? "1fr" : "0fr" }}>
-                      <p className="overflow-hidden px-6 text-[15px] leading-6" style={{ color: "var(--cv-muted)", paddingBottom: open ? 20 : 0 }}>{f.a}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
       </main>
 
-      {/* 13. CTA final */}
+      {/* 10. CTA final */}
       <section className="px-4 pb-10 pt-24" style={{ background: "linear-gradient(180deg, var(--cv-bg) 0%, #e9defc 55%, #c9b8fb 100%)" }}>
         <div className="cv-reveal mx-auto max-w-2xl text-center">
           <h2 className="cv-h2">Pare de postar no improviso.<br />Mande seu primeiro áudio.</h2>
-          <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Destino, dias e valor. A Fábrica devolve anúncio, carrossel, stories, site e vídeo com a sua logo.</p>
+          <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Destino, dias e valor. Você recebe anúncio, carrossel, stories, site e vídeo com a sua logo.</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <button onClick={() => start("final_audio")} className="cv-btn h-14 w-full px-8 text-base sm:w-auto">
               <Mic className="h-4 w-4" /> Gravar um áudio
@@ -506,19 +401,43 @@ export default function InicioCreme() {
 
 /* ───────────────────────── blocos ───────────────────────── */
 
+/** Faixa principal: anúncios e carrosséis novos, maiores. */
+function FeaturedMarquee() {
+  const items = [...FEATURED, ...FEATURED];
+  return (
+    <div className="relative overflow-hidden rounded-[28px] py-2" style={{ maskImage: "linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)" }}>
+      <div className="travel-mobile-marquee flex w-max items-center gap-3 sm:gap-4">
+        {items.map((p, i) => (
+          <img
+            key={`${p.src}-${i}`}
+            src={p.src}
+            width={p.w}
+            height={p.h}
+            alt={i < FEATURED.length ? "Peça feita na plataforma Canva Viagem" : ""}
+            aria-hidden={i >= FEATURED.length}
+            className="h-[200px] w-auto shrink-0 rounded-2xl border-4 border-white object-cover shadow-md sm:h-[260px]"
+            loading={i < 6 ? "eager" : "lazy"}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Faixa de baixo: peças antigas, menores e mais discretas, andando para o outro lado. */
 function Marquee() {
   const items = [...STRIP, ...STRIP];
   return (
-    <div className="relative overflow-hidden rounded-[28px] py-2" style={{ maskImage: "linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)" }}>
-      <div className="travel-mobile-marquee flex w-max gap-3 sm:gap-4">
+    <div className="relative mt-2 overflow-hidden rounded-[22px] py-1 opacity-70" style={{ maskImage: "linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)" }}>
+      <div className="travel-mobile-marquee flex w-max gap-2 sm:gap-3" style={{ animationDirection: "reverse", animationDuration: "60s" }}>
         {items.map((src, i) => (
           <img
             key={`${src}-${i}`}
             src={src}
             alt=""
-            aria-hidden={i >= STRIP.length}
-            className="aspect-[4/5] w-[150px] shrink-0 rounded-2xl border-4 border-white object-cover shadow-md sm:w-[200px]"
-            loading={i < 8 ? "eager" : "lazy"}
+            aria-hidden
+            className="aspect-[4/5] w-[90px] shrink-0 rounded-xl border-2 border-white object-cover shadow-sm sm:w-[120px]"
+            loading="lazy"
           />
         ))}
       </div>
@@ -586,44 +505,53 @@ function StepIllustration({ index }: { index: number }) {
   );
 }
 
-function ToolsGrid({ onStart }: { onStart: () => void }) {
-  const [tab, setTab] = useState<ToolTab>("principais");
-  const visible = useMemo(() => TOOLS.filter((t) => t.tags.includes(tab)), [tab]);
+const ECO_NODES: { label: string; icon: Icon }[] = [
+  { label: "Anúncios", icon: Megaphone },
+  { label: "Carrosséis", icon: Images },
+  { label: "Stories", icon: LayoutTemplate },
+  { label: "Site", icon: Globe },
+  { label: "Vídeos", icon: Video },
+  { label: "Clientes organizados", icon: Users },
+  { label: "Calendário de posts", icon: CalendarDays },
+  { label: "Agentes de IA", icon: Bot },
+];
+
+/** Tudo se conecta: a sua agência no centro, cada entrega ligada a ela, com um ponto de luz correndo nas linhas. */
+function Ecosystem() {
+  const size = 340;
+  const c = size / 2;
+  const r = 128;
+  const nodes = ECO_NODES.map((n, i) => {
+    const a = (i / ECO_NODES.length) * Math.PI * 2 - Math.PI / 2;
+    return { ...n, x: c + r * Math.cos(a), y: c + r * Math.sin(a) };
+  });
   return (
-    <section className="px-4 py-16 sm:py-24">
-      <div className="mx-auto max-w-5xl">
-        <div className="cv-reveal mx-auto max-w-2xl text-center">
-          <Eyebrow>Ferramentas</Eyebrow>
-          <h2 className="cv-h2 mt-4">Escolha o que você precisa criar hoje para a sua agência</h2>
-        </div>
-        <div className="cv-reveal mt-8 flex gap-2 overflow-x-auto pb-1 sm:justify-center" style={{ scrollbarWidth: "none" }}>
-          {TOOL_TABS.map((t) => {
-            const on = t.id === tab;
-            return (
-              <button key={t.id} type="button" onClick={() => setTab(t.id)} aria-pressed={on} className="min-h-10 shrink-0 rounded-full border px-5 text-[14px] font-semibold transition-colors" style={{ background: on ? "var(--cv-fg)" : "#fff", color: on ? "#fff" : "var(--cv-fg)", borderColor: on ? "var(--cv-fg)" : "var(--cv-line)" }}>
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
-        <div key={tab} className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((t, i) => (
-            <article key={t.title} className="cv-pop cv-card overflow-hidden" style={delay(i * 70)}>
-              <img src={t.img} alt={t.title} className="aspect-[16/10] w-full object-cover" loading="lazy" />
-              <div className="p-5">
-                <span className="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-[14px] font-bold" style={{ background: "#efe9ff" }}>
-                  <t.icon className="h-4 w-4 text-[#6440e6]" /> {t.title}
-                </span>
-                <p className="mt-3 text-[14px] leading-6" style={{ color: "var(--cv-muted)" }}>{t.text}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-        <div className="cv-reveal mt-8 text-center">
-          <button onClick={onStart} className="cv-btn min-h-[52px] px-7 text-[15px]">Quero tudo isso na minha agência <ArrowRight className="h-4 w-4" /></button>
-        </div>
+    <div className="cv-reveal relative mx-auto mt-10 aspect-square w-full max-w-[420px]">
+      <svg viewBox={`0 0 ${size} ${size}`} className="absolute inset-0 h-full w-full" aria-hidden>
+        <circle cx={c} cy={c} r={r} fill="none" stroke="#e6dcc0" strokeDasharray="2 6" />
+        {nodes.map((n, i) => (
+          <g key={n.label}>
+            <line x1={c} y1={c} x2={n.x} y2={n.y} stroke="#d9ccff" strokeWidth="2" />
+            <line x1={c} y1={c} x2={n.x} y2={n.y} stroke="#7c5cff" strokeWidth="2" strokeLinecap="round" className="cv-flow" style={delay(i * 220)} />
+          </g>
+        ))}
+      </svg>
+      <div className="absolute left-1/2 top-1/2 grid h-[92px] w-[92px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-center shadow-[0_18px_40px_-18px_rgba(100,64,230,.55)] ring-4 ring-[#efe9ff]">
+        <span className="px-2 text-[11px] font-extrabold leading-tight">Sua<br />agência</span>
       </div>
-    </section>
+      {nodes.map((n, i) => (
+        <div
+          key={n.label}
+          className="cv-float absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
+          style={{ ...delay(i * 300), left: `${(n.x / size) * 100}%`, top: `${(n.y / size) * 100}%` }}
+        >
+          <span className="grid h-11 w-11 place-items-center rounded-2xl text-white shadow-md" style={{ background: "var(--cv-primary)" }}>
+            <n.icon className="h-5 w-5" />
+          </span>
+          <span className="max-w-[86px] rounded-full bg-white px-2 py-0.5 text-center text-[10px] font-bold leading-tight shadow-sm sm:text-[11px]">{n.label}</span>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -635,9 +563,9 @@ function TeamImage() {
     { label: "Clientes", icon: Users, pos: "right-[-2%] bottom-[18%] sm:right-[-5%]", rot: "-4deg", d: 1800 },
   ];
   return (
-    <div className="cv-reveal relative mx-auto mt-12 max-w-4xl px-6 sm:px-10">
+    <div className="cv-reveal relative mx-auto mt-10 max-w-4xl px-6 sm:px-10">
       <div className="overflow-hidden rounded-[32px] bg-[#0f172a] shadow-[0_30px_60px_-30px_rgba(15,23,42,.6)]">
-        <img src={heroDashboard} alt="Agente de viagens no notebook com o painel da Fábrica aberto" className="block h-auto w-full" loading="lazy" />
+        <img src={heroDashboard} alt="Agente de viagens no notebook com o painel do Canva Viagem aberto" className="block h-auto w-full" loading="lazy" />
       </div>
       {chips.map((c) => (
         <span key={c.label} className={`cv-float absolute inline-flex items-center gap-2 rounded-2xl border border-white/30 bg-white/80 px-3 py-2 text-[13px] font-bold shadow-xl backdrop-blur-md sm:px-4 sm:text-[15px] ${c.pos}`} style={{ ...delay(c.d), ["--cv-rot" as string]: c.rot }}>
@@ -659,8 +587,8 @@ function SiteDemo({ onStart }: { onStart: () => void }) {
       <div className="mx-auto max-w-5xl">
         <div className="cv-reveal mx-auto max-w-2xl text-center">
           <Eyebrow>Seu site</Eyebrow>
-          <h2 className="cv-h2 mt-4">Não imagine. Veja funcionando.</h2>
-          <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Três modelos reais, com a página de cada pacote e o botão do WhatsApp. O seu sai assim, com a sua logo e o seu endereço.</p>
+          <h2 className="cv-h2 mt-4">Veja como o seu site ficaria</h2>
+          <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Três modelos reais, com a página de cada pacote e o botão do WhatsApp. O seu sai assim, com a sua logo.</p>
         </div>
 
         <div className="cv-reveal mt-10 flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible" style={{ scrollbarWidth: "none" }}>
@@ -792,38 +720,6 @@ function LogoDrop({ onDone }: { onDone: () => void }) {
           </button>
           <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onChange} aria-label="Enviar logo" />
           <p className="mt-3 text-center text-[12px]" style={{ color: "var(--cv-muted)" }}>Ainda não tem logo? Sem problema: dá para começar só com o nome da agência.</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function VideoBlock() {
-  const [play, setPlay] = useState(false);
-  return (
-    <section className="px-4 py-10 sm:py-16">
-      <div className="mx-auto max-w-4xl">
-        <div className="cv-reveal mx-auto max-w-2xl text-center">
-          <Eyebrow>Em 1 minuto</Eyebrow>
-          <h2 className="cv-h2 mt-4">Veja a Fábrica funcionando</h2>
-        </div>
-        <div className="cv-reveal mt-8 overflow-hidden rounded-[28px] bg-black shadow-[0_24px_50px_-30px_rgba(32,28,19,.6)]" style={delay(120)}>
-          {play ? (
-            <iframe
-              className="aspect-video w-full"
-              src={`https://www.youtube-nocookie.com/embed/${ELITE_OFFER.videoId}?autoplay=1&rel=0&modestbranding=1`}
-              title="Apresentação do Canva Viagem"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          ) : (
-            <button type="button" onClick={() => setPlay(true)} className="group relative block aspect-video w-full" aria-label="Assistir ao vídeo">
-              <img src={`https://i.ytimg.com/vi/${ELITE_OFFER.videoId}/hqdefault.jpg`} alt="" className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100" loading="lazy" />
-              <span className="absolute inset-0 grid place-items-center">
-                <span className="grid h-16 w-16 place-items-center rounded-full text-white shadow-xl" style={{ background: "var(--cv-accent)" }}><Play className="ml-1 h-7 w-7 fill-current" /></span>
-              </span>
-            </button>
-          )}
         </div>
       </div>
     </section>
