@@ -3,7 +3,7 @@
 // Entrada: { correlationID } + Authorization: Bearer <sessão>
 // Saída:   { status: "ACTIVE" | "COMPLETED" | "EXPIRED", granted: boolean }
 import { adminClient, userFromRequest } from "../_shared/wooviAuth.ts";
-import { corsHeaders, getWooviCharge, grantEliteFromCharge, json, parseCorrelationId } from "../_shared/woovi.ts";
+import { corsHeaders, getWooviCharge, grantEliteFromCharge, json, parseCorrelationId, savePixCharge } from "../_shared/woovi.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -21,6 +21,8 @@ Deno.serve(async (req) => {
 
     const charge = await getWooviCharge(correlationID);
     if (!charge) return json({ error: "Cobrança não encontrada" }, 404);
+    // Só grava quando o status sai de "aguardando" (o polling roda a cada 4 s).
+    if (charge.status !== "ACTIVE") await savePixCharge(db, charge, user.email);
 
     if (charge.status === "COMPLETED") {
       const result = await grantEliteFromCharge(db, charge);

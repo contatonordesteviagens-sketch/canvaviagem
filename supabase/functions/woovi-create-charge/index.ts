@@ -2,7 +2,7 @@
 // Entrada: { plan: "monthly" | "semiannual" | "annual" } + Authorization: Bearer <sessão>
 // Saída:   { correlationID, value, brCode, qrCodeImage, paymentLinkUrl, expiresDate }
 import { adminClient, userFromRequest } from "../_shared/wooviAuth.ts";
-import { corsHeaders, createWooviCharge, isPixPlan, json, PIX_PLANS } from "../_shared/woovi.ts";
+import { corsHeaders, createWooviCharge, isPixPlan, json, PIX_PLANS, savePixCharge } from "../_shared/woovi.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -17,8 +17,11 @@ Deno.serve(async (req) => {
     const plan = body?.plan;
     if (!isPixPlan(plan)) return json({ error: "Plano inválido" }, 400);
 
-    const charge = await createWooviCharge({ plan, userId: user.id, email: user.email.toLowerCase().trim() });
+    const email = user.email.toLowerCase().trim();
+    const name = (user.user_metadata?.name as string | undefined) || undefined;
+    const charge = await createWooviCharge({ plan, userId: user.id, email, name });
     console.log("[WOOVI-CREATE] Cobrança criada", { userId: user.id, plan, correlationID: charge.correlationID });
+    await savePixCharge(db, charge, email);
 
     return json({
       correlationID: charge.correlationID,

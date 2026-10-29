@@ -7,7 +7,7 @@
 //
 // O teste de cadastro da Woovi ({ data_criacao, event } sem "charge") recebe 200 com corpo vazio.
 import { adminClient } from "../_shared/wooviAuth.ts";
-import { getWooviCharge, grantEliteFromCharge, parseCorrelationId, verifyWebhookSignature } from "../_shared/woovi.ts";
+import { getWooviCharge, grantEliteFromCharge, parseCorrelationId, savePixCharge, verifyWebhookSignature } from "../_shared/woovi.ts";
 
 const ok = () => new Response(null, { status: 200 });
 const log = (step: string, details?: unknown) =>
@@ -47,7 +47,9 @@ Deno.serve(async (req) => {
 
   try {
     const charge = await getWooviCharge(correlationID);
-    const result = await grantEliteFromCharge(adminClient(), charge);
+    const db = adminClient();
+    await savePixCharge(db, charge);
+    const result = await grantEliteFromCharge(db, charge);
     log("Processado", { correlationID, ...result });
     return ok();
   } catch (err) {

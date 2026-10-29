@@ -57,6 +57,7 @@ export type WooviCharge = {
   expiresDate?: string;
   paidAt?: string;
   updatedAt?: string;
+  createdAt?: string;
 };
 
 async function wooviFetch(path: string, init: RequestInit = {}) {
@@ -80,9 +81,10 @@ export async function createWooviCharge(params: {
   plan: PixPlan;
   userId: string;
   email: string;
+  name?: string;
 }): Promise<WooviCharge> {
   const cfg = PIX_PLANS[params.plan];
-  const body = {
+  const body: Record<string, unknown> = {
     correlationID: buildCorrelationId(params.plan, params.userId),
     value: cfg.valueCents,
     comment: `Canva Viagem - ${cfg.label}`,
@@ -91,11 +93,69 @@ export async function createWooviCharge(params: {
       { key: "Plano", value: cfg.label },
       { key: "Conta", value: params.email },
     ],
+    // Preenche a coluna "Cliente" no painel da Woovi.
+    customer: { name: params.name || params.email.split("@")[0], email: params.email },
   };
-  const json = await wooviFetch("/api/v1/charge", { method: "POST", body: JSON.stringify(body) });
+  let json: any;
+  try {
+    json = await wooviFetch("/api/v1/charge", { method: "POST", body: JSON.stringify(body) });
+  } catch (err) {
+    // Se a Woovi recusar o bloco do cliente, a cobrança sai sem ele (o e-mail continua em "Conta").
+    console.warn("[WOOVI] Cobrança com cliente recusada, tentando sem:", (err as Error).message);
+    delete body.customer;
+    json = await wooviFetch("/api/v1/charge", { method: "POST", body: JSON.stringify(body) });
+  }
   const charge = json?.charge;
   if (!charge?.correlationID || !charge?.brCode) throw new Error("Resposta da Woovi sem cobrança");
   return charge as WooviCharge;
+}
+
+/**
+ * Guarda/atualiza a cobrança em pix_charges (funil e recuperação de quem não pagou).
+ * Nunca derruba o pagamento: erro aqui só vai para o log.
+ */
+export async function savePixCharge(db: SupabaseClient, charge: WooviCharge | null, email?: string | null): Promise<void> {
+  if (!charge?.correlationID) return;
+  const parsed = parseCorrelationId(charge.correlationID);
+  if (!parsed) return;
+  try {
+    let normalized = email?.toLowerCase().trim() || null;
+    if (!normalized) {
+      const { data } = await db.auth.admin.getUserById(parsed.userId);
+      normalized = data?.user?.email?.toLowerCase().trim() || null;
+    }
+    const status = ["ACTIVE", "COMPLETED", "EXPIRED"].includes(charge.status) ? charge.status : "ACTIVE";
+    const row: Record<string, unknown> = {
+      correlation_id: charge.correlationID,
+      user_id: parsed.userId,
+      email: normalized,
+      plan: parsed.plan,
+      value_cents: Number(charge.value) || PIX_PLANS[parsed.plan].valueCents,
+      status,
+      payment_link_url: charge.paymentLinkUrl ?? null,
+      expires_at: charge.expiresDate ?? null,
+      updated_at: new Date().toISOString(),
+    };
+    if (status === "COMPLETED") row.paid_at = charge.paidAt ?? charge.updatedAt ?? new Date().toISOString();
+    if (charge.createdAt) row.created_at = charge.createdAt;
+    const { error } = await db.from("pix_charges").upsert(row, { onConflict: "correlation_id" });
+    if (error) console.warn("[WOOVI] pix_charges não gravou:", error.message);
+  } catch (err) {
+    console.warn("[WOOVI] pix_charges falhou:", (err as Error).message);
+  }
+}
+
+/** Lista as cobranças da Woovi num intervalo de datas (para recuperar as antigas). */
+export async function listWooviCharges(startIso: string, endIso: string): Promise<WooviCharge[]> {
+  const all: WooviCharge[] = [];
+  for (let skip = 0; skip < 5000; skip += 100) {
+    const qs = new URLSearchParams({ start: startIso, end: endIso, skip: String(skip), limit: "100" });
+    const json = await wooviFetch(`/api/v1/charge?${qs.toString()}`);
+    const page: WooviCharge[] = json?.charges ?? [];
+    all.push(...page);
+    if (!json?.pageInfo?.hasNextPage || page.length === 0) break;
+  }
+  return all;
 }
 
 export async function getWooviCharge(correlationID: string): Promise<WooviCharge | null> {

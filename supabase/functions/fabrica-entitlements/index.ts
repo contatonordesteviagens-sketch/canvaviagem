@@ -10,6 +10,8 @@ const corsHeaders = {
 };
 
 const TRACKED_EVENTS = new Set([
+  // Quiz de entrada (/onboarding): cada tela vista, para o funil de recuperação.
+  "onboarding_step",
   "fabrica_opened",
   "paywall_viewed",
   "upgrade_clicked",

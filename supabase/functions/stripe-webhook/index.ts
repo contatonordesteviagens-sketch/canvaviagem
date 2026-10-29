@@ -507,8 +507,27 @@ serve(async (req) => {
   }
 });
 
+/** Funil: marca o checkout como pago ou abandonado em card_checkouts. Nunca derruba o webhook. */
+async function markCardCheckout(supabase: any, session: Stripe.Checkout.Session, status: "completed" | "expired") {
+  const email = (session.customer_details?.email || session.customer_email || "").toLowerCase().trim() || null;
+  const now = new Date().toISOString();
+  const row: Record<string, unknown> = {
+    session_id: session.id,
+    status,
+    updated_at: now,
+    recovery_url: session.after_expiration?.recovery?.url ?? null,
+  };
+  if (email) row.email = email;
+  if (session.client_reference_id) row.user_id = session.client_reference_id;
+  if (session.metadata?.billing_cycle) row.plan = session.metadata.billing_cycle;
+  if (status === "completed") row.completed_at = now;
+  const { error } = await supabase.from("card_checkouts").upsert(row, { onConflict: "session_id" });
+  if (error) logStep("WARN: card_checkouts not updated", { message: error.message });
+}
+
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabase: any, resend: any, stripe: Stripe) {
   logStep("Processing checkout.session.completed", { sessionId: session.id });
+  await markCardCheckout(supabase, session, "completed");
   const email = session.customer_email || session.customer_details?.email;
   if (!isValidEmail(email)) return;
 
@@ -786,6 +805,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resen
 }
 
 async function handleCheckoutExpired(session: Stripe.Checkout.Session, supabase: any, resend: any) {
+  await markCardCheckout(supabase, session, "expired");
   const email = session.customer_details?.email || session.customer_email;
   if (!isValidEmail(email)) return;
   await supabase.from("abandoned_checkouts").insert({ email, session_id: session.id, amount: session.amount_total });

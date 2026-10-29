@@ -320,6 +320,24 @@ serve(async (req) => {
 
     logStep("Checkout session created", { sessionId: session.id, uiMode });
 
+    // Funil: guarda o checkout aberto para recuperar quem não pagar (card_checkouts).
+    if (serviceRoleKey) {
+      const { error: funnelError } = await createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        serviceRoleKey,
+        { auth: { persistSession: false } },
+      ).from("card_checkouts").upsert({
+        session_id: session.id,
+        user_id: user.id,
+        email: user.email.toLowerCase().trim(),
+        plan: requestedCycle,
+        ui_mode: uiMode,
+        status: "open",
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "session_id" });
+      if (funnelError) logStep("WARN: card_checkouts not saved", { message: funnelError.message });
+    }
+
     const payload = uiMode === "embedded"
       ? { clientSecret: session.client_secret }
       : { url: session.url };

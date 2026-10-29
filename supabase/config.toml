@@ -90,3 +90,6 @@ verify_jwt = false
 
 [functions.woovi-renewal-reminder]
 verify_jwt = false
+
+[functions.woovi-sync-charges]
+verify_jwt = false
