@@ -2,15 +2,22 @@
 // Rodar 1x por dia (pg_cron). Manda e-mail para quem tem Elite via Pix vencendo daqui a ~3 dias
 // e outro no dia do vencimento. Não altera nenhuma assinatura.
 //
-// Protegido por segredo: header "x-cron-secret" deve ser igual a WOOVI_CRON_SECRET.
+// Protegido: aceita o header "x-cron-secret" = WOOVI_CRON_SECRET ou, como os outros crons do
+// projeto (drip, win-back), "Authorization: Bearer <service role>" lido do vault pelo pg_cron.
 import { adminClient } from "../_shared/wooviAuth.ts";
 import { isPixPlan, json, sendPixRenewalReminder } from "../_shared/woovi.ts";
 
 const DAY = 24 * 60 * 60 * 1000;
 
+function isAuthorized(req: Request): boolean {
+  const cronSecret = Deno.env.get("WOOVI_CRON_SECRET");
+  if (cronSecret && req.headers.get("x-cron-secret") === cronSecret) return true;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  return Boolean(serviceKey) && req.headers.get("Authorization") === `Bearer ${serviceKey}`;
+}
+
 Deno.serve(async (req) => {
-  const expected = Deno.env.get("WOOVI_CRON_SECRET");
-  if (!expected || req.headers.get("x-cron-secret") !== expected) return json({ error: "Não autorizado" }, 401);
+  if (!isAuthorized(req)) return json({ error: "Não autorizado" }, 401);
 
   const db = adminClient();
   const now = Date.now();
