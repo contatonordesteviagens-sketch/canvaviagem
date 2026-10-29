@@ -52,7 +52,8 @@ export const ProtectedRoute = ({
     // 1. Check Login
     if (!user && !localPreview) {
         // Redirect to auth, saving the location they tried to access
-        return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+        // Mantém a query (ex.: /checkout?plano=annual&metodo=pix) para voltar ao mesmo lugar depois do login.
+        return <Navigate to={`/login?redirect=${encodeURIComponent(`${location.pathname}${location.search}`)}`} replace />;
     }
 
     // 2. Check Admin (if required)

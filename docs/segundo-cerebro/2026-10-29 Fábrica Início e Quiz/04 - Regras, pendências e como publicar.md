@@ -18,6 +18,13 @@ criado: 2026-10-29
 - Push em `origin/main` às 06:20 UTC de 29/10 → Lovable publica em produção.
 - Testado antes do push, logado como admin no navegador: Gestão (293 usuários), home (busca, chips, Mais, atalhos, barra do celular), Fábrica (Primeiros passos, pacote em uma frase), anúncio gerado nos modelos 6 e 9 com preço/parcelas/total, carrossel (6 slides), site (aviso de rascunho, botão único, prévia), republicação do `breadi.canvaviagem.com` (contador de visitas saiu com a chave), CRM em cartões no celular, `/inicio` e `/onboarding`. Zero erros de console.
 
+### Segunda publicação (29/10, mais tarde)
+- `db61c577` (agente da Woovi: funções `woovi-*`, modal de Pix) + `82ba6fb8` (nova `/inicio`, `/checkout`, quiz, botão Google condicional, `email_captures`, `/inicio2`). Push na `main`; publicar no Lovable (Publish → Update).
+- **No Lovable Cloud depois do publish:** aplicar as migrações `20261029120000_suspend_unpaid_sites.sql` (após a consulta de prévia da nota 07) e `20261029150000_email_captures.sql`; confirmar deploy das functions `create-checkout`, `send-magic-link`, `woovi-*`; ligar **Google** em Users → Auth settings (o botão só aparece quando o provedor está ligado).
+- Voltar só esta rodada: `git push origin 570e2dbe:main --force`. Voltar tudo: `a22142a6`.
+- **Conferido no ar (29/10 noite):** Lucas publicou; `/inicio`, `/inicio2`, `/login`, `/checkout` OK no celular. Migrações, functions `woovi-*` e Google **ainda não ativados** no Lovable Cloud (detalhe e comandos de conferência em [[10 - Estado da produção e checklist pós-publicação (29-10, noite)]]).
+- Sem commit ainda: `ProtectedRoute.tsx` passou a guardar a query no redirect do login (`/checkout?plano=…&metodo=…`).
+
 ### Ponto de retorno (versão publicada ANTES desta rodada)
 - Tag e branch `backup/producao-2026-10-29` = commit **`a22142a6`** ("Consolidou e publicou vídeos"), já no GitHub.
 - **Voltar tudo ao que era:** `git push origin a22142a6:main --force` (o Lovable republica a versão antiga em minutos).

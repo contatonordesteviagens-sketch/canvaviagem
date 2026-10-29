@@ -2,7 +2,7 @@
 tags: [canva-viagem, fabrica, indice, historico]
 criado: 2026-10-29
 branch: feat/inicio-quiz-onboarding
-status: não commitado (aguardando aprovação do Lucas para rebase + push)
+status: PUBLICADO em produção (82ba6fb8, 29/10 noite) — backend do Lovable Cloud pendente, ver nota 10
 ---
 # Fábrica, Início e Quiz — rodada de usabilidade (out/2026)
 
@@ -17,9 +17,11 @@ status: não commitado (aguardando aprovação do Lucas para rebase + push)
 6. [[06 - Contexto para nova conversa (acesso, assinatura e bloqueio)]] — prompt sobre liberação, vencimento, bloqueio e o erro "paguei e não recebi"
 7. [[07 - Sites de quem não paga e visitas na Gestão]] — site sai do ar sem pagamento, redireciona para o Canva Viagem; por que as visitas zeravam
 8. [[08 - Página de pagamento (cartão + Pix) e mensagem para o agente da Woovi]] — `/checkout` com abas Cartão (Stripe embutida) e Pix (Woovi), e a mensagem de coordenação
+9. [[09 - Copy da página inicio (áudio → tudo pronto, ilimitado)]] — nova `/inicio` ("Mande um áudio"), quiz revisado, regras do Squad
+10. [[10 - Estado da produção e checklist pós-publicação (29-10, noite)]] — **comece por aqui para retomar**: o que está no ar, o que falta no Lovable Cloud, rollback
 
 ## Em 6 linhas
-- 39 arquivos alterados em `src/` + `supabase/functions`, **tudo sem commit** na branch `feat/inicio-quiz-onboarding`.
+- Duas publicações no dia 29/10: `570e2dbe` (usabilidade) e `82ba6fb8` (nova `/inicio`, `/checkout` cartão+Pix, quiz, e-mails capturados, `/inicio2`). Rollback na nota 10.
 - `npx tsc --noEmit` = 0 erros; `npx vite build` passa.
 - Maior bug encontrado: **presets globais de ajuste da arte** salvos com conteúdo de Noronha quebravam as artes de todos os clientes (preço sumindo, título errado). Corrigido.
 - Fábrica ganhou: checklist "Primeiros passos", mini-tutorial por tela, pacote criado em uma frase, quiz que preenche a Fábrica.
