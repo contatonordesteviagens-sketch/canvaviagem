@@ -194,33 +194,33 @@ export default function InicioCreme() {
               </div>
             </form>
 
-            <button
-              type="button"
-              onClick={() => start("hero_audio")}
-              className="cv-pop cv-mic mt-4 inline-flex min-h-14 items-center gap-3 rounded-full border bg-white pl-2 pr-6 text-left shadow-[0_14px_30px_-20px_rgba(32,28,19,.4)]"
-              style={{ ...delay(300), borderColor: "var(--cv-line)" }}
-            >
-              <span className="relative grid h-11 w-11 place-items-center rounded-full text-white" style={{ background: "var(--cv-accent)" }}>
-                <span className="cv-ping absolute inset-0 rounded-full" style={{ background: "var(--cv-accent)" }} />
-                <Mic className="relative h-5 w-5" />
-              </span>
-              <span>
-                <span className="block text-[15px] font-bold">Ou grave um áudio</span>
-                <span className="block text-[12px]" style={{ color: "var(--cv-muted)" }}>"Cancún, 7 dias, casal, 8.900 reais" já basta</span>
-              </span>
-            </button>
           </div>
 
           {/* Faixa infinita de peças reais */}
           <div className="cv-pop mx-auto mt-12 max-w-6xl" style={delay(380)}>
             <div className="mx-auto mb-4 flex max-w-5xl flex-wrap items-center justify-center gap-2 px-2 text-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white" style={{ background: "var(--cv-accent)" }}>
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white" style={{ background: "var(--cv-primary)" }}>
                 <InfinityIcon className="h-3.5 w-3.5" /> ILIMITADO · SEM CRÉDITOS
               </span>
               <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Carrosséis, anúncios e stories saindo da Fábrica agora. Pode fazer 1 ou 1.000 no mesmo dia.</p>
             </div>
             <Marquee />
           </div>
+          <button
+            type="button"
+            onClick={() => start("hero_audio")}
+            className="cv-pop cv-mic mx-auto mt-6 flex w-fit min-h-14 items-center gap-3 rounded-full border bg-white pl-2 pr-6 text-left shadow-[0_14px_30px_-20px_rgba(32,28,19,.4)]"
+            style={{ ...delay(440), borderColor: "var(--cv-line)" }}
+          >
+            <span className="relative grid h-11 w-11 place-items-center rounded-full text-white" style={{ background: "var(--cv-primary)" }}>
+              <span className="cv-ping absolute inset-0 rounded-full" style={{ background: "var(--cv-primary)" }} />
+              <Mic className="relative h-5 w-5" />
+            </span>
+            <span>
+              <span className="block text-[15px] font-bold">Ou grave um áudio</span>
+              <span className="block text-[12px]" style={{ color: "var(--cv-muted)" }}>"Cancún, 7 dias, casal, 8.900 reais" já basta</span>
+            </span>
+          </button>
 
           <div className="mx-auto mt-8 flex max-w-5xl flex-wrap items-center justify-center gap-2 rounded-full border bg-white px-4 py-3" style={{ borderColor: "var(--cv-line)" }}>
             <span className="mr-2 text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>SAI PRONTO PARA</span>

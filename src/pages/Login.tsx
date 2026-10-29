@@ -7,13 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Mail, ArrowLeft, ArrowRight, CheckCircle, MessageCircle, User, Phone, RefreshCw, Sparkles } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, ArrowRight, CheckCircle, Lock, ShieldCheck, MapPin, MessageCircle, User, Phone, RefreshCw, Sparkles } from "lucide-react";
 import { trackCompleteRegistration, trackViewContent } from "@/lib/meta-pixel";
 import { getMarketingAttribution, useAssociateUtmToUser } from "@/hooks/useTrackUtm";
 import { trackEvent, ANALYTICS_EVENTS } from "@/hooks/useAnalyticsEvents";
 import { formatPhoneBR, cleanPhone } from "@/lib/phone-utils";
 import logoImage from "@/assets/logo.png";
 import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
+import { BrandMark, Eyebrow } from "@/components/cv-cream/shared";
+import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
 
 const pendingAuthStateKey = "cv:pending-auth-checkout";
 
@@ -168,18 +170,24 @@ const Login = () => {
       }
 
       if (quickEntry) {
-        const { data: quick } = await supabase.functions.invoke("quick-start-session", {
-          body: { email: normalizedEmail },
+        // O projeto confirma e-mail automaticamente (mailer_autoconfirm), então o cadastro já devolve
+        // a sessão. A senha aleatória nunca é usada: a pessoa volta pelo link do e-mail ou pelo Google.
+        // E-mail que já tem conta não ganha sessão aqui; precisa confirmar pelo link.
+        const randomBytes = crypto.getRandomValues(new Uint8Array(24));
+        const password = Array.from(randomBytes, (b) => b.toString(16).padStart(2, "0")).join("");
+        const { data: signUp, error: signUpError } = await supabase.auth.signUp({
+          email: normalizedEmail,
+          password,
+          options: { data: { quick_start: true } },
         });
-        if (quick?.session?.access_token && quick?.session?.refresh_token) {
-          const { error: sessionError } = await supabase.auth.setSession(quick.session);
-          if (!sessionError) {
-            // O efeito de login acima leva para o quiz assim que a sessão carregar.
-            setOpeningQuiz(true);
-            return;
-          }
+        if (!signUpError && signUp.session) {
+          // O efeito de login acima leva para o quiz assim que a sessão carregar.
+          setOpeningQuiz(true);
+          return;
         }
-        setExistingAccount(Boolean(quick?.existing));
+        const alreadyRegistered = /already|registered|exists/i.test(signUpError?.message ?? "")
+          || (signUp?.user && (signUp.user.identities?.length ?? 0) === 0);
+        setExistingAccount(Boolean(alreadyRegistered));
       }
 
       setMagicLinkSent(true);
@@ -228,6 +236,23 @@ const Login = () => {
     );
   }
 
+  if (quickEntry) {
+    return (
+      <QuickEntryScreen
+        email={email}
+        setEmail={setEmail}
+        busy={isLoading || openingQuiz}
+        openingQuiz={openingQuiz}
+        sent={magicLinkSent}
+        existingAccount={existingAccount}
+        redirectTo={redirectTo}
+        onSubmit={handleSendMagicLink}
+        onResend={handleResendLink}
+        onBack={() => { setMagicLinkSent(false); setExistingAccount(false); }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F1F0FB] dark:bg-background p-4 font-sans">
       <div className="w-full max-w-[440px] flex flex-col items-center animate-in fade-in zoom-in duration-500">
@@ -238,7 +263,7 @@ const Login = () => {
             Canva Viagem
           </h1>
           <p className="text-muted-foreground font-medium text-sm mt-3">
-            {quickEntry ? "Digite seu e-mail para começar" : "Faça o login via e-mail para acessar o Canva Viagem"}
+            Faça o login via e-mail para acessar o Canva Viagem
           </p>
         </div>
 
@@ -247,9 +272,9 @@ const Login = () => {
             {!magicLinkSent ? (
               <div className="space-y-8">
                 <div className="text-center space-y-2">
-                  <h2 className="text-xl font-bold">{quickEntry ? "Vamos montar sua agência" : "Acesse sua Conta"}</h2>
+                  <h2 className="text-xl font-bold">Acesse sua Conta</h2>
                   <p className="text-muted-foreground text-sm">
-                    {quickEntry ? "Sem senha: só o seu e-mail" : "Entrar sem senha usando seu e-mail"}
+                    Entrar sem senha usando seu e-mail
                   </p>
                 </div>
 
@@ -270,30 +295,23 @@ const Login = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        disabled={isLoading || openingQuiz}
+                        disabled={isLoading}
                         className="h-14 pl-12 rounded-[20px] bg-white dark:bg-card text-gray-900 dark:text-foreground border-primary/10 focus:border-primary/30 focus:ring-primary/20 shadow-sm text-base"
                       />
                     </div>
-                    {!quickEntry && (
-                      <p className="text-[10px] text-muted-foreground px-1 italic">
-                        * Use o e-mail cadastrado na sua compra.
-                      </p>
-                    )}
+                    <p className="text-[10px] text-muted-foreground px-1 italic">
+                      * Use o e-mail cadastrado na sua compra.
+                    </p>
                   </div>
 
 
                   <Button
                     type="submit"
                     className="w-full h-15 rounded-[22px] text-base font-bold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 btn-shine bg-primary"
-                    disabled={isLoading || openingQuiz}
+                    disabled={isLoading}
                   >
-                    {isLoading || openingQuiz ? (
+                    {isLoading ? (
                       <Loader2 className="h-6 w-6 animate-spin" />
-                    ) : quickEntry ? (
-                      <>
-                        Continuar
-                        <ArrowRight className="ml-2 h-5 w-5 opacity-80" />
-                      </>
                     ) : (
                       <>
                         Enviar Link de Acesso
@@ -311,11 +329,6 @@ const Login = () => {
                   </div>
                   <div className="space-y-2">
                     <h2 className="text-2xl font-bold">Link Enviado! 📬</h2>
-                    {existingAccount && (
-                      <p className="text-sm font-semibold text-foreground max-w-[300px] mx-auto">
-                        Você já tem uma conta com este e-mail. Por segurança, abra o link para continuar.
-                      </p>
-                    )}
                     <p className="text-muted-foreground text-sm max-w-[280px] mx-auto">
                       Enviamos um link mágico para <span className="font-bold text-foreground">{email}</span>. Clique no botão lá para entrar.
                     </p>
@@ -345,7 +358,7 @@ const Login = () => {
 
                 <Button
                   variant="ghost"
-                  onClick={() => { setMagicLinkSent(false); setExistingAccount(false); }}
+                  onClick={() => setMagicLinkSent(false)}
                   className="w-full rounded-2xl text-muted-foreground"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
@@ -405,3 +418,143 @@ const Login = () => {
 };
 
 export default Login;
+
+/** Link para abrir a caixa de entrada nos provedores mais comuns. */
+function inboxUrl(email: string): string | null {
+  const domain = email.split("@")[1]?.toLowerCase() ?? "";
+  if (domain === "gmail.com" || domain === "googlemail.com") return "https://mail.google.com/mail/u/0/#search/canva+viagem";
+  if (/^(hotmail|outlook|live|msn)\./.test(domain)) return "https://outlook.live.com/mail/0/";
+  if (/^(yahoo|ymail)\./.test(domain)) return "https://mail.yahoo.com/";
+  return null;
+}
+
+/** Login vindo da /inicio: mesmo visual creme da página inicial, Google + e-mail; e-mail novo vai direto ao quiz. */
+function QuickEntryScreen(props: {
+  email: string;
+  setEmail: (v: string) => void;
+  busy: boolean;
+  openingQuiz: boolean;
+  sent: boolean;
+  existingAccount: boolean;
+  redirectTo: string | null;
+  onSubmit: (e: React.FormEvent) => void;
+  onResend: () => void;
+  onBack: () => void;
+}) {
+  const { email, setEmail, busy, openingQuiz, sent, existingAccount, redirectTo, onSubmit, onResend, onBack } = props;
+  const [destino] = useState(() => {
+    try { return sessionStorage.getItem(ONBOARDING_DESTINO_KEY) || ""; } catch { return ""; }
+  });
+  const inbox = inboxUrl(email);
+
+  return (
+    <div className="cv-cream flex min-h-[100dvh] flex-col">
+      <header className="flex justify-center px-4 pt-6">
+        <a href="/inicio" aria-label="Voltar para a página inicial"><BrandMark size={40} /></a>
+      </header>
+
+      <main className="flex flex-1 items-start justify-center px-4 pb-10 pt-8 sm:items-center sm:pt-4">
+        <div className="cv-card cv-pop w-full max-w-[440px] p-6 shadow-[0_24px_50px_-30px_rgba(32,28,19,.35)] sm:p-8">
+          {!sent ? (
+            <>
+              <Eyebrow>Passo 1 de 2 · seu acesso</Eyebrow>
+              <h1 className="mt-3 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em]">Vamos montar sua agência</h1>
+              <p className="mt-2 text-[15px] leading-6" style={{ color: "var(--cv-muted)" }}>
+                Sem senha. Em seguida, um quiz rápido deixa tudo com a cara da sua agência.
+              </p>
+              {destino && (
+                <span className="mt-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-semibold" style={{ background: "var(--cv-sand)" }}>
+                  <MapPin className="h-3.5 w-3.5" /> Primeiro pacote: {destino}
+                </span>
+              )}
+
+              <div className="mt-6 space-y-4 empty:hidden">
+                <GoogleSignInButton redirectTo={redirectTo} />
+                <AuthDivider />
+              </div>
+
+              <form onSubmit={onSubmit} className="mt-5">
+                <label htmlFor="quick-email" className="text-[13px] font-bold">Seu melhor e-mail</label>
+                <div
+                  className="mt-2 flex items-center gap-3 rounded-full border bg-white px-4 focus-within:ring-2"
+                  style={{ borderColor: "var(--cv-line)", ["--tw-ring-color" as string]: "rgba(124,92,255,.35)" }}
+                >
+                  <Mail className="h-5 w-5 shrink-0" style={{ color: "var(--cv-muted)" }} />
+                  <input
+                    id="quick-email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="voce@suaagencia.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={busy}
+                    className="h-14 w-full bg-transparent text-[16px] outline-none placeholder:text-[#9b917d]"
+                  />
+                </div>
+                <button type="submit" disabled={busy} className="cv-btn mt-4 h-14 w-full text-[16px]">
+                  {busy ? (
+                    <><Loader2 className="h-5 w-5 animate-spin" /> {openingQuiz ? "Abrindo o quiz…" : "Um instante…"}</>
+                  ) : (
+                    <>Continuar <ArrowRight className="h-5 w-5" /></>
+                  )}
+                </button>
+              </form>
+
+              <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[12px]" style={{ color: "var(--cv-muted)" }}>
+                <li className="inline-flex items-center gap-1"><Lock className="h-3.5 w-3.5" /> Sem senha</li>
+                <li className="inline-flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" /> 7 dias de garantia</li>
+                <li>Cancele quando quiser</li>
+              </ul>
+              <p className="mt-4 text-center text-[12px]" style={{ color: "var(--cv-muted)" }}>
+                Já é assinante? Use o mesmo e-mail da compra.
+              </p>
+            </>
+          ) : (
+            <div className="text-center">
+              <span className="mx-auto grid h-16 w-16 place-items-center rounded-full" style={{ background: "#efe9ff", color: "var(--cv-primary-ink)" }}>
+                <Mail className="h-7 w-7" />
+              </span>
+              <h1 className="mt-5 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
+                {existingAccount ? "Você já tem conta aqui" : "Confira seu e-mail"}
+              </h1>
+              <p className="mx-auto mt-2 max-w-[320px] text-[15px] leading-6" style={{ color: "var(--cv-muted)" }}>
+                {existingAccount
+                  ? <>Por segurança, mandamos um link de acesso para <b style={{ color: "var(--cv-fg)" }}>{email}</b>. Abra e você continua de onde parou.</>
+                  : <>Mandamos um link de acesso para <b style={{ color: "var(--cv-fg)" }}>{email}</b>. Abra para continuar.</>}
+              </p>
+              {inbox && (
+                <a href={inbox} target="_blank" rel="noopener noreferrer" className="cv-btn mt-6 h-14 w-full text-[16px]">
+                  Abrir meu e-mail <ArrowRight className="h-5 w-5" />
+                </a>
+              )}
+              <div className="mt-4 empty:hidden">
+                <GoogleSignInButton redirectTo={redirectTo} />
+              </div>
+              <p className="mt-5 text-[13px]" style={{ color: "var(--cv-muted)" }}>
+                Não chegou? Olhe o Spam ou{" "}
+                <button type="button" onClick={onResend} disabled={busy} className="font-bold underline disabled:opacity-50">reenvie o link</button>.
+              </p>
+              <button type="button" onClick={onBack} className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold" style={{ color: "var(--cv-muted)" }}>
+                <ArrowLeft className="h-4 w-4" /> Usar outro e-mail
+              </button>
+            </div>
+          )}
+        </div>
+      </main>
+
+      <footer className="pb-6 text-center text-[12px]" style={{ color: "var(--cv-muted)" }}>
+        Precisa de ajuda?{" "}
+        <a
+          href="https://wa.me/5585986411294?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20o%20Canva%20Viagem"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold underline"
+        >
+          Fale no WhatsApp
+        </a>
+      </footer>
+    </div>
+  );
+}

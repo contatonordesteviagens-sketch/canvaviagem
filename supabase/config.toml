@@ -33,9 +33,6 @@ verify_jwt = false
 [functions.verify-magic-link]
 verify_jwt = false
 
-[functions.quick-start-session]
-verify_jwt = false
-
 [functions.generate-magic-link-url]
 verify_jwt = false
 

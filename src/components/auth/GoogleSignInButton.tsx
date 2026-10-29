@@ -24,15 +24,19 @@ async function isGoogleEnabled(): Promise<boolean> {
   return googleEnabledCache;
 }
 
-export function GoogleSignInButton({ redirectTo }: { redirectTo?: string | null }) {
-  const [loading, setLoading] = useState(false);
+function useGoogleEnabled() {
   const [enabled, setEnabled] = useState<boolean | null>(googleEnabledCache);
-
   useEffect(() => {
     let alive = true;
     isGoogleEnabled().then((ok) => { if (alive) setEnabled(ok); });
     return () => { alive = false; };
   }, []);
+  return enabled;
+}
+
+export function GoogleSignInButton({ redirectTo }: { redirectTo?: string | null }) {
+  const [loading, setLoading] = useState(false);
+  const enabled = useGoogleEnabled();
 
   if (!enabled) return null;
 
@@ -73,7 +77,10 @@ export function GoogleSignInButton({ redirectTo }: { redirectTo?: string | null 
   );
 }
 
+/** Só aparece junto com o botão do Google; sem ele, "ou com e-mail" ficaria solto na tela. */
 export function AuthDivider() {
+  const enabled = useGoogleEnabled();
+  if (!enabled) return null;
   return (
     <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
       <span className="h-px flex-1 bg-slate-200" /> ou com e-mail <span className="h-px flex-1 bg-slate-200" />
