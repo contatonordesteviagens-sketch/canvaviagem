@@ -123,7 +123,7 @@ export default function InicioCreme() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /** Todo caminho leva ao mesmo lugar: login (pega o e-mail) → quiz → pagamento. Assinante vai para a Fábrica. */
+  /** Todo caminho leva ao mesmo lugar: e-mail → quiz → pagamento (e-mail novo não espera o link). Assinante vai para a Fábrica. */
   const start = (source: string) => {
     const value = destino.trim();
     try {
@@ -131,7 +131,7 @@ export default function InicioCreme() {
     } catch { /* sessionStorage indisponível */ }
     trackMetaEvent("Lead", { content_name: "inicio_creme_cta", content_category: source });
     if (user && subscription.subscribed) { navigate("/fabrica"); return; }
-    navigate(user ? ONBOARDING_PATH : `/login?redirect=${encodeURIComponent(ONBOARDING_PATH)}`);
+    navigate(user ? ONBOARDING_PATH : `/login?redirect=${encodeURIComponent(ONBOARDING_PATH)}&entrada=rapida`);
   };
 
   const onHeroSubmit = (e: FormEvent) => {

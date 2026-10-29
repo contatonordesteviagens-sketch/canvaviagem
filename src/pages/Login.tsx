@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Mail, ArrowLeft, CheckCircle, MessageCircle, User, Phone, RefreshCw, Sparkles } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, ArrowRight, CheckCircle, MessageCircle, User, Phone, RefreshCw, Sparkles } from "lucide-react";
 import { trackCompleteRegistration, trackViewContent } from "@/lib/meta-pixel";
 import { getMarketingAttribution, useAssociateUtmToUser } from "@/hooks/useTrackUtm";
 import { trackEvent, ANALYTICS_EVENTS } from "@/hooks/useAnalyticsEvents";
@@ -61,6 +61,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [showExtras, setShowExtras] = useState(false);
+  const [existingAccount, setExistingAccount] = useState(false);
+  const [openingQuiz, setOpeningQuiz] = useState(false);
 
   // Validate redirect parameter
   const getSafeRedirect = (path: string | null): string | null => {
@@ -77,6 +79,8 @@ const Login = () => {
 
   const rawRedirect = searchParams.get("redirect");
   const redirectTo = getSafeRedirect(rawRedirect);
+  // Vindo da página inicial: e-mail novo entra direto no quiz, sem a tela "Link Enviado!".
+  const quickEntry = searchParams.get("entrada") === "rapida" && Boolean(redirectTo?.startsWith("/onboarding"));
 
   useEffect(() => {
     trackViewContent('Página de Login');
@@ -163,6 +167,21 @@ const Login = () => {
         return;
       }
 
+      if (quickEntry) {
+        const { data: quick } = await supabase.functions.invoke("quick-start-session", {
+          body: { email: normalizedEmail },
+        });
+        if (quick?.session?.access_token && quick?.session?.refresh_token) {
+          const { error: sessionError } = await supabase.auth.setSession(quick.session);
+          if (!sessionError) {
+            // O efeito de login acima leva para o quiz assim que a sessão carregar.
+            setOpeningQuiz(true);
+            return;
+          }
+        }
+        setExistingAccount(Boolean(quick?.existing));
+      }
+
       setMagicLinkSent(true);
       toast.success("Link enviado! Verifique seu email.");
     } catch (error) {
@@ -219,7 +238,7 @@ const Login = () => {
             Canva Viagem
           </h1>
           <p className="text-muted-foreground font-medium text-sm mt-3">
-            Faça o login via e-mail para acessar o Canva Viagem
+            {quickEntry ? "Digite seu e-mail para começar" : "Faça o login via e-mail para acessar o Canva Viagem"}
           </p>
         </div>
 
@@ -228,9 +247,9 @@ const Login = () => {
             {!magicLinkSent ? (
               <div className="space-y-8">
                 <div className="text-center space-y-2">
-                  <h2 className="text-xl font-bold">Acesse sua Conta</h2>
+                  <h2 className="text-xl font-bold">{quickEntry ? "Vamos montar sua agência" : "Acesse sua Conta"}</h2>
                   <p className="text-muted-foreground text-sm">
-                    Entrar sem senha usando seu e-mail
+                    {quickEntry ? "Sem senha: só o seu e-mail" : "Entrar sem senha usando seu e-mail"}
                   </p>
                 </div>
 
@@ -251,23 +270,30 @@ const Login = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        disabled={isLoading}
+                        disabled={isLoading || openingQuiz}
                         className="h-14 pl-12 rounded-[20px] bg-white dark:bg-card text-gray-900 dark:text-foreground border-primary/10 focus:border-primary/30 focus:ring-primary/20 shadow-sm text-base"
                       />
                     </div>
-                    <p className="text-[10px] text-muted-foreground px-1 italic">
-                      * Use o e-mail cadastrado na sua compra.
-                    </p>
+                    {!quickEntry && (
+                      <p className="text-[10px] text-muted-foreground px-1 italic">
+                        * Use o e-mail cadastrado na sua compra.
+                      </p>
+                    )}
                   </div>
 
 
                   <Button
                     type="submit"
                     className="w-full h-15 rounded-[22px] text-base font-bold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 btn-shine bg-primary"
-                    disabled={isLoading}
+                    disabled={isLoading || openingQuiz}
                   >
-                    {isLoading ? (
+                    {isLoading || openingQuiz ? (
                       <Loader2 className="h-6 w-6 animate-spin" />
+                    ) : quickEntry ? (
+                      <>
+                        Continuar
+                        <ArrowRight className="ml-2 h-5 w-5 opacity-80" />
+                      </>
                     ) : (
                       <>
                         Enviar Link de Acesso
@@ -285,6 +311,11 @@ const Login = () => {
                   </div>
                   <div className="space-y-2">
                     <h2 className="text-2xl font-bold">Link Enviado! 📬</h2>
+                    {existingAccount && (
+                      <p className="text-sm font-semibold text-foreground max-w-[300px] mx-auto">
+                        Você já tem uma conta com este e-mail. Por segurança, abra o link para continuar.
+                      </p>
+                    )}
                     <p className="text-muted-foreground text-sm max-w-[280px] mx-auto">
                       Enviamos um link mágico para <span className="font-bold text-foreground">{email}</span>. Clique no botão lá para entrar.
                     </p>
@@ -314,7 +345,7 @@ const Login = () => {
 
                 <Button
                   variant="ghost"
-                  onClick={() => setMagicLinkSent(false)}
+                  onClick={() => { setMagicLinkSent(false); setExistingAccount(false); }}
                   className="w-full rounded-2xl text-muted-foreground"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />

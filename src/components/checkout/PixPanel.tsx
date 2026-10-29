@@ -94,7 +94,7 @@ function useCountdown(expiresDate: string | null) {
  */
 export function PixPanel({ plan, onSwitchToCard }: { plan: CheckoutCycle; onSwitchToCard: () => void }) {
   const navigate = useNavigate();
-  const { refreshSubscription } = useAuth();
+  const { user, refreshSubscription } = useAuth();
   const info = CHECKOUT_PLANS[plan];
   const [taxId, setTaxId] = useState(() => {
     try { return formatTaxId(sessionStorage.getItem(TAX_ID_KEY) || ""); } catch { return ""; }
@@ -219,6 +219,19 @@ export function PixPanel({ plan, onSwitchToCard }: { plan: CheckoutCycle; onSwit
         </div>
       ) : (
         <>
+          {user?.email && (
+            <div className="mb-4">
+              <label htmlFor="checkout-pix-email" className="block text-[14px] font-bold text-slate-900">E-mail de acesso</label>
+              <input
+                id="checkout-pix-email"
+                type="email"
+                value={user.email}
+                readOnly
+                className="mt-2 min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-[16px] text-slate-600 outline-none"
+              />
+              <p className="mt-1.5 text-[12px] text-slate-500">O acesso é liberado neste e-mail assim que o Pix cair.</p>
+            </div>
+          )}
           <label htmlFor="checkout-taxid" className="block text-[14px] font-bold text-slate-900">CPF ou CNPJ do titular</label>
           <input
             id="checkout-taxid"
