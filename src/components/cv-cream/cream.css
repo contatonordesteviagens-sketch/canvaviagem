@@ -76,9 +76,13 @@
 @keyframes cv-fill { from { width: 0; } }
 .cv-cream .cv-fill { animation: cv-fill 1.1s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: var(--cv-delay, 0ms); }
 
+/* Linha de gráfico se desenhando (o path usa pathLength=1) */
+@keyframes cv-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.cv-cream .cv-draw { stroke-dasharray: 1; animation: cv-draw 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both; }
+
 @media (prefers-reduced-motion: reduce) {
   .cv-cream .cv-reveal { opacity: 1; transform: none; transition: none; }
-  .cv-cream .cv-float, .cv-cream .cv-pop, .cv-cream .cv-bar, .cv-cream .cv-fill { animation: none; }
+  .cv-cream .cv-float, .cv-cream .cv-pop, .cv-cream .cv-bar, .cv-cream .cv-fill, .cv-cream .cv-draw { animation: none; }
 }
 
 /* ─── animações da /inicio: ouvir → montar → publicar ─── */

@@ -1,39 +1,48 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
+// Funil de venda e páginas públicas: o popup nunca aparece aqui (atrapalhava o checkout).
+const FUNNEL_PATHS = ['/inicio', '/inicio2', '/es/inicio', '/onboarding', '/checkout', '/pix', '/login', '/auth', '/planos', '/obrigado'];
+const SEEN_FLAG = 'install_prompt_seen';
+
+/**
+ * "Adicione um atalho na sua tela inicial": uma única vez por usuário, no celular,
+ * só para assinante e só dentro da plataforma. A marca fica no user_metadata da conta
+ * (vale em qualquer aparelho) e no localStorage (não pisca enquanto a conta atualiza).
+ */
 export function InstallPrompt() {
   const [open, setOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, subscription } = useAuth();
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    // Only show to logged in users
-    if (!user) return;
+    if (!user || subscription.loading || !subscription.subscribed) return;
+    if (FUNNEL_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return;
 
-    // Check if mobile (iOS and Android)
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     if (!isMobile) return;
 
-    // Check if already installed (standalone mode)
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
     if (isStandalone) return;
 
-    // Check how many times it was shown for this user
-    const storageKey = `installPromptCount_${user.id}`;
-    const count = parseInt(localStorage.getItem(storageKey) || '0', 10);
-    
-    // Limit to 2 times per account
-    if (count >= 2) return;
+    const storageKey = `installPromptSeen_${user.id}`;
+    let seenLocally = false;
+    try { seenLocally = localStorage.getItem(storageKey) === '1'; } catch { /* sem storage */ }
+    if (seenLocally || user.user_metadata?.[SEEN_FLAG]) return;
 
-    // Show popup after a short delay so it doesn't interrupt immediate navigation
+    // Espera a pessoa chegar e ver a ferramenta antes de interromper.
     const timer = setTimeout(() => {
       setOpen(true);
-      localStorage.setItem(storageKey, (count + 1).toString());
+      try { localStorage.setItem(storageKey, '1'); } catch { /* sem storage */ }
+      supabase.auth.updateUser({ data: { [SEEN_FLAG]: true } }).catch(() => undefined);
     }, 2500);
 
     return () => clearTimeout(timer);
-  }, [user]);
+  }, [user, subscription.loading, subscription.subscribed, pathname]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

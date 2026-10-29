@@ -22,11 +22,12 @@ type Option = { id: string; label: string; hint: string; icon: Icon };
 type QuestionStep = { kind: "question"; key: AnswerKey; title: string; sub: string; multi?: boolean; options: Option[] };
 type ScreenStep = { kind: "intro" | "how-buy" | "speed" | "start-small" | "one-destino" | "diagnosis" | "sample" | "building" | "result" | "loop" | "offer" };
 type Step = QuestionStep | ScreenStep;
-type AnswerKey = "objetivo" | "ferramenta" | "desafio" | "momento" | "destinos" | "travas" | "prazo";
+type AnswerKey = "objetivo" | "ferramenta" | "desafio" | "momento" | "orcamentos" | "destinos" | "travas" | "prazo";
 type Answers = Partial<Record<AnswerKey, string[]>>;
 type Cycle = "monthly" | "semiannual" | "annual";
 
-const STORAGE_KEY = "cv-onboarding-v1";
+// v2: entrou a pergunta de orçamentos; a v1 guardava o passo pela ordem antiga.
+const STORAGE_KEY = "cv-onboarding-v2";
 
 const STEPS: Step[] = [
   { kind: "intro" },
@@ -68,6 +69,15 @@ const STEPS: Step[] = [
       { id: "equipe", label: "Tenho equipe", hint: "Agência estruturada", icon: Users },
     ],
   },
+  {
+    kind: "question", key: "orcamentos", title: "Quantos pedidos de orçamento chegam no seu WhatsApp por semana?", sub: "Conta aproximada já ajuda",
+    options: [
+      { id: "zero", label: "Nenhum ainda", hint: "O WhatsApp quase não toca", icon: MessageCircleOff },
+      { id: "poucos", label: "De 1 a 5", hint: "Chegam alguns, sem constância", icon: MessageCircle },
+      { id: "medio", label: "De 6 a 20", hint: "Tenho movimento, quero mais", icon: TrendingUp },
+      { id: "muitos", label: "Mais de 20", hint: "Preciso organizar e fechar mais", icon: Users },
+    ],
+  },
   { kind: "start-small" },
   {
     kind: "question", key: "destinos", multi: true, title: "Quais destinos você mais vende?", sub: "Marque todos que quiser",
@@ -83,10 +93,9 @@ const STEPS: Step[] = [
   {
     kind: "question", key: "travas", multi: true, title: "Algum desses parece com você?", sub: "Marque todos que se aplicam",
     options: [
-      { id: "design", label: "Não sei nada de design", hint: "Nunca abri um editor", icon: Palette },
-      { id: "tempo", label: "Não tenho tempo", hint: "Atendo, vendo e ainda posto?", icon: Clock },
-      { id: "legenda", label: "Não sei escrever legenda", hint: "Não sei o que falar", icon: PenLine },
-      { id: "vergonha", label: "Tenho vergonha do meu Instagram", hint: "Parece abandonado", icon: EyeOff },
+      { id: "design", label: "Não sei criar postagens", hint: "Não sei editar fotos nem vídeos", icon: Palette },
+      { id: "tempo", label: "Não tenho tempo", hint: "Já faço muita coisa e não sobra tempo pra mais nada", icon: Clock },
+      { id: "vergonha", label: "Preciso melhorar meu Instagram", hint: "Quero que pareça de uma grande agência de viagens", icon: EyeOff },
     ],
   },
   { kind: "diagnosis" },
@@ -109,10 +118,15 @@ const STEPS: Step[] = [
 const TOTAL = STEPS.length;
 
 const FIXES: Record<string, { title: string; fix: string; icon: Icon }> = {
-  design: { title: "Você não sabe design", fix: "Os modelos já vêm prontos. Você só troca o destino.", icon: Palette },
-  tempo: { title: "Você não tem tempo", fix: "Cada arte sai em cerca de 2 minutos.", icon: Clock },
-  legenda: { title: "Você não sabe o que escrever", fix: "A IA escreve a legenda de venda pra você.", icon: PenLine },
-  vergonha: { title: "Seu Instagram parece parado", fix: "Uma semana de posts profissionais já muda a cara do perfil.", icon: EyeOff },
+  design: { title: "Você não sabe criar postagens", fix: "Anúncio, carrossel e vídeo já vêm prontos. Você só fala o pacote.", icon: Palette },
+  tempo: { title: "Você não tem tempo", fix: "Cada arte sai em cerca de 2 minutos, com legenda e logo.", icon: Clock },
+  vergonha: { title: "Seu Instagram ainda não parece de agência grande", fix: "Duas semanas de posts profissionais já mudam a cara do perfil.", icon: EyeOff },
+};
+
+const QUIZ_MEDIA = {
+  intro: ["/quiz-media/anuncio-maragogi-1.webp", "/quiz-media/carrossel-noronha-01.webp", "/quiz-media/anuncio-rio-1.webp"],
+  sample: "/quiz-media/anuncio-maragogi-1.webp",
+  carousel: ["/quiz-media/carrossel-noronha-01.webp", "/quiz-media/carrossel-noronha-02.webp", "/quiz-media/carrossel-noronha-03.webp", "/quiz-media/carrossel-noronha-04.webp"],
 };
 
 const DESTINO_LABEL: Record<string, string> = {
@@ -306,8 +320,6 @@ type ScreenProps = {
   setPlan: (c: Cycle) => void; onNext: () => void; onCheckout: () => void;
 };
 
-const ART_CARDS = ["/travel-carousel-assets/cancun-card-01.webp", "/travel-carousel-assets/cancun-editorial-02.webp", "/travel-carousel-assets/cancun-glass-03.webp"];
-
 function Screen(props: ScreenProps) {
   switch (props.kind) {
     case "intro": return <Intro onNext={props.onNext} />;
@@ -316,7 +328,7 @@ function Screen(props: ScreenProps) {
     case "start-small": return <StartSmall onNext={props.onNext} />;
     case "one-destino": return <OneDestino destino={props.destino} onNext={props.onNext} />;
     case "diagnosis": return <Diagnosis answers={props.answers} onNext={props.onNext} />;
-    case "sample": return <Sample destino={props.destino} onNext={props.onNext} />;
+    case "sample": return <Sample onNext={props.onNext} />;
     case "building": return <Building onDone={props.onNext} />;
     case "result": return <Result answers={props.answers} destino={props.destino} onNext={props.onNext} />;
     case "loop": return <Loop onNext={props.onNext} />;
@@ -336,15 +348,35 @@ function Intro({ onNext }: { onNext: () => void }) {
           Fale o pacote num áudio. Receba anúncio, carrossel, site e vídeo <Accent>prontos, com a sua logo.</Accent>
         </h1>
         <p className="cv-pop mt-3 max-w-[300px] text-[15px] leading-6" style={{ ...delay(160), color: "var(--cv-muted)" }}>
-          Responda 7 perguntas e a gente monta o seu primeiro pacote completo: do post ao site.
+          Responda 8 perguntas e a gente monta as suas 2 primeiras semanas: do anúncio ao site.
         </p>
       </div>
-      <div className="relative mx-auto mt-10 flex h-64 w-full max-w-[340px] items-center justify-center">
-        {ART_CARDS.map((src, i) => (
-          <div key={src} className="cv-float absolute w-[118px]" style={{ ...delay(i * 300), ["--cv-rot" as string]: ["-8deg", "0deg", "7deg"][i], left: `${[2, 34, 66][i]}%`, top: i === 1 ? 4 : 22, zIndex: i === 1 ? 2 : 1 }}>
-            <img src={src} alt="" className="aspect-[4/5] w-full rounded-2xl border-4 border-white object-cover shadow-xl" />
-          </div>
-        ))}
+      <div className="relative mx-auto mt-8 h-72 w-full max-w-[360px]">
+        {QUIZ_MEDIA.intro.map((src, i) => {
+          const center = i === 1;
+          return (
+            <div
+              key={src}
+              className="cv-float absolute"
+              style={{
+                ...delay(i * 300),
+                ["--cv-rot" as string]: ["-7deg", "0deg", "7deg"][i],
+                width: center ? 168 : 132,
+                left: center ? "50%" : i === 0 ? "0%" : undefined,
+                right: i === 2 ? "0%" : undefined,
+                marginLeft: center ? -84 : undefined,
+                top: center ? 0 : 44,
+                zIndex: center ? 2 : 1,
+              }}
+            >
+              <img
+                src={src}
+                alt={["Anúncio de Maragogi feito na Fábrica", "Carrossel de Fernando de Noronha feito na Fábrica", "Anúncio do Rio de Janeiro feito na Fábrica"][i]}
+                className={`w-full rounded-2xl border-4 border-white object-cover shadow-xl ${center ? "aspect-[4/5]" : "aspect-square"}`}
+              />
+            </div>
+          );
+        })}
       </div>
       <div className="mt-6 flex flex-col items-center gap-2">
         <span className="rounded-full border bg-white px-3 py-1 text-[12px]" style={{ borderColor: "var(--cv-line)" }}>Um áudio · tudo pronto · sem limite</span>
@@ -498,16 +530,21 @@ function Diagnosis({ answers, onNext }: { answers: Answers; onNext: () => void }
   );
 }
 
-function Sample({ destino, onNext }: { destino: string; onNext: () => void }) {
+function Sample({ onNext }: { onNext: () => void }) {
   return (
     <>
-      <Title sub="Anúncio de feed · texto de venda e marca já aplicados">Essa arte levou 30 segundos. <Accent>Curtiu?</Accent></Title>
-      <div className="cv-pop relative mx-auto mt-6 w-full max-w-[300px]" style={delay(150)}>
-        <img src="/travel-carousel-assets/cancun-card-01.webp" alt={`Arte de exemplo para ${destino}`} className="aspect-[4/5] w-full rounded-[28px] object-cover shadow-[0_24px_50px_-24px_rgba(32,28,19,.6)]" />
-        <span className="absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[12px] font-bold">Com a <span className="text-[#6440e6]">sua logo</span></span>
-        <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/65 px-3 py-1 text-[12px] font-semibold text-white"><MapPin className="h-3.5 w-3.5" /> {destino}</span>
+      <Title sub="Anúncio de feed com preço, legenda e logo já aplicados. O carrossel sai junto.">Essa arte levou 30 segundos. <Accent>Curtiu?</Accent></Title>
+      <div className="cv-pop mx-auto mt-6 w-full max-w-[320px]" style={delay(150)}>
+        <img src={QUIZ_MEDIA.sample} alt="Anúncio de Maragogi feito na Fábrica do Canva Viagem" className="aspect-square w-full rounded-[28px] object-cover shadow-[0_24px_50px_-24px_rgba(32,28,19,.6)]" />
       </div>
-      <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
+      <div className="cv-pop mx-auto mt-4 w-full max-w-[320px]" style={delay(300)}>
+        <p className="mb-2 text-[12px] font-semibold" style={{ color: "var(--cv-muted)" }}>+ carrossel do mesmo jeito</p>
+        <div className="grid grid-cols-4 gap-2">
+          {QUIZ_MEDIA.carousel.map((src, i) => (
+            <img key={src} src={src} alt={`Tela ${i + 1} do carrossel de Fernando de Noronha`} loading="lazy" className="aspect-[4/5] w-full rounded-xl object-cover shadow-md" />
+          ))}
+        </div>
+      </div>      <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
         <button onClick={onNext} className="h-14 rounded-full border bg-white text-[15px] font-semibold" style={{ borderColor: "var(--cv-line)" }}>Não é meu estilo</button>
         <button onClick={onNext} className="cv-btn h-14 text-[15px]">Postaria isso!</button>
       </div>
@@ -519,10 +556,10 @@ function Sample({ destino, onNext }: { destino: string; onNext: () => void }) {
 function Building({ onDone }: { onDone: () => void }) {
   const [pct, setPct] = useState(0);
   const tasks = [
-    { label: "Lendo suas respostas", done: "7 de 7", at: 25 },
+    { label: "Lendo suas respostas", done: "8 de 8", at: 25 },
     { label: "Separando modelos de anúncio, carrossel e site", done: "pronto", at: 55 },
     { label: "Escrevendo os textos de venda", done: "pronto", at: 80 },
-    { label: "Montando sua primeira semana", done: "7 peças", at: 100 },
+    { label: "Montando suas 2 primeiras semanas", done: "14 dias", at: 100 },
   ];
   useEffect(() => {
     const id = window.setInterval(() => setPct((p) => Math.min(p + 2, 100)), 70);
@@ -536,7 +573,7 @@ function Building({ onDone }: { onDone: () => void }) {
   const r = 58, c = 2 * Math.PI * r;
   return (
     <div className="flex flex-1 flex-col items-center pt-8">
-      <h1 className="text-center text-[26px] font-extrabold tracking-[-0.02em]">Montando sua primeira semana</h1>
+      <h1 className="text-center text-[26px] font-extrabold tracking-[-0.02em]">Montando suas 2 primeiras semanas</h1>
       <div className="relative mt-6 h-36 w-36">
         <svg viewBox="0 0 136 136" className="h-full w-full -rotate-90">
           <circle cx="68" cy="68" r={r} fill="none" stroke="#e8e2d2" strokeWidth="6" />
@@ -586,23 +623,39 @@ function scoreFrom(answers: Answers) {
 
 function Result({ answers, destino, onNext }: { answers: Answers; destino: string; onNext: () => void }) {
   const { now, potential } = scoreFrom(answers);
+  const [openWeek2, setOpenWeek2] = useState(false);
   const travas = new Set(answers.travas || []);
   const desafio = answers.desafio?.[0];
+  const orcamentos = answers.orcamentos?.[0];
   const metrics = [
     { label: "Constância de posts", now: travas.has("tempo") || desafio === "tempo" ? 20 : 40, with: 95 },
-    { label: "Visual profissional", now: travas.has("design") || travas.has("vergonha") || desafio === "amador" ? 25 : 50, with: 92 },
-    { label: "Legenda que vende", now: travas.has("legenda") || desafio === "ninguem" ? 20 : 45, with: 90 },
-    { label: "Caminho até o WhatsApp", now: desafio === "ninguem" ? 25 : 40, with: 88 },
+    { label: "Visual profissional", now: travas.has("design") || desafio === "amador" ? 25 : 50, with: 92 },
+    { label: "Perfil que vende", now: travas.has("vergonha") || desafio === "ninguem" ? 20 : 45, with: 90 },
+    { label: "Pedidos de orçamento no WhatsApp", now: orcamentos === "zero" ? 10 : orcamentos === "poucos" ? 25 : orcamentos === "medio" ? 45 : orcamentos === "muitos" ? 60 : 30, with: 90 },
   ];
-  const week = [
-    { d: "Seg", t: "Post de feed", icon: Instagram }, { d: "Ter", t: "Story com enquete", icon: LayoutTemplate },
-    { d: "Qua", t: "Carrossel do roteiro", icon: Images }, { d: "Qui", t: "Post de oferta", icon: Instagram },
-    { d: "Sex", t: "Story com valor", icon: LayoutTemplate }, { d: "Sáb", t: "Página do pacote", icon: Globe2 },
-    { d: "Dom", t: "Disparo no WhatsApp", icon: MessageCircle },
+  const weeks = [
+    [
+      { d: "Seg", t: `Anúncio de ${destino} + stories do pacote`, icon: Megaphone },
+      { d: "Ter", t: "Carrossel do pacote com dicas da viagem", icon: Images },
+      { d: "Qua", t: "Pacote publicado no seu site", icon: Globe2 },
+      { d: "Qui", t: "Reels do pacote", icon: Video },
+      { d: "Sex", t: "Stories e vídeo de outro pacote em promoção", icon: LayoutTemplate },
+      { d: "Sáb", t: "Responder orçamentos no WhatsApp e anunciar outro pacote", icon: MessageCircle },
+      { d: "Dom", t: "Organizar clientes no CRM e planejar a semana", icon: Users },
+    ],
+    [
+      { d: "Seg", t: "Anúncio de um pacote novo + stories com enquete", icon: Megaphone },
+      { d: "Ter", t: "Carrossel: o que fazer no destino", icon: Images },
+      { d: "Qua", t: "Página do pacote novo no site e link na bio", icon: Globe2 },
+      { d: "Qui", t: "Reels com bastidores ou depoimento de cliente", icon: Video },
+      { d: "Sex", t: "Stories com contagem regressiva da promoção", icon: LayoutTemplate },
+      { d: "Sáb", t: "Mandar a página do pacote para quem pediu orçamento", icon: MessageCircle },
+      { d: "Dom", t: "CRM: quem fechou, quem falta responder e o plano da próxima semana", icon: Users },
+    ],
   ];
   return (
     <>
-      <Title sub="Com base nas suas 7 respostas">Seu diagnóstico <Accent>está pronto</Accent></Title>
+      <Title sub="Com base nas suas 8 respostas">Seu diagnóstico <Accent>está pronto</Accent></Title>
       <div className="cv-pop cv-card mt-6 p-5" style={delay(120)}>
         <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>POTENCIAL DE VENDAS NO INSTAGRAM</p>
         <div className="mt-3 flex items-end gap-4">
@@ -616,6 +669,7 @@ function Result({ answers, destino, onNext }: { answers: Answers; destino: strin
             <p className="text-[34px] font-extrabold leading-none text-[#6440e6]">{potential}</p>
           </div>
         </div>
+        <GrowthChart now={now} potential={potential} />
         <div className="mt-5 space-y-3.5">
           {metrics.map((m, i) => (
             <div key={m.label}>
@@ -635,22 +689,75 @@ function Result({ answers, destino, onNext }: { answers: Answers; destino: strin
 
       <div className="cv-pop cv-card mt-4 p-5" style={delay(300)}>
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>SUA PRIMEIRA SEMANA</p>
-          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-semibold" style={{ background: "var(--cv-accent-soft)", color: "var(--cv-accent)" }}><MapPin className="h-3 w-3" /> {destino}</span>
+          <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>SEU PLANO DE 2 SEMANAS</p>
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-semibold" style={{ background: "#efe9ff", color: "var(--cv-primary-ink)" }}><MapPin className="h-3 w-3" /> {destino}</span>
         </div>
-        <div className="mt-3 divide-y" style={{ borderColor: "var(--cv-line)" }}>
-          {week.map((w) => (
-            <div key={w.d} className="flex items-center gap-3 py-2 text-[14px]" style={{ borderColor: "var(--cv-line)" }}>
-              <span className="w-9 text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>{w.d}</span>
-              <w.icon className="h-4 w-4 text-[#6440e6]" />
-              <span className="flex-1">{w.t}</span>
-              <Lock className="h-3.5 w-3.5 text-[#b9ae95]" />
-            </div>
-          ))}
-        </div>
+        <p className="mt-3 text-[13px] font-bold">Semana 1</p>
+        <WeekList days={weeks[0]} />
+        <button
+          type="button"
+          onClick={() => setOpenWeek2((o) => !o)}
+          aria-expanded={openWeek2}
+          className="mt-3 flex w-full items-center justify-between rounded-2xl px-3 py-2.5 text-left text-[13px] font-bold"
+          style={{ background: "var(--cv-sand)" }}
+        >
+          Semana 2 · novo pacote, mesmo ritmo
+          <ChevronLeft className="h-4 w-4 transition-transform" style={{ transform: openWeek2 ? "rotate(90deg)" : "rotate(-90deg)" }} />
+        </button>
+        {openWeek2 && <WeekList days={weeks[1]} />}
       </div>
       <BottomCta onClick={onNext}>Ver meu plano <ArrowRight className="h-4 w-4" /></BottomCta>
     </>
+  );
+}
+
+function WeekList({ days }: { days: { d: string; t: string; icon: Icon }[] }) {
+  return (
+    <div className="mt-1 divide-y" style={{ borderColor: "var(--cv-line)" }}>
+      {days.map((w) => (
+        <div key={w.d} className="flex items-center gap-3 py-2 text-[14px]" style={{ borderColor: "var(--cv-line)" }}>
+          <span className="w-9 shrink-0 text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>{w.d}</span>
+          <w.icon className="h-4 w-4 shrink-0 text-[#6440e6]" />
+          <span className="flex-1 leading-5">{w.t}</span>
+          <Lock className="h-3.5 w-3.5 shrink-0 text-[#b9ae95]" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Curva de 8 semanas: do jeito que está hoje × postando com constância no Canva Viagem. */
+function GrowthChart({ now, potential }: { now: number; potential: number }) {
+  const W = 300, H = 132, padX = 6, padTop = 14, padBottom = 22;
+  const weeks = 8;
+  const x = (i: number) => padX + (i / (weeks - 1)) * (W - padX * 2);
+  const y = (v: number) => padTop + (1 - v / 100) * (H - padTop - padBottom);
+  const growth = Array.from({ length: weeks }, (_, i) => now + (potential - now) * (1 - Math.pow(1 - i / (weeks - 1), 2.2)));
+  const flat = Array.from({ length: weeks }, (_, i) => now + i * 0.6);
+  const line = (vals: number[]) => vals.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const area = `${line(growth)} L${x(weeks - 1)},${H - padBottom} L${x(0)},${H - padBottom} Z`;
+  return (
+    <figure className="mt-5">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`Potencial sobe de ${now} para ${potential} em 8 semanas postando com constância`}>
+        <defs>
+          <linearGradient id="cv-growth" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#7c5cff" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#7c5cff" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {[25, 50, 75].map((g) => <line key={g} x1={padX} x2={W - padX} y1={y(g)} y2={y(g)} stroke="#efe6cc" strokeDasharray="3 4" />)}
+        <path d={area} fill="url(#cv-growth)" />
+        <path d={line(flat)} fill="none" stroke="#cfc4a6" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="5 5" />
+        <path d={line(growth)} fill="none" stroke="#7c5cff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" pathLength={1} className="cv-draw" />
+        <circle cx={x(weeks - 1)} cy={y(potential)} r="5" fill="#7c5cff" stroke="#fff" strokeWidth="2" />
+        <text x={padX} y={H - 6} fontSize="10" fill="#8a8170">Hoje</text>
+        <text x={W - padX} y={H - 6} fontSize="10" fill="#8a8170" textAnchor="end">Semana 8</text>
+      </svg>
+      <figcaption className="mt-1 flex gap-4 text-[11px]" style={{ color: "var(--cv-muted)" }}>
+        <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-4 rounded bg-[#7c5cff]" /> postando com o Canva Viagem</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-4 rounded border-t-2 border-dashed border-[#cfc4a6]" /> do jeito de hoje</span>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -685,13 +792,13 @@ function Offer({ plan, setPlan, onCheckout }: { plan: Cycle; setPlan: (c: Cycle)
   const selected = PLANS.find((p) => p.cycle === plan)!;
   return (
     <>
-      <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Sua semana está pronta. <Accent>Libere o acesso.</Accent></Title>
+      <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Suas 2 semanas estão prontas. <Accent>Libere o acesso.</Accent></Title>
 
       <div className="cv-pop mt-5 flex items-center gap-3 rounded-[22px] border p-4" style={{ ...delay(100), background: "#efe9ff", borderColor: "#cbbcff" }}>
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white"><Gift className="h-5 w-5 text-[#6440e6]" /></span>
         <div>
           <p className="text-[14px] font-bold">Prêmio desbloqueado</p>
-          <p className="text-[12px] leading-4" style={{ color: "var(--cv-muted)" }}>Sua primeira semana de posts já montada + 7 dias de garantia pra testar com um pacote real.</p>
+          <p className="text-[12px] leading-4" style={{ color: "var(--cv-muted)" }}>Seus 14 primeiros dias de posts já montados (é só repetir o ciclo no mês inteiro) + 7 dias de garantia pra testar com um pacote seu.</p>
         </div>
       </div>
 
