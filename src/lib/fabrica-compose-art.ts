@@ -4,14 +4,15 @@ export interface ComposeAdResult {
 }
 import { createArtTweakContext, type ArtElementBox, type ArtTweakMap } from "@/lib/fabrica-art-tweaks";
 import { createArtRecorder } from "@/lib/fabrica-art-recorder";
+import { PRO_VARIANTS, renderProLayout, type ProArtModel } from "@/lib/fabrica-art-pro";
 
 
 type Format = "square" | "story";
-type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
+export type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
 
 // Escurece (percent < 0) ou clareia (percent > 0) uma cor hex (#rgb / #rrggbb).
 // Usado para derivar tons (ex.: anel mais escuro do box V3 a partir do secondaryColor).
-function shadeColor(hex: string, percent: number): string {
+export function shadeColor(hex: string, percent: number): string {
   let h = (hex || "").trim().replace("#", "");
   if (h.length === 3) h = h.split("").map((c) => c + c).join("");
   if (h.length !== 6) return hex;
@@ -40,7 +41,7 @@ function luminance(hex: string): number {
 }
 
 // Retorna um tom profundo ou claro derivado do fundo, em vez de preto/branco puro.
-function contrastOn(bg: string): string {
+export function contrastOn(bg: string): string {
   const normalized = (bg || "").trim().toLowerCase();
   if (normalized === "#0c2340") return "#ffffff";
   return luminance(bg) > 0.6 ? shadeColor(bg, -80) : "#ffffff";
@@ -97,7 +98,7 @@ export type PaymentMode =
  * Aplica um efeito de vinheta (bordas escurecidas) para dar profundidade
  * e focar a atencão no centro da imagem/conteudo.
  */
-function applyVignette(ctx: CanvasRenderingContext2D, width: number, height: number, intensity = 0.5) {
+export function applyVignette(ctx: CanvasRenderingContext2D, width: number, height: number, intensity = 0.5) {
   const grad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.sqrt((width / 2) ** 2 + (height / 2) ** 2));
   grad.addColorStop(0, "rgba(0,0,0,0)");
   grad.addColorStop(0.6, `rgba(0,0,0,${intensity * 0.1})`);
@@ -115,7 +116,7 @@ function applyVignette(ctx: CanvasRenderingContext2D, width: number, height: num
  * @param maxWidth  Largura máxima em pixels
  * @param minSize  Tamanho mínimo de fonte (default 12px) â€” abaixo disso para de reduzir
  */
-function safeFillText(
+export function safeFillText(
   ctx: CanvasRenderingContext2D,
   text: string,
   x: number,
@@ -142,7 +143,7 @@ function safeFillText(
  * Também reduz a fonte se uma única palavra não couber.
  * Retorna array de linhas prontas para renderizar.
  */
-function wrapTextSafe(
+export function wrapTextSafe(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxWidth: number,
@@ -246,6 +247,8 @@ interface ComposeTravelAdOptions {
   footerContact2Value?: string;
   isExperience?: boolean;
   hideCents?: boolean;
+  /** Força os layouts antigos (V0–V8 de antes do redesenho). Só para comparação no laboratório. */
+  legacyLayouts?: boolean;
   /** ADMIN: ajustes finos por elemento ({ id: { dx, dy, scale } }). */
   artTweaks?: ArtTweakMap;
   /** ADMIN: callback com as caixas dos elementos desenhados (para o editor visual). */
@@ -341,7 +344,7 @@ export function fitUrlText(ctx: CanvasRenderingContext2D, text: string, maxWidth
  * DESENHA O BRANDING FINAL (Rodape, Logo, WhatsApp, Instagram)
  * Unificado para evitar cache e garantir consistencia.
  */
-async function drawFinalBranding(
+export async function drawFinalBranding(
   ctx: CanvasRenderingContext2D,
   cw: number,
   ch: number,
@@ -516,7 +519,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+export function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   const radius = Math.min(r, w / 2, h / 2);
   ctx.beginPath();
   ctx.moveTo(x + radius, y);
@@ -531,7 +534,7 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, color?: string) {
+export function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, color?: string) {
   ctx.save();
   if (color) ctx.fillStyle = color;
   roundRect(ctx, x, y, w, h, r);
@@ -610,7 +613,7 @@ export async function preloadNewIcons() {
   __newIconsLoaded = true;
 }
 
-function drawMonoIcon(
+export function drawMonoIcon(
   ctx: CanvasRenderingContext2D,
   kind: IconKey,
   cx: number,
@@ -737,7 +740,7 @@ function drawMonoIcon(
   ctx.restore();
 }
 
-function drawPixLogo(
+export function drawPixLogo(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
@@ -766,7 +769,7 @@ function drawPixLogo(
   ctx.restore();
 }
 
-function fitCover(iw: number, ih: number, tw: number, th: number, fy = 0.5) {
+export function fitCover(iw: number, ih: number, tw: number, th: number, fy = 0.5) {
   const ratio = Math.max(tw / iw, th / ih);
   const sw = tw / ratio;
   const sh = th / ratio;
@@ -5397,6 +5400,60 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
   // â”€â”€ ROTEAMENTO FINAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const resolvedVariant = ((((typeof forceVariant === "number" ? forceVariant : variation) % 8) + 8) % 8);
+
+  // ── LAYOUTS PRO (redesenho 30/10) ─────────────────────────────────────────
+  // As variações redesenhadas saem de `fabrica-art-pro.ts`; as demais seguem
+  // no motor antigo abaixo. `legacyLayouts` força o antigo (comparação no lab).
+  const proVariant = ((((typeof forceVariant === "number" ? forceVariant : variation) % 9) + 9) % 9);
+  if (!options.legacyLayouts && PRO_VARIANTS.has(proVariant)) {
+    const priceDigits = (price || "").replace(/^[^\d]*/, "").trim();
+    const centsMatch = priceDigits.match(/^(.*?)[.,](\d{2})$/);
+    const intPart = centsMatch ? centsMatch[1] : priceDigits;
+    const cents = centsMatch && !hideCents ? centsMatch[2] : "";
+    const proHighlights = highlights
+      .filter((h) => h && h.text && h.text.trim())
+      .map((h) => ({ text: h.text.trim(), icon: (h.icon || "check") as IconKey }));
+    const fallbackIncluded: { text: string; icon: IconKey }[] = isExperience
+      ? [{ text: "Roteiro exclusivo", icon: "map" }, { text: "Hospedagem", icon: "hotel" }, { text: "Experiências locais", icon: "star" }]
+      : [{ text: "Transporte", icon: "bus" }, { text: "Hospedagem", icon: "hotel" }, { text: "Café da manhã", icon: "coffee" }, { text: "Guia local", icon: "guide" }];
+    const proModel: ProArtModel = {
+      ctx,
+      width,
+      height,
+      format,
+      image,
+      primary: primaryColor || "#0c2340",
+      secondary: secondaryColor || "#ffd400",
+      destination: destFmt || destination || "Destino",
+      city: cityFmt,
+      promoName: (promoName || (isExperience ? "Experiência exclusiva" : "Oferta especial")).trim(),
+      headline: titleText || (isExperience ? headlinePool[0] : `Pacote ${destFmt || destination}`),
+      subtitle: subtitleText,
+      travelPeriod: (travelPeriod || "").trim(),
+      highlights: proHighlights.length ? proHighlights : fallbackIncluded,
+      price: {
+        has: hasPriceValue,
+        sym: curSym,
+        intPart,
+        cents,
+        topLabel: hasPriceValue ? (topLabel || "").trim() : "",
+        prefix: typeof pricePrefix === "string" ? pricePrefix.trim() : "a partir de",
+        suffix: (bottomSuffix || "").trim(),
+        total: showTotal ? resolveTotalStr(installments, price, curSym, totalOverride) : "",
+        pixText: showPixBanner ? ((pixBannerText || "").trim() || "5% OFF À VISTA NO PIX") : "",
+      },
+      isExperience: !!isExperience,
+      fontFamily: userFamily,
+      logoDataUrl,
+      logoFormat,
+      contact1: footerContact1Icon ? { icon: footerContact1Icon, value: footerContact1Value || "" } : (whatsapp ? { icon: "whatsapp_green", value: whatsapp } : undefined),
+      contact2: footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
+      textColorOverride: effectiveTextColor,
+    };
+    await renderProLayout(proModel, proVariant);
+    return { url: canvas.toDataURL("image/png"), variant: proVariant };
+  }
+
   try {
     if (isExperience) {
       const variant = resolvedVariant;

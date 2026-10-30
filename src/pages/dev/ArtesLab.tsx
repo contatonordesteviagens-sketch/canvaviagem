@@ -5,6 +5,7 @@
  * dados de exemplo, sem login, para diagnóstico visual e comparação antes/depois.
  *
  * URL: /dev/artes-lab?format=square|story&cat=oferta|experiencia&photo=0..2&v=0..8&scale=1
+ *      &palette=cv|cvc|teal|wine&city=Maceió&legacy=1 (layouts antigos)
  */
 import { useEffect, useState } from "react";
 import { composeTravelAd } from "@/lib/fabrica-compose-art";
@@ -16,6 +17,14 @@ const PHOTOS = [
   "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=1600&q=80", // Rio
 ];
 
+// Paletas de agências reais para testar contraste: (principal, secundária)
+const PALETTES: Record<string, [string, string]> = {
+  cv: ["#080808", "#F5F906"],   // Canva Viagem
+  cvc: ["#0B3B8C", "#FFD400"],  // azul + amarelo
+  teal: ["#0B8C8F", "#FFFFFF"], // turquesa + branco
+  wine: ["#7A1F3D", "#F2E8D5"], // vinho + creme
+};
+
 const LOGO = "/artes/canvaviagem_premium_logo_1772930557454.png";
 
 const DEFAULT_HIGHLIGHTS = [
@@ -25,9 +34,9 @@ const DEFAULT_HIGHLIGHTS = [
   { text: "Guia local", icon: "guia-turistico" },
 ];
 const EXP_HIGHLIGHTS = [
-  { text: "EXPERIÊNCIA SENSORIAL", icon: "check" },
-  { text: "MOMENTOS INESQUECÍVEIS", icon: "check" },
-  { text: "CURADORIA PREMIUM", icon: "check" },
+  { text: "Passeio de barco privativo", icon: "ship" },
+  { text: "Hospedagem boutique", icon: "placa-do-hotel" },
+  { text: "Jantar ao pôr do sol", icon: "cafe-da-manha" },
 ];
 
 type Item = { variant: number; url?: string; error?: string; ms?: number };
@@ -39,10 +48,13 @@ export default function ArtesLab() {
   const photo = PHOTOS[Number(params.get("photo") || 0) % PHOTOS.length];
   const only = params.get("v");
   const dest = params.get("dest") || "Maragogi";
+  const city = params.get("city") || "";
   const scale = Number(params.get("scale") || 1);
   const withLogo = params.get("logo") !== "0";
   const price = params.get("price") || "149,90";
   const inst = params.get("inst") || "10x";
+  const legacy = params.get("legacy") === "1";
+  const [primaryColor, secondaryColor] = PALETTES[params.get("palette") || "cv"] || PALETTES.cv;
   const variants = only !== null ? [Number(only)] : [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
   const [items, setItems] = useState<Item[]>(variants.map((variant) => ({ variant })));
@@ -59,14 +71,14 @@ export default function ArtesLab() {
             imageUrl: photo,
             format,
             destination: dest,
-            city: "",
-            primaryColor: "#080808",
-            secondaryColor: "#F5F906",
+            city,
+            primaryColor,
+            secondaryColor,
             price,
             currencySymbol: "R$",
             hideCents: false,
             installments: inst,
-            promoName: isExp ? "EXPERIÊNCIA EXCLUSIVA" : "OFERTA ESPECIAL",
+            promoName: isExp ? "Experiência exclusiva" : "Oferta especial",
             highlights: (isExp ? EXP_HIGHLIGHTS : DEFAULT_HIGHLIGHTS) as any,
             hasLogo: withLogo,
             logoDataUrl: withLogo ? LOGO : undefined,
@@ -80,8 +92,10 @@ export default function ArtesLab() {
             strategy: "vitrine",
             variation: variant,
             forceVariant: variant,
-            titleOverride: `Pacote ${dest}`,
-            titleVariations: [`Pacote ${dest}`, `Você precisa conhecer ${dest}`, `${dest} te espera`],
+            titleOverride: isExp ? `${dest} como você nunca viu` : `Pacote ${dest}`,
+            titleVariations: isExp
+              ? [`${dest} como você nunca viu`, `Dias que você não esquece`, `Viva ${dest} de verdade`]
+              : [`Pacote ${dest}`, `Você precisa conhecer ${dest}`, `${dest} te espera`],
             travelPeriod: "Dezembro",
             showPixBanner: true,
             showTotal: true,
@@ -89,7 +103,8 @@ export default function ArtesLab() {
             titleScale: 1,
             descScale: 1,
             isExperience: isExp,
-            artTweaks: getArtTweakPreset(cat, variant, format),
+            legacyLayouts: legacy,
+            artTweaks: legacy ? getArtTweakPreset(cat, variant, format) : undefined,
           } as any);
           if (cancelled) return;
           setItems((prev) => prev.map((it) => (it.variant === variant ? { ...it, url: res.url, ms: Math.round(performance.now() - t0) } : it)));
@@ -110,7 +125,7 @@ export default function ArtesLab() {
   return (
     <div style={{ background: "#1a1a1a", minHeight: "100vh", padding: 16, color: "#fff", fontFamily: "Inter, sans-serif" }}>
       <div data-testid="lab-status" style={{ fontSize: 12, marginBottom: 12 }}>
-        {format} · {cat} · {done}/{items.length} prontas
+        {format} · {cat} · {legacy ? "ANTIGO" : "NOVO"} · {params.get("palette") || "cv"} · {done}/{items.length} prontas
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
         {items.map((it) => (
