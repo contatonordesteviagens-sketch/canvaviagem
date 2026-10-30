@@ -460,6 +460,16 @@ type CarouselEditableTextField = "title" | "body" | "bullets";
 const uniqueTextSuggestions = (values: string[]) =>
   Array.from(new Set(values.map(cleanCarouselText).filter(Boolean)));
 
+/**
+ * "A partir de R$ 1.299" quando o preço é só número; se a agência já escreveu
+ * "À vista R$ 149,90" ou "10x R$ 129", usa como está (antes saía "a partir de A vista…").
+ */
+function priceLead(price: string, lead = "a partir de"): string {
+  const p = (price || "").trim();
+  if (!p) return "";
+  return /^(R\$|US\$|AR\$|€|£|\$)?\s*[\d.,]+\s*$/.test(p) ? `${lead} ${p}` : p;
+}
+
 function documentedTextSuggestionPool(
   pacote: Pacote,
   total: CarouselSize,
@@ -511,7 +521,7 @@ function documentedTextSuggestionPool(
     const departure = cleanCarouselText(pacote.departureLocation || "");
     title = isCover
       ? [
-          price ? `${destination} a partir de ${price}` : `Pacote ${destination} com tudo organizado`,
+          price ? `${destination} ${priceLead(price)}` : `Pacote ${destination} com tudo organizado`,
           departure ? `${destination} saindo de ${departure}` : `${destination}: a viagem que cabe no seu calendário`,
           dates ? `${destination} em ${dates}` : `Que tal ${destination} na próxima folga?`,
           `${destination} com tudo incluso e sem surpresa no final`,
@@ -731,7 +741,7 @@ function documentedCarouselTextSequence(
   const offerDetails = included.slice(0, 4);
   const offer: Record<CarouselSize, CarouselTextBlock[]> = {
     3: [
-      block(price ? `${destination} a partir de ${price}` : `Sua próxima viagem: ${destination}`, "", [], "OFERTA"),
+      block(price ? `${destination} ${priceLead(price)}` : `Sua próxima viagem: ${destination}`, "", [], "OFERTA"),
       block(
         duration || "Tudo organizado para você só curtir",
         "",

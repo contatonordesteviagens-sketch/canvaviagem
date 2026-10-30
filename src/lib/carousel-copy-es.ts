@@ -45,7 +45,7 @@ export function documentedSequenceEs(p: Pacote, total: Size, strategy: string): 
 
   if (family === "offer") {
     cover = block(
-      f.price ? `${d} desde ${f.price}` : `Paquete ${d} con todo organizado`,
+      f.price ? `${d} ${/^(R\$|US\$|AR\$|€|£|\$)?\s*[\d.,]+\s*$/.test(f.price) ? `desde ${f.price}` : f.price}` : `Paquete ${d} con todo organizado`,
       f.origin ? `Saliendo de ${f.origin}.` : "Pasaje, hospedaje y paseos en un solo lugar: tú solo haces la maleta.",
       [],
       "OFERTA",
