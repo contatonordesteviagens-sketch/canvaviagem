@@ -260,9 +260,16 @@ export let __currentDialCode = "55";
 
 export function formatAdPhone(val: string, explicitDialCode?: string): string {
   if (!val) return "";
-  const d = val.replace(/\D/g, "");
+  let d = val.replace(/\D/g, "");
   const dial = (explicitDialCode || __currentDialCode || "55").replace(/\D/g, "");
-  
+
+  // Número brasileiro digitado com o 55 na frente ou com dígito sobrando ("(82) 9370222-0010"):
+  // tira o 55 e corta no 11º dígito, em vez de imprimir "+55 (82) 9370222-0010" na arte.
+  if (dial === "55" && !val.startsWith("+") && d.length > 11) {
+    if (d.startsWith("55") && d.length <= 13) d = d.slice(2);
+    if (d.length > 11) d = d.slice(0, 11);
+  }
+
   if (dial === "55" && !val.startsWith("+") && d.length <= 11) {
     if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
     if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;

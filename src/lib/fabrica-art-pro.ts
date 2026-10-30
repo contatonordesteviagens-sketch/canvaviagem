@@ -488,7 +488,10 @@ async function layoutV0(m: ProArtModel) {
   const fg = contrastOn(card);
   const x = F.M;
   const w = width - F.M * 2;
-  const startY = F.story ? F.top + 20 : 56;
+  // story: o bloco começa logo abaixo da zona coberta pelo Instagram (a foto preenche o topo),
+  // para não sobrar 250px de cor vazia acima do texto.
+  const blockTop = F.story ? F.top - 80 : 0;
+  const startY = blockTop + 56;
   const K = F.story ? 1.25 : 1;
 
   const content = (k: number, dry: boolean): number => {
@@ -523,14 +526,18 @@ async function layoutV0(m: ProArtModel) {
     return y;
   };
 
-  const maxBlock = Math.round(height * (F.story ? 0.52 : 0.6));
+  const maxBlock = Math.round(height * (F.story ? 0.56 : 0.6));
   const { k, h: endY } = fitScale(content, maxBlock - 40);
   const blockH = Math.min(maxBlock, endY + 40);
 
-  drawPhoto(m, 0, blockH, width, height - blockH, 0.5);
+  if (F.story) {
+    drawPhoto(m, 0, 0, width, height, 0.5);
+  } else {
+    drawPhoto(m, 0, blockH, width, height - blockH, 0.5);
+  }
   veil(ctx, 0, height - 420, width, height, 0.7);
   ctx.fillStyle = card;
-  ctx.fillRect(0, 0, width, blockH);
+  ctx.fillRect(0, blockTop, width, blockH - blockTop);
   ctx.fillStyle = accent;
   ctx.fillRect(0, blockH - 8, width, 8);
   content(k, false);
@@ -673,9 +680,21 @@ async function layoutV2(m: ProArtModel) {
   const contentTop = F.bottom - contentH;
   const photoH = contentTop - 30 - ribbonH / 2 - 10;
 
-  drawPhoto(m, 0, 0, width, photoH, 0.45);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, photoH, width, height - photoH);
+  if (F.story) {
+    // story: a foto preenche a tela e o painel branco é um cartão que termina logo
+    // depois do rodapé (nada de faixa branca vazia na zona coberta pelo Instagram).
+    drawPhoto(m, 0, 0, width, height, 0.45);
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.3)";
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 10;
+    fillRoundRect(ctx, 0, photoH, width, F.footerBottom + 36 - photoH, 40, "#ffffff");
+    ctx.restore();
+  } else {
+    drawPhoto(m, 0, 0, width, photoH, 0.45);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, photoH, width, height - photoH);
+  }
   const ribbonY = photoH - ribbonH / 2 - 10;
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,0.25)";
@@ -1101,10 +1120,14 @@ async function layoutV9(m: ProArtModel) {
   const { dark, side } = columnPair(m);
   const darkFg = contrastOn(dark);
   const sideFg = contrastOn(side);
-  const splitX = Math.round(width * (F.story ? 0.6 : 0.58));
+  const splitX = Math.round(width * 0.58);
   const x = F.M;
-  const w = splitX - F.M - 36;
+  // story: foto em cima e bloco escuro embaixo, com a largura toda; quadrado: duas colunas.
+  const w = F.story ? width - F.M * 2 : splitX - F.M - 36;
   const K = F.story ? 1.15 : 1;
+  const cols = F.story ? 2 : 1;
+  const colGap = 16;
+  const colW = Math.floor((w - colGap * (cols - 1)) / cols);
 
   const content = (k: number, dry: boolean, y0 = 0): number => {
     let y = y0;
@@ -1113,23 +1136,24 @@ async function layoutV9(m: ProArtModel) {
     const hs = (F.story ? 80 : 66) * k;
     y += paragraph(ctx, m.isExperience ? m.headline : m.headline, x, y, w, { weight: 900, size: hs, family: f.display, color: darkFg, maxLines: 3, lineHeight: hs * 1.02 }, dry) + 22;
     // checklist em pílulas claras, uma por linha, todas com a mesma largura (a da coluna)
-    const items = m.highlights.slice(0, 5);
+    const items = m.highlights.slice(0, cols === 2 ? 6 : 5);
     const ph = 46 * K * k;
     const icon = 26 * K * k;
-    items.forEach((h) => {
+    items.forEach((h, i) => {
+      const cx = x + (i % cols) * (colW + colGap);
       if (!dry) {
-        fillRoundRect(ctx, x, y, w, ph, ph / 2, "#ffffff");
-        fillRoundRect(ctx, x + 8, y + (ph - icon * 1.3) / 2, icon * 1.3, icon * 1.3, icon * 0.65, side === "#ffffff" ? dark : side);
-        drawMonoIcon(ctx, "check", x + 8 + icon * 0.65, y + ph / 2, icon * 0.8, side === "#ffffff" ? darkFg : sideFg, 2);
+        fillRoundRect(ctx, cx, y, colW, ph, ph / 2, "#ffffff");
+        fillRoundRect(ctx, cx + 8, y + (ph - icon * 1.3) / 2, icon * 1.3, icon * 1.3, icon * 0.65, side === "#ffffff" ? dark : side);
+        drawMonoIcon(ctx, "check", cx + 8 + icon * 0.65, y + ph / 2, icon * 0.8, side === "#ffffff" ? darkFg : sideFg, 2);
         ctx.save();
         ctx.fillStyle = "#15171A";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
         setFont(ctx, 700, 22 * K * k, f.sans);
-        safeFillText(ctx, h.text, x + 8 + icon * 1.3 + 14, y + ph / 2 + 1, w - icon * 1.3 - 40, 14);
+        safeFillText(ctx, h.text, cx + 8 + icon * 1.3 + 14, y + ph / 2 + 1, colW - icon * 1.3 - 40, 14);
         ctx.restore();
       }
-      y += ph + 10;
+      if (i % cols === cols - 1 || i === items.length - 1) y += ph + 10;
     });
     y += 14;
     if (m.isExperience) {
@@ -1144,6 +1168,23 @@ async function layoutV9(m: ProArtModel) {
     }
     return y - y0;
   };
+
+  if (F.story) {
+    const gap = 52;
+    const minPhoto = F.top + 240; // foto visível abaixo da zona coberta pelo Instagram
+    const { k, h: contentH } = fitScale((kk, dry) => content(kk, dry), F.bottom - minPhoto - gap);
+    const splitY = F.bottom - contentH - gap;
+    drawPhoto(m, 0, 0, width, splitY + 60, 0.5);
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.35)";
+    ctx.shadowBlur = 36;
+    ctx.shadowOffsetY = -8;
+    fillRoundRect(ctx, 0, splitY, width, height - splitY + 80, 44, dark);
+    ctx.restore();
+    content(k, false, splitY + gap);
+    await branding(m, darkFg);
+    return;
+  }
 
   const { k, h: contentH } = fitScale((kk, dry) => content(kk, dry), F.bottom - F.top);
   const startY = Math.round(F.top + (F.bottom - F.top - contentH) / 2);
