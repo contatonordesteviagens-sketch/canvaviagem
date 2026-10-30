@@ -21,6 +21,29 @@ function upgradePublishedSiteWhatsApp(html) {
   return `${WHATSAPP_RUNTIME_FIX}${withBrandIcon}`;
 }
 
+// Números de exemplo do gerador antigo ("12+ anos", "15k+ viajantes", "25 países", "99% satisfação").
+// Sites publicados antes da regra "só aparece o que a agência preencheu" ainda os trazem no HTML salvo.
+// O que a agência digitou (qualquer outro valor) fica.
+const LEGACY_SAMPLE_STAT_NUMBERS = new Set(["12+", "15k+", "25", "99%"]);
+
+function cleanLegacyPublishedSite(html) {
+  if (!html) return html;
+  let out = html;
+  if (out.includes("stat-num")) {
+    out = out.replace(
+      /<div data-visual-removable="stat-\d"><div class="stat-num">([^<]*)<\/div><div class="stat-label">[^<]*<\/div><\/div>/g,
+      (match, num) => (LEGACY_SAMPLE_STAT_NUMBERS.has(num.trim()) ? "" : match),
+    );
+    // barra que ficou sem nenhum número: some inteira
+    out = out.replace(/<div class="stats-bar">\s*<\/div>/g, "");
+  }
+  // subtítulo do topo em espanhol dentro de site em português (padrão antigo do estado)
+  if (out.includes('lang="pt-BR"')) {
+    out = out.replace(/Consultor[íi]a Premium de Viajes/g, "Consultoria Premium de Viagens");
+  }
+  return out;
+}
+
 function getSingleSubdomain(hostname) {
   const normalizedHost = hostname.toLowerCase();
   if (!normalizedHost.endsWith(AGENCY_HOST_SUFFIX)) return "";
@@ -165,7 +188,7 @@ async function fetchPublishedSite(request, env, slug) {
     "referrer-policy": "strict-origin-when-cross-origin",
   });
   if (publishedSite.locale) responseHeaders.set("content-language", String(publishedSite.locale));
-  const responseHtml = upgradePublishedSiteWhatsApp(publishedSite.html);
+  const responseHtml = upgradePublishedSiteWhatsApp(cleanLegacyPublishedSite(publishedSite.html));
   return new Response(request.method === "HEAD" ? null : responseHtml, {
     status: 200,
     headers: responseHeaders,
@@ -201,4 +224,5 @@ export {
   rewriteApexRedirect,
   suspendedSiteRedirectUrl,
   upgradePublishedSiteWhatsApp,
+  cleanLegacyPublishedSite,
 };

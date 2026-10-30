@@ -6,6 +6,7 @@ import worker, {
   isReservedSubdomain,
   rewriteApexRedirect,
   upgradePublishedSiteWhatsApp,
+  cleanLegacyPublishedSite,
 } from "../src/index.js";
 
 const TEST_ENV = {
@@ -215,4 +216,31 @@ test("não altera redirect externo", () => {
   });
   const rewritten = rewriteApexRedirect(response, new URL("https://agencia.canvaviagem.com/"));
   assert.equal(rewritten.headers.get("location"), "https://example.com/continuar");
+});
+
+test("remove números de exemplo do gerador antigo e mantém o que a agência digitou", () => {
+  const stat = (i, num, label) => `<div data-visual-removable="stat-${i}"><div class="stat-num">${num}</div><div class="stat-label">${label}</div></div>`;
+  const html = `<html lang="pt-BR"><body><div class="stats-bar">${stat(0, "15", "Anos de Experiência")}${stat(1, "15k+", "Viajantes Felizes")}${stat(2, "25", "Países Atendidos")}${stat(3, "99%", "Satisfação")}</div></body></html>`;
+  const out = cleanLegacyPublishedSite(html);
+  assert.ok(out.includes('<div class="stat-num">15</div>'));
+  assert.equal(out.includes("15k+"), false);
+  assert.equal(out.includes("Países Atendidos"), false);
+  assert.equal(out.includes("99%"), false);
+});
+
+test("apaga a barra de números quando todos eram de exemplo", () => {
+  const stat = (i, num, label) => `<div data-visual-removable="stat-${i}"><div class="stat-num">${num}</div><div class="stat-label">${label}</div></div>`;
+  const html = `<html lang="pt-BR"><body><section><div class="stats-bar">${stat(0, "12+", "Anos")}${stat(1, "15k+", "Viajantes")}${stat(2, "25", "Países")}${stat(3, "99%", "Satisfação")}</div></section></body></html>`;
+  const out = cleanLegacyPublishedSite(html);
+  assert.equal(out.includes("stats-bar"), false);
+  assert.equal(out.includes("stat-num"), false);
+});
+
+test("traduz o subtítulo em espanhol só em site português e não mexe em HTML sem números", () => {
+  const pt = `<html lang="pt-BR"><head><title>X — Consultoría Premium de Viajes</title></head><body><span class="eyebrow">Consultoría Premium de Viajes</span></body></html>`;
+  assert.equal((cleanLegacyPublishedSite(pt).match(/Consultoria Premium de Viagens/g) || []).length, 2);
+  const es = `<html lang="es"><body><span class="eyebrow">Consultoría Premium de Viajes</span></body></html>`;
+  assert.equal(cleanLegacyPublishedSite(es), es);
+  const plain = `<html lang="pt-BR"><body><p>Sem barra</p></body></html>`;
+  assert.equal(cleanLegacyPublishedSite(plain), plain);
 });
