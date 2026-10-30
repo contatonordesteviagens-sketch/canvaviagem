@@ -3105,7 +3105,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // FIX 2026-08-04: logo manual, badges verticais, benefits clampados, PIX pós-sufixo,
       // gradiente só na foto, ícones sociais maiores e bem alinhados.
       const isStoryV1 = format === "story";
-      const panelW = Math.round(width * 0.44);
+      // Painel mais largo (era 44%): pílulas, preço e contatos ficavam pequenos demais.
+      const panelW = Math.round(width * 0.5);
       const photoX = panelW;
       const photoW = width - panelW;
       const v1PanelBg = primaryColor || "#1a1a2e";
@@ -3120,12 +3121,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const logoMaxW   = Math.round(panelW * 0.64);   // ~304px em 475
       const logoTopY   = Math.round(height * 0.035);  // ~38px
       const badgeH     = Math.round(height * 0.052);  // ~56px
-      const pillH      = Math.round(height * 0.043);  // ~46px
+      const pillH      = Math.round(height * 0.048);  // ~52px
       const pillGap    = Math.round(height * 0.011);  // ~12px
-      const pillFont   = Math.round(panelW * 0.048);  // ~23px
+      const pillFont   = Math.round(panelW * 0.052);  // ~28px
       const iconSz     = Math.round(pillH * 0.70);    // ~32px
       const contactIconSz = Math.round(height * 0.034); // ~37px
-      const contactFontSz = Math.round(panelW * 0.046); // ~22px
+      const contactFontSz = Math.round(panelW * 0.048); // ~26px
       const contactLineH  = Math.round(contactIconSz * 1.75);
       const bottomPad     = Math.round(height * 0.042); // ~45px
       const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.13)" : "rgba(0,0,0,0.15)";
