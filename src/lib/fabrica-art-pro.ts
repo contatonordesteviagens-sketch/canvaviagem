@@ -306,7 +306,8 @@ function priceBlock(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y:
   cy += Math.round(numSize * 0.9);
 
   const small = Math.round(S * 0.17);
-  const tail = [p.suffix, (o.showTotal ?? true) && p.total ? `Total ${p.total}` : ""].filter(Boolean).join("  ·  ");
+  const totalText = (p.total || "").trim();
+  const tail = [p.suffix, (o.showTotal ?? true) && totalText ? (/^total/i.test(totalText) ? totalText : `Total ${totalText}`) : ""].filter(Boolean).join("  ·  ");
   setFont(ctx, 600, small, f.sans);
   const tailW = tail ? Math.min(maxW, ctx.measureText(tail).width) : 0;
   setFont(ctx, 700, Math.round(S * 0.18), f.sans);

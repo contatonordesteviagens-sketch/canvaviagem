@@ -124,13 +124,14 @@ export default function ArtesLab() {
                 : [`Pacote ${dest}`, `Você precisa conhecer ${dest}`, `${dest} te espera`],
             travelPeriod: long ? "28/12 a 02/01" : "Dezembro",
             showPixBanner: pay.paymentMode !== "free_quote",
-            showTotal: pay.paymentMode === "installments",
+            showTotal: pay.paymentMode === "installments" || !!params.get("total"),
+            totalOverride: params.get("total") || undefined,
             fontFamily: font,
-            titleScale: 1,
-            descScale: 1,
+            titleScale: Number(params.get("tscale") || 1),
+            descScale: Number(params.get("dscale") || 1),
             isExperience: isExp,
             legacyLayouts: legacy,
-            artTweaks: legacy ? getArtTweakPreset(cat, variant, format) : undefined,
+            artTweaks: getArtTweakPreset(cat, variant, format),
           } as any);
           if (cancelled) return;
           setItems((prev) => prev.map((it) => (it.variant === variant ? { ...it, url: res.url, ms: Math.round(performance.now() - t0) } : it)));

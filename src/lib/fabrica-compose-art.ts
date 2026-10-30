@@ -960,7 +960,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // ADMIN — gravador universal: torna TODO elemento (texto, imagem, forma) de
   // QUALQUER variação editável (mover, escalar, girar, esconder, reordenar,
   // trocar texto) sem instrumentar variação por variação.
-  const recorder = createArtRecorder(rawCtx, options.artTweaks);
+  const usesProLayout = !options.legacyLayouts
+    && PRO_VARIANTS.has(((((typeof forceVariant === "number" ? forceVariant : variation) % PRO_TOTAL_VARIANTS) + PRO_TOTAL_VARIANTS) % PRO_TOTAL_VARIANTS));
+  // Os presets de ajuste fino (ArtTweakMap) são indexados pela ordem dos elementos dos
+  // layouts ANTIGOS. Aplicá-los nos layouts pro desloca, gira e esconde textos.
+  const recorder = createArtRecorder(rawCtx, usesProLayout ? undefined : options.artTweaks);
   const ctx = recorder.ctx;
   const originalToDataURL = canvas.toDataURL.bind(canvas);
   (canvas as any).toDataURL = (...args: any[]) => {
@@ -5425,7 +5429,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       primary: primaryColor || "#0c2340",
       secondary: secondaryColor || "#ffd400",
       destination: destFmt || destination || "Destino",
-      city: cityFmt,
+      city: "", // sem campo "saindo de" no formulário do anúncio: nunca inventar a saída
       promoName: (promoName || (isExperience ? "Experiência exclusiva" : "Oferta especial")).trim(),
       headline: titleText || (isExperience ? headlinePool[0] : `Pacote ${destFmt || destination}`),
       subtitle: subtitleText,
