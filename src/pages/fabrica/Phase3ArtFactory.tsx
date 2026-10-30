@@ -987,6 +987,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       return;
     }
     setPhotoQuery(q);
+    // Quem digita o destino na busca de fotos quase nunca repete no campo "Destino":
+    // preenche sozinho (senão o botão "Gerar Anúncio" fica apagado sem explicação).
+    if (!destination.trim()) setDestination(q);
     setSearchingPhotos(true);
     setPhotos([]);
     setSelectedPhotoUrl("");
