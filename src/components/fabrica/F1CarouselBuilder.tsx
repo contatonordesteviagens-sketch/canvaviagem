@@ -6,6 +6,7 @@ import {
   type ChangeEvent,
   type CSSProperties,
 } from "react";
+import { ProSlide, isProSlideVariant } from "@/components/fabrica/CarouselProSlides";
 import {
   AlignCenter,
   AlignLeft,
@@ -58,6 +59,10 @@ export type CarouselSlideKind = "cover" | "content" | "closing";
 type CarouselContactChannel = "whatsapp" | "instagram" | "email";
 export type LogoPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 export type CarouselSlideVariant =
+  | "pro-bold"
+  | "pro-split"
+  | "pro-magazine"
+  | "pro-luxe"
   | "impact"
   | "itinerary"
   | "editorial"
@@ -496,7 +501,7 @@ function documentedTextSuggestionPool(
   let body: string[] = [];
   let bullets: string[][] = [];
 
-  if (strategy === "oferta") {
+  if (strategy === "oferta" || strategy === "pro-split") {
     const price = cleanCarouselText(pacote.price || "");
     const duration = cleanCarouselText(pacote.duration || "");
     const dates = cleanCarouselText(pacote.travelDates || "");
@@ -537,7 +542,7 @@ function documentedTextSuggestionPool(
       compact([price, payment]).slice(0, 4),
       ["Chamar no WhatsApp", "Escolher a data", "Receber o roteiro"],
     ];
-  } else if (strategy === "editorial") {
+  } else if (strategy === "editorial" || strategy === "pro-magazine") {
     title = isCover
       ? [
           `Guia rápido de ${destination}: salve para não esquecer`,
@@ -1658,6 +1663,22 @@ export function CarouselCanvas({
           </div>
         )}
       </div>
+    );
+  }
+
+  // Modelos pro (CarouselProSlides): desenho próprio, mesmas props.
+  if (isProSlideVariant(slide.slideVariant)) {
+    return (
+      <ProSlide
+        slide={slide}
+        index={index}
+        total={total}
+        ratio={ratio}
+        logo={logoSource}
+        primary={primary}
+        secondary={secondary}
+        canvasRef={canvasRef}
+      />
     );
   }
 
@@ -4274,7 +4295,7 @@ export function F1CarouselBuilder({
       try {
         const destImages = uniqueImages([...availableImages, ...photoResults.map((p) => p.url)]);
         const persistedStrategy =
-          slides.find((slide) => slide.kind === "content")?.slideVariant || "impact";
+          slides.find((slide) => slide.kind === "content")?.slideVariant || "pro-bold";
         const generatedArchive = selectedPackage
           ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, destImages, persistedStrategy, effectiveCoverSource)
           : [];
@@ -4372,7 +4393,7 @@ export function F1CarouselBuilder({
   };
 
   const currentStrategy =
-    slides.find((slide) => slide.kind === "content")?.slideVariant || "impact";
+    slides.find((slide) => slide.kind === "content")?.slideVariant || "pro-bold";
 
   const cycleActiveTextSuggestion = (field: CarouselEditableTextField) => {
     if (!selectedPackage || !activeSlide || isEs || activeCoverIsProtected) return;
@@ -4527,7 +4548,7 @@ export function F1CarouselBuilder({
     uploadRequestRef.current.clear();
     const destImages = uniqueImages([...availableImages, ...photoResults.map((p) => p.url)]);
     const currentVariant =
-      slides.find((slide) => slide.kind === "content")?.slideVariant || "impact";
+      slides.find((slide) => slide.kind === "content")?.slideVariant || "pro-bold";
     const nextVariant =
       CAROUSEL_VARIANTS[
         (CAROUSEL_VARIANTS.indexOf(currentVariant) + 1) % CAROUSEL_VARIANTS.length
@@ -5758,6 +5779,10 @@ export function F1CarouselBuilder({
               </legend>
               <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
                 {([
+                  ["pro-bold", isEs ? "Impacto" : "Impacto", isEs ? "Foto grande y título fuerte" : "Foto grande e título forte"],
+                  ["pro-split", isEs ? "Tarjeta" : "Cartão", isEs ? "Foto + panel claro" : "Foto + painel claro"],
+                  ["pro-magazine", isEs ? "Revista" : "Revista", isEs ? "Editorial con serifa" : "Editorial em serifa"],
+                  ["pro-luxe", isEs ? "Lujo" : "Luxo", isEs ? "Negro, marco y dorado" : "Preto, moldura e dourado"],
                   ["impact", isEs ? "Inspirar" : "Inspirar", isEs ? "Deseo y experiencia" : "Desejo e experiência"],
                   ["oferta", isEs ? "Oferta" : "Oferta", isEs ? "Valor y conversión" : "Valor e conversão"],
                   ["editorial", isEs ? "Guía" : "Guia", isEs ? "Útil para guardar" : "Útil para salvar"],

@@ -20,6 +20,7 @@ const PALETTES: Record<string, [string, string]> = {
 };
 
 export const VARIANTS: CarouselSlideVariant[] = [
+  "pro-bold", "pro-split", "pro-magazine", "pro-luxe",
   "impact", "itinerary", "editorial", "oferta", "minimalist", "vibrant",
   "organic", "glass", "headline", "headline-center", "headline-footer", "ticket",
 ];
@@ -82,7 +83,8 @@ export default function CarrosselLab() {
   const long = params.get("long") === "1";
   const dest = params.get("dest") || "Fernando de Noronha";
   const logo = params.get("logo") === "0" ? "" : LOGO;
-  const variants = only ? [only] : VARIANTS;
+  const vs = params.get("vs");
+  const variants = only ? [only] : vs ? (vs.split(",") as CarouselSlideVariant[]) : VARIANTS;
   const w = story ? 240 : 300;
 
   return (
