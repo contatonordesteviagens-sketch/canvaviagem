@@ -50,6 +50,7 @@ import { CompactBrandPaletteEditor } from "@/components/fabrica/BrandPaletteEdit
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
+import { buildQuickPackage } from "@/lib/quick-package";
 import { supabase } from "@/integrations/supabase/client";
 import { createExportIdentity } from "@/lib/exportIdentity";
 
@@ -3889,15 +3890,16 @@ export function F1CarouselBuilder({
   const [carouselFormat, setCarouselFormat] = useState<CarouselFormat>("feed");
   const [showLogo, setShowLogo] = useState(true);
   const [logoPosition, setLogoPosition] = useState<LogoPosition>("top-right");
+  const [emptyStatePackageText, setEmptyStatePackageText] = useState("");
   const slideCountRef = useRef<CarouselSize>(6);
   const [slides, setSlides] = useState<CarouselSlide[]>(() =>
     selectedPackage
-      ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, uniqueImages([...(state.siteContent.galleryImages || [])]), "impact", coverSource)
+      ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, uniqueImages([...(state.siteContent.galleryImages || [])]), "pro-bold", coverSource)
       : [],
   );
   const slideArchiveRef = useRef<CarouselSlide[]>(
     selectedPackage
-      ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, uniqueImages([...(state.siteContent.galleryImages || [])]), "impact", coverSource)
+      ? createSlides(selectedPackage, 6, coverImage, agencyPhone, isEs, uniqueImages([...(state.siteContent.galleryImages || [])]), "pro-bold", coverSource)
       : [],
   );
   const slidesRef = useRef(slides);
@@ -4114,7 +4116,7 @@ export function F1CarouselBuilder({
       agencyPhone,
       isEs,
       destImages,
-      "impact",
+      "pro-bold",
       coverSource,
     );
     const generatedArchive = createSlides(
@@ -4124,7 +4126,7 @@ export function F1CarouselBuilder({
       agencyPhone,
       isEs,
       destImages,
-      "impact",
+      "pro-bold",
       coverSource,
     );
 
@@ -4162,7 +4164,7 @@ export function F1CarouselBuilder({
         }
         const storedSlides = parsed.allSlides || parsed.slides || [];
         const restoredStrategy =
-          storedSlides.find((slide) => slide.kind === "content")?.slideVariant || "impact";
+          storedSlides.find((slide) => slide.kind === "content")?.slideVariant || "pro-bold";
         const restoredArchiveBase = createSlides(
           selectedPackage,
           6,
@@ -5179,22 +5181,50 @@ export function F1CarouselBuilder({
         </div>
 
         {/* Informações e Botão */}
-        <div className="text-center relative z-20 space-y-5 w-full max-w-[280px]">
+        {/* Sem pacote: o carrossel nasce de um pacote, então ele é criado aqui mesmo, em uma frase. */}
+        <div className="text-center relative z-20 space-y-4 w-full max-w-[420px]">
           <div className="space-y-2">
             <h2 className="text-lg sm:text-xl font-black text-white leading-tight">
-              {isEs ? "Crea Carruseles Automáticos" : "Crie Carrosséis Automáticos"}
+              {isEs ? "Describe tu paquete en una frase" : "Descreva seu pacote em uma frase"}
             </h2>
-            <p className="text-[10px] sm:text-xs font-medium text-white/40">
-              {isEs 
-                ? "Selecciona una foto y el sistema sincronizará los datos al instante."
-                : "Selecione uma foto e o sistema sincronizará os dados instantaneamente."}
+            <p className="text-[11px] sm:text-xs font-medium text-white/50">
+              {isEs
+                ? "Destino, días, precio y lo que incluye. El carrusel se arma solo."
+                : "Destino, dias, preço e o que está incluso. O carrossel é montado sozinho."}
             </p>
           </div>
+          <form
+            className="flex flex-col gap-2 text-left"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const text = emptyStatePackageText.trim();
+              if (!text) return;
+              const pkg = buildQuickPackage(text, state.selectedPackages);
+              if (!pkg) return;
+              update({ selectedPackages: [pkg, ...state.selectedPackages] });
+              setEmptyStatePackageText("");
+              toast.success(isEs ? `Paquete "${pkg.title}" creado.` : `Pacote "${pkg.title}" criado. Montando o carrossel…`);
+            }}
+          >
+            <input
+              value={emptyStatePackageText}
+              onChange={(event) => setEmptyStatePackageText(event.target.value)}
+              placeholder={isEs ? "Ej: Porto de Galinhas, 5 días, 10x R$ 199, aéreo + hotel con desayuno" : "Ex: Porto de Galinhas, 5 dias, 10x R$ 199, aéreo + hotel com café"}
+              className="min-h-12 w-full rounded-xl border border-white/15 bg-black/50 px-4 text-sm text-white placeholder-white/30 outline-none focus:border-[#F5F906]"
+              data-testid="carousel-empty-package-input"
+            />
+            <button
+              type="submit"
+              className="min-h-12 w-full rounded-xl bg-[#F5F906] text-[12px] font-black uppercase tracking-widest text-zinc-950 shadow-[0_8px_28px_rgba(245,249,6,0.35)] transition-transform active:scale-[0.98]"
+            >
+              {isEs ? "Crear paquete y montar carrusel" : "Criar pacote e montar carrossel"}
+            </button>
+          </form>
           <button
             onClick={() => onBackToAd?.()} 
-            className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-black text-[11px] sm:text-xs uppercase tracking-widest transition-all duration-150 ease-out  active:scale-[0.97] shadow-lg shadow-[#F5F906]/20 bg-[#F5F906] text-black hover:bg-[#e3e705]"
+            className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-bold text-[11px] uppercase tracking-widest border border-white/15 text-white/70 hover:bg-white/[0.06] hover:text-white transition-colors"
           >
-            <ImagePlus className="w-4 h-4" /> {isEs ? "Seleccionar Imagen" : "Selecionar Imagem"}
+            <ImagePlus className="w-4 h-4" /> {isEs ? "O empieza por el Anuncio" : "Ou comece pelo Anúncio"}
           </button>
         </div>
       </section>
@@ -5553,7 +5583,7 @@ export function F1CarouselBuilder({
         <div className="flex items-center gap-2 mb-4">
           <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">1</span>
           <h3 className="text-sm font-semibold tracking-tight text-white">
-            {isEs ? "Formato y paquete, cantidad y objetivo" : "Formato e pacote, quantidade e objetivo"}
+            {isEs ? "Elige el paquete y el modelo" : "Escolha o pacote e o modelo"}
           </h3>
         </div>
 
@@ -5615,6 +5645,138 @@ export function F1CarouselBuilder({
                 />
               </button>
             </div>
+          </div>
+
+          <div>
+            <fieldset>
+              <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+                {isEs ? "Total de imágenes" : "Total de imagens"}
+              </legend>
+              <div className="mt-1.5 grid grid-cols-4 gap-2">
+                {([3, 4, 5, 6] as CarouselSize[]).map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    aria-pressed={slideCount === count}
+                    onClick={() => changeSlideCount(count)}
+                    className={`min-h-10 rounded-xl border px-2.5 text-xs font-extrabold transition-colors ${
+                      slideCount === count
+                        ? "border-[#F5F906] bg-[#F5F906] text-zinc-950 shadow-sm"
+                        : "border-white/10 bg-white/[0.02] text-white/70 hover:bg-white/[0.06] hover:text-white"
+                    }`}
+                  >
+                    {count}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset className="mt-3">
+              <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+                {isEs ? "Formato de salida" : "Formato de saída"}
+              </legend>
+              <div className="mt-1.5 grid grid-cols-2 gap-2">
+                {([
+                  ["feed", Square, "Feed 4:5", "1080 × 1350"],
+                  ["story", Smartphone, "Stories 9:16", "1080 × 1920"],
+                ] as const).map(([format, Icon, labelText, dimensionsText]) => {
+                  const active = carouselFormat === format;
+                  return (
+                    <div
+                      key={format}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={active}
+                      onClick={() => setCarouselFormat(format)}
+                      onKeyDown={(e) => e.key === "Enter" && setCarouselFormat(format)}
+                      className={`flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl border px-3 text-left transition-colors ${
+                        active
+                          ? "border-[#F5F906] bg-[#F5F906]/10 text-white"
+                          : "border-white/10 bg-white/[0.02] text-white/65 hover:bg-white/[0.06] hover:text-white"
+                      }`}
+                    >
+                      <Icon className={`h-4 w-4 shrink-0 ${active ? "text-[#F5F906]" : "text-white/45"}`} />
+                      <span className="min-w-0">
+                        <span className="block text-[10px] font-extrabold">{labelText}</span>
+                        <span className="block text-[8px] text-white/40">{dimensionsText}</span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </fieldset>
+            </div>
+
+            <fieldset className="min-w-0 lg:col-span-2">
+              <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+                {isEs ? "Formato del carrusel" : "Formato do carrossel"}
+              </legend>
+              <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
+                {([
+                  ["pro-bold", "Neon", isEs ? "Oscuro, brillo y chips" : "Escuro, brilho e chips"],
+                  ["pro-split", "Oferta", isEs ? "Tarjeta con precio y aleta de avión" : "Cartão com preço e aba de avião"],
+                  ["pro-magazine", "Enseada", isEs ? "Título grande, íconos | precio" : "Título grande, ícones | preço"],
+                  ["pro-luxe", isEs ? "Conoce" : "Conheça", isEs ? "Panel crema + bloque de título" : "Painel creme + bloco de título"],
+                  ["impact", isEs ? "Inspirar" : "Inspirar", isEs ? "Deseo y experiencia" : "Desejo e experiência"],
+                  ["oferta", isEs ? "Oferta" : "Oferta", isEs ? "Valor y conversión" : "Valor e conversão"],
+                  ["editorial", isEs ? "Guía" : "Guia", isEs ? "Útil para guardar" : "Útil para salvar"],
+                  ["vibrant", "FAQ", isEs ? "Resuelve objeciones" : "Resolve objeções"],
+                  ["minimalist", isEs ? "Confianza" : "Confiança", isEs ? "Claridad y atención" : "Clareza e atendimento"],
+                  ["itinerary", isEs ? "Itinerario" : "Roteiro", isEs ? "Ruta y logística" : "Percurso e logística"],
+                  ["organic", "Curvo", isEs ? "Formas orgánicas" : "Formas orgânicas"],
+                  ["glass", "Transparente", isEs ? "Ligero y sofisticado" : "Leve e sofisticado"],
+                  ["headline", isEs ? "Titular" : "Destaque", isEs ? "Gancho con degradado" : "Gancho com degradê"],
+                  ["ticket", isEs ? "Billete" : "Bilhete", isEs ? "Estilo tarjeta de embarque" : "Estilo cartão de embarque"],
+                  ["headline-center", isEs ? "Franjas centro" : "Faixas centrais", isEs ? "Informacion centrada abajo" : "Informacoes centralizadas abaixo"],
+                  ["headline-footer", isEs ? "Franjas bajas" : "Faixas inferiores", isEs ? "Titulo e informacion en la base" : "Titulo e informacoes na base"],
+                ] as const).filter(([variant], index) => showAllFormats || index < 4 || currentStrategy === variant).map(([variant, labelText, description]) => {
+                  const isActiveVariant = currentStrategy === variant;
+                  return (
+                    <button
+                      key={variant}
+                      type="button"
+                      aria-pressed={isActiveVariant}
+                      aria-label={`${labelText}: ${description}`}
+                      title={description}
+                      onClick={() => applyCarouselStrategy(variant)}
+                      className={`min-h-9 min-w-0 rounded-lg border px-2 py-2 text-center transition-colors ${
+                        isActiveVariant
+                          ? "border-[#F5F906] bg-[#F5F906]/10"
+                          : "border-white/10 bg-transparent hover:border-white/20 hover:bg-white/[0.03]"
+                      }`}
+                    >
+                      <span className={`block text-[10px] font-extrabold ${isActiveVariant ? "text-[#F5F906]" : "text-white/75"}`}>
+                        {labelText}
+                      </span>
+                      <span className="block truncate text-[9px] font-medium text-white/40">{description}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAllFormats((v) => !v)}
+                className="mt-2 text-[11px] font-semibold text-white/50 underline-offset-2 hover:text-white hover:underline"
+              >
+                {showAllFormats
+                  ? (isEs ? "Ver menos formatos" : "Ver menos formatos")
+                  : (isEs ? "Ver más formatos (8)" : "Ver mais formatos (8)")}
+              </button>
+            </fieldset>
+
+            {/* Ajustes que a maioria não precisa mexer: ficam recolhidos. */}
+            <details className="group min-w-0 rounded-xl border border-white/10 bg-black/20 lg:col-span-2">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-[11px] font-bold text-white/70">
+                <span className="flex items-center gap-2">
+                  <ChevronDown className="h-3.5 w-3.5 text-white/40 transition-transform group-open:-rotate-180" />
+                  {isEs ? "Ajustes avanzados" : "Ajustes avançados"}
+                  <span className="hidden text-[10px] font-medium text-white/40 sm:inline">
+                    {isEs ? "logo, colores y portada del anuncio" : "logo, cores e capa do anúncio"}
+                  </span>
+                </span>
+                <span className="text-[10px] font-medium text-white/40">{showLogo ? (isEs ? "logo: sí" : "logo: sim") : (isEs ? "logo: no" : "logo: não")}</span>
+              </summary>
+              <div className="grid grid-cols-1 gap-3 px-3 pb-3 lg:grid-cols-2">
+                <div className="space-y-3">
             <div className="rounded-xl border border-white/10 bg-black/20 p-2">
               <button
                 type="button"
@@ -5698,65 +5860,8 @@ export function F1CarouselBuilder({
                 {isEs ? "Crear portada en Anuncio" : "Criar capa no Anúncio"}
               </button>
             )}
-          </div>
-
-          <div>
-            <fieldset>
-              <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
-                {isEs ? "Total de imágenes" : "Total de imagens"}
-              </legend>
-              <div className="mt-1.5 grid grid-cols-4 gap-2">
-                {([3, 4, 5, 6] as CarouselSize[]).map((count) => (
-                  <button
-                    key={count}
-                    type="button"
-                    aria-pressed={slideCount === count}
-                    onClick={() => changeSlideCount(count)}
-                    className={`min-h-10 rounded-xl border px-2.5 text-xs font-extrabold transition-colors ${
-                      slideCount === count
-                        ? "border-[#F5F906] bg-[#F5F906] text-zinc-950 shadow-sm"
-                        : "border-white/10 bg-white/[0.02] text-white/70 hover:bg-white/[0.06] hover:text-white"
-                    }`}
-                  >
-                    {count}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-            <fieldset className="mt-3">
-              <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
-                {isEs ? "Formato de salida" : "Formato de saída"}
-              </legend>
-              <div className="mt-1.5 grid grid-cols-2 gap-2">
-                {([
-                  ["feed", Square, "Feed 4:5", "1080 × 1350"],
-                  ["story", Smartphone, "Stories 9:16", "1080 × 1920"],
-                ] as const).map(([format, Icon, labelText, dimensionsText]) => {
-                  const active = carouselFormat === format;
-                  return (
-                    <div
-                      key={format}
-                      role="button"
-                      tabIndex={0}
-                      aria-pressed={active}
-                      onClick={() => setCarouselFormat(format)}
-                      onKeyDown={(e) => e.key === "Enter" && setCarouselFormat(format)}
-                      className={`flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl border px-3 text-left transition-colors ${
-                        active
-                          ? "border-[#F5F906] bg-[#F5F906]/10 text-white"
-                          : "border-white/10 bg-white/[0.02] text-white/65 hover:bg-white/[0.06] hover:text-white"
-                      }`}
-                    >
-                      <Icon className={`h-4 w-4 shrink-0 ${active ? "text-[#F5F906]" : "text-white/45"}`} />
-                      <span className="min-w-0">
-                        <span className="block text-[10px] font-extrabold">{labelText}</span>
-                        <span className="block text-[8px] text-white/40">{dimensionsText}</span>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </fieldset>
+                </div>
+                <div>
             <fieldset className="mt-3">
               <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
                 {isEs ? "Colores del carrusel" : "Cores do carrossel"}
@@ -5771,64 +5876,9 @@ export function F1CarouselBuilder({
                 />
               </div>
             </fieldset>
-            </div>
-
-            <fieldset className="min-w-0 lg:col-span-2">
-              <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
-                {isEs ? "Formato del carrusel" : "Formato do carrossel"}
-              </legend>
-              <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
-                {([
-                  ["pro-bold", "Neon", isEs ? "Oscuro, brillo y chips" : "Escuro, brilho e chips"],
-                  ["pro-split", "Oferta", isEs ? "Tarjeta con precio y aleta de avión" : "Cartão com preço e aba de avião"],
-                  ["pro-magazine", "Enseada", isEs ? "Título grande, íconos | precio" : "Título grande, ícones | preço"],
-                  ["pro-luxe", isEs ? "Conoce" : "Conheça", isEs ? "Panel crema + bloque de título" : "Painel creme + bloco de título"],
-                  ["impact", isEs ? "Inspirar" : "Inspirar", isEs ? "Deseo y experiencia" : "Desejo e experiência"],
-                  ["oferta", isEs ? "Oferta" : "Oferta", isEs ? "Valor y conversión" : "Valor e conversão"],
-                  ["editorial", isEs ? "Guía" : "Guia", isEs ? "Útil para guardar" : "Útil para salvar"],
-                  ["vibrant", "FAQ", isEs ? "Resuelve objeciones" : "Resolve objeções"],
-                  ["minimalist", isEs ? "Confianza" : "Confiança", isEs ? "Claridad y atención" : "Clareza e atendimento"],
-                  ["itinerary", isEs ? "Itinerario" : "Roteiro", isEs ? "Ruta y logística" : "Percurso e logística"],
-                  ["organic", "Curvo", isEs ? "Formas orgánicas" : "Formas orgânicas"],
-                  ["glass", "Transparente", isEs ? "Ligero y sofisticado" : "Leve e sofisticado"],
-                  ["headline", isEs ? "Titular" : "Destaque", isEs ? "Gancho con degradado" : "Gancho com degradê"],
-                  ["ticket", isEs ? "Billete" : "Bilhete", isEs ? "Estilo tarjeta de embarque" : "Estilo cartão de embarque"],
-                  ["headline-center", isEs ? "Franjas centro" : "Faixas centrais", isEs ? "Informacion centrada abajo" : "Informacoes centralizadas abaixo"],
-                  ["headline-footer", isEs ? "Franjas bajas" : "Faixas inferiores", isEs ? "Titulo e informacion en la base" : "Titulo e informacoes na base"],
-                ] as const).filter(([variant], index) => showAllFormats || index < 4 || currentStrategy === variant).map(([variant, labelText, description]) => {
-                  const isActiveVariant = currentStrategy === variant;
-                  return (
-                    <button
-                      key={variant}
-                      type="button"
-                      aria-pressed={isActiveVariant}
-                      aria-label={`${labelText}: ${description}`}
-                      title={description}
-                      onClick={() => applyCarouselStrategy(variant)}
-                      className={`min-h-9 min-w-0 rounded-lg border px-2 py-2 text-center transition-colors ${
-                        isActiveVariant
-                          ? "border-[#F5F906] bg-[#F5F906]/10"
-                          : "border-white/10 bg-transparent hover:border-white/20 hover:bg-white/[0.03]"
-                      }`}
-                    >
-                      <span className={`block text-[10px] font-extrabold ${isActiveVariant ? "text-[#F5F906]" : "text-white/75"}`}>
-                        {labelText}
-                      </span>
-                      <span className="block truncate text-[9px] font-medium text-white/40">{description}</span>
-                    </button>
-                  );
-                })}
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowAllFormats((v) => !v)}
-                className="mt-2 text-[11px] font-semibold text-white/50 underline-offset-2 hover:text-white hover:underline"
-              >
-                {showAllFormats
-                  ? (isEs ? "Ver menos formatos" : "Ver menos formatos")
-                  : (isEs ? "Ver más formatos (8)" : "Ver mais formatos (8)")}
-              </button>
-            </fieldset>
+            </details>
         </div>
       </div>
 
@@ -6427,7 +6477,17 @@ export function F1CarouselBuilder({
             {activeSlide && !activeCoverIsProtected && (
               <div className="divide-y divide-white/[0.06]">
 
-                {/* ── SECTION 1: Estilo & Fonte ── */}
+                {/* ── SECTION 1+2 recolhidas: estilo do texto e selo. O leigo só vê título/corpo/tópicos. ── */}
+                <details className="group">
+                  <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 select-none">
+                    <span className="flex items-center gap-2">
+                      <ChevronDown className="h-3.5 w-3.5 text-white/30 transition-transform group-open:-rotate-180" />
+                      <span className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
+                        {isEs ? "Estilo del texto" : "Estilo do texto"}
+                      </span>
+                    </span>
+                    <span className="text-[9px] font-medium text-white/35">{isEs ? "fuente, sombra, etiqueta" : "fonte, sombra, selo"}</span>
+                  </summary>
                 <div className="px-4 py-3.5 space-y-3">
                   <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/30">
                     {isEs ? "Textos y colores / Dirección" : "Textos e cores / Direção"}
@@ -6701,6 +6761,7 @@ export function F1CarouselBuilder({
                   </div>
                   </details>
                 </div>
+                </details>
 
                 {activeSlide.kind !== "closing" ? (
                   <>

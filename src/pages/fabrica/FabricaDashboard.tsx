@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
+import { buildQuickPackage } from "@/lib/quick-package";
 import { materializeRecoveredProject, useDiagnosticos, useSaveDiagnostico, type DiagnosticoSalvo } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
@@ -136,40 +137,11 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   const createQuickPackage = () => {
     const text = quickPackageText.trim();
     if (!text) { toast.error("Escreva o pacote em uma frase. Ex: Porto de Galinhas, 5 dias, R$ 1.997, hotel e transfer"); return; }
-    const parts = text.split(/[,;|]+/).map((p) => p.trim()).filter(Boolean);
-    const title = parts.shift() || text;
-    let price = "";
-    let duration = "";
-    const included: string[] = [];
-    for (const part of parts) {
-      const priceMatch = part.match(/(?:R\$|US\$|€|\$)?\s*\d{1,3}(?:[.\s]\d{3})*(?:,\d{1,2})?/i);
-      const durationMatch = part.match(/\b(\d{1,2})\s*(dias?|noites?|di[aá]rias?)\b/i);
-      if (!price && priceMatch && /R\$|US\$|€|\$|reais|por pessoa/i.test(part)) {
-        const n = priceMatch[0].trim();
-        price = /^(R\$|US\$|€|\$)/.test(n) ? n : `R$ ${n}`;
-      } else if (!duration && durationMatch) {
-        duration = `${durationMatch[1]} ${durationMatch[2].toLowerCase()}`;
-      } else {
-        part.split(/\s+(?:\+|e)\s+|\s*\+\s*/).map((x) => x.trim()).filter(Boolean).forEach((x) => included.push(x.charAt(0).toUpperCase() + x.slice(1)));
-      }
-    }
-    const id = `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-    const usedSlugs = state.selectedPackages.map((item) => item.slug || buildPackageSlug(item.title, item.id));
-    const pkg: Pacote = {
-      id,
-      title,
-      slug: createUniquePackageSlug(title, usedSlugs, id),
-      description: [duration ? `${duration} em ${title}` : `Viagem para ${title}`, included.length ? `com ${included.slice(0, 3).join(", ").toLowerCase()}` : ""].filter(Boolean).join(" "),
-      price: price || "Consulte",
-      duration: duration || undefined,
-      included: included.length ? included : undefined,
-      imageUrl: "",
-      ctaLabel: "Reservar agora",
-      isDraft: false,
-    };
+    const pkg = buildQuickPackage(text, state.selectedPackages);
+    if (!pkg) return;
     update({ selectedPackages: [pkg, ...state.selectedPackages] });
     setQuickPackageText("");
-    toast.success(`Pacote "${title}" criado${price ? ` por ${price}` : ""}. Já aparece no site, no anúncio e no carrossel.`);
+    toast.success(`Pacote "${pkg.title}" criado${pkg.price && pkg.price !== "Consulte" ? ` por ${pkg.price}` : ""}. Já aparece no site, no anúncio e no carrossel.`);
   };
   const [isSaving, setIsSaving] = useState(false);
   const [pendingProjectSwitch, setPendingProjectSwitch] = useState<DiagnosticoSalvo | null>(null);
