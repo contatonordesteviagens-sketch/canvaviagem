@@ -19,6 +19,7 @@ import {
 } from "@/lib/fabrica-project-persistence";
 import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
 import { normalizePortugueseSiteDefaults } from "@/lib/fabrica-site-pt-defaults";
+import { EMPTY_SITE_STATS, HONEST_DEFAULTS } from "@/lib/site-honest-content";
 
 export type Niche = "nordeste" | "sul" | "internacional" | "cruzeiro" | "aventura" | "luademel" | "";
 
@@ -374,12 +375,7 @@ const defaultStateBR: FabricaState = {
     faqTitle: "Perguntas Frequentes",
     finalCtaTitle: "Pronto para sua próxima viagem?",
     finalCtaLabel: "Chamar no WhatsApp",
-    faq: [
-      { q: "Vocês parcelam?", a: "Sim! Em até 12x no cartão de crédito, sem juros em condições selecionadas." },
-      { q: "É seguro contratar com vocês?", a: "Somos uma agência regularizada com CNPJ ativo e parceria direta com operadoras." },
-      { q: "E se eu precisar cancelar?", a: "Cada pacote tem sua política. Você recebe o contrato com tudo claro antes de fechar." },
-      { q: "Como tira dúvidas?", a: "Atendimento direto pelo WhatsApp, com resposta em até 1h em horário comercial." },
-    ],
+    faq: HONEST_DEFAULTS.faq.map((item) => ({ ...item })),
     heroImageUrl: "",
     templateId: "standard",
     sectionColors: {},
@@ -402,29 +398,20 @@ const defaultStateBR: FabricaState = {
     aboutImageUrl: "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80",
     
     // Default values for new fields
-    heroEyebrow: "Consultoria Premium de Viagens",
+    heroEyebrow: "",
     processoEyebrow: "Processo",
     processoTitle: "Sua viagem dos sonhos em 3 passos",
-    processoSteps: [
-      { num: "1", title: "Consulta Personalizada", desc: "Entendemos seus sonhos, datas, orçamento e estilo em uma conversa de 30 minutos sem compromisso." },
-      { num: "2", title: "Curadoria Exclusiva", desc: "Criamos um roteiro 100% personalizado com os melhores hotéis, passeios e experiências para o seu perfil." },
-      { num: "3", title: "Embarque Tranquilo", desc: "Cuidamos de passagens, hospedagem, transfers e suporte 24h durante toda a sua viagem." }
-    ],
+    processoSteps: HONEST_DEFAULTS.processoSteps.map((step) => ({ ...step })),
     destinosEyebrow: "Destinos",
-    equipeBadge: "+15k Clientes Satisfeitos",
+    equipeBadge: "",
     equipeEyebrow: "Nossa equipe",
     equipeTitle: "Uma equipe dedicada exclusivamente a você",
-    equipeIntro: "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.",
-    equipeFeatures: [
-      { icon: "🛡️", title: "Segurança e Confiabilidade", desc: "Anos de atuação com milhares de famílias e parceiros verificados mundialmente." },
-      { icon: "📞", title: "Suporte 24h Durante a Viagem", desc: "Nossa equipe está disponível a qualquer hora. Qualquer imprevisto, resolvemos." },
-      { icon: "✨", title: "Experiências Exclusivas", desc: "Acesso a hotéis e experiências que não estão disponíveis para o público geral." },
-      { icon: "💰", title: "Melhor Custo-Benefício", desc: "Nossa rede de parceiros oferece condições especiais que você não encontra em outros lugares." }
-    ],
+    equipeIntro: HONEST_DEFAULTS.equipeIntro,
+    equipeFeatures: HONEST_DEFAULTS.equipeFeatures.map((feature) => ({ ...feature })),
     orcamentoEyebrow: "Orçamento",
     orcamentoTitle: "Fale com um consultor agora",
-    orcamentoText: "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.",
-    atendimentoText: "Seg–Sex 8h–20h · Sáb 9h–15h",
+    orcamentoText: HONEST_DEFAULTS.orcamentoText,
+    atendimentoText: "",
     equipeCtaLabel: "Falar com um especialista",
     formSubmitLabel: "Enviar pelo WhatsApp",
     footerText: "Sua parceira ideal para viagens inesquecíveis. Cuidamos de cada detalhe para que você apenas aproveite o momento.",
@@ -435,13 +422,8 @@ const defaultStateBR: FabricaState = {
     footerProcessLabel: "Como Funciona",
     footerTestimonialsLabel: "Depoimentos",
     footerContactLabel: "Contato",
-    footerHoursLabel: "Seg–Sex 8h–20h",
-    stats: [
-      { num: "12+", label: "Anos de Experiência" },
-      { num: "15k+", label: "Viajantes Felizes" },
-      { num: "25", label: "Países Atendidos" },
-      { num: "99%", label: "Satisfação" },
-    ],
+    footerHoursLabel: "",
+    stats: EMPTY_SITE_STATS.map((stat) => ({ ...stat })),
   },
   crmForm: createDefaultCrmFormConfig("pt-BR"),
   lastCategoria: "oferta_pacote",

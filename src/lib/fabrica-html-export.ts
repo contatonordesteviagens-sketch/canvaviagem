@@ -9,6 +9,7 @@ import {
 import { normalizeSiteTemplateId } from "@/lib/site-template-catalog";
 import { getSiteTemplateCss } from "@/lib/site-template-css";
 import { normalizePortugueseSiteDefaults } from "@/lib/fabrica-site-pt-defaults";
+import { HONEST_DEFAULTS, LEGACY_HERO_EYEBROW, heroDefaultsFor, resolveSiteStats } from "@/lib/site-honest-content";
 import { resolveFabricaCrmFormId } from "@/lib/fabrica-crm-publication";
 
 const SB_URL = SUPABASE_PUBLIC_URL;
@@ -141,6 +142,18 @@ const normalizeSocialHref = (type: string, value: string) => {
   return `https://${clean}`;
 };
 
+// Etiqueta do cartão: o destino inteiro ("Porto de Galinhas"), não só a 1ª palavra ("Porto").
+const destinationTag = (title: string) => {
+  const words = String(title || "").trim().split(/\s+/).filter(Boolean);
+  const kept: string[] = [];
+  for (const word of words) {
+    if (kept.length && [...kept, word].join(" ").length > 22) break;
+    kept.push(word);
+  }
+  while (kept.length > 1 && /^(de|da|do|das|dos|e|em|para)$/i.test(kept[kept.length - 1])) kept.pop();
+  return kept.join(" ") || "Destino";
+};
+
 const formatWhatsAppDisplay = (raw: string, dial = "55") => {
   const digits = String(raw || "").replace(/\D/g, "");
   const dialCode = String(dial || "55").replace(/\D/g, "") || "55";
@@ -196,13 +209,15 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string, optio
   const agencia = state.agencyName || "Agência de Viagens";
   const cidade = state.city || "Brasil";
   const wppDisplay = formatWhatsAppDisplay(state.whatsapp, state.whatsappDialCode);
-  const contactLocation = state.address?.trim() || cidade;
-  const emailDomainLabel = (agencia || "agencia")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "") || "agencia";
-  const agencyEmail = state.agencyEmail || `contato@${emailDomainLabel}.com.br`;
+  // Contato só com o que a agência preencheu: nada de e-mail gerado, "—" ou "Brasil".
+  const hasWhatsApp = wppDisplay !== "—";
+  const contactLocation = state.address?.trim() || state.city?.trim() || "";
+  const agencyEmail = state.agencyEmail?.trim() || "";
+  const contactHours = sc.atendimentoText?.trim() || "";
+  // Campo vazio na prévia: o aviso é só visual (CSS), então clicar e sair não salva o aviso como dado.
+  const contactSpan = (value: string, hint: string) => value
+    ? `<span>${esc(value)}</span>`
+    : `<span class="site-missing" data-placeholder="${esc(hint)}"></span>`;
   const socialIcons = renderSocialIcons(state);
   const footerSocialIcons = renderSocialIcons(state, "footer-socials");
   const logoUrl = sanitizeImageUrl(state.logoBase64, "");
@@ -1079,11 +1094,13 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
 `;
   }
 
-  const headline =
-    sc.heroHeadline?.trim() || "Viagens que transformam para sempre";
-  const subheadline =
-    sc.heroSubheadline?.trim() ||
-    `Roteiros exclusivos e sob medida para viajantes que não aceitam o comum. Da primeira reunião ao retorno em casa — cuidamos de cada detalhe.`;
+  // Topo: o que a agência escreveu; se estiver vazio, o texto do tipo de agência dela.
+  const heroDefaults = heroDefaultsFor(state.agencyType, state.city);
+  const headline = sc.heroHeadline?.trim() || heroDefaults.headline;
+  const subheadline = sc.heroSubheadline?.trim() || heroDefaults.subheadline;
+  const heroEyebrow = sc.heroEyebrow?.trim() && sc.heroEyebrow.trim() !== LEGACY_HERO_EYEBROW
+    ? sc.heroEyebrow.trim()
+    : heroDefaults.eyebrow;
 
   const pacotes = state.selectedPackages.length
     ? state.selectedPackages.filter(p => !p.isDraft)
@@ -1156,7 +1173,7 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
         importantNotes: p.importantNotes || "",
         agencyName: agencia,
         agencyEmail,
-        agencyPhone: wppDisplay,
+        agencyPhone: hasWhatsApp ? wppDisplay : "",
         agencyLocation: contactLocation,
         whatsappUrl: wppMsg(p.title || "Pacote de viagem"),
         faq: packageFaq.length ? packageFaq : globalFaq,
@@ -1164,19 +1181,12 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
     }),
   );
 
-  // Stats default ou personalizado. Os números de exemplo ("15k+ viajantes") nunca vão
-  // para o site publicado: só aparecem na prévia, marcados como exemplo, até a agência trocar.
-  const DEFAULT_STATS = [
-    { num: "12+", label: "Anos de Experiência" },
-    { num: "15k+", label: "Viajantes Felizes" },
-    { num: "25", label: "Países Atendidos" },
-    { num: "99%", label: "Satisfação" },
-  ];
-  const rawStats = sc.stats || DEFAULT_STATS;
-  const statsAreExample = rawStats.every((s, i) => DEFAULT_STATS[i] && s.num === DEFAULT_STATS[i].num && s.label === DEFAULT_STATS[i].label);
-  const stats = statsAreExample && !options.preview ? [] : rawStats;
-  const DEFAULT_BADGE = "+15k Clientes Satisfeitos";
-  const equipeBadgeText = (sc.equipeBadge || DEFAULT_BADGE) === DEFAULT_BADGE && !options.preview ? "" : (sc.equipeBadge || DEFAULT_BADGE);
+  // Números: cada um só vai para o site publicado quando a agência preenche.
+  // Na prévia, os vazios aparecem como campo para clicar e preencher.
+  const allStats = resolveSiteStats(sc.stats);
+  const stats = options.preview ? allStats : allStats.filter((s) => s.num.trim());
+  const statsHaveEmpty = options.preview && allStats.some((s) => !s.num.trim());
+  const equipeBadgeText = sc.equipeBadge?.trim() || "";
 
   // Avatar com inicial — gera SVG inline pra não depender de rede
   const avatarSvg = (nome: string, bg: string) => {
@@ -1194,25 +1204,24 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
     "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80",
   );
 
+  // Formulário curto: 3 campos à vista. Os outros ficam em "Mais detalhes" com os MESMOS nomes,
+  // então o envio ao CRM (nome, wpp, email, destino, viaj, ida, volta, obs) continua idêntico.
   const quoteFormHtml = `<form class="orc-form" onsubmit="handleMainFormSubmit(event)">
-        <div class="form-row">
-          <div class="field"><label for="quote-name">Nome Completo</label><input id="quote-name" name="nome" autocomplete="name" required placeholder="Ex: Maria Silva"></div>
-          <div class="field"><label for="quote-phone">WhatsApp</label><input id="quote-phone" type="tel" name="wpp" autocomplete="tel" required placeholder="(00) 00000-0000"></div>
-        </div>
-        <div class="form-row single">
-          <div class="field"><label for="quote-email">E-mail</label><input id="quote-email" type="email" name="email" autocomplete="email" required placeholder="seu@email.com"></div>
-        </div>
-        <div class="form-row">
-          <div class="field"><label for="quote-destination">Destino de Interesse</label><select id="quote-destination" name="destino"><option value="">Selecione…</option>${pacotes.map((p) => `<option>${esc(p.title)}</option>`).join("")}<option>Outro / sob medida</option></select></div>
-          <div class="field"><label for="quote-travelers">Nº de Viajantes</label><input id="quote-travelers" type="number" name="viaj" min="1" value="2"></div>
-        </div>
-        <div class="form-row">
-          <div class="field"><label for="quote-departure">Data de Ida</label><input id="quote-departure" type="date" name="ida"></div>
-          <div class="field"><label for="quote-return">Data de Volta</label><input id="quote-return" type="date" name="volta"></div>
-        </div>
-        <div class="form-row single">
-          <div class="field"><label for="quote-notes">Observações (opcional)</label><textarea id="quote-notes" name="obs" placeholder="Preferências, ocasião especial, orçamento…"></textarea></div>
-        </div>
+        <div class="field"><label for="quote-name">Seu nome</label><input id="quote-name" name="nome" autocomplete="name" required placeholder="Ex: Maria Silva"></div>
+        <div class="field"><label for="quote-phone">WhatsApp</label><input id="quote-phone" type="tel" inputmode="tel" name="wpp" autocomplete="tel" required placeholder="(00) 00000-0000"></div>
+        <div class="field"><label for="quote-destination">Para onde você quer ir?</label><input id="quote-destination" name="destino" list="quote-destination-list" autocomplete="off" placeholder="${esc(pacotes[0]?.title ? `Ex: ${pacotes[0].title}` : "Ex: Gramado, Porto de Galinhas")}"><datalist id="quote-destination-list">${pacotes.map((p) => `<option value="${esc(p.title)}"></option>`).join("")}</datalist></div>
+        <details class="orc-more">
+          <summary>Mais detalhes (opcional)</summary>
+          <div class="field"><label for="quote-email">E-mail</label><input id="quote-email" type="email" name="email" autocomplete="email" placeholder="seu@email.com"></div>
+          <div class="form-row">
+            <div class="field"><label for="quote-travelers">Quantas pessoas</label><input id="quote-travelers" type="number" inputmode="numeric" name="viaj" min="1" value="2"></div>
+            <div class="field"><label for="quote-departure">Ida</label><input id="quote-departure" type="date" name="ida"></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label for="quote-return">Volta</label><input id="quote-return" type="date" name="volta"></div>
+          </div>
+          <div class="field"><label for="quote-notes">Observações</label><textarea id="quote-notes" name="obs" placeholder="Preferências, ocasião especial, orçamento…"></textarea></div>
+        </details>
         <button type="submit" class="btn form-submit">${esc(sc.formSubmitLabel || "Enviar pelo WhatsApp")}</button>
       </form>`;
   
@@ -1255,7 +1264,7 @@ ${pixelCode}
 ${ga4Code}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${esc(agencia)} — Consultoria Premium de Viagens</title>
+<title>${esc(agencia)} — ${esc(heroEyebrow)}</title>
 <meta name="description" content="${esc(subheadline)}">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Inter:wght@400;500;600;700&family=Onest:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -1326,6 +1335,10 @@ img{max-width:100%;display:block}
 .stats-bar{display:flex;flex-wrap:wrap;justify-content:center;gap:32px;margin-top:64px;padding:48px 24px;background:linear-gradient(rgba(15,39,66,0.85),rgba(15,39,66,0.85)),url("${heroImg}") center/cover;border-radius:16px;position:relative;z-index:1;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,0.2)}
 .stats-bar > div{flex:1 1 180px;max-width:250px;}
 .stat-num{font-family:'Playfair Display',serif;font-size:48px;font-weight:800;color:#fff;line-height:1}
+.stat-num:empty::before{content:"Seu número";display:inline-block;padding:6px 14px;border:1.5px dashed currentColor;border-radius:999px;font:600 16px/1.3 Inter,Arial,sans-serif;opacity:.75;cursor:text}
+.site-missing{display:inline-block;min-width:120px;min-height:24px;font-weight:500;color:#9a5b00;background:#fff7e6;border:1px dashed #e7b45a;border-radius:6px;padding:2px 8px;font-size:15px;cursor:text}
+.site-missing:empty::before{content:attr(data-placeholder)}
+.site-missing-note{max-width:640px;margin:40px auto -48px;text-align:center;font:600 13px/1.5 Inter,Arial,sans-serif;color:#9a5b00;background:#fff7e6;border:1px dashed #e7b45a;border-radius:10px;padding:8px 14px;position:relative;z-index:2}
 .stat-label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;opacity:0.9;margin-top:10px;font-weight:600;color:#fff}
 @media (max-width: 640px){
   .hero{padding:44px 0 40px}
@@ -1435,9 +1448,17 @@ section{padding:80px 0}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .form-row.single{grid-template-columns:1fr}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.field input,.field select,.field textarea{width:100%;padding:13px 14px;border:1.5px solid rgba(0,0,0,.08);border-radius:10px;font-size:15px;font-family:'Inter',sans-serif;background:#fff;color:var(--ink);transition:border .2s;-webkit-appearance:none;appearance:none}
+.field input,.field select,.field textarea{width:100%;padding:13px 14px;border:1.5px solid rgba(0,0,0,.08);border-radius:10px;font-size:16px;font-family:'Inter',sans-serif;background:#fff;color:var(--ink);transition:border .2s;-webkit-appearance:none;appearance:none}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brand)}
 .field textarea{resize:vertical;min-height:90px}
+.orc-form>.field{margin-bottom:14px}
+.orc-more{margin:4px 0 18px;border-top:1px solid rgba(0,0,0,.08);padding-top:4px}
+.orc-more>summary{min-height:44px;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:16px;font-weight:600;color:var(--ink,#111);list-style:none}
+.orc-more>summary::-webkit-details-marker{display:none}
+.orc-more>summary::before{content:"+";display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1.5px solid currentColor;font-weight:700;line-height:1}
+.orc-more[open]>summary::before{content:"−"}
+.orc-more>.field,.orc-more>.form-row{margin-top:12px}
+.orc-form .form-submit{width:100%;min-height:52px;font-size:16px}
 .form-submit{width:100%;padding:16px;font-size:15px;justify-content:center;margin-top:8px}
 @media (max-width: 840px){.orc-grid{grid-template-columns:1fr;gap:32px}.form-row{grid-template-columns:1fr;gap:12px;margin-bottom:12px}.orc-form{padding:24px 20px;border-radius:16px}.contact-item{padding:14px}}
 
@@ -1614,7 +1635,7 @@ ${sectionOrder
     ${!sc.hiddenElements?.includes('hero-content') ? `
     <div class="hero-grid" data-visual-removable="hero-content">
       <div class="hero-content">
-        ${!sc.hiddenElements?.includes('hero-eyebrow') ? `<span class="eyebrow" data-visual-removable="hero-eyebrow">${esc(sc.heroEyebrow || "Consultoria Premium de Viagens")}</span>` : ''}
+        ${!sc.hiddenElements?.includes('hero-eyebrow') ? `<span class="eyebrow" data-visual-removable="hero-eyebrow">${esc(heroEyebrow)}</span>` : ''}
         ${!sc.hiddenElements?.includes('hero-headline') ? `<h1 data-visual-removable="hero-headline">${esc(headline)}</h1>` : ''}
         ${!sc.hiddenElements?.includes('hero-sub') ? `<p class="lead" data-visual-removable="hero-sub">${esc(subheadline)}</p>` : ''}
         <div class="hero-actions">
@@ -1625,9 +1646,9 @@ ${sectionOrder
     </div>
     ` : ''}
     ${stats.some((s, i) => !sc.hiddenElements?.includes(`stat-${i}`)) ? `
-    ${statsAreExample ? `<p style="text-align:center;margin:40px 0 -48px;font:700 11px/1.4 Inter,Arial,sans-serif;letter-spacing:.08em;color:#b45309;text-transform:uppercase">Números de exemplo: clique para colocar os seus. No site publicado eles ficam escondidos até você trocar.</p>` : ""}
+    ${statsHaveEmpty ? `<p class="site-missing-note">Opcional: clique em "Seu número" e coloque números reais da sua agência. O que ficar vazio não aparece no site.</p>` : ""}
     <div class="stats-bar">
-      ${stats.map((s, i) => !sc.hiddenElements?.includes(`stat-${i}`) ? `<div data-visual-removable="stat-${i}"><div class="stat-num">${esc(s.num)}</div><div class="stat-label">${esc(s.label)}</div></div>` : '').join("")}
+      ${stats.map((s, i) => !sc.hiddenElements?.includes(`stat-${i}`) ? `<div data-visual-removable="stat-${i}"><div class="stat-num">${esc(s.num.trim())}</div><div class="stat-label">${esc(s.label)}</div></div>` : '').join("")}
     </div>
     ` : ''}
   </div>
@@ -1661,7 +1682,7 @@ ${sectionOrder
           (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<article role="button" tabindex="0" onclick="openPackageDetails(${i}, this)" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openPackageDetails(${i},this)}" class="dest-card" data-package-index="${i}" data-package-id="${esc(String(p.id || i + 1))}" data-visual-removable="dest-card-${i}" aria-haspopup="dialog" aria-label="Ver detalhes de ${esc(p.title)}">
         <div class="dest-img-wrap">
           <img src="${esc(sanitizeImageUrl(p.imageUrl))}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
-          <span class="dest-tag">${esc(p.badge || p.title.split(" ")[0] || "Destino")}</span>
+          <span class="dest-tag">${esc(p.badge || destinationTag(p.title))}</span>
           <div class="dest-overlay" data-site-edit-key="packageOverlayLabel">${esc(sc.packageOverlayLabel || "Ver pacote →")}</div>
         </div>
         <div class="dest-body">
@@ -1687,7 +1708,7 @@ ${sectionOrder
         ${!sc.hiddenElements?.includes('equipe-badge') && equipeBadgeText ? `<span class="badge-counter" data-visual-removable="equipe-badge">${esc(equipeBadgeText)}</span>` : ''}
         ${!sc.hiddenElements?.includes('equipe-eyebrow') ? `<div class="eyebrow" data-visual-removable="equipe-eyebrow">${esc(sc.equipeEyebrow || "Nossa equipe")}</div>` : ''}
         ${!sc.hiddenElements?.includes('equipe-title') ? `<h2 data-visual-removable="equipe-title">${esc(sc.equipeTitle || "Uma equipe dedicada exclusivamente a você")}</h2>` : ''}
-        ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">${esc(sc.equipeIntro || "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">${esc(sc.equipeIntro || HONEST_DEFAULTS.equipeIntro)}</p>` : ''}
         <div class="equipe-features">
           ${(sc.equipeFeatures || []).map((feat, i) => !sc.hiddenElements?.includes(`equipe-feat-${i}`) ? `
           <div class="feat" data-visual-removable="equipe-feat-${i}"><div class="feat-icon">${esc(feat.icon)}</div><div><h4>${esc(feat.title)}</h4><p>${esc(feat.desc)}</p></div></div>
@@ -1736,12 +1757,12 @@ ${sectionOrder
       <div class="orc-info">
         ${!sc.hiddenElements?.includes('orcamento-eyebrow') ? `<span class="eyebrow" data-visual-removable="orcamento-eyebrow">${esc(sc.orcamentoEyebrow || "Orçamento")}</span>` : ''}
         ${!sc.hiddenElements?.includes('orcamento-title') ? `<h2 style="margin-top:12px" data-visual-removable="orcamento-title">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>` : ''}
-        ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>` : ''}
+        ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">${esc(sc.orcamentoText || HONEST_DEFAULTS.orcamentoText)}</p>` : ''}
         <div class="contact-list">
-          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon" data-site-edit-key="contactWhatsappIcon">${esc(sc.contactWhatsappIcon || "📱")}</div><div><strong data-site-edit-key="contactWhatsappLabel">${esc(sc.contactWhatsappLabel || "WhatsApp")}</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon" data-site-edit-key="contactEmailIcon">${esc(sc.contactEmailIcon || "✉️")}</div><div><strong data-site-edit-key="contactEmailLabel">${esc(sc.contactEmailLabel || "E-mail")}</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon" data-site-edit-key="contactHoursIcon">${esc(sc.contactHoursIcon || "⏰")}</div><div><strong data-site-edit-key="contactHoursLabel">${esc(sc.contactHoursLabel || "Atendimento")}</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
-          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon" data-site-edit-key="contactLocationIcon">${esc(sc.contactLocationIcon || "📍")}</div><div><strong data-site-edit-key="contactLocationLabel">${esc(sc.contactLocationLabel || "Localização")}</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-wpp") && (hasWhatsApp || options.preview) ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon" data-site-edit-key="contactWhatsappIcon">${esc(sc.contactWhatsappIcon || "📱")}</div><div><strong data-site-edit-key="contactWhatsappLabel">${esc(sc.contactWhatsappLabel || "WhatsApp")}</strong>${contactSpan(hasWhatsApp ? wppDisplay : "", "Clique e escreva seu WhatsApp")}</div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-email") && (agencyEmail || options.preview) ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon" data-site-edit-key="contactEmailIcon">${esc(sc.contactEmailIcon || "✉️")}</div><div><strong data-site-edit-key="contactEmailLabel">${esc(sc.contactEmailLabel || "E-mail")}</strong>${contactSpan(agencyEmail, "Clique e escreva seu e-mail (opcional)")}</div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-hours") && (contactHours || options.preview) ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon" data-site-edit-key="contactHoursIcon">${esc(sc.contactHoursIcon || "⏰")}</div><div><strong data-site-edit-key="contactHoursLabel">${esc(sc.contactHoursLabel || "Atendimento")}</strong>${contactSpan(contactHours, "Clique e escreva seu horário (opcional)")}</div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-location") && (contactLocation || options.preview) ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon" data-site-edit-key="contactLocationIcon">${esc(sc.contactLocationIcon || "📍")}</div><div><strong data-site-edit-key="contactLocationLabel">${esc(sc.contactLocationLabel || "Localização")}</strong>${contactSpan(contactLocation, "Clique e escreva sua cidade")}</div></div>` : ''}
         </div>
         ${socialIcons}
       </div>
@@ -1841,10 +1862,10 @@ ${state.address ? `
       <div>
         <h4 data-site-edit-key="footerContactTitle">${esc(sc.footerContactTitle || "Contato")}</h4>
         <ul>
-          <li data-site-contact="whatsapp">${esc(wppDisplay)}</li>
-          <li data-site-contact="email">${esc(agencyEmail)}</li>
-          <li data-site-contact="address">${esc(contactLocation)}</li>
-          <li data-site-edit-key="footerHoursLabel">${esc(sc.footerHoursLabel || "Seg–Sex 8h–20h")}</li>
+          ${hasWhatsApp ? `<li data-site-contact="whatsapp">${esc(wppDisplay)}</li>` : ""}
+          ${agencyEmail ? `<li data-site-contact="email">${esc(agencyEmail)}</li>` : ""}
+          ${contactLocation ? `<li data-site-contact="address">${esc(contactLocation)}</li>` : ""}
+          ${sc.footerHoursLabel?.trim() ? `<li data-site-edit-key="footerHoursLabel">${esc(sc.footerHoursLabel)}</li>` : ""}
         </ul>
       </div>
     </div>
@@ -1913,7 +1934,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
       </div>
       <div class="package-contact">
         <div><h3>Atendimento da agência</h3><p><strong id="package-agency">${esc(agencia)}</strong><br><span id="package-agency-location">${esc(contactLocation)}</span></p></div>
-        <div><h3>Fale com a gente</h3><p><span id="package-phone">${esc(wppDisplay)}</span><br><span id="package-email">${esc(agencyEmail)}</span></p></div>
+        <div><h3>Fale com a gente</h3><p><span id="package-phone">${hasWhatsApp ? esc(wppDisplay) : ""}</span><br><span id="package-email">${esc(agencyEmail)}</span></p></div>
       </div>
       <div class="package-faq" id="package-faq-section"><h3>Perguntas frequentes</h3><div id="package-faq-list"></div></div>
       <button type="button" class="btn package-reserve" onclick="reserveCurrentPackage()">Reservar este pacote</button>
@@ -2219,7 +2240,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     const selected = currentPackage;
     closePackageDetails(false);
     const quoteSection = document.getElementById("orcamento");
-    const destinationSelect = quoteSection && quoteSection.querySelector('select[name="destino"]');
+    const destinationSelect = quoteSection && quoteSection.querySelector('[name="destino"]');
     if (!quoteSection || !destinationSelect) {
       track("package_cta_unavailable", { target: selected.title, package_id: selected.id });
       return;
@@ -2450,7 +2471,11 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     });
     track("click_whatsapp", { target: payload.destino, lead_submitted: true });
     
-    const msg = encodeURIComponent('Olá! Quero um orçamento.\\n\\nNome: '+f.nome.value+'\\nWhatsApp: '+f.wpp.value+'\\nE-mail: '+f.email.value+'\\nDestino: '+f.destino.value+'\\nViajantes: '+f.viaj.value+'\\nIda: '+f.ida.value+'\\nVolta: '+f.volta.value+'\\nObs: '+f.obs.value);
+    // Só as linhas preenchidas vão na mensagem do WhatsApp (o envio ao CRM acima não muda).
+    const msgLines = [['Nome', f.nome.value], ['WhatsApp', f.wpp.value], ['E-mail', f.email.value], ['Destino', f.destino.value], ['Viajantes', f.viaj.value], ['Ida', f.ida.value], ['Volta', f.volta.value], ['Obs', f.obs.value]]
+      .filter(function (row) { return String(row[1] || '').trim(); })
+      .map(function (row) { return row[0] + ': ' + row[1]; });
+    const msg = encodeURIComponent('Olá! Quero um orçamento.\\n\\n' + msgLines.join('\\n'));
     
     btn.innerHTML = originalText;
     btn.disabled = false;
@@ -2566,7 +2591,7 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
 `<a href="${wppMsg(p.title)}" target="_blank" rel="noopener" class="dest-card">
   <div class="dest-img-wrap">
     <img src="${esc(sanitizeImageUrl(p.imageUrl))}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
-    <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
+    <span class="dest-tag">${esc(destinationTag(p.title))}</span>
     <div class="dest-overlay">Ver pacote →</div>
   </div>
   <div class="dest-body">

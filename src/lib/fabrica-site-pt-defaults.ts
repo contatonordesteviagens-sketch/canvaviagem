@@ -1,4 +1,5 @@
 import type { SiteContent } from "@/hooks/useFabricaContext";
+import { replaceLegacyClaim } from "@/lib/site-honest-content";
 
 // Translate only exact factory sample copy carried over from an ES draft.
 // Never run a general-purpose translation over a customer's own writing.
@@ -60,7 +61,7 @@ const ptDefaults: Record<string, string> = {
 };
 
 export const replacePortugueseSiteDefault = (value: string | undefined) =>
-  value ? ptDefaults[value] || value : value;
+  value ? replaceLegacyClaim(ptDefaults[value] || value) : value;
 
 const replaceDefault = replacePortugueseSiteDefault;
 

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useId } from "react";
+import { HONEST_DEFAULTS, LEGACY_HERO_EYEBROW, resolveSiteStats } from "@/lib/site-honest-content";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { useFabricaContext, type AgencyType, type Pacote, type Depoimento, type SocialLink, type SocialType } from "@/hooks/useFabricaContext";
@@ -786,12 +787,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               const allStats = Array.from(doc.querySelectorAll(".stats-bar > div"));
               const idx = allStats.indexOf(statDiv as Element);
               if (idx !== -1) {
-                const stats = (state.siteContent.stats || [
-                  { num: "12+", label: "Anos de Experiência" },
-                  { num: "15k+", label: "Viajantes Felizes" },
-                  { num: "25", label: "Países Atendidos" },
-                  { num: "99%", label: "Satisfação" }
-                ]).map(s => ({ ...s }));
+                const stats = resolveSiteStats(state.siteContent.stats);
                 if (!stats[idx]) stats[idx] = { num: "", label: "" };
                 if (el.classList.contains("stat-num")) stats[idx].num = textVal;
                 else if (el.classList.contains("stat-label")) stats[idx].label = textVal;
@@ -993,14 +989,17 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     const isCorp = type === "corporativa";
     const isLuxo = type === "luxo";
 
-    if (!state.siteContent.heroEyebrow || state.siteContent.heroEyebrow === "Consultoria Premium de Viagens") {
-      let eyebrow = "Consultoria Premium de Viagens";
+    // Sem tipo especial, o topo fica vazio e o site usa o texto do tipo de agência (heroDefaultsFor).
+    if (!state.siteContent.heroEyebrow || state.siteContent.heroEyebrow === LEGACY_HERO_EYEBROW) {
+      let eyebrow = "";
       if (isAutonoma) eyebrow = "Agente de Viagens Especialista";
       if (isCorp) eyebrow = "Gestão de Viagens Corporativas";
       if (isLuxo) eyebrow = "Viagens de Luxo Sob Medida";
       if (state.niche === "cruzeiro") eyebrow = "Especialista em Cruzeiros";
-      patches["siteContent.heroEyebrow"] = eyebrow;
-      synced.push("Identidade do Nicho/Agência");
+      if (eyebrow) {
+        patches["siteContent.heroEyebrow"] = eyebrow;
+        synced.push("Identidade do Nicho/Agência");
+      }
     }
 
     if (!state.siteContent.equipeEyebrow || state.siteContent.equipeEyebrow === "Nossa equipe") {
@@ -1017,10 +1016,10 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
     if (!state.siteContent.equipeIntro || state.siteContent.equipeIntro.startsWith("Cada viagem começa com uma conversa")) {
       patches["siteContent.equipeIntro"] = isAutonoma
-        ? "Meu foco é planejar cada detalhe da sua viagem. Conheço os destinos de perto e cuido de tudo para o seu perfil e momento."
+        ? "Meu foco é planejar cada detalhe da sua viagem, pensando no seu perfil e no seu momento."
         : isCorp
-        ? "Ajudamos sua empresa a economizar e ter total segurança nas viagens de negócios. Atendimento rápido e eficiente."
-        : "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.";
+        ? "Organizamos as viagens de negócios da sua empresa: passagens, hospedagem e ajustes de agenda, com atendimento direto."
+        : HONEST_DEFAULTS.equipeIntro;
     }
 
     if (!state.siteContent.processoTitle || state.siteContent.processoTitle === "Sua viagem dos sonhos em 3 passos") {

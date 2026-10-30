@@ -19,7 +19,10 @@ export function improvePublishedPortugueseSite(html: string, locale: string | nu
     if (element.children.length) continue;
     const text = element.textContent;
     const translated = replacePortugueseSiteDefault(text || "");
-    if (translated !== text) element.textContent = translated || "";
+    if (translated === text) continue;
+    // Texto de fábrica com número ou promessa que não tem versão neutra (selo "+15k", horário de exemplo): some.
+    if (!translated) element.closest(".badge-counter, .contact-item, li")?.remove();
+    else element.textContent = translated;
   }
 
   const teamEyebrow = doc.querySelector<HTMLElement>('#por-que .eyebrow[style="color:#fff;opacity:.6"]');

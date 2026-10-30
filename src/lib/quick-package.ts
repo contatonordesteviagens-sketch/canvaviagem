@@ -17,9 +17,21 @@ export interface QuickPackageParse {
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+// Quem dita por áudio ou digita rápido não usa vírgula ("Porto de Galinhas 5 dias aéreo + hotel
+// 10x R$ 450,00 saindo de Recife"). Antes de separar, põe uma vírgula antes/depois das partes que
+// sabemos reconhecer: duração, parcelas, preço e cidade de saída.
+function segmentSentence(text: string): string {
+  return text
+    .replace(/(?<!\b\d{1,2}\s*x)\s+(?=(?:R\$|US\$|€)\s*\d)/gi, ", ")
+    .replace(/\s+(?=\d{1,2}\s*x\b)/gi, ", ")
+    .replace(/\s+(?=\d{1,3}\s*(?:dias?|noites?|di[aá]rias?)\b)/gi, ", ")
+    .replace(/(\b\d{1,3}\s*(?:dias?|noites?|di[aá]rias?)\b)\s+(?![,;|+])/gi, "$1, ")
+    .replace(/\s+(?=(?:sa[ií](?:ndo|da)|saliendo|salida)\s+(?:de|desde)\b)/gi, ", ");
+}
+
 export function parseQuickPackage(text: string): QuickPackageParse {
   // Protege a vírgula decimal ("1.299,00") para ela não virar separador de campo.
-  const protectedText = text.replace(/(\d),(\d{2})\b/g, "$1⁣$2");
+  const protectedText = segmentSentence(text).replace(/(\d),(\d{2})\b/g, "$1⁣$2");
   const parts = protectedText
     .split(/[,;|]+|\s+e\s+(?=\d)/)
     .map((p) => p.replace(/⁣/g, ",").trim())
@@ -63,7 +75,7 @@ function splitIncluded(part: string): string[] {
   return part
     .split(/\s*\+\s*|\s+[ey]\s+(?=[a-záéíóúçñ])/i)
     .map((x) => x.replace(/^(com|con|incluindo|incluyendo|incluso|incluye)\s+/i, "").trim())
-    .filter((x) => x.length > 1);
+    .filter((x) => x.length > 1 && !/^(a partir de|desde|por|por apenas|apenas|em até|em|e|y|sem juros)$/i.test(x));
 }
 
 export function buildQuickPackage(text: string, existing: Pacote[], isEs = false): Pacote | null {
