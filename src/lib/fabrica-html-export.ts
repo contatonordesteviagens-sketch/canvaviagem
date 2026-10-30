@@ -201,6 +201,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string, optio
   const wpp = rawWpp ? (rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`) : "";
   const sc = normalizePortugueseSiteDefaults(state.siteContent);
   const templateId = normalizeSiteTemplateId(sc.templateId);
+  const isRoteiros = templateId === "roteiros";
   const sectionBackgroundAttr = (key: string) => {
     const value = sc.sectionColors?.[key];
     const safeValue = value && /^#[0-9a-f]{6}$/i.test(value) ? value : "";
@@ -1115,6 +1116,10 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
     ? state.sectionOrder
     : ["hero", "processo", "destinos", "porQue", "depoimentos", "orcamento", "faq", "finalCta"]
   ).map((key) => key === "ctaFinal" ? "finalCta" : key);
+  if (isRoteiros && sectionOrder.includes("destinos") && sectionOrder.includes("hero")) {
+    sectionOrder.splice(sectionOrder.indexOf("destinos"), 1);
+    sectionOrder.splice(sectionOrder.indexOf("hero") + 1, 0, "destinos");
+  }
   if (!sectionOrder.includes("finalCta")) sectionOrder.push("finalCta");
 
   const wppMsg = (titulo: string) =>
@@ -1203,6 +1208,23 @@ body.template-horizonte .foot-brand{font-family:'Bricolage Grotesque',sans-serif
     sc.aboutImageUrl,
     "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80",
   );
+
+  // Botão do topo que diz "WhatsApp" abre o WhatsApp (antes levava ao formulário).
+  const heroCtaOpensWhatsApp = Boolean(wpp) && /whats/i.test(sc.heroCtaLabel || "");
+  // Modelo Roteiros: linha "Saindo de X · 5 dias", datas e filtros por destino.
+  const calendarSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`;
+  const packageKickerHtml = (p: Partial<FabricaState["selectedPackages"][number]>) => {
+    const parts = [p.departureLocation ? `Saindo de ${p.departureLocation}` : "", p.duration || ""].filter(Boolean);
+    return parts.length ? `<div class="dest-kicker">${esc(parts.join(" · "))}</div>` : "";
+  };
+  const packageMetaHtml = (p: Partial<FabricaState["selectedPackages"][number]>) =>
+    p.travelDates ? `<div class="dest-meta">${calendarSvg}<span>${esc(p.travelDates)}</span></div>` : "";
+  const filterDestinations = Array.from(new Set(
+    pacotes.filter((_p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`)).map((p) => destinationTag(p.title)),
+  ));
+  const packageFilterHtml = isRoteiros && visiblePackageCount >= 3 && filterDestinations.length >= 2
+    ? `<div class="pkg-filter" role="group" aria-label="Filtrar pacotes por destino"><button type="button" aria-pressed="true" data-dest="" onclick="filterPackages(this)">Todos</button>${filterDestinations.slice(0, 8).map((d) => `<button type="button" aria-pressed="false" data-dest="${esc(d)}" onclick="filterPackages(this)">${esc(d)}</button>`).join("")}</div>`
+    : "";
 
   // Formulário curto: 3 campos à vista. Os outros ficam em "Mais detalhes" com os MESMOS nomes,
   // então o envio ao CRM (nome, wpp, email, destino, viaj, ida, volta, obs) continua idêntico.
@@ -1639,7 +1661,7 @@ ${sectionOrder
         ${!sc.hiddenElements?.includes('hero-headline') ? `<h1 data-visual-removable="hero-headline">${esc(headline)}</h1>` : ''}
         ${!sc.hiddenElements?.includes('hero-sub') ? `<p class="lead" data-visual-removable="hero-sub">${esc(subheadline)}</p>` : ''}
         <div class="hero-actions">
-          ${!sc.hiddenElements?.includes('hero-cta-1') ? `<a href="#orcamento" class="btn" data-visual-removable="hero-cta-1">${esc(sc.heroCtaLabel || "Solicitar Meu Roteiro")}</a>` : ''}
+          ${!sc.hiddenElements?.includes('hero-cta-1') ? `<a href="#orcamento" class="btn" data-visual-removable="hero-cta-1"${heroCtaOpensWhatsApp ? ` onclick="openLeadForm('Topo do site', 'https://wa.me/${wpp}');return false;"` : ""}>${esc(sc.heroCtaLabel || "Solicitar Meu Roteiro")}</a>` : ''}
           ${!sc.hiddenElements?.includes('hero-cta-2') ? `<a href="#destinos" class="btn btn-outline" data-visual-removable="hero-cta-2">${esc(sc.heroSecondaryCtaLabel || "Ver Destinos")}</a>` : ''}
         </div>
       </div>
@@ -1676,20 +1698,23 @@ ${sectionOrder
   <div class="container">
     <div class="section-eyebrow eyebrow">${esc(sc.destinosEyebrow || "Destinos")}</div>
     <h2 class="section-title">${esc(sc.pacotesTitle || "Experiências que ficam na memória")}</h2>
+    ${packageFilterHtml}
     <div class="destinos-grid" data-package-count="${visiblePackageCount}">
       ${pacotes.length ? pacotes
         .map(
-          (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<article role="button" tabindex="0" onclick="openPackageDetails(${i}, this)" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openPackageDetails(${i},this)}" class="dest-card" data-package-index="${i}" data-package-id="${esc(String(p.id || i + 1))}" data-visual-removable="dest-card-${i}" aria-haspopup="dialog" aria-label="Ver detalhes de ${esc(p.title)}">
+          (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<article role="button" tabindex="0" onclick="openPackageDetails(${i}, this)" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openPackageDetails(${i},this)}" class="dest-card" data-dest="${esc(destinationTag(p.title))}" data-package-index="${i}" data-package-id="${esc(String(p.id || i + 1))}" data-visual-removable="dest-card-${i}" aria-haspopup="dialog" aria-label="Ver detalhes de ${esc(p.title)}">
         <div class="dest-img-wrap">
           <img src="${esc(sanitizeImageUrl(p.imageUrl))}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.badge || destinationTag(p.title))}</span>
           <div class="dest-overlay" data-site-edit-key="packageOverlayLabel">${esc(sc.packageOverlayLabel || "Ver pacote →")}</div>
         </div>
         <div class="dest-body">
+          ${isRoteiros ? packageKickerHtml(p) : ""}
           <h3>${esc(p.title)}</h3>
           <p>${esc(p.description)}</p>
+          ${isRoteiros ? packageMetaHtml(p) : ""}
           <div class="dest-price">${parsePriceHTML(p.price)}</div>
-          <span class="dest-cta">${esc(p.ctaLabel || "Saiba mais →")}</span>
+          ${isRoteiros ? `<div class="dest-actions"><span class="dest-cta">${esc(sc.packageOverlayLabel && sc.packageOverlayLabel !== "Ver pacote →" ? sc.packageOverlayLabel : "Ver roteiro")}</span>${wpp ? `<a class="dest-reserve" href="${esc(wppMsg(p.title))}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Reservar</a>` : ""}</div>` : `<span class="dest-cta">${esc(p.ctaLabel || "Saiba mais →")}</span>`}
         </div>
       </article>` : ''
         )
@@ -2548,6 +2573,8 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
   ${seasonalScripts}
 </script>
 
+${isRoteiros && wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a class="wa-bar" href="#" onclick="openLeadForm('WhatsApp', 'https://wa.me/${wpp}');return false;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3a.5.5 0 0 0 0-.4l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>Falar no WhatsApp</a>` : ""}
+${isRoteiros ? `<script>function filterPackages(btn){var d=btn.getAttribute("data-dest")||"";document.querySelectorAll("#destinos .dest-card").forEach(function(c){c.hidden=!!d&&c.getAttribute("data-dest")!==d;});document.querySelectorAll(".pkg-filter button").forEach(function(b){b.setAttribute("aria-pressed",b===btn?"true":"false");});}</script>` : ""}
 </body>
 </html>`;
 }

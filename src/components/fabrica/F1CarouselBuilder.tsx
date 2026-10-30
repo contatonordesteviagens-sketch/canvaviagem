@@ -5592,9 +5592,10 @@ export function F1CarouselBuilder({
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,1fr)]">
           <div className="space-y-3">
             <div>
-              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+              <label className="block text-xs font-bold text-white/75">
                 {isEs ? "Paquete seleccionado" : "Pacote selecionado"}
               </label>
+              <p className="mb-1.5 mt-0.5 text-xs leading-snug text-white/50">{isEs ? "El carrusel usa la foto, el precio y lo incluido en este paquete." : "O carrossel usa a foto, o preço e o que está incluso neste pacote."}</p>
               <select
                 value={selectedPackage.id}
                 onChange={(event) => {
@@ -5651,9 +5652,10 @@ export function F1CarouselBuilder({
 
           <div>
             <fieldset>
-              <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+              <legend className="text-xs font-bold text-white/75">
                 {isEs ? "Total de imágenes" : "Total de imagens"}
               </legend>
+              <p className="mt-0.5 text-xs leading-snug text-white/50">{isEs ? "Cuántas imágenes tendrá el post. Con 5 o 6 cuentas más del viaje." : "Quantas imagens o post terá. Com 5 ou 6 dá para contar mais da viagem."}</p>
               <div className="mt-1.5 grid grid-cols-4 gap-2">
                 {([3, 4, 5, 6] as CarouselSize[]).map((count) => (
                   <button
@@ -5673,9 +5675,10 @@ export function F1CarouselBuilder({
               </div>
             </fieldset>
             <fieldset className="mt-3">
-              <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+              <legend className="text-xs font-bold text-white/75">
                 {isEs ? "Formato de salida" : "Formato de saída"}
               </legend>
+              <p className="mt-0.5 text-xs leading-snug text-white/50">{isEs ? "Feed: post que queda en el perfil. Stories: pantalla completa, desaparece en 24 horas." : "Feed: post que fica no perfil. Stories: tela cheia, some em 24 horas."}</p>
               <div className="mt-1.5 grid grid-cols-2 gap-2">
                 {([
                   ["feed", Square, "Feed 4:5", "1080 × 1350"],
@@ -5709,10 +5712,11 @@ export function F1CarouselBuilder({
             </div>
 
             <fieldset className="min-w-0 lg:col-span-2">
-              <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+              <legend className="text-xs font-bold text-white/75">
                 {isEs ? "Formato del carrusel" : "Formato do carrossel"}
               </legend>
-              <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
+              <p className="mt-0.5 text-xs leading-snug text-white/50">{isEs ? "Es el estilo de las diapositivas. Toca uno y míralo en la vista previa; puedes cambiarlo cuando quieras." : "É o visual dos slides. Toque em um e veja na prévia; dá para trocar quando quiser."}</p>
+              <div className="mt-1.5 grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
                 {([
                   ["pro-bold", "Neon", isEs ? "Oscuro, brillo y chips" : "Escuro, brilho e chips"],
                   ["pro-split", "Oferta", isEs ? "Tarjeta con precio y aleta de avión" : "Cartão com preço e aba de avião"],
@@ -5740,16 +5744,16 @@ export function F1CarouselBuilder({
                       aria-label={`${labelText}: ${description}`}
                       title={description}
                       onClick={() => applyCarouselStrategy(variant)}
-                      className={`min-h-9 min-w-0 rounded-lg border px-2 py-2 text-center transition-colors ${
+                      className={`min-h-11 min-w-0 rounded-lg border px-2 py-2 text-center transition-colors ${
                         isActiveVariant
                           ? "border-[#F5F906] bg-[#F5F906]/10"
                           : "border-white/10 bg-transparent hover:border-white/20 hover:bg-white/[0.03]"
                       }`}
                     >
-                      <span className={`block text-[10px] font-extrabold ${isActiveVariant ? "text-[#F5F906]" : "text-white/75"}`}>
+                      <span className={`block text-xs font-extrabold ${isActiveVariant ? "text-[#F5F906]" : "text-white/80"}`}>
                         {labelText}
                       </span>
-                      <span className="block truncate text-[9px] font-medium text-white/40">{description}</span>
+                      <span className="block text-[11px] font-medium leading-snug text-white/50">{description}</span>
                     </button>
                   );
                 })}

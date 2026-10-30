@@ -1,4 +1,5 @@
 export const SITE_TEMPLATE_IDS = [
+  "roteiros",
   "standard",
   "horizonte",
   "ofertas",
@@ -23,6 +24,21 @@ export interface SiteTemplateDefinition {
 }
 
 export const SITE_TEMPLATE_CATALOG: readonly SiteTemplateDefinition[] = [
+  {
+    id: "roteiros",
+    copy: {
+      pt: {
+        label: "Roteiros",
+        audience: "Recomendado",
+        summary: "Pacotes logo no início, com datas, preço e botão de WhatsApp fixo no celular.",
+      },
+      es: {
+        label: "Rutas",
+        audience: "Recomendado",
+        summary: "Paquetes al inicio, con fechas, precio y botón de WhatsApp fijo en el celular.",
+      },
+    },
+  },
   {
     id: "standard",
     copy: {

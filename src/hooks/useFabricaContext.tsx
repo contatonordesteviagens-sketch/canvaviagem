@@ -377,7 +377,7 @@ const defaultStateBR: FabricaState = {
     finalCtaLabel: "Chamar no WhatsApp",
     faq: HONEST_DEFAULTS.faq.map((item) => ({ ...item })),
     heroImageUrl: "",
-    templateId: "standard",
+    templateId: "roteiros",
     sectionColors: {},
     galleryImages: [],
     vercelUrl: "",

@@ -4,7 +4,7 @@ import { replacePortugueseSiteDefault } from "@/lib/fabrica-site-pt-defaults";
 export function improvePublishedPortugueseSite(html: string, locale: string | null): string {
   if (locale !== "pt-BR" || !html.includes('lang="pt-BR"')) return html;
   const doc = new DOMParser().parseFromString(html, "text/html");
-  if (!doc.body.matches(".template-standard, .template-horizonte, .template-ofertas, .template-experiencias, .template-expedicoes, .template-excursoes")) return html;
+  if (!doc.body.matches(".template-roteiros, .template-standard, .template-horizonte, .template-ofertas, .template-experiencias, .template-expedicoes, .template-excursoes")) return html;
 
   const selectors = [
     ".hero .eyebrow", ".hero .hero-actions .btn", ".stats-bar .stat-label",

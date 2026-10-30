@@ -435,6 +435,22 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
         </div>
       )}
 
+      {/* Guia rápido para quem nunca usou um CRM */}
+      <details className="group rounded-2xl border border-white/10 bg-white/[0.03] [&::-webkit-details-marker]:hidden">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
+          <span>
+            <span className="block text-[15px] font-bold text-white">Como os clientes chegam aqui</span>
+            <span className="block text-[13px] text-white/55">Entenda em 3 passos (toque para abrir)</span>
+          </span>
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/15 text-white/70 group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <ol className="space-y-3 px-4 pb-4 text-sm text-white/75">
+          <li className="flex gap-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-xs font-black text-zinc-950">1</span><span><strong className="text-white">Publique o site e divulgue o link</strong> na bio do Instagram, no status e nos grupos de WhatsApp.</span></li>
+          <li className="flex gap-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-xs font-black text-zinc-950">2</span><span><strong className="text-white">O cliente pede orçamento</strong> no formulário do site (nome, WhatsApp e destino).</span></li>
+          <li className="flex gap-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-xs font-black text-zinc-950">3</span><span><strong className="text-white">O contato aparece na lista abaixo.</strong> Chame no WhatsApp e mude a fase conforme a conversa avança.</span></li>
+        </ol>
+      </details>
+
       {/* MÉTRICAS — MINIMALISTAS */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
@@ -443,7 +459,8 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
               ? <Loader2 className="w-5 h-5 animate-spin text-white/30" />
               : metricsAvailable ? stats.visits : "—"}
           </div>
-          <div className="text-[11px] text-white/35 font-medium">Visitas</div>
+          <div className="text-xs text-white/60 font-semibold">Visitas</div>
+          <div className="text-[11px] leading-snug text-white/40">Pessoas que abriram seu site</div>
           {metricsAvailable && stats.avgTime > 0 && <div className="text-[10px] text-white/25 mt-1">{stats.avgTime}s médio</div>}
         </div>
         <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
@@ -452,13 +469,15 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
               ? <Loader2 className="w-5 h-5 animate-spin text-white/30" />
               : metricsAvailable ? stats.clicks : "—"}
           </div>
-          <div className="text-[11px] text-white/35 font-medium">Cliques WhatsApp</div>
+          <div className="text-xs text-white/60 font-semibold">Cliques WhatsApp</div>
+          <div className="text-[11px] leading-snug text-white/40">Quem tocou no botão de WhatsApp</div>
         </div>
         <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
           <div className="text-2xl font-black text-white mb-1">
             {loading ? <Loader2 className="w-5 h-5 animate-spin text-white/30" /> : stats.leads}
           </div>
-          <div className="text-[11px] text-white/35 font-medium">Leads do projeto</div>
+          <div className="text-xs text-white/60 font-semibold">Leads do projeto</div>
+          <div className="text-[11px] leading-snug text-white/40">Quem pediu orçamento pelo formulário</div>
         </div>
         <div className="border border-white/8 rounded-2xl p-4 bg-transparent">
           <div className="text-2xl font-black text-white mb-1">
@@ -466,7 +485,8 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
               ? <Loader2 className="w-5 h-5 animate-spin text-white/30" />
               : conversionRate === null ? "—" : `${conversionRate}%`}
           </div>
-          <div className="text-[11px] text-white/35 font-medium">Taxa de conversão</div>
+          <div className="text-xs text-white/60 font-semibold">Taxa de conversão</div>
+          <div className="text-[11px] leading-snug text-white/40">De cada 100 visitas, quantas viraram lead</div>
           {!loading && conversionRate === null && (
             <div className="text-[10px] text-amber-300/60 mt-1">
               {metricsAvailable ? "Histórico de visitas incompleto" : "Métricas indisponíveis"}

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useId } from "react";
+import { SiteProgress, type SiteProgressTarget } from "@/components/fabrica/SiteProgress";
 import { HONEST_DEFAULTS, LEGACY_HERO_EYEBROW, resolveSiteStats } from "@/lib/site-honest-content";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
@@ -1217,6 +1218,20 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   }, [previewHTML, removeMode]);
 
   // No celular a prévia "Computador" não cabe: começa em "Celular".
+  // Leva a pessoa ao lugar certo da tela (checklist e barra fixa do celular) e abre a sanfona.
+  const goToSiteArea = (target: SiteProgressTarget | "preview" | "edit") => {
+    const el = target === "publish" ? document.getElementById("site-publish-area")
+      : target === "preview" ? document.getElementById("site-preview-area")
+      : target === "edit" ? document.getElementById("site-edit-area")
+      : document.querySelector<HTMLElement>(`[data-fabrica-card="${target}"]`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (el.hasAttribute("data-fabrica-card")) {
+      const trigger = el.querySelector<HTMLButtonElement>('button[aria-expanded="false"]');
+      trigger?.click();
+    }
+  };
+
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">(() => (typeof window !== "undefined" && window.innerWidth < 640 ? "mobile" : "desktop"));
 
   // Shortcut Shift+Ctrl+P to toggle Mobile Mode
@@ -1236,7 +1251,13 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   }, []);
 
   return (
-    <div className="max-w-3xl lg:max-w-[1550px] mx-auto transition-all duration-300">
+    <div className="max-w-3xl lg:max-w-[1550px] mx-auto transition-all duration-300 pb-24 md:pb-0">
+      {/* Barra fixa no celular: os três lugares que importam, a um toque */}
+      <nav aria-label="Atalhos do site" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 gap-2 border-t border-white/10 bg-zinc-950/95 px-3 pb-[max(10px,env(safe-area-inset-bottom))] pt-2.5 backdrop-blur md:hidden">
+        <button type="button" onClick={() => goToSiteArea("preview")} className="min-h-12 rounded-xl border border-white/15 text-sm font-semibold text-white">👁️ Ver site</button>
+        <button type="button" onClick={() => goToSiteArea("edit")} className="min-h-12 rounded-xl border border-white/15 text-sm font-semibold text-white">✏️ Editar</button>
+        <button type="button" onClick={() => goToSiteArea("publish")} className="min-h-12 rounded-xl bg-[#F5F906] text-sm font-bold text-zinc-950">🚀 Publicar</button>
+      </nav>
       <ProjectSwitchDialog
         open={Boolean(pendingProjectSwitch)}
         currentName={state.agencyName || "Sem nome"}
@@ -1320,6 +1341,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         </div>
       </details>
 
+      <SiteProgress onGo={goToSiteArea} />
+
       <SiteTemplateSelector
         selected={state.siteContent.templateId}
         onSelect={(templateId) => {
@@ -1383,9 +1406,11 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         {/* Painel Esquerdo: Opções de Configuração (5 colunas em lg) */}
         <div className="w-full space-y-6">
           {/* Publicação oficial do site (movida para o topo) */}
-          <PublishSiteCard html={previewHTML} onBack={onBack} onNext={onNext} />
+          <div id="site-publish-area" className="scroll-mt-4">
+            <PublishSiteCard html={previewHTML} onBack={onBack} onNext={onNext} />
+          </div>
 
-          <div className="border-b border-white/10 pb-4 pt-6">
+          <div id="site-edit-area" className="border-b border-white/10 pb-4 pt-6 scroll-mt-4">
             <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Palette className="w-5 h-5 text-amber-400" />
               Editar mais detalhes do site (opcional)
@@ -1401,7 +1426,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </div>
 
-            <FabricaCard title="📦 Pacotes oferecidos" sectionId="packages" defaultOpen>
+            <FabricaCard title="📦 Pacotes oferecidos" hint="Os cartões de viagem do site: foto, preço e botão de reserva." sectionId="packages" defaultOpen>
               <FieldText
                 label="Título da seção"
                 value={state.siteContent.pacotesTitle}
@@ -1433,7 +1458,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-            <FabricaCard title="✏️ Topo do site (Hero)">
+            <FabricaCard title="✏️ Topo do site" hint="A primeira coisa que o cliente vê: título, frase e botões.">
               <div className="space-y-3">
                 <FieldText
                   label="Título principal"
@@ -1456,7 +1481,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-            <FabricaCard title="⭐ Depoimentos">
+            <FabricaCard title="⭐ Depoimentos" hint="Frases reais de clientes. Se ficar vazio, a parte some do site.">
               <FieldText
                 label="Título da seção"
                 value={state.siteContent.depoimentosTitle}
@@ -1497,7 +1522,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-            <FabricaCard title="❓ Perguntas Frequentes (FAQ)">
+            <FabricaCard title="❓ Perguntas frequentes" hint="Respostas para as dúvidas que o cliente mais manda no WhatsApp.">
               <FieldText
                 label="Título da seção"
                 value={state.siteContent.faqTitle}
@@ -1546,7 +1571,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-            <FabricaCard title="🎯 CTA Final">
+            <FabricaCard title="🎯 Chamada final" hint="O último convite do site, antes do rodapé, com botão de WhatsApp.">
               <div className="space-y-3">
                 <FieldText
                   label="Título"
@@ -1569,7 +1594,32 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </div>
 
-            <FabricaCard title="📍 Endereço e Mapa">
+            <FabricaCard
+              sectionId="agency"
+              title="📞 Dados da agência"
+              hint="Nome e WhatsApp aparecem no topo, nos botões e no rodapé do site."
+              defaultOpen={!state.agencyName?.trim() || !state.whatsapp}
+            >
+              <div className="space-y-3">
+                <FieldText label="Nome da agência" value={state.agencyName || ""} onChange={(v) => update({ agencyName: v })} placeholder="Ex.: Mar Azul Viagens" />
+                <FieldText
+                  label="WhatsApp com DDD"
+                  value={state.whatsapp || ""}
+                  inputMode="tel"
+                  onChange={(v) => {
+                    const digits = v.replace(/\D/g, "");
+                    const dial = (state.whatsappDialCode || "55").replace(/\D/g, "");
+                    update({ whatsapp: digits.length > 11 && digits.startsWith(dial) ? digits.slice(dial.length) : digits });
+                  }}
+                  placeholder="Ex.: 81 99999-0000"
+                />
+                <p className="text-xs leading-relaxed text-white/50">Os botões "Falar no WhatsApp" e "Reservar" do site abrem uma conversa com este número.</p>
+                <FieldText label="E-mail (opcional)" value={state.agencyEmail || ""} inputMode="email" onChange={(v) => update({ agencyEmail: v.trim() })} placeholder="Ex.: contato@suaagencia.com.br" />
+                <FieldText label="Cidade (opcional)" value={state.city || ""} onChange={(v) => update({ city: v })} placeholder="Ex.: Recife" />
+              </div>
+            </FabricaCard>
+
+            <FabricaCard title="📍 Endereço e Mapa" hint="Onde fica a agência. Deixe vazio se você atende só online.">
               <div className="space-y-3">
                 <FieldText
                   label="Endereço da Agência"
@@ -1581,7 +1631,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-            <FabricaCard title="🌐 Redes Sociais e Canais">
+            <FabricaCard title="🌐 Redes Sociais e Canais" hint="Instagram, Facebook e outros links. Aparecem no contato e no rodapé.">
               <div className="space-y-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {SOCIAL_OPTIONS.map((option) => (
@@ -1649,7 +1699,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </div>
 
-            <FabricaCard title="Paleta da marca">
+            <FabricaCard sectionId="palette" title="Paleta da marca" hint="As cores do site. Use as mesmas da sua logo.">
               <BrandPaletteEditor
                 primaryColor={state.primaryColor}
                 secondaryColor={state.secondaryColor}
@@ -1658,7 +1708,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               />
             </FabricaCard>
 
-            <FabricaCard title="🖼️ Banco de imagens">
+            <FabricaCard title="🖼️ Banco de imagens" hint="Troque as fotos do topo e da equipe por fotos suas ou do banco.">
               <p className="text-xs text-white/50 mb-3">
                 Salve aqui as imagens que você gerou na Fase 3 ou cole links externos. Elas ficam disponíveis no seletor de fotos da prévia.
               </p>
@@ -1670,7 +1720,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               />
             </FabricaCard>
 
-            <FabricaCard title="👁️ Seções do site">
+            <FabricaCard title="👁️ Seções do site" hint="Ligue ou desligue partes do site, como depoimentos ou perguntas.">
 
               <div className="flex flex-col gap-2">
                 {(() => {
@@ -1785,7 +1835,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-            <FabricaCard title="✨ Efeitos Visuais & Campanhas">
+            <FabricaCard title="✨ Efeitos Visuais & Campanhas" hint="Animações e faixas de campanha. Opcional.">
 
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1865,7 +1915,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </div>
 
-            <FabricaCard title="📊 Pixel do Facebook e Google (para quem faz anúncio pago)">
+            <FabricaCard title="📊 Pixel do Facebook e Google" hint="Só para quem faz anúncio pago: mede quem visitou o site.">
               <div className="space-y-4">
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1969,7 +2019,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </div>
 
-            <div className="p-4 bg-zinc-950/40 relative">
+            <div id="site-preview-area" className="p-4 bg-zinc-950/40 relative scroll-mt-4">
               <div className="mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center text-xs text-amber-300 font-semibold flex items-center justify-center gap-2">
                 <Pencil className="w-4 h-4 text-amber-400" />
                 💡 <strong>Clique em textos, ícones, fotos ou fundos para editar.</strong> Em botões, use duplo clique para abrir as cores da marca.
@@ -2246,21 +2296,24 @@ const FieldText = ({
   value,
   onChange,
   placeholder,
+  inputMode,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 }) => (
   <label className="block">
-    <span className="text-[11px] font-bold text-white/50 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+    <span className="text-xs font-bold text-white/60 mb-1.5 flex items-center gap-1.5">
       <Pencil className="w-3 h-3" /> {label}
     </span>
     <input
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
+      inputMode={inputMode}
+      className="w-full min-h-11 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-base sm:text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
     />
   </label>
 );
@@ -2277,7 +2330,7 @@ const FieldTextarea = ({
   placeholder?: string;
 }) => (
   <label className="block">
-    <span className="text-[11px] font-bold text-white/50 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+    <span className="text-xs font-bold text-white/60 mb-1.5 flex items-center gap-1.5">
       <Pencil className="w-3 h-3" /> {label}
     </span>
     <textarea
@@ -2285,7 +2338,7 @@ const FieldTextarea = ({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       rows={2}
-      className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
+      className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-base sm:text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
     />
   </label>
 );
@@ -3233,11 +3286,14 @@ O link antigo vai parar de funcionar para quem já recebeu. Quer continuar?`,
 };
 const FabricaCard = ({
   title,
+  hint,
   children,
   sectionId,
   defaultOpen = false,
 }: {
   title: string;
+  /** Uma frase dizendo para que serve esta parte (para quem não entende de site). */
+  hint?: string;
   children: React.ReactNode;
   sectionId?: string;
   defaultOpen?: boolean;
@@ -3264,9 +3320,10 @@ const FabricaCard = ({
         aria-controls={contentId}
         className="w-full flex items-center justify-between p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-300/70 select-none group"
       >
+        <span className="min-w-0">
         <h3
-          className="text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2"
-          style={{ color: isOpen ? UI_ACCENT : "rgba(255, 255, 255, 0.6)" }}
+          className="text-[15px] font-bold transition-all duration-300 flex items-center gap-2"
+          style={{ color: isOpen ? UI_ACCENT : "rgba(255, 255, 255, 0.92)" }}
         >
           {isOpen && (
             <span
@@ -3276,8 +3333,10 @@ const FabricaCard = ({
           )}
           {title}
         </h3>
+        {hint && <span className="mt-1 block text-[13px] font-normal leading-snug text-white/55">{hint}</span>}
+        </span>
         <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 text-sm font-black"
+          className="w-11 h-11 shrink-0 rounded-lg flex items-center justify-center border transition-all duration-300 text-sm font-black"
           style={{
             borderColor: isOpen ? UI_ACCENT_BORDER : "rgba(255, 255, 255, 0.15)",
             backgroundColor: isOpen ? UI_ACCENT_SOFT : "transparent",

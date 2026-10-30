@@ -21,13 +21,13 @@ const copy = {
   pt: {
     title: "Escolha o modelo do site",
     support: "Troque o visual sem perder textos, imagens ou as cores da sua agência.",
-    count: "6 modelos",
+    count: `${SITE_TEMPLATE_CATALOG.length} modelos`,
     selected: "Selecionado",
   },
   es: {
     title: "Elige el modelo del sitio",
     support: "Cambia el visual sin perder textos, imágenes ni los colores de tu agencia.",
-    count: "6 modelos",
+    count: `${SITE_TEMPLATE_CATALOG.length} modelos`,
     selected: "Seleccionado",
   },
 } as const;
@@ -50,7 +50,7 @@ const TemplatePreview = ({
   return (
     <div
       aria-hidden="true"
-      className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-[var(--preview-background)] min-[560px]:h-auto min-[560px]:w-full min-[560px]:aspect-[16/10] template-preview-${templateId}`}
+      className={`relative w-full shrink-0 overflow-hidden rounded-lg border border-white/10 bg-[var(--preview-background)] aspect-[16/10] template-preview-${templateId}`}
       style={style}
     >
       {heroImageUrl ? (
@@ -64,6 +64,17 @@ const TemplatePreview = ({
         <span className="h-1 w-6 rounded-full bg-white/65" />
       </div>
 
+      {templateId === "roteiros" && (
+        <div className="absolute bottom-1.5 left-2 right-2 grid grid-cols-2 gap-1">
+          {[0, 1].map((item) => (
+            <span key={item} className="overflow-hidden rounded-[4px] bg-white">
+              <i className="block h-3 bg-[var(--preview-primary)]/60" />
+              <i className="mx-1 my-1 block h-1 w-6 rounded bg-black/70" />
+              <i className="mx-1 mb-1 block h-1.5 rounded-full bg-[var(--preview-primary)]" />
+            </span>
+          ))}
+        </div>
+      )}
       {templateId === "standard" && (
         <>
           <span className="absolute bottom-5 left-2 h-1.5 w-10 rounded-full bg-white" />
@@ -153,7 +164,7 @@ export const SiteTemplateSelector = ({
         </div>
       </summary>
 
-      <div className="p-4 pt-0 border-t border-white/5 mt-2 animate-fade-in grid grid-cols-1 gap-2 min-[560px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-6" data-testid="site-template-selector">
+      <div className="p-4 pt-3 border-t border-white/5 mt-2 animate-fade-in flex snap-x snap-mandatory gap-2 overflow-x-auto [scrollbar-width:none] min-[560px]:grid min-[560px]:grid-cols-2 min-[560px]:overflow-visible md:grid-cols-3 xl:grid-cols-7" data-testid="site-template-selector">
         {SITE_TEMPLATE_CATALOG.map((template) => {
           const templateCopy = template.copy[locale];
           const active = activeTemplateId === template.id;
@@ -163,7 +174,7 @@ export const SiteTemplateSelector = ({
           return (
             <label
               key={template.id}
-              className={`group relative flex min-h-20 cursor-pointer items-center gap-3 rounded-xl border p-2.5 text-left transition-colors focus-within:ring-2 focus-within:ring-[#F5F906] focus-within:ring-offset-2 focus-within:ring-offset-zinc-950 min-[560px]:min-h-0 min-[560px]:flex-col min-[560px]:items-stretch min-[560px]:p-3 ${
+              className={`group relative flex w-[136px] shrink-0 snap-start cursor-pointer flex-col items-stretch gap-2 rounded-xl border p-2.5 text-left transition-colors focus-within:ring-2 focus-within:ring-[#F5F906] focus-within:ring-offset-2 focus-within:ring-offset-zinc-950 min-[560px]:w-auto min-[560px]:p-3 ${
                 active
                   ? "border-[#F5F906] bg-[#F5F906]/10"
                   : "border-white/10 bg-black/15 hover:border-white/25 hover:bg-white/[0.04]"
@@ -192,14 +203,14 @@ export const SiteTemplateSelector = ({
               />
               <span className="min-w-0 flex-1">
                 <span className="flex items-center justify-between gap-2">
-                  <span id={nameId} className="text-xs font-bold text-white">{templateCopy.label}</span>
+                  <span id={nameId} className="text-sm font-bold text-white">{templateCopy.label}</span>
                   {active && (
                     <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#F5F906] text-zinc-950">
                       <Check className="h-3 w-3" strokeWidth={3} />
                     </span>
                   )}
                 </span>
-                <span id={descriptionId} className="mt-1 block text-[11px] font-semibold leading-snug text-white/70">
+                <span id={descriptionId} className="mt-0.5 block text-xs font-semibold leading-snug text-white/70">
                   {templateCopy.audience}
                 </span>
                 <span className="mt-1 hidden text-[11px] leading-snug text-white/65 min-[900px]:block xl:hidden">

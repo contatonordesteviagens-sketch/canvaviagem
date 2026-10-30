@@ -1,4 +1,5 @@
 import { normalizeSiteTemplateId, type SiteTemplateId } from "@/lib/site-template-catalog";
+import { ROTEIROS_CSS } from "@/lib/site-template-roteiros-css";
 
 const HORIZONTE_ES_CSS = `
 /* HORIZONTE (paridade ES): consultoria visual com imagem ampla e ritmo calmo. */
@@ -364,6 +365,7 @@ body.template-excursoes footer{background:var(--brand-dark)}
 `;
 
 const TEMPLATE_CSS: Partial<Record<SiteTemplateId, string>> = {
+  roteiros: ROTEIROS_CSS,
   horizonte: HORIZONTE_ES_CSS,
   ofertas: OFFERS_CSS,
   experiencias: EXPERIENCES_CSS,
