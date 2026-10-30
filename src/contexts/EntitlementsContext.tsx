@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
+import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import {
   ensureFreshSupabaseSession,
 } from "@/lib/supabase-session";
@@ -198,6 +199,14 @@ const buildFallbackSnapshot = (
   };
 };
 
+// Sem usuário: visitante. Em desenvolvimento no localhost, libera tudo para
+// testar a Fábrica sem login (o servidor continua validando exportações).
+const buildAnonymousSnapshot = (): EntitlementsSnapshot =>
+  import.meta.env.DEV && isLocalPreviewEnabled()
+    ? buildFallbackSnapshot(true, true, null, false)
+    : buildGuestSnapshot();
+
+
 const EntitlementsContext = createContext<EntitlementsContextValue | null>(null);
 
 export function EntitlementsProvider({ children }: { children: ReactNode }) {
@@ -212,13 +221,13 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
     [isAdmin, subscription.productId, subscription.subscribed, subscription.loading],
   );
   const [snapshot, setSnapshot] = useState<EntitlementsSnapshot>(
-    () => user ? fallback : buildGuestSnapshot(),
+    () => user ? fallback : buildAnonymousSnapshot(),
   );
   const [loading, setLoading] = useState(Boolean(user));
 
   useEffect(() => {
     setSnapshot((current) => {
-      if (!user) return buildGuestSnapshot();
+      if (!user) return buildAnonymousSnapshot();
       return current.tier === "guest" ? fallback : current;
     });
   }, [fallback, user]);
@@ -270,7 +279,7 @@ export function EntitlementsProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     if (!user || !session?.access_token) {
-      setSnapshot(user ? fallback : buildGuestSnapshot());
+      setSnapshot(user ? fallback : buildAnonymousSnapshot());
       setLoading(false);
       return;
     }
