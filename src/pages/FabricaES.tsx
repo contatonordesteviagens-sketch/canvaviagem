@@ -29,6 +29,19 @@ import { CloudSaveIndicatorES } from "@/components/fabrica/CloudSaveIndicatorES"
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { FabricaLockedFeature } from "@/components/fabrica/FabricaLockedFeature";
 
+// Igual ao PT (Fabrica.tsx): a URL é a única fonte de verdade da fase. Antes a página ES
+// renderizava por `state.currentPhase`, que a hidratação do projeto podia devolver a 1 —
+// /es/fabrica/carrossel abria o formulário de Anúncio.
+const getPhaseFromPathES = (pathname: string): number => {
+  const p = pathname.toLowerCase();
+  if (p.includes("/anuncio") || p.includes("/anuncios")) return 1;
+  if (p.includes("/carrossel") || p.includes("/carrusel")) return 2;
+  if (p.includes("/site") || p.includes("/sites") || p.includes("/sitio")) return 3;
+  if (p.includes("/crm")) return 4;
+  if (p.includes("/checkup") || p.includes("/plano") || p.includes("/plan") || p.includes("/planos") || p.includes("/projeto") || p.includes("/projetos")) return 5;
+  return 0;
+};
+
 const FabricaInnerES = () => {
   const { state, setPhase } = useFabricaContext();
   const { isAdmin } = useAuth();
@@ -37,6 +50,8 @@ const FabricaInnerES = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "phase">("dashboard");
+  const phaseFromPath = getPhaseFromPathES(location.pathname);
+  const activePhase = phaseFromPath > 0 ? phaseFromPath : state.currentPhase;
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -80,11 +95,11 @@ const FabricaInnerES = () => {
   const getPhaseName = () => {
     if (activeTab === "dashboard") return "Panel Inicial";
     
-    if (state.currentPhase === 1) return "Anuncio";
-    if (state.currentPhase === 2) return "Carrusel";
-    if (state.currentPhase === 3) return "Sitio";
-    if (state.currentPhase === 4) return "CRM";
-    if (state.currentPhase === 5) return "Planos";
+    if (activePhase === 1) return "Anuncio";
+    if (activePhase === 2) return "Carrusel";
+    if (activePhase === 3) return "Sitio";
+    if (activePhase === 4) return "CRM";
+    if (activePhase === 5) return "Planos";
     
     return "";
   };
@@ -137,13 +152,13 @@ const FabricaInnerES = () => {
                 setActiveTab("phase");
               }}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                activeTab === "phase" && state.currentPhase === 1
+                activeTab === "phase" && activePhase === 1
                   ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
                   : "text-white/60 hover:text-white hover:bg-white/[0.04]"
               }`}
             >
               <div className="flex items-center gap-3">
-                <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 1 ? "text-amber-400" : "text-white/40"}`} />
+                <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && activePhase === 1 ? "text-amber-400" : "text-white/40"}`} />
                 <span>Anuncio</span>
               </div>
             </button>
@@ -163,13 +178,13 @@ const FabricaInnerES = () => {
                   navigate(location.pathname.startsWith("/es") ? "/es/fabrica/carrusel" : "/fabrica/carrusel");
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeTab === "phase" && state.currentPhase === 2
+                  activeTab === "phase" && activePhase === 2
                     ? "bg-white/[0.06] text-white border border-white/10"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
+                  <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && activePhase === 2 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Carrusel</span>
                 </div>
               </button>
@@ -182,13 +197,13 @@ const FabricaInnerES = () => {
                   navigate(location.pathname.startsWith("/es") ? "/es/fabrica/sitio" : "/fabrica/sitio");
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeTab === "phase" && state.currentPhase === 3
+                  activeTab === "phase" && activePhase === 3
                     ? "bg-white/[0.06] text-white border border-white/10"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <FileText className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
+                  <FileText className={`w-4 h-4 ${activeTab === "phase" && activePhase === 3 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Sitio</span>
                 </div>
               </button>
@@ -201,13 +216,13 @@ const FabricaInnerES = () => {
                   navigate(location.pathname.startsWith("/es") ? "/es/fabrica/crm" : "/fabrica/crm");
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeTab === "phase" && state.currentPhase === 4
+                  activeTab === "phase" && activePhase === 4
                     ? "bg-white/[0.06] text-white border border-white/10"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
+                  <Users className={`w-4 h-4 ${activeTab === "phase" && activePhase === 4 ? "text-amber-400" : "text-white/40"}`} />
                   <span>CRM</span>
                 </div>
               </button>
@@ -220,13 +235,13 @@ const FabricaInnerES = () => {
                   navigate(location.pathname.startsWith("/es") ? "/es/fabrica/planos" : "/fabrica/planos");
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeTab === "phase" && state.currentPhase === 5
+                  activeTab === "phase" && activePhase === 5
                     ? "bg-white/[0.06] text-white border border-white/10"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Sliders className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
+                  <Sliders className={`w-4 h-4 ${activeTab === "phase" && activePhase === 5 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Planos</span>
                 </div>
               </button>
@@ -288,7 +303,7 @@ const FabricaInnerES = () => {
               setMobileMenuOpen(false);
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
-              activeTab === "phase" && state.currentPhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "phase" && activePhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
             🖼️ Anuncio
@@ -302,7 +317,7 @@ const FabricaInnerES = () => {
               setMobileMenuOpen(false);
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
-              activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "phase" && activePhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
             🖼️ Carrusel
@@ -314,7 +329,7 @@ const FabricaInnerES = () => {
               setMobileMenuOpen(false);
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
-              activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "phase" && activePhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
             📄 Sitio
@@ -326,7 +341,7 @@ const FabricaInnerES = () => {
               setMobileMenuOpen(false);
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
-              activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "phase" && activePhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
             👥 CRM
@@ -338,7 +353,7 @@ const FabricaInnerES = () => {
               setMobileMenuOpen(false);
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
-              activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "phase" && activePhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
             ⚙️ Planos
@@ -393,10 +408,10 @@ const FabricaInnerES = () => {
           )}
           {activeTab === "phase" && (
             <>
-              {state.currentPhase === 1 && <Phase3ArtFactoryES key="phase1-ad-es" onNext={() => navigate("/es/fabrica/carrossel")} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => navigate("/es/fabrica/site")} />}
-              {state.currentPhase === 2 && <Phase3ArtFactoryES key="phase2-carousel-es" onNext={() => navigate("/es/fabrica/site")} onBack={() => navigate("/es/fabrica/anuncio")} lockMode={true} initialMode="carousel" />}
-              {state.currentPhase === 3 && <Phase4LandingBuilderES onNext={() => navigate("/es/fabrica/crm")} onBack={() => navigate("/es/fabrica/carrossel")} />}
-              {state.currentPhase === 4 && (
+              {activePhase === 1 && <Phase3ArtFactoryES key="phase1-ad-es" onNext={() => navigate("/es/fabrica/carrossel")} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => navigate("/es/fabrica/site")} />}
+              {activePhase === 2 && <Phase3ArtFactoryES key="phase2-carousel-es" onNext={() => navigate("/es/fabrica/site")} onBack={() => navigate("/es/fabrica/anuncio")} lockMode={true} initialMode="carousel" />}
+              {activePhase === 3 && <Phase4LandingBuilderES onNext={() => navigate("/es/fabrica/crm")} onBack={() => navigate("/es/fabrica/carrossel")} />}
+              {activePhase === 4 && (
                 can("crm.real_data") ? (
                   <Phase5DashboardES onNext={() => navigate("/es/fabrica/planos")} onBack={() => navigate("/es/fabrica/site")} />
                 ) : (
@@ -412,7 +427,7 @@ const FabricaInnerES = () => {
                   />
                 )
               )}
-              {state.currentPhase === 5 && (
+              {activePhase === 5 && (
                 <div className="space-y-8 pb-12">
                   <Phase2AtivosES onNext={() => {}} onBack={() => navigate("/es/fabrica/crm")} />
                   <Phase1DiagnosticoES onComplete={() => {}} onBack={() => {}} />
