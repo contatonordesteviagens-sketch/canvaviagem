@@ -86,7 +86,13 @@ Checklist por arte (olhe a grade, uma por uma):
 - [ ] story: nada útil nos 250px do topo nem nos 310px da base
 - [ ] `npx tsc --noEmit` = 0 e `npx vite build` ok
 
-## 5. Carrosséis (próxima fase) — as mesmas regras
+## 5. Carrosséis — as mesmas regras, mais estas
+
+- Cor de destaque (amarelo, creme, dourado) só em detalhes finos: filete do kicker, marcador do tópico, botão.
+  Nunca como fundo de etiqueta ao lado de texto branco; nunca degradê entre as duas cores da marca.
+- Etiqueta padrão é o `kicker` (texto em caixa alta espaçada + filete). Pílula só se o usuário escolher.
+- Painel de fechamento cresce com o conteúdo (sem `top` fixo). Títulos até 5 linhas antes de cortar.
+- Lab: `/dev/carrossel-lab?format=feed|story&palette=cv|cvc|teal|wine&long=1` e `bash /c/tmp/lab-shots/shoot-car.sh`.
 
 `F1CarouselBuilder.tsx` / `CarouselCanvas` (DOM, não canvas): aplicar 1–7 a cada slide. Em especial:
 capa com um ponto focal; slides internos com a mesma margem e o mesmo eixo; título e corpo na mesma
