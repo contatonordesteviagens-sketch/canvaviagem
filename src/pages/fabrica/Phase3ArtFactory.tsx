@@ -2853,15 +2853,6 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     </button>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={downloadPNG}
-                    disabled={!generatedImage}
-                    className="shrink-0 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.08] px-4 py-2 text-xs font-bold text-white hover:bg-white/[0.12] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                    Baixar esta arte
-                  </button>
                 </div>
 
                 <div className={`${generatedImages.length > 1 ? "flex md:grid gap-3 overflow-x-auto snap-x pb-2 md:pb-0 md:grid-cols-3" : "grid grid-cols-1"}`}>
@@ -2949,6 +2940,25 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     );
                   })}
                 </div>
+
+                {/* Botão de baixar em destaque: grande, largura cheia, impossível de não ver. */}
+                <button
+                  type="button"
+                  onClick={downloadPNG}
+                  disabled={!generatedImage}
+                  data-testid="download-art-cta"
+                  className="group flex w-full min-h-16 items-center justify-center gap-3 rounded-2xl bg-[#F5F906] px-6 py-4 text-base font-black text-zinc-950 shadow-[0_8px_32px_rgba(245,249,6,0.35)] ring-2 ring-[#F5F906]/40 ring-offset-2 ring-offset-zinc-950 transition-all hover:brightness-105 hover:shadow-[0_10px_40px_rgba(245,249,6,0.5)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none sm:text-lg"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-zinc-950 text-[#F5F906]">
+                    <Download className="h-5 w-5" />
+                  </span>
+                  <span className="flex flex-col items-start leading-tight">
+                    <span>{isBatchMode && generatedImages.length > 1 ? `Baixar as ${generatedImages.length} artes` : "Baixar esta arte"}</span>
+                    <span className="text-[11px] font-bold text-zinc-950/70">
+                      PNG em alta · {format === "story" ? "1080×1920 (Stories)" : "1080×1080 (Feed)"}
+                    </span>
+                  </span>
+                </button>
 
                 {isAdmin && artEditorTarget && (
                   <ArtTweakEditor
