@@ -78,7 +78,8 @@ export default function ArtesLab() {
   const cents = params.get("cents") !== "0";
   const pay = PAY[params.get("pay") || "installments"] || PAY.installments;
   const [primaryColor, secondaryColor] = PALETTES[params.get("palette") || "cv"] || PALETTES.cv;
-  const variants = only !== null ? [Number(only)] : [0, 1, 2, 3, 4, 5, 6, 7, 8];
+  const vs = params.get("vs");
+  const variants = only !== null ? [Number(only)] : vs ? vs.split(",").map(Number) : Array.from({ length: 12 }, (_, i) => i);
 
   const [items, setItems] = useState<Item[]>(variants.map((variant) => ({ variant })));
 

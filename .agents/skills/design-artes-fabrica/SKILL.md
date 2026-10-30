@@ -44,6 +44,11 @@ Enseada, Batata Turismo, hotéis de luxo). Contact sheets em `C:/tmp/lab-shots/r
 | V6 | foto + bloco inferior em duas colunas (destino \| preço) | Tailândia / New York (Gricel) |
 | V7 | um cartão no alto (tudo à esquerda) + faixa "o que inclui" | Jalapão / Gricel |
 | V8 | destino em serifa gigante sobre véu + pílula + CTA | "NEW YORK" hotel deals |
+| V9 | coluna escura (headline, checklist em pílulas, preço) + coluna da marca com tira de 3 fotos | Black Friday "Combo 4 praias" |
+| V10 | coluna centralizada sobre a foto: nome em script, destino, pino, data, ícones com rótulo, selo de preço | Saint-Michel "Jalapão e Palmas" |
+| V11 | título centrado no alto, caixa de preço + cartão de benefícios lado a lado, CTA de largura cheia | "All-inclusive Hotel Deals" |
+
+Total: `PRO_TOTAL_VARIANTS = 12` (motor, rodízio da UI e botões 1–12 leem daí).
 
 Nova variação = anatomia estrutural nova (posição da foto, divisão de blocos). Mesma anatomia com outro
 texto é ajuste, não variação. Antes de codar uma nova, escreva a anatomia em % e mostre ao Lucas.

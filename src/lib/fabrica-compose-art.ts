@@ -4,7 +4,7 @@ export interface ComposeAdResult {
 }
 import { createArtTweakContext, type ArtElementBox, type ArtTweakMap } from "@/lib/fabrica-art-tweaks";
 import { createArtRecorder } from "@/lib/fabrica-art-recorder";
-import { PRO_VARIANTS, renderProLayout, type ProArtModel } from "@/lib/fabrica-art-pro";
+import { PRO_TOTAL_VARIANTS, PRO_VARIANTS, renderProLayout, type ProArtModel } from "@/lib/fabrica-art-pro";
 
 
 type Format = "square" | "story";
@@ -5404,7 +5404,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
   // ── LAYOUTS PRO (redesenho 30/10) ─────────────────────────────────────────
   // As variações redesenhadas saem de `fabrica-art-pro.ts`; as demais seguem
   // no motor antigo abaixo. `legacyLayouts` força o antigo (comparação no lab).
-  const proVariant = ((((typeof forceVariant === "number" ? forceVariant : variation) % 9) + 9) % 9);
+  const proVariant = ((((typeof forceVariant === "number" ? forceVariant : variation) % PRO_TOTAL_VARIANTS) + PRO_TOTAL_VARIANTS) % PRO_TOTAL_VARIANTS);
   if (!options.legacyLayouts && PRO_VARIANTS.has(proVariant)) {
     const priceDigits = (price || "").replace(/^[^\d]*/, "").trim();
     const centsMatch = priceDigits.match(/^(.*?)[.,](\d{2})$/);

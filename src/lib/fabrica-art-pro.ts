@@ -1076,12 +1076,243 @@ async function layoutV8(m: ProArtModel) {
   await branding(m);
 }
 
+/** Coluna escura + coluna da marca: cores das duas colunas a partir da paleta. */
+function columnPair(m: ProArtModel) {
+  const dark = isLight(m.primary) ? shadeColor(m.primary, -60) : m.primary;
+  const side = isLight(m.secondary) ? m.secondary : "#ffffff";
+  return { dark, side };
+}
+
+/** V9 — "Combo" (Black Friday): coluna escura com headline, checklist em pílulas e preço; coluna da marca com tira de 3 fotos. */
+async function layoutV9(m: ProArtModel) {
+  const { ctx, width, height } = m;
+  const F = frame(m);
+  const f = fontsOf(m);
+  const { dark, side } = columnPair(m);
+  const darkFg = contrastOn(dark);
+  const sideFg = contrastOn(side);
+  const splitX = Math.round(width * (F.story ? 0.6 : 0.58));
+  const x = F.M;
+  const w = splitX - F.M - 36;
+  const K = F.story ? 1.15 : 1;
+
+  const content = (k: number, dry: boolean, y0 = 0): number => {
+    let y = y0;
+    pill(ctx, x, y, m.promoName.toUpperCase(), { bg: side, fg: sideFg, size: 20 * K * k, family: f.sans, weight: 900, h: 40 * K * k, padX: 18 }, dry);
+    y += 40 * K * k + 22;
+    const hs = (F.story ? 80 : 66) * k;
+    y += paragraph(ctx, m.isExperience ? m.headline : m.headline, x, y, w, { weight: 900, size: hs, family: f.display, color: darkFg, maxLines: 3, lineHeight: hs * 1.02 }, dry) + 22;
+    // checklist em pílulas claras, uma por linha, todas com a mesma largura (a da coluna)
+    const items = m.highlights.slice(0, 5);
+    const ph = 46 * K * k;
+    const icon = 26 * K * k;
+    items.forEach((h) => {
+      if (!dry) {
+        fillRoundRect(ctx, x, y, w, ph, ph / 2, "#ffffff");
+        fillRoundRect(ctx, x + 8, y + (ph - icon * 1.3) / 2, icon * 1.3, icon * 1.3, icon * 0.65, side === "#ffffff" ? dark : side);
+        drawMonoIcon(ctx, "check", x + 8 + icon * 0.65, y + ph / 2, icon * 0.8, side === "#ffffff" ? darkFg : sideFg, 2);
+        ctx.save();
+        ctx.fillStyle = "#15171A";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        setFont(ctx, 700, 22 * K * k, f.sans);
+        safeFillText(ctx, h.text, x + 8 + icon * 1.3 + 14, y + ph / 2 + 1, w - icon * 1.3 - 40, 14);
+        ctx.restore();
+      }
+      y += ph + 10;
+    });
+    y += 14;
+    if (m.isExperience) {
+      y += experienceBlock(ctx, m, x, y, w, { fg: darkFg, ctaBg: side, ctaFg: sideFg, size: 60 * k, withHeadline: false }, dry);
+    } else {
+      y += priceBlock(ctx, m, x, y, w, { fg: darkFg, accentBg: side, accentFg: sideFg, size: (F.story ? 130 : 108) * k }, dry);
+      if (m.price.pixText) {
+        y += 10;
+        pill(ctx, x, y, m.price.pixText.toUpperCase(), { bg: "transparent", fg: darkFg, size: 18 * K * k, family: f.sans, weight: 900, h: 40 * K * k, padX: 16, stroke: side, maxW: w }, dry);
+        y += 40 * K * k;
+      }
+    }
+    return y - y0;
+  };
+
+  const { k, h: contentH } = fitScale((kk, dry) => content(kk, dry), F.bottom - F.top);
+  const startY = Math.round(F.top + (F.bottom - F.top - contentH) / 2);
+
+  ctx.fillStyle = dark;
+  ctx.fillRect(0, 0, splitX, height);
+  ctx.fillStyle = side;
+  ctx.fillRect(splitX, 0, width - splitX, height);
+  // tira de 3 recortes da foto (focos diferentes), com a mesma margem da coluna
+  const pad = 28;
+  const fx = splitX + pad;
+  const fw = width - splitX - pad * 2;
+  const fTop = F.story ? F.top : 40;
+  const fBottom = F.footerTop - 24;
+  const gap = 16;
+  const fh = Math.floor((fBottom - fTop - gap * 2) / 3);
+  [0.15, 0.5, 0.85].forEach((focus, i) => drawPhoto(m, fx, fTop + i * (fh + gap), fw, fh, focus, 26));
+  content(k, false, startY);
+  await branding(m, sideFg);
+}
+
+/** V10 — "Jalapão": tudo centralizado numa coluna sobre a foto — nome em script, destino, local, data, ícones com rótulo e selo de preço. */
+async function layoutV10(m: ProArtModel) {
+  const { ctx, width, height } = m;
+  const F = frame(m);
+  const f = fontsOf(m);
+  const accent = isLight(m.secondary) ? m.secondary : (isLight(m.primary) ? m.primary : "#F5C518");
+  const accentFg = contrastOn(accent);
+  const cx = width / 2;
+  const maxW = width - F.M * 2;
+  const script = "'Dancing Script', 'Playfair Display', cursive";
+
+  const content = (k: number, dry: boolean, y0 = 0): number => {
+    let y = y0;
+    y += paragraph(ctx, m.promoName, cx, y, maxW, { weight: 700, size: 52 * k, family: script, color: accent, maxLines: 1, align: "center" }, dry) + 2;
+    const ds = (F.story ? 104 : 92) * k;
+    y += paragraph(ctx, m.destination, cx, y, maxW, { weight: 900, size: ds, family: f.display, color: "#ffffff", maxLines: 2, align: "center", lineHeight: ds * 0.98 }, dry) + 14;
+    if (m.city || m.isExperience) {
+      const line = m.city ? `Saindo de ${m.city}` : m.subtitle;
+      if (!dry) drawMonoIcon(ctx, "map", cx - (measurePara(ctx, line, maxW, { weight: 600, size: 28 * k, family: f.sans, color: "", maxLines: 1 }).width / 2) - 22, y + 16 * k, 28 * k, accent, 1.8);
+      y += paragraph(ctx, line, cx + 14, y, maxW, { weight: 600, size: 28 * k, family: f.sans, color: "#ffffff", maxLines: 1, align: "center" }, dry) + 18;
+    }
+    if (m.travelPeriod) {
+      pill(ctx, cx, y, m.travelPeriod.toUpperCase(), { bg: accent, fg: accentFg, size: 22 * k, family: f.sans, weight: 900, h: 44 * k, padX: 22, align: "center" }, dry);
+      y += 44 * k + 26;
+    }
+    // ícones com rótulo embaixo, em linha centralizada
+    const items = m.highlights.slice(0, 6);
+    const slot = Math.min(150, maxW / Math.max(1, items.length));
+    const startX = cx - (slot * items.length) / 2;
+    const iconSize = 40 * k;
+    if (!dry) {
+      items.forEach((h, i) => {
+        const ix = startX + slot * i + slot / 2;
+        fillRoundRect(ctx, ix - iconSize * 0.8, y, iconSize * 1.6, iconSize * 1.6, iconSize * 0.8, "rgba(255,255,255,0.14)");
+        drawMonoIcon(ctx, h.icon, ix, y + iconSize * 0.8, iconSize, "#ffffff", 1.6);
+        paragraph(ctx, h.text, ix, y + iconSize * 1.6 + 8, slot - 10, { weight: 600, size: 16 * k, family: f.sans, color: "rgba(255,255,255,0.92)", maxLines: 2, align: "center", minSize: 12 });
+      });
+    }
+    y += iconSize * 1.6 + 8 + 2 * 16 * k * 1.08 + 26;
+    // selo de preço escuro
+    const badgeW = Math.min(maxW, 620 * k);
+    const bx = cx - badgeW / 2;
+    // o subtítulo já apareceu na linha do pino quando não há cidade; aqui entra só com cidade
+    const expOpts: ExpOpts = { fg: "#ffffff", ctaBg: accent, ctaFg: accentFg, size: 56 * k, align: "center", withHeadline: false, withSubtitle: !!m.city };
+    const inner = m.isExperience
+      ? experienceBlock(ctx, m, bx + 32, y + 28, badgeW - 64, expOpts, true)
+      : priceBlock(ctx, m, bx + 32, y + 26, badgeW - 64, { fg: "#ffffff", accentBg: accent, accentFg: accentFg, size: (F.story ? 124 : 110) * k, align: "center" }, true);
+    const badgeH = inner + 54;
+    if (!dry) {
+      fillRoundRect(ctx, bx, y, badgeW, badgeH, 30, "rgba(10,10,12,0.78)");
+      if (m.isExperience) experienceBlock(ctx, m, bx + 32, y + 28, badgeW - 64, expOpts);
+      else priceBlock(ctx, m, bx + 32, y + 26, badgeW - 64, { fg: "#ffffff", accentBg: accent, accentFg: accentFg, size: (F.story ? 124 : 110) * k, align: "center" });
+    }
+    y += badgeH;
+    return y - y0;
+  };
+
+  const startY = F.story ? F.top + 10 : 48;
+  const { k } = fitScale((kk, dry) => content(kk, dry), F.bottom - startY);
+
+  drawPhoto(m, 0, 0, width, height, 0.5);
+  veil(ctx, 0, 0, width, height * 0.62, 0.72, true);
+  veil(ctx, 0, height * 0.6, width, height, 0.62);
+  content(k, false, startY);
+  await branding(m);
+}
+
+/** V11 — "Deals": título centrado no alto, caixa de preço + cartão de benefícios lado a lado e CTA de largura cheia. */
+async function layoutV11(m: ProArtModel) {
+  const { ctx, width, height } = m;
+  const F = frame(m);
+  const f = fontsOf(m);
+  const { dark } = columnPair(m);
+  const accent = isLight(m.secondary) ? m.secondary : "#ffffff";
+  const accentFg = contrastOn(accent);
+  const darkFg = contrastOn(dark);
+  const cx = width / 2;
+  const x = F.M;
+  const w = width - F.M * 2;
+  const ctaH = F.story ? 84 : 76;
+  const ctaY = F.bottom - ctaH;
+  const gap = 20;
+  const leftW = Math.round(w * 0.5);
+  const rightW = w - leftW - gap;
+
+  const content = (k: number, dry: boolean, y0 = 0): number => {
+    let y = y0;
+    pill(ctx, cx, y, m.promoName.toUpperCase(), { bg: accent, fg: accentFg, size: 22 * k, family: f.sans, weight: 900, h: 44 * k, padX: 22, align: "center" }, dry);
+    y += 44 * k + 18;
+    const hs = (F.story ? 96 : 84) * k;
+    y += paragraph(ctx, m.destination.toUpperCase(), cx, y, w, { weight: 900, size: hs, family: f.display, color: "#ffffff", maxLines: 2, align: "center", lineHeight: hs * 0.98 }, dry) + 16;
+    const inc = m.highlights.slice(0, 3).map((h) => h.text).join(" + ");
+    if (inc) {
+      pill(ctx, cx, y, inc, { bg: "rgba(255,255,255,0.92)", fg: "#15171A", size: 22 * k, family: f.sans, weight: 700, h: 46 * k, padX: 22, align: "center", maxW: w }, dry);
+      y += 46 * k + 30;
+    }
+    // duas caixas com a mesma altura
+    const leftInner = m.isExperience
+      ? paragraph(ctx, m.headline, x + 28, y + 28, leftW - 56, { weight: 800, size: 44 * k, family: f.display, color: darkFg, maxLines: 3 }, true) + 14
+        + paragraph(ctx, m.subtitle, x + 28, y, leftW - 56, { weight: 500, size: 24 * k, family: f.sans, color: darkFg, maxLines: 2 }, true)
+      : priceBlock(ctx, m, x + 28, y + 28, leftW - 56, { fg: darkFg, accentBg: accent, accentFg, size: (F.story ? 124 : 108) * k, align: "center" }, true);
+    const items = m.highlights.slice(0, 4);
+    const rowH = 40 * k + 10 + 22 * k * 1.1 + 16;
+    const rightInner = items.length * rowH - 16;
+    const boxH = Math.max(leftInner, rightInner) + 56;
+    if (!dry) {
+      fillRoundRect(ctx, x, y, leftW, boxH, 28, dark);
+      fillRoundRect(ctx, x + leftW + gap, y, rightW, boxH, 28, "rgba(255,255,255,0.94)");
+      if (m.isExperience) {
+        const used = paragraph(ctx, m.headline, x + 28, y + 28, leftW - 56, { weight: 800, size: 44 * k, family: f.display, color: darkFg, maxLines: 3 });
+        paragraph(ctx, m.subtitle, x + 28, y + 28 + used + 14, leftW - 56, { weight: 500, size: 24 * k, family: f.sans, color: darkFg, maxLines: 2 });
+      } else {
+        priceBlock(ctx, m, x + 28, y + 28 + (boxH - 56 - leftInner) / 2, leftW - 56, { fg: darkFg, accentBg: accent, accentFg, size: (F.story ? 124 : 108) * k, align: "center" });
+      }
+      const rcx = x + leftW + gap + rightW / 2;
+      let ry = y + 28 + (boxH - 56 - rightInner) / 2;
+      items.forEach((h) => {
+        drawMonoIcon(ctx, h.icon, rcx, ry + 20 * k, 40 * k, dark, 1.6);
+        paragraph(ctx, h.text, rcx, ry + 40 * k + 10, rightW - 40, { weight: 700, size: 22 * k, family: f.sans, color: "#15171A", maxLines: 1, align: "center" });
+        ry += rowH;
+      });
+    }
+    y += boxH;
+    return y - y0;
+  };
+
+  const startY = F.story ? F.top + 10 : 48;
+  const { k } = fitScale((kk, dry) => content(kk, dry), ctaY - 30 - startY);
+
+  drawPhoto(m, 0, 0, width, height, 0.5);
+  veil(ctx, 0, 0, width, height * 0.5, 0.7, true);
+  veil(ctx, 0, height * 0.45, width, height, 0.8);
+  content(k, false, startY);
+  // CTA de largura cheia
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.3)";
+  ctx.shadowBlur = 24;
+  ctx.shadowOffsetY = 8;
+  fillRoundRect(ctx, x, ctaY, w, ctaH, 22, accent);
+  ctx.restore();
+  ctx.fillStyle = accentFg;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  setFont(ctx, 900, F.story ? 32 : 28, f.sans);
+  ctx.fillText(m.isExperience ? `${CTA_TEXT}  →` : "RESERVAR AGORA  →", cx, ctaY + ctaH / 2 + 1);
+  await branding(m);
+}
+
 const LAYOUTS: Record<number, (m: ProArtModel) => Promise<void>> = {
   0: layoutV0, 1: layoutV1, 2: layoutV2, 3: layoutV3, 4: layoutV4, 5: layoutV5, 6: layoutV6, 7: layoutV7, 8: layoutV8,
+  9: layoutV9, 10: layoutV10, 11: layoutV11,
 };
 
+/** Total de variações do motor (a UI e o rodízio usam este número). */
+export const PRO_TOTAL_VARIANTS = 12;
+
 /** Variações já redesenhadas (as demais continuam no motor antigo até serem aprovadas). */
-export const PRO_VARIANTS = new Set<number>([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+export const PRO_VARIANTS = new Set<number>(Array.from({ length: PRO_TOTAL_VARIANTS }, (_, i) => i));
 
 export async function renderProLayout(m: ProArtModel, variant: number): Promise<void> {
   const fn = LAYOUTS[variant];

@@ -8,6 +8,7 @@ import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } f
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { composeTravelAd, formatAdPhone, type PaymentMode } from "@/lib/fabrica-compose-art";
+import { PRO_TOTAL_VARIANTS } from "@/lib/fabrica-art-pro";
 import { GeneratedArt } from "@/lib/fabrica-art-types";
 import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
@@ -1401,7 +1402,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
 
         // Rotacion deterministica entre variantes del compositor (V0..V8).
         // Evita as 2 últimas usadas para garantir imagem nova a cada clique.
-        const TOTAL_VARIANTS_PHOTO = 9;
+        const TOTAL_VARIANTS_PHOTO = PRO_TOTAL_VARIANTS;
         const DISABLED_VARIANTS_PHOTO: number[] = [];
         const recentPhoto = variantHistoryRef.current.slice(-2);
         let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i)
@@ -1676,7 +1677,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
       const palette = selectedPalette(primaryColor, secondaryColor);
 
       // Rotacion deterministica entre variantes del compositor (V0..V8).
-      const TOTAL_VARIANTS = 9;
+      const TOTAL_VARIANTS = PRO_TOTAL_VARIANTS;
       const DISABLED_VARIANTS: number[] = [];
       const recent = variantHistoryRef.current.slice(-2);
       let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i)
@@ -2067,7 +2068,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
               >
                 Auto
               </button>
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((v) => (
+              {Array.from({ length: PRO_TOTAL_VARIANTS }, (_, i) => i).map((v) => (
                 <button
                   key={v}
                   onClick={() => setForcedVariant(v)}
