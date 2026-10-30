@@ -51,6 +51,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
 import { buildQuickPackage } from "@/lib/quick-package";
+import { ctaSuggestionsEs, documentedSequenceEs, textPoolEs } from "@/lib/carousel-copy-es";
 import { supabase } from "@/integrations/supabase/client";
 import { createExportIdentity } from "@/lib/exportIdentity";
 
@@ -673,9 +674,13 @@ function documentedCarouselTextSequence(
   isEs: boolean,
   strategy: CarouselSlideVariant,
 ): CarouselTextBlock[] | null {
-  if (isEs || !["impact", "oferta", "editorial", "vibrant"].includes(strategy)) {
+  if (!["impact", "oferta", "editorial", "vibrant", "pro-bold", "pro-split", "pro-magazine", "pro-luxe"].includes(strategy)) {
     return null;
   }
+  if (isEs) return documentedSequenceEs(pacote, total, strategy);
+  if (strategy === "pro-bold" || strategy === "pro-luxe") strategy = "impact";
+  else if (strategy === "pro-split") strategy = "oferta";
+  else if (strategy === "pro-magazine") strategy = "editorial";
 
   const destination = cleanCarouselText(pacote.title) || "seu próximo destino";
   const included = compact([...(pacote.included || []), ...(pacote.highlights || [])])
@@ -4398,13 +4403,10 @@ export function F1CarouselBuilder({
     slides.find((slide) => slide.kind === "content")?.slideVariant || "pro-bold";
 
   const cycleActiveTextSuggestion = (field: CarouselEditableTextField) => {
-    if (!selectedPackage || !activeSlide || isEs || activeCoverIsProtected) return;
-    const pool = documentedTextSuggestionPool(
-      selectedPackage,
-      slideCount,
-      currentStrategy,
-      activeIndex,
-    );
+    if (!selectedPackage || !activeSlide || activeCoverIsProtected) return;
+    const pool = isEs
+      ? textPoolEs(selectedPackage, slideCount, currentStrategy, activeIndex)
+      : documentedTextSuggestionPool(selectedPackage, slideCount, currentStrategy, activeIndex);
 
     if (field === "bullets") {
       const currentValue = activeSlide.bullets.join("\n");
@@ -4418,16 +4420,16 @@ export function F1CarouselBuilder({
       if (nextValue) patchActive({ [field]: nextValue });
     }
 
-    toast.success("Nova sugestão aplicada somente neste campo.");
+    toast.success(isEs ? "Nueva sugerencia aplicada solo en este campo." : "Nova sugestão aplicada somente neste campo.");
   };
 
   const cycleActiveCtaSuggestion = () => {
-    if (!selectedPackage || !activeSlide || isEs || activeCoverIsProtected) return;
-    const options = documentedCtaSuggestions(selectedPackage);
+    if (!selectedPackage || !activeSlide || activeCoverIsProtected) return;
+    const options = isEs ? ctaSuggestionsEs(selectedPackage) : documentedCtaSuggestions(selectedPackage);
     const currentIndex = options.findIndex((option) => option === activeSlide.cta);
     const nextValue = options[(currentIndex + 1) % options.length];
     if (nextValue) patchActive({ cta: nextValue });
-    toast.success("Nova chamada aplicada somente neste campo.");
+    toast.success(isEs ? "Nuevo llamado aplicado solo en este campo." : "Nova chamada aplicada somente neste campo.");
   };
 
   const applyCarouselStrategy = (strategy: CarouselSlideVariant) => {
@@ -5199,7 +5201,7 @@ export function F1CarouselBuilder({
               event.preventDefault();
               const text = emptyStatePackageText.trim();
               if (!text) return;
-              const pkg = buildQuickPackage(text, state.selectedPackages);
+              const pkg = buildQuickPackage(text, state.selectedPackages, isEs);
               if (!pkg) return;
               update({ selectedPackages: [pkg, ...state.selectedPackages] });
               setEmptyStatePackageText("");
@@ -7012,9 +7014,9 @@ export function F1CarouselBuilder({
                         placeholder="RESERVE SUA VAGA"
                       />
                       <div className="flex flex-wrap gap-1.5">
-                        {(selectedPackage && !isEs
-                          ? documentedCtaSuggestions(selectedPackage).slice(0, 5)
-                          : ["RESERVE SUA VAGA", "FALE CONOSCO", "SAIBA MAIS", "GARANTA SEU LUGAR"]
+                        {(selectedPackage
+                          ? (isEs ? ctaSuggestionsEs(selectedPackage) : documentedCtaSuggestions(selectedPackage)).slice(0, 5)
+                          : isEs ? ["RESERVA TU LUGAR", "HABLA CON NOSOTROS", "SABER MÁS"] : ["RESERVE SUA VAGA", "FALE CONOSCO", "SAIBA MAIS", "GARANTA SEU LUGAR"]
                         ).map(suggestion => (
                           <button
                             key={suggestion}

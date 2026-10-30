@@ -60,6 +60,16 @@ const NIGHT = "#0A0B0E";
 
 const clean = (s?: string) => (s || "").replace(/\s+/g, " ").trim();
 
+// Textos fixos dos modelos. O carrossel não recebe o idioma por props; a Fábrica em
+// espanhol vive em /es/fabrica (e o laboratório aceita ?lang=es).
+const PT = { trip: "Viagem", swipe: "Arraste para o lado", swipeShort: "Arraste", swipeCaps: "ARRASTE", from: "A partir de", fromLower: "a partir de", perPerson: "por pessoa", perPersonShort: "/pessoa", by: "por", offer: "Oferta", tagline: "A sua melhor viagem começa aqui.", leaving: "Saindo de", askPrices: "Consulte valores e datas", askUs: "Consulte-nos", fareNote: "Tarifa sujeita a alteração sem aviso prévio", itinerary: "Roteiro", talk: "Fale com a gente" };
+const ES: typeof PT = { trip: "Viaje", swipe: "Desliza al lado", swipeShort: "Desliza", swipeCaps: "DESLIZA", from: "Desde", fromLower: "desde", perPerson: "por persona", perPersonShort: "/persona", by: "por", offer: "Oferta", tagline: "Tu mejor viaje empieza aquí.", leaving: "Saliendo de", askPrices: "Consulta valores y fechas", askUs: "Consúltanos", fareNote: "Tarifa sujeta a cambios sin previo aviso", itinerary: "Itinerario", talk: "Habla con nosotros" };
+const tr = () => {
+  if (typeof window === "undefined") return PT;
+  const es = /^\/es(\/|$)/.test(window.location.pathname) || new URLSearchParams(window.location.search).get("lang") === "es";
+  return es ? ES : PT;
+};
+
 // ───────── ícones reais do projeto (/assets/icons) ─────────
 const ICON_RULES: [RegExp, string][] = [
   [/a[ée]reo|voo|passag|avi[ãa]o|embarque/i, "aviao"],
@@ -99,11 +109,11 @@ function IconChip({ name, bg, size = 40, radius = 12, style }: { name: string; b
 }
 
 // ───────── preço no texto ─────────
-const PRICE_RE = /(?:(\d{1,2})\s*x\s*)?(?:de\s+)?R\$\s?(\d{1,3}(?:\.\d{3})*|\d+)(?:,(\d{2}))?/i;
+const PRICE_RE = /(?:(\d{1,2})\s*x\s*)?(?:de\s+|desde\s+)?(?:R\$|US\$|AR\$|€|\$)\s?(\d{1,3}(?:\.\d{3})*|\d+)(?:,(\d{2}))?/i;
 function extractPrice(texts: string[]) {
   for (const t of texts) {
     const m = t.match(PRICE_RE);
-    if (m) return { installments: m[1] ? `${m[1]}x` : "", int: m[2], cents: m[3] || "", raw: m[0] };
+    if (m) return { installments: m[1] ? `${m[1]}x` : "", int: m[2], cents: m[3] || "", raw: m[0], sym: m[0].match(/R\$|US\$|AR\$|€|\$/)?.[0] || "R$" };
   }
   return null;
 }
@@ -184,7 +194,7 @@ function IconList({ items, color, ff, size = 15, max = 4, chip, iconTone, gap = 
   );
 }
 
-function SwipePill({ bg, fg, ff, text = "Arraste para o lado" }: { bg: string; fg: string; ff: string; text?: string }) {
+function SwipePill({ bg, fg, ff, text = tr().swipe }: { bg: string; fg: string; ff: string; text?: string }) {
   return (
     <span style={{ display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 8, padding: "6px 12px 6px 6px", borderRadius: 999, background: bg, color: fg, fontFamily: ff, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
       <span style={{ width: 20, height: 20, borderRadius: 10, background: fg, color: bg, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 900 }}>→</span>
@@ -207,14 +217,14 @@ function Button({ text, bg, fg, ff, arrow = true, size = 13 }: { text: string; b
   );
 }
 
-function PriceTag({ price, color, ff, prefix = "A partir de", suffix = "por pessoa", size = 54 }: { price: Price; color: string; ff: string; prefix?: string; suffix?: string; size?: number }) {
+function PriceTag({ price, color, ff, prefix = tr().from, suffix = tr().perPerson, size = 54 }: { price: Price; color: string; ff: string; prefix?: string; suffix?: string; size?: number }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2, color, fontFamily: ff, flexShrink: 0 }}>
       {prefix && <span style={{ fontSize: Math.round(size * 0.24), fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", opacity: 0.85 }}>{prefix}</span>}
       <span style={{ display: "flex", alignItems: "flex-start", gap: 6, lineHeight: 0.9 }}>
         <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", fontWeight: 800, fontSize: Math.round(size * 0.3), lineHeight: 1, marginTop: Math.round(size * 0.12) }}>
           {price.installments && <span>{price.installments}</span>}
-          <span>R$</span>
+          <span>{price.sym}</span>
         </span>
         <span style={{ fontSize: size, fontWeight: 900, letterSpacing: "-0.04em" }}>{price.int}</span>
         {price.cents && <span style={{ fontSize: Math.round(size * 0.34), fontWeight: 800, marginTop: Math.round(size * 0.1) }}>,{price.cents}</span>}
@@ -264,6 +274,7 @@ function NeonBackdrop({ accent, glowAt = "70% 20%" }: { accent: string; glowAt?:
 // ───────── modelos ─────────
 export function ProSlide(p: ProSlideProps) {
   const { slide, ratio } = p;
+  const T = tr();
   const story = ratio < 0.68;
   const ff = slide.fontFamily || "Inter, ui-sans-serif, system-ui, sans-serif";
   const primary = p.primary || "#0B3B8C";
@@ -273,14 +284,14 @@ export function ProSlide(p: ProSlideProps) {
   const kind = slide.kind;
   const title = clean(slide.title);
   const bodyRaw = clean(slide.body);
-  const cta = clean(slide.cta) || "Fale com a gente";
+  const cta = clean(slide.cta) || T.talk;
   const label = clean(slide.label);
   const bullets = slide.bullets.map(clean).filter(Boolean);
   const price = extractPrice([bodyRaw, ...bullets]);
   const body = price && bodyRaw.includes(price.raw) ? clean(bodyRaw.replace(PRICE_RE, "").replace(/\b(a partir de|por pessoa)\b/gi, "").replace(/^[\s,.;:-]+|[\s,.;:-]+$/g, "")) : bodyRaw;
   const bulletsNoPrice = price ? bullets.filter((b) => !b.includes(price.raw)) : bullets;
-  const departure = [bodyRaw, ...bullets].map((t) => t.match(/sa[ií](?:ndo|da) de ([^.,;]+)/i)?.[1]?.trim()).find(Boolean);
-  const bodyNoDeparture = clean((departure ? body.replace(/sa[ií](?:ndo|da) de [^.,;]+[.,;]?/i, "") : body).replace(/^[\s,.;:-]+|[\s,.;:-]+$/g, ""));
+  const departure = [bodyRaw, ...bullets].map((t) => t.match(/(?:sa[ií](?:ndo|da)|saliendo|salida) (?:de|desde) ([^.,;]+)/i)?.[1]?.trim()).find(Boolean);
+  const bodyNoDeparture = clean((departure ? body.replace(/(?:sa[ií](?:ndo|da)|saliendo|salida) (?:de|desde) [^.,;]+[.,;]?/i, "") : body).replace(/^[\s,.;:-]+|[\s,.;:-]+$/g, ""));
   const titleColor = slide.titleStyle?.color;
   const bodyColor = slide.bodyStyle?.color;
   const M = 26;
@@ -298,7 +309,7 @@ export function ProSlide(p: ProSlideProps) {
       <div style={{ position: "absolute", left: M, right: M, top: safeTop, display: "flex", alignItems: "center", justifyContent: "space-between", zIndex: 30 }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,.85)", fontFamily: ff, fontSize: 10, fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase" }}>
           <span style={{ width: 8, height: 8, borderRadius: 4, background: accent, boxShadow: `0 0 12px ${accent}` }} />
-          {label || "Viagem"}
+          {label || T.trip}
         </span>
         <PageMark index={p.index} total={p.total} color="rgba(255,255,255,.6)" ff={ff} />
       </div>
@@ -381,7 +392,7 @@ export function ProSlide(p: ProSlideProps) {
     const cardBg = strong;
     const cardFg = onColor(cardBg);
     const stripe = accent;
-    const tagline = bodyNoDeparture || "A sua melhor viagem começa aqui.";
+    const tagline = bodyNoDeparture || T.tagline;
     if (kind === "cover") {
       return (
         <Frame canvasRef={p.canvasRef} ratio={ratio} background={NIGHT} ff={ff}>
@@ -391,14 +402,14 @@ export function ProSlide(p: ProSlideProps) {
           <div style={{ position: "absolute", left: M, right: story ? "16%" : "12%", bottom: safeBottom + 18, background: cardBg, color: cardFg, borderRadius: 22, boxShadow: "0 24px 60px rgba(0,0,0,.35)" }}>
             <div style={{ padding: "18px 18px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontFamily: ff, fontSize: 24, fontWeight: 900, letterSpacing: "-0.02em", flexShrink: 0 }}>{label || "Oferta"}</span>
+                <span style={{ fontFamily: ff, fontSize: 24, fontWeight: 900, letterSpacing: "-0.02em", flexShrink: 0 }}>{label || T.offer}</span>
                 <span style={{ width: 1.5, height: 26, background: rgba(cardFg, 0.5), flexShrink: 0 }} />
                 <Body text={tagline} color={cardFg} ff={ff} size={11} maxLines={2} weight={600} />
               </div>
               <Title text={title} color={titleColor || cardFg} ff={ff} base={story ? 34 : 32} maxLines={4} weight={900} />
               {departure && (
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: ff, fontSize: 12, fontWeight: 700 }}>
-                  <Icon name="pino-de-localizacao" size={14} tone={isLight(cardBg) ? "dark" : "light"} /> Saindo de {departure}
+                  <Icon name="pino-de-localizacao" size={14} tone={isLight(cardBg) ? "dark" : "light"} /> {T.leaving} {departure}
                 </span>
               )}
               {bulletsNoPrice.length > 0 && (
@@ -410,13 +421,13 @@ export function ProSlide(p: ProSlideProps) {
             <div style={{ position: "relative", background: "#FFFFFF", color: cardBg, borderRadius: "0 0 22px 22px", overflow: "hidden" }}>
               <IconChip name="aviao" bg={stripe} size={44} radius={0} style={{ position: "absolute", left: 0, top: 0, borderRadius: "0 0 14px 0" }} />
               <div style={{ padding: "14px 18px 0 62px" }}>
-                {price ? <PriceTag price={price} color={cardBg} ff={ff} size={50} /> : <Title text="Consulte valores e datas" color={cardBg} ff={ff} base={20} maxLines={2} />}
+                {price ? <PriceTag price={price} color={cardBg} ff={ff} size={50} /> : <Title text={T.askPrices} color={cardBg} ff={ff} base={20} maxLines={2} />}
               </div>
-              <div style={{ marginTop: 12, background: stripe, color: onColor(stripe), textAlign: "center", padding: "9px 0", fontFamily: ff, fontSize: 13, fontWeight: 800 }}>Consulte-nos →</div>
+              <div style={{ marginTop: 12, background: stripe, color: onColor(stripe), textAlign: "center", padding: "9px 0", fontFamily: ff, fontSize: 13, fontWeight: 800 }}>{T.askUs} →</div>
             </div>
           </div>
           <div style={{ position: "absolute", left: M, right: M, bottom: safeBottom - 14, display: "flex", justifyContent: "space-between", color: "rgba(255,255,255,.85)", fontFamily: ff, fontSize: 9.5, fontWeight: 600 }}>
-            <span>Tarifa sujeita a alteração sem aviso prévio</span>
+            <span>{T.fareNote}</span>
             <PageMark index={p.index} total={p.total} color="rgba(255,255,255,.85)" ff={ff} />
           </div>
         </Frame>
@@ -484,19 +495,19 @@ export function ProSlide(p: ProSlideProps) {
             <>
               <Title text={title} color={titleColor || ink} ff={ff} base={story ? 44 : 40} maxLines={4} weight={900} />
               <span style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 8, background: bar, color: barFg, padding: "8px 14px", fontFamily: ff, fontSize: 14, fontWeight: 600, maxWidth: "100%", flexShrink: 0 }}>
-                {departure ? `Saindo de ${departure}` : bodyNoDeparture || label}
+                {departure ? `${T.leaving} ${departure}` : bodyNoDeparture || label}
                 <Icon name="pino-de-localizacao" size={15} tone={isLight(bar) ? "dark" : "light"} />
               </span>
               <div style={{ display: "flex", alignItems: "stretch", gap: 14, marginTop: 4, flexShrink: 0, flexWrap: "wrap" }}>
                 <IconList items={bulletsNoPrice} color={ink} ff={ff} size={15} max={3} gap={8} bold={false} />
                 <span style={{ width: 2, background: ink, opacity: 0.8, margin: "2px 0" }} />
                 <div style={{ display: "flex", alignItems: "center", minWidth: 0 }}>
-                  {price ? <PriceTag price={price} color={ink} ff={ff} prefix="a partir de" suffix="/pessoa" size={38} /> : <SwipePill bg={bar} fg={barFg} ff={ff} text="Arraste" />}
+                  {price ? <PriceTag price={price} color={ink} ff={ff} prefix={T.fromLower} suffix={T.perPersonShort} size={38} /> : <SwipePill bg={bar} fg={barFg} ff={ff} text={T.swipeShort} />}
                 </div>
               </div>
             </>,
           )}
-          <div style={{ position: "absolute", left: M, bottom: safeBottom - 8, color: "#fff", fontFamily: ff, fontSize: 11, fontWeight: 700, letterSpacing: ".14em", textShadow: "0 2px 8px rgba(0,0,0,.6)" }}>{num}/{totalStr} · ARRASTE →</div>
+          <div style={{ position: "absolute", left: M, bottom: safeBottom - 8, color: "#fff", fontFamily: ff, fontSize: 11, fontWeight: 700, letterSpacing: ".14em", textShadow: "0 2px 8px rgba(0,0,0,.6)" }}>{num}/{totalStr} · {T.swipeCaps} →</div>
         </Frame>
       );
     }
@@ -507,13 +518,13 @@ export function ProSlide(p: ProSlideProps) {
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                 <span style={{ fontFamily: ff, fontSize: 44, fontWeight: 900, color: ink, lineHeight: 1, letterSpacing: "-0.04em" }}>{num}</span>
-                <span style={{ background: bar, color: barFg, padding: "6px 12px", fontFamily: ff, fontSize: 11, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase" }}>{label || "Roteiro"}</span>
+                <span style={{ background: bar, color: barFg, padding: "6px 12px", fontFamily: ff, fontSize: 11, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase" }}>{label || T.itinerary}</span>
               </div>
               <Title text={title} color={titleColor || ink} ff={ff} base={30} maxLines={3} weight={900} />
               <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={13} maxLines={2} />
               <div style={{ display: "flex", alignItems: "stretch", gap: 16, flexShrink: 0 }}>
                 <IconList items={bulletsNoPrice} color={ink} ff={ff} size={14} max={4} gap={7} bold={false} />
-                {price && <><span style={{ width: 2, background: ink, opacity: 0.8 }} /><div style={{ display: "flex", alignItems: "center", minWidth: 0 }}><PriceTag price={price} color={ink} ff={ff} prefix="por" suffix="/pessoa" size={36} /></div></>}
+                {price && <><span style={{ width: 2, background: ink, opacity: 0.8 }} /><div style={{ display: "flex", alignItems: "center", minWidth: 0 }}><PriceTag price={price} color={ink} ff={ff} prefix={T.by} suffix={T.perPersonShort} size={36} /></div></>}
               </div>
             </>,
           )}
@@ -562,7 +573,7 @@ export function ProSlide(p: ProSlideProps) {
           <IconList items={bulletsNoPrice} color={teal} ff={ff} size={16} max={3} gap={10} iconTone="dark" />
           {price ? (
             <div style={{ alignSelf: "flex-start", background: teal, color: tealFg, borderRadius: 12, padding: "8px 14px", display: "flex", alignItems: "center", gap: 10, fontFamily: ff, flexShrink: 0 }}>
-              <span style={{ fontSize: 10, lineHeight: 1.15, fontWeight: 600, whiteSpace: "nowrap" }}>A partir de<br /><b style={{ fontSize: 14 }}>{price.installments ? `${price.installments} ` : ""}R$</b></span>
+              <span style={{ fontSize: 10, lineHeight: 1.15, fontWeight: 600, whiteSpace: "nowrap" }}>{T.from}<br /><b style={{ fontSize: 14 }}>{price.installments ? `${price.installments} ` : ""}{price.sym}</b></span>
               <span style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-0.03em", whiteSpace: "nowrap" }}>{price.int}<span style={{ fontSize: 14 }}>{price.cents ? `,${price.cents}` : ""}</span></span>
             </div>
           ) : (
