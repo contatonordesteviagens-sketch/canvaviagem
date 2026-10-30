@@ -10,8 +10,9 @@ Enseada, Batata Turismo, hotéis de luxo). Contact sheets em `C:/tmp/lab-shots/r
 
 ## 1. As 7 regras (toda arte passa por todas)
 
-1. **Bloco flexível.** Cartão, painel, faixa e bloco de cor têm a altura (e, quando faz sentido, a largura)
-   do conteúdo que carregam. Meça antes de pintar (passada `dry`), depois desenhe o fundo e por fim o texto.
+1. **Bloco flexível.** Cartão, painel, faixa, botão e bloco de cor têm a altura **e a largura** do conteúdo
+   que carregam (um botão com texto curto é curto; uma caixa de preço mede `priceNaturalWidth()`).
+   Nunca repita a mesma foto em recortes; uma foto só, bem enquadrada. Meça antes de pintar (passada `dry`), depois desenhe o fundo e por fim o texto.
    Pouco texto = bloco pequeno; muito texto = bloco maior, até um teto; passou do teto, reduza a escala
    (`fitScale`), nunca corte nem vaze.
 2. **Um eixo por bloco.** Dentro de um bloco todos os elementos partem da mesma linha à esquerda

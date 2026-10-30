@@ -218,6 +218,9 @@ function iconStrip(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y: 
 }
 
 type PriceOpts = { fg: string; accentBg: string; accentFg: string; size?: number; align?: "left" | "right" | "center"; showTotal?: boolean };
+/** Largura natural do último bloco de preço medido (para caixas que se ajustam ao conteúdo). */
+let LAST_PRICE_WIDTH = 0;
+export const priceNaturalWidth = () => LAST_PRICE_WIDTH;
 /** Bloco de preço estilo CVC. Devolve a altura. */
 function priceBlock(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y: number, maxW: number, o: PriceOpts, dry = false): number {
   const f = fontsOf(m);
@@ -304,6 +307,11 @@ function priceBlock(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y:
 
   const small = Math.round(S * 0.17);
   const tail = [p.suffix, (o.showTotal ?? true) && p.total ? `Total ${p.total}` : ""].filter(Boolean).join("  ·  ");
+  setFont(ctx, 600, small, f.sans);
+  const tailW = tail ? Math.min(maxW, ctx.measureText(tail).width) : 0;
+  setFont(ctx, 700, Math.round(S * 0.18), f.sans);
+  const prefixW = p.prefix ? ctx.measureText(p.prefix.toUpperCase()).width : 0;
+  LAST_PRICE_WIDTH = Math.ceil(Math.max(mm.total, tailW, prefixW, stackedPill ? pillW : 0));
   if (tail) {
     cy += small * 0.4;
     if (!dry) {
@@ -1083,7 +1091,7 @@ function columnPair(m: ProArtModel) {
   return { dark, side };
 }
 
-/** V9 — "Combo" (Black Friday): coluna escura com headline, checklist em pílulas e preço; coluna da marca com tira de 3 fotos. */
+/** V9 — "Combo" (Black Friday): coluna escura com headline, checklist em pílulas e preço; coluna da marca com a foto em moldura. */
 async function layoutV9(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
@@ -1142,15 +1150,13 @@ async function layoutV9(m: ProArtModel) {
   ctx.fillRect(0, 0, splitX, height);
   ctx.fillStyle = side;
   ctx.fillRect(splitX, 0, width - splitX, height);
-  // tira de 3 recortes da foto (focos diferentes), com a mesma margem da coluna
+  // uma foto só, em moldura arredondada, com a mesma margem da coluna
   const pad = 28;
   const fx = splitX + pad;
   const fw = width - splitX - pad * 2;
   const fTop = F.story ? F.top : 40;
   const fBottom = F.footerTop - 24;
-  const gap = 16;
-  const fh = Math.floor((fBottom - fTop - gap * 2) / 3);
-  [0.15, 0.5, 0.85].forEach((focus, i) => drawPhoto(m, fx, fTop + i * (fh + gap), fw, fh, focus, 26));
+  drawPhoto(m, fx, fTop, fw, fBottom - fTop, 0.5, 26);
   content(k, false, startY);
   await branding(m, sideFg);
 }
@@ -1237,43 +1243,63 @@ async function layoutV11(m: ProArtModel) {
   const ctaH = F.story ? 84 : 76;
   const ctaY = F.bottom - ctaH;
   const gap = 20;
-  const leftW = Math.round(w * 0.5);
-  const rightW = w - leftW - gap;
+  const pad = 28;
 
   const content = (k: number, dry: boolean, y0 = 0): number => {
     let y = y0;
     pill(ctx, cx, y, m.promoName.toUpperCase(), { bg: accent, fg: accentFg, size: 22 * k, family: f.sans, weight: 900, h: 44 * k, padX: 22, align: "center" }, dry);
     y += 44 * k + 18;
     const hs = (F.story ? 96 : 84) * k;
-    y += paragraph(ctx, m.destination.toUpperCase(), cx, y, w, { weight: 900, size: hs, family: f.display, color: "#ffffff", maxLines: 2, align: "center", lineHeight: hs * 0.98 }, dry) + 16;
+    const titleOpts: ParaOpts = { weight: 900, size: hs, family: f.display, color: "#ffffff", maxLines: 2, align: "center", lineHeight: hs * 0.98 };
+    const titleW = measurePara(ctx, m.destination.toUpperCase(), w, titleOpts).width;
+    y += paragraph(ctx, m.destination.toUpperCase(), cx, y, w, titleOpts, dry) + 16;
     const inc = m.highlights.slice(0, 3).map((h) => h.text).join(" + ");
     if (inc) {
       pill(ctx, cx, y, inc, { bg: "rgba(255,255,255,0.92)", fg: "#15171A", size: 22 * k, family: f.sans, weight: 700, h: 46 * k, padX: 22, align: "center", maxW: w }, dry);
       y += 46 * k + 30;
     }
-    // duas caixas com a mesma altura
-    const leftInner = m.isExperience
-      ? paragraph(ctx, m.headline, x + 28, y + 28, leftW - 56, { weight: 800, size: 44 * k, family: f.display, color: darkFg, maxLines: 3 }, true) + 14
-        + paragraph(ctx, m.subtitle, x + 28, y, leftW - 56, { weight: 500, size: 24 * k, family: f.sans, color: darkFg, maxLines: 2 }, true)
-      : priceBlock(ctx, m, x + 28, y + 28, leftW - 56, { fg: darkFg, accentBg: accent, accentFg, size: (F.story ? 124 : 108) * k, align: "center" }, true);
+    // Duas caixas: cada uma com a largura do próprio conteúdo; juntas ocupam pelo
+    // menos a largura do título e ficam centradas sob ele.
     const items = m.highlights.slice(0, 4);
+    const maxLeftInner = Math.round(w * 0.55) - pad * 2;
+    const priceOpts: PriceOpts = { fg: darkFg, accentBg: accent, accentFg, size: (F.story ? 124 : 108) * k, align: "center" };
+    let leftInner = 0;
+    let leftNeed = 0;
+    if (m.isExperience) {
+      const h1 = measurePara(ctx, m.headline, maxLeftInner, { weight: 800, size: 44 * k, family: f.display, color: "", maxLines: 3 });
+      const h2 = measurePara(ctx, m.subtitle, maxLeftInner, { weight: 500, size: 24 * k, family: f.sans, color: "", maxLines: 2 });
+      leftInner = h1.h + 14 + h2.h;
+      leftNeed = Math.ceil(Math.max(h1.width, h2.width, 260));
+    } else {
+      leftInner = priceBlock(ctx, m, 0, 0, maxLeftInner, priceOpts, true);
+      leftNeed = Math.min(maxLeftInner, priceNaturalWidth());
+    }
+    setFont(ctx, 700, 22 * k, f.sans);
+    const rightNeed = Math.ceil(Math.max(200, ...items.map((h) => ctx.measureText(h.text).width)));
     const rowH = 40 * k + 10 + 22 * k * 1.1 + 16;
     const rightInner = items.length * rowH - 16;
     const boxH = Math.max(leftInner, rightInner) + 56;
+    let leftW = leftNeed + pad * 2;
+    let rightW = rightNeed + 40;
+    const minTotal = Math.min(w, Math.max(titleW, leftW + gap + rightW));
+    const extra = minTotal - (leftW + gap + rightW);
+    if (extra > 0) { leftW += extra / 2; rightW += extra / 2; }
+    const total = leftW + gap + rightW;
+    const bx = cx - total / 2;
     if (!dry) {
-      fillRoundRect(ctx, x, y, leftW, boxH, 28, dark);
-      fillRoundRect(ctx, x + leftW + gap, y, rightW, boxH, 28, "rgba(255,255,255,0.94)");
+      fillRoundRect(ctx, bx, y, leftW, boxH, 28, dark);
+      fillRoundRect(ctx, bx + leftW + gap, y, rightW, boxH, 28, "rgba(255,255,255,0.94)");
       if (m.isExperience) {
-        const used = paragraph(ctx, m.headline, x + 28, y + 28, leftW - 56, { weight: 800, size: 44 * k, family: f.display, color: darkFg, maxLines: 3 });
-        paragraph(ctx, m.subtitle, x + 28, y + 28 + used + 14, leftW - 56, { weight: 500, size: 24 * k, family: f.sans, color: darkFg, maxLines: 2 });
+        const used = paragraph(ctx, m.headline, bx + pad, y + 28, leftW - pad * 2, { weight: 800, size: 44 * k, family: f.display, color: darkFg, maxLines: 3 });
+        paragraph(ctx, m.subtitle, bx + pad, y + 28 + used + 14, leftW - pad * 2, { weight: 500, size: 24 * k, family: f.sans, color: darkFg, maxLines: 2 });
       } else {
-        priceBlock(ctx, m, x + 28, y + 28 + (boxH - 56 - leftInner) / 2, leftW - 56, { fg: darkFg, accentBg: accent, accentFg, size: (F.story ? 124 : 108) * k, align: "center" });
+        priceBlock(ctx, m, bx + pad, y + 28 + (boxH - 56 - leftInner) / 2, leftW - pad * 2, priceOpts);
       }
-      const rcx = x + leftW + gap + rightW / 2;
+      const rcx = bx + leftW + gap + rightW / 2;
       let ry = y + 28 + (boxH - 56 - rightInner) / 2;
       items.forEach((h) => {
         drawMonoIcon(ctx, h.icon, rcx, ry + 20 * k, 40 * k, dark, 1.6);
-        paragraph(ctx, h.text, rcx, ry + 40 * k + 10, rightW - 40, { weight: 700, size: 22 * k, family: f.sans, color: "#15171A", maxLines: 1, align: "center" });
+        paragraph(ctx, h.text, rcx, ry + 40 * k + 10, rightW - 24, { weight: 700, size: 22 * k, family: f.sans, color: "#15171A", maxLines: 1, align: "center" });
         ry += rowH;
       });
     }
@@ -1282,24 +1308,21 @@ async function layoutV11(m: ProArtModel) {
   };
 
   const startY = F.story ? F.top + 10 : 48;
-  const { k } = fitScale((kk, dry) => content(kk, dry), ctaY - 30 - startY);
+  const { k, h: contentH } = fitScale((kk, dry) => content(kk, dry), ctaY - 30 - startY);
+  // CTA logo abaixo das caixas (conversa com o bloco), nunca abaixo do limite do rodapé
+  const ctaTop = Math.min(ctaY, startY + contentH + 34);
 
   drawPhoto(m, 0, 0, width, height, 0.5);
-  veil(ctx, 0, 0, width, height * 0.5, 0.7, true);
-  veil(ctx, 0, height * 0.45, width, height, 0.8);
+  veil(ctx, 0, 0, width, Math.max(height * 0.5, ctaTop + ctaH + 60), 0.7, true);
+  veil(ctx, 0, height * 0.6, width, height, 0.7);
   content(k, false, startY);
-  // CTA de largura cheia
+  // CTA centrado, com a largura do próprio texto
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,0.3)";
   ctx.shadowBlur = 24;
   ctx.shadowOffsetY = 8;
-  fillRoundRect(ctx, x, ctaY, w, ctaH, 22, accent);
+  pill(ctx, cx, ctaTop, m.isExperience ? `${CTA_TEXT}  →` : "RESERVAR AGORA  →", { bg: accent, fg: accentFg, size: F.story ? 32 : 28, family: f.sans, weight: 900, h: ctaH, padX: 56, align: "center", maxW: w });
   ctx.restore();
-  ctx.fillStyle = accentFg;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  setFont(ctx, 900, F.story ? 32 : 28, f.sans);
-  ctx.fillText(m.isExperience ? `${CTA_TEXT}  →` : "RESERVAR AGORA  →", cx, ctaY + ctaH / 2 + 1);
   await branding(m);
 }
 
