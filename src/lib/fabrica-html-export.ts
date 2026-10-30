@@ -1661,7 +1661,7 @@ ${sectionOrder
         ${!sc.hiddenElements?.includes('hero-headline') ? `<h1 data-visual-removable="hero-headline">${esc(headline)}</h1>` : ''}
         ${!sc.hiddenElements?.includes('hero-sub') ? `<p class="lead" data-visual-removable="hero-sub">${esc(subheadline)}</p>` : ''}
         <div class="hero-actions">
-          ${!sc.hiddenElements?.includes('hero-cta-1') ? `<a href="#orcamento" class="btn" data-visual-removable="hero-cta-1"${heroCtaOpensWhatsApp ? ` onclick="openLeadForm('Topo do site', 'https://wa.me/${wpp}');return false;"` : ""}>${esc(sc.heroCtaLabel || "Solicitar Meu Roteiro")}</a>` : ''}
+          ${!sc.hiddenElements?.includes('hero-cta-1') ? `<a href="#orcamento" class="btn" data-visual-removable="hero-cta-1"${heroCtaOpensWhatsApp ? ` onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;"` : ""}>${esc(sc.heroCtaLabel || "Solicitar Meu Roteiro")}</a>` : ''}
           ${!sc.hiddenElements?.includes('hero-cta-2') ? `<a href="#destinos" class="btn btn-outline" data-visual-removable="hero-cta-2">${esc(sc.heroSecondaryCtaLabel || "Ver Destinos")}</a>` : ''}
         </div>
       </div>
@@ -1714,7 +1714,7 @@ ${sectionOrder
           <p>${esc(p.description)}</p>
           ${isRoteiros ? packageMetaHtml(p) : ""}
           <div class="dest-price">${parsePriceHTML(p.price)}</div>
-          ${isRoteiros ? `<div class="dest-actions"><span class="dest-cta">${esc(sc.packageOverlayLabel && sc.packageOverlayLabel !== "Ver pacote →" ? sc.packageOverlayLabel : "Ver roteiro")}</span>${wpp ? `<a class="dest-reserve" href="${esc(wppMsg(p.title))}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Reservar</a>` : ""}</div>` : `<span class="dest-cta">${esc(p.ctaLabel || "Saiba mais →")}</span>`}
+          ${isRoteiros ? `<div class="dest-actions"><span class="dest-cta">${esc(sc.packageOverlayLabel && sc.packageOverlayLabel !== "Ver pacote →" ? sc.packageOverlayLabel : "Ver roteiro")}</span>${wpp ? `<a class="dest-reserve" href="${esc(wppMsg(p.title))}" data-target="${esc(p.title)}" onclick="event.stopPropagation();openLeadForm(this.getAttribute('data-target'), this.href);return false;">Reservar</a>` : ""}</div>` : `<span class="dest-cta">${esc(p.ctaLabel || "Saiba mais →")}</span>`}
         </div>
       </article>` : ''
         )
@@ -2573,7 +2573,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
   ${seasonalScripts}
 </script>
 
-${isRoteiros && wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a class="wa-bar" href="#" onclick="openLeadForm('WhatsApp', 'https://wa.me/${wpp}');return false;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3a.5.5 0 0 0 0-.4l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>Falar no WhatsApp</a>` : ""}
+${isRoteiros && wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a class="wa-bar" href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3a.5.5 0 0 0 0-.4l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>Falar no WhatsApp</a>` : ""}
 ${isRoteiros ? `<script>function filterPackages(btn){var d=btn.getAttribute("data-dest")||"";document.querySelectorAll("#destinos .dest-card").forEach(function(c){c.hidden=!!d&&c.getAttribute("data-dest")!==d;});document.querySelectorAll(".pkg-filter button").forEach(function(b){b.setAttribute("aria-pressed",b===btn?"true":"false");});}</script>` : ""}
 </body>
 </html>`;
