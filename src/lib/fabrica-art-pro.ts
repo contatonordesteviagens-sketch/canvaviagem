@@ -2,14 +2,16 @@
  * LAYOUTS PRO — redesenho das artes V0–V8 a partir das referências de mercado
  * (CVC, Decolar, Clube Turismo, Enseada, Batata Turismo, hotéis de luxo).
  *
- * Regras que todos os layouts obedecem (nota 15 do segundo cérebro):
- * - grid com margem lateral fixa; stories respeitam 250px no topo e ~310px na base;
- * - um único ponto focal (preço na oferta, headline na experiência);
- * - texto nunca solto sobre foto crua: sempre dentro de cartão, bloco ou véu;
- * - bloco de cor chapada no máximo ~40% da arte e sempre denso;
- * - ícones sempre com rótulo; logo e contatos discretos (drawFinalBranding).
+ * Princípios (skill `design-artes-fabrica` e nota 15 do segundo cérebro):
+ * - BLOCOS FLEXÍVEIS: todo cartão/painel/bloco é medido antes de ser pintado;
+ *   a altura acompanha o texto. Nunca sobra bloco vazio nem texto vazando.
+ * - ALINHAMENTO: dentro de um bloco todos os elementos partem da mesma linha
+ *   à esquerda (ou do mesmo centro) e respeitam a mesma largura máxima.
+ * - RODAPÉ RESERVADO: o conteúdo termina acima de `F.footerTop` (logo + contatos).
+ * - Um único ponto focal (preço na oferta, headline na experiência); texto só
+ *   dentro de cartão, bloco ou véu; ícones sempre com rótulo quando há espaço.
  *
- * Este arquivo só desenha. Quem monta o modelo é `composeTravelAd` (fabrica-compose-art.ts).
+ * Cada primitiva aceita `dry` (só mede) para a passada de medição.
  */
 import {
   applyVignette,
@@ -30,14 +32,14 @@ export interface ProHighlight { text: string; icon: IconKey }
 
 export interface ProPrice {
   has: boolean;
-  sym: string;         // "R$"
-  intPart: string;     // "1.499"
-  cents: string;       // "90" ou ""
-  topLabel: string;    // "10x" | "A VISTA" ...
-  prefix: string;      // "a partir de"
-  suffix: string;      // "por pessoa"
-  total: string;       // "R$ 1.499,00" ou ""
-  pixText: string;     // "5% OFF À VISTA NO PIX" ou ""
+  sym: string;
+  intPart: string;
+  cents: string;
+  topLabel: string;
+  prefix: string;
+  suffix: string;
+  total: string;
+  pixText: string;
 }
 
 export interface ProContact { icon: string; value: string }
@@ -67,29 +69,28 @@ export interface ProArtModel {
   textColorOverride?: string;
 }
 
-const CTA_TEXT = "RESERVE AGORA";
-const CTA_TEXT_SOFT = "Reserve agora";
+export const CTA_TEXT = "RESERVE AGORA";
 
-// ───────────────────────── utilitários de desenho ─────────────────────────
+// ───────────────────────── utilitários ─────────────────────────
 
 const isLight = (hex: string) => contrastOn(hex) !== "#ffffff";
 
 type Fonts = { sans: string; display: string; serif: string };
 const fontsOf = (m: ProArtModel): Fonts => {
   const user = (m.fontFamily || "").trim();
+  const isSerifUser = /playfair|georgia|serif|garamond|merriweather/i.test(user);
   const sans = user ? `${user}, Inter, Arial, sans-serif` : "Inter, Arial, sans-serif";
   return {
     sans,
     display: user ? sans : "Outfit, Inter, Arial, sans-serif",
-    serif: "'Playfair Display', Georgia, serif",
+    serif: isSerifUser ? sans : "'Playfair Display', Georgia, serif",
   };
 };
 
 function setFont(ctx: CanvasRenderingContext2D, weight: number | string, size: number, family: string) {
-  ctx.font = `${weight} ${size}px ${family}`;
+  ctx.font = `${weight} ${Math.round(size)}px ${family}`;
 }
 
-/** Reduz a fonte até `text` caber em `maxW`. Devolve o tamanho final. */
 function fitSize(ctx: CanvasRenderingContext2D, text: string, maxW: number, weight: number | string, size: number, family: string, minSize = 18) {
   let s = size;
   setFont(ctx, weight, s, family);
@@ -100,51 +101,50 @@ function fitSize(ctx: CanvasRenderingContext2D, text: string, maxW: number, weig
   return s;
 }
 
-/** Texto em várias linhas; devolve a altura ocupada. */
-function paragraph(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxW: number,
-  opts: { weight: number | string; size: number; family: string; color: string; maxLines: number; lineHeight?: number; align?: CanvasTextAlign; minSize?: number; letterSpacing?: number },
-): number {
-  if (!text) return 0;
-  let size = opts.size;
-  const minSize = opts.minSize ?? Math.round(opts.size * 0.6);
+type ParaOpts = { weight: number | string; size: number; family: string; color: string; maxLines: number; lineHeight?: number; align?: CanvasTextAlign; minSize?: number; letterSpacing?: number };
+
+/** Mede um parágrafo: linhas, tamanho final e altura. */
+function measurePara(ctx: CanvasRenderingContext2D, text: string, maxW: number, o: ParaOpts) {
+  let size = o.size;
+  const minSize = o.minSize ?? Math.round(o.size * 0.6);
   let lines: string[] = [];
-  // encolhe até caber em maxLines
   for (;;) {
-    setFont(ctx, opts.weight, size, opts.family);
-    lines = wrapTextSafe(ctx, text, maxW, opts.maxLines + 1, minSize);
-    if (lines.length <= opts.maxLines || size <= minSize) break;
+    setFont(ctx, o.weight, size, o.family);
+    lines = wrapTextSafe(ctx, text, maxW, o.maxLines + 1, minSize);
+    if (lines.length <= o.maxLines || size <= minSize) break;
     size -= 2;
   }
-  lines = lines.slice(0, opts.maxLines);
-  const lh = opts.lineHeight ?? size * 1.08;
-  ctx.save();
-  ctx.fillStyle = opts.color;
-  ctx.textAlign = opts.align ?? "left";
-  ctx.textBaseline = "alphabetic";
-  if (opts.letterSpacing && "letterSpacing" in ctx) (ctx as any).letterSpacing = `${opts.letterSpacing}px`;
-  lines.forEach((ln, i) => safeFillText(ctx, ln, x, y + size + i * lh, maxW, minSize));
-  ctx.restore();
-  return lines.length * lh;
+  lines = lines.slice(0, o.maxLines);
+  const lh = o.lineHeight ? o.lineHeight * (size / o.size) : size * 1.08;
+  return { lines, size, lh, h: lines.length * lh, width: Math.max(0, ...lines.map((l) => ctx.measureText(l).width)) };
 }
 
-/** Pílula com texto. Devolve a largura. */
-function pill(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  text: string,
-  o: { bg: string; fg: string; size: number; family: string; weight?: number | string; h?: number; padX?: number; align?: "left" | "center" | "right"; maxW?: number; stroke?: string },
-): number {
-  const h = o.h ?? Math.round(o.size * 1.9);
+/** Parágrafo. Devolve a altura. `dry` só mede. */
+function paragraph(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxW: number, o: ParaOpts, dry = false): number {
+  if (!text) return 0;
+  const mm = measurePara(ctx, text, maxW, o);
+  if (dry) return mm.h;
+  ctx.save();
+  setFont(ctx, o.weight, mm.size, o.family);
+  ctx.fillStyle = o.color;
+  ctx.textAlign = o.align ?? "left";
+  ctx.textBaseline = "alphabetic";
+  if (o.letterSpacing && "letterSpacing" in ctx) (ctx as any).letterSpacing = `${o.letterSpacing}px`;
+  mm.lines.forEach((ln, i) => safeFillText(ctx, ln, x, y + mm.size * 0.92 + i * mm.lh, maxW, 10));
+  ctx.restore();
+  return mm.h;
+}
+
+type PillOpts = { bg: string; fg: string; size: number; family: string; weight?: number | string; h?: number; padX?: number; align?: "left" | "center" | "right"; maxW?: number; stroke?: string };
+const pillH = (o: PillOpts) => o.h ?? Math.round(o.size * 1.9);
+
+/** Pílula. Devolve a largura. */
+function pill(ctx: CanvasRenderingContext2D, x: number, y: number, text: string, o: PillOpts, dry = false): number {
+  const h = pillH(o);
   const padX = o.padX ?? Math.round(o.size * 0.9);
-  const maxTextW = (o.maxW ?? 9999) - padX * 2;
-  const size = fitSize(ctx, text, maxTextW, o.weight ?? 800, o.size, o.family, 14);
+  const size = fitSize(ctx, text, (o.maxW ?? 9999) - padX * 2, o.weight ?? 800, o.size, o.family, 14);
   const w = Math.ceil(ctx.measureText(text).width + padX * 2);
+  if (dry) return w;
   const left = o.align === "center" ? x - w / 2 : o.align === "right" ? x - w : x;
   ctx.save();
   if (o.bg !== "transparent") fillRoundRect(ctx, left, y, w, h, h / 2, o.bg);
@@ -163,20 +163,16 @@ function pill(
   return w;
 }
 
-/** Lista vertical de benefícios com ícone. Devolve a altura. */
-function iconList(
-  ctx: CanvasRenderingContext2D,
-  items: ProHighlight[],
-  x: number,
-  y: number,
-  maxW: number,
-  o: { size: number; family: string; color: string; iconColor?: string; gap?: number; iconBg?: string; columns?: 1 | 2 },
-): number {
+type ListOpts = { size: number; family: string; color: string; iconColor?: string; gap?: number; columns?: 1 | 2 };
+/** Lista de benefícios com ícone. Devolve a altura. */
+function iconList(ctx: CanvasRenderingContext2D, items: ProHighlight[], x: number, y: number, maxW: number, o: ListOpts, dry = false): number {
   if (!items.length) return 0;
-  const gap = o.gap ?? Math.round(o.size * 1.9);
+  const gap = o.gap ?? Math.round(o.size * 1.8);
   const icon = Math.round(o.size * 1.25);
   const cols = o.columns ?? 1;
   const colW = cols === 2 ? maxW / 2 : maxW;
+  const rows = cols === 2 ? Math.ceil(items.length / 2) : items.length;
+  if (dry) return rows * gap;
   ctx.save();
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
@@ -185,20 +181,19 @@ function iconList(
     const row = cols === 2 ? Math.floor(i / 2) : i;
     const cx = x + col * colW;
     const cy = y + row * gap + gap / 2;
-    if (o.iconBg) fillRoundRect(ctx, cx, cy - icon * 0.8, icon * 1.6, icon * 1.6, icon * 0.5, o.iconBg);
-    drawMonoIcon(ctx, h.icon, cx + icon * 0.8, cy, icon, o.iconColor ?? o.color, 1.6);
+    drawMonoIcon(ctx, h.icon, cx + icon / 2, cy, icon, o.iconColor ?? o.color, 1.6);
     ctx.fillStyle = o.color;
     setFont(ctx, 600, o.size, o.family);
-    safeFillText(ctx, h.text, cx + icon * 1.9, cy + 1, colW - icon * 2.2, Math.round(o.size * 0.7));
+    safeFillText(ctx, h.text, cx + icon * 1.55, cy + 1, colW - icon * 1.8, Math.round(o.size * 0.7));
   });
   ctx.restore();
-  const rows = cols === 2 ? Math.ceil(items.length / 2) : items.length;
   return rows * gap;
 }
 
-/** Linha "7 dias | ✈ 🏨 🍳" estilo CVC. Devolve a altura. */
-function iconStrip(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y: number, color: string, size = 26): number {
+/** Linha "Dezembro | ✈ 🏨 🍳". Devolve a altura. */
+function iconStrip(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y: number, color: string, size = 26, dry = false): number {
   const f = fontsOf(m);
+  if (dry) return size * 2;
   ctx.save();
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
@@ -209,7 +204,6 @@ function iconStrip(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y: 
     ctx.fillStyle = color;
     ctx.fillText(m.travelPeriod, cx, cy);
     cx += ctx.measureText(m.travelPeriod).width + size * 0.8;
-    ctx.fillStyle = color;
     ctx.globalAlpha = 0.5;
     ctx.fillRect(cx, cy - size * 0.7, 2, size * 1.4);
     ctx.globalAlpha = 1;
@@ -223,46 +217,38 @@ function iconStrip(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y: 
   return size * 2;
 }
 
-/**
- * Bloco de preço estilo CVC: "a partir de" · pílula "10X" · R$ 149,90 · total.
- * Alinhado à esquerda em `x`. Devolve a altura ocupada.
- */
-function priceBlock(
-  ctx: CanvasRenderingContext2D,
-  m: ProArtModel,
-  x: number,
-  y: number,
-  maxW: number,
-  o: { fg: string; accentBg: string; accentFg: string; size?: number; align?: "left" | "right" | "center"; showTotal?: boolean },
-): number {
+type PriceOpts = { fg: string; accentBg: string; accentFg: string; size?: number; align?: "left" | "right" | "center"; showTotal?: boolean };
+/** Bloco de preço estilo CVC. Devolve a altura. */
+function priceBlock(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y: number, maxW: number, o: PriceOpts, dry = false): number {
   const f = fontsOf(m);
   const p = m.price;
-  const S = o.size ?? 150; // tamanho do número
+  const S = o.size ?? 150;
   const align = o.align ?? "left";
-  let cursorY = y;
-
+  const ax = align === "center" ? x + maxW / 2 : align === "right" ? x + maxW : x;
+  const ta: CanvasTextAlign = align === "center" ? "center" : align === "right" ? "right" : "left";
+  let cy = y;
   ctx.save();
   ctx.textBaseline = "alphabetic";
 
-  // 1. prefixo
   if (p.prefix) {
-    setFont(ctx, 700, Math.round(S * 0.18), f.sans);
-    ctx.fillStyle = o.fg;
-    ctx.textAlign = align === "center" ? "center" : align === "right" ? "right" : "left";
-    ctx.fillText(p.prefix.toUpperCase(), align === "center" ? x + maxW / 2 : align === "right" ? x + maxW : x, cursorY + Math.round(S * 0.18));
-    cursorY += Math.round(S * 0.30);
+    const ps = Math.round(S * 0.18);
+    if (!dry) {
+      setFont(ctx, 700, ps, f.sans);
+      ctx.fillStyle = o.fg;
+      ctx.textAlign = ta;
+      ctx.fillText(p.prefix.toUpperCase(), ax, cy + ps);
+    }
+    cy += Math.round(S * 0.30);
   }
 
-  // 2. pílula + preço: mede tudo para alinhar
   const pillLabel = (p.topLabel || "").trim();
   const pillSize = Math.round(S * 0.26);
-  const pillH = Math.round(pillSize * 1.8);
+  const pH = Math.round(pillSize * 1.8);
   setFont(ctx, 900, pillSize, f.display);
   const pillW = pillLabel ? Math.ceil(ctx.measureText(pillLabel).width + pillSize * 1.2) : 0;
   const symSize = Math.round(S * 0.30);
   const centsSize = Math.round(S * 0.32);
   let numSize = S;
-  setFont(ctx, 900, numSize, f.display);
   const measure = () => {
     setFont(ctx, 800, symSize, f.display);
     const symW = ctx.measureText(p.sym).width + symSize * 0.25;
@@ -273,47 +259,64 @@ function priceBlock(
     return { symW, numW, centsW, total: (pillW ? pillW + pillSize * 0.7 : 0) + symW + numW + centsW };
   };
   let mm = measure();
-  while (mm.total > maxW && numSize > 60) {
+  while (mm.total > maxW && numSize > Math.max(56, S * 0.6)) {
     numSize -= 4;
     mm = measure();
   }
-  const groupW = mm.total;
-  const startX = align === "center" ? x + (maxW - groupW) / 2 : align === "right" ? x + maxW - groupW : x;
-  const baseline = cursorY + numSize * 0.78;
-  let cx = startX;
-  if (pillLabel) {
-    pill(ctx, cx, baseline - pillH - numSize * 0.05, pillLabel, { bg: o.accentBg, fg: o.accentFg, size: pillSize, family: f.display, weight: 900, h: pillH, padX: pillSize * 0.6 });
-    cx += pillW + pillSize * 0.7;
+  // Rótulo largo ("ENTRADA +", "À VISTA · 5% OFF"): se não cabe ao lado do número
+  // nem com o número reduzido, a pílula sobe para a linha de cima.
+  let stackedPill = false;
+  if (pillLabel && mm.total > maxW) {
+    stackedPill = true;
+    numSize = S;
+    const noPill = () => { const r = measure(); return r.total - (pillW + pillSize * 0.7); };
+    while (noPill() > maxW && numSize > 56) numSize -= 4;
+    mm = measure();
+    mm.total -= pillW + pillSize * 0.7;
+    if (!dry) {
+      const px = align === "center" ? x + (maxW - pillW) / 2 : align === "right" ? x + maxW - pillW : x;
+      pill(ctx, px, cy, pillLabel, { bg: o.accentBg, fg: o.accentFg, size: pillSize, family: f.display, weight: 900, h: pH, padX: pillSize * 0.6 });
+    }
+    cy += pH + 10;
   }
-  ctx.textAlign = "left";
-  ctx.fillStyle = o.fg;
-  setFont(ctx, 800, symSize, f.display);
-  ctx.fillText(p.sym, cx, baseline - numSize * 0.42);
-  cx += mm.symW;
-  setFont(ctx, 900, numSize, f.display);
-  ctx.fillText(p.intPart, cx, baseline);
-  cx += mm.numW;
-  if (p.cents) {
-    setFont(ctx, 800, centsSize, f.display);
-    ctx.fillText(`,${p.cents}`, cx, baseline - numSize * 0.42);
+  const startX = align === "center" ? x + (maxW - mm.total) / 2 : align === "right" ? x + maxW - mm.total : x;
+  const baseline = cy + numSize * 0.78;
+  if (!dry) {
+    let cx = startX;
+    if (pillLabel && !stackedPill) {
+      pill(ctx, cx, baseline - pH - numSize * 0.05, pillLabel, { bg: o.accentBg, fg: o.accentFg, size: pillSize, family: f.display, weight: 900, h: pH, padX: pillSize * 0.6 });
+      cx += pillW + pillSize * 0.7;
+    }
+    ctx.textAlign = "left";
+    ctx.fillStyle = o.fg;
+    setFont(ctx, 800, symSize, f.display);
+    ctx.fillText(p.sym, cx, baseline - numSize * 0.42);
+    cx += mm.symW;
+    setFont(ctx, 900, numSize, f.display);
+    ctx.fillText(p.intPart, cx, baseline);
+    cx += mm.numW;
+    if (p.cents) {
+      setFont(ctx, 800, centsSize, f.display);
+      ctx.fillText(`,${p.cents}`, cx, baseline - numSize * 0.42);
+    }
   }
-  cursorY += Math.round(numSize * 0.9);
+  cy += Math.round(numSize * 0.9);
 
-  // 3. sufixo + total
   const small = Math.round(S * 0.17);
-  setFont(ctx, 600, small, f.sans);
-  ctx.fillStyle = o.fg;
-  ctx.globalAlpha = 0.85;
-  ctx.textAlign = align === "center" ? "center" : align === "right" ? "right" : "left";
-  const tx = align === "center" ? x + maxW / 2 : align === "right" ? x + maxW : x;
   const tail = [p.suffix, (o.showTotal ?? true) && p.total ? `Total ${p.total}` : ""].filter(Boolean).join("  ·  ");
   if (tail) {
-    cursorY += small * 0.4;
-    safeFillText(ctx, tail, tx, cursorY + small, maxW, 14);
-    cursorY += small * 1.3;
+    cy += small * 0.4;
+    if (!dry) {
+      setFont(ctx, 600, small, f.sans);
+      ctx.fillStyle = o.fg;
+      ctx.globalAlpha = 0.85;
+      ctx.textAlign = ta;
+      safeFillText(ctx, tail, ax, cy + small, maxW, 14);
+    }
+    cy += small * 1.3;
   }
   ctx.restore();
-  return cursorY - y;
+  return cy - y;
 }
 
 /** Faixa "5% OFF À VISTA NO pix" no rodapé de um cartão. */
@@ -347,32 +350,26 @@ function pixStripe(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y: 
   ctx.restore();
 }
 
-/** Bloco de experiência: headline + subtítulo + CTA. Substitui o bloco de preço. Devolve a altura. */
-function experienceBlock(
-  ctx: CanvasRenderingContext2D,
-  m: ProArtModel,
-  x: number,
-  y: number,
-  maxW: number,
-  o: { fg: string; ctaBg: string; ctaFg: string; size?: number; align?: "left" | "center"; serif?: boolean; withHeadline?: boolean; withSubtitle?: boolean },
-): number {
+type ExpOpts = { fg: string; ctaBg: string; ctaFg: string; size?: number; align?: "left" | "center"; serif?: boolean; withHeadline?: boolean; withSubtitle?: boolean };
+/** Bloco de experiência: headline + subtítulo + CTA (no lugar do preço). Devolve a altura. */
+function experienceBlock(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y: number, maxW: number, o: ExpOpts, dry = false): number {
   const f = fontsOf(m);
   const S = o.size ?? 64;
   const align = o.align ?? "left";
+  const ax = align === "center" ? x + maxW / 2 : x;
   let cy = y;
   if (o.withHeadline ?? true) {
-    cy += paragraph(ctx, m.headline, align === "center" ? x + maxW / 2 : x, cy, maxW, { weight: o.serif ? 700 : 900, size: S, family: o.serif ? f.serif : f.display, color: o.fg, maxLines: 3, align, lineHeight: S * 1.04 });
+    cy += paragraph(ctx, m.headline, ax, cy, maxW, { weight: o.serif ? 700 : 900, size: S, family: o.serif ? f.serif : f.display, color: o.fg, maxLines: 3, align, lineHeight: S * 1.04 }, dry);
     cy += S * 0.25;
   }
   if (m.subtitle && (o.withSubtitle ?? true)) {
-    cy += paragraph(ctx, m.subtitle, align === "center" ? x + maxW / 2 : x, cy, maxW, { weight: 500, size: Math.round(S * 0.46), family: f.sans, color: o.fg, maxLines: 2, align });
+    cy += paragraph(ctx, m.subtitle, ax, cy, maxW, { weight: 500, size: Math.round(S * 0.46), family: f.sans, color: o.fg, maxLines: 2, align }, dry);
     cy += S * 0.35;
   }
-  // CTA: nunca menor que 26px, para ser clicável aos olhos
   const ctaSize = Math.max(26, Math.round(S * 0.48));
-  const ctaX = align === "center" ? x + maxW / 2 : x;
-  pill(ctx, ctaX, cy, CTA_TEXT, { bg: o.ctaBg, fg: o.ctaFg, size: ctaSize, family: f.sans, weight: 900, align: align === "center" ? "center" : "left", padX: ctaSize * 1.2, h: Math.round(ctaSize * 2.1) });
-  cy += Math.round(ctaSize * 2.1);
+  const h = Math.round(ctaSize * 2.1);
+  pill(ctx, ax, cy, CTA_TEXT, { bg: o.ctaBg, fg: o.ctaFg, size: ctaSize, family: f.sans, weight: 900, align: align === "center" ? "center" : "left", padX: ctaSize * 1.2, h }, dry);
+  cy += h;
   return cy - y;
 }
 
@@ -388,7 +385,6 @@ function drawPhoto(m: ProArtModel, x: number, y: number, w: number, h: number, f
   ctx.restore();
 }
 
-/** Véu escuro vertical (de `from` até `to`), para texto sobre foto. */
 function veil(ctx: CanvasRenderingContext2D, x: number, from: number, w: number, to: number, strength = 0.78, up = false) {
   const g = ctx.createLinearGradient(0, from, 0, to);
   if (up) {
@@ -402,16 +398,30 @@ function veil(ctx: CanvasRenderingContext2D, x: number, from: number, w: number,
   ctx.fillRect(x, Math.min(from, to), w, Math.abs(to - from));
 }
 
+function kickerText(ctx: CanvasRenderingContext2D, m: ProArtModel, x: number, y: number, color: string, align: CanvasTextAlign = "left", size = 22, dry = false): number {
+  const f = fontsOf(m);
+  if (dry) return size + 12;
+  ctx.save();
+  setFont(ctx, 700, size, f.sans);
+  ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.textBaseline = "alphabetic";
+  (ctx as any).letterSpacing = "3px";
+  ctx.fillText(m.promoName.toUpperCase(), x, y + size);
+  (ctx as any).letterSpacing = "0px";
+  ctx.restore();
+  return size + 12;
+}
+
 function legalLine(ctx: CanvasRenderingContext2D, m: ProArtModel, y: number, color = "rgba(255,255,255,0.75)") {
   const f = fontsOf(m);
   const parts = [m.city ? `Saída de ${m.city}` : "", m.travelPeriod ? `Período: ${m.travelPeriod}` : "", "Valores por pessoa, sujeitos a disponibilidade."];
-  const text = parts.filter(Boolean).join(" · ");
   ctx.save();
   ctx.fillStyle = color;
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
   setFont(ctx, 500, 18, f.sans);
-  safeFillText(ctx, text, m.width / 2, y, m.width - 120, 12);
+  safeFillText(ctx, parts.filter(Boolean).join(" · "), m.width / 2, y, m.width - 120, 12);
   ctx.restore();
 }
 
@@ -419,190 +429,192 @@ async function branding(m: ProArtModel, contactColor?: string) {
   await drawFinalBranding(m.ctx, m.width, m.height, m.logoDataUrl, m.contact1, m.contact2, m.textColorOverride, m.fontFamily, false, m.logoFormat, false, contactColor);
 }
 
-/** Geometria comum. */
+/** Geometria comum. O rodapé (logo + contatos) ocupa [footerTop, footerTop + footerH]. */
 function frame(m: ProArtModel) {
   const story = m.format === "story";
+  const footerH = story ? 120 : 100;
+  const footerTop = story ? m.height - 350 : m.height - 140;
   return {
     story,
-    M: story ? 80 : 72,                  // margem lateral
-    top: story ? 250 : 72,               // primeiro Y útil
-    bottom: story ? 1540 : 910,          // último Y útil (acima do rodapé de branding)
-    footerTop: story ? m.height - 350 : m.height - 140,
+    M: story ? 80 : 72,
+    top: story ? 250 : 72,
+    footerTop,
+    footerH,
+    footerBottom: footerTop + footerH,
+    bottom: footerTop - 28, // último Y útil para conteúdo
   };
 }
 
-/** Escolhe o par (fundo do cartão, cor de destaque) a partir das cores da marca. */
 function brandPair(m: ProArtModel) {
   const primaryLight = isLight(m.primary);
   const secondaryLight = isLight(m.secondary);
-  // cartão sempre na cor clara se houver uma; destaque na outra
   if (secondaryLight && !primaryLight) return { card: m.secondary, accent: m.primary };
   if (primaryLight && !secondaryLight) return { card: m.primary, accent: m.secondary };
   if (secondaryLight && primaryLight) return { card: m.secondary, accent: shadeColor(m.primary, -45) };
   return { card: "#ffffff", accent: m.primary };
 }
 
+/**
+ * Mede o conteúdo (`dry`) e, se não couber em `maxH`, repete com escala menor.
+ * Devolve a escala escolhida e a altura medida.
+ */
+function fitScale(content: (k: number, dry: boolean) => number, maxH: number): { k: number; h: number } {
+  const steps = [1, 0.92, 0.85, 0.78, 0.7];
+  let h = 0;
+  for (const k of steps) {
+    h = content(k, true);
+    if (h <= maxH) return { k, h };
+  }
+  return { k: steps[steps.length - 1], h };
+}
+
 // ───────────────────────────── LAYOUTS ─────────────────────────────
 
-/** V0 — "Enseada": bloco superior denso (headline, pílula, benefícios | preço) + foto embaixo. */
+/** V0 — "Enseada": bloco superior denso + foto. Bloco cresce/encolhe com o texto. */
 async function layoutV0(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
   const f = fontsOf(m);
   const { card, accent } = brandPair(m);
   const fg = contrastOn(card);
-  const k = F.story ? 1.25 : 1; // stories: tudo um pouco maior para o bloco ficar denso
   const x = F.M;
   const w = width - F.M * 2;
-  const headSize = F.story ? 96 : 78;
-  const priceSize = F.story ? 150 : 118;
+  const startY = F.story ? F.top + 20 : 56;
+  const K = F.story ? 1.25 : 1;
 
-  // Mede o conteúdo antes de pintar: a altura do bloco acompanha o texto
-  // (destino longo = duas linhas), em vez de o texto vazar para a foto.
-  setFont(ctx, 900, headSize, f.display);
-  const headLines = Math.min(2, wrapTextSafe(ctx, m.headline, w, 3, Math.round(headSize * 0.6)).length);
-  const listRows = Math.min(4, m.highlights.length);
-  const columnsH = Math.max(listRows * 50 * k, m.isExperience ? 64 * k * 1.9 : priceSize * 1.5 + (F.story && m.price.pixText ? 62 : 0));
-  const startY = F.story ? F.top + 10 : 56;
-  const contentH = (44 * k + 26) + headLines * headSize * 1.02 + 18 + (m.city ? 46 * k + 24 : 8) + columnsH;
-  const blockH = Math.min(Math.round(height * (F.story ? 0.5 : 0.56)), Math.round(startY + contentH + 36));
+  const content = (k: number, dry: boolean): number => {
+    let y = startY;
+    const kw = pill(ctx, x, y, m.promoName.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 22 * K * k, family: f.sans, weight: 900, h: 44 * K * k, padX: 20 }, dry);
+    if (m.travelPeriod) pill(ctx, x + kw + 12, y, m.travelPeriod.toUpperCase(), { bg: "transparent", fg, size: 22 * K * k, family: f.sans, weight: 800, h: 44 * K * k, padX: 18, stroke: fg }, dry);
+    y += 44 * K * k + 24;
+    const hs = (F.story ? 96 : 78) * k;
+    y += paragraph(ctx, m.headline, x, y, w, { weight: 900, size: hs, family: f.display, color: fg, maxLines: 2, lineHeight: hs * 1.02 }, dry);
+    y += 16;
+    if (m.city) {
+      pill(ctx, x, y, `Saindo de ${m.city}`, { bg: accent, fg: contrastOn(accent), size: 24 * K * k, family: f.sans, weight: 800, h: 46 * K * k, padX: 20 }, dry);
+      y += 46 * K * k + 22;
+    } else {
+      y += 6;
+    }
+    const leftW = Math.round(w * 0.46);
+    const rightX = x + leftW + 40;
+    const rightW = w - leftW - 40;
+    const listH = iconList(ctx, m.highlights.slice(0, 5), x, y, leftW, { size: 28 * K * k, family: f.sans, color: fg, iconColor: accent, gap: 50 * K * k }, dry);
+    let rightH = 0;
+    if (m.isExperience) {
+      rightH = experienceBlock(ctx, m, rightX, y, rightW, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 64 * K * k, withHeadline: false }, dry);
+    } else {
+      rightH = priceBlock(ctx, m, rightX, y - 6, rightW, { fg, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 150 : 118) * k, align: "right" }, dry);
+      if (m.price.pixText) {
+        pill(ctx, x + w, y + rightH + 8, m.price.pixText.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 20 * K * k, family: f.sans, weight: 900, h: 42 * K * k, padX: 20, align: "right" }, dry);
+        rightH += 8 + 42 * K * k;
+      }
+    }
+    y += Math.max(listH, rightH);
+    return y;
+  };
+
+  const maxBlock = Math.round(height * (F.story ? 0.52 : 0.6));
+  const { k, h: endY } = fitScale(content, maxBlock - 40);
+  const blockH = Math.min(maxBlock, endY + 40);
 
   drawPhoto(m, 0, blockH, width, height - blockH, 0.5);
   veil(ctx, 0, height - 420, width, height, 0.7);
   ctx.fillStyle = card;
   ctx.fillRect(0, 0, width, blockH);
-
-  let y = startY;
-
-  // kicker
-  const kickerW = pill(ctx, x, y, m.promoName.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 22 * k, family: f.sans, weight: 900, h: 44 * k, padX: 20 });
-  if (m.travelPeriod) {
-    pill(ctx, x + kickerW + 12, y, m.travelPeriod.toUpperCase(), { bg: "transparent", fg, size: 22 * k, family: f.sans, weight: 800, h: 44 * k, padX: 18, stroke: fg });
-  }
-  y += 44 * k + 26;
-
-  // headline
-  y += paragraph(ctx, m.headline, x, y, w, { weight: 900, size: headSize, family: f.display, color: fg, maxLines: 2, lineHeight: headSize * 1.02 });
-  y += 18;
-
-  // sub: cidade de saída
-  if (m.city) {
-    pill(ctx, x, y, `Saindo de ${m.city}`, { bg: accent, fg: contrastOn(accent), size: 24 * k, family: f.sans, weight: 800, h: 46 * k, padX: 20 });
-    y += 46 * k + 24;
-  } else {
-    y += 8;
-  }
-
-  // duas colunas: benefícios | preço
-  const colGap = 40;
-  const leftW = Math.round(w * 0.46);
-  const rightX = x + leftW + colGap;
-  const rightW = w - leftW - colGap;
-  const listH = iconList(ctx, m.highlights.slice(0, 4), x, y, leftW, { size: 28 * k, family: f.sans, color: fg, iconColor: accent, gap: 50 * k });
-  if (m.isExperience) {
-    experienceBlock(ctx, m, rightX, y, rightW, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 64 * k, withHeadline: false });
-  } else {
-    const used = priceBlock(ctx, m, rightX, y - 6, rightW, { fg, accentBg: accent, accentFg: contrastOn(accent), size: priceSize, align: "right" });
-    if (F.story && m.price.pixText) {
-      pill(ctx, x + w, y + used + 12, m.price.pixText.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 24, family: f.sans, weight: 900, h: 50, padX: 22, align: "right" });
-    }
-  }
-  y += Math.max(listH, 160);
-
-  // linha de separação sutil entre bloco e foto
   ctx.fillStyle = accent;
   ctx.fillRect(0, blockH - 8, width, 8);
-
-  if (!m.isExperience) legalLine(ctx, m, F.footerTop - 16);
+  content(k, false);
+  if (!m.isExperience) legalLine(ctx, m, F.footerTop - 14);
   await branding(m);
 }
 
-/** V1 — "Conheça": painel claro lateral com título em faixa que invade a foto. */
+/** V1 — "Conheça": painel claro à esquerda com altura pelo conteúdo; título em faixa que invade a foto. */
 async function layoutV1(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
   const f = fontsOf(m);
-  const panelW = Math.round(width * (F.story ? 0.56 : 0.5));
+  const panelW = Math.round(width * (F.story ? 0.58 : 0.52));
   const cream = "#F8F5EE";
   const ink = "#15171A";
   const accent = isLight(m.primary) ? shadeColor(m.primary, -45) : m.primary;
-
-  drawPhoto(m, panelW, 0, width - panelW, height, 0.5);
-  veil(ctx, panelW, height - 360, width - panelW, height, 0.75);
-  ctx.fillStyle = cream;
-  ctx.fillRect(0, 0, panelW, height);
-
   const x = F.M;
-  const w = panelW - F.M - 36;
-  let y = F.story ? F.top + 90 : 84;
+  const w = panelW - F.M - 40;
+  const startY = F.story ? F.top + 30 : 72;
+  const K = F.story ? 1.15 : 1;
 
-  // kicker
-  setFont(ctx, 700, 22, f.sans);
-  ctx.fillStyle = accent;
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
-  (ctx as any).letterSpacing = "3px";
-  ctx.fillText(m.promoName.toUpperCase(), x, y + 22);
-  (ctx as any).letterSpacing = "0px";
-  y += 56;
+  const content = (k: number, dry: boolean): number => {
+    let y = startY;
+    y += kickerText(ctx, m, x, y, accent, "left", 22 * K * k, dry) + 10;
+    // faixa do título
+    const rs = (F.story ? 80 : 64) * K * k;
+    const t1 = m.isExperience ? "Viva" : "Conheça";
+    const mm = measurePara(ctx, `${m.destination}!`, panelW + (F.story ? 90 : 120) - x - 40, { weight: 900, size: rs, family: f.display, color: "", maxLines: 2, lineHeight: rs });
+    const ribbonH = 30 + rs * 0.78 + mm.lines.length * mm.lh + 26;
+    if (!dry) {
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.25)";
+      ctx.shadowBlur = 30;
+      ctx.shadowOffsetX = 10;
+      fillRoundRect(ctx, -40, y, panelW + (F.story ? 90 : 120) + 40, ribbonH, 28, accent);
+      ctx.restore();
+      ctx.fillStyle = contrastOn(accent);
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      setFont(ctx, 400, rs * 0.78, f.display);
+      ctx.fillText(t1, x, y + 30 + rs * 0.62);
+      setFont(ctx, 900, mm.size, f.display);
+      mm.lines.forEach((ln, i) => ctx.fillText(ln, x, y + 30 + rs * 0.78 + (i + 1) * mm.lh - mm.lh * 0.1));
+    }
+    y += ribbonH + 36;
+    if (m.travelPeriod || m.city) {
+      const sub = [m.travelPeriod, m.city ? `Saindo de ${m.city}` : ""].filter(Boolean).join(" · ");
+      pill(ctx, x, y, sub.toUpperCase(), { bg: "transparent", fg: accent, size: 20 * K * k, family: f.sans, weight: 800, h: 40 * K * k, padX: 18, stroke: accent, maxW: w }, dry);
+      y += 40 * K * k + 24;
+    }
+    y += iconList(ctx, m.highlights.slice(0, 5), x, y, w, { size: 30 * K * k, family: f.sans, color: ink, iconColor: accent, gap: 60 * K * k }, dry);
+    y += 22;
+    if (m.isExperience) {
+      y += experienceBlock(ctx, m, x, y, w, { fg: ink, ctaBg: accent, ctaFg: contrastOn(accent), size: 64 * K * k, withHeadline: false }, dry);
+    } else {
+      y += priceBlock(ctx, m, x, y, w, { fg: accent, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 150 : 110) * k }, dry) + 14;
+      if (m.price.pixText) {
+        pill(ctx, x, y, m.price.pixText.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 20 * K * k, family: f.sans, weight: 900, h: 42 * K * k, padX: 20, maxW: w }, dry);
+        y += 42 * K * k;
+      }
+    }
+    return y;
+  };
 
-  // faixa com o título, invadindo a foto
-  const ribbonSize = F.story ? 86 : 64;
-  setFont(ctx, 900, ribbonSize, f.display);
-  const title1 = m.isExperience ? "Viva" : "Conheça";
-  const lines = wrapTextSafe(ctx, `${m.destination}!`, panelW + 120 - x - 40, 2, 40);
-  const ribbonH = 36 + ribbonSize * 0.95 + lines.length * ribbonSize * 1.0 + 24;
-  const ribbonW = panelW + (F.story ? 90 : 120) - 0;
+  const { k, h: endY } = fitScale(content, F.bottom - startY);
+  const panelH = Math.min(height, endY + 44);
+  // story: o painel começa logo abaixo da zona que o Instagram cobre, como um cartão
+  // encostado na borda esquerda; quadrado: começa no topo.
+  const panelTop = F.story ? F.top - 50 : 0;
+  drawPhoto(m, 0, 0, width, height, 0.5);
+  veil(ctx, 0, height - 400, width, height, 0.75);
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,0.25)";
   ctx.shadowBlur = 30;
-  ctx.shadowOffsetX = 10;
-  fillRoundRect(ctx, -40, y, ribbonW + 40, ribbonH, 28, accent);
+  ctx.shadowOffsetX = 8;
+  ctx.fillStyle = cream;
+  ctx.beginPath();
+  const r = panelH < height ? 44 : 0;
+  const rt = panelTop > 0 ? 44 : 0;
+  ctx.moveTo(0, panelTop);
+  ctx.lineTo(panelW - rt, panelTop);
+  ctx.quadraticCurveTo(panelW, panelTop, panelW, panelTop + rt);
+  ctx.lineTo(panelW, panelH - r);
+  ctx.quadraticCurveTo(panelW, panelH, panelW - r, panelH);
+  ctx.lineTo(0, panelH);
+  ctx.closePath();
+  ctx.fill();
   ctx.restore();
-  ctx.fillStyle = contrastOn(accent);
-  setFont(ctx, 400, Math.round(ribbonSize * 0.8), f.display);
-  ctx.fillText(title1, x, y + 36 + ribbonSize * 0.75);
-  setFont(ctx, 900, ribbonSize, f.display);
-  lines.forEach((ln, i) => ctx.fillText(ln, x, y + 36 + ribbonSize * 0.75 + (i + 1) * ribbonSize * 1.0));
-  y += ribbonH + 44;
-
-  // período / saída
-  if (m.travelPeriod || m.city) {
-    const sub = [m.travelPeriod, m.city ? `Saindo de ${m.city}` : ""].filter(Boolean).join(" · ");
-    pill(ctx, x, y, sub.toUpperCase(), { bg: "transparent", fg: accent, size: F.story ? 24 : 20, family: f.sans, weight: 800, h: F.story ? 48 : 40, padX: 18, stroke: accent, maxW: w });
-    y += (F.story ? 48 : 40) + 26;
-  }
-
-  // benefícios
-  y += iconList(ctx, m.highlights.slice(0, 4), x, y, w, { size: F.story ? 38 : 30, family: f.sans, color: ink, iconColor: accent, gap: F.story ? 88 : 60 });
-  y += F.story ? 44 : 28;
-
-  // preço / CTA
-  if (m.isExperience) {
-    y += experienceBlock(ctx, m, x, y, w, { fg: ink, ctaBg: accent, ctaFg: contrastOn(accent), size: F.story ? 80 : 60, withHeadline: false });
-  } else {
-    const used = priceBlock(ctx, m, x, y, w, { fg: accent, accentBg: accent, accentFg: contrastOn(accent), size: F.story ? 164 : 110 });
-    y += used + 16;
-    if (m.price.pixText) {
-      pill(ctx, x, y, m.price.pixText.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: F.story ? 24 : 20, family: f.sans, weight: 900, h: F.story ? 50 : 42, padX: 20, maxW: w });
-      y += (F.story ? 50 : 42) + 30;
-    }
-  }
-  // story: frase de apoio para o painel não terminar no vazio
-  if (F.story && m.subtitle && y + 80 < F.footerTop) {
-    paragraph(ctx, m.subtitle, x, y + 20, w, { weight: 500, size: 30, family: f.serif, color: "#3A3F47", maxLines: 2 });
-  }
-
-  // linha fina decorativa
-  ctx.fillStyle = accent;
-  ctx.globalAlpha = 0.35;
-  ctx.fillRect(x, F.footerTop - 30, w, 2);
-  ctx.globalAlpha = 1;
-
+  content(k, false);
   await branding(m);
 }
 
-/** V2 — foto em cima, bloco claro embaixo com título em faixa (Santa Teresa). */
+/** V2 — foto em cima, bloco claro embaixo com altura pelo conteúdo; faixa de título sobre a emenda. */
 async function layoutV2(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
@@ -610,115 +622,113 @@ async function layoutV2(m: ProArtModel) {
   const ink = "#15171A";
   const accent = isLight(m.primary) ? shadeColor(m.primary, -45) : m.primary;
   const soft = isLight(m.secondary) ? m.secondary : "#F2F4F7";
-  const photoH = F.story ? 1150 : 560;
-  const k = F.story ? 1.2 : 1;
+  const x = F.M;
+  const w = width - F.M * 2;
+  const K = F.story ? 1.2 : 1;
+
+  // faixa de título (medida fora do conteúdo porque fica sobre a emenda)
+  const text = `${m.isExperience ? "Viva" : "Conheça"} ${m.destination}!`;
+  const rsize = fitSize(ctx, text, width - x - 40, 900, (F.story ? 76 : 66) * K, f.display, 36);
+  const ribbonW = Math.ceil(ctx.measureText(text).width);
+  const ribbonH = Math.round(rsize * 1.5);
+
+  const content = (k: number, dry: boolean, y0 = 0): number => {
+    let y = y0;
+    if (m.isExperience) {
+      y += iconList(ctx, m.highlights.slice(0, 6), x, y, w, { size: 30 * K * k, family: f.sans, color: ink, iconColor: accent, gap: 56 * K * k, columns: 2 }, dry);
+      y += 14;
+      y += experienceBlock(ctx, m, x, y, w, { fg: ink, ctaBg: accent, ctaFg: contrastOn(accent), size: 60 * K * k, withHeadline: false }, dry);
+    } else {
+      const leftW = Math.round(w * 0.5);
+      const cardX = x + leftW + 24;
+      const cardW = w - leftW - 24;
+      const listH = iconList(ctx, m.highlights.slice(0, 5), x, y, leftW, { size: 30 * K * k, family: f.sans, color: ink, iconColor: accent, gap: 58 * K * k }, dry);
+      const priceH = priceBlock(ctx, m, cardX + 28, y + 24, cardW - 56, { fg: contrastOn(soft) === "#ffffff" ? "#ffffff" : accent, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 118 : 96) * k, align: "center" }, true);
+      const cardH = priceH + 48;
+      if (!dry) {
+        fillRoundRect(ctx, cardX, y, cardW, cardH, 28, soft);
+        priceBlock(ctx, m, cardX + 28, y + 24, cardW - 56, { fg: contrastOn(soft) === "#ffffff" ? "#ffffff" : accent, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 118 : 96) * k, align: "center" });
+      }
+      y += Math.max(listH, cardH);
+      if (m.price.pixText) {
+        y += 14;
+        pill(ctx, x, y, m.price.pixText.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 20 * K * k, family: f.sans, weight: 800, h: 42 * K * k, padX: 20 }, dry);
+        y += 42 * K * k;
+      }
+    }
+    return y - y0;
+  };
+
+  const maxContent = F.bottom - (F.top + 300) - ribbonH;
+  const { k, h: contentH } = fitScale((kk, dry) => content(kk, dry, 0), maxContent);
+  const contentTop = F.bottom - contentH;
+  const photoH = contentTop - 30 - ribbonH / 2 - 10;
 
   drawPhoto(m, 0, 0, width, photoH, 0.45);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, photoH, width, height - photoH);
-
-  const x = F.M;
-  const w = width - F.M * 2;
-  // faixa do título sobre a emenda
-  const ribbonSize = F.story ? 76 : 66;
-  setFont(ctx, 900, ribbonSize, f.display);
-  const text = `${m.isExperience ? "Viva" : "Conheça"} ${m.destination}!`;
-  const size = fitSize(ctx, text, width - x - 40, 900, ribbonSize, f.display, 40);
-  const tw = ctx.measureText(text).width;
-  const ribbonH = Math.round(size * 1.5);
   const ribbonY = photoH - ribbonH / 2 - 10;
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,0.25)";
   ctx.shadowBlur = 24;
   ctx.shadowOffsetY = 8;
-  fillRoundRect(ctx, -30, ribbonY, Math.min(width - 30, x + tw + 60) + 30, ribbonH, 24, accent);
+  fillRoundRect(ctx, -30, ribbonY, Math.min(width - 30, x + ribbonW + 60) + 30, ribbonH, 24, accent);
   ctx.restore();
   ctx.fillStyle = contrastOn(accent);
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  setFont(ctx, 900, size, f.display);
+  setFont(ctx, 900, rsize, f.display);
   ctx.fillText(text, x, ribbonY + ribbonH / 2 + 2);
-
-  let y = ribbonY + ribbonH + 36;
-  if (m.isExperience) {
-    y += iconList(ctx, m.highlights.slice(0, 4), x, y, w, { size: 30 * k, family: f.sans, color: ink, iconColor: accent, gap: 56 * k, columns: 2 });
-    y += 16;
-    experienceBlock(ctx, m, x, y, w, { fg: ink, ctaBg: accent, ctaFg: contrastOn(accent), size: 60 * k, withHeadline: false });
-  } else {
-    const leftW = Math.round(w * 0.5);
-    iconList(ctx, m.highlights.slice(0, 4), x, y, leftW, { size: 30 * k, family: f.sans, color: ink, iconColor: accent, gap: 58 * k });
-    // preço em cartão suave à direita
-    const cardX = x + leftW + 24;
-    const cardW = w - leftW - 24;
-    const cardH = F.story ? 280 : 220;
-    fillRoundRect(ctx, cardX, y - 10, cardW, cardH, 28, soft);
-    priceBlock(ctx, m, cardX + 28, y + 14, cardW - 56, { fg: contrastOn(soft) === "#ffffff" ? "#ffffff" : accent, accentBg: accent, accentFg: contrastOn(accent), size: F.story ? 118 : 96, align: "center" });
-    y += Math.max(cardH, 4 * 58 * k);
-    if (m.price.pixText) {
-      y += 10;
-      pill(ctx, x, y, m.price.pixText.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 22 * k, family: f.sans, weight: 800, h: 44 * k, padX: 20 });
-    }
-  }
-  // site/contatos em tinta escura sobre o bloco branco
+  content(k, false, contentTop);
   await branding(m, ink);
 }
 
-/** V3 — cartão CVC: foto 100% + cartão arredondado na cor da marca com preço gigante e faixa Pix. */
+/** V3 — cartão CVC com altura pelo conteúdo. */
 async function layoutV3(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
   const f = fontsOf(m);
   const { card, accent } = brandPair(m);
   const fg = contrastOn(card);
+  const cardW = F.story ? width - F.M * 2 : Math.round(width * 0.68);
+  const cardX = F.M;
+  const pad = 44;
+  const innerW = cardW - pad * 2;
+  const x = cardX + pad;
+  const pixH = !m.isExperience && m.price.pixText ? 64 : 0;
+
+  const content = (k: number, dry: boolean, y0 = 0): number => {
+    let y = y0;
+    y += kickerText(ctx, m, x, y, fg, "left", 30 * k, dry) + 4;
+    y += paragraph(ctx, m.destination, x, y, innerW, { weight: 400, size: 64 * k, family: f.display, color: fg, maxLines: 1, minSize: 34 }, dry) + 12;
+    y += iconStrip(ctx, m, x, y, fg, 26 * k, dry) + 8;
+    if (m.isExperience) {
+      y += experienceBlock(ctx, m, x, y, innerW, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 54 * k }, dry);
+    } else {
+      y += priceBlock(ctx, m, x, y, innerW, { fg, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 170 : 150) * k }, dry);
+    }
+    return y - y0;
+  };
+
+  const { k, h: contentH } = fitScale((kk, dry) => content(kk, dry), F.bottom - F.top - pad * 2 - pixH);
+  const cardH = pad + contentH + (pixH ? 24 + pixH : pad);
+  const cardY = F.story ? Math.round(F.top + (F.bottom - F.top - cardH) / 2) : Math.max(F.top, F.bottom - cardH);
 
   drawPhoto(m, 0, 0, width, height, 0.4);
   veil(ctx, 0, height - 520, width, height, 0.72);
-
-  const cardW = F.story ? width - F.M * 2 : Math.round(width * 0.66);
-  const cardX = F.story ? F.M : F.M;
-  const pad = 44;
-  const innerW = cardW - pad * 2;
-  // altura medida: cabeçalho + strip + preço/experiência + pix
-  const headH = 150;
-  const stripH = 56;
-  const bodyH = m.isExperience ? 300 : (F.story ? 330 : 300);
-  const pixH = !m.isExperience && m.price.pixText ? 64 : 0;
-  const cardH = pad + headH + stripH + bodyH + pixH + (pixH ? 0 : pad * 0.6);
-  const cardY = F.story ? Math.round(F.top + (F.bottom - F.top - cardH) / 2) : Math.max(F.top, Math.round(F.bottom - cardH - 36));
-
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,0.35)";
   ctx.shadowBlur = 40;
   ctx.shadowOffsetY = 14;
   fillRoundRect(ctx, cardX, cardY, cardW, cardH, 36, card);
   ctx.restore();
-
-  let y = cardY + pad;
-  const x = cardX + pad;
-  // cabeçalho: PACOTE + destino
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
-  setFont(ctx, 900, 34, f.display);
-  ctx.fillStyle = fg;
-  (ctx as any).letterSpacing = "2px";
-  ctx.fillText(m.promoName.toUpperCase(), x, y + 30);
-  (ctx as any).letterSpacing = "0px";
-  y += 44;
-  y += paragraph(ctx, m.destination, x, y, innerW, { weight: 400, size: 64, family: f.display, color: fg, maxLines: 1, minSize: 36 });
-  y += 14;
-  y += iconStrip(ctx, m, x, y, fg, 26);
-  y += 10;
-  if (m.isExperience) {
-    experienceBlock(ctx, m, x, y, innerW, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 52 });
-  } else {
-    priceBlock(ctx, m, x, y, innerW, { fg, accentBg: accent, accentFg: contrastOn(accent), size: F.story ? 170 : 150 });
-    if (pixH) pixStripe(ctx, m, cardX, cardY + cardH - pixH, cardW, pixH, accent, 36);
-  }
-  if (!m.isExperience) legalLine(ctx, m, F.footerTop - 16);
+  content(k, false, cardY + pad);
+  if (pixH) pixStripe(ctx, m, cardX, cardY + cardH - pixH, cardW, pixH, accent, 36);
+  if (!m.isExperience) legalLine(ctx, m, F.footerTop - 14);
   await branding(m);
 }
 
-/** V4 — Decolar: foto em moldura no topo + bloco escuro com "Pacote | DESTINO" e dois cartões. */
+/** V4 — Decolar: foto em moldura no topo + bloco da marca; a foto ocupa o que sobrar. */
 async function layoutV4(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
@@ -726,259 +736,291 @@ async function layoutV4(m: ProArtModel) {
   const base = isLight(m.primary) ? shadeColor(m.primary, -60) : m.primary;
   const accent = isLight(m.secondary) ? m.secondary : "#ffffff";
   const fg = contrastOn(base);
-
-  ctx.fillStyle = base;
-  ctx.fillRect(0, 0, width, height);
-  const topY = F.story ? F.top : 40;
-  const photoH = F.story ? 760 : 470;
-  drawPhoto(m, F.M - 20, topY, width - (F.M - 20) * 2, photoH, 0.45, 36);
-  // selo no topo da foto
-  pill(ctx, width / 2, topY + 28, m.promoName.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 24, family: f.sans, weight: 900, h: 50, padX: 24, align: "center" });
-
-  let y = topY + photoH + 44;
   const x = F.M;
   const w = width - F.M * 2;
-  // "Pacote | DESTINO"
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
-  setFont(ctx, 500, 40, f.display);
-  ctx.fillStyle = fg;
-  const label = m.isExperience ? "Experiência" : "Pacote";
-  ctx.fillText(label, x, y + 40);
-  const lw = ctx.measureText(label).width + 28;
-  ctx.globalAlpha = 0.5;
-  ctx.fillRect(x + lw, y + 4, 2, 46);
-  ctx.globalAlpha = 1;
-  const destSize = fitSize(ctx, m.destination.toUpperCase(), w - lw - 28, 900, 58, f.display, 30);
-  ctx.fillStyle = accent;
-  setFont(ctx, 900, destSize, f.display);
-  ctx.fillText(m.destination.toUpperCase(), x + lw + 28, y + 42);
-  y += 86;
-
-  // dois cartões
+  const topY = F.story ? F.top : 40;
   const gap = 20;
   const leftW = Math.round(w * 0.58);
   const rightW = w - leftW - gap;
-  const cardH = F.story ? 300 : 250;
-  const soft = "rgba(255,255,255,0.10)";
-  fillRoundRect(ctx, x, y, leftW, cardH, 26, soft);
-  fillRoundRect(ctx, x + leftW + gap, y, rightW, cardH, 26, soft);
-  if (m.isExperience) {
-    experienceBlock(ctx, m, x + 28, y + 30, leftW - 56, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 64, withHeadline: false });
-  } else {
-    priceBlock(ctx, m, x + 28, y + 22, leftW - 56, { fg, accentBg: accent, accentFg: contrastOn(accent), size: F.story ? 124 : 112, showTotal: true });
-  }
-  // cartão direito: o que inclui
-  const rx = x + leftW + gap + 24;
-  let ry = y + 26;
-  if (m.travelPeriod) {
-    setFont(ctx, 900, 30, f.display);
-    ctx.fillStyle = accent;
-    ctx.fillText(m.travelPeriod, rx, ry + 28);
-    ry += 54;
-  }
-  iconList(ctx, m.highlights.slice(0, 4), rx, ry, rightW - 48, { size: 24, family: f.sans, color: fg, iconColor: accent, gap: 44 });
-  if (m.isExperience) {
-    // headline editorial em serifa abaixo dos cartões
-    paragraph(ctx, m.headline, x, y + cardH + 22, w, { weight: 600, size: F.story ? 44 : 36, family: f.serif, color: fg, maxLines: 2 });
-  } else {
-    legalLine(ctx, m, F.footerTop - 16, "rgba(255,255,255,0.6)");
-  }
+
+  const content = (k: number, dry: boolean, y0 = 0): number => {
+    let y = y0;
+    // "Pacote | DESTINO"
+    const label = m.isExperience ? "Experiência" : "Pacote";
+    setFont(ctx, 500, 40 * k, f.display);
+    const lw = ctx.measureText(label).width + 28;
+    const ds = fitSize(ctx, m.destination.toUpperCase(), w - lw - 28, 900, 58 * k, f.display, 28);
+    if (!dry) {
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      setFont(ctx, 500, 40 * k, f.display);
+      ctx.fillStyle = fg;
+      ctx.fillText(label, x, y + 40 * k);
+      ctx.globalAlpha = 0.5;
+      ctx.fillRect(x + lw, y + 4, 2, 46 * k);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = accent;
+      setFont(ctx, 900, ds, f.display);
+      ctx.fillText(m.destination.toUpperCase(), x + lw + 28, y + 42 * k);
+    }
+    y += 86 * k;
+    // dois cartões com a mesma altura
+    const leftH = m.isExperience
+      ? experienceBlock(ctx, m, x + 28, y + 28, leftW - 56, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 60 * k, withHeadline: false }, true)
+      : priceBlock(ctx, m, x + 28, y + 24, leftW - 56, { fg, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 124 : 112) * k }, true);
+    const rx = x + leftW + gap + 24;
+    let rightH = 0;
+    if (m.travelPeriod) rightH += 54 * k;
+    rightH += iconList(ctx, m.highlights.slice(0, 5), rx, 0, rightW - 48, { size: 24 * k, family: f.sans, color: fg, iconColor: accent, gap: 44 * k }, true);
+    const cardH = Math.max(leftH, rightH) + 52;
+    if (!dry) {
+      const softBg = "rgba(255,255,255,0.10)";
+      fillRoundRect(ctx, x, y, leftW, cardH, 26, softBg);
+      fillRoundRect(ctx, x + leftW + gap, y, rightW, cardH, 26, softBg);
+      if (m.isExperience) experienceBlock(ctx, m, x + 28, y + 28, leftW - 56, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 60 * k, withHeadline: false });
+      else priceBlock(ctx, m, x + 28, y + 24, leftW - 56, { fg, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 124 : 112) * k });
+      let ry = y + 26;
+      if (m.travelPeriod) {
+        setFont(ctx, 900, 30 * k, f.display);
+        ctx.fillStyle = accent;
+        ctx.textAlign = "left";
+        ctx.fillText(m.travelPeriod, rx, ry + 28 * k);
+        ry += 54 * k;
+      }
+      iconList(ctx, m.highlights.slice(0, 5), rx, ry, rightW - 48, { size: 24 * k, family: f.sans, color: fg, iconColor: accent, gap: 44 * k });
+    }
+    y += cardH;
+    if (m.isExperience) {
+      y += 22;
+      y += paragraph(ctx, m.headline, x, y, w, { weight: 600, size: (F.story ? 44 : 36) * k, family: f.serif, color: fg, maxLines: 2 }, dry);
+    }
+    return y - y0;
+  };
+
+  const minPhoto = F.story ? 560 : 380;
+  const { k, h: contentH } = fitScale((kk, dry) => content(kk, dry), F.bottom - (topY + minPhoto + 44));
+  const contentTop = F.bottom - contentH;
+  const photoH = contentTop - 44 - topY;
+
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, width, height);
+  drawPhoto(m, F.M - 20, topY, width - (F.M - 20) * 2, photoH, 0.45, 36);
+  pill(ctx, width / 2, topY + 28, m.promoName.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 24, family: f.sans, weight: 900, h: 50, padX: 24, align: "center" });
+  content(k, false, contentTop);
+  if (!m.isExperience) legalLine(ctx, m, F.footerTop - 14, "rgba(255,255,255,0.6)");
   await branding(m);
 }
 
-/** V5 — Cartagena: cartão branco centrado com pílula na borda, ícones em pílulas e preço na cor da marca. */
+/** V5 — Cartagena: cartão branco centrado, tudo centralizado no mesmo eixo. */
 async function layoutV5(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
   const f = fontsOf(m);
   const accent = isLight(m.primary) ? shadeColor(m.primary, -45) : m.primary;
-  const pop = isLight(m.secondary) && m.secondary.toLowerCase() !== "#ffffff" ? shadeColor(m.secondary, -10) : accent;
+  // cor "pop" (selo e preço) só quando a secundária é saturada e escura o bastante
+  // para ler sobre o cartão branco; creme/branco caem para a cor da marca.
+  const secondaryPop = shadeColor(m.secondary, -10);
+  const nearWhite = m.secondary.toLowerCase() === "#ffffff" || /^#f[0-9a-f]f[0-9a-f]e[0-9a-f]$/i.test(m.secondary) || /^#f[0-9a-f]e[0-9a-f]d[0-9a-f]$/i.test(m.secondary);
+  const pop = isLight(m.secondary) && !nearWhite ? secondaryPop : accent;
+  const priceColor = isLight(pop) ? accent : pop;
+  const cardW = width - F.M * 2;
+  const cardX = F.M;
+  const cx = width / 2;
+  const innerW = cardW - 80;
+  const ix = cardX + 40;
+
+  const content = (k: number, dry: boolean, y0 = 0): number => {
+    let y = y0;
+    y += paragraph(ctx, m.destination, cx, y, innerW, { weight: 900, size: 74 * k, family: f.display, color: accent, maxLines: 1, align: "center", minSize: 40 }, dry) + 8;
+    const sub = m.isExperience ? m.subtitle : (m.city ? `Saindo de ${m.city}` : m.subtitle);
+    if (sub) y += paragraph(ctx, sub, cx, y, innerW, { weight: 500, size: 28 * k, family: f.sans, color: "#3A3F47", maxLines: 1, align: "center" }, dry) + 20;
+    // ícones + pílula do período, centralizados como um grupo
+    const icons = m.highlights.slice(0, 5);
+    const iconSize = 44 * k;
+    const pills = [m.travelPeriod].filter(Boolean) as string[];
+    const pillOpts: PillOpts = { bg: accent, fg: contrastOn(accent), size: 22 * k, family: f.sans, weight: 800, h: 44 * k, padX: 20 };
+    const pillsW = pills.reduce((acc, t) => acc + pill(ctx, 0, 0, t.toUpperCase(), pillOpts, true) + 14, 0);
+    const rowW = icons.length * (iconSize + 22) + pillsW;
+    if (!dry) {
+      let rx = cx - rowW / 2;
+      icons.forEach((h) => {
+        drawMonoIcon(ctx, h.icon, rx + iconSize / 2, y + 22 * k, iconSize, accent, 1.6);
+        rx += iconSize + 22;
+      });
+      pills.forEach((t) => { rx += pill(ctx, rx, y, t.toUpperCase(), pillOpts) + 14; });
+    }
+    y += 44 * k + 28;
+    if (m.isExperience) {
+      const inc = icons.map((h) => h.text).join("  ·  ");
+      y += paragraph(ctx, inc, cx, y, innerW, { weight: 600, size: 24 * k, family: f.sans, color: "#3A3F47", maxLines: 2, align: "center" }, dry) + 22;
+      y += experienceBlock(ctx, m, ix, y, innerW, { fg: accent, ctaBg: pop, ctaFg: contrastOn(pop), size: 64 * k, align: "center", withHeadline: false, withSubtitle: false }, dry);
+    } else {
+      y += priceBlock(ctx, m, ix, y, innerW, { fg: priceColor, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 150 : 136) * k, align: "center" }, dry);
+    }
+    return y - y0;
+  };
+
+  const padTop = 60, padBottom = 52;
+  const { k, h: contentH } = fitScale((kk, dry) => content(kk, dry), F.bottom - F.top - padTop - padBottom - 40);
+  const cardH = padTop + contentH + padBottom;
+  const cardY = Math.round(F.top + (F.bottom - F.top - cardH) / 2);
 
   drawPhoto(m, 0, 0, width, height, 0.45);
   applyVignette(ctx, width, height, 0.35);
   veil(ctx, 0, height - 420, width, height, 0.7);
-
-  const cardW = width - F.M * 2;
-  const cardX = F.M;
-  const cardH = m.isExperience ? (F.story ? 560 : 500) : (F.story ? 620 : 540);
-  const cardY = Math.round(F.top + (F.bottom - F.top - cardH) / 2) + (F.story ? 0 : 20);
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,0.35)";
   ctx.shadowBlur = 40;
   ctx.shadowOffsetY = 14;
   fillRoundRect(ctx, cardX, cardY, cardW, cardH, 40, "#ffffff");
   ctx.restore();
-  pill(ctx, width / 2, cardY - 26, m.promoName.toUpperCase(), { bg: pop, fg: contrastOn(pop), size: 26, family: f.sans, weight: 900, h: 52, padX: 26, align: "center" });
-
-  const cx = width / 2;
-  const innerW = cardW - 80;
-  let y = cardY + 64;
-  y += paragraph(ctx, m.destination, cx, y, innerW, { weight: 900, size: 74, family: f.display, color: accent, maxLines: 1, align: "center", minSize: 40 });
-  y += 10;
-  if (m.subtitle || m.city) {
-    y += paragraph(ctx, m.isExperience ? m.subtitle : (m.city ? `Saindo de ${m.city}` : m.subtitle), cx, y, innerW, { weight: 500, size: 28, family: f.sans, color: "#3A3F47", maxLines: 1, align: "center" });
-    y += 22;
-  }
-  // linha de ícones + pílulas
-  const icons = m.highlights.slice(0, 4);
-  const iconSize = 44;
-  const pillTexts = [m.travelPeriod].filter(Boolean) as string[];
-  setFont(ctx, 800, 22, f.sans);
-  const pillsW = pillTexts.reduce((acc, t) => acc + ctx.measureText(t.toUpperCase()).width + 40 + 14, 0);
-  const rowW = icons.length * (iconSize + 22) + pillsW;
-  let rx = cx - rowW / 2;
-  icons.forEach((h) => {
-    drawMonoIcon(ctx, h.icon, rx + iconSize / 2, y + 22, iconSize, accent, 1.6);
-    rx += iconSize + 22;
-  });
-  pillTexts.forEach((t) => {
-    rx += pill(ctx, rx, y, t.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 22, family: f.sans, weight: 800, h: 44, padX: 20 }) + 14;
-  });
-  y += 44 + 34;
-  if (m.isExperience) {
-    // nomes dos benefícios em texto corrido
-    const inc = icons.map((h) => h.text).join("  ·  ");
-    y += paragraph(ctx, inc, cx, y, innerW, { weight: 600, size: 24, family: f.sans, color: "#3A3F47", maxLines: 2, align: "center" });
-    y += 24;
-    experienceBlock(ctx, m, cardX + 40, y, innerW, { fg: accent, ctaBg: pop, ctaFg: contrastOn(pop), size: 64, align: "center", withHeadline: false, withSubtitle: false });
-  } else {
-    priceBlock(ctx, m, cardX + 40, y, innerW, { fg: pop === accent ? accent : pop, accentBg: accent, accentFg: contrastOn(accent), size: F.story ? 150 : 136, align: "center" });
-  }
-  if (!m.isExperience) legalLine(ctx, m, F.footerTop - 16);
+  pill(ctx, cx, cardY - 26, m.promoName.toUpperCase(), { bg: pop, fg: contrastOn(pop), size: 26, family: f.sans, weight: 900, h: 52, padX: 26, align: "center" });
+  content(k, false, cardY + padTop);
+  if (!m.isExperience) legalLine(ctx, m, F.footerTop - 14);
   await branding(m);
 }
 
-/** V6 — Tailândia: foto 64% + bloco inferior em duas colunas (destino | preço). */
+/** V6 — Tailândia: foto + bloco inferior em duas colunas; o bloco mede as colunas. */
 async function layoutV6(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
   const f = fontsOf(m);
   const accent = isLight(m.primary) ? shadeColor(m.primary, -45) : m.primary;
-  // O bloco inclui a faixa do rodapé (logo à esquerda, contatos à direita), então o
-  // conteúdo das colunas termina em F.footerTop.
-  const blockH = F.story ? 640 : 440;
-  const photoH = height - blockH;
-
-  drawPhoto(m, 0, 0, width, photoH, 0.4);
-  // bloco
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, photoH, width, blockH);
+  const fg = contrastOn(accent);
   const splitX = Math.round(width * 0.5);
-  ctx.fillStyle = accent;
-  ctx.fillRect(splitX, photoH, width - splitX, blockH);
-
-  // coluna esquerda: kicker, destino, período, ícones (centralizado na coluna)
   const lcx = splitX / 2;
   const colW = splitX - F.M * 1.3;
-  let y = photoH + (F.story ? 64 : 44);
-  setFont(ctx, 700, 20, f.sans);
-  ctx.fillStyle = accent;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "alphabetic";
-  (ctx as any).letterSpacing = "3px";
-  ctx.fillText(m.promoName.toUpperCase(), lcx, y);
-  (ctx as any).letterSpacing = "0px";
-  y += 16;
-  const destSize = F.story ? 84 : 66;
-  y += paragraph(ctx, m.destination.toUpperCase(), lcx, y, colW, { weight: 900, size: destSize, family: f.display, color: accent, maxLines: 2, align: "center", minSize: 36, lineHeight: destSize * 0.98 });
-  y += 14;
-  if (m.travelPeriod || m.city) {
-    y += paragraph(ctx, [m.travelPeriod, m.city ? `saindo de ${m.city}` : ""].filter(Boolean).join(" · "), lcx, y, colW, { weight: 600, size: 26, family: f.sans, color: "#3A3F47", maxLines: 1, align: "center" });
-    y += 12;
-  }
-  // ícones em linha (só glifos), centralizados; os rótulos ficam para as variações com mais espaço
-  const icons = m.highlights.slice(0, 4);
-  const iconSize = 40;
-  let ix = lcx - (icons.length * (iconSize + 18) - 18) / 2;
-  icons.forEach((h) => {
-    drawMonoIcon(ctx, h.icon, ix + iconSize / 2, y + iconSize / 2 + 8, iconSize, accent, 1.6);
-    ix += iconSize + 18;
-  });
-
-  // coluna direita
   const rx = splitX + F.M - 10;
   const rw = width - splitX - (F.M - 10) * 2;
-  const fg = contrastOn(accent);
-  const ry = photoH + (F.story ? 80 : 44);
-  if (m.isExperience) {
-    experienceBlock(ctx, m, rx, ry, rw, { fg, ctaBg: fg, ctaFg: accent, size: 60, withHeadline: false });
-  } else {
-    const used = priceBlock(ctx, m, rx, ry, rw, { fg, accentBg: fg, accentFg: accent, size: F.story ? 136 : 112, align: "center" });
-    const pillY = ry + used + 10;
-    if (m.price.pixText && pillY + 46 < F.footerTop) {
-      pill(ctx, splitX + (width - splitX) / 2, pillY, m.price.pixText.toUpperCase(), { bg: fg, fg: accent, size: 20, family: f.sans, weight: 900, h: 42, padX: 18, align: "center", maxW: rw });
+  const rcx = splitX + (width - splitX) / 2;
+
+  const left = (k: number, dry: boolean, y0 = 0): number => {
+    let y = y0;
+    y += kickerText(ctx, m, lcx, y, accent, "center", 20 * k, dry) + 2;
+    const ds = (F.story ? 84 : 66) * k;
+    y += paragraph(ctx, m.destination.toUpperCase(), lcx, y, colW, { weight: 900, size: ds, family: f.display, color: accent, maxLines: 2, align: "center", minSize: 34, lineHeight: ds * 0.98 }, dry) + 12;
+    if (m.travelPeriod || m.city) {
+      y += paragraph(ctx, [m.travelPeriod, m.city ? `saindo de ${m.city}` : ""].filter(Boolean).join(" · "), lcx, y, colW, { weight: 600, size: 26 * k, family: f.sans, color: "#3A3F47", maxLines: 1, align: "center" }, dry) + 14;
     }
-  }
-  // headline da experiência em serifa sobre a foto, dentro de véu
+    const icons = m.highlights.slice(0, 5);
+    const iconSize = 40 * k;
+    if (!dry) {
+      let ix = lcx - (icons.length * (iconSize + 18) - 18) / 2;
+      icons.forEach((h) => {
+        drawMonoIcon(ctx, h.icon, ix + iconSize / 2, y + iconSize / 2, iconSize, accent, 1.6);
+        ix += iconSize + 18;
+      });
+    }
+    y += iconSize;
+    return y - y0;
+  };
+  const right = (k: number, dry: boolean, y0 = 0): number => {
+    let y = y0;
+    if (m.isExperience) {
+      y += experienceBlock(ctx, m, rx, y, rw, { fg, ctaBg: fg, ctaFg: accent, size: 60 * k, withHeadline: false }, dry);
+    } else {
+      y += priceBlock(ctx, m, rx, y, rw, { fg, accentBg: fg, accentFg: accent, size: (F.story ? 136 : 112) * k, align: "center" }, dry);
+      if (m.price.pixText) {
+        y += 10;
+        pill(ctx, rcx, y, m.price.pixText.toUpperCase(), { bg: fg, fg: accent, size: 20 * k, family: f.sans, weight: 900, h: 42 * k, padX: 18, align: "center", maxW: rw }, dry);
+        y += 42 * k;
+      }
+    }
+    return y - y0;
+  };
+
+  const padTop = F.story ? 64 : 44;
+  const maxH = F.bottom - (F.story ? 1100 : 560) - padTop;
+  const both = (k: number, dry: boolean) => Math.max(left(k, dry), right(k, dry));
+  const { k, h: contentH } = fitScale(both, maxH);
+  const blockTop = F.bottom - contentH - padTop;
+  // as duas colunas começam na mesma linha e ficam centradas verticalmente no espaço útil
+  const lH = left(k, true), rH = right(k, true);
+  const leftY = blockTop + padTop + (contentH - lH) / 2;
+  const rightY = blockTop + padTop + (contentH - rH) / 2;
+
+  drawPhoto(m, 0, 0, width, blockTop, 0.4);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, blockTop, width, height - blockTop);
+  ctx.fillStyle = accent;
+  ctx.fillRect(splitX, blockTop, width - splitX, height - blockTop);
+  left(k, false, leftY);
+  right(k, false, rightY);
   if (m.isExperience) {
-    veil(ctx, 0, photoH - 460, width, photoH, 0.8);
-    paragraph(ctx, m.headline, F.M, photoH - 50 - 2 * 66, width - F.M * 2, { weight: 700, size: 64, family: f.serif, color: "#ffffff", maxLines: 2, lineHeight: 66 });
+    veil(ctx, 0, blockTop - 460, width, blockTop, 0.8);
+    const hs = 64;
+    const mm = measurePara(ctx, m.headline, width - F.M * 2, { weight: 700, size: hs, family: f.serif, color: "", maxLines: 2, lineHeight: hs * 1.04 });
+    paragraph(ctx, m.headline, F.M, blockTop - 44 - mm.h, width - F.M * 2, { weight: 700, size: hs, family: f.serif, color: "#ffffff", maxLines: 2, lineHeight: hs * 1.04 });
   }
-  // contatos ficam sobre a coluna da cor da marca: cor de contraste dela
   await branding(m, fg);
 }
 
-/** V7 — Gricel: título em bloco no alto, faixa branca na base com o que inclui. */
+/** V7 — um único cartão no alto (kicker, destino, período, preço/CTA alinhados à esquerda) + faixa "o que inclui". */
 async function layoutV7(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
   const f = fontsOf(m);
   const accent = isLight(m.primary) ? shadeColor(m.primary, -45) : m.primary;
   const accentFg = contrastOn(accent);
-  // Faixa branca "o que inclui". No quadrado ela é o rodapé (contatos em tinta escura
-  // dentro dela); no story ela fica acima da zona que o Instagram cobre e o rodapé
-  // continua sobre a foto.
-  const bandH = F.story ? 160 : 300;
-  const bandTop = F.story ? 1380 : height - bandH;
+  const pad = 40;
+  const cardX = F.M;
+  const cardMaxW = Math.round(width * 0.82) - F.M;
+  const innerW = cardMaxW - pad * 2;
+  const x = cardX + pad;
+  const items = m.highlights.slice(0, 5);
+  // faixa "o que inclui"
+  const labelH = 2 * 24 * 1.08;
+  const bandContentH = 30 + 48 + 16 + labelH + 20;
+  const bandH = F.story ? Math.round(bandContentH) : Math.round(bandContentH + F.footerH + 20);
+  const bandTop = F.story ? F.bottom - bandH : height - bandH;
+
+  let usedW = 0;
+  const content = (k: number, dry: boolean, y0 = 0): number => {
+    let y = y0;
+    usedW = 0;
+    const kw = pill(ctx, x, y, m.promoName.toUpperCase(), { bg: accentFg, fg: accent, size: 20 * k, family: f.sans, weight: 900, h: 40 * k, padX: 18 }, dry);
+    usedW = Math.max(usedW, kw);
+    y += 40 * k + 22;
+    const ds = (F.story ? 88 : 72) * k;
+    const mm = measurePara(ctx, m.destination.toUpperCase(), innerW, { weight: 900, size: ds, family: f.display, color: "", maxLines: 2, lineHeight: ds });
+    usedW = Math.max(usedW, mm.width);
+    y += paragraph(ctx, m.destination.toUpperCase(), x, y, innerW, { weight: 900, size: ds, family: f.display, color: accentFg, maxLines: 2, lineHeight: ds }, dry) + 16;
+    if (m.travelPeriod || m.city) {
+      const sub = [m.travelPeriod, m.city ? `Saindo de ${m.city}` : ""].filter(Boolean).join(" · ");
+      const sm = measurePara(ctx, sub, innerW, { weight: 600, size: 26 * k, family: f.sans, color: "", maxLines: 1 });
+      usedW = Math.max(usedW, sm.width);
+      y += paragraph(ctx, sub, x, y, innerW, { weight: 600, size: 26 * k, family: f.sans, color: accentFg, maxLines: 1 }, dry) + 22;
+    }
+    if (m.isExperience) {
+      const sm = measurePara(ctx, m.subtitle, innerW, { weight: 500, size: 28 * k, family: f.sans, color: "", maxLines: 2 });
+      usedW = Math.max(usedW, sm.width, 330);
+      y += experienceBlock(ctx, m, x, y, innerW, { fg: accentFg, ctaBg: accentFg, ctaFg: accent, size: 60 * k, withHeadline: false }, dry);
+    } else {
+      const pw = priceBlock(ctx, m, x, y, innerW, { fg: accentFg, accentBg: accentFg, accentFg: accent, size: (F.story ? 136 : 112) * k }, dry);
+      usedW = Math.max(usedW, Math.min(innerW, 520 * k));
+      y += pw;
+    }
+    return y - y0;
+  };
+
+  const startY = F.story ? F.top + 20 : 56;
+  const { k, h: contentH } = fitScale((kk, dry) => content(kk, dry), bandTop - 40 - startY - pad * 2);
+  content(k, true);
+  const cardW = Math.min(cardMaxW, Math.round(usedW + pad * 2));
+  const cardH = contentH + pad * 2;
 
   drawPhoto(m, 0, 0, width, height, 0.5);
-  veil(ctx, 0, 0, width, F.story ? 900 : 520, 0.6, true);
   if (F.story) veil(ctx, 0, height - 420, width, height, 0.75);
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.30)";
+  ctx.shadowBlur = 36;
+  ctx.shadowOffsetY = 12;
+  fillRoundRect(ctx, cardX, startY, cardW, cardH, 32, accent);
+  ctx.restore();
+  content(k, false, startY + pad);
 
-  const x = F.M;
-  const w = Math.round(width * 0.78);
-  let y = F.story ? F.top + 10 : 56;
-  // kicker em pílula
-  pill(ctx, x, y, m.promoName.toUpperCase(), { bg: accent, fg: accentFg, size: 22, family: f.sans, weight: 900, h: 44, padX: 20 });
-  y += 44 + 22;
-  // destino em bloco de cor
-  const destSize = F.story ? 88 : 74;
-  setFont(ctx, 900, destSize, f.display);
-  const lines = wrapTextSafe(ctx, m.destination.toUpperCase(), w - 60, 2, 40);
-  const blockH = lines.length * destSize * 1.0 + 50;
-  const blockW = Math.min(w, Math.max(...lines.map((l) => ctx.measureText(l).width)) + 60);
-  fillRoundRect(ctx, x, y, blockW, blockH, 20, "#ffffff");
-  ctx.fillStyle = accent;
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
-  lines.forEach((ln, i) => ctx.fillText(ln, x + 30, y + 25 + destSize * 0.85 + i * destSize));
-  y += blockH + 22;
-  // subtítulo em pílula
-  if (m.travelPeriod || m.city) {
-    const sub = [m.travelPeriod, m.city ? `Saindo de ${m.city}` : ""].filter(Boolean).join(" · ");
-    pill(ctx, x, y, sub, { bg: accent, fg: accentFg, size: 24, family: f.sans, weight: 700, h: 48, padX: 22, maxW: w });
-    y += 48 + 22;
-  }
-  // preço/CTA em pílula grande
-  if (m.isExperience) {
-    y += paragraph(ctx, m.headline, x, y, w, { weight: 700, size: 52, family: f.serif, color: "#ffffff", maxLines: 2 });
-    y += 24;
-    pill(ctx, x, y, CTA_TEXT, { bg: accent, fg: accentFg, size: 28, family: f.sans, weight: 900, h: 64, padX: 32 });
-  } else {
-    const p = m.price;
-    const label = `${p.prefix ? p.prefix.toUpperCase() + " " : ""}${p.topLabel ? p.topLabel + " " : ""}${p.sym} ${p.intPart}${p.cents ? "," + p.cents : ""}`;
-    pill(ctx, x, y, label, { bg: accent, fg: accentFg, size: F.story ? 44 : 40, family: f.display, weight: 900, h: F.story ? 92 : 84, padX: 36, maxW: width - x * 2 });
-    y += (F.story ? 92 : 84) + 14;
-    setFont(ctx, 600, 24, f.sans);
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.textAlign = "left";
-    ctx.fillText([p.suffix, p.total ? `total ${p.total}` : ""].filter(Boolean).join(" · "), x + 6, y + 24);
-  }
-  // faixa branca: o que inclui
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, bandTop, width, bandH);
-  const items = m.highlights.slice(0, 5);
   const slot = (width - F.M * 2) / Math.max(1, items.length);
   const iy = bandTop + 30;
   items.forEach((h, i) => {
@@ -989,51 +1031,47 @@ async function layoutV7(m: ProArtModel) {
   await branding(m, F.story ? undefined : "#15171A");
 }
 
-/** V8 — NEW YORK: destino em serifa gigante sobre véu, pílula de oferta e CTA. */
+/** V8 — NEW YORK: destino em serifa gigante, pílula de oferta e CTA, tudo no mesmo eixo central. */
 async function layoutV8(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
   const f = fontsOf(m);
   const accent = isLight(m.secondary) ? m.secondary : (isLight(m.primary) ? m.primary : "#F5C518");
   const accentFg = contrastOn(accent);
+  const cx = width / 2;
+  const maxW = width - F.M * 2;
 
   drawPhoto(m, 0, 0, width, height, 0.4);
   applyVignette(ctx, width, height, 0.35);
   veil(ctx, 0, 0, width, F.story ? 520 : 300, 0.55, true);
   veil(ctx, 0, height * 0.42, width, height, 0.88);
 
-  const cx = width / 2;
   // kicker no topo
-  setFont(ctx, 500, 30, f.sans);
-  ctx.fillStyle = "rgba(255,255,255,0.92)";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "alphabetic";
-  ctx.fillText(m.isExperience ? m.headline : m.promoName, cx, F.top + 40);
+  paragraph(ctx, m.isExperience ? m.headline : m.promoName, cx, F.top + 10, maxW, { weight: 500, size: 30, family: f.sans, color: "rgba(255,255,255,0.92)", maxLines: 1, align: "center" });
 
-  // destino gigante
-  const bottomY = F.bottom - (F.story ? 40 : 10);
-  const pillH = F.story ? 76 : 68;
+  const pH = F.story ? 76 : 68;
   const ctaH = F.story ? 72 : 64;
-  const stackH = pillH + 18 + ctaH;
-  let y = bottomY - stackH;
-  const destSize = fitSize(ctx, m.destination.toUpperCase(), width - F.M * 2, 900, F.story ? 150 : 128, f.serif, 60);
-  setFont(ctx, 900, destSize, f.serif);
-  ctx.fillStyle = "#ffffff";
-  ctx.shadowColor = "rgba(0,0,0,0.5)";
-  ctx.shadowBlur = 30;
-  ctx.fillText(m.destination.toUpperCase(), cx, y - 36);
-  ctx.shadowBlur = 0;
-  if (m.isExperience) {
-    // subtítulo editorial acima do destino
-    paragraph(ctx, m.subtitle, cx, y - 36 - destSize - 60, width - F.M * 2, { weight: 500, size: 30, family: f.serif, color: "rgba(255,255,255,0.9)", maxLines: 1, align: "center" });
-  }
-  // pílula de oferta / período
   const p = m.price;
   const offer = m.isExperience
     ? [m.travelPeriod, m.highlights.slice(0, 2).map((h) => h.text).join(" + ")].filter(Boolean).join(" · ")
     : `${p.prefix ? p.prefix + " " : ""}${p.topLabel ? p.topLabel + " " : ""}${p.sym} ${p.intPart}${p.cents ? "," + p.cents : ""}${p.suffix ? " " + p.suffix : ""}`;
-  pill(ctx, cx, y, offer, { bg: accent, fg: accentFg, size: F.story ? 34 : 30, family: f.sans, weight: 800, h: pillH, padX: 34, align: "center", maxW: width - F.M * 2 });
-  y += pillH + 18;
+  const stackH = pH + 18 + ctaH;
+  let y = F.bottom - stackH;
+  const destSize = fitSize(ctx, m.destination.toUpperCase(), maxW, 900, F.story ? 150 : 128, f.serif, 60);
+  ctx.save();
+  setFont(ctx, 900, destSize, f.serif);
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  ctx.shadowColor = "rgba(0,0,0,0.5)";
+  ctx.shadowBlur = 30;
+  ctx.fillText(m.destination.toUpperCase(), cx, y - 36);
+  ctx.restore();
+  if (m.isExperience) {
+    paragraph(ctx, m.subtitle, cx, y - 36 - destSize - 56, maxW, { weight: 500, size: 30, family: f.serif, color: "rgba(255,255,255,0.9)", maxLines: 1, align: "center" });
+  }
+  pill(ctx, cx, y, offer, { bg: accent, fg: accentFg, size: F.story ? 34 : 30, family: f.sans, weight: 800, h: pH, padX: 34, align: "center", maxW });
+  y += pH + 18;
   pill(ctx, cx, y, m.isExperience ? CTA_TEXT : "RESERVAR AGORA", { bg: "transparent", fg: accent, size: F.story ? 28 : 26, family: f.sans, weight: 900, h: ctaH, padX: 34, align: "center", stroke: accent });
   await branding(m);
 }
@@ -1054,6 +1092,3 @@ export async function renderProLayout(m: ProArtModel, variant: number): Promise<
   await fn(m);
   m.ctx.restore();
 }
-
-// Referência rápida para quem for ajustar: CTA_TEXT_SOFT fica disponível para variações futuras.
-export { CTA_TEXT, CTA_TEXT_SOFT };

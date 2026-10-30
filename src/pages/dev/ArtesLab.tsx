@@ -6,6 +6,8 @@
  *
  * URL: /dev/artes-lab?format=square|story&cat=oferta|experiencia&photo=0..2&v=0..8&scale=1
  *      &palette=cv|cvc|teal|wine&city=Maceió&legacy=1 (layouts antigos)
+ *      &font=Playfair%20Display|Outfit|Montserrat&pay=installments|cash|down_plus|from|free_quote
+ *      &long=1 (títulos e benefícios longos, 6 itens)&cents=0&logo=0
  */
 import { useEffect, useState } from "react";
 import { composeTravelAd } from "@/lib/fabrica-compose-art";
@@ -38,6 +40,23 @@ const EXP_HIGHLIGHTS = [
   { text: "Hospedagem boutique", icon: "placa-do-hotel" },
   { text: "Jantar ao pôr do sol", icon: "cafe-da-manha" },
 ];
+// Cenário "muito texto": 6 itens compridos, como clientes reais digitam.
+const LONG_HIGHLIGHTS = [
+  { text: "Transporte rodoviário ida e volta", icon: "onibus" },
+  { text: "Hospedagem 4 noites com café", icon: "placa-do-hotel" },
+  { text: "Passeio de buggy pelas praias", icon: "map" },
+  { text: "Guia credenciado Cadastur", icon: "guia-turistico" },
+  { text: "Seguro viagem incluso", icon: "check" },
+  { text: "City tour histórico", icon: "camera" },
+];
+// Formas de pagamento reais (mesmos campos que o formulário da Fábrica manda).
+const PAY: Record<string, { paymentMode: string; paymentLabel: string; paymentSuffix: string; pricePrefix: string }> = {
+  installments: { paymentMode: "installments", paymentLabel: "", paymentSuffix: "por pessoa", pricePrefix: "a partir de" },
+  cash: { paymentMode: "cash", paymentLabel: "À VISTA", paymentSuffix: "por pessoa no Pix", pricePrefix: "" },
+  down_plus: { paymentMode: "down_plus", paymentLabel: "ENTRADA +", paymentSuffix: "por pessoa, em até 10x", pricePrefix: "entrada de" },
+  from: { paymentMode: "from", paymentLabel: "", paymentSuffix: "o casal", pricePrefix: "a partir de" },
+  free_quote: { paymentMode: "free_quote", paymentLabel: "CONSULTE", paymentSuffix: "", pricePrefix: "" },
+};
 
 type Item = { variant: number; url?: string; error?: string; ms?: number };
 
@@ -54,6 +73,10 @@ export default function ArtesLab() {
   const price = params.get("price") || "149,90";
   const inst = params.get("inst") || "10x";
   const legacy = params.get("legacy") === "1";
+  const font = params.get("font") || "Inter";
+  const long = params.get("long") === "1";
+  const cents = params.get("cents") !== "0";
+  const pay = PAY[params.get("pay") || "installments"] || PAY.installments;
   const [primaryColor, secondaryColor] = PALETTES[params.get("palette") || "cv"] || PALETTES.cv;
   const variants = only !== null ? [Number(only)] : [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -74,32 +97,34 @@ export default function ArtesLab() {
             city,
             primaryColor,
             secondaryColor,
-            price,
+            price: cents ? price : price.replace(/[.,]\d{2}$/, ""),
             currencySymbol: "R$",
-            hideCents: false,
+            hideCents: !cents,
             installments: inst,
-            promoName: isExp ? "Experiência exclusiva" : "Oferta especial",
-            highlights: (isExp ? EXP_HIGHLIGHTS : DEFAULT_HIGHLIGHTS) as any,
+            promoName: isExp ? "Experiência exclusiva" : (long ? "Promoção de fim de ano" : "Oferta especial"),
+            highlights: (long ? LONG_HIGHLIGHTS : isExp ? EXP_HIGHLIGHTS : DEFAULT_HIGHLIGHTS) as any,
             hasLogo: withLogo,
             logoDataUrl: withLogo ? LOGO : undefined,
             logoFormat: "circle",
             whatsapp: "82993702220",
             instagram: "@ilandnoronha",
-            paymentMode: "installments",
-            paymentLabel: inst,
-            paymentSuffix: isExp ? "Sua viagem começa aqui" : "por pessoa",
-            pricePrefix: "a partir de",
+            paymentMode: pay.paymentMode,
+            paymentLabel: pay.paymentLabel || inst,
+            paymentSuffix: isExp ? "Sua viagem começa aqui" : pay.paymentSuffix,
+            pricePrefix: pay.pricePrefix,
             strategy: "vitrine",
             variation: variant,
             forceVariant: variant,
             titleOverride: isExp ? `${dest} como você nunca viu` : `Pacote ${dest}`,
-            titleVariations: isExp
-              ? [`${dest} como você nunca viu`, `Dias que você não esquece`, `Viva ${dest} de verdade`]
-              : [`Pacote ${dest}`, `Você precisa conhecer ${dest}`, `${dest} te espera`],
-            travelPeriod: "Dezembro",
-            showPixBanner: true,
-            showTotal: true,
-            fontFamily: "Inter",
+            titleVariations: long
+              ? [`Réveillon em ${dest} com tudo incluso para a família toda`, `Feriado prolongado em ${dest}: 5 dias de praia, passeios e descanso`, `${dest} te espera`]
+              : isExp
+                ? [`${dest} como você nunca viu`, `Dias que você não esquece`, `Viva ${dest} de verdade`]
+                : [`Pacote ${dest}`, `Você precisa conhecer ${dest}`, `${dest} te espera`],
+            travelPeriod: long ? "28/12 a 02/01" : "Dezembro",
+            showPixBanner: pay.paymentMode !== "free_quote",
+            showTotal: pay.paymentMode === "installments",
+            fontFamily: font,
             titleScale: 1,
             descScale: 1,
             isExperience: isExp,
@@ -125,7 +150,7 @@ export default function ArtesLab() {
   return (
     <div style={{ background: "#1a1a1a", minHeight: "100vh", padding: 16, color: "#fff", fontFamily: "Inter, sans-serif" }}>
       <div data-testid="lab-status" style={{ fontSize: 12, marginBottom: 12 }}>
-        {format} · {cat} · {legacy ? "ANTIGO" : "NOVO"} · {params.get("palette") || "cv"} · {done}/{items.length} prontas
+        {format} · {cat} · {legacy ? "ANTIGO" : "NOVO"} · {params.get("palette") || "cv"} · {font} · {pay.paymentMode}{long ? " · longo" : ""} · {done}/{items.length} prontas
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
         {items.map((it) => (
