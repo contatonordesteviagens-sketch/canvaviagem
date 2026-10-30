@@ -54,10 +54,10 @@ import { createExportIdentity } from "@/lib/exportIdentity";
 
 type CarouselSize = 3 | 4 | 5 | 6;
 type CarouselFormat = "feed" | "story";
-type CarouselSlideKind = "cover" | "content" | "closing";
+export type CarouselSlideKind = "cover" | "content" | "closing";
 type CarouselContactChannel = "whatsapp" | "instagram" | "email";
-type LogoPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
-type CarouselSlideVariant =
+export type LogoPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+export type CarouselSlideVariant =
   | "impact"
   | "itinerary"
   | "editorial"
@@ -129,7 +129,7 @@ interface FieldTypography {
   color?: string;
 }
 
-interface CarouselSlide {
+export interface CarouselSlide {
   id: string;
   kind: CarouselSlideKind;
   label: string;
@@ -476,28 +476,19 @@ function documentedTextSuggestionPool(
       ];
 
   const coverTitles = [
-    `Já imaginou conhecer ${destination}?`,
-    `Será que ${destination} combina com você?`,
-    `Por que tanta gente quer conhecer ${destination}?`,
-    `Quanto você conhece sobre ${destination}?`,
+    `${destination}: o que ninguém te conta antes de ir`,
+    `Antes de fechar sua viagem para ${destination}, leia isso`,
+    `${destination} sem perrengue: salve antes de reservar`,
     contentItemCount === 1
-      ? `1 motivo para conhecer ${destination}`
-      : `${contentItemCount} motivos para conhecer ${destination}`,
+      ? `1 motivo para colocar ${destination} na sua lista`
+      : `${contentItemCount} motivos para colocar ${destination} na sua lista`,
     contentItemCount === 1
-      ? `1 coisa para saber antes de viajar para ${destination}`
-      : `${contentItemCount} coisas para saber antes de viajar para ${destination}`,
-    contentItemCount === 1
-      ? `1 experiência para viver em ${destination}`
-      : `${contentItemCount} experiências para viver em ${destination}`,
-    contentItemCount === 1
-      ? `1 coisa que não pode faltar no seu roteiro de ${destination}`
-      : `${contentItemCount} coisas que não podem faltar no seu roteiro de ${destination}`,
-    "Talvez você tenha acabado de encontrar sua próxima viagem",
-    `Um destino que merece mais atenção: ${destination}`,
-    `Se você ainda não conhece ${destination}, salve este post`,
-    `Se você ama viajar, precisa conhecer ${destination}`,
-    `Salve isso antes de viajar para ${destination}`,
-    `Leia isso antes de montar seu roteiro de ${destination}`,
+      ? `1 erro de quem vai a ${destination} pela primeira vez`
+      : `${contentItemCount} erros de quem vai a ${destination} pela primeira vez`,
+    `Se você só tem poucos dias, ${destination} é a escolha certa`,
+    `O roteiro de ${destination} que eu montaria para a minha família`,
+    `Por que todo mundo está falando de ${destination}`,
+    `Já imaginou acordar em ${destination}?`,
   ];
 
   let title: string[] = [];
@@ -509,141 +500,139 @@ function documentedTextSuggestionPool(
     const duration = cleanCarouselText(pacote.duration || "");
     const dates = cleanCarouselText(pacote.travelDates || "");
     const payment = cleanCarouselText(pacote.paymentTerms || "");
+    const departure = cleanCarouselText(pacote.departureLocation || "");
     title = isCover
       ? [
-          price ? `${destination} a partir de ${price}` : `Sua próxima viagem: ${destination}`,
-          `Que tal viajar para ${destination}?`,
-          `${destination} pode ser sua próxima viagem`,
-          `Que tal trocar a rotina por ${destination}?`,
-          `${destination}: sua próxima viagem começa aqui`,
+          price ? `${destination} a partir de ${price}` : `Pacote ${destination} com tudo organizado`,
+          departure ? `${destination} saindo de ${departure}` : `${destination}: a viagem que cabe no seu calendário`,
+          dates ? `${destination} em ${dates}` : `Que tal ${destination} na próxima folga?`,
+          `${destination} com tudo incluso e sem surpresa no final`,
         ]
       : isClosing
-        ? [`Pronto para conhecer ${destination}?`, `Vamos transformar ${destination} em realidade?`, "Deu vontade de viajar?"]
+        ? [`Quer garantir ${destination}?`, `Me chama e eu reservo sua vaga em ${destination}`, "Deu vontade? Então vem."]
         : [
-            "Sua viagem pode incluir",
-            "Sua viagem organizada",
-            `Mais comodidade para aproveitar ${destination}`,
-            price ? `A partir de ${price}` : "Consulte valores e condições disponíveis",
-            dates || "Escolha a melhor data para embarcar",
+            "O que está incluso",
+            duration || dates ? "Quando sair e por quanto tempo" : "Você escolhe a data, a gente cuida do resto",
+            payment ? "Como pagar" : price ? `A partir de ${price}` : "Valores sob consulta, sem compromisso",
+            "Como reservar em 3 passos",
           ];
     body = isCover
       ? [
-          "Uma viagem para sair da rotina.",
-          "Uma oportunidade para viver novos momentos.",
-          "Encontre a opção que combina com sua viagem.",
+          "Passagem, hospedagem e passeios no mesmo lugar: você só faz a mala.",
+          "Tudo organizado por quem conhece o destino.",
+          price ? `Parcela que cabe no bolso: ${price}.` : "Consulte valores e datas no WhatsApp.",
         ]
       : isClosing
-        ? ["Receba todos os detalhes.", "Solicite uma cotação com nossa equipe.", "Consulte as opções disponíveis."]
+        ? ["Manda um oi no WhatsApp e eu te passo datas e valores.", "Salve este post e envie para quem vai com você.", "Comente 📍 que eu te mando as opções."]
         : [
-            duration || "Uma viagem organizada para você aproveitar mais e se preocupar menos.",
-            dates || "Escolha a melhor data para viver essa experiência.",
-            payment || "Consulte as condições disponíveis.",
-            "Consulte as melhores condições para sua viagem.",
+            duration || "Dias suficientes para conhecer sem correria.",
+            dates || "Você escolhe a data; a gente cuida do resto.",
+            payment || "Pagamento facilitado, sem letra miúda.",
+            "1. Me chama no WhatsApp · 2. Escolhe a data · 3. Recebe o roteiro pronto",
           ];
     bullets = [
       packageFacts.slice(0, 4),
-      compact([dates, duration, cleanCarouselText(pacote.departureLocation || "")]).slice(0, 4),
+      compact([dates, duration, departure]).slice(0, 4),
       compact([price, payment]).slice(0, 4),
-      ["Consulte valores", "Confira disponibilidade", "Fale com nossa equipe"],
+      ["Chamar no WhatsApp", "Escolher a data", "Receber o roteiro"],
     ];
   } else if (strategy === "editorial") {
     title = isCover
       ? [
-          `Primeira vez em ${destination}?`,
-          `Vai para ${destination}? Leia isso antes`,
-          `O mini-guia de ${destination} que você vai querer salvar`,
-          `Não planeje ${destination} antes de ler isso`,
+          `Guia rápido de ${destination}: salve para não esquecer`,
+          `Primeira vez em ${destination}? Comece por aqui`,
+          `${destination} em ${Math.max(3, contentItemCount)} decisões que mudam a viagem`,
           ...coverTitles,
         ]
       : isClosing
-        ? ["Quer um roteiro feito para sua viagem?", "Quer uma viagem organizada para o seu perfil?", "Pronto para organizar sua viagem?"]
+        ? [`Quer esse roteiro de ${destination} pronto para você?`, "Prefere que a gente monte tudo?", "Salve e me chama quando for marcar"]
         : [
-            "Defina quanto tempo você realmente terá",
-            "Escolha onde ficar pensando no seu roteiro",
-            "Priorize as experiências que mais combinam com você",
-            "Deixe espaço no roteiro para aproveitar sem pressa",
-            "Organize reservas e passeios",
+            "Melhor época para ir",
+            "Onde ficar (e onde não ficar)",
+            "O que não pode faltar no roteiro",
+            "Quantos dias são suficientes",
+            "O que levar na mala",
           ];
     body = isCover
-      ? ["Salve este mini-guia.", "Veja o que organizar antes de embarcar.", "Informações rápidas para planejar melhor."]
+      ? ["O essencial para planejar sem erro, em poucos slides.", "Salve agora e consulte na hora de reservar.", "Feito por quem leva gente para lá o ano inteiro."]
       : isClosing
-        ? ["Planeje cada etapa com mais tranquilidade.", "Fale com nossa equipe e monte seu roteiro.", "Salve este guia para consultar depois."]
+        ? ["Eu monto o roteiro no seu ritmo e no seu orçamento.", "Manda um oi no WhatsApp que eu te ajudo a decidir.", "Envie para quem vai com você."]
         : [
-            "Organize esse ponto antes de embarcar.",
-            "Uma escolha simples que facilita todo o roteiro.",
-            "Adapte essa dica ao seu tempo e perfil de viagem.",
+            "Clima e preço mudam muito ao longo do ano; a data certa faz diferença.",
+            "Ficar perto do que você quer ver economiza tempo e transporte.",
+            "Reserve o imperdível antes, deixe o resto para o improviso.",
+            "Menos deslocamento, mais aproveitamento.",
+            "Leve menos do que acha que precisa.",
           ];
     bullets = [
-      ["Defina quantos dias ficará", "Organize seu roteiro", "Escolha bem a hospedagem", "Reserve tempo para explorar"],
-      ["Tempo disponível", "Região da hospedagem", "Experiências prioritárias", "Reservas importantes"],
-      ["Planeje com antecedência", "Evite um roteiro apertado", "Deixe tempo livre"],
+      ["Época do ano", "Região da hospedagem", "Passeios imperdíveis", "Tempo de viagem"],
+      ["Reserve com antecedência", "Evite roteiro apertado", "Deixe um dia livre"],
+      ["Documentos", "Roupas certas para o clima", "Protetor e remédios básicos"],
     ];
   } else if (strategy === "vibrant") {
     title = isCover
       ? [
-          `Vai para ${destination}? Dúvidas que sempre aparecem`,
-          `${destination}: dúvidas antes de viajar?`,
-          `Dúvidas comuns sobre viajar para ${destination}`,
-          `${destination}: o que saber antes da viagem`,
+          `Dúvidas sobre ${destination}? Respondo as mais comuns`,
+          `Vai para ${destination}? Isso aqui vai te poupar tempo`,
+          `${destination}: as perguntas que todo cliente me faz`,
           ...coverTitles,
         ]
       : isClosing
-        ? [`Ainda tem dúvidas sobre ${destination}?`, "Quer ajuda para organizar tudo?", "Quer ajuda para escolher?"]
+        ? [`Ficou alguma dúvida sobre ${destination}?`, "Manda sua pergunta que eu respondo", "Quer que eu organize tudo?"]
         : [
-            "Quanto tempo ficar?",
-            "Onde se hospedar?",
-            "O que reservar antes?",
-            "Vale a pena contratar um pacote?",
-            "Pacote ou viagem por conta própria?",
+            "Precisa de quantos dias?",
+            "Onde é melhor ficar?",
+            "Vale a pena fechar pacote?",
+            "Quando sai mais em conta?",
+            "O que fazer com crianças?",
           ];
     body = isCover
-      ? ["Respostas rápidas para planejar melhor.", "O que considerar antes de decidir.", "Salve para consultar quando precisar."]
+      ? ["Respostas curtas, direto ao ponto.", "Salve para consultar antes de decidir.", "Se a sua dúvida não estiver aqui, comenta que eu respondo."]
       : isClosing
-        ? ["Fale com nossa equipe.", "Converse com a gente e tire suas dúvidas.", "Receba ajuda para planejar sua viagem."]
+        ? ["Me chama no WhatsApp: respondo rápido e sem compromisso.", "Comente a sua dúvida que eu respondo aqui.", "Envie para quem está em dúvida também."]
         : [
-            "O ideal depende do roteiro que você quer fazer.",
-            "A melhor escolha depende do seu roteiro e perfil.",
-            "Comece pelos itens mais importantes da viagem.",
-            "Compare praticidade, flexibilidade e o que está incluso.",
+            "Depende do que você quer ver; eu ajudo a calcular.",
+            "Perto do que importa para você, não do que está na moda.",
+            "Pacote resolve transporte, hospedagem e passeios de uma vez.",
+            "Fora da alta temporada o mesmo roteiro costuma sair melhor.",
+            "Tem passeio tranquilo para todas as idades.",
           ];
     bullets = [
-      ["Quanto tempo ficar?", "Onde se hospedar?", "O que colocar no roteiro?"],
-      ["Seu perfil de viagem", "Seu tempo disponível", "As experiências desejadas"],
-      ["Planejamento", "Hospedagem", "Roteiro", "Reservas"],
+      ["Dias necessários", "Melhor região", "Pacote ou por conta própria"],
+      ["Seu tempo", "Seu orçamento", "Com quem você vai"],
+      ["Transporte", "Hospedagem", "Passeios", "Alimentação"],
     ];
   } else {
     title = isCover
       ? [
-          `Talvez esse seja o sinal que faltava para conhecer ${destination}`,
+          `Já imaginou acordar em ${destination}?`,
           `${destination} merece entrar na sua próxima viagem`,
-          `Já imaginou seus próximos dias em ${destination}?`,
-          `Uma viagem para ${destination} pode estar mais perto do que você imagina`,
-          `Ainda não colocou ${destination} na sua lista?`,
+          `Talvez esse seja o sinal que faltava para conhecer ${destination}`,
           ...coverTitles,
         ]
       : isClosing
-        ? [`Que tal transformar ${destination} na sua próxima história?`, `Pronto para conhecer ${destination}?`, `${destination} entrou para sua lista?`]
+        ? [`Quer ir para ${destination} sem dor de cabeça?`, `Me chama e eu monto seu roteiro de ${destination}`, `${destination} entrou para a lista?`]
         : [
-            "Um destino para viver novas experiências",
-            "Paisagens para sair completamente da rotina",
-            "Momentos que ficam muito além das fotos",
-            "Experiências que você não vive todos os dias",
-            "Histórias que você vai querer contar quando voltar",
+            "Acordar com essa vista todos os dias",
+            "Dias sem relógio, sem trânsito, sem pressa",
+            "Comida local, mar e pôr do sol no mesmo dia",
+            "O passeio que todo mundo lembra quando volta",
+            "As fotos bonitas são só o começo",
           ];
     body = isCover
-      ? ["Uma viagem para sair da rotina e colecionar novas histórias.", "Novos lugares, novos sabores e experiências para lembrar.", "Dias diferentes começam quando você escolhe um novo destino."]
+      ? ["Uma viagem para desligar de verdade, com tudo organizado para você.", "Novos lugares, sabores e histórias para contar na volta.", "Dias diferentes começam com uma decisão simples."]
       : isClosing
-        ? ["Sua próxima viagem pode começar aqui.", "Vamos planejar sua viagem.", "Fale com nossa equipe."]
+        ? ["Manda um oi no WhatsApp e eu te passo datas e valores.", "Salve este post e envie para quem vai com você.", "Comente 📍 que eu te mando as opções."]
         : [
-            "Paisagens, experiências e momentos que fazem essa viagem valer a pena.",
-            "Um destino para sair da rotina e colecionar novas histórias.",
-            "Novos lugares, novos sabores e experiências para lembrar.",
-            "Dias diferentes começam quando você escolhe um novo destino.",
+            "É para isso que a gente organiza tudo: você só aproveita.",
+            "Sem planilha e sem perrengue: a gente cuida do roteiro.",
+            "Pacote fechado, cabeça livre.",
+            "O tipo de dia que vira história em família.",
           ];
     bullets = [
-      ["Novas experiências", "Paisagens para recordar", "Momentos além das fotos"],
-      ["Sair da rotina", "Conhecer novos lugares", "Colecionar histórias"],
-      [`Motivo ${String(position).padStart(2, "0")}`, "Uma experiência para viver de perto"],
+      ["Tudo organizado", "Roteiro no seu ritmo", "Suporte na viagem"],
+      ["Sair da rotina", "Conhecer de verdade", "Voltar com histórias"],
+      [`Motivo ${String(position).padStart(2, "0")}`, "Para viver de perto"],
     ];
   }
 
@@ -660,15 +649,14 @@ function documentedTextSuggestionPool(
 function documentedCtaSuggestions(pacote: Pacote): string[] {
   const destination = cleanCarouselText(pacote.title) || "seu próximo destino";
   return uniqueTextSuggestions([
-    "Fale com nossa equipe.",
-    "Solicite sua cotação.",
-    "Consulte disponibilidade.",
+    "Chama no WhatsApp: datas e valores sem compromisso.",
+    "Salve e envie para quem vai com você.",
+    "Comente 📍 que eu te mando as opções.",
+    `Quer o roteiro de ${destination} pronto? Me chama.`,
+    "Me chama e eu monto tudo no seu ritmo.",
+    "Responda esta publicação com a sua data.",
     "Planeje sua viagem com a gente.",
-    "Quer receber todos os detalhes? Chame no WhatsApp.",
-    "Sua próxima viagem começa aqui. Fale com nossa equipe.",
-    "Salve este post para consultar depois.",
-    "Envie para quem viajaria com você.",
-    `Pronto para conhecer ${destination}? Vamos planejar sua viagem.`,
+    "Solicite sua cotação.",
   ]).map((text) => text.slice(0, 62));
 }
 
@@ -1560,7 +1548,7 @@ async function assertExportImageReadable(source: string) {
   await prepareImageForCanvas(source);
 }
 
-function CarouselCanvas({
+export function CarouselCanvas({
   slide,
   index,
   total,
@@ -1739,14 +1727,14 @@ function CarouselCanvas({
     isClosing ? slide.textColor || "#F8FAFC" : contentTextFallback,
   );
   const titleLength = cleanCarouselText(slide.title).length;
-  const titleScale = titleLength > 70 ? 0.62 : titleLength > 52 ? 0.7 : titleLength > 38 ? 0.8 : 1;
+  const titleScale = titleLength > 70 ? 0.72 : titleLength > 52 ? 0.82 : titleLength > 38 ? 0.9 : 1;
   const contentLength =
     titleLength +
     cleanCarouselText(slide.body).length +
     slide.bullets.reduce((total, item) => total + cleanCarouselText(item).length, 0);
-  const isDenseSlide = contentLength > 165;
+  const isDenseSlide = contentLength > 260;
   const denseTextScale =
-    contentLength > 520 ? 0.62 : contentLength > 360 ? 0.72 : contentLength > 240 ? 0.84 : 1;
+    contentLength > 620 ? 0.7 : contentLength > 460 ? 0.8 : contentLength > 340 ? 0.9 : 1;
   const automaticContentAlignment: Exclude<LabelAlignment, "auto"> =
     slide.slideVariant === "headline-center"
       ? "center"
@@ -1839,7 +1827,7 @@ function CarouselCanvas({
       marginBottom: Math.round(10 * Z),
       ...alignmentMargins,
       padding: `${Math.round(5 * Z)}px ${Math.round(9 * Z)}px`,
-      fontSize: Math.round(8 * Z),
+      fontSize: Math.round(9 * Z),
       lineHeight: 1.15,
       fontWeight: 900,
       letterSpacing: ".08em",
@@ -1944,7 +1932,7 @@ function CarouselCanvas({
   }) => {
     const items = slide.bullets.map(cleanCarouselText).filter(Boolean).slice(0, max);
     if (!items.length) return null;
-    const dense = items.join("").length > 105 || items.some((item) => item.length > 34);
+    const dense = items.join("").length > 150 || items.some((item) => item.length > 44);
     return (
       <ul
         style={{
@@ -1968,7 +1956,7 @@ function CarouselCanvas({
               minWidth: 0,
               color,
               textAlign: align,
-              fontSize: Math.max(6, Math.round((compact ? 9 : dense ? 10.25 : 11.5) * scale * Z)),
+              fontSize: Math.max(8, Math.round((compact ? 10.5 : dense ? 11.5 : 12.5) * scale * Z)),
               lineHeight: compact ? 1.18 : dense ? 1.24 : 1.32,
               fontFamily: ff,
               fontWeight: bulletWeight,
@@ -2084,7 +2072,7 @@ function CarouselCanvas({
     if (variant === "itinerary") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "40%" : "36%",
+        minHeight: storyMode ? "32%" : "30%",
         left: 0,
         right: 0,
         bottom: storyMode ? "20%" : 0,
@@ -2099,7 +2087,7 @@ function CarouselCanvas({
     } else if (variant === "editorial") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "38%" : "34%",
+        minHeight: storyMode ? "32%" : "30%",
         bottom: storyMode ? "20%" : 0,
         left: 0,
         right: 0,
@@ -2135,7 +2123,7 @@ function CarouselCanvas({
     } else if (variant === "minimalist") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "38%" : "34%",
+        minHeight: storyMode ? "32%" : "30%",
         left: 0,
         right: 0,
         bottom: storyMode ? "20%" : 0,
@@ -2154,7 +2142,7 @@ function CarouselCanvas({
     } else if (variant === "vibrant") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "38%" : "34%",
+        minHeight: storyMode ? "32%" : "30%",
         bottom: storyMode ? "20%" : 0,
         left: 0,
         right: 0,
@@ -2172,7 +2160,7 @@ function CarouselCanvas({
     } else if (variant === "organic") {
       contentStyle = {
         ...panelStyle,
-        top: storyMode ? "38%" : "34%",
+        minHeight: storyMode ? "32%" : "30%",
         left: 0,
         right: 0,
         bottom: storyMode ? "20%" : 0,
@@ -2220,7 +2208,7 @@ function CarouselCanvas({
         left: "8%",
         right: "8%",
         alignItems: centeredHeadline ? "center" : "flex-start",
-        justifyContent: "flex-start",
+        justifyContent: "flex-end",
         padding: 0,
         textAlign: centeredHeadline ? "center" : "left",
       };
@@ -2838,7 +2826,7 @@ function CarouselCanvas({
                 >
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.06), textShadow }}>
+                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.06), textShadow }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2873,12 +2861,12 @@ function CarouselCanvas({
                 >
                   {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 20 : 23) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.06) }}>
+                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 24 : 27) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.06) }}>
                       {slide.title}
                     </h3>
                   )}
                   {slide.body && (
-                    <p style={{ margin: `${Math.round(11 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round(11.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
+                    <p style={{ margin: `${Math.round(11 * Z)}px 0 0`, color: bodyColor, fontSize: Math.round(12.5 * Z), lineHeight: 1.42, fontFamily: ff, fontWeight: bodyWeight, fontStyle: bodyStyleAttr, textDecoration: bodyDecAttr, whiteSpace: "pre-wrap" }}>
                       {renderBodyText(slide.body)}
                     </p>
                   )}
@@ -2899,7 +2887,7 @@ function CarouselCanvas({
 
             {/* ─── VARIANT: OFERTA — conversion panel using the agency palette ─── */}
             {slide.slideVariant === "oferta" && (() => {
-              const offerTitleSize = isDenseSlide ? 19 : titleLength > 38 ? 22 : ratio < 0.68 ? 25 : 28;
+              const offerTitleSize = isDenseSlide ? 22 : titleLength > 38 ? 24 : ratio < 0.68 ? 27 : 30;
               return (
                 <div
                   style={{
@@ -2944,7 +2932,7 @@ function CarouselCanvas({
                       {renderLabel(slide.label, "center")}
                     </div>
                     {slide.title && (
-                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
+                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.04) }}>
                         {slide.title}
                       </h3>
                     )}
@@ -2982,7 +2970,7 @@ function CarouselCanvas({
                 <div style={{ background, color: titleColor, padding: isDenseSlide ? "4.5% 8% 7% 8%" : "6.5% 8% 10% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.04) }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2998,7 +2986,7 @@ function CarouselCanvas({
 
             {/* ─── VARIANT: VIBRANT — FAQ split layout without decorative gradients ─── */}
             {slide.slideVariant === "vibrant" && (() => {
-              const faqTitleSize = isDenseSlide ? 16 : titleLength > 38 ? 18 : ratio < 0.68 ? 20 : 23;
+              const faqTitleSize = isDenseSlide ? 19 : titleLength > 38 ? 21 : ratio < 0.68 ? 24 : 27;
               return (
                 <div
                   style={{
@@ -3086,7 +3074,7 @@ function CarouselCanvas({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
                       {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
-                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
+                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.04) }}>
                           {slide.title}
                         </h3>
                       )}
@@ -3386,7 +3374,7 @@ function CarouselCanvas({
                     />
                     {renderLabel(slide.label)}
                     {slide.title && (
-                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04) }}>
+                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.04) }}>
                         {slide.title}
                       </h3>
                     )}
@@ -3408,7 +3396,7 @@ function CarouselCanvas({
   );
 }
 
-function ScaledSlidePreview({
+export function ScaledSlidePreview({
   showPixBanner,
   pixBannerHighlight,
   pixBannerText,
