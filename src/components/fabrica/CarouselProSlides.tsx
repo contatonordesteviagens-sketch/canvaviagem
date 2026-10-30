@@ -1,12 +1,21 @@
 /**
- * MODELOS PRO DO CARROSSEL — quatro famílias modeladas nas referências de mercado,
- * com as regras da skill `design-artes-fabrica`:
- * - um ponto focal por slide (título grande ou foto), hierarquia clara;
- * - cor de destaque só em detalhes (filete, numeral, botão); nunca pílula ao lado de texto branco;
- * - mesma margem e mesmo eixo em todos os slides; indicador de página e "arraste" na capa;
- * - painéis com a altura do conteúdo.
+ * MODELOS PRO DO CARROSSEL — reconstruídos a partir das referências em
+ * C:\Users\win 10\Downloads\referencias (30/10):
  *
- * Base de desenho: 432px de largura (como o CarouselCanvas); altura = 432 / ratio.
+ * - "neon"   (pro-bold)     → Kriptopix: fundo preto, brilho na cor de destaque, grade fina,
+ *                             cartões escuros com borda luminosa, pílula "Arraste para o lado →",
+ *                             chips de ícone, linha pontilhada com pins.
+ * - "oferta" (pro-split)    → Clube Turismo (Natal R$195): cartão arredondado na cor da marca com
+ *                             "Oferta | frase", destino enorme, inclusos em caixa alta, ABA COM
+ *                             AVIÃO no canto, sub-cartão branco com preço e faixa "Consulte-nos".
+ * - "enseada"(pro-magazine) → Enseada "3 praias em 1 dia": bloco claro no topo com título gigante,
+ *                             barra "Saindo de X 📍", lista de ícones | divisor | preço, foto embaixo.
+ * - "conheca"(pro-luxe)     → "Conheça Maragogi!": painel creme à esquerda, título em bloco da cor da
+ *                             marca invadindo a foto, lista de ícones grandes, pílula de preço, filete.
+ *
+ * Ícones reais em /assets/icons (avião, ônibus, hotel, café, guia, pino, calendário…), escolhidos
+ * pelo texto de cada tópico. Preço detectado no texto ("R$ 1.299,00") vira bloco de preço.
+ * Base de desenho: 432px de largura; altura = 432 / ratio.
  */
 import type { CSSProperties, ReactNode } from "react";
 import type { CarouselSlide } from "@/components/fabrica/F1CarouselBuilder";
@@ -41,90 +50,133 @@ const luminance = (hex: string) => {
     return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
   } catch { return 0; }
 };
+const rgba = (hex: string, a: number) => { try { const { r, g, b } = hexToRgb(hex); return `rgba(${r},${g},${b},${a})`; } catch { return `rgba(0,0,0,${a})`; } };
 const isLight = (hex: string) => luminance(hex) > 0.45;
 const onColor = (hex: string) => (isLight(hex) ? "#111318" : "#FFFFFF");
 const INK = "#111318";
-const INK_SOFT = "#3A3F47";
-const PAPER = "#F7F6F2";
-const CREAM = "#F3EEE4";
-const NIGHT = "#0B0C0F";
+const INK_SOFT = "#4A4F58";
+const CREAM = "#FBF7EF";
+const NIGHT = "#0A0B0E";
 
 const clean = (s?: string) => (s || "").replace(/\s+/g, " ").trim();
 
-// ───────── peças compartilhadas ─────────
+// ───────── ícones reais do projeto (/assets/icons) ─────────
+const ICON_RULES: [RegExp, string][] = [
+  [/a[ée]reo|voo|passag|avi[ãa]o|embarque/i, "aviao"],
+  [/[ôo]nibus|transporte|rodovi|transfer|traslado/i, "onibus"],
+  [/hospeda|hotel|pousada|noite|resort|quarto|apartamento/i, "placa-do-hotel"],
+  [/caf[ée]|refei|almo[çc]o|jantar|all ?inclusive|pens[ãa]o|gastronom|comida/i, "cafe-da-manha"],
+  [/guia|acompanh|recep/i, "guia-turistico"],
+  [/seguro|assist/i, "kit-de-primeiros-socorros"],
+  [/data|dia |dias|sa[ií]da|per[ií]odo|\d{1,2}\/\d{1,2}/i, "calendar"],
+  [/barco|lancha|catamar|cruzeiro|balsa|mergulho/i, "balsa"],
+  [/carro|aluguel|buggy|4x4|jipe|jeep/i, "carro-sedan-na-frente"],
+  [/hor[áa]rio|tempo|hora/i, "relogio"],
+  [/passeio|tour|roteiro|visita|praia|trilha|city/i, "pino-de-localizacao"],
+];
+const iconFor = (text: string, fallback = "pino-de-localizacao") => {
+  for (const [re, name] of ICON_RULES) if (re.test(text)) return name;
+  return fallback;
+};
+/** Ícone PNG monocromático: `tone` branco ou preto (filtro CSS; funciona no html-to-image). */
+function Icon({ name, size = 20, tone = "dark", style }: { name: string; size?: number; tone?: "dark" | "light"; style?: CSSProperties }) {
+  return (
+    <img
+      src={`/assets/icons/${name}.png`}
+      alt=""
+      aria-hidden="true"
+      style={{ width: size, height: size, objectFit: "contain", flex: "0 0 auto", filter: tone === "light" ? "brightness(0) invert(1)" : "brightness(0)", ...style }}
+    />
+  );
+}
+/** Chip quadrado arredondado com ícone (a "aba do avião" da Clube Turismo). */
+function IconChip({ name, bg, size = 40, radius = 12, style }: { name: string; bg: string; size?: number; radius?: number; style?: CSSProperties }) {
+  return (
+    <span style={{ width: size, height: size, borderRadius: radius, background: bg, display: "grid", placeItems: "center", flex: "0 0 auto", ...style }}>
+      <Icon name={name} size={Math.round(size * 0.55)} tone={isLight(bg) ? "dark" : "light"} />
+    </span>
+  );
+}
+
+// ───────── preço no texto ─────────
+const PRICE_RE = /(?:(\d{1,2})\s*x\s*)?(?:de\s+)?R\$\s?(\d{1,3}(?:\.\d{3})*|\d+)(?:,(\d{2}))?/i;
+function extractPrice(texts: string[]) {
+  for (const t of texts) {
+    const m = t.match(PRICE_RE);
+    if (m) return { installments: m[1] ? `${m[1]}x` : "", int: m[2], cents: m[3] || "", raw: m[0] };
+  }
+  return null;
+}
+type Price = NonNullable<ReturnType<typeof extractPrice>>;
+
+// ───────── peças ─────────
 const crossOrigin = (src: string) => (src.startsWith("data:") || src.startsWith("blob:") ? undefined : "anonymous");
 
-function Photo({ src, style, radius = 0, focus = "center" }: { src: string; style: CSSProperties; radius?: number; focus?: string }) {
+function Photo({ src, style, radius = 0 }: { src: string; style: CSSProperties; radius?: number }) {
   if (!src) return <div style={{ ...style, background: "#2A2D33", borderRadius: radius }} />;
   return (
     <div style={{ ...style, overflow: "hidden", borderRadius: radius }}>
-      <img src={src} alt="" crossOrigin={crossOrigin(src)} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: focus, display: "block" }} />
+      <img src={src} alt="" crossOrigin={crossOrigin(src)} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
     </div>
   );
 }
 
-function Logo({ src, light = true }: { src: string; light?: boolean }) {
+function Logo({ src, dark = false, pos = "right" }: { src: string; dark?: boolean; pos?: "left" | "right" | "center" }) {
   if (!src) return null;
   return (
     <img
       src={src}
       alt=""
       crossOrigin={crossOrigin(src)}
-      style={{ position: "absolute", zIndex: 40, top: 20, right: 20, width: 38, height: 38, borderRadius: 10, objectFit: "contain", padding: 4, background: light ? "rgba(255,255,255,.96)" : "rgba(17,19,24,.9)", boxShadow: "0 6px 18px rgba(0,0,0,.22)", boxSizing: "border-box" }}
+      style={{ position: "absolute", zIndex: 40, top: 18, ...(pos === "center" ? { left: "50%", transform: "translateX(-50%)" } : pos === "left" ? { left: 18 } : { right: 18 }), width: 40, height: 40, borderRadius: 12, objectFit: "contain", padding: 4, background: dark ? "rgba(17,19,24,.92)" : "rgba(255,255,255,.96)", boxShadow: "0 6px 18px rgba(0,0,0,.22)", boxSizing: "border-box" }}
     />
-  );
-}
-
-function Kicker({ text, color, ff, align = "left" }: { text: string; color: string; ff: string; align?: "left" | "center" }) {
-  if (!text) return null;
-  return (
-    <div style={{ display: "flex", flexShrink: 0, alignItems: "center", justifyContent: align === "center" ? "center" : "flex-start", gap: 8, color, fontFamily: ff, fontSize: 10, fontWeight: 800, letterSpacing: ".2em", textTransform: "uppercase", lineHeight: 1.2 }}>
-      <span style={{ width: 20, height: 2, background: color, flex: "0 0 auto" }} />
-      <span>{text}</span>
-    </div>
   );
 }
 
 function titleSize(text: string, base: number) {
   const n = clean(text).length;
-  if (n > 72) return Math.round(base * 0.68);
-  if (n > 54) return Math.round(base * 0.78);
-  if (n > 38) return Math.round(base * 0.88);
+  if (n > 72) return Math.round(base * 0.64);
+  if (n > 54) return Math.round(base * 0.74);
+  if (n > 38) return Math.round(base * 0.86);
   return base;
 }
 
-function Title({ text, color, ff, base, serif = false, align = "left", maxLines = 4, italic = false }: { text: string; color: string; ff: string; base: number; serif?: boolean; align?: "left" | "center"; maxLines?: number; italic?: boolean }) {
+function Title({ text, color, ff, base, align = "left", maxLines = 4, weight = 800, tight = true, accentWord, accentColor }: { text: string; color: string; ff: string; base: number; align?: "left" | "center"; maxLines?: number; weight?: number; tight?: boolean; accentWord?: boolean; accentColor?: string }) {
   if (!text) return null;
   const size = titleSize(text, base);
+  let node: ReactNode = text;
+  if (accentWord && accentColor) {
+    const words = text.split(" ");
+    if (words.length > 2) {
+      const last = words.pop();
+      node = <>{words.join(" ")} <span style={{ color: accentColor }}>{last}</span></>;
+    }
+  }
   return (
-    <h3 style={{ margin: 0, flexShrink: 0, color, fontFamily: serif ? "'Playfair Display', Georgia, serif" : ff, fontSize: size, fontWeight: serif ? 700 : 800, fontStyle: italic ? "italic" : "normal", lineHeight: serif ? 1.04 : 0.98, letterSpacing: serif ? "0" : "-0.02em", textAlign: align, overflowWrap: "break-word", display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: maxLines, overflow: "hidden" }}>
-      {text}
+    <h3 style={{ margin: 0, flexShrink: 0, color, fontFamily: ff, fontSize: size, fontWeight: weight, lineHeight: tight ? 0.98 : 1.08, letterSpacing: tight ? "-0.025em" : "-0.01em", textAlign: align, overflowWrap: "break-word", display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: maxLines, overflow: "hidden" }}>
+      {node}
     </h3>
   );
 }
 
-function Body({ text, color, ff, size = 14, align = "left", maxLines = 3 }: { text: string; color: string; ff: string; size?: number; align?: "left" | "center"; maxLines?: number }) {
+function Body({ text, color, ff, size = 14, align = "left", maxLines = 3, weight = 500 }: { text: string; color: string; ff: string; size?: number; align?: "left" | "center"; maxLines?: number; weight?: number }) {
   if (!text) return null;
   return (
-    <p style={{ margin: 0, flexShrink: 0, color, fontFamily: ff, fontSize: size, lineHeight: 1.4, fontWeight: 500, textAlign: align, display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: maxLines, overflow: "hidden", overflowWrap: "break-word" }}>
+    <p style={{ margin: 0, flexShrink: 0, color, fontFamily: ff, fontSize: size, lineHeight: 1.38, fontWeight: weight, textAlign: align, display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: maxLines, overflow: "hidden", overflowWrap: "break-word" }}>
       {text}
     </p>
   );
 }
 
-function Bullets({ items, color, accent, ff, kind = "bar", max = 4, size = 13 }: { items: string[]; color: string; accent: string; ff: string; kind?: "bar" | "check" | "number" | "dash"; max?: number; size?: number }) {
+function IconList({ items, color, ff, size = 15, max = 4, chip, iconTone, gap = 10, bold = true }: { items: string[]; color: string; ff: string; size?: number; max?: number; chip?: string; iconTone?: "dark" | "light"; gap?: number; bold?: boolean }) {
   const list = items.map(clean).filter(Boolean).slice(0, max);
   if (!list.length) return null;
+  const tone: "dark" | "light" = iconTone ?? (color === "#FFFFFF" || color.startsWith("rgba(255") ? "light" : "dark");
   return (
-    <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8, flexShrink: 0 }}>
+    <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap, flexShrink: 0 }}>
       {list.map((t, i) => (
-        <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, color, fontFamily: ff, fontSize: size, lineHeight: 1.3, fontWeight: 600 }}>
-          {kind === "bar" && <span style={{ width: 4, height: size * 1.1, borderRadius: 2, background: accent, flex: "0 0 auto", marginTop: 2 }} />}
-          {kind === "check" && (
-            <span style={{ width: 18, height: 18, borderRadius: 9, background: accent, color: onColor(accent), fontSize: 11, fontWeight: 900, display: "grid", placeItems: "center", flex: "0 0 auto" }}>✓</span>
-          )}
-          {kind === "number" && <span style={{ color: accent, fontWeight: 800, fontSize: size - 1, minWidth: 22, letterSpacing: ".04em" }}>{String(i + 1).padStart(2, "0")}</span>}
-          {kind === "dash" && <span style={{ width: 14, height: 1.5, background: accent, flex: "0 0 auto", marginTop: size * 0.6 }} />}
+        <li key={i} style={{ display: "flex", alignItems: "center", gap: 10, color, fontFamily: ff, fontSize: size, lineHeight: 1.25, fontWeight: bold ? 700 : 600, minWidth: 0 }}>
+          {chip ? <IconChip name={iconFor(t)} bg={chip} size={Math.round(size * 1.9)} radius={Math.round(size * 0.55)} /> : <Icon name={iconFor(t)} size={Math.round(size * 1.45)} tone={tone} />}
           <span style={{ overflowWrap: "break-word", minWidth: 0 }}>{t}</span>
         </li>
       ))}
@@ -132,37 +184,59 @@ function Bullets({ items, color, accent, ff, kind = "bar", max = 4, size = 13 }:
   );
 }
 
-function PageMark({ index, total, color, ff, swipe = false, swipeText = "arraste" }: { index: number; total: number; color: string; ff: string; swipe?: boolean; swipeText?: string }) {
+function SwipePill({ bg, fg, ff, text = "Arraste para o lado" }: { bg: string; fg: string; ff: string; text?: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color, fontFamily: ff, fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase" }}>
-      <span>{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>
-      {swipe ? <span>{swipeText} →</span> : <span />}
-    </div>
+    <span style={{ display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 8, padding: "6px 12px 6px 6px", borderRadius: 999, background: bg, color: fg, fontFamily: ff, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+      <span style={{ width: 20, height: 20, borderRadius: 10, background: fg, color: bg, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 900 }}>→</span>
+      {text}
+    </span>
   );
 }
 
-function Button({ text, bg, fg, ff, outline = false, full = true }: { text: string; bg: string; fg: string; ff: string; outline?: boolean; full?: boolean }) {
+function PageMark({ index, total, color, ff }: { index: number; total: number; color: string; ff: string }) {
+  return <span style={{ color, fontFamily: ff, fontSize: 11, fontWeight: 700, letterSpacing: ".14em", flexShrink: 0 }}>{String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}</span>;
+}
+
+function Button({ text, bg, fg, ff, arrow = true, size = 13 }: { text: string; bg: string; fg: string; ff: string; arrow?: boolean; size?: number }) {
   if (!text) return null;
   return (
-    <div style={{ display: full ? "flex" : "inline-flex", alignItems: "center", justifyContent: "center", minHeight: 50, padding: "0 22px", borderRadius: 12, background: outline ? "transparent" : bg, color: outline ? bg : fg, border: outline ? `2px solid ${bg}` : "none", fontFamily: ff, fontSize: 13, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", textAlign: "center", boxSizing: "border-box", boxShadow: outline ? "none" : "0 10px 26px rgba(0,0,0,.18)" }}>
-      {text}
+    <div style={{ display: "inline-flex", alignSelf: "flex-start", alignItems: "center", justifyContent: "center", gap: 10, minHeight: 48, padding: "0 20px 0 22px", borderRadius: 999, background: bg, color: fg, fontFamily: ff, fontSize: size, fontWeight: 800, letterSpacing: ".04em", boxSizing: "border-box", boxShadow: `0 12px 28px ${rgba(bg, 0.35)}`, flexShrink: 0, maxWidth: "100%" }}>
+      <span style={{ overflowWrap: "anywhere" }}>{text}</span>
+      {arrow && <span style={{ width: 26, height: 26, borderRadius: 13, background: fg, color: bg, display: "grid", placeItems: "center", fontSize: 14, fontWeight: 900, flex: "0 0 auto" }}>→</span>}
     </div>
   );
 }
 
-function Contacts({ slide, color, ff }: { slide: CarouselSlide; color: string; ff: string }) {
+function PriceTag({ price, color, ff, prefix = "A partir de", suffix = "por pessoa", size = 54 }: { price: Price; color: string; ff: string; prefix?: string; suffix?: string; size?: number }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2, color, fontFamily: ff, flexShrink: 0 }}>
+      {prefix && <span style={{ fontSize: Math.round(size * 0.24), fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", opacity: 0.85 }}>{prefix}</span>}
+      <span style={{ display: "flex", alignItems: "flex-start", gap: 6, lineHeight: 0.9 }}>
+        <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", fontWeight: 800, fontSize: Math.round(size * 0.3), lineHeight: 1, marginTop: Math.round(size * 0.12) }}>
+          {price.installments && <span>{price.installments}</span>}
+          <span>R$</span>
+        </span>
+        <span style={{ fontSize: size, fontWeight: 900, letterSpacing: "-0.04em" }}>{price.int}</span>
+        {price.cents && <span style={{ fontSize: Math.round(size * 0.34), fontWeight: 800, marginTop: Math.round(size * 0.1) }}>,{price.cents}</span>}
+      </span>
+      {suffix && <span style={{ fontSize: Math.round(size * 0.22), fontWeight: 600, opacity: 0.85 }}>{suffix}</span>}
+    </div>
+  );
+}
+
+function Contacts({ slide, color, ff, size = 14 }: { slide: CarouselSlide; color: string; ff: string; size?: number }) {
   const channels = slide.contactChannels ?? ([slide.phone ? "whatsapp" : null, slide.instagram ? "instagram" : null, slide.email ? "email" : null].filter(Boolean) as string[]);
   const rows: { icon?: string; text: string }[] = [];
   if (channels.includes("whatsapp") && slide.phone) rows.push({ icon: "/social-icons/whatsapp.png", text: slide.phone });
   if (channels.includes("instagram") && slide.instagram) rows.push({ icon: "/social-icons/instagram_bolinha.png", text: slide.instagram.startsWith("@") ? slide.instagram : `@${slide.instagram}` });
-  if (channels.includes("email") && slide.email) rows.push({ text: slide.email });
-  if (slide.website) rows.push({ text: slide.website });
+  if (channels.includes("email") && slide.email) rows.push({ icon: "/social-icons/email_azul.png", text: slide.email });
+  if (slide.website) rows.push({ icon: "/social-icons/site.png", text: slide.website });
   if (!rows.length) return null;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
       {rows.map((r, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 9, color, fontFamily: ff, fontSize: 14, fontWeight: 700 }}>
-          {r.icon && <img src={r.icon} alt="" aria-hidden="true" style={{ width: 20, height: 20, objectFit: "contain", flex: "0 0 auto" }} />}
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 9, color, fontFamily: ff, fontSize: size, fontWeight: 700 }}>
+          {r.icon && <img src={r.icon} alt="" aria-hidden="true" style={{ width: Math.round(size * 1.5), height: Math.round(size * 1.5), objectFit: "contain", flex: "0 0 auto" }} />}
           <span style={{ overflowWrap: "anywhere" }}>{r.text}</span>
         </div>
       ))}
@@ -178,6 +252,15 @@ function Frame({ canvasRef, ratio, background, children, ff }: { canvasRef?: Pro
   );
 }
 
+function NeonBackdrop({ accent, glowAt = "70% 20%" }: { accent: string; glowAt?: string }) {
+  return (
+    <>
+      <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(${rgba("#ffffff", 0.05)} 1px, transparent 1px), linear-gradient(90deg, ${rgba("#ffffff", 0.05)} 1px, transparent 1px)`, backgroundSize: "36px 36px" }} />
+      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at ${glowAt}, ${rgba(accent, 0.55)} 0%, ${rgba(accent, 0.18)} 22%, rgba(0,0,0,0) 55%)` }} />
+    </>
+  );
+}
+
 // ───────── modelos ─────────
 export function ProSlide(p: ProSlideProps) {
   const { slide, ratio } = p;
@@ -185,225 +268,338 @@ export function ProSlide(p: ProSlideProps) {
   const ff = slide.fontFamily || "Inter, ui-sans-serif, system-ui, sans-serif";
   const primary = p.primary || "#0B3B8C";
   const secondary = p.secondary || "#FFD400";
-  // destaque sobre fundo escuro: a cor clara da marca; se as duas forem escuras, branco
-  const accentOnDark = isLight(secondary) ? secondary : isLight(primary) ? primary : "#FFFFFF";
-  // cor "forte" da marca para botões e blocos: a escura; se as duas forem claras, escurece a principal
+  const accent = isLight(secondary) ? secondary : isLight(primary) ? primary : "#FFD400";
   const strong = !isLight(primary) ? primary : !isLight(secondary) ? secondary : INK;
   const kind = slide.kind;
   const title = clean(slide.title);
-  const body = clean(slide.body);
+  const bodyRaw = clean(slide.body);
   const cta = clean(slide.cta) || "Fale com a gente";
   const label = clean(slide.label);
+  const bullets = slide.bullets.map(clean).filter(Boolean);
+  const price = extractPrice([bodyRaw, ...bullets]);
+  const body = price && bodyRaw.includes(price.raw) ? clean(bodyRaw.replace(PRICE_RE, "").replace(/\b(a partir de|por pessoa)\b/gi, "").replace(/^[\s,.;:-]+|[\s,.;:-]+$/g, "")) : bodyRaw;
+  const bulletsNoPrice = price ? bullets.filter((b) => !b.includes(price.raw)) : bullets;
+  const departure = [bodyRaw, ...bullets].map((t) => t.match(/sa[ií](?:ndo|da) de ([^.,;]+)/i)?.[1]?.trim()).find(Boolean);
+  const bodyNoDeparture = clean((departure ? body.replace(/sa[ií](?:ndo|da) de [^.,;]+[.,;]?/i, "") : body).replace(/^[\s,.;:-]+|[\s,.;:-]+$/g, ""));
   const titleColor = slide.titleStyle?.color;
   const bodyColor = slide.bodyStyle?.color;
-  const M = 28; // margem lateral/base
-  const safeTop = story ? 64 : 24;
-  const safeBottom = story ? 96 : M;
-  const ctx = { slide, index: p.index, total: p.total, ff };
+  const M = 26;
+  const safeTop = story ? 64 : 22;
+  const safeBottom = story ? 96 : 26;
   const variant = slide.slideVariant as ProSlideVariant;
+  const num = String(p.index + 1).padStart(2, "0");
+  const totalStr = String(p.total).padStart(2, "0");
 
-  // ── BOLD: foto + título enorme, numeral grande no miolo, fechamento na cor forte ──
+  // ═══════════ NEON (Kriptopix) ═══════════
   if (variant === "pro-bold") {
-    if (kind === "cover") {
-      return (
-        <Frame canvasRef={p.canvasRef} ratio={ratio} background={NIGHT} ff={ff}>
-          <Photo src={slide.imageUrl} style={{ position: "absolute", inset: 0 }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,.18) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,.55) 58%, rgba(0,0,0,.94) 100%)" }} />
-          <Logo src={p.logo} />
-          <div style={{ position: "absolute", left: M, right: M, bottom: safeBottom, display: "grid", gap: 14 }}>
-            <Kicker text={label} color={accentOnDark} ff={ff} />
-            <Title text={title} color={titleColor || "#FFFFFF"} ff={ff} base={story ? 46 : 42} />
-            <Body text={body} color={bodyColor || "rgba(255,255,255,.85)"} ff={ff} maxLines={2} />
-            <div style={{ height: 2, width: 44, background: accentOnDark, marginTop: 2 }} />
-            <PageMark {...ctx} color="rgba(255,255,255,.75)" swipe />
-          </div>
-        </Frame>
-      );
-    }
-    if (kind === "content") {
-      const photoH = story ? "44%" : "46%";
-      return (
-        <Frame canvasRef={p.canvasRef} ratio={ratio} background={NIGHT} ff={ff}>
-          <Photo src={slide.imageUrl} style={{ position: "absolute", left: 0, right: 0, top: 0, height: photoH }} />
-          <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: photoH, background: `linear-gradient(180deg, rgba(11,12,15,0) 55%, ${NIGHT} 100%)` }} />
-          <Logo src={p.logo} />
-          <div style={{ position: "absolute", left: M, right: M, top: `calc(${photoH} - 34px)`, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ color: accentOnDark, fontFamily: ff, fontSize: 64, fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em" }}>{String(p.index + 1).padStart(2, "0")}</div>
-            <Title text={title} color={titleColor || "#FFFFFF"} ff={ff} base={30} maxLines={3} />
-            <Body text={body} color={bodyColor || "rgba(255,255,255,.78)"} ff={ff} maxLines={3} />
-            <Bullets items={slide.bullets} color="#FFFFFF" accent={accentOnDark} ff={ff} kind="bar" />
-            <div style={{ marginTop: "auto" }}><PageMark {...ctx} color="rgba(255,255,255,.55)" /></div>
-          </div>
-        </Frame>
-      );
-    }
-    const bg = strong === INK && !isLight(primary) ? primary : strong;
-    const fg = onColor(bg);
-    return (
-      <Frame canvasRef={p.canvasRef} ratio={ratio} background={bg} ff={ff}>
-        <Logo src={p.logo} light={!isLight(bg)} />
-        <div style={{ position: "absolute", left: M, right: M, top: safeTop + 60, bottom: safeBottom, display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 16 }}>
-          <Kicker text={label} color={accentOnDark === bg ? fg : (isLight(bg) ? INK : accentOnDark)} ff={ff} />
-          <Title text={title} color={titleColor || fg} ff={ff} base={38} maxLines={4} />
-          <Body text={body} color={bodyColor || fg} ff={ff} maxLines={2} />
-          <Button text={cta} bg={isLight(bg) ? INK : accentOnDark} fg={isLight(bg) ? "#FFFFFF" : onColor(accentOnDark)} ff={ff} />
-          <Contacts slide={slide} color={fg} ff={ff} />
-        </div>
-      </Frame>
+    const accentFg = onColor(accent);
+    const glowCard: CSSProperties = { background: "rgba(14,15,19,.92)", border: `1px solid ${rgba(accent, 0.45)}`, boxShadow: `0 24px 60px rgba(0,0,0,.5), 0 0 40px ${rgba(accent, 0.18)}`, borderRadius: 22 };
+    const topBar = (
+      <div style={{ position: "absolute", left: M, right: M, top: safeTop, display: "flex", alignItems: "center", justifyContent: "space-between", zIndex: 30 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,.85)", fontFamily: ff, fontSize: 10, fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase" }}>
+          <span style={{ width: 8, height: 8, borderRadius: 4, background: accent, boxShadow: `0 0 12px ${accent}` }} />
+          {label || "Viagem"}
+        </span>
+        <PageMark index={p.index} total={p.total} color="rgba(255,255,255,.6)" ff={ff} />
+      </div>
     );
-  }
-
-  // ── SPLIT: foto em cima, painel claro com faixa de título na emenda (CVC / "Conheça") ──
-  if (variant === "pro-split") {
-    const panelFg = INK;
     if (kind === "cover") {
-      const photoH = story ? "56%" : "54%";
       return (
-        <Frame canvasRef={p.canvasRef} ratio={ratio} background={PAPER} ff={ff}>
-          <Photo src={slide.imageUrl} style={{ position: "absolute", left: 0, right: 0, top: 0, height: photoH }} />
-          <Logo src={p.logo} />
-          <div style={{ position: "absolute", left: 0, right: 0, top: photoH, bottom: 0, background: PAPER }} />
-          <div style={{ position: "absolute", left: M, right: M, top: `calc(${photoH} - 30px)`, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ alignSelf: "flex-start", maxWidth: "100%", background: strong, color: onColor(strong), padding: "12px 18px", borderRadius: 10, boxShadow: "0 10px 26px rgba(0,0,0,.18)" }}>
-              <Title text={title} color={titleColor || onColor(strong)} ff={ff} base={28} maxLines={3} />
+        <Frame canvasRef={p.canvasRef} ratio={ratio} background={NIGHT} ff={ff}>
+          <NeonBackdrop accent={accent} glowAt="80% 15%" />
+          {topBar}
+          <Logo src={p.logo} dark pos="center" />
+          <div style={{ position: "absolute", left: M, right: M, top: safeTop + 72, display: "flex", flexDirection: "column", gap: 14 }}>
+            <Title text={title} color={titleColor || "#FFFFFF"} ff={ff} base={story ? 40 : 36} maxLines={3} accentWord accentColor={accent} />
+            <Body text={bodyNoDeparture} color={bodyColor || "rgba(255,255,255,.72)"} ff={ff} size={13} maxLines={2} />
+            <SwipePill bg={accent} fg={accentFg} ff={ff} />
+          </div>
+          <div style={{ position: "absolute", left: M, right: M, bottom: safeBottom, top: story ? "54%" : "56%", ...glowCard, overflow: "hidden" }}>
+            <Photo src={slide.imageUrl} style={{ position: "absolute", inset: 0 }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(10,11,14,0) 45%, rgba(10,11,14,.9) 100%)" }} />
+            <div style={{ position: "absolute", left: 14, right: 14, bottom: 14, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
+              {price ? (
+                <PriceTag price={price} color="#FFFFFF" ff={ff} size={40} />
+              ) : (
+                bulletsNoPrice.slice(0, 3).map((b, i) => (
+                  <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 999, background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.18)", color: "#fff", fontFamily: ff, fontSize: 10.5, fontWeight: 700 }}>
+                    <Icon name={iconFor(b)} size={13} tone="light" />{b}
+                  </span>
+                ))
+              )}
             </div>
-            <Body text={body} color={bodyColor || INK_SOFT} ff={ff} maxLines={2} />
-            <Bullets items={slide.bullets} color={panelFg} accent={strong} ff={ff} kind="check" max={title.length > 54 ? 2 : 3} />
-            <div style={{ marginTop: "auto" }}><PageMark {...ctx} color={INK_SOFT} swipe /></div>
           </div>
         </Frame>
       );
     }
     if (kind === "content") {
-      return (
-        <Frame canvasRef={p.canvasRef} ratio={ratio} background={PAPER} ff={ff}>
-          <Photo src={slide.imageUrl} style={{ position: "absolute", left: 16, right: 16, top: 16, height: story ? "38%" : "40%" }} radius={18} />
-          <Logo src={p.logo} />
-          <div style={{ position: "absolute", left: M, top: `calc(${story ? "38%" : "40%"} - 8px)`, width: 48, height: 48, borderRadius: 24, background: strong, color: onColor(strong), display: "grid", placeItems: "center", fontFamily: ff, fontSize: 18, fontWeight: 900, boxShadow: "0 8px 20px rgba(0,0,0,.2)" }}>{String(p.index + 1).padStart(2, "0")}</div>
-          <div style={{ position: "absolute", left: M, right: M, top: `calc(${story ? "38%" : "40%"} + 54px)`, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 12 }}>
-            {label && <Kicker text={label} color={strong} ff={ff} />}
-            <Title text={title} color={titleColor || INK} ff={ff} base={28} maxLines={3} />
-            <Body text={body} color={bodyColor || INK_SOFT} ff={ff} maxLines={3} />
-            <Bullets items={slide.bullets} color={INK} accent={strong} ff={ff} kind="check" max={title.length > 54 ? 3 : 4} />
-            <div style={{ marginTop: "auto" }}><PageMark {...ctx} color={INK_SOFT} /></div>
-          </div>
-        </Frame>
-      );
-    }
-    return (
-      <Frame canvasRef={p.canvasRef} ratio={ratio} background={PAPER} ff={ff}>
-        <Photo src={slide.imageUrl} style={{ position: "absolute", left: 16, right: 16, top: 16, height: story ? "34%" : "36%" }} radius={18} />
-        <Logo src={p.logo} />
-        <div style={{ position: "absolute", left: M, right: M, top: `calc(${story ? "34%" : "36%"} + 40px)`, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 14 }}>
-          {label && <Kicker text={label} color={strong} ff={ff} />}
-          <Title text={title} color={titleColor || INK} ff={ff} base={32} maxLines={3} />
-          <Body text={body} color={bodyColor || INK_SOFT} ff={ff} maxLines={2} />
-          <Button text={cta} bg={strong} fg={onColor(strong)} ff={ff} />
-          <Contacts slide={slide} color={INK} ff={ff} />
-        </div>
-      </Frame>
-    );
-  }
-
-  // ── MAGAZINE: serifa, moldura fina, creme ──
-  if (variant === "pro-magazine") {
-    if (kind === "cover") {
+      const photoH = story ? "28%" : "30%";
       return (
         <Frame canvasRef={p.canvasRef} ratio={ratio} background={NIGHT} ff={ff}>
-          <Photo src={slide.imageUrl} style={{ position: "absolute", inset: 0 }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,.72) 100%)" }} />
-          <div style={{ position: "absolute", inset: 14, border: "1.5px solid rgba(255,255,255,.75)", pointerEvents: "none" }} />
-          <Logo src={p.logo} />
-          <div style={{ position: "absolute", left: 34, top: safeTop + 12 }}><Kicker text={label} color="#FFFFFF" ff={ff} /></div>
-          <div style={{ position: "absolute", left: 34, right: 34, bottom: safeBottom + 8, display: "grid", gap: 12 }}>
-            <Title text={title} color={titleColor || "#FFFFFF"} ff={ff} base={story ? 44 : 40} serif />
-            <Body text={body} color={bodyColor || "rgba(255,255,255,.85)"} ff={ff} maxLines={2} />
-            <PageMark {...ctx} color="rgba(255,255,255,.8)" swipe />
-          </div>
-        </Frame>
-      );
-    }
-    if (kind === "content") {
-      return (
-        <Frame canvasRef={p.canvasRef} ratio={ratio} background={CREAM} ff={ff}>
-          <Photo src={slide.imageUrl} style={{ position: "absolute", left: 0, right: 0, top: 0, height: story ? "36%" : "38%" }} />
-          <Logo src={p.logo} />
-          <div style={{ position: "absolute", left: M, right: M, top: `calc(${story ? "36%" : "38%"} + 18px)`, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-              <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 54, lineHeight: 1, color: strong, fontWeight: 400 }}>{String(p.index + 1).padStart(2, "0")}</span>
-              <span style={{ flex: 1, height: 1, background: "rgba(17,19,24,.25)" }} />
-              {label && <span style={{ fontFamily: ff, fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: INK_SOFT, fontWeight: 700 }}>{label}</span>}
+          <NeonBackdrop accent={accent} glowAt="15% 85%" />
+          {topBar}
+          <Logo src={p.logo} dark pos="center" />
+          <Photo src={slide.imageUrl} style={{ position: "absolute", left: M, right: M, top: safeTop + 58, height: photoH }} radius={18} />
+          <div style={{ position: "absolute", left: M, right: M, top: `calc(${photoH} + ${safeTop + 40}px)`, bottom: safeBottom, ...glowCard, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12, boxSizing: "border-box", overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+              <span style={{ width: 40, height: 40, borderRadius: 12, background: accent, color: accentFg, display: "grid", placeItems: "center", fontFamily: ff, fontSize: 16, fontWeight: 900, boxShadow: `0 0 18px ${rgba(accent, 0.6)}` }}>{num}</span>
+              <span style={{ flex: 1, height: 1, backgroundImage: `linear-gradient(90deg, ${accent} 50%, transparent 50%)`, backgroundSize: "8px 1px", opacity: 0.6 }} />
+              <Icon name={iconFor(title + " " + bodyRaw)} size={22} tone="light" />
             </div>
-            <Title text={title} color={titleColor || INK} ff={ff} base={30} serif maxLines={3} />
-            <Body text={body} color={bodyColor || INK_SOFT} ff={ff} maxLines={3} />
-            <Bullets items={slide.bullets} color={INK} accent={strong} ff={ff} kind="dash" />
-            <div style={{ marginTop: "auto" }}><PageMark {...ctx} color={INK_SOFT} /></div>
+            <Title text={title} color={titleColor || "#FFFFFF"} ff={ff} base={26} maxLines={3} />
+            <Body text={bodyNoDeparture} color={bodyColor || "rgba(255,255,255,.7)"} ff={ff} size={12.5} maxLines={bulletsNoPrice.length > 3 ? 2 : 3} />
+            {price ? <PriceTag price={price} color={accent} ff={ff} size={44} /> : <IconList items={bulletsNoPrice} color="#FFFFFF" ff={ff} size={12.5} chip={rgba(accent, 0.16)} iconTone="light" gap={7} />}
           </div>
         </Frame>
       );
     }
-    return (
-      <Frame canvasRef={p.canvasRef} ratio={ratio} background={CREAM} ff={ff}>
-        <div style={{ position: "absolute", inset: 14, border: `1.5px solid ${strong}`, opacity: 0.6, pointerEvents: "none" }} />
-        <Logo src={p.logo} />
-        <div style={{ position: "absolute", left: 36, right: 36, top: safeTop + 50, bottom: safeBottom + 10, display: "flex", flexDirection: "column", justifyContent: "center", gap: 16, textAlign: "center", alignItems: "center" }}>
-          <Kicker text={label} color={strong} ff={ff} align="center" />
-          <Title text={title} color={titleColor || INK} ff={ff} base={36} serif align="center" maxLines={4} />
-          <Body text={body} color={bodyColor || INK_SOFT} ff={ff} align="center" maxLines={2} />
-          <Button text={cta} bg={strong} fg={onColor(strong)} ff={ff} outline full={false} />
-          <Contacts slide={slide} color={INK} ff={ff} />
-        </div>
-      </Frame>
-    );
-  }
-
-  // ── LUXE: preto, foto em moldura alta, serifa e filete dourado ──
-  const gold = isLight(secondary) && secondary.toLowerCase() !== "#ffffff" ? secondary : "#D4B36A";
-  if (kind === "cover") {
     return (
       <Frame canvasRef={p.canvasRef} ratio={ratio} background={NIGHT} ff={ff}>
-        <Photo src={slide.imageUrl} style={{ position: "absolute", right: 18, top: safeTop, bottom: safeBottom - 6, width: "46%" }} radius={16} />
-        <Logo src={p.logo} light={false} />
-        <div style={{ position: "absolute", left: M, right: "calc(46% + 34px)", top: safeTop + 30, bottom: safeBottom, display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 14, overflow: "hidden" }}>
-          <Kicker text={label} color={gold} ff={ff} />
-          <Title text={title} color={titleColor || "#FFFFFF"} ff={ff} base={30} serif maxLines={5} />
-          <div style={{ width: 40, height: 1.5, background: gold }} />
-          <Body text={body} color={bodyColor || "rgba(255,255,255,.72)"} ff={ff} size={13} maxLines={3} />
-          <PageMark {...ctx} color="rgba(255,255,255,.55)" swipe />
+        <NeonBackdrop accent={accent} glowAt="50% 100%" />
+        {topBar}
+        <Logo src={p.logo} dark pos="center" />
+        <div style={{ position: "absolute", left: M, right: M, top: safeTop + 90, height: 70 }}>
+          <div style={{ position: "absolute", left: 14, right: 14, top: 32, borderTop: `2px dashed ${rgba(accent, 0.5)}` }} />
+          {[0, 50, 100].map((x, i) => (
+            <span key={i} style={{ position: "absolute", left: `calc(${x}% - 14px)`, top: 18, width: 28, height: 28, borderRadius: 14, background: i === 2 ? accent : "rgba(14,15,19,.95)", border: `2px solid ${accent}`, display: "grid", placeItems: "center", boxShadow: i === 2 ? `0 0 18px ${rgba(accent, 0.7)}` : "none" }}>
+              <Icon name={i === 0 ? "pino-de-localizacao" : i === 1 ? "aviao" : "placa-do-hotel"} size={14} tone={i === 2 ? (isLight(accent) ? "dark" : "light") : "light"} />
+            </span>
+          ))}
+        </div>
+        <div style={{ position: "absolute", left: M, right: M, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 14 }}>
+          <Title text={title} color={titleColor || "#FFFFFF"} ff={ff} base={34} maxLines={4} accentWord accentColor={accent} />
+          <Body text={bodyNoDeparture} color={bodyColor || "rgba(255,255,255,.72)"} ff={ff} size={13} maxLines={2} />
+          <Button text={cta} bg={accent} fg={accentFg} ff={ff} />
+          <Contacts slide={slide} color="#FFFFFF" ff={ff} />
+        </div>
+      </Frame>
+    );
+  }
+
+  // ═══════════ OFERTA (Clube Turismo) ═══════════
+  if (variant === "pro-split") {
+    const cardBg = strong;
+    const cardFg = onColor(cardBg);
+    const stripe = accent;
+    const tagline = bodyNoDeparture || "A sua melhor viagem começa aqui.";
+    if (kind === "cover") {
+      return (
+        <Frame canvasRef={p.canvasRef} ratio={ratio} background={NIGHT} ff={ff}>
+          <Photo src={slide.imageUrl} style={{ position: "absolute", inset: 0 }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.35) 100%)" }} />
+          <Logo src={p.logo} />
+          <div style={{ position: "absolute", left: M, right: story ? "16%" : "12%", bottom: safeBottom + 18, background: cardBg, color: cardFg, borderRadius: 22, boxShadow: "0 24px 60px rgba(0,0,0,.35)" }}>
+            <div style={{ padding: "18px 18px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontFamily: ff, fontSize: 24, fontWeight: 900, letterSpacing: "-0.02em", flexShrink: 0 }}>{label || "Oferta"}</span>
+                <span style={{ width: 1.5, height: 26, background: rgba(cardFg, 0.5), flexShrink: 0 }} />
+                <Body text={tagline} color={cardFg} ff={ff} size={11} maxLines={2} weight={600} />
+              </div>
+              <Title text={title} color={titleColor || cardFg} ff={ff} base={story ? 34 : 32} maxLines={4} weight={900} />
+              {departure && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: ff, fontSize: 12, fontWeight: 700 }}>
+                  <Icon name="pino-de-localizacao" size={14} tone={isLight(cardBg) ? "dark" : "light"} /> Saindo de {departure}
+                </span>
+              )}
+              {bulletsNoPrice.length > 0 && (
+                <div style={{ fontFamily: ff, fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".02em", lineHeight: 1.3, opacity: 0.95 }}>
+                  {bulletsNoPrice.slice(0, 3).join(" + ")}
+                </div>
+              )}
+            </div>
+            <div style={{ position: "relative", background: "#FFFFFF", color: cardBg, borderRadius: "0 0 22px 22px", overflow: "hidden" }}>
+              <IconChip name="aviao" bg={stripe} size={44} radius={0} style={{ position: "absolute", left: 0, top: 0, borderRadius: "0 0 14px 0" }} />
+              <div style={{ padding: "14px 18px 0 62px" }}>
+                {price ? <PriceTag price={price} color={cardBg} ff={ff} size={50} /> : <Title text="Consulte valores e datas" color={cardBg} ff={ff} base={20} maxLines={2} />}
+              </div>
+              <div style={{ marginTop: 12, background: stripe, color: onColor(stripe), textAlign: "center", padding: "9px 0", fontFamily: ff, fontSize: 13, fontWeight: 800 }}>Consulte-nos →</div>
+            </div>
+          </div>
+          <div style={{ position: "absolute", left: M, right: M, bottom: safeBottom - 14, display: "flex", justifyContent: "space-between", color: "rgba(255,255,255,.85)", fontFamily: ff, fontSize: 9.5, fontWeight: 600 }}>
+            <span>Tarifa sujeita a alteração sem aviso prévio</span>
+            <PageMark index={p.index} total={p.total} color="rgba(255,255,255,.85)" ff={ff} />
+          </div>
+        </Frame>
+      );
+    }
+    if (kind === "content") {
+      return (
+        <Frame canvasRef={p.canvasRef} ratio={ratio} background={NIGHT} ff={ff}>
+          <Photo src={slide.imageUrl} style={{ position: "absolute", inset: 0 }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.4) 100%)" }} />
+          <Logo src={p.logo} />
+          <div style={{ position: "absolute", left: M, right: M, bottom: safeBottom + 18, background: cardBg, color: cardFg, borderRadius: 22, boxShadow: "0 24px 60px rgba(0,0,0,.35)", padding: "18px 18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ width: 38, height: 38, borderRadius: 10, background: stripe, color: onColor(stripe), display: "grid", placeItems: "center", fontFamily: ff, fontSize: 15, fontWeight: 900, flexShrink: 0 }}>{num}</span>
+              <span style={{ fontFamily: ff, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", opacity: 0.9 }}>{label}</span>
+            </div>
+            <Title text={title} color={titleColor || cardFg} ff={ff} base={27} maxLines={3} weight={900} />
+            <Body text={bodyNoDeparture} color={bodyColor || cardFg} ff={ff} size={12.5} maxLines={3} />
+            {price ? <PriceTag price={price} color={cardFg} ff={ff} size={46} /> : <IconList items={bulletsNoPrice} color={cardFg} ff={ff} size={13} chip={stripe} gap={8} />}
+          </div>
+          <div style={{ position: "absolute", right: M, bottom: safeBottom - 14 }}><PageMark index={p.index} total={p.total} color="rgba(255,255,255,.85)" ff={ff} /></div>
+        </Frame>
+      );
+    }
+    return (
+      <Frame canvasRef={p.canvasRef} ratio={ratio} background={cardBg} ff={ff}>
+        <Photo src={slide.imageUrl} style={{ position: "absolute", left: 0, right: 0, top: 0, height: "46%" }} />
+        <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: "46%", background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, ${cardBg} 100%)` }} />
+        <Logo src={p.logo} />
+        <div style={{ position: "absolute", left: M, right: M, top: "42%", bottom: safeBottom, display: "flex", flexDirection: "column", gap: 14, color: cardFg }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            {["aviao", "onibus", "placa-do-hotel", "cafe-da-manha"].map((n) => <IconChip key={n} name={n} bg={stripe} size={34} radius={9} />)}
+          </div>
+          <Title text={title} color={titleColor || cardFg} ff={ff} base={32} maxLines={3} weight={900} />
+          <Body text={bodyNoDeparture} color={bodyColor || cardFg} ff={ff} size={13} maxLines={2} />
+          <Button text={cta} bg={stripe} fg={onColor(stripe)} ff={ff} />
+          <Contacts slide={slide} color={cardFg} ff={ff} />
+        </div>
+      </Frame>
+    );
+  }
+
+  // ═══════════ ENSEADA ("3 praias em 1 dia") ═══════════
+  if (variant === "pro-magazine") {
+    const paper = isLight(secondary) && secondary.toLowerCase() !== "#ffffff" ? secondary : CREAM;
+    const ink = strong;
+    const bar = strong;
+    const barFg = onColor(bar);
+    // Bloco claro com a altura do conteúdo; a foto ocupa o que sobrar (mínimo dado).
+    const block = (children: ReactNode, minPhoto = "30%") => (
+      <>
+        <Logo src={p.logo} pos="right" />
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
+          <div style={{ background: paper, padding: `${safeTop + 44}px ${M}px 22px`, display: "flex", flexDirection: "column", gap: 12, flexShrink: 0 }}>{children}</div>
+          <div style={{ flex: 1, minHeight: minPhoto, position: "relative" }}>
+            <Photo src={slide.imageUrl} style={{ position: "absolute", inset: 0 }} />
+          </div>
+        </div>
+      </>
+    );
+    if (kind === "cover") {
+      return (
+        <Frame canvasRef={p.canvasRef} ratio={ratio} background={paper} ff={ff}>
+          {block(
+            <>
+              <Title text={title} color={titleColor || ink} ff={ff} base={story ? 44 : 40} maxLines={4} weight={900} />
+              <span style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 8, background: bar, color: barFg, padding: "8px 14px", fontFamily: ff, fontSize: 14, fontWeight: 600, maxWidth: "100%", flexShrink: 0 }}>
+                {departure ? `Saindo de ${departure}` : bodyNoDeparture || label}
+                <Icon name="pino-de-localizacao" size={15} tone={isLight(bar) ? "dark" : "light"} />
+              </span>
+              <div style={{ display: "flex", alignItems: "stretch", gap: 14, marginTop: 4, flexShrink: 0, flexWrap: "wrap" }}>
+                <IconList items={bulletsNoPrice} color={ink} ff={ff} size={15} max={3} gap={8} bold={false} />
+                <span style={{ width: 2, background: ink, opacity: 0.8, margin: "2px 0" }} />
+                <div style={{ display: "flex", alignItems: "center", minWidth: 0 }}>
+                  {price ? <PriceTag price={price} color={ink} ff={ff} prefix="a partir de" suffix="/pessoa" size={38} /> : <SwipePill bg={bar} fg={barFg} ff={ff} text="Arraste" />}
+                </div>
+              </div>
+            </>,
+          )}
+          <div style={{ position: "absolute", left: M, bottom: safeBottom - 8, color: "#fff", fontFamily: ff, fontSize: 11, fontWeight: 700, letterSpacing: ".14em", textShadow: "0 2px 8px rgba(0,0,0,.6)" }}>{num}/{totalStr} · ARRASTE →</div>
+        </Frame>
+      );
+    }
+    if (kind === "content") {
+      return (
+        <Frame canvasRef={p.canvasRef} ratio={ratio} background={paper} ff={ff}>
+          {block(
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                <span style={{ fontFamily: ff, fontSize: 44, fontWeight: 900, color: ink, lineHeight: 1, letterSpacing: "-0.04em" }}>{num}</span>
+                <span style={{ background: bar, color: barFg, padding: "6px 12px", fontFamily: ff, fontSize: 11, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase" }}>{label || "Roteiro"}</span>
+              </div>
+              <Title text={title} color={titleColor || ink} ff={ff} base={30} maxLines={3} weight={900} />
+              <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={13} maxLines={2} />
+              <div style={{ display: "flex", alignItems: "stretch", gap: 16, flexShrink: 0 }}>
+                <IconList items={bulletsNoPrice} color={ink} ff={ff} size={14} max={4} gap={7} bold={false} />
+                {price && <><span style={{ width: 2, background: ink, opacity: 0.8 }} /><div style={{ display: "flex", alignItems: "center", minWidth: 0 }}><PriceTag price={price} color={ink} ff={ff} prefix="por" suffix="/pessoa" size={36} /></div></>}
+              </div>
+            </>,
+          )}
+          <div style={{ position: "absolute", right: M, bottom: safeBottom - 8, color: "#fff", fontFamily: ff, fontSize: 11, fontWeight: 700, letterSpacing: ".14em", textShadow: "0 2px 8px rgba(0,0,0,.6)" }}>{num}/{totalStr}</div>
+        </Frame>
+      );
+    }
+    return (
+      <Frame canvasRef={p.canvasRef} ratio={ratio} background={paper} ff={ff}>
+        {block(
+          <>
+            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              {["aviao", "onibus", "placa-do-hotel", "guia-turistico"].map((n) => <IconChip key={n} name={n} bg={bar} size={36} radius={10} />)}
+            </div>
+            <Title text={title} color={titleColor || ink} ff={ff} base={34} maxLines={3} weight={900} />
+            <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={13} maxLines={2} />
+            <Button text={cta} bg={bar} fg={barFg} ff={ff} />
+            <Contacts slide={slide} color={ink} ff={ff} />
+          </>,
+          "24%",
+        )}
+      </Frame>
+    );
+  }
+
+  // ═══════════ CONHEÇA ("Conheça Maragogi!") ═══════════
+  const panel = CREAM;
+  const teal = strong === INK ? "#0E7C86" : strong;
+  const tealFg = onColor(teal);
+  const panelW = story ? "60%" : "52%";
+  const panelInner = `calc(${panelW} - ${M + 18}px)`;
+  const titleBlock = (text: string, base: number) => (
+    <div style={{ alignSelf: "flex-start", marginLeft: -M, width: `calc(100% + ${M + 58}px)`, background: teal, color: tealFg, padding: "14px 18px 16px 26px", borderRadius: "0 14px 14px 0", boxShadow: "0 18px 40px rgba(0,0,0,.28)", boxSizing: "border-box", flexShrink: 0, zIndex: 5 }}>
+      <Title text={text} color={titleColor || tealFg} ff={ff} base={base} maxLines={4} weight={900} />
+    </div>
+  );
+  if (kind === "cover") {
+    return (
+      <Frame canvasRef={p.canvasRef} ratio={ratio} background={panel} ff={ff}>
+        <Photo src={slide.imageUrl} style={{ position: "absolute", top: 0, bottom: 0, right: 0, left: panelW }} />
+        <Logo src={p.logo} pos="left" />
+        <div style={{ position: "absolute", left: M, width: panelInner, top: safeTop + 64, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 14 }}>
+          {titleBlock(title, story ? 32 : 30)}
+          <span style={{ flex: 1 }} />
+          <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={12.5} maxLines={2} />
+          <IconList items={bulletsNoPrice} color={teal} ff={ff} size={16} max={3} gap={10} iconTone="dark" />
+          {price ? (
+            <div style={{ alignSelf: "flex-start", background: teal, color: tealFg, borderRadius: 12, padding: "8px 14px", display: "flex", alignItems: "center", gap: 10, fontFamily: ff, flexShrink: 0 }}>
+              <span style={{ fontSize: 10, lineHeight: 1.15, fontWeight: 600, whiteSpace: "nowrap" }}>A partir de<br /><b style={{ fontSize: 14 }}>{price.installments ? `${price.installments} ` : ""}R$</b></span>
+              <span style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-0.03em", whiteSpace: "nowrap" }}>{price.int}<span style={{ fontSize: 14 }}>{price.cents ? `,${price.cents}` : ""}</span></span>
+            </div>
+          ) : (
+            <SwipePill bg={teal} fg={tealFg} ff={ff} />
+          )}
+          <span style={{ height: 3, width: "100%", background: teal, marginTop: 4, flexShrink: 0 }} />
         </div>
       </Frame>
     );
   }
   if (kind === "content") {
+    const flip = p.index % 2 === 0;
     return (
-      <Frame canvasRef={p.canvasRef} ratio={ratio} background={NIGHT} ff={ff}>
-        <Photo src={slide.imageUrl} style={{ position: "absolute", left: 18, right: 18, top: 18, height: story ? "40%" : "42%" }} radius={16} />
-        <Logo src={p.logo} light={false} />
-        <div style={{ position: "absolute", left: M, right: M, top: `calc(${story ? "40%" : "42%"} + 40px)`, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 30, color: gold, lineHeight: 1 }}>{String(p.index + 1).padStart(2, "0")}</span>
-            <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,.18)" }} />
-            {label && <span style={{ fontFamily: ff, fontSize: 10, letterSpacing: ".2em", textTransform: "uppercase", color: gold, fontWeight: 700 }}>{label}</span>}
-          </div>
-          <Title text={title} color={titleColor || "#FFFFFF"} ff={ff} base={30} serif maxLines={3} />
-          <Body text={body} color={bodyColor || "rgba(255,255,255,.72)"} ff={ff} maxLines={3} />
-          <Bullets items={slide.bullets} color="rgba(255,255,255,.9)" accent={gold} ff={ff} kind="dash" />
-          <div style={{ marginTop: "auto" }}><PageMark {...ctx} color="rgba(255,255,255,.45)" /></div>
+      <Frame canvasRef={p.canvasRef} ratio={ratio} background={panel} ff={ff}>
+        <Photo src={slide.imageUrl} style={{ position: "absolute", top: 0, bottom: 0, ...(flip ? { left: 0, width: `calc(100% - ${panelW})` } : { right: 0, width: `calc(100% - ${panelW})` }) }} />
+        <Logo src={p.logo} pos={flip ? "right" : "left"} />
+        <div style={{ position: "absolute", top: safeTop + 40, bottom: safeBottom, ...(flip ? { right: M } : { left: M }), width: panelInner, display: "flex", flexDirection: "column", justifyContent: "center", gap: 12 }}>
+          <span style={{ alignSelf: "flex-start", background: teal, color: tealFg, borderRadius: 10, padding: "6px 12px", fontFamily: ff, fontSize: 18, fontWeight: 900, flexShrink: 0 }}>{num}</span>
+          <Title text={title} color={titleColor || teal} ff={ff} base={27} maxLines={4} weight={900} />
+          <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={12.5} maxLines={3} />
+          {price ? <PriceTag price={price} color={teal} ff={ff} size={40} /> : <IconList items={bulletsNoPrice} color={teal} ff={ff} size={14} max={4} gap={8} iconTone="dark" />}
+          <span style={{ height: 3, width: 60, background: teal, flexShrink: 0 }} />
         </div>
       </Frame>
     );
   }
   return (
-    <Frame canvasRef={p.canvasRef} ratio={ratio} background={NIGHT} ff={ff}>
-      <Photo src={slide.imageUrl} style={{ position: "absolute", inset: 0, opacity: 0.35 }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(11,12,15,.2), rgba(11,12,15,.95) 70%)" }} />
-      <Logo src={p.logo} light={false} />
-      <div style={{ position: "absolute", left: M, right: M, top: safeTop + 40, bottom: safeBottom, display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 16 }}>
-        <Kicker text={label} color={gold} ff={ff} />
-        <Title text={title} color={titleColor || "#FFFFFF"} ff={ff} base={36} serif maxLines={4} />
-        <Body text={body} color={bodyColor || "rgba(255,255,255,.75)"} ff={ff} maxLines={2} />
-        <Button text={cta} bg={gold} fg={onColor(gold)} ff={ff} />
-        <Contacts slide={slide} color="#FFFFFF" ff={ff} />
+    <Frame canvasRef={p.canvasRef} ratio={ratio} background={panel} ff={ff}>
+      <Photo src={slide.imageUrl} style={{ position: "absolute", top: 0, bottom: 0, right: 0, left: panelW }} />
+      <Logo src={p.logo} pos="left" />
+      <div style={{ position: "absolute", left: M, width: panelInner, top: safeTop + 64, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 14 }}>
+        {titleBlock(title, 28)}
+        <span style={{ flex: 1 }} />
+        <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={12.5} maxLines={2} />
+        <Button text={cta} bg={teal} fg={tealFg} ff={ff} size={11} />
+        <Contacts slide={slide} color={INK} ff={ff} size={13} />
+        <span style={{ height: 3, width: "100%", background: teal, flexShrink: 0 }} />
       </div>
     </Frame>
   );

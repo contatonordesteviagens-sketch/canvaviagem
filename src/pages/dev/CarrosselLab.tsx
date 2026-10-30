@@ -45,7 +45,7 @@ function makeSlides(variant: CarouselSlideVariant, dest: string, long: boolean):
       kind: "cover",
       label: "INSPIRE-SE",
       title: long ? `Réveillon em ${dest} com tudo incluso para a família toda` : `Motivos para colocar ${dest} na sua lista`,
-      body: long ? "Cinco dias de praia, passeios e descanso, com saída de Maceió e tudo organizado por nós." : "Uma viagem para sair da rotina e colecionar novas histórias.",
+      body: long ? "Cinco dias de praia, passeios e descanso, saindo de Maceió, a partir de 10x R$ 1.299,00 por pessoa." : "Saindo de Recife. A partir de 10x R$ 195,90 por pessoa.",
       bullets,
     },
     {

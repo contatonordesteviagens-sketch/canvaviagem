@@ -5779,10 +5779,10 @@ export function F1CarouselBuilder({
               </legend>
               <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
                 {([
-                  ["pro-bold", isEs ? "Impacto" : "Impacto", isEs ? "Foto grande y título fuerte" : "Foto grande e título forte"],
-                  ["pro-split", isEs ? "Tarjeta" : "Cartão", isEs ? "Foto + panel claro" : "Foto + painel claro"],
-                  ["pro-magazine", isEs ? "Revista" : "Revista", isEs ? "Editorial con serifa" : "Editorial em serifa"],
-                  ["pro-luxe", isEs ? "Lujo" : "Luxo", isEs ? "Negro, marco y dorado" : "Preto, moldura e dourado"],
+                  ["pro-bold", "Neon", isEs ? "Oscuro, brillo y chips" : "Escuro, brilho e chips"],
+                  ["pro-split", "Oferta", isEs ? "Tarjeta con precio y aleta de avión" : "Cartão com preço e aba de avião"],
+                  ["pro-magazine", "Enseada", isEs ? "Título grande, íconos | precio" : "Título grande, ícones | preço"],
+                  ["pro-luxe", isEs ? "Conoce" : "Conheça", isEs ? "Panel crema + bloque de título" : "Painel creme + bloco de título"],
                   ["impact", isEs ? "Inspirar" : "Inspirar", isEs ? "Deseo y experiencia" : "Desejo e experiência"],
                   ["oferta", isEs ? "Oferta" : "Oferta", isEs ? "Valor y conversión" : "Valor e conversão"],
                   ["editorial", isEs ? "Guía" : "Guia", isEs ? "Útil para guardar" : "Útil para salvar"],
