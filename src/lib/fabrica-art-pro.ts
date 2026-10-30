@@ -1063,7 +1063,8 @@ async function layoutV8(m: ProArtModel) {
   const p = m.price;
   const offer = m.isExperience
     ? [m.travelPeriod, m.highlights.slice(0, 2).map((h) => h.text).join(" + ")].filter(Boolean).join(" · ")
-    : `${p.prefix ? p.prefix + " " : ""}${p.topLabel ? p.topLabel + " " : ""}${p.sym} ${p.intPart}${p.cents ? "," + p.cents : ""}${p.suffix ? " " + p.suffix : ""}`;
+    // O rótulo da forma de pagamento ("10X", "À VISTA") já diz tudo; o prefixo só entra sem rótulo.
+    : `${p.topLabel ? p.topLabel + " " : p.prefix ? p.prefix + " " : ""}${p.sym} ${p.intPart}${p.cents ? "," + p.cents : ""}${p.suffix ? " " + p.suffix : ""}`;
   const stackH = pH + 18 + ctaH;
   let y = F.bottom - stackH;
   const destSize = fitSize(ctx, m.destination.toUpperCase(), maxW, 900, F.story ? 150 : 128, f.serif, 60);
