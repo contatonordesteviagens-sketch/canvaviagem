@@ -1176,8 +1176,32 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
   const isVisible = (key: keyof SectionVisibility) => state.siteContent.sections[key] !== false;
 
-  const previewHTML = user?.id
-    ? buildLandingHTML(state, user.id, { preview: true })
+  // Só em desenvolvimento no localhost: permite auditar a prévia sem login (sai do build).
+  // Pacote criado em uma frase nasce sem foto: busca a primeira foto do destino sozinha (uma vez por pacote).
+  const autoPhotoTriedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const missing = state.selectedPackages.filter((pk) => pk.title?.trim() && !pk.imageUrl && !autoPhotoTriedRef.current.has(pk.id));
+    if (!missing.length) return;
+    missing.forEach((pk) => autoPhotoTriedRef.current.add(pk.id));
+    (async () => {
+      const found: Record<string, string> = {};
+      for (const pk of missing.slice(0, 4)) {
+        try {
+          const { data } = await supabase.functions.invoke("fabrica-search-photos", { body: { query: pk.title, perPage: 4, engine: "pexels" } });
+          const url = data?.photos?.[0]?.url || data?.photos?.[0]?.src || data?.photos?.[0]?.thumb;
+          if (url) found[pk.id] = url;
+        } catch { /* sem foto: o cartão continua com o placeholder */ }
+      }
+      if (Object.keys(found).length) {
+        update({ selectedPackages: state.selectedPackages.map((pk) => (found[pk.id] && !pk.imageUrl ? { ...pk, imageUrl: found[pk.id] } : pk)) });
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.selectedPackages.map((pk) => `${pk.id}:${pk.imageUrl ? 1 : 0}`).join("|")]);
+
+  const previewOwnerId = user?.id || (import.meta.env.DEV && typeof window !== "undefined" && window.location.hostname === "localhost" ? "dev-local" : "");
+  const previewHTML = previewOwnerId
+    ? buildLandingHTML(state, previewOwnerId, { preview: true })
     : `<!doctype html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#fff;color:#111}.hero{height:440px;padding:60px 8%;background:linear-gradient(135deg,${state.primaryColor || "#7c3aed"},${state.secondaryColor || "#2563eb"});color:white}.tag{font-size:12px;font-weight:800;letter-spacing:2px}.title{font-size:48px;font-weight:900;max-width:650px;margin:22px 0}.cta{display:inline-block;padding:16px 24px;border-radius:14px;background:#fff;color:#111;font-weight:900}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:38px 8%}.card{height:210px;border-radius:22px;background:linear-gradient(145deg,#e5e7eb,#f8fafc);filter:blur(4px)}.lock{text-align:center;padding:28px;font-size:20px;font-weight:900}</style></head><body><section class="hero"><div class="tag">PRÉVIA DO SITE DA SUA AGÊNCIA</div><div class="title">${String(state.agencyName || "Sua Agência de Viagens").replace(/[<>&"']/g, "")}</div><div class="cta">Solicitar orçamento</div></section><section class="cards"><div class="card"></div><div class="card"></div><div class="card"></div></section><div class="lock">Assine o Plano Elite para montar e visualizar o site completo.</div></body></html>`;
   const activeSiteTemplate = getSiteTemplateDefinition(state.siteContent.templateId);
 
@@ -1369,7 +1393,16 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             </h4>
           </div>
 
-            <FabricaCard title="📦 Pacotes oferecidos" sectionId="packages">
+          <div className="space-y-6">
+            <div className="mt-6 flex items-center gap-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-[12px] font-black text-zinc-950">1</span>
+              <div>
+                <p className="text-sm font-extrabold text-white">Seu conteúdo</p>
+                <p className="text-[11px] text-white/40">Pacotes, topo do site, depoimentos, perguntas e chamada final</p>
+              </div>
+            </div>
+
+            <FabricaCard title="📦 Pacotes oferecidos" sectionId="packages" defaultOpen>
               <FieldText
                 label="Título da seção"
                 value={state.siteContent.pacotesTitle}
@@ -1401,15 +1434,141 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-          <div className="space-y-6">
-            <FabricaCard title="Paleta da marca">
-              <BrandPaletteEditor
-                primaryColor={state.primaryColor}
-                secondaryColor={state.secondaryColor}
-                backgroundColor={state.backgroundColor || "#F4F6F9"}
-                onChange={(patch) => update(patch)}
-              />
+            <FabricaCard title="✏️ Topo do site (Hero)">
+              <div className="space-y-3">
+                <FieldText
+                  label="Título principal"
+                  value={state.siteContent.heroHeadline}
+                  onChange={(v) => updSite({ heroHeadline: v })}
+                  placeholder={`${state.agencyName || "Sua Agência"} — Sua próxima viagem começa aqui`}
+                />
+                <FieldTextarea
+                  label="Subtítulo"
+                  value={state.siteContent.heroSubheadline}
+                  onChange={(v) => updSite({ heroSubheadline: v })}
+                  placeholder="Atendimento personalizado, roteiros sob medida..."
+                />
+                <FieldText
+                  label="Texto do botão principal"
+                  value={state.siteContent.heroCtaLabel}
+                  onChange={(v) => updSite({ heroCtaLabel: v })}
+                  placeholder="Falar no WhatsApp"
+                />
+              </div>
             </FabricaCard>
+
+            <FabricaCard title="⭐ Depoimentos">
+              <FieldText
+                label="Título da seção"
+                value={state.siteContent.depoimentosTitle}
+                onChange={(v) => updSite({ depoimentosTitle: v })}
+              />
+              <div className="space-y-3 mt-4">
+                {state.depoimentos.map((d, i) => (
+                  <div key={i} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        value={d.name}
+                        onChange={(e) => updDepo(i, { name: e.target.value })}
+                        placeholder="Nome do cliente"
+                        className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
+                      />
+                      <button
+                        onClick={() => delDepo(i)}
+                        className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <textarea
+                      value={d.text}
+                      onChange={(e) => updDepo(i, { text: e.target.value })}
+                      placeholder="Depoimento"
+                      rows={2}
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
+                    />
+                  </div>
+                ))}
+                <button
+                  onClick={addDepo}
+                  className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  <Plus className="w-4 h-4" /> Adicionar depoimento
+                </button>
+              </div>
+            </FabricaCard>
+
+            <FabricaCard title="❓ Perguntas Frequentes (FAQ)">
+              <FieldText
+                label="Título da seção"
+                value={state.siteContent.faqTitle}
+                onChange={(v) => updSite({ faqTitle: v })}
+              />
+              <div className="space-y-3 mt-4">
+                {state.siteContent.faq.map((item, i) => (
+                  <div key={i} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        value={item.q}
+                        onChange={(e) => {
+                          const next = [...state.siteContent.faq];
+                          next[i] = { ...next[i], q: e.target.value };
+                          updSite({ faq: next });
+                        }}
+                        placeholder="Pergunta"
+                        className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
+                      />
+                      <button
+                        onClick={() => updSite({ faq: state.siteContent.faq.filter((_, idx) => idx !== i) })}
+                        className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <textarea
+                      value={item.a}
+                      onChange={(e) => {
+                        const next = [...state.siteContent.faq];
+                        next[i] = { ...next[i], a: e.target.value };
+                        updSite({ faq: next });
+                      }}
+                      placeholder="Resposta"
+                      rows={2}
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
+                    />
+                  </div>
+                ))}
+                <button
+                  onClick={() => updSite({ faq: [...state.siteContent.faq, { q: "Nova pergunta?", a: "Resposta..." }] })}
+                  className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  <Plus className="w-4 h-4" /> Adicionar pergunta
+                </button>
+              </div>
+            </FabricaCard>
+
+            <FabricaCard title="🎯 CTA Final">
+              <div className="space-y-3">
+                <FieldText
+                  label="Título"
+                  value={state.siteContent.finalCtaTitle}
+                  onChange={(v) => updSite({ finalCtaTitle: v })}
+                />
+                <FieldText
+                  label="Texto do botão"
+                  value={state.siteContent.finalCtaLabel}
+                  onChange={(v) => updSite({ finalCtaLabel: v })}
+                />
+              </div>
+            </FabricaCard>
+
+            <div className="mt-6 flex items-center gap-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-[12px] font-black text-zinc-950">2</span>
+              <div>
+                <p className="text-sm font-extrabold text-white">Contato e redes</p>
+                <p className="text-[11px] text-white/40">Onde o cliente fala com você</p>
+              </div>
+            </div>
 
             <FabricaCard title="📍 Endereço e Mapa">
               <div className="space-y-3">
@@ -1420,38 +1579,6 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   placeholder="Ex: Av. Paulista, 1000 - Bela Vista, São Paulo - SP"
                 />
 
-              </div>
-            </FabricaCard>
-
-            <FabricaCard title="📊 Pixel do Facebook e Google (para quem faz anúncio pago)">
-              <div className="space-y-4">
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
-                      Meta Pixel ID (Opcional)
-                    </label>
-                    <input
-                      type="text"
-                      value={state.metaPixelId || ""}
-                      onChange={(e) => update({ metaPixelId: e.target.value })}
-                      placeholder="Ex: 123456789012345"
-                      className="w-full bg-white/[0.04] border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
-                      Google Analytics ID (Opcional)
-                    </label>
-                    <input
-                      type="text"
-                      value={state.ga4Id || ""}
-                      onChange={(e) => update({ ga4Id: e.target.value })}
-                      placeholder="Ex: G-XXXXXXXXXX"
-                      className="w-full bg-white/[0.04] border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
-                    />
-                  </div>
-                </div>
               </div>
             </FabricaCard>
 
@@ -1513,6 +1640,35 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   )}
                 </div>
               </div>
+            </FabricaCard>
+
+            <div className="mt-6 flex items-center gap-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-[12px] font-black text-zinc-950">3</span>
+              <div>
+                <p className="text-sm font-extrabold text-white">Aparência</p>
+                <p className="text-[11px] text-white/40">Cores, fotos, seções e efeitos</p>
+              </div>
+            </div>
+
+            <FabricaCard title="Paleta da marca">
+              <BrandPaletteEditor
+                primaryColor={state.primaryColor}
+                secondaryColor={state.secondaryColor}
+                backgroundColor={state.backgroundColor || "#F4F6F9"}
+                onChange={(patch) => update(patch)}
+              />
+            </FabricaCard>
+
+            <FabricaCard title="🖼️ Banco de imagens">
+              <p className="text-xs text-white/50 mb-3">
+                Salve aqui as imagens que você gerou na Fase 3 ou cole links externos. Elas ficam disponíveis no seletor de fotos da prévia.
+              </p>
+              <ImageGallery
+                images={state.siteContent.galleryImages}
+                generatedAd={state.lastCleanPhoto || ""}
+                onAdd={addToGallery}
+                onRemove={removeFromGallery}
+              />
             </FabricaCard>
 
             <FabricaCard title="👁️ Seções do site">
@@ -1702,145 +1858,43 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
-            <FabricaCard title="✏️ Topo do site (Hero)">
-              <div className="space-y-3">
-                <FieldText
-                  label="Título principal"
-                  value={state.siteContent.heroHeadline}
-                  onChange={(v) => updSite({ heroHeadline: v })}
-                  placeholder={`${state.agencyName || "Sua Agência"} — Sua próxima viagem começa aqui`}
-                />
-                <FieldTextarea
-                  label="Subtítulo"
-                  value={state.siteContent.heroSubheadline}
-                  onChange={(v) => updSite({ heroSubheadline: v })}
-                  placeholder="Atendimento personalizado, roteiros sob medida..."
-                />
-                <FieldText
-                  label="Texto do botão principal"
-                  value={state.siteContent.heroCtaLabel}
-                  onChange={(v) => updSite({ heroCtaLabel: v })}
-                  placeholder="Falar no WhatsApp"
-                />
+            <div className="mt-6 flex items-center gap-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-[12px] font-black text-zinc-950">4</span>
+              <div>
+                <p className="text-sm font-extrabold text-white">Anúncios (opcional)</p>
+                <p className="text-[11px] text-white/40">Só para quem faz tráfego pago</p>
               </div>
-            </FabricaCard>
+            </div>
 
-            <FabricaCard title="🖼️ Banco de imagens">
-              <p className="text-xs text-white/50 mb-3">
-                Salve aqui as imagens que você gerou na Fase 3 ou cole links externos. Elas ficam disponíveis no seletor de fotos da prévia.
-              </p>
-              <ImageGallery
-                images={state.siteContent.galleryImages}
-                generatedAd={state.lastCleanPhoto || ""}
-                onAdd={addToGallery}
-                onRemove={removeFromGallery}
-              />
-            </FabricaCard>
+            <FabricaCard title="📊 Pixel do Facebook e Google (para quem faz anúncio pago)">
+              <div className="space-y-4">
 
-
-
-            <FabricaCard title="⭐ Depoimentos">
-              <FieldText
-                label="Título da seção"
-                value={state.siteContent.depoimentosTitle}
-                onChange={(v) => updSite({ depoimentosTitle: v })}
-              />
-              <div className="space-y-3 mt-4">
-                {state.depoimentos.map((d, i) => (
-                  <div key={i} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-2">
-                    <div className="flex gap-2">
-                      <input
-                        value={d.name}
-                        onChange={(e) => updDepo(i, { name: e.target.value })}
-                        placeholder="Nome do cliente"
-                        className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
-                      />
-                      <button
-                        onClick={() => delDepo(i)}
-                        className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <textarea
-                      value={d.text}
-                      onChange={(e) => updDepo(i, { text: e.target.value })}
-                      placeholder="Depoimento"
-                      rows={2}
-                      className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                      Meta Pixel ID (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={state.metaPixelId || ""}
+                      onChange={(e) => update({ metaPixelId: e.target.value })}
+                      placeholder="Ex: 123456789012345"
+                      className="w-full bg-white/[0.04] border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
                     />
                   </div>
-                ))}
-                <button
-                  onClick={addDepo}
-                  className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
-                >
-                  <Plus className="w-4 h-4" /> Adicionar depoimento
-                </button>
-              </div>
-            </FabricaCard>
-
-            <FabricaCard title="❓ Perguntas Frequentes (FAQ)">
-              <FieldText
-                label="Título da seção"
-                value={state.siteContent.faqTitle}
-                onChange={(v) => updSite({ faqTitle: v })}
-              />
-              <div className="space-y-3 mt-4">
-                {state.siteContent.faq.map((item, i) => (
-                  <div key={i} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-2">
-                    <div className="flex gap-2">
-                      <input
-                        value={item.q}
-                        onChange={(e) => {
-                          const next = [...state.siteContent.faq];
-                          next[i] = { ...next[i], q: e.target.value };
-                          updSite({ faq: next });
-                        }}
-                        placeholder="Pergunta"
-                        className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
-                      />
-                      <button
-                        onClick={() => updSite({ faq: state.siteContent.faq.filter((_, idx) => idx !== i) })}
-                        className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <textarea
-                      value={item.a}
-                      onChange={(e) => {
-                        const next = [...state.siteContent.faq];
-                        next[i] = { ...next[i], a: e.target.value };
-                        updSite({ faq: next });
-                      }}
-                      placeholder="Resposta"
-                      rows={2}
-                      className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
+                  <div>
+                    <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                      Google Analytics ID (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={state.ga4Id || ""}
+                      onChange={(e) => update({ ga4Id: e.target.value })}
+                      placeholder="Ex: G-XXXXXXXXXX"
+                      className="w-full bg-white/[0.04] border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
                     />
                   </div>
-                ))}
-                <button
-                  onClick={() => updSite({ faq: [...state.siteContent.faq, { q: "Nova pergunta?", a: "Resposta..." }] })}
-                  className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
-                >
-                  <Plus className="w-4 h-4" /> Adicionar pergunta
-                </button>
-              </div>
-            </FabricaCard>
-
-            <FabricaCard title="🎯 CTA Final">
-              <div className="space-y-3">
-                <FieldText
-                  label="Título"
-                  value={state.siteContent.finalCtaTitle}
-                  onChange={(v) => updSite({ finalCtaTitle: v })}
-                />
-                <FieldText
-                  label="Texto do botão"
-                  value={state.siteContent.finalCtaLabel}
-                  onChange={(v) => updSite({ finalCtaLabel: v })}
-                />
+                </div>
               </div>
             </FabricaCard>
 
@@ -1854,11 +1908,11 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         {/* Painel Direito: Preview do Site (7 colunas em lg, Sticky) */}
         <div className="w-full space-y-6">
           <div className="bg-zinc-950 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-            <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+            <div className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur px-3 py-2 border-b border-white/10 flex items-center justify-between gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden">
               
               <div className="flex items-center gap-2">
                 {/* Seletor Dispositivo */}
-                <div className="hidden sm:flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
+                <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
                   <button
                     onClick={() => setPreviewMode("desktop")}
                     className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all whitespace-nowrap ${
@@ -1922,13 +1976,13 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 💡 <strong>Clique em textos, ícones, fotos ou fundos para editar.</strong> Em botões, use duplo clique para abrir as cores da marca.
               </div>
 
-              <div className="transition-all duration-300 ease-in-out w-full h-[800px] sm:h-[900px] lg:h-[1050px]">
+              <div className="transition-all duration-300 ease-in-out w-full h-[78vh] min-h-[520px] max-h-[1100px]">
                 <iframe
                   ref={iframeRef}
                   srcDoc={previewHTML}
                   className={`bg-white transition-all duration-300 shadow-xl ${
                     previewMode === "mobile"
-                      ? "w-full max-w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px]"
+                      ? "w-full max-w-[375px] h-full max-h-[780px] mx-auto border-[10px] border-zinc-800 rounded-[36px]"
                       : "w-full h-full border border-white/10 rounded-2xl"
                   }`}
                   title="Preview"
@@ -2880,7 +2934,7 @@ const PublishSiteCard = ({
   useEffect(() => {
     if (user?.id || !html) return;
     track("site_preview_generated", { source: "site_builder" });
-    sitePreviewTimerRef.current = window.setTimeout(() => setShowPublishPaywall(true), 10_000);
+    // O paywall NÃO abre mais sozinho (antes: após 10s). Só ao clicar em Publicar ou Baixar.
     return () => {
       if (sitePreviewTimerRef.current) window.clearTimeout(sitePreviewTimerRef.current);
     };
@@ -3156,7 +3210,7 @@ O link antigo vai parar de funcionar para quem já recebeu. Quer continuar?`,
           </button>
           <button
             onClick={handleDownload}
-            className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white font-bold hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2"
+            className="flex-1 py-4 rounded-xl border border-white/10 bg-transparent text-white/55 text-xs font-semibold hover:bg-white/[0.06] hover:text-white transition-all flex items-center justify-center gap-2"
           >
             <Download className="w-4 h-4" /> Baixar arquivo do site (avançado)
           </button>
@@ -3182,12 +3236,14 @@ const FabricaCard = ({
   title,
   children,
   sectionId,
+  defaultOpen = false,
 }: {
   title: string;
   children: React.ReactNode;
   sectionId?: string;
+  defaultOpen?: boolean;
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const contentId = useId();
   const triggerId = `${contentId}-trigger`;
 
