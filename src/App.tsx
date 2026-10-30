@@ -161,6 +161,7 @@ const FabricaES = lazy(() => import("./pages/FabricaES"));
 const SiteViewer = lazy(() => import("./pages/SiteViewer"));
 const VendedorIA = lazy(() => import("./pages/vendedor-ia/VendedorIA"));
 const Tutorial = lazy(() => import("./pages/Tutorial"));
+const ArtesLab = import.meta.env.DEV ? lazy(() => import("./pages/dev/ArtesLab")) : null;
 
 const RESERVED_CANVA_VIAGEM_SUBDOMAINS = new Set([
   "www",
@@ -411,6 +412,7 @@ const App = () => {
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="/view/:id" element={<SiteViewer />} />
                     <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+                    {ArtesLab && <Route path="/dev/artes-lab" element={<ArtesLab />} />}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   </PlatformLayoutController>
