@@ -830,17 +830,28 @@ function documentedCarouselTextSequence(
           ? faq[total]
           : inspiring[total];
 
+  // Tópicos do próprio pacote (o que está incluso), distribuídos 2 por slide,
+  // em vez da mesma lista genérica repetida em todas as imagens.
+  const pickIncluded = (slideIndex: number, perSlide = 2) => {
+    if (!included.length) return [] as string[];
+    const start = Math.max(0, slideIndex - 1) * perSlide;
+    return Array.from({ length: Math.min(perSlide, included.length) }, (_, k) => included[(start + k) % included.length]);
+  };
   return sequence.map((textBlock, slideIndex) => {
     if (slideIndex === total - 1) return textBlock;
     const suggestions = documentedTextSuggestionPool(pacote, total, strategy, slideIndex);
+    const rotate = <T,>(arr: T[], fallback: T): T => (arr.length ? arr[Math.max(0, slideIndex - 1) % arr.length] : fallback);
+    const ownBullets = slideIndex === 0 ? [] : pickIncluded(slideIndex);
     return {
       ...textBlock,
-      title: textBlock.title || suggestions.title[0] || destination,
-      body: textBlock.body || suggestions.body[0] || "Conteúdo pronto para sua viagem.",
+      title: textBlock.title || rotate(suggestions.title, destination),
+      body: textBlock.body || rotate(suggestions.body, "Conteúdo pronto para sua viagem."),
       bullets:
         textBlock.bullets.length > 0
           ? textBlock.bullets
-          : suggestions.bullets[0] || ["Planeje sua viagem com tranquilidade"],
+          : ownBullets.length
+            ? ownBullets
+            : rotate(suggestions.bullets, ["Planeje sua viagem com tranquilidade"]),
     };
   });
 }
@@ -1337,7 +1348,14 @@ function distributeUniqueSlideImages(
   });
 
   return items.map((slide) => {
-    if (slide.kind === "cover") return slide;
+    if (slide.kind === "cover") {
+      // Capa herdada do anúncio ou já com foto: não mexe. Capa vazia: primeira foto do destino.
+      if (slide.imageUrl || slide.coverSource === "ad") return slide;
+      const firstImage = pool.find((image) => !used.has(image));
+      if (!firstImage) return slide;
+      used.add(firstImage);
+      return { ...slide, imageUrl: firstImage };
+    }
     if (preserveUploads && isUserUploadedImage(slide.imageUrl)) {
       used.add(slide.imageUrl);
       return slide;
@@ -1721,7 +1739,7 @@ function CarouselCanvas({
     isClosing ? slide.textColor || "#F8FAFC" : contentTextFallback,
   );
   const titleLength = cleanCarouselText(slide.title).length;
-  const titleScale = titleLength > 70 ? 0.76 : titleLength > 52 ? 0.84 : titleLength > 38 ? 0.92 : 1;
+  const titleScale = titleLength > 70 ? 0.62 : titleLength > 52 ? 0.7 : titleLength > 38 ? 0.8 : 1;
   const contentLength =
     titleLength +
     cleanCarouselText(slide.body).length +
@@ -2779,7 +2797,7 @@ function CarouselCanvas({
                 <div style={{ position: "absolute", left: "8%", right: "8%", bottom: "14%" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(3, 1.04), textShadow }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.04), textShadow }}>
                       {slide.title}
                     </h3>
                   )}
@@ -3892,9 +3910,6 @@ export function F1CarouselBuilder({
     if (!slides.find((slide) => slide.kind === "cover")?.imageUrl?.trim()) {
       issues.push(isEs ? "Elige la foto de portada" : "Escolha a foto da capa");
     }
-    if (showLogo && !state.logoBase64?.trim()) {
-      issues.push(isEs ? "Agrega el logo en el Panel" : "Adicione a logo no Painel");
-    }
     if (!contentSlides.length || contentSlides.some((slide) => !cleanCarouselText(slide.title))) {
       issues.push(isEs ? "Completa los títulos" : "Complete os títulos");
     }
@@ -4783,13 +4798,12 @@ export function F1CarouselBuilder({
 
     const closingSlide = slides.find((slide) => slide.kind === "closing");
     if (showLogo && !state.logoBase64) {
-      setActiveIndex(slides.length - 1);
-      toast.error(
+      // Sem logo cadastrada: baixa mesmo assim (sem logo) e só avisa.
+      toast.info(
         isEs
-          ? "Agrega la logo de la empresa antes de descargar."
-          : "Adicione a logo da empresa antes de baixar.",
+          ? "Sin logo en el Panel: el carrusel sale sin logo."
+          : "Sem logo no Painel: o carrossel sai sem a logo.",
       );
-      return;
     }
     if (!closingSlide?.phone.trim()) {
       setActiveIndex(slides.length - 1);
@@ -5408,6 +5422,37 @@ export function F1CarouselBuilder({
     );
   };
 
+  // Botão de baixar em destaque. Quando falta algo, continua clicável: o clique
+  // mostra o que falta (toast) em vez de um botão apagado sem explicação.
+  const renderBigDownloadButton = (compact = false) => (
+    <button
+      type="button"
+      onClick={downloadAll}
+      disabled={downloading}
+      data-testid="download-carousel-cta"
+      title={!qualityReady ? qualityIssues.join(" • ") : undefined}
+      className={`group flex w-full items-center justify-center gap-3 rounded-2xl bg-[#F5F906] px-5 text-zinc-950 shadow-[0_8px_32px_rgba(245,249,6,0.35)] ring-2 ring-[#F5F906]/40 ring-offset-2 ring-offset-zinc-950 transition-all hover:brightness-105 hover:shadow-[0_10px_40px_rgba(245,249,6,0.5)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 ${compact ? "min-h-14 py-2.5" : "min-h-16 py-3.5"}`}
+    >
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-zinc-950 text-[#F5F906]">
+        {downloading ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
+      </span>
+      <span className="flex min-w-0 flex-col items-start leading-tight">
+        <span className="text-base font-black sm:text-lg">
+          {downloading
+            ? `${isEs ? "Preparando" : "Preparando"} ${downloadProgress || 1}/${slides.length}...`
+            : (isEs ? `Descargar las ${slides.length} imágenes` : `Baixar as ${slides.length} imagens`)}
+        </span>
+        <span className="truncate text-[11px] font-bold text-zinc-950/70">
+          {!qualityReady && qualityIssues[0]
+            ? (isEs ? `Falta: ${qualityIssues[0]}` : `Falta: ${qualityIssues[0]}`)
+            : (isEs
+                ? `PNG en alta · ${carouselFormat === "story" ? "1080×1920" : "1080×1350"} · listo para publicar`
+                : `PNG em alta · ${carouselFormat === "story" ? "1080×1920" : "1080×1350"} · pronto para postar`)}
+        </span>
+      </span>
+    </button>
+  );
+
   const renderActionBar = () => (
     <div className={`rounded-2xl border bg-[#0F0F11] p-4 sm:p-5 ${qualityReady ? "border-emerald-400/25" : "border-amber-300/25"}`}>
       <div className="mb-3 flex items-center gap-3">
@@ -5437,7 +5482,9 @@ export function F1CarouselBuilder({
           {isEs ? "Antes de descargar: " : "Antes de baixar: "}{qualityIssues[0]}
         </p>
       )}
-      <div className="flex flex-col sm:flex-row gap-2.5">
+      {/* Botão principal: baixar. Grande, largura cheia, impossível de não ver. */}
+      {renderBigDownloadButton()}
+      <div className="mt-2.5 flex flex-col sm:flex-row gap-2.5">
         {onBackToAd && (
           <button type="button" onClick={onBackToAd} className="flex-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-xs font-extrabold text-white/70 hover:bg-white/[0.08] transition-colors">
             <ArrowLeft className="h-4 w-4" />
@@ -5448,14 +5495,8 @@ export function F1CarouselBuilder({
           <RefreshCw className="h-4 w-4" />
           {isEs ? "Nueva variación" : "Nova variação"}
         </button>
-        <button type="button" onClick={downloadAll} disabled={downloading || !qualityReady} title={!qualityReady ? qualityIssues.join(" • ") : undefined} className="flex-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5F906] px-3 text-xs font-extrabold text-zinc-950 hover:bg-[#F5F906]/90 disabled:cursor-not-allowed disabled:opacity-40">
-          {downloading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-          {downloading
-            ? `${isEs ? "Preparando" : "Preparando"} ${downloadProgress || 1}/${slides.length}...`
-            : (isEs ? `Descargar ${slides.length}` : `Baixar ${slides.length} imagens`)}
-        </button>
         {onNext && (
-          <button type="button" onClick={onNext} className="flex-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black px-3 text-xs font-extrabold shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-colors">
+          <button type="button" onClick={onNext} className="flex-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-3 text-xs font-extrabold text-amber-200 hover:bg-amber-500/20 transition-colors">
             {isEs ? "Avanzar: Sitio" : "Avançar: Site"} <ArrowRight className="h-4 w-4" />
           </button>
         )}
@@ -5464,7 +5505,7 @@ export function F1CarouselBuilder({
   );
 
   return (
-    <section className="space-y-4" data-testid="f1-carousel-builder">
+    <section className="space-y-4 pb-28 lg:pb-0" data-testid="f1-carousel-builder">
       <div className="rounded-3xl border border-white/[0.08] bg-[#0F0F11]/80 backdrop-blur-2xl p-4 sm:p-6 shadow-2xl transition-all duration-300">
         <div className="flex items-center gap-2 mb-4">
           <span className="grid h-6 w-6 place-items-center rounded-full bg-[#F5F906] text-[11px] font-black text-zinc-950">1</span>
@@ -7296,6 +7337,11 @@ export function F1CarouselBuilder({
       </div>
 
       {slides.length > 0 && renderActionBar()}
+      {slides.length > 0 && (
+        <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-black via-black/95 to-black/0 px-3 pb-3 pt-6 pointer-events-none">
+          <div className="pointer-events-auto">{renderBigDownloadButton(true)}</div>
+        </div>
+      )}
 
       {showNewCarouselModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
