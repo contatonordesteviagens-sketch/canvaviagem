@@ -79,7 +79,8 @@ type LabelStyle =
   | "line-bottom"
   | "rectangle"
   | "translucent"
-  | "gradient";
+  | "gradient"
+  | "kicker";
 type LabelAlignment = "auto" | "left" | "center" | "right";
 
 function SealStyleGlyph({ style }: { style: LabelStyle }) {
@@ -1253,7 +1254,7 @@ function createSlides(
       slideVariant: strategy,
       bulletIcon: "none",
       showShadow: true,
-      labelStyle: "filled",
+      labelStyle: "kicker",
       fontFamily: "Inter",
       fontWeight: "normal",
       fontStyle: "normal",
@@ -1277,7 +1278,7 @@ function createSlides(
       slideVariant: strategy,
       bulletIcon: "none",
       showShadow: true,
-      labelStyle: "filled",
+      labelStyle: "kicker",
       fontFamily: "Inter",
       fontWeight: "normal",
       fontStyle: "normal",
@@ -1310,7 +1311,7 @@ function createSlides(
     slideVariant: strategy,
     bulletIcon: "none",
     showShadow: true,
-    labelStyle: "filled",
+    labelStyle: "kicker",
     fontFamily: "Inter",
     fontWeight: "normal",
     fontStyle: "normal",
@@ -1700,7 +1701,7 @@ export function CarouselCanvas({
   const ff = slide.fontFamily || "Inter, ui-sans-serif, system-ui, sans-serif";
   
   const titleBold = slide.titleStyle?.bold !== undefined ? slide.titleStyle.bold : (slide.fontWeight === "normal" ? false : true);
-  const titleWeight = titleBold ? 950 : 600;
+  const titleWeight = titleBold ? 800 : 500;
   const titleStyleAttr = (slide.titleStyle?.italic !== undefined ? slide.titleStyle.italic : slide.fontStyle === "italic") ? "italic" : "normal";
   const titleDecAttr = (slide.titleStyle?.underline !== undefined ? slide.titleStyle.underline : slide.textDecoration === "underline") ? "underline" : "none";
   const contentTextFallback = defaultContentTextColor(slide.slideVariant, primary, background);
@@ -1816,7 +1817,39 @@ export function CarouselCanvas({
           ? { marginLeft: "auto", marginRight: 0 }
           : { marginLeft: 0, marginRight: "auto" };
 
-    const style = slide.labelStyle || "filled";
+    const style = slide.labelStyle || "kicker";
+    if (style === "kicker") {
+      // Etiqueta editorial: caixa alta, espaçada, na cor de destaque, com um filete curto.
+      // Em painel claro a cor de destaque clara (amarelo, creme) vira a cor principal.
+      const lightPanelVariant = ["editorial", "minimalist", "organic", "ticket"].includes(slide.slideVariant || "");
+      const accentIsLight = readableText(bg) === "#111318";
+      const kickerColor = editableColor(
+        slide.labelTextColor,
+        lightPanelVariant && accentIsLight ? primary : bg,
+      );
+      return (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: Math.round(8 * Z),
+            marginBottom: Math.round(10 * Z),
+            justifyContent: resolvedAlignment === "center" ? "center" : resolvedAlignment === "right" ? "flex-end" : "flex-start",
+            color: kickerColor,
+            fontSize: Math.round(9 * Z),
+            lineHeight: 1.2,
+            fontWeight: 800,
+            letterSpacing: ".18em",
+            textTransform: "uppercase",
+            ...safeTextWrap,
+          }}
+        >
+          {resolvedAlignment !== "right" && <span style={{ width: Math.round(18 * Z), height: Math.max(1, Math.round(2 * Z)), background: kickerColor, flex: "0 0 auto" }} />}
+          <span>{label}</span>
+          {resolvedAlignment === "right" && <span style={{ width: Math.round(18 * Z), height: Math.max(1, Math.round(2 * Z)), background: kickerColor, flex: "0 0 auto" }} />}
+        </div>
+      );
+    }
     const commonStyle: React.CSSProperties = {
       display: "inline-flex",
       alignItems: "center",
@@ -2022,8 +2055,9 @@ export function CarouselCanvas({
       Math.min(1, 19 / Math.max(19, closingLongestHeadline)),
     );
     const centeredHeadline = variant === "headline-center";
-    const brandGradient = `linear-gradient(100deg, ${primary} 0%, ${secondary} 100%)`;
-    const gradientForeground = readableGradientText(primary, secondary);
+    // Botão sólido na cor de destaque: degradê entre as duas cores da marca ficava "adesivo".
+    const brandGradient = secondary;
+    const gradientForeground = readableText(secondary);
     const brandForeground = readableText(primary);
     const lightPanel = ["editorial", "minimalist", "organic", "ticket"].includes(variant);
     const panelForeground = lightPanel
@@ -2066,7 +2100,7 @@ export function CarouselCanvas({
     let ctaBackground = primary;
     let ctaForeground = brandForeground;
     let ctaBorder = "none";
-    let ctaRadius = Math.round(999 * Z);
+    let ctaRadius = Math.round(10 * Z);
     let accentPlacement: "top" | "side" | "dash" | "none" = "none";
 
     if (variant === "itinerary") {
@@ -2353,8 +2387,8 @@ export function CarouselCanvas({
                     maxWidth: "100%",
                     marginTop: lineIndex ? Math.round(3 * Z) : 0,
                     padding: `${Math.round(5 * Z)}px ${Math.round(12 * Z)}px`,
-                    background: `linear-gradient(100deg, rgba(0,0,0,.28), rgba(0,0,0,.18)), linear-gradient(${96 + lineIndex * 7}deg, ${primary} 0%, ${secondary} 100%)`,
-                    color: "#FFFFFF",
+                    background: primary,
+                    color: readableText(primary),
                     fontSize: Math.round(
                       (storyMode ? 26 : 29) *
                         titleScale *
@@ -2785,7 +2819,7 @@ export function CarouselCanvas({
                 <div style={{ position: "absolute", left: "8%", right: "8%", bottom: "14%" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.04), textShadow }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 30 : 34) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(5, 1.04), textShadow }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2826,7 +2860,7 @@ export function CarouselCanvas({
                 >
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.06), textShadow }}>
+                    <h3 style={{ maxWidth: "92%", margin: 0, color: titleColor, fontSize: Math.max(11, Math.round((isDenseSlide ? 19 : ratio < 0.68 ? 24 : 28) * titleScale * denseTextScale * Z)), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(5, 1.06), textShadow }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2861,7 +2895,7 @@ export function CarouselCanvas({
                 >
                   {renderLabel(slide.label, contentOnRight ? "right" : "left")}
                   {slide.title && (
-                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 24 : 27) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.06) }}>
+                    <h3 style={{ margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 24 : 27) * titleScale * Z), lineHeight: 1.06, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(5, 1.06) }}>
                       {slide.title}
                     </h3>
                   )}
@@ -2932,7 +2966,7 @@ export function CarouselCanvas({
                       {renderLabel(slide.label, "center")}
                     </div>
                     {slide.title && (
-                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.04) }}>
+                      <h3 style={{ maxWidth: "92%", margin: "0 auto", color: titleColor, fontSize: Math.max(11, Math.round(offerTitleSize * titleScale * denseTextScale * Z)), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(5, 1.04) }}>
                         {slide.title}
                       </h3>
                     )}
@@ -2970,7 +3004,7 @@ export function CarouselCanvas({
                 <div style={{ background, color: titleColor, padding: isDenseSlide ? "4.5% 8% 7% 8%" : "6.5% 8% 10% 8%", borderTop: `${Math.max(3, Math.round(5 * Z))}px solid ${primary}`, boxShadow: `0 ${Math.round(-10 * Z)}px ${Math.round(32 * Z)}px rgba(0,0,0,.2)`, boxSizing: "border-box" }}>
                   {renderLabel(slide.label)}
                   {slide.title && (
-                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.04) }}>
+                    <h3 style={{ maxWidth: "88%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 27 : 31) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(5, 1.04) }}>
                       {slide.title}
                     </h3>
                   )}
@@ -3074,7 +3108,7 @@ export function CarouselCanvas({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start" }}>
                       {renderLabel(slide.label, alignRight ? "right" : "left")}
                       {slide.title && (
-                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.04) }}>
+                        <h3 style={{ maxWidth: "82%", margin: 0, color: titleColor, fontSize: Math.round((ratio < 0.68 ? 25 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(5, 1.04) }}>
                           {slide.title}
                         </h3>
                       )}
@@ -3215,8 +3249,8 @@ export function CarouselCanvas({
                               marginLeft: centeredLayout ? "auto" : 0,
                               marginRight: centeredLayout ? "auto" : 0,
                               padding: `${Math.round(5 * Z)}px ${Math.round(13 * Z)}px`,
-                              background: `linear-gradient(100deg, rgba(0,0,0,.28), rgba(0,0,0,.18)), linear-gradient(${96 + lineIndex * 7}deg, ${primary} 0%, ${secondary} 100%)`,
-                              color: "#FFFFFF",
+                              background: primary,
+                              color: readableText(primary),
                               fontSize: Math.round((storyMode ? 29 : 33) * titleScale * headlineFontScale * Z),
                               lineHeight: 1.02,
                               fontWeight: titleWeight,
@@ -3374,7 +3408,7 @@ export function CarouselCanvas({
                     />
                     {renderLabel(slide.label)}
                     {slide.title && (
-                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(4, 1.04) }}>
+                      <h3 style={{ maxWidth: "96%", margin: 0, color: titleColor, fontSize: Math.round((storyMode ? 26 : 30) * titleScale * Z), lineHeight: 1.04, fontFamily: ff, fontWeight: titleWeight, fontStyle: titleStyleAttr, textDecoration: titleDecAttr, ...safeTextWrap, ...safeClamp(5, 1.04) }}>
                         {slide.title}
                       </h3>
                     )}
@@ -6493,6 +6527,7 @@ export function F1CarouselBuilder({
                         ["outline-thick", isEs ? "Borde fuerte" : "Borda forte"],
                         ["translucent", "Suave"],
                         ["gradient", isEs ? "Degradado" : "Degrade"],
+                        ["kicker", "Editorial (sem fundo)"],
                         ["stripe-left", isEs ? "Linea lateral" : "Linha lateral"],
                         ["line-top", isEs ? "Linea arriba" : "Linha acima"],
                         ["line-bottom", isEs ? "Linea abajo" : "Linha abaixo"],
@@ -6502,10 +6537,10 @@ export function F1CarouselBuilder({
                           type="button"
                           title={styleTitle}
                           aria-label={styleTitle}
-                          aria-pressed={(activeSlide.labelStyle || "filled") === styleKey}
+                          aria-pressed={(activeSlide.labelStyle || "kicker") === styleKey}
                           onClick={() => patchActive({ labelStyle: styleKey })}
                           className={`grid min-h-8 place-items-center rounded-md border px-1 py-1 transition-colors ${
-                            (activeSlide.labelStyle || "filled") === styleKey
+                            (activeSlide.labelStyle || "kicker") === styleKey
                               ? "border-[#F5F906] bg-[#F5F906]/10 text-[#F5F906]"
                               : "border-white/10 bg-white/[0.02] text-white/55 hover:border-white/25 hover:text-white"
                           }`}
@@ -6556,7 +6591,7 @@ export function F1CarouselBuilder({
                         type="button"
                         onClick={() => patchActive({ labelStyle: styleKey })}
                         className={`rounded-full border px-2.5 py-1 text-[9px] font-bold leading-tight transition-all ${
-                          (activeSlide.labelStyle || "filled") === styleKey
+                          (activeSlide.labelStyle || "kicker") === styleKey
                             ? "border-[#F5F906] bg-[#F5F906]/15 text-[#F5F906] shadow-[0_0_10px_rgba(245,249,6,0.2)]"
                             : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
                         }`}
