@@ -114,6 +114,8 @@ async function sendOne(email: string, kind: RecoveryKind, vars: { firstName: str
 
 const BF_KINDS: BlackFridayKind[] = ["bf6", "bf5", "bf3", "bf4", "bf2", "bf1"]; // do mais tardio ao mais cedo
 const BF_LEAD_WAIT_HOURS = 72;
+// Resend grátis: 100 por dia, divididos com o link de login e os e-mails de compra. A campanha usa no máximo 70.
+const BF_DAILY_CAP = 70;
 const bfRunning = () => Date.now() >= Date.parse(BF_CAMPAIGN.start) && Date.now() < Date.parse(BF_CAMPAIGN.end);
 
 /** Link que entra logado e abre a página, com a origem do e-mail para o rastreamento. */
@@ -166,9 +168,18 @@ async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number)
   if (due) for (const email of former) if (!skip.has(email) && !sentKinds.has(`${email}:${due}`)) queue.push({ email, kind: due });
   for (const email of active) if (!skip.has(email) && !sentKinds.has(`${email}:novidades`)) queue.push({ email, kind: "novidades" });
 
+  // O que não couber hoje sai nas próximas rodadas. Quem recebeu menos e-mails da campanha vai primeiro,
+  // para que quem ficou de fora no dia 29 receba o último aviso no dia 30.
+  const received = new Map<string, number>();
+  for (const l of logs ?? []) received.set(l.email, (received.get(l.email) ?? 0) + 1);
+  queue.sort((a, b) => (received.get(a.email) ?? 0) - (received.get(b.email) ?? 0));
+  const { count: lastDay } = await db.from("recovery_email_log").select("email", { count: "exact", head: true })
+    .gte("sent_at", new Date(Date.now() - 24 * HOUR).toISOString());
+  const allowed = Math.min(limit, Math.max(0, BF_DAILY_CAP - (lastDay ?? 0)));
+
   let sent = 0;
   for (const item of queue) {
-    if (sent >= limit) break;
+    if (sent >= allowed) break;
     const { error: logErr } = await db.from("recovery_email_log").insert({ email: item.email, kind: item.kind });
     if (logErr) continue;
     try {
@@ -180,9 +191,10 @@ async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number)
     } catch (err) {
       console.error("[BLACK-FRIDAY]", (err as Error).message);
       await db.from("recovery_email_log").delete().eq("email", item.email).eq("kind", item.kind);
+      if (/quota/i.test((err as Error).message)) break;
     }
   }
-  console.log("[BLACK-FRIDAY] Execução", { fila: queue.length, sent });
+  console.log("[BLACK-FRIDAY] Execução", { fila: queue.length, permitidos: allowed, sent });
   return { active: true, sent, queue: queue.length };
 }
 
