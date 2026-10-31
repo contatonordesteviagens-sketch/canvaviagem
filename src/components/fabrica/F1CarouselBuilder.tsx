@@ -3938,7 +3938,13 @@ export function F1CarouselBuilder({
   const [photoResults, setPhotoResults] = useState<PhotoResult[]>([]);
   const [photoPage, setPhotoPage] = useState(1);
   const [photoHasMore, setPhotoHasMore] = useState(false);
-  const [photoDestination, setPhotoDestination] = useState("");
+  const [photoDestination, setPhotoDestinationState] = useState("");
+  // Último destino pedido: a busca automática espera o estado chegar nele, em vez de rodar com o do pacote anterior.
+  const requestedDestinationRef = useRef("");
+  const setPhotoDestination = (value: string) => {
+    requestedDestinationRef.current = value;
+    setPhotoDestinationState(value);
+  };
   const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -4730,6 +4736,7 @@ export function F1CarouselBuilder({
   };
 
   useEffect(() => {
+    if (photoDestination !== requestedDestinationRef.current) return;
     const packageKey = [
       state.projectId || "local",
       selectedPackage?.id || "",
