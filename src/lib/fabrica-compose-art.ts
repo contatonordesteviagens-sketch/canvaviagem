@@ -260,6 +260,7 @@ export let __currentDialCode = "55";
 
 export function formatAdPhone(val: string, explicitDialCode?: string): string {
   if (!val) return "";
+  if ((explicitDialCode || __currentDialCode || "55").replace(/\D/g, "") === "55") val = val.replace(/^\s*\+\s*55\s*/, "");
   let d = val.replace(/\D/g, "");
   const dial = (explicitDialCode || __currentDialCode || "55").replace(/\D/g, "");
 

@@ -17,6 +17,7 @@
  * pelo texto de cada tópico. Preço detectado no texto ("R$ 1.299,00") vira bloco de preço.
  * Base de desenho: 432px de largura; altura = 432 / ratio.
  */
+import { formatAdPhone } from "@/lib/fabrica-compose-art";
 import type { CSSProperties, ReactNode } from "react";
 import type { CarouselSlide } from "@/components/fabrica/F1CarouselBuilder";
 
@@ -72,6 +73,9 @@ const tr = () => {
 
 // ───────── ícones reais do projeto (/assets/icons) ─────────
 const ICON_RULES: [RegExp, string][] = [
+  [/ritmo|rotina|sem pressa/i, "relogio"],
+  [/conhecer de verdade|valem a visita/i, "guia-turistico"],
+  [/voltar com|mem[óo]rias/i, "aviao"],
   [/a[ée]reo|voo|passag|avi[ãa]o|embarque/i, "aviao"],
   [/[ôo]nibus|transporte|rodovi|transfer|traslado/i, "onibus"],
   [/hospeda|hotel|pousada|noite|resort|quarto|apartamento/i, "placa-do-hotel"],
@@ -240,7 +244,7 @@ function PriceTag({ price, color, ff, prefix = tr().from, suffix = tr().perPerso
 function Contacts({ slide, color, ff, size = 14 }: { slide: CarouselSlide; color: string; ff: string; size?: number }) {
   const channels = slide.contactChannels ?? ([slide.phone ? "whatsapp" : null, slide.instagram ? "instagram" : null, slide.email ? "email" : null].filter(Boolean) as string[]);
   const rows: { icon?: string; text: string }[] = [];
-  if (channels.includes("whatsapp") && slide.phone) rows.push({ icon: "/social-icons/whatsapp.png", text: slide.phone });
+  if (channels.includes("whatsapp") && slide.phone) rows.push({ icon: "/social-icons/whatsapp.png", text: formatAdPhone(slide.phone) });
   if (channels.includes("instagram") && slide.instagram) rows.push({ icon: "/social-icons/instagram_bolinha.png", text: slide.instagram.startsWith("@") ? slide.instagram : `@${slide.instagram}` });
   if (channels.includes("email") && slide.email) rows.push({ icon: "/social-icons/email_azul.png", text: slide.email });
   if (slide.website) rows.push({ icon: "/social-icons/site.png", text: slide.website });
@@ -353,8 +357,9 @@ export function ProSlide(p: ProSlideProps) {
           <NeonBackdrop accent={accent} glowAt="15% 85%" />
           {topBar}
           <Logo src={p.logo} dark pos="center" />
-          <Photo src={slide.imageUrl} style={{ position: "absolute", left: M, right: M, top: safeTop + 58, height: photoH }} radius={18} />
-          <div style={{ position: "absolute", left: M, right: M, top: `calc(${photoH} + ${safeTop + 40}px)`, bottom: safeBottom, ...glowCard, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12, boxSizing: "border-box", overflow: "hidden" }}>
+          <div style={{ position: "absolute", left: M, right: M, top: safeTop + 58, bottom: safeBottom, display: "flex", flexDirection: "column" }}>
+          <Photo src={slide.imageUrl} style={{ flex: "1 1 0", minHeight: 90 }} radius={18} />
+          <div style={{ position: "relative", flexShrink: 0, marginTop: -18, ...glowCard, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12, boxSizing: "border-box", overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
               <span style={{ width: 40, height: 40, borderRadius: 12, background: accent, color: accentFg, display: "grid", placeItems: "center", fontFamily: ff, fontSize: 16, fontWeight: 900, boxShadow: `0 0 18px ${rgba(accent, 0.6)}` }}>{num}</span>
               <span style={{ flex: 1, height: 1, backgroundImage: `linear-gradient(90deg, ${accent} 50%, transparent 50%)`, backgroundSize: "8px 1px", opacity: 0.6 }} />
@@ -363,6 +368,7 @@ export function ProSlide(p: ProSlideProps) {
             <Title text={title} color={titleColor || "#FFFFFF"} ff={ff} base={26} maxLines={3} />
             <Body text={bodyNoDeparture} color={bodyColor || "rgba(255,255,255,.7)"} ff={ff} size={12.5} maxLines={bulletsNoPrice.length > 3 ? 2 : 3} />
             {price ? <PriceTag price={price} color={accent} ff={ff} size={44} /> : <IconList items={bulletsNoPrice} color="#FFFFFF" ff={ff} size={12.5} chip={rgba(accent, 0.16)} iconTone="light" gap={7} />}
+          </div>
           </div>
         </Frame>
       );

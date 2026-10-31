@@ -1,3 +1,4 @@
+import { formatAdPhone } from "@/lib/fabrica-compose-art";
 import {
   useEffect,
   useMemo,
@@ -650,7 +651,8 @@ function documentedTextSuggestionPool(
     bullets = [
       ["Tudo organizado", "Roteiro no seu ritmo", "Suporte na viagem"],
       ["Sair da rotina", "Conhecer de verdade", "Voltar com histórias"],
-      [`Motivo ${String(position).padStart(2, "0")}`, "Para viver de perto"],
+      ["Lugares que valem a visita", "Tempo para aproveitar", "Memórias para guardar"],
+      ["Dias sem pressa", "Fotos para guardar", "Para ir com quem você ama"],
     ];
   }
 
@@ -2554,7 +2556,7 @@ export function CarouselCanvas({
                   objectFit: "contain",
                 }}
               />
-              <span>{slide.phone}</span>
+              <span>{formatAdPhone(slide.phone)}</span>
             </div>
           )}
           {(activeContactChannels.includes("instagram") && slide.instagram) ||
@@ -2783,7 +2785,7 @@ export function CarouselCanvas({
                 <svg width={Math.round(20 * Z)} height={Math.round(20 * Z)} viewBox="0 0 24 24" fill="#25D366" style={{ filter: "drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.5))" }}>
                   <path d="M11.999 0C5.373 0 0 5.373 0 12c0 2.126.556 4.196 1.614 6.012L.053 23.947l6.096-1.597C7.935 23.411 9.948 24 11.999 24 18.626 24 24 18.627 24 12S18.626 0 11.999 0zm6.166 17.067c-.259.73-1.512 1.405-2.09 1.463-.559.055-1.079.255-3.468-.682-2.885-1.132-4.757-4.088-4.901-4.281-.143-.193-1.173-1.564-1.173-2.984 0-1.42.744-2.122 1.009-2.414.259-.285.566-.356.755-.356.188 0 .376.002.541.011.174.009.407-.066.638.489.236.568.804 1.956.874 2.101.07.145.117.315.022.507-.095.193-.143.315-.284.482-.143.167-.301.374-.429.501-.143.143-.292.298-.125.586.167.288.742 1.228 1.596 1.986 1.101.977 2.031 1.281 2.319 1.424.288.143.456.12.625-.072.167-.193.717-.837.908-1.124.193-.288.384-.24.649-.143.264.098 1.68 0.793 1.968.937.288.143.479.215.549.335.071.12.071.698-.188 1.428z" />
                 </svg>
-                <span>{slide.phone}</span>
+                <span>{formatAdPhone(slide.phone)}</span>
               </div>
             )}
             {slide.instagram && (
