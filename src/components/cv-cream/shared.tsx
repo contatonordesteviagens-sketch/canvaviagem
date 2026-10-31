@@ -36,7 +36,7 @@ export function BrandMark({ size = 40, withName = true }: { size?: number; withN
   return (
     <span className="inline-flex items-center gap-2.5">
       <img src={logo} alt="Canva Viagem" width={size} height={size} className="rounded-full object-cover" style={{ width: size, height: size }} />
-      {withName && <span className="text-[19px] font-extrabold tracking-[-0.02em]">Canva Viagem</span>}
+      {withName && <span className="whitespace-nowrap text-[16px] font-extrabold tracking-[-0.02em] sm:text-[19px]">Canva Viagem</span>}
     </span>
   );
 }

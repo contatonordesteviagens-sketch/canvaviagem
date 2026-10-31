@@ -19,20 +19,39 @@ export const ONBOARDING_LOGO_KEY = "cv-onboarding-logo";
 type Icon = ComponentType<{ className?: string }>;
 type Piece = { src: string; w: number; h: number };
 
-// Peças novas (anúncios e carrosséis feitos na plataforma): aparecem primeiro e maiores.
-const ad = (n: string): Piece => ({ src: `/quiz-media/${n}.webp`, w: 1080, h: 1080 });
-const slide = (n: string): Piece => ({ src: `/quiz-media/${n}.webp`, w: 1080, h: 1350 });
-const FEATURED: Piece[] = [
-  ad("anuncio-maragogi-1"), slide("carrossel-noronha-01"), slide("carrossel-maragogi-01"), ad("anuncio-rio-1"),
-  slide("carrossel-noronha-02"), slide("carrossel-maragogi-02"), ad("anuncio-maragogi-2"), slide("carrossel-noronha-03"),
-  slide("carrossel-maragogi-03"), ad("anuncio-rio-2"), slide("carrossel-noronha-04"), slide("carrossel-maragogi-04"), slide("carrossel-noronha-05"),
-];
-
-// Peças antigas: continuam, menores e mais discretas, numa segunda faixa.
-const STRIP = [
-  "cancun-glass-01", "cancun-card-01", "cancun-editorial-01", "gramado-offer-01", "cancun-glass-02", "cancun-card-02",
-  "cancun-editorial-02", "gramado-offer-02", "cancun-glass-03", "cancun-card-03", "cancun-editorial-03", "gramado-offer-05", "cancun-glass-04",
-].map((n) => `/travel-carousel-assets/${n}.webp`);
+// Vitrine: peças feitas na plataforma, em versões leves para o tamanho em que aparecem.
+const ADS: Piece[] = Array.from({ length: 9 }, (_, i) => ({ src: `/quiz-media/vitrine/ad-rio-${i + 1}.webp`, w: 540, h: 540 }));
+const CAROUSEL_SLIDES: Piece[] = [
+  "car-noronha-1",
+  "car-azul-0",
+  "car-preto-0",
+  "car-noronha-2",
+  "car-azul-1",
+  "car-preto-1",
+  "car-noronha-3",
+  "car-azul-2",
+  "car-preto-2",
+  "car-noronha-4",
+  "car-azul-3",
+  "car-preto-3",
+  "car-noronha-5",
+  "car-azul-4",
+  "car-preto-4",
+  "car-azul-5",
+  "car-preto-5",
+  "car-azul-6",
+  "car-preto-6",
+  "car-azul-7",
+  "car-preto-7",
+  "car-azul-8",
+  "car-preto-8",
+  "car-azul-9",
+  "car-preto-9",
+  "car-azul-10",
+  "car-preto-10",
+  "car-azul-11",
+  "car-preto-11",
+].map((n) => ({ src: `/quiz-media/vitrine/${n}.webp`, w: 480, h: 600 }));
 
 const builtFor: { label: string; icon: Icon }[] = [
   { label: "Anúncios", icon: Megaphone },
@@ -134,8 +153,8 @@ export default function InicioCreme() {
             boxShadow: scrolled ? "0 10px 30px -18px rgba(32,28,19,.35)" : "none",
           }}
         >
-          <a href="/inicio" aria-label="Canva Viagem" className="pr-2"><BrandMark size={44} /></a>
-          <button onClick={() => start("header")} className="cv-btn h-11 px-5 text-[15px] sm:h-[52px] sm:px-7 sm:text-base">
+          <a href="/inicio" aria-label="Canva Viagem" className="pr-2"><BrandMark size={36} /></a>
+          <button onClick={() => start("header")} className="cv-btn h-11 shrink-0 whitespace-nowrap px-4 text-[14px] sm:h-[52px] sm:px-7 sm:text-base">
             Comece agora <ArrowRight className="hidden h-4 w-4 sm:block" />
           </button>
         </div>
@@ -180,8 +199,8 @@ export default function InicioCreme() {
               </span>
               <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Anúncios, carrosséis e stories saindo prontos agora. Pode fazer 1 ou 1.000 no mesmo dia.</p>
             </div>
-            <FeaturedMarquee />
-            <Marquee />
+            <ShowcaseRow pieces={ADS} alt="Anúncio feito na plataforma Canva Viagem" />
+            <ShowcaseRow pieces={CAROUSEL_SLIDES} alt="Slide de carrossel feito na plataforma Canva Viagem" reverse className="mt-2" />
           </div>
 
           <div className="mx-auto mt-8 flex max-w-5xl flex-wrap items-center justify-center gap-2 rounded-full border bg-white px-4 py-3" style={{ borderColor: "var(--cv-line)" }}>
@@ -401,43 +420,24 @@ export default function InicioCreme() {
 
 /* ───────────────────────── blocos ───────────────────────── */
 
-/** Faixa principal: anúncios e carrosséis novos, maiores. */
-function FeaturedMarquee() {
-  const items = [...FEATURED, ...FEATURED];
+/** Faixa da vitrine. Carrega tudo logo ao abrir: em faixa animada o carregamento adiado deixava quadros vazios no celular. */
+function ShowcaseRow({ pieces, alt, reverse = false, className = "" }: { pieces: Piece[]; alt: string; reverse?: boolean; className?: string }) {
+  const items = [...pieces, ...pieces];
   return (
-    <div className="relative overflow-hidden rounded-[28px] py-2" style={{ maskImage: "linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)" }}>
-      <div className="travel-mobile-marquee flex w-max items-center gap-3 sm:gap-4">
+    <div className={`relative overflow-hidden rounded-[28px] py-2 ${className}`} style={{ maskImage: "linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)" }}>
+      <div className="travel-mobile-marquee flex w-max items-center gap-4" style={reverse ? { animationDirection: "reverse", animationDuration: "90s" } : undefined}>
         {items.map((p, i) => (
           <img
             key={`${p.src}-${i}`}
             src={p.src}
             width={p.w}
             height={p.h}
-            alt={i < FEATURED.length ? "Peça feita na plataforma Canva Viagem" : ""}
-            aria-hidden={i >= FEATURED.length}
+            alt={i < pieces.length ? alt : ""}
+            aria-hidden={i >= pieces.length}
             className="h-[200px] w-auto shrink-0 rounded-2xl border-4 border-white object-cover shadow-md sm:h-[260px]"
-            loading={i < 6 ? "eager" : "lazy"}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/** Faixa de baixo: peças antigas, menores e mais discretas, andando para o outro lado. */
-function Marquee() {
-  const items = [...STRIP, ...STRIP];
-  return (
-    <div className="relative mt-2 overflow-hidden rounded-[22px] py-1 opacity-70" style={{ maskImage: "linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)" }}>
-      <div className="travel-mobile-marquee flex w-max gap-2 sm:gap-3" style={{ animationDirection: "reverse", animationDuration: "60s" }}>
-        {items.map((src, i) => (
-          <img
-            key={`${src}-${i}`}
-            src={src}
-            alt=""
-            aria-hidden
-            className="aspect-[4/5] w-[90px] shrink-0 rounded-xl border-2 border-white object-cover shadow-sm sm:w-[120px]"
-            loading="lazy"
+            style={{ background: "var(--cv-sand)", aspectRatio: `${p.w} / ${p.h}` }}
+            loading="eager"
+            decoding="async"
           />
         ))}
       </div>
