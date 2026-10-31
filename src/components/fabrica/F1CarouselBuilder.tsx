@@ -1,4 +1,5 @@
 import { formatAdPhone } from "@/lib/fabrica-compose-art";
+import { photoQueryFor } from "@/lib/photo-search";
 import {
   useEffect,
   useMemo,
@@ -412,10 +413,13 @@ const safeHexToRgba = (hex: string, alpha: number) => {
 
 /** "Pacote Maceió 5 Dias com Tudo Incluído" vira "Maceió": é esse nome que dá boas fotos na busca. */
 const packageDestinationName = (title = "") =>
-  cleanCarouselText(title)
-    .replace(/^(pacote|paquete)\s+/i, "")
-    .replace(/\s+(\d+\s*(dias?|días?|noites?|noches?)|com tudo|con todo)\b.*$/i, "")
-    .trim();
+  photoQueryFor(
+    cleanCarouselText(title)
+      .replace(/^(pacote|paquete)\s+/i, "")
+      .replace(/\s+[-–—]\s.*$/, "")
+      .replace(/\s+(\d+\s*(dias?|días?|noites?|noches?)|com tudo|con todo)\b.*$/i, "")
+      .trim(),
+  );
 
 const phoneLabel = (dialCode: string, phone: string) => {
   const dial = dialCode.replace(/\D/g, "");

@@ -21,7 +21,12 @@ const RELATED: Record<string, { name: string; terms: string[] }> = {
   santiago: { name: "Santiago", terms: ["Santiago Chile", "Valle Nevado", "Valparaíso Chile"] },
   bariloche: { name: "Bariloche", terms: ["Lago Nahuel Huapi", "Cerro Catedral", "Bariloche neve"] },
   maldivas: { name: "Maldivas", terms: ["Maldives overwater", "Maldivas resort", "Maldivas praia"] },
+  natal: { name: "Natal", terms: ["Ponta Negra Natal", "Morro do Careca", "Genipabu dunas"] },
 };
+
+/** "Natal" sozinho traz árvore de Natal; aqui é sempre a cidade. "Natal em Gramado" continua como está. */
+export const photoQueryFor = (query: string) =>
+  /^natal\b/i.test(query.trim()) && !/^natal\s+(em|no|na|de)\b/i.test(query.trim()) ? "Natal Rio Grande do Norte" : query;
 
 const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 
@@ -63,7 +68,7 @@ export function relatedPhotoTerms(destination: string, isEs = false): string[] {
 }
 
 const invoke = async (query: string, perPage: number, engine: string, page: number): Promise<SearchPhoto[]> => {
-  const { data, error } = await supabase.functions.invoke("fabrica-search-photos", { body: { query, perPage, engine, page } });
+  const { data, error } = await supabase.functions.invoke("fabrica-search-photos", { body: { query: photoQueryFor(query), perPage, engine, page } });
   if (error) throw error;
   return (data?.photos as SearchPhoto[]) || [];
 };
