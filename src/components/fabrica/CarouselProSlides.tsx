@@ -594,7 +594,7 @@ export function ProSlide(p: ProSlideProps) {
         <div style={{ position: "absolute", left: M, width: panelInner, top: safeTop + 64, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 14 }}>
           {titleBlock(title, story ? 32 : 30)}
           <span style={{ flex: 1 }} />
-          <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={12.5} maxLines={2} />
+          <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={12.5} maxLines={3} />
           <IconList items={bulletsNoPrice} color={tealText} ff={ff} size={16} max={3} gap={10} iconTone="dark" />
           {price ? (
             <div style={{ alignSelf: "flex-start", background: teal, color: tealFg, borderRadius: 12, padding: "8px 14px", display: "flex", alignItems: "center", gap: 10, fontFamily: ff, flexShrink: 0 }}>
@@ -632,7 +632,7 @@ export function ProSlide(p: ProSlideProps) {
       <div style={{ position: "absolute", left: M, width: `calc(62% - ${M + 18}px)`, top: safeTop + 64, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 14 }}>
         {titleBlock(title, 28)}
         <span style={{ flex: 1 }} />
-        <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={12.5} maxLines={2} />
+        <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={12.5} maxLines={3} />
         <Button text={cta} bg={teal} fg={tealFg} ff={ff} size={11} />
         <Contacts slide={slide} color={INK} ff={ff} size={13} />
         <span style={{ flex: 1 }} />
