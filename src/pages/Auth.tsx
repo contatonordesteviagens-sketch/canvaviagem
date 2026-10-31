@@ -201,7 +201,16 @@ const Auth = () => {
     }
   };
 
-  if (loading) {
+  // Voltando do Google: a sessão ainda está entrando. Sem isto, o formulário de login
+  // reaparecia até a assinatura carregar e o redirecionamento acontecer.
+  const [returningFromOAuth, setReturningFromOAuth] = useState(() => /access_token=|[?&]code=/.test(window.location.hash + window.location.search));
+  useEffect(() => {
+    if (!returningFromOAuth) return;
+    const timer = window.setTimeout(() => setReturningFromOAuth(false), 8000);
+    return () => window.clearTimeout(timer);
+  }, [returningFromOAuth]);
+
+  if (loading || user || returningFromOAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
