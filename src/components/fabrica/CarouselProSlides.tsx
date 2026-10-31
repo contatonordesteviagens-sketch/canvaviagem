@@ -140,7 +140,7 @@ function extractPrice(texts: string[]) {
 type Price = NonNullable<ReturnType<typeof extractPrice>>;
 
 // ───────── peças ─────────
-const crossOrigin = (src: string) => (src.startsWith("data:") || src.startsWith("blob:") ? undefined : "anonymous");
+const crossOrigin = (src: string): "anonymous" | undefined => (src.startsWith("data:") || src.startsWith("blob:") ? undefined : "anonymous");
 
 function Photo({ src, style, radius = 0 }: { src: string; style: CSSProperties; radius?: number }) {
   if (!src) return <div style={{ ...style, background: "#2A2D33", borderRadius: radius }} />;
