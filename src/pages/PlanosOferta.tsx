@@ -25,9 +25,9 @@ const PRICES: Record<Variant, Record<CheckoutCycle, Price>> = {
     annual: { label: "Anual", whole: "482", cents: "", per: "/ano", note: "Dá R$ 40,17 por mês.", save: "Economize R$ 682" },
   },
   "black-friday": {
-    monthly: { label: "Mensal", whole: "48", cents: ",50", per: "/mês", note: "Era R$ 97. Com 50% enquanto você assinar." },
-    semiannual: { label: "Semestral", whole: "173", cents: ",50", per: "/6 meses", note: "Era R$ 347. Dá R$ 28,92 por mês.", save: "50% para sempre" },
-    annual: { label: "Anual", whole: "241", cents: "", per: "/ano", note: "Era R$ 482. Dá R$ 20,08 por mês.", save: "50% para sempre" },
+    monthly: { label: "Mensal", whole: "48", cents: ",50", per: "/mês", note: "Era R$ 97. Renova sempre por R$ 48,50." },
+    semiannual: { label: "Semestral", whole: "173", cents: ",50", per: "/6 meses", note: "Era R$ 347. Dá R$ 28,92 por mês e renova por esse valor.", save: "Metade do preço" },
+    annual: { label: "Anual", whole: "241", cents: "", per: "/ano", note: "Era R$ 482. Dá R$ 20,08 por mês e renova por esse valor.", save: "Metade do preço" },
   },
 };
 
@@ -47,6 +47,8 @@ const TOOLS = [
   { icon: Users, title: "Seus clientes", text: "Quem pediu informação fica organizado num só lugar." },
   { icon: Palette, title: "Sua marca em tudo", text: "Envie a logo uma vez. Ela entra em cada peça." },
 ];
+
+const FAQ_BLACK = { q: "O preço sobe na renovação?", a: "Não. Quem entra na Black Vitalícia paga sempre esse mesmo valor, enquanto continuar assinando." };
 
 const FAQ = [
   { q: "Serve para a minha agência?", a: "Sim, se você vende viagens e precisa postar. Foi feito para agência que não tem equipe de marketing." },
@@ -111,8 +113,8 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
       </Helmet>
 
       <div className="plan-topbar">
-        <span className="plan-tag">{isBf ? "BLACK FRIDAY" : "OFERTA DE LANÇAMENTO"}</span>
-        <span>{isBf ? "50% para sempre" : "Créditos ilimitados"}</span>
+        <span className="plan-tag">{isBf ? "BLACK VITALÍCIA" : "OFERTA DE LANÇAMENTO"}</span>
+        <span>{isBf ? "Metade do preço, para sempre" : "Créditos ilimitados"}</span>
       </div>
 
       <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-16 pt-4">
@@ -125,9 +127,9 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
 
         {isBf ? (
           <section className="plan-card plan-glow p-5">
-            <p className="plan-kicker">VOLTAR AO CANVA VIAGEM</p>
-            <h1 className="mt-2 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em]">50% de desconto. Para sempre.</h1>
-            <p className="plan-muted mt-2 text-[15px] leading-6">Não é só no primeiro mês. O desconto fica enquanto você continuar assinando, em qualquer plano.</p>
+            <p className="plan-kicker">BLACK VITALÍCIA</p>
+            <h1 className="mt-2 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em]">Metade do preço. Para sempre.</h1>
+            <p className="plan-muted mt-2 text-[15px] leading-6">Não é só no primeiro mês. Você entra com esse valor e renova sempre por ele, enquanto continuar assinando, em qualquer plano.</p>
           </section>
         ) : (
           <section className="plan-card p-5">
@@ -219,7 +221,7 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
           <p className="plan-kicker">DÚVIDAS</p>
           <h2 className="mt-2 text-[26px] font-extrabold leading-[1.12] tracking-[-0.02em]">Antes de você assinar.</h2>
           <div className="mt-4 grid gap-2">
-            {FAQ.map((item) => (
+            {(isBf ? [FAQ_BLACK, ...FAQ] : FAQ).map((item) => (
               <details key={item.q} className="plan-card plan-faq">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-[15px] font-semibold">
                   {item.q} <ChevronDown className="h-4 w-4 shrink-0" />
