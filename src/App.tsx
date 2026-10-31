@@ -253,7 +253,7 @@ const App = () => {
                     <Route path="/planos" element={<Navigate to="/inicio" replace />} />
                     <Route path="/pt/planos" element={<Navigate to="/inicio" replace />} />
                     <Route path="/inicio" element={<InicioEntry />} />
-                    <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                    <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                     <Route path="/anuncios-para-agencia-de-viagens" element={<AdsOfferLanding />} />
                     <Route path="/site-para-agencia-de-viagens" element={<SiteOfferLanding />} />

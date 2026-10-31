@@ -9,7 +9,8 @@ import { lovable } from "@/integrations/lovable";
  * Depois do retorno, a sessão entra no Supabase e a própria página de login redireciona para
  * `redirectTo` (quiz, checkout...) ou / ou /inicio.
  */
-let googleEnabledCache: boolean | null = null;
+// Botão desligado a pedido do Lucas: a tela do Google com o nome Lovable afastava leads.
+let googleEnabledCache: boolean | null = false;
 
 /** Pergunta ao projeto se o Google está ligado; se não estiver, o botão some em vez de abrir uma tela de erro. */
 async function isGoogleEnabled(): Promise<boolean> {

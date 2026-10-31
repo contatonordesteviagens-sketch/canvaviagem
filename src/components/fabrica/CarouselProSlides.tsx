@@ -428,7 +428,7 @@ export function ProSlide(p: ProSlideProps) {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ fontFamily: ff, fontSize: 24, fontWeight: 900, letterSpacing: "-0.02em", flexShrink: 0 }}>{label || T.offer}</span>
                 <span style={{ width: 1.5, height: 26, background: rgba(cardFg, 0.5), flexShrink: 0 }} />
-                <Body text={tagline} color={cardFg} ff={ff} size={11} maxLines={2} weight={600} />
+                <div style={{ flex: "1 1 0", minWidth: 0 }}><Body text={tagline} color={cardFg} ff={ff} size={11} maxLines={2} weight={600} /></div>
               </div>
               <Title text={title} color={titleColor || cardFg} ff={ff} base={story ? 34 : 32} maxLines={4} weight={900} />
               {departure && (

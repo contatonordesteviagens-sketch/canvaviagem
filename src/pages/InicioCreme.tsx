@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ComponentType, type DragEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "@/assets/logo.png";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowRight, Check, X, MapPin, Sparkles, Download, Mic, Upload, Infinity as InfinityIcon,
@@ -9,6 +10,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { BrandMark, Eyebrow, delay, useReveal } from "@/components/cv-cream/shared";
+import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
 import { siteOfferDemos } from "@/lib/site-offer-demos";
 import heroDashboard from "@/assets/hero_dashboard.jpg";
 
@@ -17,41 +19,6 @@ export const ONBOARDING_DESTINO_KEY = "cv-onboarding-destino";
 export const ONBOARDING_LOGO_KEY = "cv-onboarding-logo";
 
 type Icon = ComponentType<{ className?: string }>;
-type Piece = { src: string; w: number; h: number };
-
-// Vitrine: peças feitas na plataforma, em versões leves para o tamanho em que aparecem.
-const ADS: Piece[] = Array.from({ length: 9 }, (_, i) => ({ src: `/quiz-media/vitrine/ad-rio-${i + 1}.webp`, w: 540, h: 540 }));
-const CAROUSEL_SLIDES: Piece[] = [
-  "car-noronha-1",
-  "car-azul-0",
-  "car-preto-0",
-  "car-noronha-2",
-  "car-azul-1",
-  "car-preto-1",
-  "car-noronha-3",
-  "car-azul-2",
-  "car-preto-2",
-  "car-noronha-4",
-  "car-azul-3",
-  "car-preto-3",
-  "car-noronha-5",
-  "car-azul-4",
-  "car-preto-4",
-  "car-azul-5",
-  "car-preto-5",
-  "car-azul-6",
-  "car-preto-6",
-  "car-azul-7",
-  "car-preto-7",
-  "car-azul-8",
-  "car-preto-8",
-  "car-azul-9",
-  "car-preto-9",
-  "car-azul-10",
-  "car-preto-10",
-  "car-azul-11",
-  "car-preto-11",
-].map((n) => ({ src: `/quiz-media/vitrine/${n}.webp`, w: 480, h: 600 }));
 
 const builtFor: { label: string; icon: Icon }[] = [
   { label: "Anúncios", icon: Megaphone },
@@ -153,9 +120,11 @@ export default function InicioCreme() {
             boxShadow: scrolled ? "0 10px 30px -18px rgba(32,28,19,.35)" : "none",
           }}
         >
-          <a href="/inicio" aria-label="Canva Viagem" className="pr-2"><BrandMark size={36} /></a>
-          <button onClick={() => start("header")} className="cv-btn h-11 shrink-0 whitespace-nowrap px-4 text-[14px] sm:h-[52px] sm:px-7 sm:text-base">
-            Comece agora <ArrowRight className="hidden h-4 w-4 sm:block" />
+          <a href="/inicio" aria-label="Canva Viagem" className="block h-[26px] w-[26px] overflow-hidden rounded-full">
+            <img src={logo} alt="Canva Viagem" width={26} height={26} className="h-full w-full scale-[1.18] object-cover" />
+          </a>
+          <button onClick={() => start("header")} className="cv-btn h-9 shrink-0 whitespace-nowrap px-4 text-[13px]">
+            Acessar
           </button>
         </div>
       </header>
@@ -199,8 +168,8 @@ export default function InicioCreme() {
               </span>
               <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Anúncios, carrosséis e stories saindo prontos agora. Pode fazer 1 ou 1.000 no mesmo dia.</p>
             </div>
-            <ShowcaseRow pieces={ADS} alt="Anúncio feito na plataforma Canva Viagem" />
-            <ShowcaseRow pieces={CAROUSEL_SLIDES} alt="Slide de carrossel feito na plataforma Canva Viagem" reverse className="mt-2" />
+            <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito na plataforma Canva Viagem" />
+            <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito na plataforma Canva Viagem" reverse className="mt-2" />
           </div>
 
           <div className="mx-auto mt-8 flex max-w-5xl flex-wrap items-center justify-center gap-2 rounded-full border bg-white px-4 py-3" style={{ borderColor: "var(--cv-line)" }}>
@@ -419,31 +388,6 @@ export default function InicioCreme() {
 }
 
 /* ───────────────────────── blocos ───────────────────────── */
-
-/** Faixa da vitrine. Carrega tudo logo ao abrir: em faixa animada o carregamento adiado deixava quadros vazios no celular. */
-function ShowcaseRow({ pieces, alt, reverse = false, className = "" }: { pieces: Piece[]; alt: string; reverse?: boolean; className?: string }) {
-  const items = [...pieces, ...pieces];
-  return (
-    <div className={`relative overflow-hidden rounded-[28px] py-2 ${className}`} style={{ maskImage: "linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)" }}>
-      <div className="travel-mobile-marquee flex w-max items-center gap-4" style={reverse ? { animationDirection: "reverse", animationDuration: "90s" } : undefined}>
-        {items.map((p, i) => (
-          <img
-            key={`${p.src}-${i}`}
-            src={p.src}
-            width={p.w}
-            height={p.h}
-            alt={i < pieces.length ? alt : ""}
-            aria-hidden={i >= pieces.length}
-            className="h-[200px] w-auto shrink-0 rounded-2xl border-4 border-white object-cover shadow-md sm:h-[260px]"
-            style={{ background: "var(--cv-sand)", aspectRatio: `${p.w} / ${p.h}` }}
-            loading="eager"
-            decoding="async"
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 /** Ilustrações animadas dos três passos: ouvir, montar, publicar. */
 function StepIllustration({ index }: { index: number }) {

@@ -28,6 +28,8 @@ const hashNormalizedEmail = async (email: string) => {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 };
 
+const LEAD_EMAIL_KEY = "cv:lead-email";
+
 const bindPendingCheckoutToEmail = async (email: string) => {
   try {
     const pendingState = JSON.parse(localStorage.getItem(pendingAuthStateKey) || "null") as {
@@ -57,7 +59,9 @@ const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading, subscription } = useAuth();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => {
+    try { return localStorage.getItem(LEAD_EMAIL_KEY) || ""; } catch { return ""; }
+  });
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -148,7 +152,25 @@ const Login = () => {
 
     try {
       const normalizedEmail = email.toLowerCase().trim();
+      try { localStorage.setItem(LEAD_EMAIL_KEY, normalizedEmail); } catch { /* storage indisponível */ }
       await bindPendingCheckoutToEmail(normalizedEmail);
+      if (quickEntry) {
+        // Da página inicial: guarda o e-mail e abre o quiz na hora, sem link nem tela de confirmação.
+        // E-mail novo já ganha conta e sessão (mailer_autoconfirm). Quem já tem conta faz o quiz
+        // sem sessão e só confirma o e-mail na hora de pagar: entrar na conta sem o link seria inseguro.
+        const randomBytes = crypto.getRandomValues(new Uint8Array(24));
+        const password = Array.from(randomBytes, (b) => b.toString(16).padStart(2, "0")).join("");
+        const { data: signUp } = await supabase.auth
+          .signUp({ email: normalizedEmail, password, options: { data: { quick_start: true } } })
+          .catch(() => ({ data: { session: null } }));
+        if (signUp?.session) {
+          // O efeito de login acima leva para o quiz assim que a sessão carregar.
+          setOpeningQuiz(true);
+          return;
+        }
+        navigate(redirectTo || "/onboarding");
+        return;
+      }
       const { data, error } = await supabase.functions.invoke("send-magic-link", {
         body: {
           email: normalizedEmail,
@@ -167,27 +189,6 @@ const Login = () => {
           toast.error(errorMsg);
         }
         return;
-      }
-
-      if (quickEntry) {
-        // O projeto confirma e-mail automaticamente (mailer_autoconfirm), então o cadastro já devolve
-        // a sessão. A senha aleatória nunca é usada: a pessoa volta pelo link do e-mail ou pelo Google.
-        // E-mail que já tem conta não ganha sessão aqui; precisa confirmar pelo link.
-        const randomBytes = crypto.getRandomValues(new Uint8Array(24));
-        const password = Array.from(randomBytes, (b) => b.toString(16).padStart(2, "0")).join("");
-        const { data: signUp, error: signUpError } = await supabase.auth.signUp({
-          email: normalizedEmail,
-          password,
-          options: { data: { quick_start: true } },
-        });
-        if (!signUpError && signUp.session) {
-          // O efeito de login acima leva para o quiz assim que a sessão carregar.
-          setOpeningQuiz(true);
-          return;
-        }
-        const alreadyRegistered = /already|registered|exists/i.test(signUpError?.message ?? "")
-          || (signUp?.user && (signUp.user.identities?.length ?? 0) === 0);
-        setExistingAccount(Boolean(alreadyRegistered));
       }
 
       setMagicLinkSent(true);
@@ -517,7 +518,7 @@ function QuickEntryScreen(props: {
                 <li>Cancele quando quiser</li>
               </ul>
               <p className="mt-4 text-center text-[12px]" style={{ color: "var(--cv-muted)" }}>
-                Já é assinante? Use o mesmo e-mail da compra.
+                Já é assinante? <a href="/login?redirect=%2F" className="font-semibold underline">Entrar na minha conta</a>
               </p>
             </>
           ) : (
