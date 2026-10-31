@@ -24,7 +24,7 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
   const { isCollapsed } = useSidebar();
 
   const hideSidebarPaths = [
-    '/planos', '/pt/planos', '/es/planos', '/auth', '/login', '/auth/verify', '/sucesso', '/obrigado', '/es/obrigado',
+    '/planos', '/pt/planos', '/black-friday', '/es/planos', '/auth', '/login', '/auth/verify', '/sucesso', '/obrigado', '/es/obrigado',
     '/pos-pagamento', '/canva', '/termos', '/privacidade', '/exclusao-de-dados',
     '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/inicio2', '/es/inicio', '/onboarding', '/pix', '/checkout',
     '/anuncios-para-agencia-de-viagens', '/site-para-agencia-de-viagens', '/carrosseis-para-agencia-de-viagens',
@@ -145,6 +145,7 @@ const Blog = lazy(() => import("./pages/Blog"));
 const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
 const InicioEntry = lazy(() => import("./pages/InicioEntry"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const PlanosOferta = lazy(() => import("./pages/PlanosOferta"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const Inicio2 = lazy(() => import("./pages/Inicio2"));
 const OfferLanding = lazy(() => import("./pages/OfferLanding"));
@@ -250,8 +251,9 @@ const App = () => {
                         <Calendar />
                       </ProtectedRoute>
                     } />
-                    <Route path="/planos" element={<Navigate to="/inicio" replace />} />
-                    <Route path="/pt/planos" element={<Navigate to="/inicio" replace />} />
+                    <Route path="/planos" element={<PlanosOferta />} />
+                    <Route path="/black-friday" element={<PlanosOferta variant="black-friday" />} />
+                    <Route path="/pt/planos" element={<Navigate to="/planos" replace />} />
                     <Route path="/inicio" element={<InicioEntry />} />
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />

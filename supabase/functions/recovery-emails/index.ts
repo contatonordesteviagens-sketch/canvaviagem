@@ -70,16 +70,17 @@ async function payLink(db: ReturnType<typeof adminClient>, email: string, plan: 
   return `${canonicalSiteUrl()}/auth/verify?token=${token}&redirect=${encodeURIComponent(checkout)}`;
 }
 
-/** Link que entra logado e devolve a pessoa ao quiz. */
-async function resumeLink(db: ReturnType<typeof adminClient>, email: string) {
+/** Link que entra logado e leva à página de planos, com a origem do e-mail para o rastreamento. */
+async function resumeLink(db: ReturnType<typeof adminClient>, email: string, campaign: string) {
   const token = crypto.randomUUID();
   const { error } = await db.from("magic_link_tokens").insert({
     email,
     token,
     expires_at: new Date(Date.now() + 7 * 24 * HOUR).toISOString(),
   });
-  if (error) return `${canonicalSiteUrl()}/inicio`;
-  return `${canonicalSiteUrl()}/auth/verify?token=${token}&redirect=${encodeURIComponent("/onboarding")}`;
+  const planos = `/planos?utm_source=email&utm_medium=nurture&utm_campaign=${encodeURIComponent(campaign)}`;
+  if (error) return `${canonicalSiteUrl()}${planos}`;
+  return `${canonicalSiteUrl()}/auth/verify?token=${token}&redirect=${encodeURIComponent(planos)}`;
 }
 
 async function firstName(db: ReturnType<typeof adminClient>, userId: string | null, email: string) {
@@ -234,7 +235,7 @@ Deno.serve(async (req) => {
       if (logErr) continue;
       const name = await firstName(db, attempt.userId, email);
       const payUrl = isLead
-        ? await resumeLink(db, email)
+        ? await resumeLink(db, email, due)
         : due === "pronta" ? await payLink(db, email, attempt.plan, attempt.method) : `${canonicalSiteUrl()}/checkout`;
       await sendOne(email, due, { firstName: name, payUrl });
       sent++;

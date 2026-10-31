@@ -115,60 +115,57 @@ export function renderRecoveryEmail(kind: RecoveryKind, vars: {
 
 function renderLeadEmail(kind: LeadKind, first: string, greeting: string, url: string, unsub: string): { subject: string; html: string } {
   const hello = p(greeting);
-  const go = (label: string) => btn(label, url, "#0a6080");
+  const go = (label: string) => btn(label, url, "#6440e6");
   const mail = (subject: string, preheader: string, parts: string[]) => ({
     subject,
     html: shell([hello, ...parts].join("\n"), preheader, unsub),
   });
 
   if (kind === "lead1") {
-    return mail(`${first ? `${first}, f` : "F"}altou pouco`, "Você começou a montar sua agência e parou no meio.", [
-      p(`Você começou a montar sua agência no Canva Viagem e parou no meio.`),
-      p(`Falta pouco para ver o que sai pronto para você:`),
+    return mail(`${first ? `${first}, s` : "S"}ua conta está pronta. Falta 1 clique.`, "Tudo configurado. Só falta escolher o plano.", [
+      p(`Sua conta no Canva Viagem já está de pé.`),
+      p(`Falta só uma coisa: escolher o plano. Assim que confirmar, você já cria a primeira postagem da sua agência.`),
       list(["anúncios para feed e stories", "carrosséis do seu pacote", "a página do pacote no seu site", "os seus clientes organizados num lugar só"]),
-      go("Continuar de onde parei →"),
+      go("Escolher meu plano →"),
       small(`Travou em alguma coisa? Responda este e-mail que eu te ajudo.`),
     ]);
   }
   if (kind === "lead2") {
-    return mail(`Como sai um anúncio de viagem em poucos minutos`, "Você fala o destino. O resto sai pronto.", [
-      p(`Quase todo agente perde tempo no mesmo lugar: criar a arte de cada pacote.`),
-      p(`No Canva Viagem é assim: você fala o destino, os dias e o valor. A arte sai pronta, com a sua logo e os seus contatos.`),
+    return mail(`Seu 1º anúncio pronto em poucos minutos`, "Você fala o destino. O resto sai pronto.", [
+      p(`Criar a arte de cada pacote é onde o agente mais perde tempo.`),
+      p(`Aqui você fala o destino, os dias e o valor. O anúncio sai pronto, com a sua logo e o seu WhatsApp.`),
       p(`O carrossel e a legenda saem junto.`),
-      go("Ver como fica na minha agência →"),
+      go("Quero fazer o meu →"),
     ]);
   }
   if (kind === "lead3") {
-    return mail(`Você não precisa de uma equipe de marketing`, "Feito para agência que faz tudo sozinha.", [
-      p(`A maioria das agências pequenas não tem designer nem social media. É o agente que atende, vende e ainda posta.`),
-      p(`O Canva Viagem foi feito para esse agente. Anúncio, carrossel, stories e a página do pacote saem do mesmo lugar.`),
-      p(`Assim sobra tempo para o que vende: conversar com o cliente.`),
-      go("Continuar minha agência →"),
+    return mail(`Não sabe design? A arte já vem pronta.`, "Nada de editor, nada de alinhar texto.", [
+      p(`Você não abre editor. Não escolhe cor. Não alinha nada.`),
+      p(`Escolhe a foto do destino, confere o preço e baixa. Se não gostar, gera outro modelo. Tem 12.`),
+      p(`E dá para fazer tudo pelo celular.`),
+      go("Ver os planos →"),
     ]);
   }
   if (kind === "lead4") {
-    return mail(`Não sabe mexer com design? Melhor ainda`, "Nada para aprender. É só escolher.", [
-      p(`Muita gente acha que precisa aprender a mexer em programa de arte. Aqui não precisa.`),
-      p(`Você escolhe a foto do destino, confere o preço e baixa. Se não gostar, gera outro modelo.`),
-      p(`E dá para fazer tudo pelo celular.`),
-      go("Testar com o meu destino →"),
+    return mail(`Sem cartão? Dá para assinar no Pix.`, "O QR aparece na hora e o acesso libera sozinho.", [
+      p(`Nem todo mundo quer passar o cartão, e tudo bem.`),
+      p(`Na hora de pagar, é só escolher Pix. O QR aparece na tela e o acesso libera assim que o pagamento confirmar.`),
+      go("Assinar no Pix →"),
+      small(`Se preferir o cartão, ele também está lá.`),
     ]);
   }
   if (kind === "lead5") {
-    return mail(`${first ? `${first}, l` : "L"}iberei um desconto até amanhã`, `${RECOVERY_DISCOUNT}% para liberar a sua conta. Só pelas próximas 24 horas.`, [
-      p(`Às vezes o que segura é o momento. Então vou facilitar.`),
-      box(`<strong>${RECOVERY_DISCOUNT}% de desconto</strong> para liberar a sua conta. Vale só pelas próximas <strong>24 horas</strong>.`, "#effaf3", "#25D366"),
-      p(`É só me chamar no WhatsApp que eu te mando o link com o desconto aplicado.`),
-      btn(`Quero meu desconto de ${RECOVERY_DISCOUNT}% →`, whatsappUrl(`Quero meu desconto de ${RECOVERY_DISCOUNT}% no Canva Viagem`), "#25D366"),
-      small(`É o mesmo número do suporte. Depois de 24 horas, o desconto sai do ar.`),
+    return mail(`Sem fidelidade, sem multa. 7 dias de garantia.`, "Se não servir, você cancela em 2 cliques.", [
+      p(`Sei que assinar mais uma ferramenta dá um pé atrás.`),
+      p(`Então é assim: você tem 7 dias de garantia para testar com um pacote real.`),
+      p(`Não serviu? Cancela em 2 cliques no seu painel, sem ligação e sem multa.`),
+      go("Testar com o meu pacote →"),
     ]);
   }
-  return mail(`${first ? `${first}, e` : "E"}stou tentando falar com você`, "O que fez você parar?", [
-    p(`Te mandei alguns e-mails nos últimos dias e não tive resposta.`),
-    p(`Pode ser que tenham caído no spam. Pode ser que não seja a hora. Tudo bem.`),
-    p(`Só queria entender uma coisa: o que fez você parar?`),
-    box(`Foi o preço? Ficou alguma dúvida de como funciona? Faltou tempo agora? Me conta em uma frase, que eu respondo pessoalmente.`, "#f0f7fa", "#0a6080"),
-    btn("Falar comigo no WhatsApp →", whatsappUrl(`Oi, Lucas. Vi seu e-mail sobre o Canva Viagem`), "#25D366"),
-    small(`Este é o último e-mail desta sequência.`),
+  return mail(`Apaga este e-mail se você já posta todo dia`, "Mas se o seu feed anda parado, leia até o fim.", [
+    p(`Se a sua agência já posta todo dia, pode fechar aqui e seguir a vida.`),
+    p(`Mas se o Instagram anda parado porque criar conteúdo dá trabalho demais, foi para isso que eu fiz o Canva Viagem.`),
+    go("Destravar meu Instagram →"),
+    small(`Este é o último e-mail desta sequência. Se quiser falar comigo, é só responder.`),
   ]);
 }
