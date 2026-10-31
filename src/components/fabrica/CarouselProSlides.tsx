@@ -53,7 +53,20 @@ const luminance = (hex: string) => {
 };
 const rgba = (hex: string, a: number) => { try { const { r, g, b } = hexToRgb(hex); return `rgba(${r},${g},${b},${a})`; } catch { return `rgba(0,0,0,${a})`; } };
 const isLight = (hex: string) => luminance(hex) > 0.45;
-const onColor = (hex: string) => (isLight(hex) ? "#111318" : "#FFFFFF");
+const contrast = (a: string, b: string) => { const x = luminance(a), y = luminance(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+/** Texto sobre a cor: escolhe preto ou branco pelo maior contraste (branco em laranja não passa). */
+const onColor = (hex: string) => (contrast(hex, "#111318") >= contrast(hex, "#FFFFFF") ? "#111318" : "#FFFFFF");
+/** Escurece a cor da marca até ficar legível como texto sobre um fundo claro. */
+const readableOn = (hex: string, bg: string) => {
+  try {
+    const { r, g, b } = hexToRgb(hex);
+    for (let k = 1; k > 0.1; k -= 0.05) {
+      const c = "#" + [r, g, b].map((v) => Math.round(v * k).toString(16).padStart(2, "0")).join("");
+      if (contrast(c, bg) >= 4.5) return c;
+    }
+  } catch { /* cor inválida: cai no preto */ }
+  return "#111318";
+};
 const INK = "#111318";
 const INK_SOFT = "#4A4F58";
 const CREAM = "#FBF7EF";
@@ -264,6 +277,7 @@ function Contacts({ slide, color, ff, size = 14 }: { slide: CarouselSlide; color
 function Frame({ canvasRef, ratio, background, children, ff }: { canvasRef?: ProSlideProps["canvasRef"]; ratio: number; background: string; children: ReactNode; ff: string }) {
   return (
     <div ref={canvasRef} data-carousel-canvas style={{ width: "100%", aspectRatio: `${ratio}`, position: "relative", overflow: "hidden", isolation: "isolate", background, fontFamily: ff, boxSizing: "border-box" }}>
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, background, zIndex: -1 }} />
       {children}
     </div>
   );
@@ -292,7 +306,8 @@ export function ProSlide(p: ProSlideProps) {
   const title = clean(slide.title);
   const bodyRaw = clean(slide.body);
   const cta = clean(slide.cta) || T.talk;
-  const label = clean(slide.label);
+  const rawLabel = clean(slide.label);
+  const label = /^\d+$/.test(rawLabel) ? "" : rawLabel;
   const bullets = slide.bullets.map(clean).filter(Boolean);
   const price = extractPrice([bodyRaw, ...bullets]);
   const body = price && bodyRaw.includes(price.raw) ? clean(bodyRaw.replace(PRICE_RE, "").replace(/\b(a partir de|por pessoa)\b/gi, "").replace(/^[\s,.;:-]+|[\s,.;:-]+$/g, "")) : bodyRaw;
@@ -316,7 +331,7 @@ export function ProSlide(p: ProSlideProps) {
       <div style={{ position: "absolute", left: M, right: M, top: safeTop, display: "flex", alignItems: "center", justifyContent: "space-between", zIndex: 30 }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,.85)", fontFamily: ff, fontSize: 10, fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase" }}>
           <span style={{ width: 8, height: 8, borderRadius: 4, background: accent, boxShadow: `0 0 12px ${accent}` }} />
-          {label && !/^\d+$/.test(label.trim()) ? label : T.trip}
+          {label || T.trip}
         </span>
         <PageMark index={p.index} total={p.total} color="rgba(255,255,255,.6)" ff={ff} />
       </div>
@@ -430,7 +445,7 @@ export function ProSlide(p: ProSlideProps) {
             <div style={{ position: "relative", background: "#FFFFFF", color: cardBg, borderRadius: "0 0 22px 22px", overflow: "hidden" }}>
               <IconChip name="aviao" bg={stripe} size={44} radius={0} style={{ position: "absolute", left: 0, top: 0, borderRadius: "0 0 14px 0" }} />
               <div style={{ padding: "14px 18px 0 62px" }}>
-                {price ? <PriceTag price={price} color={cardBg} ff={ff} size={50} /> : <Title text={T.askPrices} color={cardBg} ff={ff} base={20} maxLines={2} />}
+                {price ? <PriceTag price={price} color={readableOn(cardBg, "#FFFFFF")} ff={ff} size={50} /> : <Title text={T.askPrices} color={readableOn(cardBg, "#FFFFFF")} ff={ff} base={20} maxLines={2} />}
               </div>
               <div style={{ marginTop: 12, background: stripe, color: onColor(stripe), textAlign: "center", padding: "9px 0", fontFamily: ff, fontSize: 13, fontWeight: 800 }}>{T.askUs} →</div>
             </div>
@@ -482,7 +497,7 @@ export function ProSlide(p: ProSlideProps) {
   // ═══════════ ENSEADA ("3 praias em 1 dia") ═══════════
   if (variant === "pro-magazine") {
     const paper = isLight(secondary) && secondary.toLowerCase() !== "#ffffff" ? secondary : CREAM;
-    const ink = strong;
+    const ink = readableOn(strong, paper);
     const bar = strong;
     const barFg = onColor(bar);
     // Bloco claro com a altura do conteúdo; a foto ocupa o que sobrar (mínimo dado).
@@ -563,6 +578,7 @@ export function ProSlide(p: ProSlideProps) {
   const panel = CREAM;
   const teal = strong === INK ? "#0E7C86" : strong;
   const tealFg = onColor(teal);
+  const tealText = readableOn(teal, panel);
   const panelW = story ? "60%" : "52%";
   const panelInner = `calc(${panelW} - ${M + 18}px)`;
   const titleBlock = (text: string, base: number) => (
@@ -579,7 +595,7 @@ export function ProSlide(p: ProSlideProps) {
           {titleBlock(title, story ? 32 : 30)}
           <span style={{ flex: 1 }} />
           <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={12.5} maxLines={2} />
-          <IconList items={bulletsNoPrice} color={teal} ff={ff} size={16} max={3} gap={10} iconTone="dark" />
+          <IconList items={bulletsNoPrice} color={tealText} ff={ff} size={16} max={3} gap={10} iconTone="dark" />
           {price ? (
             <div style={{ alignSelf: "flex-start", background: teal, color: tealFg, borderRadius: 12, padding: "8px 14px", display: "flex", alignItems: "center", gap: 10, fontFamily: ff, flexShrink: 0 }}>
               <span style={{ fontSize: 10, lineHeight: 1.15, fontWeight: 600, whiteSpace: "nowrap" }}>{T.from}<br /><b style={{ fontSize: 14 }}>{price.installments ? `${price.installments} ` : ""}{price.sym}</b></span>
@@ -601,9 +617,9 @@ export function ProSlide(p: ProSlideProps) {
         <Logo src={p.logo} pos={flip ? "right" : "left"} />
         <div style={{ position: "absolute", top: safeTop + 40, bottom: safeBottom, ...(flip ? { right: M } : { left: M }), width: panelInner, display: "flex", flexDirection: "column", justifyContent: "center", gap: 12 }}>
           <span style={{ alignSelf: "flex-start", background: teal, color: tealFg, borderRadius: 10, padding: "6px 12px", fontFamily: ff, fontSize: 18, fontWeight: 900, flexShrink: 0 }}>{num}</span>
-          <Title text={title} color={titleColor || teal} ff={ff} base={27} maxLines={4} weight={900} />
+          <Title text={title} color={titleColor || tealText} ff={ff} base={27} maxLines={4} weight={900} />
           <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={12.5} maxLines={3} />
-          {price ? <PriceTag price={price} color={teal} ff={ff} size={40} /> : <IconList items={bulletsNoPrice} color={teal} ff={ff} size={14} max={4} gap={8} iconTone="dark" />}
+          {price ? <PriceTag price={price} color={tealText} ff={ff} size={40} /> : <IconList items={bulletsNoPrice} color={tealText} ff={ff} size={14} max={4} gap={8} iconTone="dark" />}
           <span style={{ height: 3, width: 60, background: teal, flexShrink: 0 }} />
         </div>
       </Frame>
@@ -611,14 +627,15 @@ export function ProSlide(p: ProSlideProps) {
   }
   return (
     <Frame canvasRef={p.canvasRef} ratio={ratio} background={panel} ff={ff}>
-      <Photo src={slide.imageUrl} style={{ position: "absolute", top: 0, bottom: 0, right: 0, left: panelW }} />
+      <Photo src={slide.imageUrl} style={{ position: "absolute", top: 0, bottom: 0, right: 0, left: "62%" }} />
       <Logo src={p.logo} pos="left" />
-      <div style={{ position: "absolute", left: M, width: panelInner, top: safeTop + 64, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ position: "absolute", left: M, width: `calc(62% - ${M + 18}px)`, top: safeTop + 64, bottom: safeBottom, display: "flex", flexDirection: "column", gap: 14 }}>
         {titleBlock(title, 28)}
         <span style={{ flex: 1 }} />
         <Body text={bodyNoDeparture} color={bodyColor || INK_SOFT} ff={ff} size={12.5} maxLines={2} />
         <Button text={cta} bg={teal} fg={tealFg} ff={ff} size={11} />
         <Contacts slide={slide} color={INK} ff={ff} size={13} />
+        <span style={{ flex: 1 }} />
         <span style={{ height: 3, width: "100%", background: teal, flexShrink: 0 }} />
       </div>
     </Frame>

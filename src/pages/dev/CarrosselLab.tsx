@@ -15,6 +15,7 @@ const LOGO = "/artes/canvaviagem_premium_logo_1772930557454.png";
 const PALETTES: Record<string, [string, string]> = {
   cv: ["#080808", "#F5F906"],
   cvc: ["#0B3B8C", "#FFD400"],
+  laranja: ["#F39C0F", "#7A4B00"],
   teal: ["#0B8C8F", "#FFFFFF"],
   wine: ["#7A1F3D", "#F2E8D5"],
 };

@@ -532,7 +532,7 @@ function documentedTextSuggestionPool(
         : [
             "O que está incluso",
             duration || dates ? "Quando sair e por quanto tempo" : "Você escolhe a data, a gente cuida do resto",
-            payment ? "Como pagar" : price ? `A partir de ${price}` : "Valores sob consulta, sem compromisso",
+            payment ? "Como pagar" : price ? priceLead(price, "A partir de") : "Valores sob consulta, sem compromisso",
             "Como reservar em 3 passos",
           ];
     body = isCover
@@ -755,14 +755,14 @@ function documentedCarouselTextSequence(
     4: [
       block(destination, "Uma viagem para sair da rotina", [], "OFERTA"),
       block("Sua viagem pode incluir", "", offerDetails.slice(0, 3), "INCLUSO"),
-      block(price ? `A partir de ${price}` : "Condições personalizadas para sua viagem", payment, [], "CONDIÇÕES"),
+      block(price ? priceLead(price, "A partir de") : "Condições personalizadas para sua viagem", payment, [], "CONDIÇÕES"),
       block(`Quer conhecer ${destination}?`, "", [], "", "Solicite sua cotação com nossa equipe."),
     ],
     5: [
       block(`${destination} pode ser sua próxima viagem`, "", [], "OFERTA"),
       block(dates || "Escolha a melhor data para viver essa experiência.", duration, [], dates ? "DATA" : ""),
       block("Sua viagem inclui", "", offerDetails.slice(0, 3), "INCLUSO"),
-      block(price ? `A partir de ${price}` : "Consulte as melhores condições para sua viagem.", payment, [], "CONDIÇÕES"),
+      block(price ? priceLead(price, "A partir de") : "Consulte as melhores condições para sua viagem.", payment, [], "CONDIÇÕES"),
       block("Deu vontade de viajar?", "", [], "", "Fale com nossa equipe e receba todos os detalhes."),
     ],
     6: [
@@ -770,7 +770,7 @@ function documentedCarouselTextSequence(
       block(dates || "Escolha a melhor data para embarcar.", "", compact([duration, origin]), dates ? "DATA DA VIAGEM" : ""),
       block("Sua viagem organizada", "", offerDetails.slice(0, 2), "INCLUSO"),
       block(`Mais comodidade para aproveitar ${destination}`, "", offerDetails.slice(2, 4), "VANTAGENS"),
-      block(price ? `A partir de ${price}` : "Consulte valores e condições disponíveis", payment, [], "CONDIÇÕES"),
+      block(price ? priceLead(price, "A partir de") : "Consulte valores e condições disponíveis", payment, [], "CONDIÇÕES"),
       block(`Vamos transformar ${destination} em realidade?`, "", [], "", "Fale com nossa equipe."),
     ],
   };
