@@ -83,6 +83,9 @@ const ICON_RULES: [RegExp, string][] = [
   [/carro|aluguel|buggy|4x4|jipe|jeep/i, "carro-sedan-na-frente"],
   [/hor[áa]rio|tempo|hora/i, "relogio"],
   [/passeio|tour|roteiro|visita|praia|trilha|city/i, "pino-de-localizacao"],
+  [/organiz|planej|sem preocupa/i, "calendar"],
+  [/ritmo|tempo|hor[aá]rio/i, "relogio"],
+  [/suporte|atendimento|acompanh|soporte/i, "guia-turistico"],
 ];
 const iconFor = (text: string, fallback = "pino-de-localizacao") => {
   for (const [re, name] of ICON_RULES) if (re.test(text)) return name;
@@ -309,7 +312,7 @@ export function ProSlide(p: ProSlideProps) {
       <div style={{ position: "absolute", left: M, right: M, top: safeTop, display: "flex", alignItems: "center", justifyContent: "space-between", zIndex: 30 }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,.85)", fontFamily: ff, fontSize: 10, fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase" }}>
           <span style={{ width: 8, height: 8, borderRadius: 4, background: accent, boxShadow: `0 0 12px ${accent}` }} />
-          {label || T.trip}
+          {label && !/^\d+$/.test(label.trim()) ? label : T.trip}
         </span>
         <PageMark index={p.index} total={p.total} color="rgba(255,255,255,.6)" ff={ff} />
       </div>

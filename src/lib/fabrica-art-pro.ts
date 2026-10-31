@@ -541,7 +541,7 @@ async function layoutV0(m: ProArtModel) {
   ctx.fillStyle = accent;
   ctx.fillRect(0, blockH - 8, width, 8);
   content(k, false);
-  if (!m.isExperience) legalLine(ctx, m, F.footerTop - 14);
+  if (!m.isExperience) legalLine(ctx, m, F.footerTop - 36);
   await branding(m);
 }
 
@@ -806,7 +806,7 @@ async function layoutV4(m: ProArtModel) {
       fillRoundRect(ctx, x, y, leftW, cardH, 26, softBg);
       fillRoundRect(ctx, x + leftW + gap, y, rightW, cardH, 26, softBg);
       if (m.isExperience) experienceBlock(ctx, m, x + 28, y + 28, leftW - 56, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 60 * k, withHeadline: false });
-      else priceBlock(ctx, m, x + 28, y + 24, leftW - 56, { fg, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 124 : 112) * k });
+      else priceBlock(ctx, m, x + 28, y + (cardH - leftH) / 2, leftW - 56, { fg, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 124 : 112) * k });
       let ry = y + 26;
       if (m.travelPeriod) {
         setFont(ctx, 900, 30 * k, f.display);
@@ -832,7 +832,8 @@ async function layoutV4(m: ProArtModel) {
 
   ctx.fillStyle = base;
   ctx.fillRect(0, 0, width, height);
-  drawPhoto(m, F.M - 20, topY, width - (F.M - 20) * 2, photoH, 0.45, 36);
+  if (F.story) drawPhoto(m, 0, 0, width, topY + photoH, 0.45);
+  else drawPhoto(m, F.M - 20, topY, width - (F.M - 20) * 2, photoH, 0.45, 36);
   pill(ctx, width / 2, topY + 28, m.promoName.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 24, family: f.sans, weight: 900, h: 50, padX: 24, align: "center" });
   content(k, false, contentTop);
   if (!m.isExperience) legalLine(ctx, m, F.footerTop - 14, "rgba(255,255,255,0.6)");
