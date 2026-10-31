@@ -51,6 +51,11 @@ export const ProtectedRoute = ({
 
     // 1. Check Login
     if (!user && !localPreview) {
+        // Página principal: quem não está logado vai para a página inicial de vendas, não para o login.
+        const path = location.pathname.replace(/\/+$/, "") || "/";
+        if (path === "/" || path === "/pt") return <Navigate to={`/inicio${location.search}`} replace />;
+        if (path === "/es") return <Navigate to={`/es/inicio${location.search}`} replace />;
+
         // Redirect to auth, saving the location they tried to access
         // Mantém a query (ex.: /checkout?plano=annual&metodo=pix) para voltar ao mesmo lugar depois do login.
         return <Navigate to={`/login?redirect=${encodeURIComponent(`${location.pathname}${location.search}`)}`} replace />;
