@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LayoutDashboard, FolderOpen, Upload, History, Users, MessageSquare, Globe } from "lucide-react";
+import { ClipboardList, Loader2, LayoutDashboard, FolderOpen, Upload, History, Users, MessageSquare, Globe } from "lucide-react";
 import {
   useAllContentItems,
   useAllCaptions,
@@ -20,6 +20,7 @@ import { useEffect } from "react";
 import { insertMissingCaptions } from "@/utils/insertMissing";
 
 // Components
+import { PlanoSection } from "@/components/gestao/PlanoSection";
 import { ContentSection } from "@/components/gestao/ContentSection";
 import { ImportSection } from "@/components/gestao/ImportSection";
 import { DashboardSection } from "@/components/gestao/DashboardSection";
@@ -190,8 +191,12 @@ const Gestao = () => {
 
       {/* Main Content with Tabs */}
       <div className="container mx-auto px-4 py-6">
-        <Tabs value={searchParams.get("tab") || "dashboard"} onValueChange={(tab) => setSearchParams({ tab })} className="w-full">
+        <Tabs value={searchParams.get("tab") || "plano"} onValueChange={(tab) => setSearchParams({ tab })} className="w-full">
           <TabsList className="w-full flex-wrap h-auto gap-2 bg-muted/50 p-2 mb-6">
+            <TabsTrigger value="plano" className="flex items-center gap-2 flex-1 min-w-[120px]">
+              <ClipboardList className="h-4 w-4" />
+              <span>Plano</span>
+            </TabsTrigger>
             <TabsTrigger value="dashboard" className="flex items-center gap-2 flex-1 min-w-[120px]">
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
@@ -223,6 +228,10 @@ const Gestao = () => {
           </TabsList>
 
           {/* Dashboard Tab */}
+          <TabsContent value="plano" className="mt-0">
+            <PlanoSection />
+          </TabsContent>
+
           <TabsContent value="dashboard" className="mt-0">
             <DashboardSection />
           </TabsContent>
