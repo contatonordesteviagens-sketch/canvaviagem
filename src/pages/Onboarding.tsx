@@ -540,9 +540,9 @@ function Sample({ onNext }: { onNext: () => void }) {
       <Title sub="Você recebe tudo isso pronto, com a sua logo.">Veja o que sai para a sua agência. <Accent>Curtiu?</Accent></Title>
       <div className="cv-pop -mx-5 mt-5" style={delay(150)}>
         <p className="mb-1 px-5 text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>ANÚNCIOS</p>
-        <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito no Canva Viagem" small />
+        <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito no Canva Viagem" />
         <p className="mb-1 mt-3 px-5 text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>CARROSSÉIS</p>
-        <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito no Canva Viagem" reverse small />
+        <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito no Canva Viagem" slow />
       </div>
       <div className="cv-pop mx-auto mt-4 w-full max-w-[240px]" style={delay(300)}>
         <p className="mb-2 text-center text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>SITE DO PACOTE</p>

@@ -114,10 +114,10 @@ export default function InicioCreme() {
         <div
           className="flex w-full max-w-5xl items-center justify-between rounded-full px-3 py-2 transition-all duration-300"
           style={{
-            background: scrolled ? "rgba(255,255,255,0.88)" : "transparent",
-            border: `1px solid ${scrolled ? "var(--cv-line)" : "transparent"}`,
+            background: scrolled ? "rgba(255,255,255,0.1)" : "transparent",
+            border: "1px solid transparent",
             backdropFilter: scrolled ? "blur(16px) saturate(1.4)" : "none",
-            boxShadow: scrolled ? "0 10px 30px -18px rgba(32,28,19,.35)" : "none",
+            boxShadow: "none",
           }}
         >
           <a href="/inicio" aria-label="Canva Viagem" className="block h-[26px] w-[26px] overflow-hidden rounded-full">
@@ -168,8 +168,8 @@ export default function InicioCreme() {
               </span>
               <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Anúncios, carrosséis e stories saindo prontos agora. Pode fazer 1 ou 1.000 no mesmo dia.</p>
             </div>
-            <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito na plataforma Canva Viagem" />
-            <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito na plataforma Canva Viagem" reverse className="mt-2" />
+            <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito na plataforma Canva Viagem" size="compact" />
+            <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito na plataforma Canva Viagem" size="tiny" slow />
           </div>
 
           <div className="mx-auto mt-8 flex max-w-5xl flex-wrap items-center justify-center gap-2 rounded-full border bg-white px-4 py-3" style={{ borderColor: "var(--cv-line)" }}>

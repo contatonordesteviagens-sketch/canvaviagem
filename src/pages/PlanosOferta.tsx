@@ -193,9 +193,9 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
             <h2 className="mt-2 text-[26px] font-extrabold leading-[1.12] tracking-[-0.02em]">Postagens feitas aqui, do jeito que saem.</h2>
           </div>
           <p className="plan-muted mb-1 mt-4 px-4 text-[12px] font-bold">ANÚNCIOS</p>
-          <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito no Canva Viagem" small />
+          <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito no Canva Viagem" />
           <p className="plan-muted mb-1 mt-3 px-4 text-[12px] font-bold">CARROSSÉIS</p>
-          <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito no Canva Viagem" reverse small />
+          <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito no Canva Viagem" slow />
         </section>
 
         <section className="mt-6">

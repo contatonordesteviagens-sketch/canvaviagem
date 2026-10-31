@@ -116,7 +116,7 @@
 
 @keyframes travel-mobile-marquee {
   from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(calc(-50% - 0.5rem), 0, 0); }
+  to { transform: translate3d(calc(-50% - var(--marquee-half-gap, 0.5rem)), 0, 0); }
 }
 
 .travel-mobile-marquee {

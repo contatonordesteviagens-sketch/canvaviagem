@@ -29,20 +29,26 @@ export const SHOWCASE_CAROUSELS: ShowcasePiece[] = [
 export function ShowcaseRow({
   pieces,
   alt,
-  reverse = false,
-  small = false,
+  slow = false,
+  size = "small",
   className = "",
 }: {
   pieces: ShowcasePiece[];
   alt: string;
-  reverse?: boolean;
-  small?: boolean;
+  slow?: boolean;
+  size?: "tiny" | "compact" | "small";
   className?: string;
 }) {
   const items = [...pieces, ...pieces];
+  const height = { tiny: "h-[90px] sm:h-[110px]", compact: "h-[130px] sm:h-[160px]", small: "h-[170px]" }[size];
+  const compactGap = size !== "small";
   return (
     <div className={`relative overflow-hidden rounded-[28px] py-2 ${className}`} style={{ maskImage: "linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)" }}>
-      <div className="travel-mobile-marquee flex w-max items-center gap-4" style={reverse ? { animationDirection: "reverse", animationDuration: "120s" } : undefined}>
+      {/* Sempre para a esquerda, como quem arrasta um carrossel com o dedo. */}
+      <div
+        className={`travel-mobile-marquee flex w-max items-center ${compactGap ? "gap-2" : "gap-4"}`}
+        style={{ ...(slow ? { animationDuration: "120s" } : {}), ["--marquee-half-gap" as string]: compactGap ? "0.25rem" : "0.5rem" }}
+      >
         {items.map((p, i) => (
           <img
             key={`${p.src}-${i}`}
@@ -51,8 +57,8 @@ export function ShowcaseRow({
             height={p.h}
             alt={i < pieces.length ? alt : ""}
             aria-hidden={i >= pieces.length}
-            className={`w-auto shrink-0 rounded-2xl border-4 border-white object-cover shadow-md ${small ? "h-[170px]" : "h-[200px] sm:h-[260px]"}`}
-            style={{ background: "var(--cv-sand)", aspectRatio: `${p.w} / ${p.h}`, marginLeft: p.newSet ? 24 : undefined }}
+            className={`w-auto shrink-0 object-cover shadow-md ${height} ${compactGap ? "rounded-xl border-2 border-white" : "rounded-2xl border-4 border-white"}`}
+            style={{ background: "var(--cv-sand)", aspectRatio: `${p.w} / ${p.h}`, marginLeft: p.newSet ? (compactGap ? 10 : 24) : undefined }}
             loading="eager"
             decoding="async"
           />
