@@ -96,3 +96,6 @@ verify_jwt = false
 
 [functions.recovery-emails]
 verify_jwt = false
+
+[functions.capture-lead]
+verify_jwt = false

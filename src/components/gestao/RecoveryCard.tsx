@@ -34,7 +34,7 @@ const TABS: { id: string; label: string; stages: Lead["stage"][] }[] = [
   { id: "pagou", label: "Pagou", stages: ["pagou"] },
 ];
 
-const KIND_LABEL: Record<string, string> = { pronta: "1 · conta pronta", desconto: "2 · desconto 20%", contato: "3 · tentando falar" };
+const KIND_LABEL: Record<string, string> = { pronta: "1 · conta pronta", desconto: "2 · desconto 20%", contato: "3 · tentando falar", lead1: "Quiz 1 · falta pouco", lead2: "Quiz 2 · o que sai pronto", lead3: "Quiz 3 · sem equipe", lead4: "Quiz 4 · sem design", lead5: "Quiz 5 · desconto 20%", lead6: "Quiz 6 · tentando falar" };
 const PLAN: Record<string, string> = { monthly: "Mensal", semiannual: "Semestral", annual: "Anual" };
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—");
 

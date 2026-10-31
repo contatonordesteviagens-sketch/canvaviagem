@@ -14,6 +14,7 @@ import { ELITE_OFFER } from "@/lib/eliteOffer";
 import { checkoutPath } from "@/components/checkout/checkout-plans";
 import { PayWithPixButton } from "@/components/pix/PixCheckout";
 import { BrandMark, delay } from "@/components/cv-cream/shared";
+import { captureLead, readLeadEmail } from "@/lib/lead-capture";
 import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
 import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
@@ -184,8 +185,10 @@ export default function Onboarding() {
       trackMetaEvent("ViewContent", { content_name: "Canva Viagem - Onboarding Quiz", content_category: "onboarding", content_type: "product" });
     }
     track("onboarding_step", { step: step + 1, kind: STEPS[step].kind, key: (STEPS[step] as QuestionStep).key ?? null });
+    // Sem sessão (quem já tem conta e ainda não confirmou o e-mail): registra pelo e-mail digitado.
+    if (!user) captureLead(readLeadEmail(), "step", { step: step + 1, kind: STEPS[step].kind, key: (STEPS[step] as QuestionStep).key ?? null });
     window.scrollTo({ top: 0 });
-  }, [step, track]);
+  }, [step, track, user]);
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
@@ -207,6 +210,7 @@ export default function Onboarding() {
   const checkout = () => {
     const selected = PLANS.find((p) => p.cycle === plan)!;
     track("plan_selected", { billing_cycle: plan, feature: "onboarding", answers });
+    if (!user) captureLead(readLeadEmail(), "plan", { billing_cycle: plan });
     trackMetaEvent("InitiateCheckout", { value: selected.value, currency: "BRL", content_name: `Canva Viagem ${selected.name}`, content_category: "onboarding" });
     navigate(checkoutPath(plan));
   };

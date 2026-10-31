@@ -1,6 +1,7 @@
 // E-mails de recuperação de quem gerou Pix / abriu o cartão e NÃO pagou.
 // Roda de hora em hora (pg_cron). Regras:
 // - E-mail 1 "pronta" após 1 h, 2 "desconto" no 3º dia, 3 "contato" no 7º dia (RECOVERY_SCHEDULE_HOURS).
+// - Quem só deixou o e-mail ou fez o quiz: 6 e-mails, lead1 a lead6 (LEAD_SCHEDULE_HOURS), do mais recente vencido.
 // - Cada tipo no máximo 1 vez por e-mail (recovery_email_log). Manda só o tipo mais recente que já venceu.
 // - Ignora quem pagou (Pix COMPLETED, cartão completed ou assinatura ativa) e quem pediu para sair.
 // - Só tentativas dos últimos 8 dias: ligar o sistema não dispara e-mail para a base antiga.
@@ -11,7 +12,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { adminClient, userFromRequest } from "../_shared/wooviAuth.ts";
 import { claimJobRun } from "../_shared/jobRuns.ts";
 import { canonicalSiteUrl } from "../_shared/siteUrl.ts";
-import { renderRecoveryEmail, RECOVERY_SCHEDULE_HOURS, type RecoveryKind } from "../_shared/recoveryEmails.ts";
+import { renderRecoveryEmail, RECOVERY_SCHEDULE_HOURS, LEAD_SCHEDULE_HOURS, type LeadKind, type RecoveryKind } from "../_shared/recoveryEmails.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -23,7 +24,9 @@ const json = (body: unknown, status = 200) =>
 const HOUR = 60 * 60 * 1000;
 const MAX_AGE_HOURS = 8 * 24;
 const MAX_PER_RUN = 60;
-const KINDS: RecoveryKind[] = ["contato", "desconto", "pronta"]; // do mais tardio ao mais cedo
+const KINDS: ("contato" | "desconto" | "pronta")[] = ["contato", "desconto", "pronta"]; // do mais tardio ao mais cedo
+const LEAD_KINDS: LeadKind[] = ["lead6", "lead5", "lead4", "lead3", "lead2", "lead1"];
+const LEAD_MAX_AGE_HOURS = 11 * 24;
 
 const FUNCTION_URL = `${Deno.env.get("SUPABASE_URL")}/functions/v1/recovery-emails`;
 
@@ -65,6 +68,18 @@ async function payLink(db: ReturnType<typeof adminClient>, email: string, plan: 
   const checkout = `/checkout?plano=${encodeURIComponent(plan || "annual")}&metodo=${method}`;
   if (error) return `${canonicalSiteUrl()}${checkout}`;
   return `${canonicalSiteUrl()}/auth/verify?token=${token}&redirect=${encodeURIComponent(checkout)}`;
+}
+
+/** Link que entra logado e devolve a pessoa ao quiz. */
+async function resumeLink(db: ReturnType<typeof adminClient>, email: string) {
+  const token = crypto.randomUUID();
+  const { error } = await db.from("magic_link_tokens").insert({
+    email,
+    token,
+    expires_at: new Date(Date.now() + 7 * 24 * HOUR).toISOString(),
+  });
+  if (error) return `${canonicalSiteUrl()}/inicio`;
+  return `${canonicalSiteUrl()}/auth/verify?token=${token}&redirect=${encodeURIComponent("/onboarding")}`;
 }
 
 async function firstName(db: ReturnType<typeof adminClient>, userId: string | null, email: string) {
@@ -134,7 +149,7 @@ Deno.serve(async (req) => {
   // ── Teste (admin): manda um modelo para um e-mail, sem registrar ──
   if (body?.test_to) {
     if (!adminEmail && !isServer) return json({ error: "Só admin" }, 403);
-    const kind: RecoveryKind = ["pronta", "desconto", "contato"].includes(body.kind) ? body.kind : "pronta";
+    const kind: RecoveryKind = ["pronta", "desconto", "contato", "lead1", "lead2", "lead3", "lead4", "lead5", "lead6"].includes(body.kind) ? body.kind : "pronta";
     const to = String(body.test_to).toLowerCase().trim();
     await sendOne(to, kind, { firstName: "Lucas", payUrl: `${canonicalSiteUrl()}/checkout?plano=annual&metodo=pix` });
     return json({ test: true, sent: kind, to });
@@ -161,6 +176,19 @@ Deno.serve(async (req) => {
   for (const r of pix ?? []) add(r, "pix", r.status === "COMPLETED");
   for (const r of cards ?? []) add(r, "cartao", r.status === "completed");
 
+  // Quem deixou o e-mail na página inicial ou fez o quiz e não chegou ao pagamento.
+  const leadEmails = new Set<string>();
+  const leadSince = new Date(Date.now() - LEAD_MAX_AGE_HOURS * HOUR).toISOString();
+  const { data: captures } = await db.from("email_captures").select("email,last_seen_at,metadata").gte("last_seen_at", leadSince);
+  for (const c of captures ?? []) {
+    const meta = (c.metadata ?? {}) as { funnel?: string; redirect?: string | null };
+    if (meta.funnel !== "inicio" && !String(meta.redirect ?? "").startsWith("/onboarding")) continue;
+    const email = String(c.email ?? "").toLowerCase().trim();
+    if (!email || byEmail.has(email)) continue;
+    byEmail.set(email, { email, userId: null, plan: "annual", method: "pix", at: Date.parse(c.last_seen_at), paid: false });
+    leadEmails.add(email);
+  }
+
   const emails = [...byEmail.keys()].filter((e) => !paidEmails.has(e));
   if (!emails.length) return json({ candidates: 0, sent: 0 });
 
@@ -183,10 +211,17 @@ Deno.serve(async (req) => {
     if (skip.has(email)) continue;
     const attempt = byEmail.get(email)!;
     const hours = (Date.now() - attempt.at) / HOUR;
-    const due = KINDS.find((k) => hours >= RECOVERY_SCHEDULE_HOURS[k]);
+    const isLead = leadEmails.has(email);
+    const due: RecoveryKind | undefined = isLead
+      ? LEAD_KINDS.find((k) => hours >= LEAD_SCHEDULE_HOURS[k])
+      : KINDS.find((k) => hours >= RECOVERY_SCHEDULE_HOURS[k]);
     if (!due || sentKinds.get(email)?.has(due)) continue;
 
     // Assinatura ativa (pagou por outro caminho): não manda.
+    if (!attempt.userId) {
+      const { data: profile } = await db.from("profiles").select("user_id").eq("email", email).maybeSingle();
+      attempt.userId = profile?.user_id ?? null;
+    }
     if (attempt.userId) {
       const { data: sub } = await db.from("subscriptions").select("status,current_period_end").eq("user_id", attempt.userId).maybeSingle();
       const active = sub && ["active", "trialing"].includes(sub.status) && (!sub.current_period_end || Date.parse(sub.current_period_end) > Date.now());
@@ -198,7 +233,9 @@ Deno.serve(async (req) => {
       const { error: logErr } = await db.from("recovery_email_log").insert({ email, kind: due });
       if (logErr) continue;
       const name = await firstName(db, attempt.userId, email);
-      const payUrl = due === "pronta" ? await payLink(db, email, attempt.plan, attempt.method) : `${canonicalSiteUrl()}/checkout`;
+      const payUrl = isLead
+        ? await resumeLink(db, email)
+        : due === "pronta" ? await payLink(db, email, attempt.plan, attempt.method) : `${canonicalSiteUrl()}/checkout`;
       await sendOne(email, due, { firstName: name, payUrl });
       sent++;
     } catch (err) {

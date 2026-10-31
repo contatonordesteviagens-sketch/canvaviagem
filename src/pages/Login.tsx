@@ -15,6 +15,7 @@ import { formatPhoneBR, cleanPhone } from "@/lib/phone-utils";
 import logoImage from "@/assets/logo.png";
 import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
 import { BrandMark, Eyebrow } from "@/components/cv-cream/shared";
+import { captureLead, LEAD_EMAIL_KEY } from "@/lib/lead-capture";
 import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
 
 const pendingAuthStateKey = "cv:pending-auth-checkout";
@@ -27,8 +28,6 @@ const hashNormalizedEmail = async (email: string) => {
   );
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 };
-
-const LEAD_EMAIL_KEY = "cv:lead-email";
 
 const bindPendingCheckoutToEmail = async (email: string) => {
   try {
@@ -155,6 +154,7 @@ const Login = () => {
       try { localStorage.setItem(LEAD_EMAIL_KEY, normalizedEmail); } catch { /* storage indisponível */ }
       await bindPendingCheckoutToEmail(normalizedEmail);
       if (quickEntry) {
+        captureLead(normalizedEmail, "lead");
         // Da página inicial: guarda o e-mail e abre o quiz na hora, sem link nem tela de confirmação.
         // E-mail novo já ganha conta e sessão (mailer_autoconfirm). Quem já tem conta faz o quiz
         // sem sessão e só confirma o e-mail na hora de pagar: entrar na conta sem o link seria inseguro.
