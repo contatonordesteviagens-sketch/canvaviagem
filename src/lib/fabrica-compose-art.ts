@@ -1155,10 +1155,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
     );
   const subtitlePool = [
     "Roteiro pensado para viver melhor",
-    "Beleza, conforto e boas memorias",
+    "Beleza, conforto e boas memórias",
     "Uma viagem com outro ritmo",
-    "Paisagens, sabores e historias",
-    "Seu descanso comeca aqui",
+    "Paisagens, sabores e histórias",
+    "Seu descanso começa aqui",
   ];
   const subtitleText = subtitlePool[(Math.abs(variation) + 2) % subtitlePool.length];
 

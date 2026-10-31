@@ -27,7 +27,7 @@ const GUIDES: Record<FabricaGuideKey, GuideContent> = {
       "Confira o preço e os textos em \"Textos e preço\".",
       "Clique em \"Gerar Anúncio\", depois em \"Baixar esta arte\" e copie a legenda pronta.",
     ],
-    tip: "Não gostou do visual? Abra \"Modelo da arte\", escolha outro número e gere de novo.",
+    tip: "Não gostou do visual? Clique em gerar de novo: cada arte sai em um modelo diferente, até passar pelos 12.",
   },
   carrossel: {
     title: "Monte um carrossel em 3 passos",

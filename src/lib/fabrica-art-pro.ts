@@ -791,22 +791,24 @@ async function layoutV4(m: ProArtModel) {
   const content = (k: number, dry: boolean, y0 = 0): number => {
     let y = y0;
     // "Pacote | DESTINO"
-    const label = m.isExperience ? "Experiência" : "Pacote";
+    const label = m.customHeading ? "" : m.isExperience ? "Experiência" : "Pacote";
     setFont(ctx, 500, 40 * k, f.display);
-    const lw = ctx.measureText(label).width + 28;
+    const lw = label ? ctx.measureText(label).width + 28 : 0;
     const ds = fitSize(ctx, m.destination.toUpperCase(), w - lw - 28, 900, 58 * k, f.display, 28);
     if (!dry) {
       ctx.textAlign = "left";
       ctx.textBaseline = "alphabetic";
       setFont(ctx, 500, 40 * k, f.display);
       ctx.fillStyle = fg;
-      ctx.fillText(label, x, y + 40 * k);
-      ctx.globalAlpha = 0.5;
-      ctx.fillRect(x + lw, y + 4, 2, 46 * k);
-      ctx.globalAlpha = 1;
+      if (label) {
+        ctx.fillText(label, x, y + 40 * k);
+        ctx.globalAlpha = 0.5;
+        ctx.fillRect(x + lw, y + 4, 2, 46 * k);
+        ctx.globalAlpha = 1;
+      }
       ctx.fillStyle = accent;
       setFont(ctx, 900, ds, f.display);
-      ctx.fillText(m.destination.toUpperCase(), x + lw + 28, y + 42 * k);
+      ctx.fillText(m.destination.toUpperCase(), label ? x + lw + 28 : x, y + 42 * k);
     }
     y += 86 * k;
     // dois cartões com a mesma altura
@@ -1043,7 +1045,7 @@ async function layoutV7(m: ProArtModel) {
       y += experienceBlock(ctx, m, x, y, innerW, { fg: accentFg, ctaBg: accentFg, ctaFg: accent, size: 60 * k, withHeadline: false }, dry);
     } else {
       const pw = priceBlock(ctx, m, x, y, innerW, { fg: accentFg, accentBg: accentFg, accentFg: accent, size: (F.story ? 136 : 112) * k }, dry);
-      usedW = Math.max(usedW, Math.min(innerW, 520 * k));
+      usedW = Math.max(usedW, Math.min(innerW, priceNaturalWidth()));
       y += pw;
     }
     return y - y0;

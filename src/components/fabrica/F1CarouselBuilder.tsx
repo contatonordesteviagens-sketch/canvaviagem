@@ -410,6 +410,13 @@ const safeHexToRgba = (hex: string, alpha: number) => {
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 };
 
+/** "Pacote Maceió 5 Dias com Tudo Incluído" vira "Maceió": é esse nome que dá boas fotos na busca. */
+const packageDestinationName = (title = "") =>
+  cleanCarouselText(title)
+    .replace(/^(pacote|paquete)\s+/i, "")
+    .replace(/\s+(\d+\s*(dias?|días?|noites?|noches?)|com tudo|con todo)\b.*$/i, "")
+    .trim();
+
 const phoneLabel = (dialCode: string, phone: string) => {
   const dial = dialCode.replace(/\D/g, "");
   const number = phone.replace(/\D/g, "");
@@ -4089,10 +4096,11 @@ export function F1CarouselBuilder({
   }, [currentDestination, packages]);
 
   useEffect(() => {
+    // Pacote escolhido que não é o destino em edição: as fotos são do pacote, não do último destino.
     const initialDestination =
+      (selectedIsCurrent && currentDestination.trim()) ||
+      packageDestinationName(selectedPackage?.title) ||
       currentDestination.trim() ||
-      state.destinos.find((destination) => destination?.trim())?.trim() ||
-      selectedPackage?.title ||
       "";
     setPhotoDestination(initialDestination);
     setPhotoQuery(initialDestination);

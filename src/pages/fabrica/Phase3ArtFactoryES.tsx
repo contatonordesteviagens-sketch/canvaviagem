@@ -494,7 +494,7 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   const period = v.travelPeriod.trim();
   const agency = v.agencyName.trim() || "nossa agência";
   const ig = v.instagram.trim() ? `@${v.instagram.replace(/^@/, "").trim()}` : "";
-  const wa = v.whatsapp.trim();
+  const wa = formatAdPhone(v.whatsapp.trim());
   const contactLine = wa
     ? `📲 Fale comigo agora: *${wa}* ${ig ? `| ${ig}` : ""}`
     : ig
