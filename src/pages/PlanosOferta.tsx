@@ -58,8 +58,8 @@ const FAQ = [
 ];
 
 const CYCLES: CheckoutCycle[] = ["monthly", "semiannual", "annual"];
-// A oferta só abre quando os preços com 50% existirem na Stripe e no Pix: até lá a página não cobra.
-const BLACK_FRIDAY_OPEN = false;
+// Fechar aqui e nas funções create-checkout e woovi quando a campanha acabar.
+const BLACK_FRIDAY_OPEN = true;
 
 export default function PlanosOferta({ variant = "lancamento" }: { variant?: Variant }) {
   useTrackUtm();
@@ -89,6 +89,7 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
     track("plan_selected", { billing_cycle: cycle, feature: `planos_${variant}`, source });
     trackMetaEvent("InitiateCheckout", { content_name: `Canva Viagem ${price.label}`, content_category: `planos_${variant}` });
     const url = new URLSearchParams(checkoutPath(cycle).split("?")[1]);
+    if (isBf) url.set("oferta", "black-friday");
     // Mantém a origem (e-mail, anúncio) visível até o pagamento.
     params.forEach((value, key) => { if (key.startsWith("utm_")) url.set(key, value); });
     navigate(`/checkout?${url.toString()}`);

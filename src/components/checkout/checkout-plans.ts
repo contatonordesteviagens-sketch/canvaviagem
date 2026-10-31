@@ -41,6 +41,17 @@ export const CHECKOUT_PLANS: Record<CheckoutCycle, {
   },
 };
 
+export type CheckoutOffer = "black-friday" | null;
+
+/** Black Friday: mesmos planos com 50%. A oferta vem da URL e o servidor confirma o valor cobrado. */
+export const BLACK_FRIDAY_PLANS: typeof CHECKOUT_PLANS = {
+  monthly: { ...CHECKOUT_PLANS.monthly, price: "R$ 48,50", priceLong: "R$ 48,50", valueCents: 4850 },
+  semiannual: { ...CHECKOUT_PLANS.semiannual, price: "R$ 173,50", priceLong: "R$ 173,50", valueCents: 17350 },
+  annual: { ...CHECKOUT_PLANS.annual, price: "R$ 241", priceLong: "R$ 241,00", valueCents: 24100 },
+};
+
+export const plansFor = (offer: CheckoutOffer) => (offer ? BLACK_FRIDAY_PLANS : CHECKOUT_PLANS);
+
 export function checkoutPath(cycle: CheckoutCycle, method?: "cartao" | "pix") {
   const params = new URLSearchParams({ plano: cycle });
   if (method) params.set("metodo", method);

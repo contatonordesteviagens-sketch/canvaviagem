@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { cn } from "@/lib/utils";
-import { CHECKOUT_PLANS, type CheckoutCycle } from "./checkout-plans";
+import { plansFor, type CheckoutCycle, type CheckoutOffer } from "./checkout-plans";
 
 /**
  * Vira true quando a Woovi estiver com o Pix Automático (recorrente) ligado.
@@ -92,10 +92,10 @@ function useCountdown(expiresDate: string | null) {
  * Fala com as funções woovi-create-charge / woovi-charge-status (contrato do agente da Woovi);
  * envia também `taxId` para o Pix Automático quando ele estiver ligado.
  */
-export function PixPanel({ plan, onSwitchToCard }: { plan: CheckoutCycle; onSwitchToCard: () => void }) {
+export function PixPanel({ plan, onSwitchToCard, offer = null }: { plan: CheckoutCycle; onSwitchToCard: () => void; offer?: CheckoutOffer }) {
   const navigate = useNavigate();
   const { user, refreshSubscription } = useAuth();
-  const info = CHECKOUT_PLANS[plan];
+  const info = plansFor(offer)[plan];
   const [taxId, setTaxId] = useState(() => {
     try { return formatTaxId(sessionStorage.getItem(TAX_ID_KEY) || ""); } catch { return ""; }
   });
@@ -120,9 +120,11 @@ export function PixPanel({ plan, onSwitchToCard }: { plan: CheckoutCycle; onSwit
     try {
       try { sessionStorage.setItem(TAX_ID_KEY, onlyDigits(taxId)); } catch { /* sem storage */ }
       const { data, error: fnError } = await supabase.functions.invoke("woovi-create-charge", {
-        body: { plan, taxId: onlyDigits(taxId) },
+        body: { plan, taxId: onlyDigits(taxId), ...(offer ? { offer } : {}) },
       });
       if (fnError || !data?.brCode) throw new Error(data?.error || fnError?.message || "Falha ao gerar o Pix");
+      // Nunca mostra um QR com valor diferente do preço anunciado.
+      if (Number(data.value) !== info.valueCents) throw new Error("Valor do Pix diferente do plano");
       setCharge(data as Charge);
       trackMetaEvent("InitiateCheckout", { value: info.valueCents / 100, currency: "BRL", content_name: `Canva Viagem ${info.name}`, content_category: "pix" });
     } catch (err) {
@@ -131,7 +133,7 @@ export function PixPanel({ plan, onSwitchToCard }: { plan: CheckoutCycle; onSwit
     } finally {
       setLoading(false);
     }
-  }, [plan, taxId, info.name, info.valueCents]);
+  }, [plan, taxId, info.name, info.valueCents, offer]);
 
   // Troca de plano: zera a cobrança (o valor mudou).
   useEffect(() => {

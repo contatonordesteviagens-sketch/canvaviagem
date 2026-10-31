@@ -5,7 +5,7 @@ import { ArrowLeft, Check, CreditCard, Lock, QrCode, ShieldCheck } from "lucide-
 import { useAuth } from "@/contexts/AuthContext";
 import { CardPanel } from "@/components/checkout/CardPanel";
 import { PixPanel, PIX_RENOVA_SOZINHO } from "@/components/checkout/PixPanel";
-import { CHECKOUT_PLANS, isCheckoutCycle, type CheckoutCycle } from "@/components/checkout/checkout-plans";
+import { CHECKOUT_PLANS, isCheckoutCycle, plansFor, type CheckoutCycle, type CheckoutOffer } from "@/components/checkout/checkout-plans";
 import { cn } from "@/lib/utils";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
 
@@ -16,8 +16,8 @@ const METHODS: { id: Method; title: string; sub: string; icon: ComponentType<{ c
   { id: "pix", title: PIX_RENOVA_SOZINHO ? "Pix Automático" : "Pix", sub: PIX_RENOVA_SOZINHO ? "paga agora e renova sozinho" : "paga agora, acesso na hora", icon: QrCode },
 ];
 
-function PlanDetails({ plan, compact = false }: { plan: CheckoutCycle; compact?: boolean }) {
-  const info = CHECKOUT_PLANS[plan];
+function PlanDetails({ plan, offer, compact = false }: { plan: CheckoutCycle; offer: CheckoutOffer; compact?: boolean }) {
+  const info = plansFor(offer)[plan];
   return (
     <div className={cn("text-[13px]", !compact && "mt-4 border-t border-slate-200 pt-4")}>
       <div className="flex items-start justify-between gap-3">
@@ -55,7 +55,8 @@ export default function Checkout() {
   const rawPlan = params.get("plano");
   const plan: CheckoutCycle = isCheckoutCycle(rawPlan) ? rawPlan : "annual";
   const [method, setMethod] = useState<Method>(params.get("metodo") === "pix" ? "pix" : "cartao");
-  const info = CHECKOUT_PLANS[plan];
+  const offer: CheckoutOffer = params.get("oferta") === "black-friday" ? "black-friday" : null;
+  const info = plansFor(offer)[plan];
 
   // Quem já assina não precisa pagar de novo (no localhost a tela fica visível para testes).
   useEffect(() => {
@@ -125,7 +126,7 @@ export default function Checkout() {
         <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-8">
           {/* Resumo: no celular só o essencial fica acima do pagamento; o restante desce. */}
           <aside className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5 lg:sticky lg:top-6 lg:self-start">
-            <p className="text-[13px] text-slate-500">Assinar Canva Viagem</p>
+            <p className="text-[13px] text-slate-500">Assinar Canva Viagem{offer ? " · Black Friday: 50% para sempre" : ""}</p>
             <p className="mt-1 flex items-baseline gap-1.5">
               <span className="text-[32px] font-extrabold leading-none tracking-tight">{info.priceLong}</span>
               <span className="text-[13px] text-slate-500">{info.per}</span>
@@ -148,13 +149,13 @@ export default function Checkout() {
               ))}
             </div>
 
-            <div className="hidden lg:block"><PlanDetails plan={plan} /></div>
+            <div className="hidden lg:block"><PlanDetails plan={plan} offer={offer} /></div>
           </aside>
 
           {/* Painel do método */}
           <div>
-            {method === "cartao" ? <CardPanel plan={plan} /> : <PixPanel plan={plan} onSwitchToCard={() => choose("cartao")} />}
-            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 lg:hidden"><PlanDetails plan={plan} compact /></div>
+            {method === "cartao" ? <CardPanel plan={plan} offer={offer} /> : <PixPanel plan={plan} offer={offer} onSwitchToCard={() => choose("cartao")} />}
+            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 lg:hidden"><PlanDetails plan={plan} offer={offer} compact /></div>
           </div>
         </div>
 

@@ -2,7 +2,7 @@
 // Entrada: { plan: "monthly" | "semiannual" | "annual" } + Authorization: Bearer <sessão>
 // Saída:   { correlationID, value, brCode, qrCodeImage, paymentLinkUrl, expiresDate }
 import { adminClient, userFromRequest } from "../_shared/wooviAuth.ts";
-import { corsHeaders, createWooviCharge, isPixPlan, json, PIX_PLANS, savePixCharge } from "../_shared/woovi.ts";
+import { corsHeaders, createWooviCharge, isPixPlan, json, PIX_PLANS, savePixCharge, BLACK_FRIDAY_OPEN, PIX_BLACK_FRIDAY_CENTS } from "../_shared/woovi.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -19,13 +19,20 @@ Deno.serve(async (req) => {
 
     const email = user.email.toLowerCase().trim();
     const name = (user.user_metadata?.name as string | undefined) || undefined;
-    const charge = await createWooviCharge({ plan, userId: user.id, email, name });
+    const wantsBlackFriday = body?.offer === "black-friday";
+    if (wantsBlackFriday && !BLACK_FRIDAY_OPEN) {
+      // Com a campanha fechada, só renova com desconto quem já pagou com o valor da oferta.
+      const { data: paid } = await db.from("pix_charges").select("value_cents").eq("email", email).eq("status", "COMPLETED")
+        .eq("value_cents", PIX_BLACK_FRIDAY_CENTS[plan]).limit(1);
+      if (!paid?.length) return json({ error: "Oferta encerrada" }, 400);
+    }
+    const charge = await createWooviCharge({ plan, userId: user.id, email, name, blackFriday: wantsBlackFriday });
     console.log("[WOOVI-CREATE] Cobrança criada", { userId: user.id, plan, correlationID: charge.correlationID });
     await savePixCharge(db, charge, email);
 
     return json({
       correlationID: charge.correlationID,
-      value: PIX_PLANS[plan].valueCents,
+      value: wantsBlackFriday ? PIX_BLACK_FRIDAY_CENTS[plan] : PIX_PLANS[plan].valueCents,
       brCode: charge.brCode,
       qrCodeImage: charge.qrCodeImage ?? null,
       paymentLinkUrl: charge.paymentLinkUrl ?? null,

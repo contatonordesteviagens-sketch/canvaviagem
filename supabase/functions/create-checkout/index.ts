@@ -59,6 +59,14 @@ const sanitizeInternalPath = (value: unknown) => {
   }
 };
 
+// Black Friday: preços recorrentes com 50%, para sempre. IDs públicos da Stripe.
+const BLACK_FRIDAY_OPEN = true;
+const BLACK_FRIDAY_PRICES: Record<BillingCycle, string> = {
+  monthly: "price_1UVxwiLXUoWoiE4T1YfQBodb",
+  semiannual: "price_1UWgEOLXUoWoiE4TRWiF0jxw",
+  annual: "price_1UVx9ULXUoWoiE4TzihaQwOH",
+};
+
 const getPriceId = (billingCycle: BillingCycle) => {
   const envName = {
     monthly: "STRIPE_ELITE_MONTHLY_PRICE_ID",
@@ -148,9 +156,11 @@ serve(async (req) => {
     let landingVariant = "general";
     // "embedded": a página /checkout mostra o formulário da Stripe dentro do site e recebe client_secret.
     let uiMode: "hosted" | "embedded" = "hosted";
+    let offer = "";
     try {
       const body = await req.json();
       if (body?.ui_mode === "embedded") uiMode = "embedded";
+      if (body?.offer === "black-friday" && BLACK_FRIDAY_OPEN) offer = "black-friday";
       if (body?.billing_cycle === "semiannual" || body?.billing_cycle === "annual") {
         requestedCycle = body.billing_cycle;
       }
@@ -167,7 +177,7 @@ serve(async (req) => {
       // Empty request bodies use the canonical monthly offer.
     }
 
-    const priceId = getPriceId(requestedCycle);
+    const priceId = offer ? BLACK_FRIDAY_PRICES[requestedCycle] : getPriceId(requestedCycle);
     if (!priceId) {
       logStep("ERROR: Elite price is not configured", { billingCycle: requestedCycle });
       return new Response(JSON.stringify({ error: GENERIC_ERRORS.configError }), {
@@ -265,6 +275,7 @@ serve(async (req) => {
       metadata: {
         user_id: user.id,
         billing_cycle: requestedCycle,
+        offer,
         upgrade: upgradeFeature,
         return_to: returnTo,
         landing_path: landingPath,
@@ -292,6 +303,7 @@ serve(async (req) => {
       metadata: {
         user_id: user.id,
         billing_cycle: requestedCycle,
+        offer,
         upgrade: upgradeFeature,
         return_to: returnTo,
         landing_path: landingPath,

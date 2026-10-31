@@ -7,7 +7,7 @@
 // (job_runs), então chamar de novo não manda o aviso em dobro.
 import { adminClient } from "../_shared/wooviAuth.ts";
 import { claimJobRun } from "../_shared/jobRuns.ts";
-import { isPixPlan, json, sendPixRenewalReminder } from "../_shared/woovi.ts";
+import { isPixPlan, json, sendPixRenewalReminder, PIX_BLACK_FRIDAY_CENTS } from "../_shared/woovi.ts";
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -51,8 +51,11 @@ Deno.serve(async (req) => {
       const email = u?.user?.email?.toLowerCase();
       if (!email) continue;
       const plan = isPixPlan(sub.billing_cycle) ? sub.billing_cycle : "monthly";
+      const { data: lastPaid } = await db.from("pix_charges").select("value_cents").eq("email", email).eq("status", "COMPLETED")
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
       try {
         await sendPixRenewalReminder(db, {
+          blackFriday: lastPaid?.value_cents === PIX_BLACK_FRIDAY_CENTS[plan],
           email,
           name: (u!.user!.user_metadata?.name as string | undefined) || email.split("@")[0],
           periodEnd: sub.current_period_end!,

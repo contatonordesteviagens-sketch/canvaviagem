@@ -23,6 +23,10 @@ export const PIX_PLANS: Record<PixPlan, { valueCents: number; days: number; prod
 /** Tempo para pagar o QR Code (segundos). */
 export const PIX_EXPIRES_IN_SECONDS = 60 * 60;
 
+// Black Friday: 50% para sempre. Quem pagou com esse valor renova com esse valor, mesmo depois de a campanha fechar.
+export const BLACK_FRIDAY_OPEN = true;
+export const PIX_BLACK_FRIDAY_CENTS: Record<PixPlan, number> = { monthly: 4850, semiannual: 17350, annual: 24100 };
+
 export function isPixPlan(value: unknown): value is PixPlan {
   return value === "monthly" || value === "semiannual" || value === "annual";
 }
@@ -82,15 +86,17 @@ export async function createWooviCharge(params: {
   userId: string;
   email: string;
   name?: string;
+  blackFriday?: boolean;
 }): Promise<WooviCharge> {
   const cfg = PIX_PLANS[params.plan];
+  const label = params.blackFriday ? `${cfg.label} Black Friday` : cfg.label;
   const body: Record<string, unknown> = {
     correlationID: buildCorrelationId(params.plan, params.userId),
-    value: cfg.valueCents,
-    comment: `Canva Viagem - ${cfg.label}`,
+    value: params.blackFriday ? PIX_BLACK_FRIDAY_CENTS[params.plan] : cfg.valueCents,
+    comment: `Canva Viagem - ${label}`,
     expiresIn: PIX_EXPIRES_IN_SECONDS,
     additionalInfo: [
-      { key: "Plano", value: cfg.label },
+      { key: "Plano", value: label },
       { key: "Conta", value: params.email },
     ],
     // Preenche a coluna "Cliente" no painel da Woovi.
@@ -233,7 +239,7 @@ export async function grantEliteFromCharge(db: SupabaseClient, charge: WooviChar
   const parsed = parseCorrelationId(charge.correlationID);
   if (!parsed) return { granted: false, reason: "foreign_correlation_id" };
   const cfg = PIX_PLANS[parsed.plan];
-  if (Number(charge.value) !== cfg.valueCents) {
+  if (Number(charge.value) !== cfg.valueCents && Number(charge.value) !== PIX_BLACK_FRIDAY_CENTS[parsed.plan]) {
     console.error("[WOOVI] Valor diferente do plano", { correlationID: charge.correlationID, value: charge.value });
     return { granted: false, reason: "value_mismatch" };
   }
@@ -330,10 +336,12 @@ async function sendPixConfirmationEmail(db: SupabaseClient, p: { email: string; 
   });
 }
 
-export async function sendPixRenewalReminder(db: SupabaseClient, p: { email: string; name: string; periodEnd: string; plan: PixPlan }) {
+export async function sendPixRenewalReminder(db: SupabaseClient, p: { email: string; name: string; periodEnd: string; plan: PixPlan; blackFriday?: boolean }) {
   const resendKey = Deno.env.get("RESEND_API_KEY");
   if (!resendKey) throw new Error("RESEND_API_KEY não configurado");
-  const link = `${canonicalSiteUrl()}/pix?plano=${p.plan}`;
+  const link = p.blackFriday
+    ? `${canonicalSiteUrl()}/checkout?plano=${p.plan}&metodo=pix&oferta=black-friday`
+    : `${canonicalSiteUrl()}/pix?plano=${p.plan}`;
   await new Resend(resendKey).emails.send({
     from: FROM_EMAIL(),
     to: [p.email],

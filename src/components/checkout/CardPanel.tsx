@@ -5,7 +5,7 @@ import { CreditCard, ExternalLink, Loader2, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ELITE_OFFER, withCheckoutIdentity } from "@/lib/eliteOffer";
-import type { CheckoutCycle } from "./checkout-plans";
+import type { CheckoutCycle, CheckoutOffer } from "./checkout-plans";
 
 // Mesma chave pública usada no StripeCheckoutModal.
 const stripePromise = loadStripe(
@@ -22,25 +22,27 @@ const PAYMENT_LINK: Record<CheckoutCycle, string> = {
 type State =
   | { kind: "loading" }
   | { kind: "embedded"; clientSecret: string }
-  | { kind: "redirect"; url: string };
+  | { kind: "redirect"; url: string }
+  | { kind: "error" };
 
 /**
  * Aba "Cartão": o formulário da Stripe aparece dentro da página (checkout embutido).
  * Se a função ainda não souber responder em modo embutido (ou falhar), mostra um botão
  * que leva para a página segura da Stripe com a conta logada identificada. Nunca fica sem saída.
  */
-export function CardPanel({ plan }: { plan: CheckoutCycle }) {
+export function CardPanel({ plan, offer = null }: { plan: CheckoutCycle; offer?: CheckoutOffer }) {
   const { user } = useAuth();
   const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {
     let cancelled = false;
     setState({ kind: "loading" });
-    const fallback = () => withCheckoutIdentity(PAYMENT_LINK[plan], user);
+    // O link fixo cobra o preço cheio: na oferta, melhor avisar do que cobrar o valor errado.
+    const fail = () => setState(offer ? { kind: "error" } : { kind: "redirect", url: withCheckoutIdentity(PAYMENT_LINK[plan], user) });
     (async () => {
       try {
         const { data, error } = await supabase.functions.invoke("create-checkout", {
-          body: { billing_cycle: plan, ui_mode: "embedded", return_to: "/fabrica" },
+          body: { billing_cycle: plan, ui_mode: "embedded", return_to: "/fabrica", ...(offer ? { offer } : {}) },
         });
         if (cancelled) return;
         if (!error && typeof data?.clientSecret === "string" && data.clientSecret) {
@@ -51,16 +53,16 @@ export function CardPanel({ plan }: { plan: CheckoutCycle }) {
           setState({ kind: "redirect", url: data.url });
           return;
         }
-        setState({ kind: "redirect", url: fallback() });
+        fail();
       } catch (err) {
         console.error("[Checkout] create-checkout falhou:", err);
-        if (!cancelled) setState({ kind: "redirect", url: fallback() });
+        if (!cancelled) fail();
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [plan, user]);
+  }, [plan, user, offer]);
 
   return (
     <section aria-labelledby="checkout-cartao" className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
@@ -74,6 +76,10 @@ export function CardPanel({ plan }: { plan: CheckoutCycle }) {
           <div className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-200 text-[13px] text-slate-500">
             <Loader2 className="h-6 w-6 animate-spin" /> Abrindo o pagamento seguro…
           </div>
+        )}
+
+        {state.kind === "error" && (
+          <p className="rounded-xl bg-slate-50 p-4 text-[13px] leading-5 text-slate-700">Não foi possível abrir o pagamento agora. Tente de novo em instantes ou pague com Pix.</p>
         )}
 
         {state.kind === "embedded" && (
