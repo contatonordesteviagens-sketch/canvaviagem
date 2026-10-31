@@ -320,14 +320,11 @@ serve(async (req) => {
           },
         }
         : {}),
-      consent_collection: {
-        promotions: 'auto',
-      },
       expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 minutes
     }, {
       // Repeated clicks within the same ten-minute window reuse the same Stripe
       // operation instead of creating parallel checkout sessions.
-      idempotencyKey: `elite-checkout:${uiMode}:${user.id}:${requestedCycle}:${Math.floor(Date.now() / 600000)}`,
+      idempotencyKey: `elite-checkout:${uiMode}:${user.id}:${requestedCycle}${offer ? `:${offer}` : ""}:${Math.floor(Date.now() / 600000)}`,
     });
 
     logStep("Checkout session created", { sessionId: session.id, uiMode });
