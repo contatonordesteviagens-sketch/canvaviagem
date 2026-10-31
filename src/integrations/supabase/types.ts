@@ -768,6 +768,24 @@ export type Database = {
         }
         Relationships: []
       }
+      gestao_checklist: {
+        Row: {
+          done: boolean
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          done?: boolean
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          done?: boolean
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       job_runs: {
         Row: {
           job: string
