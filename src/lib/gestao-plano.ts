@@ -13,8 +13,9 @@ export const STATUS_GERAL = [
   { area: "Artes, carrossel e site da Fábrica", estado: "ok", detalhe: "12 modelos em rodízio, feed e stories. PNG conferido." },
   { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo." },
   { area: "Automação de e-mails", estado: "ok", detalhe: "Roda de hora em hora. Campanha agendada para 17/11." },
+  { area: "Pixel do Meta", estado: "ok", detalhe: "Recebendo do site: nos 7 dias até 31/10, 43 Lead, 20 InitiateCheckout e 2 Purchase." },
   { area: "Liberação de acesso depois de pagar", estado: "atencao", detalhe: "Produtos certos, mas nunca testado com pagamento real." },
-  { area: "Aviso da Stripe para o sistema (webhook)", estado: "problema", detalhe: "Desativado. Veja o próximo passo 2." },
+  { area: "Aviso da Stripe para o sistema (webhook)", estado: "problema", detalhe: "Desativado, com 0 entregas. Eventos do servidor no pixel parados desde 10/08. Veja o próximo passo 2." },
 ] as const;
 
 export const PROXIMOS_PASSOS: ProximoPasso[] = [
@@ -33,8 +34,8 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
   {
     quando: "Até 03/11",
     quem: "Lucas",
-    oque: "Ligar os anúncios para /inicio com valor pequeno, depois da compra de teste.",
-    porque: "Volta a entrar lead novo, que cai sozinho nos 6 e-mails.",
+    oque: "Ligar os anúncios para /inicio com valor pequeno, depois da compra de teste. Confira antes a conta: CA 1 - EUA, INFOS ALFA e Viva Mundi aparecem com saldo pendente no Meta.",
+    porque: "Volta a entrar lead novo, que cai sozinho nos 6 e-mails. Conta com saldo pendente pode não veicular.",
   },
   {
     quando: "Até 06/11",
@@ -192,6 +193,8 @@ export const FEITO: { data: string; itens: string[] }[] = [
       "12 modelos de arte em rodízio, busca de fotos e título editável.",
       "Carrossel busca as fotos do pacote escolhido.",
       "Worker publicado: sites antigos sem \"15k+\" e site suspenso leva para a /inicio.",
+      "Campanha limitada a 70 e-mails por dia, por causa da cota grátis do Resend.",
+      "Esta aba Plano na Gestão, com checklist que fica salvo.",
     ],
   },
 ];
