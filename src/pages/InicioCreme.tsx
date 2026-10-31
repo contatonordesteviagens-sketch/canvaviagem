@@ -163,10 +163,10 @@ export default function InicioCreme() {
           {/* Faixas de peças reais: as novas em destaque, as antigas menores embaixo */}
           <div className="cv-pop mx-auto mt-12 max-w-6xl" style={delay(380)}>
             <div className="mx-auto mb-4 flex max-w-5xl flex-wrap items-center justify-center gap-2 px-2 text-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white" style={{ background: "var(--cv-primary)" }}>
-                <InfinityIcon className="h-3.5 w-3.5" /> ILIMITADO · SEM CRÉDITOS
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white"   style={{ background: "var(--cv-fg)" }}>
+                <InfinityIcon className="h-3.5 w-3.5" /> CRÉDITOS ILIMITADOS
               </span>
-              <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Anúncios, carrosséis e stories saindo prontos agora. Pode fazer 1 ou 1.000 no mesmo dia.</p>
+              <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Gere quantas imagens quiser: anúncios, carrosséis e stories, sem limite por dia.</p>
             </div>
             <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito na plataforma Canva Viagem" size="compact" />
             <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito na plataforma Canva Viagem" size="tiny" slow />

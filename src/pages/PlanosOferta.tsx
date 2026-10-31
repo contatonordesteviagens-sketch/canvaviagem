@@ -32,7 +32,7 @@ const PRICES: Record<Variant, Record<CheckoutCycle, Price>> = {
 };
 
 const INCLUDED = [
-  "Artes, carrosséis e sites sem limite, sem créditos",
+  "Gerações de imagens ilimitadas: artes, carrosséis e sites",
   "Sua logo, suas cores e seu WhatsApp em tudo",
   "Textos e legendas prontos para postar",
   "Clientes organizados num só lugar",
@@ -51,7 +51,7 @@ const TOOLS = [
 const FAQ = [
   { q: "Serve para a minha agência?", a: "Sim, se você vende viagens e precisa postar. Foi feito para agência que não tem equipe de marketing." },
   { q: "Preciso saber design?", a: "Não. Você fala o destino, os dias e o valor. A arte já sai pronta, com a sua logo." },
-  { q: "Tem limite de artes?", a: "Não. Você pode fazer 1 ou 1.000 no mesmo dia, sem créditos." },
+  { q: "Tem limite de artes?", a: "Não. Os créditos são ilimitados: gere 1 ou 1.000 imagens no mesmo dia." },
   { q: "Posso pagar no Pix?", a: "Pode. Na tela de pagamento você escolhe cartão ou Pix, e o QR aparece na hora." },
   { q: "Posso cancelar quando quiser?", a: "Pode. O cancelamento é em 2 cliques no seu painel, sem ligação e sem multa." },
   { q: "E se eu não gostar?", a: "Você tem 7 dias de garantia para testar com um pacote real." },
@@ -111,7 +111,7 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
 
       <div className="plan-topbar">
         <span className="plan-tag">{isBf ? "BLACK FRIDAY" : "OFERTA DE LANÇAMENTO"}</span>
-        <span>{isBf ? "50% para sempre" : "Sem limites e sem créditos"}</span>
+        <span>{isBf ? "50% para sempre" : "Créditos ilimitados"}</span>
       </div>
 
       <main className="mx-auto flex max-w-[560px] flex-col gap-4 px-4 pb-16 pt-4">
@@ -152,9 +152,9 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
           <section className="plan-card plan-offer p-5">
             <span className="plan-tag">OFERTA DE LANÇAMENTO</span>
             <h2 className="mt-3 flex items-center gap-2 text-[22px] font-extrabold leading-tight tracking-[-0.02em]">
-              <InfinityIcon className="h-6 w-6 shrink-0" /> Tudo ilimitado
+              <InfinityIcon className="h-6 w-6 shrink-0" /> Créditos ilimitados
             </h2>
-            <p className="plan-muted mt-1 text-[14px] leading-6">Sem créditos e sem limite de artes. Você usa o quanto a sua agência precisar.</p>
+            <p className="plan-muted mt-1 text-[14px] leading-6">Gere quantas imagens quiser: anúncios, carrosséis e stories, sem limite por dia.</p>
           </section>
         )}
 
