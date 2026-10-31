@@ -15,7 +15,7 @@ export const STATUS_GERAL = [
   { area: "Automação de e-mails", estado: "ok", detalhe: "Roda de hora em hora. Campanha agendada para 17/11." },
   { area: "Pixel do Meta no site", estado: "atencao", detalhe: "O site envia para outros pixels. O da INFOS ALFA, a conta usada nos anúncios, não está instalado." },
   { area: "Liberação de acesso depois de pagar", estado: "atencao", detalhe: "Produtos certos, mas nunca testado com pagamento real." },
-  { area: "Aviso da Stripe para o sistema (webhook)", estado: "problema", detalhe: "Desativado, com 0 entregas. Eventos do servidor no pixel parados desde 10/08. Veja o próximo passo 2." },
+  { area: "Aviso da Stripe para o sistema (webhook)", estado: "atencao", detalhe: "Ligado em 31/10. Falta ver a primeira entrega com sucesso, que deve aparecer em até 24 horas." },
 ] as const;
 
 export const PROXIMOS_PASSOS: ProximoPasso[] = [
@@ -26,9 +26,9 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
     porque: "É a única parte do caminho que nunca foi testada de ponta a ponta, e eu não faço pagamentos.",
   },
   {
-    quando: "Hoje",
+    quando: "01/11",
     quem: "Claude",
-    oque: "Reativar o webhook da Stripe do projeto, depois do OK do Lucas.",
+    oque: "Conferir na Stripe a primeira entrega do aviso de pagamento, ligado em 31/10.",
     porque: "É o aviso que a Stripe manda ao nosso sistema quando alguém paga. Sem ele o cartão libera acesso, mas a compra não fica registrada e a pessoa pode receber e-mail de cobrança.",
   },
   {
@@ -142,7 +142,8 @@ export const CHECKLIST: ChecklistGrupo[] = [
     titulo: "Para confiar no pagamento",
     itens: [
       { id: "compra-teste-pix", texto: "Compra real de teste no Pix, com acesso liberado", quem: "Lucas" },
-      { id: "webhook-stripe", texto: "Webhook da Stripe reativado e entregando", quem: "Claude", nota: "Precisa do OK do Lucas." },
+      { id: "webhook-stripe-ligado", texto: "Aviso de pagamento da Stripe ligado", quem: "Claude", feito: true },
+      { id: "webhook-stripe-entrega", texto: "Primeira entrega do aviso conferida", quem: "Claude" },
       { id: "precos-elite", texto: "Preços da Black em produtos que liberam acesso", quem: "Claude", feito: true },
       { id: "checkout-valores", texto: "Cartão e Pix abrem com o valor certo", quem: "Claude", feito: true },
       { id: "lovable-pago", texto: "Pagamento do Lovable resolvido", quem: "Lucas" },
@@ -197,6 +198,7 @@ export const FEITO: { data: string; itens: string[] }[] = [
       "Worker publicado: sites antigos sem \"15k+\" e site suspenso leva para a /inicio.",
       "Campanha limitada a 70 e-mails por dia, por causa da cota grátis do Resend.",
       "Esta aba Plano na Gestão, com checklist que fica salvo.",
+      "Aviso de pagamento da Stripe ligado de novo.",
     ],
   },
 ];
