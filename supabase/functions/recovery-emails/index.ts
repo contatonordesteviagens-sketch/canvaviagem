@@ -12,7 +12,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { adminClient, userFromRequest } from "../_shared/wooviAuth.ts";
 import { claimJobRun } from "../_shared/jobRuns.ts";
 import { canonicalSiteUrl } from "../_shared/siteUrl.ts";
-import { renderRecoveryEmail, RECOVERY_SCHEDULE_HOURS, LEAD_SCHEDULE_HOURS, type LeadKind, type RecoveryKind } from "../_shared/recoveryEmails.ts";
+import { BF_CAMPAIGN, BF_SCHEDULE_DAYS, renderRecoveryEmail, RECOVERY_SCHEDULE_HOURS, LEAD_SCHEDULE_HOURS, type BlackFridayKind, type LeadKind, type RecoveryKind } from "../_shared/recoveryEmails.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -112,6 +112,77 @@ async function sendOne(email: string, kind: RecoveryKind, vars: { firstName: str
   if (error) throw new Error(error.message ?? String(error));
 }
 
+const BF_KINDS: BlackFridayKind[] = ["bf6", "bf5", "bf4", "bf3", "bf2", "bf1"];
+
+/** Link que entra logado e abre a página, com a origem do e-mail para o rastreamento. */
+async function campaignLink(db: ReturnType<typeof adminClient>, email: string, path: string, medium: string, campaign: string) {
+  const target = `${path}?utm_source=email&utm_medium=${medium}&utm_campaign=${encodeURIComponent(campaign)}`;
+  const token = crypto.randomUUID();
+  const { error } = await db.from("magic_link_tokens").insert({ email, token, expires_at: new Date(Date.now() + 7 * 24 * HOUR).toISOString() });
+  if (error) return `${canonicalSiteUrl()}${target}`;
+  return `${canonicalSiteUrl()}/auth/verify?token=${token}&redirect=${encodeURIComponent(target)}`;
+}
+
+/**
+ * Campanha da Black Friday: não faz nada enquanto BF_CAMPAIGN.start estiver vazio.
+ * Ex-assinantes recebem a sequência bf1 a bf6; quem deixou o e-mail entra 3 dias depois de deixar;
+ * assinante ativo recebe só "novidades". Cada tipo sai 1 vez por e-mail.
+ */
+async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number) {
+  const startMs = BF_CAMPAIGN.start ? Date.parse(BF_CAMPAIGN.start) : NaN;
+  if (!BF_CAMPAIGN.endLabel || !Number.isFinite(startMs) || Date.now() < startMs || limit <= 0) return { active: false, sent: 0 };
+
+  const { data: subs } = await db.from("subscriptions").select("user_id,status,current_period_end");
+  const isActive = (s: any) => ["active", "trialing"].includes(s.status) && (!s.current_period_end || Date.parse(s.current_period_end) > Date.now());
+  const userIds = (subs ?? []).map((s: any) => s.user_id);
+  const { data: profiles } = userIds.length ? await db.from("profiles").select("user_id,email").in("user_id", userIds) : { data: [] as any[] };
+  const emailOf = new Map((profiles ?? []).map((p: any) => [p.user_id, String(p.email ?? "").toLowerCase().trim()]));
+  const active = new Set<string>();
+  const former = new Set<string>();
+  for (const sub of subs ?? []) {
+    const email = emailOf.get(sub.user_id);
+    if (email) (isActive(sub) ? active : former).add(email);
+  }
+  for (const email of active) former.delete(email);
+
+  const { data: captures } = await db.from("email_captures").select("email,first_seen_at,metadata");
+  const leads = (captures ?? [])
+    .filter((c: any) => (c.metadata?.funnel === "inicio" || String(c.metadata?.redirect ?? "").startsWith("/onboarding")) && Date.now() - Date.parse(c.first_seen_at) >= 72 * HOUR)
+    .map((c: any) => String(c.email ?? "").toLowerCase().trim())
+    .filter((email: string) => email && !active.has(email));
+  for (const email of leads) former.add(email);
+
+  const { data: unsubs } = await db.from("email_unsubscribes").select("email");
+  const { data: logs } = await db.from("recovery_email_log").select("email,kind").or("kind.like.bf%,kind.eq.novidades");
+  const skip = new Set((unsubs ?? []).map((u: any) => u.email));
+  const sentKinds = new Set((logs ?? []).map((l: any) => `${l.email}:${l.kind}`));
+  const days = (Date.now() - startMs) / (24 * HOUR);
+  const due = BF_KINDS.find((k) => days >= BF_SCHEDULE_DAYS[k]);
+
+  const queue: { email: string; kind: RecoveryKind }[] = [];
+  if (due) for (const email of former) if (!skip.has(email) && !sentKinds.has(`${email}:${due}`)) queue.push({ email, kind: due });
+  for (const email of active) if (!skip.has(email) && !sentKinds.has(`${email}:novidades`)) queue.push({ email, kind: "novidades" });
+
+  let sent = 0;
+  for (const item of queue) {
+    if (sent >= limit) break;
+    const { error: logErr } = await db.from("recovery_email_log").insert({ email: item.email, kind: item.kind });
+    if (logErr) continue;
+    try {
+      const url = item.kind === "novidades"
+        ? await campaignLink(db, item.email, "/fabrica", "novidades", "novidades")
+        : await campaignLink(db, item.email, "/black-friday", "winback", item.kind);
+      await sendOne(item.email, item.kind, { firstName: await firstName(db, null, item.email), payUrl: url });
+      sent++;
+    } catch (err) {
+      console.error("[BLACK-FRIDAY]", (err as Error).message);
+      await db.from("recovery_email_log").delete().eq("email", item.email).eq("kind", item.kind);
+    }
+  }
+  console.log("[BLACK-FRIDAY] Execução", { fila: queue.length, sent });
+  return { active: true, sent, queue: queue.length };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   const db = adminClient();
@@ -150,7 +221,7 @@ Deno.serve(async (req) => {
   // ── Teste (admin): manda um modelo para um e-mail, sem registrar ──
   if (body?.test_to) {
     if (!adminEmail && !isServer) return json({ error: "Só admin" }, 403);
-    const kind: RecoveryKind = ["pronta", "desconto", "contato", "lead1", "lead2", "lead3", "lead4", "lead5", "lead6"].includes(body.kind) ? body.kind : "pronta";
+    const kind: RecoveryKind = ["pronta", "desconto", "contato", "lead1", "lead2", "lead3", "lead4", "lead5", "lead6", "bf1", "bf2", "bf3", "bf4", "bf5", "bf6", "novidades"].includes(body.kind) ? body.kind : "pronta";
     const to = String(body.test_to).toLowerCase().trim();
     await sendOne(to, kind, { firstName: "Lucas", payUrl: `${canonicalSiteUrl()}/checkout?plano=annual&metodo=pix` });
     return json({ test: true, sent: kind, to });
@@ -191,7 +262,7 @@ Deno.serve(async (req) => {
   }
 
   const emails = [...byEmail.keys()].filter((e) => !paidEmails.has(e));
-  if (!emails.length) return json({ candidates: 0, sent: 0 });
+  if (!emails.length) return json({ candidates: 0, sent: 0, blackFriday: await runBlackFriday(db, MAX_PER_RUN) });
 
   const [{ data: unsubs }, { data: logs }, { data: anyPaid }] = await Promise.all([
     db.from("email_unsubscribes").select("email").in("email", emails),
@@ -246,5 +317,5 @@ Deno.serve(async (req) => {
   }
 
   console.log("[RECOVERY] Execução", { candidates: emails.length, sent, errors: errors.length });
-  return json({ candidates: emails.length, sent, errors });
+  return json({ candidates: emails.length, sent, errors, blackFriday: await runBlackFriday(db, MAX_PER_RUN - sent) });
 });

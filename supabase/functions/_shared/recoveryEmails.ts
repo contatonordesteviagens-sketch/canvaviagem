@@ -6,13 +6,18 @@
 // 2) desconto  → 3º dia: 20% por 24 horas, fechado com o Lucas no WhatsApp do suporte.
 // 3) contato   → 7º dia: "estou tentando falar com você", conversa no WhatsApp.
 
-export type RecoveryKind = "pronta" | "desconto" | "contato" | LeadKind;
+export type RecoveryKind = "pronta" | "desconto" | "contato" | LeadKind | BlackFridayKind | "novidades";
+export type BlackFridayKind = "bf1" | "bf2" | "bf3" | "bf4" | "bf5" | "bf6";
 export type LeadKind = "lead1" | "lead2" | "lead3" | "lead4" | "lead5" | "lead6";
 
 export const RECOVERY_WHATSAPP = "5585986411294";
 export const RECOVERY_DISCOUNT = 20;
 export const RECOVERY_SCHEDULE_HOURS: Record<"pronta" | "desconto" | "contato", number> = { pronta: 1, desconto: 72, contato: 168 };
 // Quem deixou o e-mail ou fez o quiz e não comprou: 6 e-mails, com cerca de 2 dias de intervalo.
+// Black Friday: desligada até BF_CAMPAIGN.start ter data. Só depois disso sai e-mail para a base.
+// Dias contados do início da campanha. Quem deixou o e-mail só entra 3 dias depois de deixar.
+export const BF_CAMPAIGN: { start: string | null; endLabel: string } = { start: null, endLabel: "" };
+export const BF_SCHEDULE_DAYS: Record<BlackFridayKind, number> = { bf1: 0, bf2: 2, bf3: 4, bf4: 6, bf5: 8, bf6: 10 };
 export const LEAD_SCHEDULE_HOURS: Record<LeadKind, number> = { lead1: 1, lead2: 48, lead3: 96, lead4: 144, lead5: 192, lead6: 240 };
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -59,6 +64,7 @@ export function renderRecoveryEmail(kind: RecoveryKind, vars: {
   // Sem nome cadastrado (quase todo lead só tem e-mail): saudação sem nome.
   const greeting = first ? `Fala, <strong>${name}</strong>.` : "Fala, tudo bem?";
 
+  if (kind.startsWith("bf") || kind === "novidades") return renderBlackFridayEmail(kind as BlackFridayKind | "novidades", greeting, vars.payUrl, vars.unsubscribeUrl);
   if (kind.startsWith("lead")) return renderLeadEmail(kind as LeadKind, first, greeting, vars.payUrl, vars.unsubscribeUrl);
 
   if (kind === "pronta") {
@@ -167,5 +173,71 @@ function renderLeadEmail(kind: LeadKind, first: string, greeting: string, url: s
     p(`Mas se o Instagram anda parado porque criar conteúdo dá trabalho demais, foi para isso que eu fiz o Canva Viagem.`),
     go("Destravar meu Instagram →"),
     small(`Este é o último e-mail desta sequência. Se quiser falar comigo, é só responder.`),
+  ]);
+}
+
+function renderBlackFridayEmail(kind: BlackFridayKind | "novidades", greeting: string, url: string, unsub: string): { subject: string; html: string } {
+  const hello = p(greeting);
+  const go = (label: string) => btn(label, url, "#6440e6");
+  const mail = (subject: string, preheader: string, parts: string[]) => ({
+    subject,
+    html: shell([hello, ...parts].join("\n"), preheader, unsub),
+  });
+  const end = BF_CAMPAIGN.endLabel;
+
+  if (kind === "novidades") {
+    return mail("Tem novidade na sua conta", "Novas artes, novos carrosséis, novos modelos.", [
+      p(`Você já está com a gente, então isso aqui é só para te mostrar o que chegou:`),
+      list(["novos modelos de anúncio: agora são 12, e cada geração sai diferente", "novos modelos de carrossel, com ícones e textos melhores", "busca de fotos com mais opções para cada destino"]),
+      p(`Já está tudo liberado na sua conta. Não precisa fazer nada.`),
+      go("Abrir minha conta →"),
+    ]);
+  }
+  if (kind === "bf1") {
+    return mail("Talvez você tenha ficado chateado", "E eu preciso te pedir desculpas.", [
+      p(`Você confiou na gente e assinou o Canva Viagem.`),
+      p(`Talvez tenha tentado usar, não tenha conseguido como queria e foi embora chateado. Se foi isso, eu te peço desculpas.`),
+      p(`Mexi no que estava ruim. As artes foram refeitas. Os carrosséis também. O site ficou mais fácil de montar.`),
+      p(`E para me redimir com quem já confiou uma vez, liberei a Black Vitalícia: metade do preço, para sempre. Você entra com esse valor e renova sempre por ele.`),
+      p(`O mensal, que hoje é R$ 97, fica R$ 48,50. Topa me dar mais uma chance?`),
+      go("Quero voltar pela metade →"),
+    ]);
+  }
+  if (kind === "bf2") {
+    return mail("O que mudou desde que você saiu", "Abra e veja com os seus olhos.", [
+      p(`Não quero que você volte pela minha palavra. Quero que veja.`),
+      p(`Hoje você fala o destino, os dias e o valor. A arte sai pronta, com a sua logo e o seu WhatsApp.`),
+      p(`São 12 modelos de anúncio, e cada vez que você gera, sai um diferente. O carrossel sai pronto para baixar. A página do pacote também.`),
+      go("Ver as novidades →"),
+    ]);
+  }
+  if (kind === "bf3") {
+    return mail("Quanto fica no anual", "R$ 20,08 por mês, e não sobe na renovação.", [
+      p(`Fiz a conta da Black Vitalícia para você:`),
+      list(["Mensal: R$ 48,50 por mês", "Semestral: R$ 173,50 a cada 6 meses (dá R$ 28,92 por mês)", "Anual: R$ 241 por ano (dá R$ 20,08 por mês)"]),
+      p(`Em qualquer um deles, a renovação continua nesse mesmo valor.`),
+      go("Escolher meu plano →"),
+    ]);
+  }
+  if (kind === "bf4") {
+    return mail("Ainda está postando tudo sozinho?", "A venda passa pela sua mão. A arte não precisa.", [
+      p(`Cliente chamando no WhatsApp, pacote para fechar, e ainda falta o post de hoje.`),
+      p(`É aí que o Instagram da agência para.`),
+      p(`Foi para esse dia que eu refiz tudo. Você resolve o post em poucos minutos e volta para o que vende: conversar com o cliente.`),
+      go("Voltar pela metade do preço →"),
+    ]);
+  }
+  if (kind === "bf5") {
+    return mail(`A Black Vitalícia acaba em ${end}`, "Depois disso, volta ao preço normal.", [
+      p(`Passando só para avisar: a condição termina em ${end}.`),
+      p(`Quem entrar até lá fica com a metade do preço enquanto continuar assinando. Depois, volta ao preço normal para quem entrar.`),
+      go("Garantir a metade do preço →"),
+    ]);
+  }
+  return mail("Me responde uma coisa?", "É o último e-mail sobre isso.", [
+    p(`Este é o último e-mail que mando sobre a Black Vitalícia.`),
+    p(`Se não for a hora, tudo bem, e obrigado por ter confiado na gente.`),
+    p(`Só me conta em uma frase o que fez você sair. É só responder este e-mail.`),
+    go("Quero voltar pela metade →"),
   ]);
 }
