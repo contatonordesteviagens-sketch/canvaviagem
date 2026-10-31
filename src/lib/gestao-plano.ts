@@ -14,7 +14,7 @@ export const STATUS_GERAL = [
   { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo." },
   { area: "Automação de e-mails", estado: "ok", detalhe: "Roda de hora em hora. Campanha agendada para 17/11." },
   { area: "Pixel do Meta no site", estado: "atencao", detalhe: "O site envia para outros pixels. O da INFOS ALFA, a conta usada nos anúncios, não está instalado." },
-  { area: "Liberação de acesso depois de pagar", estado: "atencao", detalhe: "Produtos certos, mas nunca testado com pagamento real." },
+  { area: "Liberação de acesso depois de pagar", estado: "atencao", detalhe: "Pix conferido com venda real em 31/10: acesso liberado em 30 segundos e cliente gerou e baixou arte. Falta o cartão." },
   { area: "Aviso da Stripe para o sistema (webhook)", estado: "atencao", detalhe: "Ligado em 31/10. Falta ver a primeira entrega com sucesso, que deve aparecer em até 24 horas." },
 ] as const;
 
@@ -22,8 +22,8 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
   {
     quando: "Hoje",
     quem: "Lucas",
-    oque: "Fazer 1 compra real de R$ 48,50 no Pix, em /black-friday, com um e-mail de teste. Ver se entra na Fábrica. Depois pedir o estorno.",
-    porque: "É a única parte do caminho que nunca foi testada de ponta a ponta, e eu não faço pagamentos.",
+    oque: "Fazer 1 compra real de R$ 48,50 no cartão, em /black-friday, com um e-mail de teste. Ver se entra na Fábrica. Depois pedir o estorno.",
+    porque: "O Pix já foi confirmado por uma venda real. O cartão nunca foi testado de ponta a ponta, e eu não faço pagamentos.",
   },
   {
     quando: "01/11",
@@ -141,7 +141,8 @@ export const CHECKLIST: ChecklistGrupo[] = [
   {
     titulo: "Para confiar no pagamento",
     itens: [
-      { id: "compra-teste-pix", texto: "Compra real de teste no Pix, com acesso liberado", quem: "Lucas" },
+      { id: "compra-real-pix", texto: "Venda real no Pix, com acesso liberado e arte baixada", quem: "Lucas", feito: true },
+      { id: "compra-teste-cartao", texto: "Compra real de teste no cartão, com acesso liberado", quem: "Lucas" },
       { id: "webhook-stripe-ligado", texto: "Aviso de pagamento da Stripe ligado", quem: "Claude", feito: true },
       { id: "webhook-stripe-entrega", texto: "Primeira entrega do aviso conferida", quem: "Claude" },
       { id: "precos-elite", texto: "Preços da Black em produtos que liberam acesso", quem: "Claude", feito: true },
@@ -204,7 +205,7 @@ export const FEITO: { data: string; itens: string[] }[] = [
 ];
 
 export const NAO_TESTADO = [
-  "Pagamento real e liberação de acesso com valor da Black.",
+  "Pagamento real no cartão e com o valor da Black. O Pix foi confirmado só no preço cheio de R$ 97.",
   "Limite de 70 por dia em envio real: só simulado, roda a partir de 17/11.",
   "Celular real (iPhone): testado só em tela simulada.",
 ];
