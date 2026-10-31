@@ -55,13 +55,15 @@ export function renderRecoveryEmail(kind: RecoveryKind, vars: {
   unsubscribeUrl: string;
 }): { subject: string; html: string } {
   const first = (vars.firstName || "").trim();
-  const name = esc(first || "tudo bem");
+  const name = esc(first);
+  // Sem nome cadastrado (quase todo lead só tem e-mail): saudação sem nome.
+  const greeting = first ? `Fala, <strong>${name}</strong>.` : "Fala, tudo bem?";
 
-  if (kind.startsWith("lead")) return renderLeadEmail(kind as LeadKind, first, name, vars.payUrl, vars.unsubscribeUrl);
+  if (kind.startsWith("lead")) return renderLeadEmail(kind as LeadKind, first, greeting, vars.payUrl, vars.unsubscribeUrl);
 
   if (kind === "pronta") {
     const body = [
-      p(`Fala, <strong>${name}</strong>.`),
+      p(greeting),
       p(`Sua conta já está criada. E o plano das suas 2 primeiras semanas também.`),
       p(`Está tudo separado, esperando você:`),
       list([
@@ -82,7 +84,7 @@ export function renderRecoveryEmail(kind: RecoveryKind, vars: {
 
   if (kind === "desconto") {
     const body = [
-      p(`Fala, <strong>${name}</strong>.`),
+      p(greeting),
       p(`Sua conta continua lá, com o plano das 2 semanas montado. Só não foi liberada.`),
       p(`Às vezes o que segura é o momento. Então vou facilitar.`),
       box(`<strong>${RECOVERY_DISCOUNT}% de desconto</strong> para liberar a sua conta. Vale só pelas próximas <strong>24 horas</strong>.`, "#effaf3", "#25D366"),
@@ -97,7 +99,7 @@ export function renderRecoveryEmail(kind: RecoveryKind, vars: {
   }
 
   const body = [
-    p(`Fala, <strong>${name}</strong>.`),
+    p(greeting),
     p(`Te mandei alguns e-mails nos últimos dias e não tive resposta.`),
     p(`Pode ser que tenham caído no spam. Pode ser que não seja a hora. Tudo bem.`),
     p(`Só queria entender uma coisa: o que fez você parar antes de liberar a sua conta?`),
@@ -111,8 +113,8 @@ export function renderRecoveryEmail(kind: RecoveryKind, vars: {
   };
 }
 
-function renderLeadEmail(kind: LeadKind, first: string, name: string, url: string, unsub: string): { subject: string; html: string } {
-  const hello = p(`Fala, <strong>${name}</strong>.`);
+function renderLeadEmail(kind: LeadKind, first: string, greeting: string, url: string, unsub: string): { subject: string; html: string } {
+  const hello = p(greeting);
   const go = (label: string) => btn(label, url, "#0a6080");
   const mail = (subject: string, preheader: string, parts: string[]) => ({
     subject,
