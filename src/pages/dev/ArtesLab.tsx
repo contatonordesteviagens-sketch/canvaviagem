@@ -116,6 +116,7 @@ export default function ArtesLab() {
             strategy: "vitrine",
             variation: variant,
             forceVariant: variant,
+            customHeading: params.get("heading") || undefined,
             titleOverride: isExp ? `${dest} como você nunca viu` : `Pacote ${dest}`,
             titleVariations: long
               ? [`Réveillon em ${dest} com tudo incluso para a família toda`, `Feriado prolongado em ${dest}: 5 dias de praia, passeios e descanso`, `${dest} te espera`]

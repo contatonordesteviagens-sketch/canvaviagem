@@ -8,7 +8,8 @@ import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } f
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { composeTravelAd, formatAdPhone, type PaymentMode } from "@/lib/fabrica-compose-art";
-import { PRO_TOTAL_VARIANTS } from "@/lib/fabrica-art-pro";
+import { PRO_TOTAL_VARIANTS, takeAutoVariant } from "@/lib/fabrica-art-pro";
+import { fetchDestinationPhotos, matchKnownDestination, relatedPhotoTerms } from "@/lib/photo-search";
 import { GeneratedArt } from "@/lib/fabrica-art-types";
 import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
@@ -808,6 +809,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
   const [priceOptionsOpen, setPriceOptionsOpen] = useState(false);
   const [priceOptionsEnabled, setPriceOptionsEnabled] = useState(false);
   const resolvedAdTitle = (adTitleTemplate || "").replace(/\{destino\}/gi, destination?.trim() || "Destino *");
+  // Texto próprio (fora das sugestões do menu) substitui o nome do destino em todos os modelos.
+  const titleIsCustom = Boolean(adTitleTemplate?.trim()) && ![...AD_TITLE_PRESETS, ...AD_TITLE_PRESETS_EXPERIENCIA, "Pacote {destino}", "Paquete {destino}"].includes(adTitleTemplate);
   const adTitleVariations = buildTitleVariations(adTitleTemplate || "Pacote {destino}", destination);
   const SUFFIX_PRESETS = ["por persona", "por pareja", "por paquete", "por grupo", "total del paquete"];
   const DESTINATION_SUGGESTIONS = Array.from(new Set([
@@ -1009,6 +1012,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string>("");
   const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [visiblePhotoCount, setVisiblePhotoCount] = useState(3);
+  const [photoPage, setPhotoPage] = useState(1);
+  const [photoBaseDestination, setPhotoBaseDestination] = useState("");
   // Sua imagem
   const [customSource, setCustomSource] = useState<CustomSource>("upload");
   const [customImageData, setCustomImageData] = useState<string>(""); // base64 (upload) ou URL (link) — só em memória
@@ -1088,42 +1093,57 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
     "city tourism", "skyline", "cultural travel", "sightseeing",
   ];
 
-  const searchPhotos = async (overrideQuery?: string) => {
-    const q = (overrideQuery ?? photoQuery ?? destination).trim();
-    if (!q) {
-      toast.error("Digite o destino para buscar fotos");
+  const searchPhotos = async (overrideQuery?: string, opts?: { relatedTerm?: boolean }) => {
+    const raw = (overrideQuery ?? photoQuery ?? destination).trim();
+    if (!raw) {
+      toast.error("Escribe el destino para buscar fotos");
       return;
     }
+    const known = opts?.relatedTerm ? null : matchKnownDestination(raw, POPULAR_PHOTO_DESTINATIONS);
+    const q = known || raw;
     setPhotoQuery(q);
-    // Quem digita o destino na busca de fotos quase nunca repete no campo "Destino":
-    // preenche sozinho (senão o botão "Gerar Anúncio" fica apagado sem explicação).
-    if (!destination.trim()) setDestination(q);
+    // O nome na arte acompanha o destino buscado (antes a foto era de Paris e a arte dizia outro lugar).
+    if (!opts?.relatedTerm) {
+      setPhotoBaseDestination(q);
+      if (known || !destination.trim()) setDestination(q);
+    }
     setSearchingPhotos(true);
     setPhotos([]);
     setSelectedPhotoUrl("");
-
-    setPhotoQuery(q);
-
-
+    setPhotoPage(1);
     try {
-      const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
-        body: { 
-          query: q, 
-          perPage: 12, 
-          engine: searchEngine 
-        }
-      });
-
-      if (error) throw error;
-      if (data?.photos) {
-        setPhotos(data.photos);
-        setVisiblePhotoCount(3);
-        setSelectedPhotoUrl("");
-        toast.success(`Fotos de ${q} carregadas com sucesso!`);
-      }
+      const found = await fetchDestinationPhotos(q, searchEngine);
+      setPhotos(found as typeof photos);
+      setVisiblePhotoCount(3);
+      setSelectedPhotoUrl("");
+      if (found.length) toast.success(`¡Fotos de ${q} cargadas!`);
+      else toast.error(`No encontramos fotos de ${q}. Prueba otro nombre.`);
     } catch (err) {
       console.error("Erro ao buscar fotos:", err);
       toast.error(err instanceof Error ? err.message : String(err) || "Erro na busca de fotos.");
+    } finally {
+      setSearchingPhotos(false);
+    }
+  };
+
+  /** Mostra mais 3; quando acabam as carregadas, busca a próxima página. */
+  const showMorePhotos = async () => {
+    if (visiblePhotoCount + 3 <= photos.length) {
+      setVisiblePhotoCount((n) => n + 3);
+      return;
+    }
+    setSearchingPhotos(true);
+    try {
+      const next = photoPage + 1;
+      const found = await fetchDestinationPhotos(photoQuery, searchEngine, next);
+      setPhotoPage(next);
+      setPhotos((prev) => {
+        const seen = new Set(prev.map((p) => p.url));
+        return [...prev, ...(found as typeof photos).filter((p) => !seen.has(p.url))];
+      });
+      setVisiblePhotoCount((n) => n + 3);
+    } catch (err) {
+      console.error("Erro ao buscar fotos:", err);
     } finally {
       setSearchingPhotos(false);
     }
@@ -1366,6 +1386,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
           strategy: localStrategy,
           variation: varSeed,
           forceVariant: forceVar,
+          customHeading: titleIsCustom ? resolvedAdTitle : undefined,
           titleOverride: resolvedAdTitle,
           titleVariations: adTitleVariations,
           travelPeriod,
@@ -1404,16 +1425,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
         // Evita as 2 últimas usadas para garantir imagem nova a cada clique.
         const TOTAL_VARIANTS_PHOTO = PRO_TOTAL_VARIANTS;
         const DISABLED_VARIANTS_PHOTO: number[] = [];
-        const recentPhoto = variantHistoryRef.current.slice(-2);
-        let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i)
-          .filter((v) => !DISABLED_VARIANTS_PHOTO.includes(v))
-          .filter((v) => !recentPhoto.includes(v));
-        if (candidatesPhoto.length === 0) {
-          candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i).filter((v) => !DISABLED_VARIANTS_PHOTO.includes(v));
-        }
         const nextVariantPhoto = forcedVariant !== null && !DISABLED_VARIANTS_PHOTO.includes(forcedVariant)
           ? forcedVariant
-          : candidatesPhoto[Math.floor(Math.random() * candidatesPhoto.length)];
+          : takeAutoVariant(chosen.length);
         variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantPhoto];
 
         const composed = await Promise.all(
@@ -1679,16 +1693,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
       // Rotacion deterministica entre variantes del compositor (V0..V8).
       const TOTAL_VARIANTS = PRO_TOTAL_VARIANTS;
       const DISABLED_VARIANTS: number[] = [];
-      const recent = variantHistoryRef.current.slice(-2);
-      let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i)
-        .filter((v) => !DISABLED_VARIANTS.includes(v))
-        .filter((v) => !recent.includes(v));
-      if (candidates.length === 0) {
-        candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !DISABLED_VARIANTS.includes(v));
-      }
       const nextVariant = forcedVariant !== null && !DISABLED_VARIANTS.includes(forcedVariant)
         ? forcedVariant
-        : candidates[Math.floor(Math.random() * candidates.length)];
+        : takeAutoVariant(chosen.length);
       variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariant];
 
       const imagesCustom = await Promise.all(
@@ -2205,9 +2212,22 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                   Buscar
                 </button>
               </div>
+              {relatedPhotoTerms(photoBaseDestination || photoQuery, true).length > 0 && (
+                <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                  {relatedPhotoTerms(photoBaseDestination || photoQuery, true).map((term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      onClick={() => searchPhotos(term, { relatedTerm: true })}
+                      className={`flex-shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] transition-colors ${photoQuery === term ? "border-white/40 bg-white/15 text-white" : "border-white/10 bg-white/[0.03] text-white/60 hover:border-white/30"}`}
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              )}
               {photos.length > 0 ? (() => {
                 const visible = photos.slice(0, visiblePhotoCount);
-                const hasMore = visiblePhotoCount < photos.length;
                 return (
                   <>
                     <div className="grid grid-cols-3 gap-2">
@@ -2229,15 +2249,26 @@ export const Phase3ArtFactoryES = ({ onNext, onBack, initialMode = "ad", lockMod
                         </button>
                       ))}
                     </div>
-                    {hasMore && (
+                    <div className="mt-3 flex gap-2">
                       <button
-                        onClick={() => setVisiblePhotoCount((n) => n + 3)}
-                        className="w-full mt-3 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:bg-white/[0.06] transition-all flex items-center justify-center gap-2"
+                        type="button"
+                        onClick={showMorePhotos}
+                        disabled={searchingPhotos}
+                        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 py-2.5 text-sm font-semibold text-white/60 transition-all hover:bg-white/[0.06] disabled:opacity-50"
                       >
                         <Plus className="w-4 h-4" />
-                        Ver mais fotos ({photos.length - visiblePhotoCount} restantes)
+                        Ver más fotos
                       </button>
-                    )}
+                      {visiblePhotoCount > 3 && (
+                        <button
+                          type="button"
+                          onClick={() => setVisiblePhotoCount(3)}
+                          className="flex-1 rounded-xl border border-white/10 py-2.5 text-sm font-semibold text-white/60 transition-all hover:bg-white/[0.06]"
+                        >
+                          Ver menos
+                        </button>
+                      )}
+                    </div>
                   </>
                 );
               })() : (

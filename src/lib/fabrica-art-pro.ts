@@ -44,7 +44,22 @@ export interface ProPrice {
 
 export interface ProContact { icon: string; value: string }
 
+const AUTO_VARIANT_KEY = "fabrica_art_next_variant";
+
+/** Rodízio automático: reserva os próximos `count` modelos e devolve o primeiro. Só repete depois de passar por todos. */
+export function takeAutoVariant(count = 1): number {
+  let start = 0;
+  try {
+    const saved = Number.parseInt(localStorage.getItem(AUTO_VARIANT_KEY) || "0", 10);
+    if (Number.isFinite(saved) && saved >= 0 && saved < PRO_TOTAL_VARIANTS) start = saved;
+    localStorage.setItem(AUTO_VARIANT_KEY, String((start + count) % PRO_TOTAL_VARIANTS));
+  } catch { /* sem localStorage: começa do primeiro */ }
+  return start;
+}
+
 export interface ProArtModel {
+  /** O usuário escreveu o próprio título: ele substitui o nome do destino e os modelos não acrescentam "Conheça". */
+  customHeading?: boolean;
   ctx: CanvasRenderingContext2D;
   width: number;
   height: number;
@@ -564,9 +579,11 @@ async function layoutV1(m: ProArtModel) {
     y += kickerText(ctx, m, x, y, accent, "left", 22 * K * k, dry) + 10;
     // faixa do título
     const rs = (F.story ? 80 : 64) * K * k;
-    const t1 = m.isExperience ? "Viva" : "Conheça";
-    const mm = measurePara(ctx, `${m.destination}!`, panelW + (F.story ? 90 : 120) - x - 40, { weight: 900, size: rs, family: f.display, color: "", maxLines: 2, lineHeight: rs });
-    const ribbonH = 30 + rs * 0.78 + mm.lines.length * mm.lh + 26;
+    const t1 = m.customHeading ? "" : m.isExperience ? "Viva" : "Conheça";
+    const headingV1 = m.customHeading ? m.destination : `${m.destination}!`;
+    const t1H = m.customHeading ? 0 : rs * 0.78;
+    const mm = measurePara(ctx, headingV1, panelW + (F.story ? 90 : 120) - x - 40, { weight: 900, size: rs, family: f.display, color: "", maxLines: 2, lineHeight: rs });
+    const ribbonH = 30 + t1H + mm.lines.length * mm.lh + 26;
     if (!dry) {
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.25)";
@@ -580,7 +597,7 @@ async function layoutV1(m: ProArtModel) {
       setFont(ctx, 400, rs * 0.78, f.display);
       ctx.fillText(t1, x, y + 30 + rs * 0.62);
       setFont(ctx, 900, mm.size, f.display);
-      mm.lines.forEach((ln, i) => ctx.fillText(ln, x, y + 30 + rs * 0.78 + (i + 1) * mm.lh - mm.lh * 0.1));
+      mm.lines.forEach((ln, i) => ctx.fillText(ln, x, y + 30 + t1H + (i + 1) * mm.lh - mm.lh * 0.1));
     }
     y += ribbonH + 36;
     if (m.travelPeriod || m.city) {
@@ -643,7 +660,7 @@ async function layoutV2(m: ProArtModel) {
   const K = F.story ? 1.2 : 1;
 
   // faixa de título (medida fora do conteúdo porque fica sobre a emenda)
-  const text = `${m.isExperience ? "Viva" : "Conheça"} ${m.destination}!`;
+  const text = m.customHeading ? m.destination : `${m.isExperience ? "Viva" : "Conheça"} ${m.destination}!`;
   const rsize = fitSize(ctx, text, width - x - 40, 900, (F.story ? 76 : 66) * K, f.display, 36);
   const ribbonW = Math.ceil(ctx.measureText(text).width);
   const ribbonH = Math.round(rsize * 1.5);

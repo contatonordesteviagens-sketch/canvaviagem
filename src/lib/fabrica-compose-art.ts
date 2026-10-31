@@ -211,6 +211,8 @@ interface ComposeTravelAdOptions {
   /** Forca uma variante específica (0..2 para Sua Imagem + Oferta + 1:1). Quando definido, ignora variation%N. */
   forceVariant?: number;
   /** Quando definido, sobrescreve o pool aleatorio de headlines e usa este texto como título principal em todas as variantes. */
+  /** Título escrito pelo usuário: nos layouts pro, aparece no lugar do nome do destino. */
+  customHeading?: string;
   titleOverride?: string;
   /** Pool de variacÁes de título (uma por variante). Se fornecido, tem prioridade sobre titleOverride: usa-se titleVariations[variantIndex % len]. */
   titleVariations?: string[];
@@ -5436,7 +5438,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       image,
       primary: primaryColor || "#0c2340",
       secondary: secondaryColor || "#ffd400",
-      destination: destFmt || destination || "Destino",
+      destination: sanitizeAdText(options.customHeading || "") || destFmt || destination || "Destino",
+      customHeading: Boolean(sanitizeAdText(options.customHeading || "")),
       city: "", // sem campo "saindo de" no formulário do anúncio: nunca inventar a saída
       promoName: (promoName || (isExperience ? "Experiência exclusiva" : "Oferta especial")).trim(),
       headline: titleText || (isExperience ? headlinePool[0] : `Pacote ${destFmt || destination}`),
