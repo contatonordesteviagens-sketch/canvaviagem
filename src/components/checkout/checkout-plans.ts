@@ -50,6 +50,9 @@ export const BLACK_FRIDAY_PLANS: typeof CHECKOUT_PLANS = {
   annual: { ...CHECKOUT_PLANS.annual, price: "R$ 241", priceLong: "R$ 241,00", valueCents: 24100 },
 };
 
+/** A oferta fecha sozinha às 23h59 de 30/11 (Brasília). As funções create-checkout e woovi têm a mesma data. */
+export const isBlackFridayOpen = () => Date.now() < Date.parse("2026-12-01T03:00:00Z");
+
 export const plansFor = (offer: CheckoutOffer) => (offer ? BLACK_FRIDAY_PLANS : CHECKOUT_PLANS);
 
 export function checkoutPath(cycle: CheckoutCycle, method?: "cartao" | "pix") {

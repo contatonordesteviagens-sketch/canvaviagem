@@ -94,7 +94,7 @@ async function firstName(db: ReturnType<typeof adminClient>, userId: string | nu
   return "";
 }
 
-async function sendOne(email: string, kind: RecoveryKind, vars: { firstName: string; payUrl: string }) {
+async function sendOne(email: string, kind: RecoveryKind, vars: { firstName: string; payUrl: string; neverSubscribed?: boolean }) {
   const resendKey = Deno.env.get("RESEND_API_KEY");
   if (!resendKey) throw new Error("RESEND_API_KEY não configurado");
   const unsub = await unsubscribeUrl(email);
@@ -112,7 +112,9 @@ async function sendOne(email: string, kind: RecoveryKind, vars: { firstName: str
   if (error) throw new Error(error.message ?? String(error));
 }
 
-const BF_KINDS: BlackFridayKind[] = ["bf6", "bf5", "bf4", "bf3", "bf2", "bf1"];
+const BF_KINDS: BlackFridayKind[] = ["bf6", "bf5", "bf3", "bf4", "bf2", "bf1"]; // do mais tardio ao mais cedo
+const BF_LEAD_WAIT_HOURS = 72;
+const bfRunning = () => Date.now() >= Date.parse(BF_CAMPAIGN.start) && Date.now() < Date.parse(BF_CAMPAIGN.end);
 
 /** Link que entra logado e abre a página, com a origem do e-mail para o rastreamento. */
 async function campaignLink(db: ReturnType<typeof adminClient>, email: string, path: string, medium: string, campaign: string) {
@@ -124,13 +126,13 @@ async function campaignLink(db: ReturnType<typeof adminClient>, email: string, p
 }
 
 /**
- * Campanha da Black Friday: não faz nada enquanto BF_CAMPAIGN.start estiver vazio.
+ * Campanha da Black Friday: não faz nada fora das datas de BF_CAMPAIGN.
  * Ex-assinantes recebem a sequência bf1 a bf6; quem deixou o e-mail entra 3 dias depois de deixar;
  * assinante ativo recebe só "novidades". Cada tipo sai 1 vez por e-mail.
  */
 async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number) {
-  const startMs = BF_CAMPAIGN.start ? Date.parse(BF_CAMPAIGN.start) : NaN;
-  if (!BF_CAMPAIGN.endLabel || !Number.isFinite(startMs) || Date.now() < startMs || limit <= 0) return { active: false, sent: 0 };
+  const startMs = Date.parse(BF_CAMPAIGN.start);
+  if (Date.now() < Date.parse(BF_CAMPAIGN.novidades) || Date.now() >= Date.parse(BF_CAMPAIGN.end) || limit <= 0) return { active: false, sent: 0 };
 
   const { data: subs } = await db.from("subscriptions").select("user_id,status,current_period_end");
   const isActive = (s: any) => ["active", "trialing"].includes(s.status) && (!s.current_period_end || Date.parse(s.current_period_end) > Date.now());
@@ -147,9 +149,10 @@ async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number)
 
   const { data: captures } = await db.from("email_captures").select("email,first_seen_at,metadata");
   const leads = (captures ?? [])
-    .filter((c: any) => (c.metadata?.funnel === "inicio" || String(c.metadata?.redirect ?? "").startsWith("/onboarding")) && Date.now() - Date.parse(c.first_seen_at) >= 72 * HOUR)
+    .filter((c: any) => (c.metadata?.funnel === "inicio" || String(c.metadata?.redirect ?? "").startsWith("/onboarding")) && Date.now() - Date.parse(c.first_seen_at) >= BF_LEAD_WAIT_HOURS * HOUR)
     .map((c: any) => String(c.email ?? "").toLowerCase().trim())
     .filter((email: string) => email && !active.has(email));
+  const neverSubscribed = new Set(leads.filter((email: string) => !former.has(email)));
   for (const email of leads) former.add(email);
 
   const { data: unsubs } = await db.from("email_unsubscribes").select("email");
@@ -157,7 +160,7 @@ async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number)
   const skip = new Set((unsubs ?? []).map((u: any) => u.email));
   const sentKinds = new Set((logs ?? []).map((l: any) => `${l.email}:${l.kind}`));
   const days = (Date.now() - startMs) / (24 * HOUR);
-  const due = BF_KINDS.find((k) => days >= BF_SCHEDULE_DAYS[k]);
+  const due = days >= 0 ? BF_KINDS.find((k) => days >= BF_SCHEDULE_DAYS[k]) : undefined;
 
   const queue: { email: string; kind: RecoveryKind }[] = [];
   if (due) for (const email of former) if (!skip.has(email) && !sentKinds.has(`${email}:${due}`)) queue.push({ email, kind: due });
@@ -172,7 +175,7 @@ async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number)
       const url = item.kind === "novidades"
         ? await campaignLink(db, item.email, "/fabrica", "novidades", "novidades")
         : await campaignLink(db, item.email, "/black-friday", "winback", item.kind);
-      await sendOne(item.email, item.kind, { firstName: await firstName(db, null, item.email), payUrl: url });
+      await sendOne(item.email, item.kind, { firstName: await firstName(db, null, item.email), payUrl: url, neverSubscribed: neverSubscribed.has(item.email) });
       sent++;
     } catch (err) {
       console.error("[BLACK-FRIDAY]", (err as Error).message);
@@ -223,7 +226,10 @@ Deno.serve(async (req) => {
     if (!adminEmail && !isServer) return json({ error: "Só admin" }, 403);
     const kind: RecoveryKind = ["pronta", "desconto", "contato", "lead1", "lead2", "lead3", "lead4", "lead5", "lead6", "bf1", "bf2", "bf3", "bf4", "bf5", "bf6", "novidades"].includes(body.kind) ? body.kind : "pronta";
     const to = String(body.test_to).toLowerCase().trim();
-    await sendOne(to, kind, { firstName: "Lucas", payUrl: `${canonicalSiteUrl()}/checkout?plano=annual&metodo=pix` });
+    const testUrl = kind.startsWith("bf")
+      ? `${canonicalSiteUrl()}/black-friday?utm_source=email&utm_medium=winback&utm_campaign=${kind}`
+      : `${canonicalSiteUrl()}/checkout?plano=annual&metodo=pix`;
+    await sendOne(to, kind, { firstName: "Lucas", payUrl: testUrl, neverSubscribed: Boolean(body.never_subscribed) });
     return json({ test: true, sent: kind, to });
   }
 
@@ -251,12 +257,14 @@ Deno.serve(async (req) => {
   // Quem deixou o e-mail na página inicial ou fez o quiz e não chegou ao pagamento.
   const leadEmails = new Set<string>();
   const leadSince = new Date(Date.now() - LEAD_MAX_AGE_HOURS * HOUR).toISOString();
-  const { data: captures } = await db.from("email_captures").select("email,last_seen_at,metadata").gte("last_seen_at", leadSince);
+  const { data: captures } = await db.from("email_captures").select("email,first_seen_at,last_seen_at,metadata").gte("last_seen_at", leadSince);
   for (const c of captures ?? []) {
     const meta = (c.metadata ?? {}) as { funnel?: string; redirect?: string | null };
     if (meta.funnel !== "inicio" && !String(meta.redirect ?? "").startsWith("/onboarding")) continue;
     const email = String(c.email ?? "").toLowerCase().trim();
     if (!email || byEmail.has(email)) continue;
+    // Durante a campanha, quem já entrou nela não recebe também a sequência de preço cheio.
+    if (bfRunning() && Date.now() - Date.parse(c.first_seen_at) >= BF_LEAD_WAIT_HOURS * HOUR) continue;
     byEmail.set(email, { email, userId: null, plan: "annual", method: "pix", at: Date.parse(c.last_seen_at), paid: false });
     leadEmails.add(email);
   }

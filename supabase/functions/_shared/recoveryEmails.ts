@@ -14,10 +14,16 @@ export const RECOVERY_WHATSAPP = "5585986411294";
 export const RECOVERY_DISCOUNT = 20;
 export const RECOVERY_SCHEDULE_HOURS: Record<"pronta" | "desconto" | "contato", number> = { pronta: 1, desconto: 72, contato: 168 };
 // Quem deixou o e-mail ou fez o quiz e não comprou: 6 e-mails, com cerca de 2 dias de intervalo.
-// Black Friday: desligada até BF_CAMPAIGN.start ter data. Só depois disso sai e-mail para a base.
-// Dias contados do início da campanha. Quem deixou o e-mail só entra 3 dias depois de deixar.
-export const BF_CAMPAIGN: { start: string | null; endLabel: string } = { start: null, endLabel: "" };
-export const BF_SCHEDULE_DAYS: Record<BlackFridayKind, number> = { bf1: 0, bf2: 2, bf3: 4, bf4: 6, bf5: 8, bf6: 10 };
+// Black Friday: 19/11 a 30/11. Assinante ativo recebe "novidades" 2 dias antes. Horários em UTC (9h de Brasília).
+// Dias contados do início: 19, 23, 25, 27 (a conta dos preços cai na própria Black Friday), 29 e 30/11.
+// Quem deixou o e-mail só entra 3 dias depois de deixar. Fechada a data, não sai mais nada.
+export const BF_CAMPAIGN = {
+  novidades: "2026-11-17T12:00:00Z",
+  start: "2026-11-19T12:00:00Z",
+  end: "2026-12-01T03:00:00Z",
+  endLabel: "30/11",
+};
+export const BF_SCHEDULE_DAYS: Record<BlackFridayKind, number> = { bf1: 0, bf2: 4, bf4: 6, bf3: 8, bf5: 10, bf6: 11 };
 export const LEAD_SCHEDULE_HOURS: Record<LeadKind, number> = { lead1: 1, lead2: 48, lead3: 96, lead4: 144, lead5: 192, lead6: 240 };
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -58,13 +64,14 @@ export function renderRecoveryEmail(kind: RecoveryKind, vars: {
   firstName: string;
   payUrl: string;          // e-mail 1: link que entra logado e abre o pagamento
   unsubscribeUrl: string;
+  neverSubscribed?: boolean; // Black Friday: quem só deixou o e-mail não pode ler "você assinou" nem "você saiu".
 }): { subject: string; html: string } {
   const first = (vars.firstName || "").trim();
   const name = esc(first);
   // Sem nome cadastrado (quase todo lead só tem e-mail): saudação sem nome.
   const greeting = first ? `Fala, <strong>${name}</strong>.` : "Fala, tudo bem?";
 
-  if (kind.startsWith("bf") || kind === "novidades") return renderBlackFridayEmail(kind as BlackFridayKind | "novidades", greeting, vars.payUrl, vars.unsubscribeUrl);
+  if (kind.startsWith("bf") || kind === "novidades") return renderBlackFridayEmail(kind as BlackFridayKind | "novidades", greeting, vars.payUrl, vars.unsubscribeUrl, Boolean(vars.neverSubscribed));
   if (kind.startsWith("lead")) return renderLeadEmail(kind as LeadKind, first, greeting, vars.payUrl, vars.unsubscribeUrl);
 
   if (kind === "pronta") {
@@ -176,7 +183,7 @@ function renderLeadEmail(kind: LeadKind, first: string, greeting: string, url: s
   ]);
 }
 
-function renderBlackFridayEmail(kind: BlackFridayKind | "novidades", greeting: string, url: string, unsub: string): { subject: string; html: string } {
+function renderBlackFridayEmail(kind: BlackFridayKind | "novidades", greeting: string, url: string, unsub: string, neverSubscribed: boolean): { subject: string; html: string } {
   const hello = p(greeting);
   const go = (label: string) => btn(label, url, "#6440e6");
   const mail = (subject: string, preheader: string, parts: string[]) => ({
@@ -193,6 +200,15 @@ function renderBlackFridayEmail(kind: BlackFridayKind | "novidades", greeting: s
       go("Abrir minha conta →"),
     ]);
   }
+  if (kind === "bf1" && neverSubscribed) {
+    return mail("Você deixou seu e-mail e parou aí", "Sem problema. Mas abri uma condição.", [
+      p(`Você deixou seu e-mail no Canva Viagem e não chegou a assinar.`),
+      p(`Talvez não fosse a hora. Talvez tenha ficado na dúvida se ia usar de verdade.`),
+      p(`Por isso, liberei a Black Vitalícia: metade do preço, para sempre. Você entra com esse valor e renova sempre por ele.`),
+      p(`O mensal, que hoje é R$ 97, fica R$ 48,50.`),
+      go("Quero entrar pela metade →"),
+    ]);
+  }
   if (kind === "bf1") {
     return mail("Talvez você tenha ficado chateado", "E eu preciso te pedir desculpas.", [
       p(`Você confiou na gente e assinou o Canva Viagem.`),
@@ -201,6 +217,14 @@ function renderBlackFridayEmail(kind: BlackFridayKind | "novidades", greeting: s
       p(`E para me redimir com quem já confiou uma vez, liberei a Black Vitalícia: metade do preço, para sempre. Você entra com esse valor e renova sempre por ele.`),
       p(`O mensal, que hoje é R$ 97, fica R$ 48,50. Topa me dar mais uma chance?`),
       go("Quero voltar pela metade →"),
+    ]);
+  }
+  if (kind === "bf2" && neverSubscribed) {
+    return mail("O que sai pronto aqui dentro", "Veja antes de decidir.", [
+      p(`Não quero que você decida pela minha palavra. Quero que veja.`),
+      p(`Você fala o destino, os dias e o valor. A arte sai pronta, com a sua logo e o seu WhatsApp.`),
+      p(`São 12 modelos de anúncio, e cada vez que você gera, sai um diferente. O carrossel sai pronto para baixar. A página do pacote também.`),
+      go("Ver o que sai pronto →"),
     ]);
   }
   if (kind === "bf2") {
@@ -224,7 +248,7 @@ function renderBlackFridayEmail(kind: BlackFridayKind | "novidades", greeting: s
       p(`Cliente chamando no WhatsApp, pacote para fechar, e ainda falta o post de hoje.`),
       p(`É aí que o Instagram da agência para.`),
       p(`Foi para esse dia que eu refiz tudo. Você resolve o post em poucos minutos e volta para o que vende: conversar com o cliente.`),
-      go("Voltar pela metade do preço →"),
+      go(neverSubscribed ? "Entrar pela metade do preço →" : "Voltar pela metade do preço →"),
     ]);
   }
   if (kind === "bf5") {
@@ -237,7 +261,8 @@ function renderBlackFridayEmail(kind: BlackFridayKind | "novidades", greeting: s
   return mail("Me responde uma coisa?", "É o último e-mail sobre isso.", [
     p(`Este é o último e-mail que mando sobre a Black Vitalícia.`),
     p(`Se não for a hora, tudo bem, e obrigado por ter confiado na gente.`),
-    p(`Só me conta em uma frase o que fez você sair. É só responder este e-mail.`),
-    go("Quero voltar pela metade →"),
+    p(neverSubscribed ? `Só me conta em uma frase o que te travou. É só responder este e-mail.` : `Só me conta em uma frase o que fez você sair. É só responder este e-mail.`),
+    p(`A condição fecha hoje, às 23h59.`),
+    go(neverSubscribed ? "Quero entrar pela metade →" : "Quero voltar pela metade →"),
   ]);
 }

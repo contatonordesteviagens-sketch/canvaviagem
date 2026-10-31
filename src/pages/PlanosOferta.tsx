@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowRight, Check, ChevronDown, Globe, Images, Infinity as InfinityIcon, LayoutTemplate, Lock, Megaphone,
@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { useTrackUtm, useAssociateUtmToUser } from "@/hooks/useTrackUtm";
-import { checkoutPath, type CheckoutCycle } from "@/components/checkout/checkout-plans";
+import { checkoutPath, isBlackFridayOpen, type CheckoutCycle } from "@/components/checkout/checkout-plans";
 import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
 import logo from "@/assets/logo.png";
 import "@/components/cv-cream/cream.css";
@@ -60,20 +60,18 @@ const FAQ = [
 ];
 
 const CYCLES: CheckoutCycle[] = ["monthly", "semiannual", "annual"];
-// Fechar aqui e nas funções create-checkout e woovi quando a campanha acabar.
-const BLACK_FRIDAY_OPEN = true;
 
 export default function PlanosOferta({ variant = "lancamento" }: { variant?: Variant }) {
   useTrackUtm();
   useAssociateUtmToUser();
   const navigate = useNavigate();
+  const { search } = useLocation();
   const [params] = useSearchParams();
   const { user, subscription } = useAuth();
   const { track } = useEntitlements();
   const [cycle, setCycle] = useState<CheckoutCycle>("annual");
   const tracked = useRef(false);
   const isBf = variant === "black-friday";
-  const canBuy = !isBf || BLACK_FRIDAY_OPEN;
   const price = PRICES[variant][cycle];
 
   useEffect(() => {
@@ -87,7 +85,6 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
   }, [isBf, subscription.subscribed, navigate]);
 
   const goToCheckout = (source: string) => {
-    if (!canBuy) return;
     track("plan_selected", { billing_cycle: cycle, feature: `planos_${variant}`, source });
     trackMetaEvent("InitiateCheckout", { content_name: `Canva Viagem ${price.label}`, content_category: `planos_${variant}` });
     const url = new URLSearchParams(checkoutPath(cycle).split("?")[1]);
@@ -97,11 +94,12 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
     navigate(`/checkout?${url.toString()}`);
   };
 
-  const ctaLabel = canBuy ? "Assinar e começar" : "Abre na Black Friday";
+  // Passou o prazo: a página da oferta vira a de preço normal, mantendo a origem do link.
+  if (isBf && !isBlackFridayOpen()) return <Navigate to={`/planos${search}`} replace />;
 
   const renderCta = (source: string, className = "") => (
-    <button type="button" disabled={!canBuy} onClick={() => goToCheckout(source)} className={`cv-btn h-14 w-full text-[16px] ${className}`}>
-      {ctaLabel} {canBuy && <ArrowRight className="h-5 w-5" />}
+    <button type="button" onClick={() => goToCheckout(source)} className={`cv-btn h-14 w-full text-[16px] ${className}`}>
+      Assinar e começar <ArrowRight className="h-5 w-5" />
     </button>
   );
 
@@ -130,6 +128,7 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
             <p className="plan-kicker">BLACK VITALÍCIA</p>
             <h1 className="mt-2 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em]">Metade do preço. Para sempre.</h1>
             <p className="plan-muted mt-2 text-[15px] leading-6">Não é só no primeiro mês. Você entra com esse valor e renova sempre por ele, enquanto continuar assinando, em qualquer plano.</p>
+            <p className="mt-3 text-[13px] font-bold">Fecha em 30/11, às 23h59.</p>
           </section>
         ) : (
           <section className="plan-card p-5">

@@ -24,7 +24,8 @@ export const PIX_PLANS: Record<PixPlan, { valueCents: number; days: number; prod
 export const PIX_EXPIRES_IN_SECONDS = 60 * 60;
 
 // Black Friday: 50% para sempre. Quem pagou com esse valor renova com esse valor, mesmo depois de a campanha fechar.
-export const BLACK_FRIDAY_OPEN = true;
+// A compra nova fecha sozinha às 23h59 de 30/11 (Brasília).
+export const isBlackFridayOpen = () => Date.now() < Date.parse("2026-12-01T03:00:00Z");
 export const PIX_BLACK_FRIDAY_CENTS: Record<PixPlan, number> = { monthly: 4850, semiannual: 17350, annual: 24100 };
 
 export function isPixPlan(value: unknown): value is PixPlan {

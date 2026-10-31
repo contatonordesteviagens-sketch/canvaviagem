@@ -60,7 +60,8 @@ const sanitizeInternalPath = (value: unknown) => {
 };
 
 // Black Friday: preços recorrentes com 50%, para sempre. IDs públicos da Stripe.
-const BLACK_FRIDAY_OPEN = true;
+// Fecha sozinha às 23h59 de 30/11 (Brasília). Quem já entrou segue renovando com o mesmo preço na Stripe.
+const BLACK_FRIDAY_ENDS_AT = Date.parse("2026-12-01T03:00:00Z");
 const BLACK_FRIDAY_PRICES: Record<BillingCycle, string> = {
   monthly: "price_1UVxwiLXUoWoiE4T1YfQBodb",
   semiannual: "price_1UWgEOLXUoWoiE4TRWiF0jxw",
@@ -160,7 +161,16 @@ serve(async (req) => {
     try {
       const body = await req.json();
       if (body?.ui_mode === "embedded") uiMode = "embedded";
-      if (body?.offer === "black-friday" && BLACK_FRIDAY_OPEN) offer = "black-friday";
+      if (body?.offer === "black-friday") {
+        // Com a oferta fechada, recusa em vez de cobrar o preço cheio de quem viu a metade.
+        if (Date.now() >= BLACK_FRIDAY_ENDS_AT) {
+          return new Response(JSON.stringify({ error: "Oferta encerrada" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          });
+        }
+        offer = "black-friday";
+      }
       if (body?.billing_cycle === "semiannual" || body?.billing_cycle === "annual") {
         requestedCycle = body.billing_cycle;
       }
