@@ -232,8 +232,8 @@ export const FEITO: { data: string; itens: string[] }[] = [
   {
     data: "01/11",
     itens: [
-      "Artes do teste trocadas para os Modelos 1, 5 e 9. O Modelo 6, do cartão branco com sobra, saiu do rodízio.",
-      "Quiz de 19 para 10 telas, com prints de clientes antes do preço.",
+      "Artes do teste trocadas para os Modelos 1, 5 e 2. O Modelo 6, do cartão branco com sobra, saiu do rodízio.",
+      "Quiz de 19 para 10 telas, 6 perguntas, com prints de clientes antes do preço. As 3 artes passam inteiras na primeira tela.",
       "Limite de 10 áudios por dia por cliente, com aviso só no nono.",
       "Pixel da INFOS ALFA ligado no site, só no navegador por enquanto.",
       "Arte de teste vale uma vez por aparelho: recarregar mostra as mesmas artes. Imagem menor, marca em três linhas e sem clique direito.",

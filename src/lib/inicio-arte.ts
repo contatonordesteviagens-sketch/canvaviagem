@@ -50,8 +50,8 @@ export const TRIAL_DESTINOS: TrialDestino[] = [
 export const trialPhotoUrl = (photo: number, width: number) =>
   `https://images.pexels.com/photos/${photo}/pexels-photo-${photo}.jpeg?auto=compress&cs=tinysrgb&w=${width}`;
 
-// Modelos 1, 5 e 9: bloco de cor em cima, moldura de cor e foto inteira com o destino grande.
-const TRIAL_VARIANTS = [0, 4, 8];
+// Modelos 1, 5 e 2: bloco de cor em cima, moldura de cor e painel ao lado da foto.
+const TRIAL_VARIANTS = [0, 4, 1];
 const DEFAULT_COLORS = { primary: "#0B3B8C", secondary: "#FFD400" };
 // Boa para ver no celular, pequena demais para virar anúncio.
 const OUTPUT_SIZE = 540;
@@ -142,8 +142,8 @@ function drawTrialLogo(ctx: CanvasRenderingContext2D, canvasWidth: number, logo:
   const chipW = width + pad * 2;
   const chipH = height + pad * 2;
   const x = canvasWidth - chipW - (variant === 4 ? 30 : 18);
-  // Sempre sobre a foto, longe do texto: canto de cima no Modelo 9, fim da foto no 5, embaixo no 1.
-  const y = variant === 8 ? 18 : variant === 4 ? 287 - chipH - 12 : canvasWidth - 32 - chipH - 30;
+  // Sempre sobre a foto, longe do texto: canto de cima no Modelo 2, fim da foto no 5, embaixo no 1.
+  const y = variant === 1 ? 18 : variant === 4 ? 287 - chipH - 12 : canvasWidth - 32 - chipH - 30;
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.28)";
   ctx.shadowBlur = 18;

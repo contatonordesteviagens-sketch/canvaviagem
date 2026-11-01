@@ -27,7 +27,7 @@ import depoimento3 from "@/assets/depoimento3.jpg";
 type Icon = ComponentType<{ className?: string }>;
 type Option = { id: string; label: string; hint: string; icon: Icon };
 type QuestionStep = { kind: "question"; key: AnswerKey; title: string; sub: string; multi?: boolean; options: Option[] };
-type ScreenStep = { kind: "intro" | "sample" | "building" | "result" | "proof" | "offer" };
+type ScreenStep = { kind: "intro" | "result" | "proof" | "offer" };
 type Step = QuestionStep | ScreenStep;
 type AnswerKey = "objetivo" | "ferramenta" | "desafio" | "momento" | "orcamentos" | "destinos" | "travas" | "prazo";
 type Answers = Partial<Record<AnswerKey, string[]>>;
@@ -38,6 +38,15 @@ const STORAGE_KEY = "cv-onboarding-v3";
 
 const STEPS: Step[] = [
   { kind: "intro" },
+  {
+    kind: "question", key: "objetivo", title: "O que mais vendas mudariam pra você?", sub: "Seja sincero, isso muda tudo o que vamos recomendar",
+    options: [
+      { id: "contas", label: "Pagar as contas do mês", hint: "Ter um caixa previsível", icon: Wallet },
+      { id: "primeira", label: "Fazer a primeira venda", hint: "Sair do zero de vez", icon: Sprout },
+      { id: "emprego", label: "Largar o emprego", hint: "Viver só da agência", icon: Briefcase },
+      { id: "crescer", label: "Crescer a agência", hint: "Vender mais do que já vendo", icon: TrendingUp },
+    ],
+  },
   {
     kind: "question", key: "ferramenta", title: "Como você cria seus posts hoje?", sub: "Isso decide quanto trabalho a gente tira das suas mãos",
     options: [
@@ -54,6 +63,15 @@ const STEPS: Step[] = [
       { id: "ninguem", label: "Posto e ninguém chama", hint: "Curtidas sem orçamento", icon: MessageCircleOff },
       { id: "tempo", label: "Demora demais pra criar", hint: "Uma arte leva a tarde toda", icon: Clock },
       { id: "amador", label: "Meus posts parecem amadores", hint: "Não passam confiança", icon: Frown },
+    ],
+  },
+  {
+    kind: "question", key: "momento", title: "Em que momento a sua agência está?", sub: "Não existe resposta errada",
+    options: [
+      { id: "comecando", label: "Começando agora", hint: "Ainda não vendi", icon: Sprout },
+      { id: "pouco", label: "Já vendi, mas pouco", hint: "Vendas de vez em quando", icon: Rocket },
+      { id: "todo-mes", label: "Vendo todo mês", hint: "Quero escalar", icon: TrendingUp },
+      { id: "equipe", label: "Tenho equipe", hint: "Agência estruturada", icon: Users },
     ],
   },
   {
@@ -75,8 +93,6 @@ const STEPS: Step[] = [
       { id: "excursao", label: "Excursões", hint: "Bate-volta e grupos", icon: Bus },
     ],
   },
-  { kind: "sample" },
-  { kind: "building" },
   { kind: "result" },
   { kind: "proof" },
   { kind: "offer" },
@@ -88,10 +104,6 @@ const FIXES: Record<string, { title: string; fix: string; icon: Icon }> = {
   design: { title: "Você não sabe criar postagens", fix: "Anúncio, carrossel e vídeo já vêm prontos. Você só fala o pacote.", icon: Palette },
   tempo: { title: "Você não tem tempo", fix: "Cada arte sai em cerca de 2 minutos, com legenda e logo.", icon: Clock },
   vergonha: { title: "Seu Instagram ainda não parece de agência grande", fix: "Duas semanas de posts profissionais já mudam a cara do perfil.", icon: EyeOff },
-};
-
-const QUIZ_MEDIA = {
-  site: { desktop: "/quiz-media/site-desktop.webp", mobile: "/quiz-media/site-mobile.webp" },
 };
 
 const DESTINO_LABEL: Record<string, string> = {
@@ -111,9 +123,7 @@ function loadState(): { step: number; answers: Answers } {
     if (raw) {
       const parsed = JSON.parse(raw);
       const step = Math.min(Math.max(Number(parsed.step) || 0, 0), TOTAL - 1);
-      // Telas automáticas não devem ser retomadas no meio.
-      const safeStep = STEPS[step]?.kind === "building" ? step + 1 : step;
-      return { step: safeStep, answers: parsed.answers || {} };
+      return { step, answers: parsed.answers || {} };
     }
   } catch { /* storage indisponível */ }
   return { step: 0, answers: {} };
@@ -300,42 +310,80 @@ type ScreenProps = {
 function Screen(props: ScreenProps) {
   switch (props.kind) {
     case "intro": return <Intro onNext={props.onNext} />;
-    case "sample": return <Sample onNext={props.onNext} />;
-    case "building": return <Building onDone={props.onNext} />;
     case "result": return <Result answers={props.answers} destino={props.destino} onNext={props.onNext} />;
     case "proof": return <Proof onNext={props.onNext} />;
     case "offer": return <Offer plan={props.plan} setPlan={props.setPlan} onCheckout={props.onCheckout} />;
   }
 }
 
-/** As artes do teste da página inicial, com a marca d'água, no mesmo leque da primeira tela. */
-function TrialFan({ trial }: { trial: TrialResult }) {
+/** As 3 artes do teste, inteiras: passam sozinhas até a pessoa tocar, e dá para arrastar. */
+function TrialGallery({ trial }: { trial: TrialResult }) {
   const arts = trial.arts.slice(0, 3);
-  const [front, setFront] = useState(Math.min(1, arts.length - 1));
+  const [active, setActive] = useState(0);
+  const scroller = useRef<HTMLDivElement>(null);
+  const touched = useRef(false);
+
+  const show = (index: number) => {
+    const el = scroller.current;
+    const card = el?.children[index] as HTMLElement | undefined;
+    if (!el || !card) return;
+    el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.clientWidth) / 2, behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      if (!touched.current) show((active + 1) % arts.length);
+    }, 2600);
+    return () => window.clearInterval(id);
+  }, [active, arts.length]);
+
+  const onScroll = () => {
+    const el = scroller.current;
+    if (!el) return;
+    const center = el.scrollLeft + el.clientWidth / 2;
+    let nearest = 0;
+    let best = Infinity;
+    Array.from(el.children).forEach((child, i) => {
+      const card = child as HTMLElement;
+      const distance = Math.abs(card.offsetLeft + card.clientWidth / 2 - center);
+      if (distance < best) { best = distance; nearest = i; }
+    });
+    setActive(nearest);
+  };
+
   return (
-    <div className="relative mx-auto mt-7 h-64 w-full max-w-[360px] select-none" onContextMenu={(e) => e.preventDefault()} style={{ WebkitTouchCallout: "none" }}>
-      {arts.map((src, i) => {
-        const isFront = i === front;
-        const side = i < front ? -1 : i > front ? 1 : 0;
-        return (
+    <div className="cv-pop -mx-5 mt-4" style={delay(220)}>
+      <div
+        ref={scroller}
+        onScroll={onScroll}
+        onPointerDown={() => { touched.current = true; }}
+        onContextMenu={(e) => e.preventDefault()}
+        className="no-scrollbar flex select-none snap-x snap-mandatory gap-3 overflow-x-auto px-[15%] pb-2"
+        style={{ WebkitTouchCallout: "none" }}
+      >
+        {arts.map((src, i) => (
+          <div key={src.slice(-40)} className="w-[70%] max-w-[300px] shrink-0 snap-center">
+            <img
+              src={src}
+              alt={`Arte ${i + 1} de ${trial.destino}`}
+              draggable={false}
+              className="pointer-events-none aspect-square w-full rounded-2xl border-4 border-white object-cover shadow-xl"
+            />
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 flex justify-center gap-1.5">
+        {arts.map((src, i) => (
           <button
-            key={src.slice(-40)}
+            key={src.slice(-24)}
             type="button"
-            onClick={() => setFront(i)}
-            aria-label={`Ver a arte ${i + 1} de ${trial.destino}`}
-            className="absolute left-1/2 top-0 transition-all duration-300"
-            style={{
-              width: isFront ? 224 : 150,
-              marginLeft: isFront ? -112 : side < 0 ? -176 : 26,
-              top: isFront ? 0 : 42,
-              zIndex: isFront ? 2 : 1,
-              transform: `rotate(${side * 7}deg)`,
-            }}
-          >
-            <img src={src} alt="" draggable={false} className="pointer-events-none aspect-square w-full rounded-2xl border-4 border-white object-cover shadow-xl" />
-          </button>
-        );
-      })}
+            aria-label={`Ver a arte ${i + 1}`}
+            onClick={() => { touched.current = true; show(i); }}
+            className="h-2.5 w-2.5 rounded-full transition-colors"
+            style={{ background: i === active ? "var(--cv-primary)" : "#d9cfb3" }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -348,37 +396,23 @@ function Intro({ onNext }: { onNext: () => void }) {
         <span className="cv-pop inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 text-[12px] font-semibold" style={{ borderColor: "var(--cv-line)" }}>
           Quiz de 1 minuto
         </span>
-        <h1 className="cv-pop mt-5 text-balance text-[32px] font-extrabold leading-[1.05] tracking-[-0.025em]" style={delay(80)}>
-          {trial ? (
-            <>Suas artes de {trial.destino} <Accent>já estão aqui.</Accent></>
-          ) : (
-            <>Veja o que sai pronto <Accent>para a sua agência.</Accent></>
-          )}
+        <h1 className="cv-pop mt-3 text-balance text-[26px] font-extrabold leading-[1.08] tracking-[-0.025em]" style={delay(80)}>
+          Fale o pacote num áudio. Receba anúncio, carrossel e site <Accent>prontos, com a sua logo.</Accent>
         </h1>
-        <p className="cv-pop mt-3 max-w-[320px] text-[15px] leading-6" style={{ ...delay(160), color: "var(--cv-muted)" }}>
+        <p className="cv-pop mt-2 max-w-[330px] text-[14px] leading-5" style={{ ...delay(160), color: "var(--cv-muted)" }}>
           {trial
-            ? "Toque para ver cada uma. Responda 4 perguntas rápidas e veja o plano para usar essas artes sem marca d'água, com o seu preço e o seu WhatsApp."
-            : "Anúncio, carrossel e site com a sua logo, e vídeos prontos para postar. Responda 4 perguntas rápidas e veja o plano certo para a sua agência."}
+            ? `Estas artes de ${trial.destino} ficaram prontas em segundos. Responda 6 perguntas rápidas e use sem marca d'água, com o seu preço e o seu WhatsApp.`
+            : "E você ainda tem vídeos prontos para postar. Responda 6 perguntas rápidas e veja o plano certo para a sua agência."}
         </p>
       </div>
       {trial ? (
-        <TrialFan trial={trial} />
+        <TrialGallery trial={trial} />
       ) : (
         <div className="cv-pop -mx-5 mt-6" style={delay(220)}>
           <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito no Canva Viagem" />
           <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito no Canva Viagem" slow size="compact" className="mt-1" />
         </div>
       )}
-      <div className="mt-6 flex flex-col items-center gap-2">
-        <span className="rounded-full border bg-white px-3 py-1 text-[12px]" style={{ borderColor: "var(--cv-line)" }}>Fale ou digite · sua logo em tudo · sem limite</span>
-        <div className="flex items-center gap-3 text-[12px] font-semibold" style={{ color: "var(--cv-muted)" }}>
-          <span className="tracking-[1.2px]">PARA</span>
-          <span className="inline-flex items-center gap-1"><Instagram className="h-3.5 w-3.5" /> Feed</span>
-          <span className="inline-flex items-center gap-1"><LayoutTemplate className="h-3.5 w-3.5" /> Stories</span>
-          <span className="inline-flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</span>
-          <span className="inline-flex items-center gap-1"><Globe2 className="h-3.5 w-3.5" /> Site</span>
-        </div>
-      </div>
       <BottomCta onClick={onNext}>Montar meu plano <ArrowRight className="h-4 w-4" /></BottomCta>
     </>
   );
@@ -388,48 +422,6 @@ function Intro({ onNext }: { onNext: () => void }) {
 
 
 
-
-function Sample({ onNext }: { onNext: () => void }) {
-  return (
-    <>
-      <Title sub="Anúncio, carrossel e site com a sua logo.">Veja o que sai para a sua agência. <Accent>Curtiu?</Accent></Title>
-      <div className="cv-pop -mx-5 mt-5" style={delay(150)}>
-        <p className="mb-1 px-5 text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>ANÚNCIOS</p>
-        <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito no Canva Viagem" />
-        <p className="mb-1 mt-3 px-5 text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>CARROSSÉIS</p>
-        <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito no Canva Viagem" slow />
-      </div>
-      <div className="cv-pop mx-auto mt-4 w-full max-w-[240px]" style={delay(300)}>
-        <p className="mb-2 text-center text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>SITE DO PACOTE</p>
-        <SitePreview />
-      </div>
-      <p className="cv-pop mt-3 text-center text-[13px] font-semibold" style={{ ...delay(450), color: "var(--cv-muted)" }}>+ seus clientes organizados em um só lugar</p>
-      <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
-        <button onClick={onNext} className="h-14 rounded-full border bg-white text-[15px] font-semibold" style={{ borderColor: "var(--cv-line)" }}>Não é meu estilo</button>
-        <button onClick={onNext} className="cv-btn h-14 text-[15px]">Postaria isso!</button>
-      </div>
-      <p className="mt-3 text-center text-[12px]" style={{ color: "var(--cv-muted)" }}>De qualquer jeito, a gente ajusta ao seu gosto</p>
-    </>
-  );
-}
-
-/** Print real de um site de demonstração: navegador do computador com o celular por cima. */
-function SitePreview() {
-  return (
-    <div className="relative pb-6 pr-10">
-      <div className="overflow-hidden rounded-xl border bg-white shadow-md" style={{ borderColor: "var(--cv-line)" }}>
-        <div className="flex items-center gap-1 border-b bg-[#f3f1ea] px-2 py-1.5" style={{ borderColor: "#e6e1d2" }}>
-          <i className="h-1.5 w-1.5 rounded-full bg-[#ff5f57]" /><i className="h-1.5 w-1.5 rounded-full bg-[#febc2e]" /><i className="h-1.5 w-1.5 rounded-full bg-[#28c840]" />
-          <span className="mx-auto truncate rounded-full bg-white px-2 text-[8px] text-[#6e6555]">suaagencia.canvaviagem.com</span>
-        </div>
-        <img src={QUIZ_MEDIA.site.desktop} alt="Site de agência feito no Canva Viagem, no computador" loading="lazy" className="block aspect-[984/560] w-full object-cover" />
-      </div>
-      <div className="absolute bottom-0 right-0 w-[86px] overflow-hidden rounded-[16px] border-[4px] border-[#2c261b] bg-white shadow-xl">
-        <img src={QUIZ_MEDIA.site.mobile} alt="O mesmo site no celular" loading="lazy" className="block aspect-[348/600] w-full object-cover" />
-      </div>
-    </div>
-  );
-}
 
 const CRM_LEADS = [
   { name: "Ana", destino: "Gramado" },
@@ -466,66 +458,6 @@ function CrmPreview() {
           </div>
         </div>
       ))}
-    </div>
-  );
-}
-
-function Building({ onDone }: { onDone: () => void }) {
-  const [pct, setPct] = useState(0);
-  const tasks = [
-    { label: "Lendo suas respostas", done: "pronto", at: 25 },
-    { label: "Separando modelos de anúncio, carrossel e site", done: "pronto", at: 55 },
-    { label: "Escrevendo os textos de venda", done: "pronto", at: 80 },
-    { label: "Sugerindo o que postar nas 2 primeiras semanas", done: "pronto", at: 100 },
-  ];
-  useEffect(() => {
-    const id = window.setInterval(() => setPct((p) => Math.min(p + 2, 100)), 70);
-    return () => window.clearInterval(id);
-  }, []);
-  useEffect(() => {
-    if (pct < 100) return;
-    const t = window.setTimeout(onDone, 700);
-    return () => window.clearTimeout(t);
-  }, [pct, onDone]);
-  const r = 58, c = 2 * Math.PI * r;
-  return (
-    <div className="flex flex-1 flex-col items-center pt-8">
-      <h1 className="text-center text-[26px] font-extrabold tracking-[-0.02em]">Montando seu plano</h1>
-      <div className="relative mt-6 h-36 w-36">
-        <svg viewBox="0 0 136 136" className="h-full w-full -rotate-90">
-          <circle cx="68" cy="68" r={r} fill="none" stroke="#e8e2d2" strokeWidth="6" />
-          <circle cx="68" cy="68" r={r} fill="none" stroke="var(--cv-primary)" strokeWidth="6" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)} />
-        </svg>
-        <span className="absolute inset-0 grid place-items-center text-[28px] font-extrabold">{pct}%</span>
-      </div>
-      <div className="mt-8 w-full space-y-3">
-        {tasks.map((t, i) => {
-          const done = pct >= t.at;
-          const active = !done && (i === 0 || pct >= tasks[i - 1].at);
-          return (
-            <div key={t.label} className="flex items-center gap-3 text-[15px]" style={{ opacity: done || active ? 1 : 0.35 }}>
-              <span className="grid h-6 w-6 place-items-center rounded-full border" style={{ background: done ? "var(--cv-primary)" : "transparent", borderColor: done || active ? "var(--cv-primary)" : "#e3dccb" }}>
-                {done ? <Check className="h-3.5 w-3.5 text-white" /> : active && <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--cv-primary)" }} />}
-              </span>
-              <span className="flex-1">{t.label}</span>
-              {done && <span className="text-[13px] font-bold text-[#6440e6]">{t.done}</span>}
-            </div>
-          );
-        })}
-      </div>
-      <div className="cv-card mt-8 w-full p-4">
-        <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>O QUE ESTÁ SAINDO</p>
-        <div className="mt-3 grid grid-cols-2 gap-2 text-[13px] font-semibold">
-          {[["Anúncio feed", Instagram], ["Stories", LayoutTemplate], ["Carrossel", Images], ["Site do pacote", Globe2], ["Vídeos prontos", Video], ["Texto pro WhatsApp", MessageCircle]].map(([label, Icon]) => {
-            const I = Icon as Icon;
-            return (
-              <span key={label as string} className="inline-flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "var(--cv-sand)" }}>
-                <I className="h-4 w-4 text-[#6440e6]" /> {label as string}
-              </span>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 }
