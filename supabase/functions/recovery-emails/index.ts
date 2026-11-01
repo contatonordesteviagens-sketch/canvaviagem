@@ -133,7 +133,7 @@ const COLD_NOT_REAL = /(teste|test[._-]|@test|exemplo|example|mailinator|yopmail
 const COLD_VALID = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 const COLD_TYPO = /(\.con|\.cmo|\.comm)$|@(gmial|gmal|gamil|gnail|hotmal|hotmial|outlok)\./i;
 
-async function runColdList(db: ReturnType<typeof adminClient>, limit: number, dryRun: boolean) {
+async function runColdList(db: ReturnType<typeof adminClient>, limit: number, dryRun: boolean, onlyProven: boolean) {
   const firstSeen = new Map<string, number>();
   const keep = (rawEmail: unknown, at: unknown) => {
     const email = String(rawEmail ?? "").toLowerCase().trim();
@@ -142,17 +142,27 @@ async function runColdList(db: ReturnType<typeof adminClient>, limit: number, dr
     firstSeen.set(email, Math.min(firstSeen.get(email) ?? ms, ms));
   };
   const userEmail = new Map<string, string>();
+  // Prova de que a caixa existe: clicou em um link nosso ou entrou com o Google.
+  // O login guarda todo e-mail digitado, mesmo com erro de digitação, e é daí que vêm as rejeições.
+  const proven = new Set<string>();
   for (let page = 1; ; page++) {
     const { data, error } = await db.auth.admin.listUsers({ page, perPage: 1000 });
     if (error) throw error;
     for (const u of data.users) {
       keep(u.email, u.created_at);
       if (u.email) userEmail.set(u.id, u.email.toLowerCase().trim());
+      if (u.email && (u.app_metadata?.providers ?? []).includes("google")) proven.add(u.email.toLowerCase().trim());
     }
     if (data.users.length < 1000) break;
   }
   const { data: captures } = await db.from("email_captures").select("email,first_seen_at");
   for (const c of captures ?? []) keep(c.email, c.first_seen_at);
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await db.from("magic_link_tokens").select("email").not("used_at", "is", null).range(from, from + 999);
+    if (error) throw error;
+    for (const row of data ?? []) proven.add(String(row.email ?? "").toLowerCase().trim());
+    if ((data?.length ?? 0) < 1000) break;
+  }
 
   // Lista separada: ninguém que já assinou, tentou pagar, pediu para sair ou já recebeu e-mail nosso.
   const [{ data: subs }, { data: pix }, { data: cards }, { data: unsubs }, { data: logs }] = await Promise.all([
@@ -166,10 +176,12 @@ async function runColdList(db: ReturnType<typeof adminClient>, limit: number, dr
   for (const s of subs ?? []) { const e = userEmail.get(s.user_id); if (e) out.add(e); }
   for (const list of [pix, cards, unsubs, logs]) for (const row of list ?? []) out.add(String(row.email ?? "").toLowerCase().trim());
 
-  const queue = [...firstSeen.entries()]
+  const fullQueue = [...firstSeen.entries()]
     .filter(([email]) => !out.has(email) && COLD_VALID.test(email) && !COLD_NOT_REAL.test(email) && !COLD_TYPO.test(email))
     .sort((a, b) => a[1] - b[1]);
-  const base = { fila: queue.length, de: queue[0] ? new Date(queue[0][1]).toISOString().slice(0, 10) : null };
+  const provenQueue = fullQueue.filter(([email]) => proven.has(email));
+  const queue = onlyProven ? provenQueue : fullQueue;
+  const base = { fila: fullQueue.length, fila_comprovada: provenQueue.length, de: queue[0] ? new Date(queue[0][1]).toISOString().slice(0, 10) : null };
   if (dryRun) return { ...base, dry_run: true };
 
   let sent = 0;
@@ -315,7 +327,7 @@ Deno.serve(async (req) => {
   if (body?.cold_list) {
     if (!adminEmail && !isServer) return json({ error: "Só admin" }, 403);
     const limit = Math.max(0, Math.floor(Number(body.limit) || 0));
-    return json(await runColdList(db, limit, Boolean(body.dry_run)));
+    return json(await runColdList(db, limit, Boolean(body.dry_run), Boolean(body.only_proven)));
   }
 
   // ── Envio automático ──
