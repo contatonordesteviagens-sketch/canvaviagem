@@ -1575,6 +1575,22 @@ export type Database = {
         Args: { p_active: boolean; p_reason?: string; p_site_id: string }
         Returns: boolean
       }
+      admin_usage_by_user: {
+        Args: { p_days?: number }
+        Returns: {
+          active_seconds: number
+          events: Json
+          first_art_at: string
+          first_fabrica_at: string
+          last_event_at: string
+          screens: Json
+          sessions: number
+          site_avg_seconds: number
+          site_clicks: number
+          site_visits: number
+          user_id: string
+        }[]
+      }
       admin_user_intelligence: { Args: never; Returns: Json }
       append_webinar_lead_comment: {
         Args: {
