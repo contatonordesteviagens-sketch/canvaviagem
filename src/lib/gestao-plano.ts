@@ -9,7 +9,7 @@ export type ChecklistItem = { id: string; texto: string; quem: Owner; feito?: bo
 export type ChecklistGrupo = { titulo: string; itens: ChecklistItem[] };
 
 export const STATUS_GERAL = [
-  { area: "Lista fria: só deixou o e-mail", estado: "problema", detalhe: "Parada por decisão do Lucas. Dos 20 contatos mais antigos, 5 voltaram (25%). Faltam 208. A conta do Resend está com 13,75% de rejeição nos últimos 15 dias, e o limite é 4%." },
+  { area: "Lista fria: só deixou o e-mail", estado: "problema", detalhe: "Parada por decisão do Lucas. Dos 20 contatos mais antigos, 5 voltaram (25%). Faltam 208, e 133 têm prova de que o e-mail existe. A conta do Resend está com 13,75% de rejeição nos últimos 15 dias, e o limite é 4%." },
   { area: "Página inicial, quiz e captura de e-mail", estado: "ok", detalhe: "Conferido em produção em 31/10." },
   { area: "Artes, carrossel e site da Fábrica", estado: "ok", detalhe: "12 modelos em rodízio, feed e stories. PNG conferido." },
   { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo." },
