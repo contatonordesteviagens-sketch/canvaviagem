@@ -645,6 +645,30 @@ export type Database = {
         }
         Relationships: []
       }
+      fabrica_event_rate_limits: {
+        Row: {
+          fingerprint: string
+          project_id: string
+          request_count: number
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          fingerprint: string
+          project_id: string
+          request_count?: number
+          updated_at?: string
+          window_start: string
+        }
+        Update: {
+          fingerprint?: string
+          project_id?: string
+          request_count?: number
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       fabrica_rate_limits: {
         Row: {
           action: string
@@ -1605,6 +1629,15 @@ export type Database = {
       capture_email: {
         Args: { p_email: string; p_metadata?: Json; p_source?: string }
         Returns: undefined
+      }
+      check_fabrica_event_rate_limit: {
+        Args: {
+          p_fingerprint: string
+          p_limit?: number
+          p_project_id: string
+          p_window_seconds?: number
+        }
+        Returns: boolean
       }
       claim_fabrica_trial: {
         Args: {

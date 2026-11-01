@@ -50,6 +50,20 @@
       "when": 1793491473968,
       "tag": "0006_admin_usage_by_user",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793492035262,
+      "tag": "0007_admin_usage_visitas_antigas",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793492041177,
+      "tag": "0008_fabrica_event_rate_limit",
+      "breakpoints": true
     }
   ]
 }
