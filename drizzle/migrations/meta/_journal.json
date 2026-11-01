@@ -43,6 +43,13 @@
       "when": 1793477328957,
       "tag": "0005_gestao_checklist",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793491473968,
+      "tag": "0006_admin_usage_by_user",
+      "breakpoints": true
     }
   ]
 }
