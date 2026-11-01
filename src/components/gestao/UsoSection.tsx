@@ -168,7 +168,7 @@ export function UsoSection() {
     lista.forEach((e, i) => {
       if (!i) return;
       const anterior = lista[i - 1].valor;
-      const queda = anterior >= 3 ? 1 - e.valor / anterior : 0;
+      const queda = anterior >= 5 ? 1 - e.valor / anterior : 0;
       if (queda > maiorQueda) { maiorQueda = queda; pior = i; }
     });
     return { lista, pior, maiorQueda };
@@ -314,7 +314,6 @@ export function UsoSection() {
               </DialogHeader>
               <div className="flex flex-wrap gap-2">
                 <Badge variant={aberto.ativo ? "default" : "outline"}>{aberto.ativo ? aberto.plan_name : "Sem assinatura ativa"}</Badge>
-                {aberto.plan_value && aberto.ativo && <Badge variant="secondary">{aberto.plan_value}</Badge>}
                 {aberto.utm_source && <Badge variant="outline">Origem: {aberto.utm_source}</Badge>}
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
