@@ -148,7 +148,7 @@ const Obrigado = () => {
       const currency = typeof data.currency === "string" ? data.currency.toUpperCase() : "BRL";
       if (!Number.isFinite(value) || value <= 0) return;
 
-      const purchaseEventId = `purchase_${stableSessionId}`;
+      const purchaseEventId = typeof data.event_id === "string" && data.event_id ? data.event_id : `purchase_${stableSessionId}`;
       trackMetaEvent("Purchase", {
         value,
         currency,

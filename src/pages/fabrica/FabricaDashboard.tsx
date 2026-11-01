@@ -896,7 +896,8 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       <FabricaFirstSteps
         onGo={(target) => {
           if (target === "perfil") {
-            document.getElementById("fabrica-perfil")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            // O microfone fica no topo da tela; os campos para quem prefere digitar vêm logo abaixo das missões.
+            window.scrollTo({ top: 0, behavior: "smooth" });
             return;
           }
           if (target === "pacote") {

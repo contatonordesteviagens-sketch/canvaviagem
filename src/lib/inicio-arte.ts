@@ -5,6 +5,23 @@ import { extractPaletteFromCanvas } from "@/lib/extract-palette";
 export const ONBOARDING_PATH = "/onboarding";
 export const ONBOARDING_DESTINO_KEY = "cv-onboarding-destino";
 export const ONBOARDING_LOGO_KEY = "cv-onboarding-logo";
+const TRIAL_RESULT_KEY = "cv-inicio-artes";
+
+/** O teste vale uma vez por aparelho: quem recarrega a página vê as mesmas artes, e o quiz mostra essas artes. */
+export type TrialResult = { destino: string; arts: string[] };
+
+export function readTrialResult(): TrialResult | null {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(TRIAL_RESULT_KEY) || "null") as TrialResult | null;
+    return parsed?.destino && Array.isArray(parsed.arts) && parsed.arts.length ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveTrialResult(result: TrialResult) {
+  try { localStorage.setItem(TRIAL_RESULT_KEY, JSON.stringify(result)); } catch { /* sem espaço: o teste só não fica guardado */ }
+}
 
 export type TrialDestino = {
   id: string;
@@ -36,7 +53,8 @@ export const trialPhotoUrl = (photo: number, width: number) =>
 // Foto inteira + um cartão forte, cartão no centro e foto ao lado: três caras diferentes do mesmo pacote.
 const TRIAL_VARIANTS = [3, 5, 9];
 const DEFAULT_COLORS = { primary: "#0B3B8C", secondary: "#FFD400" };
-const OUTPUT_SIZE = 720;
+// Boa para ver no celular, pequena demais para virar anúncio.
+const OUTPUT_SIZE = 540;
 const LOGO_MAX_SIZE = 400;
 
 export type TrialLogo = { dataUrl: string; primary: string; secondary: string; lightOnly: boolean };
@@ -118,20 +136,20 @@ export async function prepareTrialLogo(file: File): Promise<TrialLogo> {
 
 /** No teste a logo é o que mais importa: vai grande no canto, em fundo que contrasta com ela. */
 function drawTrialLogo(ctx: CanvasRenderingContext2D, canvasWidth: number, logo: HTMLImageElement, lightOnly: boolean) {
-  const height = 96;
-  const width = Math.min(220, Math.max(height, height * (logo.naturalWidth / logo.naturalHeight)));
-  const pad = 14;
+  const height = 72;
+  const width = Math.min(165, Math.max(height, height * (logo.naturalWidth / logo.naturalHeight)));
+  const pad = 10;
   const chipW = width + pad * 2;
   const chipH = height + pad * 2;
-  const x = canvasWidth - chipW - 24;
-  const y = 24;
+  const x = canvasWidth - chipW - 18;
+  const y = 18;
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.28)";
   ctx.shadowBlur = 18;
   ctx.shadowOffsetY = 6;
   ctx.fillStyle = lightOnly ? "#141414" : "#fff";
   ctx.beginPath();
-  ctx.roundRect(x, y, chipW, chipH, 22);
+  ctx.roundRect(x, y, chipW, chipH, 16);
   ctx.fill();
   ctx.restore();
   const fit = Math.min(width / logo.naturalWidth, height / logo.naturalHeight);
@@ -150,30 +168,32 @@ async function finishTrialArt(url: string, logo: TrialLogo | null): Promise<stri
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   if (logo) drawTrialLogo(ctx, canvas.width, await loadLocalImage(logo.dataUrl), logo.lightOnly);
 
-  // Uma marca grande no meio, que não sai com um corte, e a faixa de teste embaixo.
+  // Marca em três linhas, passando pelo preço e pela logo: não sai com um corte e dá trabalho para apagar.
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(-Math.PI / 7);
-  ctx.font = "800 84px Inter, Arial, sans-serif";
+  ctx.font = "800 58px Inter, Arial, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.lineWidth = 2;
-  ctx.strokeStyle = "rgba(0,0,0,.16)";
-  ctx.fillStyle = "rgba(255,255,255,.3)";
-  ctx.strokeText("CANVA VIAGEM", 0, 0);
-  ctx.fillText("CANVA VIAGEM", 0, 0);
+  ctx.strokeStyle = "rgba(0,0,0,.18)";
+  ctx.fillStyle = "rgba(255,255,255,.34)";
+  for (const offsetY of [-170, 0, 170]) {
+    ctx.strokeText("CANVA VIAGEM", 0, offsetY);
+    ctx.fillText("CANVA VIAGEM", 0, offsetY);
+  }
   ctx.restore();
 
-  const bandHeight = 40;
+  const bandHeight = 32;
   ctx.fillStyle = "rgba(0,0,0,.62)";
   ctx.fillRect(0, canvas.height - bandHeight, canvas.width, bandHeight);
-  ctx.font = "700 18px Inter, Arial, sans-serif";
+  ctx.font = "700 14px Inter, Arial, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#fff";
   ctx.fillText("Arte de teste feita no Canva Viagem", canvas.width / 2, canvas.height - bandHeight / 2);
 
-  return canvas.toDataURL("image/jpeg", 0.82);
+  return canvas.toDataURL("image/jpeg", 0.74);
 }
 
 /** Entrega as artes uma a uma. Se uma falhar, as outras seguem. */

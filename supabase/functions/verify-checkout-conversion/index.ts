@@ -64,7 +64,10 @@ serve(async (req) => {
       currency: (session.currency || "brl").toUpperCase(),
       billing_cycle: session.metadata?.billing_cycle || null,
       offer_variant: session.metadata?.landing_variant || "general",
-      event_id: `purchase_${session.id}`,
+      // Igual ao que o stripe-webhook manda ao Meta, para a compra não contar em dobro.
+      event_id: session.invoice
+        ? `stripe_invoice_${typeof session.invoice === "string" ? session.invoice : session.invoice.id}`
+        : `purchase_${session.id}`,
     });
   } catch (error) {
     console.error("[VERIFY-CHECKOUT-CONVERSION]", error instanceof Error ? error.message : String(error));

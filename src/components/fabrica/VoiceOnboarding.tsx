@@ -13,6 +13,9 @@ type State = "idle" | "recording" | "uploading" | "transcribing" | "extracting" 
 interface ExtractedData {
   agencyName: string;
   niche: string;
+  whatsapp?: string;
+  instagram?: string;
+  city?: string;
   destinos: string[];
   packages: Array<
     Pick<Pacote, "title" | "description" | "price"> &
@@ -20,7 +23,12 @@ interface ExtractedData {
   >;
 }
 
-export function VoiceOnboarding() {
+/**
+ * Microfone único da plataforma. "bar" fica na barra da Fábrica; "hero" é o cartão grande do portal.
+ * Os dois gravam, transcrevem, extraem e salvam no mesmo projeto.
+ */
+export function VoiceOnboarding({ variant = "bar", onSaved }: { variant?: "bar" | "hero"; onSaved?: () => void }) {
+  const hero = variant === "hero";
   const [state, setState] = useState<State>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [timer, setTimer] = useState(0);
@@ -188,6 +196,10 @@ export function VoiceOnboarding() {
     const newStateUpdates = {
       agencyName: extractedData.agencyName || fabricaState.agencyName,
       niche: (extractedData.niche as any) || fabricaState.niche,
+      // O que a pessoa já preencheu vale mais que o que a IA entendeu no áudio.
+      whatsapp: fabricaState.whatsapp || (extractedData.whatsapp || "").replace(/\D/g, ""),
+      instagram: fabricaState.instagram || extractedData.instagram || "",
+      city: fabricaState.city || extractedData.city || "",
       // Lista vazia da IA não pode apagar os destinos que o usuário já tinha.
       destinos: extractedData.destinos?.length ? extractedData.destinos : fabricaState.destinos,
       selectedPackages: [...newPackages, ...fabricaState.selectedPackages],
@@ -213,6 +225,7 @@ export function VoiceOnboarding() {
     setState("idle");
     setTranscript("");
     setExtractedData(null);
+    onSaved?.();
   };
 
   const formatTime = (seconds: number) => {
@@ -222,58 +235,87 @@ export function VoiceOnboarding() {
   };
 
   return (
-    <div className="flex items-center min-w-0 w-full sm:w-auto">
-      {state === "idle" && (
-        <div className="flex items-center gap-2 sm:mr-4 min-w-0 w-full sm:w-auto">
+    <div className={hero ? "w-full rounded-3xl bg-gradient-to-br from-violet-600 to-indigo-700 p-5 text-white shadow-lg sm:p-6" : "flex items-center min-w-0 w-full sm:w-auto"}>
+      {state === "idle" && hero && (
+        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
           <button
             onClick={startRecording}
-            className="flex items-center justify-center w-7 h-7 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-lg transition-all active:scale-95 border border-amber-500/20 shrink-0"
-            title="Gravar por voz"
+            className="relative grid h-20 w-20 shrink-0 place-items-center rounded-full bg-white text-violet-700 shadow-xl transition-transform active:scale-95"
+            aria-label="Gravar um áudio sobre a sua agência"
           >
-            <Mic className="w-3.5 h-3.5" />
+            <span className="absolute inset-0 animate-ping rounded-full bg-white/40" />
+            <Mic className="relative h-9 w-9" />
           </button>
-          <span className="text-[9px] font-black text-white/60 uppercase tracking-widest select-none truncate sm:whitespace-nowrap">
-            Adicione informações da sua agência
-          </span>
-        </div>
-      )}
-
-      {state === "recording" && (
-        <div className="flex items-center gap-2 mr-4">
-          <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 px-3 py-1 rounded-full">
-            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-            <span className="text-red-400 text-[10px] font-bold font-mono">{formatTime(timer)}</span>
-            <span className="text-[9px] text-red-400/70 uppercase tracking-wide ml-1">
-              Gravando...
-            </span>
-            <button
-              onClick={stopRecording}
-              className="bg-red-500 hover:bg-red-600 text-white p-0.5 rounded-sm transition-transform active:scale-95 ml-2"
-            >
-              <Square className="w-3 h-3" />
-            </button>
+          <div className="min-w-0">
+            <p className="text-xl font-black leading-tight sm:text-2xl">Toque e fale sobre a sua agência</p>
+            <p className="mt-1 text-sm text-white/85">
+              Diga o nome, o WhatsApp, o Instagram e um pacote que você vende. A gente preenche tudo e sua primeira arte fica a um clique.
+            </p>
+            <p className="mt-2 text-xs text-white/70">Exemplo: "Sou a Sol Viagens, de Maceió. Vendo Gramado, 5 dias, por 1.990 reais."</p>
           </div>
         </div>
       )}
 
+      {state === "idle" && !hero && (
+        <div className="flex items-center gap-3 sm:mr-4 min-w-0 w-full sm:w-auto">
+          <button
+            onClick={startRecording}
+            className="relative flex items-center justify-center w-11 h-11 bg-violet-600 hover:bg-violet-500 text-white rounded-full transition-all active:scale-95 shadow-lg shadow-violet-600/40 shrink-0"
+            title="Gravar por voz"
+            aria-label="Gravar um áudio sobre a sua agência"
+          >
+            <Mic className="w-5 h-5" />
+          </button>
+          <button type="button" onClick={startRecording} className="min-w-0 text-left">
+            <span className="block text-[13px] font-black leading-tight text-white">Fale sobre sua agência</span>
+            <span className="block truncate text-[11px] text-white/55 sm:whitespace-nowrap">Grave um áudio e a gente preenche</span>
+          </button>
+        </div>
+      )}
+
+      {state === "recording" && (
+        <div className={hero ? "flex flex-col items-center gap-3 py-2 text-center" : "flex items-center gap-2 mr-4"}>
+          <div className={hero ? "flex items-center gap-3 text-xl font-black" : "flex items-center gap-2 bg-red-500/10 border border-red-500/30 px-3 py-1.5 rounded-full"}>
+            <div className={hero ? "h-3 w-3 animate-pulse rounded-full bg-red-400" : "w-2 h-2 bg-red-500 rounded-full animate-pulse"}></div>
+            <span className={hero ? "font-mono" : "text-red-400 text-xs font-bold font-mono"}>{formatTime(timer)}</span>
+            <span className={hero ? "" : "text-[11px] text-red-400/80 font-bold ml-1"}>
+              Gravando...
+            </span>
+            {!hero && (
+              <button
+                onClick={stopRecording}
+                className="inline-flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-2.5 py-1 rounded-full text-[11px] font-bold transition-transform active:scale-95 ml-2"
+              >
+                <Square className="w-3 h-3" /> Parar
+              </button>
+            )}
+          </div>
+          {hero && (
+            <button onClick={stopRecording} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-7 text-base font-black text-violet-700 active:scale-95">
+              <Square className="h-4 w-4" /> Terminei de falar
+            </button>
+          )}
+        </div>
+      )}
+
       {(state === "uploading" || state === "transcribing" || state === "extracting") && (
-        <div className="flex items-center gap-2 text-amber-400 mr-4">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="text-[9px] uppercase tracking-wide font-bold whitespace-nowrap">
-            {state === "uploading" && "Enviando..."}
-            {state === "transcribing" && "Ouvindo áudio..."}
-            {state === "extracting" && "Extraindo..."}
+        <div className={hero ? "flex items-center justify-center gap-3 py-4 text-base font-bold" : "flex items-center gap-2 text-amber-400 mr-4"}>
+          <Loader2 className={hero ? "h-6 w-6 animate-spin" : "w-5 h-5 animate-spin"} />
+          <span className={hero ? "" : "text-xs font-bold whitespace-nowrap"}>
+            {state === "uploading" && "Enviando o áudio..."}
+            {state === "transcribing" && "Ouvindo o áudio..."}
+            {state === "extracting" && "Separando as informações..."}
           </span>
         </div>
       )}
 
       {state === "error" && (
-        <div className="flex items-center gap-2 text-red-400 mr-4">
-          <AlertCircle className="w-3.5 h-3.5" />
-          <span className="font-bold text-[10px]">{errorMsg}</span>
-          <button 
+        <div className={hero ? "flex flex-col items-center gap-3 py-2 text-center" : "flex items-center gap-2 text-red-400 mr-4"}>
+          <AlertCircle className={hero ? "h-6 w-6" : "w-4 h-4 shrink-0"} />
+          <span className={hero ? "text-sm font-bold" : "font-bold text-xs"}>{errorMsg}</span>
+          <button
             onClick={() => { setState("idle"); void startRecording(); }}
-            className="text-[9px] text-white/50 hover:text-white underline ml-2 whitespace-nowrap"
+            className={hero ? "inline-flex min-h-11 items-center rounded-full bg-white px-6 text-sm font-black text-violet-700" : "text-[11px] text-white/60 hover:text-white underline ml-2 whitespace-nowrap"}
           >
             Tentar novamente
           </button>
@@ -281,7 +323,9 @@ export function VoiceOnboarding() {
       )}
 
       {state === "review" && extractedData && (
-        <div className="absolute top-[110%] left-0 z-50 w-full max-w-2xl bg-[#0F0F11] border border-white/10 rounded-xl p-6 space-y-6 shadow-2xl">
+        <div className={hero
+          ? "fixed inset-x-3 top-16 z-[70] mx-auto max-h-[80vh] max-w-2xl overflow-y-auto bg-[#0F0F11] border border-white/10 rounded-xl p-6 space-y-6 shadow-2xl"
+          : "absolute top-[110%] left-0 z-50 max-h-[75vh] overflow-y-auto w-full max-w-2xl bg-[#0F0F11] border border-white/10 rounded-xl p-6 space-y-6 shadow-2xl"}>
           <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
             <Check className="w-4 h-4" /> Revise os Dados
           </h3>
@@ -302,6 +346,24 @@ export function VoiceOnboarding() {
                 type="text" 
                 value={extractedData.niche || ""}
                 onChange={(e) => setExtractedData({...extractedData, niche: e.target.value})}
+                className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">WhatsApp</label>
+              <input
+                type="text"
+                value={extractedData.whatsapp || ""}
+                onChange={(e) => setExtractedData({...extractedData, whatsapp: e.target.value})}
+                className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">Instagram</label>
+              <input
+                type="text"
+                value={extractedData.instagram || ""}
+                onChange={(e) => setExtractedData({...extractedData, instagram: e.target.value})}
                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
               />
             </div>
@@ -358,9 +420,9 @@ export function VoiceOnboarding() {
             </button>
             <button 
               onClick={handleSaveAndAdvance}
-              className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-4 py-1.5 rounded-lg text-xs transition-colors shadow-lg shadow-amber-500/20"
+              className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-5 py-2.5 rounded-lg text-sm transition-colors shadow-lg shadow-amber-500/20"
             >
-              Salvar
+              {onSaved ? "Salvar e criar minha arte" : "Salvar"}
             </button>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNod
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
-  ArrowRight, Check, ChevronLeft, Star, Wallet, Sprout, Briefcase, TrendingUp, Palette, UserRound,
+  ArrowRight, Check, ChevronLeft, Wallet, Sprout, Briefcase, TrendingUp, Palette, UserRound,
   Images, EyeOff, Rocket, Users, Clock, MessageCircleOff, Sparkles, Waves, Mountain, Plane, Ship, Bus, Globe2,
   PenLine, Frown, Flame, CalendarDays, Leaf, Eye, Gift, ShieldCheck, Lock, CircleCheck, MapPin, Instagram,
   LayoutTemplate, MessageCircle, Download, Megaphone, Mic, Video,
@@ -19,6 +19,7 @@ import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-c
 import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import { trackInicioTeste } from "@/lib/inicio-teste";
+import { readTrialResult, type TrialResult } from "@/lib/inicio-arte";
 
 type Icon = ComponentType<{ className?: string }>;
 type Option = { id: string; label: string; hint: string; icon: Icon };
@@ -47,7 +48,7 @@ const STEPS: Step[] = [
   {
     kind: "question", key: "ferramenta", title: "Como você cria seus posts hoje?", sub: "Isso decide quanto trabalho a gente tira das suas mãos",
     options: [
-      { id: "canva", label: "Canva comum", hint: "Grátis, mas leva horas", icon: Palette },
+      { id: "canva", label: "Editor online, tipo Canva", hint: "Grátis, mas leva horas", icon: Palette },
       { id: "designer", label: "Designer ou freelancer", hint: "Caro e demora dias", icon: UserRound },
       { id: "operadora", label: "Arte pronta da operadora", hint: "Igual à de todo mundo", icon: Images },
       { id: "nada", label: "Quase não posto", hint: "Não sei por onde começar", icon: EyeOff },
@@ -127,7 +128,6 @@ const FIXES: Record<string, { title: string; fix: string; icon: Icon }> = {
 };
 
 const QUIZ_MEDIA = {
-  intro: ["/quiz-media/vitrine/ad-rio-7.webp", "/quiz-media/vitrine/car-noronha-1.webp", "/quiz-media/vitrine/ad-rio-2.webp"],
   site: { desktop: "/quiz-media/site-desktop.webp", mobile: "/quiz-media/site-mobile.webp" },
 };
 
@@ -350,50 +350,69 @@ function Screen(props: ScreenProps) {
   }
 }
 
+/** As artes do teste da página inicial, com a marca d'água, no mesmo leque da primeira tela. */
+function TrialFan({ trial }: { trial: TrialResult }) {
+  const arts = trial.arts.slice(0, 3);
+  const [front, setFront] = useState(Math.min(1, arts.length - 1));
+  return (
+    <div className="relative mx-auto mt-7 h-64 w-full max-w-[360px] select-none" onContextMenu={(e) => e.preventDefault()} style={{ WebkitTouchCallout: "none" }}>
+      {arts.map((src, i) => {
+        const isFront = i === front;
+        const side = i < front ? -1 : i > front ? 1 : 0;
+        return (
+          <button
+            key={src.slice(-40)}
+            type="button"
+            onClick={() => setFront(i)}
+            aria-label={`Ver a arte ${i + 1} de ${trial.destino}`}
+            className="absolute left-1/2 top-0 transition-all duration-300"
+            style={{
+              width: isFront ? 224 : 150,
+              marginLeft: isFront ? -112 : side < 0 ? -176 : 26,
+              top: isFront ? 0 : 42,
+              zIndex: isFront ? 2 : 1,
+              transform: `rotate(${side * 7}deg)`,
+            }}
+          >
+            <img src={src} alt="" draggable={false} className="pointer-events-none aspect-square w-full rounded-2xl border-4 border-white object-cover shadow-xl" />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function Intro({ onNext }: { onNext: () => void }) {
+  const [trial] = useState(readTrialResult);
   return (
     <>
       <div className="flex flex-col items-center text-center">
         <span className="cv-pop inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 text-[12px] font-semibold" style={{ borderColor: "var(--cv-line)" }}>
-          <span className="flex text-[#ff3d8b]">{[0, 1, 2, 3, 4].map((i) => <Star key={i} className="h-3 w-3 fill-current" />)}</span>
           Quiz de 2 minutos
         </span>
         <h1 className="cv-pop mt-5 text-balance text-[32px] font-extrabold leading-[1.05] tracking-[-0.025em]" style={delay(80)}>
-          Fale o pacote num áudio. Receba anúncio, carrossel, site e vídeo <Accent>prontos, com a sua logo.</Accent>
+          {trial ? (
+            <>Suas artes de {trial.destino} <Accent>já estão aqui.</Accent></>
+          ) : (
+            <>Veja o que sai pronto <Accent>para a sua agência.</Accent></>
+          )}
         </h1>
-        <p className="cv-pop mt-3 max-w-[300px] text-[15px] leading-6" style={{ ...delay(160), color: "var(--cv-muted)" }}>
-          Responda 8 perguntas e a gente monta as suas 2 primeiras semanas: do anúncio ao site.
+        <p className="cv-pop mt-3 max-w-[320px] text-[15px] leading-6" style={{ ...delay(160), color: "var(--cv-muted)" }}>
+          {trial
+            ? "Toque para ver cada uma. Responda 8 perguntas rápidas e veja o plano para usar essas artes sem marca d'água, com o seu preço e o seu WhatsApp."
+            : "Anúncio, carrossel e site com a sua logo, e vídeos prontos para postar. Responda 8 perguntas rápidas e veja o plano certo para a sua agência."}
         </p>
       </div>
-      <div className="relative mx-auto mt-8 h-72 w-full max-w-[360px]">
-        {QUIZ_MEDIA.intro.map((src, i) => {
-          const center = i === 1;
-          return (
-            <div
-              key={src}
-              className="cv-float absolute"
-              style={{
-                ...delay(i * 300),
-                ["--cv-rot" as string]: ["-7deg", "0deg", "7deg"][i],
-                width: center ? 168 : 132,
-                left: center ? "50%" : i === 0 ? "0%" : undefined,
-                right: i === 2 ? "0%" : undefined,
-                marginLeft: center ? -84 : undefined,
-                top: center ? 0 : 44,
-                zIndex: center ? 2 : 1,
-              }}
-            >
-              <img
-                src={src}
-                alt={["Anúncio de Maragogi feito na Fábrica", "Carrossel de Fernando de Noronha feito na Fábrica", "Anúncio do Rio de Janeiro feito na Fábrica"][i]}
-                className={`w-full rounded-2xl border-4 border-white object-cover shadow-xl ${center ? "aspect-[4/5]" : "aspect-square"}`}
-              />
-            </div>
-          );
-        })}
-      </div>
+      {trial ? (
+        <TrialFan trial={trial} />
+      ) : (
+        <div className="cv-pop -mx-5 mt-6" style={delay(220)}>
+          <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito no Canva Viagem" />
+          <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito no Canva Viagem" slow size="compact" className="mt-1" />
+        </div>
+      )}
       <div className="mt-6 flex flex-col items-center gap-2">
-        <span className="rounded-full border bg-white px-3 py-1 text-[12px]" style={{ borderColor: "var(--cv-line)" }}>Um áudio · tudo pronto · sem limite</span>
+        <span className="rounded-full border bg-white px-3 py-1 text-[12px]" style={{ borderColor: "var(--cv-line)" }}>Fale ou digite · sua logo em tudo · sem limite</span>
         <div className="flex items-center gap-3 text-[12px] font-semibold" style={{ color: "var(--cv-muted)" }}>
           <span className="tracking-[1.2px]">PARA</span>
           <span className="inline-flex items-center gap-1"><Instagram className="h-3.5 w-3.5" /> Feed</span>
@@ -438,7 +457,7 @@ function HowBuy({ onNext }: { onNext: () => void }) {
 
 function Speed({ onNext }: { onNext: () => void }) {
   const rows = [
-    { label: "Canva comum", time: "2–3 h", width: 78, color: "#d8cfb8" },
+    { label: "Editor comum", time: "2–3 h", width: 78, color: "#d8cfb8" },
     { label: "Designer", time: "1–3 dias", width: 100, color: "#d8cfb8" },
     { label: "Canva Viagem", time: "2 min", width: 9, color: "var(--cv-primary)" },
   ];
@@ -462,7 +481,7 @@ function Speed({ onNext }: { onNext: () => void }) {
         </div>
       </div>
       <p className="cv-pop mt-6 text-[15px] leading-6" style={{ ...delay(500), color: "var(--cv-muted)" }}>
-        Fale o pacote num áudio (ou digite) e receba tudo pronto, com a sua logo. <strong className="text-[var(--cv-fg)]">Do zero ao post em uns 2 minutos.</strong>
+        Fale o pacote num áudio ou digite, e a arte sai com a sua logo. <strong className="text-[var(--cv-fg)]">Do zero ao post em uns 2 minutos.</strong>
       </p>
       <BottomCta onClick={onNext}>Continuar</BottomCta>
     </>
@@ -547,7 +566,7 @@ function Diagnosis({ answers, onNext }: { answers: Answers; onNext: () => void }
 function Sample({ onNext }: { onNext: () => void }) {
   return (
     <>
-      <Title sub="Você recebe tudo isso pronto, com a sua logo.">Veja o que sai para a sua agência. <Accent>Curtiu?</Accent></Title>
+      <Title sub="Anúncio, carrossel e site com a sua logo.">Veja o que sai para a sua agência. <Accent>Curtiu?</Accent></Title>
       <div className="cv-pop -mx-5 mt-5" style={delay(150)}>
         <p className="mb-1 px-5 text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>ANÚNCIOS</p>
         <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito no Canva Viagem" />
@@ -631,7 +650,7 @@ function Building({ onDone }: { onDone: () => void }) {
     { label: "Lendo suas respostas", done: "8 de 8", at: 25 },
     { label: "Separando modelos de anúncio, carrossel e site", done: "pronto", at: 55 },
     { label: "Escrevendo os textos de venda", done: "pronto", at: 80 },
-    { label: "Montando suas 2 primeiras semanas", done: "14 dias", at: 100 },
+    { label: "Sugerindo o que postar nas 2 primeiras semanas", done: "pronto", at: 100 },
   ];
   useEffect(() => {
     const id = window.setInterval(() => setPct((p) => Math.min(p + 2, 100)), 70);
@@ -645,7 +664,7 @@ function Building({ onDone }: { onDone: () => void }) {
   const r = 58, c = 2 * Math.PI * r;
   return (
     <div className="flex flex-1 flex-col items-center pt-8">
-      <h1 className="text-center text-[26px] font-extrabold tracking-[-0.02em]">Montando suas 2 primeiras semanas</h1>
+      <h1 className="text-center text-[26px] font-extrabold tracking-[-0.02em]">Montando seu plano</h1>
       <div className="relative mt-6 h-36 w-36">
         <svg viewBox="0 0 136 136" className="h-full w-full -rotate-90">
           <circle cx="68" cy="68" r={r} fill="none" stroke="#e8e2d2" strokeWidth="6" />
@@ -671,7 +690,7 @@ function Building({ onDone }: { onDone: () => void }) {
       <div className="cv-card mt-8 w-full p-4">
         <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>O QUE ESTÁ SAINDO</p>
         <div className="mt-3 grid grid-cols-2 gap-2 text-[13px] font-semibold">
-          {[["Anúncio feed", Instagram], ["Stories", LayoutTemplate], ["Carrossel", Images], ["Site do pacote", Globe2], ["Vídeo do destino", Video], ["Texto pro WhatsApp", MessageCircle]].map(([label, Icon]) => {
+          {[["Anúncio feed", Instagram], ["Stories", LayoutTemplate], ["Carrossel", Images], ["Site do pacote", Globe2], ["Vídeos prontos", Video], ["Texto pro WhatsApp", MessageCircle]].map(([label, Icon]) => {
             const I = Icon as Icon;
             return (
               <span key={label as string} className="inline-flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "var(--cv-sand)" }}>
@@ -685,32 +704,26 @@ function Building({ onDone }: { onDone: () => void }) {
   );
 }
 
-function scoreFrom(answers: Answers) {
-  const travas = answers.travas?.length ?? 1;
-  const momento = answers.momento?.[0];
-  const base = momento === "equipe" ? 58 : momento === "todo-mes" ? 52 : momento === "pouco" ? 44 : 36;
-  const now = Math.max(base - travas * 4, 18);
-  return { now, potential: Math.min(now + 52, 96) };
-}
-
 function Result({ answers, destino, onNext }: { answers: Answers; destino: string; onNext: () => void }) {
-  const { now, potential } = scoreFrom(answers);
   const [openWeek2, setOpenWeek2] = useState(false);
   const travas = new Set(answers.travas || []);
   const desafio = answers.desafio?.[0];
   const orcamentos = answers.orcamentos?.[0];
-  const metrics = [
-    { label: "Constância de posts", now: travas.has("tempo") || desafio === "tempo" ? 20 : 40, with: 95 },
-    { label: "Visual profissional", now: travas.has("design") || desafio === "amador" ? 25 : 50, with: 92 },
-    { label: "Perfil que vende", now: travas.has("vergonha") || desafio === "ninguem" ? 20 : 45, with: 90 },
-    { label: "Pedidos de orçamento no WhatsApp", now: orcamentos === "zero" ? 10 : orcamentos === "poucos" ? 25 : orcamentos === "medio" ? 45 : orcamentos === "muitos" ? 60 : 30, with: 90 },
-  ];
+  // O que a pessoa respondeu e o que a plataforma faz por isso. Sem nota: não temos dado para medir ninguém.
+  const pontos = [
+    { show: travas.has("tempo") || desafio === "tempo", label: "Falta tempo para postar", fix: "A arte sai em minutos, sem começar do zero." },
+    { show: travas.has("design") || desafio === "amador", label: "Os posts parecem amadores", fix: "Modelos prontos, com a sua logo e as suas cores." },
+    { show: travas.has("vergonha") || desafio === "ninguem", label: "Posta e ninguém chama", fix: "Anúncio com preço e WhatsApp, e o site do pacote para receber o pedido." },
+    { show: desafio === "oque", label: "Não sabe o que postar", fix: "Uma sugestão do que postar em cada dia." },
+    { show: orcamentos === "zero" || orcamentos === "poucos", label: "Poucos pedidos de orçamento", fix: "Site com o botão do WhatsApp e seus clientes organizados em um só lugar." },
+  ].filter((p) => p.show);
+  const pontosVisiveis = pontos.length ? pontos : [{ label: "Vender mais com a mesma rotina", fix: "Arte, site e clientes no mesmo lugar, sem precisar de equipe." }];
   const weeks = [
     [
       { d: "Seg", t: `Anúncio de ${destino} + stories do pacote`, icon: Megaphone },
       { d: "Ter", t: "Carrossel do pacote com dicas da viagem", icon: Images },
       { d: "Qua", t: "Pacote publicado no seu site", icon: Globe2 },
-      { d: "Qui", t: "Reels do pacote", icon: Video },
+      { d: "Qui", t: "Vídeo pronto do destino", icon: Video },
       { d: "Sex", t: "Stories e vídeo de outro pacote em promoção", icon: LayoutTemplate },
       { d: "Sáb", t: "Responder orçamentos no WhatsApp e anunciar outro pacote", icon: MessageCircle },
       { d: "Dom", t: "Organizar clientes no CRM e planejar a semana", icon: Users },
@@ -719,7 +732,7 @@ function Result({ answers, destino, onNext }: { answers: Answers; destino: strin
       { d: "Seg", t: "Anúncio de um pacote novo + stories com enquete", icon: Megaphone },
       { d: "Ter", t: "Carrossel: o que fazer no destino", icon: Images },
       { d: "Qua", t: "Página do pacote novo no site e link na bio", icon: Globe2 },
-      { d: "Qui", t: "Reels com bastidores ou depoimento de cliente", icon: Video },
+      { d: "Qui", t: "Vídeo pronto de outro destino", icon: Video },
       { d: "Sex", t: "Stories com contagem regressiva da promoção", icon: LayoutTemplate },
       { d: "Sáb", t: "Mandar a página do pacote para quem pediu orçamento", icon: MessageCircle },
       { d: "Dom", t: "CRM: quem fechou, quem falta responder e o plano da próxima semana", icon: Users },
@@ -729,39 +742,23 @@ function Result({ answers, destino, onNext }: { answers: Answers; destino: strin
     <>
       <Title sub="Com base nas suas 8 respostas">Seu diagnóstico <Accent>está pronto</Accent></Title>
       <div className="cv-pop cv-card mt-6 p-5" style={delay(120)}>
-        <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>POTENCIAL DE VENDAS NO INSTAGRAM</p>
-        <div className="mt-3 flex items-end gap-4">
-          <div>
-            <p className="text-[12px]" style={{ color: "var(--cv-muted)" }}>Hoje</p>
-            <p className="text-[34px] font-extrabold leading-none text-[#b9ae95]">{now}</p>
-          </div>
-          <ArrowRight className="mb-2 h-5 w-5 text-[#cfc4a6]" />
-          <div>
-            <p className="text-[12px]" style={{ color: "var(--cv-muted)" }}>Com o Canva Viagem</p>
-            <p className="text-[34px] font-extrabold leading-none text-[#6440e6]">{potential}</p>
-          </div>
-        </div>
-        <GrowthChart now={now} potential={potential} />
-        <div className="mt-5 space-y-3.5">
-          {metrics.map((m, i) => (
-            <div key={m.label}>
-              <p className="mb-1 text-[13px] font-semibold">{m.label}</p>
-              <div className="relative h-2.5 overflow-hidden rounded-full bg-[#f3ecda]">
-                <div className="cv-fill absolute inset-y-0 left-0 rounded-full bg-[#efe9ff]" style={{ ...delay(300 + i * 120), width: `${m.with}%` }} />
-                <div className="cv-fill absolute inset-y-0 left-0 rounded-full bg-[#ff3d8b]" style={{ ...delay(200 + i * 120), width: `${m.now}%` }} />
+        <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>O QUE VOCÊ NOS CONTOU</p>
+        <div className="mt-3 space-y-3">
+          {pontosVisiveis.map((p) => (
+            <div key={p.label} className="flex items-start gap-3">
+              <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full" style={{ background: "#efe9ff" }}><Check className="h-3.5 w-3.5 text-[#6440e6]" /></span>
+              <div>
+                <p className="text-[14px] font-bold">{p.label}</p>
+                <p className="text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>{p.fix}</p>
               </div>
             </div>
           ))}
-          <div className="flex gap-4 pt-1 text-[11px]" style={{ color: "var(--cv-muted)" }}>
-            <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#ff3d8b]" /> hoje</span>
-            <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#cbbcff]" /> com o Canva Viagem</span>
-          </div>
         </div>
       </div>
 
       <div className="cv-pop cv-card mt-4 p-5" style={delay(300)}>
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>SEU PLANO DE 2 SEMANAS</p>
+          <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>O QUE POSTAR NAS 2 PRIMEIRAS SEMANAS</p>
           <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-semibold" style={{ background: "#efe9ff", color: "var(--cv-primary-ink)" }}><MapPin className="h-3 w-3" /> {destino}</span>
         </div>
         <p className="mt-3 text-[13px] font-bold">Semana 1</p>
@@ -791,52 +788,16 @@ function WeekList({ days }: { days: { d: string; t: string; icon: Icon }[] }) {
           <span className="w-9 shrink-0 text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>{w.d}</span>
           <w.icon className="h-4 w-4 shrink-0 text-[#6440e6]" />
           <span className="flex-1 leading-5">{w.t}</span>
-          <Lock className="h-3.5 w-3.5 shrink-0 text-[#b9ae95]" />
         </div>
       ))}
     </div>
   );
 }
 
-/** Curva de 8 semanas: do jeito que está hoje × postando com constância no Canva Viagem. */
-function GrowthChart({ now, potential }: { now: number; potential: number }) {
-  const W = 300, H = 132, padX = 6, padTop = 14, padBottom = 22;
-  const weeks = 8;
-  const x = (i: number) => padX + (i / (weeks - 1)) * (W - padX * 2);
-  const y = (v: number) => padTop + (1 - v / 100) * (H - padTop - padBottom);
-  const growth = Array.from({ length: weeks }, (_, i) => now + (potential - now) * (1 - Math.pow(1 - i / (weeks - 1), 2.2)));
-  const flat = Array.from({ length: weeks }, (_, i) => now + i * 0.6);
-  const line = (vals: number[]) => vals.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
-  const area = `${line(growth)} L${x(weeks - 1)},${H - padBottom} L${x(0)},${H - padBottom} Z`;
-  return (
-    <figure className="mt-5">
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`Potencial sobe de ${now} para ${potential} em 8 semanas postando com constância`}>
-        <defs>
-          <linearGradient id="cv-growth" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7c5cff" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#7c5cff" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {[25, 50, 75].map((g) => <line key={g} x1={padX} x2={W - padX} y1={y(g)} y2={y(g)} stroke="#efe6cc" strokeDasharray="3 4" />)}
-        <path d={area} fill="url(#cv-growth)" />
-        <path d={line(flat)} fill="none" stroke="#cfc4a6" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="5 5" />
-        <path d={line(growth)} fill="none" stroke="#7c5cff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" pathLength={1} className="cv-draw" />
-        <circle cx={x(weeks - 1)} cy={y(potential)} r="5" fill="#7c5cff" stroke="#fff" strokeWidth="2" />
-        <text x={padX} y={H - 6} fontSize="10" fill="#8a8170">Hoje</text>
-        <text x={W - padX} y={H - 6} fontSize="10" fill="#8a8170" textAnchor="end">Semana 8</text>
-      </svg>
-      <figcaption className="mt-1 flex gap-4 text-[11px]" style={{ color: "var(--cv-muted)" }}>
-        <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-4 rounded bg-[#7c5cff]" /> postando com o Canva Viagem</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-4 rounded border-t-2 border-dashed border-[#cfc4a6]" /> do jeito de hoje</span>
-      </figcaption>
-    </figure>
-  );
-}
-
 function Loop({ onNext }: { onNext: () => void }) {
   const steps = [
     { icon: Mic, title: "Mande um áudio", text: "Destino, dias e valor do pacote. Ou digite." },
-    { icon: Sparkles, title: "Receba tudo pronto", text: "Anúncio, stories, carrossel, site e vídeo, com a sua logo." },
+    { icon: Sparkles, title: "Receba tudo pronto", text: "Anúncio, stories, carrossel e site, com a sua logo. E vídeos prontos para postar." },
     { icon: Download, title: "Publique", text: "Baixe e poste no Instagram em minutos." },
     { icon: MessageCircle, title: "Venda no WhatsApp", text: "Mande a página do pacote e feche a viagem." },
   ];
@@ -864,7 +825,7 @@ function Offer({ plan, setPlan, onCheckout }: { plan: Cycle; setPlan: (c: Cycle)
   const selected = PLANS.find((p) => p.cycle === plan)!;
   return (
     <>
-      <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Suas 2 semanas estão prontas. <Accent>Libere o acesso.</Accent></Title>
+      <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Seu plano está pronto. <Accent>Libere o acesso.</Accent></Title>
 
       <div className="cv-pop mt-5 flex items-center gap-3 rounded-[22px] border p-4" style={{ ...delay(100), background: "#efe9ff", borderColor: "#cbbcff" }}>
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white"><Gift className="h-5 w-5 text-[#6440e6]" /></span>

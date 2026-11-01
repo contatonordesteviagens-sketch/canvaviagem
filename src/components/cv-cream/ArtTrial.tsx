@@ -2,10 +2,9 @@ import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "r
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check, Loader2, Lock, Mail, MapPin, ShieldCheck, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import {
-  generateTrialArts, ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH, prepareTrialLogo, TRIAL_DESTINOS, trialPhotoUrl,
-  type TrialDestino, type TrialLogo,
+  generateTrialArts, ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH, prepareTrialLogo, readTrialResult, saveTrialResult,
+  TRIAL_DESTINOS, trialPhotoUrl, type TrialDestino, type TrialLogo,
 } from "@/lib/inicio-arte";
 import { trackInicioTeste } from "@/lib/inicio-teste";
 import { startWithEmail } from "@/lib/quick-start";
@@ -24,10 +23,11 @@ type Stage = "destino" | "logo" | "artes";
 export function ArtTrial() {
   const navigate = useNavigate();
   const { user, subscription } = useAuth();
-  const [stage, setStage] = useState<Stage>("destino");
+  const [previous] = useState(readTrialResult);
+  const [stage, setStage] = useState<Stage>(previous ? "artes" : "destino");
   const [destino, setDestino] = useState<TrialDestino | null>(null);
   const [logoError, setLogoError] = useState(false);
-  const [arts, setArts] = useState<string[]>([]);
+  const [arts, setArts] = useState<string[]>(previous?.arts ?? []);
   const [generating, setGenerating] = useState(false);
   const [failed, setFailed] = useState(false);
   const [email, setEmail] = useState("");
@@ -58,9 +58,12 @@ export function ArtTrial() {
     setFailed(false);
     setGenerating(true);
     window.requestAnimationFrame(() => topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    const made: string[] = [];
     const done = await generateTrialArts(item, logo, (url) => {
+      made.push(url);
       if (alive.current) setArts((prev) => [...prev, url]);
     }).catch(() => 0);
+    if (done) saveTrialResult({ destino: item.nome, arts: made });
     if (!alive.current) return;
     setGenerating(false);
     if (done) trackInicioTeste("artes");
@@ -91,7 +94,6 @@ export function ArtTrial() {
     e.preventDefault();
     if (busy) return;
     setBusy(true);
-    trackMetaEvent("Lead", { content_name: "inicio_arte", content_category: "depois_das_artes" });
     const result = await startWithEmail(email, ONBOARDING_PATH);
     if (!alive.current) return;
     if (result === "existing") {
@@ -162,16 +164,30 @@ export function ArtTrial() {
           <p className="text-center text-[22px] font-extrabold leading-tight tracking-[-0.02em]">
             {generating ? "Montando suas artes…" : failed ? "Não consegui montar as artes agora" : "Suas artes ficaram prontas"}
           </p>
+          {previous && (
+            <p className="mt-1 text-center text-[13px]" style={{ color: "var(--cv-muted)" }}>
+              Essas são as artes do seu teste de {previous.destino}. Na sua conta, você cria para qualquer destino.
+            </p>
+          )}
           {failed ? (
             <button type="button" onClick={() => destino && void generate(destino, null)} className="cv-btn mx-auto mt-4 h-12 px-6 text-[15px]">
               Tentar de novo
             </button>
           ) : (
-            <div className="-mx-4 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
+            <div
+              onContextMenu={(e) => e.preventDefault()}
+              className="-mx-4 mt-4 flex select-none snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0"
+              style={{ WebkitTouchCallout: "none" }}
+            >
               {Array.from({ length: TRIAL_ARTS }, (_, i) => (
                 <div key={i} className="aspect-square w-[78vw] max-w-[320px] shrink-0 snap-center overflow-hidden rounded-2xl bg-[#e9e3d3] sm:w-auto sm:max-w-none">
                   {arts[i] ? (
-                    <img src={arts[i]} alt={`Arte ${i + 1} de ${destino?.nome ?? "seu destino"}`} className="cv-pop h-full w-full object-cover" />
+                    <img
+                      src={arts[i]}
+                      alt={`Arte ${i + 1} de ${destino?.nome ?? previous?.destino ?? "seu destino"}`}
+                      draggable={false}
+                      className="cv-pop pointer-events-none h-full w-full object-cover"
+                    />
                   ) : generating ? (
                     <div className="grid h-full w-full place-items-center"><Loader2 className="h-7 w-7 animate-spin" style={{ color: "var(--cv-muted)" }} /></div>
                   ) : null}

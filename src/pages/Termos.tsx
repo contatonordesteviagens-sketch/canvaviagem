@@ -48,7 +48,10 @@ const Termos = () => {
               4. Assinaturas e Pagamentos
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              As assinaturas são cobradas conforme o plano escolhido. Renovações são automáticas até que o cancelamento seja solicitado. Reembolsos seguem nossa política específica disponível na área do assinante.
+              As assinaturas são cobradas conforme o plano escolhido. Renovações são automáticas até que o cancelamento seja solicitado.
+            </p>
+            <p className="text-muted-foreground leading-relaxed">
+              <strong>Garantia de 7 dias:</strong> na primeira compra, você pode pedir o reembolso integral em até 7 dias corridos, pelo WhatsApp (85) 98641-1294, informando o e-mail da compra. Depois do reembolso, o acesso à plataforma é encerrado.
             </p>
           </section>
 

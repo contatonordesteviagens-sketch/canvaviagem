@@ -13,6 +13,9 @@ const SYSTEM_PROMPT = `Você é um extrator de informações de negócios para a
 Receberá um texto (geralmente transcrição de áudio falado pelo dono da agência) e deve retornar APENAS um JSON estritamente no formato:
 {
   "agencyName": "string",
+  "whatsapp": "string",
+  "instagram": "string",
+  "city": "string",
   "niche": "string",
   "publicoAlvo": "string",
   "estiloMarca": "string",
@@ -51,6 +54,7 @@ Receberá um texto (geralmente transcrição de áudio falado pelo dono da agên
 Regras:
 - Se o usuário citar destinos (ex: Jericoacoara, Canoa Quebrada, Rio de Janeiro), liste-os em "destinos" E gere pelo menos um pacote sugerido por destino em "packages".
 - Use português brasileiro natural.
+- "whatsapp": só os dígitos do telefone que a pessoa disser, com DDD e sem o 55. "instagram": o @ dito. "city": a cidade da agência. Vazio se não foi dito.
 - Se faltar informação, retorne string vazia ou array vazio — NUNCA invente um nome de agência.
 - "price" pode ser estimativa formatada (ex: "R$ 1.890,00") ou "Consulte".
 - Extraia detalhes somente quando forem ditos ou claramente implicados no texto. NÃO invente datas, inclusões, hotel, documentos, políticas ou condições.
@@ -171,6 +175,9 @@ Deno.serve(async (req) => {
     // Normaliza schema
     const safe = {
       agencyName: String(parsed.agencyName || ""),
+      whatsapp: String(parsed.whatsapp || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, ""),
+      instagram: String(parsed.instagram || "").trim(),
+      city: String(parsed.city || "").trim(),
       niche: String(parsed.niche || ""),
       publicoAlvo: String(parsed.publicoAlvo || ""),
       estiloMarca: String(parsed.estiloMarca || ""),

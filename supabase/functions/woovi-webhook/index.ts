@@ -13,6 +13,43 @@ const ok = () => new Response(null, { status: 200 });
 const log = (step: string, details?: unknown) =>
   console.log(`[WOOVI-WEBHOOK] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
 
+/** Mesmo event_id do navegador (PixCheckout): o Meta une os dois e conta uma compra só. Falha aqui não pode travar a liberação. */
+async function sendPixPurchaseToMeta(db: ReturnType<typeof adminClient>, correlationID: string, value: number, userId?: string) {
+  const accessToken = Deno.env.get("META_CAPI_TOKEN_2120347238758199");
+  if (!accessToken || !(value > 0)) return;
+  try {
+    const userData: Record<string, unknown> = {};
+    if (userId) {
+      const { data } = await db.auth.admin.getUserById(userId);
+      const email = data?.user?.email?.toLowerCase().trim();
+      if (email) {
+        const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(email));
+        userData.em = [Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("")];
+      }
+    }
+    const response = await fetch("https://graph.facebook.com/v18.0/2120347238758199/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(8000),
+      body: JSON.stringify({
+        access_token: accessToken,
+        data: [{
+          event_name: "Purchase",
+          event_time: Math.floor(Date.now() / 1000),
+          event_id: `purchase_${correlationID}`,
+          event_source_url: "https://canvaviagem.com/checkout",
+          action_source: "website",
+          user_data: userData,
+          custom_data: { value, currency: "BRL" },
+        }],
+      }),
+    });
+    if (!response.ok) log("Meta recusou a compra", { correlationID, status: response.status });
+  } catch (err) {
+    log("Falha ao avisar o Meta", { correlationID, message: (err as Error).message });
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response(null, { status: 405 });
 
@@ -51,6 +88,7 @@ Deno.serve(async (req) => {
     await savePixCharge(db, charge);
     const result = await grantEliteFromCharge(db, charge);
     log("Processado", { correlationID, ...result });
+    if (result.granted) await sendPixPurchaseToMeta(db, correlationID, Number(charge?.value) / 100, result.userId);
     return ok();
   } catch (err) {
     // 500 faz a Woovi tentar de novo mais tarde.

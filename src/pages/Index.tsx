@@ -1,6 +1,7 @@
 import { aiTools } from "@/data/templates";
 import { hasPendingOnboarding } from "@/lib/onboarding-bridge";
 import { QuickStartActions } from "@/components/canva/QuickStartActions";
+import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import { useState, useEffect, useMemo, Suspense, lazy } from "react";
 // Build trigger: Freemium Transition - 2026-02-27
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -29,6 +30,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Info, Bot, Image, Video, Zap, ShieldCheck, Layout } from "lucide-react";
 import { ELITE_OFFER } from "@/lib/eliteOffer";
 import AutoplayLoopVideo from "@/components/travel-agency-content/AutoplayLoopVideo";
+const PortalStart = lazy(() => import("@/components/canva/PortalStart"));
 
 // Lazy load non-critical components
 const PremiumGateModal = lazy(() => import("@/components/PremiumGateModal").then(module => ({ default: module.PremiumGateModal })));
@@ -1785,6 +1787,11 @@ const Index = () => {
             setSearchQuery(val);
           }}
         >
+          {(user || isLocalPreviewEnabled()) && hasConfirmedFabricaAccess && (
+            <Suspense fallback={null}>
+              <PortalStart />
+            </Suspense>
+          )}
           {user && <QuickStartActions onReadyContent={() => setActiveCategory('videos')} />}
           {categoryNavNode}
         </HeroBanner>
@@ -2099,7 +2106,8 @@ const Index = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      <WelcomeTutorialPopup />
+      {/* Quem tem a Fábrica já recebe o microfone e as missões: o popup cobriria justamente isso. */}
+      {!hasConfirmedFabricaAccess && <WelcomeTutorialPopup />}
     </div>
   );
 };

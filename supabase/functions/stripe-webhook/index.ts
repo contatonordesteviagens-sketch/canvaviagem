@@ -475,6 +475,9 @@ serve(async (req) => {
       case "customer.subscription.deleted":
         await handleSubscriptionDeleted(event.data.object, supabaseAdmin, resend, stripe);
         break;
+      case "charge.refunded":
+        await handleChargeRefunded(event.data.object, supabaseAdmin, stripe);
+        break;
       case "invoice.payment_succeeded":
         await handlePaymentSucceeded(event.data.object, supabaseAdmin, resend, stripe);
         break;
@@ -673,6 +676,30 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supa
   }
   if (resend && profile?.email) await sendCancellationEmail(resend, profile.email);
   if (profile?.email) await triggerZaiaWebhook("ZAIA_WEBHOOK_CANCELLATION", { email: profile.email, name: profile.name });
+}
+
+/** Garantia dos Termos: reembolso integral encerra o acesso. Reembolso parcial não muda nada. */
+async function handleChargeRefunded(charge: Stripe.Charge, supabase: any, stripe: Stripe) {
+  const customerId = typeof charge.customer === "string" ? charge.customer : charge.customer?.id;
+  if (!charge.refunded || !customerId) {
+    logStep("Reembolso parcial ou sem cliente: acesso mantido", { chargeId: charge.id });
+    return;
+  }
+  const { data: activeSubscriptions } = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 });
+  for (const subscription of activeSubscriptions) {
+    await stripe.subscriptions.cancel(subscription.id);
+  }
+  const { data: updated, error } = await supabase
+    .from("subscriptions")
+    .update({ status: "canceled", updated_at: new Date().toISOString() })
+    .eq("stripe_customer_id", customerId)
+    .select("user_id");
+  if (error) throw error;
+  for (const row of updated ?? []) {
+    const { error: siteAccessError } = await supabase.rpc("sync_user_public_site_access", { p_user_id: row.user_id });
+    if (siteAccessError) throw siteAccessError;
+  }
+  logStep("Reembolso integral: acesso encerrado", { chargeId: charge.id, accounts: updated?.length ?? 0 });
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, resend: any, stripe: Stripe) {

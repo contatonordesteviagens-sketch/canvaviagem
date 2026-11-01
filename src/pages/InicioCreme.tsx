@@ -34,7 +34,7 @@ const builtFor: { label: string; icon: Icon }[] = [
 
 const steps = [
   { n: "01", icon: Mic, title: "Mande um áudio", text: "Fale o destino, os dias e o valor, do jeito que você fala com um cliente. Se preferir, digite." },
-  { n: "02", icon: Sparkles, title: "Receba tudo pronto", text: "Anúncio, carrossel, stories, a página do pacote e o vídeo saem montados, já com a sua logo." },
+  { n: "02", icon: Sparkles, title: "Receba tudo pronto", text: "Anúncio, carrossel, stories e a página do pacote saem montados, já com a sua logo. E os vídeos prontos estão lá para postar." },
   { n: "03", icon: Download, title: "Publique e venda", text: "Baixe, poste no Instagram, impulsione o anúncio e mande o site no WhatsApp." },
 ];
 
@@ -102,7 +102,6 @@ export default function InicioCreme() {
     try {
       if (value) sessionStorage.setItem(ONBOARDING_DESTINO_KEY, value);
     } catch { /* sessionStorage indisponível */ }
-    trackMetaEvent("Lead", { content_name: "inicio_creme_cta", content_category: source });
     if (user && subscription.subscribed) { navigate("/fabrica"); return; }
     navigate(user ? ONBOARDING_PATH : `/login?redirect=${encodeURIComponent(ONBOARDING_PATH)}&entrada=rapida`);
   };
@@ -116,7 +115,7 @@ export default function InicioCreme() {
     <div ref={pageRef} className="cv-cream min-h-screen overflow-x-hidden">
       <Helmet>
         <title>Canva Viagem — Mande um áudio e receba anúncios, carrosséis, site e vídeos prontos</title>
-        <meta name="description" content="Fale o destino, os dias e o valor do pacote. Em minutos saem anúncios, carrosséis, stories, o site e os vídeos, com a sua logo. Sem limite de quantidade." />
+        <meta name="description" content="Fale o destino, os dias e o valor do pacote. Em minutos saem anúncios, carrosséis, stories e o site, com a sua logo, e você ainda tem vídeos prontos para postar. Sem limite de quantidade." />
       </Helmet>
 
       {/* Cabeçalho flutuante */}
@@ -154,7 +153,7 @@ export default function InicioCreme() {
             <p className="cv-pop mt-6 max-w-xl text-lg leading-7" style={{ ...delay(120), color: "var(--cv-muted)" }}>
               {artTest
                 ? "Teste aqui mesmo, sem cadastro. Escolha o destino, envie a sua logo e veja como fica a arte da sua agência."
-                : "Fale o destino, os dias e o valor, do jeito que você fala com um cliente. Em minutos saem o anúncio, o carrossel, os stories, a página do pacote e os vídeos, tudo com a sua logo."}
+                : "Fale o destino, os dias e o valor, do jeito que você fala com um cliente. Em minutos saem o anúncio, o carrossel, os stories e a página do pacote, tudo com a sua logo. E você ainda tem vídeos prontos para postar."}
             </p>
 
             {artTest ? (
@@ -207,8 +206,8 @@ export default function InicioCreme() {
           <div className="cv-pop mx-auto mt-6 grid max-w-3xl overflow-hidden rounded-[28px] border bg-white shadow-[0_18px_40px_-26px_rgba(32,28,19,.35)] sm:grid-cols-2" style={{ ...delay(460), borderColor: "var(--cv-line)" }}>
             <div className="p-6 text-center sm:text-left">
               <p className="text-[12px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-primary-ink)" }}>PREFERE FALAR?</p>
-              <p className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.02em]">Grave um áudio de 20 segundos.</p>
-              <p className="mt-2 text-[14px] leading-6" style={{ color: "var(--cv-muted)" }}>"Cancún, 7 dias, casal, 8.900 reais" já basta. O resto sai pronto.</p>
+              <p className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.02em]">Na sua conta, é só falar.</p>
+              <p className="mt-2 text-[14px] leading-6" style={{ color: "var(--cv-muted)" }}>"Cancún, 7 dias, casal, 8.900 reais" já preenche o pacote. Sua arte fica a um clique.</p>
             </div>
             <button
               type="button"
@@ -220,7 +219,7 @@ export default function InicioCreme() {
                 <span className="cv-ping absolute inset-0 rounded-full bg-white/30" />
                 <Mic className="relative h-9 w-9" />
               </span>
-              <span className="text-[17px] font-bold">Gravar meu áudio</span>
+              <span className="text-[17px] font-bold">Começar agora</span>
             </button>
           </div>
         </section>
@@ -331,7 +330,7 @@ export default function InicioCreme() {
           <div className="mx-auto max-w-5xl">
             <div className="cv-reveal mx-auto max-w-2xl text-center">
               <Eyebrow>Comparação</Eyebrow>
-              <h2 className="cv-h2 mt-4">O que você recebe aqui e no Canva comum</h2>
+              <h2 className="cv-h2 mt-4">O que você recebe aqui e em um editor comum</h2>
             </div>
             <div className="cv-reveal mt-10 overflow-hidden rounded-[32px] border" style={{ borderColor: "var(--cv-line)" }}>
               <table className="w-full text-left text-sm">
@@ -339,7 +338,7 @@ export default function InicioCreme() {
                   <tr>
                     <th className="px-4 py-4 font-medium sm:px-6" style={{ color: "var(--cv-muted)" }}>O que você recebe</th>
                     <th className="px-2 py-4 text-center font-bold sm:px-6">Canva Viagem</th>
-                    <th className="px-2 py-4 text-center font-medium sm:px-6" style={{ color: "var(--cv-muted)" }}>Canva comum</th>
+                    <th className="px-2 py-4 text-center font-medium sm:px-6" style={{ color: "var(--cv-muted)" }}>Editor comum</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -385,10 +384,10 @@ export default function InicioCreme() {
       <section className="px-4 pb-10 pt-24" style={{ background: "linear-gradient(180deg, var(--cv-bg) 0%, #e9defc 55%, #c9b8fb 100%)" }}>
         <div className="cv-reveal mx-auto max-w-2xl text-center">
           <h2 className="cv-h2">Pare de postar no improviso.<br />Mande seu primeiro áudio.</h2>
-          <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Destino, dias e valor. Você recebe anúncio, carrossel, stories, site e vídeo com a sua logo.</p>
+          <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Destino, dias e valor. Você recebe anúncio, carrossel, stories e site com a sua logo, e vídeos prontos para postar.</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <button onClick={() => start("final_audio")} className="cv-btn h-14 w-full px-8 text-base sm:w-auto">
-              <Mic className="h-4 w-4" /> Gravar um áudio
+              <Mic className="h-4 w-4" /> Começar agora
             </button>
             <button onClick={() => start("final_cta")} className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full border bg-white px-8 text-base font-semibold sm:w-auto" style={{ borderColor: "rgba(32,28,19,.15)" }}>
               Comece agora <ArrowRight className="h-4 w-4" />
@@ -637,7 +636,7 @@ function LogoDrop({ onDone }: { onDone: () => void }) {
   const onChange = (e: ChangeEvent<HTMLInputElement>) => handleFile(e.target.files?.[0]);
 
   const places: { label: string; icon: Icon }[] = [
-    { label: "No anúncio", icon: Megaphone }, { label: "No carrossel", icon: Images }, { label: "No site", icon: Globe }, { label: "No vídeo", icon: Video },
+    { label: "No anúncio", icon: Megaphone }, { label: "No carrossel", icon: Images }, { label: "No site", icon: Globe }, { label: "Nos stories", icon: LayoutTemplate },
   ];
 
   return (
@@ -647,7 +646,7 @@ function LogoDrop({ onDone }: { onDone: () => void }) {
           <Eyebrow>Sua marca</Eyebrow>
           <h2 className="cv-h2 mt-4">Envie a logo uma vez. Ela entra em tudo.</h2>
           <p className="mt-4 text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
-            Anúncio, carrossel, stories, site e vídeo saem com a sua logo, as suas cores e o seu WhatsApp. Trocou a logo? Troca em tudo.
+            Anúncio, carrossel, stories e site saem com a sua logo, as suas cores e o seu WhatsApp. Trocou a logo? Troca em tudo.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {places.map((p, i) => (

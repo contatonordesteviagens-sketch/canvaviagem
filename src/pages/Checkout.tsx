@@ -39,6 +39,14 @@ function PlanDetails({ plan, offer, compact = false }: { plan: CheckoutCycle; of
       <p className="mt-4 text-[12px] leading-5 text-slate-500">
         Cancele quando quiser, em 2 cliques, direto no seu painel — sem ligação, sem multa. 7 dias de garantia para testar com um pacote real.
       </p>
+      <a
+        href="https://wa.me/5585986411294?text=Ol%C3%A1%2C%20tenho%20uma%20d%C3%BAvida%20antes%20de%20assinar%20o%20Canva%20Viagem"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-slate-700 underline"
+      >
+        Dúvida antes de assinar? Fale no WhatsApp
+      </a>
     </div>
   );
 }
