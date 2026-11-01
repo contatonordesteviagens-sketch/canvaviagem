@@ -358,11 +358,11 @@ function TrialGallery({ trial }: { trial: TrialResult }) {
         onScroll={onScroll}
         onPointerDown={() => { touched.current = true; }}
         onContextMenu={(e) => e.preventDefault()}
-        className="no-scrollbar flex select-none snap-x snap-mandatory gap-3 overflow-x-auto px-[15%] pb-2"
-        style={{ WebkitTouchCallout: "none" }}
+        className="no-scrollbar flex select-none snap-x snap-mandatory gap-3 overflow-x-auto pb-6"
+        style={{ WebkitTouchCallout: "none", paddingInline: "calc((100% - min(72vw, 36vh, 300px)) / 2)" }}
       >
         {arts.map((src, i) => (
-          <div key={src.slice(-40)} className="w-[70%] max-w-[300px] shrink-0 snap-center">
+          <div key={src.slice(-40)} className="shrink-0 snap-center" style={{ width: "min(72vw, 36vh, 300px)" }}>
             <img
               src={src}
               alt={`Arte ${i + 1} de ${trial.destino}`}
@@ -372,7 +372,7 @@ function TrialGallery({ trial }: { trial: TrialResult }) {
           </div>
         ))}
       </div>
-      <div className="mt-2 flex justify-center gap-1.5">
+      <div className="flex justify-center gap-1.5">
         {arts.map((src, i) => (
           <button
             key={src.slice(-24)}
