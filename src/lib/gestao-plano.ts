@@ -27,10 +27,10 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
     porque: "A conta está em 13,75% e o Resend pode pausar ou encerrar o envio acima de 4%. O remetente é o mesmo do link de login, então um bloqueio impede os clientes de entrar.",
   },
   {
-    quando: "Depois da sua decisão",
-    quem: "Claude",
-    oque: "Construir a arte na /inicio: escolhe o destino, envia a logo, vê até 3 artes com marca d'água e segue para o quiz.",
-    porque: "Hoje o botão Criar agora não cria nada. A pessoa precisa ver o produto funcionando antes de dar dados.",
+    quando: "Agora",
+    quem: "Lucas",
+    oque: "Abrir canvaviagem.com/inicio?arte=1 no celular, testar e dar o ok para ligar o sorteio: metade dos visitantes novos vê a arte, metade vê a página atual.",
+    porque: "A página com a arte já está no ar, mas só abre por esse link. O resultado aparece nesta aba, no quadro Teste da /inicio.",
   },
   {
     quando: "Antes dos anúncios",
@@ -167,7 +167,7 @@ export const CHECKLIST: ChecklistGrupo[] = [
   {
     titulo: "Antes de ligar os anúncios (análise crítica de 30/10)",
     itens: [
-      { id: "critica-arte-inicio", texto: "Arte com marca d'água na /inicio, com a logo salva", quem: "Claude", nota: "Hoje a logo enviada na /inicio se perde." },
+      { id: "critica-arte-inicio", texto: "Arte com marca d'água na /inicio, com a logo salva", quem: "Claude", feito: true, nota: "No ar pelo link com ?arte=1. O sorteio entre as duas páginas só liga depois do ok do Lucas." },
       { id: "critica-video", texto: "Promessa de vídeo com a logo decidida e corrigida", quem: "Lucas", nota: "Recomendação: vídeos prontos para postar, em breve com a sua logo." },
       { id: "critica-botao-audio", texto: "Botão de áudio da /inicio deixa de levar ao login sem gravar", quem: "Claude" },
       { id: "critica-numero-quiz", texto: "Número inventado e 14 dias de posts fora do quiz", quem: "Claude" },
@@ -232,6 +232,9 @@ export const FEITO: { data: string; itens: string[] }[] = [
   {
     data: "01/11",
     itens: [
+      "Arte na /inicio: escolhe o destino, envia a logo e vê 3 artes com marca d'água. O e-mail só aparece depois. Aberta só pelo link com ?arte=1.",
+      "Logo e destino escolhidos na /inicio passam para a Fábrica depois da assinatura. As respostas do quiz também voltaram a chegar lá.",
+      "Quadro Teste da /inicio no Plano: visitas, quiz, contas e assinaturas de cada página.",
       "Aba Uso na Gestão: totais, onde as pessoas travam e os dados de cada cliente.",
       "Visitas e cliques dos sites voltaram a ser registrados. Estavam parados desde 23/07 por um erro.",
       "Carrossel gerado, site aberto, site publicado e áudio passam a ser contados para assinantes.",

@@ -64,7 +64,7 @@ export default function ArtesLab() {
   const params = new URLSearchParams(window.location.search);
   const format = (params.get("format") === "story" ? "story" : "square") as "square" | "story";
   const cat = params.get("cat") === "experiencia" ? "experiencia_destino" : "oferta_destino";
-  const photo = PHOTOS[Number(params.get("photo") || 0) % PHOTOS.length];
+  const photo = params.get("img") || PHOTOS[Number(params.get("photo") || 0) % PHOTOS.length];
   const only = params.get("v");
   const dest = params.get("dest") || "Maragogi";
   const city = params.get("city") || "";

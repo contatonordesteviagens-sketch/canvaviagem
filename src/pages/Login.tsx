@@ -15,7 +15,8 @@ import { formatPhoneBR, cleanPhone } from "@/lib/phone-utils";
 import logoImage from "@/assets/logo.png";
 import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
 import { BrandMark, Eyebrow } from "@/components/cv-cream/shared";
-import { captureLead, LEAD_EMAIL_KEY } from "@/lib/lead-capture";
+import { LEAD_EMAIL_KEY } from "@/lib/lead-capture";
+import { startWithEmail } from "@/lib/quick-start";
 import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
 
 const pendingAuthStateKey = "cv:pending-auth-checkout";
@@ -154,29 +155,17 @@ const Login = () => {
       try { localStorage.setItem(LEAD_EMAIL_KEY, normalizedEmail); } catch { /* storage indisponível */ }
       await bindPendingCheckoutToEmail(normalizedEmail);
       if (quickEntry) {
-        captureLead(normalizedEmail, "lead");
-        // Da página inicial: guarda o e-mail e abre o quiz na hora, sem link nem tela de confirmação.
-        // E-mail novo já ganha conta e sessão (mailer_autoconfirm). Quem já tem conta recebe o link:
-        // entrar na conta sem ele seria inseguro. Assinante cai na conta; quem não assinou, no quiz.
-        const randomBytes = crypto.getRandomValues(new Uint8Array(24));
-        const password = Array.from(randomBytes, (b) => b.toString(16).padStart(2, "0")).join("");
-        const { data: signUp, error: signUpError } = await supabase.auth
-          .signUp({ email: normalizedEmail, password, options: { data: { quick_start: true } } })
-          .catch(() => ({ data: { session: null }, error: null }));
-        if (signUp?.session) {
+        // Da página inicial: assinante cai na conta; quem não assinou, no quiz.
+        const result = await startWithEmail(normalizedEmail, redirectTo);
+        if (result === "session") {
           // O efeito de login acima leva para o quiz assim que a sessão carregar.
           setOpeningQuiz(true);
           return;
         }
-        if (signUpError && /already|exists/i.test(`${signUpError.code ?? ""} ${signUpError.message}`)) {
-          const { data: linkSent } = await supabase.functions
-            .invoke("send-magic-link", { body: { email: normalizedEmail, siteUrl: window.location.origin, redirect: redirectTo } })
-            .catch(() => ({ data: null }));
-          if (linkSent?.success) {
-            setExistingAccount(true);
-            setMagicLinkSent(true);
-            return;
-          }
+        if (result === "existing") {
+          setExistingAccount(true);
+          setMagicLinkSent(true);
+          return;
         }
         navigate(redirectTo || "/onboarding");
         return;

@@ -18,6 +18,7 @@ import { captureLead, readLeadEmail } from "@/lib/lead-capture";
 import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
 import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
+import { trackInicioTeste } from "@/lib/inicio-teste";
 
 type Icon = ComponentType<{ className?: string }>;
 type Option = { id: string; label: string; hint: string; icon: Icon };
@@ -183,12 +184,21 @@ export default function Onboarding() {
     if (!startedRef.current) {
       startedRef.current = true;
       trackMetaEvent("ViewContent", { content_name: "Canva Viagem - Onboarding Quiz", content_category: "onboarding", content_type: "product" });
+      trackInicioTeste("quiz");
     }
     track("onboarding_step", { step: step + 1, kind: STEPS[step].kind, key: (STEPS[step] as QuestionStep).key ?? null });
     // Sem sessão (quem já tem conta e ainda não confirmou o e-mail): registra pelo e-mail digitado.
     if (!user) captureLead(readLeadEmail(), "step", { step: step + 1, kind: STEPS[step].kind, key: (STEPS[step] as QuestionStep).key ?? null });
     window.scrollTo({ top: 0 });
   }, [step, track, user]);
+
+  // Liga a conta ao grupo do teste, para a Gestão ver quem assinou em cada página.
+  const contaMarcada = useRef(false);
+  useEffect(() => {
+    if (!user || contaMarcada.current) return;
+    contaMarcada.current = true;
+    trackInicioTeste("conta");
+  }, [user]);
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));

@@ -11,12 +11,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { BrandMark, Eyebrow, delay, useReveal } from "@/components/cv-cream/shared";
 import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
+import { ArtTrial } from "@/components/cv-cream/ArtTrial";
+import { resolveInicioVariant, trackInicioTeste } from "@/lib/inicio-teste";
 import { siteOfferDemos } from "@/lib/site-offer-demos";
 import heroDashboard from "@/assets/hero_dashboard.jpg";
 
-export const ONBOARDING_PATH = "/onboarding";
-export const ONBOARDING_DESTINO_KEY = "cv-onboarding-destino";
-export const ONBOARDING_LOGO_KEY = "cv-onboarding-logo";
+import { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH } from "@/lib/inicio-arte";
+
+export { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH };
 
 type Icon = ComponentType<{ className?: string }>;
 
@@ -69,6 +71,8 @@ export default function InicioCreme() {
   const navigate = useNavigate();
   const { user, subscription } = useAuth();
   const [destino, setDestino] = useState("");
+  const [variant] = useState(() => resolveInicioVariant(window.location.search));
+  const artTest = variant === "arte";
   const [scrolled, setScrolled] = useState(false);
   const tracked = useRef(false);
   const pageRef = useReveal<HTMLDivElement>();
@@ -76,7 +80,8 @@ export default function InicioCreme() {
   useEffect(() => {
     if (tracked.current) return;
     tracked.current = true;
-    trackMetaEvent("ViewContent", { content_name: "Canva Viagem - Plataforma para Agências", content_category: "inicio_creme", content_type: "product" });
+    trackMetaEvent("ViewContent", { content_name: "Canva Viagem - Plataforma para Agências", content_category: artTest ? "inicio_arte" : "inicio_creme", content_type: "product" });
+    trackInicioTeste("visita");
   }, []);
 
   useEffect(() => {
@@ -88,6 +93,11 @@ export default function InicioCreme() {
 
   /** Todo caminho leva ao mesmo lugar: e-mail → quiz → pagamento (e-mail novo não espera o link). Assinante vai para a Fábrica. */
   const start = (source: string) => {
+    // No teste, o e-mail só aparece depois das artes: os botões da página levam até elas. "Acessar" continua sendo o login.
+    if (artTest && source !== "header") {
+      document.getElementById("teste-arte")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     const value = destino.trim();
     try {
       if (value) sessionStorage.setItem(ONBOARDING_DESTINO_KEY, value);
@@ -135,12 +145,23 @@ export default function InicioCreme() {
           <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
             <Eyebrow className="cv-pop">Para agências de viagens sem equipe de marketing</Eyebrow>
             <h1 className="cv-pop mt-4 text-balance text-[2.5rem] font-extrabold leading-[1.02] tracking-[-0.025em] sm:text-6xl md:text-[4.4rem]" style={delay(60)}>
-              Mande um áudio. Receba sua agência <span style={{ color: "var(--cv-primary-ink)" }}>inteira pronta.</span>
+              {artTest ? (
+                <>Escolha um destino. Veja o anúncio <span style={{ color: "var(--cv-primary-ink)" }}>pronto agora.</span></>
+              ) : (
+                <>Mande um áudio. Receba sua agência <span style={{ color: "var(--cv-primary-ink)" }}>inteira pronta.</span></>
+              )}
             </h1>
             <p className="cv-pop mt-6 max-w-xl text-lg leading-7" style={{ ...delay(120), color: "var(--cv-muted)" }}>
-              Fale o destino, os dias e o valor, do jeito que você fala com um cliente. Em minutos saem o anúncio, o carrossel, os stories, a página do pacote e os vídeos, tudo com a sua logo.
+              {artTest
+                ? "Teste aqui mesmo, sem cadastro. Escolha o destino, envie a sua logo e veja como fica a arte da sua agência."
+                : "Fale o destino, os dias e o valor, do jeito que você fala com um cliente. Em minutos saem o anúncio, o carrossel, os stories, a página do pacote e os vídeos, tudo com a sua logo."}
             </p>
 
+            {artTest ? (
+              <div className="cv-pop mt-8 w-full max-w-3xl text-left" style={delay(220)}>
+                <ArtTrial />
+              </div>
+            ) : (
             <form onSubmit={onHeroSubmit} className="cv-pop mt-8 w-full max-w-xl" style={delay(220)}>
               <div className="flex flex-col gap-2 rounded-[28px] border bg-white p-2 shadow-[0_18px_40px_-24px_rgba(32,28,19,.35)] sm:flex-row sm:items-center sm:rounded-full" style={{ borderColor: "var(--cv-line)" }}>
                 <label className="flex flex-1 items-center gap-3 px-4 py-2">
@@ -158,6 +179,7 @@ export default function InicioCreme() {
                 </button>
               </div>
             </form>
+            )}
           </div>
 
           {/* Faixas de peças reais: as novas em destaque, as antigas menores embaixo */}
@@ -268,7 +290,7 @@ export default function InicioCreme() {
         </section>
 
         {/* 5. Sua logo em tudo (acima do site) */}
-        <LogoDrop onDone={() => start("logo_upload")} />
+        {!artTest && <LogoDrop onDone={() => start("logo_upload")} />}
 
         {/* 6. Site pronto */}
         <SiteDemo onStart={() => start("site_demo_cta")} />

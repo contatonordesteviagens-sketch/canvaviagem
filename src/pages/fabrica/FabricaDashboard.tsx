@@ -101,7 +101,7 @@ const projectSwitchErrorMessage = (
 };
 
 export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
-  const { state, update, reset, deleteAndDiscardCurrentProject, switchProject } = useFabricaContext();
+  const { state, update, reset, deleteAndDiscardCurrentProject, switchProject, isHydrated } = useFabricaContext();
   const { user } = useAuth();
   const { limits, track } = useEntitlements();
   const {
@@ -117,9 +117,10 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   const [quickPackageText, setQuickPackageText] = useState("");
 
   // Quem veio do quiz já disse o destino e o momento da agência: a Fábrica começa com isso preenchido.
+  // Espera o projeto carregar: aplicado antes, o carregamento sobrescreve e o que veio do quiz se perde.
   const onboardingAppliedRef = useRef(false);
   useEffect(() => {
-    if (onboardingAppliedRef.current || !hasPendingOnboarding()) return;
+    if (!isHydrated || onboardingAppliedRef.current || !hasPendingOnboarding()) return;
     const answers = readOnboardingAnswers();
     if (!answers) return;
     onboardingAppliedRef.current = true;
@@ -131,7 +132,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       toast.success(`Trouxemos "${patch.destinos[0]}" do seu quiz. Seu primeiro anúncio já vai sair com esse destino.`, { duration: 7000 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isHydrated]);
 
   // "Porto de Galinhas, 5 dias, R$ 1.997, hotel + transfer + passeios" vira um pacote pronto.
   const createQuickPackage = () => {

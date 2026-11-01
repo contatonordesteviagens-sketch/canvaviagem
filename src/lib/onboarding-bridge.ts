@@ -7,8 +7,9 @@
  */
 import type { FabricaState } from "@/hooks/useFabricaContext";
 
-const QUIZ_KEY = "cv-onboarding-v1";
+const QUIZ_KEY = "cv-onboarding-v2";
 const DESTINO_KEY = "cv-onboarding-destino";
+const LOGO_KEY = "cv-onboarding-logo";
 const APPLIED_KEY = "cv-onboarding-aplicado";
 
 // Mesmos rótulos usados no quiz (Onboarding.tsx).
@@ -29,6 +30,7 @@ const TIPO_POR_MOMENTO: Record<string, FabricaState["agencyType"]> = {
 
 export interface OnboardingAnswers {
   destino: string;
+  logo: string;
   destinosGrupo: string[];
   momento?: string;
   travas: string[];
@@ -38,14 +40,16 @@ export interface OnboardingAnswers {
 export function readOnboardingAnswers(): OnboardingAnswers | null {
   try {
     const raw = localStorage.getItem(QUIZ_KEY);
-    const destinoDigitado = sessionStorage.getItem(DESTINO_KEY)?.trim() || "";
-    if (!raw && !destinoDigitado) return null;
+    const destinoDigitado = (sessionStorage.getItem(DESTINO_KEY) || localStorage.getItem(DESTINO_KEY) || "").trim();
+    const logo = sessionStorage.getItem(LOGO_KEY) || localStorage.getItem(LOGO_KEY) || "";
+    if (!raw && !destinoDigitado && !logo) return null;
     const parsed = raw ? (JSON.parse(raw) as { answers?: Record<string, string[]> }) : {};
     const answers = parsed.answers || {};
     const destinosGrupo = answers.destinos || [];
     const destino = destinoDigitado || (destinosGrupo[0] ? DESTINO_POR_GRUPO[destinosGrupo[0]] : "") || "";
     return {
       destino,
+      logo,
       destinosGrupo,
       momento: answers.momento?.[0],
       travas: answers.travas || [],
@@ -67,12 +71,15 @@ export function hasPendingOnboarding(): boolean {
 
 /** Monta o que a Fábrica pode herdar do quiz sem sobrescrever nada que já exista. */
 export function buildFabricaPatchFromOnboarding(
-  state: Pick<FabricaState, "destinos" | "agencyType">,
+  state: Pick<FabricaState, "destinos" | "agencyType" | "logoBase64">,
   answers: OnboardingAnswers,
 ): Partial<FabricaState> {
   const patch: Partial<FabricaState> = {};
   if (!(state.destinos || []).filter(Boolean).length && answers.destino) {
     patch.destinos = [answers.destino];
+  }
+  if (!state.logoBase64 && answers.logo) {
+    patch.logoBase64 = answers.logo;
   }
   if (!state.agencyType && answers.momento && TIPO_POR_MOMENTO[answers.momento]) {
     patch.agencyType = TIPO_POR_MOMENTO[answers.momento];
@@ -83,6 +90,7 @@ export function buildFabricaPatchFromOnboarding(
 export function markOnboardingApplied() {
   try {
     localStorage.setItem(APPLIED_KEY, new Date().toISOString());
+    localStorage.removeItem(LOGO_KEY);
   } catch {
     /* sem storage: na pior hipótese reaplica, e o patch não sobrescreve nada */
   }

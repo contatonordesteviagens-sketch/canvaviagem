@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, CircleDashed, ExternalLink, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InicioTesteCard } from "@/components/gestao/InicioTesteCard";
 import { supabase } from "@/integrations/supabase/client";
 import { SUPABASE_PUBLIC_KEY, SUPABASE_PUBLIC_URL } from "@/lib/supabase-public";
 import {
@@ -169,6 +170,8 @@ export function PlanoSection() {
           )}
         </CardContent>
       </Card>
+
+      <InicioTesteCard />
 
       <Card>
         <CardHeader><CardTitle className="text-lg">O que está sendo enviado</CardTitle></CardHeader>
