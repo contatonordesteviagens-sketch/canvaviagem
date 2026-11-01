@@ -14,7 +14,7 @@ function PortalStartContent() {
   return (
     <div className="mx-auto mb-6 w-full max-w-4xl text-left">
       <div ref={voiceRef} className="mb-3 scroll-mt-24">
-        <VoiceOnboarding variant="hero" onSaved={() => navigate("/fabrica/anuncio")} />
+        <VoiceOnboarding variant="hero" onSaved={() => navigate("/fabrica/anuncio?gerar=1")} />
       </div>
       <FabricaFirstSteps
         onGo={(target) => {

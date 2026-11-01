@@ -23,6 +23,19 @@ interface ExtractedData {
   >;
 }
 
+/** "R$ 1.990" vira preço único; "10x de R$ 199" vira parcela. Sem número, fica como está. */
+function spokenPriceFields(raw: string | undefined) {
+  const value = (raw || "").replace(/R\$/gi, " ").trim();
+  const parcel = value.match(/(\d{1,2})\s*x\s*(?:de\s*)?([\d.,]+)/i);
+  const amount = parcel ? parcel[2] : value.match(/\d[\d.,]*/)?.[0];
+  if (!amount) return {};
+  const cents = /,\d{2}$/.test(amount) ? "" : ",00";
+  const lastPrice = `${amount}${cents}`;
+  return parcel
+    ? { lastPrice, lastPaymentMode: "installments" as const, lastInstallments: `${parcel[1]}x` }
+    : { lastPrice, lastPaymentMode: "from" as const };
+}
+
 /**
  * Microfone único da plataforma. "bar" fica na barra da Fábrica; "hero" é o cartão grande do portal.
  * Os dois gravam, transcrevem, extraem e salvam no mesmo projeto.
@@ -200,6 +213,10 @@ export function VoiceOnboarding({ variant = "bar", onSaved }: { variant?: "bar" 
       whatsapp: fabricaState.whatsapp || (extractedData.whatsapp || "").replace(/\D/g, ""),
       instagram: fabricaState.instagram || extractedData.instagram || "",
       city: fabricaState.city || extractedData.city || "",
+      // A arte sai com o que a pessoa falou, e não com o preço de exemplo do formulário.
+      footerContact1Value: fabricaState.footerContact1Value || (extractedData.whatsapp || "").replace(/\D/g, ""),
+      footerContact2Value: fabricaState.footerContact2Value || extractedData.instagram || "",
+      ...spokenPriceFields(extractedData.packages?.[0]?.price),
       // Lista vazia da IA não pode apagar os destinos que o usuário já tinha.
       destinos: extractedData.destinos?.length ? extractedData.destinos : fabricaState.destinos,
       selectedPackages: [...newPackages, ...fabricaState.selectedPackages],
@@ -322,6 +339,7 @@ export function VoiceOnboarding({ variant = "bar", onSaved }: { variant?: "bar" 
         </div>
       )}
 
+      {state === "review" && extractedData && hero && <div className="fixed inset-0 z-[65] bg-black/60" />}
       {state === "review" && extractedData && (
         <div className={hero
           ? "fixed inset-x-3 top-16 z-[70] mx-auto max-h-[80vh] max-w-2xl overflow-y-auto bg-[#0F0F11] border border-white/10 rounded-xl p-6 space-y-6 shadow-2xl"

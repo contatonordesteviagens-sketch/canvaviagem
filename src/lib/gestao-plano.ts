@@ -33,6 +33,12 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
     porque: "O cadastro com conta de verdade foi testado só em simulação. Esse link fica fora da conta do teste.",
   },
   {
+    quando: "Hoje",
+    quem: "Lucas",
+    oque: "Na Stripe, em Desenvolvedores > Webhooks > stripe-webhook > Editar destino, marcar o evento charge.refunded e salvar.",
+    porque: "Sem esse evento, quem pede reembolso no cartão continua com acesso até o cancelamento manual. A proteção de permissões não deixou o Claude alterar isso.",
+  },
+  {
     quando: "Antes dos anúncios",
     quem: "Lucas",
     oque: "Decidir o pixel: compartilhar o pixel principal 2120347238758199 com a conta INFOS ALFA ou criar um pixel só do Canva Viagem nela.",
@@ -238,7 +244,8 @@ export const FEITO: { data: string; itens: string[] }[] = [
       "Missões, níveis e medalhas para quem nunca usou a plataforma, na Fábrica e no início.",
       "Promessas corrigidas: sem vídeo com a logo, sem nota inventada, sem 14 dias e sem estrelas no quiz. Garantia de 7 dias nos Termos e WhatsApp no pagamento.",
       "Medição: Lead só com o e-mail enviado, compra no cartão sem contar em dobro e compra no Pix enviada pelo servidor.",
-      "Reembolso integral no cartão encerra o acesso sozinho. No Pix ainda é manual.",
+      "Sistema pronto para encerrar o acesso no reembolso integral do cartão, mas só funciona depois de ligar o evento na Stripe. No Pix ainda é manual.",
+      "Áudio gera a arte sozinho: o preço, o WhatsApp e o Instagram falados entram na arte.",
       "Arte na /inicio: escolhe o destino, envia a logo e vê 3 artes com marca d'água. O e-mail só aparece depois. Metade dos visitantes novos vê essa página, metade vê a atual.",
       "Teste real da arte na /inicio: logo de verdade, assinante indo para a Fábrica e e-mail de conta existente, com o link entregue no Resend.",
       "Logo e destino escolhidos na /inicio passam para a Fábrica depois da assinatura. As respostas do quiz também voltaram a chegar lá.",

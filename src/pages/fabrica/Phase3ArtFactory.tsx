@@ -490,7 +490,7 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
 };
 
 export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode = false, onSkipToSite }: Props) => {
-  const { state, update, systemUpdate, reset } = useFabricaContext();
+  const { state, update, systemUpdate, reset, isHydrated } = useFabricaContext();
   const { user, isAdmin } = useAuth();
   const { reserve, commit, release, track, can, tier, remaining } = useEntitlements();
   const [showExportPaywall, setShowExportPaywall] = useState(false);
@@ -1170,6 +1170,27 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       }
     } as any);
   };
+
+  // Quem acabou de falar no microfone não passa pelo formulário: busca a foto e gera a arte sozinho.
+  const autoGenerateRef = useRef(new URLSearchParams(window.location.search).get("gerar") === "1");
+  const autoSearchedRef = useRef(false);
+  useEffect(() => {
+    if (!autoGenerateRef.current || !isHydrated) return;
+    if (!destination.trim()) {
+      autoGenerateRef.current = false;
+      return;
+    }
+    if (!autoSearchedRef.current) {
+      autoSearchedRef.current = true;
+      void searchPhotos(destination);
+      return;
+    }
+    if (!selectedPhotoUrl || searchingPhotos) return;
+    autoGenerateRef.current = false;
+    window.history.replaceState(null, "", window.location.pathname);
+    void generate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, destination, selectedPhotoUrl, searchingPhotos]);
 
   const generate = async (forceVariation?: number, accumulate: boolean = false) => {
     if (!destination.trim()) {

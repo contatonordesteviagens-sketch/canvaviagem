@@ -341,7 +341,7 @@ const FabricaInner = () => {
         {/* Top Bar with Voice AI and Phase Shortcuts */}
         <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-2xl bg-black border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 relative z-30">
             <div className="w-full sm:w-auto flex justify-center sm:justify-start shrink-0 min-w-0">
-              <VoiceOnboarding />
+              <VoiceOnboarding onSaved={isES ? undefined : () => navigate("/fabrica/anuncio?gerar=1")} />
             </div>
 
             <div className="h-4 w-px bg-white/10 mx-1 hidden sm:block"></div>
