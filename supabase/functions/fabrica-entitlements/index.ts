@@ -29,6 +29,7 @@ const TRACKED_EVENTS = new Set([
   "ad_export_completed",
   "carousel_export_completed",
   "site_published",
+  "audio_used",
 ]);
 
 type Tier =

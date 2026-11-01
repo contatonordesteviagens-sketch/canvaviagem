@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardList, Loader2, LayoutDashboard, FolderOpen, Upload, History, Users, MessageSquare, Globe } from "lucide-react";
+import { Activity, ClipboardList, Loader2, LayoutDashboard, FolderOpen, Upload, History, Users, MessageSquare, Globe } from "lucide-react";
 import {
   useAllContentItems,
   useAllCaptions,
@@ -21,6 +21,7 @@ import { insertMissingCaptions } from "@/utils/insertMissing";
 
 // Components
 import { PlanoSection } from "@/components/gestao/PlanoSection";
+import { UsoSection } from "@/components/gestao/UsoSection";
 import { ContentSection } from "@/components/gestao/ContentSection";
 import { ImportSection } from "@/components/gestao/ImportSection";
 import { DashboardSection } from "@/components/gestao/DashboardSection";
@@ -197,6 +198,10 @@ const Gestao = () => {
               <ClipboardList className="h-4 w-4" />
               <span>Plano</span>
             </TabsTrigger>
+            <TabsTrigger value="uso" className="flex items-center gap-2 flex-1 min-w-[120px]">
+              <Activity className="h-4 w-4" />
+              <span>Uso</span>
+            </TabsTrigger>
             <TabsTrigger value="dashboard" className="flex items-center gap-2 flex-1 min-w-[120px]">
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
@@ -230,6 +235,10 @@ const Gestao = () => {
           {/* Dashboard Tab */}
           <TabsContent value="plano" className="mt-0">
             <PlanoSection />
+          </TabsContent>
+
+          <TabsContent value="uso" className="mt-0">
+            <UsoSection />
           </TabsContent>
 
           <TabsContent value="dashboard" className="mt-0">

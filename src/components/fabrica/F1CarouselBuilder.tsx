@@ -4283,7 +4283,7 @@ export function F1CarouselBuilder({
   }, [agencyPhone, availableImages, coverImage, coverSource, isEs, selectedPackage, storageKey]);
 
   useEffect(() => {
-    if (tier !== "guest" || !selectedPackage || slides.length === 0) return;
+    if (!selectedPackage || slides.length === 0) return;
     const previewKey = `${selectedPackage.id}:${carouselFormat}:${slides.length}`;
     if (guestPreviewShownRef.current === previewKey) return;
     guestPreviewShownRef.current = previewKey;
@@ -4292,6 +4292,7 @@ export function F1CarouselBuilder({
       slide_count: slides.length,
       format: carouselFormat,
     });
+    if (tier !== "guest") return;
     if (guestPaywallTimerRef.current) window.clearTimeout(guestPaywallTimerRef.current);
     guestPaywallTimerRef.current = window.setTimeout(() => setShowExportPaywall(true), 10_000);
     return () => {

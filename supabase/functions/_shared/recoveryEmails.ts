@@ -6,7 +6,7 @@
 // 2) desconto  → 3º dia: 20% por 24 horas, fechado com o Lucas no WhatsApp do suporte.
 // 3) contato   → 7º dia: "estou tentando falar com você", conversa no WhatsApp.
 
-export type RecoveryKind = "pronta" | "desconto" | "contato" | LeadKind | BlackFridayKind | "novidades";
+export type RecoveryKind = "pronta" | "desconto" | "contato" | LeadKind | BlackFridayKind | "novidades" | "frio1";
 export type BlackFridayKind = "bf1" | "bf2" | "bf3" | "bf4" | "bf5" | "bf6";
 export type LeadKind = "lead1" | "lead2" | "lead3" | "lead4" | "lead5" | "lead6";
 
@@ -71,7 +71,7 @@ export function renderRecoveryEmail(kind: RecoveryKind, vars: {
   // Sem nome cadastrado (quase todo lead só tem e-mail): saudação sem nome.
   const greeting = first ? `Fala, <strong>${name}</strong>.` : "Fala, tudo bem?";
 
-  if (kind.startsWith("bf") || kind === "novidades") return renderBlackFridayEmail(kind as BlackFridayKind | "novidades", greeting, vars.payUrl, vars.unsubscribeUrl, Boolean(vars.neverSubscribed));
+  if (kind.startsWith("bf") || kind === "novidades" || kind === "frio1") return renderBlackFridayEmail(kind as BlackFridayKind | "novidades" | "frio1", greeting, vars.payUrl, vars.unsubscribeUrl, Boolean(vars.neverSubscribed));
   if (kind.startsWith("lead")) return renderLeadEmail(kind as LeadKind, first, greeting, vars.payUrl, vars.unsubscribeUrl);
 
   if (kind === "pronta") {
@@ -183,7 +183,7 @@ function renderLeadEmail(kind: LeadKind, first: string, greeting: string, url: s
   ]);
 }
 
-function renderBlackFridayEmail(kind: BlackFridayKind | "novidades", greeting: string, url: string, unsub: string, neverSubscribed: boolean): { subject: string; html: string } {
+function renderBlackFridayEmail(kind: BlackFridayKind | "novidades" | "frio1", greeting: string, url: string, unsub: string, neverSubscribed: boolean): { subject: string; html: string } {
   const hello = p(greeting);
   const go = (label: string) => btn(label, url, "#6440e6");
   const mail = (subject: string, preheader: string, parts: string[]) => ({
@@ -198,6 +198,15 @@ function renderBlackFridayEmail(kind: BlackFridayKind | "novidades", greeting: s
       list(["novos modelos de anúncio: agora são 12, e cada geração sai diferente", "novos modelos de carrossel, com ícones e textos melhores", "busca de fotos com mais opções para cada destino"]),
       p(`Já está tudo liberado na sua conta. Não precisa fazer nada.`),
       go("Abrir minha conta →"),
+    ]);
+  }
+  if (kind === "frio1") {
+    return mail("Você deixou seu e-mail e parou aí", "Sem problema. Mas abri uma condição até 30/11.", [
+      p(`Faz um tempo que você deixou seu e-mail no Canva Viagem e não chegou a assinar.`),
+      p(`Talvez não fosse a hora. Talvez tenha ficado na dúvida se ia usar de verdade.`),
+      p(`De lá para cá, refiz as artes, os carrosséis e o site da agência. Por isso, abri uma condição: metade do preço, para sempre. Você entra com esse valor e renova sempre por ele.`),
+      p(`O mensal, que hoje é R$ 97, fica R$ 48,50. A condição fecha em ${end}.`),
+      go("Quero entrar pela metade →"),
     ]);
   }
   if (kind === "bf1" && neverSubscribed) {

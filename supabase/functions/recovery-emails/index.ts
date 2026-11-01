@@ -127,6 +127,72 @@ async function campaignLink(db: ReturnType<typeof adminClient>, email: string, p
   return `${canonicalSiteUrl()}/auth/verify?token=${token}&redirect=${encodeURIComponent(target)}`;
 }
 
+// Quem só deixou o e-mail, do mais antigo ao mais novo. Só sai por pedido do admin, em levas pequenas.
+const COLD_MAX_PER_CALL = 60;
+const COLD_NOT_REAL = /(teste|test[._-]|@test|exemplo|example|mailinator|yopmail|tempmail|guerrillamail|lucashenrique|contatonordeste|canvaviagem|rochadigital|rzxv)/i;
+const COLD_VALID = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+const COLD_TYPO = /(\.con|\.cmo|\.comm)$|@(gmial|gmal|gamil|gnail|hotmal|hotmial|outlok)\./i;
+
+async function runColdList(db: ReturnType<typeof adminClient>, limit: number, dryRun: boolean) {
+  const firstSeen = new Map<string, number>();
+  const keep = (rawEmail: unknown, at: unknown) => {
+    const email = String(rawEmail ?? "").toLowerCase().trim();
+    const ms = Date.parse(String(at ?? ""));
+    if (!email || !Number.isFinite(ms)) return;
+    firstSeen.set(email, Math.min(firstSeen.get(email) ?? ms, ms));
+  };
+  const userEmail = new Map<string, string>();
+  for (let page = 1; ; page++) {
+    const { data, error } = await db.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) throw error;
+    for (const u of data.users) {
+      keep(u.email, u.created_at);
+      if (u.email) userEmail.set(u.id, u.email.toLowerCase().trim());
+    }
+    if (data.users.length < 1000) break;
+  }
+  const { data: captures } = await db.from("email_captures").select("email,first_seen_at");
+  for (const c of captures ?? []) keep(c.email, c.first_seen_at);
+
+  // Lista separada: ninguém que já assinou, tentou pagar, pediu para sair ou já recebeu e-mail nosso.
+  const [{ data: subs }, { data: pix }, { data: cards }, { data: unsubs }, { data: logs }] = await Promise.all([
+    db.from("subscriptions").select("user_id"),
+    db.from("pix_charges").select("email"),
+    db.from("card_checkouts").select("email"),
+    db.from("email_unsubscribes").select("email"),
+    db.from("recovery_email_log").select("email"),
+  ]);
+  const out = new Set<string>();
+  for (const s of subs ?? []) { const e = userEmail.get(s.user_id); if (e) out.add(e); }
+  for (const list of [pix, cards, unsubs, logs]) for (const row of list ?? []) out.add(String(row.email ?? "").toLowerCase().trim());
+
+  const queue = [...firstSeen.entries()]
+    .filter(([email]) => !out.has(email) && COLD_VALID.test(email) && !COLD_NOT_REAL.test(email) && !COLD_TYPO.test(email))
+    .sort((a, b) => a[1] - b[1]);
+  const base = { fila: queue.length, de: queue[0] ? new Date(queue[0][1]).toISOString().slice(0, 10) : null };
+  if (dryRun) return { ...base, dry_run: true };
+
+  let sent = 0;
+  const errors: string[] = [];
+  let lastAt: number | null = null;
+  for (const [email, at] of queue.slice(0, Math.min(limit, COLD_MAX_PER_CALL))) {
+    const { error: logErr } = await db.from("recovery_email_log").insert({ email, kind: "frio1" });
+    if (logErr) continue;
+    try {
+      const url = await campaignLink(db, email, "/black-friday", "lista_fria", "frio1");
+      await sendOne(email, "frio1", { firstName: await firstName(db, null, email), payUrl: url });
+      sent++;
+      lastAt = at;
+    } catch (err) {
+      const message = (err as Error).message;
+      errors.push(message.slice(0, 120));
+      await db.from("recovery_email_log").delete().eq("email", email).eq("kind", "frio1");
+      if (/quota|limit/i.test(message) || errors.length >= 3) break;
+    }
+  }
+  return { ...base, enviados: sent, ate: lastAt ? new Date(lastAt).toISOString().slice(0, 10) : null, restantes: queue.length - sent, erros: errors };
+}
+
 /**
  * Campanha da Black Friday: não faz nada fora das datas de BF_CAMPAIGN.
  * Ex-assinantes recebem a sequência bf1 a bf6; quem deixou o e-mail entra 3 dias depois de deixar;
@@ -236,13 +302,20 @@ Deno.serve(async (req) => {
   // ── Teste (admin): manda um modelo para um e-mail, sem registrar ──
   if (body?.test_to) {
     if (!adminEmail && !isServer) return json({ error: "Só admin" }, 403);
-    const kind: RecoveryKind = ["pronta", "desconto", "contato", "lead1", "lead2", "lead3", "lead4", "lead5", "lead6", "bf1", "bf2", "bf3", "bf4", "bf5", "bf6", "novidades"].includes(body.kind) ? body.kind : "pronta";
+    const kind: RecoveryKind = ["pronta", "desconto", "contato", "lead1", "lead2", "lead3", "lead4", "lead5", "lead6", "bf1", "bf2", "bf3", "bf4", "bf5", "bf6", "frio1", "novidades"].includes(body.kind) ? body.kind : "pronta";
     const to = String(body.test_to).toLowerCase().trim();
-    const testUrl = kind.startsWith("bf")
+    const testUrl = kind.startsWith("bf") || kind === "frio1"
       ? `${canonicalSiteUrl()}/black-friday?utm_source=email&utm_medium=winback&utm_campaign=${kind}`
       : `${canonicalSiteUrl()}/checkout?plano=annual&metodo=pix`;
     await sendOne(to, kind, { firstName: "Lucas", payUrl: testUrl, neverSubscribed: Boolean(body.never_subscribed) });
     return json({ test: true, sent: kind, to });
+  }
+
+  // ── Lista fria (admin): quem só deixou o e-mail, do mais antigo ao mais novo ──
+  if (body?.cold_list) {
+    if (!adminEmail && !isServer) return json({ error: "Só admin" }, 403);
+    const limit = Math.max(0, Math.floor(Number(body.limit) || 0));
+    return json(await runColdList(db, limit, Boolean(body.dry_run)));
   }
 
   // ── Envio automático ──

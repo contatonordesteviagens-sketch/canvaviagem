@@ -1,7 +1,7 @@
 // Conteúdo da aba Gestão > Plano. Atualizar a cada rodada de trabalho: é a memória do projeto.
 // Nada de número inventado: o que é proposta está escrito como proposta.
 
-export const PLANO_ATUALIZADO_EM = "31/10/2026";
+export const PLANO_ATUALIZADO_EM = "01/11/2026";
 
 export type Owner = "Lucas" | "Claude" | "Automático";
 export type ProximoPasso = { quando: string; quem: Owner; oque: string; porque: string };
@@ -19,6 +19,24 @@ export const STATUS_GERAL = [
 ] as const;
 
 export const PROXIMOS_PASSOS: ProximoPasso[] = [
+  {
+    quando: "01/11",
+    quem: "Claude",
+    oque: "Ler rejeição e pedidos de saída da lista fria, enviada do contato mais antigo ao mais novo, antes da próxima leva.",
+    porque: "É a lista mais antiga. Se a rejeição passar de 4%, paramos: ela usa o mesmo remetente do link de login.",
+  },
+  {
+    quando: "Depois da sua decisão",
+    quem: "Claude",
+    oque: "Construir a arte na /inicio: escolhe o destino, envia a logo, vê até 3 artes com marca d'água e segue para o quiz.",
+    porque: "Hoje o botão Criar agora não cria nada. A pessoa precisa ver o produto funcionando antes de dar dados.",
+  },
+  {
+    quando: "Antes dos anúncios",
+    quem: "Claude",
+    oque: "Corrigir promessas e medição: vídeo com logo, botão de áudio da /inicio, número do quiz, compra contada em dobro, Lead no clique e Pix pelo servidor.",
+    porque: "Sem isso, o anúncio paga por promessa que o cliente confere no primeiro dia, e você não sabe o que vendeu.",
+  },
   {
     quando: "Hoje",
     quem: "Lucas",
@@ -75,6 +93,7 @@ export const ENVIOS: { data: string; iso: string; kind: string; publico: string;
 ];
 
 export const AUTOMACOES = [
+  { nome: "Lista fria: só deixou o e-mail", como: "Envio manual, do mais antigo ao mais novo, com 50% para sempre até 30/11. Fica fora quem já assinou, tentou pagar, pediu para sair ou já recebeu e-mail nosso." },
   { nome: "Quem deixou o e-mail e não comprou", como: "6 e-mails: 1 h depois e a cada 2 dias. Ligada." },
   { nome: "Gerou Pix ou abriu o cartão e não pagou", como: "3 e-mails: 1 h, 3 dias e 7 dias. Ligada." },
   { nome: "Black Vitalícia", como: "No máximo 70 por dia, para sobrar cota do Resend para login e compra. Fecha às 23h59 de 30/11." },
@@ -139,6 +158,24 @@ export const NOVE_QUADROS: { fase: string; titulo: string; texto: string; estado
 
 export const CHECKLIST: ChecklistGrupo[] = [
   {
+    titulo: "Antes de ligar os anúncios (análise crítica de 30/10)",
+    itens: [
+      { id: "critica-arte-inicio", texto: "Arte com marca d'água na /inicio, com a logo salva", quem: "Claude", nota: "Hoje a logo enviada na /inicio se perde." },
+      { id: "critica-video", texto: "Promessa de vídeo com a logo decidida e corrigida", quem: "Lucas", nota: "Recomendação: vídeos prontos para postar, em breve com a sua logo." },
+      { id: "critica-botao-audio", texto: "Botão de áudio da /inicio deixa de levar ao login sem gravar", quem: "Claude" },
+      { id: "critica-numero-quiz", texto: "Número inventado e 14 dias de posts fora do quiz", quem: "Claude" },
+      { id: "critica-compra-dobro", texto: "Compra no cartão contada uma vez só no pixel", quem: "Claude", nota: "Passa a contar em dobro desde que o aviso da Stripe foi ligado." },
+      { id: "critica-lead", texto: "Lead contado depois do e-mail, não no clique", quem: "Claude" },
+      { id: "critica-pix-servidor", texto: "Compra no Pix enviada ao Meta pelo servidor", quem: "Claude" },
+      { id: "critica-google-ads", texto: "Conversão do Google Ads em português", quem: "Claude" },
+      { id: "critica-canva-comum", texto: "Tirar Canva comum da tabela e do quiz", quem: "Claude" },
+      { id: "critica-whatsapp", texto: "WhatsApp no checkout", quem: "Claude" },
+      { id: "critica-termos", texto: "Garantia de 7 dias escrita nos Termos", quem: "Claude" },
+      { id: "critica-preco", texto: "Preço na /inicio", quem: "Claude" },
+      { id: "critica-quiz-curto", texto: "Quiz com cerca de 10 telas e a arte na tela de preço", quem: "Claude" },
+    ],
+  },
+  {
     titulo: "Para confiar no pagamento",
     itens: [
       { id: "compra-real-pix", texto: "Venda real no Pix, com acesso liberado e arte baixada", quem: "Lucas", feito: true },
@@ -185,6 +222,14 @@ export const CHECKLIST: ChecklistGrupo[] = [
 ];
 
 export const FEITO: { data: string; itens: string[] }[] = [
+  {
+    data: "01/11",
+    itens: [
+      "Aba Uso na Gestão: totais, onde as pessoas travam e os dados de cada cliente.",
+      "Carrossel gerado, site aberto, site publicado e áudio passam a ser contados para assinantes.",
+      "Envio da lista fria, do contato mais antigo ao mais novo.",
+    ],
+  },
   {
     data: "31/10",
     itens: [

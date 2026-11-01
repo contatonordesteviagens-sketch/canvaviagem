@@ -2982,9 +2982,11 @@ const PublishSiteCard = ({
   const { can, track } = useEntitlements();
   const [showPublishPaywall, setShowPublishPaywall] = useState(false);
   const sitePreviewTimerRef = useRef<number | null>(null);
+  const sitePreviewTrackedRef = useRef(false);
 
   useEffect(() => {
-    if (user?.id || !html) return;
+    if (!html || sitePreviewTrackedRef.current) return;
+    sitePreviewTrackedRef.current = true;
     track("site_preview_generated", { source: "site_builder" });
     // O paywall NÃO abre mais sozinho (antes: após 10s). Só ao clicar em Publicar ou Baixar.
     return () => {
@@ -3084,6 +3086,7 @@ const PublishSiteCard = ({
         siteContent: result.state.siteContent,
       });
 
+      track("site_published", { source: "site_builder" });
       toast.success("Site publicado no link Canva Viagem!", { id: toastId });
     } catch (err: any) {
       // Fix #7b: Sanitiza mensagem técnica de banco antes de exibir ao usuário

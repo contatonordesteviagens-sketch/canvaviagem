@@ -125,6 +125,7 @@ export function VoiceOnboarding() {
       const transcribeData = await response.json();
       const fullText: string = (transcribeData?.text || "").trim();
       setTranscript(fullText);
+      track("audio_used", { source: "voice_onboarding" });
 
       if (!fullText || fullText.length < 5) {
         throw new Error("Não conseguimos entender o áudio. Fale mais alto e por pelo menos 10 segundos.");
