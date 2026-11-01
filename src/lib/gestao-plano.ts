@@ -9,6 +9,7 @@ export type ChecklistItem = { id: string; texto: string; quem: Owner; feito?: bo
 export type ChecklistGrupo = { titulo: string; itens: ChecklistItem[] };
 
 export const STATUS_GERAL = [
+  { area: "Lista fria: só deixou o e-mail", estado: "problema", detalhe: "Pausada em 31/10. Dos 20 contatos mais antigos, 5 voltaram (25%). Faltam 208. Não enviar sem validar a lista." },
   { area: "Página inicial, quiz e captura de e-mail", estado: "ok", detalhe: "Conferido em produção em 31/10." },
   { area: "Artes, carrossel e site da Fábrica", estado: "ok", detalhe: "12 modelos em rodízio, feed e stories. PNG conferido." },
   { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo." },
@@ -22,8 +23,8 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
   {
     quando: "01/11",
     quem: "Claude",
-    oque: "Ler rejeição e pedidos de saída da lista fria, enviada do contato mais antigo ao mais novo, antes da próxima leva.",
-    porque: "É a lista mais antiga. Se a rejeição passar de 4%, paramos: ela usa o mesmo remetente do link de login.",
+    oque: "Decidir como validar os 208 contatos restantes da lista fria antes de qualquer novo envio. Ver quem clicou nos 15 que não voltaram.",
+    porque: "A primeira leva teve 25% de rejeição, muito acima dos 4% considerados limite. O remetente é o mesmo do link de login, e o Resend pode suspender a conta.",
   },
   {
     quando: "Depois da sua decisão",
@@ -93,7 +94,7 @@ export const ENVIOS: { data: string; iso: string; kind: string; publico: string;
 ];
 
 export const AUTOMACOES = [
-  { nome: "Lista fria: só deixou o e-mail", como: "Envio manual, do mais antigo ao mais novo, com 50% para sempre até 30/11. Fica fora quem já assinou, tentou pagar, pediu para sair ou já recebeu e-mail nosso." },
+  { nome: "Lista fria: só deixou o e-mail", como: "Pausada. Envio manual, do mais antigo ao mais novo, com 50% para sempre até 30/11. 20 enviados em 31/10, 5 voltaram. Fica fora quem já assinou, tentou pagar, pediu para sair ou já recebeu e-mail nosso." },
   { nome: "Quem deixou o e-mail e não comprou", como: "6 e-mails: 1 h depois e a cada 2 dias. Ligada." },
   { nome: "Gerou Pix ou abriu o cartão e não pagou", como: "3 e-mails: 1 h, 3 dias e 7 dias. Ligada." },
   { nome: "Black Vitalícia", como: "No máximo 70 por dia, para sobrar cota do Resend para login e compra. Fecha às 23h59 de 30/11." },
@@ -228,7 +229,7 @@ export const FEITO: { data: string; itens: string[] }[] = [
       "Aba Uso na Gestão: totais, onde as pessoas travam e os dados de cada cliente.",
       "Visitas e cliques dos sites voltaram a ser registrados. Estavam parados desde 23/07 por um erro.",
       "Carrossel gerado, site aberto, site publicado e áudio passam a ser contados para assinantes.",
-      "Envio da lista fria, do contato mais antigo ao mais novo.",
+      "Primeira leva da lista fria: 20 enviados, 5 voltaram. Envio pausado.",
     ],
   },
   {
