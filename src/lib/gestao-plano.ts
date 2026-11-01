@@ -233,6 +233,7 @@ export const FEITO: { data: string; itens: string[] }[] = [
     data: "01/11",
     itens: [
       "Arte na /inicio: escolhe o destino, envia a logo e vê 3 artes com marca d'água. O e-mail só aparece depois. Metade dos visitantes novos vê essa página, metade vê a atual.",
+      "Teste real da arte na /inicio: logo de verdade, assinante indo para a Fábrica e e-mail de conta existente, com o link entregue no Resend.",
       "Logo e destino escolhidos na /inicio passam para a Fábrica depois da assinatura. As respostas do quiz também voltaram a chegar lá.",
       "Quadro Teste da /inicio no Plano: visitas, quiz, contas e assinaturas de cada página.",
       "Aba Uso na Gestão: totais, onde as pessoas travam e os dados de cada cliente.",
@@ -262,6 +263,7 @@ export const FEITO: { data: string; itens: string[] }[] = [
 ];
 
 export const NAO_TESTADO = [
+  "Cadastro de e-mail novo depois da mudança de 01/11 na /inicio: testado só em simulação. O último cadastro real foi antes dela. A primeira linha nova em Criaram conta, no quadro Teste da /inicio, confirma.",
   "Resto da migração de 23/07 dos projetos da Fábrica: só a parte do registro de visitas foi aplicada. Falta conferir se o restante está no banco.",
   "Pagamento real no cartão e com o valor da Black. O Pix foi confirmado só no preço cheio de R$ 97.",
   "Limite de 70 por dia em envio real: só simulado, roda a partir de 17/11.",
