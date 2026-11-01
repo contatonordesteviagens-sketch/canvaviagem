@@ -103,7 +103,7 @@ export function ArtTrial() {
   };
 
   return (
-    <div ref={topRef} id="teste-arte" className="w-full scroll-mt-24">
+    <div ref={topRef} id="teste-arte" className="w-full scroll-mt-36">
       {stage === "destino" && (
         <div className="cv-pop">
           <p className="text-[15px] font-bold">1. Escolha um destino</p>
