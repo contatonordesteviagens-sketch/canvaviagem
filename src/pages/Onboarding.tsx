@@ -20,31 +20,24 @@ import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import { trackInicioTeste } from "@/lib/inicio-teste";
 import { readTrialResult, type TrialResult } from "@/lib/inicio-arte";
+import depoimento1 from "@/assets/depoimento1.jpg";
+import depoimento2 from "@/assets/depoimento2.png";
+import depoimento3 from "@/assets/depoimento3.jpg";
 
 type Icon = ComponentType<{ className?: string }>;
 type Option = { id: string; label: string; hint: string; icon: Icon };
 type QuestionStep = { kind: "question"; key: AnswerKey; title: string; sub: string; multi?: boolean; options: Option[] };
-type ScreenStep = { kind: "intro" | "how-buy" | "speed" | "start-small" | "one-destino" | "diagnosis" | "sample" | "building" | "result" | "loop" | "offer" };
+type ScreenStep = { kind: "intro" | "sample" | "building" | "result" | "proof" | "offer" };
 type Step = QuestionStep | ScreenStep;
 type AnswerKey = "objetivo" | "ferramenta" | "desafio" | "momento" | "orcamentos" | "destinos" | "travas" | "prazo";
 type Answers = Partial<Record<AnswerKey, string[]>>;
 type Cycle = "monthly" | "semiannual" | "annual";
 
-// v2: entrou a pergunta de orçamentos; a v1 guardava o passo pela ordem antiga.
-const STORAGE_KEY = "cv-onboarding-v2";
+// v3: quiz de 10 telas; as versões antigas guardavam o passo pela ordem antiga.
+const STORAGE_KEY = "cv-onboarding-v3";
 
 const STEPS: Step[] = [
   { kind: "intro" },
-  {
-    kind: "question", key: "objetivo", title: "O que mais vendas mudariam pra você?", sub: "Seja sincero, isso muda tudo o que vamos recomendar",
-    options: [
-      { id: "contas", label: "Pagar as contas do mês", hint: "Ter um caixa previsível", icon: Wallet },
-      { id: "primeira", label: "Fazer a primeira venda", hint: "Sair do zero de vez", icon: Sprout },
-      { id: "emprego", label: "Largar o emprego", hint: "Viver só da agência", icon: Briefcase },
-      { id: "crescer", label: "Crescer a agência", hint: "Vender mais do que já vendo", icon: TrendingUp },
-    ],
-  },
-  { kind: "how-buy" },
   {
     kind: "question", key: "ferramenta", title: "Como você cria seus posts hoje?", sub: "Isso decide quanto trabalho a gente tira das suas mãos",
     options: [
@@ -54,7 +47,6 @@ const STEPS: Step[] = [
       { id: "nada", label: "Quase não posto", hint: "Não sei por onde começar", icon: EyeOff },
     ],
   },
-  { kind: "speed" },
   {
     kind: "question", key: "desafio", title: "Qual é o seu maior desafio hoje?", sub: "Escolha o que mais pesa",
     options: [
@@ -62,15 +54,6 @@ const STEPS: Step[] = [
       { id: "ninguem", label: "Posto e ninguém chama", hint: "Curtidas sem orçamento", icon: MessageCircleOff },
       { id: "tempo", label: "Demora demais pra criar", hint: "Uma arte leva a tarde toda", icon: Clock },
       { id: "amador", label: "Meus posts parecem amadores", hint: "Não passam confiança", icon: Frown },
-    ],
-  },
-  {
-    kind: "question", key: "momento", title: "Em que momento a sua agência está?", sub: "Não existe resposta errada",
-    options: [
-      { id: "comecando", label: "Começando agora", hint: "Ainda não vendi", icon: Sprout },
-      { id: "pouco", label: "Já vendi, mas pouco", hint: "Vendas de vez em quando", icon: Rocket },
-      { id: "todo-mes", label: "Vendo todo mês", hint: "Quero escalar", icon: TrendingUp },
-      { id: "equipe", label: "Tenho equipe", hint: "Agência estruturada", icon: Users },
     ],
   },
   {
@@ -82,7 +65,6 @@ const STEPS: Step[] = [
       { id: "muitos", label: "Mais de 20", hint: "Preciso organizar e fechar mais", icon: Users },
     ],
   },
-  { kind: "start-small" },
   {
     kind: "question", key: "destinos", multi: true, title: "Quais destinos você mais vende?", sub: "Marque todos que quiser",
     options: [
@@ -93,29 +75,10 @@ const STEPS: Step[] = [
       { id: "excursao", label: "Excursões", hint: "Bate-volta e grupos", icon: Bus },
     ],
   },
-  { kind: "one-destino" },
-  {
-    kind: "question", key: "travas", multi: true, title: "Algum desses parece com você?", sub: "Marque todos que se aplicam",
-    options: [
-      { id: "design", label: "Não sei criar postagens", hint: "Não sei editar fotos nem vídeos", icon: Palette },
-      { id: "tempo", label: "Não tenho tempo", hint: "Já faço muita coisa e não sobra tempo pra mais nada", icon: Clock },
-      { id: "vergonha", label: "Preciso melhorar meu Instagram", hint: "Quero que pareça de uma grande agência de viagens", icon: EyeOff },
-    ],
-  },
-  { kind: "diagnosis" },
-  {
-    kind: "question", key: "prazo", title: "Pra quando você quer isso funcionando?", sub: "Última pergunta",
-    options: [
-      { id: "semana", label: "Esta semana", hint: "Preciso vender agora", icon: Flame },
-      { id: "mes", label: "Este mês", hint: "Construindo com calma", icon: CalendarDays },
-      { id: "meses", label: "Nos próximos meses", hint: "Sem pressa", icon: Leaf },
-      { id: "olhando", label: "Só olhando", hint: "Vendo o que é possível", icon: Eye },
-    ],
-  },
   { kind: "sample" },
   { kind: "building" },
   { kind: "result" },
-  { kind: "loop" },
+  { kind: "proof" },
   { kind: "offer" },
 ];
 
@@ -337,15 +300,10 @@ type ScreenProps = {
 function Screen(props: ScreenProps) {
   switch (props.kind) {
     case "intro": return <Intro onNext={props.onNext} />;
-    case "how-buy": return <HowBuy onNext={props.onNext} />;
-    case "speed": return <Speed onNext={props.onNext} />;
-    case "start-small": return <StartSmall onNext={props.onNext} />;
-    case "one-destino": return <OneDestino destino={props.destino} onNext={props.onNext} />;
-    case "diagnosis": return <Diagnosis answers={props.answers} onNext={props.onNext} />;
     case "sample": return <Sample onNext={props.onNext} />;
     case "building": return <Building onDone={props.onNext} />;
     case "result": return <Result answers={props.answers} destino={props.destino} onNext={props.onNext} />;
-    case "loop": return <Loop onNext={props.onNext} />;
+    case "proof": return <Proof onNext={props.onNext} />;
     case "offer": return <Offer plan={props.plan} setPlan={props.setPlan} onCheckout={props.onCheckout} />;
   }
 }
@@ -388,7 +346,7 @@ function Intro({ onNext }: { onNext: () => void }) {
     <>
       <div className="flex flex-col items-center text-center">
         <span className="cv-pop inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 text-[12px] font-semibold" style={{ borderColor: "var(--cv-line)" }}>
-          Quiz de 2 minutos
+          Quiz de 1 minuto
         </span>
         <h1 className="cv-pop mt-5 text-balance text-[32px] font-extrabold leading-[1.05] tracking-[-0.025em]" style={delay(80)}>
           {trial ? (
@@ -399,8 +357,8 @@ function Intro({ onNext }: { onNext: () => void }) {
         </h1>
         <p className="cv-pop mt-3 max-w-[320px] text-[15px] leading-6" style={{ ...delay(160), color: "var(--cv-muted)" }}>
           {trial
-            ? "Toque para ver cada uma. Responda 8 perguntas rápidas e veja o plano para usar essas artes sem marca d'água, com o seu preço e o seu WhatsApp."
-            : "Anúncio, carrossel e site com a sua logo, e vídeos prontos para postar. Responda 8 perguntas rápidas e veja o plano certo para a sua agência."}
+            ? "Toque para ver cada uma. Responda 4 perguntas rápidas e veja o plano para usar essas artes sem marca d'água, com o seu preço e o seu WhatsApp."
+            : "Anúncio, carrossel e site com a sua logo, e vídeos prontos para postar. Responda 4 perguntas rápidas e veja o plano certo para a sua agência."}
         </p>
       </div>
       {trial ? (
@@ -426,142 +384,10 @@ function Intro({ onNext }: { onNext: () => void }) {
   );
 }
 
-function HowBuy({ onNext }: { onNext: () => void }) {
-  const steps = [
-    { icon: Instagram, title: "Vê o seu post", text: "O cliente para no feed por causa da arte." },
-    { icon: MessageCircle, title: "Chama no WhatsApp", text: "A legenda certa faz ele pedir orçamento." },
-    { icon: Globe2, title: "Recebe a página do pacote", text: "Roteiro, fotos e valor, tudo organizado." },
-    { icon: CircleCheck, title: "Fecha com você", text: "Entendeu o valor antes de pedir desconto." },
-  ];
-  return (
-    <>
-      <Title sub="E quase sempre começa no Instagram.">É assim que o cliente compra viagem hoje</Title>
-      <div className="mt-7 space-y-3">
-        {steps.map((s, i) => (
-          <div key={s.title} className="cv-pop cv-card flex items-center gap-4 p-4" style={delay(120 + i * 110)}>
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full" style={{ background: "var(--cv-accent-soft)", color: "var(--cv-accent)" }}><s.icon className="h-5 w-5" /></span>
-            <div>
-              <p className="text-[15px] font-bold">{i + 1}. {s.title}</p>
-              <p className="text-[13px]" style={{ color: "var(--cv-muted)" }}>{s.text}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <p className="cv-pop mt-6 text-[15px] leading-6" style={{ ...delay(600), color: "var(--cv-muted)" }}>
-        Se o primeiro passo falha, <strong className="text-[var(--cv-fg)]">nenhum dos outros acontece.</strong> É aí que a gente entra.
-      </p>
-      <BottomCta onClick={onNext}>Continuar</BottomCta>
-    </>
-  );
-}
 
-function Speed({ onNext }: { onNext: () => void }) {
-  const rows = [
-    { label: "Editor comum", time: "2–3 h", width: 78, color: "#d8cfb8" },
-    { label: "Designer", time: "1–3 dias", width: 100, color: "#d8cfb8" },
-    { label: "Canva Viagem", time: "2 min", width: 9, color: "var(--cv-primary)" },
-  ];
-  return (
-    <>
-      <Title sub="Achar a ideia, montar a arte, escrever a legenda, aplicar a sua marca: esse é o trabalho todo, e é exatamente o que a gente faz.">Você não vai precisar de <Accent>nada disso</Accent></Title>
-      <div className="cv-pop cv-card mt-7 p-5" style={delay(150)}>
-        <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>TEMPO POR ARTE</p>
-        <div className="mt-4 space-y-4">
-          {rows.map((r, i) => (
-            <div key={r.label}>
-              <div className="mb-1.5 flex justify-between text-[13px]">
-                <span className="font-semibold">{r.label}</span>
-                <span className="font-bold" style={{ color: i === 2 ? "var(--cv-primary-ink)" : "var(--cv-muted)" }}>{r.time}</span>
-              </div>
-              <div className="h-2.5 overflow-hidden rounded-full bg-[#f3ecda]">
-                <div className="cv-fill h-full rounded-full" style={{ ...delay(300 + i * 150), width: `${r.width}%`, background: r.color }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <p className="cv-pop mt-6 text-[15px] leading-6" style={{ ...delay(500), color: "var(--cv-muted)" }}>
-        Fale o pacote num áudio ou digite, e a arte sai com a sua logo. <strong className="text-[var(--cv-fg)]">Do zero ao post em uns 2 minutos.</strong>
-      </p>
-      <BottomCta onClick={onNext}>Continuar</BottomCta>
-    </>
-  );
-}
 
-function StartSmall({ onNext }: { onNext: () => void }) {
-  const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
-  return (
-    <>
-      <Title sub="Você não precisa de milhares de seguidores. Precisa aparecer todo dia com posts que fazem o cliente chamar.">Começar pequeno <Accent>não é problema</Accent></Title>
-      <div className="cv-pop cv-card mt-7 p-5" style={delay(150)}>
-        <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>CONSTÂNCIA DE UMA SEMANA</p>
-        <div className="mt-4 grid grid-cols-7 gap-1.5">
-          {days.map((d, i) => (
-            <div key={d} className="cv-pop flex flex-col items-center gap-1.5" style={delay(250 + i * 80)}>
-              <span className="text-[11px]" style={{ color: "var(--cv-muted)" }}>{d}</span>
-              <span className="grid aspect-square w-full place-items-center rounded-lg" style={{ background: i === 3 || i === 5 ? "#ff3d8b" : "#efe9ff" }}>
-                <Check className={`h-3.5 w-3.5 ${i === 3 || i === 5 ? "text-white" : "text-[#6440e6]"}`} />
-              </span>
-            </div>
-          ))}
-        </div>
-        <p className="mt-4 text-[13px]" style={{ color: "var(--cv-muted)" }}>7 posts na semana. Não precisa acertar em todos, <strong className="text-[var(--cv-fg)]">precisa estar lá quando o cliente procurar.</strong></p>
-      </div>
-      <BottomCta onClick={onNext}>Continuar</BottomCta>
-    </>
-  );
-}
 
-function OneDestino({ destino, onNext }: { destino: string; onNext: () => void }) {
-  const formats = [
-    { icon: Instagram, label: "Posts de feed", n: 3 },
-    { icon: LayoutTemplate, label: "Stories", n: 3 },
-    { icon: Images, label: "Carrossel", n: 2 },
-    { icon: Globe2, label: "Página do pacote no seu site", n: 1 },
-    { icon: Megaphone, label: "Anúncio pra impulsionar", n: 2 },
-    { icon: MessageCircle, label: "Texto pro WhatsApp", n: 1 },
-  ];
-  return (
-    <>
-      <Title sub="Um áudio com destino, dias e valor vira peças pra todos os lugares onde o seu cliente está.">Um áudio. <Accent>Tudo isso pronto.</Accent></Title>
-      <div className="cv-pop mt-7 flex items-center justify-center gap-2 rounded-full border bg-white px-4 py-3 text-[15px] font-bold" style={{ ...delay(120), borderColor: "var(--cv-line)" }}>
-        <MapPin className="h-4 w-4" style={{ color: "var(--cv-accent)" }} /> {destino}
-      </div>
-      <div className="mt-4 space-y-2">
-        {formats.map((f, i) => (
-          <div key={f.label} className="cv-pop cv-card flex items-center justify-between rounded-[20px] px-4 py-3" style={delay(220 + i * 90)}>
-            <span className="flex items-center gap-3 text-[14px] font-semibold"><f.icon className="h-4 w-4" style={{ color: "var(--cv-primary-ink)" }} /> {f.label}</span>
-            <span className="rounded-full bg-[#efe9ff] px-2.5 py-0.5 text-[13px] font-bold text-[#6440e6]">×{f.n}</span>
-          </div>
-        ))}
-      </div>
-      <p className="cv-pop mt-5 text-[15px]" style={{ ...delay(750), color: "var(--cv-muted)" }}>Ninguém é gênio aqui. <strong className="text-[var(--cv-fg)]">É constância.</strong></p>
-      <BottomCta onClick={onNext}>Continuar</BottomCta>
-    </>
-  );
-}
 
-function Diagnosis({ answers, onNext }: { answers: Answers; onNext: () => void }) {
-  const items = (answers.travas?.length ? answers.travas : ["tempo"]).map((id) => FIXES[id]).filter(Boolean);
-  return (
-    <>
-      <Title sub="Cada um deles tem solução.">Isso é o que está te travando</Title>
-      <div className="mt-7 space-y-2.5">
-        {items.map((it, i) => (
-          <div key={it.title} className="cv-pop cv-card flex items-center gap-3.5 rounded-[22px] p-3.5" style={delay(120 + i * 120)}>
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl" style={{ background: "var(--cv-sand)" }}><it.icon className="h-[18px] w-[18px]" /></span>
-            <span className="flex-1">
-              <span className="block text-[14px] font-semibold">{it.title}</span>
-              <span className="block text-[12px]" style={{ color: "var(--cv-muted)" }}>{it.fix}</span>
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#dcf5e8] px-2 py-1 text-[10px] font-bold tracking-[0.6px] text-[#15803d]"><Check className="h-3 w-3" /> TEM SOLUÇÃO</span>
-          </div>
-        ))}
-      </div>
-      <BottomCta onClick={onNext}>Ver como a gente resolve <ArrowRight className="h-4 w-4" /></BottomCta>
-    </>
-  );
-}
 
 function Sample({ onNext }: { onNext: () => void }) {
   return (
@@ -647,7 +473,7 @@ function CrmPreview() {
 function Building({ onDone }: { onDone: () => void }) {
   const [pct, setPct] = useState(0);
   const tasks = [
-    { label: "Lendo suas respostas", done: "8 de 8", at: 25 },
+    { label: "Lendo suas respostas", done: "pronto", at: 25 },
     { label: "Separando modelos de anúncio, carrossel e site", done: "pronto", at: 55 },
     { label: "Escrevendo os textos de venda", done: "pronto", at: 80 },
     { label: "Sugerindo o que postar nas 2 primeiras semanas", done: "pronto", at: 100 },
@@ -706,14 +532,13 @@ function Building({ onDone }: { onDone: () => void }) {
 
 function Result({ answers, destino, onNext }: { answers: Answers; destino: string; onNext: () => void }) {
   const [openWeek2, setOpenWeek2] = useState(false);
-  const travas = new Set(answers.travas || []);
   const desafio = answers.desafio?.[0];
   const orcamentos = answers.orcamentos?.[0];
   // O que a pessoa respondeu e o que a plataforma faz por isso. Sem nota: não temos dado para medir ninguém.
   const pontos = [
-    { show: travas.has("tempo") || desafio === "tempo", label: "Falta tempo para postar", fix: "A arte sai em minutos, sem começar do zero." },
-    { show: travas.has("design") || desafio === "amador", label: "Os posts parecem amadores", fix: "Modelos prontos, com a sua logo e as suas cores." },
-    { show: travas.has("vergonha") || desafio === "ninguem", label: "Posta e ninguém chama", fix: "Anúncio com preço e WhatsApp, e o site do pacote para receber o pedido." },
+    { show: desafio === "tempo", label: "Falta tempo para postar", fix: "A arte sai em minutos, sem começar do zero." },
+    { show: desafio === "amador", label: "Os posts parecem amadores", fix: "Modelos prontos, com a sua logo e as suas cores." },
+    { show: desafio === "ninguem", label: "Posta e ninguém chama", fix: "Anúncio com preço e WhatsApp, e o site do pacote para receber o pedido." },
     { show: desafio === "oque", label: "Não sabe o que postar", fix: "Uma sugestão do que postar em cada dia." },
     { show: orcamentos === "zero" || orcamentos === "poucos", label: "Poucos pedidos de orçamento", fix: "Site com o botão do WhatsApp e seus clientes organizados em um só lugar." },
   ].filter((p) => p.show);
@@ -740,7 +565,7 @@ function Result({ answers, destino, onNext }: { answers: Answers; destino: strin
   ];
   return (
     <>
-      <Title sub="Com base nas suas 8 respostas">Seu diagnóstico <Accent>está pronto</Accent></Title>
+      <Title sub="Com base nas suas respostas">Seu diagnóstico <Accent>está pronto</Accent></Title>
       <div className="cv-pop cv-card mt-6 p-5" style={delay(120)}>
         <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>O QUE VOCÊ NOS CONTOU</p>
         <div className="mt-3 space-y-3">
@@ -794,26 +619,21 @@ function WeekList({ days }: { days: { d: string; t: string; icon: Icon }[] }) {
   );
 }
 
-function Loop({ onNext }: { onNext: () => void }) {
-  const steps = [
-    { icon: Mic, title: "Mande um áudio", text: "Destino, dias e valor do pacote. Ou digite." },
-    { icon: Sparkles, title: "Receba tudo pronto", text: "Anúncio, stories, carrossel e site, com a sua logo. E vídeos prontos para postar." },
-    { icon: Download, title: "Publique", text: "Baixe e poste no Instagram em minutos." },
-    { icon: MessageCircle, title: "Venda no WhatsApp", text: "Mande a página do pacote e feche a viagem." },
-  ];
+
+/** Prints de conversas com clientes, logo antes do preço. */
+function Proof({ onNext }: { onNext: () => void }) {
   return (
     <>
-      <Title sub="Esse é o ciclo todo. Você repete quantas vezes quiser.">Quatro passos, <Accent>sempre os mesmos</Accent></Title>
-      <div className="relative mt-7 space-y-3">
-        <span className="absolute bottom-6 left-[34px] top-6 w-px border-l border-dashed border-[#d9cfb3]" />
-        {steps.map((s, i) => (
-          <div key={s.title} className="cv-pop cv-card relative flex items-center gap-4 p-4" style={delay(120 + i * 120)}>
-            <span className="relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-full text-[14px] font-extrabold text-white" style={{ background: "var(--cv-primary)" }}>{i + 1}</span>
-            <div>
-              <p className="flex items-center gap-2 text-[15px] font-bold"><s.icon className="h-4 w-4" style={{ color: "var(--cv-accent)" }} /> {s.title}</p>
-              <p className="text-[13px]" style={{ color: "var(--cv-muted)" }}>{s.text}</p>
-            </div>
-          </div>
+      <Title sub="Mensagens que chegaram no WhatsApp.">Quem começou a divulgar <Accent>conta assim</Accent></Title>
+      <div className="cv-pop -mx-5 mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2" style={delay(120)}>
+        {[depoimento1, depoimento2, depoimento3].map((src, i) => (
+          <img
+            key={src}
+            src={src}
+            alt={`Mensagem de cliente ${i + 1}`}
+            loading="lazy"
+            className="max-h-[440px] w-[82%] shrink-0 snap-center rounded-2xl border-4 border-white object-contain shadow-xl"
+          />
         ))}
       </div>
       <BottomCta onClick={onNext}>Ver meu plano <ArrowRight className="h-4 w-4" /></BottomCta>

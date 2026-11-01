@@ -146,6 +146,9 @@ export function VoiceOnboarding({ variant = "bar", onSaved }: { variant?: "bar" 
       const transcribeData = await response.json();
       const fullText: string = (transcribeData?.text || "").trim();
       setTranscript(fullText);
+      if (transcribeData?.audios_restantes === 1) {
+        toast.warning("O próximo é o seu último áudio de hoje. Amanhã libera de novo.", { duration: 8000 });
+      }
       track("audio_used", { source: "voice_onboarding" });
 
       if (!fullText || fullText.length < 5) {

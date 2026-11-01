@@ -50,8 +50,8 @@ export const TRIAL_DESTINOS: TrialDestino[] = [
 export const trialPhotoUrl = (photo: number, width: number) =>
   `https://images.pexels.com/photos/${photo}/pexels-photo-${photo}.jpeg?auto=compress&cs=tinysrgb&w=${width}`;
 
-// Foto inteira + um cartão forte, cartão no centro e foto ao lado: três caras diferentes do mesmo pacote.
-const TRIAL_VARIANTS = [3, 5, 9];
+// Modelos 1, 5 e 9: bloco de cor em cima, moldura de cor e foto inteira com o destino grande.
+const TRIAL_VARIANTS = [0, 4, 8];
 const DEFAULT_COLORS = { primary: "#0B3B8C", secondary: "#FFD400" };
 // Boa para ver no celular, pequena demais para virar anúncio.
 const OUTPUT_SIZE = 540;
@@ -135,14 +135,15 @@ export async function prepareTrialLogo(file: File): Promise<TrialLogo> {
 }
 
 /** No teste a logo é o que mais importa: vai grande no canto, em fundo que contrasta com ela. */
-function drawTrialLogo(ctx: CanvasRenderingContext2D, canvasWidth: number, logo: HTMLImageElement, lightOnly: boolean) {
+function drawTrialLogo(ctx: CanvasRenderingContext2D, canvasWidth: number, logo: HTMLImageElement, lightOnly: boolean, variant: number) {
   const height = 72;
   const width = Math.min(165, Math.max(height, height * (logo.naturalWidth / logo.naturalHeight)));
   const pad = 10;
   const chipW = width + pad * 2;
   const chipH = height + pad * 2;
-  const x = canvasWidth - chipW - 18;
-  const y = 18;
+  const x = canvasWidth - chipW - (variant === 4 ? 30 : 18);
+  // Sempre sobre a foto, longe do texto: canto de cima no Modelo 9, fim da foto no 5, embaixo no 1.
+  const y = variant === 8 ? 18 : variant === 4 ? 287 - chipH - 12 : canvasWidth - 32 - chipH - 30;
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.28)";
   ctx.shadowBlur = 18;
@@ -158,7 +159,7 @@ function drawTrialLogo(ctx: CanvasRenderingContext2D, canvasWidth: number, logo:
   ctx.drawImage(logo, x + (chipW - w) / 2, y + (chipH - h) / 2, w, h);
 }
 
-async function finishTrialArt(url: string, logo: TrialLogo | null): Promise<string> {
+async function finishTrialArt(url: string, logo: TrialLogo | null, variant: number): Promise<string> {
   const img = await loadLocalImage(url);
   const canvas = document.createElement("canvas");
   canvas.width = OUTPUT_SIZE;
@@ -166,7 +167,7 @@ async function finishTrialArt(url: string, logo: TrialLogo | null): Promise<stri
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas indisponível");
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  if (logo) drawTrialLogo(ctx, canvas.width, await loadLocalImage(logo.dataUrl), logo.lightOnly);
+  if (logo) drawTrialLogo(ctx, canvas.width, await loadLocalImage(logo.dataUrl), logo.lightOnly, variant);
 
   // Marca em três linhas, passando pelo preço e pela logo: não sai com um corte e dá trabalho para apagar.
   ctx.save();
@@ -238,7 +239,7 @@ export async function generateTrialArts(
         showTotal: false,
         fontFamily: "Inter",
       } as unknown as Parameters<typeof composeTravelAd>[0]);
-      onArt(await finishTrialArt(url, logo));
+      onArt(await finishTrialArt(url, logo, variant));
       done++;
     } catch (error) {
       console.error("Arte de teste:", error);

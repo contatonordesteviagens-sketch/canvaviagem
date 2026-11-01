@@ -7,7 +7,7 @@
  */
 import type { FabricaState } from "@/hooks/useFabricaContext";
 
-const QUIZ_KEY = "cv-onboarding-v2";
+const QUIZ_KEY = "cv-onboarding-v3";
 const DESTINO_KEY = "cv-onboarding-destino";
 const LOGO_KEY = "cv-onboarding-logo";
 const APPLIED_KEY = "cv-onboarding-aplicado";

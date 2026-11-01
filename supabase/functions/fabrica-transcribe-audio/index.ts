@@ -2,6 +2,16 @@
 // Recebe multipart/form-data com `file`. Retorna SSE (default) ou JSON (?stream=false).
 
 import { verifyFabricaEliteAccess } from "../_shared/fabricaAccess.ts";
+import { adminClient } from "../_shared/wooviAuth.ts";
+
+// Cada áudio custa crédito de IA. O limite é por cliente, por dia de Brasília.
+const DAILY_AUDIO_LIMIT = 10;
+const AUDIO_EVENT = "audio_transcrito";
+
+function startOfBrasiliaDay() {
+  const day = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  return `${day}T03:00:00.000Z`;
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,6 +38,22 @@ Deno.serve(async (req) => {
   try {
     const access = await verifyFabricaEliteAccess(req, corsHeaders);
     if (!access.ok) return access.response;
+
+    const db = adminClient();
+    const { count: audiosHoje, error: countError } = await db
+      .from("analytics_events")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", access.userId)
+      .eq("event_type", AUDIO_EVENT)
+      .gte("created_at", startOfBrasiliaDay());
+    if (countError) console.error("Limite de áudio: falha na contagem", countError.message);
+    const usados = audiosHoje ?? 0;
+    if (usados >= DAILY_AUDIO_LIMIT) {
+      return new Response(
+        JSON.stringify({ error: "Você já mandou os áudios de hoje. Amanhã libera de novo. Enquanto isso, é só digitar." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -99,6 +125,15 @@ Deno.serve(async (req) => {
       );
     }
 
+    const { error: logError } = await db.from("analytics_events").insert({
+      user_id: access.userId,
+      session_id: `audio-${crypto.randomUUID()}`,
+      event_type: AUDIO_EVENT,
+      event_data: {},
+      url_path: "/fabrica",
+    });
+    if (logError) console.error("Limite de áudio: falha ao registrar", logError.message);
+
     if (wantStream) {
       return new Response(response.body, {
         headers: {
@@ -111,7 +146,7 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify({ ...data, audios_restantes: DAILY_AUDIO_LIMIT - usados - 1 }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

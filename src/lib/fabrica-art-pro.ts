@@ -52,6 +52,8 @@ export function takeAutoVariant(count = 1): number {
   try {
     const saved = Number.parseInt(localStorage.getItem(AUTO_VARIANT_KEY) || "0", 10);
     if (Number.isFinite(saved) && saved >= 0 && saved < PRO_TOTAL_VARIANTS) start = saved;
+    // O Modelo 6 (cartão branco com sobra de espaço) foi reprovado: fica fora do rodízio até ser refeito.
+    if (start <= 5 && start + count > 5) start = 6;
     localStorage.setItem(AUTO_VARIANT_KEY, String((start + count) % PRO_TOTAL_VARIANTS));
   } catch { /* sem localStorage: começa do primeiro */ }
   return start;

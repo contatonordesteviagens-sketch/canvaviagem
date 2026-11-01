@@ -99,6 +99,24 @@ async function sendOne(email: string, kind: RecoveryKind, vars: { firstName: str
   if (!resendKey) throw new Error("RESEND_API_KEY não configurado");
   const unsub = await unsubscribeUrl(email);
   const { subject, html } = renderRecoveryEmail(kind, { ...vars, unsubscribeUrl: unsub });
+  // A campanha sai pelo Brevo: rejeição nela não pode travar o link de login, que sai pelo Resend.
+  const brevoKey = Deno.env.get("BREVO_API_KEY");
+  if (brevoKey && (kind.startsWith("bf") || kind === "novidades")) {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: { "api-key": brevoKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: { name: "Canva Viagem", email: "lucas@rochadigitalmidia.com.br" },
+        to: [{ email }],
+        replyTo: { email: Deno.env.get("RECOVERY_REPLY_TO") || "lucas@rochadigitalmidia.com.br" },
+        subject,
+        htmlContent: html,
+        headers: { "List-Unsubscribe": `<${unsub}>` },
+      }),
+    });
+    if (!response.ok) throw new Error(`Brevo ${response.status}: ${(await response.text()).slice(0, 200)}`);
+    return;
+  }
   const from = Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>";
   const replyTo = Deno.env.get("RECOVERY_REPLY_TO") || "lucas@rochadigitalmidia.com.br";
   const { error } = await new Resend(resendKey).emails.send({
@@ -115,7 +133,8 @@ async function sendOne(email: string, kind: RecoveryKind, vars: { firstName: str
 const BF_KINDS: BlackFridayKind[] = ["bf6", "bf5", "bf3", "bf4", "bf2", "bf1"]; // do mais tardio ao mais cedo
 const BF_LEAD_WAIT_HOURS = 72;
 // Resend grátis: 100 por dia, divididos com o link de login e os e-mails de compra. A campanha usa no máximo 70.
-const BF_DAILY_CAP = 70;
+// Pelo Brevo, a cota é a do plano pago e não divide espaço com o login.
+const BF_DAILY_CAP = Deno.env.get("BREVO_API_KEY") ? 400 : 70;
 const bfRunning = () => Date.now() >= Date.parse(BF_CAMPAIGN.start) && Date.now() < Date.parse(BF_CAMPAIGN.end);
 
 /** Link que entra logado e abre a página, com a origem do e-mail para o rastreamento. */
@@ -231,7 +250,8 @@ async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number)
   const leads = (captures ?? [])
     .filter((c: any) => (c.metadata?.funnel === "inicio" || String(c.metadata?.redirect ?? "").startsWith("/onboarding")) && Date.now() - Date.parse(c.first_seen_at) >= BF_LEAD_WAIT_HOURS * HOUR)
     .map((c: any) => String(c.email ?? "").toLowerCase().trim())
-    .filter((email: string) => email && !active.has(email));
+    // E-mail com erro de digitação volta como rejeição: fica fora da campanha.
+    .filter((email: string) => email && !active.has(email) && COLD_VALID.test(email) && !COLD_NOT_REAL.test(email) && !COLD_TYPO.test(email));
   const neverSubscribed = new Set(leads.filter((email: string) => !former.has(email)));
   for (const email of leads) former.add(email);
 

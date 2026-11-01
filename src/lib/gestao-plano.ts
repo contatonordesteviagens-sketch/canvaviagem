@@ -33,16 +33,10 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
     porque: "O cadastro com conta de verdade foi testado só em simulação. Esse link fica fora da conta do teste.",
   },
   {
-    quando: "Hoje",
+    quando: "Antes de 17/11",
     quem: "Lucas",
-    oque: "Na Stripe, em Desenvolvedores > Webhooks > stripe-webhook > Editar destino, marcar o evento charge.refunded e salvar.",
-    porque: "Sem esse evento, quem pede reembolso no cartão continua com acesso até o cancelamento manual. A proteção de permissões não deixou o Claude alterar isso.",
-  },
-  {
-    quando: "Antes dos anúncios",
-    quem: "Lucas",
-    oque: "Decidir o pixel: compartilhar o pixel principal 2120347238758199 com a conta INFOS ALFA ou criar um pixel só do Canva Viagem nela.",
-    porque: "Os anúncios saem da INFOS ALFA e o site não envia eventos para o pixel dela. Sem isso, o Meta não sabe quem comprou e não otimiza. O pixel que ela tem hoje recebe dados de outros produtos, por isso não foi ligado direto.",
+    oque: "Colar a chave do Brevo no Lovable, no segredo BREVO_API_KEY. Sem ela, a campanha da Black sai pelo Resend, limitada a 70 por dia.",
+    porque: "Pelo Brevo, rejeição na campanha não trava o link de login. O plano tem 4.888 e-mails até 27/11.",
   },
   {
     quando: "Hoje",
@@ -185,7 +179,7 @@ export const CHECKLIST: ChecklistGrupo[] = [
       { id: "critica-whatsapp", texto: "WhatsApp no checkout", quem: "Claude", feito: true },
       { id: "critica-termos", texto: "Garantia de 7 dias escrita nos Termos", quem: "Claude", feito: true },
       { id: "critica-preco", texto: "Preço na /inicio", quem: "Claude" },
-      { id: "critica-quiz-curto", texto: "Quiz com cerca de 10 telas e a arte na tela de preço", quem: "Claude" },
+      { id: "critica-quiz-curto", texto: "Quiz com 10 telas", quem: "Claude", feito: true },
     ],
   },
   {
@@ -238,13 +232,17 @@ export const FEITO: { data: string; itens: string[] }[] = [
   {
     data: "01/11",
     itens: [
+      "Artes do teste trocadas para os Modelos 1, 5 e 9. O Modelo 6, do cartão branco com sobra, saiu do rodízio.",
+      "Quiz de 19 para 10 telas, com prints de clientes antes do preço.",
+      "Limite de 10 áudios por dia por cliente, com aviso só no nono.",
+      "Pixel da INFOS ALFA ligado no site, só no navegador por enquanto.",
       "Arte de teste vale uma vez por aparelho: recarregar mostra as mesmas artes. Imagem menor, marca em três linhas e sem clique direito.",
       "A primeira tela do quiz mostra as artes da própria pessoa. Quem não testou vê as artes reais passando.",
       "Microfone maior na Fábrica e novo no início, ligado ao mesmo projeto. O áudio também capta WhatsApp, Instagram e cidade.",
       "Missões, níveis e medalhas para quem nunca usou a plataforma, na Fábrica e no início.",
       "Promessas corrigidas: sem vídeo com a logo, sem nota inventada, sem 14 dias e sem estrelas no quiz. Garantia de 7 dias nos Termos e WhatsApp no pagamento.",
       "Medição: Lead só com o e-mail enviado, compra no cartão sem contar em dobro e compra no Pix enviada pelo servidor.",
-      "Sistema pronto para encerrar o acesso no reembolso integral do cartão, mas só funciona depois de ligar o evento na Stripe. No Pix ainda é manual.",
+      "Reembolso integral no cartão encerra o acesso: evento ligado na Stripe em 01/11, ainda sem reembolso real para confirmar. No Pix ainda é manual.",
       "Áudio gera a arte sozinho: o preço, o WhatsApp e o Instagram falados entram na arte.",
       "Arte na /inicio: escolhe o destino, envia a logo e vê 3 artes com marca d'água. O e-mail só aparece depois. Metade dos visitantes novos vê essa página, metade vê a atual.",
       "Teste real da arte na /inicio: logo de verdade, assinante indo para a Fábrica e e-mail de conta existente, com o link entregue no Resend.",
