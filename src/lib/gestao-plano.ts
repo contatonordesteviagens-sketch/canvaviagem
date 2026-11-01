@@ -8,71 +8,107 @@ export type ProximoPasso = { quando: string; quem: Owner; oque: string; porque: 
 export type ChecklistItem = { id: string; texto: string; quem: Owner; feito?: boolean; nota?: string };
 export type ChecklistGrupo = { titulo: string; itens: ChecklistItem[] };
 
+/** Marco estratégico atual. A contagem vem da tabela de assinaturas; o que está em caminhos é proposta. */
+export const META = {
+  titulo: "Meta: 10 assinantes novos até 06/11",
+  inicio: "2026-11-01T03:00:00Z",
+  alvo: 10,
+  emDiaNoInicio: 26,
+  ritmo: "Nos últimos 30 dias entraram 3 assinantes pagos. A meta é 20 vezes esse ritmo, então depende de tudo abaixo sair nos próximos 2 dias.",
+  regra: "Conta assinatura nova desde 01/11. Ex-assinante que volta aparece só em Em dia. A compra de teste do Lucas entra aqui até o estorno.",
+  caminhos: [
+    { nome: "Quem quase comprou", alvo: "1 a 2", como: "12 pessoas terminaram o quiz ou abriram o pagamento. O Lucas fala com uma a uma." },
+    { nome: "Lista fria pelo Brevo", alvo: "2 a 3", como: "133 com e-mail comprovado, 50% para sempre. Pelo Brevo, rejeição não trava o login. Precisa da chave e do sim do Lucas." },
+    { nome: "Ex-assinantes", alvo: "2 a 3", como: "119 pessoas que já pagaram. Antecipar o primeiro e-mail da Black, que hoje sai em 19/11. Decisão do Lucas." },
+    { nome: "Anúncios para /inicio", alvo: "2 a 4", como: "Proposta: R$ 200 por dia, R$ 1.000 nos 5 dias. Dá cerca de 300 visitas pelo custo atual da INFOS ALFA, de R$ 3,29 por visita, em outro produto. Só ligar depois do cadastro e do cartão testados." },
+  ],
+  aviso: "As quantidades são estimativas: o Canva Viagem ainda não tem histórico de venda por anúncio nesta página.",
+};
+
 export const STATUS_GERAL = [
+  { area: "Aviso da Stripe para o sistema (webhook)", estado: "problema", detalhe: "As 14 entregas desde 31/10 voltaram com erro 500 e nenhum aviso foi registrado. O motivo provável é o segredo do webhook errado. Enquanto isso, reembolso e cancelamento no cartão não cortam o acesso, e a compra no cartão não é registrada por esse caminho." },
   { area: "Lista fria: só deixou o e-mail", estado: "problema", detalhe: "Parada por decisão do Lucas. Dos 20 contatos mais antigos, 5 voltaram (25%). Faltam 208, e 133 têm prova de que o e-mail existe. A conta do Resend está com 13,75% de rejeição nos últimos 15 dias, e o limite é 4%." },
-  { area: "Página inicial, quiz e captura de e-mail", estado: "ok", detalhe: "Conferido em produção em 31/10." },
+  { area: "Página inicial, quiz e captura de e-mail", estado: "atencao", detalhe: "No ar. Em 01/11 foram 93 visitas e nenhum e-mail deixado. A origem ainda não é conhecida: a partir de agora cada visita registra de onde veio. Cadastro de e-mail novo segue sem teste real." },
   { area: "Artes, carrossel e site da Fábrica", estado: "ok", detalhe: "12 modelos em rodízio, feed e stories. PNG conferido." },
   { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo." },
   { area: "Automação de e-mails", estado: "ok", detalhe: "Roda de hora em hora. Campanha agendada para 17/11." },
-  { area: "Pixel do Meta no site", estado: "atencao", detalhe: "O site envia para outros pixels. O da INFOS ALFA, a conta usada nos anúncios, não está instalado." },
+  { area: "Pixel do Meta no site", estado: "ok", detalhe: "O pixel da INFOS ALFA recebe eventos do canvaviagem.com desde 01/11, só pelo navegador. A conta está ativa." },
+  { area: "Segurança", estado: "ok", detalhe: "Conferida em 01/11: nenhuma chave secreta no site nem nos commits recentes, e dados de clientes fechados para quem não é admin. Sobram itens menores no checklist." },
   { area: "Liberação de acesso depois de pagar", estado: "atencao", detalhe: "Pix conferido com venda real em 31/10: acesso liberado em 30 segundos e cliente gerou e baixou arte. Falta o cartão." },
-  { area: "Aviso da Stripe para o sistema (webhook)", estado: "atencao", detalhe: "Ligado em 31/10. Falta ver a primeira entrega com sucesso, que deve aparecer em até 24 horas." },
 ] as const;
 
 export const PROXIMOS_PASSOS: ProximoPasso[] = [
   {
-    quando: "01/11",
-    quem: "Claude",
-    oque: "Lista fria parada. Só ver quem clicou nos 15 que não voltaram e acompanhar a rejeição da conta no Resend até ela ficar abaixo de 4%.",
-    porque: "A conta está em 13,75% e o Resend pode pausar ou encerrar o envio acima de 4%. O remetente é o mesmo do link de login, então um bloqueio impede os clientes de entrar.",
+    quando: "Hoje",
+    quem: "Lucas",
+    oque: "Colar 2 segredos no campo aberto no chat do Lovable: STRIPE_WEBHOOK_SECRET, copiado da Stripe em Webhooks, Chave secreta de assinatura, e BREVO_API_KEY.",
+    porque: "O primeiro é o conserto provável do aviso da Stripe. O segundo tira a campanha e a lista fria do remetente do login.",
   },
   {
-    quando: "Hoje",
+    quando: "Depois dos segredos",
+    quem: "Claude",
+    oque: "Reenviar um aviso na Stripe e confirmar que voltou 200. Se continuar com erro, ler o motivo e corrigir.",
+    porque: "É a prova de que o conserto funcionou. Sem isso, a Stripe pode desligar o aviso de novo depois de vários dias de falha.",
+  },
+  {
+    quando: "02/11",
     quem: "Lucas",
     oque: "Fazer um cadastro real em canvaviagem.com/inicio?arte=1, no celular, com um e-mail de teste e a sua logo. Ver se abre o quiz.",
-    porque: "O cadastro com conta de verdade foi testado só em simulação. Esse link fica fora da conta do teste.",
+    porque: "O cadastro com conta de verdade foi testado só em simulação, e hoje nenhuma das 93 visitas deixou e-mail. Esse link fica fora da conta do teste.",
   },
   {
-    quando: "Antes de 17/11",
+    quando: "02/11",
     quem: "Lucas",
-    oque: "Colar a chave do Brevo no Lovable, no segredo BREVO_API_KEY. Sem ela, a campanha da Black sai pelo Resend, limitada a 70 por dia.",
-    porque: "Pelo Brevo, rejeição na campanha não trava o link de login. O plano tem 4.888 e-mails até 27/11.",
-  },
-  {
-    quando: "Hoje",
-    quem: "Lucas",
-    oque: "Fazer 1 compra real de R$ 48,50 no cartão, em /black-friday, com um e-mail de teste. Ver se entra na Fábrica. Depois pedir o estorno.",
+    oque: "Fazer 1 compra real de R$ 48,50 no cartão, em /black-friday, com um e-mail de teste. Ver se entra na Fábrica. Depois pedir o estorno e ver se o acesso sai.",
     porque: "O Pix já foi confirmado por uma venda real. O cartão nunca foi testado de ponta a ponta, e eu não faço pagamentos.",
   },
   {
-    quando: "01/11",
-    quem: "Claude",
-    oque: "Conferir na Stripe a primeira entrega do aviso de pagamento, ligado em 31/10.",
-    porque: "É o aviso que a Stripe manda ao nosso sistema quando alguém paga. Sem ele o cartão libera acesso, mas a compra não fica registrada e a pessoa pode receber e-mail de cobrança.",
+    quando: "02/11",
+    quem: "Lucas",
+    oque: "Falar com as 12 pessoas que terminaram o quiz ou abriram o pagamento. A lista está na Gestão.",
+    porque: "É quem está mais perto de comprar, e não custa nada.",
   },
   {
-    quando: "Até 03/11",
+    quando: "02/11",
     quem: "Lucas",
-    oque: "Antes de ligar os anúncios na INFOS ALFA: acertar o saldo pendente da conta e escolher o pixel. O pixel da INFOS ALFA não está no canvaviagem.com.",
-    porque: "Conta com saldo pendente pode não veicular. Sem o pixel certo, o Meta não enxerga quem veio do anúncio nem quem comprou.",
+    oque: "Decidir 3 coisas da meta: enviar a lista fria de 133 pelo Brevo, antecipar a Black para os 119 ex-assinantes, e o valor por dia dos anúncios.",
+    porque: "Sem isso a meta depende só de quem chega sozinho, e foram 3 assinantes em 30 dias.",
+  },
+  {
+    quando: "02/11",
+    quem: "Claude",
+    oque: "Escrever os anúncios e preparar a campanha para /inicio, para o Lucas aprovar antes de ligar.",
+    porque: "A campanha ativa na INFOS ALFA é de outro produto. Para o Canva Viagem ainda não existe anúncio pronto.",
+  },
+  {
+    quando: "03/11",
+    quem: "Claude",
+    oque: "Ler a origem das visitas da /inicio e o resultado de cada caminho da meta, e dizer o que aumentar e o que parar.",
+    porque: "Com 3 dias restantes ainda dá para mudar o caminho.",
   },
   {
     quando: "Até 06/11",
     quem: "Lucas",
     oque: "Resolver o pagamento do Lovable.",
-    porque: "O painel avisa que os créditos pausam em 06/11.",
+    porque: "O painel avisa que os créditos pausam em 06/11, no último dia da meta. Sem créditos não dá para corrigir nada pelo chat.",
+  },
+  {
+    quando: "06/11",
+    quem: "Claude",
+    oque: "Fechar a meta: quantos assinantes entraram, de onde vieram e quanto custou cada um.",
+    porque: "É o que decide quanto colocar em anúncio depois.",
   },
   {
     quando: "Até 14/11",
     quem: "Lucas",
     oque: "Pedir depoimento a 3 assinantes ativos, com autorização para usar.",
-    porque: "As páginas e os e-mails não têm nenhuma prova real. Não usamos depoimento inventado.",
+    porque: "As páginas e os e-mails não têm depoimento real. Não usamos depoimento inventado.",
   },
   {
     quando: "Antes de 17/11",
     quem: "Claude",
-    oque: "Revisar quem recebe a campanha da Black: leads da /inicio entram sem prova de que o e-mail existe. E impedir que erro de digitação no login vire rejeição.",
-    porque: "O login e a /inicio guardam todo e-mail digitado. Quatro das nove rejeições permanentes dos últimos 15 dias parecem erro de digitação no login. A campanha não pode começar com a conta acima do limite.",
+    oque: "Acompanhar a rejeição da conta no Resend até ficar abaixo de 4%. Revisar quem recebe a campanha da Black e impedir que erro de digitação no login vire rejeição.",
+    porque: "A conta está em 13,75%. O login e a /inicio guardam todo e-mail digitado, e quatro das nove rejeições permanentes parecem erro de digitação.",
   },
   {
     quando: "17/11, 9h15",
@@ -100,20 +136,31 @@ export const ENVIOS: { data: string; iso: string; kind: string; publico: string;
 ];
 
 export const AUTOMACOES = [
-  { nome: "Lista fria: só deixou o e-mail", como: "Pausada. Envio manual, do mais antigo ao mais novo, com 50% para sempre até 30/11. 20 enviados em 31/10, 5 voltaram. Fica fora quem já assinou, tentou pagar, pediu para sair ou já recebeu e-mail nosso." },
+  { nome: "Lista fria: só deixou o e-mail", como: "Pausada. Envio manual, do mais antigo ao mais novo, com 50% para sempre até 30/11. 20 enviados em 31/10, 5 voltaram. Fica fora quem já assinou, tentou pagar, pediu para sair ou já recebeu e-mail nosso. Com a chave do Brevo, sai por lá." },
   { nome: "Quem deixou o e-mail e não comprou", como: "6 e-mails: 1 h depois e a cada 2 dias. Ligada." },
   { nome: "Gerou Pix ou abriu o cartão e não pagou", como: "3 e-mails: 1 h, 3 dias e 7 dias. Ligada." },
-  { nome: "Black Vitalícia", como: "No máximo 70 por dia, para sobrar cota do Resend para login e compra. Fecha às 23h59 de 30/11." },
+  { nome: "Black Vitalícia", como: "Pelo Brevo, até 400 por dia, assim que a chave entrar. Sem a chave, pelo Resend, até 70 por dia. Fecha às 23h59 de 30/11." },
 ];
 
 export const FASES = [
+  {
+    titulo: "Agora · 10 assinantes em 5 dias",
+    periodo: "01 a 06/11",
+    objetivo: "Provar que o funil novo vende e descobrir de onde vem a venda.",
+    acoes: [
+      "Consertar o aviso da Stripe e testar cadastro e cartão antes de gastar em anúncio.",
+      "Vender primeiro para quem já conhece: quem quase comprou, lista fria e ex-assinantes.",
+      "Anúncios para /inicio, pausando o conjunto que gastar R$ 194 sem venda.",
+      "Ler o resultado em 03/11 e fechar em 06/11.",
+    ],
+  },
   {
     titulo: "Fase 1 · Deixar tudo confiável",
     periodo: "Até 16/11",
     objetivo: "Ter certeza de que quem paga entra, e voltar a captar lead novo.",
     acoes: [
       "Compra de teste e webhook da Stripe.",
-      "Anúncios para /inicio, com valor pequeno.",
+      "Manter nos anúncios só o que vendeu na meta de 5 dias.",
       "3 depoimentos reais de assinantes ativos.",
     ],
   },
@@ -165,6 +212,36 @@ export const NOVE_QUADROS: { fase: string; titulo: string; texto: string; estado
 
 export const CHECKLIST: ChecklistGrupo[] = [
   {
+    titulo: "Meta: 10 assinantes até 06/11",
+    itens: [
+      { id: "meta-segredo-stripe", texto: "Segredo certo do webhook colado no Lovable", quem: "Lucas" },
+      { id: "meta-chave-brevo", texto: "Chave do Brevo colada no Lovable", quem: "Lucas" },
+      { id: "meta-webhook-200", texto: "Aviso reenviado na Stripe voltando 200", quem: "Claude" },
+      { id: "meta-cadastro-real", texto: "Cadastro real de e-mail novo no celular", quem: "Lucas" },
+      { id: "meta-mornos", texto: "12 pessoas que quase compraram contatadas", quem: "Lucas" },
+      { id: "meta-origem", texto: "Origem de cada visita da /inicio registrada", quem: "Claude", feito: true },
+      { id: "meta-fria-pronta", texto: "Lista fria pronta para sair pelo Brevo", quem: "Claude", feito: true, nota: "Nenhum e-mail saiu. O envio depende da chave e do sim do Lucas." },
+      { id: "meta-fria-enviada", texto: "Lista fria de 133 enviada", quem: "Lucas" },
+      { id: "meta-ex-assinantes", texto: "Decisão sobre antecipar a Black para os 119 ex-assinantes", quem: "Lucas" },
+      { id: "meta-anuncios-prontos", texto: "Anúncios e campanha prontos para aprovar", quem: "Claude" },
+      { id: "meta-leitura-0311", texto: "Resultado lido em 03/11", quem: "Claude" },
+      { id: "meta-fechamento", texto: "Meta fechada em 06/11, com custo por assinante", quem: "Claude" },
+    ],
+  },
+  {
+    titulo: "Segurança (conferida em 01/11)",
+    itens: [
+      { id: "seg-chaves-site", texto: "Nenhuma chave secreta no código publicado do site", quem: "Claude", feito: true },
+      { id: "seg-chaves-commits", texto: "Nenhuma chave nova nos últimos 40 commits", quem: "Claude", feito: true },
+      { id: "seg-dados-fechados", texto: "Clientes, leads e funções de admin fechados para visitante", quem: "Claude", feito: true, nota: "Testado sem login: nenhuma linha devolvida." },
+      { id: "seg-painel-mkt", texto: "Painel de marketing sem expor o arquivo de chaves", quem: "Claude", feito: true },
+      { id: "seg-chave-google", texto: "Trocar a chave Google que está em Vendedor-de-Viagens-IA-main/App.tsx", quem: "Lucas", nota: "O repositório é privado e essa pasta não vai para o site. Risco baixo." },
+      { id: "seg-canva-inicio", texto: "Tirar do site a cópia canva_inicio.html, usada pela página CanvaClone", quem: "Claude", nota: "É pública e traz uma chave Google que parece ser da página copiada." },
+      { id: "seg-pacotes", texto: "Atualizar pacotes com alerta: 20 no total, 2 críticos", quem: "Claude", nota: "Depois da meta, para não mexer no site durante a venda." },
+      { id: "seg-pixel-teste", texto: "Pixel fora do site local e da prévia do Lovable", quem: "Claude", nota: "Hoje os testes também entram no pixel." },
+    ],
+  },
+  {
     titulo: "Antes de ligar os anúncios (análise crítica de 30/10)",
     itens: [
       { id: "critica-arte-inicio", texto: "Arte com marca d'água na /inicio, com a logo salva", quem: "Claude", feito: true, nota: "No ar para metade dos visitantes novos desde 01/11. Resultado no quadro Teste da /inicio." },
@@ -188,7 +265,7 @@ export const CHECKLIST: ChecklistGrupo[] = [
       { id: "compra-real-pix", texto: "Venda real no Pix, com acesso liberado e arte baixada", quem: "Lucas", feito: true },
       { id: "compra-teste-cartao", texto: "Compra real de teste no cartão, com acesso liberado", quem: "Lucas" },
       { id: "webhook-stripe-ligado", texto: "Aviso de pagamento da Stripe ligado", quem: "Claude", feito: true },
-      { id: "webhook-stripe-entrega", texto: "Primeira entrega do aviso conferida", quem: "Claude" },
+      { id: "webhook-stripe-entrega", texto: "Primeira entrega do aviso conferida", quem: "Claude", nota: "Conferida em 01/11: 14 entregas, 14 com erro 500. Falta o conserto." },
       { id: "precos-elite", texto: "Preços da Black em produtos que liberam acesso", quem: "Claude", feito: true },
       { id: "checkout-valores", texto: "Cartão e Pix abrem com o valor certo", quem: "Claude", feito: true },
       { id: "lovable-pago", texto: "Pagamento do Lovable resolvido", quem: "Lucas" },
@@ -200,10 +277,10 @@ export const CHECKLIST: ChecklistGrupo[] = [
       { id: "pagina-inicio", texto: "/inicio carregando, com vitrine e sem Google", quem: "Claude", feito: true },
       { id: "quiz-completo", texto: "Quiz completo até o pagamento", quem: "Claude", feito: true },
       { id: "email-lead", texto: "Lead recebe os e-mails sozinho", quem: "Claude", feito: true },
-      { id: "saldo-infos-alfa", texto: "Saldo pendente da INFOS ALFA acertado", quem: "Lucas" },
-      { id: "pixel-canva-infos-alfa", texto: "Pixel da conta de anúncios instalado no site", quem: "Claude", nota: "Precisa da escolha do Lucas." },
+      { id: "saldo-infos-alfa", texto: "Saldo pendente da INFOS ALFA acertado", quem: "Lucas", feito: true, nota: "Conta ativa em 01/11, com campanha de outro produto entregando." },
+      { id: "pixel-canva-infos-alfa", texto: "Pixel da conta de anúncios instalado no site", quem: "Claude", feito: true, nota: "Só no navegador. Falta o token do servidor." },
       { id: "anuncios-ligados", texto: "Anúncios ligados com link para /inicio", quem: "Lucas" },
-      { id: "regra-pausa", texto: "Definir o valor por dia e a regra de pausa", quem: "Lucas", nota: "Sugestão: pausar o conjunto que gastar R$ 194 (2 mensais) sem venda." },
+      { id: "regra-pausa", texto: "Definir o valor por dia e a regra de pausa", quem: "Lucas", nota: "Proposta: R$ 200 por dia, pausando o conjunto que gastar R$ 194 (2 mensais) sem venda." },
     ],
   },
   {
@@ -212,7 +289,7 @@ export const CHECKLIST: ChecklistGrupo[] = [
       { id: "pagina-bf", texto: "Página /black-friday no ar", quem: "Claude", feito: true },
       { id: "emails-bf", texto: "E-mails escritos, com texto próprio para quem nunca assinou", quem: "Claude", feito: true },
       { id: "datas-bf", texto: "Datas definidas e prazo fechando sozinho", quem: "Claude", feito: true },
-      { id: "cota-resend", texto: "Campanha limitada a 70 por dia", quem: "Claude", feito: true },
+      { id: "cota-resend", texto: "Campanha limitada: 70 por dia no Resend, 400 no Brevo", quem: "Claude", feito: true },
       { id: "depoimentos", texto: "3 depoimentos reais autorizados", quem: "Lucas" },
       { id: "ler-primeiro-envio", texto: "Resultado do primeiro envio lido em 20/11", quem: "Claude" },
       { id: "ler-respostas", texto: "Respostas do último e-mail lidas e resumidas", quem: "Claude" },
@@ -232,6 +309,11 @@ export const FEITO: { data: string; itens: string[] }[] = [
   {
     data: "01/11",
     itens: [
+      "Meta definida: 10 assinantes novos até 06/11, com contador neste Plano.",
+      "Conferência final: aviso da Stripe com 14 falhas em 14, 93 visitas sem nenhum e-mail na /inicio e pixel da INFOS ALFA recebendo do site.",
+      "Segurança conferida: nenhuma chave exposta no site e dados fechados para quem não é admin.",
+      "Cada visita da /inicio passa a registrar de onde veio.",
+      "Lista fria pronta para sair pelo Brevo, sem nenhum envio feito.",
       "Artes do teste trocadas para os Modelos 1, 5 e 2. O Modelo 6, do cartão branco com sobra, saiu do rodízio.",
       "Quiz de 19 para 10 telas, 6 perguntas, com prints de clientes antes do preço. As 3 artes passam inteiras na primeira tela.",
       "Limite de 10 áudios por dia por cliente, com aviso só no nono.",
@@ -279,7 +361,10 @@ export const NAO_TESTADO = [
   "Resto da migração de 23/07 dos projetos da Fábrica: só a parte do registro de visitas foi aplicada. Falta conferir se o restante está no banco.",
   "Pagamento real no cartão e com o valor da Black. O Pix foi confirmado só no preço cheio de R$ 97.",
   "Limite de 70 por dia em envio real: só simulado, roda a partir de 17/11.",
-  "Celular real (iPhone): testado só em tela simulada.",
+  "Celular real (iPhone): testado só em tela simulada. Inclui o microfone.",
+  "Áudio: salvar em conta real, aviso no nono e bloqueio depois do décimo.",
+  "Reembolso no cartão cortando o acesso: depende do conserto do aviso da Stripe.",
+  "Envio pelo Brevo: a chave ainda não entrou.",
 ];
 
 export const LINKS = [

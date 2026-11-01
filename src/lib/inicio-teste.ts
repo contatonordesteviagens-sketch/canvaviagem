@@ -37,10 +37,27 @@ export function resolveInicioVariant(search: string): InicioVariant {
   }
 }
 
+/** De onde veio a visita: campanha do link, anúncio do Meta ou o site anterior. */
+function origemDaVisita() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("utm_source")) return params.get("utm_source");
+  if (params.has("fbclid")) return "meta";
+  try {
+    return document.referrer ? new URL(document.referrer).hostname : "direto";
+  } catch {
+    return "direto";
+  }
+}
+
 export function trackInicioTeste(step: InicioStep) {
   const current = read();
   if (!current) return;
   // Prévia do Lovable e site local não são visitantes: ficam fora da conta, como quem escolheu o grupo.
   const isVisitor = /(^|\.)canvaviagem\.com$/.test(window.location.hostname);
-  void trackEvent("inicio_teste", { variant: current.variant, step, manual: current.manual || !isVisitor });
+  void trackEvent("inicio_teste", {
+    variant: current.variant,
+    step,
+    manual: current.manual || !isVisitor,
+    ...(step === "visita" ? { origem: origemDaVisita() } : {}),
+  });
 }

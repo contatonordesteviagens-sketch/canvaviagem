@@ -6,11 +6,12 @@ import { InicioTesteCard } from "@/components/gestao/InicioTesteCard";
 import { supabase } from "@/integrations/supabase/client";
 import { SUPABASE_PUBLIC_KEY, SUPABASE_PUBLIC_URL } from "@/lib/supabase-public";
 import {
-  AUTOMACOES, CHECKLIST, ENVIOS, FASES, FEITO, LINKS, NAO_TESTADO, NOVE_QUADROS, PLANO_ATUALIZADO_EM, PROXIMOS_PASSOS, STATUS_GERAL,
+  AUTOMACOES, CHECKLIST, ENVIOS, FASES, FEITO, LINKS, META, NAO_TESTADO, NOVE_QUADROS, PLANO_ATUALIZADO_EM, PROXIMOS_PASSOS, STATUS_GERAL,
 } from "@/lib/gestao-plano";
 
 type SentEmail = { email: string; kind: string; sent_at: string; unsubscribed: boolean };
 type Lead = { stage: string; subscribed: boolean };
+type Assinatura = { status: string; created_at: string; current_period_end: string | null };
 
 async function rest<T>(path: string, init?: RequestInit): Promise<T> {
   const { data: { session } } = await supabase.auth.getSession();
@@ -44,17 +45,20 @@ const QUADRO_NOME = { pronto: "Pronto", parcial: "Em parte", falta: "Falta" };
 export function PlanoSection() {
   const [sent, setSent] = useState<SentEmail[] | null>(null);
   const [leads, setLeads] = useState<Lead[] | null>(null);
+  const [assinaturas, setAssinaturas] = useState<Assinatura[] | null>(null);
   const [marked, setMarked] = useState<Record<string, boolean>>({});
   const [saveError, setSaveError] = useState(false);
 
   const load = useCallback(async () => {
-    const [s, l, c] = await Promise.all([
+    const [s, l, c, a] = await Promise.all([
       rest<SentEmail[]>("rpc/admin_recovery_emails", { method: "POST", body: "{}" }).catch(() => null),
       rest<Lead[]>("rpc/admin_funnel_leads", { method: "POST", body: "{}" }).catch(() => null),
       rest<{ id: string; done: boolean }[]>("gestao_checklist?select=id,done").catch(() => null),
+      rest<Assinatura[]>("subscriptions?select=status,created_at,current_period_end&limit=5000").catch(() => null),
     ]);
     setSent(s);
     setLeads(l);
+    setAssinaturas(a);
     if (c) setMarked(Object.fromEntries(c.map((row) => [row.id, row.done])));
   }, []);
 
@@ -99,6 +103,12 @@ export function PlanoSection() {
     ];
   }, [leads, sent]);
 
+  const meta = useMemo(() => {
+    if (!assinaturas) return null;
+    const emDia = assinaturas.filter((a) => a.status === "active" && a.current_period_end && Date.parse(a.current_period_end) > Date.now());
+    return { emDia: emDia.length, novas: emDia.filter((a) => Date.parse(a.created_at) >= Date.parse(META.inicio)).length };
+  }, [assinaturas]);
+
   const total = CHECKLIST.flatMap((g) => g.itens);
   const totalDone = total.filter(isDone).length;
   const today = new Date().toISOString().slice(0, 10);
@@ -111,6 +121,35 @@ export function PlanoSection() {
           Atualizado em {PLANO_ATUALIZADO_EM}. Checklist: {totalDone} de {total.length} feitos.
         </p>
       </div>
+
+      <Card className="border-primary">
+        <CardHeader><CardTitle className="text-lg">{META.titulo}</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="text-3xl font-bold">{meta?.novas ?? "–"} de {META.alvo}</span>
+              <span className="text-sm text-muted-foreground">Em dia agora: {meta?.emDia ?? "–"} (eram {META.emDiaNoInicio})</span>
+            </div>
+            <div className="mt-2 h-3 overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, ((meta?.novas ?? 0) / META.alvo) * 100)}%` }} />
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">{META.regra}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{META.ritmo}</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {META.caminhos.map((c) => (
+              <div key={c.nome} className="rounded-lg border p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-semibold leading-tight">{c.nome}</p>
+                  <Badge variant="outline" className="shrink-0">{c.alvo}</Badge>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">{c.como}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground">{META.aviso}</p>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader><CardTitle className="text-lg">Onde estamos</CardTitle></CardHeader>

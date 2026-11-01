@@ -101,7 +101,7 @@ async function sendOne(email: string, kind: RecoveryKind, vars: { firstName: str
   const { subject, html } = renderRecoveryEmail(kind, { ...vars, unsubscribeUrl: unsub });
   // A campanha sai pelo Brevo: rejeição nela não pode travar o link de login, que sai pelo Resend.
   const brevoKey = Deno.env.get("BREVO_API_KEY");
-  if (brevoKey && (kind.startsWith("bf") || kind === "novidades")) {
+  if (brevoKey && (kind.startsWith("bf") || kind === "novidades" || kind === "frio1")) {
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: { "api-key": brevoKey, "Content-Type": "application/json" },
