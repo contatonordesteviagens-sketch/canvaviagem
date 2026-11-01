@@ -9,7 +9,7 @@ export type ChecklistItem = { id: string; texto: string; quem: Owner; feito?: bo
 export type ChecklistGrupo = { titulo: string; itens: ChecklistItem[] };
 
 export const STATUS_GERAL = [
-  { area: "Lista fria: só deixou o e-mail", estado: "problema", detalhe: "Pausada em 31/10. Dos 20 contatos mais antigos, 5 voltaram (25%). Faltam 208. Não enviar sem validar a lista." },
+  { area: "Lista fria: só deixou o e-mail", estado: "problema", detalhe: "Parada por decisão do Lucas. Dos 20 contatos mais antigos, 5 voltaram (25%). Faltam 208. A conta do Resend está com 13,75% de rejeição nos últimos 15 dias, e o limite é 4%." },
   { area: "Página inicial, quiz e captura de e-mail", estado: "ok", detalhe: "Conferido em produção em 31/10." },
   { area: "Artes, carrossel e site da Fábrica", estado: "ok", detalhe: "12 modelos em rodízio, feed e stories. PNG conferido." },
   { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo." },
@@ -23,8 +23,8 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
   {
     quando: "01/11",
     quem: "Claude",
-    oque: "Decidir como validar os 208 contatos restantes da lista fria antes de qualquer novo envio. Ver quem clicou nos 15 que não voltaram.",
-    porque: "A primeira leva teve 25% de rejeição, muito acima dos 4% considerados limite. O remetente é o mesmo do link de login, e o Resend pode suspender a conta.",
+    oque: "Lista fria parada. Só ver quem clicou nos 15 que não voltaram e acompanhar a rejeição da conta no Resend até ela ficar abaixo de 4%.",
+    porque: "A conta está em 13,75% e o Resend pode pausar ou encerrar o envio acima de 4%. O remetente é o mesmo do link de login, então um bloqueio impede os clientes de entrar.",
   },
   {
     quando: "Depois da sua decisão",
@@ -67,6 +67,12 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
     quem: "Lucas",
     oque: "Pedir depoimento a 3 assinantes ativos, com autorização para usar.",
     porque: "As páginas e os e-mails não têm nenhuma prova real. Não usamos depoimento inventado.",
+  },
+  {
+    quando: "Antes de 17/11",
+    quem: "Claude",
+    oque: "Revisar quem recebe a campanha da Black: leads da /inicio entram sem prova de que o e-mail existe. E impedir que erro de digitação no login vire rejeição.",
+    porque: "O login e a /inicio guardam todo e-mail digitado. Quatro das nove rejeições permanentes dos últimos 15 dias parecem erro de digitação no login. A campanha não pode começar com a conta acima do limite.",
   },
   {
     quando: "17/11, 9h15",
@@ -229,7 +235,8 @@ export const FEITO: { data: string; itens: string[] }[] = [
       "Aba Uso na Gestão: totais, onde as pessoas travam e os dados de cada cliente.",
       "Visitas e cliques dos sites voltaram a ser registrados. Estavam parados desde 23/07 por um erro.",
       "Carrossel gerado, site aberto, site publicado e áudio passam a ser contados para assinantes.",
-      "Primeira leva da lista fria: 20 enviados, 5 voltaram. Envio pausado.",
+      "Primeira leva da lista fria: 20 enviados, 5 voltaram. Envio parado por decisão do Lucas.",
+      "Lista fria ganhou filtro opcional: só e-mail comprovado, de quem clicou em link nosso ou entrou com o Google. Nenhum e-mail saiu com ele.",
     ],
   },
   {
