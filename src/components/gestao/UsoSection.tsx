@@ -298,6 +298,7 @@ export function UsoSection() {
             <li>Áudio: contado a partir de 01/11/2026.</li>
             <li>Tempo: aproximado. Soma o intervalo entre as ações na Fábrica, e pausa acima de 15 minutos não conta. Tempo gasto sem nenhuma ação não aparece.</li>
             <li>Cliques nos sites: botão de WhatsApp e botões dos pacotes.</li>
+            <li>Visitas e cliques nos sites: não foram registrados de 23/07 a 31/10/2026, por um erro corrigido em 01/11. Zero nesse período não quer dizer que ninguém visitou.</li>
           </ul>
         </CardContent>
       </Card>

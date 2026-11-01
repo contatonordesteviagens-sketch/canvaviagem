@@ -226,6 +226,7 @@ export const FEITO: { data: string; itens: string[] }[] = [
     data: "01/11",
     itens: [
       "Aba Uso na Gestão: totais, onde as pessoas travam e os dados de cada cliente.",
+      "Visitas e cliques dos sites voltaram a ser registrados. Estavam parados desde 23/07 por um erro.",
       "Carrossel gerado, site aberto, site publicado e áudio passam a ser contados para assinantes.",
       "Envio da lista fria, do contato mais antigo ao mais novo.",
     ],
@@ -250,6 +251,7 @@ export const FEITO: { data: string; itens: string[] }[] = [
 ];
 
 export const NAO_TESTADO = [
+  "Resto da migração de 23/07 dos projetos da Fábrica: só a parte do registro de visitas foi aplicada. Falta conferir se o restante está no banco.",
   "Pagamento real no cartão e com o valor da Black. O Pix foi confirmado só no preço cheio de R$ 97.",
   "Limite de 70 por dia em envio real: só simulado, roda a partir de 17/11.",
   "Celular real (iPhone): testado só em tela simulada.",
