@@ -118,7 +118,7 @@ export function UsoSection() {
           audios: ev.audio_used ?? 0,
           visitas: u?.site_visits ?? 0,
           cliques: u?.site_clicks ?? 0,
-          ativo: b.plan === "elite" || b.plan === "start",
+          ativo: b.subscription_status === "active" && Boolean(b.current_period_end) && Date.parse(b.current_period_end!) > Date.now(),
           minutosAtePrimeiraArte: primeira,
         };
       });
@@ -144,7 +144,7 @@ export function UsoSection() {
       { nome: "Áudios usados", valor: n(soma((c) => c.audios)) },
       { nome: "Tempo médio na Fábrica, por sessão", valor: sessoes ? fmtDuracao(Math.round(tempo / sessoes)) : "-" },
       { nome: "Tempo médio de visita nos sites", valor: comSite.length ? fmtDuracao(Math.round(comSite.reduce((a, c) => a + (c.uso?.site_avg_seconds ?? 0), 0) / comSite.length)) : "-" },
-      { nome: "Assinantes ativos", valor: n(clientes.filter((c) => c.ativo).length) },
+      { nome: "Assinantes em dia", valor: n(clientes.filter((c) => c.ativo).length) },
     ];
   }, [clientes, periodo]);
 
@@ -218,7 +218,7 @@ export function UsoSection() {
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
           <CardTitle className="text-lg">Onde as pessoas travam</CardTitle>
           <div className="flex gap-1">
-            <Button size="sm" variant={grupo === "ativos" ? "default" : "outline"} onClick={() => setGrupo("ativos")}>Assinantes ativos</Button>
+            <Button size="sm" variant={grupo === "ativos" ? "default" : "outline"} onClick={() => setGrupo("ativos")}>Assinantes em dia</Button>
             <Button size="sm" variant={grupo === "todos" ? "default" : "outline"} onClick={() => setGrupo("todos")}>Todas as contas</Button>
           </div>
         </CardHeader>
@@ -293,7 +293,8 @@ export function UsoSection() {
         <CardHeader><CardTitle className="text-lg">Como ler estes dados</CardTitle></CardHeader>
         <CardContent>
           <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>Artes geradas: contadas desde 20/08/2026.</li>
+            <li>Assinantes em dia: assinatura ativa com validade no futuro. Contas antigas ativas sem data de validade aparecem só em Todas as contas.</li>
+            <li>Abertura da Fábrica: contada desde 30/07/2026. Artes geradas: desde 20/08/2026.</li>
             <li>Carrosséis gerados e sites abertos ou publicados por assinantes: contados a partir de 01/11/2026. Antes, só contávamos os downloads e os sites no ar.</li>
             <li>Áudio: contado a partir de 01/11/2026.</li>
             <li>Tempo: aproximado. Soma o intervalo entre as ações na Fábrica, e pausa acima de 15 minutos não conta. Tempo gasto sem nenhuma ação não aparece.</li>
