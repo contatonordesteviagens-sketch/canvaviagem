@@ -40,5 +40,7 @@ export function resolveInicioVariant(search: string): InicioVariant {
 export function trackInicioTeste(step: InicioStep) {
   const current = read();
   if (!current) return;
-  void trackEvent("inicio_teste", { variant: current.variant, step, manual: current.manual });
+  // Prévia do Lovable e site local não são visitantes: ficam fora da conta, como quem escolheu o grupo.
+  const isVisitor = /(^|\.)canvaviagem\.com$/.test(window.location.hostname);
+  void trackEvent("inicio_teste", { variant: current.variant, step, manual: current.manual || !isVisitor });
 }
