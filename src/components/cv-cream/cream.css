@@ -132,9 +132,10 @@
 /* Roda da equipe de marketing: gira para a direita, com os textos sempre em pé */
 @keyframes cv-wheel { to { transform: rotate(360deg); } }
 @keyframes cv-wheel-label { to { transform: rotate(-360deg); } }
-.cv-cream .cv-wheel { transform-origin: 200px 200px; animation: cv-wheel 70s linear infinite; }
-.cv-cream .cv-wheel-label { animation: cv-wheel-label 70s linear infinite; }
+.cv-cream .cv-wheel { transform-origin: 200px 200px; }
+.cv-cream .cv-reveal.is-in .cv-wheel { animation: cv-wheel 70s linear infinite; }
+.cv-cream .cv-reveal.is-in .cv-wheel-label { animation: cv-wheel-label 70s linear infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cv-cream .cv-peek, .cv-cream .cv-reveal.is-in .cv-peek-in, .cv-cream .cv-swipe, .cv-cream .cv-wheel, .cv-cream .cv-wheel-label { animation: none; opacity: 1; }
+  .cv-cream .cv-peek, .cv-cream .cv-reveal.is-in .cv-peek-in, .cv-cream .cv-swipe, .cv-cream .cv-reveal.is-in .cv-wheel, .cv-cream .cv-reveal.is-in .cv-wheel-label { animation: none; opacity: 1; }
 }
