@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNod
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
-  ArrowRight, Check, ChevronLeft, Wallet, Sprout, Briefcase, TrendingUp, Palette, UserRound,
+  ArrowRight, Check, ChevronLeft, ChevronRight, Wallet, Sprout, Briefcase, TrendingUp, Palette, UserRound,
   Images, EyeOff, Rocket, Users, Clock, MessageCircleOff, Sparkles, Waves, Mountain, Plane, Ship, Bus, Globe2,
   PenLine, Frown, Flame, CalendarDays, Leaf, Eye, Gift, ShieldCheck, Lock, CircleCheck, MapPin, Instagram,
   LayoutTemplate, MessageCircle, Download, Megaphone, Mic, Video, QrCode, CreditCard,
@@ -16,7 +16,7 @@ import { PayWithPixButton } from "@/components/pix/PixCheckout";
 import { BrandMark, delay } from "@/components/cv-cream/shared";
 import { captureLead, readLeadEmail } from "@/lib/lead-capture";
 import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
-import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
+import { ONBOARDING_DESTINO_KEY, yearGifs } from "@/pages/InicioCreme";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import { trackInicioTeste } from "@/lib/inicio-teste";
 import { readTrialResult, type TrialResult } from "@/lib/inicio-arte";
@@ -36,7 +36,6 @@ type Cycle = "monthly" | "semiannual" | "annual";
 
 // v6: telas de carregamento no lugar da tela de prova; as versões antigas guardavam o passo pela ordem antiga.
 const STORAGE_KEY = "cv-onboarding-v6";
-const DEPOIMENTO_PACK = "/quiz-media/depoimento-pack-reels.png";
 const LOADING_MS = 7000;
 
 const STEPS: Step[] = [
@@ -508,12 +507,84 @@ function WeekList({ days }: { days: { d: string; t: string; icon: Icon }[] }) {
 }
 
 
+const RECEBE = [
+  "Anúncios para feed e stories, com a sua logo",
+  "Carrosséis prontos para cada destino",
+  "Site com a página de cada pacote e o botão do WhatsApp",
+  "Clientes organizados em um só lugar",
+  "Vídeos Reels prontos para postar",
+  "Calendário dizendo o que postar em cada dia",
+  "Artes sem limite de quantidade",
+];
+
+const AVALIACOES = [
+  "Fiz 23 orçamentos só ontem e consegui fechar 5 pacotes.",
+  "Esse mês já saíram várias vendas, até aumentei a meta do mês.",
+  "Eu comprei, estou usando e é maravilhoso o conteúdo.",
+];
+
+function PayButtons({ plan, onCheckout, onPix }: { plan: Cycle; onCheckout: () => void; onPix: () => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <div onClickCapture={() => onPix()}>
+        <PayWithPixButton plan={plan} quick redirectTo="/pagamento-confirmado" className="cv-btn h-12 border-0 py-0 text-[14px] text-white hover:bg-transparent">
+          <QrCode className="h-4 w-4" /> Pagar com Pix
+        </PayWithPixButton>
+      </div>
+      <button type="button" onClick={() => onCheckout()} className="inline-flex h-12 items-center justify-center gap-2 rounded-full border bg-white text-[14px] font-semibold" style={{ borderColor: "var(--cv-primary)", color: "var(--cv-primary-ink)" }}>
+        <CreditCard className="h-4 w-4" /> Pagar com cartão
+      </button>
+    </div>
+  );
+}
+
+/** Prints de clientes: passam sozinhos devagar até a pessoa tocar. */
+function ProofCarousel() {
+  const scroller = useRef<HTMLDivElement>(null);
+  const touched = useRef(false);
+  const [atEnd, setAtEnd] = useState(false);
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const el = scroller.current;
+      if (!el || touched.current) return;
+      const end = el.scrollLeft + el.clientWidth >= el.scrollWidth - 24;
+      el.scrollTo({ left: end ? 0 : el.scrollLeft + el.clientWidth * 0.8, behavior: "smooth" });
+    }, 3500);
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <div className="relative mt-4">
+      <p className="text-center text-[14px] font-bold">Mensagens de clientes</p>
+      <div
+        ref={scroller}
+        onPointerDown={() => { touched.current = true; }}
+        onScroll={(e) => { const el = e.currentTarget; setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 24); }}
+        className="no-scrollbar -mx-5 mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3"
+      >
+        {[depoimento1, depoimento2, depoimento3].map((src, i) => (
+          <img key={src} src={src} alt={`Mensagem de cliente ${i + 1}`} loading="lazy" className="h-[260px] w-[78%] shrink-0 snap-center rounded-2xl border-4 border-white bg-black object-contain shadow-lg" />
+        ))}
+      </div>
+      {!atEnd && (
+        <span aria-hidden className="cv-swipe pointer-events-none absolute right-0 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white shadow-lg">
+          <ChevronRight className="h-5 w-5" style={{ color: "var(--cv-primary-ink)" }} />
+        </span>
+      )}
+    </div>
+  );
+}
+
 function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c: Cycle) => void; onCheckout: () => void; onPix: () => void }) {
+  const selected = PLANS.find((p) => p.cycle === plan)!;
   return (
     <>
       <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Seu plano está pronto. <Accent>Libere o acesso.</Accent></Title>
 
-      <div className="mt-5 space-y-3">
+      <p className="cv-pop mt-4 rounded-2xl p-3 text-center text-[14px] font-bold leading-5" style={{ background: "#efe9ff", color: "var(--cv-primary-ink)" }}>
+        Tudo ilimitado é por tempo limitado. Essa condição pode mudar a qualquer momento.
+      </p>
+
+      <div className="mt-4 space-y-3">
         {PLANS.map((p, i) => {
           const on = p.cycle === plan;
           return (
@@ -538,26 +609,11 @@ function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c:
                 <p className="mt-3 border-t pt-2 text-[12px] font-semibold" style={{ borderColor: "var(--cv-line)", color: p.popular ? "#15803d" : "var(--cv-muted)" }}>{p.note}</p>
               </button>
               {on && (
-                <div className="grid grid-cols-2 gap-2 px-4 pb-4">
-                  <div onClickCapture={() => onPix()}>
-                    <PayWithPixButton plan={p.cycle} quick redirectTo="/pagamento-confirmado" className="cv-btn h-12 border-0 py-0 text-[14px] text-white hover:bg-transparent">
-                      <QrCode className="h-4 w-4" /> Pagar com Pix
-                    </PayWithPixButton>
-                  </div>
-                  <button type="button" onClick={() => onCheckout()} className="inline-flex h-12 items-center justify-center gap-2 rounded-full border bg-white text-[14px] font-semibold" style={{ borderColor: "var(--cv-primary)", color: "var(--cv-primary-ink)" }}>
-                    <CreditCard className="h-4 w-4" /> Pagar com cartão
-                  </button>
-                </div>
+                <div className="px-4 pb-4"><PayButtons plan={p.cycle} onCheckout={onCheckout} onPix={onPix} /></div>
               )}
             </div>
           );
         })}
-      </div>
-
-      <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px]" style={{ color: "var(--cv-muted)" }}>
-        {["Tudo ilimitado", "Sua logo em tudo", "Site da agência", "Clientes no WhatsApp"].map((f) => (
-          <span key={f} className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-[#16a34a]" /> {f}</span>
-        ))}
       </div>
 
       <div className="cv-card mt-5 p-4 text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>
@@ -565,11 +621,37 @@ function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c:
         <p className="mt-1">Monte as artes de um pacote real da sua agência. Se não fizer sentido, peça o reembolso dentro do prazo da garantia.</p>
       </div>
 
-      <p className="mt-6 text-center text-[14px] font-bold">Mensagens de clientes. Arraste para o lado.</p>
-      <div className="no-scrollbar -mx-5 mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3">
-        {[depoimento1, depoimento2, depoimento3, DEPOIMENTO_PACK].map((src, i) => (
-          <img key={src} src={src} alt={`Mensagem de cliente ${i + 1}`} loading="lazy" className="h-[260px] w-[78%] shrink-0 snap-center rounded-2xl border-4 border-white bg-black object-contain shadow-lg" />
+      <div className="cv-card mt-4 p-4">
+        <p className="text-[15px] font-extrabold">O que você recebe neste plano</p>
+        <ul className="mt-2 space-y-1.5 text-[14px] leading-5">
+          {RECEBE.map((item) => (
+            <li key={item} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-[#16a34a]" /> {item}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-5 grid grid-cols-3 gap-2">
+        {yearGifs.previews.map((src, i) => (
+          <img key={src} src={src} alt={`Exemplo de vídeo pronto ${i + 1}`} loading="lazy" className="aspect-[9/16] w-full rounded-2xl object-cover shadow-md" />
         ))}
+      </div>
+
+      <div className="mt-5 space-y-2">
+        {AVALIACOES.map((review) => (
+          <div key={review} className="cv-card p-3.5">
+            <p className="flex items-center gap-1 text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>
+              <span aria-hidden style={{ color: "#f5a623" }} className="text-[15px] tracking-[1px]">★★★★★</span> 5 estrelas
+            </p>
+            <p className="mt-1 text-[14px] font-semibold leading-5">"{review}"</p>
+          </div>
+        ))}
+      </div>
+
+      <ProofCarousel />
+
+      <div className="sticky bottom-0 -mx-5 mt-5 border-t px-5 py-3" style={{ background: "var(--cv-bg)", borderColor: "var(--cv-line)" }}>
+        <p className="mb-2 text-center text-[13px] font-semibold">Plano {selected.name}: {selected.price}{selected.per}</p>
+        <PayButtons plan={plan} onCheckout={onCheckout} onPix={onPix} />
       </div>
     </>
   );
