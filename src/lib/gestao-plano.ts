@@ -302,6 +302,8 @@ export const FEITO: { data: string; itens: string[] }[] = [
       "Depois das artes, o botão leva à tela de e-mail, como login para usar a ferramenta, e só então ao quiz.",
       "Página mais limpa: créditos menores, vitrine depois deles, roda colorida de marketing, redes sociais na foto, conteúdo pronto só com título e vídeos.",
       "Corrigido o uso de num por em um nas páginas de venda.",
+      "Quiz mais limpo: só a logo no topo, barra em 50% depois de 2 respostas, artes menores em pilha, carregamento de 5 segundos com print de cliente antes do diagnóstico e do plano.",
+      "Plano: ao escolher, aparecem Pix e cartão no próprio plano. Abaixo, garantia e 4 prints de clientes. Saiu o prêmio de 14 dias de posts.",
     ],
   },
   {

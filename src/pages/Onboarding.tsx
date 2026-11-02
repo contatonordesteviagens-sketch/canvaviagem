@@ -5,14 +5,13 @@ import {
   ArrowRight, Check, ChevronLeft, Wallet, Sprout, Briefcase, TrendingUp, Palette, UserRound,
   Images, EyeOff, Rocket, Users, Clock, MessageCircleOff, Sparkles, Waves, Mountain, Plane, Ship, Bus, Globe2,
   PenLine, Frown, Flame, CalendarDays, Leaf, Eye, Gift, ShieldCheck, Lock, CircleCheck, MapPin, Instagram,
-  LayoutTemplate, MessageCircle, Download, Megaphone, Mic, Video,
+  LayoutTemplate, MessageCircle, Download, Megaphone, Mic, Video, Loader2, QrCode, CreditCard,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { ELITE_OFFER } from "@/lib/eliteOffer";
 import { checkoutPath } from "@/components/checkout/checkout-plans";
-import { PayWithPixButton } from "@/components/pix/PixCheckout";
 import { BrandMark, delay } from "@/components/cv-cream/shared";
 import { captureLead, readLeadEmail } from "@/lib/lead-capture";
 import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
@@ -27,14 +26,17 @@ import depoimento3 from "@/assets/depoimento3.jpg";
 type Icon = ComponentType<{ className?: string }>;
 type Option = { id: string; label: string; hint: string; icon: Icon };
 type QuestionStep = { kind: "question"; key: AnswerKey; title: string; sub: string; multi?: boolean; options: Option[] };
-type ScreenStep = { kind: "intro" | "result" | "proof" | "offer" };
-type Step = QuestionStep | ScreenStep;
+type ScreenStep = { kind: "intro" | "result" | "offer" };
+type LoadingStep = { kind: "loading"; label: string; images: string[] };
+type Step = QuestionStep | ScreenStep | LoadingStep;
 type AnswerKey = "objetivo" | "ferramenta" | "desafio" | "momento" | "orcamentos" | "destinos" | "travas" | "prazo";
 type Answers = Partial<Record<AnswerKey, string[]>>;
 type Cycle = "monthly" | "semiannual" | "annual";
 
-// v5: o e-mail voltou para antes do quiz; as versões antigas guardavam o passo pela ordem antiga.
-const STORAGE_KEY = "cv-onboarding-v5";
+// v6: telas de carregamento no lugar da tela de prova; as versões antigas guardavam o passo pela ordem antiga.
+const STORAGE_KEY = "cv-onboarding-v6";
+const DEPOIMENTO_PACK = "/quiz-media/depoimento-pack-reels.png";
+const LOADING_MS = 5000;
 
 const STEPS: Step[] = [
   { kind: "intro" },
@@ -66,7 +68,7 @@ const STEPS: Step[] = [
     ],
   },
   {
-    kind: "question", key: "momento", title: "Em que momento a sua agência está?", sub: "Não existe resposta errada",
+    kind: "question", key: "momento", title: "Em que momento você está?", sub: "Não existe resposta errada",
     options: [
       { id: "comecando", label: "Começando agora", hint: "Ainda não vendi", icon: Sprout },
       { id: "pouco", label: "Já vendi, mas pouco", hint: "Vendas de vez em quando", icon: Rocket },
@@ -75,7 +77,7 @@ const STEPS: Step[] = [
     ],
   },
   {
-    kind: "question", key: "orcamentos", title: "Quantos pedidos de orçamento chegam no seu WhatsApp por semana?", sub: "Conta aproximada já ajuda",
+    kind: "question", key: "orcamentos", title: "Quantos orçamentos você recebe por semana?", sub: "Conta aproximada já ajuda",
     options: [
       { id: "zero", label: "Nenhum ainda", hint: "O WhatsApp quase não toca", icon: MessageCircleOff },
       { id: "poucos", label: "De 1 a 5", hint: "Chegam alguns, sem constância", icon: MessageCircle },
@@ -93,12 +95,15 @@ const STEPS: Step[] = [
       { id: "excursao", label: "Excursões", hint: "Bate-volta e grupos", icon: Bus },
     ],
   },
+  { kind: "loading", label: "Preparando o seu diagnóstico…", images: [depoimento1] },
   { kind: "result" },
-  { kind: "proof" },
+  { kind: "loading", label: "Liberando o seu plano…", images: [depoimento2] },
   { kind: "offer" },
 ];
 
 const TOTAL = STEPS.length;
+// A barra anda mais no começo: duas perguntas respondidas já marcam 50%, para mostrar que é rápido.
+const PROGRESS = [8, 25, 38, 50, 62, 72, 82, 90, 94, 97, 100];
 
 const FIXES: Record<string, { title: string; fix: string; icon: Icon }> = {
   design: { title: "Você não sabe criar postagens", fix: "Anúncio, carrossel e vídeo já vêm prontos. Você só fala o pacote.", icon: Palette },
@@ -174,7 +179,11 @@ export default function Onboarding() {
   }, [user]);
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL - 1));
-  const back = () => setStep((s) => Math.max(s - 1, 0));
+  // Voltando, pula as telas de carregamento.
+  const back = () => setStep((s) => {
+    const previous = Math.max(s - 1, 0);
+    return STEPS[previous].kind === "loading" ? previous - 1 : previous;
+  });
 
   const current = STEPS[step];
 
@@ -190,12 +199,12 @@ export default function Onboarding() {
     window.setTimeout(next, 280);
   };
 
-  const checkout = () => {
+  const checkout = (method: "pix" | "cartao") => {
     const selected = PLANS.find((p) => p.cycle === plan)!;
-    track("plan_selected", { billing_cycle: plan, feature: "onboarding", answers });
+    track("plan_selected", { billing_cycle: plan, feature: "onboarding", answers, method });
     if (!user) captureLead(readLeadEmail(), "plan", { billing_cycle: plan });
     trackMetaEvent("InitiateCheckout", { value: selected.value, currency: "BRL", content_name: `Canva Viagem ${selected.name}`, content_category: "onboarding" });
-    navigate(checkoutPath(plan));
+    navigate(checkoutPath(plan, method));
   };
 
   return (
@@ -207,8 +216,8 @@ export default function Onboarding() {
             <button onClick={back} disabled={step === 0} aria-label="Voltar" className="grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-[#f3ead2] disabled:opacity-0">
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <BrandMark size={22} />
-            <span className="w-9 text-right text-[12px] font-semibold" style={{ color: "var(--cv-muted)" }}>{step + 1}/{TOTAL}</span>
+            <BrandMark size={26} withName={false} />
+            <span className="w-9" />
           </div>
           <Progress step={step} />
         </header>
@@ -216,6 +225,8 @@ export default function Onboarding() {
         <main key={step} className="flex flex-1 flex-col pb-6 pt-6">
           {current.kind === "question" ? (
             <Question q={current} selected={answers[current.key] || []} onChoose={(id) => choose(current, id)} onContinue={next} />
+          ) : current.kind === "loading" ? (
+            <Loading label={current.label} images={current.images} onDone={next} />
           ) : (
             <Screen kind={current.kind} answers={answers} destino={destinoPrincipal} plan={plan} setPlan={setPlan} onNext={next} onCheckout={checkout} />
           )}
@@ -225,20 +236,10 @@ export default function Onboarding() {
   );
 }
 
-/** 7 segmentos, como no original: o progresso preenche segmento por segmento. */
 function Progress({ step }: { step: number }) {
-  const segments = 7;
-  const ratio = (step + 1) / TOTAL;
   return (
-    <div className="mt-2 flex gap-1.5">
-      {Array.from({ length: segments }).map((_, i) => {
-        const fill = Math.min(Math.max(ratio * segments - i, 0), 1);
-        return (
-          <span key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-[#ece5d3]">
-            <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${fill * 100}%`, background: "var(--cv-primary)" }} />
-          </span>
-        );
-      })}
+    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#ece5d3]">
+      <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${PROGRESS[step] ?? 100}%`, background: "var(--cv-primary)" }} />
     </div>
   );
 }
@@ -304,84 +305,58 @@ function Question({ q, selected, onChoose, onContinue }: { q: QuestionStep; sele
 
 type ScreenProps = {
   kind: ScreenStep["kind"]; answers: Answers; destino: string; plan: Cycle;
-  setPlan: (c: Cycle) => void; onNext: () => void; onCheckout: () => void;
+  setPlan: (c: Cycle) => void; onNext: () => void; onCheckout: (method: "pix" | "cartao") => void;
 };
 
 function Screen(props: ScreenProps) {
   switch (props.kind) {
     case "intro": return <Intro onNext={props.onNext} />;
     case "result": return <Result answers={props.answers} destino={props.destino} onNext={props.onNext} />;
-    case "proof": return <Proof onNext={props.onNext} />;
     case "offer": return <Offer plan={props.plan} setPlan={props.setPlan} onCheckout={props.onCheckout} />;
   }
 }
 
-/** As 3 artes do teste, inteiras: passam sozinhas até a pessoa tocar, e dá para arrastar. */
-function TrialGallery({ trial }: { trial: TrialResult }) {
+/** As 3 artes do teste em pilha: a do meio na frente, as outras atrás. */
+function TrialStack({ trial }: { trial: TrialResult }) {
   const arts = trial.arts.slice(0, 3);
-  const [active, setActive] = useState(0);
-  const scroller = useRef<HTMLDivElement>(null);
-  const touched = useRef(false);
-
-  const show = (index: number) => {
-    const el = scroller.current;
-    const card = el?.children[index] as HTMLElement | undefined;
-    if (!el || !card) return;
-    el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.clientWidth) / 2, behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      if (!touched.current) show((active + 1) % arts.length);
-    }, 2600);
-    return () => window.clearInterval(id);
-  }, [active, arts.length]);
-
-  const onScroll = () => {
-    const el = scroller.current;
-    if (!el) return;
-    const center = el.scrollLeft + el.clientWidth / 2;
-    let nearest = 0;
-    let best = Infinity;
-    Array.from(el.children).forEach((child, i) => {
-      const card = child as HTMLElement;
-      const distance = Math.abs(card.offsetLeft + card.clientWidth / 2 - center);
-      if (distance < best) { best = distance; nearest = i; }
-    });
-    setActive(nearest);
-  };
-
+  const size = "min(40vw, 170px)";
+  const places = [
+    { transform: "translateX(-62%) rotate(-7deg) scale(.88)", zIndex: 1 },
+    { transform: "translateX(62%) rotate(7deg) scale(.88)", zIndex: 1 },
+    { transform: "none", zIndex: 2 },
+  ];
   return (
-    <div className="cv-pop -mx-5 mt-4" style={delay(220)}>
-      <div
-        ref={scroller}
-        onScroll={onScroll}
-        onPointerDown={() => { touched.current = true; }}
-        onContextMenu={(e) => e.preventDefault()}
-        className="no-scrollbar flex select-none snap-x snap-mandatory gap-3 overflow-x-auto pb-6"
-        style={{ WebkitTouchCallout: "none", paddingInline: "calc((100% - min(72vw, 36vh, 300px)) / 2)" }}
-      >
-        {arts.map((src, i) => (
-          <div key={src.slice(-40)} className="shrink-0 snap-center" style={{ width: "min(72vw, 36vh, 300px)" }}>
-            <img
-              src={src}
-              alt={`Arte ${i + 1} de ${trial.destino}`}
-              draggable={false}
-              className="pointer-events-none aspect-square w-full rounded-2xl border-4 border-white object-cover shadow-xl"
-            />
-          </div>
-        ))}
+    <div className="cv-pop relative mx-auto mt-7 flex items-center justify-center" style={{ ...delay(220), height: `calc(${size} + 16px)` }} onContextMenu={(e) => e.preventDefault()}>
+      {arts.map((src, i) => (
+        <img
+          key={src.slice(-40)}
+          src={src}
+          alt={`Arte ${i + 1} de ${trial.destino}`}
+          draggable={false}
+          className="pointer-events-none absolute aspect-square select-none rounded-2xl border-[3px] border-white object-cover shadow-xl"
+          style={{ width: size, ...places[arts.length === 3 ? i : 2 - i] }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Carregando por 5 segundos, com o print de um cliente enquanto isso. */
+function Loading({ label, images, onDone }: { label: string; images: string[]; onDone: () => void }) {
+  useEffect(() => {
+    const id = window.setTimeout(onDone, LOADING_MS);
+    return () => window.clearTimeout(id);
+  }, []);
+  return (
+    <div className="flex flex-col items-center text-center">
+      <Loader2 className="h-8 w-8 animate-spin" style={{ color: "var(--cv-primary)" }} />
+      <p className="mt-3 text-[20px] font-extrabold tracking-[-0.02em]">{label}</p>
+      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#ece5d3]">
+        <span className="cv-fill block h-full rounded-full" style={{ width: "100%", background: "var(--cv-primary)", animationDuration: `${LOADING_MS}ms`, animationTimingFunction: "linear" }} />
       </div>
-      <div className="flex justify-center gap-1.5">
-        {arts.map((src, i) => (
-          <button
-            key={src.slice(-24)}
-            type="button"
-            aria-label={`Ver a arte ${i + 1}`}
-            onClick={() => { touched.current = true; show(i); }}
-            className="h-2.5 w-2.5 rounded-full transition-colors"
-            style={{ background: i === active ? "var(--cv-primary)" : "#d9cfb3" }}
-          />
+      <div className="mt-6 w-full space-y-3">
+        {images.map((src, i) => (
+          <img key={src} src={src} alt={`Mensagem de cliente ${i + 1}`} className="cv-pop max-h-[52vh] w-full rounded-2xl border-4 border-white object-contain shadow-xl" />
         ))}
       </div>
     </div>
@@ -393,72 +368,24 @@ function Intro({ onNext }: { onNext: () => void }) {
   return (
     <>
       <div className="flex flex-col items-center text-center">
-        <span className="cv-pop inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 text-[12px] font-semibold" style={{ borderColor: "var(--cv-line)" }}>
-          Quiz de 1 minuto
-        </span>
-        <h1 className="cv-pop mt-3 text-balance text-[26px] font-extrabold leading-[1.08] tracking-[-0.025em]" style={delay(80)}>
-          Fale o pacote em um áudio. Receba anúncio, carrossel e site <Accent>prontos, com a sua logo.</Accent>
+        <h1 className="cv-pop text-balance text-[28px] font-extrabold leading-[1.08] tracking-[-0.025em]" style={delay(80)}>
+          Fale da sua agência e <Accent>receba tudo pronto.</Accent>
         </h1>
-        <p className="cv-pop mt-2 max-w-[330px] text-[14px] leading-5" style={{ ...delay(160), color: "var(--cv-muted)" }}>
-          {trial
-            ? `Estas artes de ${trial.destino} ficaram prontas em segundos. Responda 6 perguntas rápidas e use sem marca d'água, com o seu preço e o seu WhatsApp.`
-            : "E você ainda tem vídeos prontos para postar. Responda 6 perguntas rápidas e veja o plano certo para a sua agência."}
+        <p className="cv-pop mt-2 max-w-[330px] text-[15px] leading-6" style={{ ...delay(160), color: "var(--cv-muted)" }}>
+          Responda o questionário de 1 minuto para <strong style={{ color: "var(--cv-fg)" }}>liberar o seu acesso.</strong>
         </p>
       </div>
       {trial ? (
-        <TrialGallery trial={trial} />
+        <TrialStack trial={trial} />
       ) : (
         <div className="cv-pop -mx-5 mt-6" style={delay(220)}>
           <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito no Canva Viagem" />
           <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito no Canva Viagem" slow size="compact" className="mt-1" />
         </div>
       )}
-      <BottomCta onClick={onNext}>Começar a gerar as artes agora <ArrowRight className="h-4 w-4" /></BottomCta>
+      <BottomCta onClick={onNext}>Começar agora <ArrowRight className="h-4 w-4" /></BottomCta>
+      <p className="mt-2 text-center text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>Avance para gerar mais artes sem marca d'água, com o seu preço e o seu WhatsApp.</p>
     </>
-  );
-}
-
-
-
-
-
-
-const CRM_LEADS = [
-  { name: "Ana", destino: "Gramado" },
-  { name: "Carlos", destino: "Cancún" },
-  { name: "Júlia", destino: "Noronha" },
-  { name: "Pedro", destino: "Maragogi" },
-];
-const CRM_COLUMNS = ["Novo pedido", "Em conversa", "Fechou"];
-
-/** Quadro de clientes animado: pedidos de orçamento entram e andam até "Fechou". */
-function CrmPreview() {
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = window.setInterval(() => setTick((t) => t + 1), 1400);
-    return () => window.clearInterval(id);
-  }, []);
-  // Cada cliente entra num momento diferente e avança uma coluna a cada passo.
-  const placed = CRM_LEADS.map((lead, i) => ({ ...lead, col: Math.min(Math.max(((tick + i * 2) % 8) - 2, -1), 2) }));
-  return (
-    <div className="grid grid-cols-3 gap-1.5 rounded-xl border bg-white p-2 shadow-md" style={{ borderColor: "var(--cv-line)" }}>
-      {CRM_COLUMNS.map((title, col) => (
-        <div key={title} className="min-h-[112px] rounded-lg p-1.5" style={{ background: col === 2 ? "#e9f8ef" : "var(--cv-sand)" }}>
-          <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.5px]" style={{ color: col === 2 ? "#15803d" : "var(--cv-muted)" }}>{title}</p>
-          <div className="space-y-1">
-            {placed.filter((l) => l.col === col).map((l) => (
-              <div key={l.name} className="cv-pop rounded-md bg-white px-1.5 py-1 shadow-sm">
-                <p className="text-[10px] font-bold leading-tight">{l.name}</p>
-                <p className="flex items-center gap-0.5 text-[9px] leading-tight" style={{ color: "var(--cv-muted)" }}>
-                  <MessageCircle className="h-2.5 w-2.5 text-[#25D366]" /> {l.destino}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
   );
 }
 
@@ -552,64 +479,46 @@ function WeekList({ days }: { days: { d: string; t: string; icon: Icon }[] }) {
 }
 
 
-/** Prints de conversas com clientes, logo antes do preço. */
-function Proof({ onNext }: { onNext: () => void }) {
-  return (
-    <>
-      <Title sub="Mensagens que chegaram no WhatsApp.">Quem começou a divulgar <Accent>conta assim</Accent></Title>
-      <div className="cv-pop -mx-5 mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2" style={delay(120)}>
-        {[depoimento1, depoimento2, depoimento3].map((src, i) => (
-          <img
-            key={src}
-            src={src}
-            alt={`Mensagem de cliente ${i + 1}`}
-            loading="lazy"
-            className="max-h-[440px] w-[82%] shrink-0 snap-center rounded-2xl border-4 border-white object-contain shadow-xl"
-          />
-        ))}
-      </div>
-      <BottomCta onClick={onNext}>Ver meu plano <ArrowRight className="h-4 w-4" /></BottomCta>
-    </>
-  );
-}
-
-function Offer({ plan, setPlan, onCheckout }: { plan: Cycle; setPlan: (c: Cycle) => void; onCheckout: () => void }) {
-  const selected = PLANS.find((p) => p.cycle === plan)!;
+function Offer({ plan, setPlan, onCheckout }: { plan: Cycle; setPlan: (c: Cycle) => void; onCheckout: (method: "pix" | "cartao") => void }) {
   return (
     <>
       <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Seu plano está pronto. <Accent>Libere o acesso.</Accent></Title>
-
-      <div className="cv-pop mt-5 flex items-center gap-3 rounded-[22px] border p-4" style={{ ...delay(100), background: "#efe9ff", borderColor: "#cbbcff" }}>
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white"><Gift className="h-5 w-5 text-[#6440e6]" /></span>
-        <div>
-          <p className="text-[14px] font-bold">Prêmio desbloqueado</p>
-          <p className="text-[12px] leading-4" style={{ color: "var(--cv-muted)" }}>Seus 14 primeiros dias de posts já montados (é só repetir o ciclo no mês inteiro) + 7 dias de garantia pra testar com um pacote seu.</p>
-        </div>
-      </div>
 
       <div className="mt-5 space-y-3">
         {PLANS.map((p, i) => {
           const on = p.cycle === plan;
           return (
-            <button key={p.cycle} onClick={() => setPlan(p.cycle)} className="cv-pop w-full rounded-[24px] border-2 p-4 text-left transition-all" style={{ ...delay(180 + i * 80), background: on ? "#f4f0ff" : "var(--cv-card)", borderColor: on ? "var(--cv-primary)" : "var(--cv-line)" }}>
-              <div className="flex items-start gap-3">
-                <span className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border" style={{ background: on ? "var(--cv-primary)" : "transparent", borderColor: on ? "var(--cv-primary)" : "#e3dccb" }}>
-                  {on && <Check className="h-3 w-3 text-white" />}
-                </span>
-                <div className="flex-1">
-                  <p className="flex flex-wrap items-center gap-2 text-[17px] font-extrabold">
-                    {p.name}
-                    {p.popular && <span className="rounded-full px-2 py-0.5 text-[10px] font-bold tracking-[0.6px] text-white" style={{ background: "var(--cv-primary)" }}>MAIS ESCOLHIDO</span>}
-                  </p>
-                  <p className="text-[13px]" style={{ color: "var(--cv-muted)" }}>{p.hint}</p>
+            <div key={p.cycle} className="cv-pop rounded-[24px] border-2 transition-all" style={{ ...delay(180 + i * 80), background: on ? "#f4f0ff" : "var(--cv-card)", borderColor: on ? "var(--cv-primary)" : "var(--cv-line)" }}>
+              <button type="button" onClick={() => setPlan(p.cycle)} aria-pressed={on} className="w-full p-4 text-left">
+                <div className="flex items-start gap-3">
+                  <span className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border" style={{ background: on ? "var(--cv-primary)" : "transparent", borderColor: on ? "var(--cv-primary)" : "#e3dccb" }}>
+                    {on && <Check className="h-3 w-3 text-white" />}
+                  </span>
+                  <div className="flex-1">
+                    <p className="flex flex-wrap items-center gap-2 text-[17px] font-extrabold">
+                      {p.name}
+                      {p.popular && <span className="rounded-full px-2 py-0.5 text-[10px] font-bold tracking-[0.6px] text-white" style={{ background: "var(--cv-primary)" }}>MAIS ESCOLHIDO</span>}
+                    </p>
+                    <p className="text-[13px]" style={{ color: "var(--cv-muted)" }}>{p.hint}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[20px] font-extrabold" style={{ color: on ? "var(--cv-primary-ink)" : undefined }}>{p.price}</p>
+                    <p className="text-[11px]" style={{ color: "var(--cv-muted)" }}>{p.per}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-[20px] font-extrabold" style={{ color: on ? "var(--cv-primary-ink)" : undefined }}>{p.price}</p>
-                  <p className="text-[11px]" style={{ color: "var(--cv-muted)" }}>{p.per}</p>
+                <p className="mt-3 border-t pt-2 text-[12px] font-semibold" style={{ borderColor: "var(--cv-line)", color: p.popular ? "#15803d" : "var(--cv-muted)" }}>{p.note}</p>
+              </button>
+              {on && (
+                <div className="grid grid-cols-2 gap-2 px-4 pb-4">
+                  <button type="button" onClick={() => onCheckout("pix")} className="cv-btn h-12 text-[14px]">
+                    <QrCode className="h-4 w-4" /> Pagar com Pix
+                  </button>
+                  <button type="button" onClick={() => onCheckout("cartao")} className="inline-flex h-12 items-center justify-center gap-2 rounded-full border bg-white text-[14px] font-semibold" style={{ borderColor: "var(--cv-primary)", color: "var(--cv-primary-ink)" }}>
+                    <CreditCard className="h-4 w-4" /> Pagar com cartão
+                  </button>
                 </div>
-              </div>
-              <p className="mt-3 border-t pt-2 text-[12px] font-semibold" style={{ borderColor: "var(--cv-line)", color: p.popular ? "#15803d" : "var(--cv-muted)" }}>{p.note}</p>
-            </button>
+              )}
+            </div>
           );
         })}
       </div>
@@ -620,16 +529,15 @@ function Offer({ plan, setPlan, onCheckout }: { plan: Cycle; setPlan: (c: Cycle)
         ))}
       </div>
 
-      <BottomCta onClick={onCheckout}>Começar com o {selected.name}</BottomCta>
-      <p className="mt-2 text-center text-[12px]" style={{ color: "var(--cv-muted)" }}>{selected.price}{selected.per} · {selected.note.toLowerCase()}</p>
-      <PayWithPixButton plan={plan} className="mt-3 rounded-full py-3 text-[13px]" />
-      <div className="mt-3 flex justify-center gap-4 text-[12px]" style={{ color: "var(--cv-muted)" }}>
-        <span className="inline-flex items-center gap-1"><Lock className="h-3.5 w-3.5" /> Pagamento seguro Stripe</span>
-        <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" /> 7 dias de garantia</span>
-      </div>
       <div className="cv-card mt-5 p-4 text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>
-        <p className="font-bold text-[var(--cv-fg)]">Garantia de 7 dias</p>
-        Monte as artes de um pacote real da sua agência. Se não fizer sentido, peça o reembolso dentro do prazo da garantia.
+        <p className="inline-flex items-center gap-1.5 font-bold text-[var(--cv-fg)]"><ShieldCheck className="h-4 w-4" /> Garantia de 7 dias</p>
+        <p className="mt-1">Monte as artes de um pacote real da sua agência. Se não fizer sentido, peça o reembolso dentro do prazo da garantia.</p>
+      </div>
+
+      <div className="mt-5 space-y-3">
+        {[depoimento1, depoimento2, depoimento3, DEPOIMENTO_PACK].map((src, i) => (
+          <img key={src} src={src} alt={`Mensagem de cliente ${i + 1}`} loading="lazy" className="w-full rounded-2xl border-4 border-white object-contain shadow-lg" />
+        ))}
       </div>
     </>
   );
