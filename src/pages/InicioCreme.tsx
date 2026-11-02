@@ -398,11 +398,11 @@ const WHEEL: { label: string[]; bg: string; ink: string }[] = [
   { label: ["Agentes", "de IA"], bg: "#e8345f", ink: "#fff" },
 ];
 
-/** Roda de setas: cada entrega leva à próxima, com a cor acendendo em sequência. */
+/** Roda de setas girando devagar para a direita. Os textos ficam sempre em pé, e os principais começam à esquerda. */
 function MarketingWheel() {
   const c = 200;
-  const outer = 192;
-  const inner = 124;
+  const outer = 196;
+  const inner = 112;
   const mid = (outer + inner) / 2;
   const step = 360 / WHEEL.length;
   const tip = 7;
@@ -414,31 +414,34 @@ function MarketingWheel() {
   return (
     <div className="cv-reveal relative mx-auto mt-10 w-full max-w-[460px]">
       <svg viewBox="0 0 400 400" className="block h-auto w-full" role="img" aria-label="Anúncios, carrosséis, stories, site, vídeos, clientes organizados, calendário de posts e agentes de IA">
-        {WHEEL.map((seg, i) => {
-          const start = -90 + i * step - step / 2 + gap;
-          const end = start + step - gap * 2;
-          const center = (start + end) / 2 + tip / 2;
-          const flip = Math.sin((center * Math.PI) / 180) > 0.05;
-          const rotate = center + (flip ? -90 : 90);
-          const [x, y] = at(mid, center).split(" ");
-          return (
-            <g key={seg.label.join(" ")}>
-              <path
-                className="cv-seg"
-                style={delay(i * 500)}
-                fill={seg.bg}
-                d={`M ${at(outer, start)} A ${outer} ${outer} 0 0 1 ${at(outer, end)} L ${at(mid, end + tip)} L ${at(inner, end)} A ${inner} ${inner} 0 0 0 ${at(inner, start)} L ${at(mid, start + tip)} Z`}
-              />
-              <text transform={`translate(${x} ${y}) rotate(${rotate.toFixed(2)})`} textAnchor="middle" fill={seg.ink} fontSize="14" fontWeight="800">
-                {seg.label.map((line, l) => (
-                  <tspan key={line} x="0" dy={l === 0 ? (seg.label.length > 1 ? -2 : 5) : 15}>{line}</tspan>
-                ))}
-              </text>
-            </g>
-          );
-        })}
-        <text x="200" y="190" textAnchor="middle" fontSize="26" fontWeight="800" fill="var(--cv-fg)">Sua agência</text>
-        <text x="200" y="218" textAnchor="middle" fontSize="15" fontWeight="600" fill="var(--cv-muted)">em um só lugar</text>
+        <g className="cv-wheel">
+          {WHEEL.map((seg, i) => {
+            // Anúncios embaixo à esquerda, carrosséis à esquerda e stories em cima à esquerda.
+            const start = 135 + i * step - step / 2 + gap;
+            const end = start + step - gap * 2;
+            const [x, y] = at(mid, (start + end) / 2 + tip / 2).split(" ");
+            return (
+              <g key={seg.label.join(" ")}>
+                <path
+                  fill={seg.bg}
+                  d={`M ${at(outer, start)} A ${outer} ${outer} 0 0 1 ${at(outer, end)} L ${at(mid, end + tip)} L ${at(inner, end)} A ${inner} ${inner} 0 0 0 ${at(inner, start)} L ${at(mid, start + tip)} Z`}
+                />
+                <g transform={`translate(${x} ${y})`}>
+                  <text className="cv-wheel-label" textAnchor="middle" fill={seg.ink} fontSize="12.5" fontWeight="800">
+                    {seg.label.map((line, l) => (
+                      <tspan key={line} x="0" dy={l === 0 ? (seg.label.length > 1 ? -3 : 4) : 15}>{line}</tspan>
+                    ))}
+                  </text>
+                </g>
+              </g>
+            );
+          })}
+        </g>
+        <text textAnchor="middle" fontWeight="800" fill="var(--cv-fg)" fontSize="19">
+          <tspan x="200" y="182">Tudo da sua</tspan>
+          <tspan x="200" dy="24">agência em um</tspan>
+          <tspan x="200" dy="24">só lugar</tspan>
+        </text>
       </svg>
     </div>
   );
