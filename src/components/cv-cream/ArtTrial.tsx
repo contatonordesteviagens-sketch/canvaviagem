@@ -7,6 +7,7 @@ import {
   TRIAL_DESTINOS, type TrialDestino, type TrialLogo,
 } from "@/lib/inicio-arte";
 import { trackInicioTeste } from "@/lib/inicio-teste";
+import { delay } from "@/components/cv-cream/shared";
 
 const TRIAL_ARTS = 3;
 const MAX_LOGO_STORED = 1_500_000;
@@ -119,15 +120,17 @@ export function ArtTrial() {
             </div>
           </form>
           <div className="mt-3 flex flex-wrap justify-center gap-2">
-            {QUICK_DESTINOS.map((item) => (
+            {QUICK_DESTINOS.map((item, i) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => chooseDestino(item)}
-                className="rounded-full border bg-white px-3 py-1.5 text-[13px] font-semibold transition-colors hover:bg-[#f3ead2]"
-                style={{ borderColor: "var(--cv-line)" }}
+                className={`relative rounded-full border bg-white px-2.5 py-1 text-[12px] font-semibold transition-colors hover:bg-[#f3ead2] sm:px-3 sm:py-1.5 sm:text-[13px] ${i < 3 ? "cv-chip" : ""}`}
+                style={{ borderColor: "var(--cv-line)", ...(i < 3 ? delay(i * 1500) : {}) }}
               >
                 {item.nome}
+                {/* Toque animado nos três primeiros, um de cada vez: mostra que dá para clicar. */}
+                {i < 3 && <span aria-hidden className="cv-chip-dot pointer-events-none absolute left-1/2 top-1/2 -ml-3 -mt-3 h-6 w-6 rounded-full" style={delay(i * 1500)} />}
               </button>
             ))}
           </div>
