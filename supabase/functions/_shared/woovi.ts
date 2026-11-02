@@ -22,8 +22,8 @@ export const PIX_PLANS: Record<PixPlan, { valueCents: number; days: number; prod
 
 /** Tempo para pagar o QR Code (segundos). */
 export const PIX_EXPIRES_IN_SECONDS = 60 * 60;
-/** No quiz o Pix vale 10 minutos: o relógio da tela é o prazo real da cobrança. */
-export const PIX_QUICK_EXPIRES_IN_SECONDS = 10 * 60;
+/** No quiz o Pix vale 24 horas: quem fecha a tela ainda consegue pagar. O relógio de 10 minutos é só um lembrete. */
+export const PIX_QUICK_EXPIRES_IN_SECONDS = 24 * 60 * 60;
 
 // Black Friday: 50% para sempre. Quem pagou com esse valor renova com esse valor, mesmo depois de a campanha fechar.
 // A compra nova fecha sozinha às 23h59 de 30/11 (Brasília).

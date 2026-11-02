@@ -35,6 +35,7 @@ type Charge = {
 };
 
 const POLL_MS = 4000;
+const NUDGE_MS = 10 * 60 * 1000;
 
 /**
  * Enquanto false, o botão "Pagar com Pix" só aparece para admins (fase de testes).
@@ -65,7 +66,7 @@ export function PixCheckoutModal({
   onOpenChange: (open: boolean) => void;
   plan: PixPlan;
   redirectTo?: string;
-  /** Pix de 10 minutos, usado no quiz. */
+  /** No quiz: relógio de 10 minutos para incentivar o pagamento. O Pix continua valendo depois dele. */
   quick?: boolean;
 }) {
   const navigate = useNavigate();
@@ -78,6 +79,10 @@ export function PixCheckoutModal({
   const requestedRef = useRef<string | null>(null);
   const { remaining, label } = useCountdown(charge?.expiresDate ?? null);
   const expired = remaining === 0;
+  const [nudgeEnd, setNudgeEnd] = useState<string | null>(null);
+  const nudge = useCountdown(quick ? nudgeEnd : null);
+  const timerLabel = quick ? nudge.label : label;
+  const timerOver = quick && nudge.remaining === 0;
 
   const createCharge = useCallback(async () => {
     setLoading(true);
@@ -87,6 +92,7 @@ export function PixCheckoutModal({
       const { data, error: fnError } = await supabase.functions.invoke("woovi-create-charge", { body: { plan, quick } });
       if (fnError || !data?.brCode) throw new Error(data?.error || fnError?.message || "Falha ao gerar o Pix");
       setCharge(data as Charge);
+      setNudgeEnd(new Date(Date.now() + NUDGE_MS).toISOString());
       trackMetaEvent("InitiateCheckout", { value: info.value, currency: "BRL", content_name: `Canva Viagem ${info.label}`, content_category: "pix" });
     } catch (err) {
       console.error("[Pix] Falha ao criar cobrança:", err);
@@ -173,9 +179,13 @@ export function PixCheckoutModal({
           </div>
         ) : charge ? (
           <div className="flex flex-col items-center gap-3">
-            {!expired && label && (
+            {!expired && timerOver ? (
+              <p className="w-full rounded-xl bg-amber-50 px-3 py-2 text-center text-[14px] font-semibold text-amber-900">
+                Seu tempo acabou, mas este Pix continua valendo. Faça o pagamento para liberar o acesso.
+              </p>
+            ) : !expired && timerLabel && (
               <p className="w-full rounded-xl bg-emerald-50 py-2 text-center text-[14px] font-semibold text-emerald-800">
-                Pague em <b className="tabular-nums text-[18px]">{label}</b>
+                Pague em <b className="tabular-nums text-[18px]">{timerLabel}</b>
               </p>
             )}
             <div className={cn("rounded-2xl border bg-white p-2", expired && "opacity-30")}>

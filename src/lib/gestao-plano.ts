@@ -302,7 +302,7 @@ export const FEITO: { data: string; itens: string[] }[] = [
       "Depois das artes, o botão leva à tela de e-mail, como login para usar a ferramenta, e só então ao quiz.",
       "Página mais limpa: créditos menores, vitrine depois deles, roda colorida de marketing, redes sociais na foto, conteúdo pronto só com título e vídeos.",
       "Corrigido o uso de num por em um nas páginas de venda.",
-      "Pix do quiz abre direto no popup, sem CPF: QR Code, botão verde de copiar e 10 minutos reais para pagar. Depois de pagar, a pessoa confere ou corrige o e-mail de acesso.",
+      "Pix do quiz abre direto no popup, sem CPF: QR Code, botão verde de copiar e relógio de 10 minutos. O Pix vale 24 horas e continua aparecendo quando o relógio zera. Depois de pagar, a pessoa confere ou corrige o e-mail de acesso.",
       "E-mail de compra explica como entrar em outro aparelho, com link fixo para a página de login. Ainda sem teste com pagamento real.",
       "Quadro Onde as pessoas desistem no Plano: cada etapa da página ao pagamento, as respostas do quiz e o filtro só de anúncios.",
       "Pergunta de destinos menor, com o botão de continuar à vista no celular.",
