@@ -3,7 +3,7 @@
 import { trackEvent } from "@/hooks/useAnalyticsEvents";
 
 export type InicioVariant = "arte" | "atual";
-export type InicioStep = "visita" | "destino" | "logo" | "artes" | "email" | "quiz" | "conta";
+export type InicioStep = "visita" | "destino" | "logo" | "artes" | "botao" | "tela_email" | "email" | "quiz" | "quiz_tela" | "resposta" | "plano" | "pagar" | "conta";
 
 const STORAGE_KEY = "cv-inicio-teste";
 /** Fatia dos visitantes novos que vê a arte: 0 desliga o sorteio, 0.5 divide meio a meio. */
@@ -49,9 +49,9 @@ function origemDaVisita() {
   }
 }
 
-export function trackInicioTeste(step: InicioStep) {
-  const current = read();
-  if (!current) return;
+export function trackInicioTeste(step: InicioStep, extra?: { tela?: string; valor?: string }) {
+  // Quem entra direto pelo link do quiz ou do e-mail, sem passar pela página, também conta no funil.
+  const current = read() ?? { variant: "arte" as InicioVariant, manual: false };
   // Prévia do Lovable e site local não são visitantes: ficam fora da conta, como quem escolheu o grupo.
   const isVisitor = /(^|\.)canvaviagem\.com$/.test(window.location.hostname);
   void trackEvent("inicio_teste", {
@@ -59,5 +59,6 @@ export function trackInicioTeste(step: InicioStep) {
     step,
     manual: current.manual || !isVisitor,
     ...(step === "visita" ? { origem: origemDaVisita() } : {}),
+    ...extra,
   });
 }

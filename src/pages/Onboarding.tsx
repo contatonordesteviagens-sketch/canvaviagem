@@ -5,7 +5,7 @@ import {
   ArrowRight, Check, ChevronLeft, Wallet, Sprout, Briefcase, TrendingUp, Palette, UserRound,
   Images, EyeOff, Rocket, Users, Clock, MessageCircleOff, Sparkles, Waves, Mountain, Plane, Ship, Bus, Globe2,
   PenLine, Frown, Flame, CalendarDays, Leaf, Eye, Gift, ShieldCheck, Lock, CircleCheck, MapPin, Instagram,
-  LayoutTemplate, MessageCircle, Download, Megaphone, Mic, Video, Loader2, QrCode, CreditCard,
+  LayoutTemplate, MessageCircle, Download, Megaphone, Mic, Video, QrCode, CreditCard,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
@@ -27,7 +27,7 @@ type Icon = ComponentType<{ className?: string }>;
 type Option = { id: string; label: string; hint: string; icon: Icon };
 type QuestionStep = { kind: "question"; key: AnswerKey; title: string; sub: string; multi?: boolean; options: Option[] };
 type ScreenStep = { kind: "intro" | "result" | "offer" };
-type LoadingStep = { kind: "loading"; label: string; images: string[] };
+type LoadingStep = { kind: "loading"; label: string; reviews: string[] };
 type Step = QuestionStep | ScreenStep | LoadingStep;
 type AnswerKey = "objetivo" | "ferramenta" | "desafio" | "momento" | "orcamentos" | "destinos" | "travas" | "prazo";
 type Answers = Partial<Record<AnswerKey, string[]>>;
@@ -36,7 +36,7 @@ type Cycle = "monthly" | "semiannual" | "annual";
 // v6: telas de carregamento no lugar da tela de prova; as versões antigas guardavam o passo pela ordem antiga.
 const STORAGE_KEY = "cv-onboarding-v6";
 const DEPOIMENTO_PACK = "/quiz-media/depoimento-pack-reels.png";
-const LOADING_MS = 5000;
+const LOADING_MS = 7000;
 
 const STEPS: Step[] = [
   { kind: "intro" },
@@ -95,9 +95,15 @@ const STEPS: Step[] = [
       { id: "excursao", label: "Excursões", hint: "Bate-volta e grupos", icon: Bus },
     ],
   },
-  { kind: "loading", label: "Preparando o seu diagnóstico…", images: [depoimento1] },
+  {
+    kind: "loading", label: "Preparando o seu diagnóstico…",
+    reviews: ["Fiz 23 orçamentos só ontem e consegui fechar 5 pacotes.", "Eu comprei, estou usando e é maravilhoso o conteúdo."],
+  },
   { kind: "result" },
-  { kind: "loading", label: "Liberando o seu plano…", images: [depoimento2] },
+  {
+    kind: "loading", label: "Liberando o seu plano…",
+    reviews: ["Esse mês já saíram várias vendas, até aumentei a meta do mês.", "Ajudou muito aqui. Tava batendo cabeça para criar vídeos dos lugares para postar."],
+  },
   { kind: "offer" },
 ];
 
@@ -165,6 +171,7 @@ export default function Onboarding() {
       trackInicioTeste("quiz");
     }
     track("onboarding_step", { step: step + 1, kind: STEPS[step].kind, key: (STEPS[step] as QuestionStep).key ?? null });
+    if (STEPS[step].kind !== "loading") trackInicioTeste("quiz_tela", { tela: (STEPS[step] as QuestionStep).key ?? STEPS[step].kind });
     // Sem sessão (quem já tem conta e ainda não confirmou o e-mail): registra pelo e-mail digitado.
     if (!user) captureLead(readLeadEmail(), "step", { step: step + 1, kind: STEPS[step].kind, key: (STEPS[step] as QuestionStep).key ?? null });
     window.scrollTo({ top: 0 });
@@ -188,6 +195,9 @@ export default function Onboarding() {
   const current = STEPS[step];
 
   const choose = (q: QuestionStep, id: string) => {
+    const valor = q.options.find((o) => o.id === id)?.label;
+    const marcando = !(answers[q.key] || []).includes(id);
+    if (marcando) trackInicioTeste("resposta", { tela: q.key, valor });
     if (q.multi) {
       setAnswers((a) => {
         const prev = a[q.key] || [];
@@ -202,6 +212,7 @@ export default function Onboarding() {
   const checkout = (method: "pix" | "cartao") => {
     const selected = PLANS.find((p) => p.cycle === plan)!;
     track("plan_selected", { billing_cycle: plan, feature: "onboarding", answers, method });
+    trackInicioTeste("pagar", { tela: plan, valor: method });
     if (!user) captureLead(readLeadEmail(), "plan", { billing_cycle: plan });
     trackMetaEvent("InitiateCheckout", { value: selected.value, currency: "BRL", content_name: `Canva Viagem ${selected.name}`, content_category: "onboarding" });
     navigate(checkoutPath(plan, method));
@@ -226,9 +237,9 @@ export default function Onboarding() {
           {current.kind === "question" ? (
             <Question q={current} selected={answers[current.key] || []} onChoose={(id) => choose(current, id)} onContinue={next} />
           ) : current.kind === "loading" ? (
-            <Loading label={current.label} images={current.images} onDone={next} />
+            <Loading label={current.label} reviews={current.reviews} onDone={next} />
           ) : (
-            <Screen kind={current.kind} answers={answers} destino={destinoPrincipal} plan={plan} setPlan={setPlan} onNext={next} onCheckout={checkout} />
+            <Screen kind={current.kind} answers={answers} destino={destinoPrincipal} plan={plan} setPlan={(c) => { trackInicioTeste("plano", { valor: c }); setPlan(c); }} onNext={next} onCheckout={checkout} />
           )}
         </main>
       </div>
@@ -244,11 +255,11 @@ function Progress({ step }: { step: number }) {
   );
 }
 
-function Title({ children, sub }: { children: ReactNode; sub?: ReactNode }) {
+function Title({ children, sub, compact }: { children: ReactNode; sub?: ReactNode; compact?: boolean }) {
   return (
     <div className="cv-pop">
-      <h1 className="text-balance text-[30px] font-extrabold leading-[1.05] tracking-[-0.025em]">{children}</h1>
-      {sub && <p className="mt-2 text-[15px] leading-6" style={{ color: "var(--cv-muted)" }}>{sub}</p>}
+      <h1 className={`text-balance font-extrabold leading-[1.05] tracking-[-0.025em] ${compact ? "text-[24px]" : "text-[30px]"}`}>{children}</h1>
+      {sub && <p className={compact ? "mt-1 text-[13px] leading-5" : "mt-2 text-[15px] leading-6"} style={{ color: "var(--cv-muted)" }}>{sub}</p>}
     </div>
   );
 }
@@ -268,25 +279,26 @@ function BottomCta({ children, onClick, disabled }: { children: ReactNode; onCli
 function Question({ q, selected, onChoose, onContinue }: { q: QuestionStep; selected: string[]; onChoose: (id: string) => void; onContinue: () => void }) {
   return (
     <>
-      <Title sub={q.sub}>{q.title}</Title>
-      <div className="mt-7 space-y-2.5">
+      {/* Múltipla escolha: menor, para o botão de continuar aparecer sem rolar. */}
+      <Title sub={q.sub} compact={q.multi}>{q.title}</Title>
+      <div className={q.multi ? "mt-4 space-y-2" : "mt-7 space-y-2.5"}>
         {q.options.map((o, i) => {
           const on = selected.includes(o.id);
           return (
             <button
               key={o.id}
               onClick={() => onChoose(o.id)}
-              className="cv-pop flex w-full items-center gap-3.5 rounded-[22px] border p-3.5 text-left transition-all duration-200 hover:-translate-y-px"
+              className={`cv-pop flex w-full items-center border text-left transition-all duration-200 hover:-translate-y-px ${q.multi ? "gap-3 rounded-[18px] p-2.5" : "gap-3.5 rounded-[22px] p-3.5"}`}
               style={{ ...delay(80 + i * 60), background: on ? "#efe9ff" : "var(--cv-card)", borderColor: on ? "var(--cv-primary)" : "var(--cv-line)" }}
             >
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl" style={{ background: on ? "#ddd3ff" : "var(--cv-sand)" }}>
+              <span className={`grid shrink-0 place-items-center rounded-xl ${q.multi ? "h-8 w-8" : "h-10 w-10"}`} style={{ background: on ? "#ddd3ff" : "var(--cv-sand)" }}>
                 <o.icon className="h-[18px] w-[18px]" />
               </span>
               <span className="flex-1">
-                <span className="block text-[15px] font-semibold">{o.label}</span>
-                <span className="block text-[13px]" style={{ color: "var(--cv-muted)" }}>{o.hint}</span>
+                <span className={`block font-semibold ${q.multi ? "text-[14px] leading-5" : "text-[15px]"}`}>{o.label}</span>
+                <span className={`block ${q.multi ? "text-[12px] leading-4" : "text-[13px]"}`} style={{ color: "var(--cv-muted)" }}>{o.hint}</span>
               </span>
-              <span className={`grid h-6 w-6 place-items-center border ${q.multi ? "rounded-md" : "rounded-full"}`} style={{ borderColor: on ? "var(--cv-primary)" : "#e3dccb", background: on ? "var(--cv-primary)" : "transparent" }}>
+              <span className={`grid shrink-0 place-items-center border ${q.multi ? "h-5 w-5 rounded-md" : "h-6 w-6 rounded-full"}`} style={{ borderColor: on ? "var(--cv-primary)" : "#e3dccb", background: on ? "var(--cv-primary)" : "transparent" }}>
                 {on && <Check className="h-3.5 w-3.5 text-white" />}
               </span>
             </button>
@@ -295,8 +307,7 @@ function Question({ q, selected, onChoose, onContinue }: { q: QuestionStep; sele
       </div>
       {q.multi && (
         <>
-          {selected.length > 0 && <p className="mt-3 text-center text-[13px]" style={{ color: "var(--cv-muted)" }}>{selected.length} {selected.length === 1 ? "selecionado" : "selecionados"}</p>}
-          <BottomCta onClick={onContinue} disabled={selected.length === 0}>{selected.length === 0 ? "Escolha pelo menos um" : "Continuar"}</BottomCta>
+          <BottomCta onClick={onContinue} disabled={selected.length === 0}>{selected.length === 0 ? "Escolha pelo menos um" : `Continuar (${selected.length})`}</BottomCta>
         </>
       )}
     </>
@@ -341,22 +352,35 @@ function TrialStack({ trial }: { trial: TrialResult }) {
   );
 }
 
-/** Carregando por 5 segundos, com o print de um cliente enquanto isso. */
-function Loading({ label, images, onDone }: { label: string; images: string[]; onDone: () => void }) {
+/** Carregando em círculo, com avaliações curtas tiradas das mensagens de clientes. */
+function Loading({ label, reviews, onDone }: { label: string; reviews: string[]; onDone: () => void }) {
+  const [percent, setPercent] = useState(0);
   useEffect(() => {
-    const id = window.setTimeout(onDone, LOADING_MS);
-    return () => window.clearTimeout(id);
+    const started = Date.now();
+    const tick = window.setInterval(() => setPercent(Math.min(100, Math.round(((Date.now() - started) / LOADING_MS) * 100))), 100);
+    const end = window.setTimeout(onDone, LOADING_MS);
+    return () => { window.clearInterval(tick); window.clearTimeout(end); };
   }, []);
+  const radius = 42;
+  const circle = 2 * Math.PI * radius;
   return (
     <div className="flex flex-col items-center text-center">
-      <Loader2 className="h-8 w-8 animate-spin" style={{ color: "var(--cv-primary)" }} />
-      <p className="mt-3 text-[20px] font-extrabold tracking-[-0.02em]">{label}</p>
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[#ece5d3]">
-        <span className="cv-fill block h-full rounded-full" style={{ width: "100%", background: "var(--cv-primary)", animationDuration: `${LOADING_MS}ms`, animationTimingFunction: "linear" }} />
+      <div className="relative h-24 w-24">
+        <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" aria-hidden>
+          <circle cx="50" cy="50" r={radius} fill="none" stroke="#ece5d3" strokeWidth="8" />
+          <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--cv-primary)" strokeWidth="8" strokeLinecap="round" strokeDasharray={circle} strokeDashoffset={circle * (1 - percent / 100)} />
+        </svg>
+        <span className="absolute inset-0 grid place-items-center text-[20px] font-extrabold">{percent}%</span>
       </div>
-      <div className="mt-6 w-full space-y-3">
-        {images.map((src, i) => (
-          <img key={src} src={src} alt={`Mensagem de cliente ${i + 1}`} className="cv-pop max-h-[52vh] w-full rounded-2xl border-4 border-white object-contain shadow-xl" />
+      <p className="mt-4 text-[20px] font-extrabold tracking-[-0.02em]">{label}</p>
+      <div className="mt-6 w-full space-y-3 text-left">
+        {reviews.map((review, i) => (
+          <div key={review} className="cv-pop cv-card p-4" style={delay(600 + i * 2200)}>
+            <p className="flex items-center gap-1 text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>
+              <span aria-hidden style={{ color: "#f5a623" }} className="text-[15px] tracking-[1px]">★★★★★</span> 5 estrelas
+            </p>
+            <p className="mt-1.5 text-[15px] font-semibold leading-5">"{review}"</p>
+          </div>
         ))}
       </div>
     </div>
@@ -534,9 +558,10 @@ function Offer({ plan, setPlan, onCheckout }: { plan: Cycle; setPlan: (c: Cycle)
         <p className="mt-1">Monte as artes de um pacote real da sua agência. Se não fizer sentido, peça o reembolso dentro do prazo da garantia.</p>
       </div>
 
-      <div className="mt-5 space-y-3">
+      <p className="mt-6 text-center text-[14px] font-bold">Mensagens de clientes. Arraste para o lado.</p>
+      <div className="no-scrollbar -mx-5 mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3">
         {[depoimento1, depoimento2, depoimento3, DEPOIMENTO_PACK].map((src, i) => (
-          <img key={src} src={src} alt={`Mensagem de cliente ${i + 1}`} loading="lazy" className="w-full rounded-2xl border-4 border-white object-contain shadow-lg" />
+          <img key={src} src={src} alt={`Mensagem de cliente ${i + 1}`} loading="lazy" className="h-[260px] w-[78%] shrink-0 snap-center rounded-2xl border-4 border-white bg-black object-contain shadow-lg" />
         ))}
       </div>
     </>

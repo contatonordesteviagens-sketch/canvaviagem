@@ -92,6 +92,7 @@ export function ArtTrial() {
   };
 
   const goOn = () => {
+    trackInicioTeste("botao", { valor: "artes" });
     if (user && subscription.subscribed) { navigate("/fabrica"); return; }
     navigate(user ? ONBOARDING_PATH : QUICK_LOGIN_PATH);
   };

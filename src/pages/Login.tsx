@@ -17,6 +17,7 @@ import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInB
 import { BrandMark, Eyebrow } from "@/components/cv-cream/shared";
 import { LEAD_EMAIL_KEY } from "@/lib/lead-capture";
 import { startWithEmail } from "@/lib/quick-start";
+import { trackInicioTeste } from "@/lib/inicio-teste";
 import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
 
 const pendingAuthStateKey = "cv:pending-auth-checkout";
@@ -89,6 +90,10 @@ const Login = () => {
   const quickEntry = searchParams.get("entrada") === "rapida" && Boolean(redirectTo?.startsWith("/onboarding"));
 
   useEffect(() => {
+    if (quickEntry) trackInicioTeste("tela_email");
+  }, [quickEntry]);
+
+  useEffect(() => {
     trackViewContent('Página de Login');
   }, []);
 
@@ -156,6 +161,7 @@ const Login = () => {
       await bindPendingCheckoutToEmail(normalizedEmail);
       if (quickEntry) {
         // Da página inicial: assinante cai na conta; quem não assinou, no quiz.
+        trackInicioTeste("email");
         const result = await startWithEmail(normalizedEmail, redirectTo);
         if (result === "session") {
           // O efeito de login acima leva para o quiz assim que a sessão carregar.

@@ -80,7 +80,8 @@ export default function InicioCreme() {
   }, []);
 
   /** Todo caminho leva ao mesmo lugar: e-mail, quiz e pagamento. Assinante vai para a Fábrica. */
-  const start = (_source: string) => {
+  const start = (source: string) => {
+    trackInicioTeste("botao", { valor: source });
     if (user && subscription.subscribed) { navigate("/fabrica"); return; }
     navigate(user ? ONBOARDING_PATH : QUICK_LOGIN_PATH);
   };
