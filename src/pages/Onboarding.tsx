@@ -326,7 +326,7 @@ function TrialStack({ trial }: { trial: TrialResult }) {
     { transform: "none", zIndex: 2 },
   ];
   return (
-    <div className="cv-pop relative mx-auto mt-7 flex items-center justify-center" style={{ ...delay(220), height: `calc(${size} + 16px)` }} onContextMenu={(e) => e.preventDefault()}>
+    <div className="cv-pop relative mt-7 flex w-full items-center justify-center" style={{ ...delay(220), height: `calc(${size} + 16px)` }} onContextMenu={(e) => e.preventDefault()}>
       {arts.map((src, i) => (
         <img
           key={src.slice(-40)}
