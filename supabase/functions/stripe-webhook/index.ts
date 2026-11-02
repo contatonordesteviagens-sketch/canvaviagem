@@ -431,7 +431,8 @@ serve(async (req) => {
   assertOfficialSupabaseProject("stripe-webhook");
 
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-  const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+  const rawWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+  const webhookSecret = rawWebhookSecret?.trim();
   const resendKey = Deno.env.get("RESEND_API_KEY") || Deno.env.get("resend");
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -505,7 +506,13 @@ serve(async (req) => {
         .update({ status: "failed", last_error: String(err?.message || err).slice(0, 1000), updated_at: new Date().toISOString() })
         .eq("event_id", claimedEventId);
     }
-    logStep("ERROR in stripe-webhook", { message: err.message });
+    // Só o formato do segredo, nunca o valor: diferencia segredo mal colado de segredo de outro webhook.
+    logStep("ERROR in stripe-webhook", {
+      message: err.message,
+      secret_prefix_ok: webhookSecret.startsWith("whsec_"),
+      secret_length: webhookSecret.length,
+      secret_had_spaces: rawWebhookSecret !== webhookSecret,
+    });
     return new Response(JSON.stringify({ error: GENERIC_ERRORS.serviceError }), { headers: corsHeaders, status: 500 });
   }
 });
