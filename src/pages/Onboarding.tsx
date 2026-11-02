@@ -37,6 +37,8 @@ type Cycle = "monthly" | "semiannual" | "annual";
 // v6: telas de carregamento no lugar da tela de prova; as versões antigas guardavam o passo pela ordem antiga.
 const STORAGE_KEY = "cv-onboarding-v6";
 const LOADING_MS = 7000;
+const OFFER_KEY = "cv-oferta-fim";
+const OFFER_MS = 18 * 60 * 1000;
 
 const STEPS: Step[] = [
   { kind: "intro" },
@@ -507,14 +509,39 @@ function WeekList({ days }: { days: { d: string; t: string; icon: Icon }[] }) {
 }
 
 
+/** Prazo real, por aparelho: 18 minutos desde a primeira vez na tela de planos. Ao zerar, o plano Anual sai da tela. */
+function useOfferTimer() {
+  const [end] = useState(() => {
+    try {
+      const saved = Number(localStorage.getItem(OFFER_KEY));
+      if (saved) return saved;
+      const value = Date.now() + OFFER_MS;
+      localStorage.setItem(OFFER_KEY, String(value));
+      return value;
+    } catch {
+      return Date.now() + OFFER_MS;
+    }
+  });
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  const left = Math.max(0, end - now);
+  return {
+    expired: left === 0,
+    label: `${String(Math.floor(left / 60000)).padStart(2, "0")}:${String(Math.floor((left % 60000) / 1000)).padStart(2, "0")}`,
+  };
+}
+
 const RECEBE = [
   "Anúncios para feed e stories, com a sua logo",
   "Carrosséis prontos para cada destino",
-  "Site com a página de cada pacote e o botão do WhatsApp",
+  "Site completo com o botão para o seu WhatsApp",
   "Clientes organizados em um só lugar",
   "Vídeos Reels prontos para postar",
   "Calendário dizendo o que postar em cada dia",
-  "Artes sem limite de quantidade",
+  "Uso ilimitado",
 ];
 
 const AVALIACOES = [
@@ -576,16 +603,16 @@ function ProofCarousel() {
 
 function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c: Cycle) => void; onCheckout: () => void; onPix: () => void }) {
   const selected = PLANS.find((p) => p.cycle === plan)!;
+  const offer = useOfferTimer();
+  useEffect(() => {
+    if (offer.expired && plan === "annual") setPlan("semiannual");
+  }, [offer.expired, plan]);
   return (
     <>
       <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Seu plano está pronto. <Accent>Libere o acesso.</Accent></Title>
 
-      <p className="cv-pop mt-4 rounded-2xl p-3 text-center text-[14px] font-bold leading-5" style={{ background: "#efe9ff", color: "var(--cv-primary-ink)" }}>
-        Tudo ilimitado é por tempo limitado. Essa condição pode mudar a qualquer momento.
-      </p>
-
       <div className="mt-4 space-y-3">
-        {PLANS.map((p, i) => {
+        {PLANS.filter((p) => !(offer.expired && p.cycle === "annual")).map((p, i) => {
           const on = p.cycle === plan;
           return (
             <div key={p.cycle} className="cv-pop rounded-[24px] border-2 transition-all" style={{ ...delay(180 + i * 80), background: on ? "#f4f0ff" : "var(--cv-card)", borderColor: on ? "var(--cv-primary)" : "var(--cv-line)" }}>
@@ -648,6 +675,18 @@ function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c:
       </div>
 
       <ProofCarousel />
+
+      <div className="mt-4 rounded-2xl p-4 text-center" style={{ background: "#efe9ff" }}>
+        <p className="text-[14px] font-bold leading-5" style={{ color: "var(--cv-primary-ink)" }}>Oferta de tudo ilimitado. Pode mudar a qualquer momento.</p>
+        {offer.expired ? (
+          <p className="mt-1 text-[14px] font-semibold">O tempo da oferta do plano Anual acabou.</p>
+        ) : (
+          <>
+            <p className="mt-2 text-[13px] font-semibold" style={{ color: "var(--cv-muted)" }}>Tempo da oferta do plano Anual</p>
+            <p className="text-[30px] font-extrabold tabular-nums leading-tight">{offer.label}</p>
+          </>
+        )}
+      </div>
 
       <div className="mt-5 border-t pt-4" style={{ background: "var(--cv-bg)", borderColor: "var(--cv-line)" }}>
         <p className="mb-2 text-center text-[13px] font-semibold">Plano {selected.name}: {selected.price}{selected.per}</p>
