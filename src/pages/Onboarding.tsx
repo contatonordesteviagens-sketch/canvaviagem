@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentType, type FormEvent, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowRight, Check, ChevronLeft, Wallet, Sprout, Briefcase, TrendingUp, Palette, UserRound,
   Images, EyeOff, Rocket, Users, Clock, MessageCircleOff, Sparkles, Waves, Mountain, Plane, Ship, Bus, Globe2,
   PenLine, Frown, Flame, CalendarDays, Leaf, Eye, Gift, ShieldCheck, Lock, CircleCheck, MapPin, Instagram,
-  LayoutTemplate, MessageCircle, Download, Megaphone, Mic, Video,
+  LayoutTemplate, MessageCircle, Download, Megaphone, Mic, Video, Mail, Loader2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
@@ -15,6 +15,7 @@ import { checkoutPath } from "@/components/checkout/checkout-plans";
 import { PayWithPixButton } from "@/components/pix/PixCheckout";
 import { BrandMark, delay } from "@/components/cv-cream/shared";
 import { captureLead, readLeadEmail } from "@/lib/lead-capture";
+import { startWithEmail } from "@/lib/quick-start";
 import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
 import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
@@ -27,17 +28,18 @@ import depoimento3 from "@/assets/depoimento3.jpg";
 type Icon = ComponentType<{ className?: string }>;
 type Option = { id: string; label: string; hint: string; icon: Icon };
 type QuestionStep = { kind: "question"; key: AnswerKey; title: string; sub: string; multi?: boolean; options: Option[] };
-type ScreenStep = { kind: "intro" | "result" | "proof" | "offer" };
+type ScreenStep = { kind: "intro" | "login" | "result" | "proof" | "offer" };
 type Step = QuestionStep | ScreenStep;
 type AnswerKey = "objetivo" | "ferramenta" | "desafio" | "momento" | "orcamentos" | "destinos" | "travas" | "prazo";
 type Answers = Partial<Record<AnswerKey, string[]>>;
 type Cycle = "monthly" | "semiannual" | "annual";
 
-// v3: quiz de 10 telas; as versões antigas guardavam o passo pela ordem antiga.
-const STORAGE_KEY = "cv-onboarding-v3";
+// v4: tela de entrada com e-mail depois da primeira; as versões antigas guardavam o passo pela ordem antiga.
+const STORAGE_KEY = "cv-onboarding-v4";
 
 const STEPS: Step[] = [
   { kind: "intro" },
+  { kind: "login" },
   {
     kind: "question", key: "objetivo", title: "O que mais vendas mudariam pra você?", sub: "Seja sincero, isso muda tudo o que vamos recomendar",
     options: [
@@ -174,7 +176,15 @@ export default function Onboarding() {
   }, [user]);
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL - 1));
-  const back = () => setStep((s) => Math.max(s - 1, 0));
+  // Quem já tem sessão não vê a tela de entrada, nem indo nem voltando.
+  const back = () => setStep((s) => {
+    const previous = Math.max(s - 1, 0);
+    return STEPS[previous].kind === "login" && user ? previous - 1 : previous;
+  });
+  const passLogin = () => setStep((s) => (STEPS[s].kind === "login" ? s + 1 : s));
+  useEffect(() => {
+    if (user) passLogin();
+  }, [user, step]);
 
   const current = STEPS[step];
 
@@ -217,7 +227,7 @@ export default function Onboarding() {
           {current.kind === "question" ? (
             <Question q={current} selected={answers[current.key] || []} onChoose={(id) => choose(current, id)} onContinue={next} />
           ) : (
-            <Screen kind={current.kind} answers={answers} destino={destinoPrincipal} plan={plan} setPlan={setPlan} onNext={next} onCheckout={checkout} />
+            <Screen kind={current.kind} answers={answers} destino={destinoPrincipal} plan={plan} setPlan={setPlan} onNext={next} onLogin={passLogin} onCheckout={checkout} />
           )}
         </main>
       </div>
@@ -304,12 +314,13 @@ function Question({ q, selected, onChoose, onContinue }: { q: QuestionStep; sele
 
 type ScreenProps = {
   kind: ScreenStep["kind"]; answers: Answers; destino: string; plan: Cycle;
-  setPlan: (c: Cycle) => void; onNext: () => void; onCheckout: () => void;
+  setPlan: (c: Cycle) => void; onNext: () => void; onLogin: () => void; onCheckout: () => void;
 };
 
 function Screen(props: ScreenProps) {
   switch (props.kind) {
     case "intro": return <Intro onNext={props.onNext} />;
+    case "login": return <Login onDone={props.onLogin} />;
     case "result": return <Result answers={props.answers} destino={props.destino} onNext={props.onNext} />;
     case "proof": return <Proof onNext={props.onNext} />;
     case "offer": return <Offer plan={props.plan} setPlan={props.setPlan} onCheckout={props.onCheckout} />;
@@ -388,6 +399,57 @@ function TrialGallery({ trial }: { trial: TrialResult }) {
   );
 }
 
+/** O e-mail é a entrada na ferramenta: conta nova segue na hora, e quem já tem conta recebe o link. */
+function Login({ onDone }: { onDone: () => void }) {
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    trackInicioTeste("email");
+    const result = await startWithEmail(email, "/onboarding");
+    setBusy(false);
+    if (result === "existing") setLinkSent(true);
+    else onDone();
+  };
+
+  return (
+    <>
+      <Title sub="Digite o seu e-mail para entrar e começar a usar a ferramenta. Sem senha.">Crie sua conta para começar</Title>
+      {linkSent ? (
+        <p role="status" className="cv-pop mt-6 flex gap-2 rounded-2xl p-4 text-[15px] font-semibold" style={{ background: "var(--cv-sand)" }}>
+          <Check className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>Você já tem conta aqui. Mandamos um link de acesso para {email.trim()}. Abra o link para continuar.</span>
+        </p>
+      ) : (
+        <form onSubmit={submit} className="cv-pop mt-6">
+          <div className="flex items-center gap-3 rounded-full border bg-white px-4" style={{ borderColor: "var(--cv-line)" }}>
+            <Mail className="h-5 w-5 shrink-0" style={{ color: "var(--cv-muted)" }} />
+            <input
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              aria-label="Seu e-mail"
+              placeholder="voce@suaagencia.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={busy}
+              className="h-14 w-full bg-transparent text-[16px] outline-none placeholder:text-[#9b917d]"
+            />
+          </div>
+          <button type="submit" disabled={busy} className="cv-btn mt-3 h-14 w-full text-base">
+            {busy ? <><Loader2 className="h-5 w-5 animate-spin" /> Um instante…</> : <>Entrar e começar <ArrowRight className="h-4 w-4" /></>}
+          </button>
+        </form>
+      )}
+    </>
+  );
+}
+
 function Intro({ onNext }: { onNext: () => void }) {
   const [trial] = useState(readTrialResult);
   return (
@@ -397,7 +459,7 @@ function Intro({ onNext }: { onNext: () => void }) {
           Quiz de 1 minuto
         </span>
         <h1 className="cv-pop mt-3 text-balance text-[26px] font-extrabold leading-[1.08] tracking-[-0.025em]" style={delay(80)}>
-          Fale o pacote num áudio. Receba anúncio, carrossel e site <Accent>prontos, com a sua logo.</Accent>
+          Fale o pacote em um áudio. Receba anúncio, carrossel e site <Accent>prontos, com a sua logo.</Accent>
         </h1>
         <p className="cv-pop mt-2 max-w-[330px] text-[14px] leading-5" style={{ ...delay(160), color: "var(--cv-muted)" }}>
           {trial
@@ -413,7 +475,7 @@ function Intro({ onNext }: { onNext: () => void }) {
           <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito no Canva Viagem" slow size="compact" className="mt-1" />
         </div>
       )}
-      <BottomCta onClick={onNext}>Montar meu plano <ArrowRight className="h-4 w-4" /></BottomCta>
+      <BottomCta onClick={onNext}>Começar a gerar as artes agora <ArrowRight className="h-4 w-4" /></BottomCta>
     </>
   );
 }

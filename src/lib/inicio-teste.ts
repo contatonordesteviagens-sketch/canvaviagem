@@ -7,7 +7,7 @@ export type InicioStep = "visita" | "destino" | "logo" | "artes" | "email" | "qu
 
 const STORAGE_KEY = "cv-inicio-teste";
 /** Fatia dos visitantes novos que vê a arte: 0 desliga o sorteio, 0.5 divide meio a meio. */
-export const ARTE_SHARE = 0.5;
+export const ARTE_SHARE = 1;
 
 type Stored = { variant: InicioVariant; manual: boolean };
 

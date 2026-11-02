@@ -47,6 +47,21 @@ export const TRIAL_DESTINOS: TrialDestino[] = [
   { id: "machu", nome: "Machu Picchu", photo: 37885473, parcela: "790", internacional: true },
 ];
 
+/** Foto neutra para destino digitado que não está na lista: sem conta, a busca de fotos não abre. */
+const GENERIC_PHOTO = 2007401;
+const fold = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+export function resolveTrialDestino(text: string): TrialDestino {
+  const typed = fold(text);
+  const known = TRIAL_DESTINOS.find((item) => {
+    const nome = fold(item.nome);
+    return typed.length >= 3 && (nome.includes(typed) || typed.includes(nome));
+  });
+  if (known) return known;
+  const nome = text.trim().replace(/\s+/g, " ").replace(/(^|\s)\p{L}/gu, (letter) => letter.toUpperCase());
+  return { id: "digitado", nome, photo: GENERIC_PHOTO, parcela: "490" };
+}
+
 export const trialPhotoUrl = (photo: number, width: number) =>
   `https://images.pexels.com/photos/${photo}/pexels-photo-${photo}.jpeg?auto=compress&cs=tinysrgb&w=${width}`;
 
@@ -57,7 +72,7 @@ const DEFAULT_COLORS = { primary: "#0B3B8C", secondary: "#FFD400" };
 const OUTPUT_SIZE = 540;
 const LOGO_MAX_SIZE = 400;
 
-export type TrialLogo = { dataUrl: string; primary: string; secondary: string; lightOnly: boolean };
+export type TrialLogo = { dataUrl: string; primary: string; secondary: string };
 
 function loadLocalImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -97,19 +112,6 @@ const sameHue = (a: string, b: string) => {
   return Math.min(diff, 360 - diff) < 30;
 };
 
-/** Logo só de traços claros em fundo transparente, como logo branca, some no fundo branco. */
-function isLightOnlyLogo(ctx: CanvasRenderingContext2D, width: number, height: number) {
-  const { data } = ctx.getImageData(0, 0, width, height);
-  let total = 0;
-  let light = 0;
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] < 128) continue;
-    total++;
-    if (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2] > 200) light++;
-  }
-  return total > 0 && light / total > 0.85;
-}
-
 /** Reduz a logo e tira as cores dela. Falha em formato que o navegador não abre (ex.: HEIC do iPhone). */
 export async function prepareTrialLogo(file: File): Promise<TrialLogo> {
   const img = await loadLocalImage(await readFile(file));
@@ -121,42 +123,28 @@ export async function prepareTrialLogo(file: File): Promise<TrialLogo> {
   if (!ctx) throw new Error("canvas indisponível");
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   const { primary, secondary } = extractPaletteFromCanvas(ctx, canvas.width, canvas.height);
-  const lightOnly = isLightOnlyLogo(ctx, canvas.width, canvas.height);
   // Cor clara como cor principal vira painel apagado: nesse caso ela fica de destaque, sobre um fundo escuro.
   if (primary && isLightColor(primary)) {
-    return { dataUrl: canvas.toDataURL("image/png"), primary: "#141414", secondary: primary, lightOnly };
+    return { dataUrl: canvas.toDataURL("image/png"), primary: "#141414", secondary: primary };
   }
   return {
     dataUrl: canvas.toDataURL("image/png"),
     primary: primary || DEFAULT_COLORS.primary,
     secondary: secondary && !(primary && sameHue(primary, secondary)) ? secondary : primary ? "#FFFFFF" : DEFAULT_COLORS.secondary,
-    lightOnly,
   };
 }
 
-/** No teste a logo é o que mais importa: vai grande no canto, em fundo que contrasta com ela. */
-function drawTrialLogo(ctx: CanvasRenderingContext2D, canvasWidth: number, logo: HTMLImageElement, lightOnly: boolean, variant: number) {
-  const height = 72;
-  const width = Math.min(165, Math.max(height, height * (logo.naturalWidth / logo.naturalHeight)));
-  const pad = 10;
-  const chipW = width + pad * 2;
-  const chipH = height + pad * 2;
-  const x = canvasWidth - chipW - (variant === 4 ? 30 : 18);
+/** A logo entra como a pessoa enviou, sem fundo nem borda por trás. */
+function drawTrialLogo(ctx: CanvasRenderingContext2D, canvasWidth: number, logo: HTMLImageElement, variant: number) {
+  const height = 92;
+  const width = Math.min(185, Math.max(height, height * (logo.naturalWidth / logo.naturalHeight)));
+  const x = canvasWidth - width - (variant === 4 ? 40 : 28);
   // Sempre sobre a foto, longe do texto: canto de cima no Modelo 2, fim da foto no 5, embaixo no 1.
-  const y = variant === 1 ? 18 : variant === 4 ? 287 - chipH - 12 : canvasWidth - 32 - chipH - 30;
-  ctx.save();
-  ctx.shadowColor = "rgba(0,0,0,.28)";
-  ctx.shadowBlur = 18;
-  ctx.shadowOffsetY = 6;
-  ctx.fillStyle = lightOnly ? "#141414" : "#fff";
-  ctx.beginPath();
-  ctx.roundRect(x, y, chipW, chipH, 16);
-  ctx.fill();
-  ctx.restore();
+  const y = variant === 1 ? 28 : variant === 4 ? 287 - height - 22 : canvasWidth - 32 - height - 40;
   const fit = Math.min(width / logo.naturalWidth, height / logo.naturalHeight);
   const w = logo.naturalWidth * fit;
   const h = logo.naturalHeight * fit;
-  ctx.drawImage(logo, x + (chipW - w) / 2, y + (chipH - h) / 2, w, h);
+  ctx.drawImage(logo, x + (width - w) / 2, y + (height - h) / 2, w, h);
 }
 
 async function finishTrialArt(url: string, logo: TrialLogo | null, variant: number): Promise<string> {
@@ -167,7 +155,7 @@ async function finishTrialArt(url: string, logo: TrialLogo | null, variant: numb
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas indisponível");
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  if (logo) drawTrialLogo(ctx, canvas.width, await loadLocalImage(logo.dataUrl), logo.lightOnly, variant);
+  if (logo) drawTrialLogo(ctx, canvas.width, await loadLocalImage(logo.dataUrl), variant);
 
   // Marca em três linhas, passando pelo preço e pela logo: não sai com um corte e dá trabalho para apagar.
   ctx.save();

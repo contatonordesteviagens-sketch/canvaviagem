@@ -120,3 +120,19 @@
 @media (prefers-reduced-motion: reduce) {
   .cv-cream .cv-ping, .cv-cream .cv-wave, .cv-cream .cv-cascade, .cv-cream .cv-badge, .cv-cream .cv-travel, .cv-cream .cv-hop { animation: none; opacity: 1; transform: none; }
 }
+
+/* Artes no celular: encosta para o lado e volta, avisando que dá para arrastar */
+@keyframes cv-peek { 0%, 100% { transform: none; } 45% { transform: translateX(-42px); } }
+.cv-cream .cv-peek { animation: cv-peek 1.1s ease-in-out 0.5s 3; }
+@media (max-width: 639px) { .cv-cream .cv-reveal.is-in .cv-peek-in { animation: cv-peek 1.1s ease-in-out 0.9s 3; } }
+@media (min-width: 640px) { .cv-cream .cv-peek { animation: none; } }
+@keyframes cv-swipe { 0%, 100% { margin-right: 0; } 50% { margin-right: 8px; } }
+.cv-cream .cv-swipe { animation: cv-swipe 1.1s ease-in-out infinite; }
+
+/* Roda da equipe de marketing: a cor acende em sequência */
+@keyframes cv-seg { 0%, 100% { opacity: .62; } 12%, 30% { opacity: 1; } }
+.cv-cream .cv-seg { animation: cv-seg 4s ease-in-out infinite; animation-delay: var(--cv-delay, 0ms); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-cream .cv-peek, .cv-cream .cv-reveal.is-in .cv-peek-in, .cv-cream .cv-swipe, .cv-cream .cv-seg { animation: none; opacity: 1; }
+}

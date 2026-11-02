@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState, type ChangeEvent, type ComponentType, type DragEvent, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type ComponentType, type DragEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.png";
 import { Helmet } from "react-helmet-async";
 import {
-  ArrowRight, Check, X, MapPin, Sparkles, Download, Mic, Upload, Infinity as InfinityIcon,
-  Instagram, MessageCircle, LayoutTemplate, Images, Globe, Video, Users, Megaphone, Smartphone, Monitor,
-  CalendarDays, ShieldCheck, Palette, PenLine, BadgeCheck, Bot,
+  ArrowRight, Check, X, MapPin, Sparkles, Download, Mic, Upload, Infinity as InfinityIcon, DollarSign,
+  Instagram, Facebook, Youtube, MessageCircle, LayoutTemplate, Images, Globe, Video, Users, Megaphone, Smartphone, Monitor,
+  ShieldCheck, Palette, PenLine, BadgeCheck,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
@@ -22,31 +22,21 @@ export { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH };
 
 type Icon = ComponentType<{ className?: string }>;
 
-const builtFor: { label: string; icon: Icon }[] = [
-  { label: "Anúncios", icon: Megaphone },
-  { label: "Instagram Feed", icon: Instagram },
-  { label: "Stories", icon: LayoutTemplate },
-  { label: "Carrosséis", icon: Images },
-  { label: "Site", icon: Globe },
-  { label: "Vídeos", icon: Video },
-  { label: "WhatsApp", icon: MessageCircle },
-];
-
 const steps = [
   { n: "01", icon: Mic, title: "Mande um áudio", text: "Fale o destino, os dias e o valor, do jeito que você fala com um cliente. Se preferir, digite." },
-  { n: "02", icon: Sparkles, title: "Receba tudo pronto", text: "Anúncio, carrossel, stories e a página do pacote saem montados, já com a sua logo. E os vídeos prontos estão lá para postar." },
+  { n: "02", icon: Sparkles, title: "Receba tudo pronto", text: "Anúncio, carrossel, CRM, site e vídeos saem prontos, já com a sua logo." },
   { n: "03", icon: Download, title: "Publique e venda", text: "Baixe, poste no Instagram, impulsione o anúncio e mande o site no WhatsApp." },
 ];
 
 const compare = [
-  ["Fala o pacote num áudio e recebe tudo pronto", true, false],
+  ["Fala o pacote em um áudio e recebe tudo pronto", true, false],
   ["Sua logo e cores aplicadas sozinhas", true, false],
   ["Anúncios para feed e stories", true, false],
   ["Carrosséis prontos por destino", true, true],
   ["Site com a página de cada pacote", true, false],
-  ["Seus clientes organizados num só lugar", true, false],
+  ["Seus clientes organizados em um só lugar", true, false],
   ["Vídeos de destinos prontos para postar", true, false],
-  ["Sem limite: 1 ou 1.000 peças no mesmo dia", true, false],
+  ["Sem limite de mídias no mesmo dia", true, false],
   ["Funciona no celular", true, true],
   ["7 dias de garantia", true, false],
 ] as const;
@@ -70,9 +60,7 @@ const yearGifs = {
 export default function InicioCreme() {
   const navigate = useNavigate();
   const { user, subscription } = useAuth();
-  const [destino, setDestino] = useState("");
-  const [variant] = useState(() => resolveInicioVariant(window.location.search));
-  const artTest = variant === "arte";
+  useState(() => resolveInicioVariant(window.location.search));
   const [scrolled, setScrolled] = useState(false);
   const tracked = useRef(false);
   const pageRef = useReveal<HTMLDivElement>();
@@ -80,7 +68,7 @@ export default function InicioCreme() {
   useEffect(() => {
     if (tracked.current) return;
     tracked.current = true;
-    trackMetaEvent("ViewContent", { content_name: "Canva Viagem - Plataforma para Agências", content_category: artTest ? "inicio_arte" : "inicio_creme", content_type: "product" });
+    trackMetaEvent("ViewContent", { content_name: "Canva Viagem - Plataforma para Agências", content_category: "inicio_arte", content_type: "product" });
     trackInicioTeste("visita");
   }, []);
 
@@ -91,24 +79,11 @@ export default function InicioCreme() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /** Todo caminho leva ao mesmo lugar: e-mail → quiz → pagamento (e-mail novo não espera o link). Assinante vai para a Fábrica. */
+  /** "Acessar" é o login. Os outros botões levam ao quiz, e o e-mail é pedido lá. Assinante vai para a Fábrica. */
   const start = (source: string) => {
-    // No teste, o e-mail só aparece depois das artes: os botões da página levam até elas. "Acessar" continua sendo o login.
-    if (artTest && source !== "header") {
-      document.getElementById("teste-arte")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-    const value = destino.trim();
-    try {
-      if (value) sessionStorage.setItem(ONBOARDING_DESTINO_KEY, value);
-    } catch { /* sessionStorage indisponível */ }
     if (user && subscription.subscribed) { navigate("/fabrica"); return; }
-    navigate(user ? ONBOARDING_PATH : `/login?redirect=${encodeURIComponent(ONBOARDING_PATH)}&entrada=rapida`);
-  };
-
-  const onHeroSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    start("hero_input");
+    if (source === "header" && !user) { navigate(`/login?redirect=${encodeURIComponent(ONBOARDING_PATH)}&entrada=rapida`); return; }
+    navigate(ONBOARDING_PATH);
   };
 
   return (
@@ -140,87 +115,27 @@ export default function InicioCreme() {
 
       <main>
         {/* 1. Hero */}
-        <section className="px-4 pb-6 pt-28 sm:pt-36">
-          <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-            <Eyebrow className="cv-pop">Para agências de viagens sem equipe de marketing</Eyebrow>
-            <h1 className="cv-pop mt-4 text-balance text-[2.5rem] font-extrabold leading-[1.02] tracking-[-0.025em] sm:text-6xl md:text-[4.4rem]" style={delay(60)}>
-              {artTest ? (
-                <>Escolha um destino. Veja o anúncio <span style={{ color: "var(--cv-primary-ink)" }}>pronto agora.</span></>
-              ) : (
-                <>Mande um áudio. Receba sua agência <span style={{ color: "var(--cv-primary-ink)" }}>inteira pronta.</span></>
-              )}
+        <section className="px-4 pb-8 pt-24 sm:pt-32">
+          <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
+            <Eyebrow className="cv-pop">Para agências de viagens</Eyebrow>
+            <h1 className="cv-pop mt-3 max-w-3xl text-balance text-[2.4rem] font-extrabold leading-[1.04] tracking-[-0.025em] sm:text-6xl md:text-[4.2rem]" style={delay(60)}>
+              Mande um áudio. Receba sua agência de{" "}
+              <em className="font-bold" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "var(--cv-primary-ink)" }}>viagens</em>{" "}
+              <span style={{ color: "var(--cv-primary-ink)" }}>inteira pronta.</span>
             </h1>
-            <p className="cv-pop mt-6 max-w-xl text-lg leading-7" style={{ ...delay(120), color: "var(--cv-muted)" }}>
-              {artTest
-                ? "Teste aqui mesmo, sem cadastro. Escolha o destino, envie a sua logo e veja como fica a arte da sua agência."
-                : "Fale o destino, os dias e o valor, do jeito que você fala com um cliente. Em minutos saem o anúncio, o carrossel, os stories e a página do pacote, tudo com a sua logo. E você ainda tem vídeos prontos para postar."}
+            <p className="cv-pop mt-4 text-[19px] font-bold leading-6" style={delay(120)}>Escolha um destino e gere sua arte.</p>
+            <p className="cv-pop mt-2 max-w-xl text-[15px] leading-6" style={{ ...delay(160), color: "var(--cv-muted)" }}>
+              Fale o destino e, em 20 segundos, saem os anúncios, carrosséis, stories e site do seu pacote. Tudo com a sua logo. E você ainda tem vídeos prontos para postar.
             </p>
-
-            {artTest ? (
-              <div className="cv-pop mt-8 w-full max-w-3xl text-left" style={delay(220)}>
-                <ArtTrial />
-              </div>
-            ) : (
-            <form onSubmit={onHeroSubmit} className="cv-pop mt-8 w-full max-w-xl" style={delay(220)}>
-              <div className="flex flex-col gap-2 rounded-[28px] border bg-white p-2 shadow-[0_18px_40px_-24px_rgba(32,28,19,.35)] sm:flex-row sm:items-center sm:rounded-full" style={{ borderColor: "var(--cv-line)" }}>
-                <label className="flex flex-1 items-center gap-3 px-4 py-2">
-                  <MapPin className="h-5 w-5 shrink-0" style={{ color: "var(--cv-muted)" }} />
-                  <input
-                    value={destino}
-                    onChange={(e) => setDestino(e.target.value)}
-                    placeholder="Digite um destino: Cancún, Gramado, Disney..."
-                    className="w-full bg-transparent text-[16px] outline-none placeholder:text-[#9b917d]"
-                    aria-label="Destino do pacote"
-                  />
-                </label>
-                <button type="submit" className="cv-btn h-12 px-7 text-[15px] sm:h-[52px]">
-                  Criar agora <ArrowRight className="h-4 w-4" />
-                </button>
-              </div>
-            </form>
-            )}
-          </div>
-
-          {/* Faixas de peças reais: as novas em destaque, as antigas menores embaixo */}
-          <div className="cv-pop mx-auto mt-12 max-w-6xl" style={delay(380)}>
-            <div className="mx-auto mb-4 flex max-w-5xl flex-wrap items-center justify-center gap-2 px-2 text-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white"   style={{ background: "var(--cv-fg)" }}>
+            <div className="cv-pop mt-6 w-full text-left" style={delay(220)}>
+              <ArtTrial />
+            </div>
+            <div className="cv-pop mt-7 flex flex-col items-center gap-2" style={delay(300)}>
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white" style={{ background: "var(--cv-fg)" }}>
                 <InfinityIcon className="h-3.5 w-3.5" /> CRÉDITOS ILIMITADOS
               </span>
-              <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Gere quantas imagens quiser: anúncios, carrosséis e stories, sem limite por dia.</p>
+              <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Gere quantas mídias quiser: anúncios, carrosséis e stories, sem limite por dia.</p>
             </div>
-            <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito na plataforma Canva Viagem" size="compact" />
-            <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito na plataforma Canva Viagem" size="tiny" slow />
-          </div>
-
-          <div className="mx-auto mt-8 flex max-w-5xl flex-wrap items-center justify-center gap-2 rounded-full border bg-white px-4 py-3" style={{ borderColor: "var(--cv-line)" }}>
-            <span className="mr-2 text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>SAI PRONTO PARA</span>
-            {builtFor.map((b) => (
-              <span key={b.label} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold" style={{ background: "var(--cv-sand)" }}>
-                <b.icon className="h-3.5 w-3.5" /> {b.label}
-              </span>
-            ))}
-          </div>
-
-          {/* Áudio em destaque: tela dividida */}
-          <div className="cv-pop mx-auto mt-6 grid max-w-3xl overflow-hidden rounded-[28px] border bg-white shadow-[0_18px_40px_-26px_rgba(32,28,19,.35)] sm:grid-cols-2" style={{ ...delay(460), borderColor: "var(--cv-line)" }}>
-            <div className="p-6 text-center sm:text-left">
-              <p className="text-[12px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-primary-ink)" }}>PREFERE FALAR?</p>
-              <p className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.02em]">Na sua conta, é só falar.</p>
-              <p className="mt-2 text-[14px] leading-6" style={{ color: "var(--cv-muted)" }}>"Cancún, 7 dias, casal, 8.900 reais" já preenche o pacote. Sua arte fica a um clique.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => start("hero_audio")}
-              className="cv-mic flex min-h-[150px] flex-col items-center justify-center gap-3 p-6 text-white"
-              style={{ background: "linear-gradient(135deg, #7c5cff 0%, #6440e6 100%)" }}
-            >
-              <span className="relative grid h-20 w-20 place-items-center rounded-full bg-white/15">
-                <span className="cv-ping absolute inset-0 rounded-full bg-white/30" />
-                <Mic className="relative h-9 w-9" />
-              </span>
-              <span className="text-[17px] font-bold">Começar agora</span>
-            </button>
           </div>
         </section>
 
@@ -229,7 +144,7 @@ export default function InicioCreme() {
           <div className="mx-auto max-w-5xl">
             <div className="cv-reveal mx-auto max-w-2xl text-center">
               <Eyebrow>Como funciona</Eyebrow>
-              <h2 className="cv-h2 mt-4">Um áudio. Três passos. A semana inteira resolvida.</h2>
+              <h2 className="cv-h2 mt-4">Um áudio. Três passos. O mês inteiro resolvido.</h2>
               <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Você fala → a gente monta → você publica. O resto é cliente chamando.</p>
             </div>
             <div className="mt-12 grid gap-4 md:grid-cols-3">
@@ -247,72 +162,73 @@ export default function InicioCreme() {
                 </div>
               ))}
             </div>
-            <div className="cv-reveal mt-8 text-center">
-              <button onClick={() => start("steps_cta")} className="cv-btn h-13 min-h-[52px] px-7 text-[15px]">
-                <Mic className="h-4 w-4" /> Mandar meu primeiro áudio
+            {/* Áudio em destaque */}
+            <div className="cv-reveal mx-auto mt-8 grid max-w-3xl overflow-hidden rounded-[28px] border bg-white shadow-[0_18px_40px_-26px_rgba(32,28,19,.35)] sm:grid-cols-2" style={{ borderColor: "var(--cv-line)" }}>
+              <div className="p-6 text-center sm:text-left">
+                <p className="text-[22px] font-extrabold leading-tight tracking-[-0.02em]">Fale da sua agência e do seu pacote</p>
+                <p className="mt-2 text-[15px] leading-6" style={{ color: "var(--cv-muted)" }}>Exemplo: "Cancún, 7 dias, casal, R$ 8.000"</p>
+                <p className="mt-2 text-[15px] font-bold">Tudo fica pronto em segundos.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => start("steps_audio")}
+                className="cv-mic flex min-h-[150px] flex-col items-center justify-center gap-3 p-6 text-white"
+                style={{ background: "linear-gradient(135deg, #7c5cff 0%, #6440e6 100%)" }}
+              >
+                <span className="relative grid h-20 w-20 place-items-center rounded-full bg-white/15">
+                  <span className="cv-ping absolute inset-0 rounded-full bg-white/30" />
+                  <Mic className="relative h-9 w-9" />
+                </span>
+                <span className="text-[17px] font-bold">Gravar áudio agora</span>
               </button>
             </div>
           </div>
         </section>
 
         {/* 3. Créditos infinitos */}
-        <section className="px-4 py-12 sm:py-16">
-          <div className="cv-reveal mx-auto max-w-4xl rounded-[36px] border px-6 py-10 text-center sm:px-12 sm:py-14" style={{ background: "linear-gradient(180deg, #f4f0ff 0%, #ebe4ff 100%)", borderColor: "#d9ccff" }}>
+        <section className="px-4 py-10 sm:py-14">
+          <div className="cv-reveal mx-auto max-w-6xl text-center">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[12px] font-bold tracking-[0.6px]" style={{ color: "var(--cv-primary-ink)" }}>
               <InfinityIcon className="h-4 w-4" /> CRÉDITOS INFINITOS
             </span>
-            <h2 className="cv-h2 mx-auto mt-5 max-w-2xl">Aqui não existe "acabaram os créditos".</h2>
-            <p className="mx-auto mt-4 max-w-xl text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
-              Faça 1 ou 1.000 peças no mesmo dia. <strong style={{ color: "var(--cv-fg)" }}>Ninguém te cobra a mais.</strong>
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-2">
-              {["30 stories", "12 anúncios", "4 carrosséis", "1 site novo"].map((t) => (
-                <span key={t} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[14px] font-semibold shadow-sm">
-                  {t} <span className="rounded-full px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "var(--cv-primary)" }}>0 créditos</span>
-                </span>
-              ))}
+            <p className="mt-3 text-[20px] font-extrabold tracking-[-0.01em]">Faça quantas mídias quiser no mesmo dia.</p>
+            <div className="mt-6">
+              <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito na plataforma Canva Viagem" size="compact" reverse />
+              <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito na plataforma Canva Viagem" size="tiny" slow />
             </div>
           </div>
         </section>
 
-        {/* 4. Tudo num só lugar: ecossistema + equipe */}
+        {/* 4. Tudo em um só lugar */}
         <section className="px-4 py-16 sm:py-24">
           <div className="mx-auto max-w-5xl">
             <div className="cv-reveal mx-auto max-w-2xl text-center">
-              <Eyebrow>Tudo num só lugar</Eyebrow>
-              <h2 className="cv-h2 mt-4">Tudo o que uma equipe de marketing faria. Aqui, num só lugar.</h2>
-              <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Cada parte conversa com a outra. Você só cuida de vender.</p>
+              <Eyebrow>Tudo em um só lugar</Eyebrow>
+              <h2 className="cv-h2 mt-4">Tudo que uma equipe inteira de marketing faria.</h2>
+              <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Tudo que você precisa para vender muitas viagens online.</p>
             </div>
-            <Ecosystem />
+            <MarketingWheel />
             <TeamImage />
           </div>
         </section>
 
-        {/* 5. Sua logo em tudo (acima do site) */}
-        {!artTest && <LogoDrop onDone={() => start("logo_upload")} />}
+        {/* 5. Sua logo em tudo */}
+        <LogoDrop onDone={() => start("logo_upload")} />
 
         {/* 6. Site pronto */}
         <SiteDemo onStart={() => start("site_demo_cta")} />
 
         {/* 7. 1 ano de conteúdo */}
         <section className="px-4 py-16 sm:py-24">
-          <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2">
-            <div className="cv-reveal">
+          <div className="mx-auto max-w-3xl">
+            <div className="cv-reveal text-center">
               <Eyebrow>Conteúdo pronto</Eyebrow>
               <h2 className="cv-h2 mt-4">1 ano de conteúdo para postar sem criar nada.</h2>
               <p className="mt-4 text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
-                Nos dias em que você não quiser nem gravar um áudio, já tem o que postar: vídeos Reels e artes por destino, com calendário dizendo o que vai em cada dia.
+                Todos os dias você já tem o que postar: vídeos Reels e artes por destino, com calendário dizendo o que vai em cada dia.
               </p>
-              <ul className="mt-6 space-y-2.5">
-                {["Vídeos Reels de destinos, prontos para o seu Instagram", "Artes e stories de alta qualidade, editáveis", "Sua logo e @ entram sozinhos nas artes e carrosséis", "Calendário com o que postar em cada dia"].map((f) => (
-                  <li key={f} className="flex items-center gap-3 rounded-2xl border bg-white px-4 py-3 text-[14px] font-semibold" style={{ borderColor: "var(--cv-line)" }}>
-                    <Check className="h-4 w-4 shrink-0 text-[#16a34a]" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <button onClick={() => start("year_cta")} className="cv-btn mt-6 h-13 min-h-[52px] px-7 text-[15px]">Liberar meu conteúdo <ArrowRight className="h-4 w-4" /></button>
             </div>
-            <div className="cv-reveal" style={delay(140)}>
+            <div className="cv-reveal mt-8" style={delay(140)}>
               <div className="overflow-hidden rounded-[28px] bg-white p-3 shadow-[0_24px_50px_-30px_rgba(32,28,19,.45)]">
                 <img src={yearGifs.main} alt="Vídeos Reels de destinos passando em celulares" className="w-full rounded-2xl object-cover" loading="lazy" />
               </div>
@@ -432,13 +348,14 @@ function StepIllustration({ index }: { index: number }) {
     const cards: { label: string; icon: Icon; bg: string }[] = [
       { label: "Anúncio", icon: Megaphone, bg: "var(--cv-primary)" },
       { label: "Carrossel", icon: Images, bg: "#ff3d8b" },
+      { label: "CRM", icon: Users, bg: "#6366f1" },
       { label: "Site", icon: Globe, bg: "#0ea5a0" },
       { label: "Vídeo", icon: Video, bg: "#f59e0b" },
     ];
     return (
-      <div className="flex h-32 items-end justify-center gap-2 pb-3">
+      <div className="flex h-32 items-end justify-center gap-1.5 pb-3">
         {cards.map((c, i) => (
-          <div key={c.label} className="cv-cascade relative flex h-[84px] w-14 flex-col items-center justify-end rounded-xl pb-2 text-white shadow-md" style={{ ...delay(i * 400), background: c.bg }}>
+          <div key={c.label} className="cv-cascade relative flex h-[84px] w-[50px] flex-col items-center justify-end rounded-xl pb-2 text-white shadow-md" style={{ ...delay(i * 400), background: c.bg }}>
             <span className="cv-badge absolute -top-2 left-1/2 grid h-5 w-5 -translate-x-1/2 place-items-center rounded-full bg-white shadow" style={delay(i * 400 + 500)}>
               <BadgeCheck className="h-3.5 w-3.5 text-[#16a34a]" />
             </span>
@@ -451,7 +368,7 @@ function StepIllustration({ index }: { index: number }) {
   }
   return (
     <div className="flex h-32 flex-col items-center justify-center gap-4">
-      <div className="relative flex items-center gap-5">
+      <div className="relative flex items-center gap-3">
         <span className="absolute left-5 right-5 top-1/2 h-px -translate-y-1/2 border-t border-dashed border-[#cfc4a6]" />
         <span className="cv-travel absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full" style={{ background: "var(--cv-accent)" }} />
         {[
@@ -459,82 +376,97 @@ function StepIllustration({ index }: { index: number }) {
           { icon: Instagram, bg: "#ff3d8b" },
           { icon: Megaphone, bg: "#f59e0b" },
           { icon: MessageCircle, bg: "#25d366" },
+          { icon: DollarSign, bg: "#16a34a" },
         ].map((s, i) => (
           <span key={i} className="cv-hop relative z-10 grid h-10 w-10 place-items-center rounded-full text-white shadow" style={{ ...delay(i * 650), background: s.bg }}>
             <s.icon className="h-4 w-4" />
           </span>
         ))}
       </div>
-      <span className="rounded-full px-3 py-1 text-[11px] font-bold" style={{ background: "var(--cv-sand)", color: "var(--cv-muted)" }}>baixar → postar → impulsionar → WhatsApp</span>
+      <span className="rounded-full px-3 py-1 text-center text-[10px] font-bold" style={{ background: "var(--cv-sand)", color: "var(--cv-muted)" }}>baixar → postar → impulsionar → WhatsApp → vendas</span>
     </div>
   );
 }
 
-const ECO_NODES: { label: string; icon: Icon }[] = [
-  { label: "Anúncios", icon: Megaphone },
-  { label: "Carrosséis", icon: Images },
-  { label: "Stories", icon: LayoutTemplate },
-  { label: "Site", icon: Globe },
-  { label: "Vídeos", icon: Video },
-  { label: "Clientes organizados", icon: Users },
-  { label: "Calendário de posts", icon: CalendarDays },
-  { label: "Agentes de IA", icon: Bot },
+const WHEEL: { label: string[]; bg: string; ink: string }[] = [
+  { label: ["Anúncios"], bg: "#4fae9f", ink: "#fff" },
+  { label: ["Carrosséis"], bg: "#6fe3b4", ink: "#16130d" },
+  { label: ["Stories"], bg: "#0fbfa3", ink: "#16130d" },
+  { label: ["Site"], bg: "#4667e8", ink: "#fff" },
+  { label: ["Vídeos"], bg: "#ffc61a", ink: "#16130d" },
+  { label: ["Clientes", "organizados"], bg: "#f39a1f", ink: "#16130d" },
+  { label: ["Calendário", "de posts"], bg: "#ea5545", ink: "#fff" },
+  { label: ["Agentes", "de IA"], bg: "#e8345f", ink: "#fff" },
 ];
 
-/** Tudo se conecta: a sua agência no centro, cada entrega ligada a ela, com um ponto de luz correndo nas linhas. */
-function Ecosystem() {
-  const size = 340;
-  const c = size / 2;
-  const r = 128;
-  const nodes = ECO_NODES.map((n, i) => {
-    const a = (i / ECO_NODES.length) * Math.PI * 2 - Math.PI / 2;
-    return { ...n, x: c + r * Math.cos(a), y: c + r * Math.sin(a) };
-  });
+/** Roda de setas: cada entrega leva à próxima, com a cor acendendo em sequência. */
+function MarketingWheel() {
+  const c = 200;
+  const outer = 192;
+  const inner = 124;
+  const mid = (outer + inner) / 2;
+  const step = 360 / WHEEL.length;
+  const tip = 7;
+  const gap = 1.5;
+  const at = (radius: number, deg: number) => {
+    const a = (deg * Math.PI) / 180;
+    return `${(c + radius * Math.cos(a)).toFixed(2)} ${(c + radius * Math.sin(a)).toFixed(2)}`;
+  };
   return (
-    <div className="cv-reveal relative mx-auto mt-10 aspect-square w-full max-w-[420px]">
-      <svg viewBox={`0 0 ${size} ${size}`} className="absolute inset-0 h-full w-full" aria-hidden>
-        <circle cx={c} cy={c} r={r} fill="none" stroke="#e6dcc0" strokeDasharray="2 6" />
-        {nodes.map((n, i) => (
-          <g key={n.label}>
-            <line x1={c} y1={c} x2={n.x} y2={n.y} stroke="#d9ccff" strokeWidth="2" />
-            <line x1={c} y1={c} x2={n.x} y2={n.y} stroke="#7c5cff" strokeWidth="2" strokeLinecap="round" className="cv-flow" style={delay(i * 220)} />
-          </g>
-        ))}
+    <div className="cv-reveal relative mx-auto mt-10 w-full max-w-[460px]">
+      <svg viewBox="0 0 400 400" className="block h-auto w-full" role="img" aria-label="Anúncios, carrosséis, stories, site, vídeos, clientes organizados, calendário de posts e agentes de IA">
+        {WHEEL.map((seg, i) => {
+          const start = -90 + i * step - step / 2 + gap;
+          const end = start + step - gap * 2;
+          const center = (start + end) / 2 + tip / 2;
+          const flip = Math.sin((center * Math.PI) / 180) > 0.05;
+          const rotate = center + (flip ? -90 : 90);
+          const [x, y] = at(mid, center).split(" ");
+          return (
+            <g key={seg.label.join(" ")}>
+              <path
+                className="cv-seg"
+                style={delay(i * 500)}
+                fill={seg.bg}
+                d={`M ${at(outer, start)} A ${outer} ${outer} 0 0 1 ${at(outer, end)} L ${at(mid, end + tip)} L ${at(inner, end)} A ${inner} ${inner} 0 0 0 ${at(inner, start)} L ${at(mid, start + tip)} Z`}
+              />
+              <text transform={`translate(${x} ${y}) rotate(${rotate.toFixed(2)})`} textAnchor="middle" fill={seg.ink} fontSize="14" fontWeight="800">
+                {seg.label.map((line, l) => (
+                  <tspan key={line} x="0" dy={l === 0 ? (seg.label.length > 1 ? -2 : 5) : 15}>{line}</tspan>
+                ))}
+              </text>
+            </g>
+          );
+        })}
+        <text x="200" y="190" textAnchor="middle" fontSize="26" fontWeight="800" fill="var(--cv-fg)">Sua agência</text>
+        <text x="200" y="218" textAnchor="middle" fontSize="15" fontWeight="600" fill="var(--cv-muted)">em um só lugar</text>
       </svg>
-      <div className="absolute left-1/2 top-1/2 grid h-[92px] w-[92px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-center shadow-[0_18px_40px_-18px_rgba(100,64,230,.55)] ring-4 ring-[#efe9ff]">
-        <span className="px-2 text-[11px] font-extrabold leading-tight">Sua<br />agência</span>
-      </div>
-      {nodes.map((n, i) => (
-        <div
-          key={n.label}
-          className="cv-float absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
-          style={{ ...delay(i * 300), left: `${(n.x / size) * 100}%`, top: `${(n.y / size) * 100}%` }}
-        >
-          <span className="grid h-11 w-11 place-items-center rounded-2xl text-white shadow-md" style={{ background: "var(--cv-primary)" }}>
-            <n.icon className="h-5 w-5" />
-          </span>
-          <span className="max-w-[86px] rounded-full bg-white px-2 py-0.5 text-center text-[10px] font-bold leading-tight shadow-sm sm:text-[11px]">{n.label}</span>
-        </div>
-      ))}
     </div>
   );
 }
 
+const TikTokIcon: Icon = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+    <path d="M16.6 2h-3.3v13.4a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6 0 .8.1V9.2a6.3 6.3 0 1 0 5.4 6.2V8.6a7.9 7.9 0 0 0 4.6 1.5V6.8a4.6 4.6 0 0 1-4.6-4.8Z" />
+  </svg>
+);
+
 function TeamImage() {
-  const chips: { label: string; icon: Icon; pos: string; rot: string; d: number }[] = [
-    { label: "Anúncios", icon: Megaphone, pos: "left-[-4%] top-[16%] sm:left-[-6%]", rot: "-6deg", d: 0 },
-    { label: "Vídeos", icon: Video, pos: "left-[-2%] bottom-[22%] sm:left-[-5%]", rot: "4deg", d: 600 },
-    { label: "Sites", icon: Globe, pos: "right-[-3%] top-[22%] sm:right-[-6%]", rot: "5deg", d: 1200 },
-    { label: "Clientes", icon: Users, pos: "right-[-2%] bottom-[18%] sm:right-[-5%]", rot: "-4deg", d: 1800 },
+  const chips: { label: string; icon: Icon; bg: string; pos: string; rot: string; d: number }[] = [
+    { label: "Instagram", icon: Instagram, bg: "#e1306c", pos: "left-0 top-[8%] sm:left-[-6%] sm:top-[14%]", rot: "-5deg", d: 0 },
+    { label: "Facebook", icon: Facebook, bg: "#1877f2", pos: "left-0 bottom-[8%] sm:left-[-5%] sm:bottom-[20%]", rot: "4deg", d: 600 },
+    { label: "TikTok", icon: TikTokIcon, bg: "#16130d", pos: "right-0 top-[8%] sm:right-[-6%] sm:top-[14%]", rot: "5deg", d: 1200 },
+    { label: "YouTube", icon: Youtube, bg: "#ff0000", pos: "right-0 top-[44%] sm:right-[-7%]", rot: "-3deg", d: 1500 },
+    { label: "WhatsApp", icon: MessageCircle, bg: "#25d366", pos: "right-0 bottom-[8%] sm:right-[-5%] sm:bottom-[14%]", rot: "-4deg", d: 1800 },
   ];
   return (
-    <div className="cv-reveal relative mx-auto mt-10 max-w-4xl px-6 sm:px-10">
+    <div className="cv-reveal relative mx-auto mt-10 max-w-4xl px-2 sm:px-10">
       <div className="overflow-hidden rounded-[32px] bg-[#0f172a] shadow-[0_30px_60px_-30px_rgba(15,23,42,.6)]">
         <img src={heroDashboard} alt="Agente de viagens no notebook com o painel do Canva Viagem aberto" className="block h-auto w-full" loading="lazy" />
       </div>
       {chips.map((c) => (
-        <span key={c.label} className={`cv-float absolute inline-flex items-center gap-2 rounded-2xl border border-white/30 bg-white/80 px-3 py-2 text-[13px] font-bold shadow-xl backdrop-blur-md sm:px-4 sm:text-[15px] ${c.pos}`} style={{ ...delay(c.d), ["--cv-rot" as string]: c.rot }}>
-          <span className="grid h-7 w-7 place-items-center rounded-lg text-white" style={{ background: "var(--cv-primary)" }}><c.icon className="h-4 w-4" /></span>
+        <span key={c.label} className={`cv-float absolute inline-flex items-center gap-1 rounded-xl border border-white/30 bg-white/85 px-1.5 py-1 text-[10px] font-bold shadow-lg backdrop-blur-md sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2 sm:text-[15px] ${c.pos}`} style={{ ...delay(c.d), ["--cv-rot" as string]: c.rot }}>
+          <span className="grid h-5 w-5 place-items-center rounded-md text-white sm:h-7 sm:w-7 sm:rounded-lg" style={{ background: c.bg }}><c.icon className="h-3 w-3 sm:h-4 sm:w-4" /></span>
           {c.label}
         </span>
       ))}
@@ -560,7 +492,7 @@ function SiteDemo({ onStart }: { onStart: () => void }) {
           {siteOfferDemos.map((d) => {
             const on = d.id === demo.id;
             return (
-              <button key={d.id} type="button" onClick={() => setActiveId(d.id)} aria-pressed={on} className="min-w-[240px] flex-1 rounded-[22px] border p-4 text-left transition-colors" style={{ background: on ? "#16130d" : "#fff", color: on ? "#fff" : "var(--cv-fg)", borderColor: on ? "#16130d" : "var(--cv-line)" }}>
+              <button key={d.id} type="button" onClick={() => setActiveId(d.id)} aria-pressed={on} className="cv-peek-in min-w-[240px] flex-1 rounded-[22px] border p-4 text-left transition-colors" style={{ background: on ? "#16130d" : "#fff", color: on ? "#fff" : "var(--cv-fg)", borderColor: on ? "#16130d" : "var(--cv-line)" }}>
                 <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: on ? "#8fe3d9" : "#0ea5a0" }}>{d.templateLabel.toUpperCase()}</p>
                 <p className="mt-1 text-[15px] font-extrabold">{d.agencyName}</p>
                 <p className="text-[12px]" style={{ color: on ? "#cfc4a6" : "var(--cv-muted)" }}>{d.category}</p>
@@ -643,10 +575,9 @@ function LogoDrop({ onDone }: { onDone: () => void }) {
     <section className="px-4 py-16 sm:py-24">
       <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2">
         <div className="cv-reveal">
-          <Eyebrow>Sua marca</Eyebrow>
-          <h2 className="cv-h2 mt-4">Envie a logo uma vez. Ela entra em tudo.</h2>
+          <h2 className="cv-h2">Envie sua logo e pronto.</h2>
           <p className="mt-4 text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
-            Anúncio, carrossel, stories e site saem com a sua logo, as suas cores e o seu WhatsApp. Trocou a logo? Troca em tudo.
+            Ela entra no anúncio, no carrossel, nos stories e no site. Tudo sai com a sua logo, as suas cores, o seu WhatsApp e as suas redes sociais.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {places.map((p, i) => (

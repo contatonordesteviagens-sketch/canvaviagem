@@ -30,12 +30,14 @@ export function ShowcaseRow({
   pieces,
   alt,
   slow = false,
+  reverse = false,
   size = "small",
   className = "",
 }: {
   pieces: ShowcasePiece[];
   alt: string;
   slow?: boolean;
+  reverse?: boolean;
   size?: "tiny" | "compact" | "small";
   className?: string;
 }) {
@@ -44,10 +46,9 @@ export function ShowcaseRow({
   const compactGap = size !== "small";
   return (
     <div className={`relative overflow-hidden rounded-[28px] py-2 ${className}`} style={{ maskImage: "linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)" }}>
-      {/* Sempre para a esquerda, como quem arrasta um carrossel com o dedo. */}
       <div
         className={`travel-mobile-marquee flex w-max items-center ${compactGap ? "gap-2" : "gap-4"}`}
-        style={{ ...(slow ? { animationDuration: "120s" } : {}), ["--marquee-half-gap" as string]: compactGap ? "0.25rem" : "0.5rem" }}
+        style={{ ...(slow ? { animationDuration: "120s" } : {}), ...(reverse ? { animationDirection: "reverse" } : {}), ["--marquee-half-gap" as string]: compactGap ? "0.25rem" : "0.5rem" }}
       >
         {items.map((p, i) => (
           <img

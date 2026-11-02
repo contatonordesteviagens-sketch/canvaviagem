@@ -176,7 +176,7 @@ const platformProofScreens = [
 ];
 
 const includedResultCards = [
-  ["Site Editável e CRM", "Tenha um site pronto para enviar ofertas aos clientes e controle tudo num só lugar."],
+  ["Site Editável e CRM", "Tenha um site pronto para enviar ofertas aos clientes e controle tudo em um só lugar."],
   ["Gerador de Imagens", "Crie imagens bonitas das suas ofertas usando nossa Fábrica de Destinos."],
   ["250 Reels e 400 Artes", "Receba material de vídeo e imagem para o ano inteiro, tudo pronto para postar."],
   ["Templates no Canva", "Tudo é personalizável no Canva. Mude as cores, adicione sua logo e telefone."],
