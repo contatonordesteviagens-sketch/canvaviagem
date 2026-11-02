@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.png";
 import { Helmet } from "react-helmet-async";
 import {
-  ArrowRight, Check, X, MapPin, Sparkles, Download, Mic, Upload, Infinity as InfinityIcon, DollarSign,
+  ArrowRight, MapPin, Sparkles, Download, Mic, Upload, Infinity as InfinityIcon, DollarSign,
   Instagram, Facebook, Youtube, MessageCircle, LayoutTemplate, Images, Globe, Video, Users, Megaphone, Smartphone, Monitor,
   ShieldCheck, Palette, PenLine, BadgeCheck,
 } from "lucide-react";
@@ -29,16 +29,16 @@ const steps = [
 ];
 
 const compare = [
-  ["Fala o pacote em um áudio e recebe tudo pronto", true, false],
-  ["Sua logo e cores aplicadas sozinhas", true, false],
-  ["Anúncios para feed e stories", true, false],
-  ["Carrosséis prontos por destino", true, true],
-  ["Site com a página de cada pacote", true, false],
-  ["Seus clientes organizados em um só lugar", true, false],
-  ["Vídeos de destinos prontos para postar", true, false],
-  ["Sem limite de mídias no mesmo dia", true, false],
-  ["Funciona no celular", true, true],
-  ["7 dias de garantia", true, false],
+  ["Como pedir", "Manda um áudio", "Briefing e reunião"],
+  ["Quando fica pronto", "Em segundos", "Em dias"],
+  ["Quantidade", "Sem limite", "O que couber no contrato"],
+  ["Anúncios e stories", "Inclusos", "Designer"],
+  ["Carrosséis e legendas", "Inclusos", "Social media"],
+  ["Site com cada pacote", "Incluso", "Programador"],
+  ["Vídeos para postar", "Prontos", "Editor de vídeo"],
+  ["Clientes organizados", "Em um só lugar", "Outra ferramenta"],
+  ["Quando funciona", "A qualquer hora", "Horário comercial"],
+  ["Quanto você paga", "Uma assinatura", "Salários ou freelancers"],
 ] as const;
 
 const delivery: { icon: Icon; title: string; text: string }[] = [
@@ -246,23 +246,23 @@ export default function InicioCreme() {
           <div className="mx-auto max-w-5xl">
             <div className="cv-reveal mx-auto max-w-2xl text-center">
               <Eyebrow>Comparação</Eyebrow>
-              <h2 className="cv-h2 mt-4">O que você recebe aqui e em um editor comum</h2>
+              <h2 className="cv-h2 mt-4">Canva Viagem ou uma equipe de marketing?</h2>
             </div>
             <div className="cv-reveal mt-10 overflow-hidden rounded-[32px] border" style={{ borderColor: "var(--cv-line)" }}>
               <table className="w-full text-left text-sm">
                 <thead style={{ background: "#f6edd2" }}>
                   <tr>
-                    <th className="px-4 py-4 font-medium sm:px-6" style={{ color: "var(--cv-muted)" }}>O que você recebe</th>
-                    <th className="px-2 py-4 text-center font-bold sm:px-6">Canva Viagem</th>
-                    <th className="px-2 py-4 text-center font-medium sm:px-6" style={{ color: "var(--cv-muted)" }}>Editor comum</th>
+                    <th className="px-3 py-4 font-medium sm:px-6" style={{ color: "var(--cv-muted)" }}><span className="sr-only">Comparação</span></th>
+                    <th className="px-2 py-4 font-bold sm:px-6">Canva Viagem</th>
+                    <th className="px-3 py-4 font-medium sm:px-6" style={{ color: "var(--cv-muted)" }}>Equipe de marketing</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {compare.map(([label, , them]) => (
+                  {compare.map(([label, us, team]) => (
                     <tr key={label} className="border-t" style={{ borderColor: "var(--cv-line)" }}>
-                      <td className="px-4 py-4 sm:px-6">{label}</td>
-                      <td className="px-2 py-4 sm:px-6"><Check className="mx-auto h-4 w-4 text-[#16a34a]" /></td>
-                      <td className="px-2 py-4 sm:px-6">{them ? <Check className="mx-auto h-4 w-4 text-[#8a8170]" /> : <X className="mx-auto h-4 w-4 text-[#8a8170]" />}</td>
+                      <td className="px-3 py-4 font-semibold sm:px-6">{label}</td>
+                      <td className="px-2 py-4 font-bold sm:px-6" style={{ color: "var(--cv-primary-ink)" }}>{us}</td>
+                      <td className="px-3 py-4 sm:px-6" style={{ color: "var(--cv-muted)" }}>{team}</td>
                     </tr>
                   ))}
                 </tbody>
