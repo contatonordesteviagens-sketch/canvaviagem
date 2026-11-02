@@ -87,6 +87,18 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
     porque: "É o que decide quanto colocar em anúncio depois.",
   },
   {
+    quando: "Até 06/11",
+    quem: "Lucas",
+    oque: "Perguntar ao suporte da Woovi se o Pix Automático está liberado na conta e se tem taxa própria.",
+    porque: "A documentação não diz. A resposta decide se a renovação automática pode sair depois da meta.",
+  },
+  {
+    quando: "Depois de 06/11",
+    quem: "Claude",
+    oque: "Fazer o Pix Automático aprovado pelo Lucas: depois de pagar, a pessoa pode ativar a renovação com CPF, endereço e autorização no banco. A primeira cobrança fica para o fim do período pago, e quem não ativar segue com os e-mails.",
+    porque: "No Pix, o cliente precisa pagar de novo a cada período. A compra rápida no popup não muda, e não mexemos no pagamento durante a meta.",
+  },
+  {
     quando: "Até 14/11",
     quem: "Lucas",
     oque: "Pedir depoimento a 3 assinantes ativos, com autorização para usar.",
