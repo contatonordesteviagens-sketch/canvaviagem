@@ -3,6 +3,8 @@
 import { extractPaletteFromCanvas } from "@/lib/extract-palette";
 
 export const ONBOARDING_PATH = "/onboarding";
+/** Tela de e-mail entre a página de vendas e o quiz. */
+export const QUICK_LOGIN_PATH = `/login?redirect=${encodeURIComponent(ONBOARDING_PATH)}&entrada=rapida`;
 export const ONBOARDING_DESTINO_KEY = "cv-onboarding-destino";
 export const ONBOARDING_LOGO_KEY = "cv-onboarding-logo";
 const TRIAL_RESULT_KEY = "cv-inicio-artes";

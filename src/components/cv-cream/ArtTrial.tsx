@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, ChevronRight, Loader2, MapPin, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  generateTrialArts, ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH, prepareTrialLogo, readTrialResult, resolveTrialDestino, saveTrialResult,
+  generateTrialArts, ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH, prepareTrialLogo, QUICK_LOGIN_PATH, readTrialResult, resolveTrialDestino, saveTrialResult,
   TRIAL_DESTINOS, type TrialDestino, type TrialLogo,
 } from "@/lib/inicio-arte";
 import { trackInicioTeste } from "@/lib/inicio-teste";
@@ -20,7 +20,7 @@ const remember = (key: string, value: string) => {
 
 type Stage = "destino" | "logo" | "artes";
 
-/** Destino, logo e 3 artes prontas. Depois das artes, a pessoa segue para o quiz, e o e-mail só aparece lá. */
+/** Destino, logo e 3 artes prontas. Depois das artes, a pessoa deixa o e-mail como quem entra na ferramenta e segue para o quiz. */
 export function ArtTrial() {
   const navigate = useNavigate();
   const { user, subscription } = useAuth();
@@ -92,7 +92,7 @@ export function ArtTrial() {
 
   const goOn = () => {
     if (user && subscription.subscribed) { navigate("/fabrica"); return; }
-    navigate(ONBOARDING_PATH);
+    navigate(user ? ONBOARDING_PATH : QUICK_LOGIN_PATH);
   };
 
   const ready = !generating && !failed && arts.length > 0;

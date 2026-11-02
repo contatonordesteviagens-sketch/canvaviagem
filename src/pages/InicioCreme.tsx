@@ -16,7 +16,7 @@ import { resolveInicioVariant, trackInicioTeste } from "@/lib/inicio-teste";
 import { siteOfferDemos } from "@/lib/site-offer-demos";
 import heroDashboard from "@/assets/hero_dashboard.jpg";
 
-import { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH } from "@/lib/inicio-arte";
+import { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH, QUICK_LOGIN_PATH } from "@/lib/inicio-arte";
 
 export { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH };
 
@@ -79,11 +79,10 @@ export default function InicioCreme() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /** "Acessar" é o login. Os outros botões levam ao quiz, e o e-mail é pedido lá. Assinante vai para a Fábrica. */
-  const start = (source: string) => {
+  /** Todo caminho leva ao mesmo lugar: e-mail, quiz e pagamento. Assinante vai para a Fábrica. */
+  const start = (_source: string) => {
     if (user && subscription.subscribed) { navigate("/fabrica"); return; }
-    if (source === "header" && !user) { navigate(`/login?redirect=${encodeURIComponent(ONBOARDING_PATH)}&entrada=rapida`); return; }
-    navigate(ONBOARDING_PATH);
+    navigate(user ? ONBOARDING_PATH : QUICK_LOGIN_PATH);
   };
 
   return (

@@ -28,7 +28,7 @@ export const META = {
 export const STATUS_GERAL = [
   { area: "Aviso da Stripe para o sistema (webhook)", estado: "ok", detalhe: "Consertado em 01/11: o segredo estava errado e o reenvio voltou 200 às 23:32. Falta ver uma compra real no cartão passando por ele." },
   { area: "Lista fria: só deixou o e-mail", estado: "problema", detalhe: "Parada por decisão do Lucas. Dos 20 contatos mais antigos, 5 voltaram (25%). Faltam 208, e 133 têm prova de que o e-mail existe. A conta do Resend está com 13,75% de rejeição nos últimos 15 dias, e o limite é 4%." },
-  { area: "Página inicial, quiz e captura de e-mail", estado: "atencao", detalhe: "No ar. Em 01/11 foram 93 visitas e nenhum e-mail deixado. A origem ainda não é conhecida: cada visita registra de onde veio. Página refeita em 02/11, com o e-mail só dentro do quiz. Cadastro de e-mail novo segue sem teste real." },
+  { area: "Página inicial, quiz e captura de e-mail", estado: "atencao", detalhe: "No ar. Em 01/11 foram 93 visitas e nenhum e-mail deixado. A origem ainda não é conhecida: cada visita registra de onde veio. Página refeita em 02/11, com a tela de e-mail antes do quiz. Cadastro de e-mail novo segue sem teste real." },
   { area: "Artes, carrossel e site da Fábrica", estado: "ok", detalhe: "12 modelos em rodízio, feed e stories. PNG conferido." },
   { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo." },
   { area: "Automação de e-mails", estado: "ok", detalhe: "Roda de hora em hora. Campanha agendada para 17/11." },
@@ -299,7 +299,7 @@ export const FEITO: { data: string; itens: string[] }[] = [
     itens: [
       "/inicio refeita em uma página só: chamada do áudio, destino digitado ou em botões, logo e 3 artes. O teste meio a meio acabou.",
       "Logo entra na arte como a pessoa enviou, sem fundo nem borda. Artes maiores: uma por vez no celular, com aviso de arrastar.",
-      "Depois das artes, o botão leva ao quiz. O e-mail virou a tela de entrada: Crie sua conta para começar.",
+      "Depois das artes, o botão leva à tela de e-mail, como login para usar a ferramenta, e só então ao quiz.",
       "Página mais limpa: créditos menores, vitrine depois deles, roda colorida de marketing, redes sociais na foto, conteúdo pronto só com título e vídeos.",
       "Corrigido o uso de num por em um nas páginas de venda.",
     ],

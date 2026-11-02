@@ -466,10 +466,10 @@ function QuickEntryScreen(props: {
         <div className="cv-card cv-pop w-full max-w-[440px] p-6 shadow-[0_24px_50px_-30px_rgba(32,28,19,.35)] sm:p-8">
           {!sent ? (
             <>
-              <Eyebrow>Passo 1 de 2 · seu acesso</Eyebrow>
-              <h1 className="mt-3 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em]">Vamos montar sua agência</h1>
+              <Eyebrow>Seu acesso</Eyebrow>
+              <h1 className="mt-3 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em]">Crie sua conta para começar a usar</h1>
               <p className="mt-2 text-[15px] leading-6" style={{ color: "var(--cv-muted)" }}>
-                Sem senha. Em seguida, um quiz rápido deixa tudo com a cara da sua agência.
+                Digite o seu e-mail para entrar na ferramenta. Sem senha.
               </p>
               {destino && (
                 <span className="mt-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-semibold" style={{ background: "var(--cv-sand)" }}>
@@ -506,7 +506,7 @@ function QuickEntryScreen(props: {
                   {busy ? (
                     <><Loader2 className="h-5 w-5 animate-spin" /> {openingQuiz ? "Abrindo o quiz…" : "Um instante…"}</>
                   ) : (
-                    <>Continuar <ArrowRight className="h-5 w-5" /></>
+                    <>Entrar e começar <ArrowRight className="h-5 w-5" /></>
                   )}
                 </button>
               </form>
