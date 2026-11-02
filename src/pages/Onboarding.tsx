@@ -649,7 +649,7 @@ function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c:
 
       <ProofCarousel />
 
-      <div className="sticky bottom-0 -mx-5 mt-5 border-t px-5 py-3" style={{ background: "var(--cv-bg)", borderColor: "var(--cv-line)" }}>
+      <div className="mt-5 border-t pt-4" style={{ background: "var(--cv-bg)", borderColor: "var(--cv-line)" }}>
         <p className="mb-2 text-center text-[13px] font-semibold">Plano {selected.name}: {selected.price}{selected.per}</p>
         <PayButtons plan={plan} onCheckout={onCheckout} onPix={onPix} />
       </div>
