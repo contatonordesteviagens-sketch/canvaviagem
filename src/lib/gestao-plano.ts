@@ -20,7 +20,7 @@ export const META = {
     { nome: "Quem quase comprou", alvo: "1 a 2", como: "12 pessoas terminaram o quiz ou abriram o pagamento. O Lucas fala com uma a uma." },
     { nome: "Lista fria pelo Brevo", alvo: "2 a 3", como: "133 com e-mail comprovado, 50% para sempre. Pelo Brevo, rejeição não trava o login. A chave já está salva. Falta o sim do Lucas." },
     { nome: "Ex-assinantes", alvo: "2 a 3", como: "119 pessoas que já pagaram. Antecipar o primeiro e-mail da Black, que hoje sai em 19/11. Decisão do Lucas." },
-    { nome: "Anúncios para /inicio", alvo: "2 a 4", como: "Proposta: R$ 200 por dia, R$ 1.000 nos 5 dias. Dá cerca de 300 visitas pelo custo atual da INFOS ALFA, de R$ 3,29 por visita, em outro produto. Só ligar depois do cadastro e do cartão testados." },
+    { nome: "Anúncios para /inicio", alvo: "0 a 1", como: "Decisão do Lucas: começar com R$ 50 por dia, R$ 250 até 06/11. Dá cerca de 75 visitas pelo custo atual da INFOS ALFA, de R$ 3,29 por visita, em outro produto. Só ligar depois do cadastro e do cartão testados." },
   ],
   aviso: "As quantidades são estimativas: o Canva Viagem ainda não tem histórico de venda por anúncio nesta página.",
 };
@@ -268,7 +268,7 @@ export const CHECKLIST: ChecklistGrupo[] = [
       { id: "saldo-infos-alfa", texto: "Saldo pendente da INFOS ALFA acertado", quem: "Lucas", feito: true, nota: "Conta ativa em 01/11, com campanha de outro produto entregando." },
       { id: "pixel-canva-infos-alfa", texto: "Pixel da conta de anúncios instalado no site", quem: "Claude", feito: true, nota: "Só no navegador. Falta o token do servidor." },
       { id: "anuncios-ligados", texto: "Anúncios ligados com link para /inicio", quem: "Lucas" },
-      { id: "regra-pausa", texto: "Definir o valor por dia e a regra de pausa", quem: "Lucas", nota: "Proposta: R$ 200 por dia, pausando o conjunto que gastar R$ 194 (2 mensais) sem venda." },
+      { id: "regra-pausa", texto: "Definir o valor por dia e a regra de pausa", quem: "Lucas", nota: "Decidido: R$ 50 por dia. Pausar o conjunto que gastar R$ 194 (2 mensais) sem venda." },
     ],
   },
   {
