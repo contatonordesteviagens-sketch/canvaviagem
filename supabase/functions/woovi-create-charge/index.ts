@@ -2,7 +2,7 @@
 // Entrada: { plan: "monthly" | "semiannual" | "annual" } + Authorization: Bearer <sessão>
 // Saída:   { correlationID, value, brCode, qrCodeImage, paymentLinkUrl, expiresDate }
 import { adminClient, userFromRequest } from "../_shared/wooviAuth.ts";
-import { corsHeaders, createWooviCharge, isPixPlan, json, PIX_PLANS, savePixCharge, isBlackFridayOpen, PIX_BLACK_FRIDAY_CENTS } from "../_shared/woovi.ts";
+import { corsHeaders, createWooviCharge, isPixPlan, PIX_QUICK_EXPIRES_IN_SECONDS, json, PIX_PLANS, savePixCharge, isBlackFridayOpen, PIX_BLACK_FRIDAY_CENTS } from "../_shared/woovi.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
         .eq("value_cents", PIX_BLACK_FRIDAY_CENTS[plan]).limit(1);
       if (!paid?.length) return json({ error: "Oferta encerrada" }, 400);
     }
-    const charge = await createWooviCharge({ plan, userId: user.id, email, name, blackFriday: wantsBlackFriday });
+    const charge = await createWooviCharge({ plan, userId: user.id, email, name, blackFriday: wantsBlackFriday, expiresIn: body?.quick === true ? PIX_QUICK_EXPIRES_IN_SECONDS : undefined });
     console.log("[WOOVI-CREATE] Cobrança criada", { userId: user.id, plan, correlationID: charge.correlationID });
     await savePixCharge(db, charge, email);
 

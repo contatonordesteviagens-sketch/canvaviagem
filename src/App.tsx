@@ -71,6 +71,7 @@ const PlanosES = lazy(() => import("./pages/PlanosES"));
 const SalesPageES = lazy(() => import("./pages/SalesPageES"));
 const Sucesso = lazy(() => import("./pages/Sucesso"));
 const Obrigado = lazy(() => import("./pages/Obrigado"));
+const PagamentoConfirmado = lazy(() => import("./pages/PagamentoConfirmado"));
 const ObrigadoES = lazy(() => import("./pages/ObrigadoES"));
 const PosPagamento = lazy(() => import("./pages/PosPagamento"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -307,6 +308,7 @@ const App = () => {
                     <Route path="/auth/verify" element={<AuthVerify />} />
                     <Route path="/sucesso" element={<Sucesso />} />
                     <Route path="/obrigado" element={<Obrigado />} />
+                    <Route path="/pagamento-confirmado" element={<ProtectedRoute><PagamentoConfirmado /></ProtectedRoute>} />
                     <Route path="/pos-pagamento" element={<PosPagamento />} />
                     <Route path="/gestao" element={
                       <ProtectedRoute requireSubscription>

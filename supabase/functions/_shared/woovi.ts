@@ -22,6 +22,8 @@ export const PIX_PLANS: Record<PixPlan, { valueCents: number; days: number; prod
 
 /** Tempo para pagar o QR Code (segundos). */
 export const PIX_EXPIRES_IN_SECONDS = 60 * 60;
+/** No quiz o Pix vale 10 minutos: o relógio da tela é o prazo real da cobrança. */
+export const PIX_QUICK_EXPIRES_IN_SECONDS = 10 * 60;
 
 // Black Friday: 50% para sempre. Quem pagou com esse valor renova com esse valor, mesmo depois de a campanha fechar.
 // A compra nova fecha sozinha às 23h59 de 30/11 (Brasília).
@@ -88,6 +90,7 @@ export async function createWooviCharge(params: {
   email: string;
   name?: string;
   blackFriday?: boolean;
+  expiresIn?: number;
 }): Promise<WooviCharge> {
   const cfg = PIX_PLANS[params.plan];
   const label = params.blackFriday ? `${cfg.label} Black Friday` : cfg.label;
@@ -95,7 +98,7 @@ export async function createWooviCharge(params: {
     correlationID: buildCorrelationId(params.plan, params.userId),
     value: params.blackFriday ? PIX_BLACK_FRIDAY_CENTS[params.plan] : cfg.valueCents,
     comment: `Canva Viagem - ${label}`,
-    expiresIn: PIX_EXPIRES_IN_SECONDS,
+    expiresIn: params.expiresIn ?? PIX_EXPIRES_IN_SECONDS,
     additionalInfo: [
       { key: "Plano", value: label },
       { key: "Conta", value: params.email },
@@ -316,22 +319,23 @@ async function createMagicLink(db: SupabaseClient, email: string, name: string, 
 // canvaviagem.com não está verificado no Resend: usar o remetente verificado (igual ao send-magic-link).
 const FROM_EMAIL = () => Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>";
 
-async function sendPixConfirmationEmail(db: SupabaseClient, p: { email: string; name: string; planLabel: string; periodEnd: string }) {
+export async function sendPixConfirmationEmail(db: SupabaseClient, p: { email: string; name: string; planLabel: string; periodEnd: string }) {
   const resendKey = Deno.env.get("RESEND_API_KEY");
   if (!resendKey || !p.email) return;
   const link = await createMagicLink(db, p.email, p.name);
   await new Resend(resendKey).emails.send({
     from: FROM_EMAIL(),
     to: [p.email],
-    subject: "✅ Pix confirmado — seu Elite está liberado",
+    subject: "✅ Compra confirmada: guarde este e-mail para entrar na sua conta",
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #f9fafb; border-radius: 20px;">
-        <h2 style="color: #1a1a1a;">Olá, ${p.name}!</h2>
+        <h2 style="color: #1a1a1a;">Parabéns pela compra, ${p.name}!</h2>
         <p style="color: #4b5563; font-size: 16px;">Recebemos seu Pix. O plano <b>${p.planLabel}</b> está ativo até <b>${fmtDate(p.periodEnd)}</b>.</p>
         <a href="${link}" style="background: #000; color: #fff; padding: 18px 30px; text-decoration: none; border-radius: 12px; display: inline-block; margin: 25px 0; font-weight: bold;">ACESSAR A FÁBRICA →</a>
+        <p style="color: #1a1a1a; font-size: 15px;"><b>Vai usar em outro aparelho?</b> Abra <a href="${canonicalSiteUrl()}/login?redirect=%2Ffabrica" style="color: #6440e6; font-weight: bold;">a página de login</a> e digite este e-mail: <b>${p.email}</b>. Você recebe um link e entra sem senha. Não precisa pagar de novo.</p>
         <p style="color: #6b7280; font-size: 14px;">O Pix não renova sozinho. Alguns dias antes do vencimento a gente te avisa por e-mail para renovar.</p>
         <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-        <p style="color: #9ca3af; font-size: 11px;">Por segurança, este link vale por 1 hora. Depois disso, entre normalmente pela página de login.</p>
+        <p style="color: #9ca3af; font-size: 11px;">Por segurança, o botão acima vale por 1 hora. A página de login funciona sempre.</p>
       </div>
     `,
   });

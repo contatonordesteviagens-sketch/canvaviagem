@@ -12,6 +12,7 @@ import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { ELITE_OFFER } from "@/lib/eliteOffer";
 import { checkoutPath } from "@/components/checkout/checkout-plans";
+import { PayWithPixButton } from "@/components/pix/PixCheckout";
 import { BrandMark, delay } from "@/components/cv-cream/shared";
 import { captureLead, readLeadEmail } from "@/lib/lead-capture";
 import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
@@ -209,10 +210,14 @@ export default function Onboarding() {
     window.setTimeout(next, 280);
   };
 
-  const checkout = (method: "pix" | "cartao") => {
-    const selected = PLANS.find((p) => p.cycle === plan)!;
+  const registerPayment = (method: "pix" | "cartao") => {
     track("plan_selected", { billing_cycle: plan, feature: "onboarding", answers, method });
     trackInicioTeste("pagar", { tela: plan, valor: method });
+  };
+
+  const checkout = (method: "cartao") => {
+    const selected = PLANS.find((p) => p.cycle === plan)!;
+    registerPayment(method);
     if (!user) captureLead(readLeadEmail(), "plan", { billing_cycle: plan });
     trackMetaEvent("InitiateCheckout", { value: selected.value, currency: "BRL", content_name: `Canva Viagem ${selected.name}`, content_category: "onboarding" });
     navigate(checkoutPath(plan, method));
@@ -239,7 +244,7 @@ export default function Onboarding() {
           ) : current.kind === "loading" ? (
             <Loading label={current.label} reviews={current.reviews} onDone={next} />
           ) : (
-            <Screen kind={current.kind} answers={answers} destino={destinoPrincipal} plan={plan} setPlan={(c) => { trackInicioTeste("plano", { valor: c }); setPlan(c); }} onNext={next} onCheckout={checkout} />
+            <Screen kind={current.kind} answers={answers} destino={destinoPrincipal} plan={plan} setPlan={(c) => { trackInicioTeste("plano", { valor: c }); setPlan(c); }} onNext={next} onCheckout={() => checkout("cartao")} onPix={() => registerPayment("pix")} />
           )}
         </main>
       </div>
@@ -316,14 +321,14 @@ function Question({ q, selected, onChoose, onContinue }: { q: QuestionStep; sele
 
 type ScreenProps = {
   kind: ScreenStep["kind"]; answers: Answers; destino: string; plan: Cycle;
-  setPlan: (c: Cycle) => void; onNext: () => void; onCheckout: (method: "pix" | "cartao") => void;
+  setPlan: (c: Cycle) => void; onNext: () => void; onCheckout: () => void; onPix: () => void;
 };
 
 function Screen(props: ScreenProps) {
   switch (props.kind) {
     case "intro": return <Intro onNext={props.onNext} />;
     case "result": return <Result answers={props.answers} destino={props.destino} onNext={props.onNext} />;
-    case "offer": return <Offer plan={props.plan} setPlan={props.setPlan} onCheckout={props.onCheckout} />;
+    case "offer": return <Offer plan={props.plan} setPlan={props.setPlan} onCheckout={props.onCheckout} onPix={props.onPix} />;
   }
 }
 
@@ -503,7 +508,7 @@ function WeekList({ days }: { days: { d: string; t: string; icon: Icon }[] }) {
 }
 
 
-function Offer({ plan, setPlan, onCheckout }: { plan: Cycle; setPlan: (c: Cycle) => void; onCheckout: (method: "pix" | "cartao") => void }) {
+function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c: Cycle) => void; onCheckout: () => void; onPix: () => void }) {
   return (
     <>
       <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Seu plano está pronto. <Accent>Libere o acesso.</Accent></Title>
@@ -534,10 +539,12 @@ function Offer({ plan, setPlan, onCheckout }: { plan: Cycle; setPlan: (c: Cycle)
               </button>
               {on && (
                 <div className="grid grid-cols-2 gap-2 px-4 pb-4">
-                  <button type="button" onClick={() => onCheckout("pix")} className="cv-btn h-12 text-[14px]">
-                    <QrCode className="h-4 w-4" /> Pagar com Pix
-                  </button>
-                  <button type="button" onClick={() => onCheckout("cartao")} className="inline-flex h-12 items-center justify-center gap-2 rounded-full border bg-white text-[14px] font-semibold" style={{ borderColor: "var(--cv-primary)", color: "var(--cv-primary-ink)" }}>
+                  <div onClickCapture={() => onPix()}>
+                    <PayWithPixButton plan={p.cycle} quick redirectTo="/pagamento-confirmado" className="cv-btn h-12 border-0 py-0 text-[14px] text-white hover:bg-transparent">
+                      <QrCode className="h-4 w-4" /> Pagar com Pix
+                    </PayWithPixButton>
+                  </div>
+                  <button type="button" onClick={() => onCheckout()} className="inline-flex h-12 items-center justify-center gap-2 rounded-full border bg-white text-[14px] font-semibold" style={{ borderColor: "var(--cv-primary)", color: "var(--cv-primary-ink)" }}>
                     <CreditCard className="h-4 w-4" /> Pagar com cartão
                   </button>
                 </div>

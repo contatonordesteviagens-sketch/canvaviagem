@@ -79,6 +79,9 @@ verify_jwt = false
 [functions.meta-capi-obrigado]
 verify_jwt = false
 
+[functions.confirm-purchase-email]
+verify_jwt = false
+
 [functions.woovi-create-charge]
 verify_jwt = false
 

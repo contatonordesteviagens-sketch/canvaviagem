@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Copy, ExternalLink, Loader2, QrCode, RefreshCw } from "lucide-react";
+import { CheckCircle2, Copy, Loader2, QrCode, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,11 +59,14 @@ export function PixCheckoutModal({
   onOpenChange,
   plan,
   redirectTo = "/fabrica",
+  quick = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   plan: PixPlan;
   redirectTo?: string;
+  /** Pix de 10 minutos, usado no quiz. */
+  quick?: boolean;
 }) {
   const navigate = useNavigate();
   const { refreshSubscription } = useAuth();
@@ -81,7 +84,7 @@ export function PixCheckoutModal({
     setError(null);
     setCharge(null);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke("woovi-create-charge", { body: { plan } });
+      const { data, error: fnError } = await supabase.functions.invoke("woovi-create-charge", { body: { plan, quick } });
       if (fnError || !data?.brCode) throw new Error(data?.error || fnError?.message || "Falha ao gerar o Pix");
       setCharge(data as Charge);
       trackMetaEvent("InitiateCheckout", { value: info.value, currency: "BRL", content_name: `Canva Viagem ${info.label}`, content_category: "pix" });
@@ -91,7 +94,7 @@ export function PixCheckoutModal({
     } finally {
       setLoading(false);
     }
-  }, [plan, info.label, info.value]);
+  }, [plan, quick, info.label, info.value]);
 
   // Gera uma cobrança por abertura do modal (por plano).
   useEffect(() => {
@@ -115,7 +118,7 @@ export function PixCheckoutModal({
       stopped = true;
       setPaid(true);
       trackMetaEvent("Purchase", { value: info.value, currency: "BRL", content_name: "Canva Viagem Elite", content_category: `pix_${plan}`, content_type: "product" }, undefined, `purchase_${charge.correlationID}`);
-      toast.success("Pix confirmado! Liberando sua Fábrica…");
+      toast.success("Pix confirmado!");
       await refreshSubscription().catch(() => undefined);
       window.setTimeout(() => {
         onOpenChange(false);
@@ -155,7 +158,7 @@ export function PixCheckoutModal({
           <div className="flex flex-col items-center gap-3 py-8 text-center">
             <CheckCircle2 className="h-14 w-14 text-emerald-600" />
             <p className="text-lg font-bold">Pagamento confirmado!</p>
-            <p className="text-sm text-muted-foreground">Abrindo a Fábrica…</p>
+            <p className="text-sm text-muted-foreground">Liberando o seu acesso…</p>
           </div>
         ) : loading ? (
           <div className="flex flex-col items-center gap-3 py-12 text-sm text-muted-foreground">
@@ -169,12 +172,17 @@ export function PixCheckoutModal({
             </button>
           </div>
         ) : charge ? (
-          <div className="flex flex-col items-center gap-4">
-            <div className={cn("rounded-2xl border bg-white p-3", expired && "opacity-30")}>
+          <div className="flex flex-col items-center gap-3">
+            {!expired && label && (
+              <p className="w-full rounded-xl bg-emerald-50 py-2 text-center text-[14px] font-semibold text-emerald-800">
+                Pague em <b className="tabular-nums text-[18px]">{label}</b>
+              </p>
+            )}
+            <div className={cn("rounded-2xl border bg-white p-2", expired && "opacity-30")}>
               {charge.qrCodeImage ? (
-                <img src={charge.qrCodeImage} alt="QR Code Pix" width={220} height={220} className="h-[220px] w-[220px]" />
+                <img src={charge.qrCodeImage} alt="QR Code Pix" width={200} height={200} className="h-[200px] w-[200px]" />
               ) : (
-                <div className="grid h-[220px] w-[220px] place-items-center text-xs text-muted-foreground">Use o código abaixo</div>
+                <div className="grid h-[200px] w-[200px] place-items-center text-xs text-muted-foreground">Use o código abaixo</div>
               )}
             </div>
 
@@ -187,26 +195,15 @@ export function PixCheckoutModal({
               </div>
             ) : (
               <>
-                <button type="button" onClick={() => void copy()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-sm font-bold text-white transition-colors hover:bg-emerald-500">
-                  <Copy className="h-4 w-4" /> Copiar código Pix
+                <button type="button" onClick={() => void copy()} className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 text-[16px] font-bold text-white hover:bg-emerald-700">
+                  <Copy className="h-5 w-5" /> Copiar código Pix
                 </button>
-                <p className="w-full break-all rounded-lg bg-muted px-3 py-2 font-mono text-[10px] leading-snug text-muted-foreground">{charge.brCode}</p>
-                <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Aguardando pagamento…
-                  </span>
-                  {label && <span>Expira em <b className="tabular-nums">{label}</b></span>}
-                </div>
-                {charge.paymentLinkUrl && (
-                  <a href={charge.paymentLinkUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline">
-                    Abrir página de pagamento <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
+                <p className="line-clamp-2 w-full break-all rounded-lg bg-muted px-3 py-2 font-mono text-[10px] leading-snug text-muted-foreground">{charge.brCode}</p>
+                <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Aguardando pagamento. A liberação é automática.
+                </p>
               </>
             )}
-            <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
-              Abra o app do seu banco, escolha Pix → "Pix Copia e Cola" ou leia o QR Code. A liberação é automática em segundos. Pix não renova sozinho: avisamos por e-mail antes de vencer.
-            </p>
           </div>
         ) : null}
       </DialogContent>
@@ -222,11 +219,13 @@ export function PayWithPixButton({
   className,
   children,
   redirectTo,
+  quick,
 }: {
   plan: PixPlan;
   className?: string;
   children?: React.ReactNode;
   redirectTo?: string;
+  quick?: boolean;
 }) {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -254,7 +253,7 @@ export function PayWithPixButton({
       >
         {children ?? (<><QrCode className="h-4 w-4" /> Pagar com Pix</>)}
       </button>
-      {user && <PixCheckoutModal open={open} onOpenChange={setOpen} plan={plan} redirectTo={redirectTo} />}
+      {user && <PixCheckoutModal open={open} onOpenChange={setOpen} plan={plan} redirectTo={redirectTo} quick={quick} />}
     </>
   );
 }
