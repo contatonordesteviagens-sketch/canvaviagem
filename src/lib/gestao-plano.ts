@@ -31,7 +31,7 @@ export const STATUS_GERAL = [
   { area: "Página inicial, quiz e captura de e-mail", estado: "atencao", detalhe: "No ar. Em 01/11 foram 93 visitas e nenhum e-mail deixado. A origem ainda não é conhecida: cada visita registra de onde veio. Página refeita em 02/11, com a tela de e-mail antes do quiz. Cadastro de e-mail novo segue sem teste real." },
   { area: "Artes, carrossel e site da Fábrica", estado: "ok", detalhe: "12 modelos em rodízio, feed e stories. PNG conferido." },
   { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo. Desde 03/11 existe a /black: a mesma página e o mesmo quiz da /inicio, com fundo preto e preço da Black, para quem ainda não conhece a ferramenta." },
-  { area: "Automação de e-mails", estado: "problema", detalhe: "Roda de hora em hora e os e-mails de lead e de pagamento saem. Os da Black ainda não saíram: às 14h15 e 15h15 de 03/11 nenhum foi tentado, e o Brevo não registrou envio. A função no servidor parece estar com a data antiga da campanha." },
+  { area: "Automação de e-mails", estado: "ok", detalhe: "Black saindo pelo Brevo desde 17h15 de 03/11: 59 e-mails na primeira rodada, entregues e já com aberturas. Até 60 por hora. Quem nunca assinou recebe o link da /black; ex-assinante, o da /black-friday. A lista fria comprovada entra quando sobra espaço no limite. A função de e-mails precisa ser publicada pelo chat do Lovable a cada mudança." },
   { area: "Pixel do Meta no site", estado: "ok", detalhe: "O pixel da INFOS ALFA recebe eventos do canvaviagem.com desde 01/11, só pelo navegador. A conta está ativa." },
   { area: "Segurança", estado: "ok", detalhe: "Conferida em 01/11: nenhuma chave secreta no site nem nos commits recentes, e dados de clientes fechados para quem não é admin. Sobram itens menores no checklist." },
   { area: "Liberação de acesso depois de pagar", estado: "atencao", detalhe: "Pix conferido com venda real em 31/10: acesso liberado em 30 segundos e cliente gerou e baixou arte. Falta o cartão." },
@@ -118,9 +118,9 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
   },
   {
     quando: "03/11",
-    quem: "Claude",
-    oque: "Fazer os e-mails da Black saírem: conferir a rodada das 16h15 e, se não sair nada, publicar de novo a função de e-mails no Lovable.",
-    porque: "Até 15h15 de 03/11 nenhum e-mail da Black foi tentado. Os de lead saem normalmente.",
+    quem: "Lucas",
+    oque: "Decidido: até 30/11 só se vende a Black. A /inicio abre a /black e a /planos abre a /black-friday. No Meta fica só a CV - VENDAS - COMPRA - INICIO, que já leva para a Black.",
+    porque: "A venda no preço cheio não saiu e a cliente que assinou pediu reembolso. Metade do preço para sempre é a oferta para a meta.",
   },
   {
     quando: "05/11",
