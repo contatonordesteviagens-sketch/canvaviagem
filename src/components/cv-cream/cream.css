@@ -19,6 +19,7 @@
   --cv-head: #f6edd2;
   --cv-glow-1: #e9defc;
   --cv-glow-2: #c9b8fb;
+  --cv-hl: var(--cv-primary-ink);
   background: var(--cv-bg);
   color: var(--cv-fg);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif;
@@ -156,43 +157,54 @@
   .cv-cream .cv-peek, .cv-cream .cv-reveal.is-in .cv-peek-in, .cv-cream .cv-swipe, .cv-cream .cv-chip, .cv-cream .cv-reveal.is-in .cv-wheel, .cv-cream .cv-reveal.is-in .cv-wheel-label { animation: none; opacity: 1; }
 }
 
-/* Black: mesma página em preto e amarelo (rota /black, a tela de e-mail e o quiz que vêm depois dela) */
+/* Black: fundo preto com brilho roxo, como a página de carrosséis.
+   O dourado fica só no que chama atenção: botões, selo, palavras do título e preços. */
 .cv-cream.cv-black {
-  --cv-bg: #0a0a0d;
-  --cv-fg: #f6f4fb;
-  --cv-muted: #a8a4b8;
-  --cv-line: #2a2833;
-  --cv-card: #15141b;
-  --cv-primary: #ffc61a;
-  --cv-primary-ink: #ffc61a;
-  --cv-accent: #ffc61a;
-  --cv-accent-soft: #2e2508;
-  --cv-sand: #1f1d27;
-  --cv-soft: #2a2410;
-  --cv-soft-2: #1d190b;
-  --cv-soft-3: #3d3310;
-  --cv-track: #2a2833;
-  --cv-ring: #4a4658;
-  --cv-paper: #15141b;
-  --cv-head: #1f1d27;
-  --cv-glow-1: #14110a;
-  --cv-glow-2: #2e2508;
+  --cv-bg: #08080b;
+  --cv-fg: #f5f5f7;
+  --cv-muted: #a3a0b5;
+  --cv-line: #241f33;
+  --cv-card: #121019;
+  --cv-primary: #7c5cff;
+  --cv-primary-ink: #a990ff;
+  --cv-accent: #e9c46a;
+  --cv-accent-soft: #241c0c;
+  --cv-sand: #1a1626;
+  --cv-soft: #1f1838;
+  --cv-soft-2: #18132b;
+  --cv-soft-3: #2c2350;
+  --cv-track: #241f33;
+  --cv-ring: #3d3654;
+  --cv-paper: #121019;
+  --cv-head: #1a1626;
+  --cv-glow-1: #120d22;
+  --cv-glow-2: #241241;
+  --cv-hl: #ecc768;
+  --cv-gold: linear-gradient(135deg, #f8e7b0 0%, #e9bf5c 42%, #c48f2c 100%);
+  background:
+    radial-gradient(900px 520px at 50% -8%, rgba(74, 45, 180, 0.32), transparent 65%),
+    radial-gradient(700px 500px at 100% 45%, rgba(124, 92, 255, 0.10), transparent 70%),
+    var(--cv-bg);
 }
 .cv-cream.cv-black .bg-white { background-color: var(--cv-card); }
-/* Texto branco sobre o amarelo vira preto. Onde o fundo continua escuro, a cor fica no style. */
-.cv-cream.cv-black .text-white { color: #0a0a0d; }
-.cv-cream.cv-black .cv-btn { color: #0a0a0d; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 22px -6px rgba(255, 198, 26, 0.5); }
-.cv-cream.cv-black .cv-btn:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 12px 28px -6px rgba(255, 198, 26, 0.6); }
+.cv-cream.cv-black .cv-btn {
+  background: var(--cv-gold);
+  color: #1d1505;
+  box-shadow: inset 0 1px 0 rgba(255, 248, 225, 0.6), 0 10px 26px -10px rgba(233, 191, 92, 0.55);
+}
+.cv-cream.cv-black .cv-btn:hover { filter: brightness(1.05); box-shadow: inset 0 1px 0 rgba(255, 248, 225, 0.6), 0 14px 30px -10px rgba(233, 191, 92, 0.65); }
 .cv-cream.cv-black .cv-black-tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   border-radius: 9999px;
-  border: 1px solid #ffc61a;
+  border: 1px solid rgba(236, 199, 104, 0.55);
+  background: linear-gradient(135deg, rgba(248, 231, 176, 0.14), rgba(196, 143, 44, 0.08));
   padding: 6px 14px;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #ffc61a;
+  color: var(--cv-hl);
 }
+.cv-cream.cv-black .cv-gold-badge { background: var(--cv-gold); color: #1d1505; }

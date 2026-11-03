@@ -129,11 +129,11 @@ export default function InicioCreme() {
             <h1 className="cv-pop mt-3 max-w-3xl text-balance text-[2.4rem] font-extrabold leading-[1.04] tracking-[-0.025em] sm:text-6xl md:text-[4.2rem]" style={delay(60)}>
               Mande um áudio. Receba sua agência de{" "}
               {black ? (
-                <em style={{ fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 900, color: "var(--cv-primary-ink)" }}>viagens</em>
+                <em style={{ fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 900, color: "var(--cv-hl)" }}>viagens</em>
               ) : (
                 <em className="font-bold" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "var(--cv-primary-ink)" }}>viagens</em>
               )}{" "}
-              <span style={{ color: "var(--cv-primary-ink)" }}>inteira pronta.</span>
+              <span style={{ color: "var(--cv-hl)" }}>inteira pronta.</span>
             </h1>
             <p className="cv-pop mt-4 text-[19px] font-bold leading-6" style={delay(120)}>Escolha um destino e gere sua arte.</p>
             <p className="cv-pop mt-2 max-w-xl text-[15px] leading-6" style={{ ...delay(160), color: "var(--cv-muted)" }}>
@@ -168,7 +168,7 @@ export default function InicioCreme() {
                     </span>
                     <span className="text-lg font-extrabold text-[#e6dcc0]">{s.n}</span>
                   </div>
-                  <StepIllustration index={i} black={black} />
+                  <StepIllustration index={i} />
                   <h3 className="mt-4 text-base font-extrabold tracking-[-0.4px]">{s.title}</h3>
                   <p className="mt-1 text-sm leading-6" style={{ color: "var(--cv-muted)" }}>{s.text}</p>
                 </div>
@@ -185,7 +185,7 @@ export default function InicioCreme() {
                 type="button"
                 onClick={() => start("steps_audio")}
                 className="cv-mic flex min-h-[150px] flex-col items-center justify-center gap-3 p-6 text-white"
-                style={{ background: black ? "linear-gradient(135deg, #ffd84d 0%, #ffb800 100%)" : "linear-gradient(135deg, #7c5cff 0%, #6440e6 100%)" }}
+                style={{ background: "linear-gradient(135deg, #7c5cff 0%, #6440e6 100%)" }}
               >
                 <span className="relative grid h-20 w-20 place-items-center rounded-full bg-white/15">
                   <span className="cv-ping absolute inset-0 rounded-full bg-white/30" />
@@ -228,7 +228,7 @@ export default function InicioCreme() {
         {!black && <LogoDrop onDone={() => start("logo_upload")} />}
 
         {/* 6. Site pronto */}
-        <SiteDemo black={black} onStart={() => start("site_demo_cta")} />
+        <SiteDemo onStart={() => start("site_demo_cta")} />
 
         {/* 7. 1 ano de conteúdo */}
         <section className="px-4 py-16 sm:py-24">
@@ -273,7 +273,7 @@ export default function InicioCreme() {
                   {compare.map(([label, us, team]) => (
                     <tr key={label} className="border-t" style={{ borderColor: "var(--cv-line)" }}>
                       <td className="px-3 py-4 font-semibold sm:px-6">{label}</td>
-                      <td className="px-2 py-4 font-bold sm:px-6" style={{ color: "var(--cv-primary-ink)" }}>{us}</td>
+                      <td className="px-2 py-4 font-bold sm:px-6" style={{ color: "var(--cv-hl)" }}>{us}</td>
                       <td className="px-3 py-4 sm:px-6" style={{ color: "var(--cv-muted)" }}>{team}</td>
                     </tr>
                   ))}
@@ -359,15 +359,15 @@ function BlackFaq({ onStart }: { onStart: () => void }) {
     <div className="mx-auto max-w-3xl">
       <div className="cv-reveal text-center">
         <span className="cv-black-tag">Black Friday · 50% vitalício</span>
-        <h2 className="cv-h2 mt-4">Metade do preço. <span style={{ color: "var(--cv-primary-ink)" }}>Para sempre.</span></h2>
+        <h2 className="cv-h2 mt-4">Metade do preço. <span style={{ color: "var(--cv-hl)" }}>Para sempre.</span></h2>
       </div>
       <div className="cv-reveal mt-8 grid gap-3 sm:grid-cols-3" style={delay(100)}>
         {BLACK_PRICES.map((p) => (
-          <div key={p.name} className="cv-card relative p-5 text-center" style={p.popular ? { borderColor: "#ffc61a", borderWidth: 2 } : undefined}>
-            {p.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-0.5 text-[11px] font-extrabold" style={{ background: "#ffc61a", color: "#0a0a0d" }}>MAIS ESCOLHIDO</span>}
+          <div key={p.name} className="cv-card relative p-5 text-center" style={p.popular ? { borderColor: "rgba(236,199,104,.7)", borderWidth: 2, boxShadow: "0 20px 50px -30px rgba(233,191,92,.6)" } : undefined}>
+            {p.popular && <span className="cv-gold-badge absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-0.5 text-[11px] font-extrabold">MAIS ESCOLHIDO</span>}
             <p className="text-[15px] font-extrabold">{p.name}</p>
             <p className="mt-2 text-[14px]" style={{ color: "var(--cv-muted)" }}>de <span className="line-through">{p.was}</span> por</p>
-            <p className="text-[34px] font-extrabold leading-tight tracking-[-0.02em]" style={{ color: "var(--cv-primary-ink)" }}>{p.now}</p>
+            <p className="text-[34px] font-extrabold leading-tight tracking-[-0.02em]" style={{ color: "var(--cv-hl)" }}>{p.now}</p>
             <p className="text-[13px]" style={{ color: "var(--cv-muted)" }}>{p.per}</p>
             <p className="mt-2 text-[13px] font-semibold">{p.note}</p>
           </div>
@@ -403,10 +403,7 @@ function BlackFaq({ onStart }: { onStart: () => void }) {
 }
 
 /** Ilustrações animadas dos três passos: ouvir, montar, publicar. */
-// Tons de amarelo do Black, no lugar das cores de cada peça.
-const BLACK_YELLOWS = ["#ffc61a", "#ffd84d", "#f5b400", "#ffe27a", "#ffb800"];
-
-function StepIllustration({ index, black = false }: { index: number; black?: boolean }) {
+function StepIllustration({ index }: { index: number }) {
   if (index === 0) {
     const bars = [10, 18, 28, 16, 34, 22, 12, 26, 18, 30, 14, 20];
     return (
@@ -434,7 +431,7 @@ function StepIllustration({ index, black = false }: { index: number; black?: boo
     return (
       <div className="flex h-32 items-end justify-center gap-1.5 pb-3">
         {cards.map((c, i) => (
-          <div key={c.label} className="cv-cascade relative flex h-[84px] w-[50px] flex-col items-center justify-end rounded-xl pb-2 text-white shadow-md" style={{ ...delay(i * 400), background: black ? BLACK_YELLOWS[i] : c.bg }}>
+          <div key={c.label} className="cv-cascade relative flex h-[84px] w-[50px] flex-col items-center justify-end rounded-xl pb-2 text-white shadow-md" style={{ ...delay(i * 400), background: c.bg }}>
             <span className="cv-badge absolute -top-2 left-1/2 grid h-5 w-5 -translate-x-1/2 place-items-center rounded-full bg-white shadow" style={delay(i * 400 + 500)}>
               <BadgeCheck className="h-3.5 w-3.5 text-[#16a34a]" />
             </span>
@@ -457,7 +454,7 @@ function StepIllustration({ index, black = false }: { index: number; black?: boo
           { icon: MessageCircle, bg: "#25d366" },
           { icon: DollarSign, bg: "#16a34a" },
         ].map((s, i) => (
-          <span key={i} className="cv-hop relative z-10 grid h-10 w-10 place-items-center rounded-full text-white shadow" style={{ ...delay(i * 650), background: black ? BLACK_YELLOWS[i] : s.bg }}>
+          <span key={i} className="cv-hop relative z-10 grid h-10 w-10 place-items-center rounded-full text-white shadow" style={{ ...delay(i * 650), background: s.bg }}>
             <s.icon className="h-4 w-4" />
           </span>
         ))}
@@ -503,11 +500,11 @@ function MarketingWheel({ black = false }: { black?: boolean }) {
             return (
               <g key={seg.label.join(" ")}>
                 <path
-                  fill={black ? (i % 2 ? "#26242e" : "#ffc61a") : seg.bg}
+                  fill={seg.bg}
                   d={`M ${at(outer, start)} A ${outer} ${outer} 0 0 1 ${at(outer, end)} L ${at(mid, end + tip)} L ${at(inner, end)} A ${inner} ${inner} 0 0 0 ${at(inner, start)} L ${at(mid, start + tip)} Z`}
                 />
                 <g transform={`translate(${x} ${y})`}>
-                  <text className="cv-wheel-label" textAnchor="middle" fill={black ? (i % 2 ? "#ffc61a" : "#0a0a0d") : seg.ink} fontSize="12.5" fontWeight="800">
+                  <text className="cv-wheel-label" textAnchor="middle" fill={seg.ink} fontSize="12.5" fontWeight="800">
                     {seg.label.map((line, l) => (
                       <tspan key={line} x="0" dy={l === 0 ? (seg.label.length > 1 ? -3 : 4) : 15}>{line}</tspan>
                     ))}
@@ -524,8 +521,8 @@ function MarketingWheel({ black = false }: { black?: boolean }) {
         </text>
       </svg>
       {black && SOCIAL_CHIPS.map((c) => (
-        <span key={c.label} className={`cv-float absolute inline-flex items-center gap-1 rounded-xl border px-1.5 py-1 text-[10px] font-bold shadow-lg backdrop-blur-md sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-1.5 sm:text-[14px] ${c.around}`} style={{ ...delay(c.d), ["--cv-rot" as string]: c.rot, background: "rgba(21,20,27,.9)", borderColor: "rgba(255,198,26,.45)" }}>
-          <span className="grid h-5 w-5 place-items-center rounded-md sm:h-7 sm:w-7 sm:rounded-lg" style={{ background: "#ffc61a", color: "#0a0a0d" }}><c.icon className="h-3 w-3 sm:h-4 sm:w-4" /></span>
+        <span key={c.label} className={`cv-float absolute inline-flex items-center gap-1 rounded-xl border px-1.5 py-1 text-[10px] font-bold shadow-lg backdrop-blur-md sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-1.5 sm:text-[14px] ${c.around}`} style={{ ...delay(c.d), ["--cv-rot" as string]: c.rot, background: "rgba(18,16,25,.88)", borderColor: "rgba(255,255,255,.14)" }}>
+          <span className="grid h-5 w-5 place-items-center rounded-md text-white sm:h-7 sm:w-7 sm:rounded-lg" style={{ background: c.bg }}><c.icon className="h-3 w-3 sm:h-4 sm:w-4" /></span>
           {c.label}
         </span>
       ))}
@@ -565,7 +562,7 @@ function TeamImage() {
   );
 }
 
-function SiteDemo({ onStart, black = false }: { onStart: () => void; black?: boolean }) {
+function SiteDemo({ onStart }: { onStart: () => void }) {
   const [activeId, setActiveId] = useState(siteOfferDemos[0]?.id ?? "");
   const [mode, setMode] = useState<"desktop" | "mobile">(() => (typeof window !== "undefined" && window.innerWidth < 768 ? "mobile" : "desktop"));
   const demo = siteOfferDemos.find((d) => d.id === activeId) ?? siteOfferDemos[0];
@@ -583,13 +580,11 @@ function SiteDemo({ onStart, black = false }: { onStart: () => void; black?: boo
           {siteOfferDemos.map((d) => {
             const on = d.id === demo.id;
             return (
-              <button key={d.id} type="button" onClick={() => setActiveId(d.id)} aria-pressed={on} className="cv-peek-in min-w-[240px] flex-1 rounded-[22px] border p-4 text-left transition-colors" style={black
-                ? { background: on ? "#ffc61a" : "var(--cv-paper)", color: on ? "#0a0a0d" : "var(--cv-fg)", borderColor: on ? "#ffc61a" : "rgba(255,198,26,.35)" }
-                : { background: on ? "#16130d" : "var(--cv-paper)", color: on ? "#fff" : "var(--cv-fg)", borderColor: on ? "#16130d" : "var(--cv-line)" }}>
-                <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: black ? (on ? "#0a0a0d" : "#ffc61a") : on ? "#8fe3d9" : "#0ea5a0" }}>{d.templateLabel.toUpperCase()}</p>
+              <button key={d.id} type="button" onClick={() => setActiveId(d.id)} aria-pressed={on} className="cv-peek-in min-w-[240px] flex-1 rounded-[22px] border p-4 text-left transition-colors" style={{ background: on ? "#16130d" : "var(--cv-paper)", color: on ? "#fff" : "var(--cv-fg)", borderColor: on ? "#16130d" : "var(--cv-line)" }}>
+                <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: on ? "#8fe3d9" : "#0ea5a0" }}>{d.templateLabel.toUpperCase()}</p>
                 <p className="mt-1 text-[15px] font-extrabold">{d.agencyName}</p>
-                <p className="text-[12px]" style={{ color: black && on ? "rgba(10,10,13,.7)" : on ? "#cfc4a6" : "var(--cv-muted)" }}>{d.category}</p>
-                <span className="mt-2 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-[0.6px]" style={black ? { background: on ? "rgba(10,10,13,.14)" : "#ffc61a", color: "#0a0a0d" } : { background: on ? "rgba(255,255,255,.12)" : "#e8f7f5", color: on ? "#fff" : "#0f766e" }}>{on ? "✓ SELECIONADO" : "CLIQUE PARA VER"}</span>
+                <p className="text-[12px]" style={{ color: on ? "#cfc4a6" : "var(--cv-muted)" }}>{d.category}</p>
+                <span className="mt-2 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-[0.6px]" style={{ background: on ? "rgba(255,255,255,.12)" : "#e8f7f5", color: on ? "#fff" : "#0f766e" }}>{on ? "✓ SELECIONADO" : "CLIQUE PARA VER"}</span>
               </button>
             );
           })}
@@ -600,7 +595,7 @@ function SiteDemo({ onStart, black = false }: { onStart: () => void; black?: boo
             <span className="truncate text-[14px] font-bold">{demo.agencyName}</span>
             <div className="flex shrink-0 rounded-full bg-black/40 p-1">
               {(["desktop", "mobile"] as const).map((m) => (
-                <button key={m} type="button" onClick={() => setMode(m)} aria-pressed={mode === m} className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[12px] font-bold transition-colors" style={{ background: mode === m ? (black ? "#ffc61a" : "#fff") : "transparent", color: mode === m ? "#16130d" : "#cfc4a6" }}>
+                <button key={m} type="button" onClick={() => setMode(m)} aria-pressed={mode === m} className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[12px] font-bold transition-colors" style={{ background: mode === m ? "#fff" : "transparent", color: mode === m ? "#16130d" : "#cfc4a6" }}>
                   {m === "desktop" ? <Monitor className="h-3.5 w-3.5" /> : <Smartphone className="h-3.5 w-3.5" />}
                   <span className="hidden sm:inline">{m === "desktop" ? "Computador" : "Celular"}</span>
                 </button>
