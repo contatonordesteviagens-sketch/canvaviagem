@@ -17,6 +17,7 @@ import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInB
 import { BrandMark, Eyebrow } from "@/components/cv-cream/shared";
 import { LEAD_EMAIL_KEY } from "@/lib/lead-capture";
 import { startWithEmail } from "@/lib/quick-start";
+import { isBlackFunnel } from "@/lib/black-funnel";
 import { trackInicioTeste } from "@/lib/inicio-teste";
 import { ONBOARDING_DESTINO_KEY } from "@/pages/InicioCreme";
 
@@ -87,11 +88,13 @@ const Login = () => {
   const rawRedirect = searchParams.get("redirect");
   const redirectTo = getSafeRedirect(rawRedirect);
   // Vindo da página inicial: e-mail novo entra direto no quiz, sem a tela "Link Enviado!".
-  const quickEntry = searchParams.get("entrada") === "rapida" && Boolean(redirectTo?.startsWith("/onboarding"));
+  // Vindo da /black-friday: o mesmo atalho, levando direto ao pagamento.
+  const quickToCheckout = Boolean(redirectTo?.startsWith("/checkout"));
+  const quickEntry = searchParams.get("entrada") === "rapida" && Boolean(redirectTo?.startsWith("/onboarding") || quickToCheckout);
 
   useEffect(() => {
-    if (quickEntry) trackInicioTeste("tela_email");
-  }, [quickEntry]);
+    if (quickEntry && !quickToCheckout) trackInicioTeste("tela_email");
+  }, [quickEntry, quickToCheckout]);
 
   useEffect(() => {
     trackViewContent('Página de Login');
@@ -161,7 +164,7 @@ const Login = () => {
       await bindPendingCheckoutToEmail(normalizedEmail);
       if (quickEntry) {
         // Da página inicial: assinante cai na conta; quem não assinou, no quiz.
-        trackInicioTeste("email");
+        if (!quickToCheckout) trackInicioTeste("email");
         const result = await startWithEmail(normalizedEmail, redirectTo);
         if (result === "session") {
           // O efeito de login acima leva para o quiz assim que a sessão carregar.
@@ -258,6 +261,8 @@ const Login = () => {
         setEmail={setEmail}
         busy={isLoading || openingQuiz}
         openingQuiz={openingQuiz}
+        toCheckout={quickToCheckout}
+        black={isBlackFunnel() || Boolean(redirectTo?.includes("oferta=black-friday"))}
         sent={magicLinkSent}
         existingAccount={existingAccount}
         redirectTo={redirectTo}
@@ -449,6 +454,8 @@ function QuickEntryScreen(props: {
   setEmail: (v: string) => void;
   busy: boolean;
   openingQuiz: boolean;
+  toCheckout: boolean;
+  black: boolean;
   sent: boolean;
   existingAccount: boolean;
   redirectTo: string | null;
@@ -456,16 +463,16 @@ function QuickEntryScreen(props: {
   onResend: () => void;
   onBack: () => void;
 }) {
-  const { email, setEmail, busy, openingQuiz, sent, existingAccount, redirectTo, onSubmit, onResend, onBack } = props;
+  const { email, setEmail, busy, openingQuiz, toCheckout, black, sent, existingAccount, redirectTo, onSubmit, onResend, onBack } = props;
   const [destino] = useState(() => {
     try { return sessionStorage.getItem(ONBOARDING_DESTINO_KEY) || ""; } catch { return ""; }
   });
   const inbox = inboxUrl(email);
 
   return (
-    <div className="cv-cream flex min-h-[100dvh] flex-col">
+    <div className={`cv-cream flex min-h-[100dvh] flex-col${black ? " cv-black" : ""}`}>
       <header className="flex justify-center px-4 pt-6">
-        <a href="/inicio" aria-label="Voltar para a página inicial"><BrandMark size={40} /></a>
+        <a href={black ? (toCheckout ? "/black-friday" : "/black") : "/inicio"} aria-label="Voltar para a página inicial"><BrandMark size={40} /></a>
       </header>
 
       <main className="flex flex-1 items-start justify-center px-4 pb-10 pt-8 sm:items-center sm:pt-4">
@@ -473,9 +480,9 @@ function QuickEntryScreen(props: {
           {!sent ? (
             <>
               <Eyebrow>Seu acesso</Eyebrow>
-              <h1 className="mt-3 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em]">Crie sua conta para começar a usar</h1>
+              <h1 className="mt-3 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em]">{toCheckout ? "Falta só o seu e-mail para pagar" : "Crie sua conta para começar a usar"}</h1>
               <p className="mt-2 text-[15px] leading-6" style={{ color: "var(--cv-muted)" }}>
-                Digite o seu e-mail para entrar na ferramenta. Sem senha.
+                {toCheckout ? "É o e-mail do seu acesso. Em seguida você escolhe cartão ou Pix." : "Digite o seu e-mail para entrar na ferramenta. Sem senha."}
               </p>
               {destino && (
                 <span className="mt-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-semibold" style={{ background: "var(--cv-sand)" }}>
@@ -510,9 +517,9 @@ function QuickEntryScreen(props: {
                 </div>
                 <button type="submit" disabled={busy} className="cv-btn mt-4 h-14 w-full text-[16px]">
                   {busy ? (
-                    <><Loader2 className="h-5 w-5 animate-spin" /> {openingQuiz ? "Abrindo o quiz…" : "Um instante…"}</>
+                    <><Loader2 className="h-5 w-5 animate-spin" /> {openingQuiz ? (toCheckout ? "Abrindo o pagamento…" : "Abrindo o quiz…") : "Um instante…"}</>
                   ) : (
-                    <>Entrar e começar <ArrowRight className="h-5 w-5" /></>
+                    <>{toCheckout ? "Ir para o pagamento" : "Entrar e começar"} <ArrowRight className="h-5 w-5" /></>
                   )}
                 </button>
               </form>
@@ -528,7 +535,7 @@ function QuickEntryScreen(props: {
             </>
           ) : (
             <div className="text-center">
-              <span className="mx-auto grid h-16 w-16 place-items-center rounded-full" style={{ background: "#efe9ff", color: "var(--cv-primary-ink)" }}>
+              <span className="mx-auto grid h-16 w-16 place-items-center rounded-full" style={{ background: "var(--cv-soft)", color: "var(--cv-primary-ink)" }}>
                 <Mail className="h-7 w-7" />
               </span>
               <h1 className="mt-5 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">

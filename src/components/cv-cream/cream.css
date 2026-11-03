@@ -156,28 +156,33 @@
   .cv-cream .cv-peek, .cv-cream .cv-reveal.is-in .cv-peek-in, .cv-cream .cv-swipe, .cv-cream .cv-chip, .cv-cream .cv-reveal.is-in .cv-wheel, .cv-cream .cv-reveal.is-in .cv-wheel-label { animation: none; opacity: 1; }
 }
 
-/* Black: mesma página com fundo preto (rota /black e o quiz que vem depois dela) */
+/* Black: mesma página em preto e amarelo (rota /black, a tela de e-mail e o quiz que vêm depois dela) */
 .cv-cream.cv-black {
   --cv-bg: #0a0a0d;
   --cv-fg: #f6f4fb;
   --cv-muted: #a8a4b8;
   --cv-line: #2a2833;
   --cv-card: #15141b;
-  --cv-primary-ink: #b39dff;
-  --cv-accent: #ff4d94;
-  --cv-accent-soft: #3a1426;
+  --cv-primary: #ffc61a;
+  --cv-primary-ink: #ffc61a;
+  --cv-accent: #ffc61a;
+  --cv-accent-soft: #2e2508;
   --cv-sand: #1f1d27;
-  --cv-soft: #241d3d;
-  --cv-soft-2: #1d1830;
-  --cv-soft-3: #33295a;
+  --cv-soft: #2a2410;
+  --cv-soft-2: #1d190b;
+  --cv-soft-3: #3d3310;
   --cv-track: #2a2833;
   --cv-ring: #4a4658;
   --cv-paper: #15141b;
   --cv-head: #1f1d27;
-  --cv-glow-1: #1a1430;
-  --cv-glow-2: #2e2160;
+  --cv-glow-1: #14110a;
+  --cv-glow-2: #2e2508;
 }
 .cv-cream.cv-black .bg-white { background-color: var(--cv-card); }
+/* Texto branco sobre o amarelo vira preto. Onde o fundo continua escuro, a cor fica no style. */
+.cv-cream.cv-black .text-white { color: #0a0a0d; }
+.cv-cream.cv-black .cv-btn { color: #0a0a0d; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 22px -6px rgba(255, 198, 26, 0.5); }
+.cv-cream.cv-black .cv-btn:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 12px 28px -6px rgba(255, 198, 26, 0.6); }
 .cv-cream.cv-black .cv-black-tag {
   display: inline-flex;
   align-items: center;

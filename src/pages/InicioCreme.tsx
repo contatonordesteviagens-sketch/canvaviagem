@@ -5,7 +5,7 @@ import { Helmet } from "react-helmet-async";
 import {
   ArrowRight, MapPin, Sparkles, Download, Mic, Upload, Infinity as InfinityIcon, DollarSign,
   Instagram, Facebook, Youtube, MessageCircle, LayoutTemplate, Images, Globe, Video, Users, Megaphone, Smartphone, Monitor,
-  ShieldCheck, Palette, PenLine, BadgeCheck,
+  ShieldCheck, Palette, PenLine, BadgeCheck, ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
@@ -96,6 +96,7 @@ export default function InicioCreme() {
     <div ref={pageRef} className={`cv-cream min-h-screen overflow-x-hidden${black ? " cv-black" : ""}`}>
       <Helmet>
         <title>Canva Viagem — Mande um áudio e receba anúncios, carrosséis, site e vídeos prontos</title>
+        {black && <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,900&display=swap" />}
         <meta name="description" content="Fale o destino, os dias e o valor do pacote. Em minutos saem anúncios, carrosséis, stories e o site, com a sua logo, e você ainda tem vídeos prontos para postar. Sem limite de quantidade." />
       </Helmet>
 
@@ -123,11 +124,15 @@ export default function InicioCreme() {
         {/* 1. Hero */}
         <section className="px-4 pb-8 pt-24 sm:pt-32">
           <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
-            {black && <span className="cv-black-tag cv-pop mb-3">Black Friday · 50% para sempre · até 30/11</span>}
+            {black && <span className="cv-black-tag cv-pop mb-3">Black Friday · 50% vitalício</span>}
             <Eyebrow className="cv-pop">Para agências de viagens</Eyebrow>
             <h1 className="cv-pop mt-3 max-w-3xl text-balance text-[2.4rem] font-extrabold leading-[1.04] tracking-[-0.025em] sm:text-6xl md:text-[4.2rem]" style={delay(60)}>
               Mande um áudio. Receba sua agência de{" "}
-              <em className="font-bold" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "var(--cv-primary-ink)" }}>viagens</em>{" "}
+              {black ? (
+                <em style={{ fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 900, color: "var(--cv-primary-ink)" }}>viagens</em>
+              ) : (
+                <em className="font-bold" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "var(--cv-primary-ink)" }}>viagens</em>
+              )}{" "}
               <span style={{ color: "var(--cv-primary-ink)" }}>inteira pronta.</span>
             </h1>
             <p className="cv-pop mt-4 text-[19px] font-bold leading-6" style={delay(120)}>Escolha um destino e gere sua arte.</p>
@@ -141,7 +146,7 @@ export default function InicioCreme() {
               <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold" style={{ background: "var(--cv-fg)", color: "var(--cv-bg)" }}>
                 <InfinityIcon className="h-3.5 w-3.5" /> CRÉDITOS ILIMITADOS
               </span>
-              <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Gere quantas mídias quiser: anúncios, carrosséis e stories, sem limite por dia.</p>
+              <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>{black ? "Disponível na Black Friday. Pode mudar a qualquer momento." : "Gere quantas mídias quiser: anúncios, carrosséis e stories, sem limite por dia."}</p>
             </div>
           </div>
         </section>
@@ -163,7 +168,7 @@ export default function InicioCreme() {
                     </span>
                     <span className="text-lg font-extrabold text-[#e6dcc0]">{s.n}</span>
                   </div>
-                  <StepIllustration index={i} />
+                  <StepIllustration index={i} black={black} />
                   <h3 className="mt-4 text-base font-extrabold tracking-[-0.4px]">{s.title}</h3>
                   <p className="mt-1 text-sm leading-6" style={{ color: "var(--cv-muted)" }}>{s.text}</p>
                 </div>
@@ -180,7 +185,7 @@ export default function InicioCreme() {
                 type="button"
                 onClick={() => start("steps_audio")}
                 className="cv-mic flex min-h-[150px] flex-col items-center justify-center gap-3 p-6 text-white"
-                style={{ background: "linear-gradient(135deg, #7c5cff 0%, #6440e6 100%)" }}
+                style={{ background: black ? "linear-gradient(135deg, #ffd84d 0%, #ffb800 100%)" : "linear-gradient(135deg, #7c5cff 0%, #6440e6 100%)" }}
               >
                 <span className="relative grid h-20 w-20 place-items-center rounded-full bg-white/15">
                   <span className="cv-ping absolute inset-0 rounded-full bg-white/30" />
@@ -214,16 +219,16 @@ export default function InicioCreme() {
               <h2 className="cv-h2 mt-4">Tudo que uma equipe inteira de marketing faria.</h2>
               <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Tudo que você precisa para vender muitas viagens online.</p>
             </div>
-            <MarketingWheel />
-            <TeamImage />
+            <MarketingWheel black={black} />
+            {!black && <TeamImage />}
           </div>
         </section>
 
         {/* 5. Sua logo em tudo */}
-        <LogoDrop onDone={() => start("logo_upload")} />
+        {!black && <LogoDrop onDone={() => start("logo_upload")} />}
 
         {/* 6. Site pronto */}
-        <SiteDemo onStart={() => start("site_demo_cta")} />
+        <SiteDemo black={black} onStart={() => start("site_demo_cta")} />
 
         {/* 7. 1 ano de conteúdo */}
         <section className="px-4 py-16 sm:py-24">
@@ -279,7 +284,7 @@ export default function InicioCreme() {
         </section>
 
         {/* 9. Como te entregamos tudo pronto */}
-        <section className="px-4 py-16 sm:py-24">
+        {!black && <section className="px-4 py-16 sm:py-24">
           <div className="mx-auto max-w-5xl">
             <div className="cv-reveal mx-auto max-w-2xl text-center">
               <Eyebrow>Sem mexer em nada</Eyebrow>
@@ -300,12 +305,12 @@ export default function InicioCreme() {
               ))}
             </div>
           </div>
-        </section>
+        </section>}
       </main>
 
       {/* 10. CTA final */}
       <section className="px-4 pb-10 pt-24" style={{ background: "linear-gradient(180deg, var(--cv-bg) 0%, var(--cv-glow-1) 55%, var(--cv-glow-2) 100%)" }}>
-        <div className="cv-reveal mx-auto max-w-2xl text-center">
+        {black ? <BlackFaq onStart={() => start("black_faq")} /> : <div className="cv-reveal mx-auto max-w-2xl text-center">
           <h2 className="cv-h2">Pare de postar no improviso.<br />Mande seu primeiro áudio.</h2>
           <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Destino, dias e valor. Você recebe anúncio, carrossel, stories e site com a sua logo, e vídeos prontos para postar.</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -317,7 +322,7 @@ export default function InicioCreme() {
             </button>
           </div>
           <p className="mt-4 inline-flex items-center gap-1.5 text-[13px]" style={{ color: "var(--cv-muted)" }}><ShieldCheck className="h-4 w-4" /> 7 dias de garantia · cancele quando quiser</p>
-        </div>
+        </div>}
         <footer className="mx-auto mt-24 flex max-w-5xl flex-col items-center justify-between gap-4 border-t pt-6 text-[13px] sm:flex-row" style={{ borderColor: "rgba(32,28,19,.12)", color: "var(--cv-muted)" }}>
           <BrandMark size={32} withName={false} />
           <div className="flex gap-5">
@@ -333,8 +338,75 @@ export default function InicioCreme() {
 
 /* ───────────────────────── blocos ───────────────────────── */
 
+const BLACK_PRICES = [
+  { name: "Mensal", was: "R$ 97", now: "R$ 48,50", per: "/mês", note: "Renova todo mês por R$ 48,50" },
+  { name: "Semestral", was: "R$ 347", now: "R$ 173,50", per: "/6 meses", note: "Dá R$ 28,92 por mês" },
+  { name: "Anual", was: "R$ 482", now: "R$ 241", per: "/ano", note: "Dá R$ 20,08 por mês", popular: true },
+];
+
+const BLACK_FAQ = [
+  { q: "O desconto é vitalício mesmo?", a: "Sim. Quem assina na Black paga metade do preço enquanto continuar assinando. Não é só no primeiro mês: a renovação também sai com 50%." },
+  { q: "O preço volta ao normal depois?", a: "Para quem assinou na Black, não: o seu valor fica o mesmo em todas as renovações. Quem cancelar e voltar depois que a Black acabar entra no preço normal." },
+  { q: "Preciso saber design?", a: "Não. Você fala o destino, os dias e o valor, e o anúncio, o carrossel, os stories e o site saem prontos com a sua logo." },
+  { q: "Posso pagar no Pix?", a: "Pode. No fim você escolhe cartão ou Pix, e o QR Code aparece na hora." },
+  { q: "Posso cancelar quando quiser?", a: "Pode, sem multa. Só lembre que, cancelando, você perde o preço da Black." },
+  { q: "E se eu não gostar?", a: "Você tem 7 dias de garantia para testar com um pacote real da sua agência." },
+];
+
+/** Fim da /black: preços com o valor de antes riscado e as dúvidas sobre o vitalício. */
+function BlackFaq({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="mx-auto max-w-3xl">
+      <div className="cv-reveal text-center">
+        <span className="cv-black-tag">Black Friday · 50% vitalício</span>
+        <h2 className="cv-h2 mt-4">Metade do preço. <span style={{ color: "var(--cv-primary-ink)" }}>Para sempre.</span></h2>
+      </div>
+      <div className="cv-reveal mt-8 grid gap-3 sm:grid-cols-3" style={delay(100)}>
+        {BLACK_PRICES.map((p) => (
+          <div key={p.name} className="cv-card relative p-5 text-center" style={p.popular ? { borderColor: "#ffc61a", borderWidth: 2 } : undefined}>
+            {p.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-0.5 text-[11px] font-extrabold" style={{ background: "#ffc61a", color: "#0a0a0d" }}>MAIS ESCOLHIDO</span>}
+            <p className="text-[15px] font-extrabold">{p.name}</p>
+            <p className="mt-2 text-[14px]" style={{ color: "var(--cv-muted)" }}>de <span className="line-through">{p.was}</span> por</p>
+            <p className="text-[34px] font-extrabold leading-tight tracking-[-0.02em]" style={{ color: "var(--cv-primary-ink)" }}>{p.now}</p>
+            <p className="text-[13px]" style={{ color: "var(--cv-muted)" }}>{p.per}</p>
+            <p className="mt-2 text-[13px] font-semibold">{p.note}</p>
+          </div>
+        ))}
+      </div>
+      <div className="cv-reveal mt-6 text-center" style={delay(160)}>
+        <button onClick={onStart} className="cv-btn h-14 w-full px-8 text-base sm:w-auto">
+          Quero a Black <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+      <div className="cv-reveal mt-12 text-center">
+        <Eyebrow>Dúvidas</Eyebrow>
+        <h2 className="cv-h2 mt-4">Antes de você assinar</h2>
+      </div>
+      <div className="mt-6 grid gap-2 text-left">
+        {BLACK_FAQ.map((item) => (
+          <details key={item.q} className="cv-card group px-5 py-4">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[15px] font-bold">
+              {item.q} <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" style={{ color: "var(--cv-primary-ink)" }} />
+            </summary>
+            <p className="mt-2 text-[14px] leading-6" style={{ color: "var(--cv-muted)" }}>{item.a}</p>
+          </details>
+        ))}
+      </div>
+      <div className="mt-8 text-center">
+        <button onClick={onStart} className="cv-btn h-14 w-full px-8 text-base sm:w-auto">
+          Começar agora <ArrowRight className="h-4 w-4" />
+        </button>
+        <p className="mt-4 flex justify-center items-center gap-1.5 text-[13px]" style={{ color: "var(--cv-muted)" }}><ShieldCheck className="h-4 w-4" /> 7 dias de garantia · cartão ou Pix</p>
+      </div>
+    </div>
+  );
+}
+
 /** Ilustrações animadas dos três passos: ouvir, montar, publicar. */
-function StepIllustration({ index }: { index: number }) {
+// Tons de amarelo do Black, no lugar das cores de cada peça.
+const BLACK_YELLOWS = ["#ffc61a", "#ffd84d", "#f5b400", "#ffe27a", "#ffb800"];
+
+function StepIllustration({ index, black = false }: { index: number; black?: boolean }) {
   if (index === 0) {
     const bars = [10, 18, 28, 16, 34, 22, 12, 26, 18, 30, 14, 20];
     return (
@@ -362,7 +434,7 @@ function StepIllustration({ index }: { index: number }) {
     return (
       <div className="flex h-32 items-end justify-center gap-1.5 pb-3">
         {cards.map((c, i) => (
-          <div key={c.label} className="cv-cascade relative flex h-[84px] w-[50px] flex-col items-center justify-end rounded-xl pb-2 text-white shadow-md" style={{ ...delay(i * 400), background: c.bg }}>
+          <div key={c.label} className="cv-cascade relative flex h-[84px] w-[50px] flex-col items-center justify-end rounded-xl pb-2 text-white shadow-md" style={{ ...delay(i * 400), background: black ? BLACK_YELLOWS[i] : c.bg }}>
             <span className="cv-badge absolute -top-2 left-1/2 grid h-5 w-5 -translate-x-1/2 place-items-center rounded-full bg-white shadow" style={delay(i * 400 + 500)}>
               <BadgeCheck className="h-3.5 w-3.5 text-[#16a34a]" />
             </span>
@@ -385,7 +457,7 @@ function StepIllustration({ index }: { index: number }) {
           { icon: MessageCircle, bg: "#25d366" },
           { icon: DollarSign, bg: "#16a34a" },
         ].map((s, i) => (
-          <span key={i} className="cv-hop relative z-10 grid h-10 w-10 place-items-center rounded-full text-white shadow" style={{ ...delay(i * 650), background: s.bg }}>
+          <span key={i} className="cv-hop relative z-10 grid h-10 w-10 place-items-center rounded-full text-white shadow" style={{ ...delay(i * 650), background: black ? BLACK_YELLOWS[i] : s.bg }}>
             <s.icon className="h-4 w-4" />
           </span>
         ))}
@@ -407,7 +479,7 @@ const WHEEL: { label: string[]; bg: string; ink: string }[] = [
 ];
 
 /** Roda de setas girando devagar para a direita. Os textos ficam sempre em pé, e os principais começam à esquerda. */
-function MarketingWheel() {
+function MarketingWheel({ black = false }: { black?: boolean }) {
   const c = 200;
   const outer = 196;
   const inner = 112;
@@ -420,7 +492,7 @@ function MarketingWheel() {
     return `${(c + radius * Math.cos(a)).toFixed(2)} ${(c + radius * Math.sin(a)).toFixed(2)}`;
   };
   return (
-    <div className="cv-reveal relative mx-auto mt-10 w-full max-w-[460px]">
+    <div className={`cv-reveal relative mx-auto w-full max-w-[460px] ${black ? "mb-14 mt-12" : "mt-10"}`}>
       <svg viewBox="0 0 400 400" className="block h-auto w-full" role="img" aria-label="Anúncios, carrosséis, stories, site, vídeos, clientes organizados, calendário de posts e agentes de IA">
         <g className="cv-wheel">
           {WHEEL.map((seg, i) => {
@@ -431,11 +503,11 @@ function MarketingWheel() {
             return (
               <g key={seg.label.join(" ")}>
                 <path
-                  fill={seg.bg}
+                  fill={black ? (i % 2 ? "#26242e" : "#ffc61a") : seg.bg}
                   d={`M ${at(outer, start)} A ${outer} ${outer} 0 0 1 ${at(outer, end)} L ${at(mid, end + tip)} L ${at(inner, end)} A ${inner} ${inner} 0 0 0 ${at(inner, start)} L ${at(mid, start + tip)} Z`}
                 />
                 <g transform={`translate(${x} ${y})`}>
-                  <text className="cv-wheel-label" textAnchor="middle" fill={seg.ink} fontSize="12.5" fontWeight="800">
+                  <text className="cv-wheel-label" textAnchor="middle" fill={black ? (i % 2 ? "#ffc61a" : "#0a0a0d") : seg.ink} fontSize="12.5" fontWeight="800">
                     {seg.label.map((line, l) => (
                       <tspan key={line} x="0" dy={l === 0 ? (seg.label.length > 1 ? -3 : 4) : 15}>{line}</tspan>
                     ))}
@@ -451,6 +523,12 @@ function MarketingWheel() {
           <tspan x="200" dy="24">só lugar</tspan>
         </text>
       </svg>
+      {black && SOCIAL_CHIPS.map((c) => (
+        <span key={c.label} className={`cv-float absolute inline-flex items-center gap-1 rounded-xl border px-1.5 py-1 text-[10px] font-bold shadow-lg backdrop-blur-md sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-1.5 sm:text-[14px] ${c.around}`} style={{ ...delay(c.d), ["--cv-rot" as string]: c.rot, background: "rgba(21,20,27,.9)", borderColor: "rgba(255,198,26,.45)" }}>
+          <span className="grid h-5 w-5 place-items-center rounded-md sm:h-7 sm:w-7 sm:rounded-lg" style={{ background: "#ffc61a", color: "#0a0a0d" }}><c.icon className="h-3 w-3 sm:h-4 sm:w-4" /></span>
+          {c.label}
+        </span>
+      ))}
     </div>
   );
 }
@@ -461,14 +539,17 @@ const TikTokIcon: Icon = ({ className }) => (
   </svg>
 );
 
+/** Redes sociais: na /inicio, flutuando sobre a foto; na /black, em volta da roda (cantos livres do círculo). */
+const SOCIAL_CHIPS: { label: string; icon: Icon; bg: string; pos: string; around: string; rot: string; d: number }[] = [
+  { label: "Instagram", icon: Instagram, bg: "#e1306c", pos: "left-0 top-[8%] sm:left-[-6%] sm:top-[14%]", around: "left-0 top-0 sm:-left-14 sm:top-4", rot: "-5deg", d: 0 },
+  { label: "Facebook", icon: Facebook, bg: "#1877f2", pos: "left-0 bottom-[8%] sm:left-[-5%] sm:bottom-[20%]", around: "left-0 bottom-0 sm:-left-14 sm:bottom-4", rot: "4deg", d: 600 },
+  { label: "TikTok", icon: TikTokIcon, bg: "#16130d", pos: "right-0 top-[8%] sm:right-[-6%] sm:top-[14%]", around: "right-0 top-0 sm:-right-14 sm:top-4", rot: "5deg", d: 1200 },
+  { label: "YouTube", icon: Youtube, bg: "#ff0000", pos: "right-0 top-[44%] sm:right-[-7%]", around: "right-0 bottom-0 sm:-right-14 sm:bottom-4", rot: "-3deg", d: 1500 },
+  { label: "WhatsApp", icon: MessageCircle, bg: "#25d366", pos: "right-0 bottom-[8%] sm:right-[-5%] sm:bottom-[14%]", around: "inset-x-0 -bottom-10 mx-auto w-max", rot: "-4deg", d: 1800 },
+];
+
 function TeamImage() {
-  const chips: { label: string; icon: Icon; bg: string; pos: string; rot: string; d: number }[] = [
-    { label: "Instagram", icon: Instagram, bg: "#e1306c", pos: "left-0 top-[8%] sm:left-[-6%] sm:top-[14%]", rot: "-5deg", d: 0 },
-    { label: "Facebook", icon: Facebook, bg: "#1877f2", pos: "left-0 bottom-[8%] sm:left-[-5%] sm:bottom-[20%]", rot: "4deg", d: 600 },
-    { label: "TikTok", icon: TikTokIcon, bg: "#16130d", pos: "right-0 top-[8%] sm:right-[-6%] sm:top-[14%]", rot: "5deg", d: 1200 },
-    { label: "YouTube", icon: Youtube, bg: "#ff0000", pos: "right-0 top-[44%] sm:right-[-7%]", rot: "-3deg", d: 1500 },
-    { label: "WhatsApp", icon: MessageCircle, bg: "#25d366", pos: "right-0 bottom-[8%] sm:right-[-5%] sm:bottom-[14%]", rot: "-4deg", d: 1800 },
-  ];
+  const chips = SOCIAL_CHIPS;
   return (
     <div className="cv-reveal relative mx-auto mt-10 max-w-4xl px-2 sm:px-10">
       <div className="overflow-hidden rounded-[32px] bg-[#0f172a] shadow-[0_30px_60px_-30px_rgba(15,23,42,.6)]">
@@ -484,7 +565,7 @@ function TeamImage() {
   );
 }
 
-function SiteDemo({ onStart }: { onStart: () => void }) {
+function SiteDemo({ onStart, black = false }: { onStart: () => void; black?: boolean }) {
   const [activeId, setActiveId] = useState(siteOfferDemos[0]?.id ?? "");
   const [mode, setMode] = useState<"desktop" | "mobile">(() => (typeof window !== "undefined" && window.innerWidth < 768 ? "mobile" : "desktop"));
   const demo = siteOfferDemos.find((d) => d.id === activeId) ?? siteOfferDemos[0];
@@ -502,22 +583,24 @@ function SiteDemo({ onStart }: { onStart: () => void }) {
           {siteOfferDemos.map((d) => {
             const on = d.id === demo.id;
             return (
-              <button key={d.id} type="button" onClick={() => setActiveId(d.id)} aria-pressed={on} className="cv-peek-in min-w-[240px] flex-1 rounded-[22px] border p-4 text-left transition-colors" style={{ background: on ? "#16130d" : "var(--cv-paper)", color: on ? "#fff" : "var(--cv-fg)", borderColor: on ? "#16130d" : "var(--cv-line)" }}>
-                <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: on ? "#8fe3d9" : "#0ea5a0" }}>{d.templateLabel.toUpperCase()}</p>
+              <button key={d.id} type="button" onClick={() => setActiveId(d.id)} aria-pressed={on} className="cv-peek-in min-w-[240px] flex-1 rounded-[22px] border p-4 text-left transition-colors" style={black
+                ? { background: on ? "#ffc61a" : "var(--cv-paper)", color: on ? "#0a0a0d" : "var(--cv-fg)", borderColor: on ? "#ffc61a" : "rgba(255,198,26,.35)" }
+                : { background: on ? "#16130d" : "var(--cv-paper)", color: on ? "#fff" : "var(--cv-fg)", borderColor: on ? "#16130d" : "var(--cv-line)" }}>
+                <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: black ? (on ? "#0a0a0d" : "#ffc61a") : on ? "#8fe3d9" : "#0ea5a0" }}>{d.templateLabel.toUpperCase()}</p>
                 <p className="mt-1 text-[15px] font-extrabold">{d.agencyName}</p>
-                <p className="text-[12px]" style={{ color: on ? "#cfc4a6" : "var(--cv-muted)" }}>{d.category}</p>
-                <span className="mt-2 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-[0.6px]" style={{ background: on ? "rgba(255,255,255,.12)" : "#e8f7f5", color: on ? "#fff" : "#0f766e" }}>{on ? "✓ SELECIONADO" : "CLIQUE PARA VER"}</span>
+                <p className="text-[12px]" style={{ color: black && on ? "rgba(10,10,13,.7)" : on ? "#cfc4a6" : "var(--cv-muted)" }}>{d.category}</p>
+                <span className="mt-2 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-[0.6px]" style={black ? { background: on ? "rgba(10,10,13,.14)" : "#ffc61a", color: "#0a0a0d" } : { background: on ? "rgba(255,255,255,.12)" : "#e8f7f5", color: on ? "#fff" : "#0f766e" }}>{on ? "✓ SELECIONADO" : "CLIQUE PARA VER"}</span>
               </button>
             );
           })}
         </div>
 
         <div className="cv-reveal mt-4 overflow-hidden rounded-[32px] bg-[#16130d] p-3 sm:p-5" style={delay(120)}>
-          <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#221d14] px-4 py-3 text-white">
+          <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#221d14] px-4 py-3 text-white" style={{ color: "#fff" }}>
             <span className="truncate text-[14px] font-bold">{demo.agencyName}</span>
             <div className="flex shrink-0 rounded-full bg-black/40 p-1">
               {(["desktop", "mobile"] as const).map((m) => (
-                <button key={m} type="button" onClick={() => setMode(m)} aria-pressed={mode === m} className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[12px] font-bold transition-colors" style={{ background: mode === m ? "#fff" : "transparent", color: mode === m ? "#16130d" : "#cfc4a6" }}>
+                <button key={m} type="button" onClick={() => setMode(m)} aria-pressed={mode === m} className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[12px] font-bold transition-colors" style={{ background: mode === m ? (black ? "#ffc61a" : "#fff") : "transparent", color: mode === m ? "#16130d" : "#cfc4a6" }}>
                   {m === "desktop" ? <Monitor className="h-3.5 w-3.5" /> : <Smartphone className="h-3.5 w-3.5" />}
                   <span className="hidden sm:inline">{m === "desktop" ? "Computador" : "Celular"}</span>
                 </button>

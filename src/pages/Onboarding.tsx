@@ -619,7 +619,7 @@ function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c:
   }, [offer.expired, plan]);
   return (
     <>
-      {BLACK && <p className="cv-black-tag mx-auto mb-3">Black Friday · 50% para sempre · até 30/11</p>}
+      {BLACK && <p className="cv-black-tag mx-auto mb-3">Black Friday · 50% vitalício</p>}
       <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Seu plano está pronto. <Accent>Libere o acesso.</Accent></Title>
 
       <div className="mt-4 space-y-3">

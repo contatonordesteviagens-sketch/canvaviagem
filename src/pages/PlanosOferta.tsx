@@ -16,7 +16,7 @@ import "@/components/cv-cream/cream.css";
 import "./planos.css";
 
 type Variant = "lancamento" | "black-friday";
-type Price = { label: string; whole: string; cents: string; per: string; note: string; save?: string };
+type Price = { label: string; whole: string; cents: string; per: string; note: string; save?: string; was?: string };
 
 const PRICES: Record<Variant, Record<CheckoutCycle, Price>> = {
   lancamento: {
@@ -25,9 +25,9 @@ const PRICES: Record<Variant, Record<CheckoutCycle, Price>> = {
     annual: { label: "Anual", whole: "482", cents: "", per: "/ano", note: "Dá R$ 40,17 por mês.", save: "Economize R$ 682" },
   },
   "black-friday": {
-    monthly: { label: "Mensal", whole: "48", cents: ",50", per: "/mês", note: "Era R$ 97. Renova sempre por R$ 48,50." },
-    semiannual: { label: "Semestral", whole: "173", cents: ",50", per: "/6 meses", note: "Era R$ 347. Dá R$ 28,92 por mês e renova por esse valor.", save: "Metade do preço" },
-    annual: { label: "Anual", whole: "241", cents: "", per: "/ano", note: "Era R$ 482. Dá R$ 20,08 por mês e renova por esse valor.", save: "Metade do preço" },
+    monthly: { label: "Mensal", whole: "48", cents: ",50", per: "/mês", note: "Renova sempre por R$ 48,50.", was: "R$ 97", save: "50% vitalício" },
+    semiannual: { label: "Semestral", whole: "173", cents: ",50", per: "/6 meses", note: "Dá R$ 28,92 por mês e renova por esse valor.", was: "R$ 347", save: "50% vitalício" },
+    annual: { label: "Anual", whole: "241", cents: "", per: "/ano", note: "Dá R$ 20,08 por mês e renova por esse valor.", was: "R$ 482", save: "50% vitalício" },
   },
 };
 
@@ -91,7 +91,9 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
     if (isBf) url.set("oferta", "black-friday");
     // Mantém a origem (e-mail, anúncio) visível até o pagamento.
     params.forEach((value, key) => { if (key.startsWith("utm_")) url.set(key, value); });
-    navigate(`/checkout?${url.toString()}`);
+    const target = `/checkout?${url.toString()}`;
+    // Sem conta: só o e-mail e já cai no pagamento, sem esperar link (o mesmo atalho da /inicio).
+    navigate(user ? target : `/login?redirect=${encodeURIComponent(target)}&entrada=rapida`);
   };
 
   // Passou o prazo: a página da oferta vira a de preço normal, mantendo a origem do link.
@@ -164,6 +166,7 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
           {CYCLES.map((c) => (
             <button key={c} type="button" role="radio" aria-checked={cycle === c} onClick={() => setCycle(c)} className={cycle === c ? "is-on" : ""}>
               {PRICES[variant][c].label}
+              {PRICES[variant][c].was && <span className="block text-[11px] font-semibold opacity-70"><s>{PRICES[variant][c].was}</s> R$ {PRICES[variant][c].whole}{PRICES[variant][c].cents}</span>}
             </button>
           ))}
         </div>
@@ -173,7 +176,8 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
             <h2 className="text-[20px] font-extrabold">Plano Elite</h2>
             {price.save && <span className="plan-save">{price.save}</span>}
           </div>
-          <p className="mt-3 flex items-baseline">
+          {price.was && <p className="plan-muted mt-3 text-[16px] font-semibold">de <span className="line-through">{price.was}</span> por</p>}
+          <p className={`${price.was ? "mt-1" : "mt-3"} flex items-baseline`}>
             <span className="plan-muted mr-1 text-[20px] font-semibold">R$</span>
             <span className="text-[60px] font-extrabold leading-none tracking-[-0.04em]">{price.whole}</span>
             {price.cents && <span className="text-[26px] font-extrabold">{price.cents}</span>}
@@ -234,7 +238,7 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
         <section className="plan-card plan-glow mt-6 p-5 text-center">
           <Sparkles className="plan-check mx-auto h-6 w-6" />
           <h2 className="mt-2 text-[24px] font-extrabold leading-tight tracking-[-0.02em]">Sua próxima postagem pode sair hoje.</h2>
-          <p className="plan-muted mt-1 text-[14px]">Plano {price.label}: R$ {price.whole}{price.cents}{price.per}</p>
+          <p className="plan-muted mt-1 text-[14px]">Plano {price.label}: {price.was && <><s>{price.was}</s> por </>}R$ {price.whole}{price.cents}{price.per}</p>
           {renderCta("final", "mt-4")}
         </section>
       </main>
