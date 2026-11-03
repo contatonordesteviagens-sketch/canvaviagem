@@ -18,12 +18,13 @@ export const RECOVERY_SCHEDULE_HOURS: Record<"pronta" | "desconto" | "contato", 
 // Dias contados do início: 19, 23, 25, 27 (a conta dos preços cai na própria Black Friday), 29 e 30/11.
 // Quem deixou o e-mail só entra 3 dias depois de deixar. Fechada a data, não sai mais nada.
 export const BF_CAMPAIGN = {
-  novidades: "2026-11-17T12:00:00Z",
-  start: "2026-11-19T12:00:00Z",
+  // Antecipada pelo Lucas em 03/11: começa hoje e vai até 30/11.
+  novidades: "2026-11-03T12:00:00Z",
+  start: "2026-11-03T12:00:00Z",
   end: "2026-12-01T03:00:00Z",
   endLabel: "30/11",
 };
-export const BF_SCHEDULE_DAYS: Record<BlackFridayKind, number> = { bf1: 0, bf2: 4, bf4: 6, bf3: 8, bf5: 10, bf6: 11 };
+export const BF_SCHEDULE_DAYS: Record<BlackFridayKind, number> = { bf1: 0, bf2: 5, bf4: 12, bf3: 24, bf5: 26, bf6: 27 };
 export const LEAD_SCHEDULE_HOURS: Record<LeadKind, number> = { lead1: 1, lead2: 48, lead3: 96, lead4: 144, lead5: 192, lead6: 240 };
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
