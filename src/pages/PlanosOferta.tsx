@@ -98,8 +98,6 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
 
   // Passou o prazo: a página da oferta vira a de preço normal, mantendo a origem do link.
   if (isBf && !isBlackFridayOpen()) return <Navigate to={`/planos${search}`} replace />;
-  // Até 30/11 só vendemos a Black: a página de preço cheio abre a da Black.
-  if (!isBf && isBlackFridayOpen()) return <Navigate to={`/black-friday${search}`} replace />;
 
   const renderCta = (source: string, className = "") => (
     <button type="button" onClick={() => goToCheckout(source)} className={`cv-btn h-14 w-full text-[16px] ${className}`}>
