@@ -186,6 +186,8 @@
     radial-gradient(700px 500px at 100% 45%, rgba(124, 92, 255, 0.10), transparent 70%),
     var(--cv-bg);
 }
+/* No quiz o topo e o rodapé fixos usam a cor do fundo: sem o brilho, para não aparecer uma faixa. */
+.cv-cream.cv-black.cv-flat { background: var(--cv-bg); }
 .cv-cream.cv-black .bg-white { background-color: var(--cv-card); }
 .cv-cream.cv-black .cv-btn {
   background: var(--cv-gold);

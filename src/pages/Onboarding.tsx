@@ -235,7 +235,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className={`cv-cream min-h-[100dvh]${BLACK ? " cv-black" : ""}`}>
+    <div className={`cv-cream min-h-[100dvh]${BLACK ? " cv-black cv-flat" : ""}`}>
       <Helmet><title>Seu plano — Canva Viagem</title></Helmet>
       <div className="mx-auto flex min-h-[100dvh] max-w-[440px] flex-col px-5">
         <header className="sticky top-0 z-20 pb-3 pt-3" style={{ background: "var(--cv-bg)" }}>
@@ -286,7 +286,7 @@ function Accent({ children }: { children: ReactNode }) {
 
 function BottomCta({ children, onClick, disabled }: { children: ReactNode; onClick: () => void; disabled?: boolean }) {
   return (
-    <div className="sticky bottom-0 mt-auto pt-6" style={{ background: "linear-gradient(180deg, rgba(251,246,233,0) 0%, var(--cv-bg) 30%)" }}>
+    <div className="sticky bottom-0 mt-auto pt-6" style={{ background: "linear-gradient(180deg, transparent 0%, var(--cv-bg) 30%)" }}>
       <button onClick={onClick} disabled={disabled} className="cv-btn h-14 w-full text-base">{children}</button>
     </div>
   );

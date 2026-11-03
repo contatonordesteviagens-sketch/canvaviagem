@@ -210,7 +210,8 @@ async function runColdList(db: ReturnType<typeof adminClient>, limit: number, dr
     const { error: logErr } = await db.from("recovery_email_log").insert({ email, kind: "frio1" });
     if (logErr) continue;
     try {
-      const url = await campaignLink(db, email, "/black-friday", "lista_fria", "frio1");
+      // Quem só deixou o e-mail não conhece a ferramenta: vai para a /black, com a página e o quiz.
+      const url = await campaignLink(db, email, "/black", "lista_fria", "frio1");
       await sendOne(email, "frio1", { firstName: await firstName(db, null, email), payUrl: url });
       sent++;
       lastAt = at;
@@ -291,7 +292,8 @@ async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number)
     try {
       const url = item.kind === "novidades"
         ? await campaignLink(db, item.email, "/fabrica", "novidades", "novidades")
-        : await campaignLink(db, item.email, "/black-friday", "winback", item.kind);
+        // Ex-assinante já conhece a ferramenta e vai direto aos preços; quem nunca assinou vê a página e o quiz.
+        : await campaignLink(db, item.email, neverSubscribed.has(item.email) ? "/black" : "/black-friday", "winback", item.kind);
       await sendOne(item.email, item.kind, { firstName: await firstName(db, null, item.email), payUrl: url, neverSubscribed: neverSubscribed.has(item.email) });
       sent++;
     } catch (err) {
@@ -300,8 +302,11 @@ async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number)
       if (/quota/i.test((err as Error).message)) break;
     }
   }
-  console.log("[BLACK-FRIDAY] Execução", { fila: queue.length, permitidos: allowed, sent });
-  return { active: true, sent, queue: queue.length };
+  // Sobrou espaço no limite do dia: a lista fria (só e-mails comprovados) também recebe a Black, aos poucos.
+  // Decisão do Lucas em 03/11: só vender a Black, e mandar para todo mundo.
+  const frio = sent < allowed ? await runColdList(db, allowed - sent, false, true).catch((err) => ({ erro: (err as Error).message })) : null;
+  console.log("[BLACK-FRIDAY] Execução", { fila: queue.length, permitidos: allowed, sent, frio });
+  return { active: true, sent, queue: queue.length, frio };
 }
 
 Deno.serve(async (req) => {
