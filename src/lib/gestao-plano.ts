@@ -1,7 +1,7 @@
 // Conteúdo da aba Gestão > Plano. Atualizar a cada rodada de trabalho: é a memória do projeto.
 // Nada de número inventado: o que é proposta está escrito como proposta.
 
-export const PLANO_ATUALIZADO_EM = "01/11/2026";
+export const PLANO_ATUALIZADO_EM = "03/11/2026";
 
 export type Owner = "Lucas" | "Claude" | "Automático";
 export type ProximoPasso = { quando: string; quem: Owner; oque: string; porque: string };
@@ -30,8 +30,8 @@ export const STATUS_GERAL = [
   { area: "Lista fria: só deixou o e-mail", estado: "problema", detalhe: "Parada por decisão do Lucas. Dos 20 contatos mais antigos, 5 voltaram (25%). Faltam 208, e 133 têm prova de que o e-mail existe. A conta do Resend está com 13,75% de rejeição nos últimos 15 dias, e o limite é 4%." },
   { area: "Página inicial, quiz e captura de e-mail", estado: "atencao", detalhe: "No ar. Em 01/11 foram 93 visitas e nenhum e-mail deixado. A origem ainda não é conhecida: cada visita registra de onde veio. Página refeita em 02/11, com a tela de e-mail antes do quiz. Cadastro de e-mail novo segue sem teste real." },
   { area: "Artes, carrossel e site da Fábrica", estado: "ok", detalhe: "12 modelos em rodízio, feed e stories. PNG conferido." },
-  { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo." },
-  { area: "Automação de e-mails", estado: "ok", detalhe: "Roda de hora em hora. Black Vitalícia no ar desde 03/11." },
+  { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo. Desde 03/11 existe a /black: a mesma página e o mesmo quiz da /inicio, com fundo preto e preço da Black, para quem ainda não conhece a ferramenta." },
+  { area: "Automação de e-mails", estado: "problema", detalhe: "Roda de hora em hora e os e-mails de lead e de pagamento saem. Os da Black ainda não saíram: às 14h15 e 15h15 de 03/11 nenhum foi tentado, e o Brevo não registrou envio. A função no servidor parece estar com a data antiga da campanha." },
   { area: "Pixel do Meta no site", estado: "ok", detalhe: "O pixel da INFOS ALFA recebe eventos do canvaviagem.com desde 01/11, só pelo navegador. A conta está ativa." },
   { area: "Segurança", estado: "ok", detalhe: "Conferida em 01/11: nenhuma chave secreta no site nem nos commits recentes, e dados de clientes fechados para quem não é admin. Sobram itens menores no checklist." },
   { area: "Liberação de acesso depois de pagar", estado: "atencao", detalhe: "Pix conferido com venda real em 31/10: acesso liberado em 30 segundos e cliente gerou e baixou arte. Falta o cartão." },
@@ -113,8 +113,14 @@ export const PROXIMOS_PASSOS: ProximoPasso[] = [
   {
     quando: "03/11",
     quem: "Lucas",
-    oque: "Lançar a Black Vitalícia no grupo do WhatsApp com o link canvaviagem.com/black-friday.",
-    porque: "A Black foi antecipada para hoje. Os e-mails para ex-assinantes, leads e assinantes ativos saem sozinhos a partir das 13h15.",
+    oque: "Lançar a Black Vitalícia no grupo do WhatsApp com o link canvaviagem.com/black.",
+    porque: "O grupo comprou só o pacote de vídeos e não conhece a ferramenta: a /black mostra a página e o quiz, com o preço da Black. A /black-friday fica para ex-assinantes, que já conhecem.",
+  },
+  {
+    quando: "03/11",
+    quem: "Claude",
+    oque: "Fazer os e-mails da Black saírem: conferir a rodada das 16h15 e, se não sair nada, publicar de novo a função de e-mails no Lovable.",
+    porque: "Até 15h15 de 03/11 nenhum e-mail da Black foi tentado. Os de lead saem normalmente.",
   },
   {
     quando: "05/11",
@@ -397,4 +403,5 @@ export const LINKS = [
   { nome: "Quiz", url: "/onboarding" },
   { nome: "Planos", url: "/planos" },
   { nome: "Black Vitalícia", url: "/black-friday" },
+  { nome: "Black com página e quiz", url: "/black" },
 ];
