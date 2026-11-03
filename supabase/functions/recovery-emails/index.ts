@@ -233,16 +233,20 @@ async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number)
   const startMs = Date.parse(BF_CAMPAIGN.start);
   if (Date.now() < Date.parse(BF_CAMPAIGN.novidades) || Date.now() >= Date.parse(BF_CAMPAIGN.end) || limit <= 0) return { active: false, sent: 0 };
 
-  const { data: subs } = await db.from("subscriptions").select("user_id,status,current_period_end");
+  const { data: subs } = await db.from("subscriptions").select("user_id,status,current_period_end,created_at");
   const isActive = (s: any) => ["active", "trialing"].includes(s.status) && (!s.current_period_end || Date.parse(s.current_period_end) > Date.now());
   const userIds = (subs ?? []).map((s: any) => s.user_id);
   const { data: profiles } = userIds.length ? await db.from("profiles").select("user_id,email").in("user_id", userIds) : { data: [] as any[] };
   const emailOf = new Map((profiles ?? []).map((p: any) => [p.user_id, String(p.email ?? "").toLowerCase().trim()]));
   const active = new Set<string>();
   const former = new Set<string>();
+  // Quem assinou durante a campanha já comprou a oferta: não recebe o e-mail de novidades com ela.
+  const joinedNow = new Set<string>();
   for (const sub of subs ?? []) {
     const email = emailOf.get(sub.user_id);
-    if (email) (isActive(sub) ? active : former).add(email);
+    if (!email) continue;
+    (isActive(sub) ? active : former).add(email);
+    if (isActive(sub) && Date.parse(sub.created_at) >= startMs) joinedNow.add(email);
   }
   for (const email of active) former.delete(email);
 
@@ -264,7 +268,11 @@ async function runBlackFriday(db: ReturnType<typeof adminClient>, limit: number)
 
   const queue: { email: string; kind: RecoveryKind }[] = [];
   if (due) for (const email of former) if (!skip.has(email) && !sentKinds.has(`${email}:${due}`)) queue.push({ email, kind: due });
-  for (const email of active) if (!skip.has(email) && !sentKinds.has(`${email}:novidades`)) queue.push({ email, kind: "novidades" });
+  const gotOffer = new Set((logs ?? []).filter((l: any) => String(l.kind).startsWith("bf")).map((l: any) => l.email));
+  for (const email of active) {
+    if (skip.has(email) || joinedNow.has(email) || gotOffer.has(email) || sentKinds.has(`${email}:novidades`)) continue;
+    queue.push({ email, kind: "novidades" });
+  }
 
   // O que não couber hoje sai nas próximas rodadas. Quem recebeu menos e-mails da campanha vai primeiro,
   // para que quem ficou de fora no dia 29 receba o último aviso no dia 30.
