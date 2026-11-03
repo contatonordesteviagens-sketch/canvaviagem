@@ -14,9 +14,8 @@ export default function InicioEntry() {
   const [searchParams] = useSearchParams();
   const { search } = useLocation();
   const legacy = LEGACY_PARAMS.some((key) => searchParams.has(key));
-  // Até 30/11 quem chega por anúncio do Meta vai para a /black, com a mesma origem. O resto vê a /inicio normal.
-  const fromMetaAd = searchParams.has("fbclid") || /^(facebook|fb|ig|instagram|meta)$/i.test(searchParams.get("utm_source") ?? "");
-  if (!legacy && fromMetaAd && isBlackFridayOpen()) return <Navigate to={`/black${search}`} replace />;
+  // Até 30/11 só vendemos a Black: o tráfego da /inicio (anúncios inclusive) cai na /black, com a mesma origem.
+  if (!legacy && isBlackFridayOpen()) return <Navigate to={`/black${search}`} replace />;
   return (
     <>
       <SuspendedSiteNotice />
