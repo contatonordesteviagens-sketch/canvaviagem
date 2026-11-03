@@ -10,6 +10,15 @@
   --cv-accent: #e01e72;
   --cv-accent-soft: #fde4ef;
   --cv-sand: #f3ead2;
+  --cv-soft: #efe9ff;
+  --cv-soft-2: #f4f0ff;
+  --cv-soft-3: #ddd3ff;
+  --cv-track: #ece5d3;
+  --cv-ring: #e3dccb;
+  --cv-paper: #fff;
+  --cv-head: #f6edd2;
+  --cv-glow-1: #e9defc;
+  --cv-glow-2: #c9b8fb;
   background: var(--cv-bg);
   color: var(--cv-fg);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif;
@@ -145,4 +154,40 @@
 @media (prefers-reduced-motion: reduce) {
   .cv-cream .cv-chip-dot { display: none; }
   .cv-cream .cv-peek, .cv-cream .cv-reveal.is-in .cv-peek-in, .cv-cream .cv-swipe, .cv-cream .cv-chip, .cv-cream .cv-reveal.is-in .cv-wheel, .cv-cream .cv-reveal.is-in .cv-wheel-label { animation: none; opacity: 1; }
+}
+
+/* Black: mesma página com fundo preto (rota /black e o quiz que vem depois dela) */
+.cv-cream.cv-black {
+  --cv-bg: #0a0a0d;
+  --cv-fg: #f6f4fb;
+  --cv-muted: #a8a4b8;
+  --cv-line: #2a2833;
+  --cv-card: #15141b;
+  --cv-primary-ink: #b39dff;
+  --cv-accent: #ff4d94;
+  --cv-accent-soft: #3a1426;
+  --cv-sand: #1f1d27;
+  --cv-soft: #241d3d;
+  --cv-soft-2: #1d1830;
+  --cv-soft-3: #33295a;
+  --cv-track: #2a2833;
+  --cv-ring: #4a4658;
+  --cv-paper: #15141b;
+  --cv-head: #1f1d27;
+  --cv-glow-1: #1a1430;
+  --cv-glow-2: #2e2160;
+}
+.cv-cream.cv-black .bg-white { background-color: var(--cv-card); }
+.cv-cream.cv-black .cv-black-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 9999px;
+  border: 1px solid #ffc61a;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ffc61a;
 }

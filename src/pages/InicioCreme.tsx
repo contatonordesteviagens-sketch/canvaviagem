@@ -14,6 +14,7 @@ import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-c
 import { ArtTrial } from "@/components/cv-cream/ArtTrial";
 import { resolveInicioVariant, trackInicioTeste } from "@/lib/inicio-teste";
 import { siteOfferDemos } from "@/lib/site-offer-demos";
+import { BLACK_FUNNEL_PATH, isBlackFunnel, markBlackFunnel } from "@/lib/black-funnel";
 import heroDashboard from "@/assets/hero_dashboard.jpg";
 
 import { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH, QUICK_LOGIN_PATH } from "@/lib/inicio-arte";
@@ -61,6 +62,11 @@ export default function InicioCreme() {
   const navigate = useNavigate();
   const { user, subscription } = useAuth();
   useState(() => resolveInicioVariant(window.location.search));
+  // A /inicio normal tira a marca da Black; a /black (InicioBlack) já marcou antes de chegar aqui.
+  const [black] = useState(() => {
+    if (window.location.pathname !== BLACK_FUNNEL_PATH) markBlackFunnel(false);
+    return isBlackFunnel();
+  });
   const [scrolled, setScrolled] = useState(false);
   const tracked = useRef(false);
   const pageRef = useReveal<HTMLDivElement>();
@@ -87,7 +93,7 @@ export default function InicioCreme() {
   };
 
   return (
-    <div ref={pageRef} className="cv-cream min-h-screen overflow-x-hidden">
+    <div ref={pageRef} className={`cv-cream min-h-screen overflow-x-hidden${black ? " cv-black" : ""}`}>
       <Helmet>
         <title>Canva Viagem — Mande um áudio e receba anúncios, carrosséis, site e vídeos prontos</title>
         <meta name="description" content="Fale o destino, os dias e o valor do pacote. Em minutos saem anúncios, carrosséis, stories e o site, com a sua logo, e você ainda tem vídeos prontos para postar. Sem limite de quantidade." />
@@ -98,13 +104,13 @@ export default function InicioCreme() {
         <div
           className="flex w-full max-w-5xl items-center justify-between rounded-full px-3 py-2 transition-all duration-300"
           style={{
-            background: scrolled ? "rgba(255,255,255,0.1)" : "transparent",
+            background: scrolled ? (black ? "rgba(10,10,13,0.6)" : "rgba(255,255,255,0.1)") : "transparent",
             border: "1px solid transparent",
             backdropFilter: scrolled ? "blur(16px) saturate(1.4)" : "none",
             boxShadow: "none",
           }}
         >
-          <a href="/inicio" aria-label="Canva Viagem" className="block h-[26px] w-[26px] overflow-hidden rounded-full">
+          <a href={black ? BLACK_FUNNEL_PATH : "/inicio"} aria-label="Canva Viagem" className="block h-[26px] w-[26px] overflow-hidden rounded-full">
             <img src={logo} alt="Canva Viagem" width={26} height={26} className="h-full w-full scale-[1.18] object-cover" />
           </a>
           <button onClick={() => start("header")} className="cv-btn h-9 shrink-0 whitespace-nowrap px-4 text-[13px]">
@@ -117,6 +123,7 @@ export default function InicioCreme() {
         {/* 1. Hero */}
         <section className="px-4 pb-8 pt-24 sm:pt-32">
           <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
+            {black && <span className="cv-black-tag cv-pop mb-3">Black Friday · 50% para sempre · até 30/11</span>}
             <Eyebrow className="cv-pop">Para agências de viagens</Eyebrow>
             <h1 className="cv-pop mt-3 max-w-3xl text-balance text-[2.4rem] font-extrabold leading-[1.04] tracking-[-0.025em] sm:text-6xl md:text-[4.2rem]" style={delay(60)}>
               Mande um áudio. Receba sua agência de{" "}
@@ -131,7 +138,7 @@ export default function InicioCreme() {
               <ArtTrial />
             </div>
             <div className="cv-pop mt-7 flex flex-col items-center gap-2" style={delay(300)}>
-              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white" style={{ background: "var(--cv-fg)" }}>
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold" style={{ background: "var(--cv-fg)", color: "var(--cv-bg)" }}>
                 <InfinityIcon className="h-3.5 w-3.5" /> CRÉDITOS ILIMITADOS
               </span>
               <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Gere quantas mídias quiser: anúncios, carrosséis e stories, sem limite por dia.</p>
@@ -250,7 +257,7 @@ export default function InicioCreme() {
             </div>
             <div className="cv-reveal mt-10 overflow-hidden rounded-[32px] border" style={{ borderColor: "var(--cv-line)" }}>
               <table className="w-full text-left text-sm">
-                <thead style={{ background: "#f6edd2" }}>
+                <thead style={{ background: "var(--cv-head)" }}>
                   <tr>
                     <th className="px-3 py-4 font-medium sm:px-6" style={{ color: "var(--cv-muted)" }}><span className="sr-only">Comparação</span></th>
                     <th className="px-2 py-4 font-bold sm:px-6">Canva Viagem</th>
@@ -282,7 +289,7 @@ export default function InicioCreme() {
               {delivery.map((e, i) => (
                 <div key={e.title} className="cv-reveal cv-card p-5" style={delay(i * 90)}>
                   <div className="flex items-center justify-between">
-                    <span className="grid h-11 w-11 place-items-center rounded-full" style={{ background: "#efe9ff", color: "var(--cv-primary-ink)" }}>
+                    <span className="grid h-11 w-11 place-items-center rounded-full" style={{ background: "var(--cv-soft)", color: "var(--cv-primary-ink)" }}>
                       <e.icon className="h-5 w-5" />
                     </span>
                     <span className="text-lg font-extrabold text-[#e6dcc0]">{String(i + 1).padStart(2, "0")}</span>
@@ -297,7 +304,7 @@ export default function InicioCreme() {
       </main>
 
       {/* 10. CTA final */}
-      <section className="px-4 pb-10 pt-24" style={{ background: "linear-gradient(180deg, var(--cv-bg) 0%, #e9defc 55%, #c9b8fb 100%)" }}>
+      <section className="px-4 pb-10 pt-24" style={{ background: "linear-gradient(180deg, var(--cv-bg) 0%, var(--cv-glow-1) 55%, var(--cv-glow-2) 100%)" }}>
         <div className="cv-reveal mx-auto max-w-2xl text-center">
           <h2 className="cv-h2">Pare de postar no improviso.<br />Mande seu primeiro áudio.</h2>
           <p className="mt-4 text-lg" style={{ color: "var(--cv-muted)" }}>Destino, dias e valor. Você recebe anúncio, carrossel, stories e site com a sua logo, e vídeos prontos para postar.</p>
@@ -495,7 +502,7 @@ function SiteDemo({ onStart }: { onStart: () => void }) {
           {siteOfferDemos.map((d) => {
             const on = d.id === demo.id;
             return (
-              <button key={d.id} type="button" onClick={() => setActiveId(d.id)} aria-pressed={on} className="cv-peek-in min-w-[240px] flex-1 rounded-[22px] border p-4 text-left transition-colors" style={{ background: on ? "#16130d" : "#fff", color: on ? "#fff" : "var(--cv-fg)", borderColor: on ? "#16130d" : "var(--cv-line)" }}>
+              <button key={d.id} type="button" onClick={() => setActiveId(d.id)} aria-pressed={on} className="cv-peek-in min-w-[240px] flex-1 rounded-[22px] border p-4 text-left transition-colors" style={{ background: on ? "#16130d" : "var(--cv-paper)", color: on ? "#fff" : "var(--cv-fg)", borderColor: on ? "#16130d" : "var(--cv-line)" }}>
                 <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: on ? "#8fe3d9" : "#0ea5a0" }}>{d.templateLabel.toUpperCase()}</p>
                 <p className="mt-1 text-[15px] font-extrabold">{d.agencyName}</p>
                 <p className="text-[12px]" style={{ color: on ? "#cfc4a6" : "var(--cv-muted)" }}>{d.category}</p>
@@ -607,7 +614,7 @@ function LogoDrop({ onDone }: { onDone: () => void }) {
             type="button"
             onClick={() => inputRef.current?.click()}
             className="flex min-h-[220px] w-full flex-col items-center justify-center gap-3 rounded-[32px] border-2 border-dashed bg-white p-8 text-center transition-colors"
-            style={{ borderColor: over ? "var(--cv-primary)" : "#d9cfb3", background: over ? "#f6f3ff" : "#fff" }}
+            style={{ borderColor: over ? "var(--cv-primary)" : "#d9cfb3", background: over ? "var(--cv-soft-2)" : "var(--cv-paper)" }}
           >
             {preview ? (
               <img src={preview} alt="Sua logo" className="h-20 w-20 rounded-2xl object-contain" />

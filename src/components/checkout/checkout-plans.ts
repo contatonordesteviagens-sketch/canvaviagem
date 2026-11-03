@@ -55,8 +55,9 @@ export const isBlackFridayOpen = () => Date.now() < Date.parse("2026-12-01T03:00
 
 export const plansFor = (offer: CheckoutOffer) => (offer ? BLACK_FRIDAY_PLANS : CHECKOUT_PLANS);
 
-export function checkoutPath(cycle: CheckoutCycle, method?: "cartao" | "pix") {
+export function checkoutPath(cycle: CheckoutCycle, method?: "cartao" | "pix", offer: CheckoutOffer = null) {
   const params = new URLSearchParams({ plano: cycle });
   if (method) params.set("metodo", method);
+  if (offer) params.set("oferta", offer);
   return `/checkout?${params.toString()}`;
 }

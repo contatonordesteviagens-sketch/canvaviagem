@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { ELITE_OFFER } from "@/lib/eliteOffer";
 import { cn } from "@/lib/utils";
+import { BLACK_FRIDAY_PLANS, type CheckoutOffer } from "@/components/checkout/checkout-plans";
 
 export type PixPlan = "monthly" | "semiannual" | "annual";
 
@@ -15,6 +16,13 @@ export const PIX_PLAN_INFO: Record<PixPlan, { label: string; price: string; valu
   monthly: { label: "Elite Mensal", price: ELITE_OFFER.monthlyPrice, value: 97, period: "30 dias de acesso" },
   semiannual: { label: "Elite Semestral", price: ELITE_OFFER.semiannualPrice, value: 347, period: "6 meses de acesso" },
   annual: { label: "Elite Anual", price: ELITE_OFFER.annualPrice, value: 482, period: "12 meses de acesso" },
+};
+
+const pixInfo = (plan: PixPlan, offer: CheckoutOffer) => {
+  const info = PIX_PLAN_INFO[plan];
+  if (!offer) return info;
+  const bf = BLACK_FRIDAY_PLANS[plan];
+  return { ...info, label: `${info.label} · Black`, price: bf.price, value: bf.valueCents / 100 };
 };
 
 export function isPixPlan(value: unknown): value is PixPlan {
@@ -61,17 +69,20 @@ export function PixCheckoutModal({
   plan,
   redirectTo = "/fabrica",
   quick = false,
+  offer = null,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   plan: PixPlan;
   redirectTo?: string;
+  /** Black Friday: o servidor cobra o valor da Black. */
+  offer?: CheckoutOffer;
   /** No quiz: relógio de 10 minutos para incentivar o pagamento. O Pix continua valendo depois dele. */
   quick?: boolean;
 }) {
   const navigate = useNavigate();
   const { refreshSubscription } = useAuth();
-  const info = PIX_PLAN_INFO[plan];
+  const info = pixInfo(plan, offer);
   const [charge, setCharge] = useState<Charge | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,7 +100,7 @@ export function PixCheckoutModal({
     setError(null);
     setCharge(null);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke("woovi-create-charge", { body: { plan, quick } });
+      const { data, error: fnError } = await supabase.functions.invoke("woovi-create-charge", { body: { plan, quick, ...(offer ? { offer } : {}) } });
       if (fnError || !data?.brCode) throw new Error(data?.error || fnError?.message || "Falha ao gerar o Pix");
       setCharge(data as Charge);
       setNudgeEnd(new Date(Date.now() + NUDGE_MS).toISOString());
@@ -100,7 +111,7 @@ export function PixCheckoutModal({
     } finally {
       setLoading(false);
     }
-  }, [plan, quick, info.label, info.value]);
+  }, [plan, quick, offer, info.label, info.value]);
 
   // Gera uma cobrança por abertura do modal (por plano).
   useEffect(() => {
@@ -230,12 +241,14 @@ export function PayWithPixButton({
   children,
   redirectTo,
   quick,
+  offer = null,
 }: {
   plan: PixPlan;
   className?: string;
   children?: React.ReactNode;
   redirectTo?: string;
   quick?: boolean;
+  offer?: CheckoutOffer;
 }) {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -263,7 +276,7 @@ export function PayWithPixButton({
       >
         {children ?? (<><QrCode className="h-4 w-4" /> Pagar com Pix</>)}
       </button>
-      {user && <PixCheckoutModal open={open} onOpenChange={setOpen} plan={plan} redirectTo={redirectTo} quick={quick} />}
+      {user && <PixCheckoutModal open={open} onOpenChange={setOpen} plan={plan} redirectTo={redirectTo} quick={quick} offer={offer} />}
     </>
   );
 }

@@ -26,7 +26,7 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
   const hideSidebarPaths = [
     '/planos', '/pt/planos', '/black-friday', '/es/planos', '/auth', '/login', '/auth/verify', '/sucesso', '/obrigado', '/es/obrigado',
     '/pos-pagamento', '/canva', '/termos', '/privacidade', '/exclusao-de-dados',
-    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/inicio2', '/es/inicio', '/onboarding', '/pix', '/checkout',
+    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/black', '/inicio2', '/es/inicio', '/onboarding', '/pix', '/checkout',
     '/anuncios-para-agencia-de-viagens', '/site-para-agencia-de-viagens', '/carrosseis-para-agencia-de-viagens',
     '/equipe-de-marketing-para-agencia-de-viagens', '/.lovable/oauth/consent'
   ];
@@ -145,6 +145,7 @@ const BlogPost50 = lazy(() => import("./pages/BlogPost50"));
 const Blog = lazy(() => import("./pages/Blog"));
 const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
 const InicioEntry = lazy(() => import("./pages/InicioEntry"));
+const InicioBlack = lazy(() => import("./pages/InicioBlack"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const PlanosOferta = lazy(() => import("./pages/PlanosOferta"));
 const Checkout = lazy(() => import("./pages/Checkout"));
@@ -256,6 +257,7 @@ const App = () => {
                     <Route path="/black-friday" element={<PlanosOferta variant="black-friday" />} />
                     <Route path="/pt/planos" element={<Navigate to="/planos" replace />} />
                     <Route path="/inicio" element={<InicioEntry />} />
+                    <Route path="/black" element={<InicioBlack />} />
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                     <Route path="/anuncios-para-agencia-de-viagens" element={<AdsOfferLanding />} />

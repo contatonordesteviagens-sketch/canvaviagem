@@ -12,6 +12,7 @@ import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { ELITE_OFFER } from "@/lib/eliteOffer";
 import { checkoutPath } from "@/components/checkout/checkout-plans";
+import { isBlackFunnel } from "@/lib/black-funnel";
 import { PayWithPixButton } from "@/components/pix/PixCheckout";
 import { BrandMark, delay } from "@/components/cv-cream/shared";
 import { captureLead, readLeadEmail } from "@/lib/lead-capture";
@@ -123,11 +124,20 @@ const DESTINO_LABEL: Record<string, string> = {
   praia: "Porto de Galinhas", serra: "Gramado", internacional: "Cancún", cruzeiro: "Cruzeiro pelo litoral", excursao: "Excursão de fim de semana",
 };
 
-const PLANS: { cycle: Cycle; name: string; hint: string; price: string; per: string; note: string; value: number; popular?: boolean }[] = [
+type Plan = { cycle: Cycle; name: string; hint: string; price: string; per: string; note: string; value: number; popular?: boolean; was?: string };
+const NORMAL_PLANS: Plan[] = [
   { cycle: "monthly", name: "Mensal", hint: "Pra testar com calma", price: ELITE_OFFER.monthlyPrice, per: "/mês", note: "Cancele quando quiser", value: 97 },
   { cycle: "semiannual", name: "Semestral", hint: "6 meses de acesso", price: ELITE_OFFER.semiannualPrice, per: "/6 meses", note: "R$ 57,83 por mês", value: 347 },
   { cycle: "annual", name: "Anual", hint: "Postando o ano inteiro", price: ELITE_OFFER.annualPrice, per: "/ano", note: `${ELITE_OFFER.annualMonthlyEquivalent} por mês · economia de ${ELITE_OFFER.annualSavings}`, value: 482, popular: true },
 ];
+// Black (quem veio da /black): metade do preço, e a renovação continua com a metade. O servidor confirma o valor.
+const BLACK_PLANS: Plan[] = [
+  { cycle: "monthly", name: "Mensal", hint: "Pra testar com calma", price: "R$ 48,50", was: ELITE_OFFER.monthlyPrice, per: "/mês", note: "Cancele quando quiser · 50% para sempre", value: 48.5 },
+  { cycle: "semiannual", name: "Semestral", hint: "6 meses de acesso", price: "R$ 173,50", was: ELITE_OFFER.semiannualPrice, per: "/6 meses", note: "R$ 28,92 por mês · 50% para sempre", value: 173.5 },
+  { cycle: "annual", name: "Anual", hint: "Postando o ano inteiro", price: "R$ 241", was: ELITE_OFFER.annualPrice, per: "/ano", note: "R$ 20,08 por mês · 50% para sempre", value: 241, popular: true },
+];
+const BLACK = isBlackFunnel();
+const PLANS = BLACK ? BLACK_PLANS : NORMAL_PLANS;
 
 
 function loadState(): { step: number; answers: Answers } {
@@ -221,16 +231,16 @@ export default function Onboarding() {
     registerPayment(method);
     if (!user) captureLead(readLeadEmail(), "plan", { billing_cycle: plan });
     trackMetaEvent("InitiateCheckout", { value: selected.value, currency: "BRL", content_name: `Canva Viagem ${selected.name}`, content_category: "onboarding" });
-    navigate(checkoutPath(plan, method));
+    navigate(checkoutPath(plan, method, BLACK ? "black-friday" : null));
   };
 
   return (
-    <div className="cv-cream min-h-[100dvh]">
+    <div className={`cv-cream min-h-[100dvh]${BLACK ? " cv-black" : ""}`}>
       <Helmet><title>Seu plano — Canva Viagem</title></Helmet>
       <div className="mx-auto flex min-h-[100dvh] max-w-[440px] flex-col px-5">
         <header className="sticky top-0 z-20 pb-3 pt-3" style={{ background: "var(--cv-bg)" }}>
           <div className="flex items-center justify-between">
-            <button onClick={back} disabled={step === 0} aria-label="Voltar" className="grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-[#f3ead2] disabled:opacity-0">
+            <button onClick={back} disabled={step === 0} aria-label="Voltar" className="grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-[var(--cv-sand)] disabled:opacity-0">
               <ChevronLeft className="h-5 w-5" />
             </button>
             <BrandMark size={26} withName={false} />
@@ -255,7 +265,7 @@ export default function Onboarding() {
 
 function Progress({ step }: { step: number }) {
   return (
-    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#ece5d3]">
+    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--cv-track)]">
       <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${PROGRESS[step] ?? 100}%`, background: "var(--cv-primary)" }} />
     </div>
   );
@@ -295,16 +305,16 @@ function Question({ q, selected, onChoose, onContinue }: { q: QuestionStep; sele
               key={o.id}
               onClick={() => onChoose(o.id)}
               className={`cv-pop flex w-full items-center border text-left transition-all duration-200 hover:-translate-y-px ${q.multi ? "gap-3 rounded-[18px] p-2.5" : "gap-3.5 rounded-[22px] p-3.5"}`}
-              style={{ ...delay(80 + i * 60), background: on ? "#efe9ff" : "var(--cv-card)", borderColor: on ? "var(--cv-primary)" : "var(--cv-line)" }}
+              style={{ ...delay(80 + i * 60), background: on ? "var(--cv-soft)" : "var(--cv-card)", borderColor: on ? "var(--cv-primary)" : "var(--cv-line)" }}
             >
-              <span className={`grid shrink-0 place-items-center rounded-xl ${q.multi ? "h-8 w-8" : "h-10 w-10"}`} style={{ background: on ? "#ddd3ff" : "var(--cv-sand)" }}>
+              <span className={`grid shrink-0 place-items-center rounded-xl ${q.multi ? "h-8 w-8" : "h-10 w-10"}`} style={{ background: on ? "var(--cv-soft-3)" : "var(--cv-sand)" }}>
                 <o.icon className="h-[18px] w-[18px]" />
               </span>
               <span className="flex-1">
                 <span className={`block font-semibold ${q.multi ? "text-[14px] leading-5" : "text-[15px]"}`}>{o.label}</span>
                 <span className={`block ${q.multi ? "text-[12px] leading-4" : "text-[13px]"}`} style={{ color: "var(--cv-muted)" }}>{o.hint}</span>
               </span>
-              <span className={`grid shrink-0 place-items-center border ${q.multi ? "h-5 w-5 rounded-md" : "h-6 w-6 rounded-full"}`} style={{ borderColor: on ? "var(--cv-primary)" : "#e3dccb", background: on ? "var(--cv-primary)" : "transparent" }}>
+              <span className={`grid shrink-0 place-items-center border ${q.multi ? "h-5 w-5 rounded-md" : "h-6 w-6 rounded-full"}`} style={{ borderColor: on ? "var(--cv-primary)" : "var(--cv-ring)", background: on ? "var(--cv-primary)" : "transparent" }}>
                 {on && <Check className="h-3.5 w-3.5 text-white" />}
               </span>
             </button>
@@ -373,7 +383,7 @@ function Loading({ label, reviews, onDone }: { label: string; reviews: string[];
     <div className="flex flex-col items-center text-center">
       <div className="relative h-24 w-24">
         <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" aria-hidden>
-          <circle cx="50" cy="50" r={radius} fill="none" stroke="#ece5d3" strokeWidth="8" />
+          <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--cv-track)" strokeWidth="8" />
           <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--cv-primary)" strokeWidth="8" strokeLinecap="round" strokeDasharray={circle} strokeDashoffset={circle * (1 - percent / 100)} />
         </svg>
         <span className="absolute inset-0 grid place-items-center text-[20px] font-extrabold">{percent}%</span>
@@ -460,7 +470,7 @@ function Result({ answers, destino, onNext }: { answers: Answers; destino: strin
         <div className="mt-3 space-y-3">
           {pontosVisiveis.map((p) => (
             <div key={p.label} className="flex items-start gap-3">
-              <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full" style={{ background: "#efe9ff" }}><Check className="h-3.5 w-3.5 text-[#6440e6]" /></span>
+              <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full" style={{ background: "var(--cv-soft)" }}><Check className="h-3.5 w-3.5 text-[#6440e6]" /></span>
               <div>
                 <p className="text-[14px] font-bold">{p.label}</p>
                 <p className="text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>{p.fix}</p>
@@ -473,7 +483,7 @@ function Result({ answers, destino, onNext }: { answers: Answers; destino: strin
       <div className="cv-pop cv-card mt-4 p-5" style={delay(300)}>
         <div className="flex items-center justify-between">
           <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>O QUE POSTAR NAS 2 PRIMEIRAS SEMANAS</p>
-          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-semibold" style={{ background: "#efe9ff", color: "var(--cv-primary-ink)" }}><MapPin className="h-3 w-3" /> {destino}</span>
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-semibold" style={{ background: "var(--cv-soft)", color: "var(--cv-primary-ink)" }}><MapPin className="h-3 w-3" /> {destino}</span>
         </div>
         <p className="mt-3 text-[13px] font-bold">Semana 1</p>
         <WeekList days={weeks[0]} />
@@ -554,7 +564,7 @@ function PayButtons({ plan, onCheckout, onPix }: { plan: Cycle; onCheckout: () =
   return (
     <div className="grid grid-cols-2 gap-2">
       <div onClickCapture={() => onPix()}>
-        <PayWithPixButton plan={plan} quick redirectTo="/pagamento-confirmado" className="cv-btn h-12 border-0 py-0 text-[14px] text-white hover:bg-transparent">
+        <PayWithPixButton plan={plan} quick offer={BLACK ? "black-friday" : null} redirectTo="/pagamento-confirmado" className="cv-btn h-12 border-0 py-0 text-[14px] text-white hover:bg-transparent">
           <QrCode className="h-4 w-4" /> Pagar com Pix
         </PayWithPixButton>
       </div>
@@ -609,16 +619,17 @@ function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c:
   }, [offer.expired, plan]);
   return (
     <>
+      {BLACK && <p className="cv-black-tag mx-auto mb-3">Black Friday · 50% para sempre · até 30/11</p>}
       <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Seu plano está pronto. <Accent>Libere o acesso.</Accent></Title>
 
       <div className="mt-4 space-y-3">
         {PLANS.filter((p) => !(offer.expired && p.cycle === "annual")).map((p, i) => {
           const on = p.cycle === plan;
           return (
-            <div key={p.cycle} className="cv-pop rounded-[24px] border-2 transition-all" style={{ ...delay(180 + i * 80), background: on ? "#f4f0ff" : "var(--cv-card)", borderColor: on ? "var(--cv-primary)" : "var(--cv-line)" }}>
+            <div key={p.cycle} className="cv-pop rounded-[24px] border-2 transition-all" style={{ ...delay(180 + i * 80), background: on ? "var(--cv-soft-2)" : "var(--cv-card)", borderColor: on ? "var(--cv-primary)" : "var(--cv-line)" }}>
               <button type="button" onClick={() => setPlan(p.cycle)} aria-pressed={on} className="w-full p-4 text-left">
                 <div className="flex items-start gap-3">
-                  <span className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border" style={{ background: on ? "var(--cv-primary)" : "transparent", borderColor: on ? "var(--cv-primary)" : "#e3dccb" }}>
+                  <span className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border" style={{ background: on ? "var(--cv-primary)" : "transparent", borderColor: on ? "var(--cv-primary)" : "var(--cv-ring)" }}>
                     {on && <Check className="h-3 w-3 text-white" />}
                   </span>
                   <div className="flex-1">
@@ -629,6 +640,7 @@ function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c:
                     <p className="text-[13px]" style={{ color: "var(--cv-muted)" }}>{p.hint}</p>
                   </div>
                   <div className="text-right">
+                    {p.was && <p className="text-[12px] line-through" style={{ color: "var(--cv-muted)" }}>{p.was}</p>}
                     <p className="text-[20px] font-extrabold" style={{ color: on ? "var(--cv-primary-ink)" : undefined }}>{p.price}</p>
                     <p className="text-[11px]" style={{ color: "var(--cv-muted)" }}>{p.per}</p>
                   </div>
@@ -676,7 +688,7 @@ function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c:
 
       <ProofCarousel />
 
-      <div className="mt-4 rounded-2xl p-4 text-center" style={{ background: "#efe9ff" }}>
+      <div className="mt-4 rounded-2xl p-4 text-center" style={{ background: "var(--cv-soft)" }}>
         <p className="text-[14px] font-bold leading-5" style={{ color: "var(--cv-primary-ink)" }}>Oferta de tudo ilimitado. Pode mudar a qualquer momento.</p>
         {offer.expired ? (
           <p className="mt-1 text-[14px] font-semibold">O tempo da oferta do plano Anual acabou.</p>
