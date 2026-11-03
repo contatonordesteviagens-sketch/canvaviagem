@@ -1,6 +1,7 @@
 // Teste da /inicio: parte dos visitantes testa a arte na primeira página, o resto vê a página atual.
 // O grupo fica guardado no aparelho. Com ?arte=1 ou ?arte=0 a pessoa escolhe o grupo e fica fora da conta.
 import { trackEvent } from "@/hooks/useAnalyticsEvents";
+import { trackFunnelEvent } from "@/lib/meta-pixel-sales";
 
 export type InicioVariant = "arte" | "atual";
 export type InicioStep = "visita" | "destino" | "logo" | "artes" | "botao" | "tela_email" | "email" | "quiz" | "quiz_tela" | "resposta" | "plano" | "pagar" | "conta";
@@ -37,6 +38,39 @@ export function resolveInicioVariant(search: string): InicioVariant {
   }
 }
 
+const PLAN_VALUES: Record<string, number> = { monthly: 97, semiannual: 347, annual: 482 };
+const REGISTRO_KEY = "cv-pixel-registro";
+
+/**
+ * Cada etapa do funil vira um evento no pixel do Canva Viagem.
+ * Visita (ViewContent), e-mail (Lead), início do pagamento (InitiateCheckout) e compra (Purchase) já saem nas próprias telas.
+ */
+function sendToPixel(step: InicioStep, extra?: { tela?: string; valor?: string }) {
+  const tela = extra?.tela;
+  const valor = extra?.valor;
+  switch (step) {
+    case "destino": return trackFunnelEvent("CustomizeProduct", { content_name: "destino" });
+    case "logo": return trackFunnelEvent("EnviouLogo", {}, true);
+    case "artes": return trackFunnelEvent("ViuArtes", {}, true);
+    case "botao": return trackFunnelEvent("CliqueBotao", { local: valor ?? "" }, true);
+    case "tela_email": return trackFunnelEvent("TelaEmail", {}, true);
+    case "quiz": return trackFunnelEvent("IniciouQuiz", {}, true);
+    case "quiz_tela": return trackFunnelEvent("TelaQuiz", { tela: tela ?? "" }, true);
+    case "resposta": return trackFunnelEvent("RespostaQuiz", { pergunta: tela ?? "", resposta: valor ?? "" }, true);
+    case "plano": return trackFunnelEvent("AddToCart", { value: PLAN_VALUES[valor ?? ""] ?? 0, currency: "BRL", content_name: `Canva Viagem ${valor ?? ""}` });
+    case "pagar": return trackFunnelEvent("AddPaymentInfo", { value: PLAN_VALUES[tela ?? ""] ?? 0, currency: "BRL", content_name: `Canva Viagem ${tela ?? ""}`, content_category: valor ?? "" });
+    case "conta": {
+      // Uma vez por aparelho: a conta é marcada de novo a cada abertura do quiz.
+      try {
+        if (localStorage.getItem(REGISTRO_KEY)) return;
+        localStorage.setItem(REGISTRO_KEY, "1");
+      } catch { /* sem storage, envia mesmo assim */ }
+      return trackFunnelEvent("CompleteRegistration", { content_name: "quiz" });
+    }
+    default: return;
+  }
+}
+
 /** De onde veio a visita: campanha do link, anúncio do Meta ou o site anterior. */
 function origemDaVisita() {
   const params = new URLSearchParams(window.location.search);
@@ -54,6 +88,7 @@ export function trackInicioTeste(step: InicioStep, extra?: { tela?: string; valo
   const current = read() ?? { variant: "arte" as InicioVariant, manual: false };
   // Prévia do Lovable e site local não são visitantes: ficam fora da conta, como quem escolheu o grupo.
   const isVisitor = /(^|\.)canvaviagem\.com$/.test(window.location.hostname);
+  sendToPixel(step, extra);
   void trackEvent("inicio_teste", {
     variant: current.variant,
     step,
