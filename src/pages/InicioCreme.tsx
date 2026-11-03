@@ -360,6 +360,7 @@ function BlackFaq({ onStart }: { onStart: () => void }) {
       <div className="cv-reveal text-center">
         <span className="cv-black-tag">Black Friday · 50% vitalício</span>
         <h2 className="cv-h2 mt-4">Metade do preço. <span style={{ color: "var(--cv-hl)" }}>Para sempre.</span></h2>
+        <p className="mt-3 text-[15px] font-semibold" style={{ color: "var(--cv-muted)" }}>Por tempo limitado. Quem entra agora garante esse valor.</p>
       </div>
       <div className="cv-reveal mt-8 grid gap-3 sm:grid-cols-3" style={delay(100)}>
         {BLACK_PRICES.map((p) => (

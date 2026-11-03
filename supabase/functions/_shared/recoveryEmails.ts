@@ -191,7 +191,6 @@ function renderBlackFridayEmail(kind: BlackFridayKind | "novidades" | "frio1", g
     subject,
     html: shell([hello, ...parts].join("\n"), preheader, unsub),
   });
-  const end = BF_CAMPAIGN.endLabel;
 
   if (kind === "novidades") {
     return mail("Tem novidade na sua conta", "Novas artes, novos carrosséis, novos modelos.", [
@@ -202,11 +201,11 @@ function renderBlackFridayEmail(kind: BlackFridayKind | "novidades" | "frio1", g
     ]);
   }
   if (kind === "frio1") {
-    return mail("Você deixou seu e-mail e parou aí", "Sem problema. Mas abri uma condição até 30/11.", [
+    return mail("Você deixou seu e-mail e parou aí", "Sem problema. Mas abri uma condição por tempo limitado.", [
       p(`Faz um tempo que você deixou seu e-mail no Canva Viagem e não chegou a assinar.`),
       p(`Talvez não fosse a hora. Talvez tenha ficado na dúvida se ia usar de verdade.`),
       p(`De lá para cá, refiz as artes, os carrosséis e o site da agência. Por isso, abri uma condição: metade do preço, para sempre. Você entra com esse valor e renova sempre por ele.`),
-      p(`O mensal, que hoje é R$ 97, fica R$ 48,50. A condição fecha em ${end}.`),
+      p(`O mensal, que hoje é R$ 97, fica R$ 48,50. É por tempo limitado e pode sair do ar a qualquer momento: quem entra agora garante esse valor.`),
       go("Quero entrar pela metade →"),
     ]);
   }
@@ -215,7 +214,7 @@ function renderBlackFridayEmail(kind: BlackFridayKind | "novidades" | "frio1", g
       p(`Você deixou seu e-mail no Canva Viagem e não chegou a assinar.`),
       p(`Talvez não fosse a hora. Talvez tenha ficado na dúvida se ia usar de verdade.`),
       p(`Por isso, liberei a Black Vitalícia: metade do preço, para sempre. Você entra com esse valor e renova sempre por ele.`),
-      p(`O mensal, que hoje é R$ 97, fica R$ 48,50.`),
+      p(`O mensal, que hoje é R$ 97, fica R$ 48,50. É por tempo limitado: quem entra agora garante esse valor.`),
       go("Quero entrar pela metade →"),
     ]);
   }
@@ -225,7 +224,7 @@ function renderBlackFridayEmail(kind: BlackFridayKind | "novidades" | "frio1", g
       p(`Talvez tenha tentado usar, não tenha conseguido como queria e foi embora chateado. Se foi isso, eu te peço desculpas.`),
       p(`Mexi no que estava ruim. As artes foram refeitas. Os carrosséis também. O site ficou mais fácil de montar.`),
       p(`E para me redimir com quem já confiou uma vez, liberei a Black Vitalícia: metade do preço, para sempre. Você entra com esse valor e renova sempre por ele.`),
-      p(`O mensal, que hoje é R$ 97, fica R$ 48,50. Topa me dar mais uma chance?`),
+      p(`O mensal, que hoje é R$ 97, fica R$ 48,50. É por tempo limitado. Topa me dar mais uma chance?`),
       go("Quero voltar pela metade →"),
     ]);
   }
@@ -249,7 +248,7 @@ function renderBlackFridayEmail(kind: BlackFridayKind | "novidades" | "frio1", g
     return mail("Quanto fica no anual", "R$ 20,08 por mês, e não sobe na renovação.", [
       p(`Fiz a conta da Black Vitalícia para você:`),
       list(["Mensal: R$ 48,50 por mês", "Semestral: R$ 173,50 a cada 6 meses (dá R$ 28,92 por mês)", "Anual: R$ 241 por ano (dá R$ 20,08 por mês)"]),
-      p(`Em qualquer um deles, a renovação continua nesse mesmo valor.`),
+      p(`Em qualquer um deles, a renovação continua nesse mesmo valor. A condição é por tempo limitado e pode sair do ar sem aviso.`),
       go("Escolher meu plano →"),
     ]);
   }
@@ -262,9 +261,9 @@ function renderBlackFridayEmail(kind: BlackFridayKind | "novidades" | "frio1", g
     ]);
   }
   if (kind === "bf5") {
-    return mail(`A Black Vitalícia acaba em ${end}`, "Depois disso, volta ao preço normal.", [
-      p(`Passando só para avisar: a condição termina em ${end}.`),
-      p(`Quem entrar até lá fica com a metade do preço enquanto continuar assinando. Depois, volta ao preço normal para quem entrar.`),
+    return mail("A Black Vitalícia está acabando", "Quem entrar antes fica com a metade para sempre.", [
+      p(`Passando só para avisar: a Black Vitalícia está acabando e pode sair do ar a qualquer momento.`),
+      p(`Quem entrar antes fica com a metade do preço enquanto continuar assinando. Depois, volta ao preço normal para quem entrar.`),
       go("Garantir a metade do preço →"),
     ]);
   }

@@ -132,7 +132,7 @@ export default function PlanosOferta({ variant = "lancamento" }: { variant?: Var
             <p className="plan-kicker">BLACK VITALÍCIA</p>
             <h1 className="mt-2 text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em]">Metade do preço. Para sempre.</h1>
             <p className="plan-muted mt-2 text-[15px] leading-6">Não é só no primeiro mês. Você entra com esse valor e renova sempre por ele, enquanto continuar assinando, em qualquer plano.</p>
-            <p className="mt-3 text-[13px] font-bold">Fecha em 30/11, às 23h59.</p>
+            <p className="mt-3 text-[13px] font-bold">Por tempo limitado. Pode sair do ar a qualquer momento.</p>
           </section>
         ) : (
           <section className="plan-card p-5">

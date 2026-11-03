@@ -143,7 +143,7 @@ export const ENVIOS: { data: string; iso: string; kind: string; publico: string;
   { data: "Dom 08/11", iso: "2026-11-08", kind: "bf2", publico: "Ex-assinantes e leads", assunto: "O que mudou desde que você saiu" },
   { data: "Dom 15/11", iso: "2026-11-15", kind: "bf4", publico: "Ex-assinantes e leads", assunto: "Ainda está postando tudo sozinho?" },
   { data: "Sex 27/11", iso: "2026-11-27", kind: "bf3", publico: "Ex-assinantes e leads", assunto: "Quanto fica no anual" },
-  { data: "Dom 29/11", iso: "2026-11-29", kind: "bf5", publico: "Ex-assinantes e leads", assunto: "A Black Vitalícia acaba em 30/11" },
+  { data: "Dom 29/11", iso: "2026-11-29", kind: "bf5", publico: "Ex-assinantes e leads", assunto: "A Black Vitalícia está acabando" },
   { data: "Seg 30/11", iso: "2026-11-30", kind: "bf6", publico: "Ex-assinantes e leads", assunto: "Me responde uma coisa?" },
 ];
 
