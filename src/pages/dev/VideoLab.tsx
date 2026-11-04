@@ -47,6 +47,7 @@ type Dados = {
   parcelas: string;
   entrada: string;
   preco: string;
+  precoAntigo: string;
   pessoas: string;
   itens: string[];
   destaques: string[];
@@ -792,8 +793,8 @@ function cenaRevista(ctx: CanvasRenderingContext2D, cena: number, lt: number, ou
   const num = (n: string) => {
     ctx.font = "700 22px Montserrat, Arial";
     ctx.fillStyle = "#fff";
-    ctx.fillText(n, 50, 120);
-    ctx.fillRect(50, 134, 80 * k, 3);
+    ctx.fillText(n, 50, 215);
+    ctx.fillRect(50, 229, 80 * k, 3);
   };
   if (cena === 0) {
     num("01 — DESTINO");
@@ -853,7 +854,8 @@ function cenaRevista(ctx: CanvasRenderingContext2D, cena: number, lt: number, ou
     ctx.textAlign = "center";
     ctx.globalAlpha = ease((lt - 0.4) / 0.5);
     ctx.fillStyle = "#fff";
-    ctx.font = "300 66px Montserrat, Arial";
+    const hs = fitText(ctx, "Sua próxima história", 300, 66, W - 80);
+    ctx.font = `300 ${hs}px Montserrat, Arial`;
     ctx.fillText("Sua próxima história", W / 2, 670);
     ctx.font = "italic 400 40px 'Playfair Display', Georgia, serif";
     ctx.fillText(`começa em ${d.destino}`, W / 2, 725);
@@ -1142,6 +1144,209 @@ function cenaVibrante(ctx: CanvasRenderingContext2D, cena: number, lt: number, o
   ctx.globalAlpha = 1;
 }
 
+// ---------------- Ofertas sazonais: camada por cima de qualquer modelo ----------------
+type Ocasiao = "nenhuma" | "blackfriday" | "natal" | "anonovo" | "carnaval";
+const OCASIOES: { id: Ocasiao; nome: string; selo: string }[] = [
+  { id: "nenhuma", nome: "Nenhuma", selo: "" },
+  { id: "blackfriday", nome: "🖤 Black Friday", selo: "BLACK FRIDAY" },
+  { id: "natal", nome: "🎄 Natal", selo: "OFERTA DE NATAL" },
+  { id: "anonovo", nome: "✨ Ano Novo", selo: "ESPECIAL ANO NOVO" },
+  { id: "carnaval", nome: "🎭 Carnaval", selo: "PROMO DE CARNAVAL" },
+];
+
+// número pseudoaleatório fixo por índice (as partículas não "pulam" entre quadros)
+const rnd = (i: number, s = 1) => {
+  const x = Math.sin(i * 127.1 + s * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
+
+function neve(ctx: CanvasRenderingContext2D, t: number) {
+  ctx.fillStyle = "rgba(255,255,255,.9)";
+  for (let i = 0; i < 70; i++) {
+    const r = 2 + rnd(i, 2) * 5;
+    const vel = 40 + rnd(i, 3) * 90;
+    const y = ((rnd(i, 4) * H + t * vel) % (H + 20)) - 10;
+    const x = rnd(i, 5) * W + Math.sin(t * 1.3 + i) * 18;
+    ctx.globalAlpha = 0.45 + rnd(i, 6) * 0.5;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+const CORES_CARNAVAL = ["#facc15", "#ec4899", "#22c55e", "#3b82f6", "#f97316", "#a855f7"];
+function confete(ctx: CanvasRenderingContext2D, t: number) {
+  for (let i = 0; i < 80; i++) {
+    const vel = 90 + rnd(i, 3) * 140;
+    const y = ((rnd(i, 4) * H + t * vel) % (H + 30)) - 15;
+    const x = rnd(i, 5) * W + Math.sin(t * 2 + i) * 22;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(t * (2 + rnd(i, 7) * 4) + i);
+    ctx.fillStyle = CORES_CARNAVAL[i % CORES_CARNAVAL.length];
+    ctx.globalAlpha = 0.9;
+    ctx.fillRect(-7, -3.5, 14, 7);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function fogos(ctx: CanvasRenderingContext2D, t: number) {
+  // explosões douradas que se repetem
+  for (let b = 0; b < 4; b++) {
+    const ciclo = 2.4;
+    const fase = ((t + b * 0.6) % ciclo) / ciclo;
+    const n = Math.floor((t + b * 0.6) / ciclo);
+    const cx = 120 + rnd(b + n * 7, 1) * (W - 240);
+    const cy = 140 + rnd(b + n * 7, 2) * 380;
+    const raio = 30 + fase * 150;
+    ctx.globalAlpha = Math.max(0, 1 - fase) * 0.9;
+    for (let i = 0; i < 18; i++) {
+      const a = (i / 18) * Math.PI * 2;
+      ctx.fillStyle = i % 2 ? "#fde68a" : "#f5c451";
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(a) * raio, cy + Math.sin(a) * raio + fase * fase * 40, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  // brilhos piscando
+  for (let i = 0; i < 26; i++) {
+    const pisca = (Math.sin(t * 3 + i * 1.7) + 1) / 2;
+    ctx.globalAlpha = pisca * 0.8;
+    ctx.fillStyle = "#fff7d6";
+    const x = rnd(i, 8) * W;
+    const y = rnd(i, 9) * H;
+    const r = 2 + pisca * 3;
+    ctx.beginPath();
+    ctx.moveTo(x, y - r * 2);
+    ctx.lineTo(x + r * 0.5, y);
+    ctx.lineTo(x, y + r * 2);
+    ctx.lineTo(x - r * 0.5, y);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function seloOcasiao(ctx: CanvasRenderingContext2D, oc: Ocasiao, k: number) {
+  const info = OCASIOES.find((o) => o.id === oc)!;
+  const cores: Record<Exclude<Ocasiao, "nenhuma">, { fundo: string | null; texto: string; borda: string }> = {
+    blackfriday: { fundo: "#0a0a0a", texto: "#f5c451", borda: "#f5c451" },
+    natal: { fundo: "#b91c1c", texto: "#fff", borda: "#16a34a" },
+    anonovo: { fundo: null, texto: "#1a1406", borda: "#fff3c4" },
+    carnaval: { fundo: null, texto: "#fff", borda: "#facc15" },
+  };
+  const c = cores[oc as Exclude<Ocasiao, "nenhuma">];
+  ctx.save();
+  ctx.globalAlpha = k;
+  ctx.font = "900 30px Montserrat, Arial";
+  ctx.textAlign = "center";
+  const w = ctx.measureText(info.selo).width + 70;
+  const x = (W - w) / 2;
+  const y = 92 - (1 - k) * 40;
+  roundRect(ctx, x, y, w, 62, 31);
+  if (oc === "anonovo") {
+    const g = ctx.createLinearGradient(x, 0, x + w, 0);
+    g.addColorStop(0, "#fff1c2");
+    g.addColorStop(0.5, "#f5c451");
+    g.addColorStop(1, "#c08a1e");
+    ctx.fillStyle = g;
+  } else if (oc === "carnaval") {
+    const g = ctx.createLinearGradient(x, 0, x + w, 0);
+    g.addColorStop(0, "#ec4899");
+    g.addColorStop(0.5, "#a855f7");
+    g.addColorStop(1, "#f97316");
+    ctx.fillStyle = g;
+  } else ctx.fillStyle = c.fundo!;
+  sombra(ctx, 24, "rgba(0,0,0,.4)");
+  ctx.fill();
+  semSombra(ctx);
+  ctx.strokeStyle = c.borda;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.fillStyle = c.texto;
+  ctx.fillText(info.selo, W / 2, y + 42);
+  ctx.restore();
+}
+
+// Preço antigo riscado com o desconto, logo acima da área do preço
+function precoAntigo(ctx: CanvasRenderingContext2D, d: Dados, lt: number, out: number, oc: Ocasiao, y = 250) {
+  const antigo = d.precoAntigo.trim();
+  if (!antigo || d.pagamento === "free_quote") return;
+  const num = (v: string) => parseFloat(v.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
+  const a = num(antigo);
+  const n = num(d.preco);
+  const pct = a > 0 && n > 0 && n < a && d.pagamento === "cash" ? Math.round((1 - n / a) * 100) : 0;
+  const k = back((lt - 0.15) / 0.5);
+  ctx.save();
+  ctx.globalAlpha = out * clamp01((lt - 0.15) / 0.25);
+  ctx.translate(W / 2, y);
+  ctx.scale(0.7 + 0.3 * k, 0.7 + 0.3 * k);
+  ctx.textAlign = "center";
+  const txt = `de ${antigo.startsWith("R$") ? antigo : "R$ " + antigo}`;
+  ctx.font = "800 40px Montserrat, Arial";
+  const tw = ctx.measureText(txt).width;
+  const bw = tw + 60 + (pct ? 150 : 0);
+  roundRect(ctx, -bw / 2, -46, bw, 76, 38);
+  ctx.fillStyle = "rgba(10,10,12,.82)";
+  ctx.fill();
+  const xTxt = pct ? -bw / 2 + 30 + tw / 2 : 0;
+  ctx.fillStyle = "#e5e7eb";
+  ctx.fillText(txt, xTxt, 6);
+  ctx.strokeStyle = "#ef4444";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(xTxt - tw / 2 - 6, -6);
+  ctx.lineTo(xTxt + tw / 2 + 6, -6);
+  ctx.stroke();
+  if (pct) {
+    roundRect(ctx, bw / 2 - 150, -40, 140, 64, 32);
+    ctx.fillStyle = oc === "blackfriday" ? GOLD : "#ef4444";
+    ctx.fill();
+    ctx.fillStyle = oc === "blackfriday" ? "#111" : "#fff";
+    ctx.font = "900 36px Montserrat, Arial";
+    ctx.fillText(`-${pct}%`, bw / 2 - 80, 5);
+  }
+  ctx.restore();
+}
+
+function camadaOcasiao(ctx: CanvasRenderingContext2D, oc: Ocasiao, t: number, tipo: Tela, lt: number) {
+  if (oc === "nenhuma") return;
+  if (oc === "blackfriday") {
+    // borda dourada fina e faixa preta no rodapé com o texto correndo
+    ctx.strokeStyle = "rgba(245,196,81,.9)";
+    ctx.lineWidth = 6;
+    ctx.strokeRect(12, 12, W - 24, H - 24);
+    ctx.fillStyle = "#0a0a0a";
+    ctx.fillRect(0, H - 54, W, 54);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, H - 54, W, 54);
+    ctx.clip();
+    ctx.fillStyle = GOLD;
+    ctx.font = "900 26px Montserrat, Arial";
+    ctx.textAlign = "left";
+    (ctx as unknown as { letterSpacing: string }).letterSpacing = "0px";
+    const pedacos = ["BLACK FRIDAY", "•", "OFERTA POR TEMPO LIMITADO", "•"];
+    const larg = pedacos.map((p) => ctx.measureText(p).width);
+    const ciclo = larg.reduce((a, w) => a + w + 24, 0);
+    let x = -((t * 90) % ciclo);
+    while (x < W) {
+      pedacos.forEach((p, i) => {
+        ctx.fillText(p, x, H - 18);
+        x += larg[i] + 24;
+      });
+    }
+    ctx.restore();
+  }
+  if (oc === "natal") neve(ctx, t);
+  if (oc === "carnaval") confete(ctx, t);
+  if (oc === "anonovo") fogos(ctx, t);
+  // selo na abertura e no preço
+  if (tipo === "abertura" || tipo === "preco") seloOcasiao(ctx, oc, ease(lt / 0.5));
+}
+
 function cenaDestaque(ctx: CanvasRenderingContext2D, modelo: Modelo, texto: string, lt: number, out: number) {
   ctx.textAlign = "center";
   const k = ease((lt - 0.2) / 0.6);
@@ -1255,6 +1460,7 @@ function drawFrame(
   logo: HTMLImageElement | null,
   contatos: Contato[],
   modelo: Modelo = "classico",
+  ocasiao: Ocasiao = "nenhuma",
 ) {
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = "#000";
@@ -1316,6 +1522,8 @@ function drawFrame(
     }[modelo];
     fn(ctx, CENA_MODELO[tipo], lt, out, d, logo, contatos);
   }
+  if (tipo === "preco") precoAntigo(ctx, d, lt, out, ocasiao, modelo === "revista" ? 790 : 250);
+  camadaOcasiao(ctx, ocasiao, t, tipo, lt);
   ctx.globalAlpha = 1;
   semSombra(ctx);
 }
@@ -1529,6 +1737,7 @@ function VideoLabTela() {
     parcelas: "10x",
     entrada: "",
     preco: "R$ 8.000",
+    precoAntigo: "",
     pessoas: "para o casal",
     itens: ["Aéreo ida e volta", "Hotel all inclusive", "Traslados", "Seguro viagem"],
     destaques: ["Mar azul-turquesa", "Dias de puro descanso"],
@@ -1543,6 +1752,9 @@ function VideoLabTela() {
   const [modelo, setModelo] = useState<Modelo>("classico");
   const modeloRef = useRef<Modelo>("classico");
   modeloRef.current = modelo;
+  const [ocasiao, setOcasiao] = useState<Ocasiao>("nenhuma");
+  const ocasiaoRef = useRef<Ocasiao>("nenhuma");
+  ocasiaoRef.current = ocasiao;
   const [fundos, setFundos] = useState<Midia[]>([]);
   const [pool, setPool] = useState<Midia[]>([]);
   const [editando, setEditando] = useState(false);
@@ -1670,6 +1882,7 @@ function VideoLabTela() {
         parcelas: d.parcelas || "10x",
         entrada: d.entrada || "",
         preco: d.preco || "",
+        precoAntigo: d.precoAntigo || "",
         pessoas: d.pessoas || "",
         itens: d.itens || [],
         destaques: d.destaques?.length ? d.destaques : [],
@@ -1817,7 +2030,7 @@ function VideoLabTela() {
         if (v && isVideo(v)) { v.currentTime = 0; v.play(); }
         lastScene = sc;
       }
-      drawFrame(ctx, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, modeloRef.current);
+      drawFrame(ctx, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, modeloRef.current, ocasiaoRef.current);
       raf = requestAnimationFrame(loop);
     };
     vidsRef.current.forEach((v) => isVideo(v) && v.play());
@@ -1827,17 +2040,25 @@ function VideoLabTela() {
 
   // Atalho de teste: desenha um momento do vídeo num modelo e devolve a imagem.
   useEffect(() => {
-    (window as unknown as Record<string, unknown>).__videoLabQuadro = (t: number, m: Modelo) => {
+    (window as unknown as Record<string, unknown>).__videoLabQuadro = (t: number, m: Modelo, oc: Ocasiao = "nenhuma") => {
       const c = document.createElement("canvas");
       c.width = W;
       c.height = H;
-      drawFrame(c.getContext("2d")!, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m);
+      drawFrame(c.getContext("2d")!, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m, oc);
       return c.toDataURL("image/jpeg", 0.8);
     };
   });
 
   // Gera quadro a quadro (não depende de a tela estar visível nem da velocidade do aparelho).
   async function gerar() {
+    // fotografia das opções: mudar algo na tela durante a geração não altera este vídeo
+    const foto0 = {
+      dados: structuredClone(dadosRef.current),
+      logo: logoRef.current,
+      contatos: [...contatosRef.current],
+      modelo: modeloRef.current,
+      ocasiao: ocasiaoRef.current,
+    };
     setGravando(true);
     setUrl(null);
     const FPS = 30;
@@ -1894,7 +2115,7 @@ function VideoLabTela() {
           const v = vids[i % Math.max(vids.length, 1)];
           return v && isVideo(v) ? esperar(v, Math.max(0, t - INICIOS[i] + FADE)) : Promise.resolve();
         }));
-        drawFrame(ctx, t, vids, dadosRef.current, logoRef.current, contatosRef.current, modeloRef.current);
+        drawFrame(ctx, t, vids, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao);
         const frame = new VideoFrame(canvas, { timestamp: Math.round((f * 1e6) / FPS), duration: Math.round(1e6 / FPS) });
         enc.encode(frame, { keyFrame: f % 60 === 0 });
         frame.close();
@@ -2109,6 +2330,12 @@ function VideoLabTela() {
               </div>
             )}
           </div>
+          {dados.pagamento !== "free_quote" && (
+            <div>
+              <label className={rotulo}>Preço antigo, riscado (opcional, ex.: R$ 4.990)</label>
+              <input id="campo-precoAntigo" className={campo} value={dados.precoAntigo} onChange={(e) => set("precoAntigo", e.target.value)} />
+            </div>
+          )}
           <div>
             <label className={rotulo}>Para quem</label>
             <input id="campo-pessoas" className={campo} value={dados.pessoas} onChange={(e) => set("pessoas", e.target.value)} />
@@ -2152,12 +2379,27 @@ function VideoLabTela() {
             <input type="file" accept="image/*" onChange={(e) => onLogo(e.target.files?.[0])} />
           </div>
 
+          <h2 className="mt-2 text-sm font-bold text-neutral-200">Oferta sazonal</h2>
+          <div className="flex flex-wrap gap-2">
+            {OCASIOES.map((o) => (
+              <button
+                key={o.id}
+                id={`ocasiao-${o.id}`}
+                disabled={gravando}
+                onClick={() => setOcasiao(o.id)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${ocasiao === o.id ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
+              >
+                {o.nome}
+              </button>
+            ))}
+          </div>
           <h2 className="mt-2 text-sm font-bold text-neutral-200">Modelo do vídeo</h2>
           <div className="grid grid-cols-3 gap-2">
             {MODELOS.map((m) => (
               <button
                 key={m.id}
                 id={`modelo-${m.id}`}
+                disabled={gravando}
                 onClick={() => setModelo(m.id)}
                 className={`rounded-lg border p-2 text-left ${modelo === m.id ? "border-amber-400 bg-amber-400/10" : "border-neutral-700 bg-neutral-900"}`}
               >
@@ -2176,7 +2418,7 @@ function VideoLabTela() {
           </button>
           <p id="status" className="text-sm text-neutral-300">{status}</p>
           {url && (
-            <a id="baixar" className="rounded-lg bg-green-600 px-4 py-2 text-center font-semibold" href={url} download={`video-${dados.destino}.mp4`}>
+            <a id="baixar" className="rounded-lg bg-green-600 px-4 py-2 text-center font-semibold" href={url} download={`video-${dados.destino}-${modelo}${ocasiao !== "nenhuma" ? "-" + ocasiao : ""}.mp4`}>
               Baixar vídeo
             </a>
           )}
