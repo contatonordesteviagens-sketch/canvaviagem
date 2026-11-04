@@ -128,12 +128,17 @@ function fitText(ctx: CanvasRenderingContext2D, text: string, weight: number, ma
 const GOLD = "#f5c451";
 
 // ---------------- Modelos de vídeo (4 telas: destino, inclusos, preço, contato) ----------------
-type Modelo = "classico" | "neon" | "cartao" | "luxo";
+type Modelo = "classico" | "neon" | "cartao" | "luxo" | "passagem" | "revista" | "postal" | "faixa" | "vibrante";
 const MODELOS: { id: Modelo; nome: string; desc: string }[] = [
   { id: "classico", nome: "Clássico", desc: "Letras grandes sobre o vídeo" },
   { id: "neon", nome: "Neon", desc: "Faixas amarelas, estilo oferta" },
   { id: "cartao", nome: "Cartão", desc: "Cartão branco limpo" },
   { id: "luxo", nome: "Luxo", desc: "Título com serifa, elegante" },
+  { id: "passagem", nome: "Passagem", desc: "Cartão de embarque" },
+  { id: "revista", nome: "Revista", desc: "Editorial, letras finas" },
+  { id: "postal", nome: "Postal", desc: "Moldura, selo e carimbo" },
+  { id: "faixa", nome: "Faixa preta", desc: "Painel escuro embaixo" },
+  { id: "vibrante", nome: "Vibrante", desc: "Roxo e rosa, divertido" },
 ];
 
 const NEON = "#eaff2b";
@@ -661,6 +666,482 @@ function cenaLuxo(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: 
   ctx.globalAlpha = 1;
 }
 
+// ---------- Passagem: cartão de embarque
+function bilhete(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, corte: number) {
+  ctx.save();
+  sombra(ctx, 40, "rgba(0,0,0,.35)");
+  roundRect(ctx, x, y, w, h, 28);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+  semSombra(ctx);
+  // furos laterais e linha picotada
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.beginPath();
+  ctx.arc(x, y + corte, 22, 0, Math.PI * 2);
+  ctx.arc(x + w, y + corte, 22, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.setLineDash([12, 10]);
+  ctx.strokeStyle = "#c9c9c9";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x + 34, y + corte);
+  ctx.lineTo(x + w - 34, y + corte);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+function aviao(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, cor: string) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(s, s);
+  ctx.fillStyle = cor;
+  ctx.beginPath();
+  ctx.moveTo(-20, 2); ctx.lineTo(18, 2); ctx.quadraticCurveTo(26, 0, 18, -2); ctx.lineTo(-20, -2); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(2, -2); ctx.lineTo(-6, -16); ctx.lineTo(-1, -16); ctx.lineTo(10, -2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(2, 2); ctx.lineTo(-6, 16); ctx.lineTo(-1, 16); ctx.lineTo(10, 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-16, -2); ctx.lineTo(-20, -9); ctx.lineTo(-17, -9); ctx.lineTo(-12, -2); ctx.fill();
+  ctx.restore();
+}
+const AZUL = "#1d4ed8";
+function cenaPassagem(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
+  const k = back(lt / 0.55);
+  const x = 60, w = W - 120;
+  ctx.globalAlpha = out * clamp01(lt / 0.25);
+  ctx.save();
+  ctx.translate(0, (1 - k) * 120);
+  if (cena === 0) {
+    bilhete(ctx, x, 330, w, 420, 250);
+    ctx.textAlign = "left";
+    ctx.fillStyle = AZUL;
+    ctx.font = "800 22px Montserrat, Arial";
+    ctx.fillText("CARTÃO DE EMBARQUE", x + 40, 390);
+    ctx.fillStyle = "#888";
+    ctx.font = "600 22px Montserrat, Arial";
+    ctx.fillText("DESTINO", x + 40, 440);
+    const s = fitText(ctx, d.destino.toUpperCase(), 900, 84, w - 160);
+    ctx.font = `900 ${s}px Montserrat, Arial`;
+    ctx.fillStyle = "#111";
+    ctx.fillText(d.destino.toUpperCase(), x + 40, 530);
+    aviao(ctx, x + w - 70, 500, 2.2 * ease((lt - 0.4) / 0.5), AZUL);
+    ctx.font = "600 30px Montserrat, Arial";
+    ctx.fillStyle = "#444";
+    const cs = fitText(ctx, d.chamada, 600, 30, w - 80);
+    ctx.font = `600 ${cs}px Montserrat, Arial`;
+    ctx.fillText(d.chamada, x + 40, 650);
+    ctx.fillStyle = "#888";
+    ctx.font = "600 22px Montserrat, Arial";
+    ctx.fillText("PORTÃO  A1   ·   ASSENTO  VIP", x + 40, 705);
+  }
+  if (cena === 1) {
+    const itens = d.itens.filter(Boolean).slice(0, 4);
+    const h = 160 + itens.length * 80;
+    bilhete(ctx, x, 360, w, h, 120);
+    ctx.textAlign = "left";
+    ctx.fillStyle = AZUL;
+    ctx.font = "900 40px Montserrat, Arial";
+    ctx.fillText("Sua bagagem inclui", x + 40, 440);
+    itens.forEach((it, i) => {
+      const ki = ease((lt - 0.3 - i * 0.15) / 0.4);
+      ctx.globalAlpha = out * ki;
+      const y = 545 + i * 80;
+      iconeCheck(ctx, x + 60, y - 12, 18, AZUL, "#fff");
+      const fs = fitText(ctx, it, 700, 34, w - 140);
+      ctx.font = `700 ${fs}px Montserrat, Arial`;
+      ctx.fillStyle = "#222";
+      ctx.fillText(it, x + 96, y);
+    });
+  }
+  if (cena === 2) {
+    const pt = precoTextos(d);
+    bilhete(ctx, x, 420, w, 380, 120);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#888";
+    ctx.font = "700 24px Montserrat, Arial";
+    ctx.fillText("TARIFA  ·  " + d.destino.toUpperCase().slice(0, 22), W / 2, 495);
+    ctx.fillStyle = AZUL;
+    ctx.font = "800 32px Montserrat, Arial";
+    ctx.fillText(pt.topo.toUpperCase(), W / 2, 610);
+    textoPreco(ctx, pt.valor, W / 2, 725, 130, w - 80, "#111");
+    ctx.fillStyle = "#666";
+    ctx.font = "600 28px Montserrat, Arial";
+    ctx.fillText(pt.rodape, W / 2, 775);
+  }
+  if (cena === 3) {
+    const nc = Math.max(contatosLista(d, contatos).length, 1);
+    bilhete(ctx, x, 300, w, 400 + nc * 82, 330);
+    desenharLogo(ctx, d, logo, W / 2, 410, 80, 1, "#f3f4f6");
+    ctx.textAlign = "center";
+    ctx.fillStyle = AZUL;
+    const ts = fitText(ctx, "Embarque com a gente", 900, 48, w - 80);
+    ctx.font = `900 ${ts}px Montserrat, Arial`;
+    ctx.fillText("Embarque com a gente", W / 2, 580);
+    ctx.restore();
+    ctx.save();
+    desenharPilulas(ctx, d, contatos, 700, lt, 82);
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+// ---------- Revista: editorial, título fino gigante, numeração
+function cenaRevista(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
+  const k = ease(lt / 0.7);
+  ctx.globalAlpha = out;
+  ctx.textAlign = "left";
+  const num = (n: string) => {
+    ctx.font = "700 22px Montserrat, Arial";
+    ctx.fillStyle = "#fff";
+    ctx.fillText(n, 50, 120);
+    ctx.fillRect(50, 134, 80 * k, 3);
+  };
+  if (cena === 0) {
+    num("01 — DESTINO");
+    ctx.globalAlpha = out * k;
+    const nome = d.destino.toUpperCase();
+    const s = fitText(ctx, nome, 300, 170, W - 60);
+    ctx.font = `300 ${s}px Montserrat, Arial`;
+    sombra(ctx, 20);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(nome, 34 - (1 - k) * 80, 1040);
+    semSombra(ctx);
+    ctx.font = "italic 400 40px 'Playfair Display', Georgia, serif";
+    ctx.globalAlpha = out * ease((lt - 0.6) / 0.6);
+    ctx.fillText(d.chamada, 40, 1110);
+  }
+  if (cena === 1) {
+    num("02 — NA MALA");
+    ctx.globalAlpha = out * k;
+    ctx.font = "300 72px Montserrat, Arial";
+    ctx.fillStyle = "#fff";
+    sombra(ctx, 18);
+    ctx.fillText("Incluso", 40, 760);
+    semSombra(ctx);
+    d.itens.filter(Boolean).slice(0, 4).forEach((it, i) => {
+      const ki = ease((lt - 0.3 - i * 0.16) / 0.45);
+      ctx.globalAlpha = out * ki;
+      const y = 850 + i * 70;
+      ctx.fillStyle = GOLD;
+      ctx.font = "700 26px Montserrat, Arial";
+      ctx.fillText(String(i + 1).padStart(2, "0"), 40, y);
+      ctx.fillStyle = "#fff";
+      const fs = fitText(ctx, it, 500, 38, W - 160);
+      ctx.font = `500 ${fs}px Montserrat, Arial`;
+      sombra(ctx, 14);
+      ctx.fillText(it, 100, y);
+      semSombra(ctx);
+    });
+  }
+  if (cena === 2) {
+    const pt = precoTextos(d);
+    num("03 — INVESTIMENTO");
+    ctx.globalAlpha = out * k;
+    ctx.fillStyle = "#fff";
+    ctx.font = "500 34px Montserrat, Arial";
+    sombra(ctx, 16);
+    ctx.fillText(pt.topo, 40, 880);
+    const ps = fitText(ctx, pt.valor, 300, 190, W - 60);
+    ctx.font = `300 ${ps}px Montserrat, Arial`;
+    ctx.fillText(pt.valor, 30 - (1 - k) * 60, 1060);
+    ctx.font = "500 32px Montserrat, Arial";
+    ctx.fillText(pt.rodape, 40, 1120);
+    semSombra(ctx);
+  }
+  if (cena === 3) {
+    num("04 — RESERVE");
+    desenharLogo(ctx, d, logo, W / 2, 440, 120, back(lt / 0.6));
+    ctx.textAlign = "center";
+    ctx.globalAlpha = ease((lt - 0.4) / 0.5);
+    ctx.fillStyle = "#fff";
+    ctx.font = "300 66px Montserrat, Arial";
+    ctx.fillText("Sua próxima história", W / 2, 670);
+    ctx.font = "italic 400 40px 'Playfair Display', Georgia, serif";
+    ctx.fillText(`começa em ${d.destino}`, W / 2, 725);
+    contatosLista(d, contatos).forEach((c, i) => {
+      const kc = ease((lt - 0.9 - i * 0.15) / 0.45);
+      ctx.globalAlpha = kc;
+      const y = 830 + i * 74;
+      const fs = fitText(ctx, c.txt, 600, 34, W - 140);
+      ctx.font = `600 ${fs}px Montserrat, Arial`;
+      ctx.fillStyle = i === 0 ? GOLD : "#fff";
+      ctx.fillText(c.txt, W / 2, y);
+      ctx.fillStyle = "rgba(255,255,255,.35)";
+      ctx.fillRect(W / 2 - 120, y + 22, 240, 1.5);
+    });
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- Postal: moldura branca, selo e carimbo
+function moldura(ctx: CanvasRenderingContext2D, k: number) {
+  const m = 28 * k;
+  ctx.fillStyle = "#fbf7ef";
+  ctx.fillRect(0, 0, W, m);
+  ctx.fillRect(0, H - m, W, m);
+  ctx.fillRect(0, 0, m, H);
+  ctx.fillRect(W - m, 0, m, H);
+}
+function selo(ctx: CanvasRenderingContext2D, x: number, y: number, txt: string, rot: number, k: number) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot);
+  ctx.scale(0.6 + 0.4 * k, 0.6 + 0.4 * k);
+  ctx.strokeStyle = "#c2410c";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(0, 0, 92, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, 0, 78, 0, Math.PI * 2);
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = "#c2410c";
+  ctx.textAlign = "center";
+  const s = fitText(ctx, txt, 900, 30, 140);
+  ctx.font = `900 ${s}px Montserrat, Arial`;
+  ctx.fillText(txt, 0, 10);
+  ctx.restore();
+}
+function cenaPostal(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
+  ctx.globalAlpha = 1;
+  moldura(ctx, ease(lt / 0.4));
+  const k = ease((lt - 0.2) / 0.6);
+  ctx.globalAlpha = out * k;
+  const cartaoPapel = (y: number, h: number) => {
+    ctx.save();
+    ctx.translate(W / 2, y + h / 2);
+    ctx.rotate(-0.025);
+    sombra(ctx, 30, "rgba(0,0,0,.3)");
+    ctx.fillStyle = "#fbf7ef";
+    ctx.fillRect(-(W - 140) / 2, -h / 2, W - 140, h);
+    semSombra(ctx);
+    ctx.restore();
+  };
+  if (cena === 0) {
+    ctx.textAlign = "center";
+    ctx.font = "italic 400 52px 'Playfair Display', Georgia, serif";
+    ctx.fillStyle = "#fff";
+    sombra(ctx, 20);
+    ctx.fillText("Lembranças de", W / 2, 880);
+    const s = fitText(ctx, d.destino, 700, 130, W - 120);
+    ctx.font = `700 ${s}px 'Playfair Display', Georgia, serif`;
+    ctx.fillText(d.destino, W / 2, 1010);
+    semSombra(ctx);
+    selo(ctx, W - 160, 220, "VIAGEM", 0.25, back((lt - 0.4) / 0.5));
+  }
+  if (cena === 1) {
+    const itens = d.itens.filter(Boolean).slice(0, 4);
+    cartaoPapel(560, 140 + itens.length * 74);
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#7c2d12";
+    ctx.font = "italic 400 44px 'Playfair Display', Georgia, serif";
+    ctx.fillText("Na sua viagem:", 110, 640);
+    itens.forEach((it, i) => {
+      const ki = ease((lt - 0.35 - i * 0.16) / 0.4);
+      ctx.globalAlpha = out * ki;
+      const fs = fitText(ctx, "— " + it, 500, 36, W - 240);
+      ctx.font = `500 ${fs}px Montserrat, Arial`;
+      ctx.fillStyle = "#3f3f46";
+      ctx.fillText("— " + it, 120, 720 + i * 74);
+    });
+  }
+  if (cena === 2) {
+    const pt = precoTextos(d);
+    cartaoPapel(620, 320);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#7c2d12";
+    ctx.font = "italic 400 40px 'Playfair Display', Georgia, serif";
+    ctx.fillText(pt.topo, W / 2, 710);
+    textoPreco(ctx, pt.valor, W / 2, 840, 120, W - 220, "#7c2d12");
+    ctx.font = "500 30px Montserrat, Arial";
+    ctx.fillStyle = "#57534e";
+    ctx.fillText(pt.rodape, W / 2, 895);
+    selo(ctx, W - 170, 640, "OFERTA", -0.2, back((lt - 0.5) / 0.5));
+  }
+  if (cena === 3) {
+    cartaoPapel(300, 760);
+    desenharLogo(ctx, d, logo, W / 2, 440, 100, 1, "#fff");
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#7c2d12";
+    ctx.font = "italic 400 52px 'Playfair Display', Georgia, serif";
+    ctx.fillText("Vamos juntos?", W / 2, 620);
+    desenharPilulas(ctx, d, contatos, 720, lt, 80);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- Faixa preta: painel inferior escuro com destaque amarelo
+function painel(ctx: CanvasRenderingContext2D, y: number, k: number) {
+  ctx.fillStyle = "rgba(8,8,10,.92)";
+  ctx.fillRect(0, y + (1 - k) * (H - y), W, H - y);
+  ctx.fillStyle = NEON;
+  ctx.fillRect(0, y + (1 - k) * (H - y), W * k, 8);
+}
+function cenaFaixa(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
+  const k = ease(lt / 0.5);
+  ctx.globalAlpha = out;
+  ctx.textAlign = "left";
+  if (cena === 0) {
+    painel(ctx, 860, k);
+    ctx.globalAlpha = out * ease((lt - 0.3) / 0.4);
+    ctx.fillStyle = NEON;
+    ctx.font = "800 26px Montserrat, Arial";
+    ctx.fillText("PACOTE", 50, 930);
+    const s = fitText(ctx, d.destino.toUpperCase(), 900, 96, W - 100);
+    ctx.font = `900 ${s}px Montserrat, Arial`;
+    ctx.fillStyle = "#fff";
+    ctx.fillText(d.destino.toUpperCase(), 46, 1030);
+    const cs = fitText(ctx, d.chamada, 600, 32, W - 100);
+    ctx.font = `600 ${cs}px Montserrat, Arial`;
+    ctx.fillStyle = "#d4d4d8";
+    ctx.fillText(d.chamada, 50, 1090);
+  }
+  if (cena === 1) {
+    const itens = d.itens.filter(Boolean).slice(0, 4);
+    const y0 = H - 160 - itens.length * 76;
+    painel(ctx, y0, k);
+    ctx.fillStyle = NEON;
+    ctx.font = "900 40px Montserrat, Arial";
+    ctx.globalAlpha = out * k;
+    ctx.fillText("ESTÁ INCLUSO", 50, y0 + 80);
+    itens.forEach((it, i) => {
+      const ki = ease((lt - 0.3 - i * 0.15) / 0.4);
+      ctx.globalAlpha = out * ki;
+      iconeCheck(ctx, 68, y0 + 145 + i * 76, 18, NEON, "#111");
+      const fs = fitText(ctx, it, 700, 34, W - 160);
+      ctx.font = `700 ${fs}px Montserrat, Arial`;
+      ctx.fillStyle = "#fff";
+      ctx.fillText(it, 104, y0 + 157 + i * 76);
+    });
+  }
+  if (cena === 2) {
+    const pt = precoTextos(d);
+    painel(ctx, 820, k);
+    ctx.globalAlpha = out * ease((lt - 0.3) / 0.4);
+    ctx.fillStyle = "#d4d4d8";
+    ctx.font = "800 30px Montserrat, Arial";
+    ctx.fillText(pt.topo.toUpperCase(), 50, 900);
+    ctx.save();
+    ctx.translate(46, 1050);
+    const kp = back((lt - 0.35) / 0.5);
+    ctx.scale(0.8 + 0.2 * kp, 0.8 + 0.2 * kp);
+    textoPreco(ctx, pt.valor, 0, 0, 150, W - 100, NEON);
+    ctx.restore();
+    ctx.fillStyle = "#fff";
+    ctx.font = "600 32px Montserrat, Arial";
+    ctx.fillText(pt.rodape, 50, 1110);
+  }
+  if (cena === 3) {
+    painel(ctx, 560, k);
+    desenharLogo(ctx, d, logo, W / 2, 400, 120, back(lt / 0.6));
+    ctx.textAlign = "center";
+    ctx.globalAlpha = ease((lt - 0.4) / 0.4);
+    ctx.fillStyle = NEON;
+    ctx.font = "900 60px Montserrat, Arial";
+    ctx.fillText("FALE COM A GENTE", W / 2, 690);
+    desenharPilulas(ctx, d, contatos, 790, lt, 82);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- Vibrante: degradê roxo e rosa, formas redondas
+function cenaVibrante(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
+  const k = ease(lt / 0.5);
+  const gradBloco = (x: number, y: number, w: number, h: number) => {
+    const g = ctx.createLinearGradient(x, y, x + w, y + h);
+    g.addColorStop(0, "#7c3aed");
+    g.addColorStop(1, "#ec4899");
+    return g;
+  };
+  ctx.globalAlpha = out;
+  // faixa fina em degradê no topo, que cresce a cada tela
+  ctx.fillStyle = gradBloco(0, 0, W, 10);
+  ctx.fillRect(0, 0, W * k, 10);
+  ctx.textAlign = "center";
+  if (cena === 0) {
+    const kb = back((lt - 0.15) / 0.55);
+    ctx.save();
+    ctx.translate(W / 2, 880);
+    ctx.rotate(-0.04);
+    ctx.scale(0.7 + 0.3 * kb, 0.7 + 0.3 * kb);
+    const s = fitText(ctx, d.destino, 900, 100, W - 160);
+    ctx.font = `900 ${s}px Montserrat, Arial`;
+    const w = Math.min(ctx.measureText(d.destino).width + 90, W - 60);
+    roundRect(ctx, -w / 2, -95, w, 150, 75);
+    ctx.fillStyle = gradBloco(-w / 2, -95, w, 150);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.fillText(d.destino, 0, 15);
+    ctx.restore();
+    ctx.globalAlpha = out * ease((lt - 0.7) / 0.5);
+    ctx.font = "800 36px Montserrat, Arial";
+    const cs = fitText(ctx, d.chamada, 800, 36, W - 160);
+    ctx.font = `800 ${cs}px Montserrat, Arial`;
+    const cw = Math.min(ctx.measureText(d.chamada).width + 60, W - 80);
+    roundRect(ctx, (W - cw) / 2, 990, cw, 70, 35);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.fillStyle = "#7c3aed";
+    ctx.fillText(d.chamada, W / 2, 1037);
+  }
+  if (cena === 1) {
+    ctx.globalAlpha = out * k;
+    ctx.font = "900 54px Montserrat, Arial";
+    ctx.fillStyle = "#fff";
+    sombra(ctx, 18);
+    ctx.fillText("Tá tudo incluso ✨", W / 2, 600);
+    semSombra(ctx);
+    d.itens.filter(Boolean).slice(0, 4).forEach((it, i) => {
+      const ki = back((lt - 0.3 - i * 0.15) / 0.45);
+      ctx.globalAlpha = out * clamp01((lt - 0.3 - i * 0.15) / 0.2);
+      const y = 700 + i * 96;
+      const fs = fitText(ctx, it, 800, 36, W - 200);
+      ctx.font = `800 ${fs}px Montserrat, Arial`;
+      const w = Math.min(ctx.measureText(it).width + 80, W - 80);
+      ctx.save();
+      ctx.translate(W / 2, y);
+      ctx.scale(0.7 + 0.3 * ki, 0.7 + 0.3 * ki);
+      roundRect(ctx, -w / 2, -42, w, 80, 40);
+      ctx.fillStyle = i % 2 ? "#fff" : gradBloco(-w / 2, -42, w, 80);
+      ctx.fill();
+      ctx.fillStyle = i % 2 ? "#7c3aed" : "#fff";
+      ctx.fillText(it, 0, 12);
+      ctx.restore();
+    });
+  }
+  if (cena === 2) {
+    const pt = precoTextos(d);
+    const kb = back((lt - 0.2) / 0.55);
+    ctx.globalAlpha = out * clamp01((lt - 0.2) / 0.25);
+    ctx.save();
+    ctx.translate(W / 2, 760);
+    ctx.scale(0.6 + 0.4 * kb, 0.6 + 0.4 * kb);
+    ctx.beginPath();
+    ctx.arc(0, 0, 250, 0, Math.PI * 2);
+    ctx.fillStyle = gradBloco(-250, -250, 500, 500);
+    sombra(ctx, 50, "rgba(124,58,237,.6)");
+    ctx.fill();
+    semSombra(ctx);
+    ctx.fillStyle = "#fff";
+    const ts = fitText(ctx, pt.topo.toUpperCase(), 800, 30, 380);
+    ctx.font = `800 ${ts}px Montserrat, Arial`;
+    ctx.fillText(pt.topo.toUpperCase(), 0, -80);
+    textoPreco(ctx, pt.valor, 0, 40, 120, 420, "#fff");
+    ctx.font = "700 30px Montserrat, Arial";
+    ctx.fillText(pt.rodape, 0, 100);
+    ctx.restore();
+  }
+  if (cena === 3) {
+    desenharLogo(ctx, d, logo, W / 2, 450, 125, back(lt / 0.6));
+    ctx.globalAlpha = ease((lt - 0.4) / 0.5);
+    ctx.font = "900 60px Montserrat, Arial";
+    ctx.fillStyle = "#fff";
+    ctx.fillText("Bora viajar? 💜", W / 2, 680);
+    desenharPilulas(ctx, d, contatos, 790, lt, 84);
+  }
+  ctx.globalAlpha = 1;
+}
+
 function cenaDestaque(ctx: CanvasRenderingContext2D, modelo: Modelo, texto: string, lt: number, out: number) {
   ctx.textAlign = "center";
   const k = ease((lt - 0.2) / 0.6);
@@ -697,6 +1178,62 @@ function cenaDestaque(ctx: CanvasRenderingContext2D, modelo: Modelo, texto: stri
     ctx.fill();
     semSombra(ctx);
     ctx.fillStyle = "#111";
+    ctx.fillText(texto, 0, 6);
+    ctx.restore();
+  } else if (modelo === "passagem") {
+    const s = fitText(ctx, texto, 800, 40, W - 220);
+    ctx.font = `800 ${s}px Montserrat, Arial`;
+    const w = Math.min(ctx.measureText(texto).width + 140, W - 80);
+    ctx.save();
+    ctx.translate(0, (1 - k) * 60);
+    bilhete(ctx, (W - w) / 2, 930, w, 120, 60);
+    aviao(ctx, (W - w) / 2 + 50, 990, 1.2, AZUL);
+    ctx.fillStyle = "#111";
+    ctx.fillText(texto, W / 2 + 30, 1004);
+    ctx.restore();
+  } else if (modelo === "revista") {
+    ctx.textAlign = "left";
+    const s = fitText(ctx, texto, 300, 76, W - 80);
+    ctx.font = `300 ${s}px Montserrat, Arial`;
+    sombra(ctx, 20);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(texto, 40 - (1 - k) * 60, 1060);
+    semSombra(ctx);
+    ctx.fillStyle = GOLD;
+    ctx.fillRect(40, 1090, 120 * k, 4);
+  } else if (modelo === "postal") {
+    ctx.globalAlpha = 1;
+    moldura(ctx, 1);
+    ctx.globalAlpha = out * k;
+    const s = fitText(ctx, texto, 400, 60, W - 120);
+    ctx.font = `italic 400 ${s}px 'Playfair Display', Georgia, serif`;
+    sombra(ctx, 20);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(texto, W / 2, 1020);
+    semSombra(ctx);
+  } else if (modelo === "faixa") {
+    painel(ctx, 960, k);
+    ctx.textAlign = "left";
+    const s = fitText(ctx, texto, 900, 50, W - 100);
+    ctx.font = `900 ${s}px Montserrat, Arial`;
+    ctx.fillStyle = "#fff";
+    ctx.fillText(texto, 50, 1080);
+  } else if (modelo === "vibrante") {
+    const s = fitText(ctx, texto, 900, 44, W - 180);
+    ctx.font = `900 ${s}px Montserrat, Arial`;
+    const w = Math.min(ctx.measureText(texto).width + 90, W - 60);
+    const kb = back((lt - 0.2) / 0.5);
+    ctx.save();
+    ctx.translate(W / 2, 1000);
+    ctx.rotate(-0.03);
+    ctx.scale(0.7 + 0.3 * kb, 0.7 + 0.3 * kb);
+    roundRect(ctx, -w / 2, -60, w, 100, 50);
+    const g = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
+    g.addColorStop(0, "#7c3aed");
+    g.addColorStop(1, "#ec4899");
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.fillStyle = "#fff";
     ctx.fillText(texto, 0, 6);
     ctx.restore();
   } else {
@@ -753,7 +1290,7 @@ function drawFrame(
   if (cena === CENAS - 1) {
     g.addColorStop(0, "rgba(5,8,20,.55)");
     g.addColorStop(1, "rgba(5,8,20,.85)");
-  } else if (modelo === "luxo") {
+  } else if (modelo === "luxo" || modelo === "revista" || modelo === "postal") {
     g.addColorStop(0, "rgba(0,0,0,.25)");
     g.addColorStop(0.5, "rgba(0,0,0,.35)");
     g.addColorStop(1, "rgba(0,0,0,.75)");
@@ -773,7 +1310,10 @@ function drawFrame(
     const texto = d.destaques[n] || (n === 0 ? d.chamada : `Conheça ${d.destino}`);
     cenaDestaque(ctx, modelo, texto, lt, out);
   } else {
-    const fn = { classico: cenaClassico, neon: cenaNeon, cartao: cenaCartao, luxo: cenaLuxo }[modelo];
+    const fn = {
+      classico: cenaClassico, neon: cenaNeon, cartao: cenaCartao, luxo: cenaLuxo,
+      passagem: cenaPassagem, revista: cenaRevista, postal: cenaPostal, faixa: cenaFaixa, vibrante: cenaVibrante,
+    }[modelo];
     fn(ctx, CENA_MODELO[tipo], lt, out, d, logo, contatos);
   }
   ctx.globalAlpha = 1;
@@ -1613,7 +2153,7 @@ function VideoLabTela() {
           </div>
 
           <h2 className="mt-2 text-sm font-bold text-neutral-200">Modelo do vídeo</h2>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {MODELOS.map((m) => (
               <button
                 key={m.id}
