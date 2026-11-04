@@ -9,9 +9,27 @@ import { FabricaProvider, useFabricaContext, type Pacote } from "@/hooks/useFabr
 
 const W = 720;
 const H = 1280;
-const SCENE = 4.6; // segundos por quadro
+// Telas do vídeo, na ordem. Cada uma tem o seu fundo (vídeo do destino ou foto).
+type Tela = "abertura" | "inclusos" | "destaque" | "preco" | "contato";
+const TELAS: { tipo: Tela; dur: number; nome: string }[] = [
+  { tipo: "abertura", dur: 4.5, nome: "Abertura" },
+  { tipo: "inclusos", dur: 3.8, nome: "O que inclui" },
+  { tipo: "destaque", dur: 3.0, nome: "Cena extra 1" },
+  { tipo: "destaque", dur: 3.0, nome: "Cena extra 2" },
+  { tipo: "preco", dur: 3.8, nome: "Preço" },
+  { tipo: "contato", dur: 4.2, nome: "Contato" },
+];
+const CENAS = TELAS.length;
+const INICIOS = TELAS.map((_, i) => TELAS.slice(0, i).reduce((a, x) => a + x.dur, 0));
 const FADE = 0.5;
-const TOTAL = SCENE * 3;
+const TOTAL = TELAS.reduce((a, x) => a + x.dur, 0);
+const telaEm = (t: number) => {
+  let i = 0;
+  while (i < CENAS - 1 && t >= INICIOS[i + 1]) i++;
+  return i;
+};
+// número antigo da tela em cada modelo: 0 destino, 1 inclusos, 2 preço, 3 contato
+const CENA_MODELO: Record<Tela, number> = { abertura: 0, inclusos: 1, destaque: -1, preco: 2, contato: 3 };
 
 // Vídeos de Cancún do Pexels, usados até o agente mandar o pacote dele.
 const CLIPS = [
@@ -31,6 +49,7 @@ type Dados = {
   preco: string;
   pessoas: string;
   itens: string[];
+  destaques: string[];
   agencia: string;
   whatsapp: string;
   instagram: string;
@@ -50,6 +69,7 @@ const CONTATOS: { id: Contato; nome: string; cor: string; texto: string }[] = [
 
 // Fundo de cada quadro: vídeo do destino ou, se faltar, foto com zoom.
 type Fundo = HTMLVideoElement | HTMLImageElement;
+type Midia = { tipo: "video" | "foto"; url: string; thumb?: string; nome?: string };
 const isVideo = (m: Fundo): m is HTMLVideoElement => m instanceof HTMLVideoElement;
 
 const ease = (t: number) => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3);
@@ -107,54 +127,119 @@ function fitText(ctx: CanvasRenderingContext2D, text: string, weight: number, ma
 
 const GOLD = "#f5c451";
 
-function drawFrame(
-  ctx: CanvasRenderingContext2D,
-  t: number,
-  vids: Fundo[],
-  d: Dados,
-  logo: HTMLImageElement | null,
-  contatos: Contato[],
-) {
-  ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 0, W, H);
+// ---------------- Modelos de vídeo (4 telas: destino, inclusos, preço, contato) ----------------
+type Modelo = "classico" | "neon" | "cartao" | "luxo";
+const MODELOS: { id: Modelo; nome: string; desc: string }[] = [
+  { id: "classico", nome: "Clássico", desc: "Letras grandes sobre o vídeo" },
+  { id: "neon", nome: "Neon", desc: "Faixas amarelas, estilo oferta" },
+  { id: "cartao", nome: "Cartão", desc: "Cartão branco limpo" },
+  { id: "luxo", nome: "Luxo", desc: "Título com serifa, elegante" },
+];
 
-  // fundo: vídeos com zoom lento e fusão entre quadros
-  for (let i = 0; i < 3; i++) {
-    const start = i * SCENE;
-    const local = t - start;
-    if (local < -FADE || local > SCENE + FADE) continue;
-    const a = i === 0 ? 1 : ease((local + FADE) / FADE);
-    ctx.globalAlpha = Math.min(a, 1);
-    if (vids[i]) drawCover(ctx, vids[i], (isVideo(vids[i]) ? 1.04 : 1.0) + (isVideo(vids[i]) ? 0.08 : 0.16) * (local / SCENE));
-  }
+const NEON = "#eaff2b";
+const clamp01 = (t: number) => Math.min(Math.max(t, 0), 1);
+
+function sombra(ctx: CanvasRenderingContext2D, blur = 18, cor = "rgba(0,0,0,.45)") {
+  ctx.shadowColor = cor;
+  ctx.shadowBlur = blur;
+}
+function semSombra(ctx: CanvasRenderingContext2D) {
+  ctx.shadowBlur = 0;
+}
+
+function iconeCheck(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, fundo: string, traco: string) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = fundo;
+  ctx.fill();
+  ctx.strokeStyle = traco;
+  ctx.lineWidth = Math.max(3, r / 3.6);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(x - r * 0.45, y);
+  ctx.lineTo(x - r * 0.08, y + r * 0.38);
+  ctx.lineTo(x + r * 0.5, y - r * 0.4);
+  ctx.stroke();
+}
+
+function contatosLista(d: Dados, contatos: Contato[]) {
+  return contatos.map((id) => ({ id, txt: contatoTexto(id, d) })).filter((c) => c.txt).slice(0, 5);
+}
+
+// Pílulas de contato (usadas pelo Clássico e pelo Cartão)
+function desenharPilulas(ctx: CanvasRenderingContext2D, d: Dados, contatos: Contato[], y0: number, lt: number, gap = 84) {
+  contatosLista(d, contatos).forEach((c, i) => {
+    const info = CONTATOS.find((x) => x.id === c.id)!;
+    const kc = ease((lt - 0.9 - i * 0.15) / 0.45);
+    const pulse = i === 0 ? 1 + 0.035 * Math.sin((lt - 0.9) * 6) : 1;
+    ctx.globalAlpha = kc;
+    ctx.save();
+    ctx.translate(W / 2, y0 + i * gap + (1 - kc) * 20);
+    ctx.scale(pulse, pulse);
+    const fs = fitText(ctx, c.txt, 800, i === 0 ? 34 : 30, W - 160);
+    ctx.font = `800 ${fs}px Montserrat, Arial`;
+    const bw = Math.min(ctx.measureText(c.txt).width + 80, W - 80);
+    roundRect(ctx, -bw / 2, -36, bw, 72, 36);
+    if (c.id === "instagram") {
+      const gi = ctx.createLinearGradient(-bw / 2, 0, bw / 2, 0);
+      gi.addColorStop(0, "#feda75");
+      gi.addColorStop(0.35, "#fa7e1e");
+      gi.addColorStop(0.65, "#d62976");
+      gi.addColorStop(1, "#4f5bd5");
+      ctx.fillStyle = gi;
+    } else ctx.fillStyle = info.cor;
+    ctx.fill();
+    ctx.fillStyle = info.texto;
+    ctx.textAlign = "center";
+    ctx.fillText(c.txt, 0, 11);
+    ctx.restore();
+  });
   ctx.globalAlpha = 1;
+}
 
-  const scene = Math.min(Math.floor(t / SCENE), 2);
-  const lt = t - scene * SCENE;
-  const out = 1 - ease((lt - (SCENE - 0.35)) / 0.35); // texto sai no fim do quadro
-  const keepLast = scene === 2 ? 1 : out;
-
-  // escurece para dar leitura
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  if (scene === 2) {
-    g.addColorStop(0, "rgba(5,8,20,.55)");
-    g.addColorStop(1, "rgba(5,8,20,.85)");
+function desenharLogo(ctx: CanvasRenderingContext2D, d: Dados, logo: HTMLImageElement | null, x: number, y: number, r: number, k: number, fundo = "#fff") {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(0.7 + 0.3 * k, 0.7 + 0.3 * k);
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fillStyle = fundo;
+  sombra(ctx, 40, "rgba(0,0,0,.35)");
+  ctx.fill();
+  semSombra(ctx);
+  if (logo) {
+    const s = Math.min((r * 1.48) / logo.width, (r * 1.48) / logo.height);
+    ctx.drawImage(logo, (-logo.width * s) / 2, (-logo.height * s) / 2, logo.width * s, logo.height * s);
   } else {
-    g.addColorStop(0, "rgba(0,0,0,.35)");
-    g.addColorStop(0.45, "rgba(0,0,0,0)");
-    g.addColorStop(0.7, "rgba(0,0,0,.25)");
-    g.addColorStop(1, "rgba(0,0,0,.8)");
+    ctx.fillStyle = "#14213d";
+    ctx.textAlign = "center";
+    const sz = fitText(ctx, d.agencia, 900, r / 3, r * 1.7);
+    ctx.font = `900 ${sz}px Montserrat, Arial`;
+    ctx.fillText(d.agencia, 0, sz / 3);
   }
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
 
+function textoPreco(ctx: CanvasRenderingContext2D, valor: string, x: number, y: number, max: number, maxW: number, cor: string | CanvasGradient) {
+  const ps = fitText(ctx, valor, 900, max, maxW);
+  ctx.font = `900 ${ps}px Montserrat, Arial`;
+  ctx.fillStyle = cor;
+  ctx.fillText(valor, x, y);
+  return ps;
+}
+
+function gradOuro(ctx: CanvasRenderingContext2D) {
+  const g = ctx.createLinearGradient(-200, -60, 200, 20);
+  g.addColorStop(0, "#fff1c2");
+  g.addColorStop(0.5, GOLD);
+  g.addColorStop(1, "#d49a2a");
+  return g;
+}
+
+// ---------- Clássico (o aprovado), agora com o preço em tela própria
+function cenaClassico(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
   ctx.textAlign = "center";
-  ctx.textBaseline = "alphabetic";
-
-  if (scene === 0) {
-    ctx.globalAlpha = out;
-    // selo
+  if (cena === 0) {
     const p = ease(lt / 0.5);
     ctx.save();
     ctx.translate(0, (1 - p) * -30);
@@ -168,8 +253,6 @@ function drawFrame(
     ctx.fillStyle = "#1b1404";
     ctx.fillText(tag, W / 2, 227);
     ctx.restore();
-
-    // destino com letras subindo
     const nome = d.destino.toUpperCase();
     const size = fitText(ctx, nome, 900, 150, W - 80);
     ctx.font = `900 ${size}px Montserrat, Arial`;
@@ -180,12 +263,11 @@ function drawFrame(
       const ch = nome[i];
       const cw = ctx.measureText(ch).width;
       const k = back((lt - 0.25 - i * 0.05) / 0.5);
-      ctx.globalAlpha = out * Math.min(1, Math.max(0, (lt - 0.25 - i * 0.05) / 0.25));
+      ctx.globalAlpha = out * clamp01((lt - 0.25 - i * 0.05) / 0.25);
       ctx.save();
       ctx.translate(x + cw / 2, 1010);
       ctx.scale(1, 0.6 + 0.4 * k);
-      ctx.shadowColor = "rgba(0,0,0,.45)";
-      ctx.shadowBlur = 24;
+      sombra(ctx, 24);
       ctx.fillStyle = "#fff";
       ctx.fillText(ch, -cw / 2, (1 - k) * 60);
       ctx.restore();
@@ -196,97 +278,65 @@ function drawFrame(
     ctx.globalAlpha = out * s2;
     ctx.font = "600 38px Montserrat, Arial";
     ctx.fillStyle = "#fff";
-    ctx.shadowColor = "rgba(0,0,0,.5)";
-    ctx.shadowBlur = 16;
+    sombra(ctx, 16, "rgba(0,0,0,.5)");
     ctx.fillText(d.chamada, W / 2, 1075 + (1 - s2) * 20);
-    ctx.shadowBlur = 0;
+    semSombra(ctx);
   }
-
-  if (scene === 1) {
-    // lista do que está incluso
+  if (cena === 1) {
+    const t0 = ease(lt / 0.4);
+    ctx.globalAlpha = out * t0;
+    ctx.font = "900 50px Montserrat, Arial";
+    ctx.fillStyle = "#fff";
+    sombra(ctx, 18);
+    ctx.fillText("O que está incluso", W / 2, 560);
+    semSombra(ctx);
     ctx.textAlign = "left";
-    const top = 640;
-    d.itens.slice(0, 4).forEach((it, i) => {
-      const k = ease((lt - 0.15 - i * 0.18) / 0.45);
+    const itens = d.itens.filter(Boolean).slice(0, 4);
+    itens.forEach((it, i) => {
+      const k = ease((lt - 0.25 - i * 0.18) / 0.45);
       ctx.globalAlpha = out * k;
-      const y = top + i * 82;
+      const y = 680 + i * 92;
       const x = 70 - (1 - k) * 60;
-      ctx.font = "700 34px Montserrat, Arial";
-      const w = ctx.measureText(it).width + 110;
-      roundRect(ctx, x, y - 50, w, 68, 34);
-      ctx.fillStyle = "rgba(10,14,30,.62)";
+      ctx.font = "700 36px Montserrat, Arial";
+      const w = Math.min(ctx.measureText(it).width + 116, W - 120);
+      roundRect(ctx, x, y - 52, w, 74, 37);
+      ctx.fillStyle = "rgba(10,14,30,.66)";
       ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x + 38, y - 16, 18, 0, Math.PI * 2);
-      ctx.fillStyle = GOLD;
-      ctx.fill();
-      ctx.strokeStyle = "#1b1404";
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(x + 29, y - 16);
-      ctx.lineTo(x + 36, y - 9);
-      ctx.lineTo(x + 48, y - 24);
-      ctx.stroke();
+      iconeCheck(ctx, x + 40, y - 15, 19, GOLD, "#1b1404");
       ctx.fillStyle = "#fff";
-      ctx.fillText(it, x + 72, y - 4);
+      ctx.fillText(it, x + 76, y - 2);
     });
     ctx.textAlign = "center";
-
-    // preço
-    const pk = back((lt - 1.1) / 0.55);
-    ctx.globalAlpha = out * Math.min(1, Math.max(0, (lt - 1.1) / 0.3));
-    ctx.save();
-    ctx.translate(W / 2, 1060);
-    ctx.scale(0.6 + 0.4 * pk, 0.6 + 0.4 * pk);
+  }
+  if (cena === 2) {
     const pt = precoTextos(d);
-    const ts = fitText(ctx, pt.topo.toUpperCase(), 800, 30, W - 120);
+    const pk = back((lt - 0.2) / 0.55);
+    ctx.globalAlpha = out * clamp01((lt - 0.2) / 0.3);
+    ctx.save();
+    ctx.translate(W / 2, 760);
+    ctx.scale(0.6 + 0.4 * pk, 0.6 + 0.4 * pk);
+    const ts = fitText(ctx, pt.topo.toUpperCase(), 800, 38, W - 120);
     ctx.font = `800 ${ts}px Montserrat, Arial`;
     ctx.fillStyle = "#fff";
-    ctx.fillText(pt.topo.toUpperCase(), 0, -88);
-    const ps = fitText(ctx, pt.valor, 900, 112, W - 120);
-    ctx.font = `900 ${ps}px Montserrat, Arial`;
-    const grad = ctx.createLinearGradient(-200, -60, 200, 20);
-    grad.addColorStop(0, "#fff1c2");
-    grad.addColorStop(0.5, GOLD);
-    grad.addColorStop(1, "#d49a2a");
-    ctx.shadowColor = "rgba(0,0,0,.5)";
-    ctx.shadowBlur = 22;
-    ctx.fillStyle = grad;
-    ctx.fillText(pt.valor, 0, 10);
-    ctx.shadowBlur = 0;
-    ctx.font = "600 32px Montserrat, Arial";
+    sombra(ctx, 16);
+    ctx.fillText(pt.topo.toUpperCase(), 0, -120);
+    sombra(ctx, 26, "rgba(0,0,0,.5)");
+    textoPreco(ctx, pt.valor, 0, 20, 150, W - 100, gradOuro(ctx));
+    semSombra(ctx);
+    ctx.font = "600 38px Montserrat, Arial";
     ctx.fillStyle = "#fff";
-    ctx.fillText(pt.rodape, 0, 58);
+    sombra(ctx, 14);
+    ctx.fillText(pt.rodape, 0, 90);
+    semSombra(ctx);
     ctx.restore();
   }
-
-  if (scene === 2) {
+  if (cena === 3) {
     const k = back(lt / 0.6);
-    ctx.globalAlpha = keepLast * Math.min(1, lt / 0.3);
-    // logo
-    ctx.save();
-    ctx.translate(W / 2, 470);
-    ctx.scale(0.7 + 0.3 * k, 0.7 + 0.3 * k);
-    ctx.beginPath();
-    ctx.arc(0, 0, 135, 0, Math.PI * 2);
-    ctx.fillStyle = "#fff";
-    ctx.shadowColor = "rgba(0,0,0,.4)";
-    ctx.shadowBlur = 40;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    if (logo) {
-      const s = Math.min(200 / logo.width, 200 / logo.height);
-      ctx.drawImage(logo, (-logo.width * s) / 2, (-logo.height * s) / 2, logo.width * s, logo.height * s);
-    } else {
-      ctx.fillStyle = "#14213d";
-      const sz = fitText(ctx, d.agencia, 900, 44, 230);
-      ctx.font = `900 ${sz}px Montserrat, Arial`;
-      ctx.fillText(d.agencia, 0, sz / 3);
-    }
-    ctx.restore();
-
+    ctx.globalAlpha = clamp01(lt / 0.3);
+    desenharLogo(ctx, d, logo, W / 2, 470, 135, k);
     const k2 = ease((lt - 0.5) / 0.5);
     ctx.globalAlpha = k2;
+    ctx.textAlign = "center";
     ctx.font = "900 58px Montserrat, Arial";
     ctx.fillStyle = "#fff";
     ctx.fillText("Garanta sua vaga", W / 2, 700 + (1 - k2) * 20);
@@ -295,36 +345,439 @@ function drawFrame(
     const rs = fitText(ctx, resumo, 600, 32, W - 100);
     ctx.font = `600 ${rs}px Montserrat, Arial`;
     ctx.fillText(resumo, W / 2, 752 + (1 - k2) * 20);
+    desenharPilulas(ctx, d, contatos, 860, lt);
+  }
+}
 
-    // contatos escolhidos, um embaixo do outro; o primeiro pulsa
-    const lista = contatos.map((id) => ({ id, txt: contatoTexto(id, d) })).filter((c) => c.txt);
-    lista.slice(0, 5).forEach((c, i) => {
-      const info = CONTATOS.find((x) => x.id === c.id)!;
-      const kc = ease((lt - 0.9 - i * 0.15) / 0.45);
-      const pulse = i === 0 ? 1 + 0.035 * Math.sin((lt - 0.9) * 6) : 1;
-      ctx.globalAlpha = kc;
-      ctx.save();
-      ctx.translate(W / 2, 860 + i * 84 + (1 - kc) * 20);
-      ctx.scale(pulse, pulse);
-      const fs = fitText(ctx, c.txt, 800, i === 0 ? 34 : 30, W - 160);
-      ctx.font = `800 ${fs}px Montserrat, Arial`;
-      const bw = Math.min(ctx.measureText(c.txt).width + 80, W - 80);
-      roundRect(ctx, -bw / 2, -36, bw, 72, 36);
-      if (c.id === "instagram") {
-        const gi = ctx.createLinearGradient(-bw / 2, 0, bw / 2, 0);
-        gi.addColorStop(0, "#feda75");
-        gi.addColorStop(0.35, "#fa7e1e");
-        gi.addColorStop(0.65, "#d62976");
-        gi.addColorStop(1, "#4f5bd5");
-        ctx.fillStyle = gi;
-      } else ctx.fillStyle = info.cor;
+// ---------- Neon: faixas amarelas que entram de lado, texto preto
+function faixaNeon(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, k: number, cor = NEON) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w * k, h);
+  ctx.clip();
+  ctx.fillStyle = cor;
+  ctx.fillRect(x, y, w, h);
+  ctx.restore();
+}
+function cenaNeon(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
+  ctx.textAlign = "left";
+  const k1 = ease(lt / 0.45);
+  if (cena === 0) {
+    ctx.globalAlpha = out;
+    faixaNeon(ctx, 0, 300, W - 60, 300, k1);
+    if (k1 > 0.6) {
+      const kt = ease((lt - 0.3) / 0.4);
+      ctx.globalAlpha = out * kt;
+      ctx.font = "800 24px Montserrat, Arial";
+      roundRect(ctx, 50, 330, ctx.measureText("OFERTA ESPECIAL").width + 44, 50, 25);
+      ctx.fillStyle = "#111";
       ctx.fill();
-      ctx.fillStyle = info.texto;
-      ctx.fillText(c.txt, 0, 11);
-      ctx.restore();
+      ctx.fillStyle = NEON;
+      ctx.fillText("OFERTA ESPECIAL", 72, 364);
+      ctx.fillStyle = "#111";
+      ctx.font = "800 46px Montserrat, Arial";
+      ctx.fillText("Pacote", 50, 450 + (1 - kt) * 20);
+      const s = fitText(ctx, d.destino, 900, 104, W - 140);
+      ctx.font = `900 ${s}px Montserrat, Arial`;
+      ctx.fillText(d.destino, 46, 545 + (1 - kt) * 20);
+    }
+    const kc = ease((lt - 0.8) / 0.4);
+    ctx.globalAlpha = out * kc;
+    ctx.font = "800 34px Montserrat, Arial";
+    const cw = Math.min(ctx.measureText(d.chamada).width + 60, W - 80);
+    faixaNeon(ctx, 0, 620, cw, 70, kc, "#111");
+    ctx.fillStyle = "#fff";
+    ctx.fillText(d.chamada, 30, 667);
+  }
+  if (cena === 1) {
+    ctx.globalAlpha = out;
+    faixaNeon(ctx, 0, 380, W - 60, 110, k1, "#111");
+    ctx.globalAlpha = out * k1;
+    ctx.fillStyle = NEON;
+    ctx.font = "900 52px Montserrat, Arial";
+    ctx.fillText("Está incluso", 50, 455);
+    d.itens.filter(Boolean).slice(0, 4).forEach((it, i) => {
+      const k = ease((lt - 0.3 - i * 0.16) / 0.4);
+      ctx.globalAlpha = out * k;
+      const y = 510 + i * 96;
+      ctx.font = "800 38px Montserrat, Arial";
+      const w = Math.min(ctx.measureText(it).width + 120, W - 60);
+      faixaNeon(ctx, 0, y, w, 80, k);
+      iconeCheck(ctx, 52, y + 40, 20, "#111", NEON);
+      ctx.fillStyle = "#111";
+      ctx.fillText(it, 90, y + 53);
+    });
+  }
+  if (cena === 2) {
+    const pt = precoTextos(d);
+    ctx.globalAlpha = out;
+    faixaNeon(ctx, 0, 420, W, 380, k1);
+    const kp = back((lt - 0.35) / 0.5);
+    ctx.globalAlpha = out * clamp01((lt - 0.3) / 0.25);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#111";
+    const ts = fitText(ctx, pt.topo.toUpperCase(), 800, 40, W - 100);
+    ctx.font = `800 ${ts}px Montserrat, Arial`;
+    ctx.fillText(pt.topo.toUpperCase(), W / 2, 520);
+    ctx.save();
+    ctx.translate(W / 2, 680);
+    ctx.scale(0.7 + 0.3 * kp, 0.7 + 0.3 * kp);
+    textoPreco(ctx, pt.valor, 0, 0, 160, W - 80, "#111");
+    ctx.restore();
+    ctx.font = "700 36px Montserrat, Arial";
+    ctx.fillText(pt.rodape, W / 2, 760);
+  }
+  if (cena === 3) {
+    ctx.globalAlpha = 1;
+    faixaNeon(ctx, 0, 0, W, H, ease(lt / 0.5), "rgba(10,10,10,.82)");
+    const k = back((lt - 0.2) / 0.6);
+    ctx.globalAlpha = clamp01((lt - 0.2) / 0.3);
+    desenharLogo(ctx, d, logo, W / 2, 400, 125, k);
+    const k2 = ease((lt - 0.5) / 0.5);
+    ctx.globalAlpha = k2;
+    ctx.textAlign = "center";
+    ctx.font = "900 64px Montserrat, Arial";
+    ctx.fillStyle = NEON;
+    ctx.fillText("RESERVE AGORA", W / 2, 620);
+    ctx.font = "700 32px Montserrat, Arial";
+    ctx.fillStyle = "#fff";
+    ctx.fillText(`Pacote ${d.destino}`, W / 2, 672);
+    contatosLista(d, contatos).forEach((c, i) => {
+      const kc = ease((lt - 0.8 - i * 0.15) / 0.4);
+      ctx.globalAlpha = kc;
+      const y = 760 + i * 92;
+      ctx.font = "800 34px Montserrat, Arial";
+      const w = Math.min(ctx.measureText(c.txt).width + 90, W - 80);
+      const x = (W - w) / 2;
+      faixaNeon(ctx, x, y, w, 76, kc, i === 0 ? NEON : "#fff");
+      ctx.fillStyle = "#111";
+      ctx.fillText(c.txt, W / 2, y + 50);
     });
   }
   ctx.globalAlpha = 1;
+}
+
+// ---------- Cartão: cartão branco central que troca de conteúdo
+function cartao(ctx: CanvasRenderingContext2D, y: number, h: number, k: number) {
+  const w = W - 100;
+  ctx.save();
+  ctx.translate(W / 2, y + h / 2);
+  ctx.scale(0.85 + 0.15 * k, 0.85 + 0.15 * k);
+  sombra(ctx, 50, "rgba(0,0,0,.35)");
+  roundRect(ctx, -w / 2, -h / 2, w, h, 36);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+  semSombra(ctx);
+  ctx.restore();
+}
+function seloAmarelo(ctx: CanvasRenderingContext2D, txt: string, cx: number, y: number) {
+  ctx.font = "800 22px Montserrat, Arial";
+  const w = ctx.measureText(txt).width + 40;
+  roundRect(ctx, cx - w / 2, y, w, 44, 22);
+  ctx.fillStyle = NEON;
+  ctx.fill();
+  ctx.fillStyle = "#111";
+  ctx.textAlign = "center";
+  ctx.fillText(txt, cx, y + 30);
+}
+function cenaCartao(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
+  const k = back(lt / 0.55);
+  ctx.globalAlpha = out * clamp01(lt / 0.25);
+  ctx.textAlign = "center";
+  if (cena === 0) {
+    cartao(ctx, 330, 330, k);
+    seloAmarelo(ctx, "OFERTA ESPECIAL", W / 2, 305);
+    const s = fitText(ctx, d.destino, 900, 96, W - 180);
+    ctx.font = `900 ${s}px Montserrat, Arial`;
+    ctx.fillStyle = "#111";
+    ctx.fillText(d.destino, W / 2, 490);
+    const s2 = fitText(ctx, d.chamada, 600, 34, W - 180);
+    ctx.font = `600 ${s2}px Montserrat, Arial`;
+    ctx.fillStyle = "#555";
+    ctx.fillText(d.chamada, W / 2, 560);
+  }
+  if (cena === 1) {
+    const itens = d.itens.filter(Boolean).slice(0, 4);
+    const h = 170 + itens.length * 84;
+    cartao(ctx, 300, h, k);
+    ctx.font = "900 44px Montserrat, Arial";
+    ctx.fillStyle = "#111";
+    ctx.fillText("Está incluso", W / 2, 390);
+    ctx.textAlign = "left";
+    itens.forEach((it, i) => {
+      const ki = ease((lt - 0.3 - i * 0.15) / 0.4);
+      ctx.globalAlpha = out * ki;
+      const y = 470 + i * 84;
+      iconeCheck(ctx, 110, y - 12, 20, "#111", NEON);
+      const fs = fitText(ctx, it, 700, 36, W - 260);
+      ctx.font = `700 ${fs}px Montserrat, Arial`;
+      ctx.fillStyle = "#222";
+      ctx.fillText(it, 148, y);
+    });
+  }
+  if (cena === 2) {
+    const pt = precoTextos(d);
+    cartao(ctx, 360, 380, k);
+    seloAmarelo(ctx, d.destino.toUpperCase().slice(0, 28), W / 2, 335);
+    ctx.font = "800 30px Montserrat, Arial";
+    ctx.fillStyle = "#555";
+    ctx.fillText(pt.topo.toUpperCase(), W / 2, 460);
+    const kp = back((lt - 0.35) / 0.5);
+    ctx.save();
+    ctx.translate(W / 2, 590);
+    ctx.scale(0.7 + 0.3 * kp, 0.7 + 0.3 * kp);
+    textoPreco(ctx, pt.valor, 0, 0, 140, W - 200, "#111");
+    ctx.restore();
+    ctx.font = "600 32px Montserrat, Arial";
+    ctx.fillStyle = "#555";
+    ctx.fillText(pt.rodape, W / 2, 665);
+  }
+  if (cena === 3) {
+    ctx.globalAlpha = 1;
+    cartao(ctx, 260, 820, ease(lt / 0.5));
+    desenharLogo(ctx, d, logo, W / 2, 420, 110, back(lt / 0.6), "#f4f4f4");
+    const k2 = ease((lt - 0.4) / 0.5);
+    ctx.globalAlpha = k2;
+    ctx.textAlign = "center";
+    ctx.font = "900 54px Montserrat, Arial";
+    ctx.fillStyle = "#111";
+    ctx.fillText("Garanta sua vaga", W / 2, 610);
+    ctx.font = "600 30px Montserrat, Arial";
+    ctx.fillStyle = "#555";
+    ctx.fillText(`Pacote ${d.destino}`, W / 2, 658);
+    desenharPilulas(ctx, d, contatos, 760, lt, 80);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- Luxo: título com serifa, linhas finas, dourado
+function cenaLuxo(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
+  ctx.textAlign = "center";
+  const serif = "'Playfair Display', Georgia, serif";
+  const linha = (y: number, k: number) => {
+    ctx.strokeStyle = GOLD;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - 160 * k, y);
+    ctx.lineTo(W / 2 + 160 * k, y);
+    ctx.stroke();
+  };
+  if (cena === 0) {
+    const k = ease(lt / 1.0);
+    ctx.globalAlpha = out * k;
+    ctx.font = "600 26px Montserrat, Arial";
+    ctx.fillStyle = "#fff";
+    (ctx as unknown as { letterSpacing: string }).letterSpacing = "8px";
+    ctx.fillText("OFERTA ESPECIAL", W / 2, 800);
+    (ctx as unknown as { letterSpacing: string }).letterSpacing = "0px";
+    linha(830, k);
+    const s = fitText(ctx, d.destino.toUpperCase(), 700, 110, W - 80);
+    ctx.font = `700 ${s}px ${serif}`;
+    sombra(ctx, 24);
+    ctx.globalAlpha = out * ease((lt - 0.3) / 1.0);
+    ctx.fillText(d.destino.toUpperCase(), W / 2, 950 + (1 - ease((lt - 0.3) / 1.0)) * 30);
+    semSombra(ctx);
+    ctx.globalAlpha = out * ease((lt - 1.0) / 0.8);
+    ctx.font = `italic 400 40px ${serif}`;
+    ctx.fillText(d.chamada, W / 2, 1020);
+  }
+  if (cena === 1) {
+    ctx.globalAlpha = out * ease(lt / 0.6);
+    ctx.font = `italic 400 54px ${serif}`;
+    ctx.fillStyle = "#fff";
+    sombra(ctx, 20);
+    ctx.fillText("A experiência inclui", W / 2, 560);
+    semSombra(ctx);
+    linha(600, ease(lt / 0.8));
+    d.itens.filter(Boolean).slice(0, 4).forEach((it, i) => {
+      const k = ease((lt - 0.4 - i * 0.22) / 0.6);
+      ctx.globalAlpha = out * k;
+      const fs = fitText(ctx, it, 500, 40, W - 120);
+      ctx.font = `500 ${fs}px Montserrat, Arial`;
+      ctx.fillStyle = "#fff";
+      sombra(ctx, 14);
+      ctx.fillText(it, W / 2, 700 + i * 80 + (1 - k) * 16);
+      semSombra(ctx);
+      if (i < Math.min(d.itens.filter(Boolean).length, 4) - 1) {
+        ctx.fillStyle = GOLD;
+        ctx.beginPath();
+        ctx.arc(W / 2, 700 + i * 80 + 38, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+  }
+  if (cena === 2) {
+    const pt = precoTextos(d);
+    const k = ease(lt / 0.8);
+    ctx.globalAlpha = out * k;
+    ctx.fillStyle = "#fff";
+    ctx.font = `italic 400 44px ${serif}`;
+    sombra(ctx, 16);
+    ctx.fillText(pt.topo, W / 2, 640);
+    linha(680, k);
+    const kp = ease((lt - 0.3) / 0.8);
+    ctx.globalAlpha = out * kp;
+    sombra(ctx, 26, "rgba(0,0,0,.5)");
+    const ps = fitText(ctx, pt.valor, 700, 140, W - 100);
+    ctx.font = `700 ${ps}px ${serif}`;
+    ctx.save();
+    ctx.translate(W / 2, 830);
+    ctx.fillStyle = gradOuro(ctx);
+    ctx.fillText(pt.valor, 0, 0);
+    ctx.restore();
+    semSombra(ctx);
+    ctx.font = "500 34px Montserrat, Arial";
+    ctx.fillStyle = "#fff";
+    ctx.fillText(pt.rodape, W / 2, 900);
+  }
+  if (cena === 3) {
+    ctx.globalAlpha = clamp01(lt / 0.5);
+    desenharLogo(ctx, d, logo, W / 2, 470, 125, ease(lt / 0.8));
+    const k2 = ease((lt - 0.5) / 0.7);
+    ctx.globalAlpha = k2;
+    ctx.font = `700 64px ${serif}`;
+    ctx.fillStyle = "#fff";
+    ctx.fillText("Reserve sua viagem", W / 2, 700);
+    linha(735, k2);
+    contatosLista(d, contatos).forEach((c, i) => {
+      const kc = ease((lt - 0.9 - i * 0.18) / 0.5);
+      ctx.globalAlpha = kc;
+      const y = 820 + i * 80;
+      const fs = fitText(ctx, c.txt, 600, 34, W - 200);
+      ctx.font = `600 ${fs}px Montserrat, Arial`;
+      const w = Math.min(ctx.measureText(c.txt).width + 80, W - 100);
+      roundRect(ctx, (W - w) / 2, y - 46, w, 66, 33);
+      ctx.strokeStyle = i === 0 ? GOLD : "rgba(255,255,255,.7)";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      if (i === 0) {
+        ctx.fillStyle = "rgba(245,196,81,.18)";
+        ctx.fill();
+      }
+      ctx.fillStyle = i === 0 ? GOLD : "#fff";
+      ctx.fillText(c.txt, W / 2, y);
+    });
+  }
+  ctx.globalAlpha = 1;
+}
+
+function cenaDestaque(ctx: CanvasRenderingContext2D, modelo: Modelo, texto: string, lt: number, out: number) {
+  ctx.textAlign = "center";
+  const k = ease((lt - 0.2) / 0.6);
+  ctx.globalAlpha = out * k;
+  if (modelo === "classico") {
+    const s = fitText(ctx, texto, 900, 70, W - 100);
+    ctx.font = `900 ${s}px Montserrat, Arial`;
+    sombra(ctx, 24);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(texto, W / 2, 1000 + (1 - k) * 40);
+    semSombra(ctx);
+    ctx.fillStyle = GOLD;
+    const lw = 220 * ease((lt - 0.5) / 0.5);
+    ctx.fillRect(W / 2 - lw / 2, 1035, lw, 8);
+  } else if (modelo === "neon") {
+    ctx.font = "900 46px Montserrat, Arial";
+    const w = Math.min(ctx.measureText(texto).width + 70, W - 40);
+    faixaNeon(ctx, 0, 940, w, 96, k);
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#111";
+    const s = fitText(ctx, texto, 900, 46, W - 110);
+    ctx.font = `900 ${s}px Montserrat, Arial`;
+    ctx.fillText(texto, 34, 1004);
+  } else if (modelo === "cartao") {
+    const s = fitText(ctx, texto, 800, 42, W - 200);
+    ctx.font = `800 ${s}px Montserrat, Arial`;
+    const w = Math.min(ctx.measureText(texto).width + 90, W - 100);
+    ctx.save();
+    ctx.translate(W / 2, 1000);
+    ctx.scale(0.85 + 0.15 * back((lt - 0.2) / 0.5), 0.85 + 0.15 * back((lt - 0.2) / 0.5));
+    sombra(ctx, 40, "rgba(0,0,0,.3)");
+    roundRect(ctx, -w / 2, -60, w, 100, 30);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    semSombra(ctx);
+    ctx.fillStyle = "#111";
+    ctx.fillText(texto, 0, 6);
+    ctx.restore();
+  } else {
+    const s = fitText(ctx, texto, 400, 64, W - 100);
+    ctx.font = `italic 400 ${s}px 'Playfair Display', Georgia, serif`;
+    sombra(ctx, 22);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(texto, W / 2, 1000 + (1 - k) * 24);
+    semSombra(ctx);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawFrame(
+  ctx: CanvasRenderingContext2D,
+  t: number,
+  vids: Fundo[],
+  d: Dados,
+  logo: HTMLImageElement | null,
+  contatos: Contato[],
+  modelo: Modelo = "classico",
+) {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, W, H);
+
+  // fundo: um vídeo (ou foto) por tela, com zoom lento e fusão entre telas
+  for (let i = 0; i < CENAS; i++) {
+    const m = vids[i % Math.max(vids.length, 1)];
+    if (!m) continue;
+    const dur = TELAS[i].dur;
+    const local = t - INICIOS[i];
+    if (local < -FADE || local > dur + FADE) continue;
+    ctx.globalAlpha = i === 0 ? 1 : clamp01(ease((local + FADE) / FADE));
+    const p = clamp01(local / dur);
+    if (isVideo(m)) drawCover(ctx, m, 1.04 + 0.08 * p);
+    else {
+      // foto: zoom e passeio lateral alternando o lado
+      ctx.save();
+      ctx.translate((i % 2 ? -1 : 1) * (p - 0.5) * 60, 0);
+      drawCover(ctx, m, 1.08 + 0.14 * p);
+      ctx.restore();
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  const cena = telaEm(t);
+  const lt = t - INICIOS[cena];
+  const dur = TELAS[cena].dur;
+  const out = cena === CENAS - 1 ? 1 : 1 - ease((lt - (dur - 0.35)) / 0.35);
+
+  // escurece para dar leitura
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  if (cena === CENAS - 1) {
+    g.addColorStop(0, "rgba(5,8,20,.55)");
+    g.addColorStop(1, "rgba(5,8,20,.85)");
+  } else if (modelo === "luxo") {
+    g.addColorStop(0, "rgba(0,0,0,.25)");
+    g.addColorStop(0.5, "rgba(0,0,0,.35)");
+    g.addColorStop(1, "rgba(0,0,0,.75)");
+  } else {
+    g.addColorStop(0, "rgba(0,0,0,.35)");
+    g.addColorStop(0.45, "rgba(0,0,0,0)");
+    g.addColorStop(0.7, "rgba(0,0,0,.25)");
+    g.addColorStop(1, "rgba(0,0,0,.8)");
+  }
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  ctx.textBaseline = "alphabetic";
+
+  const tipo = TELAS[cena].tipo;
+  if (tipo === "destaque") {
+    const n = TELAS.slice(0, cena).filter((x) => x.tipo === "destaque").length;
+    const texto = d.destaques[n] || (n === 0 ? d.chamada : `Conheça ${d.destino}`);
+    cenaDestaque(ctx, modelo, texto, lt, out);
+  } else {
+    const fn = { classico: cenaClassico, neon: cenaNeon, cartao: cenaCartao, luxo: cenaLuxo }[modelo];
+    fn(ctx, CENA_MODELO[tipo], lt, out, d, logo, contatos);
+  }
+  ctx.globalAlpha = 1;
+  semSombra(ctx);
 }
 
 // Grava o áudio e transcreve com a mesma função da Fábrica.
@@ -538,6 +991,7 @@ function VideoLabTela() {
     preco: "R$ 8.000",
     pessoas: "para o casal",
     itens: ["Aéreo ida e volta", "Hotel all inclusive", "Traslados", "Seguro viagem"],
+    destaques: ["Mar azul-turquesa", "Dias de puro descanso"],
     agencia: "Sua Agência",
     whatsapp: "(11) 99999-9999",
     instagram: "",
@@ -546,6 +1000,16 @@ function VideoLabTela() {
     site: "",
   });
   const [contatos, setContatos] = useState<Contato[]>(["whatsapp"]);
+  const [modelo, setModelo] = useState<Modelo>("classico");
+  const modeloRef = useRef<Modelo>("classico");
+  modeloRef.current = modelo;
+  const [fundos, setFundos] = useState<Midia[]>([]);
+  const [pool, setPool] = useState<Midia[]>([]);
+  const [editando, setEditando] = useState(false);
+  const [telaAberta, setTelaAberta] = useState<number | null>(null);
+  const [busca, setBusca] = useState("");
+  const [buscando, setBuscando] = useState(false);
+  const [fotoEtapa, setFotoEtapa] = useState<"" | "recebida" | "lendo" | "buscando" | "pronta" | "erro">("");
   const [logo, setLogo] = useState<HTMLImageElement | null>(null);
   const [status, setStatus] = useState("Carregando vídeos…");
   const [url, setUrl] = useState<string | null>(null);
@@ -594,10 +1058,11 @@ function VideoLabTela() {
 
   const pacotes = (fabrica.selectedPackages || []).filter((p) => p.title);
 
-  // Carrega os 3 fundos (vídeos do destino ou fotos de reserva).
-  async function carregarFundos(itens: { tipo: "video" | "foto"; url: string }[]) {
+  // Carrega o fundo de cada tela (vídeos do destino ou fotos de reserva).
+  async function carregarFundos(itens: Midia[]) {
     setCarregando(true);
-    const els: Fundo[] = itens.slice(0, 3).map((m) => {
+    setFundos(itens.slice(0, CENAS));
+    const els: Fundo[] = itens.slice(0, CENAS).map((m) => {
       if (m.tipo === "foto") {
         const img = new Image();
         img.crossOrigin = "anonymous";
@@ -634,9 +1099,13 @@ function VideoLabTela() {
     setStatus("Pronto");
   }
 
-  async function enviar(conteudo: { text?: string; image?: string }) {
+  async function enviar(conteudo: { text?: string; image?: string }, aoBuscar?: () => void): Promise<boolean> {
     const texto = (conteudo.text || "").trim();
-    if (!conteudo.image && texto.length < 5) return setAviso("Mande o pacote: destino, preço e o que está incluso.");
+    if (!conteudo.image && texto.length < 5) {
+      setAviso("Mande o pacote: destino, preço e o que está incluso.");
+      return false;
+    }
+    let ok = false;
     setOcupado(true);
     setAviso("");
     setEtapa(conteudo.image ? "Lendo a imagem do pacote…" : "Preenchendo as informações do pacote…");
@@ -663,28 +1132,71 @@ function VideoLabTela() {
         preco: d.preco || "",
         pessoas: d.pessoas || "",
         itens: d.itens || [],
+        destaques: d.destaques?.length ? d.destaques : [],
         agencia: a.agencia === "Sua Agência" && d.agencia ? d.agencia : a.agencia,
         whatsapp: d.whatsapp && !fabrica.whatsapp ? d.whatsapp : a.whatsapp,
         instagram: d.instagram && !a.instagram ? d.instagram : a.instagram,
       }));
       if (d.instagram && !contatosRef.current.includes("instagram")) setContatos((c) => [...c, "instagram"]);
-      const midias: { tipo: "video" | "foto"; url: string }[] = data.midias || [];
+      const midias: Midia[] = data.midias || [];
+      setPool(midias);
       if (midias.length === 0) {
         setAviso(`Não achei vídeos de ${d.destino}. Mantive os atuais.`);
       } else {
         setEtapa(`Carregando vídeos de ${d.destino}…`);
+        aoBuscar?.();
         const lista = [...midias];
-        while (lista.length < 3) lista.push(midias[lista.length % midias.length]);
+        while (lista.length < CENAS) lista.push(midias[lista.length % midias.length]);
         await carregarFundos(lista);
-        const usadas = lista.slice(0, 3);
+        const usadas = lista.slice(0, CENAS);
         setFontes({ videos: usadas.filter((m) => m.tipo === "video").length, fotos: usadas.filter((m) => m.tipo === "foto").length });
       }
       setEtapa("Pronto. Confira os campos e toque em Gerar vídeo.");
+      ok = true;
     } catch (e) {
       setAviso((e as Error).message);
       setEtapa("");
     }
     setOcupado(false);
+    return ok;
+  }
+
+  async function trocarFundo(i: number, m: Midia) {
+    const novos = [...fundos];
+    while (novos.length < CENAS) novos.push(novos[novos.length % Math.max(novos.length, 1)] || m);
+    novos[i] = m;
+    setUrl(null);
+    try {
+      await carregarFundos(novos);
+      setTelaAberta(null);
+    } catch (e) {
+      setAviso((e as Error).message);
+    }
+  }
+
+  async function buscarNoPexels() {
+    if (busca.trim().length < 2) return;
+    setBuscando(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke("fabrica-video-pronto", {
+        body: { buscar: busca.trim() },
+        headers: sess.session ? undefined : { "x-video-lab": "sem-login" },
+      });
+      if (error) throw new Error("A busca não respondeu. Tente de novo.");
+      const novos: Midia[] = data.midias || [];
+      if (!novos.length) setAviso(`Não achei vídeos de "${busca}".`);
+      setPool((p) => [...novos, ...p.filter((x) => !novos.some((n) => n.url === x.url))]);
+    } catch (e) {
+      setAviso((e as Error).message);
+    }
+    setBuscando(false);
+  }
+
+  function usarArquivoProprio(i: number, file?: File | null) {
+    if (!file) return;
+    const tipo = file.type.startsWith("video/") ? "video" : "foto";
+    trocarFundo(i, { tipo, url: URL.createObjectURL(file), nome: file.name });
   }
 
   async function onAudio(blob: Blob) {
@@ -707,13 +1219,22 @@ function VideoLabTela() {
 
   async function onFoto(file?: File | null) {
     if (!file) return;
+    setAviso("");
     try {
       const img = await lerImagem(file);
       setFoto(img);
-      await enviar({ image: img });
+      setFotoEtapa("recebida");
     } catch (e) {
       setAviso((e as Error).message);
+      setFotoEtapa("erro");
     }
+  }
+
+  async function enviarFoto() {
+    if (!foto) return;
+    setFotoEtapa("lendo");
+    const ok = await enviar({ image: foto }, () => setFotoEtapa("buscando"));
+    setFotoEtapa(ok ? "pronta" : "erro");
   }
 
   // Colar um print (Ctrl+V) em qualquer lugar da página manda a imagem.
@@ -732,9 +1253,9 @@ function VideoLabTela() {
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap";
+    link.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,400&display=swap";
     document.head.appendChild(link);
-    Promise.all([document.fonts.load("900 40px Montserrat"), carregarFundos(CLIPS.map((url) => ({ tipo: "video" as const, url })))]).catch((e) =>
+    Promise.all([document.fonts.load("900 40px Montserrat"), document.fonts.load("700 40px 'Playfair Display'"), document.fonts.load("italic 400 40px 'Playfair Display'"), carregarFundos([...CLIPS, ...CLIPS].slice(0, CENAS).map((url) => ({ tipo: "video" as const, url })))]).catch((e) =>
       setStatus("Erro: " + e.message),
     );
     return () => link.remove();
@@ -749,20 +1270,31 @@ function VideoLabTela() {
     let lastScene = -1;
     const loop = () => {
       const t = ((performance.now() - t0) / 1000) % TOTAL;
-      const sc = Math.min(Math.floor(t / SCENE), 2);
+      const sc = telaEm(t);
       if (sc !== lastScene) {
-        vidsRef.current.forEach((v, i) => {
-          if (i === sc && isVideo(v)) { v.currentTime = 0; v.play(); }
-        });
+        const vs = vidsRef.current;
+        const v = vs[sc % Math.max(vs.length, 1)];
+        if (v && isVideo(v)) { v.currentTime = 0; v.play(); }
         lastScene = sc;
       }
-      drawFrame(ctx, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current);
+      drawFrame(ctx, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, modeloRef.current);
       raf = requestAnimationFrame(loop);
     };
     vidsRef.current.forEach((v) => isVideo(v) && v.play());
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, [carregando, gravando]);
+
+  // Atalho de teste: desenha um momento do vídeo num modelo e devolve a imagem.
+  useEffect(() => {
+    (window as unknown as Record<string, unknown>).__videoLabQuadro = (t: number, m: Modelo) => {
+      const c = document.createElement("canvas");
+      c.width = W;
+      c.height = H;
+      drawFrame(c.getContext("2d")!, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m);
+      return c.toDataURL("image/jpeg", 0.8);
+    };
+  });
 
   // Gera quadro a quadro (não depende de a tela estar visível nem da velocidade do aparelho).
   async function gerar() {
@@ -785,20 +1317,44 @@ function VideoLabTela() {
       const muxer = new Muxer({ target: new ArrayBufferTarget(), video: { codec: "avc", width: W, height: H }, fastStart: "in-memory" });
       const enc = new VideoEncoder({ output: (chunk, meta) => muxer.addVideoChunk(chunk, meta), error: (e) => { throw e; } });
       enc.configure({ codec, width: W, height: H, bitrate: 6_000_000, framerate: FPS });
-      const seek = (v: Fundo, x: number) =>
+      // Em vez de "pular" para cada quadro (lento: decodifica de novo a cada pulo),
+      // cada vídeo toca normalmente e o quadro espera ele chegar no ponto certo.
+      const tocando = new Set<number>();
+      const esperar = (v: HTMLVideoElement, x: number) =>
         new Promise<void>((r) => {
-          if (!isVideo(v)) return r();
-          const alvo = x % Math.max(v.duration - 0.1, 0.5);
-          if (Math.abs(v.currentTime - alvo) < 0.001) return r();
-          v.addEventListener("seeked", () => r(), { once: true });
-          v.currentTime = alvo;
+          const alvo = x % Math.max(v.duration - 0.05, 0.5);
+          const limite = performance.now() + 400;
+          const checar = () => {
+            const ct = v.currentTime;
+            // chegou no ponto (ou deu a volta no loop) ou passou do tempo-limite
+            if (ct >= alvo - 0.017 || (alvo > v.duration - 0.6 && ct < 0.3) || performance.now() > limite) r();
+            else if ("requestVideoFrameCallback" in v) (v as HTMLVideoElement & { requestVideoFrameCallback: (cb: () => void) => void }).requestVideoFrameCallback(checar);
+            else setTimeout(checar, 5);
+          };
+          checar();
         });
       const n = Math.round(TOTAL * FPS);
       for (let f = 0; f < n; f++) {
         const t = f / FPS;
-        const ativos = [0, 1, 2].filter((i) => vids[i] && t >= i * SCENE - FADE && t <= (i + 1) * SCENE + FADE);
-        await Promise.all(ativos.map((i) => seek(vids[i], Math.max(0, t - i * SCENE + FADE))));
-        drawFrame(ctx, t, vids, dadosRef.current, logoRef.current, contatosRef.current);
+        const ativos = [...Array(CENAS).keys()].filter((i) => t >= INICIOS[i] - FADE && t <= INICIOS[i] + TELAS[i].dur + FADE);
+        // começa a tocar quem entrou e pausa quem saiu
+        for (let i = 0; i < CENAS; i++) {
+          const v = vids[i % Math.max(vids.length, 1)];
+          if (!v || !isVideo(v)) continue;
+          if (ativos.includes(i) && !tocando.has(i)) {
+            tocando.add(i);
+            v.currentTime = 0;
+            await v.play().catch(() => undefined);
+          } else if (!ativos.includes(i) && tocando.has(i)) {
+            tocando.delete(i);
+            v.pause();
+          }
+        }
+        await Promise.all(ativos.map((i) => {
+          const v = vids[i % Math.max(vids.length, 1)];
+          return v && isVideo(v) ? esperar(v, Math.max(0, t - INICIOS[i] + FADE)) : Promise.resolve();
+        }));
+        drawFrame(ctx, t, vids, dadosRef.current, logoRef.current, contatosRef.current, modeloRef.current);
         const frame = new VideoFrame(canvas, { timestamp: Math.round((f * 1e6) / FPS), duration: Math.round(1e6 / FPS) });
         enc.encode(frame, { keyFrame: f % 60 === 0 });
         frame.close();
@@ -837,6 +1393,7 @@ function VideoLabTela() {
 
   return (
     <div className="min-h-screen bg-neutral-950 p-4 text-white">
+      <style>{`@keyframes cvScan { 0% { top: 0% } 50% { top: 97% } 100% { top: 0% } } .cv-scan { animation: cvScan 1.6s ease-in-out infinite; }`}</style>
       <h1 className="mb-1 text-xl font-bold">Vídeo pronto (laboratório local)</h1>
       <p className="mb-4 text-sm text-neutral-400">Mande o pacote do jeito que preferir. A IA acha o destino, preenche tudo e busca os vídeos.</p>
       <div className="flex flex-col gap-6 lg:flex-row">
@@ -896,12 +1453,73 @@ function VideoLabTela() {
           )}
 
           {entrada === "foto" && (
-            <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-neutral-700 p-5 text-center">
-              {foto ? <img src={foto} alt="Pacote enviado" className="max-h-48 rounded-lg" /> : <span className="text-3xl">🖼️</span>}
-              <span className="text-sm font-semibold">Mande a foto ou o print do pacote</span>
-              <span className="text-xs text-neutral-400">Pode ser de operadora, de post ou do WhatsApp. Também dá para colar com Ctrl+V.</span>
-              <input id="foto" type="file" accept="image/*" className="hidden" disabled={ocupado} onChange={(e) => onFoto(e.target.files?.[0])} />
-            </label>
+            <div className="flex flex-col gap-3">
+              {!foto ? (
+                <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-violet-500/60 bg-violet-500/5 p-6 text-center transition hover:bg-violet-500/10">
+                  <span className="text-4xl">📸</span>
+                  <span className="font-semibold">Toque para escolher a foto ou o print do pacote</span>
+                  <span className="text-xs text-neutral-400">De operadora, de post ou do WhatsApp. No computador, dá para colar com Ctrl+V.</span>
+                  <input id="foto" type="file" accept="image/*" className="hidden" onChange={(e) => onFoto(e.target.files?.[0])} />
+                </label>
+              ) : (
+                <div className="flex flex-col gap-3 rounded-xl border border-neutral-700 bg-neutral-900 p-3">
+                  <div className="relative mx-auto overflow-hidden rounded-lg">
+                    <img src={foto} alt="Foto do pacote" className="max-h-64 rounded-lg" />
+                    {(fotoEtapa === "lendo" || fotoEtapa === "buscando") && (
+                      <>
+                        <div className="absolute inset-0 bg-violet-900/30" />
+                        <div className="cv-scan absolute inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-amber-300 to-transparent shadow-[0_0_24px_6px_rgba(252,211,77,.7)]" />
+                      </>
+                    )}
+                    {fotoEtapa === "pronta" && (
+                      <div className="absolute right-2 top-2 rounded-full bg-green-600 px-3 py-1 text-xs font-bold">✓ Lida</div>
+                    )}
+                  </div>
+                  {fotoEtapa === "recebida" && (
+                    <p id="foto-recebida" className="flex items-center gap-2 rounded-lg bg-green-500/15 p-2 text-sm font-semibold text-green-300">
+                      <span className="grid h-6 w-6 place-items-center rounded-full bg-green-600 text-white">✓</span>
+                      Foto recebida! Agora é só enviar.
+                    </p>
+                  )}
+                  {(fotoEtapa === "lendo" || fotoEtapa === "buscando" || fotoEtapa === "pronta") && (
+                    <ol id="foto-passos" className="flex flex-col gap-1.5 text-sm">
+                      {[
+                        { nome: "Foto recebida", feito: true },
+                        { nome: "Lendo destino, preço e inclusos da imagem", feito: fotoEtapa !== "lendo", agora: fotoEtapa === "lendo" },
+                        { nome: "Buscando vídeos do destino", feito: fotoEtapa === "pronta", agora: fotoEtapa === "buscando" },
+                      ].map((p) => (
+                        <li key={p.nome} className={`flex items-center gap-2 ${p.feito ? "text-green-300" : p.agora ? "text-amber-200" : "text-neutral-500"}`}>
+                          {p.feito ? (
+                            <span className="grid h-5 w-5 place-items-center rounded-full bg-green-600 text-[11px] text-white">✓</span>
+                          ) : p.agora ? (
+                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-amber-300 border-t-transparent" />
+                          ) : (
+                            <span className="h-5 w-5 rounded-full border-2 border-neutral-600" />
+                          )}
+                          {p.nome}
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                  {fotoEtapa !== "lendo" && fotoEtapa !== "buscando" && (
+                    <div className="flex gap-2">
+                      <button
+                        id="enviar-foto"
+                        onClick={enviarFoto}
+                        disabled={ocupado}
+                        className={`flex-1 rounded-lg px-4 py-3 font-bold disabled:opacity-60 ${fotoEtapa === "pronta" ? "bg-neutral-700" : "animate-pulse bg-violet-600"}`}
+                      >
+                        {fotoEtapa === "pronta" ? "Ler de novo" : "📤 Enviar foto e montar o vídeo"}
+                      </button>
+                      <label className="cursor-pointer rounded-lg border border-neutral-600 px-3 py-3 text-sm">
+                        Trocar
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => onFoto(e.target.files?.[0])} />
+                      </label>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {etapa && <p id="etapa" className="text-sm text-violet-300">{etapa}</p>}
@@ -994,6 +1612,20 @@ function VideoLabTela() {
             <input type="file" accept="image/*" onChange={(e) => onLogo(e.target.files?.[0])} />
           </div>
 
+          <h2 className="mt-2 text-sm font-bold text-neutral-200">Modelo do vídeo</h2>
+          <div className="grid grid-cols-2 gap-2">
+            {MODELOS.map((m) => (
+              <button
+                key={m.id}
+                id={`modelo-${m.id}`}
+                onClick={() => setModelo(m.id)}
+                className={`rounded-lg border p-2 text-left ${modelo === m.id ? "border-amber-400 bg-amber-400/10" : "border-neutral-700 bg-neutral-900"}`}
+              >
+                <p className="text-sm font-bold">{m.nome}</p>
+                <p className="text-xs text-neutral-400">{m.desc}</p>
+              </button>
+            ))}
+          </div>
           <button
             id="gerar"
             disabled={carregando || gravando || ocupado}
@@ -1007,6 +1639,97 @@ function VideoLabTela() {
             <a id="baixar" className="rounded-lg bg-green-600 px-4 py-2 text-center font-semibold" href={url} download={`video-${dados.destino}.mp4`}>
               Baixar vídeo
             </a>
+          )}
+          {url && !editando && (
+            <button id="editar" onClick={() => setEditando(true)} className="rounded-lg border border-violet-500 px-4 py-2 font-semibold text-violet-200">
+              ✏️ Editar vídeo
+            </button>
+          )}
+          {editando && (
+            <div id="editor" className="flex flex-col gap-2 rounded-xl border border-violet-500/50 bg-neutral-900 p-3">
+              <div className="flex items-center justify-between">
+                <h2 className="font-bold">Editar vídeo</h2>
+                <button className="text-sm text-neutral-400" onClick={() => { setEditando(false); setTelaAberta(null); }}>Fechar</button>
+              </div>
+              <p className="text-xs text-neutral-400">Troque o fundo de qualquer tela ou mude o texto. Depois toque em Gerar vídeo de novo.</p>
+              {TELAS.map((tela, i) => {
+                const m = fundos[i % Math.max(fundos.length, 1)];
+                const nDest = TELAS.slice(0, i).filter((x) => x.tipo === "destaque").length;
+                return (
+                  <div key={i} className="rounded-lg border border-neutral-700 p-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-20 w-12 shrink-0 overflow-hidden rounded bg-neutral-800">
+                        {m?.thumb ? (
+                          <img src={m.thumb} alt="" className="h-full w-full object-cover" />
+                        ) : m?.tipo === "foto" ? (
+                          <img src={m.url} alt="" className="h-full w-full object-cover" />
+                        ) : m ? (
+                          <video src={m.url} muted className="h-full w-full object-cover" />
+                        ) : null}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold">{i + 1}. {tela.nome} <span className="text-xs text-neutral-500">({tela.dur}s)</span></p>
+                        {tela.tipo === "abertura" && (
+                          <input className={campo + " mt-1"} value={dados.chamada} onChange={(e) => set("chamada", e.target.value)} />
+                        )}
+                        {tela.tipo === "destaque" && (
+                          <input
+                            className={campo + " mt-1"}
+                            value={dados.destaques[nDest] || ""}
+                            placeholder="Frase desta tela"
+                            onChange={(e) => {
+                              const ds = [...dados.destaques];
+                              ds[nDest] = e.target.value;
+                              set("destaques", ds);
+                            }}
+                          />
+                        )}
+                        {tela.tipo === "preco" && (
+                          <input className={campo + " mt-1"} value={dados.preco} onChange={(e) => set("preco", e.target.value)} />
+                        )}
+                        {tela.tipo === "inclusos" && <p className="text-xs text-neutral-500">Os itens ficam no campo "O que está incluso".</p>}
+                        {tela.tipo === "contato" && <p className="text-xs text-neutral-500">Os contatos ficam em "Final do vídeo".</p>}
+                      </div>
+                      <button
+                        id={`trocar-${i}`}
+                        onClick={() => setTelaAberta(telaAberta === i ? null : i)}
+                        className="rounded-lg bg-violet-600 px-3 py-2 text-xs font-bold"
+                      >
+                        Trocar fundo
+                      </button>
+                    </div>
+                    {telaAberta === i && (
+                      <div className="mt-2 flex flex-col gap-2">
+                        <div className="flex gap-2">
+                          <input
+                            className={campo}
+                            placeholder={`Buscar no Pexels (ex.: ${dados.destino} praia)`}
+                            value={busca}
+                            onChange={(e) => setBusca(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && buscarNoPexels()}
+                          />
+                          <button onClick={buscarNoPexels} disabled={buscando} className="rounded-lg bg-neutral-700 px-3 text-sm">
+                            {buscando ? "…" : "Buscar"}
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-4 gap-1">
+                          {pool.map((p) => (
+                            <button key={p.url} onClick={() => trocarFundo(i, p)} className="relative h-24 overflow-hidden rounded border border-neutral-700 hover:border-amber-400">
+                              <img src={p.thumb || p.url} alt="" className="h-full w-full object-cover" />
+                              {p.tipo === "video" && <span className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1 text-[10px]">▶</span>}
+                            </button>
+                          ))}
+                        </div>
+                        <label className="cursor-pointer rounded-lg border border-dashed border-neutral-600 p-2 text-center text-sm">
+                          📁 Usar um vídeo ou foto meu
+                          <input type="file" accept="video/*,image/*" className="hidden" onChange={(e) => usarArquivoProprio(i, e.target.files?.[0])} />
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
         <div className="lg:sticky lg:top-4 lg:self-start">
