@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { verifyFabricaEliteAccess } from "../_shared/fabricaAccess.ts";
 
 // Vídeo pronto: recebe o que o agente falou no áudio (já transcrito),
@@ -6,7 +7,7 @@ import { verifyFabricaEliteAccess } from "../_shared/fabricaAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-video-lab, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const json = (body: unknown, status = 200) =>
@@ -25,6 +26,25 @@ O agente falou num áudio como é o pacote. Extraia e devolva SÓ um JSON com:
   "buscas": ["3 termos curtos EM INGLÊS para achar vídeos reais desse destino num banco de vídeos, do mais específico ao mais genérico (ex.: Jericoacoara, Jericoacoara dunes, Brazil beach dunes)"]
 }
 Regras: não invente preço, telefone nem nome de agência. Itens só do que o agente falou; se ele não falou nenhum, devolva []. Corrija erros comuns de transcrição em nomes de lugares.`;
+
+// Teste sem login (laboratório local): no máximo 30 chamadas por hora, somando todo mundo.
+const LIMITE_SEM_LOGIN_POR_HORA = 30;
+
+async function liberarSemLogin(): Promise<boolean> {
+  const url = Deno.env.get("SUPABASE_URL") ?? "";
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  if (!url || !key) return false;
+  const db = createClient(url, key, { auth: { persistSession: false } });
+  const desde = new Date(Date.now() - 3600_000).toISOString();
+  const { count, error } = await db
+    .from("analytics_events")
+    .select("id", { count: "exact", head: true })
+    .eq("event_type", "video_pronto_sem_login")
+    .gte("created_at", desde);
+  if (error || (count ?? 0) >= LIMITE_SEM_LOGIN_POR_HORA) return false;
+  await db.from("analytics_events").insert({ event_type: "video_pronto_sem_login", url_path: "/dev/video-lab" });
+  return true;
+}
 
 type Video = { id: number; url: string; width: number; height: number; duration: number; thumb: string };
 
@@ -61,8 +81,13 @@ serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Método não permitido" }, 405);
 
   try {
-    const access = await verifyFabricaEliteAccess(req, corsHeaders);
-    if (!access.ok) return access.response;
+    const temLogin = (req.headers.get("Authorization") || "").length > 0 && req.headers.get("x-video-lab") !== "sem-login";
+    if (temLogin) {
+      const access = await verifyFabricaEliteAccess(req, corsHeaders);
+      if (!access.ok) return access.response;
+    } else if (!(await liberarSemLogin())) {
+      return json({ error: "Limite de testes sem login atingido nesta hora. Tente mais tarde." }, 429);
+    }
 
     const body = await req.json().catch(() => ({}));
     const texto = typeof body?.text === "string" ? body.text.trim().slice(0, 2000) : "";
