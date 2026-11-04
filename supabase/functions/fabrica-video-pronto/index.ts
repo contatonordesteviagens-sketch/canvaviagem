@@ -17,11 +17,13 @@ const json = (body: unknown, status = 200) =>
 
 const SYSTEM_PROMPT = `Você monta um vídeo de stories (3 quadros) para uma agência de viagens brasileira.
 Você recebe o pacote de um destes jeitos: o que o agente falou num áudio, um texto colado, os dados de um pacote cadastrado, ou a FOTO/PRINT de um pacote (de operadora, de post, de WhatsApp).
-PRIMEIRO descubra o destino (o lugar da viagem). Se for foto, leia todo o texto da imagem e use também o que aparece nela.
+PRIMEIRO descubra o destino (o lugar da viagem). Se for foto, leia todo o texto da imagem e olhe também a paisagem.
+Se o texto não disser um lugar específico (ex.: "Circuito Europeu", "Caribe", "Pacote de férias"), reconheça o lugar pela foto de fundo (monumentos, paisagens: Coliseu = Roma, Torre Eiffel = Paris, Cristo = Rio de Janeiro) e use esse lugar como destino. Se for um circuito com várias cidades, use a cidade que aparece na foto ou, sem foto clara, a região (ex.: Europa).
 Devolva SÓ um JSON com:
 {
   "destino": "nome do destino como o brasileiro escreve, com acento (ex.: Jericoacoara, Cancún, Porto de Galinhas)",
-  "chamada": "frase curta e animada para o 1º quadro, até 32 caracteres, sobre o destino (ex.: As dunas mais lindas do Ceará)",
+  "chamada": "frase curta e animada para o 1º quadro, até 32 caracteres, sobre o destino (ex.: As dunas mais lindas do Ceará). Se o pacote tiver nome próprio (ex.: Circuito Europeu), use-o aqui",
+  "destaques": ["2 frases curtas, até 30 caracteres cada, sobre o que a pessoa vai viver no destino, para telas do vídeo (ex.: Dunas e lagoas cristalinas, Pôr do sol inesquecível)"],
   "pagamento": "installments se o preço for parcelado (ex.: 10x de R$ 349), down_plus se for entrada + parcelas, cash se for à vista ou só um valor, free_quote se não tiver preço",
   "parcelas": "só o número de parcelas com x (ex.: 10x), ou \\"\\"",
   "entrada": "valor da entrada no formato R$ 500, só se for entrada + parcelas, senão \\"\\"",
@@ -31,7 +33,7 @@ Devolva SÓ um JSON com:
   "agencia": "nome da agência se aparecer, senão \\"\\"",
   "whatsapp": "telefone se aparecer, formato (88) 99999-9999, senão \\"\\"",
   "instagram": "@ do Instagram se aparecer, senão \\"\\"",
-  "buscas": ["3 termos curtos EM INGLÊS para achar vídeos reais desse destino num banco de vídeos, do mais específico ao mais genérico (ex.: Jericoacoara, Jericoacoara dunes, Brazil beach dunes)"]
+  "buscas": ["4 termos curtos EM INGLÊS para achar vídeos reais desse destino num banco de vídeos, do mais específico ao mais genérico (ex.: Jericoacoara, Jericoacoara dunes, Jericoacoara lagoon, Brazil beach dunes)"]
 }
 Regras: não invente preço, telefone, Instagram nem nome de agência. Itens só do que foi informado; se nada foi informado, devolva []. Corrija erros comuns de transcrição em nomes de lugares. Se não der para saber o destino, devolva "destino": "".`;
 
@@ -67,7 +69,7 @@ async function buscarPexels(apiKey: string, termos: string[]): Promise<Midia[]> 
   // 1) vídeos em pé; 2) vídeos deitados (o vídeo corta para stories)
   for (const orientacao of ["portrait", ""]) {
     for (const termo of termos) {
-      if (achados.length >= 6) break;
+      if (achados.length >= 10) break;
       const q = `https://api.pexels.com/videos/search?query=${encodeURIComponent(termo)}&per_page=10&size=medium${orientacao ? `&orientation=${orientacao}` : ""}`;
       const r = await fetch(q, { headers: { Authorization: apiKey } });
       if (!r.ok) continue;
@@ -79,20 +81,20 @@ async function buscarPexels(apiKey: string, termos: string[]): Promise<Midia[]> 
         const f = files[0];
         if (!f) continue;
         add({ tipo: "video", url: f.link, width: f.width, height: f.height, thumb: v.image }, "v" + v.id);
-        if (achados.length >= 6) break;
+        if (achados.length >= 10) break;
       }
     }
-    if (achados.length >= 3) return achados;
+    if (achados.length >= 6) return achados;
   }
   // 3) faltou vídeo: completa com fotos em pé do destino (o vídeo anima com zoom)
   for (const termo of termos) {
-    if (achados.length >= 3) break;
+    if (achados.length >= 6) break;
     const r = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(termo)}&per_page=6&orientation=portrait`, { headers: { Authorization: apiKey } });
     if (!r.ok) continue;
     const d = await r.json();
     for (const p of d.photos || []) {
       add({ tipo: "foto", url: p.src?.large2x || p.src?.large, width: p.width, height: p.height, thumb: p.src?.medium }, "p" + p.id);
-      if (achados.length >= 3) break;
+      if (achados.length >= 6) break;
     }
   }
   return achados;
@@ -112,6 +114,12 @@ serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
+    if (typeof body?.buscar === "string" && body.buscar.trim().length >= 2) {
+      const PEXELS = Deno.env.get("PEXELS_API_KEY");
+      if (!PEXELS) throw new Error("Chave do Pexels ausente");
+      const midias = await buscarPexels(PEXELS, [body.buscar.trim().slice(0, 60)]);
+      return json({ midias });
+    }
     const texto = typeof body?.text === "string" ? body.text.trim().slice(0, 4000) : "";
     const imagem = typeof body?.image === "string" && body.image.startsWith("data:image/") ? body.image : "";
     if (imagem.length > 7_000_000) return json({ error: "A imagem é grande demais. Mande um print menor." }, 413);
@@ -162,6 +170,7 @@ serve(async (req) => {
       entrada: s(c.entrada, 20),
       preco: s(c.preco, 20),
       pessoas: s(c.pessoas, 30),
+      destaques: Array.isArray(c.destaques) ? c.destaques.map((i: unknown) => s(i, 34)).filter(Boolean).slice(0, 2) : [],
       itens: Array.isArray(c.itens) ? c.itens.map((i: unknown) => s(i, 28)).filter(Boolean).slice(0, 4) : [],
       agencia: s(c.agencia, 40),
       whatsapp: s(c.whatsapp, 20),
@@ -169,7 +178,7 @@ serve(async (req) => {
     };
     if (!dados.destino) return json({ error: "Não achei o destino. Diga ou mostre para onde é o pacote.", dados }, 422);
 
-    const buscas = (Array.isArray(c.buscas) ? c.buscas : []).map((b: unknown) => s(b, 60)).filter(Boolean).slice(0, 3);
+    const buscas = (Array.isArray(c.buscas) ? c.buscas : []).map((b: unknown) => s(b, 60)).filter(Boolean).slice(0, 4);
     if (!buscas.includes(dados.destino)) buscas.unshift(dados.destino);
 
     const midias = await buscarPexels(PEXELS_API_KEY, buscas);
