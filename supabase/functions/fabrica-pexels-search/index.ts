@@ -37,6 +37,30 @@ serve(async (req) => {
       )
     }
 
+    // Vídeos verticais para o vídeo pronto (stories). Fotos continuam como antes.
+    if (body?.kind === "video") {
+      const vr = await fetch(`https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=12&orientation=portrait&size=medium`, {
+        headers: { Authorization: apiKey },
+      })
+      if (!vr.ok) throw new Error(`Pexels API error: ${vr.status} ${vr.statusText}`)
+      const vd = await vr.json()
+      const videos = (vd.videos || [])
+        .map((v: any) => {
+          const files = (v.video_files || []).filter((f: any) => f.file_type === "video/mp4" && f.width && f.height && f.height > f.width)
+          // o arquivo mais próximo de 720x1280, para carregar rápido no celular
+          files.sort((x: any, y: any) => Math.abs(x.height - 1280) - Math.abs(y.height - 1280))
+          const f = files[0]
+          if (!f) return null
+          return { id: v.id, url: f.link, width: f.width, height: f.height, duration: v.duration, thumb: v.image }
+        })
+        .filter((v: any) => v && v.duration >= 5)
+        .slice(0, 6)
+      return new Response(
+        JSON.stringify({ videos }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=3&orientation=landscape`, {
       headers: {
         Authorization: apiKey
