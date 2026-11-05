@@ -2638,6 +2638,19 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
       </div>
 
+      {/* No celular o botão principal fica a mais de 2.000 px do topo: uma cópia fixa no rodapé. */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0A0A0B]/95 p-3 backdrop-blur lg:hidden">
+        <button
+          onClick={() => { generateNext(); setTimeout(() => document.getElementById("fabrica-resultado")?.scrollIntoView({ behavior: "smooth", block: "start" }), 400); }}
+          disabled={loading || !destination || (genMode === "photo" && !selectedPhotoUrl) || (genMode === "custom" && !customImageData && !customLink.trim())}
+          className="mx-auto flex min-h-12 w-full max-w-md items-center justify-center gap-2 rounded-xl font-extrabold text-black disabled:opacity-40"
+          style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)` }}
+        >
+          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando…</> : <><Sparkles className="w-4 h-4" /> Gerar Anúncio</>}
+        </button>
+        {!destination && <p className="mt-1 text-center text-[11px] text-white/50">Escolha o destino acima para liberar.</p>}
+      </div>
+
       <div className={`${sectionCls} space-y-5`}>
         {/* Fonte, tamanhos e cores: a maioria não mexe. Ficam recolhidos para a tela não assustar. */}
         <details className="group rounded-xl border border-white/10 bg-black/20">

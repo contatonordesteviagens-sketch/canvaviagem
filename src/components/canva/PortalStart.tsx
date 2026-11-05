@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FabricaFirstSteps } from "@/components/fabrica/FabricaFirstSteps";
+import { JornadaGuia } from "@/components/jornada/JornadaGuia";
 import { VoiceOnboarding } from "@/components/fabrica/VoiceOnboarding";
 import { FabricaProvider } from "@/hooks/useFabricaContext";
 
@@ -14,15 +14,15 @@ function PortalStartContent() {
   return (
     <div className="mx-auto mb-6 w-full max-w-4xl text-left">
       <div ref={voiceRef} className="mb-3 scroll-mt-24">
-        <VoiceOnboarding variant="hero" onSaved={() => navigate("/fabrica/anuncio?gerar=1")} />
+        <VoiceOnboarding variant="hero" onSaved={() => navigate("/fabrica/video?gerar=1")} />
       </div>
-      <FabricaFirstSteps
-        onGo={(target) => {
-          if (target === "perfil" || target === "pacote") {
+      <JornadaGuia
+        onIr={(m) => {
+          if (m.id === "perfil") {
             voiceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
             return;
           }
-          navigate(target === "anuncio" ? "/fabrica/anuncio" : "/fabrica/site");
+          navigate(m.caminho + (m.tipo === "confirmar" ? "?missao=" + m.id : ""));
         }}
       />
     </div>

@@ -10,6 +10,8 @@ import {
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { useUserDetails } from "@/hooks/useUserDetails";
+import { Clapperboard, Medal } from "lucide-react";
 
 interface UserDetailsModalProps {
   user: AdminUserIntelligence | null;
@@ -40,6 +42,7 @@ const statusLabels: Record<string, string> = {
 
 export const UserDetailsModal = ({ user, open, onOpenChange }: UserDetailsModalProps) => {
   const { toast } = useToast();
+  const { data: detalhes } = useUserDetails(user?.user_id ?? null);
 
   if (!user) return null;
 
@@ -172,6 +175,15 @@ export const UserDetailsModal = ({ user, open, onOpenChange }: UserDetailsModalP
               <MetricCard icon={<Eye className="h-5 w-5 text-blue-500" />} value={user.site_visits} label="Visitas ao Site" />
               <MetricCard icon={<MousePointerClick className="h-5 w-5 text-purple-500" />} value={user.site_clicks} label="Cliques CTA" />
               <MetricCard icon={<UsersIcon className="h-5 w-5 text-emerald-500" />} value={user.leads} label="Leads Captados" />
+              <MetricCard icon={<Clapperboard className="h-5 w-5 text-amber-500" />} value={detalhes?.videos_prontos ?? 0} label="Vídeos prontos" />
+            </div>
+
+            <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-3 text-sm">
+              <Medal className="h-4 w-4 text-amber-500 flex-shrink-0" />
+              <span>
+                Jornada: <strong>{detalhes?.missao_atual ?? "ainda não começou"}</strong>
+                {detalhes?.ultima_missao_em && <span className="text-muted-foreground"> · última em {fmt(detalhes.ultima_missao_em)}</span>}
+              </span>
             </div>
 
             {user.last_activity && (

@@ -11,6 +11,10 @@ import { FabricaLibrary } from "@/pages/fabrica/FabricaLibrary";
 import { VoiceOnboarding } from "@/components/fabrica/VoiceOnboarding";
 import { FabricaLockedFeature } from "@/components/fabrica/FabricaLockedFeature";
 import { FabricaStepGuide, type FabricaGuideKey } from "@/components/fabrica/FabricaStepGuide";
+import { JornadaGuia } from "@/components/jornada/JornadaGuia";
+import { MinhaBiblioteca } from "@/components/jornada/MinhaBiblioteca";
+import { VideoLabTela } from "@/pages/dev/VideoLab";
+import { Clapperboard, FolderHeart } from "lucide-react";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { 
   ArrowLeft, 
@@ -39,6 +43,8 @@ import { toast } from "sonner";
  *  Returns 0 when the path is the dashboard root (no phase segment). */
 const getPhaseFromPath = (pathname: string): number => {
   const p = pathname.toLowerCase();
+  if (p.includes("/video")) return 6;
+  if (p.includes("/biblioteca") || p.includes("/conteudos")) return 7;
   if (p.includes("/anuncio") || p.includes("/anuncios")) return 1;
   if (p.includes("/carrossel") || p.includes("/carrusel")) return 2;
   if (p.includes("/site") || p.includes("/sites")) return 3;
@@ -166,6 +172,20 @@ const FabricaInner = () => {
               GERAÇÃO
             </div>
             <button
+              onClick={() => navigate(isES ? "/es/fabrica/video" : "/fabrica/video")}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                activePhase === 6
+                  ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
+                  : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Clapperboard className={`w-4 h-4 ${activePhase === 6 ? "text-amber-400" : "text-white/40"}`} />
+                <span>Vídeo pronto</span>
+              </div>
+              <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-black text-black">NOVO</span>
+            </button>
+            <button
               onClick={() => navigate(isES ? "/es/fabrica/anuncio" : "/fabrica/anuncio")}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                 activePhase === 1
@@ -245,6 +265,19 @@ const FabricaInner = () => {
                   <span>Meus Pacotes</span>
                 </div>
               </button>
+              <button
+                onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/biblioteca" : "/fabrica/biblioteca"); }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  activePhase === 7
+                    ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <FolderHeart className={`w-4 h-4 ${activePhase === 7 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Meus conteúdos</span>
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -306,6 +339,9 @@ const FabricaInner = () => {
           </button>
           
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Geração</div>
+          <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/video" : "/fabrica/video"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
+            <Clapperboard className="w-4 h-4 text-amber-400" /><span>Vídeo pronto</span><span className="ml-auto rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-black text-black">NOVO</span>
+          </button>
           <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/anuncio" : "/fabrica/anuncio"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
             <span>✨</span> Anúncio
           </button>
@@ -320,6 +356,9 @@ const FabricaInner = () => {
           </button>
           <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/crm" : "/fabrica/crm"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
             <span>👥</span> CRM
+          </button>
+          <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/biblioteca" : "/fabrica/biblioteca"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
+            <FolderHeart className="w-4 h-4 text-white/40" /><span>Meus conteúdos</span>
           </button>
           <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/planos" : "/fabrica/planos"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
             <span>🧳</span> Meus Pacotes
@@ -358,11 +397,13 @@ const FabricaInner = () => {
               </button>
 
               {([
+                { name: 'Vídeo', path: '/video', phase: 6 },
                 { name: 'Anúncio', path: '/anuncio', phase: 1 },
                 { name: 'Carrossel', path: '/carrossel', phase: 2 },
                 { name: 'Site', path: '/site', phase: 3 },
                 { name: 'CRM', path: '/crm', phase: 4 },
                 { name: 'Meus Pacotes', path: '/planos', phase: 5 },
+                { name: 'Meus conteúdos', path: '/biblioteca', phase: 7 },
               ] as const).map(({ name, path, phase }) => (
                 <button
                   key={phase}
@@ -381,9 +422,14 @@ const FabricaInner = () => {
         {/* Dynamic Component Render */}
         <div className="transition-all duration-300">
           {(() => {
-            const guideByPhase: Record<number, FabricaGuideKey> = { 1: "anuncio", 2: "carrossel", 3: "site", 4: "crm", 5: "pacotes" };
-            const guideKey = activeTab === "phase" ? guideByPhase[activePhase] : undefined; // no Painel, o checklist "Primeiros passos" faz esse papel
-            return guideKey ? <FabricaStepGuide key={guideKey} section={guideKey} /> : null;
+            const guideByPhase: Record<number, FabricaGuideKey> = { 1: "anuncio", 2: "carrossel", 3: "site", 4: "crm", 5: "pacotes", 6: "video", 7: "biblioteca" };
+            const guideKey = activeTab === "phase" ? guideByPhase[activePhase] : undefined; // no Painel, a jornada faz esse papel
+            return guideKey ? (
+              <>
+                <JornadaGuia variante="faixa" />
+                <FabricaStepGuide key={guideKey} section={guideKey} />
+              </>
+            ) : null;
           })()}
           {activeTab === "dashboard" && (
             <FabricaDashboard
@@ -396,6 +442,8 @@ const FabricaInner = () => {
           )}
           {activeTab === "phase" && (
             <>
+              {activePhase === 6 && <VideoLabTela embutido />}
+              {activePhase === 7 && <MinhaBiblioteca />}
               {activePhase === 1 && <Phase3ArtFactory key="phase1-ad" onNext={() => navigate(isES ? "/es/fabrica/carrossel" : "/fabrica/carrossel")} onBack={() => navigate(isES ? "/es/fabrica" : "/fabrica")} lockMode={true} initialMode="ad" onSkipToSite={() => navigate(isES ? "/es/fabrica/site" : "/fabrica/site")} />}
               {activePhase === 2 && <Phase3ArtFactory key="phase2-carousel" onNext={() => navigate(isES ? "/es/fabrica/site" : "/fabrica/site")} onBack={() => navigate(isES ? "/es/fabrica/anuncio" : "/fabrica/anuncio")} lockMode={true} initialMode="carousel" />}
               {activePhase === 3 && <Phase4LandingBuilder onNext={() => navigate(isES ? "/es/fabrica/crm" : "/fabrica/crm")} onBack={() => navigate(isES ? "/es/fabrica/carrossel" : "/fabrica/carrossel")} />}

@@ -9,6 +9,9 @@ export interface UserSite {
 }
 
 export interface UserDetails {
+  videos_prontos: number;
+  missao_atual: string | null;
+  ultima_missao_em: string | null;
   phone: string | null;
   images_generated: number;
   total_activities: number;
@@ -45,11 +48,17 @@ export const useUserDetails = (userId: string | null) => {
       // Fetch activities
       const { data: activities } = await supabase
         .from("user_activities")
-        .select("activity_type, created_at")
+        .select("activity_type, created_at, metadata")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
       const imagesGenerated = activities?.filter(a => a.activity_type === "art").length || 0;
+      // Vídeo pronto e jornada (missões): registrados pela Fábrica em user_activities.
+      const videosProntos = activities?.filter(a => a.activity_type === "video_pronto").length || 0;
+      const missoes = (activities || []).filter(a => a.activity_type === "missao");
+      const ultimaMissao = missoes[0]?.metadata as { numero?: number; de?: number; missao?: string } | null;
+      const missaoAtual = ultimaMissao?.numero ? `${missoes.length} de ${ultimaMissao.de ?? 8} feitas` : null;
+      const ultimaMissaoEm = missoes[0]?.created_at ?? null;
       const totalActivities = activities?.length || 0;
       const lastActive = activities && activities.length > 0 ? activities[0].created_at : null;
 
@@ -63,6 +72,9 @@ export const useUserDetails = (userId: string | null) => {
       return {
         phone,
         images_generated: imagesGenerated,
+        videos_prontos: videosProntos,
+        missao_atual: missaoAtual,
+        ultima_missao_em: ultimaMissaoEm,
         total_activities: totalActivities,
         last_active: lastActive,
         sites: sitesData || []

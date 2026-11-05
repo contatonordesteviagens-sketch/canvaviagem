@@ -2,6 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Muxer, ArrayBufferTarget } from "mp4-muxer";
 import { supabase } from "@/integrations/supabase/client";
 import { FabricaProvider, useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
+import { useSearchParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useJornada } from "@/lib/jornada";
+import { OQueFazerAgora } from "@/components/jornada/OQueFazerAgora";
+import { salvarVideo } from "@/lib/biblioteca-videos";
 
 // Laboratório local: monta um vídeo stories de 3 quadros no navegador,
 // com vídeo real de fundo, textos animados, preço e logo da agência.
@@ -1974,8 +1979,14 @@ export default function VideoLab() {
   );
 }
 
-function VideoLabTela() {
+export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const { state: fabrica, isHydrated } = useFabricaContext();
+  const { user } = useAuth();
+  const { marcar, marcada } = useJornada();
+  const [params] = useSearchParams();
+  const [restantes, setRestantes] = useState<number | null>(null);
+  const [mostrarOqueFazer, setMostrarOqueFazer] = useState(params.get("missao") === "postar_video");
+  const autoRodou = useRef(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const vidsRef = useRef<Fundo[]>([]);
   const [entrada, setEntrada] = useState<Entrada>("audio");
@@ -2076,6 +2087,18 @@ function VideoLabTela() {
 
   const pacotes = (fabrica.selectedPackages || []).filter((p) => p.title);
 
+  useEffect(() => {
+    if (autoRodou.current || !isHydrated || carregando || params.get("gerar") !== "1") return;
+    const ultimo = pacotes[pacotes.length - 1];
+    if (!ultimo) return;
+    autoRodou.current = true;
+    setEntrada("pacote");
+    enviar({ text: textoDoPacote(ultimo) }).then((ok) => {
+      if (ok) gerarTres();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, carregando, pacotes.length]);
+
   // Carrega o fundo de cada tela (vídeos do destino ou fotos de reserva).
   async function carregarFundos(itens: Midia[]) {
     setCarregando(true);
@@ -2170,7 +2193,8 @@ function VideoLabTela() {
         const usadas = lista.slice(0, CENAS);
         setFontes({ videos: usadas.filter((m) => m.tipo === "video").length, fotos: usadas.filter((m) => m.tipo === "foto").length });
       }
-      setEtapa("Pronto. Confira os campos e toque em Gerar vídeo.");
+      setEtapa("Pronto. Confira os campos e toque em Gerar 3 vídeos.");
+      if (typeof data.videos_restantes === "number") setRestantes(data.videos_restantes);
       ok = true;
     } catch (e) {
       setAviso((e as Error).message);
@@ -2353,6 +2377,44 @@ function VideoLabTela() {
   const ORDEM_SUGERIDA: Modelo[] = ["classico", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal"];
   const tresEstilos = (): Modelo[] => [modeloRef.current, ...ORDEM_SUGERIDA.filter((m) => m !== modeloRef.current)].slice(0, 3);
 
+  // Capa pequena do vídeo (último quadro desenhado), para a biblioteca.
+  function capaAtual(): string {
+    try {
+      const c = document.createElement("canvas");
+      c.width = 108;
+      c.height = 192;
+      c.getContext("2d")!.drawImage(canvasRef.current!, 0, 0, 108, 192);
+      return c.toDataURL("image/jpeg", 0.6);
+    } catch {
+      return "";
+    }
+  }
+
+  async function guardar(m: Modelo, blob: Blob) {
+    const d = dadosRef.current;
+    try {
+      await salvarVideo({
+        nome: nomeArquivo(m),
+        destino: d.destino,
+        estilo: MODELOS.findIndex((x) => x.id === m) + 1,
+        ocasiao: ocasiaoRef.current,
+        tamanho: blob.size,
+        blob,
+        capa: capaAtual(),
+      });
+    } catch { /* sem espaço ou sem IndexedDB: o vídeo continua na tela */ }
+  }
+
+  // Um registro por rodada de geração. É o que aparece na Gestão.
+  async function registrarNaGestao(quantos: number) {
+    marcar("video");
+    if (!user) return;
+    await (supabase.from("user_activities") as any)
+      .insert({ user_id: user.id, activity_type: "video_pronto", points_earned: 25, metadata: { destino: dadosRef.current.destino, quantos, ocasiao: ocasiaoRef.current } })
+      .then(() => undefined)
+      .catch(() => undefined);
+  }
+
   async function gerar() {
     setGravando(true);
     setUrl(null);
@@ -2363,6 +2425,8 @@ function VideoLabTela() {
       const u = URL.createObjectURL(blob);
       setUrl(u);
       setResultados([{ modelo: m, url: u, nome: nomeArquivo(m) }]);
+      await guardar(m, blob);
+      registrarNaGestao(1);
       setStatus("Pronto! Seu vídeo está abaixo.");
     } catch (e) {
       setStatus("Erro: " + (e as Error).message);
@@ -2383,7 +2447,9 @@ function VideoLabTela() {
         const u = URL.createObjectURL(blob);
         if (i === 0) setUrl(u);
         setResultados((r) => [...r, { modelo: m, url: u, nome: nomeArquivo(m) }]);
+        await guardar(m, blob);
       }
+      registrarNaGestao(lista.length);
       const seg = ((performance.now() - t0) / 1000).toFixed(0);
       (window as unknown as { __videoLab3: unknown }).__videoLab3 = { seg };
       setStatus(`Pronto! ${lista.length} vídeos em ${seg}s. Escolha o seu abaixo.`);
@@ -2498,10 +2564,10 @@ function VideoLabTela() {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-950 p-4 text-white">
+    <div className={embutido ? "text-white" : "min-h-screen bg-neutral-950 p-4 text-white"}>
       <style>{`@keyframes cvScan { 0% { top: 0% } 50% { top: 97% } 100% { top: 0% } } .cv-scan { animation: cvScan 1.6s ease-in-out infinite; }`}</style>
-      <h1 className="mb-1 text-xl font-bold">🎬 Vídeo pronto</h1>
-      <p className="mb-4 text-sm text-neutral-400">Mande o pacote do jeito que preferir. A IA acha o destino, preenche tudo e monta 3 vídeos para você escolher.</p>
+      {!embutido && <h1 className="mb-1 text-xl font-bold">🎬 Vídeo pronto</h1>}
+      <p className="mb-4 text-sm text-neutral-400">Mande o pacote de um jeito só: fale, escreva, mande a foto ou escolha um salvo. A IA acha o destino, preenche tudo e monta 3 vídeos para você escolher.</p>
       <div className="mx-auto grid max-w-5xl gap-4 pb-28 lg:grid-cols-[28rem_1fr] lg:pb-4">
         <div className="flex min-w-0 flex-col gap-3 lg:col-start-1">
           <p className="text-xs font-bold uppercase tracking-wide text-violet-300">1. Mande o pacote</p>
@@ -2521,6 +2587,7 @@ function VideoLabTela() {
 
           {entrada === "pacote" && (
             <div className="flex flex-col gap-2">
+              <p className="text-xs text-neutral-400">Pacotes que você já cadastrou. Toque num para virar vídeo.</p>
               {(pacotes.length ? pacotes : [PACOTE_EXEMPLO]).map((p) => (
                 <button
                   key={p.id}
@@ -2536,6 +2603,14 @@ function VideoLabTela() {
             </div>
           )}
 
+          {entrada === "audio" && (
+            <div className="rounded-xl border border-violet-500/30 bg-violet-500/10 p-3 text-sm">
+              <p className="font-bold">Fale como se estivesse contando para um cliente.</p>
+              <p className="mt-1 text-xs text-neutral-300">
+                Exemplo: <em>"Sou a Sol Viagens, de Maceió. Vendo Gramado, 5 dias, por 1.990 reais, com hotel, café da manhã e passeio de Maria Fumaça. Meu WhatsApp é 82 99999-9999."</em>
+              </p>
+            </div>
+          )}
           {entrada === "audio" &&
             (logado ? (
               <Gravador onAudio={onAudio} ocupado={ocupado} />
@@ -2545,6 +2620,7 @@ function VideoLabTela() {
 
           {entrada === "texto" && (
             <>
+              <p className="text-xs text-neutral-400">Cole a descrição do pacote do jeito que você manda no WhatsApp. Pode ser longa.</p>
               <textarea
                 id="frase"
                 className={campo}
@@ -2565,7 +2641,7 @@ function VideoLabTela() {
                 <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-violet-500/60 bg-violet-500/5 p-6 text-center transition hover:bg-violet-500/10">
                   <span className="text-4xl">📸</span>
                   <span className="font-semibold">Toque para escolher a foto ou o print do pacote</span>
-                  <span className="text-xs text-neutral-400">De operadora, de post ou do WhatsApp. No computador, dá para colar com Ctrl+V.</span>
+                  <span className="text-xs text-neutral-400">Pode ser o flyer da operadora, um post ou um print do WhatsApp. A gente lê o destino, o preço e o que inclui. No computador, dá para colar com Ctrl+V.</span>
                   <input id="foto" type="file" accept="image/*" className="hidden" onChange={(e) => onFoto(e.target.files?.[0])} />
                 </label>
               ) : (
@@ -2840,6 +2916,14 @@ function VideoLabTela() {
             </div>
           </div>
           <p id="status" className="text-sm text-neutral-300">{status}</p>
+          {restantes !== null && (
+            <p id="restantes" className="text-xs text-neutral-500">
+              {restantes > 0 ? `Você ainda pode montar ${restantes} pacote${restantes === 1 ? "" : "s"} em vídeo hoje.` : "Você usou os vídeos de hoje. Amanhã libera de novo."}
+            </p>
+          )}
+          {(resultados.length > 0 || mostrarOqueFazer) && (
+            <OQueFazerAgora momento="video" feito={marcada("postar_video")} onConfirmar={() => { marcar("postar_video"); setMostrarOqueFazer(false); }} />
+          )}
           {resultados.length > 0 && (
             <div id="resultados" className="flex flex-col gap-2">
               <p className="text-xs font-bold uppercase tracking-wide text-violet-300">Seus vídeos</p>

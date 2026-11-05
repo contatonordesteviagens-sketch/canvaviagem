@@ -269,7 +269,7 @@ export function VoiceOnboarding({ variant = "bar", onSaved }: { variant?: "bar" 
           <div className="min-w-0">
             <p className="text-xl font-black leading-tight sm:text-2xl">Toque e fale sobre a sua agência</p>
             <p className="mt-1 text-sm text-white/85">
-              Diga o nome, o WhatsApp, o Instagram e um pacote que você vende. A gente preenche tudo e sua primeira arte fica a um clique.
+              Diga o nome, o WhatsApp, o Instagram e um pacote que você vende. A gente preenche tudo e seus 3 vídeos ficam a um clique.
             </p>
             <p className="mt-2 text-xs text-white/70">Exemplo: "Sou a Sol Viagens, de Maceió. Vendo Gramado, 5 dias, por 1.990 reais."</p>
           </div>
@@ -443,7 +443,7 @@ export function VoiceOnboarding({ variant = "bar", onSaved }: { variant?: "bar" 
               onClick={handleSaveAndAdvance}
               className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-5 py-2.5 rounded-lg text-sm transition-colors shadow-lg shadow-amber-500/20"
             >
-              {onSaved ? "Salvar e criar minha arte" : "Salvar"}
+              {onSaved ? "Salvar e criar meus vídeos" : "Salvar"}
             </button>
           </div>
         </div>
