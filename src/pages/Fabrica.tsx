@@ -129,6 +129,8 @@ const FabricaInner = () => {
     if (activePhase === 3) return "Site";
     if (activePhase === 4) return "CRM";
     if (activePhase === 5) return "Meus Pacotes";
+    if (activePhase === 6) return "Vídeo pronto";
+    if (activePhase === 7) return "Meus conteúdos";
     return "";
   };
 
