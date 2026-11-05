@@ -52,6 +52,7 @@ function linhaDoTempo(telas: TelaDef[]): Linha {
   return { telas, inicios, total: telas.reduce((a, x) => a + x.dur, 0) };
 }
 const LINHA_PADRAO = linhaDoTempo(TELAS);
+const tipoDaTela = (t: number, L: Linha) => L.telas[telaEm(t, L)].tipo;
 const telaEm = (t: number, L: Linha = LINHA_PADRAO) => {
   let i = 0;
   while (i < L.telas.length - 1 && t >= L.inicios[i + 1]) i++;
@@ -220,6 +221,7 @@ function fitText(ctx: CanvasRenderingContext2D, text: string, weight: number, ma
 // ---------------- Tema: cores e fonte escolhidas pelo usuário (valem para todos os estilos) ----------------
 let GOLD = "#f5c451";
 let NEON = "#eaff2b";
+let LARANJA = "#F26B21";
 let AZUL = "#1d4ed8";
 let ROXO = "#7c3aed";
 let ROSA = "#ec4899";
@@ -263,6 +265,7 @@ function aplicarTema(tema: Tema) {
   const c2 = tema.c2 || tema.c1;
   GOLD = c1 || "#f5c451";
   NEON = c1 || "#eaff2b";
+  LARANJA = c1 || "#F26B21";
   AZUL = c1 || "#1d4ed8";
   ROXO = c1 || "#7c3aed";
   ROSA = c2 || "#ec4899";
@@ -294,7 +297,7 @@ function prepararCtx(ctx: CanvasRenderingContext2D) {
 
 
 // ---------------- Modelos de vídeo (4 telas: destino, inclusos, preço, contato) ----------------
-type Modelo = "classico" | "neon" | "cartao" | "luxo" | "passagem" | "revista" | "postal" | "faixa" | "vibrante";
+type Modelo = "classico" | "neon" | "cartao" | "luxo" | "passagem" | "revista" | "postal" | "faixa" | "vibrante" | "bf";
 const MODELOS: { id: Modelo; nome: string; desc: string }[] = [
   { id: "classico", nome: "Clássico", desc: "Letras grandes sobre o vídeo" },
   { id: "neon", nome: "Neon", desc: "Faixas amarelas, estilo oferta" },
@@ -305,6 +308,7 @@ const MODELOS: { id: Modelo; nome: string; desc: string }[] = [
   { id: "postal", nome: "Postal", desc: "Moldura, selo e carimbo" },
   { id: "faixa", nome: "Faixa preta", desc: "Painel escuro embaixo" },
   { id: "vibrante", nome: "Vibrante", desc: "Roxo e rosa, divertido" },
+  { id: "bf", nome: "Black Friday", desc: "Preto e laranja, etiqueta e cupom" },
 ];
 
 const clamp01 = (t: number) => Math.min(Math.max(t, 0), 1);
@@ -1700,6 +1704,7 @@ const ESTILO_CTA: Record<Modelo, { titulo: string; molde: string; cor: () => str
   postal: { titulo: "Vamos juntos?", molde: "italic 400 {s}px 'Playfair Display', Georgia, serif", cor: () => "#fff" },
   faixa: { titulo: "FALE COM A GENTE", molde: "900 {s}px Montserrat, Arial", cor: () => NEON },
   vibrante: { titulo: "Bora viajar?", molde: "900 {s}px Montserrat, Arial", cor: () => "#fff" },
+  bf: { titulo: "Garanta sua vaga", molde: "900 {s}px Montserrat, Arial", cor: () => LARANJA },
 };
 
 function ctaPadrao(ctx: CanvasRenderingContext2D, d: Dados, logo: HTMLImageElement | null, contatos: Contato[], lt: number, modelo: Modelo, y0 = 0) {
@@ -1808,10 +1813,217 @@ function cenaFaixa(ctx: CanvasRenderingContext2D, cena: number, lt: number, out:
   ctx.globalAlpha = 1;
 }
 
+// ——— Estilo Black Friday (inspirado nos banners de promoção: fundo preto, "Black" vazado em laranja,
+// "Friday" branco, etiqueta de preço com furo, cupom laranja, linhas com ícone e o vídeo do destino
+// recortado num arco à direita, no lugar dos monumentos) ———
+const BF_X0 = 376;
+const BF_X1 = 688;
+function arcoBf(ctx: CanvasRenderingContext2D) {
+  const yTopo = 330;
+  const yBase = 1064;
+  const r = (BF_X1 - BF_X0) / 2;
+  const rb = 26;
+  ctx.beginPath();
+  ctx.moveTo(BF_X0, yTopo + r);
+  ctx.arc(BF_X0 + r, yTopo + r, r, Math.PI, 0);
+  ctx.lineTo(BF_X1, yBase - rb);
+  ctx.quadraticCurveTo(BF_X1, yBase, BF_X1 - rb, yBase);
+  ctx.lineTo(BF_X0 + rb, yBase);
+  ctx.quadraticCurveTo(BF_X0, yBase, BF_X0, yBase - rb);
+  ctx.closePath();
+}
+function letrasBf(ctx: CanvasRenderingContext2D, x: number, y: number, tam: number) {
+  ctx.save();
+  ctx.textAlign = "left";
+  ctx.lineJoin = "round";
+  ctx.font = `900 ${tam}px Montserrat, Arial`;
+  ctx.lineWidth = Math.max(4, tam * 0.075);
+  ctx.strokeStyle = LARANJA;
+  ctx.strokeText("Black", x, y);
+  ctx.fillStyle = "#fff";
+  ctx.font = `900 ${Math.round(tam * 0.92)}px Montserrat, Arial`;
+  ctx.fillText("Friday", x, y + tam * 0.86);
+  ctx.restore();
+}
+function etiquetaBf(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  const p = 64;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x + 18, y);
+  ctx.lineTo(x + w - p, y);
+  ctx.lineTo(x + w, y + h / 2);
+  ctx.lineTo(x + w - p, y + h);
+  ctx.lineTo(x + 18, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - 18);
+  ctx.lineTo(x, y + 18);
+  ctx.quadraticCurveTo(x, y, x + 18, y);
+  ctx.closePath();
+  ctx.lineWidth = 6;
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "#fff";
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x + w - p + 16, y + h / 2, 8, 0, Math.PI * 2);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+  ctx.restore();
+}
+function cupomBf(ctx: CanvasRenderingContext2D, cx: number, y: number, txt: string, k: number) {
+  ctx.save();
+  fitText(ctx, txt, 800, 22, 280);
+  const w = Math.min(ctx.measureText(txt).width + 44, 320);
+  ctx.translate(cx, y);
+  ctx.scale(0.85 + 0.15 * k, 0.85 + 0.15 * k);
+  roundRect(ctx, -w / 2, -25, w, 50, 12);
+  ctx.fillStyle = LARANJA;
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.fillText(txt, 0, 8);
+  ctx.restore();
+}
+function linhaIconeBf(ctx: CanvasRenderingContext2D, x: number, y: number, txt: string, maxW: number) {
+  ctx.save();
+  roundRect(ctx, x, y - 23, 46, 46, 11);
+  ctx.fillStyle = LARANJA;
+  ctx.fill();
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = 4;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.moveTo(x + 13, y + 1);
+  ctx.lineTo(x + 21, y + 9);
+  ctx.lineTo(x + 34, y - 8);
+  ctx.stroke();
+  ctx.textAlign = "left";
+  fitText(ctx, txt, 600, 26, maxW);
+  ctx.fillStyle = "#fff";
+  ctx.fillText(txt, x + 60, y + 9);
+  ctx.restore();
+}
+function quebrarLinhas(ctx: CanvasRenderingContext2D, texto: string, maxW: number): string[] {
+  const linhas: string[] = [];
+  let atual = "";
+  for (const p of texto.split(/\s+/)) {
+    const tent = atual ? `${atual} ${p}` : p;
+    if (ctx.measureText(tent).width > maxW && atual) {
+      linhas.push(atual);
+      atual = p;
+    } else atual = tent;
+  }
+  if (atual) linhas.push(atual);
+  return linhas.slice(0, 3);
+}
+function cenaBf(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, _contatos: Contato[]) {
+  const k = ease(lt / 0.5);
+  const k2 = ease((lt - 0.25) / 0.5);
+  const k3 = back((lt - 0.45) / 0.5);
+  const X = 40;
+  const COL = 310;
+  ctx.textAlign = "left";
+  ctx.globalAlpha = out * k;
+  if (cena === 0) {
+    ctx.save();
+    ctx.translate(0, (1 - k) * -24);
+    letrasBf(ctx, X, 300, 118);
+    ctx.restore();
+    ctx.globalAlpha = out * k2;
+    if (d.agencia && d.agencia !== "Sua Agência") {
+      if (logo) desenharLogo(ctx, d, logo, X + 26, 440, 26, k2);
+      ctx.font = "700 22px Montserrat, Arial";
+      ctx.fillStyle = LARANJA;
+      ctx.textAlign = "left";
+      ctx.fillText(d.agencia, logo ? X + 64 : X, 449);
+    }
+    etiquetaBf(ctx, X, 500, COL, 180);
+    const destino = d.destino.toUpperCase();
+    fitText(ctx, destino, 900, 64, COL - 92);
+    ctx.fillStyle = LARANJA;
+    ctx.textAlign = "left";
+    ctx.fillText(destino, X + 22, 592);
+    fitText(ctx, d.chamada, 600, 21, COL - 96);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(d.chamada, X + 22, 640);
+    ctx.globalAlpha = out * clamp01((lt - 0.45) / 0.3);
+    const pt = precoTextos(d);
+    const teaser = pt.valor === "Consulte" ? "OFERTA BLACK FRIDAY" : `${pt.topo} ${pt.valor}`.toUpperCase();
+    cupomBf(ctx, X + COL / 2, 745, teaser, k3);
+    const linhas = [d.pessoas ? d.pessoas[0].toUpperCase() + d.pessoas.slice(1) : "", textoSaida(d)].filter(Boolean);
+    linhas.forEach((tx, i) => linhaIconeBf(ctx, X, 850 + i * 80, tx, 232));
+  } else if (cena === 1) {
+    letrasBf(ctx, X, 250, 54);
+    ctx.globalAlpha = out * k2;
+    const titulo = tituloInclusos(d, "O que está incluso");
+    fitText(ctx, titulo, 800, 27, COL);
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "left";
+    ctx.fillText(titulo, X, 372);
+    d.itens.filter(Boolean).slice(0, 4).forEach((it, i) => {
+      ctx.globalAlpha = out * clamp01((lt - 0.3 - i * 0.12) / 0.3);
+      linhaIconeBf(ctx, X, 446 + i * 86, it, 232);
+    });
+    ctx.globalAlpha = out * clamp01((lt - 0.8) / 0.3);
+    cupomBf(ctx, X + COL / 2, 820, "APROVEITE A BLACK FRIDAY", k3);
+  } else if (cena === 2) {
+    letrasBf(ctx, X, 250, 54);
+    ctx.globalAlpha = out * k2;
+    etiquetaBf(ctx, X, 380, COL, 270);
+    const pt = precoTextos(d);
+    let yy = 470;
+    const antigo = d.precoAntigo.trim();
+    if (antigo && d.pagamento !== "free_quote") {
+      const txt = `de ${antigo.startsWith("R$") ? antigo : "R$ " + antigo}`;
+      ctx.font = "600 20px Montserrat, Arial";
+      ctx.fillStyle = "#a1a1aa";
+      ctx.textAlign = "left";
+      ctx.fillText(txt, X + 22, 432);
+      const tw = ctx.measureText(txt).width;
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(X + 20, 425);
+      ctx.lineTo(X + 24 + tw, 425);
+      ctx.stroke();
+    }
+    ctx.textAlign = "left";
+    fitText(ctx, pt.topo.toUpperCase(), 700, 20, COL - 96);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(pt.topo.toUpperCase(), X + 22, yy);
+    yy += 78;
+    fitText(ctx, pt.valor, 900, 76, COL - 96);
+    ctx.fillStyle = LARANJA;
+    ctx.fillText(pt.valor, X + 22, yy);
+    if (pt.rodape) {
+      fitText(ctx, pt.rodape, 500, 20, COL - 96);
+      ctx.fillStyle = "rgba(255,255,255,.85)";
+      ctx.fillText(pt.rodape, X + 22, yy + 44);
+    }
+    ctx.globalAlpha = out * clamp01((lt - 0.45) / 0.3);
+    const urg = d.urgencia.trim();
+    cupomBf(ctx, X + COL / 2, 720, urg ? urg.toUpperCase() : "OFERTA POR TEMPO LIMITADO", k3);
+    const linhas = [textoSaida(d), ...d.itens.filter(Boolean)].filter(Boolean).slice(0, 2);
+    linhas.forEach((tx, i) => linhaIconeBf(ctx, X, 810 + i * 80, tx, 232));
+  }
+  ctx.globalAlpha = 1;
+}
+
 function cenaDestaque(ctx: CanvasRenderingContext2D, modelo: Modelo, texto: string, lt: number, out: number) {
   ctx.textAlign = "center";
   const k = ease((lt - 0.2) / 0.6);
   ctx.globalAlpha = out * k;
+  if (modelo === "bf") {
+    letrasBf(ctx, 40, 250, 54);
+    ctx.textAlign = "left";
+    ctx.font = "900 40px Montserrat, Arial";
+    const linhas = quebrarLinhas(ctx, texto, 300);
+    ctx.fillStyle = "#fff";
+    linhas.forEach((l, i) => ctx.fillText(l, 40, 560 + i * 52 + (1 - k) * 30));
+    ctx.fillStyle = LARANJA;
+    ctx.fillRect(40, 560 + linhas.length * 52 - 20, 120 * k, 6);
+    ctx.globalAlpha = 1;
+    return;
+  }
   if (modelo === "classico") {
     const s = fitText(ctx, texto, 900, 70, W - 100);
     ctx.font = `900 ${s}px Montserrat, Arial`;
@@ -1950,6 +2162,8 @@ function drawFrame(
   ctx.fillRect(0, 0, W, H);
   const dividida = modelo === "faixa";
   const alturaFundo = dividida ? LINHA_FAIXA : H;
+  // Black Friday: o vídeo do destino aparece só dentro do arco à direita (o resto fica preto); o contato é inteiro
+  const recorteBf = modelo === "bf" && tipoDaTela(t, L) !== "contato";
 
   // fundo: um vídeo (ou foto) por tela, com zoom lento e fusão entre telas
   for (let i = 0; i < L.telas.length; i++) {
@@ -1964,6 +2178,9 @@ function drawFrame(
     if (dividida) {
       ctx.beginPath();
       ctx.rect(0, 0, W, alturaFundo);
+      ctx.clip();
+    } else if (recorteBf) {
+      arcoBf(ctx);
       ctx.clip();
     }
     if (isVideo(m)) drawCover(ctx, m, 1.04 + 0.08 * p, alturaFundo);
@@ -2001,8 +2218,25 @@ function drawFrame(
     g.addColorStop(0.7, "rgba(0,0,0,.25)");
     g.addColorStop(1, "rgba(0,0,0,.8)");
   }
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
+  if (recorteBf) {
+    // fundo preto puro fora do arco; dentro, só uma sombra na base e um contorno fino
+    ctx.save();
+    arcoBf(ctx);
+    ctx.clip();
+    const gb = ctx.createLinearGradient(0, 760, 0, 1064);
+    gb.addColorStop(0, "rgba(0,0,0,0)");
+    gb.addColorStop(1, "rgba(0,0,0,.55)");
+    ctx.fillStyle = gb;
+    ctx.fillRect(BF_X0, 760, BF_X1 - BF_X0, 304);
+    ctx.restore();
+    arcoBf(ctx);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(255,255,255,.14)";
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  }
   ctx.textBaseline = "alphabetic";
 
   // tela dividida: bloco preto embaixo e a linha sempre na mesma altura
@@ -2015,7 +2249,7 @@ function drawFrame(
 
   // conteúdo um pouco menor e mais perto do centro (respeita a sangria do Instagram);
   // os estilos que encostam nas bordas de propósito ficam em tamanho cheio
-  const encolhe = !(modelo === "neon" || modelo === "faixa");
+  const encolhe = !(modelo === "neon" || modelo === "faixa" || modelo === "bf");
   if (tipo === "contato") {
     ctaPadrao(ctx, d, logo, contatos, lt, modelo, dividida ? 120 : 0);
   } else {
@@ -2033,17 +2267,18 @@ function drawFrame(
     } else {
       const fn = {
         classico: cenaClassico, neon: cenaNeon, cartao: cenaCartao, luxo: cenaLuxo,
-        passagem: cenaPassagem, revista: cenaRevista, postal: cenaPostal, faixa: cenaFaixa, vibrante: cenaVibrante,
+        passagem: cenaPassagem, revista: cenaRevista, postal: cenaPostal, faixa: cenaFaixa, vibrante: cenaVibrante, bf: cenaBf,
       }[modelo];
       fn(ctx, CENA_MODELO[tipo], lt, out, d, logo, contatos);
     }
     ctx.restore();
   }
-  if (tipo === "preco") precoAntigo(ctx, d, lt, out, ocasiao, modelo === "revista" ? 775 : modelo === "faixa" ? 690 : 300);
-  if (tipo === "preco") linhaSaida(ctx, d, lt, out, modelo, ocasiao);
-  if (tipo === "preco") linhaUrgencia(ctx, d, lt, out, modelo);
+  // o estilo Black Friday desenha preço antigo, saída e urgência dentro da etiqueta e do cupom
+  if (tipo === "preco" && modelo !== "bf") precoAntigo(ctx, d, lt, out, ocasiao, modelo === "revista" ? 775 : modelo === "faixa" ? 690 : 300);
+  if (tipo === "preco" && modelo !== "bf") linhaSaida(ctx, d, lt, out, modelo, ocasiao);
+  if (tipo === "preco" && modelo !== "bf") linhaUrgencia(ctx, d, lt, out, modelo);
   if (modelo === "postal") moldura(ctx, 1);
-  camadaOcasiao(ctx, ocasiao, t, tipo, lt, feed);
+  if (!(modelo === "bf" && ehBlack(ocasiao))) camadaOcasiao(ctx, ocasiao, t, tipo, lt, feed);
   ctx.globalAlpha = 1;
   semSombra(ctx);
 }
@@ -2693,7 +2928,10 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     `video-${dadosRef.current.destino}-estilo${MODELOS.findIndex((x) => x.id === m) + 1}${ocasiaoRef.current !== "nenhuma" ? "-" + ocasiaoRef.current : ""}${curtoRef.current ? "-curto" : ""}${formatoRef.current === "feed" ? "-feed" : ""}.mp4`;
 
   // 3 estilos diferentes: o escolhido e mais dois que combinam bem
-  const ORDEM_SUGERIDA: Modelo[] = ["classico", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal"];
+  // em novembro o estilo Black Friday entra entre os 3 sugeridos; no resto do ano fica por último
+  const ORDEM_SUGERIDA: Modelo[] = new Date().getMonth() === 10
+    ? ["classico", "bf", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal"]
+    : ["classico", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal", "bf"];
   const tresEstilos = (): Modelo[] => [modeloRef.current, ...ORDEM_SUGERIDA.filter((m) => m !== modeloRef.current)].slice(0, 3);
 
   // Capa pequena do vídeo (último quadro desenhado), para a biblioteca.
