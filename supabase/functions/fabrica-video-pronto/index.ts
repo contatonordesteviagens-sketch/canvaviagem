@@ -32,12 +32,14 @@ Devolva SÓ um JSON com:
   "pessoas": "para quem é o preço, começando com 'para' ou 'por' (ex.: por pessoa, para o casal, para 2 pessoas), ou \\"\\"",
   "saida": "cidade de onde a viagem sai, se for dita (ex.: Fortaleza), senão \\"\\"",
   "datas": "data ou período da viagem, curto, como se lê num vídeo (ex.: 12 a 17/12, 20/12/2026, julho/2027), senão \\"\\"",
+  "tipo": "um destes: pacote (aéreo + hotel, ou pacote fechado), aereo (só passagem aérea), hotel (só hospedagem ou resort), cruzeiro, excursao (excursão em grupo, bate-volta, ônibus), passeio (passeio, tour, day use), servico (seguro viagem, chip, câmbio, visto). Na dúvida, pacote",
   "itens": ["até 4 itens inclusos, cada um com até 24 caracteres, ex.: Aéreo ida e volta, Hotel 5 noites, Café da manhã, Passeio Rota Leste"],
   "agencia": "nome da agência se aparecer, senão \\"\\"",
   "whatsapp": "telefone se aparecer, formato (88) 99999-9999, senão \\"\\"",
   "instagram": "@ do Instagram se aparecer, senão \\"\\"",
   "buscas": ["4 termos curtos EM INGLÊS para achar vídeos reais desse destino num banco de vídeos, do mais específico ao mais genérico (ex.: Jericoacoara, Jericoacoara dunes, Jericoacoara lagoon, Brazil beach dunes)"]
 }
+Se for um serviço sem lugar (seguro viagem, chip internacional, câmbio, visto), use o nome do serviço como destino (ex.: Seguro Viagem) e buscas genéricas de viagem em inglês (airport, passport, suitcase, airplane window).
 Regras: não invente preço, telefone, Instagram nem nome de agência. Itens só do que foi informado; se nada foi informado, devolva []. Corrija erros comuns de transcrição em nomes de lugares. Se não der para saber o destino, devolva "destino": "".`;
 
 // Cada vídeo gasta crédito de IA. Limite por cliente, por dia de Brasília (o áudio tem 10).
@@ -215,6 +217,7 @@ serve(async (req) => {
       pessoas: s(c.pessoas, 30),
       saida: s(c.saida, 30),
       datas: s(c.datas, 22),
+      tipo: ["pacote", "aereo", "hotel", "cruzeiro", "excursao", "passeio", "servico"].includes(c.tipo) ? c.tipo : "pacote",
       destaques: Array.isArray(c.destaques) ? c.destaques.map((i: unknown) => s(i, 34)).filter(Boolean).slice(0, 2) : [],
       itens: Array.isArray(c.itens) ? c.itens.map((i: unknown) => s(i, 28)).filter(Boolean).slice(0, 4) : [],
       agencia: s(c.agencia, 40),
