@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { NavegadorInternoAviso } from "@/components/jornada/NavegadorInternoAviso";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -229,6 +230,7 @@ const AuthVerify = () => {
 
           {status === "success" && (
             <>
+              <NavegadorInternoAviso className="mb-2" />
               <div className="mx-auto w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center">
                 <CheckCircle className="h-10 w-10 text-primary" />
               </div>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
@@ -2638,7 +2639,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
       </div>
 
-      {/* No celular o botão principal fica a mais de 2.000 px do topo: uma cópia fixa no rodapé. */}
+      {/* No celular o botão principal fica a mais de 2.000 px do topo: uma cópia fixa no rodapé (portal, para nenhum pai com transform prender o fixed). */}
+      {createPortal(
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0A0A0B]/95 p-3 backdrop-blur lg:hidden">
         <button
           onClick={() => { generateNext(); setTimeout(() => document.getElementById("fabrica-resultado")?.scrollIntoView({ behavior: "smooth", block: "start" }), 400); }}
@@ -2649,7 +2651,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando…</> : <><Sparkles className="w-4 h-4" /> Gerar Anúncio</>}
         </button>
         {!destination && <p className="mt-1 text-center text-[11px] text-white/50">Escolha o destino acima para liberar.</p>}
-      </div>
+      </div>,
+      document.body)}
 
       <div className={`${sectionCls} space-y-5`}>
         {/* Fonte, tamanhos e cores: a maioria não mexe. Ficam recolhidos para a tela não assustar. */}
