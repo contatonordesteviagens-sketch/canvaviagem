@@ -139,7 +139,7 @@ const FabricaInner = () => {
     if (activePhase === 3) return "Site";
     if (activePhase === 4) return "CRM";
     if (activePhase === 5) return "Meus Pacotes";
-    if (activePhase === 6) return "Vídeo pronto";
+    if (activePhase === 6) return "Gerador de vídeo";
     if (activePhase === 7) return "Meus conteúdos";
     return "";
   };
@@ -193,7 +193,7 @@ const FabricaInner = () => {
             >
               <div className="flex items-center gap-3">
                 <Clapperboard className={`w-4 h-4 ${activePhase === 6 ? "text-amber-400" : "text-white/40"}`} />
-                <span>Vídeo pronto</span>
+                <span>Gerador de vídeo</span>
               </div>
               <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-black text-black">NOVO</span>
             </button>
@@ -373,7 +373,7 @@ const FabricaInner = () => {
           
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Geração</div>
           <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/video" : "/fabrica/video"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
-            <Clapperboard className="w-4 h-4 text-amber-400" /><span>Vídeo pronto</span><span className="ml-auto rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-black text-black">NOVO</span>
+            <Clapperboard className="w-4 h-4 text-amber-400" /><span>Gerador de vídeo</span><span className="ml-auto rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-black text-black">NOVO</span>
           </button>
           <button onClick={() => { setMobileMenuOpen(false); navigate(isES ? "/es/fabrica/anuncio" : "/fabrica/anuncio"); }} className="p-4 bg-white/[0.02] rounded-xl flex items-center gap-3 text-white/70 hover:text-white hover:bg-white/[0.05]">
             <span>✨</span> Anúncio

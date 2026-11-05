@@ -8,7 +8,7 @@ const SUPORTE_WHATSAPP = "https://wa.me/5585986411294?text=";
 const COMPARACAO: { item: string; start: boolean; elite: boolean }[] = [
   { item: "Biblioteca de vídeos, artes e legendas prontas", start: true, elite: true },
   { item: "Ferramentas básicas e microfone", start: true, elite: true },
-  { item: "Vídeo pronto do seu pacote: manda um áudio e saem 3 vídeos em 1 minuto", start: false, elite: true },
+  { item: "Gerador de vídeo: manda um áudio do pacote e saem 3 vídeos em 1 minuto", start: false, elite: true },
   { item: "Anúncios prontos com a sua logo, para baixar e postar", start: false, elite: true },
   { item: "Carrosséis prontos para o Instagram", start: false, elite: true },
   { item: "Site da agência publicado", start: false, elite: true },
@@ -17,7 +17,7 @@ const COMPARACAO: { item: string; start: boolean; elite: boolean }[] = [
 ];
 
 const BENEFICIOS = [
-  { titulo: "Vídeo pronto em 1 minuto", texto: "Fale o pacote no áudio, mande um texto ou a foto da operadora. Saem 3 vídeos com o seu preço, logo e WhatsApp." },
+  { titulo: "Gerador de vídeo: 3 vídeos em 1 minuto", texto: "Fale o pacote no áudio, mande um texto ou a foto da operadora. Saem 3 vídeos com o seu preço, logo e WhatsApp." },
   { titulo: "Anúncio e carrossel com a sua marca", texto: "Arte de oferta para stories e feed, e carrossel de conteúdo, prontos para baixar." },
   { titulo: "Site e CRM da agência", texto: "Uma página da agência no ar e os contatos de quem pediu orçamento num lugar só." },
 ];
@@ -87,9 +87,9 @@ export function UpgradeEliteFaixa() {
       <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-black text-black" style={{ background: "#F5F906" }}>
         <Sparkles className="h-3.5 w-3.5" /> Novo no Elite
       </span>
-      <p className="mt-2.5 text-[20px] font-black leading-tight">Mande um áudio do pacote e receba 3 vídeos prontos em 1 minuto</p>
+      <p className="mt-2.5 text-[20px] font-black leading-tight">Gerador de vídeo: mande um áudio do pacote e receba 3 vídeos em 1 minuto</p>
       <ul className="mt-3 grid gap-1.5 text-[14px] text-white/75 sm:grid-cols-2">
-        {["Vídeo pronto com seu preço, logo e WhatsApp", "Anúncios e carrosséis com a sua marca", "Site da agência no ar", "CRM com os pedidos de orçamento"].map((t) => (
+        {["Vídeo do seu pacote com preço, logo e WhatsApp", "Anúncios e carrosséis com a sua marca", "Site da agência no ar", "CRM com os pedidos de orçamento"].map((t) => (
           <li key={t} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-[#F5F906]" />{t}</li>
         ))}
       </ul>

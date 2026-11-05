@@ -21,7 +21,7 @@ function AvisoDeAcesso({ motivo, email }: { motivo: "sem_assinatura" | "precisa_
     const texto = encodeURIComponent(
         semAssinatura
             ? `Olá! Comprei o Canva Viagem mas não consigo acessar. Meu e-mail de login é ${email || ""}.`
-            : `Olá! Sou assinante do Canva Viagem (${email || ""}) e quero liberar a Fábrica e o Vídeo pronto.`,
+            : `Olá! Sou assinante do Canva Viagem (${email || ""}) e quero liberar a Fábrica e o Gerador de vídeo.`,
     );
     const trocarEmail = async () => {
         await signOut();
@@ -42,7 +42,7 @@ function AvisoDeAcesso({ motivo, email }: { motivo: "sem_assinatura" | "precisa_
                     ) : (
                         <>
                             Seu acesso está ativo e a biblioteca de vídeos, artes e legendas continua liberada.
-                            A Fábrica e o Vídeo pronto fazem parte do plano Elite.
+                            A Fábrica e o Gerador de vídeo fazem parte do plano Elite.
                         </>
                     )}
                 </p>

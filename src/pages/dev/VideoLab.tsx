@@ -3546,7 +3546,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   return (
     <div className={embutido ? "text-white" : "min-h-screen bg-[#0A0A0B] p-4 text-white"}>
       <style>{`@keyframes cvScan { 0% { top: 0% } 50% { top: 97% } 100% { top: 0% } } .cv-scan { animation: cvScan 1.6s ease-in-out infinite; }`}</style>
-      {!embutido && <h1 className="mb-3 text-xl font-black">Vídeo pronto</h1>}
+      {!embutido && <h1 className="mb-3 text-xl font-black">Gerador de vídeo</h1>}
       <div className="mx-auto grid max-w-5xl gap-5 pb-36 lg:grid-cols-[26rem_1fr] lg:pb-4">
         {/* ——— 1. Mande o pacote ——— */}
         <div className="flex min-w-0 flex-col gap-3 lg:col-start-1">
@@ -3556,7 +3556,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
               Este navegador não consegue montar o vídeo. Abra o Canva Viagem no <b>Chrome</b> ou no <b>Safari atualizado</b> (iPhone: iOS 16.4 ou mais novo), ou no computador.
             </p>
           )}
-          {resultados.length === 0 && <p className="px-1 text-[13px] text-white/55">Fale o pacote do seu jeito. Em 1 minuto saem 3 vídeos prontos para postar.</p>}
+          {resultados.length === 0 && <p className="px-1 text-[13px] text-white/55">Fale o pacote do seu jeito. Em 1 minuto saem 3 vídeos para postar.</p>}
           <div role="tablist" aria-label="Como mandar o pacote" className="grid grid-cols-4 gap-1 rounded-2xl bg-white/[0.06] p-1">
             {abas.map((a) => (
               <button

@@ -22,7 +22,7 @@ export interface MissaoDef {
 
 export const MISSOES: MissaoDef[] = [
   { id: "perfil", titulo: "Conte quem é a sua agência", porque: "Nome e WhatsApp entram sozinhos em tudo que você gerar.", cta: "Começar", caminho: "/fabrica", tipo: "auto" },
-  { id: "video", titulo: "Gere seu primeiro vídeo", porque: "Fale o pacote e receba 3 vídeos prontos para postar.", cta: "Gerar vídeo", caminho: "/fabrica/video", tipo: "auto" },
+  { id: "video", titulo: "Gere seu primeiro vídeo", porque: "Fale o pacote no Gerador de vídeo e receba 3 vídeos para postar.", cta: "Gerar vídeo", caminho: "/fabrica/video", tipo: "auto" },
   { id: "postar_video", titulo: "Poste o vídeo", porque: "Nos stories e no status do WhatsApp. É de graça e já traz cliente.", cta: "Ver como postar", caminho: "/fabrica/video", tipo: "confirmar" },
   { id: "anuncio", titulo: "Gere a arte do mesmo pacote", porque: "A imagem para o feed, com seu preço e seu WhatsApp.", cta: "Gerar arte", caminho: "/fabrica/anuncio", tipo: "auto" },
   { id: "carrossel", titulo: "Monte um carrossel", porque: "Várias imagens numa publicação só, mostrando o que tem no pacote.", cta: "Montar carrossel", caminho: "/fabrica/carrossel", tipo: "auto" },
@@ -34,7 +34,7 @@ export const MISSOES: MissaoDef[] = [
 export const NIVEIS = [
   "Agência começando",
   "Agência apresentada",
-  "Primeiro vídeo pronto",
+  "Primeiro vídeo gerado",
   "Vídeo no ar",
   "Primeira arte pronta",
   "Carrossel pronto",

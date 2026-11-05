@@ -175,7 +175,7 @@ export const UserDetailsModal = ({ user, open, onOpenChange }: UserDetailsModalP
               <MetricCard icon={<Eye className="h-5 w-5 text-blue-500" />} value={user.site_visits} label="Visitas ao Site" />
               <MetricCard icon={<MousePointerClick className="h-5 w-5 text-purple-500" />} value={user.site_clicks} label="Cliques CTA" />
               <MetricCard icon={<UsersIcon className="h-5 w-5 text-emerald-500" />} value={user.leads} label="Leads Captados" />
-              <MetricCard icon={<Clapperboard className="h-5 w-5 text-amber-500" />} value={detalhes?.videos_prontos ?? 0} label="Vídeos prontos" />
+              <MetricCard icon={<Clapperboard className="h-5 w-5 text-amber-500" />} value={detalhes?.videos_prontos ?? 0} label="Vídeos gerados" />
             </div>
 
             <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-3 text-sm">
