@@ -38,6 +38,35 @@ Devolva SÓ um JSON com:
 }
 Regras: não invente preço, telefone, Instagram nem nome de agência. Itens só do que foi informado; se nada foi informado, devolva []. Corrija erros comuns de transcrição em nomes de lugares. Se não der para saber o destino, devolva "destino": "".`;
 
+// Cada vídeo gasta crédito de IA. Limite por cliente, por dia de Brasília (o áudio tem 10).
+const LIMITE_VIDEOS_POR_DIA = 15;
+const EVENTO_USO = "video_pronto_uso";
+
+function inicioDoDiaBrasilia(): string {
+  const agora = new Date();
+  const brasilia = new Date(agora.getTime() - 3 * 3600_000);
+  const dia = brasilia.toISOString().slice(0, 10);
+  return new Date(`${dia}T03:00:00.000Z`).toISOString();
+}
+
+function adminDb() {
+  const url = Deno.env.get("SUPABASE_URL") ?? "";
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  return url && key ? createClient(url, key, { auth: { persistSession: false } }) : null;
+}
+
+async function videosUsadosHoje(userId: string): Promise<number> {
+  const db = adminDb();
+  if (!db) return 0;
+  const { count } = await db
+    .from("analytics_events")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("event_type", EVENTO_USO)
+    .gte("created_at", inicioDoDiaBrasilia());
+  return count ?? 0;
+}
+
 // Teste sem login (laboratório local): no máximo 30 chamadas por hora, somando todo mundo.
 const LIMITE_SEM_LOGIN_POR_HORA = 30;
 
@@ -107,14 +136,24 @@ serve(async (req) => {
 
   try {
     const semLogin = req.headers.get("x-video-lab") === "sem-login";
+    let userId: string | null = null;
+    let usadosHoje = 0;
     if (!semLogin) {
       const access = await verifyFabricaEliteAccess(req, corsHeaders);
       if (!access.ok) return access.response;
+      userId = access.userId;
     } else if (!(await liberarSemLogin())) {
       return json({ error: "Limite de testes sem login atingido nesta hora. Tente mais tarde." }, 429);
     }
 
     const body = await req.json().catch(() => ({}));
+    // a busca avulsa do editor não conta no limite diário
+    if (userId && typeof body?.buscar !== "string") {
+      usadosHoje = await videosUsadosHoje(userId);
+      if (usadosHoje >= LIMITE_VIDEOS_POR_DIA) {
+        return json({ error: `Você já fez os ${LIMITE_VIDEOS_POR_DIA} vídeos de hoje. Amanhã libera de novo. Os de hoje estão em Meus conteúdos.`, videos_restantes: 0 }, 429);
+      }
+    }
     if (typeof body?.buscar === "string" && body.buscar.trim().length >= 2) {
       const PEXELS = Deno.env.get("PEXELS_API_KEY");
       if (!PEXELS) throw new Error("Chave do Pexels ausente");
@@ -184,7 +223,13 @@ serve(async (req) => {
     if (!buscas.includes(dados.destino)) buscas.unshift(dados.destino);
 
     const midias = await buscarPexels(PEXELS_API_KEY, buscas);
-    return json({ dados, midias, buscas });
+    let videosRestantes: number | null = null;
+    if (userId) {
+      const db = adminDb();
+      await db?.from("analytics_events").insert({ user_id: userId, event_type: EVENTO_USO, event_data: { destino: dados.destino }, url_path: "/fabrica/video" });
+      videosRestantes = Math.max(0, LIMITE_VIDEOS_POR_DIA - usadosHoje - 1);
+    }
+    return json({ dados, midias, buscas, videos_restantes: videosRestantes });
   } catch (e) {
     console.error("fabrica-video-pronto error", e);
     return json({ error: "Não consegui montar agora. Tente de novo." }, 500);
