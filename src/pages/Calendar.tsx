@@ -12,6 +12,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { useGamification } from "@/hooks/useGamification";
 import { CalendarBase } from "@/components/ui/CalendarBase";
+import { posicaoSazonal, sazonaisPrimeiro } from "@/lib/sazonalTopo";
 
 const Calendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
@@ -54,8 +55,10 @@ const Calendar = () => {
     }
 
     if (allVideos && allVideos.length > 0) {
-      const templateIndex = dayOfYear % allVideos.length;
-      const video = allVideos[templateIndex];
+      // dia perto de uma data (Black Friday, Natal, Réveillon, Carnaval): sugere o vídeo dessa data
+      const daData = allVideos.filter((v) => posicaoSazonal(v.title, date) === 0);
+      const lista = daData.length > 0 ? daData : allVideos;
+      const video = lista[dayOfYear % lista.length];
       let caption = null;
       if (allCaptions && allCaptions.length > 0) {
         caption = allCaptions.find(c =>
@@ -82,6 +85,23 @@ const Calendar = () => {
 
   const selectedDayContent = selectedDay ? getContentForDay(selectedDay) : null;
 
+  // "Para postar agora": vídeos das datas que estão chegando, um por título, na ordem das datas
+  const paraAgora = (() => {
+    if (!allVideos) return [];
+    const vistos = new Set<string>();
+    const porData = new Map<number, number>();
+    // até 4 vídeos por data, para Réveillon e Carnaval também aparecerem
+    return sazonaisPrimeiro(allVideos.filter((v) => posicaoSazonal(v.title) !== null), (v) => v.title)
+      .filter((v) => {
+        const k = v.title.trim().toLowerCase();
+        const p = posicaoSazonal(v.title) ?? 99;
+        if (vistos.has(k) || (porData.get(p) ?? 0) >= 4) return false;
+        vistos.add(k);
+        porData.set(p, (porData.get(p) ?? 0) + 1);
+        return true;
+      });
+  })();
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
@@ -95,6 +115,29 @@ const Calendar = () => {
               Seu guia diário para vender mais hoje.
             </p>
           </div>
+          {paraAgora.length > 0 && (
+            <section className="mx-auto mb-12 max-w-4xl">
+              <h2 className="mb-1 text-xl font-black">🔥 Para postar agora</h2>
+              <p className="mb-4 text-sm text-muted-foreground">Vídeos das datas que estão chegando: Black Friday, Natal, Réveillon e Carnaval.</p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                {paraAgora.map((v) => (
+                  <Card key={v.id} className="flex flex-col gap-3 border-primary/20 p-4">
+                    <p className="font-bold leading-tight">{v.title}</p>
+                    <div className="mt-auto flex gap-2">
+                      <Button size="sm" className="flex-1 font-bold" onClick={() => window.open(v.url, "_blank")}>
+                        <ExternalLink className="mr-1.5 h-4 w-4" /> Abrir no Canva
+                      </Button>
+                      {v.drive_url && (
+                        <Button size="sm" variant="secondary" aria-label={`Baixar ${v.title}`} onClick={() => window.open(v.drive_url!, "_blank")}>
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          )}
           <div className="flex justify-center mb-20">
             <CalendarBase aria-label="Calendário" onChange={handleDateSelect} className="w-full max-w-2xl shadow-2xl border-primary/20" />
           </div>

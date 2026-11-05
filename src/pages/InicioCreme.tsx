@@ -119,7 +119,7 @@ export const yearGifs = {
 
 export default function InicioCreme() {
   const navigate = useNavigate();
-  const { user, subscription } = useAuth();
+  const { user, subscription, isAdmin, loading: authLoading } = useAuth();
   useState(() => resolveInicioVariant(window.location.search));
   // A /inicio normal tira a marca da Black; a /black (InicioBlack) já marcou antes de chegar aqui.
   const [black] = useState(() => {
@@ -136,6 +136,12 @@ export default function InicioCreme() {
     trackMetaEvent("ViewContent", { content_name: "Canva Viagem - Plataforma para Agências", content_category: "inicio_arte", content_type: "product" });
     trackInicioTeste("visita");
   }, []);
+
+  // Assinante logado que abre a página de vendas (link antigo, favorito, e-mail) vai para a biblioteca.
+  useEffect(() => {
+    if (authLoading || subscription.loading || !user || isAdmin) return;
+    if (subscription.subscribed) navigate("/", { replace: true });
+  }, [authLoading, subscription.loading, subscription.subscribed, user, isAdmin, navigate]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -178,9 +184,10 @@ export default function InicioCreme() {
             {!user && (
               <button
                 onClick={() => { trackInicioTeste("botao", { valor: "header_entrar" }); navigate("/login?redirect=%2F"); }}
-                className="h-9 shrink-0 whitespace-nowrap rounded-full px-3.5 text-[13px] font-semibold opacity-80 hover:opacity-100"
+                className="h-9 shrink-0 whitespace-nowrap rounded-full border px-3.5 text-[13px] font-bold"
+                style={{ borderColor: "currentColor" }}
               >
-                Entrar
+                Já sou assinante · Entrar
               </button>
             )}
             <button onClick={() => start("header")} className="cv-btn h-9 shrink-0 whitespace-nowrap px-4 text-[13px]">

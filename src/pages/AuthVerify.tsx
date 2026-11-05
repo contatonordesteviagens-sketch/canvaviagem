@@ -8,7 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { isEliteProduct, isStartProduct } from "@/lib/planAccess";
 
 const pendingAuthStateKey = "cv:pending-auth-checkout";
-const fallbackPath = "/inicio?auth=verified";
+// sem destino definido: biblioteca ("/"), nunca a página de vendas
+const fallbackPath = "/";
 
 const getSafeRedirect = (value: string | null) => {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return null;

@@ -1,3 +1,4 @@
+import { sazonaisPrimeiro } from "@/lib/sazonalTopo";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -93,12 +94,14 @@ export const useContentItems = (type?: string | string[], featuredOnly?: boolean
       if (error) throw error;
 
       // Ordenar por display_order e created_at (sem fallback de idioma)
-      return (data as ContentItem[]).sort((a, b) => {
+      const ordenados = (data as ContentItem[]).sort((a, b) => {
         const aOrder = a.display_order ?? 9999;
         const bOrder = b.display_order ?? 9999;
         if (aOrder !== bOrder) return aOrder - bOrder;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
+      // datas que estão chegando (Black Friday, Natal, Réveillon, Carnaval) vão para o topo
+      return sazonaisPrimeiro(ordenados, (i) => `${i.title || ""} ${i.subcategory || ""}`);
     },
     staleTime: 1000 * 60 * 5, // 5 minutos de cache
   });

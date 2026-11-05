@@ -111,10 +111,10 @@ const Auth = () => {
 
       if (redirectTo) {
         navigate(redirectTo);
-      } else if (subscription.subscribed) {
-        navigate("/");
       } else {
-        navigate("/inicio");
+        // logado vai sempre para a biblioteca; o "/" espera a assinatura carregar
+        // (antes, quem ainda não tinha a assinatura confirmada caía na página de vendas)
+        navigate("/");
       }
     }
   }, [user, loading, subscription, navigate, redirectTo]);

@@ -5,6 +5,8 @@ import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import { useState, useEffect, useMemo, Suspense, lazy } from "react";
 // Build trigger: Freemium Transition - 2026-02-27
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import { buildUpgradePath } from "@/lib/eliteOffer";
+import { sazonaisPrimeiro } from "@/lib/sazonalTopo";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
@@ -463,13 +465,15 @@ const Index = () => {
   const displayedCaptions = showAllCaptions ? filteredCaptions : filteredCaptions.slice(0, 8);
 
   const sortedVideos = useMemo(() => {
-    return [...filteredVideos].sort((a, b) => {
+    const porData = [...filteredVideos].sort((a, b) => {
       if (a.is_featured && !b.is_featured) return -1;
       if (!a.is_featured && b.is_featured) return 1;
       const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
       const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
       return bTime - aTime;
     });
+    // Black Friday, Natal, Réveillon e Carnaval (as datas que estão chegando) no topo
+    return sazonaisPrimeiro(porData, (v) => `${v.title || ""} ${v.subcategory || ""}`);
   }, [filteredVideos]);
 
   const displayedSortedVideos = (showAllVideos || searchQuery.trim() !== "") ? sortedVideos : sortedVideos.slice(0, 20);
@@ -636,7 +640,7 @@ const Index = () => {
                       <Button onClick={() => navigate("/fabrica")} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md">
                         Abrir a Fábrica
                       </Button>
-                      <Button variant="outline" onClick={() => navigate("/inicio")} className="text-xs border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50">
+                      <Button variant="outline" onClick={() => navigate("/minha-conta")} className="text-xs border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50">
                         Gerenciar assinatura
                       </Button>
                     </div>
@@ -2030,7 +2034,7 @@ const Index = () => {
                       onClick={() => {
                         localStorage.setItem("cv_festa_popup_seen_v3", "true");
                         setShowFestaPopup(false);
-                        navigate("/inicio");
+                        navigate(hasPremiumContent ? buildUpgradePath("fabrica", "/fabrica") : "/inicio");
                       }}
                       className="relative rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:border-slate-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between ring-1 ring-slate-900/5"
                     >
@@ -2057,7 +2061,7 @@ const Index = () => {
                       onClick={() => {
                         localStorage.setItem("cv_festa_popup_seen_v3", "true");
                         setShowFestaPopup(false);
-                        navigate("/inicio");
+                        navigate(hasPremiumContent ? buildUpgradePath("fabrica", "/fabrica") : "/inicio");
                       }}
                       className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:border-slate-300 transition-all cursor-pointer flex flex-col justify-between opacity-80 hover:opacity-100"
                     >
@@ -2083,7 +2087,7 @@ const Index = () => {
                     onClick={() => {
                       localStorage.setItem("cv_festa_popup_seen_v3", "true");
                       setShowFestaPopup(false);
-                      navigate("/inicio");
+                      navigate(hasPremiumContent ? buildUpgradePath("fabrica", "/fabrica") : "/inicio");
                     }}
                     className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm tracking-wide flex items-center justify-center gap-2 border-0 transition-all shadow-md shadow-slate-900/10 active:scale-[0.98]"
                   >
