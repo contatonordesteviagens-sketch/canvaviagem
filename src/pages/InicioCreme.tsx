@@ -24,8 +24,8 @@ export { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH };
 type Icon = ComponentType<{ className?: string }>;
 
 const steps = [
-  { n: "01", icon: Mic, title: "Mande um áudio", text: "Fale o destino, os dias e o valor, do jeito que você fala com um cliente. Se preferir, digite." },
-  { n: "02", icon: Sparkles, title: "Receba tudo pronto", text: "Anúncio, carrossel, CRM, site e vídeos saem prontos, já com a sua logo." },
+  { n: "01", icon: Mic, title: "Mande um áudio", text: "Fale o destino, os dias e o valor, do jeito que você fala com um cliente. Se preferir, digite ou mande a foto do pacote." },
+  { n: "02", icon: Sparkles, title: "Receba tudo pronto", text: "O vídeo do pacote, o anúncio, o carrossel e o site saem prontos em 1 minuto, já com a sua logo." },
   { n: "03", icon: Download, title: "Publique e venda", text: "Baixe, poste no Instagram, impulsione o anúncio e mande o site no WhatsApp." },
 ];
 
@@ -36,7 +36,7 @@ const compare = [
   ["Anúncios e stories", "Inclusos", "Designer"],
   ["Carrosséis e legendas", "Inclusos", "Social media"],
   ["Site com cada pacote", "Incluso", "Programador"],
-  ["Vídeos para postar", "Prontos", "Editor de vídeo"],
+  ["Vídeo do seu pacote, a partir de um áudio", "Pronto em 1 minuto", "Editor de vídeo"],
   ["Clientes organizados", "Em um só lugar", "Outra ferramenta"],
   ["Quando funciona", "A qualquer hora", "Horário comercial"],
   ["Quanto você paga", "Uma assinatura", "Salários ou freelancers"],
@@ -95,9 +95,9 @@ export default function InicioCreme() {
   return (
     <div ref={pageRef} className={`cv-cream min-h-screen overflow-x-hidden${black ? " cv-black" : ""}`}>
       <Helmet>
-        <title>Canva Viagem — Mande um áudio e receba anúncios, carrosséis, site e vídeos prontos</title>
+        <title>Canva Viagem — Mande um áudio e receba o vídeo do pacote, anúncios, carrosséis e site prontos</title>
         {black && <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,900&display=swap" />}
-        <meta name="description" content="Fale o destino, os dias e o valor do pacote. Em minutos saem anúncios, carrosséis, stories e o site, com a sua logo, e você ainda tem vídeos prontos para postar. Sem limite de quantidade." />
+        <meta name="description" content="Fale o destino, os dias e o valor do pacote. Em 1 minuto saem o vídeo do pacote, anúncios, carrosséis, stories e o site, com a sua logo. Sem limite de quantidade." />
       </Helmet>
 
       {/* Cabeçalho flutuante */}
@@ -137,7 +137,7 @@ export default function InicioCreme() {
             </h1>
             <p className="cv-pop mt-4 text-[19px] font-bold leading-6" style={delay(120)}>Escolha um destino e gere sua arte.</p>
             <p className="cv-pop mt-2 max-w-xl text-[15px] leading-6" style={{ ...delay(160), color: "var(--cv-muted)" }}>
-              Fale o destino e, em 20 segundos, saem os anúncios, carrosséis, stories e site do seu pacote. Tudo com a sua logo. E você ainda tem vídeos prontos para postar.
+              Fale o destino e, em 1 minuto, saem o vídeo do seu pacote, os anúncios, os carrosséis, os stories e o site. Tudo com a sua logo. Pode mandar até a foto do pacote da operadora.
             </p>
             <div className="cv-pop mt-6 w-full text-left" style={delay(220)}>
               <ArtTrial />
@@ -347,7 +347,8 @@ const BLACK_PRICES = [
 const BLACK_FAQ = [
   { q: "O desconto é vitalício mesmo?", a: "Sim. Quem assina na Black paga metade do preço enquanto continuar assinando. Não é só no primeiro mês: a renovação também sai com 50%." },
   { q: "O preço volta ao normal depois?", a: "Para quem assinou na Black, não: o seu valor fica o mesmo em todas as renovações. Quem cancelar e voltar depois que a Black acabar entra no preço normal." },
-  { q: "Preciso saber design?", a: "Não. Você fala o destino, os dias e o valor, e o anúncio, o carrossel, os stories e o site saem prontos com a sua logo." },
+  { q: "Preciso saber design?", a: "Não. Você fala o destino, os dias e o valor, e o vídeo do pacote, o anúncio, o carrossel, os stories e o site saem prontos com a sua logo." },
+  { q: "O vídeo é feito como?", a: "Você manda um áudio, um texto ou a foto do pacote. A plataforma acha o destino, busca imagens reais do lugar e monta 3 vídeos em 9 estilos, com o seu preço, a sua logo e o seu WhatsApp. Sai em 1 minuto, pronto para os stories." },
   { q: "Posso pagar no Pix?", a: "Pode. No fim você escolhe cartão ou Pix, e o QR Code aparece na hora." },
   { q: "Posso cancelar quando quiser?", a: "Pode, sem multa. Só lembre que, cancelando, você perde o preço da Black." },
   { q: "E se eu não gostar?", a: "Você tem 7 dias de garantia para testar com um pacote real da sua agência." },

@@ -132,7 +132,7 @@ export function FabricaStepGuide({ section }: { section: FabricaGuideKey }) {
         <button
           type="button"
           onClick={() => toggle(true)}
-          className="inline-flex min-h-8 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-white/50 transition-colors hover:bg-white/5 hover:text-white"
+          className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-white/50 transition-colors hover:bg-white/5 hover:text-white"
         >
           Entendi <ChevronUp className="h-3.5 w-3.5" />
         </button>

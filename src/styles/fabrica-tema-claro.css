@@ -1,0 +1,161 @@
+/* Tema claro da Fábrica.
+   A Fábrica foi escrita em escuro, com classes utilitárias fixas. Em vez de reescrever
+   milhares de classes, o tema claro troca as mais usadas quando <html> tem .fabrica-claro.
+   Fundo: cinza claro de lista agrupada (#F2F2F7, como o iPhone); cartões brancos; texto quase preto;
+   o amarelo da marca continua nos botões (texto preto em cima) e vira ocre quando é texto. */
+
+html.fabrica-claro {
+  color-scheme: light;
+  --cv-acento-texto: #7A6A00;
+  /* cartão da jornada no claro: bloco preto com botão amarelo, sem amarelo chapado no branco */
+  --cv-jornada-borda: rgba(0, 0, 0, 0.1);
+  --cv-jornada-gradiente: none;
+  --cv-jornada-bloco: #111113;
+  --cv-jornada-bloco-texto: #ffffff;
+  --cv-jornada-pilula: #F5F906;
+  --cv-jornada-pilula-texto: #000000;
+}
+
+/* fundos de página */
+html.fabrica-claro [class~="bg-[#0A0A0B]"],
+html.fabrica-claro [class~="bg-black"],
+html.fabrica-claro [class~="bg-zinc-950"],
+html.fabrica-claro [class~="bg-neutral-950"],
+html.fabrica-claro [class~="bg-[#0a0a0b]"] { background-color: #F2F2F7 !important; }
+html.fabrica-claro [class~="bg-[#0A0A0B]/95"],
+html.fabrica-claro [class~="bg-neutral-950/95"] { background-color: rgba(242, 242, 247, 0.96) !important; }
+
+/* cartões e barras */
+html.fabrica-claro [class~="bg-[#0F0F11]"],
+html.fabrica-claro [class~="bg-[#0F0F11]/80"],
+html.fabrica-claro [class~="bg-zinc-900"],
+html.fabrica-claro [class~="bg-neutral-900"],
+html.fabrica-claro [class~="bg-neutral-900/60"],
+html.fabrica-claro [class~="bg-[#141416]"],
+html.fabrica-claro [class~="bg-[#1c1c1e]/60"],
+html.fabrica-claro [class~="bg-white/[0.02]"],
+html.fabrica-claro [class~="bg-white/[0.03]"],
+html.fabrica-claro [class~="bg-white/[0.04]"],
+html.fabrica-claro [class~="bg-white/[0.05]"],
+html.fabrica-claro [class~="bg-zinc-950/40"] { background-color: #FFFFFF !important; }
+html.fabrica-claro [class~="bg-white/[0.06]"],
+html.fabrica-claro [class~="bg-white/[0.08]"],
+html.fabrica-claro [class~="bg-white/5"],
+html.fabrica-claro [class~="bg-white/10"],
+html.fabrica-claro [class~="bg-white/[0.12]"],
+html.fabrica-claro [class~="bg-white/[0.14]"],
+html.fabrica-claro [class~="bg-black/20"],
+html.fabrica-claro [class~="bg-black/30"],
+html.fabrica-claro [class~="bg-black/40"] { background-color: rgba(0, 0, 0, 0.06) !important; }
+html.fabrica-claro [class~="hover:bg-white/5"]:hover,
+html.fabrica-claro [class~="hover:bg-white/10"]:hover,
+html.fabrica-claro [class~="hover:bg-white/[0.04]"]:hover,
+html.fabrica-claro [class~="hover:bg-white/[0.05]"]:hover,
+html.fabrica-claro [class~="hover:bg-white/[0.06]"]:hover,
+html.fabrica-claro [class~="hover:bg-white/[0.07]"]:hover,
+html.fabrica-claro [class~="hover:bg-white/[0.08]"]:hover,
+html.fabrica-claro [class~="hover:bg-white/[0.12]"]:hover { background-color: rgba(0, 0, 0, 0.08) !important; }
+html.fabrica-claro [class~="active:bg-white/[0.06]"]:active,
+html.fabrica-claro [class~="active:bg-white/[0.12]"]:active { background-color: rgba(0, 0, 0, 0.1) !important; }
+
+/* texto */
+html.fabrica-claro [class~="text-white"] { color: #111113 !important; }
+html.fabrica-claro [class~="text-white/90"],
+html.fabrica-claro [class~="text-white/85"],
+html.fabrica-claro [class~="text-white/80"],
+html.fabrica-claro [class~="text-white/75"],
+html.fabrica-claro [class~="text-white/70"] { color: rgba(17, 17, 19, 0.82) !important; }
+html.fabrica-claro [class~="text-white/60"],
+html.fabrica-claro [class~="text-white/55"],
+html.fabrica-claro [class~="text-white/50"] { color: rgba(17, 17, 19, 0.62) !important; }
+html.fabrica-claro [class~="text-white/45"],
+html.fabrica-claro [class~="text-white/40"],
+html.fabrica-claro [class~="text-white/35"],
+html.fabrica-claro [class~="text-white/30"],
+html.fabrica-claro [class~="text-white/25"] { color: rgba(17, 17, 19, 0.5) !important; }
+html.fabrica-claro [class~="text-white/20"] { color: rgba(17, 17, 19, 0.35) !important; }
+html.fabrica-claro [class~="hover:text-white"]:hover { color: #111113 !important; }
+html.fabrica-claro [class~="placeholder-white/20"]::placeholder,
+html.fabrica-claro [class~="placeholder-white/30"]::placeholder,
+html.fabrica-claro [class~="placeholder:text-white/30"]::placeholder,
+html.fabrica-claro [class~="placeholder:text-white/40"]::placeholder { color: rgba(17, 17, 19, 0.4) !important; }
+html.fabrica-claro [class~="text-neutral-300"],
+html.fabrica-claro [class~="text-neutral-400"] { color: rgba(17, 17, 19, 0.6) !important; }
+html.fabrica-claro [class~="text-neutral-500"] { color: rgba(17, 17, 19, 0.5) !important; }
+html.fabrica-claro [class~="text-neutral-200"],
+html.fabrica-claro [class~="text-zinc-100"] { color: #111113 !important; }
+
+/* amarelo como texto fica ocre (legível no branco); amarelo como fundo continua */
+html.fabrica-claro [class~="text-[#F5F906]"],
+html.fabrica-claro [class~="text-amber-400"],
+html.fabrica-claro [class~="text-amber-300"],
+html.fabrica-claro [class~="text-yellow-300"],
+html.fabrica-claro [class~="text-yellow-400"] { color: #7A6A00 !important; }
+
+/* bordas e divisórias */
+html.fabrica-claro [class~="border-white/5"],
+html.fabrica-claro [class~="border-white/[0.06]"],
+html.fabrica-claro [class~="border-white/[0.08]"],
+html.fabrica-claro [class~="border-white/10"],
+html.fabrica-claro [class~="border-white/15"],
+html.fabrica-claro [class~="border-white/20"],
+html.fabrica-claro [class~="border-white/25"],
+html.fabrica-claro [class~="border-neutral-700"],
+html.fabrica-claro [class~="border-neutral-800"],
+html.fabrica-claro [class~="border-neutral-600"] { border-color: rgba(0, 0, 0, 0.12) !important; }
+html.fabrica-claro [class~="border-white"] { border-color: rgba(0, 0, 0, 0.55) !important; }
+html.fabrica-claro [class~="hover:border-white/10"]:hover,
+html.fabrica-claro [class~="hover:border-white/15"]:hover,
+html.fabrica-claro [class~="hover:border-white/20"]:hover,
+html.fabrica-claro [class~="hover:border-white/25"]:hover,
+html.fabrica-claro [class~="hover:border-white/30"]:hover,
+html.fabrica-claro [class~="hover:border-white/40"]:hover,
+html.fabrica-claro [class~="hover:border-white/60"]:hover { border-color: rgba(0, 0, 0, 0.3) !important; }
+html.fabrica-claro [class~="divide-white/10"] > :not([hidden]) ~ :not([hidden]),
+html.fabrica-claro [class~="divide-white/[0.06]"] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(0, 0, 0, 0.08) !important; }
+
+/* botões brancos (seleção) precisam de contorno no fundo claro */
+html.fabrica-claro [class~="bg-white"]:not(video):not(canvas):not(img) { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12); }
+
+/* inputs nativos */
+html.fabrica-claro input,
+html.fabrica-claro select,
+html.fabrica-claro textarea { color: #111113; }
+html.fabrica-claro select option { color: #111113; background: #fff; }
+
+/* vídeos, fotos e telas desenhadas não mudam */
+html.fabrica-claro canvas,
+html.fabrica-claro video,
+html.fabrica-claro img { filter: none !important; }
+
+/* cores de aviso como texto, mais escuras no claro */
+html.fabrica-claro [class~="text-red-300"],
+html.fabrica-claro [class~="text-red-400"],
+html.fabrica-claro [class~="text-red-400/60"] { color: #B42318 !important; }
+html.fabrica-claro [class~="text-emerald-300"],
+html.fabrica-claro [class~="text-emerald-400"],
+html.fabrica-claro [class~="text-green-300"],
+html.fabrica-claro [class~="text-green-400"] { color: #047857 !important; }
+html.fabrica-claro [class~="text-amber-200"],
+html.fabrica-claro [class~="text-yellow-200"] { color: #7A6A00 !important; }
+html.fabrica-claro [class~="text-blue-400"],
+html.fabrica-claro [class~="text-blue-300"] { color: #1D4ED8 !important; }
+
+/* bordas e fundos amarelados dos cartões de guia viram cinza e branco no claro */
+html.fabrica-claro [class~="border-[#F5F906]/25"],
+html.fabrica-claro [class~="border-[#F5F906]/30"],
+html.fabrica-claro [class~="border-[#F5F906]/40"],
+html.fabrica-claro [class~="border-amber-500/30"],
+html.fabrica-claro [class~="border-amber-400/30"],
+html.fabrica-claro [class~="border-amber-400/40"] { border-color: rgba(0, 0, 0, 0.1) !important; }
+html.fabrica-claro [class~="bg-[#F5F906]/[0.04]"],
+html.fabrica-claro [class~="bg-[#F5F906]/[0.08]"],
+html.fabrica-claro [class~="bg-amber-500/5"],
+html.fabrica-claro [class~="bg-amber-500/10"],
+html.fabrica-claro [class~="bg-amber-400/10"],
+html.fabrica-claro [class~="bg-amber-400/15"] { background-color: #FFFFFF !important; }
+html.fabrica-claro [class~="bg-[#F5F906]/15"],
+html.fabrica-claro [class~="bg-[#F5F906]/20"] { background-color: rgba(0, 0, 0, 0.06) !important; }
+/* barras fixas do rodapé */
+html.fabrica-claro [class~="bg-zinc-950/95"] { background-color: rgba(242, 242, 247, 0.96) !important; }
+html.fabrica-claro [class~="shadow-amber-500/10"] { box-shadow: none !important; }

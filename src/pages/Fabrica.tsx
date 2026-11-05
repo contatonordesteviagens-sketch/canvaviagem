@@ -14,7 +14,8 @@ import { FabricaStepGuide, type FabricaGuideKey } from "@/components/fabrica/Fab
 import { JornadaGuia } from "@/components/jornada/JornadaGuia";
 import { MinhaBiblioteca } from "@/components/jornada/MinhaBiblioteca";
 import { VideoLabTela } from "@/pages/dev/VideoLab";
-import { Clapperboard, FolderHeart } from "lucide-react";
+import { Clapperboard, FolderHeart, Moon, Sun } from "lucide-react";
+import "@/styles/fabrica-tema-claro.css";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { 
   ArrowLeft, 
@@ -60,6 +61,15 @@ const FabricaInner = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Tema claro ou escuro da Fábrica (botão sol/lua). Fica salvo no aparelho.
+  const [temaClaro, setTemaClaro] = useState(() => {
+    try { return localStorage.getItem("cv-fabrica-tema") === "claro"; } catch { return false; }
+  });
+  useEffect(() => {
+    document.documentElement.classList.toggle("fabrica-claro", temaClaro);
+    try { localStorage.setItem("cv-fabrica-tema", temaClaro ? "claro" : "escuro"); } catch { /* sem storage */ }
+    return () => document.documentElement.classList.remove("fabrica-claro");
+  }, [temaClaro]);
   useEffect(() => {
     if (!mobileMenuOpen) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileMenuOpen(false); };
@@ -286,6 +296,19 @@ const FabricaInner = () => {
 
         {/* Bottom Actions */}
         <div className="p-4 border-t border-white/5 space-y-3">
+          <button
+            onClick={() => setTemaClaro((v) => !v)}
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold text-white/70 hover:text-white hover:bg-white/[0.04] transition-all"
+            aria-label={temaClaro ? "Mudar para tema escuro" : "Mudar para tema claro"}
+          >
+            <span className="flex items-center gap-3">
+              {temaClaro ? <Moon className="w-4 h-4 text-white/40" /> : <Sun className="w-4 h-4 text-amber-400" />}
+              <span>{temaClaro ? "Tema escuro" : "Tema claro"}</span>
+            </span>
+            <span className={`relative h-5 w-9 rounded-full transition-colors ${temaClaro ? "bg-amber-400" : "bg-white/15"}`}>
+              <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${temaClaro ? "left-[18px]" : "left-0.5"}`} />
+            </span>
+          </button>
           <div className="pt-2">
             <button
               onClick={() => navigate("/")}
@@ -311,8 +334,16 @@ const FabricaInner = () => {
           <div className="hidden sm:block">
           </div>
           <button
+            onClick={() => setTemaClaro((v) => !v)}
+            className="grid h-10 w-10 place-items-center rounded-lg bg-white/[0.04] border border-white/15 active:scale-95 transition-transform"
+            aria-label={temaClaro ? "Mudar para tema escuro" : "Mudar para tema claro"}
+            title={temaClaro ? "Tema escuro" : "Tema claro"}
+          >
+            {temaClaro ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5 text-amber-400" />}
+          </button>
+          <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg bg-white/[0.04] border border-white/15 active:scale-95 transition-transform"
+            className="grid h-10 w-10 place-items-center rounded-lg bg-white/[0.04] border border-white/15 active:scale-95 transition-transform"
             aria-label="Abrir Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5 text-amber-400" /> : <Menu className="w-5 h-5" />}

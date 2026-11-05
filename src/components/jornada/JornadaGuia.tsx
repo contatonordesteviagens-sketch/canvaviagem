@@ -38,7 +38,7 @@ export function JornadaGuia({ variante = "cartao", onIr }: { variante?: "cartao"
           {atual!.numero}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: AMARELO }}>
+          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--cv-acento-texto, #F5F906)" }}>
             Missão {atual!.numero} de {total}
           </p>
           <p className="truncate text-sm font-bold">{atual!.titulo}</p>
@@ -63,10 +63,10 @@ export function JornadaGuia({ variante = "cartao", onIr }: { variante?: "cartao"
     <section
       id="jornada-cartao"
       className="mb-6 rounded-3xl border bg-[#0A0A0B] p-4 text-white sm:p-6"
-      style={{ borderColor: `${AMARELO}4d`, backgroundImage: `linear-gradient(135deg, ${AMARELO}14, transparent 60%)` }}
+      style={{ borderColor: "var(--cv-jornada-borda, #F5F9064d)", backgroundImage: "var(--cv-jornada-gradiente, linear-gradient(135deg, #F5F90614, transparent 60%))" }}
     >
       <div className="min-w-0">
-        <p className="text-[11px] font-black uppercase tracking-widest" style={{ color: AMARELO }}>
+        <p className="text-[11px] font-black uppercase tracking-widest" style={{ color: "var(--cv-acento-texto, #F5F906)" }}>
           {todas || !atual ? "Jornada completa" : `Missão ${atual.numero} de ${total}`}
         </p>
         <h2 className="mt-0.5 text-lg font-black sm:text-xl">{nivel}</h2>
@@ -93,20 +93,20 @@ export function JornadaGuia({ variante = "cartao", onIr }: { variante?: "cartao"
           type="button"
           id="jornada-proxima"
           onClick={() => ir(atual)}
-          className="mt-4 flex w-full flex-col gap-3 rounded-2xl p-4 text-left text-black transition-transform active:scale-[0.99] sm:flex-row sm:items-center"
-          style={{ background: AMARELO }}
+          className="mt-4 flex w-full flex-col gap-3 rounded-2xl p-4 text-left transition-transform active:scale-[0.99] sm:flex-row sm:items-center"
+          style={{ background: "var(--cv-jornada-bloco, #F5F906)", color: "var(--cv-jornada-bloco-texto, #000)" }}
         >
           <span className="flex min-w-0 flex-1 items-start gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black text-white">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full" style={{ background: "var(--cv-jornada-pilula, #000)", color: "var(--cv-jornada-pilula-texto, #fff)" }}>
               <Sparkles className="h-5 w-5" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[10px] font-black uppercase tracking-widest text-black/60">Sua próxima missão</span>
+              <span className="block text-[10px] font-black uppercase tracking-widest opacity-60">Sua próxima missão</span>
               <span className="block text-base font-black leading-tight sm:text-lg">{atual.titulo}</span>
-              <span className="mt-0.5 block text-xs text-black/70">{atual.porque}</span>
+              <span className="mt-0.5 block text-xs opacity-75">{atual.porque}</span>
             </span>
           </span>
-          <span className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-1 rounded-xl bg-black px-4 text-sm font-black text-white sm:w-auto">
+          <span className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-1 rounded-xl px-4 text-sm font-black sm:w-auto" style={{ background: "var(--cv-jornada-pilula, #000)", color: "var(--cv-jornada-pilula-texto, #fff)" }}>
             {atual.cta} <ArrowRight className="h-4 w-4" />
           </span>
         </button>

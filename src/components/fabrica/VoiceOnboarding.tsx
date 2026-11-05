@@ -286,7 +286,7 @@ export function VoiceOnboarding({ variant = "bar", onSaved }: { variant?: "bar" 
           >
             <Mic className="w-5 h-5" />
           </button>
-          <button type="button" onClick={startRecording} className="min-w-0 text-left">
+          <button type="button" onClick={startRecording} className="min-w-0 min-h-11 py-1 text-left">
             <span className="block text-[13px] font-black leading-tight text-white">Fale sobre sua agência</span>
             <span className="block truncate text-[11px] text-white/55 sm:whitespace-nowrap">Grave um áudio e a gente preenche</span>
           </button>

@@ -1977,7 +1977,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             <button
               type="button"
               onClick={() => setVariationsOpen(v => !v)}
-              className="w-full flex items-center justify-between text-[10px] font-bold text-white/40 hover:text-white/70 uppercase tracking-widest transition-colors py-1.5"
+              className="w-full min-h-10 flex items-center justify-between text-[10px] font-bold text-white/40 hover:text-white/70 uppercase tracking-widest transition-colors py-1.5"
             >
               <span className="flex items-center gap-1.5">
                 Modelo da arte
@@ -2033,7 +2033,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                   <button
                     key={d}
                     onClick={() => { setDestination(d); searchPhotos(d); }}
-                    className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors flex-shrink-0 whitespace-nowrap ${
+                    className={`min-h-9 px-3 py-1.5 rounded-full text-[12px] border transition-colors flex-shrink-0 whitespace-nowrap ${
                       photoQuery === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
                     }`}
                     style={photoQuery === d ? { background: UI_ACCENT, borderColor: UI_ACCENT } : undefined}
