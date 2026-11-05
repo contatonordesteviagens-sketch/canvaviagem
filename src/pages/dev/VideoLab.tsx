@@ -313,6 +313,12 @@ const MODELOS: { id: Modelo; nome: string; desc: string }[] = [
   { id: "promo", nome: "Promo azul", desc: "Cartões brancos e azul, estilo checklist" },
 ];
 
+// Ordem dos estilos na lista e no rodízio. Em novembro os dois de Black Friday vêm primeiro e são o padrão.
+const ORDEM_SUGERIDA: Modelo[] = new Date().getMonth() === 10
+  ? ["bf", "promo", "classico", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal"]
+  : ["classico", "promo", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal", "bf"];
+const MODELOS_NA_ORDEM = ORDEM_SUGERIDA.map((id) => MODELOS.find((m) => m.id === id)!).filter(Boolean);
+
 const clamp01 = (t: number) => Math.min(Math.max(t, 0), 1);
 
 function sombra(ctx: CanvasRenderingContext2D, blur = 18, cor = "rgba(0,0,0,.45)") {
@@ -2861,12 +2867,16 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     site: "",
   });
   const [contatos, setContatos] = useState<Contato[]>(["whatsapp"]);
-  const [modelo, setModelo] = useState<Modelo>("classico");
-  const modeloRef = useRef<Modelo>("classico");
+  const [modelo, setModelo] = useState<Modelo>(ORDEM_SUGERIDA[0]);
+  const modeloRef = useRef<Modelo>(ORDEM_SUGERIDA[0]);
   modeloRef.current = modelo;
-  // a oferta do mês já vem marcada (novembro: Black Friday; dezembro: Natal e Ano Novo; jan/fev: Carnaval)
+  // Rodízio: cada "Gerar" usa o estilo seguinte da ordem (1 vídeo) ou os 3 seguintes (3 vídeos),
+  // para nunca repetir a variação anterior. Escolher um estilo na lista reposiciona o rodízio nele.
+  const proximoRef = useRef(0);
+  const roteiroRef = useRef(0);
+  // a oferta do mês fica sugerida na lista (selo AGORA), mas só entra se o cliente escolher
   const sazonais = ocasioesDoMes();
-  const [ocasiao, setOcasiao] = useState<Ocasiao>(sazonais.agora[0]?.id || "nenhuma");
+  const [ocasiao, setOcasiao] = useState<Ocasiao>("nenhuma");
   const [paleta, setPaleta] = useState("estilo");
   const [corLivre, setCorLivre] = useState({ c1: "#f5c451", c2: "#0ea5e9" });
   const [fonte, setFonte] = useState("Montserrat");
@@ -3276,11 +3286,6 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     `video-${dadosRef.current.destino}-estilo${MODELOS.findIndex((x) => x.id === m) + 1}${ocasiaoRef.current !== "nenhuma" ? "-" + ocasiaoRef.current : ""}${curtoRef.current ? "-curto" : ""}${formatoRef.current === "feed" ? "-feed" : ""}.mp4`;
 
   // 3 estilos diferentes: o escolhido e mais dois que combinam bem
-  // em novembro o estilo Black Friday entra entre os 3 sugeridos; no resto do ano fica por último
-  const ORDEM_SUGERIDA: Modelo[] = new Date().getMonth() === 10
-    ? ["classico", "bf", "promo", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal"]
-    : ["classico", "promo", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal", "bf"];
-  const tresEstilos = (): Modelo[] => [modeloRef.current, ...ORDEM_SUGERIDA.filter((m) => m !== modeloRef.current)].slice(0, 3);
 
   // Capa pequena do vídeo (último quadro desenhado), para a biblioteca.
   function capaAtual(): string {
@@ -3325,11 +3330,15 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     setUrl(null);
     setResultados([]);
     try {
-      const m = modeloRef.current;
-      const blob = await renderizar(fotografar(m), (p) => setStatus(`Gerando o vídeo… ${p}%`));
+      const m = ORDEM_SUGERIDA[proximoRef.current % ORDEM_SUGERIDA.length];
+      const roteiro = ROTEIROS[roteiroRef.current % ROTEIROS.length].id;
+      proximoRef.current += 1;
+      roteiroRef.current += 1;
+      setModelo(m);
+      const blob = await renderizar(fotografar(m, roteiro), (p) => setStatus(`Gerando o vídeo… ${p}%`));
       const u = URL.createObjectURL(blob);
       setUrl(u);
-      setResultados([{ modelo: m, url: u, nome: nomeArquivo(m), roteiro: "padrao", formato: formatoRef.current }]);
+      setResultados([{ modelo: m, url: u, nome: nomeArquivo(m), roteiro, formato: formatoRef.current }]);
       await guardar(m, blob);
       registrarNaGestao(1);
       setStatus("Pronto! Seu vídeo está abaixo.");
@@ -3343,7 +3352,11 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     setGravando(true);
     setUrl(null);
     setResultados([]);
-    const lista = tresEstilos();
+    // os 3 estilos seguintes do rodízio (a próxima rodada começa de onde esta parou)
+    const inicio = proximoRef.current;
+    const lista: Modelo[] = [0, 1, 2].map((i) => ORDEM_SUGERIDA[(inicio + i) % ORDEM_SUGERIDA.length]);
+    proximoRef.current += 3;
+    setModelo(lista[0]);
     // cada um dos 3 com um roteiro: destino primeiro, preço primeiro, frase de impacto primeiro
     const roteiros: Roteiro[] = ["padrao", "preco_primeiro", "gancho"];
     const t0 = performance.now();
@@ -3440,12 +3453,21 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         new Promise<void>((r) => {
           const alvo = x % Math.max(v.duration - 0.05, 0.5);
           const limite = performance.now() + 400;
+          // O quadro novo chega pelo requestVideoFrameCallback; se a aba/painel estiver escondido ele não dispara,
+          // então um setTimeout em paralelo garante que a geração nunca trava (só fica mais lenta).
+          let tempo: ReturnType<typeof setTimeout> | undefined;
+          let rvfc: number | undefined;
+          const vv = v as HTMLVideoElement & { requestVideoFrameCallback?: (cb: () => void) => number; cancelVideoFrameCallback?: (id: number) => void };
           const checar = () => {
+            if (tempo !== undefined) clearTimeout(tempo);
+            if (rvfc !== undefined && vv.cancelVideoFrameCallback) vv.cancelVideoFrameCallback(rvfc);
             const ct = v.currentTime;
             // chegou no ponto (ou deu a volta no loop) ou passou do tempo-limite
             if (ct >= alvo - 0.017 || (alvo > v.duration - 0.6 && ct < 0.3) || performance.now() > limite) r();
-            else if ("requestVideoFrameCallback" in v) (v as HTMLVideoElement & { requestVideoFrameCallback: (cb: () => void) => void }).requestVideoFrameCallback(checar);
-            else setTimeout(checar, 5);
+            else {
+              if (vv.requestVideoFrameCallback) rvfc = vv.requestVideoFrameCallback(checar);
+              tempo = setTimeout(checar, vv.requestVideoFrameCallback ? 40 : 5);
+            }
           };
           checar();
         });
@@ -3687,8 +3709,8 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
           <section>
             <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-white/45">Visual</p>
             <div className="divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
-              <LinhaLista id="linha-oferta" titulo="Oferta sazonal" valor={nomeOcasiao} destaque={sazonais.agora.some((a) => a.id === ocasiao)} onClick={() => setFolha("oferta")} />
-              <LinhaLista id="linha-estilo" titulo="Estilo" valor={`${idxModelo + 1} · ${MODELOS[idxModelo]?.nome ?? ""}`} miniatura={miniaturas[modelo]} onClick={() => setFolha("estilo")} />
+              <LinhaLista id="linha-oferta" titulo="Oferta sazonal" valor={ocasiao === "nenhuma" && sazonais.agora.length ? "Nenhuma · sugestão do mês na lista" : nomeOcasiao} destaque={sazonais.agora.some((a) => a.id === ocasiao)} onClick={() => setFolha("oferta")} />
+              <LinhaLista id="linha-estilo" titulo="Estilo" valor={`${MODELOS[idxModelo]?.nome ?? ""} · muda a cada vídeo`} miniatura={miniaturas[modelo]} onClick={() => setFolha("estilo")} />
               <LinhaLista id="linha-duracao" titulo="Duração" valor={curto ? "12 s · curto" : "22 s · completo"} onClick={() => setFolha("duracao")} />
               <LinhaLista id="linha-formato" titulo="Formato" valor={formato === "feed" ? "Feed 4:5" : "Stories 9:16"} onClick={() => setFolha("formato")} />
               <LinhaLista id="linha-mais" titulo="Mais opções" valor={maisOpcoes ? "" : "cores e fonte"} aberto={maisOpcoes} onClick={() => setMaisOpcoes((v) => !v)} />
@@ -3961,10 +3983,10 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       </Folha>
       <Folha aberta={folha === "estilo"} titulo="Estilo do vídeo" onFechar={() => setFolha(null)}>
         <div className="grid grid-cols-3 gap-2 p-3">
-          {MODELOS.map((m, i) => (
-            <button key={m.id} id={`modelo-${m.id}`} disabled={gravando} onClick={() => { setModelo(m.id); setFolha(null); }} className={`overflow-hidden rounded-xl border text-center ${modelo === m.id ? "border-[#F5F906] ring-2 ring-[#F5F906]/40" : "border-white/10"}`}>
+          {MODELOS_NA_ORDEM.map((m) => (
+            <button key={m.id} id={`modelo-${m.id}`} disabled={gravando} onClick={() => { setModelo(m.id); proximoRef.current = Math.max(0, ORDEM_SUGERIDA.indexOf(m.id)); setFolha(null); }} className={`overflow-hidden rounded-xl border text-center ${modelo === m.id ? "border-[#F5F906] ring-2 ring-[#F5F906]/40" : "border-white/10"}`}>
               {miniaturas[m.id] ? <img src={miniaturas[m.id]} alt={m.nome} className="aspect-[9/16] w-full object-cover" /> : <div className="aspect-[9/16] w-full bg-white/[0.06]" />}
-              <span className="block py-1.5 text-[12px] font-semibold">{i + 1} · {m.nome}</span>
+              <span className="block py-1.5 text-[12px] font-semibold">{m.nome}</span>
             </button>
           ))}
         </div>
