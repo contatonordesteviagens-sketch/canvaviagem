@@ -2009,6 +2009,7 @@ function VideoLabTela() {
   const [paleta, setPaleta] = useState("estilo");
   const [corLivre, setCorLivre] = useState({ c1: "#f5c451", c2: "#0ea5e9" });
   const [fonte, setFonte] = useState("Montserrat");
+  const [resultados, setResultados] = useState<{ modelo: Modelo; url: string; nome: string }[]>([]);
   const [miniaturas, setMiniaturas] = useState<Partial<Record<Modelo, string>>>({});
   const ocasiaoRef = useRef<Ocasiao>("nenhuma");
   ocasiaoRef.current = ocasiao;
@@ -2335,25 +2336,89 @@ function VideoLabTela() {
   }, [carregando, gravando, dados, ocasiao, paleta, corLivre, fonte, logo]);
 
   // Gera quadro a quadro (não depende de a tela estar visível nem da velocidade do aparelho).
+  // fotografia das opções: mudar algo na tela durante a geração não altera o vídeo
+  const fotografar = (modeloEscolhido: Modelo) => ({
+    dados: structuredClone(dadosRef.current),
+    logo: logoRef.current,
+    contatos: [...contatosRef.current],
+    modelo: modeloEscolhido,
+    ocasiao: ocasiaoRef.current,
+    tema: { ...temaRef.current },
+  });
+
+  const nomeArquivo = (m: Modelo) =>
+    `video-${dadosRef.current.destino}-estilo${MODELOS.findIndex((x) => x.id === m) + 1}${ocasiaoRef.current !== "nenhuma" ? "-" + ocasiaoRef.current : ""}.mp4`;
+
+  // 3 estilos diferentes: o escolhido e mais dois que combinam bem
+  const ORDEM_SUGERIDA: Modelo[] = ["classico", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal"];
+  const tresEstilos = (): Modelo[] => [modeloRef.current, ...ORDEM_SUGERIDA.filter((m) => m !== modeloRef.current)].slice(0, 3);
+
   async function gerar() {
-    // fotografia das opções: mudar algo na tela durante a geração não altera este vídeo
-    const foto0 = {
-      dados: structuredClone(dadosRef.current),
-      logo: logoRef.current,
-      contatos: [...contatosRef.current],
-      modelo: modeloRef.current,
-      ocasiao: ocasiaoRef.current,
-      tema: { ...temaRef.current },
-    };
     setGravando(true);
     setUrl(null);
+    setResultados([]);
+    try {
+      const m = modeloRef.current;
+      const blob = await renderizar(fotografar(m), (p) => setStatus(`Gerando o vídeo… ${p}%`));
+      const u = URL.createObjectURL(blob);
+      setUrl(u);
+      setResultados([{ modelo: m, url: u, nome: nomeArquivo(m) }]);
+      setStatus("Pronto! Seu vídeo está abaixo.");
+    } catch (e) {
+      setStatus("Erro: " + (e as Error).message);
+    }
+    setGravando(false);
+  }
+
+  async function gerarTres() {
+    setGravando(true);
+    setUrl(null);
+    setResultados([]);
+    const lista = tresEstilos();
+    const t0 = performance.now();
+    try {
+      for (let i = 0; i < lista.length; i++) {
+        const m = lista[i];
+        const blob = await renderizar(fotografar(m), (p) => setStatus(`Vídeo ${i + 1} de ${lista.length}… ${p}%`));
+        const u = URL.createObjectURL(blob);
+        if (i === 0) setUrl(u);
+        setResultados((r) => [...r, { modelo: m, url: u, nome: nomeArquivo(m) }]);
+      }
+      const seg = ((performance.now() - t0) / 1000).toFixed(0);
+      (window as unknown as { __videoLab3: unknown }).__videoLab3 = { seg };
+      setStatus(`Pronto! ${lista.length} vídeos em ${seg}s. Escolha o seu abaixo.`);
+    } catch (e) {
+      setStatus("Erro: " + (e as Error).message);
+    }
+    setGravando(false);
+  }
+
+  async function compartilhar(r: { url: string; nome: string }) {
+    try {
+      const blob = await (await fetch(r.url)).blob();
+      const file = new File([blob], r.nome, { type: "video/mp4" });
+      const nav = navigator as Navigator & { canShare?: (d: { files: File[] }) => boolean };
+      if (nav.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `Pacote ${dadosRef.current.destino}` });
+        return;
+      }
+    } catch (e) {
+      if ((e as Error).name === "AbortError") return;
+    }
+    // sem compartilhamento (computador): baixa o arquivo
+    const a = document.createElement("a");
+    a.href = r.url;
+    a.download = r.nome;
+    a.click();
+  }
+
+  async function renderizar(foto0: ReturnType<typeof fotografar>, progresso: (p: number) => void): Promise<Blob> {
     const FPS = 30;
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
     const vids = vidsRef.current;
     vids.forEach((v) => isVideo(v) && v.pause());
-    const t0 = performance.now();
-    try {
+    {
       const codecs = ["avc1.4d0028", "avc1.640028", "avc1.42002a"];
       let codec = "";
       for (const c of codecs) {
@@ -2405,20 +2470,14 @@ function VideoLabTela() {
         const frame = new VideoFrame(canvas, { timestamp: Math.round((f * 1e6) / FPS), duration: Math.round(1e6 / FPS) });
         enc.encode(frame, { keyFrame: f % 60 === 0 });
         frame.close();
-        if (f % 15 === 0) setStatus(`Gerando o vídeo… ${Math.round((f / n) * 100)}%`);
+        if (f % 15 === 0) progresso(Math.round((f / n) * 100));
         if (enc.encodeQueueSize > 10) await new Promise((r) => setTimeout(r, 0));
       }
       await enc.flush();
       muxer.finalize();
-      const blob = new Blob([muxer.target.buffer], { type: "video/mp4" });
-      setUrl(URL.createObjectURL(blob));
-      const seg = ((performance.now() - t0) / 1000).toFixed(1);
-      (window as unknown as { __videoLab: unknown }).__videoLab = { size: blob.size, seg };
-      setStatus(`Pronto: ${(blob.size / 1e6).toFixed(1)} MB, mp4, gerado em ${seg}s`);
-    } catch (e) {
-      setStatus("Erro: " + (e as Error).message);
+      vids.forEach((v) => isVideo(v) && v.pause());
+      return new Blob([muxer.target.buffer], { type: "video/mp4" });
     }
-    setGravando(false);
   }
 
   function onLogo(f?: File) {
@@ -2441,10 +2500,11 @@ function VideoLabTela() {
   return (
     <div className="min-h-screen bg-neutral-950 p-4 text-white">
       <style>{`@keyframes cvScan { 0% { top: 0% } 50% { top: 97% } 100% { top: 0% } } .cv-scan { animation: cvScan 1.6s ease-in-out infinite; }`}</style>
-      <h1 className="mb-1 text-xl font-bold">Vídeo pronto (laboratório local)</h1>
-      <p className="mb-4 text-sm text-neutral-400">Mande o pacote do jeito que preferir. A IA acha o destino, preenche tudo e busca os vídeos.</p>
-      <div className="flex flex-col gap-6 lg:flex-row">
-        <div className="flex w-full max-w-md flex-col gap-3">
+      <h1 className="mb-1 text-xl font-bold">🎬 Vídeo pronto</h1>
+      <p className="mb-4 text-sm text-neutral-400">Mande o pacote do jeito que preferir. A IA acha o destino, preenche tudo e monta 3 vídeos para você escolher.</p>
+      <div className="mx-auto grid max-w-5xl gap-4 pb-28 lg:grid-cols-[28rem_1fr] lg:pb-4">
+        <div className="flex min-w-0 flex-col gap-3 lg:col-start-1">
+          <p className="text-xs font-bold uppercase tracking-wide text-violet-300">1. Mande o pacote</p>
           {/* 1. como mandar o pacote */}
           <div className="grid grid-cols-4 gap-1 rounded-xl bg-neutral-900 p-1">
             {abas.map((a) => (
@@ -2577,6 +2637,100 @@ function VideoLabTela() {
             </p>
           )}
 
+        </div>
+
+        <div id="previa" className="lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
+          <canvas ref={canvasRef} width={W} height={H} className="mx-auto block w-full max-w-[220px] rounded-xl border border-neutral-800 sm:max-w-[300px] lg:max-w-[360px]" />
+          <p className="mt-1 text-center text-[11px] text-neutral-500">Prévia ao vivo</p>
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-3 lg:col-start-1">
+          <p className="text-xs font-bold uppercase tracking-wide text-violet-300">2. Escolha o visual</p>
+          <h2 className="mt-2 text-sm font-bold text-neutral-200">Oferta sazonal</h2>
+          {sazonais.agora.length > 0 && <p className="-mt-2 text-xs text-amber-300">Deste mês já aparecem primeiro.</p>}
+          <div className="flex flex-wrap gap-1.5">
+            {sazonais.lista.map((o) => (
+              <button
+                key={o.id}
+                id={`ocasiao-${o.id}`}
+                disabled={gravando}
+                onClick={() => setOcasiao(o.id)}
+                className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${ocasiao === o.id ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
+              >
+                {o.nome}
+                {sazonais.agora.some((a) => a.id === o.id) && <span className="ml-1 text-amber-300">• agora</span>}
+              </button>
+            ))}
+          </div>
+
+          <h2 className="mt-2 text-sm font-bold text-neutral-200">Estilo</h2>
+          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible">
+            {MODELOS.map((m, i) => (
+              <button
+                key={m.id}
+                id={`modelo-${m.id}`}
+                title={m.nome}
+                disabled={gravando}
+                onClick={() => setModelo(m.id)}
+                className={`w-16 shrink-0 overflow-hidden rounded-md border text-center sm:w-auto ${modelo === m.id ? "border-amber-400 ring-2 ring-amber-400/40" : "border-neutral-700"}`}
+              >
+                {miniaturas[m.id] ? (
+                  <img src={miniaturas[m.id]} alt={m.nome} className="aspect-[9/16] w-full object-cover" />
+                ) : (
+                  <div className="aspect-[9/16] w-full bg-neutral-800" />
+                )}
+                <p className="py-0.5 text-[11px] font-semibold">{i + 1}</p>
+              </button>
+            ))}
+          </div>
+
+          <h2 className="mt-2 text-sm font-bold text-neutral-200">Cores</h2>
+          <div className="flex flex-wrap gap-1.5">
+            {PALETAS.map((p) => {
+              const c1 = p.id === "marca" ? fabrica.primaryColor : p.id === "livre" ? corLivre.c1 : p.c1;
+              const c2 = p.id === "marca" ? fabrica.secondaryColor : p.id === "livre" ? corLivre.c2 : p.c2;
+              return (
+                <button
+                  key={p.id}
+                  id={`paleta-${p.id}`}
+                  disabled={gravando}
+                  onClick={() => setPaleta(p.id)}
+                  className={`flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] ${paleta === p.id ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
+                >
+                  {c1 && <span className="h-3 w-3 rounded-full" style={{ background: c1 }} />}
+                  {c2 && <span className="-ml-1.5 h-3 w-3 rounded-full ring-1 ring-neutral-900" style={{ background: c2 }} />}
+                  {p.nome}
+                </button>
+              );
+            })}
+          </div>
+          {paleta === "livre" && (
+            <div className="flex items-center gap-3 text-xs">
+              <label className="flex items-center gap-1">Cor 1 <input id="cor1" type="color" value={corLivre.c1} onChange={(e) => setCorLivre((c) => ({ ...c, c1: e.target.value }))} /></label>
+              <label className="flex items-center gap-1">Cor 2 <input id="cor2" type="color" value={corLivre.c2} onChange={(e) => setCorLivre((c) => ({ ...c, c2: e.target.value }))} /></label>
+            </div>
+          )}
+
+          <h2 className="mt-2 text-sm font-bold text-neutral-200">Fonte</h2>
+          <div className="flex flex-wrap gap-1.5">
+            {FONTES.map((fo) => (
+              <button
+                key={fo}
+                id={`fonte-${fo.replace(/\s/g, "")}`}
+                disabled={gravando}
+                onClick={() => setFonte(fo)}
+                style={{ fontFamily: `'${fo}', sans-serif` }}
+                className={`rounded-full border px-2.5 py-1 text-xs ${fonte === fo ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
+              >
+                {fo}
+              </button>
+            ))}
+          </div>
+          <details id="informacoes" className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-3">
+            <summary className="cursor-pointer text-sm font-bold text-neutral-200">
+              3. Confira as informações <span className="font-normal text-neutral-400">(destino, preço, inclusos, contatos)</span>
+            </summary>
+            <div className="mt-3 flex flex-col gap-3">
           {/* 2. o pacote */}
           <h2 className="mt-2 text-sm font-bold text-neutral-200">Pacote</h2>
           <div>
@@ -2665,104 +2819,49 @@ function VideoLabTela() {
             <input type="file" accept="image/*" onChange={(e) => onLogo(e.target.files?.[0])} />
           </div>
 
-          <h2 className="mt-2 text-sm font-bold text-neutral-200">Oferta sazonal</h2>
-          {sazonais.agora.length > 0 && <p className="-mt-2 text-xs text-amber-300">Deste mês já aparecem primeiro.</p>}
-          <div className="flex flex-wrap gap-1.5">
-            {sazonais.lista.map((o) => (
-              <button
-                key={o.id}
-                id={`ocasiao-${o.id}`}
-                disabled={gravando}
-                onClick={() => setOcasiao(o.id)}
-                className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${ocasiao === o.id ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
-              >
-                {o.nome}
-                {sazonais.agora.some((a) => a.id === o.id) && <span className="ml-1 text-amber-300">• agora</span>}
-              </button>
-            ))}
-          </div>
-
-          <h2 className="mt-2 text-sm font-bold text-neutral-200">Estilo</h2>
-          <div className="grid grid-cols-5 gap-1.5">
-            {MODELOS.map((m, i) => (
-              <button
-                key={m.id}
-                id={`modelo-${m.id}`}
-                title={m.nome}
-                disabled={gravando}
-                onClick={() => setModelo(m.id)}
-                className={`overflow-hidden rounded-md border text-center ${modelo === m.id ? "border-amber-400 ring-2 ring-amber-400/40" : "border-neutral-700"}`}
-              >
-                {miniaturas[m.id] ? (
-                  <img src={miniaturas[m.id]} alt={m.nome} className="aspect-[9/16] w-full object-cover" />
-                ) : (
-                  <div className="aspect-[9/16] w-full bg-neutral-800" />
-                )}
-                <p className="py-0.5 text-[11px] font-semibold">{i + 1}</p>
-              </button>
-            ))}
-          </div>
-
-          <h2 className="mt-2 text-sm font-bold text-neutral-200">Cores</h2>
-          <div className="flex flex-wrap gap-1.5">
-            {PALETAS.map((p) => {
-              const c1 = p.id === "marca" ? fabrica.primaryColor : p.id === "livre" ? corLivre.c1 : p.c1;
-              const c2 = p.id === "marca" ? fabrica.secondaryColor : p.id === "livre" ? corLivre.c2 : p.c2;
-              return (
-                <button
-                  key={p.id}
-                  id={`paleta-${p.id}`}
-                  disabled={gravando}
-                  onClick={() => setPaleta(p.id)}
-                  className={`flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] ${paleta === p.id ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
-                >
-                  {c1 && <span className="h-3 w-3 rounded-full" style={{ background: c1 }} />}
-                  {c2 && <span className="-ml-1.5 h-3 w-3 rounded-full ring-1 ring-neutral-900" style={{ background: c2 }} />}
-                  {p.nome}
-                </button>
-              );
-            })}
-          </div>
-          {paleta === "livre" && (
-            <div className="flex items-center gap-3 text-xs">
-              <label className="flex items-center gap-1">Cor 1 <input id="cor1" type="color" value={corLivre.c1} onChange={(e) => setCorLivre((c) => ({ ...c, c1: e.target.value }))} /></label>
-              <label className="flex items-center gap-1">Cor 2 <input id="cor2" type="color" value={corLivre.c2} onChange={(e) => setCorLivre((c) => ({ ...c, c2: e.target.value }))} /></label>
             </div>
-          )}
+          </details>
 
-          <h2 className="mt-2 text-sm font-bold text-neutral-200">Fonte</h2>
-          <div className="flex flex-wrap gap-1.5">
-            {FONTES.map((fo) => (
+          <div className="fixed inset-x-0 bottom-0 z-20 border-t border-neutral-800 bg-neutral-950/95 p-3 backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:p-0">
+            <div className="mx-auto flex max-w-md flex-col gap-1.5">
               <button
-                key={fo}
-                id={`fonte-${fo.replace(/\s/g, "")}`}
-                disabled={gravando}
-                onClick={() => setFonte(fo)}
-                style={{ fontFamily: `'${fo}', sans-serif` }}
-                className={`rounded-full border px-2.5 py-1 text-xs ${fonte === fo ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
+                id="gerar3"
+                disabled={carregando || gravando || ocupado}
+                className="rounded-xl bg-amber-400 px-4 py-3.5 text-base font-bold text-black shadow-lg disabled:opacity-50"
+                onClick={gerarTres}
               >
-                {fo}
+                {gravando ? status : "🎬 Gerar 3 vídeos"}
               </button>
-            ))}
+              {!gravando && (
+                <button id="gerar" disabled={carregando || ocupado} className="text-xs text-neutral-400 underline disabled:opacity-50" onClick={gerar}>
+                  Gerar só o estilo {MODELOS.findIndex((m) => m.id === modelo) + 1}
+                </button>
+              )}
+            </div>
           </div>
-          <button
-            id="gerar"
-            disabled={carregando || gravando || ocupado}
-            className="mt-2 rounded-lg bg-amber-400 px-4 py-3 font-bold text-black disabled:opacity-50"
-            onClick={gerar}
-          >
-            🎬 Gerar vídeo
-          </button>
           <p id="status" className="text-sm text-neutral-300">{status}</p>
-          {url && (
-            <a id="baixar" className="rounded-lg bg-green-600 px-4 py-2 text-center font-semibold" href={url} download={`video-${dados.destino}-estilo${MODELOS.findIndex((m) => m.id === modelo) + 1}${ocasiao !== "nenhuma" ? "-" + ocasiao : ""}.mp4`}>
-              Baixar vídeo
-            </a>
-          )}
-          {url && !editando && (
-            <button id="editar" onClick={() => setEditando(true)} className="rounded-lg border border-violet-500 px-4 py-2 font-semibold text-violet-200">
-              ✏️ Editar vídeo
-            </button>
+          {resultados.length > 0 && (
+            <div id="resultados" className="flex flex-col gap-2">
+              <p className="text-xs font-bold uppercase tracking-wide text-violet-300">Seus vídeos</p>
+              <div className="flex snap-x gap-3 overflow-x-auto pb-2">
+                {resultados.map((r) => (
+                  <div key={r.url} className="w-40 shrink-0 snap-start rounded-xl border border-neutral-800 bg-neutral-900 p-2 sm:w-48">
+                    <video src={r.url} controls playsInline muted loop className="aspect-[9/16] w-full rounded-lg bg-black" />
+                    <p className="mt-1 text-center text-xs font-semibold">Estilo {MODELOS.findIndex((m) => m.id === r.modelo) + 1}</p>
+                    <div className="mt-1 flex flex-col gap-1">
+                      <button onClick={() => compartilhar(r)} className="rounded-lg bg-green-600 px-2 py-2 text-xs font-bold">📲 Compartilhar</button>
+                      <a id="baixar" href={r.url} download={r.nome} className="rounded-lg bg-neutral-700 px-2 py-2 text-center text-xs font-semibold">⬇️ Baixar</a>
+                      <button
+                        onClick={() => { setModelo(r.modelo); setUrl(r.url); setEditando(true); }}
+                        className="rounded-lg border border-violet-500 px-2 py-1.5 text-xs text-violet-200"
+                      >
+                        ✏️ Editar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
           {editando && (
             <div id="editor" className="flex flex-col gap-2 rounded-xl border border-violet-500/50 bg-neutral-900 p-3">
@@ -2850,9 +2949,6 @@ function VideoLabTela() {
               })}
             </div>
           )}
-        </div>
-        <div className="lg:sticky lg:top-4 lg:self-start">
-          <canvas ref={canvasRef} width={W} height={H} className="w-full max-w-[360px] rounded-xl border border-neutral-800" />
         </div>
       </div>
     </div>
