@@ -67,7 +67,7 @@ export function JornadaGuia({ variante = "cartao", onIr }: { variante?: "cartao"
     >
       <div className="min-w-0">
         <p className="text-[11px] font-black uppercase tracking-widest" style={{ color: AMARELO }}>
-          {todas ? "Jornada completa" : `Missão ${concluidas + 1} de ${total}`}
+          {todas || !atual ? "Jornada completa" : `Missão ${atual.numero} de ${total}`}
         </p>
         <h2 className="mt-0.5 text-lg font-black sm:text-xl">{nivel}</h2>
         <p className="mt-0.5 text-xs text-white/55">

@@ -135,8 +135,9 @@ export function useJornada() {
       // só comemora quando houve mudança durante o uso (anterior !== null)
       if (anterior !== null) {
         const n = agora.length;
+        const proxima = MISSOES.find((m) => !agora.includes(m.id));
         toast.success(`Missão ${novas.length > 1 ? "concluída" : `${MISSOES.findIndex((m) => m.id === novas[0]) + 1} concluída`}! 🏅`, {
-          description: n < MISSOES.length ? `Seu nível agora: ${NIVEIS[n]}. Próxima: ${MISSOES[n]?.titulo ?? ""}` : "Você completou a jornada. Agora é rotina: 1 vídeo e 1 arte por semana.",
+          description: proxima ? `Seu nível agora: ${NIVEIS[n]}. Próxima: ${proxima.titulo}` : "Você completou a jornada. Agora é rotina: 1 vídeo e 1 arte por semana.",
           duration: 7000,
         });
       }
