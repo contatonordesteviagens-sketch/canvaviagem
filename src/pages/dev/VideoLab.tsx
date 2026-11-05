@@ -52,7 +52,6 @@ function linhaDoTempo(telas: TelaDef[]): Linha {
   return { telas, inicios, total: telas.reduce((a, x) => a + x.dur, 0) };
 }
 const LINHA_PADRAO = linhaDoTempo(TELAS);
-const tipoDaTela = (t: number, L: Linha) => L.telas[telaEm(t, L)].tipo;
 const telaEm = (t: number, L: Linha = LINHA_PADRAO) => {
   let i = 0;
   while (i < L.telas.length - 1 && t >= L.inicios[i + 1]) i++;
@@ -222,6 +221,7 @@ function fitText(ctx: CanvasRenderingContext2D, text: string, weight: number, ma
 let GOLD = "#f5c451";
 let NEON = "#eaff2b";
 let LARANJA = "#F26B21";
+let AZUL_P = "#1D6BE8";
 let AZUL = "#1d4ed8";
 let ROXO = "#7c3aed";
 let ROSA = "#ec4899";
@@ -266,6 +266,7 @@ function aplicarTema(tema: Tema) {
   GOLD = c1 || "#f5c451";
   NEON = c1 || "#eaff2b";
   LARANJA = c1 || "#F26B21";
+  AZUL_P = c1 || "#1D6BE8";
   AZUL = c1 || "#1d4ed8";
   ROXO = c1 || "#7c3aed";
   ROSA = c2 || "#ec4899";
@@ -297,7 +298,7 @@ function prepararCtx(ctx: CanvasRenderingContext2D) {
 
 
 // ---------------- Modelos de vídeo (4 telas: destino, inclusos, preço, contato) ----------------
-type Modelo = "classico" | "neon" | "cartao" | "luxo" | "passagem" | "revista" | "postal" | "faixa" | "vibrante" | "bf";
+type Modelo = "classico" | "neon" | "cartao" | "luxo" | "passagem" | "revista" | "postal" | "faixa" | "vibrante" | "bf" | "promo";
 const MODELOS: { id: Modelo; nome: string; desc: string }[] = [
   { id: "classico", nome: "Clássico", desc: "Letras grandes sobre o vídeo" },
   { id: "neon", nome: "Neon", desc: "Faixas amarelas, estilo oferta" },
@@ -308,7 +309,8 @@ const MODELOS: { id: Modelo; nome: string; desc: string }[] = [
   { id: "postal", nome: "Postal", desc: "Moldura, selo e carimbo" },
   { id: "faixa", nome: "Faixa preta", desc: "Painel escuro embaixo" },
   { id: "vibrante", nome: "Vibrante", desc: "Roxo e rosa, divertido" },
-  { id: "bf", nome: "Black Friday", desc: "Preto e laranja, etiqueta e cupom" },
+  { id: "bf", nome: "Black Friday", desc: "Preto e laranja, cartão forte e ícones" },
+  { id: "promo", nome: "Promo azul", desc: "Cartões brancos e azul, estilo checklist" },
 ];
 
 const clamp01 = (t: number) => Math.min(Math.max(t, 0), 1);
@@ -1705,6 +1707,7 @@ const ESTILO_CTA: Record<Modelo, { titulo: string; molde: string; cor: () => str
   faixa: { titulo: "FALE COM A GENTE", molde: "900 {s}px Montserrat, Arial", cor: () => NEON },
   vibrante: { titulo: "Bora viajar?", molde: "900 {s}px Montserrat, Arial", cor: () => "#fff" },
   bf: { titulo: "Garanta sua vaga", molde: "900 {s}px Montserrat, Arial", cor: () => LARANJA },
+  promo: { titulo: "Garanta sua vaga", molde: "italic 900 {s}px Montserrat, Arial", cor: () => "#fff" },
 };
 
 function ctaPadrao(ctx: CanvasRenderingContext2D, d: Dados, logo: HTMLImageElement | null, contatos: Contato[], lt: number, modelo: Modelo, y0 = 0) {
@@ -1813,96 +1816,170 @@ function cenaFaixa(ctx: CanvasRenderingContext2D, cena: number, lt: number, out:
   ctx.globalAlpha = 1;
 }
 
-// ——— Estilo Black Friday (inspirado nos banners de promoção: fundo preto, "Black" vazado em laranja,
-// "Friday" branco, etiqueta de preço com furo, cupom laranja, linhas com ícone e o vídeo do destino
-// recortado num arco à direita, no lugar dos monumentos) ———
-const BF_X0 = 376;
-const BF_X1 = 688;
-function arcoBf(ctx: CanvasRenderingContext2D) {
-  const yTopo = 330;
-  const yBase = 1064;
-  const r = (BF_X1 - BF_X0) / 2;
-  const rb = 26;
-  ctx.beginPath();
-  ctx.moveTo(BF_X0, yTopo + r);
-  ctx.arc(BF_X0 + r, yTopo + r, r, Math.PI, 0);
-  ctx.lineTo(BF_X1, yBase - rb);
-  ctx.quadraticCurveTo(BF_X1, yBase, BF_X1 - rb, yBase);
-  ctx.lineTo(BF_X0 + rb, yBase);
-  ctx.quadraticCurveTo(BF_X0, yBase, BF_X0, yBase - rb);
-  ctx.closePath();
+// ——— Ícones dos itens (vetor, desenhados aqui; se existir um PNG em /video-elementos/<nome>.png ele é usado no lugar) ———
+type Glifo = "aviao" | "hotel" | "transfer" | "cafe" | "passeio" | "seguro" | "bagagem" | "calendario" | "pin" | "check";
+const NOMES_ELEMENTOS: Glifo[] = ["aviao", "hotel", "transfer", "cafe", "passeio", "seguro", "bagagem", "calendario", "pin", "check"];
+const ELEMENTOS = new Map<string, HTMLImageElement | null>();
+function carregarElementos() {
+  if (typeof window === "undefined" || ELEMENTOS.size) return;
+  for (const n of NOMES_ELEMENTOS) {
+    ELEMENTOS.set(n, null);
+    const img = new Image();
+    img.onload = () => ELEMENTOS.set(n, img);
+    img.src = `/video-elementos/${n}.png`;
+  }
 }
-function letrasBf(ctx: CanvasRenderingContext2D, x: number, y: number, tam: number) {
-  ctx.save();
-  ctx.textAlign = "left";
-  ctx.lineJoin = "round";
-  ctx.font = `900 ${tam}px Montserrat, Arial`;
-  ctx.lineWidth = Math.max(4, tam * 0.075);
-  ctx.strokeStyle = LARANJA;
-  ctx.strokeText("Black", x, y);
-  ctx.fillStyle = "#fff";
-  ctx.font = `900 ${Math.round(tam * 0.92)}px Montserrat, Arial`;
-  ctx.fillText("Friday", x, y + tam * 0.86);
-  ctx.restore();
+const elemento = (nome: string) => ELEMENTOS.get(nome) || null;
+function glifoDoItem(txt: string): Glifo {
+  const t = txt.toLowerCase();
+  if (/a[ée]re|voo|passag|milhas|embarque/.test(t)) return "aviao";
+  if (/hotel|pousada|resort|hosped|di[áa]ria|noite|cabine/.test(t)) return "hotel";
+  if (/transfer|traslado|[ôo]nibus|\bvan\b|transporte|carro|locação|aluguel/.test(t)) return "transfer";
+  if (/caf[ée]|refei|almo[çc]|jantar|pens[ãa]o|all inclusive|bebida|open bar/.test(t)) return "cafe";
+  if (/passeio|tour|city|trilha|mergulho|ingresso|parque|show|roteiro/.test(t)) return "passeio";
+  if (/seguro|assist/.test(t)) return "seguro";
+  if (/bagagem|mala|despach/.test(t)) return "bagagem";
+  if (/data|sa[íi]da|dia /.test(t)) return "calendario";
+  if (/guia|local|destino|cidade/.test(t)) return "pin";
+  return "check";
 }
-function etiquetaBf(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
-  const p = 64;
+function desenharGlifo(ctx: CanvasRenderingContext2D, g: Glifo, cx: number, cy: number, s: number, cor: string) {
   ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(x + 18, y);
-  ctx.lineTo(x + w - p, y);
-  ctx.lineTo(x + w, y + h / 2);
-  ctx.lineTo(x + w - p, y + h);
-  ctx.lineTo(x + 18, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - 18);
-  ctx.lineTo(x, y + 18);
-  ctx.quadraticCurveTo(x, y, x + 18, y);
-  ctx.closePath();
-  ctx.lineWidth = 6;
-  ctx.lineJoin = "round";
-  ctx.strokeStyle = "#fff";
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(x + w - p + 16, y + h / 2, 8, 0, Math.PI * 2);
-  ctx.fillStyle = "#fff";
-  ctx.fill();
-  ctx.restore();
-}
-function cupomBf(ctx: CanvasRenderingContext2D, cx: number, y: number, txt: string, k: number) {
-  ctx.save();
-  fitText(ctx, txt, 800, 22, 280);
-  const w = Math.min(ctx.measureText(txt).width + 44, 320);
-  ctx.translate(cx, y);
-  ctx.scale(0.85 + 0.15 * k, 0.85 + 0.15 * k);
-  roundRect(ctx, -w / 2, -25, w, 50, 12);
-  ctx.fillStyle = LARANJA;
-  ctx.fill();
-  ctx.fillStyle = "#fff";
-  ctx.textAlign = "center";
-  ctx.fillText(txt, 0, 8);
-  ctx.restore();
-}
-function linhaIconeBf(ctx: CanvasRenderingContext2D, x: number, y: number, txt: string, maxW: number) {
-  ctx.save();
-  roundRect(ctx, x, y - 23, 46, 46, 11);
-  ctx.fillStyle = LARANJA;
-  ctx.fill();
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = 4;
+  ctx.translate(cx, cy);
+  ctx.strokeStyle = cor;
+  ctx.fillStyle = cor;
+  ctx.lineWidth = Math.max(2.5, s * 0.24);
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
-  ctx.beginPath();
-  ctx.moveTo(x + 13, y + 1);
-  ctx.lineTo(x + 21, y + 9);
-  ctx.lineTo(x + 34, y - 8);
-  ctx.stroke();
-  ctx.textAlign = "left";
-  fitText(ctx, txt, 600, 26, maxW);
-  ctx.fillStyle = "#fff";
-  ctx.fillText(txt, x + 60, y + 9);
+  const circulo = (x: number, y: number, r: number) => {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  };
+  switch (g) {
+    case "aviao":
+      ctx.rotate(-Math.PI / 4);
+      ctx.beginPath();
+      ctx.moveTo(0, -s);
+      ctx.lineTo(0, s * 0.95);
+      ctx.moveTo(-s, s * 0.05);
+      ctx.lineTo(s, s * 0.05);
+      ctx.moveTo(-s * 0.45, s * 0.85);
+      ctx.lineTo(s * 0.45, s * 0.85);
+      ctx.stroke();
+      break;
+    case "hotel":
+      ctx.beginPath();
+      ctx.moveTo(-s, s * 0.7);
+      ctx.lineTo(-s, -s * 0.1);
+      ctx.lineTo(s, -s * 0.1);
+      ctx.lineTo(s, s * 0.7);
+      ctx.moveTo(-s, s * 0.3);
+      ctx.lineTo(s, s * 0.3);
+      ctx.stroke();
+      roundRect(ctx, -s * 0.8, -s * 0.55, s * 0.7, s * 0.4, 3);
+      ctx.fill();
+      break;
+    case "transfer":
+      roundRect(ctx, -s, -s * 0.85, 2 * s, s * 1.35, 4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-s, -s * 0.15);
+      ctx.lineTo(s, -s * 0.15);
+      ctx.stroke();
+      circulo(-s * 0.55, s * 0.78, s * 0.24);
+      circulo(s * 0.55, s * 0.78, s * 0.24);
+      break;
+    case "cafe":
+      roundRect(ctx, -s * 0.9, -s * 0.5, s * 1.4, s * 1.2, 4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(s * 0.6, 0, s * 0.38, -Math.PI / 2, Math.PI / 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.9, s * 0.98);
+      ctx.lineTo(s * 0.75, s * 0.98);
+      ctx.stroke();
+      break;
+    case "passeio":
+      roundRect(ctx, -s, -s * 0.55, 2 * s, s * 1.35, 4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(0, s * 0.12, s * 0.4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.45, -s * 0.55);
+      ctx.lineTo(-s * 0.25, -s * 0.95);
+      ctx.lineTo(s * 0.25, -s * 0.95);
+      ctx.lineTo(s * 0.45, -s * 0.55);
+      ctx.stroke();
+      break;
+    case "seguro":
+      ctx.beginPath();
+      ctx.moveTo(0, -s);
+      ctx.lineTo(s, -s * 0.6);
+      ctx.lineTo(s * 0.85, s * 0.3);
+      ctx.lineTo(0, s);
+      ctx.lineTo(-s * 0.85, s * 0.3);
+      ctx.lineTo(-s, -s * 0.6);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.4, 0);
+      ctx.lineTo(-s * 0.1, s * 0.32);
+      ctx.lineTo(s * 0.45, -s * 0.35);
+      ctx.stroke();
+      break;
+    case "bagagem":
+      roundRect(ctx, -s * 0.85, -s * 0.45, s * 1.7, s * 1.4, 4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.35, -s * 0.45);
+      ctx.lineTo(-s * 0.35, -s * 0.9);
+      ctx.lineTo(s * 0.35, -s * 0.9);
+      ctx.lineTo(s * 0.35, -s * 0.45);
+      ctx.stroke();
+      break;
+    case "calendario":
+      roundRect(ctx, -s, -s * 0.7, 2 * s, s * 1.6, 4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-s, -s * 0.2);
+      ctx.lineTo(s, -s * 0.2);
+      ctx.moveTo(-s * 0.5, -s);
+      ctx.lineTo(-s * 0.5, -s * 0.45);
+      ctx.moveTo(s * 0.5, -s);
+      ctx.lineTo(s * 0.5, -s * 0.45);
+      ctx.stroke();
+      break;
+    case "pin":
+      ctx.beginPath();
+      ctx.arc(0, -s * 0.3, s * 0.62, Math.PI * 0.75, Math.PI * 2.25);
+      ctx.lineTo(0, s);
+      ctx.closePath();
+      ctx.stroke();
+      circulo(0, -s * 0.3, s * 0.2);
+      break;
+    default:
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.6, 0.05 * s);
+      ctx.lineTo(-s * 0.15, s * 0.5);
+      ctx.lineTo(s * 0.65, -s * 0.45);
+      ctx.stroke();
+  }
   ctx.restore();
 }
-function quebrarLinhas(ctx: CanvasRenderingContext2D, texto: string, maxW: number): string[] {
+/** Quadrado arredondado com o ícone do item dentro (PNG de /video-elementos se existir, senão o vetor). */
+function iconeItem(ctx: CanvasRenderingContext2D, txt: string, cx: number, cy: number, tam: number, fundo: string, traco: string, raio = 12) {
+  const g = glifoDoItem(txt);
+  roundRect(ctx, cx - tam / 2, cy - tam / 2, tam, tam, raio);
+  ctx.fillStyle = fundo;
+  ctx.fill();
+  const img = elemento(g);
+  if (img) ctx.drawImage(img, cx - tam * 0.34, cy - tam * 0.34, tam * 0.68, tam * 0.68);
+  else desenharGlifo(ctx, g, cx, cy, tam * 0.27, traco);
+}
+function quebrarLinhas(ctx: CanvasRenderingContext2D, texto: string, maxW: number, max = 3): string[] {
   const linhas: string[] = [];
   let atual = "";
   for (const p of texto.split(/\s+/)) {
@@ -1913,97 +1990,361 @@ function quebrarLinhas(ctx: CanvasRenderingContext2D, texto: string, maxW: numbe
     } else atual = tent;
   }
   if (atual) linhas.push(atual);
-  return linhas.slice(0, 3);
+  return linhas.slice(0, max);
+}
+/** Escolhe o maior tamanho (até `max`) em que o texto cabe em `linhasMax` linhas de `maxW`. Define a fonte e devolve as linhas. */
+function linhasQueCabem(ctx: CanvasRenderingContext2D, texto: string, molde: string, max: number, min: number, maxW: number, linhasMax: number): { tam: number; linhas: string[] } {
+  let tam = max;
+  for (;;) {
+    ctx.font = molde.replace("{s}", String(tam));
+    const linhas = quebrarLinhas(ctx, texto, maxW, 9);
+    if (linhas.length <= linhasMax || tam <= min) return { tam, linhas: linhas.slice(0, linhasMax) };
+    tam -= 4;
+  }
+}
+function cartaoVidro(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r = 32, fundo = "rgba(8,8,10,.62)") {
+  ctx.save();
+  sombra(ctx, 40, "rgba(0,0,0,.35)");
+  roundRect(ctx, x, y, w, h, r);
+  ctx.fillStyle = fundo;
+  ctx.fill();
+  semSombra(ctx);
+  roundRect(ctx, x, y, w, h, r);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(255,255,255,.12)";
+  ctx.stroke();
+  ctx.restore();
+}
+function pilula(ctx: CanvasRenderingContext2D, cx: number, cy: number, txt: string, fundo: string, cor: string, molde = "800 {s}px Montserrat, Arial", tam = 24, maxW = 560) {
+  ctx.save();
+  let t = tam;
+  do {
+    ctx.font = molde.replace("{s}", String(t));
+    t -= 2;
+  } while (ctx.measureText(txt).width > maxW && t > 14);
+  const w = ctx.measureText(txt).width + 48;
+  roundRect(ctx, cx - w / 2, cy - 27, w, 54, 27);
+  ctx.fillStyle = fundo;
+  ctx.fill();
+  ctx.fillStyle = cor;
+  ctx.textAlign = "center";
+  ctx.fillText(txt, cx, cy + 9);
+  ctx.restore();
+  return ctx.measureText(txt).width + 48;
+}
+
+// ——— Estilo Black Friday: vídeo em tela cheia com véu escuro, "Black" vazado em laranja + "Friday" branco,
+// um cartão forte por tela, cupom laranja e itens com ícone ———
+function letrasBf(ctx: CanvasRenderingContext2D, x: number, y: number, tam: number, alinhado: CanvasTextAlign = "left") {
+  ctx.save();
+  ctx.textAlign = alinhado;
+  ctx.lineJoin = "round";
+  ctx.font = `900 ${tam}px Montserrat, Arial`;
+  ctx.lineWidth = Math.max(4, tam * 0.07);
+  ctx.strokeStyle = LARANJA;
+  ctx.strokeText("Black", x, y);
+  ctx.fillStyle = "#fff";
+  ctx.font = `900 ${Math.round(tam * 0.92)}px Montserrat, Arial`;
+  ctx.fillText("Friday", x, y + tam * 0.86);
+  ctx.restore();
 }
 function cenaBf(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, _contatos: Contato[]) {
   const k = ease(lt / 0.5);
-  const k2 = ease((lt - 0.25) / 0.5);
-  const k3 = back((lt - 0.45) / 0.5);
+  const k2 = ease((lt - 0.2) / 0.5);
+  const k3 = back((lt - 0.4) / 0.5);
   const X = 40;
-  const COL = 310;
-  ctx.textAlign = "left";
+  const LARG = W - 80;
   ctx.globalAlpha = out * k;
   if (cena === 0) {
+    if (d.agencia && d.agencia !== "Sua Agência") {
+      ctx.font = "700 24px Montserrat, Arial";
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(255,255,255,.85)";
+      if (logo) desenharLogo(ctx, d, logo, W / 2, 232, 30, k);
+      else ctx.fillText(d.agencia.toUpperCase(), W / 2, 240);
+    }
     ctx.save();
-    ctx.translate(0, (1 - k) * -24);
-    letrasBf(ctx, X, 300, 118);
+    ctx.translate(0, (1 - k) * -30);
+    letrasBf(ctx, W / 2, 430, 150, "center");
     ctx.restore();
     ctx.globalAlpha = out * k2;
-    if (d.agencia && d.agencia !== "Sua Agência") {
-      if (logo) desenharLogo(ctx, d, logo, X + 26, 440, 26, k2);
-      ctx.font = "700 22px Montserrat, Arial";
-      ctx.fillStyle = LARANJA;
-      ctx.textAlign = "left";
-      ctx.fillText(d.agencia, logo ? X + 64 : X, 449);
-    }
-    etiquetaBf(ctx, X, 500, COL, 180);
-    const destino = d.destino.toUpperCase();
-    fitText(ctx, destino, 900, 64, COL - 92);
+    const dest = linhasQueCabem(ctx, d.destino.toUpperCase(), "900 {s}px Montserrat, Arial", 84, 44, LARG - 80, 2);
+    const altura = 70 + dest.linhas.length * (dest.tam * 1.05) + 62 + 92;
+    const topo = 600;
+    cartaoVidro(ctx, X, topo, LARG, altura);
+    ctx.textAlign = "center";
     ctx.fillStyle = LARANJA;
-    ctx.textAlign = "left";
-    ctx.fillText(destino, X + 22, 592);
-    fitText(ctx, d.chamada, 600, 21, COL - 96);
+    ctx.font = `900 ${dest.tam}px Montserrat, Arial`;
+    let y = topo + 60 + dest.tam * 0.8;
+    for (const l of dest.linhas) {
+      ctx.fillText(l, W / 2, y);
+      y += dest.tam * 1.05;
+    }
+    fitText(ctx, d.chamada, 600, 28, LARG - 80);
     ctx.fillStyle = "#fff";
-    ctx.fillText(d.chamada, X + 22, 640);
-    ctx.globalAlpha = out * clamp01((lt - 0.45) / 0.3);
+    ctx.fillText(d.chamada, W / 2, y + 12);
     const pt = precoTextos(d);
     const teaser = pt.valor === "Consulte" ? "OFERTA BLACK FRIDAY" : `${pt.topo} ${pt.valor}`.toUpperCase();
-    cupomBf(ctx, X + COL / 2, 745, teaser, k3);
-    const linhas = [d.pessoas ? d.pessoas[0].toUpperCase() + d.pessoas.slice(1) : "", textoSaida(d)].filter(Boolean);
-    linhas.forEach((tx, i) => linhaIconeBf(ctx, X, 850 + i * 80, tx, 232));
+    ctx.globalAlpha = out * clamp01((lt - 0.4) / 0.3);
+    ctx.save();
+    ctx.translate(W / 2, y + 86);
+    ctx.scale(0.85 + 0.15 * k3, 0.85 + 0.15 * k3);
+    pilula(ctx, 0, 0, teaser, LARANJA, "#fff", "800 {s}px Montserrat, Arial", 26, LARG - 120);
+    ctx.restore();
   } else if (cena === 1) {
-    letrasBf(ctx, X, 250, 54);
+    letrasBf(ctx, X, 250, 64);
     ctx.globalAlpha = out * k2;
-    const titulo = tituloInclusos(d, "O que está incluso");
-    fitText(ctx, titulo, 800, 27, COL);
-    ctx.fillStyle = "#fff";
+    const itens = d.itens.filter(Boolean).slice(0, 4);
+    const topo = 340;
+    const altura = 150 + itens.length * 92 + 80;
+    cartaoVidro(ctx, X, topo, LARG, altura);
     ctx.textAlign = "left";
-    ctx.fillText(titulo, X, 372);
-    d.itens.filter(Boolean).slice(0, 4).forEach((it, i) => {
+    pilula(ctx, X + 40 + 120, topo + 64, tituloInclusos(d, "O QUE ESTÁ INCLUSO").toUpperCase(), LARANJA, "#fff", "800 {s}px Montserrat, Arial", 22, 360);
+    itens.forEach((it, i) => {
       ctx.globalAlpha = out * clamp01((lt - 0.3 - i * 0.12) / 0.3);
-      linhaIconeBf(ctx, X, 446 + i * 86, it, 232);
+      const yy = topo + 150 + i * 92;
+      iconeItem(ctx, it, X + 66, yy, 56, LARANJA, "#fff", 14);
+      ctx.textAlign = "left";
+      fitText(ctx, it, 700, 30, LARG - 140);
+      ctx.fillStyle = "#fff";
+      ctx.fillText(it, X + 112, yy + 10);
     });
     ctx.globalAlpha = out * clamp01((lt - 0.8) / 0.3);
-    cupomBf(ctx, X + COL / 2, 820, "APROVEITE A BLACK FRIDAY", k3);
+    pilula(ctx, W / 2, topo + altura - 48, "APROVEITE A BLACK FRIDAY", "rgba(255,255,255,.1)", "#fff", "800 {s}px Montserrat, Arial", 22, LARG - 120);
   } else if (cena === 2) {
-    letrasBf(ctx, X, 250, 54);
+    letrasBf(ctx, X, 250, 64);
     ctx.globalAlpha = out * k2;
-    etiquetaBf(ctx, X, 380, COL, 270);
     const pt = precoTextos(d);
-    let yy = 470;
     const antigo = d.precoAntigo.trim();
-    if (antigo && d.pagamento !== "free_quote") {
+    const temAntigo = !!antigo && d.pagamento !== "free_quote";
+    const saida = textoSaida(d);
+    const topo = 380;
+    const altura = 60 + (temAntigo ? 40 : 0) + 44 + 130 + (pt.rodape ? 40 : 0) + (saida ? 40 : 0) + 100;
+    cartaoVidro(ctx, X, topo, LARG, altura);
+    ctx.textAlign = "center";
+    let y = topo + 60;
+    if (temAntigo) {
       const txt = `de ${antigo.startsWith("R$") ? antigo : "R$ " + antigo}`;
-      ctx.font = "600 20px Montserrat, Arial";
+      ctx.font = "600 26px Montserrat, Arial";
       ctx.fillStyle = "#a1a1aa";
-      ctx.textAlign = "left";
-      ctx.fillText(txt, X + 22, 432);
+      ctx.fillText(txt, W / 2, y);
       const tw = ctx.measureText(txt).width;
       ctx.strokeStyle = "#ef4444";
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(X + 20, 425);
-      ctx.lineTo(X + 24 + tw, 425);
+      ctx.moveTo(W / 2 - tw / 2 - 4, y - 9);
+      ctx.lineTo(W / 2 + tw / 2 + 4, y - 9);
       ctx.stroke();
+      y += 40;
     }
-    ctx.textAlign = "left";
-    fitText(ctx, pt.topo.toUpperCase(), 700, 20, COL - 96);
-    ctx.fillStyle = "#fff";
-    ctx.fillText(pt.topo.toUpperCase(), X + 22, yy);
-    yy += 78;
-    fitText(ctx, pt.valor, 900, 76, COL - 96);
+    fitText(ctx, pt.topo.toUpperCase(), 700, 26, LARG - 100);
+    ctx.fillStyle = "rgba(255,255,255,.85)";
+    ctx.fillText(pt.topo.toUpperCase(), W / 2, y + 8);
+    y += 44;
+    ctx.save();
+    ctx.translate(W / 2, y + 90);
+    ctx.scale(0.8 + 0.2 * k3, 0.8 + 0.2 * k3);
+    fitText(ctx, pt.valor, 900, 120, LARG - 100);
     ctx.fillStyle = LARANJA;
-    ctx.fillText(pt.valor, X + 22, yy);
+    ctx.fillText(pt.valor, 0, 0);
+    ctx.restore();
+    y += 130;
     if (pt.rodape) {
-      fitText(ctx, pt.rodape, 500, 20, COL - 96);
-      ctx.fillStyle = "rgba(255,255,255,.85)";
-      ctx.fillText(pt.rodape, X + 22, yy + 44);
+      fitText(ctx, pt.rodape, 500, 26, LARG - 100);
+      ctx.fillStyle = "rgba(255,255,255,.8)";
+      ctx.fillText(pt.rodape, W / 2, y + 8);
+      y += 40;
+    }
+    if (saida) {
+      fitText(ctx, saida, 600, 24, LARG - 100);
+      ctx.fillStyle = "rgba(255,255,255,.7)";
+      ctx.fillText(saida, W / 2, y + 8);
+      y += 40;
     }
     ctx.globalAlpha = out * clamp01((lt - 0.45) / 0.3);
     const urg = d.urgencia.trim();
-    cupomBf(ctx, X + COL / 2, 720, urg ? urg.toUpperCase() : "OFERTA POR TEMPO LIMITADO", k3);
-    const linhas = [textoSaida(d), ...d.itens.filter(Boolean)].filter(Boolean).slice(0, 2);
-    linhas.forEach((tx, i) => linhaIconeBf(ctx, X, 810 + i * 80, tx, 232));
+    pilula(ctx, W / 2, y + 52, urg ? urg.toUpperCase() : "OFERTA POR TEMPO LIMITADO", urg ? "#dc2626" : LARANJA, "#fff", "800 {s}px Montserrat, Arial", 24, LARG - 120);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ——— Estilo Promo azul: véu azul sobre o vídeo, título branco em itálico com brilho, painel azul inclinado,
+// cartões brancos com ícones redondos e itens com check (estilo checklist) ———
+const AZUL_ESCURO = "#0B3FA6";
+const TINTA_PROMO = "#0B1F4D";
+function painelInclinado(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, cor: string, desenhar: () => void, rot = -0.045) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rot);
+  sombra(ctx, 30, "rgba(0,0,0,.3)");
+  roundRect(ctx, -w / 2, -h / 2, w, h, 18);
+  ctx.fillStyle = cor;
+  ctx.fill();
+  semSombra(ctx);
+  desenhar();
+  ctx.restore();
+}
+function aviaoRastro(ctx: CanvasRenderingContext2D, x: number, y: number, k: number) {
+  ctx.save();
+  ctx.globalAlpha *= k;
+  ctx.strokeStyle = "rgba(255,255,255,.7)";
+  ctx.lineWidth = 3;
+  ctx.setLineDash([6, 10]);
+  ctx.beginPath();
+  ctx.moveTo(x - 220, y + 60);
+  ctx.quadraticCurveTo(x - 110, y + 70, x - 20, y + 10);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  desenharGlifo(ctx, "aviao", x, y, 16, "#fff");
+  ctx.restore();
+}
+function cartaoBranco(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  ctx.save();
+  sombra(ctx, 50, "rgba(0,20,80,.35)");
+  roundRect(ctx, x, y, w, h, 30);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+  semSombra(ctx);
+  ctx.restore();
+}
+function cenaPromo(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, _contatos: Contato[]) {
+  const k = ease(lt / 0.5);
+  const k2 = ease((lt - 0.2) / 0.5);
+  const k3 = back((lt - 0.4) / 0.5);
+  const X = 40;
+  const LARG = W - 80;
+  ctx.globalAlpha = out * k;
+  if (cena === 0) {
+    // marca da agência numa pílula branca, como no banner
+    if (d.agencia && d.agencia !== "Sua Agência") {
+      if (logo) desenharLogo(ctx, d, logo, 76, 236, 30, k);
+      ctx.textAlign = "left";
+      ctx.font = "800 22px Montserrat, Arial";
+      const w = ctx.measureText(d.agencia).width + 40;
+      roundRect(ctx, logo ? 116 : X, 212, w, 48, 24);
+      ctx.fillStyle = "#fff";
+      ctx.fill();
+      ctx.fillStyle = AZUL_ESCURO;
+      ctx.fillText(d.agencia, (logo ? 116 : X) + 20, 244);
+    }
+    aviaoRastro(ctx, 600, 300, k2);
+    // destino grande, itálico, com brilho azul
+    const dest = linhasQueCabem(ctx, d.destino.toUpperCase(), "italic 900 {s}px Montserrat, Arial", 92, 48, LARG - 20, 2);
+    ctx.textAlign = "center";
+    let y = 470;
+    ctx.save();
+    ctx.translate(0, (1 - k) * -24);
+    sombra(ctx, 28, "rgba(29,107,232,.9)");
+    ctx.fillStyle = "#fff";
+    ctx.font = `italic 900 ${dest.tam}px Montserrat, Arial`;
+    for (const l of dest.linhas) {
+      ctx.fillText(l, W / 2, y);
+      y += dest.tam * 1.02;
+    }
+    semSombra(ctx);
+    ctx.restore();
+    // painel azul inclinado com a frase
+    ctx.globalAlpha = out * k2;
+    ctx.font = "italic 800 30px Montserrat, Arial";
+    const ch = linhasQueCabem(ctx, d.chamada, "italic 800 {s}px Montserrat, Arial", 34, 22, LARG - 120, 2);
+    const hP = 40 + ch.linhas.length * (ch.tam * 1.15);
+    painelInclinado(ctx, W / 2, y + hP / 2 + 6, LARG - 40, hP, AZUL_P, () => {
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#fff";
+      ctx.font = `italic 800 ${ch.tam}px Montserrat, Arial`;
+      ch.linhas.forEach((l, i) => ctx.fillText(l, 0, -hP / 2 + 30 + ch.tam * 0.75 + i * ch.tam * 1.15));
+    });
+    y += hP + 60;
+    // condição de preço numa pílula branca
+    const pt = precoTextos(d);
+    const teaser = pt.valor === "Consulte" ? "CONSULTE AS CONDIÇÕES" : `${pt.topo} ${pt.valor}`.toUpperCase();
+    ctx.globalAlpha = out * clamp01((lt - 0.4) / 0.3);
+    ctx.save();
+    ctx.translate(W / 2, y + 30);
+    ctx.scale(0.85 + 0.15 * k3, 0.85 + 0.15 * k3);
+    pilula(ctx, 0, 0, teaser, "#fff", AZUL_ESCURO, "800 {s}px Montserrat, Arial", 26, LARG - 120);
+    ctx.restore();
+  } else if (cena === 1) {
+    const itens = d.itens.filter(Boolean).slice(0, 4);
+    const topo = 330;
+    const altura = 190 + itens.length * 90;
+    ctx.globalAlpha = out * k2;
+    cartaoBranco(ctx, X, topo, LARG, altura);
+    // medalha redonda azul no alto do cartão
+    ctx.save();
+    ctx.translate(W / 2, topo);
+    ctx.scale(0.7 + 0.3 * k3, 0.7 + 0.3 * k3);
+    ctx.beginPath();
+    ctx.arc(0, 0, 50, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, 40, 0, Math.PI * 2);
+    ctx.fillStyle = AZUL_P;
+    ctx.fill();
+    desenharGlifo(ctx, "check", 0, 0, 15, "#fff");
+    ctx.restore();
+    pilula(ctx, W / 2, topo + 104, tituloInclusos(d, "O QUE INCLUI").toUpperCase(), AZUL_ESCURO, "#fff", "800 {s}px Montserrat, Arial", 22, LARG - 120);
+    itens.forEach((it, i) => {
+      ctx.globalAlpha = out * clamp01((lt - 0.3 - i * 0.12) / 0.3);
+      const yy = topo + 190 + i * 90;
+      iconeItem(ctx, it, X + 66, yy, 54, AZUL_P, "#fff", 14);
+      ctx.textAlign = "left";
+      fitText(ctx, it, 700, 30, LARG - 140);
+      ctx.fillStyle = TINTA_PROMO;
+      ctx.fillText(it, X + 112, yy + 10);
+    });
+  } else if (cena === 2) {
+    const pt = precoTextos(d);
+    const antigo = d.precoAntigo.trim();
+    const temAntigo = !!antigo && d.pagamento !== "free_quote";
+    const saida = textoSaida(d);
+    const urg = d.urgencia.trim();
+    const topo = 400;
+    const altura = 140 + 140 + (temAntigo ? 40 : 0) + (pt.rodape ? 40 : 0) + (saida ? 40 : 0) + (urg ? 80 : 40);
+    ctx.globalAlpha = out * k2;
+    cartaoBranco(ctx, X, topo, LARG, altura);
+    pilula(ctx, W / 2, topo + 64, pt.topo.toUpperCase(), AZUL_ESCURO, "#fff", "800 {s}px Montserrat, Arial", 22, LARG - 120);
+    ctx.textAlign = "center";
+    let y = topo + 140;
+    if (temAntigo) {
+      const txt = `de ${antigo.startsWith("R$") ? antigo : "R$ " + antigo}`;
+      ctx.font = "600 26px Montserrat, Arial";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText(txt, W / 2, y + 8);
+      const tw = ctx.measureText(txt).width;
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(W / 2 - tw / 2 - 4, y - 1);
+      ctx.lineTo(W / 2 + tw / 2 + 4, y - 1);
+      ctx.stroke();
+      y += 40;
+    }
+    ctx.save();
+    ctx.translate(W / 2, y + 96);
+    ctx.scale(0.8 + 0.2 * k3, 0.8 + 0.2 * k3);
+    fitText(ctx, pt.valor, 900, 124, LARG - 100);
+    ctx.fillStyle = AZUL_ESCURO;
+    ctx.fillText(pt.valor, 0, 0);
+    ctx.restore();
+    y += 140;
+    if (pt.rodape) {
+      fitText(ctx, pt.rodape, 600, 26, LARG - 100);
+      ctx.fillStyle = TINTA_PROMO;
+      ctx.fillText(pt.rodape, W / 2, y + 8);
+      y += 40;
+    }
+    if (saida) {
+      fitText(ctx, saida, 600, 24, LARG - 100);
+      ctx.fillStyle = "#475569";
+      ctx.fillText(saida, W / 2, y + 8);
+      y += 40;
+    }
+    if (urg) {
+      ctx.globalAlpha = out * clamp01((lt - 0.45) / 0.3);
+      pilula(ctx, W / 2, y + 40, urg.toUpperCase(), "#dc2626", "#fff", "800 {s}px Montserrat, Arial", 24, LARG - 120);
+    }
   }
   ctx.globalAlpha = 1;
 }
@@ -2013,14 +2354,29 @@ function cenaDestaque(ctx: CanvasRenderingContext2D, modelo: Modelo, texto: stri
   const k = ease((lt - 0.2) / 0.6);
   ctx.globalAlpha = out * k;
   if (modelo === "bf") {
-    letrasBf(ctx, 40, 250, 54);
-    ctx.textAlign = "left";
-    ctx.font = "900 40px Montserrat, Arial";
-    const linhas = quebrarLinhas(ctx, texto, 300);
+    letrasBf(ctx, 40, 250, 64);
+    const r = linhasQueCabem(ctx, texto, "900 {s}px Montserrat, Arial", 76, 40, W - 120, 2);
+    ctx.textAlign = "center";
+    sombra(ctx, 24);
     ctx.fillStyle = "#fff";
-    linhas.forEach((l, i) => ctx.fillText(l, 40, 560 + i * 52 + (1 - k) * 30));
+    ctx.font = `900 ${r.tam}px Montserrat, Arial`;
+    r.linhas.forEach((l, i) => ctx.fillText(l, W / 2, 640 + i * r.tam * 1.08 + (1 - k) * 40));
+    semSombra(ctx);
     ctx.fillStyle = LARANJA;
-    ctx.fillRect(40, 560 + linhas.length * 52 - 20, 120 * k, 6);
+    const lw = 200 * ease((lt - 0.5) / 0.5);
+    ctx.fillRect(W / 2 - lw / 2, 640 + r.linhas.length * r.tam * 1.08 - 4, lw, 8);
+    ctx.globalAlpha = 1;
+    return;
+  }
+  if (modelo === "promo") {
+    const r = linhasQueCabem(ctx, texto, "italic 900 {s}px Montserrat, Arial", 60, 34, W - 180, 2);
+    const h = 50 + r.linhas.length * r.tam * 1.12;
+    painelInclinado(ctx, W / 2, 660, W - 100, h, AZUL_P, () => {
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#fff";
+      ctx.font = `italic 900 ${r.tam}px Montserrat, Arial`;
+      r.linhas.forEach((l, i) => ctx.fillText(l, 0, -h / 2 + 36 + r.tam * 0.78 + i * r.tam * 1.12));
+    });
     ctx.globalAlpha = 1;
     return;
   }
@@ -2162,8 +2518,6 @@ function drawFrame(
   ctx.fillRect(0, 0, W, H);
   const dividida = modelo === "faixa";
   const alturaFundo = dividida ? LINHA_FAIXA : H;
-  // Black Friday: o vídeo do destino aparece só dentro do arco à direita (o resto fica preto); o contato é inteiro
-  const recorteBf = modelo === "bf" && tipoDaTela(t, L) !== "contato";
 
   // fundo: um vídeo (ou foto) por tela, com zoom lento e fusão entre telas
   for (let i = 0; i < L.telas.length; i++) {
@@ -2178,9 +2532,6 @@ function drawFrame(
     if (dividida) {
       ctx.beginPath();
       ctx.rect(0, 0, W, alturaFundo);
-      ctx.clip();
-    } else if (recorteBf) {
-      arcoBf(ctx);
       ctx.clip();
     }
     if (isVideo(m)) drawCover(ctx, m, 1.04 + 0.08 * p, alturaFundo);
@@ -2208,6 +2559,14 @@ function drawFrame(
   } else if (tipo === "contato") {
     g.addColorStop(0, "rgba(5,8,20,.5)");
     g.addColorStop(1, "rgba(5,8,20,.82)");
+  } else if (modelo === "bf") {
+    g.addColorStop(0, "rgba(0,0,0,.6)");
+    g.addColorStop(0.5, "rgba(0,0,0,.45)");
+    g.addColorStop(1, "rgba(0,0,0,.88)");
+  } else if (modelo === "promo") {
+    g.addColorStop(0, "rgba(10,55,160,.5)");
+    g.addColorStop(0.55, "rgba(8,40,120,.55)");
+    g.addColorStop(1, "rgba(4,18,60,.9)");
   } else if (modelo === "luxo" || modelo === "revista" || modelo === "postal") {
     g.addColorStop(0, "rgba(0,0,0,.25)");
     g.addColorStop(0.5, "rgba(0,0,0,.35)");
@@ -2218,25 +2577,8 @@ function drawFrame(
     g.addColorStop(0.7, "rgba(0,0,0,.25)");
     g.addColorStop(1, "rgba(0,0,0,.8)");
   }
-  if (recorteBf) {
-    // fundo preto puro fora do arco; dentro, só uma sombra na base e um contorno fino
-    ctx.save();
-    arcoBf(ctx);
-    ctx.clip();
-    const gb = ctx.createLinearGradient(0, 760, 0, 1064);
-    gb.addColorStop(0, "rgba(0,0,0,0)");
-    gb.addColorStop(1, "rgba(0,0,0,.55)");
-    ctx.fillStyle = gb;
-    ctx.fillRect(BF_X0, 760, BF_X1 - BF_X0, 304);
-    ctx.restore();
-    arcoBf(ctx);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "rgba(255,255,255,.14)";
-    ctx.stroke();
-  } else {
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W, H);
-  }
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
   ctx.textBaseline = "alphabetic";
 
   // tela dividida: bloco preto embaixo e a linha sempre na mesma altura
@@ -2249,7 +2591,7 @@ function drawFrame(
 
   // conteúdo um pouco menor e mais perto do centro (respeita a sangria do Instagram);
   // os estilos que encostam nas bordas de propósito ficam em tamanho cheio
-  const encolhe = !(modelo === "neon" || modelo === "faixa" || modelo === "bf");
+  const encolhe = !(modelo === "neon" || modelo === "faixa" || modelo === "bf" || modelo === "promo");
   if (tipo === "contato") {
     ctaPadrao(ctx, d, logo, contatos, lt, modelo, dividida ? 120 : 0);
   } else {
@@ -2267,16 +2609,17 @@ function drawFrame(
     } else {
       const fn = {
         classico: cenaClassico, neon: cenaNeon, cartao: cenaCartao, luxo: cenaLuxo,
-        passagem: cenaPassagem, revista: cenaRevista, postal: cenaPostal, faixa: cenaFaixa, vibrante: cenaVibrante, bf: cenaBf,
+        passagem: cenaPassagem, revista: cenaRevista, postal: cenaPostal, faixa: cenaFaixa, vibrante: cenaVibrante, bf: cenaBf, promo: cenaPromo,
       }[modelo];
       fn(ctx, CENA_MODELO[tipo], lt, out, d, logo, contatos);
     }
     ctx.restore();
   }
-  // o estilo Black Friday desenha preço antigo, saída e urgência dentro da etiqueta e do cupom
-  if (tipo === "preco" && modelo !== "bf") precoAntigo(ctx, d, lt, out, ocasiao, modelo === "revista" ? 775 : modelo === "faixa" ? 690 : 300);
-  if (tipo === "preco" && modelo !== "bf") linhaSaida(ctx, d, lt, out, modelo, ocasiao);
-  if (tipo === "preco" && modelo !== "bf") linhaUrgencia(ctx, d, lt, out, modelo);
+  // Black Friday e Promo desenham preço antigo, saída e urgência dentro do próprio cartão
+  const cartaoProprio = modelo === "bf" || modelo === "promo";
+  if (tipo === "preco" && !cartaoProprio) precoAntigo(ctx, d, lt, out, ocasiao, modelo === "revista" ? 775 : modelo === "faixa" ? 690 : 300);
+  if (tipo === "preco" && !cartaoProprio) linhaSaida(ctx, d, lt, out, modelo, ocasiao);
+  if (tipo === "preco" && !cartaoProprio) linhaUrgencia(ctx, d, lt, out, modelo);
   if (modelo === "postal") moldura(ctx, 1);
   if (!(modelo === "bf" && ehBlack(ocasiao))) camadaOcasiao(ctx, ocasiao, t, tipo, lt, feed);
   ctx.globalAlpha = 1;
@@ -2832,6 +3175,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     link.rel = "stylesheet";
     link.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;500;600;700;800;900&family=Oswald:wght@300;500;600;700&family=Bebas+Neue&family=Nunito:wght@300;600;700;800;900&family=Raleway:wght@300;500;600;700;800;900&family=Inter:wght@300;500;600;700;800;900&family=Roboto:wght@300;500;700;900&family=Lora:wght@500;600;700&family=Work+Sans:wght@300;500;600;700;800;900&family=DM+Sans:wght@300;500;600;700;800;900&display=swap";
     document.head.appendChild(link);
+    carregarElementos();
     Promise.all([document.fonts.load("900 40px Montserrat"), document.fonts.load("700 40px 'Playfair Display'"), document.fonts.load("italic 400 40px 'Playfair Display'"), carregarFundos([...CLIPS, ...CLIPS].slice(0, CENAS).map((url) => ({ tipo: "video" as const, url })))]).catch((e) =>
       setStatus("Erro: " + e.message),
     );
@@ -2930,8 +3274,8 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   // 3 estilos diferentes: o escolhido e mais dois que combinam bem
   // em novembro o estilo Black Friday entra entre os 3 sugeridos; no resto do ano fica por último
   const ORDEM_SUGERIDA: Modelo[] = new Date().getMonth() === 10
-    ? ["classico", "bf", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal"]
-    : ["classico", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal", "bf"];
+    ? ["classico", "bf", "promo", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal"]
+    : ["classico", "promo", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal", "bf"];
   const tresEstilos = (): Modelo[] => [modeloRef.current, ...ORDEM_SUGERIDA.filter((m) => m !== modeloRef.current)].slice(0, 3);
 
   // Capa pequena do vídeo (último quadro desenhado), para a biblioteca.

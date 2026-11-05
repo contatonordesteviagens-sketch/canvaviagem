@@ -1,0 +1,4 @@
+Ícones opcionais do Vídeo pronto (PNG com fundo transparente, 512x512, desenho branco ou de uma cor só).
+Se um destes arquivos existir aqui, o vídeo usa a imagem no lugar do ícone desenhado:
+aviao.png  hotel.png  transfer.png  cafe.png  passeio.png  seguro.png  bagagem.png  calendario.png  pin.png  check.png
+Os nomes são escolhidos pelo texto do item (ex.: "Aéreo ida e volta" usa aviao, "Hotel com café" usa hotel).
