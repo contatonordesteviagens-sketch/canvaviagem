@@ -11,7 +11,7 @@ import { ProjectDeleteDialog } from "@/components/fabrica/ProjectDeleteDialog";
 import { ProjectSwitchDialog } from "@/components/fabrica/ProjectSwitchDialog";
 import { FabricaPaywallDialog } from "@/components/fabrica/FabricaPaywallDialog";
 import { PackageAdvancedFields } from "@/components/fabrica/PackageAdvancedFields";
-import { FabricaFirstSteps } from "@/components/fabrica/FabricaFirstSteps";
+import { JornadaGuia } from "@/components/jornada/JornadaGuia";
 import { buildFabricaPatchFromOnboarding, hasPendingOnboarding, markOnboardingApplied, readOnboardingAnswers } from "@/lib/onboarding-bridge";
 
 import { 
@@ -893,19 +893,16 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
 
 
-      <FabricaFirstSteps
-        onGo={(target) => {
-          if (target === "perfil") {
+      <JornadaGuia
+        onIr={(m) => {
+          if (m.id === "perfil") {
             // O microfone fica no topo da tela; os campos para quem prefere digitar vêm logo abaixo das missões.
             window.scrollTo({ top: 0, behavior: "smooth" });
+            document.getElementById("fabrica-perfil")?.setAttribute("open", "");
             return;
           }
-          if (target === "pacote") {
-            document.getElementById("fabrica-pacote-rapido")?.scrollIntoView({ behavior: "smooth", block: "center" });
-            document.getElementById("fabrica-pacote-rapido-input")?.focus();
-            return;
-          }
-          onNavigate?.("phase", target === "anuncio" ? 1 : 3);
+          const fases: Record<string, number> = { video: 6, postar_video: 6, anuncio: 1, carrossel: 2, site: 3, divulgar_site: 3, cliente: 4 };
+          onNavigate?.("phase", fases[m.id] ?? 1);
         }}
       />
 

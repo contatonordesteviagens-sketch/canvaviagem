@@ -115,7 +115,7 @@ const TOTAL = STEPS.length;
 const PROGRESS = [8, 25, 38, 50, 62, 72, 82, 90, 94, 97, 100];
 
 const FIXES: Record<string, { title: string; fix: string; icon: Icon }> = {
-  design: { title: "Você não sabe criar postagens", fix: "Anúncio, carrossel e vídeo já vêm prontos. Você só fala o pacote.", icon: Palette },
+  design: { title: "Você não sabe criar postagens", fix: "Vídeo, anúncio e carrossel já vêm prontos. Você só fala o pacote, ou manda a foto dele.", icon: Palette },
   tempo: { title: "Você não tem tempo", fix: "Cada arte sai em cerca de 2 minutos, com legenda e logo.", icon: Clock },
   vergonha: { title: "Seu Instagram ainda não parece de agência grande", fix: "Duas semanas de posts profissionais já mudam a cara do perfil.", icon: EyeOff },
 };
@@ -545,6 +545,7 @@ function useOfferTimer() {
 }
 
 const RECEBE = [
+  "Vídeo do seu pacote pronto em 1 minuto, a partir de um áudio ou da foto do pacote",
   "Anúncios para feed e stories, com a sua logo",
   "Carrosséis prontos para cada destino",
   "Site completo com o botão para o seu WhatsApp",
@@ -620,7 +621,7 @@ function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c:
   return (
     <>
       {BLACK && <p className="cv-black-tag mx-auto mb-3">Black Friday · 50% vitalício</p>}
-      <Title sub="Anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Seu plano está pronto. <Accent>Libere o acesso.</Accent></Title>
+      <Title sub="Vídeo do pacote, anúncios, stories, carrosséis, site e seus clientes organizados. Tudo com a sua marca, sem limite de quantidade.">Seu plano está pronto. <Accent>Libere o acesso.</Accent></Title>
 
       <div className="mt-4 space-y-3">
         {PLANS.filter((p) => !(offer.expired && p.cycle === "annual")).map((p, i) => {

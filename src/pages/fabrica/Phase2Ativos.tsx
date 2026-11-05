@@ -345,7 +345,7 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
                           <button
                             onClick={() => togglePublish(pkg.id, true)}
                             title="Aprovar e Enviar para o Site"
-                            className="h-7 px-2 flex items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 text-[10px] font-bold hover:bg-emerald-500/30 transition-all cursor-pointer mr-1"
+                            className="min-h-10 px-3 flex items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 text-[12px] font-bold hover:bg-emerald-500/30 transition-all cursor-pointer mr-1"
                           >
                             <Check className="w-3 h-3 mr-1" /> Mostrar no site
                           </button>
@@ -353,14 +353,14 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
                           <button
                             onClick={() => togglePublish(pkg.id, false)}
                             title="Remover do Site"
-                            className="h-7 px-2 flex items-center justify-center rounded-lg bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-white/50 text-[9px] font-bold mr-1 uppercase tracking-wider border border-white/10 transition-all cursor-pointer"
+                            className="min-h-10 px-3 flex items-center justify-center rounded-lg bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-white/50 text-[11px] font-bold mr-1 uppercase tracking-wider border border-white/10 transition-all cursor-pointer"
                           >
                             No Site
                           </button>
                         )}
-                        <button onClick={() => startEdit(pkg)} title="Editar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"><Pencil className="w-3 h-3" /></button>
-                        <button onClick={() => duplicatePackage(pkg)} title="Duplicar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"><Copy className="w-3 h-3" /></button>
-                        <button onClick={() => removePackage(pkg.id)} title="Remover" className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400/60 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
+                        <button onClick={() => startEdit(pkg)} className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-white/[0.06] px-3 text-xs font-bold text-white/80 hover:bg-white/[0.12] hover:text-white transition-all"><Pencil className="w-3.5 h-3.5" /> Editar</button>
+                        <button onClick={() => duplicatePackage(pkg)} className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-white/[0.06] px-3 text-xs font-bold text-white/80 hover:bg-white/[0.12] hover:text-white transition-all"><Copy className="w-3.5 h-3.5" /> Duplicar</button>
+                        <button onClick={() => removePackage(pkg.id)} className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-red-500/10 px-3 text-xs font-bold text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-all"><Trash2 className="w-3.5 h-3.5" /> Remover</button>
                       </div>
                     </div>
                     {pkg.imageUrl ? (

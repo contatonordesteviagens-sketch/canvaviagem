@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronUp, HelpCircle, Lightbulb } from "lucide-react";
 
-export type FabricaGuideKey = "painel" | "anuncio" | "carrossel" | "site" | "crm" | "pacotes";
+export type FabricaGuideKey = "painel" | "video" | "biblioteca" | "anuncio" | "carrossel" | "site" | "crm" | "pacotes";
 
 interface GuideContent {
   title: string;
@@ -19,6 +19,24 @@ const GUIDES: Record<FabricaGuideKey, GuideContent> = {
       "Cadastre seus pacotes em \"Meus Pacotes\" e depois clique em \"Criar anúncio\".",
     ],
     tip: "Tudo salva sozinho. Pode fechar e voltar depois que nada se perde.",
+  },
+  video: {
+    title: "Seu vídeo pronto em 3 passos",
+    steps: [
+      "Mande o pacote de um jeito só: fale no microfone, cole um texto, mande a foto do pacote ou escolha um pacote salvo.",
+      "A IA acha o destino, preenche o preço e o que inclui, e busca vídeos reais do lugar. Confira e mude o que quiser.",
+      "Toque em \"Gerar 3 vídeos\", escolha o que mais gostou e poste nos stories.",
+    ],
+    tip: "Fale como se estivesse contando para um cliente. Quanto mais detalhes, melhor sai o vídeo.",
+  },
+  biblioteca: {
+    title: "Tudo que você já gerou",
+    steps: [
+      "Os vídeos ficam guardados neste aparelho. Toque para baixar ou compartilhar de novo.",
+      "As artes e os sites ficam na sua conta e aparecem em qualquer aparelho.",
+      "Para apagar, toque em Remover. Não dá para desfazer.",
+    ],
+    tip: "Poste 1 vídeo e 1 arte por semana. É o que mantém a agência aparecendo.",
   },
   anuncio: {
     title: "Crie um anúncio em 3 passos",
@@ -114,7 +132,7 @@ export function FabricaStepGuide({ section }: { section: FabricaGuideKey }) {
         <button
           type="button"
           onClick={() => toggle(true)}
-          className="inline-flex min-h-8 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-white/50 transition-colors hover:bg-white/5 hover:text-white"
+          className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-white/50 transition-colors hover:bg-white/5 hover:text-white"
         >
           Entendi <ChevronUp className="h-3.5 w-3.5" />
         </button>

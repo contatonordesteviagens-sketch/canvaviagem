@@ -422,6 +422,8 @@ const App = () => {
                     <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     {ArtesLab && <Route path="/dev/artes-lab" element={<ArtesLab />} />}
                     <Route path="/admin-video-lab" element={<ProtectedRoute requireAdmin><VideoLab /></ProtectedRoute>} />
+                    {import.meta.env.DEV && <Route path="/dev/video-lab" element={<VideoLab />} />}
+                    <Route path="/video-pronto" element={<Navigate to="/fabrica/video" replace />} />
                     {CarrosselLab && <Route path="/dev/carrossel-lab" element={<CarrosselLab />} />}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

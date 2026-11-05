@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
@@ -1976,7 +1977,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             <button
               type="button"
               onClick={() => setVariationsOpen(v => !v)}
-              className="w-full flex items-center justify-between text-[10px] font-bold text-white/40 hover:text-white/70 uppercase tracking-widest transition-colors py-1.5"
+              className="w-full min-h-10 flex items-center justify-between text-[10px] font-bold text-white/40 hover:text-white/70 uppercase tracking-widest transition-colors py-1.5"
             >
               <span className="flex items-center gap-1.5">
                 Modelo da arte
@@ -2032,7 +2033,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                   <button
                     key={d}
                     onClick={() => { setDestination(d); searchPhotos(d); }}
-                    className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors flex-shrink-0 whitespace-nowrap ${
+                    className={`min-h-9 px-3 py-1.5 rounded-full text-[12px] border transition-colors flex-shrink-0 whitespace-nowrap ${
                       photoQuery === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
                     }`}
                     style={photoQuery === d ? { background: UI_ACCENT, borderColor: UI_ACCENT } : undefined}
@@ -2496,7 +2497,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         )}
 
-        <div className="col-span-2 mt-2 pt-4 border-t border-white/[0.06]">
+        <div className="col-span-full mt-2 pt-4 border-t border-white/[0.06]">
           <div className="flex items-baseline justify-between mb-2 gap-2">
             <label className={labelCls}>{categoria === "experiencia_destino" ? "Descrição da experiência" : "Benefícios / Inclusos"}</label>
             <div className="flex items-center gap-2">
@@ -2637,6 +2638,21 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         </button>
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
       </div>
+
+      {/* No celular o botão principal fica a mais de 2.000 px do topo: uma cópia fixa no rodapé (portal, para nenhum pai com transform prender o fixed). */}
+      {createPortal(
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0A0A0B]/95 p-3 backdrop-blur lg:hidden">
+        <button
+          onClick={() => { generateNext(); setTimeout(() => document.getElementById("fabrica-resultado")?.scrollIntoView({ behavior: "smooth", block: "start" }), 400); }}
+          disabled={loading || !destination || (genMode === "photo" && !selectedPhotoUrl) || (genMode === "custom" && !customImageData && !customLink.trim())}
+          className="mx-auto flex min-h-12 w-full max-w-md items-center justify-center gap-2 rounded-xl font-extrabold text-black disabled:opacity-40"
+          style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)` }}
+        >
+          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando…</> : <><Sparkles className="w-4 h-4" /> Gerar Anúncio</>}
+        </button>
+        {!destination && <p className="mt-1 text-center text-[11px] text-white/50">Escolha o destino acima para liberar.</p>}
+      </div>,
+      document.body)}
 
       <div className={`${sectionCls} space-y-5`}>
         {/* Fonte, tamanhos e cores: a maioria não mexe. Ficam recolhidos para a tela não assustar. */}

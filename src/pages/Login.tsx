@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { NavegadorInternoAviso } from "@/components/jornada/NavegadorInternoAviso";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -495,6 +496,7 @@ function QuickEntryScreen(props: {
                 <AuthDivider />
               </div>
 
+              <NavegadorInternoAviso className="mt-5" />
               <form onSubmit={onSubmit} className="mt-5">
                 <label htmlFor="quick-email" className="text-[13px] font-bold">Seu melhor e-mail</label>
                 <div

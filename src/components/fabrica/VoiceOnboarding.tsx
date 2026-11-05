@@ -269,7 +269,7 @@ export function VoiceOnboarding({ variant = "bar", onSaved }: { variant?: "bar" 
           <div className="min-w-0">
             <p className="text-xl font-black leading-tight sm:text-2xl">Toque e fale sobre a sua agência</p>
             <p className="mt-1 text-sm text-white/85">
-              Diga o nome, o WhatsApp, o Instagram e um pacote que você vende. A gente preenche tudo e sua primeira arte fica a um clique.
+              Diga o nome, o WhatsApp, o Instagram e um pacote que você vende. A gente preenche tudo e seus 3 vídeos ficam a um clique.
             </p>
             <p className="mt-2 text-xs text-white/70">Exemplo: "Sou a Sol Viagens, de Maceió. Vendo Gramado, 5 dias, por 1.990 reais."</p>
           </div>
@@ -280,13 +280,13 @@ export function VoiceOnboarding({ variant = "bar", onSaved }: { variant?: "bar" 
         <div className="flex items-center gap-3 sm:mr-4 min-w-0 w-full sm:w-auto">
           <button
             onClick={startRecording}
-            className="relative flex items-center justify-center w-11 h-11 bg-violet-600 hover:bg-violet-500 text-white rounded-full transition-all active:scale-95 shadow-lg shadow-violet-600/40 shrink-0"
+            className="relative flex items-center justify-center w-11 h-11 bg-[#F5F906] hover:brightness-105 text-black rounded-full transition-all active:scale-95 shadow-lg shadow-[#F5F906]/30 shrink-0"
             title="Gravar por voz"
             aria-label="Gravar um áudio sobre a sua agência"
           >
             <Mic className="w-5 h-5" />
           </button>
-          <button type="button" onClick={startRecording} className="min-w-0 text-left">
+          <button type="button" onClick={startRecording} className="min-w-0 min-h-11 py-1 text-left">
             <span className="block text-[13px] font-black leading-tight text-white">Fale sobre sua agência</span>
             <span className="block truncate text-[11px] text-white/55 sm:whitespace-nowrap">Grave um áudio e a gente preenche</span>
           </button>
@@ -443,7 +443,7 @@ export function VoiceOnboarding({ variant = "bar", onSaved }: { variant?: "bar" 
               onClick={handleSaveAndAdvance}
               className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-5 py-2.5 rounded-lg text-sm transition-colors shadow-lg shadow-amber-500/20"
             >
-              {onSaved ? "Salvar e criar minha arte" : "Salvar"}
+              {onSaved ? "Salvar e criar meus vídeos" : "Salvar"}
             </button>
           </div>
         </div>

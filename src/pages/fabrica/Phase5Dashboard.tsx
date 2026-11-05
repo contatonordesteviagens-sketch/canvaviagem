@@ -590,7 +590,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
             <select
               value={filterData}
               onChange={(e) => setFilterData(e.target.value)}
-              className="bg-white/5 border border-white/10 text-[11px] text-white/60 rounded-lg px-2.5 py-1.5 outline-none"
+              className="bg-white/5 border border-white/10 text-[12px] text-white/60 rounded-lg px-2.5 py-2 min-h-10 outline-none"
             >
               <option value="Todas">Qualquer Data</option>
               <option value="Hoje">Hoje</option>
@@ -600,7 +600,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
             <select
               value={filterFase}
               onChange={(e) => setFilterFase(e.target.value)}
-              className="bg-white/5 border border-white/10 text-[11px] text-white/60 rounded-lg px-2.5 py-1.5 outline-none"
+              className="bg-white/5 border border-white/10 text-[12px] text-white/60 rounded-lg px-2.5 py-2 min-h-10 outline-none"
             >
               <option value="Todas">Todas as fases</option>
               <option value="novo">Novo</option>
@@ -612,7 +612,7 @@ export const Phase5Dashboard = ({ onNext, onBack }: { onNext?: () => void; onBac
             <select
               value={filterRoteiro}
               onChange={(e) => setFilterRoteiro(e.target.value)}
-              className="bg-white/5 border border-white/10 text-[11px] text-white/60 rounded-lg px-2.5 py-1.5 outline-none max-w-[140px] truncate"
+              className="bg-white/5 border border-white/10 text-[12px] text-white/60 rounded-lg px-2.5 py-2 min-h-10 outline-none max-w-[140px] truncate"
             >
               {getRoteirosUnicos().map(r => (
                 <option key={r} value={r}>{r}</option>
