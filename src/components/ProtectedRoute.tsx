@@ -4,6 +4,7 @@ import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { Loader2 } from "lucide-react";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import { BLACK_FUNNEL_PATH } from "@/lib/black-funnel";
+import { UpgradeEliteTela } from "@/components/UpgradeElite";
 
 const SUPORTE_WHATSAPP = "https://wa.me/5585986411294?text=";
 
@@ -15,6 +16,8 @@ function AvisoDeAcesso({ motivo, email }: { motivo: "sem_assinatura" | "precisa_
     const navigate = useNavigate();
     const { signOut } = useAuth();
     const semAssinatura = motivo === "sem_assinatura";
+    // assinante Start: em vez de só avisar, mostra o que o Elite libera e o botão de upgrade
+    if (!semAssinatura) return <UpgradeEliteTela email={email} voltar={() => navigate("/", { replace: true })} />;
     const texto = encodeURIComponent(
         semAssinatura
             ? `Olá! Comprei o Canva Viagem mas não consigo acessar. Meu e-mail de login é ${email || ""}.`

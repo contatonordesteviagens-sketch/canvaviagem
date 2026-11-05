@@ -31,6 +31,7 @@ import { CheckCircle2, Info, Bot, Image, Video, Zap, ShieldCheck, Layout } from 
 import { ELITE_OFFER } from "@/lib/eliteOffer";
 import AutoplayLoopVideo from "@/components/travel-agency-content/AutoplayLoopVideo";
 const PortalStart = lazy(() => import("@/components/canva/PortalStart"));
+const UpgradeEliteFaixa = lazy(() => import("@/components/UpgradeElite").then((m) => ({ default: m.UpgradeEliteFaixa })));
 
 // Lazy load non-critical components
 const PremiumGateModal = lazy(() => import("@/components/PremiumGateModal").then(module => ({ default: module.PremiumGateModal })));
@@ -131,8 +132,10 @@ const Index = () => {
   // Assinante recém-chegado do quiz: leva direto para a Fábrica, onde as respostas viram o primeiro anúncio.
   useEffect(() => {
     if (!user || !subscription.subscribed || !hasPendingOnboarding()) return;
+    // só o Elite vai direto para a Fábrica; o Start fica na biblioteca (com a faixa de upgrade)
+    if (!hasEliteAccess({ subscribed: subscription.subscribed, productId: subscription.productId })) return;
     navigate("/fabrica", { replace: true });
-  }, [user, subscription.subscribed, navigate]);
+  }, [user, subscription.subscribed, subscription.productId, navigate]);
   const { can, loading: entitlementsLoading } = useEntitlements();
   const hasConfirmedFabricaAccess = isAdmin
     || hasEliteAccess({ subscribed: subscription.subscribed, productId: subscription.productId })
@@ -1790,6 +1793,11 @@ const Index = () => {
           {(user || isLocalPreviewEnabled()) && hasConfirmedFabricaAccess && (
             <Suspense fallback={null}>
               <PortalStart />
+            </Suspense>
+          )}
+          {user && !entitlementsLoading && hasPremiumContent && !hasConfirmedFabricaAccess && (
+            <Suspense fallback={null}>
+              <UpgradeEliteFaixa />
             </Suspense>
           )}
           {user && <QuickStartActions onReadyContent={() => setActiveCategory('videos')} />}
