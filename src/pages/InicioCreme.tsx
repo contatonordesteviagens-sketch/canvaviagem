@@ -8,6 +8,7 @@ import {
   ShieldCheck, Palette, PenLine, BadgeCheck, ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasEliteAccess } from "@/lib/planAccess";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
 import { BrandMark, Eyebrow, delay, useReveal } from "@/components/cv-cream/shared";
 import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
@@ -88,7 +89,7 @@ export default function InicioCreme() {
   /** Todo caminho leva ao mesmo lugar: e-mail, quiz e pagamento. Assinante vai para a Fábrica. */
   const start = (source: string) => {
     trackInicioTeste("botao", { valor: source });
-    if (user && subscription.subscribed) { navigate("/fabrica"); return; }
+    if (user && subscription.subscribed) { navigate(hasEliteAccess(subscription) ? "/fabrica" : "/"); return; }
     navigate(user ? ONBOARDING_PATH : QUICK_LOGIN_PATH);
   };
 
@@ -114,9 +115,20 @@ export default function InicioCreme() {
           <a href={black ? BLACK_FUNNEL_PATH : "/inicio"} aria-label="Canva Viagem" className="block h-[26px] w-[26px] overflow-hidden rounded-full">
             <img src={logo} alt="Canva Viagem" width={26} height={26} className="h-full w-full scale-[1.18] object-cover" />
           </a>
-          <button onClick={() => start("header")} className="cv-btn h-9 shrink-0 whitespace-nowrap px-4 text-[13px]">
-            Acessar
-          </button>
+          <div className="flex items-center gap-1.5">
+            {/* Já tem conta: entra com o e-mail (link de acesso). Acessar: cria a conta e segue para o teste. */}
+            {!user && (
+              <button
+                onClick={() => { trackInicioTeste("botao", { valor: "header_entrar" }); navigate("/login?redirect=%2F"); }}
+                className="h-9 shrink-0 whitespace-nowrap rounded-full px-3.5 text-[13px] font-semibold opacity-80 hover:opacity-100"
+              >
+                Entrar
+              </button>
+            )}
+            <button onClick={() => start("header")} className="cv-btn h-9 shrink-0 whitespace-nowrap px-4 text-[13px]">
+              {user ? "Ir para minha conta" : "Criar conta"}
+            </button>
+          </div>
         </div>
       </header>
 
