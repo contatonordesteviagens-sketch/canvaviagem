@@ -1812,9 +1812,10 @@ function drawFrame(
       ctx.scale(0.9, 0.9);
       ctx.translate(-W / 2, -600);
     }
-    if (tipo === "destaque") {
+    const semItens = tipo === "inclusos" && !d.itens.some(Boolean);
+    if (tipo === "destaque" || semItens) {
       const n = TELAS.slice(0, cena).filter((x) => x.tipo === "destaque").length;
-      const texto = d.destaques[n] || (n === 0 ? d.chamada : `Conheça ${d.destino}`);
+      const texto = semItens ? (d.destaques[2] || d.chamada) : d.destaques[n] || (n === 0 ? d.chamada : `Conheça ${d.destino}`);
       cenaDestaque(ctx, modelo, texto, lt, out);
     } else {
       const fn = {
@@ -2536,13 +2537,13 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       const codecs = ["avc1.4d0028", "avc1.640028", "avc1.42002a"];
       let codec = "";
       for (const c of codecs) {
-        const ok = await VideoEncoder.isConfigSupported({ codec: c, width: W, height: H, bitrate: 6_000_000, framerate: FPS });
+        const ok = await VideoEncoder.isConfigSupported({ codec: c, width: W, height: H, bitrate: 4_500_000, framerate: FPS });
         if (ok.supported) { codec = c; break; }
       }
       if (!codec) throw new Error("Este navegador não gera MP4");
       const muxer = new Muxer({ target: new ArrayBufferTarget(), video: { codec: "avc", width: W, height: H }, fastStart: "in-memory" });
       const enc = new VideoEncoder({ output: (chunk, meta) => muxer.addVideoChunk(chunk, meta), error: (e) => { throw e; } });
-      enc.configure({ codec, width: W, height: H, bitrate: 6_000_000, framerate: FPS });
+      enc.configure({ codec, width: W, height: H, bitrate: 4_500_000, framerate: FPS });
       // Em vez de "pular" para cada quadro (lento: decodifica de novo a cada pulo),
       // cada vídeo toca normalmente e o quadro espera ele chegar no ponto certo.
       const tocando = new Set<number>();
