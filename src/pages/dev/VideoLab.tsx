@@ -80,14 +80,14 @@ const back = (t: number) => {
   return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
 };
 
-function drawCover(ctx: CanvasRenderingContext2D, m: Fundo, zoom: number) {
+function drawCover(ctx: CanvasRenderingContext2D, m: Fundo, zoom: number, alt = H) {
   const mw = isVideo(m) ? m.videoWidth : m.naturalWidth;
   const mh = isVideo(m) ? m.videoHeight : m.naturalHeight;
   if (!mw) return;
-  const s = Math.max(W / mw, H / mh) * zoom;
+  const s = Math.max(W / mw, alt / mh) * zoom;
   const w = mw * s;
   const h = mh * s;
-  ctx.drawImage(m, (W - w) / 2, (H - h) / 2, w, h);
+  ctx.drawImage(m, (W - w) / 2, (alt - h) / 2, w, h);
 }
 
 function precoTextos(d: Dados): { topo: string; valor: string; rodape: string } {
@@ -126,7 +126,80 @@ function fitText(ctx: CanvasRenderingContext2D, text: string, weight: number, ma
   return size + 4;
 }
 
-const GOLD = "#f5c451";
+// ---------------- Tema: cores e fonte escolhidas pelo usuário (valem para todos os estilos) ----------------
+let GOLD = "#f5c451";
+let NEON = "#eaff2b";
+let AZUL = "#1d4ed8";
+let ROXO = "#7c3aed";
+let ROSA = "#ec4899";
+let TINTA = "#7c2d12";
+let CARIMBO = "#c2410c";
+let SOBRE_NEON = "#111";
+let SOBRE_GOLD = "#1b1404";
+let FONTE = "Montserrat";
+// Textos 18% menores que o desenho original (pedido do Lucas: títulos e preço estavam grandes).
+const ESCALA_TEXTO = 0.82;
+
+type Tema = { c1?: string; c2?: string; fonte: string };
+type Paleta = { id: string; nome: string; c1?: string; c2?: string };
+const PALETAS: Paleta[] = [
+  { id: "estilo", nome: "Do estilo" },
+  { id: "marca", nome: "Da minha marca" },
+  { id: "dourado", nome: "Dourado", c1: "#f5c451", c2: "#b45309" },
+  { id: "neon", nome: "Amarelo", c1: "#eaff2b", c2: "#65a30d" },
+  { id: "azul", nome: "Azul", c1: "#3b82f6", c2: "#0ea5e9" },
+  { id: "roxo", nome: "Roxo e rosa", c1: "#8b5cf6", c2: ROSA },
+  { id: "verde", nome: "Verde", c1: "#22c55e", c2: "#14b8a6" },
+  { id: "vermelho", nome: "Vermelho", c1: "#ef4444", c2: "#f97316" },
+  { id: "laranja", nome: "Laranja", c1: "#f97316", c2: "#facc15" },
+  { id: "livre", nome: "Escolher" },
+];
+const FONTES = ["Montserrat", "Poppins", "Oswald", "Bebas Neue", "Nunito", "Raleway"];
+
+function luz(hex: string) {
+  const h = hex.replace("#", "");
+  const n = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  const r = parseInt(n.slice(0, 2), 16) / 255;
+  const g = parseInt(n.slice(2, 4), 16) / 255;
+  const b = parseInt(n.slice(4, 6), 16) / 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+const sobre = (hex: string) => (luz(hex) > 0.55 ? "#111" : "#fff");
+
+function aplicarTema(tema: Tema) {
+  const c1 = tema.c1;
+  const c2 = tema.c2 || tema.c1;
+  GOLD = c1 || "#f5c451";
+  NEON = c1 || "#eaff2b";
+  AZUL = c1 || "#1d4ed8";
+  ROXO = c1 || "#7c3aed";
+  ROSA = c2 || "#ec4899";
+  TINTA = c1 ? (luz(c1) > 0.5 ? "#3f3f46" : c1) : "#7c2d12";
+  CARIMBO = c1 || "#c2410c";
+  SOBRE_NEON = sobre(NEON);
+  SOBRE_GOLD = sobre(GOLD);
+  FONTE = tema.fonte || "Montserrat";
+}
+
+// Toda vez que o desenho define uma fonte, aplica a escala do texto e a fonte escolhida.
+function prepararCtx(ctx: CanvasRenderingContext2D) {
+  const c = ctx as CanvasRenderingContext2D & { __tema?: boolean };
+  if (c.__tema) return;
+  const desc = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, "font")!;
+  Object.defineProperty(ctx, "font", {
+    configurable: true,
+    get() {
+      return desc.get!.call(this);
+    },
+    set(v: string) {
+      let f = v.replace(/(\d+(?:\.\d+)?)px/, (_m, n) => `${(parseFloat(n) * ESCALA_TEXTO).toFixed(1)}px`);
+      if (FONTE !== "Montserrat") f = f.replace(/Montserrat/g, `'${FONTE}'`);
+      desc.set!.call(this, f);
+    },
+  });
+  c.__tema = true;
+}
+
 
 // ---------------- Modelos de vídeo (4 telas: destino, inclusos, preço, contato) ----------------
 type Modelo = "classico" | "neon" | "cartao" | "luxo" | "passagem" | "revista" | "postal" | "faixa" | "vibrante";
@@ -142,7 +215,6 @@ const MODELOS: { id: Modelo; nome: string; desc: string }[] = [
   { id: "vibrante", nome: "Vibrante", desc: "Roxo e rosa, divertido" },
 ];
 
-const NEON = "#eaff2b";
 const clamp01 = (t: number) => Math.min(Math.max(t, 0), 1);
 
 function sombra(ctx: CanvasRenderingContext2D, blur = 18, cor = "rgba(0,0,0,.45)") {
@@ -256,7 +328,7 @@ function cenaClassico(ctx: CanvasRenderingContext2D, cena: number, lt: number, o
     roundRect(ctx, (W - tw) / 2, 190, tw, 54, 27);
     ctx.fillStyle = GOLD;
     ctx.fill();
-    ctx.fillStyle = "#1b1404";
+    ctx.fillStyle = SOBRE_GOLD;
     ctx.fillText(tag, W / 2, 227);
     ctx.restore();
     const nome = d.destino.toUpperCase();
@@ -376,11 +448,11 @@ function cenaNeon(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: 
       ctx.globalAlpha = out * kt;
       ctx.font = "800 24px Montserrat, Arial";
       roundRect(ctx, 50, 330, ctx.measureText("OFERTA ESPECIAL").width + 44, 50, 25);
-      ctx.fillStyle = "#111";
+      ctx.fillStyle = SOBRE_NEON;
       ctx.fill();
       ctx.fillStyle = NEON;
       ctx.fillText("OFERTA ESPECIAL", 72, 364);
-      ctx.fillStyle = "#111";
+      ctx.fillStyle = SOBRE_NEON;
       ctx.font = "800 46px Montserrat, Arial";
       ctx.fillText("Pacote", 50, 450 + (1 - kt) * 20);
       const s = fitText(ctx, d.destino, 900, 104, W - 140);
@@ -391,13 +463,13 @@ function cenaNeon(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: 
     ctx.globalAlpha = out * kc;
     ctx.font = "800 34px Montserrat, Arial";
     const cw = Math.min(ctx.measureText(d.chamada).width + 60, W - 80);
-    faixaNeon(ctx, 0, 620, cw, 70, kc, "#111");
+    faixaNeon(ctx, 0, 620, cw, 70, kc, SOBRE_NEON);
     ctx.fillStyle = "#fff";
     ctx.fillText(d.chamada, 30, 667);
   }
   if (cena === 1) {
     ctx.globalAlpha = out;
-    faixaNeon(ctx, 0, 380, W - 60, 110, k1, "#111");
+    faixaNeon(ctx, 0, 380, W - 60, 110, k1, SOBRE_NEON);
     ctx.globalAlpha = out * k1;
     ctx.fillStyle = NEON;
     ctx.font = "900 52px Montserrat, Arial";
@@ -409,8 +481,8 @@ function cenaNeon(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: 
       ctx.font = "800 38px Montserrat, Arial";
       const w = Math.min(ctx.measureText(it).width + 120, W - 60);
       faixaNeon(ctx, 0, y, w, 80, k);
-      iconeCheck(ctx, 52, y + 40, 20, "#111", NEON);
-      ctx.fillStyle = "#111";
+      iconeCheck(ctx, 52, y + 40, 20, SOBRE_NEON, NEON);
+      ctx.fillStyle = SOBRE_NEON;
       ctx.fillText(it, 90, y + 53);
     });
   }
@@ -421,14 +493,14 @@ function cenaNeon(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: 
     const kp = back((lt - 0.35) / 0.5);
     ctx.globalAlpha = out * clamp01((lt - 0.3) / 0.25);
     ctx.textAlign = "center";
-    ctx.fillStyle = "#111";
+    ctx.fillStyle = SOBRE_NEON;
     const ts = fitText(ctx, pt.topo.toUpperCase(), 800, 40, W - 100);
     ctx.font = `800 ${ts}px Montserrat, Arial`;
     ctx.fillText(pt.topo.toUpperCase(), W / 2, 520);
     ctx.save();
     ctx.translate(W / 2, 680);
     ctx.scale(0.7 + 0.3 * kp, 0.7 + 0.3 * kp);
-    textoPreco(ctx, pt.valor, 0, 0, 160, W - 80, "#111");
+    textoPreco(ctx, pt.valor, 0, 0, 160, W - 80, SOBRE_NEON);
     ctx.restore();
     ctx.font = "700 36px Montserrat, Arial";
     ctx.fillText(pt.rodape, W / 2, 760);
@@ -456,7 +528,7 @@ function cenaNeon(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: 
       const w = Math.min(ctx.measureText(c.txt).width + 90, W - 80);
       const x = (W - w) / 2;
       faixaNeon(ctx, x, y, w, 76, kc, i === 0 ? NEON : "#fff");
-      ctx.fillStyle = "#111";
+      ctx.fillStyle = SOBRE_NEON;
       ctx.fillText(c.txt, W / 2, y + 50);
     });
   }
@@ -482,7 +554,7 @@ function seloAmarelo(ctx: CanvasRenderingContext2D, txt: string, cx: number, y: 
   roundRect(ctx, cx - w / 2, y, w, 44, 22);
   ctx.fillStyle = NEON;
   ctx.fill();
-  ctx.fillStyle = "#111";
+  ctx.fillStyle = SOBRE_NEON;
   ctx.textAlign = "center";
   ctx.fillText(txt, cx, y + 30);
 }
@@ -704,7 +776,6 @@ function aviao(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, c
   ctx.beginPath(); ctx.moveTo(-16, -2); ctx.lineTo(-20, -9); ctx.lineTo(-17, -9); ctx.lineTo(-12, -2); ctx.fill();
   ctx.restore();
 }
-const AZUL = "#1d4ed8";
 function cenaPassagem(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
   const k = back(lt / 0.55);
   const x = 60, w = W - 120;
@@ -888,7 +959,7 @@ function selo(ctx: CanvasRenderingContext2D, x: number, y: number, txt: string, 
   ctx.translate(x, y);
   ctx.rotate(rot);
   ctx.scale(0.6 + 0.4 * k, 0.6 + 0.4 * k);
-  ctx.strokeStyle = "#c2410c";
+  ctx.strokeStyle = CARIMBO;
   ctx.lineWidth = 5;
   ctx.beginPath();
   ctx.arc(0, 0, 92, 0, Math.PI * 2);
@@ -897,7 +968,7 @@ function selo(ctx: CanvasRenderingContext2D, x: number, y: number, txt: string, 
   ctx.arc(0, 0, 78, 0, Math.PI * 2);
   ctx.lineWidth = 2;
   ctx.stroke();
-  ctx.fillStyle = "#c2410c";
+  ctx.fillStyle = CARIMBO;
   ctx.textAlign = "center";
   const s = fitText(ctx, txt, 900, 30, 140);
   ctx.font = `900 ${s}px Montserrat, Arial`;
@@ -906,7 +977,6 @@ function selo(ctx: CanvasRenderingContext2D, x: number, y: number, txt: string, 
 }
 function cenaPostal(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
   ctx.globalAlpha = 1;
-  moldura(ctx, ease(lt / 0.4));
   const k = ease((lt - 0.2) / 0.6);
   ctx.globalAlpha = out * k;
   const cartaoPapel = (y: number, h: number) => {
@@ -935,7 +1005,7 @@ function cenaPostal(ctx: CanvasRenderingContext2D, cena: number, lt: number, out
     const itens = d.itens.filter(Boolean).slice(0, 4);
     cartaoPapel(560, 140 + itens.length * 74);
     ctx.textAlign = "left";
-    ctx.fillStyle = "#7c2d12";
+    ctx.fillStyle = TINTA;
     ctx.font = "italic 400 44px 'Playfair Display', Georgia, serif";
     ctx.fillText("Na sua viagem:", 110, 640);
     itens.forEach((it, i) => {
@@ -951,10 +1021,10 @@ function cenaPostal(ctx: CanvasRenderingContext2D, cena: number, lt: number, out
     const pt = precoTextos(d);
     cartaoPapel(620, 320);
     ctx.textAlign = "center";
-    ctx.fillStyle = "#7c2d12";
+    ctx.fillStyle = TINTA;
     ctx.font = "italic 400 40px 'Playfair Display', Georgia, serif";
     ctx.fillText(pt.topo, W / 2, 710);
-    textoPreco(ctx, pt.valor, W / 2, 840, 120, W - 220, "#7c2d12");
+    textoPreco(ctx, pt.valor, W / 2, 840, 120, W - 220, TINTA);
     ctx.font = "500 30px Montserrat, Arial";
     ctx.fillStyle = "#57534e";
     ctx.fillText(pt.rodape, W / 2, 895);
@@ -964,7 +1034,7 @@ function cenaPostal(ctx: CanvasRenderingContext2D, cena: number, lt: number, out
     cartaoPapel(300, 760);
     desenharLogo(ctx, d, logo, W / 2, 440, 100, 1, "#fff");
     ctx.textAlign = "center";
-    ctx.fillStyle = "#7c2d12";
+    ctx.fillStyle = TINTA;
     ctx.font = "italic 400 52px 'Playfair Display', Georgia, serif";
     ctx.fillText("Vamos juntos?", W / 2, 620);
     desenharPilulas(ctx, d, contatos, 720, lt, 80);
@@ -979,80 +1049,12 @@ function painel(ctx: CanvasRenderingContext2D, y: number, k: number) {
   ctx.fillStyle = NEON;
   ctx.fillRect(0, y + (1 - k) * (H - y), W * k, 8);
 }
-function cenaFaixa(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
-  const k = ease(lt / 0.5);
-  ctx.globalAlpha = out;
-  ctx.textAlign = "left";
-  if (cena === 0) {
-    painel(ctx, 860, k);
-    ctx.globalAlpha = out * ease((lt - 0.3) / 0.4);
-    ctx.fillStyle = NEON;
-    ctx.font = "800 26px Montserrat, Arial";
-    ctx.fillText("PACOTE", 50, 930);
-    const s = fitText(ctx, d.destino.toUpperCase(), 900, 96, W - 100);
-    ctx.font = `900 ${s}px Montserrat, Arial`;
-    ctx.fillStyle = "#fff";
-    ctx.fillText(d.destino.toUpperCase(), 46, 1030);
-    const cs = fitText(ctx, d.chamada, 600, 32, W - 100);
-    ctx.font = `600 ${cs}px Montserrat, Arial`;
-    ctx.fillStyle = "#d4d4d8";
-    ctx.fillText(d.chamada, 50, 1090);
-  }
-  if (cena === 1) {
-    const itens = d.itens.filter(Boolean).slice(0, 4);
-    const y0 = H - 160 - itens.length * 76;
-    painel(ctx, y0, k);
-    ctx.fillStyle = NEON;
-    ctx.font = "900 40px Montserrat, Arial";
-    ctx.globalAlpha = out * k;
-    ctx.fillText("ESTÁ INCLUSO", 50, y0 + 80);
-    itens.forEach((it, i) => {
-      const ki = ease((lt - 0.3 - i * 0.15) / 0.4);
-      ctx.globalAlpha = out * ki;
-      iconeCheck(ctx, 68, y0 + 145 + i * 76, 18, NEON, "#111");
-      const fs = fitText(ctx, it, 700, 34, W - 160);
-      ctx.font = `700 ${fs}px Montserrat, Arial`;
-      ctx.fillStyle = "#fff";
-      ctx.fillText(it, 104, y0 + 157 + i * 76);
-    });
-  }
-  if (cena === 2) {
-    const pt = precoTextos(d);
-    painel(ctx, 820, k);
-    ctx.globalAlpha = out * ease((lt - 0.3) / 0.4);
-    ctx.fillStyle = "#d4d4d8";
-    ctx.font = "800 30px Montserrat, Arial";
-    ctx.fillText(pt.topo.toUpperCase(), 50, 900);
-    ctx.save();
-    ctx.translate(46, 1050);
-    const kp = back((lt - 0.35) / 0.5);
-    ctx.scale(0.8 + 0.2 * kp, 0.8 + 0.2 * kp);
-    textoPreco(ctx, pt.valor, 0, 0, 150, W - 100, NEON);
-    ctx.restore();
-    ctx.fillStyle = "#fff";
-    ctx.font = "600 32px Montserrat, Arial";
-    ctx.fillText(pt.rodape, 50, 1110);
-  }
-  if (cena === 3) {
-    painel(ctx, 560, k);
-    desenharLogo(ctx, d, logo, W / 2, 400, 120, back(lt / 0.6));
-    ctx.textAlign = "center";
-    ctx.globalAlpha = ease((lt - 0.4) / 0.4);
-    ctx.fillStyle = NEON;
-    ctx.font = "900 60px Montserrat, Arial";
-    ctx.fillText("FALE COM A GENTE", W / 2, 690);
-    desenharPilulas(ctx, d, contatos, 790, lt, 82);
-  }
-  ctx.globalAlpha = 1;
-}
-
-// ---------- Vibrante: degradê roxo e rosa, formas redondas
 function cenaVibrante(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, logo: HTMLImageElement | null, contatos: Contato[]) {
   const k = ease(lt / 0.5);
   const gradBloco = (x: number, y: number, w: number, h: number) => {
     const g = ctx.createLinearGradient(x, y, x + w, y + h);
-    g.addColorStop(0, "#7c3aed");
-    g.addColorStop(1, "#ec4899");
+    g.addColorStop(0, ROXO);
+    g.addColorStop(1, ROSA);
     return g;
   };
   ctx.globalAlpha = out;
@@ -1083,7 +1085,7 @@ function cenaVibrante(ctx: CanvasRenderingContext2D, cena: number, lt: number, o
     roundRect(ctx, (W - cw) / 2, 990, cw, 70, 35);
     ctx.fillStyle = "#fff";
     ctx.fill();
-    ctx.fillStyle = "#7c3aed";
+    ctx.fillStyle = ROXO;
     ctx.fillText(d.chamada, W / 2, 1037);
   }
   if (cena === 1) {
@@ -1106,7 +1108,7 @@ function cenaVibrante(ctx: CanvasRenderingContext2D, cena: number, lt: number, o
       roundRect(ctx, -w / 2, -42, w, 80, 40);
       ctx.fillStyle = i % 2 ? "#fff" : gradBloco(-w / 2, -42, w, 80);
       ctx.fill();
-      ctx.fillStyle = i % 2 ? "#7c3aed" : "#fff";
+      ctx.fillStyle = i % 2 ? ROXO : "#fff";
       ctx.fillText(it, 0, 12);
       ctx.restore();
     });
@@ -1144,15 +1146,30 @@ function cenaVibrante(ctx: CanvasRenderingContext2D, cena: number, lt: number, o
   ctx.globalAlpha = 1;
 }
 
-// ---------------- Ofertas sazonais: camada por cima de qualquer modelo ----------------
-type Ocasiao = "nenhuma" | "blackfriday" | "natal" | "anonovo" | "carnaval";
-const OCASIOES: { id: Ocasiao; nome: string; selo: string }[] = [
-  { id: "nenhuma", nome: "Nenhuma", selo: "" },
-  { id: "blackfriday", nome: "🖤 Black Friday", selo: "BLACK FRIDAY" },
-  { id: "natal", nome: "🎄 Natal", selo: "OFERTA DE NATAL" },
-  { id: "anonovo", nome: "✨ Ano Novo", selo: "ESPECIAL ANO NOVO" },
-  { id: "carnaval", nome: "🎭 Carnaval", selo: "PROMO DE CARNAVAL" },
+// ---------------- Ofertas sazonais: camada por cima de qualquer estilo ----------------
+type Ocasiao = "nenhuma" | "blackfriday" | "bf_neon" | "bf_vermelha" | "natal" | "anonovo" | "carnaval";
+// meses: 0 = janeiro ... 11 = dezembro. A lista se reordena sozinha pelo mês atual.
+const OCASIOES: { id: Ocasiao; nome: string; selo: string; meses: number[] }[] = [
+  { id: "nenhuma", nome: "Nenhuma", selo: "", meses: [] },
+  { id: "blackfriday", nome: "🖤 Black Friday dourada", selo: "BLACK FRIDAY", meses: [10] },
+  { id: "bf_neon", nome: "⚡ Black Friday neon", selo: "BLACK FRIDAY", meses: [10] },
+  { id: "bf_vermelha", nome: "🔥 Black Friday vermelha", selo: "BLACK FRIDAY", meses: [10] },
+  { id: "natal", nome: "🎄 Natal", selo: "OFERTA DE NATAL", meses: [11] },
+  { id: "anonovo", nome: "✨ Ano Novo", selo: "ESPECIAL ANO NOVO", meses: [11, 0] },
+  { id: "carnaval", nome: "🎭 Carnaval", selo: "🎭 CARNAVAL", meses: [0, 1] },
 ];
+function ocasioesDoMes(hoje = new Date()) {
+  const m = hoje.getMonth();
+  const agora = OCASIOES.filter((o) => o.meses.includes(m));
+  const resto = OCASIOES.filter((o) => !o.meses.includes(m) && o.id !== "nenhuma");
+  return { agora, lista: [...agora, OCASIOES[0], ...resto] };
+}
+const ehBlack = (oc: Ocasiao) => oc === "blackfriday" || oc === "bf_neon" || oc === "bf_vermelha";
+const ESTILO_BF: Record<"blackfriday" | "bf_neon" | "bf_vermelha", { barra: string; texto: string; borda: string | null }> = {
+  blackfriday: { barra: "#0a0a0a", texto: "#f5c451", borda: "rgba(245,196,81,.9)" },
+  bf_neon: { barra: "#eaff2b", texto: "#0a0a0a", borda: null },
+  bf_vermelha: { barra: "#dc2626", texto: "#ffffff", borda: "rgba(220,38,38,.85)" },
+};
 
 // número pseudoaleatório fixo por índice (as partículas não "pulam" entre quadros)
 const rnd = (i: number, s = 1) => {
@@ -1162,12 +1179,12 @@ const rnd = (i: number, s = 1) => {
 
 function neve(ctx: CanvasRenderingContext2D, t: number) {
   ctx.fillStyle = "rgba(255,255,255,.9)";
-  for (let i = 0; i < 70; i++) {
-    const r = 2 + rnd(i, 2) * 5;
-    const vel = 40 + rnd(i, 3) * 90;
+  for (let i = 0; i < 60; i++) {
+    const r = 2 + rnd(i, 2) * 4;
+    const vel = 40 + rnd(i, 3) * 80;
     const y = ((rnd(i, 4) * H + t * vel) % (H + 20)) - 10;
     const x = rnd(i, 5) * W + Math.sin(t * 1.3 + i) * 18;
-    ctx.globalAlpha = 0.45 + rnd(i, 6) * 0.5;
+    ctx.globalAlpha = 0.4 + rnd(i, 6) * 0.45;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
@@ -1175,49 +1192,49 @@ function neve(ctx: CanvasRenderingContext2D, t: number) {
   ctx.globalAlpha = 1;
 }
 
-const CORES_CARNAVAL = ["#facc15", "#ec4899", "#22c55e", "#3b82f6", "#f97316", "#a855f7"];
+// confete minimalista: só no topo (até 20% da altura) e some antes de descer mais
 function confete(ctx: CanvasRenderingContext2D, t: number) {
-  for (let i = 0; i < 80; i++) {
-    const vel = 90 + rnd(i, 3) * 140;
-    const y = ((rnd(i, 4) * H + t * vel) % (H + 30)) - 15;
-    const x = rnd(i, 5) * W + Math.sin(t * 2 + i) * 22;
+  const cores = [ROXO, ROSA, "#facc15", "#22c55e", "#3b82f6"];
+  const faixa = H * 0.2;
+  for (let i = 0; i < 34; i++) {
+    const vel = 50 + rnd(i, 3) * 70;
+    const y = (rnd(i, 4) * faixa + t * vel) % faixa;
+    const x = rnd(i, 5) * W + Math.sin(t * 2 + i) * 14;
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(t * (2 + rnd(i, 7) * 4) + i);
-    ctx.fillStyle = CORES_CARNAVAL[i % CORES_CARNAVAL.length];
-    ctx.globalAlpha = 0.9;
-    ctx.fillRect(-7, -3.5, 14, 7);
+    ctx.rotate(t * (2 + rnd(i, 7) * 3) + i);
+    ctx.fillStyle = cores[i % cores.length];
+    ctx.globalAlpha = 0.85 * (1 - y / faixa);
+    ctx.fillRect(-5, -2.5, 10, 5);
     ctx.restore();
   }
   ctx.globalAlpha = 1;
 }
 
 function fogos(ctx: CanvasRenderingContext2D, t: number) {
-  // explosões douradas que se repetem
-  for (let b = 0; b < 4; b++) {
+  for (let b = 0; b < 3; b++) {
     const ciclo = 2.4;
-    const fase = ((t + b * 0.6) % ciclo) / ciclo;
-    const n = Math.floor((t + b * 0.6) / ciclo);
+    const fase = ((t + b * 0.8) % ciclo) / ciclo;
+    const n = Math.floor((t + b * 0.8) / ciclo);
     const cx = 120 + rnd(b + n * 7, 1) * (W - 240);
-    const cy = 140 + rnd(b + n * 7, 2) * 380;
-    const raio = 30 + fase * 150;
-    ctx.globalAlpha = Math.max(0, 1 - fase) * 0.9;
-    for (let i = 0; i < 18; i++) {
-      const a = (i / 18) * Math.PI * 2;
-      ctx.fillStyle = i % 2 ? "#fde68a" : "#f5c451";
+    const cy = 200 + rnd(b + n * 7, 2) * 260;
+    const raio = 24 + fase * 120;
+    ctx.globalAlpha = Math.max(0, 1 - fase) * 0.85;
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2;
+      ctx.fillStyle = i % 2 ? "#fde68a" : GOLD;
       ctx.beginPath();
-      ctx.arc(cx + Math.cos(a) * raio, cy + Math.sin(a) * raio + fase * fase * 40, 3.5, 0, Math.PI * 2);
+      ctx.arc(cx + Math.cos(a) * raio, cy + Math.sin(a) * raio + fase * fase * 36, 3, 0, Math.PI * 2);
       ctx.fill();
     }
   }
-  // brilhos piscando
-  for (let i = 0; i < 26; i++) {
+  for (let i = 0; i < 20; i++) {
     const pisca = (Math.sin(t * 3 + i * 1.7) + 1) / 2;
-    ctx.globalAlpha = pisca * 0.8;
+    ctx.globalAlpha = pisca * 0.7;
     ctx.fillStyle = "#fff7d6";
     const x = rnd(i, 8) * W;
     const y = rnd(i, 9) * H;
-    const r = 2 + pisca * 3;
+    const r = 2 + pisca * 2.5;
     ctx.beginPath();
     ctx.moveTo(x, y - r * 2);
     ctx.lineTo(x + r * 0.5, y);
@@ -1231,47 +1248,49 @@ function fogos(ctx: CanvasRenderingContext2D, t: number) {
 
 function seloOcasiao(ctx: CanvasRenderingContext2D, oc: Ocasiao, k: number) {
   const info = OCASIOES.find((o) => o.id === oc)!;
-  const cores: Record<Exclude<Ocasiao, "nenhuma">, { fundo: string | null; texto: string; borda: string }> = {
-    blackfriday: { fundo: "#0a0a0a", texto: "#f5c451", borda: "#f5c451" },
-    natal: { fundo: "#b91c1c", texto: "#fff", borda: "#16a34a" },
-    anonovo: { fundo: null, texto: "#1a1406", borda: "#fff3c4" },
-    carnaval: { fundo: null, texto: "#fff", borda: "#facc15" },
-  };
-  const c = cores[oc as Exclude<Ocasiao, "nenhuma">];
   ctx.save();
   ctx.globalAlpha = k;
-  ctx.font = "900 30px Montserrat, Arial";
+  ctx.font = "900 28px Montserrat, Arial";
   ctx.textAlign = "center";
-  const w = ctx.measureText(info.selo).width + 70;
+  const w = ctx.measureText(info.selo).width + 56;
+  const h = 50;
   const x = (W - w) / 2;
-  const y = 92 - (1 - k) * 40;
-  roundRect(ctx, x, y, w, 62, 31);
-  if (oc === "anonovo") {
+  const y = (ehBlack(oc) ? 166 : 118) - (1 - k) * 30;
+  roundRect(ctx, x, y, w, h, h / 2);
+  let texto = "#fff";
+  if (ehBlack(oc)) {
+    const e = ESTILO_BF[oc as keyof typeof ESTILO_BF];
+    ctx.fillStyle = e.barra;
+    texto = e.texto;
+  } else if (oc === "natal") ctx.fillStyle = "#b91c1c";
+  else if (oc === "anonovo") {
     const g = ctx.createLinearGradient(x, 0, x + w, 0);
     g.addColorStop(0, "#fff1c2");
     g.addColorStop(0.5, "#f5c451");
     g.addColorStop(1, "#c08a1e");
     ctx.fillStyle = g;
-  } else if (oc === "carnaval") {
+    texto = "#1a1406";
+  } else {
     const g = ctx.createLinearGradient(x, 0, x + w, 0);
-    g.addColorStop(0, "#ec4899");
-    g.addColorStop(0.5, "#a855f7");
-    g.addColorStop(1, "#f97316");
+    g.addColorStop(0, ROXO);
+    g.addColorStop(1, ROSA);
     ctx.fillStyle = g;
-  } else ctx.fillStyle = c.fundo!;
-  sombra(ctx, 24, "rgba(0,0,0,.4)");
+  }
+  sombra(ctx, 18, "rgba(0,0,0,.35)");
   ctx.fill();
   semSombra(ctx);
-  ctx.strokeStyle = c.borda;
-  ctx.lineWidth = 3;
-  ctx.stroke();
-  ctx.fillStyle = c.texto;
-  ctx.fillText(info.selo, W / 2, y + 42);
+  if (oc === "blackfriday") {
+    ctx.strokeStyle = "#f5c451";
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  }
+  ctx.fillStyle = texto;
+  ctx.fillText(info.selo, W / 2, y + 34);
   ctx.restore();
 }
 
 // Preço antigo riscado com o desconto, logo acima da área do preço
-function precoAntigo(ctx: CanvasRenderingContext2D, d: Dados, lt: number, out: number, oc: Ocasiao, y = 250) {
+function precoAntigo(ctx: CanvasRenderingContext2D, d: Dados, lt: number, out: number, oc: Ocasiao, y = 300) {
   const antigo = d.precoAntigo.trim();
   if (!antigo || d.pagamento === "free_quote") return;
   const num = (v: string) => parseFloat(v.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
@@ -1285,66 +1304,261 @@ function precoAntigo(ctx: CanvasRenderingContext2D, d: Dados, lt: number, out: n
   ctx.scale(0.7 + 0.3 * k, 0.7 + 0.3 * k);
   ctx.textAlign = "center";
   const txt = `de ${antigo.startsWith("R$") ? antigo : "R$ " + antigo}`;
-  ctx.font = "800 40px Montserrat, Arial";
+  ctx.font = "800 38px Montserrat, Arial";
   const tw = ctx.measureText(txt).width;
-  const bw = tw + 60 + (pct ? 150 : 0);
-  roundRect(ctx, -bw / 2, -46, bw, 76, 38);
+  const bw = tw + 48 + (pct ? 118 : 0);
+  roundRect(ctx, -bw / 2, -34, bw, 60, 30);
   ctx.fillStyle = "rgba(10,10,12,.82)";
   ctx.fill();
-  const xTxt = pct ? -bw / 2 + 30 + tw / 2 : 0;
+  const xTxt = pct ? -bw / 2 + 24 + tw / 2 : 0;
   ctx.fillStyle = "#e5e7eb";
   ctx.fillText(txt, xTxt, 6);
   ctx.strokeStyle = "#ef4444";
-  ctx.lineWidth = 5;
+  ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(xTxt - tw / 2 - 6, -6);
-  ctx.lineTo(xTxt + tw / 2 + 6, -6);
+  ctx.moveTo(xTxt - tw / 2 - 5, -4);
+  ctx.lineTo(xTxt + tw / 2 + 5, -4);
   ctx.stroke();
   if (pct) {
-    roundRect(ctx, bw / 2 - 150, -40, 140, 64, 32);
-    ctx.fillStyle = oc === "blackfriday" ? GOLD : "#ef4444";
+    roundRect(ctx, bw / 2 - 114, -28, 104, 48, 24);
+    const bf = ehBlack(oc) ? ESTILO_BF[oc as keyof typeof ESTILO_BF] : null;
+    ctx.fillStyle = bf ? (oc === "blackfriday" ? "#f5c451" : bf.barra) : "#ef4444";
     ctx.fill();
-    ctx.fillStyle = oc === "blackfriday" ? "#111" : "#fff";
-    ctx.font = "900 36px Montserrat, Arial";
-    ctx.fillText(`-${pct}%`, bw / 2 - 80, 5);
+    ctx.fillStyle = bf ? (oc === "blackfriday" ? "#111" : bf.texto) : "#fff";
+    ctx.font = "900 32px Montserrat, Arial";
+    ctx.fillText(`-${pct}%`, bw / 2 - 62, 6);
+  }
+  ctx.restore();
+}
+
+function letreiro(ctx: CanvasRenderingContext2D, y: number, h: number, t: number, sentido: number, e: { barra: string; texto: string }) {
+  ctx.fillStyle = e.barra;
+  ctx.fillRect(0, y, W, h);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, y, W, h);
+  ctx.clip();
+  ctx.fillStyle = e.texto;
+  ctx.font = "900 24px Montserrat, Arial";
+  ctx.textAlign = "left";
+  const pedacos = ["BLACK FRIDAY", "•", "OFERTA POR TEMPO LIMITADO", "•"];
+  const larg = pedacos.map((p) => ctx.measureText(p).width);
+  const ciclo = larg.reduce((a, w) => a + w + 22, 0);
+  let x = sentido > 0 ? -((t * 80) % ciclo) : -ciclo + ((t * 80) % ciclo);
+  while (x < W) {
+    pedacos.forEach((p, i) => {
+      ctx.fillText(p, x, y + h / 2 + 8);
+      x += larg[i] + 22;
+    });
   }
   ctx.restore();
 }
 
 function camadaOcasiao(ctx: CanvasRenderingContext2D, oc: Ocasiao, t: number, tipo: Tela, lt: number) {
   if (oc === "nenhuma") return;
-  if (oc === "blackfriday") {
-    // borda dourada fina e faixa preta no rodapé com o texto correndo
-    ctx.strokeStyle = "rgba(245,196,81,.9)";
-    ctx.lineWidth = 6;
-    ctx.strokeRect(12, 12, W - 24, H - 24);
-    ctx.fillStyle = "#0a0a0a";
-    ctx.fillRect(0, H - 54, W, 54);
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, H - 54, W, 54);
-    ctx.clip();
-    ctx.fillStyle = GOLD;
-    ctx.font = "900 26px Montserrat, Arial";
-    ctx.textAlign = "left";
-    (ctx as unknown as { letterSpacing: string }).letterSpacing = "0px";
-    const pedacos = ["BLACK FRIDAY", "•", "OFERTA POR TEMPO LIMITADO", "•"];
-    const larg = pedacos.map((p) => ctx.measureText(p).width);
-    const ciclo = larg.reduce((a, w) => a + w + 24, 0);
-    let x = -((t * 90) % ciclo);
-    while (x < W) {
-      pedacos.forEach((p, i) => {
-        ctx.fillText(p, x, H - 18);
-        x += larg[i] + 24;
-      });
+  if (ehBlack(oc)) {
+    const e = ESTILO_BF[oc as keyof typeof ESTILO_BF];
+    if (e.borda) {
+      ctx.strokeStyle = e.borda;
+      ctx.lineWidth = 5;
+      ctx.strokeRect(10, 10, W - 20, H - 20);
     }
-    ctx.restore();
+    // letreiro em cima e embaixo, dentro da área que o Instagram não cobre
+    letreiro(ctx, 104, 42, t, 1, e);
+    letreiro(ctx, 1110, 42, t, -1, e);
   }
   if (oc === "natal") neve(ctx, t);
   if (oc === "carnaval") confete(ctx, t);
   if (oc === "anonovo") fogos(ctx, t);
-  // selo na abertura e no preço
   if (tipo === "abertura" || tipo === "preco") seloOcasiao(ctx, oc, ease(lt / 0.5));
+}
+
+// ---------------- Contato padrão (igual em todos os estilos): logo, título e botões com ícone ----------------
+function icone(ctx: CanvasRenderingContext2D, id: Contato, cx: number, cy: number, r: number, cor = "#fff") {
+  ctx.save();
+  ctx.strokeStyle = cor;
+  ctx.fillStyle = cor;
+  ctx.lineWidth = Math.max(2.5, r / 5);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  if (id === "whatsapp") {
+    // balão com telefone
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.85, Math.PI * 0.72, Math.PI * 2.62);
+    ctx.lineTo(cx - r * 0.95, cy + r * 0.95);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.lineWidth = Math.max(3, r / 3.4);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.38, Math.PI * 0.75, Math.PI * 1.75);
+    ctx.stroke();
+  } else if (id === "instagram") {
+    roundRect(ctx, cx - r * 0.85, cy - r * 0.85, r * 1.7, r * 1.7, r * 0.5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + r * 0.48, cy - r * 0.48, r * 0.1, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (id === "facebook") {
+    ctx.font = `900 ${Math.round(r * 2.2)}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("f", cx + r * 0.05, cy + r * 0.12);
+    ctx.textBaseline = "alphabetic";
+  } else if (id === "email") {
+    ctx.strokeRect(cx - r * 0.85, cy - r * 0.6, r * 1.7, r * 1.2);
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.85, cy - r * 0.6);
+    ctx.lineTo(cx, cy + r * 0.1);
+    ctx.lineTo(cx + r * 0.85, cy - r * 0.6);
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.85, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r * 0.38, r * 0.85, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.85, cy);
+    ctx.lineTo(cx + r * 0.85, cy);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// texto do botão: só o contato, sem a palavra "WhatsApp" (o ícone já diz)
+function contatoCurto(id: Contato, d: Dados) {
+  if (id === "whatsapp") return d.whatsapp || "Fale conosco";
+  return contatoTexto(id, d);
+}
+
+function ajustarFonte(ctx: CanvasRenderingContext2D, molde: string, texto: string, max: number, maxW: number) {
+  let s = max;
+  do {
+    ctx.font = molde.replace("{s}", String(s));
+    s -= 3;
+  } while (ctx.measureText(texto).width > maxW && s > 16);
+}
+
+const ESTILO_CTA: Record<Modelo, { titulo: string; molde: string; cor: () => string }> = {
+  classico: { titulo: "Garanta sua vaga", molde: "900 {s}px Montserrat, Arial", cor: () => "#fff" },
+  neon: { titulo: "RESERVE AGORA", molde: "900 {s}px Montserrat, Arial", cor: () => NEON },
+  cartao: { titulo: "Garanta sua vaga", molde: "800 {s}px Montserrat, Arial", cor: () => "#fff" },
+  luxo: { titulo: "Reserve sua viagem", molde: "700 {s}px 'Playfair Display', Georgia, serif", cor: () => "#fff" },
+  passagem: { titulo: "Embarque com a gente", molde: "900 {s}px Montserrat, Arial", cor: () => "#fff" },
+  revista: { titulo: "Sua próxima história", molde: "300 {s}px Montserrat, Arial", cor: () => "#fff" },
+  postal: { titulo: "Vamos juntos?", molde: "italic 400 {s}px 'Playfair Display', Georgia, serif", cor: () => "#fff" },
+  faixa: { titulo: "FALE COM A GENTE", molde: "900 {s}px Montserrat, Arial", cor: () => NEON },
+  vibrante: { titulo: "Bora viajar?", molde: "900 {s}px Montserrat, Arial", cor: () => "#fff" },
+};
+
+function ctaPadrao(ctx: CanvasRenderingContext2D, d: Dados, logo: HTMLImageElement | null, contatos: Contato[], lt: number, modelo: Modelo, y0 = 0) {
+  ctx.textAlign = "center";
+  ctx.globalAlpha = clamp01(lt / 0.3);
+  desenharLogo(ctx, d, logo, W / 2, 430 + y0, 88, back(lt / 0.6));
+  const est = ESTILO_CTA[modelo];
+  const k2 = ease((lt - 0.4) / 0.5);
+  ctx.globalAlpha = k2;
+  ajustarFonte(ctx, est.molde, est.titulo, 60, W - 120);
+  ctx.fillStyle = est.cor();
+  sombra(ctx, 18, "rgba(0,0,0,.5)");
+  ctx.fillText(est.titulo, W / 2, 590 + y0 + (1 - k2) * 16);
+  semSombra(ctx);
+  const pt = precoTextos(d);
+  const sub = pt.valor === "Consulte" ? d.destino : `${d.destino} · ${pt.topo === "a partir de" ? "" : pt.topo + " "}${pt.valor}`;
+  ajustarFonte(ctx, "600 {s}px Montserrat, Arial", sub, 30, W - 140);
+  ctx.fillStyle = "#e5e7eb";
+  ctx.fillText(sub, W / 2, 636 + y0 + (1 - k2) * 16);
+
+  contatosLista(d, contatos).forEach((c, i) => {
+    const info = CONTATOS.find((x) => x.id === c.id)!;
+    const txt = contatoCurto(c.id, d);
+    const kc = ease((lt - 0.8 - i * 0.14) / 0.4);
+    const pulse = i === 0 ? 1 + 0.03 * Math.sin((lt - 0.8) * 6) : 1;
+    ctx.globalAlpha = kc;
+    ctx.save();
+    ctx.translate(W / 2, 715 + y0 + i * 70 + (1 - kc) * 16);
+    ctx.scale(pulse, pulse);
+    ajustarFonte(ctx, "700 {s}px Montserrat, Arial", txt, 30, W - 260);
+    const tw = ctx.measureText(txt).width;
+    const bw = tw + 104;
+    const h = 56;
+    roundRect(ctx, -bw / 2, -h / 2, bw, h, h / 2);
+    if (c.id === "instagram") {
+      const gi = ctx.createLinearGradient(-bw / 2, 0, bw / 2, 0);
+      gi.addColorStop(0, "#feda75");
+      gi.addColorStop(0.35, "#fa7e1e");
+      gi.addColorStop(0.65, "#d62976");
+      gi.addColorStop(1, "#4f5bd5");
+      ctx.fillStyle = gi;
+    } else ctx.fillStyle = info.cor;
+    sombra(ctx, 14, "rgba(0,0,0,.3)");
+    ctx.fill();
+    semSombra(ctx);
+    icone(ctx, c.id, -bw / 2 + 34, 0, 15, info.texto);
+    ctx.fillStyle = info.texto;
+    ctx.textAlign = "left";
+    ctx.fillText(txt, -bw / 2 + 62, 10);
+    ctx.textAlign = "center";
+    ctx.restore();
+  });
+  ctx.globalAlpha = 1;
+}
+
+// ---------------- Faixa preta: tela dividida (vídeo em cima, bloco preto embaixo, linha sempre na mesma altura) ----------------
+const LINHA_FAIXA = 640;
+function cenaFaixa(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, _logo: HTMLImageElement | null, _contatos: Contato[]) {
+  const k = ease((lt - 0.1) / 0.5);
+  ctx.globalAlpha = out * k;
+  ctx.textAlign = "left";
+  const y = (v: number) => v + (1 - k) * 24;
+  if (cena === 0) {
+    ctx.fillStyle = NEON;
+    ctx.font = "800 26px Montserrat, Arial";
+    ctx.fillText("PACOTE", 56, y(740));
+    const s = fitText(ctx, d.destino.toUpperCase(), 900, 104, W - 112);
+    ctx.font = `900 ${s}px Montserrat, Arial`;
+    ctx.fillStyle = "#fff";
+    ctx.fillText(d.destino.toUpperCase(), 52, y(840));
+    const cs = fitText(ctx, d.chamada, 600, 34, W - 112);
+    ctx.font = `600 ${cs}px Montserrat, Arial`;
+    ctx.fillStyle = "#d4d4d8";
+    ctx.fillText(d.chamada, 56, y(900));
+  }
+  if (cena === 1) {
+    ctx.fillStyle = NEON;
+    ctx.font = "900 38px Montserrat, Arial";
+    ctx.fillText("ESTÁ INCLUSO", 56, y(730));
+    d.itens.filter(Boolean).slice(0, 4).forEach((it, i) => {
+      const ki = ease((lt - 0.3 - i * 0.15) / 0.4);
+      ctx.globalAlpha = out * ki;
+      const yy = 800 + i * 70;
+      iconeCheck(ctx, 72, yy - 11, 16, NEON, SOBRE_NEON);
+      const fs = fitText(ctx, it, 700, 34, W - 170);
+      ctx.font = `700 ${fs}px Montserrat, Arial`;
+      ctx.fillStyle = "#fff";
+      ctx.fillText(it, 104, yy);
+    });
+  }
+  if (cena === 2) {
+    const pt = precoTextos(d);
+    ctx.fillStyle = "#d4d4d8";
+    ctx.font = "800 30px Montserrat, Arial";
+    ctx.fillText(pt.topo.toUpperCase(), 56, y(780));
+    const kp = back((lt - 0.3) / 0.5);
+    ctx.save();
+    ctx.translate(52, 915);
+    ctx.scale(0.85 + 0.15 * kp, 0.85 + 0.15 * kp);
+    textoPreco(ctx, pt.valor, 0, 0, 150, W - 110, NEON);
+    ctx.restore();
+    ctx.fillStyle = "#fff";
+    ctx.font = "600 30px Montserrat, Arial";
+    ctx.fillText(pt.rodape, 56, y(970));
+  }
+  ctx.globalAlpha = 1;
 }
 
 function cenaDestaque(ctx: CanvasRenderingContext2D, modelo: Modelo, texto: string, lt: number, out: number) {
@@ -1408,7 +1622,6 @@ function cenaDestaque(ctx: CanvasRenderingContext2D, modelo: Modelo, texto: stri
     ctx.fillRect(40, 1090, 120 * k, 4);
   } else if (modelo === "postal") {
     ctx.globalAlpha = 1;
-    moldura(ctx, 1);
     ctx.globalAlpha = out * k;
     const s = fitText(ctx, texto, 400, 60, W - 120);
     ctx.font = `italic 400 ${s}px 'Playfair Display', Georgia, serif`;
@@ -1417,12 +1630,13 @@ function cenaDestaque(ctx: CanvasRenderingContext2D, modelo: Modelo, texto: stri
     ctx.fillText(texto, W / 2, 1020);
     semSombra(ctx);
   } else if (modelo === "faixa") {
-    painel(ctx, 960, k);
     ctx.textAlign = "left";
-    const s = fitText(ctx, texto, 900, 50, W - 100);
+    const s = fitText(ctx, texto, 900, 56, W - 112);
     ctx.font = `900 ${s}px Montserrat, Arial`;
     ctx.fillStyle = "#fff";
-    ctx.fillText(texto, 50, 1080);
+    ctx.fillText(texto, 56, 790 + (1 - k) * 24);
+    ctx.fillStyle = NEON;
+    ctx.fillRect(56, 822, 140 * k, 6);
   } else if (modelo === "vibrante") {
     const s = fitText(ctx, texto, 900, 44, W - 180);
     ctx.font = `900 ${s}px Montserrat, Arial`;
@@ -1434,8 +1648,8 @@ function cenaDestaque(ctx: CanvasRenderingContext2D, modelo: Modelo, texto: stri
     ctx.scale(0.7 + 0.3 * kb, 0.7 + 0.3 * kb);
     roundRect(ctx, -w / 2, -60, w, 100, 50);
     const g = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
-    g.addColorStop(0, "#7c3aed");
-    g.addColorStop(1, "#ec4899");
+    g.addColorStop(0, ROXO);
+    g.addColorStop(1, ROSA);
     ctx.fillStyle = g;
     ctx.fill();
     ctx.fillStyle = "#fff";
@@ -1461,10 +1675,15 @@ function drawFrame(
   contatos: Contato[],
   modelo: Modelo = "classico",
   ocasiao: Ocasiao = "nenhuma",
+  tema: Tema = { fonte: "Montserrat" },
 ) {
+  prepararCtx(ctx);
+  aplicarTema(tema);
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, W, H);
+  const dividida = modelo === "faixa";
+  const alturaFundo = dividida ? LINHA_FAIXA : H;
 
   // fundo: um vídeo (ou foto) por tela, com zoom lento e fusão entre telas
   for (let i = 0; i < CENAS; i++) {
@@ -1475,14 +1694,19 @@ function drawFrame(
     if (local < -FADE || local > dur + FADE) continue;
     ctx.globalAlpha = i === 0 ? 1 : clamp01(ease((local + FADE) / FADE));
     const p = clamp01(local / dur);
-    if (isVideo(m)) drawCover(ctx, m, 1.04 + 0.08 * p);
+    ctx.save();
+    if (dividida) {
+      ctx.beginPath();
+      ctx.rect(0, 0, W, alturaFundo);
+      ctx.clip();
+    }
+    if (isVideo(m)) drawCover(ctx, m, 1.04 + 0.08 * p, alturaFundo);
     else {
       // foto: zoom e passeio lateral alternando o lado
-      ctx.save();
       ctx.translate((i % 2 ? -1 : 1) * (p - 0.5) * 60, 0);
-      drawCover(ctx, m, 1.08 + 0.14 * p);
-      ctx.restore();
+      drawCover(ctx, m, 1.08 + 0.14 * p, alturaFundo);
     }
+    ctx.restore();
   }
   ctx.globalAlpha = 1;
 
@@ -1490,12 +1714,17 @@ function drawFrame(
   const lt = t - INICIOS[cena];
   const dur = TELAS[cena].dur;
   const out = cena === CENAS - 1 ? 1 : 1 - ease((lt - (dur - 0.35)) / 0.35);
+  const tipo = TELAS[cena].tipo;
 
   // escurece para dar leitura
   const g = ctx.createLinearGradient(0, 0, 0, H);
-  if (cena === CENAS - 1) {
-    g.addColorStop(0, "rgba(5,8,20,.55)");
-    g.addColorStop(1, "rgba(5,8,20,.85)");
+  if (dividida) {
+    g.addColorStop(0, "rgba(0,0,0,.25)");
+    g.addColorStop(0.3, "rgba(0,0,0,0)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+  } else if (tipo === "contato") {
+    g.addColorStop(0, "rgba(5,8,20,.5)");
+    g.addColorStop(1, "rgba(5,8,20,.82)");
   } else if (modelo === "luxo" || modelo === "revista" || modelo === "postal") {
     g.addColorStop(0, "rgba(0,0,0,.25)");
     g.addColorStop(0.5, "rgba(0,0,0,.35)");
@@ -1510,19 +1739,41 @@ function drawFrame(
   ctx.fillRect(0, 0, W, H);
   ctx.textBaseline = "alphabetic";
 
-  const tipo = TELAS[cena].tipo;
-  if (tipo === "destaque") {
-    const n = TELAS.slice(0, cena).filter((x) => x.tipo === "destaque").length;
-    const texto = d.destaques[n] || (n === 0 ? d.chamada : `Conheça ${d.destino}`);
-    cenaDestaque(ctx, modelo, texto, lt, out);
-  } else {
-    const fn = {
-      classico: cenaClassico, neon: cenaNeon, cartao: cenaCartao, luxo: cenaLuxo,
-      passagem: cenaPassagem, revista: cenaRevista, postal: cenaPostal, faixa: cenaFaixa, vibrante: cenaVibrante,
-    }[modelo];
-    fn(ctx, CENA_MODELO[tipo], lt, out, d, logo, contatos);
+  // tela dividida: bloco preto embaixo e a linha sempre na mesma altura
+  if (dividida) {
+    ctx.fillStyle = "#0a0a0c";
+    ctx.fillRect(0, LINHA_FAIXA, W, H - LINHA_FAIXA);
+    ctx.fillStyle = NEON;
+    ctx.fillRect(0, LINHA_FAIXA - 4, W, 8);
   }
-  if (tipo === "preco") precoAntigo(ctx, d, lt, out, ocasiao, modelo === "revista" ? 790 : 250);
+
+  // conteúdo um pouco menor e mais perto do centro (respeita a sangria do Instagram);
+  // os estilos que encostam nas bordas de propósito ficam em tamanho cheio
+  const encolhe = !(modelo === "neon" || modelo === "faixa");
+  if (tipo === "contato") {
+    ctaPadrao(ctx, d, logo, contatos, lt, modelo, dividida ? 120 : 0);
+  } else {
+    ctx.save();
+    if (encolhe) {
+      ctx.translate(W / 2, 600);
+      ctx.scale(0.9, 0.9);
+      ctx.translate(-W / 2, -600);
+    }
+    if (tipo === "destaque") {
+      const n = TELAS.slice(0, cena).filter((x) => x.tipo === "destaque").length;
+      const texto = d.destaques[n] || (n === 0 ? d.chamada : `Conheça ${d.destino}`);
+      cenaDestaque(ctx, modelo, texto, lt, out);
+    } else {
+      const fn = {
+        classico: cenaClassico, neon: cenaNeon, cartao: cenaCartao, luxo: cenaLuxo,
+        passagem: cenaPassagem, revista: cenaRevista, postal: cenaPostal, faixa: cenaFaixa, vibrante: cenaVibrante,
+      }[modelo];
+      fn(ctx, CENA_MODELO[tipo], lt, out, d, logo, contatos);
+    }
+    ctx.restore();
+  }
+  if (tipo === "preco") precoAntigo(ctx, d, lt, out, ocasiao, modelo === "revista" ? 775 : modelo === "faixa" ? 690 : 300);
+  if (modelo === "postal") moldura(ctx, 1);
   camadaOcasiao(ctx, ocasiao, t, tipo, lt);
   ctx.globalAlpha = 1;
   semSombra(ctx);
@@ -1752,9 +2003,23 @@ function VideoLabTela() {
   const [modelo, setModelo] = useState<Modelo>("classico");
   const modeloRef = useRef<Modelo>("classico");
   modeloRef.current = modelo;
-  const [ocasiao, setOcasiao] = useState<Ocasiao>("nenhuma");
+  // a oferta do mês já vem marcada (novembro: Black Friday; dezembro: Natal e Ano Novo; jan/fev: Carnaval)
+  const sazonais = ocasioesDoMes();
+  const [ocasiao, setOcasiao] = useState<Ocasiao>(sazonais.agora[0]?.id || "nenhuma");
+  const [paleta, setPaleta] = useState("estilo");
+  const [corLivre, setCorLivre] = useState({ c1: "#f5c451", c2: "#0ea5e9" });
+  const [fonte, setFonte] = useState("Montserrat");
+  const [miniaturas, setMiniaturas] = useState<Partial<Record<Modelo, string>>>({});
   const ocasiaoRef = useRef<Ocasiao>("nenhuma");
   ocasiaoRef.current = ocasiao;
+  const temaAtual = (): Tema => {
+    if (paleta === "marca") return { c1: fabrica.primaryColor || undefined, c2: fabrica.secondaryColor || undefined, fonte };
+    if (paleta === "livre") return { ...corLivre, fonte };
+    const p = PALETAS.find((x) => x.id === paleta);
+    return { c1: p?.c1, c2: p?.c2, fonte };
+  };
+  const temaRef = useRef<Tema>({ fonte: "Montserrat" });
+  temaRef.current = temaAtual();
   const [fundos, setFundos] = useState<Midia[]>([]);
   const [pool, setPool] = useState<Midia[]>([]);
   const [editando, setEditando] = useState(false);
@@ -2006,7 +2271,7 @@ function VideoLabTela() {
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,400&display=swap";
+    link.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;500;600;700;800;900&family=Oswald:wght@300;500;600;700&family=Bebas+Neue&family=Nunito:wght@300;600;700;800;900&family=Raleway:wght@300;500;600;700;800;900&display=swap";
     document.head.appendChild(link);
     Promise.all([document.fonts.load("900 40px Montserrat"), document.fonts.load("700 40px 'Playfair Display'"), document.fonts.load("italic 400 40px 'Playfair Display'"), carregarFundos([...CLIPS, ...CLIPS].slice(0, CENAS).map((url) => ({ tipo: "video" as const, url })))]).catch((e) =>
       setStatus("Erro: " + e.message),
@@ -2030,7 +2295,7 @@ function VideoLabTela() {
         if (v && isVideo(v)) { v.currentTime = 0; v.play(); }
         lastScene = sc;
       }
-      drawFrame(ctx, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, modeloRef.current, ocasiaoRef.current);
+      drawFrame(ctx, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, modeloRef.current, ocasiaoRef.current, temaRef.current);
       raf = requestAnimationFrame(loop);
     };
     vidsRef.current.forEach((v) => isVideo(v) && v.play());
@@ -2040,14 +2305,34 @@ function VideoLabTela() {
 
   // Atalho de teste: desenha um momento do vídeo num modelo e devolve a imagem.
   useEffect(() => {
-    (window as unknown as Record<string, unknown>).__videoLabQuadro = (t: number, m: Modelo, oc: Ocasiao = "nenhuma") => {
+    (window as unknown as Record<string, unknown>).__videoLabQuadro = (t: number, m: Modelo, oc: Ocasiao = "nenhuma", tema?: Tema) => {
       const c = document.createElement("canvas");
       c.width = W;
       c.height = H;
-      drawFrame(c.getContext("2d")!, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m, oc);
+      drawFrame(c.getContext("2d")!, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m, oc, tema || temaRef.current);
       return c.toDataURL("image/jpeg", 0.8);
     };
   });
+
+  useEffect(() => {
+    if (carregando || gravando) return;
+    const id = setTimeout(() => {
+      const grande = document.createElement("canvas");
+      grande.width = W;
+      grande.height = H;
+      const pequeno = document.createElement("canvas");
+      pequeno.width = 108;
+      pequeno.height = 192;
+      const novas: Partial<Record<Modelo, string>> = {};
+      for (const m of MODELOS) {
+        drawFrame(grande.getContext("2d")!, 2.8, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m.id, ocasiaoRef.current, temaRef.current);
+        pequeno.getContext("2d")!.drawImage(grande, 0, 0, 108, 192);
+        novas[m.id] = pequeno.toDataURL("image/jpeg", 0.7);
+      }
+      setMiniaturas(novas);
+    }, 700);
+    return () => clearTimeout(id);
+  }, [carregando, gravando, dados, ocasiao, paleta, corLivre, fonte, logo]);
 
   // Gera quadro a quadro (não depende de a tela estar visível nem da velocidade do aparelho).
   async function gerar() {
@@ -2058,6 +2343,7 @@ function VideoLabTela() {
       contatos: [...contatosRef.current],
       modelo: modeloRef.current,
       ocasiao: ocasiaoRef.current,
+      tema: { ...temaRef.current },
     };
     setGravando(true);
     setUrl(null);
@@ -2115,7 +2401,7 @@ function VideoLabTela() {
           const v = vids[i % Math.max(vids.length, 1)];
           return v && isVideo(v) ? esperar(v, Math.max(0, t - INICIOS[i] + FADE)) : Promise.resolve();
         }));
-        drawFrame(ctx, t, vids, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao);
+        drawFrame(ctx, t, vids, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao, foto0.tema);
         const frame = new VideoFrame(canvas, { timestamp: Math.round((f * 1e6) / FPS), duration: Math.round(1e6 / FPS) });
         enc.encode(frame, { keyFrame: f % 60 === 0 });
         frame.close();
@@ -2380,31 +2666,82 @@ function VideoLabTela() {
           </div>
 
           <h2 className="mt-2 text-sm font-bold text-neutral-200">Oferta sazonal</h2>
-          <div className="flex flex-wrap gap-2">
-            {OCASIOES.map((o) => (
+          {sazonais.agora.length > 0 && <p className="-mt-2 text-xs text-amber-300">Deste mês já aparecem primeiro.</p>}
+          <div className="flex flex-wrap gap-1.5">
+            {sazonais.lista.map((o) => (
               <button
                 key={o.id}
                 id={`ocasiao-${o.id}`}
                 disabled={gravando}
                 onClick={() => setOcasiao(o.id)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${ocasiao === o.id ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
+                className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${ocasiao === o.id ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
               >
                 {o.nome}
+                {sazonais.agora.some((a) => a.id === o.id) && <span className="ml-1 text-amber-300">• agora</span>}
               </button>
             ))}
           </div>
-          <h2 className="mt-2 text-sm font-bold text-neutral-200">Modelo do vídeo</h2>
-          <div className="grid grid-cols-3 gap-2">
-            {MODELOS.map((m) => (
+
+          <h2 className="mt-2 text-sm font-bold text-neutral-200">Estilo</h2>
+          <div className="grid grid-cols-5 gap-1.5">
+            {MODELOS.map((m, i) => (
               <button
                 key={m.id}
                 id={`modelo-${m.id}`}
+                title={m.nome}
                 disabled={gravando}
                 onClick={() => setModelo(m.id)}
-                className={`rounded-lg border p-2 text-left ${modelo === m.id ? "border-amber-400 bg-amber-400/10" : "border-neutral-700 bg-neutral-900"}`}
+                className={`overflow-hidden rounded-md border text-center ${modelo === m.id ? "border-amber-400 ring-2 ring-amber-400/40" : "border-neutral-700"}`}
               >
-                <p className="text-sm font-bold">{m.nome}</p>
-                <p className="text-xs text-neutral-400">{m.desc}</p>
+                {miniaturas[m.id] ? (
+                  <img src={miniaturas[m.id]} alt={m.nome} className="aspect-[9/16] w-full object-cover" />
+                ) : (
+                  <div className="aspect-[9/16] w-full bg-neutral-800" />
+                )}
+                <p className="py-0.5 text-[11px] font-semibold">{i + 1}</p>
+              </button>
+            ))}
+          </div>
+
+          <h2 className="mt-2 text-sm font-bold text-neutral-200">Cores</h2>
+          <div className="flex flex-wrap gap-1.5">
+            {PALETAS.map((p) => {
+              const c1 = p.id === "marca" ? fabrica.primaryColor : p.id === "livre" ? corLivre.c1 : p.c1;
+              const c2 = p.id === "marca" ? fabrica.secondaryColor : p.id === "livre" ? corLivre.c2 : p.c2;
+              return (
+                <button
+                  key={p.id}
+                  id={`paleta-${p.id}`}
+                  disabled={gravando}
+                  onClick={() => setPaleta(p.id)}
+                  className={`flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] ${paleta === p.id ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
+                >
+                  {c1 && <span className="h-3 w-3 rounded-full" style={{ background: c1 }} />}
+                  {c2 && <span className="-ml-1.5 h-3 w-3 rounded-full ring-1 ring-neutral-900" style={{ background: c2 }} />}
+                  {p.nome}
+                </button>
+              );
+            })}
+          </div>
+          {paleta === "livre" && (
+            <div className="flex items-center gap-3 text-xs">
+              <label className="flex items-center gap-1">Cor 1 <input id="cor1" type="color" value={corLivre.c1} onChange={(e) => setCorLivre((c) => ({ ...c, c1: e.target.value }))} /></label>
+              <label className="flex items-center gap-1">Cor 2 <input id="cor2" type="color" value={corLivre.c2} onChange={(e) => setCorLivre((c) => ({ ...c, c2: e.target.value }))} /></label>
+            </div>
+          )}
+
+          <h2 className="mt-2 text-sm font-bold text-neutral-200">Fonte</h2>
+          <div className="flex flex-wrap gap-1.5">
+            {FONTES.map((fo) => (
+              <button
+                key={fo}
+                id={`fonte-${fo.replace(/\s/g, "")}`}
+                disabled={gravando}
+                onClick={() => setFonte(fo)}
+                style={{ fontFamily: `'${fo}', sans-serif` }}
+                className={`rounded-full border px-2.5 py-1 text-xs ${fonte === fo ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
+              >
+                {fo}
               </button>
             ))}
           </div>
@@ -2418,7 +2755,7 @@ function VideoLabTela() {
           </button>
           <p id="status" className="text-sm text-neutral-300">{status}</p>
           {url && (
-            <a id="baixar" className="rounded-lg bg-green-600 px-4 py-2 text-center font-semibold" href={url} download={`video-${dados.destino}-${modelo}${ocasiao !== "nenhuma" ? "-" + ocasiao : ""}.mp4`}>
+            <a id="baixar" className="rounded-lg bg-green-600 px-4 py-2 text-center font-semibold" href={url} download={`video-${dados.destino}-estilo${MODELOS.findIndex((m) => m.id === modelo) + 1}${ocasiao !== "nenhuma" ? "-" + ocasiao : ""}.mp4`}>
               Baixar vídeo
             </a>
           )}
