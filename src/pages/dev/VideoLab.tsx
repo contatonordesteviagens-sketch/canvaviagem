@@ -2040,7 +2040,11 @@ function letrasBf(ctx: CanvasRenderingContext2D, x: number, y: number, tam: numb
   ctx.textAlign = alinhado;
   ctx.lineJoin = "round";
   ctx.font = `900 ${tam}px Montserrat, Arial`;
-  ctx.lineWidth = Math.max(4, tam * 0.07);
+  // contorno fino (grosso demais fecha os miolos do B e do a) sobre um miolo escuro translúcido
+  ctx.miterLimit = 2;
+  ctx.fillStyle = "rgba(0,0,0,.32)";
+  ctx.fillText("Black", x, y);
+  ctx.lineWidth = Math.max(2.5, tam * 0.042);
   ctx.strokeStyle = LARANJA;
   ctx.strokeText("Black", x, y);
   ctx.fillStyle = "#fff";
