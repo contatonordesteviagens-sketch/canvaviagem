@@ -9,6 +9,7 @@ import { OQueFazerAgora } from "@/components/jornada/OQueFazerAgora";
 import { salvarVideo } from "@/lib/biblioteca-videos";
 import { createPortal } from "react-dom";
 import { Check, ChevronRight, Download, Image as ImageIcon, Maximize2, Pencil, Share } from "lucide-react";
+import { NavegadorInternoAviso } from "@/components/jornada/NavegadorInternoAviso";
 
 // Laboratório local: monta um vídeo stories de 3 quadros no navegador,
 // com vídeo real de fundo, textos animados, preço e logo da agência.
@@ -18,7 +19,8 @@ const W = 720;
 const H = 1280;
 // Telas do vídeo, na ordem. Cada uma tem o seu fundo (vídeo do destino ou foto).
 type Tela = "abertura" | "inclusos" | "destaque" | "preco" | "contato";
-const TELAS: { tipo: Tela; dur: number; nome: string }[] = [
+type TelaDef = { tipo: Tela; dur: number; nome: string };
+const TELAS: TelaDef[] = [
   { tipo: "abertura", dur: 4.5, nome: "Abertura" },
   { tipo: "inclusos", dur: 3.8, nome: "O que inclui" },
   { tipo: "destaque", dur: 3.0, nome: "Cena extra 1" },
@@ -26,15 +28,37 @@ const TELAS: { tipo: Tela; dur: number; nome: string }[] = [
   { tipo: "preco", dur: 3.8, nome: "Preço" },
   { tipo: "contato", dur: 4.2, nome: "Contato" },
 ];
+// quantos fundos (vídeos do destino) um vídeo usa: um por tela
 const CENAS = TELAS.length;
-const INICIOS = TELAS.map((_, i) => TELAS.slice(0, i).reduce((a, x) => a + x.dur, 0));
 const FADE = 0.5;
-const TOTAL = TELAS.reduce((a, x) => a + x.dur, 0);
-const telaEm = (t: number) => {
+// Roteiro = a ordem das telas. "3 vídeos diferentes" gera um de cada, para o cliente escolher o gancho.
+type Roteiro = "padrao" | "preco_primeiro" | "gancho";
+const ROTEIROS: { id: Roteiro; nome: string }[] = [
+  { id: "padrao", nome: "Destino primeiro" },
+  { id: "preco_primeiro", nome: "Preço primeiro" },
+  { id: "gancho", nome: "Frase de impacto primeiro" },
+];
+function montarTelas(roteiro: Roteiro, curto: boolean): TelaDef[] {
+  const [ab, inc, d1, d2, pr, ct] = TELAS as [TelaDef, TelaDef, TelaDef, TelaDef, TelaDef, TelaDef];
+  let lista = roteiro === "preco_primeiro" ? [pr, ab, inc, d1, d2, ct] : roteiro === "gancho" ? [d1, ab, inc, d2, pr, ct] : [ab, inc, d1, d2, pr, ct];
+  // versão curta (12 s): só abertura, preço e contato, na ordem do roteiro
+  if (curto) lista = lista.filter((x) => x.tipo === "abertura" || x.tipo === "preco" || x.tipo === "contato").map((x) => (x.tipo === "abertura" ? { ...x, dur: 4 } : x));
+  return lista;
+}
+// Linha do tempo de um vídeo: as telas, quando cada uma começa e a duração total
+type Linha = { telas: TelaDef[]; inicios: number[]; total: number };
+function linhaDoTempo(telas: TelaDef[]): Linha {
+  const inicios = telas.map((_, i) => telas.slice(0, i).reduce((a, x) => a + x.dur, 0));
+  return { telas, inicios, total: telas.reduce((a, x) => a + x.dur, 0) };
+}
+const LINHA_PADRAO = linhaDoTempo(TELAS);
+const telaEm = (t: number, L: Linha = LINHA_PADRAO) => {
   let i = 0;
-  while (i < CENAS - 1 && t >= INICIOS[i + 1]) i++;
+  while (i < L.telas.length - 1 && t >= L.inicios[i + 1]) i++;
   return i;
 };
+// O navegador consegue montar o MP4? (WebCodecs: Chrome, Edge, Safari 16.4+. Falta em iPhone antigo e em alguns navegadores internos.)
+const GERA_MP4 = typeof window !== "undefined" && "VideoEncoder" in window && "VideoFrame" in window;
 // número antigo da tela em cada modelo: 0 destino, 1 inclusos, 2 preço, 3 contato
 const CENA_MODELO: Record<Tela, number> = { abertura: 0, inclusos: 1, destaque: -1, preco: 2, contato: 3 };
 
@@ -56,6 +80,8 @@ type Dados = {
   preco: string;
   precoAntigo: string;
   pessoas: string;
+  saida: string;
+  datas: string;
   itens: string[];
   destaques: string[];
   agencia: string;
@@ -1341,6 +1367,87 @@ function seloOcasiao(ctx: CanvasRenderingContext2D, oc: Ocasiao, k: number) {
 }
 
 // Preço antigo riscado com o desconto, logo acima da área do preço
+function textoSaida(d: Dados) {
+  const datas = (d.datas || "").trim();
+  const saida = (d.saida || "").trim();
+  if (!datas && !saida) return "";
+  if (datas && saida) return `Saída ${datas} · de ${saida}`;
+  return datas ? `Saída ${datas}` : `Saída de ${saida}`;
+}
+
+// "Saída 12 a 17/12 · de Fortaleza" na tela do preço, numa pílula escura.
+// Fica no mesmo ponto do preço antigo (que varia por estilo); quando os dois existem, a saída sobe.
+function linhaSaida(ctx: CanvasRenderingContext2D, d: Dados, lt: number, out: number, modelo: Modelo) {
+  const txt = textoSaida(d);
+  if (!txt) return;
+  const base = modelo === "revista" ? 775 : modelo === "faixa" ? 690 : 300;
+  const temAntigo = !!d.precoAntigo.trim() && d.pagamento !== "free_quote";
+  const y = temAntigo ? base - 72 : base;
+  const k = back((lt - 0.3) / 0.5);
+  ctx.save();
+  ctx.globalAlpha = out * clamp01((lt - 0.3) / 0.25);
+  ctx.translate(W / 2, y);
+  ctx.scale(0.8 + 0.2 * k, 0.8 + 0.2 * k);
+  fitText(ctx, txt, 800, 30, W - 200);
+  const tw = ctx.measureText(txt).width;
+  const bw = tw + 64;
+  roundRect(ctx, -bw / 2, -30, bw, 54, 27);
+  ctx.fillStyle = "rgba(10,10,12,.82)";
+  ctx.fill();
+  ctx.fillStyle = NEON;
+  ctx.beginPath();
+  ctx.arc(-bw / 2 + 26, -3, 7, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#f3f4f6";
+  ctx.textAlign = "left";
+  ctx.fillText(txt, -bw / 2 + 44, 7);
+  ctx.restore();
+}
+
+// Enquanto a função do servidor não devolve "saida" e "datas", procura no próprio texto do pacote.
+const MESES = "janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro";
+function extrairSaida(texto: string): { saida: string; datas: string } {
+  const t = ` ${texto} `.replace(/\s+/g, " ");
+  const mSaida = t.match(/\b(?:sa[íi]da|saindo|partindo|partida|embarque)\s+(?:de|do|da|em)\s+([\wÀ-ÿ]+(?:\s+(?:de|do|da|dos|das)\s+[\wÀ-ÿ]+|\s+[\wÀ-ÿ]+)?)/i);
+  const mData =
+    t.match(new RegExp(String.raw`\b(\d{1,2}\s*(?:a|à|até|-)\s*\d{1,2}\s*(?:de\s+)?(?:\/\s*\d{1,2}(?:\/\d{2,4})?|(?:${MESES})(?:\s+de\s+\d{4})?))`, "i")) ||
+    t.match(/\b(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)\b/) ||
+    t.match(new RegExp(String.raw`\b(\d{1,2}\s+de\s+(?:${MESES})(?:\s+de\s+\d{4})?)`, "i")) ||
+    t.match(new RegExp(String.raw`\b(?:em|para|pra)\s+((?:${MESES})(?:\s*(?:de|\/)\s*\d{4})?)\b`, "i"));
+  const PARA = new Set(["dia", "no", "na", "em", "com", "por", "para", "pra", "e", "a", "o", "as", "os", "às", "ao", "aos", "de", "do", "da"]);
+  let saida = mSaida ? mSaida[1].trim() : "";
+  while (saida && PARA.has(saida.split(" ").slice(-1)[0].toLowerCase())) saida = saida.split(" ").slice(0, -1).join(" ");
+  saida = saida.split(" ").map((p) => (p.length > 3 && p === p.toLowerCase() ? p[0].toUpperCase() + p.slice(1) : p)).join(" ").slice(0, 30);
+  let datas = mData ? mData[1].replace(/\s+/g, " ").trim().slice(0, 22) : "";
+  if (datas && new RegExp(`^(?:${MESES})`, "i").test(datas)) datas = `em ${datas.toLowerCase()}`;
+  return { saida, datas };
+}
+
+// Legenda pronta para colar no post, com o que está no vídeo.
+function montarLegenda(d: Dados, contatos: Contato[]): string {
+  const pt = precoTextos(d);
+  const linhas: string[] = [];
+  linhas.push(`✈️ ${d.chamada || d.destino}`);
+  linhas.push(`📍 ${d.destino}${d.pessoas ? ` · ${d.pessoas}` : ""}`);
+  if (pt.valor === "Consulte") linhas.push("💬 Consulte valores e condições");
+  else {
+    const antigo = d.precoAntigo.trim();
+    const preco = pt.topo === "a partir de" ? `a partir de ${pt.valor}` : `${pt.topo} ${pt.valor}`;
+    linhas.push(`💰 ${antigo ? `De ${antigo.startsWith("R$") ? antigo : "R$ " + antigo} por ` : ""}${preco}`);
+  }
+  const saida = textoSaida(d);
+  if (saida) linhas.push(`📅 ${saida}`);
+  d.itens.filter(Boolean).forEach((it) => linhas.push(`✅ ${it}`));
+  if (d.agencia && d.agencia !== "Sua Agência") linhas.push(`✨ ${d.agencia}`);
+  if (contatos.includes("whatsapp")) linhas.push(`📲 ${d.whatsapp ? `Chame no WhatsApp: ${d.whatsapp}` : "Chame no WhatsApp"}`);
+  if (contatos.includes("instagram") && d.instagram) linhas.push(`📸 ${d.instagram}`);
+  if (contatos.includes("site") && d.site) linhas.push(`🌐 ${d.site}`);
+  const tag = d.destino.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  linhas.push("");
+  linhas.push(`#${tag || "viagem"} #viagem #agenciadeviagens #pacotedeviagem #ferias`);
+  return linhas.join("\n");
+}
+
 function precoAntigo(ctx: CanvasRenderingContext2D, d: Dados, lt: number, out: number, oc: Ocasiao, y = 300) {
   const antigo = d.precoAntigo.trim();
   if (!antigo || d.pagamento === "free_quote") return;
@@ -1729,6 +1836,7 @@ function drawFrame(
   modelo: Modelo = "classico",
   ocasiao: Ocasiao = "nenhuma",
   tema: Tema = { fonte: "Montserrat" },
+  L: Linha = LINHA_PADRAO,
 ) {
   prepararCtx(ctx);
   aplicarTema(tema);
@@ -1739,11 +1847,11 @@ function drawFrame(
   const alturaFundo = dividida ? LINHA_FAIXA : H;
 
   // fundo: um vídeo (ou foto) por tela, com zoom lento e fusão entre telas
-  for (let i = 0; i < CENAS; i++) {
+  for (let i = 0; i < L.telas.length; i++) {
     const m = vids[i % Math.max(vids.length, 1)];
     if (!m) continue;
-    const dur = TELAS[i].dur;
-    const local = t - INICIOS[i];
+    const dur = L.telas[i].dur;
+    const local = t - L.inicios[i];
     if (local < -FADE || local > dur + FADE) continue;
     ctx.globalAlpha = i === 0 ? 1 : clamp01(ease((local + FADE) / FADE));
     const p = clamp01(local / dur);
@@ -1763,11 +1871,11 @@ function drawFrame(
   }
   ctx.globalAlpha = 1;
 
-  const cena = telaEm(t);
-  const lt = t - INICIOS[cena];
-  const dur = TELAS[cena].dur;
-  const out = cena === CENAS - 1 ? 1 : 1 - ease((lt - (dur - 0.35)) / 0.35);
-  const tipo = TELAS[cena].tipo;
+  const cena = telaEm(t, L);
+  const lt = t - L.inicios[cena];
+  const dur = L.telas[cena].dur;
+  const out = cena === L.telas.length - 1 ? 1 : 1 - ease((lt - (dur - 0.35)) / 0.35);
+  const tipo = L.telas[cena].tipo;
 
   // escurece para dar leitura
   const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -1814,7 +1922,7 @@ function drawFrame(
     }
     const semItens = tipo === "inclusos" && !d.itens.some(Boolean);
     if (tipo === "destaque" || semItens) {
-      const n = TELAS.slice(0, cena).filter((x) => x.tipo === "destaque").length;
+      const n = L.telas.slice(0, cena).filter((x) => x.tipo === "destaque").length;
       const texto = semItens ? (d.destaques[2] || d.chamada) : d.destaques[n] || (n === 0 ? d.chamada : `Conheça ${d.destino}`);
       cenaDestaque(ctx, modelo, texto, lt, out);
     } else {
@@ -1827,6 +1935,7 @@ function drawFrame(
     ctx.restore();
   }
   if (tipo === "preco") precoAntigo(ctx, d, lt, out, ocasiao, modelo === "revista" ? 775 : modelo === "faixa" ? 690 : 300);
+  if (tipo === "preco") linhaSaida(ctx, d, lt, out, modelo);
   if (modelo === "postal") moldura(ctx, 1);
   camadaOcasiao(ctx, ocasiao, t, tipo, lt);
   ctx.globalAlpha = 1;
@@ -2050,6 +2159,8 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     preco: "R$ 8.000",
     precoAntigo: "",
     pessoas: "para o casal",
+    saida: "",
+    datas: "",
     itens: ["Aéreo ida e volta", "Hotel all inclusive", "Traslados", "Seguro viagem"],
     destaques: ["Mar azul-turquesa", "Dias de puro descanso"],
     agencia: "Sua Agência",
@@ -2069,7 +2180,15 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const [paleta, setPaleta] = useState("estilo");
   const [corLivre, setCorLivre] = useState({ c1: "#f5c451", c2: "#0ea5e9" });
   const [fonte, setFonte] = useState("Montserrat");
-  const [resultados, setResultados] = useState<{ modelo: Modelo; url: string; nome: string }[]>([]);
+  const [resultados, setResultados] = useState<{ modelo: Modelo; url: string; nome: string; roteiro: Roteiro }[]>([]);
+  // duração: completo (22 s, 6 telas) ou curto (12 s: abertura, preço e contato)
+  const [curto, setCurto] = useState(false);
+  const curtoRef = useRef(false);
+  curtoRef.current = curto;
+  const linhaPrevia = linhaDoTempo(montarTelas("padrao", curto));
+  const linhaRef = useRef(LINHA_PADRAO);
+  linhaRef.current = linhaPrevia;
+  const [legendaCopiada, setLegendaCopiada] = useState(false);
   const [miniaturas, setMiniaturas] = useState<Partial<Record<Modelo, string>>>({});
   const ocasiaoRef = useRef<Ocasiao>("nenhuma");
   ocasiaoRef.current = ocasiao;
@@ -2211,6 +2330,8 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         throw new Error(msg);
       }
       const d = data.dados as Partial<Dados>;
+      // enquanto o servidor não devolve saída e datas, tenta achar no próprio texto
+      const extra = extrairSaida(conteudo.text || "");
       setDados((a) => ({
         ...a,
         destino: d.destino || a.destino,
@@ -2222,6 +2343,8 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         preco: d.preco || "",
         precoAntigo: d.precoAntigo || "",
         pessoas: d.pessoas || "",
+        saida: d.saida || extra.saida,
+        datas: d.datas || extra.datas,
         itens: d.itens || [],
         destaques: d.destaques?.length ? d.destaques : [],
         agencia: a.agencia === "Sua Agência" && d.agencia ? d.agencia : a.agencia,
@@ -2361,29 +2484,30 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     const t0 = performance.now();
     let lastScene = -1;
     const loop = () => {
-      const t = ((performance.now() - t0) / 1000) % TOTAL;
-      const sc = telaEm(t);
+      const L = linhaRef.current;
+      const t = ((performance.now() - t0) / 1000) % L.total;
+      const sc = telaEm(t, L);
       if (sc !== lastScene) {
         const vs = vidsRef.current;
         const v = vs[sc % Math.max(vs.length, 1)];
         if (v && isVideo(v)) { v.currentTime = 0; v.play(); }
         lastScene = sc;
       }
-      drawFrame(ctx, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, modeloRef.current, ocasiaoRef.current, temaRef.current);
+      drawFrame(ctx, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, modeloRef.current, ocasiaoRef.current, temaRef.current, L);
       raf = requestAnimationFrame(loop);
     };
     vidsRef.current.forEach((v) => isVideo(v) && v.play());
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [carregando, gravando]);
+  }, [carregando, gravando, curto]);
 
   // Atalho de teste: desenha um momento do vídeo num modelo e devolve a imagem.
   useEffect(() => {
-    (window as unknown as Record<string, unknown>).__videoLabQuadro = (t: number, m: Modelo, oc: Ocasiao = "nenhuma", tema?: Tema) => {
+    (window as unknown as Record<string, unknown>).__videoLabQuadro = (t: number, m: Modelo, oc: Ocasiao = "nenhuma", tema?: Tema, roteiro: Roteiro = "padrao", curtoQ: boolean = curtoRef.current) => {
       const c = document.createElement("canvas");
       c.width = W;
       c.height = H;
-      drawFrame(c.getContext("2d")!, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m, oc, tema || temaRef.current);
+      drawFrame(c.getContext("2d")!, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m, oc, tema || temaRef.current, linhaDoTempo(montarTelas(roteiro, curtoQ)));
       return c.toDataURL("image/jpeg", 0.8);
     };
   });
@@ -2410,17 +2534,19 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
 
   // Gera quadro a quadro (não depende de a tela estar visível nem da velocidade do aparelho).
   // fotografia das opções: mudar algo na tela durante a geração não altera o vídeo
-  const fotografar = (modeloEscolhido: Modelo) => ({
+  const fotografar = (modeloEscolhido: Modelo, roteiro: Roteiro = "padrao") => ({
     dados: structuredClone(dadosRef.current),
     logo: logoRef.current,
     contatos: [...contatosRef.current],
     modelo: modeloEscolhido,
     ocasiao: ocasiaoRef.current,
     tema: { ...temaRef.current },
+    roteiro,
+    linha: linhaDoTempo(montarTelas(roteiro, curtoRef.current)),
   });
 
   const nomeArquivo = (m: Modelo) =>
-    `video-${dadosRef.current.destino}-estilo${MODELOS.findIndex((x) => x.id === m) + 1}${ocasiaoRef.current !== "nenhuma" ? "-" + ocasiaoRef.current : ""}.mp4`;
+    `video-${dadosRef.current.destino}-estilo${MODELOS.findIndex((x) => x.id === m) + 1}${ocasiaoRef.current !== "nenhuma" ? "-" + ocasiaoRef.current : ""}${curtoRef.current ? "-curto" : ""}.mp4`;
 
   // 3 estilos diferentes: o escolhido e mais dois que combinam bem
   const ORDEM_SUGERIDA: Modelo[] = ["classico", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal"];
@@ -2473,7 +2599,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       const blob = await renderizar(fotografar(m), (p) => setStatus(`Gerando o vídeo… ${p}%`));
       const u = URL.createObjectURL(blob);
       setUrl(u);
-      setResultados([{ modelo: m, url: u, nome: nomeArquivo(m) }]);
+      setResultados([{ modelo: m, url: u, nome: nomeArquivo(m), roteiro: "padrao" }]);
       await guardar(m, blob);
       registrarNaGestao(1);
       setStatus("Pronto! Seu vídeo está abaixo.");
@@ -2488,14 +2614,17 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     setUrl(null);
     setResultados([]);
     const lista = tresEstilos();
+    // cada um dos 3 com um roteiro: destino primeiro, preço primeiro, frase de impacto primeiro
+    const roteiros: Roteiro[] = ["padrao", "preco_primeiro", "gancho"];
     const t0 = performance.now();
     try {
       for (let i = 0; i < lista.length; i++) {
         const m = lista[i];
-        const blob = await renderizar(fotografar(m), (p) => setStatus(`Vídeo ${i + 1} de ${lista.length}… ${p}%`));
+        const roteiro = roteiros[i % roteiros.length];
+        const blob = await renderizar(fotografar(m, roteiro), (p) => setStatus(`Vídeo ${i + 1} de ${lista.length}… ${p}%`));
         const u = URL.createObjectURL(blob);
         if (i === 0) setUrl(u);
-        setResultados((r) => [...r, { modelo: m, url: u, nome: nomeArquivo(m) }]);
+        setResultados((r) => [...r, { modelo: m, url: u, nome: nomeArquivo(m), roteiro }]);
         await guardar(m, blob);
       }
       registrarNaGestao(lista.length);
@@ -2506,6 +2635,17 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       setStatus("Erro: " + (e as Error).message);
     }
     setGravando(false);
+  }
+
+  const legenda = montarLegenda(dados, contatos);
+  async function copiarLegenda() {
+    try {
+      await navigator.clipboard.writeText(legenda);
+      setLegendaCopiada(true);
+      setTimeout(() => setLegendaCopiada(false), 2500);
+    } catch {
+      window.prompt("Copie a legenda:", legenda);
+    }
   }
 
   async function compartilhar(r: { url: string; nome: string }) {
@@ -2560,12 +2700,13 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
           };
           checar();
         });
-      const n = Math.round(TOTAL * FPS);
+      const L = foto0.linha;
+      const n = Math.round(L.total * FPS);
       for (let f = 0; f < n; f++) {
         const t = f / FPS;
-        const ativos = [...Array(CENAS).keys()].filter((i) => t >= INICIOS[i] - FADE && t <= INICIOS[i] + TELAS[i].dur + FADE);
+        const ativos = [...Array(L.telas.length).keys()].filter((i) => t >= L.inicios[i] - FADE && t <= L.inicios[i] + L.telas[i].dur + FADE);
         // começa a tocar quem entrou e pausa quem saiu
-        for (let i = 0; i < CENAS; i++) {
+        for (let i = 0; i < L.telas.length; i++) {
           const v = vids[i % Math.max(vids.length, 1)];
           if (!v || !isVideo(v)) continue;
           if (ativos.includes(i) && !tocando.has(i)) {
@@ -2579,9 +2720,9 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         }
         await Promise.all(ativos.map((i) => {
           const v = vids[i % Math.max(vids.length, 1)];
-          return v && isVideo(v) ? esperar(v, Math.max(0, t - INICIOS[i] + FADE)) : Promise.resolve();
+          return v && isVideo(v) ? esperar(v, Math.max(0, t - L.inicios[i] + FADE)) : Promise.resolve();
         }));
-        drawFrame(ctx, t, vids, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao, foto0.tema);
+        drawFrame(ctx, t, vids, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao, foto0.tema, L);
         const frame = new VideoFrame(canvas, { timestamp: Math.round((f * 1e6) / FPS), duration: Math.round(1e6 / FPS) });
         enc.encode(frame, { keyFrame: f % 60 === 0 });
         frame.close();
@@ -2602,8 +2743,9 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     img.src = URL.createObjectURL(f);
   }
 
-  const [folha, setFolha] = useState<null | "oferta" | "estilo" | "cores" | "fonte">(null);
+  const [folha, setFolha] = useState<null | "oferta" | "estilo" | "cores" | "fonte" | "duracao">(null);
   const [infoAberta, setInfoAberta] = useState(false);
+  const [maisOpcoes, setMaisOpcoes] = useState(false);
 
   const campo = "w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2.5 text-[15px] text-white outline-none focus:border-[#F5F906]/60";
   const rotulo = "mb-1 block text-[12px] font-semibold text-white/55";
@@ -2632,6 +2774,13 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       <div className="mx-auto grid max-w-5xl gap-5 pb-36 lg:grid-cols-[26rem_1fr] lg:pb-4">
         {/* ——— 1. Mande o pacote ——— */}
         <div className="flex min-w-0 flex-col gap-3 lg:col-start-1">
+          <NavegadorInternoAviso />
+          {!GERA_MP4 && (
+            <p id="sem-mp4" className="rounded-2xl border border-amber-400/40 bg-amber-500/10 p-3 text-[13px] leading-5 text-amber-100">
+              Este navegador não consegue montar o vídeo. Abra o Canva Viagem no <b>Chrome</b> ou no <b>Safari atualizado</b> (iPhone: iOS 16.4 ou mais novo), ou no computador.
+            </p>
+          )}
+          {resultados.length === 0 && <p className="px-1 text-[13px] text-white/55">Fale o pacote do seu jeito. Em 1 minuto saem 3 vídeos prontos para postar.</p>}
           <div role="tablist" aria-label="Como mandar o pacote" className="grid grid-cols-4 gap-1 rounded-2xl bg-white/[0.06] p-1">
             {abas.map((a) => (
               <button
@@ -2660,7 +2809,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                   >
                     <span className="min-w-0">
                       <span className="block truncate text-[15px] font-semibold">{p.title}</span>
-                      <span className="block text-[12px] text-white/50">{[p.price, p.duration].filter(Boolean).join(" · ")}</span>
+                      <span className="block text-[12px] text-white/50">{p.id === "exemplo" ? "Exemplo: toque para ver como fica" : [p.price, p.duration].filter(Boolean).join(" · ")}</span>
                     </span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-white/40" />
                   </button>
@@ -2786,8 +2935,10 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
             <div className="divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
               <LinhaLista id="linha-oferta" titulo="Oferta sazonal" valor={nomeOcasiao} destaque={sazonais.agora.some((a) => a.id === ocasiao)} onClick={() => setFolha("oferta")} />
               <LinhaLista id="linha-estilo" titulo="Estilo" valor={`${idxModelo + 1} · ${MODELOS[idxModelo]?.nome ?? ""}`} miniatura={miniaturas[modelo]} onClick={() => setFolha("estilo")} />
-              <LinhaLista id="linha-cores" titulo="Cores" valor={nomePaleta} onClick={() => setFolha("cores")} />
-              <LinhaLista id="linha-fonte" titulo="Fonte" valor={fonte} onClick={() => setFolha("fonte")} />
+              <LinhaLista id="linha-duracao" titulo="Duração" valor={curto ? "12 s · curto" : "22 s · completo"} onClick={() => setFolha("duracao")} />
+              <LinhaLista id="linha-mais" titulo="Mais opções" valor={maisOpcoes ? "" : "cores e fonte"} aberto={maisOpcoes} onClick={() => setMaisOpcoes((v) => !v)} />
+              {maisOpcoes && <LinhaLista id="linha-cores" titulo="Cores" valor={nomePaleta} onClick={() => setFolha("cores")} />}
+              {maisOpcoes && <LinhaLista id="linha-fonte" titulo="Fonte" valor={fonte} onClick={() => setFolha("fonte")} />}
             </div>
           </section>
 
@@ -2802,7 +2953,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                     <input id="campo-destino" className={campo} value={dados.destino} onChange={(e) => set("destino", e.target.value)} />
                   </div>
                   <div>
-                    <label className={rotulo}>Chamada</label>
+                    <label className={rotulo}>Frase de abertura</label>
                     <input id="campo-chamada" className={campo} value={dados.chamada} onChange={(e) => set("chamada", e.target.value)} />
                   </div>
                   <div>
@@ -2843,6 +2994,16 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                   <div>
                     <label className={rotulo}>Para quem</label>
                     <input id="campo-pessoas" className={campo} value={dados.pessoas} onChange={(e) => set("pessoas", e.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className={rotulo}>Saída de (cidade)</label>
+                      <input id="campo-saida" className={campo} placeholder="Ex.: Fortaleza" value={dados.saida} onChange={(e) => set("saida", e.target.value)} />
+                    </div>
+                    <div>
+                      <label className={rotulo}>Data da viagem</label>
+                      <input id="campo-datas" className={campo} placeholder="Ex.: 12 a 17/12" value={dados.datas} onChange={(e) => set("datas", e.target.value)} />
+                    </div>
                   </div>
                   <div>
                     <label className={rotulo}>O que está incluso (um por linha, até 4)</label>
@@ -2901,6 +3062,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                     <video id={`video-${i}`} src={r.url} controls playsInline muted loop className="mx-auto aspect-[9/16] w-full max-w-[250px] rounded-xl bg-black" />
                     <p className="mt-2 text-center text-[13px] font-semibold text-white/80">
                       Estilo {MODELOS.findIndex((m) => m.id === r.modelo) + 1} · {MODELOS.find((m) => m.id === r.modelo)?.nome}
+                      {resultados.length > 1 && <span className="font-normal text-white/50"> · {ROTEIROS.find((x) => x.id === r.roteiro)?.nome}</span>}
                     </p>
                     <div className="mt-2 grid grid-cols-4 gap-2">
                       <button onClick={() => compartilhar(r)} className={botaoIcone} aria-label="Enviar">
@@ -2922,6 +3084,18 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
             </section>
           )}
 
+          {resultados.length > 0 && (
+            <section id="legenda" className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[12px] font-bold uppercase tracking-wide text-white/45">Legenda pronta para o post</p>
+                <button id="copiar-legenda" type="button" onClick={copiarLegenda} className="min-h-10 rounded-xl px-3 text-[13px] font-bold text-black" style={{ background: "#F5F906" }}>
+                  {legendaCopiada ? "Copiada!" : "Copiar"}
+                </button>
+              </div>
+              <pre className="mt-2 whitespace-pre-wrap font-sans text-[13px] leading-5 text-white/80">{legenda}</pre>
+            </section>
+          )}
+
           {(resultados.length > 0 || mostrarOqueFazer) && (
             <OQueFazerAgora momento="video" feito={marcada("postar_video")} onConfirmar={() => { marcar("postar_video"); setMostrarOqueFazer(false); }} />
           )}
@@ -2933,9 +3107,9 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                 <button className="min-h-10 px-2 text-[14px] font-semibold text-[#F5F906]" onClick={() => { setEditando(false); setTelaAberta(null); }}>Pronto</button>
               </div>
               <p className="text-[12px] text-white/50">Troque o fundo de uma tela ou mude o texto. Depois gere de novo.</p>
-              {TELAS.map((tela, i) => {
+              {linhaPrevia.telas.map((tela, i) => {
                 const m = fundos[i % Math.max(fundos.length, 1)];
-                const nDest = TELAS.slice(0, i).filter((x) => x.tipo === "destaque").length;
+                const nDest = linhaPrevia.telas.slice(0, i).filter((x) => x.tipo === "destaque").length;
                 return (
                   <div key={i} className="rounded-xl border border-white/10 p-2">
                     <div className="flex items-center gap-2">
@@ -2996,10 +3170,10 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       {/* ——— Barra de ação (fixa no celular) ——— */}
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[#0A0A0B]/95 px-3 pt-2.5 pb-[max(10px,env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0">
         <div className="mx-auto grid max-w-md grid-cols-[1fr_1.5fr] gap-2">
-          <button id="gerar" disabled={carregando || gravando || ocupado} className="min-h-12 rounded-2xl bg-white/[0.08] text-[15px] font-bold text-white disabled:opacity-50" onClick={gerar}>
+          <button id="gerar" disabled={carregando || gravando || ocupado || !GERA_MP4} className="min-h-12 rounded-2xl bg-white/[0.08] text-[15px] font-bold text-white disabled:opacity-50" onClick={gerar}>
             1 vídeo
           </button>
-          <button id="gerar3" disabled={carregando || gravando || ocupado} className="min-h-12 rounded-2xl text-[15px] font-black text-black disabled:opacity-60" style={{ background: "#F5F906" }} onClick={gerarTres}>
+          <button id="gerar3" disabled={carregando || gravando || ocupado || !GERA_MP4} className="min-h-12 rounded-2xl text-[15px] font-black text-black disabled:opacity-60" style={{ background: "#F5F906" }} onClick={gerarTres}>
             {gravando ? status : "3 vídeos diferentes"}
           </button>
         </div>
@@ -3050,6 +3224,20 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
             <label className="flex items-center gap-2">Cor 2 <input id="cor2" type="color" value={corLivre.c2} onChange={(e) => setCorLivre((c) => ({ ...c, c2: e.target.value }))} /></label>
           </div>
         )}
+      </Folha>
+      <Folha aberta={folha === "duracao"} titulo="Duração" onFechar={() => setFolha(null)}>
+        {[
+          { curto: false, nome: "Completo", desc: "22 s · abertura, o que inclui, 2 cenas, preço e contato" },
+          { curto: true, nome: "Curto", desc: "12 s · abertura, preço e contato. Bom para status e stories" },
+        ].map((o) => (
+          <button key={o.nome} id={`duracao-${o.curto ? "curto" : "completo"}`} disabled={gravando} onClick={() => { setCurto(o.curto); setFolha(null); }} className="flex min-h-14 w-full items-center justify-between gap-3 px-4 py-2 text-left">
+            <span>
+              <span className="block text-[16px] font-semibold">{o.nome}</span>
+              <span className="block text-[12px] text-white/50">{o.desc}</span>
+            </span>
+            {curto === o.curto && <Check className="h-5 w-5 shrink-0 text-[#F5F906]" />}
+          </button>
+        ))}
       </Folha>
       <Folha aberta={folha === "fonte"} titulo="Fonte" onFechar={() => setFolha(null)}>
         {FONTES.map((fo) => (
