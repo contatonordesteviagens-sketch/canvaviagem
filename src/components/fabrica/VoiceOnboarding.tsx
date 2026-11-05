@@ -280,7 +280,7 @@ export function VoiceOnboarding({ variant = "bar", onSaved }: { variant?: "bar" 
         <div className="flex items-center gap-3 sm:mr-4 min-w-0 w-full sm:w-auto">
           <button
             onClick={startRecording}
-            className="relative flex items-center justify-center w-11 h-11 bg-violet-600 hover:bg-violet-500 text-white rounded-full transition-all active:scale-95 shadow-lg shadow-violet-600/40 shrink-0"
+            className="relative flex items-center justify-center w-11 h-11 bg-[#F5F906] hover:brightness-105 text-black rounded-full transition-all active:scale-95 shadow-lg shadow-[#F5F906]/30 shrink-0"
             title="Gravar por voz"
             aria-label="Gravar um áudio sobre a sua agência"
           >

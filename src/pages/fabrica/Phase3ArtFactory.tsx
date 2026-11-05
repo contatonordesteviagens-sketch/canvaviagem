@@ -2497,7 +2497,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         )}
 
-        <div className="col-span-2 mt-2 pt-4 border-t border-white/[0.06]">
+        <div className="col-span-full mt-2 pt-4 border-t border-white/[0.06]">
           <div className="flex items-baseline justify-between mb-2 gap-2">
             <label className={labelCls}>{categoria === "experiencia_destino" ? "Descrição da experiência" : "Benefícios / Inclusos"}</label>
             <div className="flex items-center gap-2">

@@ -87,10 +87,10 @@ export function OQueFazerAgora({
   return (
     <section
       id={`oque-fazer-${momento}`}
-      className="rounded-2xl border border-emerald-400/30 bg-gradient-to-br from-emerald-500/10 to-transparent p-4 text-white"
+      className="rounded-2xl border border-[#F5F906]/30 bg-white/[0.03] p-4 text-white"
     >
       <button type="button" onClick={() => setAberto((v) => !v)} className="flex w-full items-center gap-2 text-left">
-        <Rocket className="h-5 w-5 shrink-0 text-emerald-300" />
+        <Rocket className="h-5 w-5 shrink-0 text-[#F5F906]" />
         <span className="flex-1 text-sm font-extrabold sm:text-base">{a.titulo}</span>
         {aberto ? <ChevronUp className="h-4 w-4 text-white/50" /> : <ChevronDown className="h-4 w-4 text-white/50" />}
       </button>
@@ -98,8 +98,8 @@ export function OQueFazerAgora({
         <>
           <ol className="mt-3 space-y-2">
             {a.passos.map((p, i) => (
-              <li key={p.t} className="flex gap-3 rounded-xl bg-black/30 p-3">
-                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-400 text-sm font-black text-black">{i + 1}</span>
+              <li key={p.t} className="flex gap-3 rounded-xl bg-white/[0.04] p-3">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-sm font-black text-black">{i + 1}</span>
                 <div className="min-w-0">
                   <p className="text-sm font-bold leading-tight">{p.t}</p>
                   <p className="mt-0.5 text-xs text-white/60">{p.d}</p>
@@ -113,7 +113,7 @@ export function OQueFazerAgora({
               type="button"
               disabled={feito}
               onClick={onConfirmar}
-              className={`mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold ${feito ? "bg-emerald-400/20 text-emerald-200" : "bg-emerald-400 text-black"}`}
+              className={`mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold ${feito ? "bg-[#F5F906]/20 text-[#F5F906]" : "bg-[#F5F906] text-black"}`}
             >
               <Check className="h-4 w-4" /> {feito ? "Feito! Missão concluída" : a.confirmar}
             </button>

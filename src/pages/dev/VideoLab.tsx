@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useJornada } from "@/lib/jornada";
 import { OQueFazerAgora } from "@/components/jornada/OQueFazerAgora";
 import { salvarVideo } from "@/lib/biblioteca-videos";
+import { createPortal } from "react-dom";
+import { Check, ChevronRight, Download, Image as ImageIcon, Maximize2, Pencil, Share } from "lucide-react";
 
 // Laboratório local: monta um vídeo stories de 3 quadros no navegador,
 // com vídeo real de fundo, textos animados, preço e logo da agência.
@@ -159,7 +161,8 @@ const PALETAS: Paleta[] = [
   { id: "laranja", nome: "Laranja", c1: "#f97316", c2: "#facc15" },
   { id: "livre", nome: "Escolher" },
 ];
-const FONTES = ["Montserrat", "Poppins", "Oswald", "Bebas Neue", "Nunito", "Raleway"];
+// As mesmas fontes do Anúncio (FONT_PRESETS do Phase3ArtFactory).
+const FONTES = ["Montserrat", "Inter", "Poppins", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
 
 function luz(hex: string) {
   const h = hex.replace("#", "");
@@ -1152,7 +1155,7 @@ function cenaVibrante(ctx: CanvasRenderingContext2D, cena: number, lt: number, o
 }
 
 // ---------------- Ofertas sazonais: camada por cima de qualquer estilo ----------------
-type Ocasiao = "nenhuma" | "blackfriday" | "bf_neon" | "bf_vermelha" | "natal" | "anonovo" | "carnaval";
+type Ocasiao = "nenhuma" | "blackfriday" | "bf_neon" | "bf_vermelha" | "natal" | "anonovo" | "carnaval" | "verao" | "pascoa" | "maes" | "namorados" | "ferias_julho" | "pais" | "criancas" | "feriado";
 // meses: 0 = janeiro ... 11 = dezembro. A lista se reordena sozinha pelo mês atual.
 const OCASIOES: { id: Ocasiao; nome: string; selo: string; meses: number[] }[] = [
   { id: "nenhuma", nome: "Nenhuma", selo: "", meses: [] },
@@ -1162,7 +1165,27 @@ const OCASIOES: { id: Ocasiao; nome: string; selo: string; meses: number[] }[] =
   { id: "natal", nome: "🎄 Natal", selo: "OFERTA DE NATAL", meses: [11] },
   { id: "anonovo", nome: "✨ Ano Novo", selo: "ESPECIAL ANO NOVO", meses: [11, 0] },
   { id: "carnaval", nome: "🎭 Carnaval", selo: "🎭 CARNAVAL", meses: [0, 1] },
+  { id: "verao", nome: "☀️ Verão", selo: "ESPECIAL DE VERÃO", meses: [11, 0, 1] },
+  { id: "pascoa", nome: "🐣 Páscoa", selo: "FERIADO DE PÁSCOA", meses: [2, 3] },
+  { id: "maes", nome: "💐 Dia das Mães", selo: "PRESENTE DE DIA DAS MÃES", meses: [4] },
+  { id: "namorados", nome: "❤️ Dia dos Namorados", selo: "DIA DOS NAMORADOS", meses: [5] },
+  { id: "ferias_julho", nome: "🏖️ Férias de julho", selo: "FÉRIAS DE JULHO", meses: [5, 6] },
+  { id: "pais", nome: "👔 Dia dos Pais", selo: "PRESENTE DE DIA DOS PAIS", meses: [7] },
+  { id: "criancas", nome: "🎈 Dia das Crianças", selo: "DIA DAS CRIANÇAS", meses: [9] },
+  { id: "feriado", nome: "📅 Feriado prolongado", selo: "FERIADO PROLONGADO", meses: [] },
 ];
+// cor do selo de cada ocasião (as Black Friday têm estilo próprio)
+const COR_SELO: Partial<Record<Ocasiao, { fundo: string; texto: string }>> = {
+  natal: { fundo: "#b91c1c", texto: "#fff" },
+  verao: { fundo: "#f59e0b", texto: "#1a1406" },
+  pascoa: { fundo: "#f9a8d4", texto: "#4a044e" },
+  maes: { fundo: "#db2777", texto: "#fff" },
+  namorados: { fundo: "#dc2626", texto: "#fff" },
+  ferias_julho: { fundo: "#0ea5e9", texto: "#fff" },
+  pais: { fundo: "#1e3a8a", texto: "#fff" },
+  criancas: { fundo: "#7c3aed", texto: "#fff" },
+  feriado: { fundo: "#16a34a", texto: "#fff" },
+};
 function ocasioesDoMes(hoje = new Date()) {
   const m = hoje.getMonth();
   const agora = OCASIOES.filter((o) => o.meses.includes(m));
@@ -1211,6 +1234,27 @@ function confete(ctx: CanvasRenderingContext2D, t: number) {
     ctx.fillStyle = cores[i % cores.length];
     ctx.globalAlpha = 0.85 * (1 - y / faixa);
     ctx.fillRect(-5, -2.5, 10, 5);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function coracoes(ctx: CanvasRenderingContext2D, t: number, cor: string) {
+  const faixa = H * 0.22;
+  for (let i = 0; i < 16; i++) {
+    const vel = 30 + rnd(i, 3) * 40;
+    const y = faixa - ((rnd(i, 4) * faixa + t * vel) % faixa); // sobem
+    const x = rnd(i, 5) * W + Math.sin(t * 1.5 + i) * 12;
+    const r = 5 + rnd(i, 2) * 6;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.globalAlpha = 0.75 * (y / faixa);
+    ctx.fillStyle = cor;
+    ctx.beginPath();
+    ctx.moveTo(0, r);
+    ctx.bezierCurveTo(-r * 1.4, -r * 0.2, -r * 0.6, -r * 1.2, 0, -r * 0.4);
+    ctx.bezierCurveTo(r * 0.6, -r * 1.2, r * 1.4, -r * 0.2, 0, r);
+    ctx.fill();
     ctx.restore();
   }
   ctx.globalAlpha = 1;
@@ -1267,8 +1311,10 @@ function seloOcasiao(ctx: CanvasRenderingContext2D, oc: Ocasiao, k: number) {
     const e = ESTILO_BF[oc as keyof typeof ESTILO_BF];
     ctx.fillStyle = e.barra;
     texto = e.texto;
-  } else if (oc === "natal") ctx.fillStyle = "#b91c1c";
-  else if (oc === "anonovo") {
+  } else if (COR_SELO[oc]) {
+    ctx.fillStyle = COR_SELO[oc]!.fundo;
+    texto = COR_SELO[oc]!.texto;
+  } else if (oc === "anonovo") {
     const g = ctx.createLinearGradient(x, 0, x + w, 0);
     g.addColorStop(0, "#fff1c2");
     g.addColorStop(0.5, "#f5c451");
@@ -1373,6 +1419,8 @@ function camadaOcasiao(ctx: CanvasRenderingContext2D, oc: Ocasiao, t: number, ti
     letreiro(ctx, 1110, 42, t, -1, e);
   }
   if (oc === "natal") neve(ctx, t);
+  if (oc === "maes") coracoes(ctx, t, "#f472b6");
+  if (oc === "namorados") coracoes(ctx, t, "#ef4444");
   if (oc === "carnaval") confete(ctx, t);
   if (oc === "anonovo") fogos(ctx, t);
   if (tipo === "abertura" || tipo === "preco") seloOcasiao(ctx, oc, ease(lt / 0.5));
@@ -1852,13 +1900,13 @@ function Gravador({ onAudio, ocupado }: { onAudio: (b: Blob) => void; ocupado: b
     <button
       id="microfone"
       disabled={ocupado}
-      className={`w-full rounded-xl px-4 py-4 text-lg font-bold disabled:opacity-60 ${gravando ? "animate-pulse bg-red-600" : "bg-violet-600"}`}
+      className={`w-full rounded-2xl px-4 py-4 text-[16px] font-bold disabled:opacity-60 ${gravando ? "animate-pulse bg-red-600 text-white" : "bg-[#F5F906] text-black"}`}
       onClick={() => {
         if (gravando) { recRef.current?.stop(); setGravando(false); }
         else iniciar().catch(() => alert("O navegador bloqueou o microfone. Clique no cadeado da barra de endereço e permita."));
       }}
     >
-      {gravando ? `⏹ Parar e enviar (${seg}s)` : "🎤 Gravar áudio do pacote"}
+      {gravando ? `Parar e enviar (${seg}s)` : "Gravar áudio do pacote"}
     </button>
   );
 }
@@ -1904,15 +1952,15 @@ function Microfone({ onTexto, onAviso }: { onTexto: (t: string) => void; onAviso
   }
 
   return (
-    <div className="rounded-lg border border-neutral-700 p-3">
+    <div>
       <button
         id="microfone"
-        className={`w-full rounded-xl px-4 py-4 text-lg font-bold ${ouvindo ? "animate-pulse bg-red-600" : "bg-violet-600"}`}
+        className={`w-full rounded-2xl px-4 py-4 text-[16px] font-bold ${ouvindo ? "animate-pulse bg-red-600 text-white" : "bg-[#F5F906] text-black"}`}
         onClick={() => (ouvindo ? recRef.current?.stop() : iniciar())}
       >
-        {ouvindo ? "⏹ Parar e enviar" : "🎤 Gravar áudio do pacote"}
+        {ouvindo ? "Parar e enviar" : "Gravar áudio do pacote"}
       </button>
-      {parcial && <p className="mt-2 text-sm italic text-neutral-300">{parcial}</p>}
+      {parcial && <p className="mt-2 text-[13px] italic text-white/70">{parcial}</p>}
     </div>
   );
 }
@@ -2296,7 +2344,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;500;600;700;800;900&family=Oswald:wght@300;500;600;700&family=Bebas+Neue&family=Nunito:wght@300;600;700;800;900&family=Raleway:wght@300;500;600;700;800;900&display=swap";
+    link.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;500;600;700;800;900&family=Oswald:wght@300;500;600;700&family=Bebas+Neue&family=Nunito:wght@300;600;700;800;900&family=Raleway:wght@300;500;600;700;800;900&family=Inter:wght@300;500;600;700;800;900&family=Roboto:wght@300;500;700;900&family=Lora:wght@500;600;700&family=Work+Sans:wght@300;500;600;700;800;900&family=DM+Sans:wght@300;500;600;700;800;900&display=swap";
     document.head.appendChild(link);
     Promise.all([document.fonts.load("900 40px Montserrat"), document.fonts.load("700 40px 'Playfair Display'"), document.fonts.load("italic 400 40px 'Playfair Display'"), carregarFundos([...CLIPS, ...CLIPS].slice(0, CENAS).map((url) => ({ tipo: "video" as const, url })))]).catch((e) =>
       setStatus("Erro: " + e.message),
@@ -2553,427 +2601,349 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     img.src = URL.createObjectURL(f);
   }
 
-  const campo = "w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white";
-  const rotulo = "text-xs text-neutral-400";
+  const [folha, setFolha] = useState<null | "oferta" | "estilo" | "cores" | "fonte">(null);
+  const [infoAberta, setInfoAberta] = useState(false);
+
+  const campo = "w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2.5 text-[15px] text-white outline-none focus:border-[#F5F906]/60";
+  const rotulo = "mb-1 block text-[12px] font-semibold text-white/55";
   const set = <K extends keyof Dados>(k: K, v: Dados[K]) => setDados((d) => ({ ...d, [k]: v }));
   const abas: { id: Entrada; nome: string }[] = [
-    { id: "pacote", nome: "📦 Meus pacotes" },
-    { id: "audio", nome: "🎤 Áudio" },
-    { id: "texto", nome: "✍️ Texto" },
-    { id: "foto", nome: "🖼️ Foto" },
+    { id: "pacote", nome: "Pacotes" },
+    { id: "audio", nome: "Áudio" },
+    { id: "texto", nome: "Texto" },
+    { id: "foto", nome: "Foto" },
   ];
+  const nomeOcasiao = OCASIOES.find((o) => o.id === ocasiao)?.nome.replace(/^\S+\s/, "") || "Nenhuma";
+  const idxModelo = MODELOS.findIndex((m) => m.id === modelo);
+  const nomePaleta = PALETAS.find((p) => p.id === paleta)?.nome || "Do estilo";
+  const telaCheia = (id: string) => {
+    const v = document.getElementById(id) as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
+    if (!v) return;
+    if (v.requestFullscreen) v.requestFullscreen().catch(() => v.webkitEnterFullscreen?.());
+    else v.webkitEnterFullscreen?.();
+  };
+  const botaoIcone = "flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl bg-white/[0.06] text-[11px] font-semibold text-white/80 active:bg-white/[0.12]";
 
   return (
-    <div className={embutido ? "text-white" : "min-h-screen bg-neutral-950 p-4 text-white"}>
+    <div className={embutido ? "text-white" : "min-h-screen bg-[#0A0A0B] p-4 text-white"}>
       <style>{`@keyframes cvScan { 0% { top: 0% } 50% { top: 97% } 100% { top: 0% } } .cv-scan { animation: cvScan 1.6s ease-in-out infinite; }`}</style>
-      {!embutido && <h1 className="mb-1 text-xl font-bold">🎬 Vídeo pronto</h1>}
-      <p className="mb-4 text-sm text-neutral-400">Mande o pacote de um jeito só: fale, escreva, mande a foto ou escolha um salvo. A IA acha o destino, preenche tudo e monta 3 vídeos para você escolher.</p>
-      <div className="mx-auto grid max-w-5xl gap-4 pb-28 lg:grid-cols-[28rem_1fr] lg:pb-4">
+      {!embutido && <h1 className="mb-3 text-xl font-black">Vídeo pronto</h1>}
+      <div className="mx-auto grid max-w-5xl gap-5 pb-36 lg:grid-cols-[26rem_1fr] lg:pb-4">
+        {/* ——— 1. Mande o pacote ——— */}
         <div className="flex min-w-0 flex-col gap-3 lg:col-start-1">
-          <p className="text-xs font-bold uppercase tracking-wide text-violet-300">1. Mande o pacote</p>
-          {/* 1. como mandar o pacote */}
-          <div className="grid grid-cols-4 gap-1 rounded-xl bg-neutral-900 p-1">
+          <div role="tablist" aria-label="Como mandar o pacote" className="grid grid-cols-4 gap-1 rounded-2xl bg-white/[0.06] p-1">
             {abas.map((a) => (
               <button
                 key={a.id}
                 id={`aba-${a.id}`}
+                role="tab"
+                aria-selected={entrada === a.id}
                 onClick={() => setEntrada(a.id)}
-                className={`rounded-lg px-1 py-2 text-xs font-semibold ${entrada === a.id ? "bg-violet-600" : "text-neutral-300"}`}
+                className={`min-h-11 rounded-xl text-[13px] font-semibold transition-colors ${entrada === a.id ? "bg-white/[0.14] text-white shadow-sm" : "text-white/60"}`}
               >
                 {a.nome}
               </button>
             ))}
           </div>
 
-          {entrada === "pacote" && (
-            <div className="flex flex-col gap-2">
-              <p className="text-xs text-neutral-400">Pacotes que você já cadastrou. Toque num para virar vídeo.</p>
-              {(pacotes.length ? pacotes : [PACOTE_EXEMPLO]).map((p) => (
-                <button
-                  key={p.id}
-                  disabled={ocupado}
-                  onClick={() => enviar({ text: textoDoPacote(p) })}
-                  className="rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-left disabled:opacity-60"
-                >
-                  <p className="font-semibold">{p.title}</p>
-                  <p className="text-xs text-neutral-400">{[p.price, p.duration].filter(Boolean).join(" · ")}</p>
+          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            {entrada === "pacote" && (
+              <div className="flex flex-col gap-2">
+                <p className="text-[13px] text-white/55">Toque num pacote para virar vídeo.</p>
+                {(pacotes.length ? pacotes : [PACOTE_EXEMPLO]).map((p) => (
+                  <button
+                    key={p.id}
+                    disabled={ocupado}
+                    onClick={() => enviar({ text: textoDoPacote(p) })}
+                    className="flex min-h-12 items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-left disabled:opacity-60"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-[15px] font-semibold">{p.title}</span>
+                      <span className="block text-[12px] text-white/50">{[p.price, p.duration].filter(Boolean).join(" · ")}</span>
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-white/40" />
+                  </button>
+                ))}
+                {!pacotes.length && <p className="text-[12px] text-white/40">Você ainda não tem pacote salvo. Este é um exemplo.</p>}
+              </div>
+            )}
+
+            {entrada === "audio" && (
+              <div className="flex flex-col gap-3">
+                {logado ? <Gravador onAudio={onAudio} ocupado={ocupado} /> : <Microfone onTexto={(t) => { setFrase(t); enviar({ text: t }); }} onAviso={setAviso} />}
+                <p className="text-[13px] text-white/55">
+                  Fale como se fosse para um cliente. <span className="text-white/80">"Sou a Sol Viagens. Vendo Gramado, 5 dias, por 1.990 reais, com hotel e café. Meu WhatsApp é 82 99999-9999."</span>
+                </p>
+              </div>
+            )}
+
+            {entrada === "texto" && (
+              <div className="flex flex-col gap-3">
+                <textarea
+                  id="frase"
+                  className={campo}
+                  rows={4}
+                  placeholder="Cole o pacote como você manda no WhatsApp: destino, preço, o que inclui."
+                  value={frase}
+                  onChange={(e) => setFrase(e.target.value)}
+                />
+                <button id="enviar" disabled={ocupado} className="min-h-12 rounded-xl text-[15px] font-bold text-black disabled:opacity-60" style={{ background: "#F5F906" }} onClick={() => enviar({ text: frase })}>
+                  {ocupado ? "Aguarde…" : "Enviar"}
                 </button>
-              ))}
-              {!pacotes.length && <p className="text-xs text-neutral-500">Nenhum pacote salvo na Fábrica neste navegador. Mostrei um exemplo.</p>}
-            </div>
-          )}
+              </div>
+            )}
 
-          {entrada === "audio" && (
-            <div className="rounded-xl border border-violet-500/30 bg-violet-500/10 p-3 text-sm">
-              <p className="font-bold">Fale como se estivesse contando para um cliente.</p>
-              <p className="mt-1 text-xs text-neutral-300">
-                Exemplo: <em>"Sou a Sol Viagens, de Maceió. Vendo Gramado, 5 dias, por 1.990 reais, com hotel, café da manhã e passeio de Maria Fumaça. Meu WhatsApp é 82 99999-9999."</em>
-              </p>
-            </div>
-          )}
-          {entrada === "audio" &&
-            (logado ? (
-              <Gravador onAudio={onAudio} ocupado={ocupado} />
-            ) : (
-              <Microfone onTexto={(t) => { setFrase(t); enviar({ text: t }); }} onAviso={setAviso} />
-            ))}
-
-          {entrada === "texto" && (
-            <>
-              <p className="text-xs text-neutral-400">Cole a descrição do pacote do jeito que você manda no WhatsApp. Pode ser longa.</p>
-              <textarea
-                id="frase"
-                className={campo}
-                rows={5}
-                placeholder="Cole aqui o pacote: destino, preço, parcelas, o que está incluso…"
-                value={frase}
-                onChange={(e) => setFrase(e.target.value)}
-              />
-              <button id="enviar" disabled={ocupado} className="rounded-lg bg-violet-600 px-4 py-2 font-semibold disabled:opacity-60" onClick={() => enviar({ text: frase })}>
-                {ocupado ? "Aguarde…" : "Enviar"}
-              </button>
-            </>
-          )}
-
-          {entrada === "foto" && (
-            <div className="flex flex-col gap-3">
-              {!foto ? (
-                <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-violet-500/60 bg-violet-500/5 p-6 text-center transition hover:bg-violet-500/10">
-                  <span className="text-4xl">📸</span>
-                  <span className="font-semibold">Toque para escolher a foto ou o print do pacote</span>
-                  <span className="text-xs text-neutral-400">Pode ser o flyer da operadora, um post ou um print do WhatsApp. A gente lê o destino, o preço e o que inclui. No computador, dá para colar com Ctrl+V.</span>
-                  <input id="foto" type="file" accept="image/*" className="hidden" onChange={(e) => onFoto(e.target.files?.[0])} />
-                </label>
-              ) : (
-                <div className="flex flex-col gap-3 rounded-xl border border-neutral-700 bg-neutral-900 p-3">
-                  <div className="relative mx-auto overflow-hidden rounded-lg">
-                    <img src={foto} alt="Foto do pacote" className="max-h-64 rounded-lg" />
-                    {(fotoEtapa === "lendo" || fotoEtapa === "buscando") && (
-                      <>
-                        <div className="absolute inset-0 bg-violet-900/30" />
-                        <div className="cv-scan absolute inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-amber-300 to-transparent shadow-[0_0_24px_6px_rgba(252,211,77,.7)]" />
-                      </>
+            {entrada === "foto" && (
+              <div className="flex flex-col gap-3">
+                {!foto ? (
+                  <label className="flex min-h-36 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-white/[0.02] p-5 text-center">
+                    <ImageIcon className="h-7 w-7 text-[#F5F906]" />
+                    <span className="text-[15px] font-semibold">Escolher foto ou print do pacote</span>
+                    <span className="text-[12px] text-white/50">Flyer da operadora, post ou print do WhatsApp.</span>
+                    <input id="foto" type="file" accept="image/*" className="hidden" onChange={(e) => onFoto(e.target.files?.[0])} />
+                  </label>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <div className="relative mx-auto overflow-hidden rounded-xl">
+                      <img src={foto} alt="Foto do pacote" className="max-h-56 rounded-xl" />
+                      {(fotoEtapa === "lendo" || fotoEtapa === "buscando") && (
+                        <>
+                          <div className="absolute inset-0 bg-black/40" />
+                          <div className="cv-scan absolute inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-[#F5F906] to-transparent shadow-[0_0_24px_6px_rgba(245,249,6,.6)]" />
+                        </>
+                      )}
+                      {fotoEtapa === "pronta" && <div className="absolute right-2 top-2 rounded-full px-3 py-1 text-[12px] font-bold text-black" style={{ background: "#F5F906" }}>Lida</div>}
+                    </div>
+                    {fotoEtapa === "recebida" && (
+                      <p id="foto-recebida" className="flex items-center gap-2 text-[14px] font-semibold">
+                        <span className="grid h-6 w-6 place-items-center rounded-full text-black" style={{ background: "#F5F906" }}><Check className="h-3.5 w-3.5" /></span>
+                        Foto recebida. Agora é só enviar.
+                      </p>
                     )}
-                    {fotoEtapa === "pronta" && (
-                      <div className="absolute right-2 top-2 rounded-full bg-green-600 px-3 py-1 text-xs font-bold">✓ Lida</div>
+                    {(fotoEtapa === "lendo" || fotoEtapa === "buscando" || fotoEtapa === "pronta") && (
+                      <ol id="foto-passos" className="flex flex-col gap-1.5 text-[13px]">
+                        {[
+                          { nome: "Foto recebida", feito: true },
+                          { nome: "Lendo destino, preço e inclusos", feito: fotoEtapa !== "lendo", agora: fotoEtapa === "lendo" },
+                          { nome: "Buscando vídeos do destino", feito: fotoEtapa === "pronta", agora: fotoEtapa === "buscando" },
+                        ].map((p) => (
+                          <li key={p.nome} className={`flex items-center gap-2 ${p.feito ? "text-white" : p.agora ? "text-[#F5F906]" : "text-white/40"}`}>
+                            {p.feito ? (
+                              <span className="grid h-5 w-5 place-items-center rounded-full text-black" style={{ background: "#F5F906" }}><Check className="h-3 w-3" /></span>
+                            ) : p.agora ? (
+                              <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#F5F906] border-t-transparent" />
+                            ) : (
+                              <span className="h-5 w-5 rounded-full border-2 border-white/20" />
+                            )}
+                            {p.nome}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                    {fotoEtapa !== "lendo" && fotoEtapa !== "buscando" && (
+                      <div className="flex gap-2">
+                        <button
+                          id="enviar-foto"
+                          onClick={enviarFoto}
+                          disabled={ocupado}
+                          className={`min-h-12 flex-1 rounded-xl text-[15px] font-bold disabled:opacity-60 ${fotoEtapa === "pronta" ? "bg-white/[0.08] text-white" : "text-black"}`}
+                          style={fotoEtapa === "pronta" ? undefined : { background: "#F5F906" }}
+                        >
+                          {fotoEtapa === "pronta" ? "Ler de novo" : "Enviar foto"}
+                        </button>
+                        <label className="grid min-h-12 cursor-pointer place-items-center rounded-xl border border-white/15 px-4 text-[14px] font-semibold">
+                          Trocar
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => onFoto(e.target.files?.[0])} />
+                        </label>
+                      </div>
                     )}
                   </div>
-                  {fotoEtapa === "recebida" && (
-                    <p id="foto-recebida" className="flex items-center gap-2 rounded-lg bg-green-500/15 p-2 text-sm font-semibold text-green-300">
-                      <span className="grid h-6 w-6 place-items-center rounded-full bg-green-600 text-white">✓</span>
-                      Foto recebida! Agora é só enviar.
-                    </p>
-                  )}
-                  {(fotoEtapa === "lendo" || fotoEtapa === "buscando" || fotoEtapa === "pronta") && (
-                    <ol id="foto-passos" className="flex flex-col gap-1.5 text-sm">
-                      {[
-                        { nome: "Foto recebida", feito: true },
-                        { nome: "Lendo destino, preço e inclusos da imagem", feito: fotoEtapa !== "lendo", agora: fotoEtapa === "lendo" },
-                        { nome: "Buscando vídeos do destino", feito: fotoEtapa === "pronta", agora: fotoEtapa === "buscando" },
-                      ].map((p) => (
-                        <li key={p.nome} className={`flex items-center gap-2 ${p.feito ? "text-green-300" : p.agora ? "text-amber-200" : "text-neutral-500"}`}>
-                          {p.feito ? (
-                            <span className="grid h-5 w-5 place-items-center rounded-full bg-green-600 text-[11px] text-white">✓</span>
-                          ) : p.agora ? (
-                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-amber-300 border-t-transparent" />
-                          ) : (
-                            <span className="h-5 w-5 rounded-full border-2 border-neutral-600" />
-                          )}
-                          {p.nome}
-                        </li>
-                      ))}
-                    </ol>
-                  )}
-                  {fotoEtapa !== "lendo" && fotoEtapa !== "buscando" && (
-                    <div className="flex gap-2">
-                      <button
-                        id="enviar-foto"
-                        onClick={enviarFoto}
-                        disabled={ocupado}
-                        className={`flex-1 rounded-lg px-4 py-3 font-bold disabled:opacity-60 ${fotoEtapa === "pronta" ? "bg-neutral-700" : "animate-pulse bg-violet-600"}`}
-                      >
-                        {fotoEtapa === "pronta" ? "Ler de novo" : "📤 Enviar foto e montar o vídeo"}
-                      </button>
-                      <label className="cursor-pointer rounded-lg border border-neutral-600 px-3 py-3 text-sm">
-                        Trocar
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => onFoto(e.target.files?.[0])} />
-                      </label>
+                )}
+              </div>
+            )}
+          </section>
+
+          {etapa && <p id="etapa" className="text-[13px] font-semibold text-[#F5F906]">{etapa}</p>}
+          {aviso && <p id="aviso" className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-[13px] text-red-200">{aviso}</p>}
+          {fontes && (
+            <p id="fontes" className="text-[12px] text-white/40">
+              Fundo: {fontes.videos} vídeo{fontes.videos === 1 ? "" : "s"}{fontes.fotos ? ` e ${fontes.fotos} foto${fontes.fotos === 1 ? "" : "s"}` : ""} do destino
+            </p>
+          )}
+        </div>
+
+        {/* ——— Prévia ——— */}
+        <div id="previa" className="lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
+          <canvas ref={canvasRef} width={W} height={H} className="mx-auto block w-full max-w-[210px] rounded-2xl border border-white/10 sm:max-w-[300px] lg:max-w-[360px]" />
+          <p className="mt-1.5 text-center text-[11px] text-white/40">Prévia ao vivo</p>
+        </div>
+
+        {/* ——— 2. Visual ——— */}
+        <div className="flex min-w-0 flex-col gap-5 lg:col-start-1">
+          <section>
+            <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-white/45">Visual</p>
+            <div className="divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+              <LinhaLista id="linha-oferta" titulo="Oferta sazonal" valor={nomeOcasiao} destaque={sazonais.agora.some((a) => a.id === ocasiao)} onClick={() => setFolha("oferta")} />
+              <LinhaLista id="linha-estilo" titulo="Estilo" valor={`${idxModelo + 1} · ${MODELOS[idxModelo]?.nome ?? ""}`} miniatura={miniaturas[modelo]} onClick={() => setFolha("estilo")} />
+              <LinhaLista id="linha-cores" titulo="Cores" valor={nomePaleta} onClick={() => setFolha("cores")} />
+              <LinhaLista id="linha-fonte" titulo="Fonte" valor={fonte} onClick={() => setFolha("fonte")} />
+            </div>
+          </section>
+
+          <section>
+            <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-white/45">Informações</p>
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+              <LinhaLista id="linha-info" titulo="Destino, preço e contatos" valor={dados.destino} aberto={infoAberta} onClick={() => setInfoAberta((v) => !v)} />
+              {infoAberta && (
+                <div className="flex flex-col gap-3 border-t border-white/10 p-4">
+                  <div>
+                    <label className={rotulo}>Destino</label>
+                    <input id="campo-destino" className={campo} value={dados.destino} onChange={(e) => set("destino", e.target.value)} />
+                  </div>
+                  <div>
+                    <label className={rotulo}>Chamada</label>
+                    <input id="campo-chamada" className={campo} value={dados.chamada} onChange={(e) => set("chamada", e.target.value)} />
+                  </div>
+                  <div>
+                    <label className={rotulo}>Pagamento</label>
+                    <select id="campo-pagamento" className={campo} value={dados.pagamento} onChange={(e) => set("pagamento", e.target.value as Pagamento)}>
+                      <option value="installments">Parcelado (ex.: 10x de R$ 349)</option>
+                      <option value="cash">À vista / a partir de</option>
+                      <option value="down_plus">Entrada + parcelas</option>
+                      <option value="free_quote">Sem preço (consulte)</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(dados.pagamento === "installments" || dados.pagamento === "down_plus") && (
+                      <div>
+                        <label className={rotulo}>Parcelas</label>
+                        <input id="campo-parcelas" className={campo} value={dados.parcelas} onChange={(e) => set("parcelas", e.target.value)} />
+                      </div>
+                    )}
+                    {dados.pagamento === "down_plus" && (
+                      <div>
+                        <label className={rotulo}>Entrada</label>
+                        <input id="campo-entrada" className={campo} value={dados.entrada} onChange={(e) => set("entrada", e.target.value)} />
+                      </div>
+                    )}
+                    {dados.pagamento !== "free_quote" && (
+                      <div className={dados.pagamento === "cash" ? "col-span-3" : dados.pagamento === "installments" ? "col-span-2" : ""}>
+                        <label className={rotulo}>{dados.pagamento === "cash" ? "Preço" : "Valor da parcela"}</label>
+                        <input id="campo-preco" className={campo} value={dados.preco} onChange={(e) => set("preco", e.target.value)} />
+                      </div>
+                    )}
+                  </div>
+                  {dados.pagamento !== "free_quote" && (
+                    <div>
+                      <label className={rotulo}>Preço antigo, riscado (opcional)</label>
+                      <input id="campo-precoAntigo" className={campo} placeholder="Ex.: R$ 4.990" value={dados.precoAntigo} onChange={(e) => set("precoAntigo", e.target.value)} />
                     </div>
                   )}
+                  <div>
+                    <label className={rotulo}>Para quem</label>
+                    <input id="campo-pessoas" className={campo} value={dados.pessoas} onChange={(e) => set("pessoas", e.target.value)} />
+                  </div>
+                  <div>
+                    <label className={rotulo}>O que está incluso (um por linha, até 4)</label>
+                    <textarea id="campo-itens" className={campo} rows={4} value={dados.itens.join("\n")} onChange={(e) => set("itens", e.target.value.split("\n"))} />
+                  </div>
+                  <div>
+                    <label className={rotulo}>Agência</label>
+                    <input id="campo-agencia" className={campo} value={dados.agencia} onChange={(e) => set("agencia", e.target.value)} />
+                  </div>
+                  <p className={rotulo}>Contatos no final do vídeo</p>
+                  {CONTATOS.map((c) => {
+                    const on = contatos.includes(c.id);
+                    return (
+                      <div key={c.id} className="flex items-center gap-2">
+                        <input
+                          id={`usar-${c.id}`}
+                          type="checkbox"
+                          checked={on}
+                          onChange={() => setContatos((l) => (on ? l.filter((x) => x !== c.id) : [...l, c.id]))}
+                          className="h-5 w-5 accent-[#F5F906]"
+                        />
+                        <span className="w-20 text-[13px]">{c.nome}</span>
+                        <input
+                          id={`campo-${c.id}`}
+                          className={campo}
+                          placeholder={{ whatsapp: "(88) 99999-9999", instagram: "@suaagencia", facebook: "suaagencia", email: "contato@…", site: "suaagencia.com.br" }[c.id]}
+                          value={dados[c.id]}
+                          onChange={(e) => set(c.id, e.target.value)}
+                        />
+                      </div>
+                    );
+                  })}
+                  <div>
+                    <label className={rotulo}>Logo {fabrica.logoBase64 ? "(da Fábrica)" : ""}</label>
+                    <input type="file" accept="image/*" className="text-[13px]" onChange={(e) => onLogo(e.target.files?.[0])} />
+                  </div>
                 </div>
               )}
             </div>
-          )}
+          </section>
 
-          {etapa && <p id="etapa" className="text-sm text-violet-300">{etapa}</p>}
-          {aviso && <p id="aviso" className="rounded-lg bg-red-500/15 p-3 text-sm text-red-200">{aviso}</p>}
-          {fontes && (
-            <p id="fontes" className="text-xs text-neutral-500">
-              Fundo: {fontes.videos} vídeo(s){fontes.fotos ? ` e ${fontes.fotos} foto(s)` : ""} do Pexels
-            </p>
-          )}
-
-        </div>
-
-        <div id="previa" className="lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
-          <canvas ref={canvasRef} width={W} height={H} className="mx-auto block w-full max-w-[220px] rounded-xl border border-neutral-800 sm:max-w-[300px] lg:max-w-[360px]" />
-          <p className="mt-1 text-center text-[11px] text-neutral-500">Prévia ao vivo</p>
-        </div>
-
-        <div className="flex min-w-0 flex-col gap-3 lg:col-start-1">
-          <p className="text-xs font-bold uppercase tracking-wide text-violet-300">2. Escolha o visual</p>
-          <h2 className="mt-2 text-sm font-bold text-neutral-200">Oferta sazonal</h2>
-          {sazonais.agora.length > 0 && <p className="-mt-2 text-xs text-amber-300">Deste mês já aparecem primeiro.</p>}
-          <div className="flex flex-wrap gap-1.5">
-            {sazonais.lista.map((o) => (
-              <button
-                key={o.id}
-                id={`ocasiao-${o.id}`}
-                disabled={gravando}
-                onClick={() => setOcasiao(o.id)}
-                className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${ocasiao === o.id ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
-              >
-                {o.nome}
-                {sazonais.agora.some((a) => a.id === o.id) && <span className="ml-1 text-amber-300">• agora</span>}
-              </button>
-            ))}
-          </div>
-
-          <h2 className="mt-2 text-sm font-bold text-neutral-200">Estilo</h2>
-          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible">
-            {MODELOS.map((m, i) => (
-              <button
-                key={m.id}
-                id={`modelo-${m.id}`}
-                title={m.nome}
-                disabled={gravando}
-                onClick={() => setModelo(m.id)}
-                className={`w-16 shrink-0 overflow-hidden rounded-md border text-center sm:w-auto ${modelo === m.id ? "border-amber-400 ring-2 ring-amber-400/40" : "border-neutral-700"}`}
-              >
-                {miniaturas[m.id] ? (
-                  <img src={miniaturas[m.id]} alt={m.nome} className="aspect-[9/16] w-full object-cover" />
-                ) : (
-                  <div className="aspect-[9/16] w-full bg-neutral-800" />
-                )}
-                <p className="py-0.5 text-[11px] font-semibold">{i + 1}</p>
-              </button>
-            ))}
-          </div>
-
-          <h2 className="mt-2 text-sm font-bold text-neutral-200">Cores</h2>
-          <div className="flex flex-wrap gap-1.5">
-            {PALETAS.map((p) => {
-              const c1 = p.id === "marca" ? fabrica.primaryColor : p.id === "livre" ? corLivre.c1 : p.c1;
-              const c2 = p.id === "marca" ? fabrica.secondaryColor : p.id === "livre" ? corLivre.c2 : p.c2;
-              return (
-                <button
-                  key={p.id}
-                  id={`paleta-${p.id}`}
-                  disabled={gravando}
-                  onClick={() => setPaleta(p.id)}
-                  className={`flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] ${paleta === p.id ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
-                >
-                  {c1 && <span className="h-3 w-3 rounded-full" style={{ background: c1 }} />}
-                  {c2 && <span className="-ml-1.5 h-3 w-3 rounded-full ring-1 ring-neutral-900" style={{ background: c2 }} />}
-                  {p.nome}
-                </button>
-              );
-            })}
-          </div>
-          {paleta === "livre" && (
-            <div className="flex items-center gap-3 text-xs">
-              <label className="flex items-center gap-1">Cor 1 <input id="cor1" type="color" value={corLivre.c1} onChange={(e) => setCorLivre((c) => ({ ...c, c1: e.target.value }))} /></label>
-              <label className="flex items-center gap-1">Cor 2 <input id="cor2" type="color" value={corLivre.c2} onChange={(e) => setCorLivre((c) => ({ ...c, c2: e.target.value }))} /></label>
-            </div>
-          )}
-
-          <h2 className="mt-2 text-sm font-bold text-neutral-200">Fonte</h2>
-          <div className="flex flex-wrap gap-1.5">
-            {FONTES.map((fo) => (
-              <button
-                key={fo}
-                id={`fonte-${fo.replace(/\s/g, "")}`}
-                disabled={gravando}
-                onClick={() => setFonte(fo)}
-                style={{ fontFamily: `'${fo}', sans-serif` }}
-                className={`rounded-full border px-2.5 py-1 text-xs ${fonte === fo ? "border-amber-400 bg-amber-400/15" : "border-neutral-700 bg-neutral-900"}`}
-              >
-                {fo}
-              </button>
-            ))}
-          </div>
-          <details id="informacoes" className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-3">
-            <summary className="cursor-pointer text-sm font-bold text-neutral-200">
-              3. Confira as informações <span className="font-normal text-neutral-400">(destino, preço, inclusos, contatos)</span>
-            </summary>
-            <div className="mt-3 flex flex-col gap-3">
-          {/* 2. o pacote */}
-          <h2 className="mt-2 text-sm font-bold text-neutral-200">Pacote</h2>
-          <div>
-            <label className={rotulo}>Destino</label>
-            <input id="campo-destino" className={campo} value={dados.destino} onChange={(e) => set("destino", e.target.value)} />
-          </div>
-          <div>
-            <label className={rotulo}>Chamada</label>
-            <input id="campo-chamada" className={campo} value={dados.chamada} onChange={(e) => set("chamada", e.target.value)} />
-          </div>
-          <div>
-            <label className={rotulo}>Pagamento</label>
-            <select id="campo-pagamento" className={campo} value={dados.pagamento} onChange={(e) => set("pagamento", e.target.value as Pagamento)}>
-              <option value="installments">💳 Parcelado (ex.: 10x de R$ 349)</option>
-              <option value="cash">💰 À vista / a partir de</option>
-              <option value="down_plus">💵 Entrada + parcelas</option>
-              <option value="free_quote">💬 Sem preço (consulte)</option>
-            </select>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {(dados.pagamento === "installments" || dados.pagamento === "down_plus") && (
-              <div>
-                <label className={rotulo}>Parcelas</label>
-                <input id="campo-parcelas" className={campo} value={dados.parcelas} onChange={(e) => set("parcelas", e.target.value)} />
-              </div>
-            )}
-            {dados.pagamento === "down_plus" && (
-              <div>
-                <label className={rotulo}>Entrada</label>
-                <input id="campo-entrada" className={campo} value={dados.entrada} onChange={(e) => set("entrada", e.target.value)} />
-              </div>
-            )}
-            {dados.pagamento !== "free_quote" && (
-              <div className={dados.pagamento === "cash" ? "col-span-3" : ""}>
-                <label className={rotulo}>{dados.pagamento === "cash" ? "Preço" : "Valor da parcela"}</label>
-                <input id="campo-preco" className={campo} value={dados.preco} onChange={(e) => set("preco", e.target.value)} />
-              </div>
-            )}
-          </div>
-          {dados.pagamento !== "free_quote" && (
-            <div>
-              <label className={rotulo}>Preço antigo, riscado (opcional, ex.: R$ 4.990)</label>
-              <input id="campo-precoAntigo" className={campo} value={dados.precoAntigo} onChange={(e) => set("precoAntigo", e.target.value)} />
-            </div>
-          )}
-          <div>
-            <label className={rotulo}>Para quem</label>
-            <input id="campo-pessoas" className={campo} value={dados.pessoas} onChange={(e) => set("pessoas", e.target.value)} />
-          </div>
-          <div>
-            <label className={rotulo}>O que está incluso (um por linha, até 4)</label>
-            <textarea id="campo-itens" className={campo} rows={4} value={dados.itens.join("\n")} onChange={(e) => set("itens", e.target.value.split("\n"))} />
-          </div>
-
-          {/* 3. a agência e os contatos do final */}
-          <h2 className="mt-2 text-sm font-bold text-neutral-200">Final do vídeo</h2>
-          <div>
-            <label className={rotulo}>Agência</label>
-            <input id="campo-agencia" className={campo} value={dados.agencia} onChange={(e) => set("agencia", e.target.value)} />
-          </div>
-          <p className={rotulo}>Contatos que aparecem no vídeo</p>
-          {CONTATOS.map((c) => {
-            const on = contatos.includes(c.id);
-            return (
-              <div key={c.id} className="flex items-center gap-2">
-                <input
-                  id={`usar-${c.id}`}
-                  type="checkbox"
-                  checked={on}
-                  onChange={() => setContatos((l) => (on ? l.filter((x) => x !== c.id) : [...l, c.id]))}
-                  className="h-4 w-4"
-                />
-                <span className="w-20 text-sm">{c.nome}</span>
-                <input
-                  id={`campo-${c.id}`}
-                  className={campo}
-                  placeholder={{ whatsapp: "(88) 99999-9999", instagram: "@suaagencia", facebook: "suaagencia", email: "contato@…", site: "suaagencia.com.br" }[c.id]}
-                  value={dados[c.id]}
-                  onChange={(e) => set(c.id, e.target.value)}
-                />
-              </div>
-            );
-          })}
-          <div>
-            <label className={rotulo}>Logo {fabrica.logoBase64 ? "(da Fábrica)" : ""}</label>
-            <input type="file" accept="image/*" onChange={(e) => onLogo(e.target.files?.[0])} />
-          </div>
-
-            </div>
-          </details>
-
-          <div className="fixed inset-x-0 bottom-0 z-20 border-t border-neutral-800 bg-neutral-950/95 p-3 backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:p-0">
-            <div className="mx-auto flex max-w-md flex-col gap-1.5">
-              <button
-                id="gerar3"
-                disabled={carregando || gravando || ocupado}
-                className="rounded-xl bg-amber-400 px-4 py-3.5 text-base font-bold text-black shadow-lg disabled:opacity-50"
-                onClick={gerarTres}
-              >
-                {gravando ? status : "🎬 Gerar 3 vídeos"}
-              </button>
-              {!gravando && (
-                <button id="gerar" disabled={carregando || ocupado} className="text-xs text-neutral-400 underline disabled:opacity-50" onClick={gerar}>
-                  Gerar só o estilo {MODELOS.findIndex((m) => m.id === modelo) + 1}
-                </button>
-              )}
-            </div>
-          </div>
-          <p id="status" className="text-sm text-neutral-300">{status}</p>
+          <p id="status" className="text-[13px] text-white/60">{status}</p>
           {restantes !== null && (
-            <p id="restantes" className="text-xs text-neutral-500">
+            <p id="restantes" className="-mt-3 text-[12px] text-white/40">
               {restantes > 0 ? `Você ainda pode montar ${restantes} pacote${restantes === 1 ? "" : "s"} em vídeo hoje.` : "Você usou os vídeos de hoje. Amanhã libera de novo."}
             </p>
           )}
+
+          {/* ——— Seus vídeos ——— */}
+          {resultados.length > 0 && (
+            <section id="resultados">
+              <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-white/45">Seus vídeos</p>
+              <div className="flex flex-col gap-4">
+                {resultados.map((r, i) => (
+                  <article key={r.url} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+                    <video id={`video-${i}`} src={r.url} controls playsInline muted loop className="mx-auto aspect-[9/16] w-full max-w-[250px] rounded-xl bg-black" />
+                    <p className="mt-2 text-center text-[13px] font-semibold text-white/80">
+                      Estilo {MODELOS.findIndex((m) => m.id === r.modelo) + 1} · {MODELOS.find((m) => m.id === r.modelo)?.nome}
+                    </p>
+                    <div className="mt-2 grid grid-cols-4 gap-2">
+                      <button onClick={() => compartilhar(r)} className={botaoIcone} aria-label="Enviar">
+                        <Share className="h-5 w-5 text-[#F5F906]" /> Enviar
+                      </button>
+                      <a id="baixar" href={r.url} download={r.nome} className={botaoIcone} aria-label="Baixar">
+                        <Download className="h-5 w-5" /> Baixar
+                      </a>
+                      <button onClick={() => { setModelo(r.modelo); setUrl(r.url); setEditando(true); }} className={botaoIcone} aria-label="Editar">
+                        <Pencil className="h-5 w-5" /> Editar
+                      </button>
+                      <button onClick={() => telaCheia(`video-${i}`)} className={botaoIcone} aria-label="Tela cheia">
+                        <Maximize2 className="h-5 w-5" /> Tela cheia
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
           {(resultados.length > 0 || mostrarOqueFazer) && (
             <OQueFazerAgora momento="video" feito={marcada("postar_video")} onConfirmar={() => { marcar("postar_video"); setMostrarOqueFazer(false); }} />
           )}
-          {resultados.length > 0 && (
-            <div id="resultados" className="flex flex-col gap-2">
-              <p className="text-xs font-bold uppercase tracking-wide text-violet-300">Seus vídeos</p>
-              <div className="flex snap-x gap-3 overflow-x-auto pb-2">
-                {resultados.map((r) => (
-                  <div key={r.url} className="w-40 shrink-0 snap-start rounded-xl border border-neutral-800 bg-neutral-900 p-2 sm:w-48">
-                    <video src={r.url} controls playsInline muted loop className="aspect-[9/16] w-full rounded-lg bg-black" />
-                    <p className="mt-1 text-center text-xs font-semibold">Estilo {MODELOS.findIndex((m) => m.id === r.modelo) + 1}</p>
-                    <div className="mt-1 flex flex-col gap-1">
-                      <button onClick={() => compartilhar(r)} className="rounded-lg bg-green-600 px-2 py-2 text-xs font-bold">📲 Compartilhar</button>
-                      <a id="baixar" href={r.url} download={r.nome} className="rounded-lg bg-neutral-700 px-2 py-2 text-center text-xs font-semibold">⬇️ Baixar</a>
-                      <button
-                        onClick={() => { setModelo(r.modelo); setUrl(r.url); setEditando(true); }}
-                        className="rounded-lg border border-violet-500 px-2 py-1.5 text-xs text-violet-200"
-                      >
-                        ✏️ Editar
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+
           {editando && (
-            <div id="editor" className="flex flex-col gap-2 rounded-xl border border-violet-500/50 bg-neutral-900 p-3">
+            <section id="editor" className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
               <div className="flex items-center justify-between">
-                <h2 className="font-bold">Editar vídeo</h2>
-                <button className="text-sm text-neutral-400" onClick={() => { setEditando(false); setTelaAberta(null); }}>Fechar</button>
+                <h2 className="text-[15px] font-bold">Editar vídeo</h2>
+                <button className="min-h-10 px-2 text-[14px] font-semibold text-[#F5F906]" onClick={() => { setEditando(false); setTelaAberta(null); }}>Pronto</button>
               </div>
-              <p className="text-xs text-neutral-400">Troque o fundo de qualquer tela ou mude o texto. Depois toque em Gerar vídeo de novo.</p>
+              <p className="text-[12px] text-white/50">Troque o fundo de uma tela ou mude o texto. Depois gere de novo.</p>
               {TELAS.map((tela, i) => {
                 const m = fundos[i % Math.max(fundos.length, 1)];
                 const nDest = TELAS.slice(0, i).filter((x) => x.tipo === "destaque").length;
                 return (
-                  <div key={i} className="rounded-lg border border-neutral-700 p-2">
+                  <div key={i} className="rounded-xl border border-white/10 p-2">
                     <div className="flex items-center gap-2">
-                      <div className="h-20 w-12 shrink-0 overflow-hidden rounded bg-neutral-800">
-                        {m?.thumb ? (
-                          <img src={m.thumb} alt="" className="h-full w-full object-cover" />
-                        ) : m?.tipo === "foto" ? (
-                          <img src={m.url} alt="" className="h-full w-full object-cover" />
-                        ) : m ? (
-                          <video src={m.url} muted className="h-full w-full object-cover" />
-                        ) : null}
+                      <div className="h-20 w-12 shrink-0 overflow-hidden rounded-lg bg-white/[0.06]">
+                        {m?.thumb ? <img src={m.thumb} alt="" className="h-full w-full object-cover" /> : m?.tipo === "foto" ? <img src={m.url} alt="" className="h-full w-full object-cover" /> : m ? <video src={m.url} muted className="h-full w-full object-cover" /> : null}
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold">{i + 1}. {tela.nome} <span className="text-xs text-neutral-500">({tela.dur}s)</span></p>
-                        {tela.tipo === "abertura" && (
-                          <input className={campo + " mt-1"} value={dados.chamada} onChange={(e) => set("chamada", e.target.value)} />
-                        )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-semibold">{i + 1}. {tela.nome} <span className="text-[11px] text-white/40">({tela.dur}s)</span></p>
+                        {tela.tipo === "abertura" && <input className={campo + " mt-1"} value={dados.chamada} onChange={(e) => set("chamada", e.target.value)} />}
                         {tela.tipo === "destaque" && (
                           <input
                             className={campo + " mt-1"}
@@ -2986,44 +2956,30 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                             }}
                           />
                         )}
-                        {tela.tipo === "preco" && (
-                          <input className={campo + " mt-1"} value={dados.preco} onChange={(e) => set("preco", e.target.value)} />
-                        )}
-                        {tela.tipo === "inclusos" && <p className="text-xs text-neutral-500">Os itens ficam no campo "O que está incluso".</p>}
-                        {tela.tipo === "contato" && <p className="text-xs text-neutral-500">Os contatos ficam em "Final do vídeo".</p>}
+                        {tela.tipo === "preco" && <input className={campo + " mt-1"} value={dados.preco} onChange={(e) => set("preco", e.target.value)} />}
+                        {tela.tipo === "inclusos" && <p className="text-[11px] text-white/40">Os itens ficam em Informações.</p>}
+                        {tela.tipo === "contato" && <p className="text-[11px] text-white/40">Os contatos ficam em Informações.</p>}
                       </div>
-                      <button
-                        id={`trocar-${i}`}
-                        onClick={() => setTelaAberta(telaAberta === i ? null : i)}
-                        className="rounded-lg bg-violet-600 px-3 py-2 text-xs font-bold"
-                      >
+                      <button id={`trocar-${i}`} onClick={() => setTelaAberta(telaAberta === i ? null : i)} className="min-h-10 rounded-lg bg-white/[0.08] px-3 text-[12px] font-bold">
                         Trocar fundo
                       </button>
                     </div>
                     {telaAberta === i && (
                       <div className="mt-2 flex flex-col gap-2">
                         <div className="flex gap-2">
-                          <input
-                            className={campo}
-                            placeholder={`Buscar no Pexels (ex.: ${dados.destino} praia)`}
-                            value={busca}
-                            onChange={(e) => setBusca(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && buscarNoPexels()}
-                          />
-                          <button onClick={buscarNoPexels} disabled={buscando} className="rounded-lg bg-neutral-700 px-3 text-sm">
-                            {buscando ? "…" : "Buscar"}
-                          </button>
+                          <input className={campo} placeholder={`Buscar vídeo (ex.: ${dados.destino} praia)`} value={busca} onChange={(e) => setBusca(e.target.value)} onKeyDown={(e) => e.key === "Enter" && buscarNoPexels()} />
+                          <button onClick={buscarNoPexels} disabled={buscando} className="min-h-11 rounded-xl bg-white/[0.08] px-3 text-[13px] font-semibold">{buscando ? "…" : "Buscar"}</button>
                         </div>
                         <div className="grid grid-cols-4 gap-1">
                           {pool.map((p) => (
-                            <button key={p.url} onClick={() => trocarFundo(i, p)} className="relative h-24 overflow-hidden rounded border border-neutral-700 hover:border-amber-400">
+                            <button key={p.url} onClick={() => trocarFundo(i, p)} className="relative h-24 overflow-hidden rounded-lg border border-white/10">
                               <img src={p.thumb || p.url} alt="" className="h-full w-full object-cover" />
                               {p.tipo === "video" && <span className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1 text-[10px]">▶</span>}
                             </button>
                           ))}
                         </div>
-                        <label className="cursor-pointer rounded-lg border border-dashed border-neutral-600 p-2 text-center text-sm">
-                          📁 Usar um vídeo ou foto meu
+                        <label className="grid min-h-11 cursor-pointer place-items-center rounded-xl border border-dashed border-white/20 text-[13px]">
+                          Usar um vídeo ou foto meu
                           <input type="file" accept="video/*,image/*" className="hidden" onChange={(e) => usarArquivoProprio(i, e.target.files?.[0])} />
                         </label>
                       </div>
@@ -3031,10 +2987,115 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                   </div>
                 );
               })}
-            </div>
+            </section>
           )}
         </div>
       </div>
+
+      {/* ——— Barra de ação (fixa no celular) ——— */}
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[#0A0A0B]/95 px-3 pt-2.5 pb-[max(10px,env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0">
+        <div className="mx-auto grid max-w-md grid-cols-[1fr_1.5fr] gap-2">
+          <button id="gerar" disabled={carregando || gravando || ocupado} className="min-h-12 rounded-2xl bg-white/[0.08] text-[15px] font-bold text-white disabled:opacity-50" onClick={gerar}>
+            1 vídeo
+          </button>
+          <button id="gerar3" disabled={carregando || gravando || ocupado} className="min-h-12 rounded-2xl text-[15px] font-black text-black disabled:opacity-60" style={{ background: "#F5F906" }} onClick={gerarTres}>
+            {gravando ? status : "3 vídeos diferentes"}
+          </button>
+        </div>
+      </div>
+
+      {/* ——— Folhas de escolha ——— */}
+      <Folha aberta={folha === "oferta"} titulo="Oferta sazonal" onFechar={() => setFolha(null)}>
+        {sazonais.lista.map((o) => (
+          <button key={o.id} id={`ocasiao-${o.id}`} disabled={gravando} onClick={() => { setOcasiao(o.id); setFolha(null); }} className="flex min-h-12 w-full items-center justify-between px-4 text-left text-[15px]">
+            <span>
+              {o.nome}
+              {sazonais.agora.some((a) => a.id === o.id) && <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-black text-black" style={{ background: "#F5F906" }}>AGORA</span>}
+            </span>
+            {ocasiao === o.id && <Check className="h-5 w-5 text-[#F5F906]" />}
+          </button>
+        ))}
+      </Folha>
+      <Folha aberta={folha === "estilo"} titulo="Estilo do vídeo" onFechar={() => setFolha(null)}>
+        <div className="grid grid-cols-3 gap-2 p-3">
+          {MODELOS.map((m, i) => (
+            <button key={m.id} id={`modelo-${m.id}`} disabled={gravando} onClick={() => { setModelo(m.id); setFolha(null); }} className={`overflow-hidden rounded-xl border text-center ${modelo === m.id ? "border-[#F5F906] ring-2 ring-[#F5F906]/40" : "border-white/10"}`}>
+              {miniaturas[m.id] ? <img src={miniaturas[m.id]} alt={m.nome} className="aspect-[9/16] w-full object-cover" /> : <div className="aspect-[9/16] w-full bg-white/[0.06]" />}
+              <span className="block py-1.5 text-[12px] font-semibold">{i + 1} · {m.nome}</span>
+            </button>
+          ))}
+        </div>
+      </Folha>
+      <Folha aberta={folha === "cores"} titulo="Cores" onFechar={() => setFolha(null)}>
+        {PALETAS.map((p) => {
+          const c1 = p.id === "marca" ? fabrica.primaryColor : p.id === "livre" ? corLivre.c1 : p.c1;
+          const c2 = p.id === "marca" ? fabrica.secondaryColor : p.id === "livre" ? corLivre.c2 : p.c2;
+          return (
+            <button key={p.id} id={`paleta-${p.id}`} disabled={gravando} onClick={() => { setPaleta(p.id); if (p.id !== "livre") setFolha(null); }} className="flex min-h-12 w-full items-center justify-between px-4 text-left text-[15px]">
+              <span className="flex items-center gap-2">
+                <span className="flex">
+                  {c1 && <span className="h-5 w-5 rounded-full ring-2 ring-[#141416]" style={{ background: c1 }} />}
+                  {c2 && <span className="-ml-2 h-5 w-5 rounded-full ring-2 ring-[#141416]" style={{ background: c2 }} />}
+                </span>
+                {p.nome}
+              </span>
+              {paleta === p.id && <Check className="h-5 w-5 text-[#F5F906]" />}
+            </button>
+          );
+        })}
+        {paleta === "livre" && (
+          <div className="flex items-center gap-4 px-4 py-3 text-[14px]">
+            <label className="flex items-center gap-2">Cor 1 <input id="cor1" type="color" value={corLivre.c1} onChange={(e) => setCorLivre((c) => ({ ...c, c1: e.target.value }))} /></label>
+            <label className="flex items-center gap-2">Cor 2 <input id="cor2" type="color" value={corLivre.c2} onChange={(e) => setCorLivre((c) => ({ ...c, c2: e.target.value }))} /></label>
+          </div>
+        )}
+      </Folha>
+      <Folha aberta={folha === "fonte"} titulo="Fonte" onFechar={() => setFolha(null)}>
+        {FONTES.map((fo) => (
+          <button key={fo} id={`fonte-${fo.replace(/\s/g, "")}`} disabled={gravando} onClick={() => { setFonte(fo); setFolha(null); }} className="flex min-h-12 w-full items-center justify-between px-4 text-left text-[17px]" style={{ fontFamily: `'${fo}', sans-serif` }}>
+            <span>{fo}</span>
+            {fonte === fo && <Check className="h-5 w-5 text-[#F5F906]" />}
+          </button>
+        ))}
+      </Folha>
     </div>
+  );
+}
+
+/** Linha de lista agrupada (como nos Ajustes do iPhone): título à esquerda, valor e seta à direita. */
+function LinhaLista({ id, titulo, valor, miniatura, destaque, aberto, onClick }: { id?: string; titulo: string; valor: string; miniatura?: string; destaque?: boolean; aberto?: boolean; onClick: () => void }) {
+  return (
+    <button id={id} type="button" onClick={onClick} className="flex min-h-[52px] w-full items-center gap-3 px-4 py-2 text-left active:bg-white/[0.06]">
+      <span className="flex-1 text-[15px] font-semibold text-white">{titulo}</span>
+      {miniatura && <img src={miniatura} alt="" className="h-9 w-5 rounded object-cover" />}
+      <span className={`max-w-[48%] truncate text-[14px] ${destaque ? "font-semibold text-[#F5F906]" : "text-white/55"}`}>{valor}</span>
+      <ChevronRight className={`h-4 w-4 shrink-0 text-white/35 transition-transform ${aberto ? "rotate-90" : ""}`} />
+    </button>
+  );
+}
+
+/** Folha que sobe de baixo, com a lista de opções. Fecha ao tocar fora ou em Pronto. */
+function Folha({ aberta, titulo, onFechar, children }: { aberta: boolean; titulo: string; onFechar: () => void; children: React.ReactNode }) {
+  useEffect(() => {
+    if (!aberta) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onFechar();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [aberta, onFechar]);
+  if (!aberta) return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-end justify-center lg:items-center" role="dialog" aria-modal="true" aria-label={titulo}>
+      <button type="button" aria-label="Fechar" onClick={onFechar} className="absolute inset-0 bg-black/60" />
+      <div className="relative flex max-h-[78vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-white/10 bg-[#141416] text-white shadow-2xl lg:rounded-3xl">
+        <div className="flex items-center justify-between px-4 pb-2 pt-3">
+          <span className="w-16" />
+          <span className="text-[15px] font-bold">{titulo}</span>
+          <button type="button" onClick={onFechar} className="min-h-10 w-16 text-right text-[15px] font-bold text-[#F5F906]">Pronto</button>
+        </div>
+        <div className="mx-auto mb-1 h-1 w-10 rounded-full bg-white/20" />
+        <div className="divide-y divide-white/[0.06] overflow-y-auto pb-[max(12px,env(safe-area-inset-bottom))]">{children}</div>
+      </div>
+    </div>,
+    document.body,
   );
 }
