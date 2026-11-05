@@ -32,16 +32,17 @@ const TELAS: TelaDef[] = [
 const CENAS = TELAS.length;
 const FADE = 0.5;
 // Roteiro = a ordem das telas. "3 vídeos diferentes" gera um de cada, para o cliente escolher o gancho.
-type Roteiro = "padrao" | "preco_primeiro" | "gancho";
+// Regra de venda (Lucas): primeiro o valor (destino, experiência, o que inclui), o preço SEMPRE por último, antes do contato.
+type Roteiro = "padrao" | "experiencia" | "gancho";
 const ROTEIROS: { id: Roteiro; nome: string }[] = [
   { id: "padrao", nome: "Destino primeiro" },
-  { id: "preco_primeiro", nome: "Preço primeiro" },
+  { id: "experiencia", nome: "Experiência primeiro" },
   { id: "gancho", nome: "Frase de impacto primeiro" },
 ];
 function montarTelas(roteiro: Roteiro, curto: boolean): TelaDef[] {
   const [ab, inc, d1, d2, pr, ct] = TELAS as [TelaDef, TelaDef, TelaDef, TelaDef, TelaDef, TelaDef];
-  let lista = roteiro === "preco_primeiro" ? [pr, ab, inc, d1, d2, ct] : roteiro === "gancho" ? [d1, ab, inc, d2, pr, ct] : [ab, inc, d1, d2, pr, ct];
-  // versão curta (12 s): só abertura, preço e contato, na ordem do roteiro
+  let lista = roteiro === "experiencia" ? [d1, d2, ab, inc, pr, ct] : roteiro === "gancho" ? [d1, ab, inc, d2, pr, ct] : [ab, d1, inc, d2, pr, ct];
+  // versão curta (12 s): só abertura, preço e contato (o preço continua depois do destino)
   if (curto) lista = lista.filter((x) => x.tipo === "abertura" || x.tipo === "preco" || x.tipo === "contato").map((x) => (x.tipo === "abertura" ? { ...x, dur: 4 } : x));
   return lista;
 }
@@ -1527,16 +1528,17 @@ function montarLegenda(d: Dados, contatos: Contato[]): string {
   const linhas: string[] = [];
   linhas.push(`✈️ ${d.chamada || d.destino}`);
   linhas.push(`📍 ${ehPacote(d) ? d.destino : nomeOferta(d)}${d.pessoas ? ` · ${d.pessoas}` : ""}`);
+  // valor primeiro (o que inclui, quando), preço por último
+  d.itens.filter(Boolean).forEach((it) => linhas.push(`✅ ${it}`));
+  const saida = textoSaida(d);
+  if (saida) linhas.push(`📅 ${saida}`);
   if (pt.valor === "Consulte") linhas.push("💬 Consulte valores e condições");
   else {
     const antigo = d.precoAntigo.trim();
     const preco = pt.topo === "a partir de" ? `a partir de ${pt.valor}` : `${pt.topo} ${pt.valor}`;
     linhas.push(`💰 ${antigo ? `De ${antigo.startsWith("R$") ? antigo : "R$ " + antigo} por ` : ""}${preco}`);
   }
-  const saida = textoSaida(d);
-  if (saida) linhas.push(`📅 ${saida}`);
   if ((d.urgencia || "").trim()) linhas.push(`⏳ ${d.urgencia.trim()}`);
-  d.itens.filter(Boolean).forEach((it) => linhas.push(`✅ ${it}`));
   if (d.agencia && d.agencia !== "Sua Agência") linhas.push(`✨ ${d.agencia}`);
   if (contatos.includes("whatsapp")) linhas.push(`📲 ${d.whatsapp ? `Chame no WhatsApp: ${d.whatsapp}` : "Chame no WhatsApp"}`);
   if (contatos.includes("instagram") && d.instagram) linhas.push(`📸 ${d.instagram}`);
@@ -2093,8 +2095,8 @@ function cenaBf(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: nu
     fitText(ctx, d.chamada, 600, 28, LARG - 80);
     ctx.fillStyle = "#fff";
     ctx.fillText(d.chamada, W / 2, y + 12);
-    const pt = precoTextos(d);
-    const teaser = pt.valor === "Consulte" ? "OFERTA BLACK FRIDAY" : `${pt.topo} ${pt.valor}`.toUpperCase();
+    // abertura vende o destino; o preço só aparece na tela de preço
+    const teaser = "OFERTA BLACK FRIDAY";
     ctx.globalAlpha = out * clamp01((lt - 0.4) / 0.3);
     ctx.save();
     ctx.translate(W / 2, y + 86);
@@ -2265,9 +2267,8 @@ function cenaPromo(ctx: CanvasRenderingContext2D, cena: number, lt: number, out:
       ch.linhas.forEach((l, i) => ctx.fillText(l, 0, -hP / 2 + 30 + ch.tam * 0.75 + i * ch.tam * 1.15));
     });
     y += hP + 60;
-    // condição de preço numa pílula branca
-    const pt = precoTextos(d);
-    const teaser = pt.valor === "Consulte" ? "CONSULTE AS CONDIÇÕES" : `${pt.topo} ${pt.valor}`.toUpperCase();
+    // abertura vende o destino; o preço só aparece na tela de preço
+    const teaser = "VEJA O QUE ESTÁ INCLUSO";
     ctx.globalAlpha = out * clamp01((lt - 0.4) / 0.3);
     ctx.save();
     ctx.translate(W / 2, y + 30);
@@ -3358,7 +3359,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     proximoRef.current += 3;
     setModelo(lista[0]);
     // cada um dos 3 com um roteiro: destino primeiro, preço primeiro, frase de impacto primeiro
-    const roteiros: Roteiro[] = ["padrao", "preco_primeiro", "gancho"];
+    const roteiros: Roteiro[] = ["padrao", "experiencia", "gancho"];
     const t0 = performance.now();
     try {
       for (let i = 0; i < lista.length; i++) {

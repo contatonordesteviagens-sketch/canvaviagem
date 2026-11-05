@@ -50,6 +50,64 @@ const delivery: { icon: Icon; title: string; text: string }[] = [
   { icon: Download, title: "Baixa e publica", text: "Posta no Instagram e manda no WhatsApp." },
 ];
 
+const GERADOR_ITENS = [
+  "Imagens reais do destino, em tela cheia",
+  "O que está incluso, item por item, com ícones",
+  "A sua logo e o seu WhatsApp no final",
+  "Estilos de Black Friday e de cada data do ano",
+];
+const GERADOR_VIDEOS = ["/inicio/gerador-video-black.mp4", "/inicio/gerador-video-promo.mp4"];
+
+/** Seção da novidade: mostra os vídeos que a ferramenta gera a partir de um texto ou áudio. */
+function GeradorVideo({ black, onStart }: { black: boolean; onStart: () => void }) {
+  return (
+    <section id="gerador-de-video" className="scroll-mt-24 px-4 py-16 sm:py-24">
+      <div className="mx-auto max-w-5xl">
+        <div className="cv-reveal mx-auto max-w-2xl text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-extrabold tracking-[0.6px]" style={{ background: "var(--cv-hl)", color: black ? "#0a0a0d" : "#16130d" }}>
+            <Sparkles className="h-3.5 w-3.5" /> NOVO · GERADOR DE VÍDEO
+          </span>
+          <h2 className="cv-h2 mt-4">Fale o pacote. Em 1 minuto saem 3 vídeos prontos para os stories.</h2>
+          <p className="mt-4 text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
+            Mande um áudio, cole o texto do WhatsApp ou a foto da operadora. O vídeo mostra o destino, a experiência e o que está incluso, e fecha com o preço e o seu contato.
+          </p>
+        </div>
+        <div className="mt-10 grid items-center gap-8 md:grid-cols-[1fr_1.1fr]">
+          <div className="cv-reveal mx-auto grid w-full max-w-[420px] grid-cols-2 gap-3" style={delay(100)}>
+            {GERADOR_VIDEOS.map((src, i) => (
+              <video
+                key={src}
+                src={src}
+                className="aspect-[9/16] w-full rounded-[22px] object-cover shadow-[0_24px_50px_-28px_rgba(0,0,0,.6)]"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload={i === 0 ? "auto" : "metadata"}
+                aria-label={`Exemplo de vídeo de pacote gerado ${i + 1}`}
+              />
+            ))}
+          </div>
+          <div className="cv-reveal" style={delay(180)}>
+            <p className="text-[13px] font-bold uppercase tracking-[0.6px]" style={{ color: "var(--cv-muted)" }}>Os dois vídeos saíram de um único texto, sem edição</p>
+            <ul className="mt-4 flex flex-col gap-3">
+              {GERADOR_ITENS.map((t) => (
+                <li key={t} className="flex items-start gap-2.5 text-[16px] font-semibold leading-6">
+                  <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0" style={{ color: "var(--cv-accent)" }} /> {t}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 text-[15px] leading-6" style={{ color: "var(--cv-muted)" }}>Cada vez que você gera, sai uma variação nova. A legenda do post já vem pronta para colar.</p>
+            <button onClick={onStart} className="cv-btn mt-6 inline-flex h-12 items-center gap-2 px-6 text-[15px]">
+              Quero gerar meus vídeos <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export const yearGifs = {
   main: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm5kcmcybmE2aTFkOTU3ZDNqYmZkbHQ2YjRibjB1NjFtN2RoNWdrMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6osnZ6joYcPfERZsaE/giphy.gif",
   previews: [
@@ -209,6 +267,9 @@ export default function InicioCreme() {
           </div>
         </section>
 
+        {/* 2b. Novidade: Gerador de vídeo (valor primeiro, exemplos reais gerados pela ferramenta) */}
+        <GeradorVideo black={black} onStart={() => start("gerador_video")} />
+
         {/* 3. Créditos infinitos */}
         <section className="px-4 py-10 sm:py-14">
           <div className="cv-reveal mx-auto max-w-6xl text-center">
@@ -360,7 +421,7 @@ const BLACK_FAQ = [
   { q: "O desconto é vitalício mesmo?", a: "Sim. Quem assina na Black paga metade do preço enquanto continuar assinando. Não é só no primeiro mês: a renovação também sai com 50%." },
   { q: "O preço volta ao normal depois?", a: "Para quem assinou na Black, não: o seu valor fica o mesmo em todas as renovações. Quem cancelar e voltar depois que a Black acabar entra no preço normal." },
   { q: "Preciso saber design?", a: "Não. Você fala o destino, os dias e o valor, e o vídeo do pacote, o anúncio, o carrossel, os stories e o site saem prontos com a sua logo." },
-  { q: "O vídeo é feito como?", a: "Você manda um áudio, um texto ou a foto do pacote. A plataforma acha o destino, busca imagens reais do lugar e monta 3 vídeos em 9 estilos, com o seu preço, a sua logo e o seu WhatsApp. Sai em 1 minuto, pronto para os stories." },
+  { q: "O vídeo é feito como?", a: "Você manda um áudio, um texto ou a foto do pacote. A plataforma acha o destino, busca imagens reais do lugar e monta 3 vídeos diferentes, inclusive no estilo Black Friday, com o seu preço, a sua logo e o seu WhatsApp. Sai em 1 minuto, pronto para os stories." },
   { q: "Posso pagar no Pix?", a: "Pode. No fim você escolhe cartão ou Pix, e o QR Code aparece na hora." },
   { q: "Posso cancelar quando quiser?", a: "Pode, sem multa. Só lembre que, cancelando, você perde o preço da Black." },
   { q: "E se eu não gostar?", a: "Você tem 7 dias de garantia para testar com um pacote real da sua agência." },
