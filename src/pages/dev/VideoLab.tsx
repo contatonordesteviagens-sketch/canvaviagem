@@ -3755,9 +3755,40 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         </div>
 
         {/* ——— Prévia ——— */}
-        <div id="previa" className="lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
-          <canvas ref={canvasRef} width={W} height={H} className="mx-auto block w-full max-w-[210px] rounded-2xl border border-white/10 sm:max-w-[300px] lg:max-w-[360px]" />
-          <p className="mt-1.5 text-center text-[11px] text-white/40">Prévia ao vivo</p>
+        <div id="previa" className="min-w-0 lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
+          {/* destino e estilos em cima da prévia: toque num estilo e veja na hora */}
+          <p className="mb-2 truncate text-center text-[17px] font-extrabold">
+            <span className="mr-1">📍</span>
+            {dados.destino || "Seu destino"}
+          </p>
+          <div role="radiogroup" aria-label="Estilo do vídeo" className="-mx-1 mb-3 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] lg:flex-wrap lg:justify-center lg:overflow-visible">
+            {MODELOS_NA_ORDEM.map((m, i) => {
+              const ativo = modelo === m.id;
+              return (
+                <button
+                  key={m.id}
+                  role="radio"
+                  aria-checked={ativo}
+                  disabled={gravando}
+                  onClick={() => {
+                    setModelo(m.id);
+                    proximoRef.current = Math.max(0, ORDEM_SUGERIDA.indexOf(m.id));
+                  }}
+                  className={`flex min-h-10 shrink-0 snap-start items-center gap-1.5 rounded-full border px-3 text-[13px] font-bold transition-all duration-200 active:scale-95 disabled:opacity-50 ${ativo ? "border-[#F5F906] bg-[#F5F906] text-black shadow-[0_4px_18px_-6px_rgba(245,249,6,.8)]" : "border-white/15 bg-white/[0.05] text-white/75"}`}
+                >
+                  <span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] ${ativo ? "bg-black text-[#F5F906]" : "bg-white/15"}`}>{i + 1}</span>
+                  {m.nome}
+                </button>
+              );
+            })}
+          </div>
+          <div className="relative mx-auto w-full max-w-[210px] sm:max-w-[300px] lg:max-w-[360px]">
+            <canvas ref={canvasRef} width={W} height={H} className="block w-full rounded-2xl border border-white/10" />
+            <span key={modelo} className="pointer-events-none absolute left-2 top-2 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-bold text-white animate-in fade-in slide-in-from-top-1 duration-300">
+              Estilo {Math.max(1, MODELOS_NA_ORDEM.findIndex((m) => m.id === modelo) + 1)}
+            </span>
+          </div>
+          <p className="mt-1.5 text-center text-[11px] text-white/40">Prévia ao vivo · toque num estilo para ver</p>
         </div>
 
         {/* ——— 2. Visual ——— */}
