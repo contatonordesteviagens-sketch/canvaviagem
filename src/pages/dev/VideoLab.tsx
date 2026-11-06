@@ -1635,7 +1635,32 @@ function camadaOcasiao(ctx: CanvasRenderingContext2D, oc: Ocasiao, t: number, ti
 }
 
 // ---------------- Contato padrão (igual em todos os estilos): logo, título e botões com ícone ----------------
+// Os mesmos ícones oficiais que saem nos anúncios da Fábrica (public/social-icons)
+const ARQ_ICONE: Record<Contato, string> = { whatsapp: "whatsapp", instagram: "instagram_fino", facebook: "facebook", email: "email_azul", site: "site" };
+const ICONES_ANUNCIO: Partial<Record<Contato, HTMLImageElement>> = {};
+if (typeof window !== "undefined") {
+  (Object.keys(ARQ_ICONE) as Contato[]).forEach((id) => {
+    const img = new Image();
+    img.src = `/social-icons/${ARQ_ICONE[id]}.png`;
+    ICONES_ANUNCIO[id] = img;
+  });
+}
 function icone(ctx: CanvasRenderingContext2D, id: Contato, cx: number, cy: number, r: number, cor = "#fff") {
+  const img = ICONES_ANUNCIO[id];
+  if (img && img.complete && img.naturalWidth > 0) {
+    ctx.save();
+    if (id !== "whatsapp") {
+      // fundo branco para o ícone colorido não sumir no botão da mesma cor
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 1.25, 0, Math.PI * 2);
+      ctx.fillStyle = "#fff";
+      ctx.fill();
+    }
+    const t = id === "whatsapp" ? r * 2.5 : r * 1.7;
+    ctx.drawImage(img, cx - t / 2, cy - t / 2, t, t);
+    ctx.restore();
+    return;
+  }
   ctx.save();
   ctx.strokeStyle = cor;
   ctx.fillStyle = cor;
@@ -2041,20 +2066,17 @@ function pilula(ctx: CanvasRenderingContext2D, cx: number, cy: number, txt: stri
   return ctx.measureText(txt).width + 48;
 }
 
-// ——— Estilo Black Friday: vídeo em tela cheia com véu escuro, "Black" vazado em laranja + "Friday" branco,
+// ——— Estilo Black Friday: vídeo em tela cheia com véu escuro, "Black" cheio em laranja + "Friday" branco,
 // um cartão forte por tela, cupom laranja e itens com ícone ———
 function letrasBf(ctx: CanvasRenderingContext2D, x: number, y: number, tam: number, alinhado: CanvasTextAlign = "left") {
   ctx.save();
   ctx.textAlign = alinhado;
   ctx.lineJoin = "round";
   ctx.font = `900 ${tam}px Montserrat, Arial`;
-  // contorno fino (grosso demais fecha os miolos do B e do a) sobre um miolo escuro translúcido
-  ctx.miterLimit = 2;
-  ctx.fillStyle = "rgba(0,0,0,.32)";
+  // "Black" cheio em laranja (o vazado ficava feio sobre o vídeo)
+  sombra(ctx, 18, "rgba(0,0,0,.45)");
+  ctx.fillStyle = LARANJA;
   ctx.fillText("Black", x, y);
-  ctx.lineWidth = Math.max(2.5, tam * 0.042);
-  ctx.strokeStyle = LARANJA;
-  ctx.strokeText("Black", x, y);
   ctx.fillStyle = "#fff";
   ctx.font = `900 ${Math.round(tam * 0.92)}px Montserrat, Arial`;
   ctx.fillText("Friday", x, y + tam * 0.86);
