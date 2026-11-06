@@ -185,7 +185,7 @@ function detectarTipo(texto: string): TipoOferta {
 
 function precoTextos(d: Dados): { topo: string; valor: string; rodape: string } {
   const semPreco = d.pagamento === "free_quote" || !d.preco.trim();
-  if (semPreco) return { topo: "condições especiais", valor: "Consulte", rodape: "faça sua cotação" };
+  if (semPreco) return { topo: "condições especiais", valor: "Sob consulta", rodape: "peça sua cotação" };
   if (d.pagamento === "installments") return { topo: `em até ${d.parcelas || "10x"} de`, valor: d.preco, rodape: d.pessoas };
   if (d.pagamento === "down_plus")
     return { topo: `entrada ${d.entrada || ""} + ${d.parcelas || "10x"} de`.replace(/\s+/g, " "), valor: d.preco, rodape: d.pessoas };
@@ -525,7 +525,7 @@ function cenaClassico(ctx: CanvasRenderingContext2D, cena: number, lt: number, o
     ctx.fillStyle = "#fff";
     ctx.fillText("Garanta sua vaga", W / 2, 700 + (1 - k2) * 20);
     const pt = precoTextos(d);
-    const resumo = pt.valor === "Consulte" ? d.destino : `${d.destino} · ${pt.topo === "a partir de" ? "" : pt.topo + " "}${pt.valor}`;
+    const resumo = pt.valor === "Sob consulta" ? d.destino : `${d.destino} · ${pt.topo === "a partir de" ? "" : pt.topo + " "}${pt.valor}`;
     const rs = fitText(ctx, resumo, 600, 32, W - 100);
     ctx.font = `600 ${rs}px Montserrat, Arial`;
     ctx.fillText(resumo, W / 2, 752 + (1 - k2) * 20);
@@ -1533,7 +1533,7 @@ function montarLegenda(d: Dados, contatos: Contato[]): string {
   d.itens.filter(Boolean).forEach((it) => linhas.push(`✅ ${it}`));
   const saida = textoSaida(d);
   if (saida) linhas.push(`📅 ${saida}`);
-  if (pt.valor === "Consulte") linhas.push("💬 Consulte valores e condições");
+  if (pt.valor === "Sob consulta") linhas.push("💬 Consulte valores e condições");
   else {
     const antigo = d.precoAntigo.trim();
     const preco = pt.topo === "a partir de" ? `a partir de ${pt.valor}` : `${pt.topo} ${pt.valor}`;
@@ -1636,6 +1636,15 @@ function camadaOcasiao(ctx: CanvasRenderingContext2D, oc: Ocasiao, t: number, ti
 }
 
 const CHAVE_SALVO = "cv-gerador-video-v1";
+const CHAVE_FUNDOS = "cv-gerador-fundos-v1";
+function fundosSalvos(): Midia[] {
+  try {
+    const l = JSON.parse(localStorage.getItem(CHAVE_FUNDOS) || "[]");
+    return Array.isArray(l) ? l.filter((m) => m && typeof m.url === "string" && /^https:\/\//.test(m.url)) : [];
+  } catch {
+    return [];
+  }
+}
 
 // ---------------- Contato padrão (igual em todos os estilos): logo, título e botões com ícone ----------------
 // Os mesmos ícones oficiais que saem nos anúncios da Fábrica (public/social-icons)
@@ -1759,7 +1768,7 @@ function ctaPadrao(ctx: CanvasRenderingContext2D, d: Dados, logo: HTMLImageEleme
   ctx.fillText(tituloCta(d, est.titulo), W / 2, 590 + y0 + (1 - k2) * 16);
   semSombra(ctx);
   const pt = precoTextos(d);
-  const sub = pt.valor === "Consulte" ? d.destino : `${d.destino} · ${pt.topo === "a partir de" ? "" : pt.topo + " "}${pt.valor}`;
+  const sub = pt.valor === "Sob consulta" ? d.destino : `${d.destino} · ${pt.topo === "a partir de" ? "" : pt.topo + " "}${pt.valor}`;
   ajustarFonte(ctx, "600 {s}px Montserrat, Arial", sub, 30, W - 140);
   ctx.fillStyle = "#e5e7eb";
   ctx.fillText(sub, W / 2, 636 + y0 + (1 - k2) * 16);
@@ -2603,7 +2612,12 @@ function drawFrame(
     g.addColorStop(0, "rgba(10,55,160,.5)");
     g.addColorStop(0.55, "rgba(8,40,120,.55)");
     g.addColorStop(1, "rgba(4,18,60,.9)");
-  } else if (modelo === "luxo" || modelo === "revista" || modelo === "postal") {
+  } else if (modelo === "luxo" || modelo === "revista") {
+    g.addColorStop(0, "rgba(0,0,0,.3)");
+    g.addColorStop(0.4, "rgba(0,0,0,.5)");
+    g.addColorStop(0.65, "rgba(0,0,0,.68)");
+    g.addColorStop(1, "rgba(0,0,0,.85)");
+  } else if (modelo === "postal") {
     g.addColorStop(0, "rgba(0,0,0,.25)");
     g.addColorStop(0.5, "rgba(0,0,0,.35)");
     g.addColorStop(1, "rgba(0,0,0,.75)");
@@ -2915,6 +2929,15 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const [modelo, setModelo] = useState<Modelo>(ORDEM_SUGERIDA[0]);
   const modeloRef = useRef<Modelo>(ORDEM_SUGERIDA[0]);
   modeloRef.current = modelo;
+  // fileira de estilos no celular: o estilo ativo (inclusive quando o gerador troca sozinho) fica à vista
+  const estilosRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const fila = estilosRef.current;
+    const ativo = fila?.querySelector<HTMLElement>('[aria-checked="true"]');
+    if (!fila || !ativo || fila.scrollWidth <= fila.clientWidth) return;
+    const dx = ativo.getBoundingClientRect().left - fila.getBoundingClientRect().left;
+    fila.scrollTo({ left: fila.scrollLeft + dx - (fila.clientWidth - ativo.offsetWidth) / 2, behavior: "smooth" });
+  }, [modelo]);
   // Rodízio: cada "Gerar" usa o estilo seguinte da ordem (1 vídeo) ou os 3 seguintes (3 vídeos),
   // para nunca repetir a variação anterior. Escolher um estilo na lista reposiciona o rodízio nele.
   const proximoRef = useRef(0);
@@ -2950,6 +2973,17 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const temaRef = useRef<Tema>({ fonte: "Montserrat" });
   temaRef.current = temaAtual();
   const [fundos, setFundos] = useState<Midia[]>([]);
+  // os vídeos de fundo também ficam salvos: ao recarregar, o destino salvo volta com as imagens dele
+  useEffect(() => {
+    const online = fundos.filter((m) => /^https:\/\//.test(m.url));
+    // os vídeos de exemplo (Cancún) não contam: só guarda o fundo de um destino de verdade
+    if (!online.length || online.every((m) => CLIPS.includes(m.url))) return;
+    try {
+      localStorage.setItem(CHAVE_FUNDOS, JSON.stringify(online));
+    } catch {
+      /* sem espaço: segue sem salvar */
+    }
+  }, [fundos]);
   const [pool, setPool] = useState<Midia[]>([]);
   const [editando, setEditando] = useState(false);
   const [telaAberta, setTelaAberta] = useState<number | null>(null);
@@ -3015,6 +3049,21 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHydrated, carregando, pacotes.length]);
+
+  // Ao abrir: os fundos do último destino salvo; sem eles (ou se algum link expirou), os vídeos de exemplo.
+  async function carregarInicial() {
+    const exemplo = [...CLIPS, ...CLIPS].slice(0, CENAS).map((url) => ({ tipo: "video" as const, url }));
+    const salvos = salvo?.dados?.destino ? fundosSalvos() : [];
+    if (salvos.length >= CENAS) {
+      try {
+        await carregarFundos(salvos.slice(0, CENAS));
+        return;
+      } catch {
+        /* link expirado: volta para o exemplo */
+      }
+    }
+    await carregarFundos(exemplo);
+  }
 
   // Carrega o fundo de cada tela (vídeos do destino ou fotos de reserva).
   async function carregarFundos(itens: Midia[]) {
@@ -3235,7 +3284,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     link.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;500;600;700;800;900&family=Oswald:wght@300;500;600;700&family=Bebas+Neue&family=Nunito:wght@300;600;700;800;900&family=Raleway:wght@300;500;600;700;800;900&family=Inter:wght@300;500;600;700;800;900&family=Roboto:wght@300;500;700;900&family=Lora:wght@500;600;700&family=Work+Sans:wght@300;500;600;700;800;900&family=DM+Sans:wght@300;500;600;700;800;900&display=swap";
     document.head.appendChild(link);
     carregarElementos();
-    Promise.all([document.fonts.load("900 40px Montserrat"), document.fonts.load("700 40px 'Playfair Display'"), document.fonts.load("italic 400 40px 'Playfair Display'"), carregarFundos([...CLIPS, ...CLIPS].slice(0, CENAS).map((url) => ({ tipo: "video" as const, url })))]).catch((e) =>
+    Promise.all([document.fonts.load("900 40px Montserrat"), document.fonts.load("700 40px 'Playfair Display'"), document.fonts.load("italic 400 40px 'Playfair Display'"), carregarInicial()]).catch((e) =>
       setStatus("Erro: " + e.message),
     );
     return () => link.remove();
@@ -3372,6 +3421,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
 
   async function gerar() {
     setGravando(true);
+    setEtapa("");
     setUrl(null);
     setResultados([]);
     try {
@@ -3395,6 +3445,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
 
   async function gerarTres() {
     setGravando(true);
+    setEtapa(""); // a mensagem "toque em Gerar" já não vale: os vídeos estão saindo
     setUrl(null);
     setResultados([]);
     // os 3 estilos seguintes do rodízio (a próxima rodada começa de onde esta parou)
@@ -3761,7 +3812,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
             <span className="mr-1">📍</span>
             {dados.destino || "Seu destino"}
           </p>
-          <div role="radiogroup" aria-label="Estilo do vídeo" className="-mx-1 mb-3 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] lg:flex-wrap lg:justify-center lg:overflow-visible">
+          <div ref={estilosRef} role="radiogroup" aria-label="Estilo do vídeo" className="-mx-1 mb-3 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] lg:flex-wrap lg:justify-center lg:overflow-visible">
             {MODELOS_NA_ORDEM.map((m, i) => {
               const ativo = modelo === m.id;
               return (
@@ -3782,7 +3833,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
               );
             })}
           </div>
-          <div className="relative mx-auto w-full max-w-[210px] sm:max-w-[300px] lg:max-w-[360px]">
+          <div className="relative mx-auto w-full max-w-[210px] sm:max-w-[300px] lg:max-w-[min(360px,calc((100vh-290px)*0.5625))]">
             <canvas ref={canvasRef} width={W} height={H} className="block w-full rounded-2xl border border-white/10" />
             <span key={modelo} className="pointer-events-none absolute left-2 top-2 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-bold text-white animate-in fade-in slide-in-from-top-1 duration-300">
               Estilo {Math.max(1, MODELOS_NA_ORDEM.findIndex((m) => m.id === modelo) + 1)}

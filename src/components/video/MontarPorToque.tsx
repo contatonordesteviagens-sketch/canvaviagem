@@ -35,7 +35,7 @@ const DESTINOS: Record<Regiao, { nome: string; emoji: string }[]> = {
 const TIPOS: Tipo[] = [
   { id: "pacote", nome: "Pacote completo", frase: "Pacote completo", emoji: "🧳", cor: "#F5F906", inclusos: ["Aéreo ida e volta", "Hotel com café da manhã", "Traslados", "Seguro viagem", "Passeios", "All inclusive"] },
   { id: "aereo", nome: "Passagem aérea", frase: "Passagem aérea", emoji: "✈️", cor: "#4DA3FF", inclusos: ["Ida e volta", "Bagagem de mão", "Mala despachada", "Taxas inclusas"] },
-  { id: "hotel", nome: "Hotel ou resort", frase: "Hospedagem em hotel", emoji: "🏨", cor: "#B98CFF", inclusos: ["Café da manhã", "All inclusive", "Piscina", "Vista para o mar", "Wi-Fi"] },
+  { id: "hotel", nome: "Hotel ou resort", frase: "Hospedagem em hotel", emoji: "🏨", cor: "#B98CFF", inclusos: ["Café da manhã", "All inclusive", "Piscina", "Quarto com vista", "Wi-Fi"] },
   { id: "cruzeiro", nome: "Cruzeiro", frase: "Cruzeiro", emoji: "🚢", cor: "#3FD8E0", inclusos: ["Pensão completa", "Shows a bordo", "Taxas portuárias", "Bebidas"] },
   { id: "excursao", nome: "Excursão", frase: "Excursão em grupo", emoji: "🚌", cor: "#4BE08A", inclusos: ["Ônibus executivo", "Hotel", "Guia acompanhante", "Café da manhã"] },
   { id: "passeio", nome: "Passeio ou day use", frase: "Passeio", emoji: "🚤", cor: "#FF9A3D", inclusos: ["Transporte", "Guia", "Almoço", "Fotos"] },

@@ -92,6 +92,11 @@ async function liberarSemLogin(): Promise<boolean> {
 
 type Midia = { tipo: "video" | "foto"; url: string; width: number; height: number; thumb: string };
 
+// Cenas que não vendem viagem: o Pexels às vezes devolve isso para nomes de praia pouco conhecidos
+// (ex.: "Jericoacoara" trouxe porto de cargueiros). O endereço do vídeo/foto traz a descrição em inglês.
+const FORA_DE_VIAGEM = /\b(cargo|containers?|freight|shipping port|industrial|industry|factory|warehouse|cranes?|trucks?|traffic|highway|construction|refinery|oil rig|power plant|office|laptop|computer|hospital|protest|garbage|trash|pollution|smoke|war|military|police)\b/i;
+const foraDeViagem = (...textos: (string | undefined)[]) => textos.some((t) => !!t && FORA_DE_VIAGEM.test(t.replace(/[-_/]+/g, " ")));
+
 async function buscarPexels(apiKey: string, termos: string[]): Promise<Midia[]> {
   const achados: Midia[] = [];
   const vistos = new Set<string>();
@@ -110,6 +115,7 @@ async function buscarPexels(apiKey: string, termos: string[]): Promise<Midia[]> 
       const d = await r.json();
       for (const v of d.videos || []) {
         if ((v.duration ?? 0) < 5) continue;
+        if (foraDeViagem(v.url, v.image, ...(Array.isArray(v.tags) ? v.tags : []))) continue;
         const files = (v.video_files || []).filter((f: any) => f.file_type === "video/mp4" && f.width && f.height);
         files.sort((a: any, b: any) => Math.abs(Math.min(a.width, a.height) - 720) - Math.abs(Math.min(b.width, b.height) - 720));
         const f = files[0];
@@ -127,6 +133,7 @@ async function buscarPexels(apiKey: string, termos: string[]): Promise<Midia[]> 
     if (!r.ok) continue;
     const d = await r.json();
     for (const p of d.photos || []) {
+      if (foraDeViagem(p.url, p.alt)) continue;
       add({ tipo: "foto", url: p.src?.large2x || p.src?.large, width: p.width, height: p.height, thumb: p.src?.medium }, "p" + p.id);
       if (achados.length >= 6) break;
     }
