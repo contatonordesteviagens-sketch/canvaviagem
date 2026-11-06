@@ -2,6 +2,7 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { Loader2 } from "lucide-react";
+import { useRef } from "react";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import { BLACK_FUNNEL_PATH } from "@/lib/black-funnel";
 import { UpgradeEliteTela } from "@/components/UpgradeElite";
@@ -93,6 +94,10 @@ export const ProtectedRoute = ({
     const location = useLocation();
     const { user, loading, isAdmin, subscription } = useAuth();
     const { can, loading: entitlementsLoading } = useEntitlements();
+    // Quem já entrou nesta tela continua nela enquanto as permissões são reconferidas em segundo plano.
+    // Antes, cada reconferência trocava a página pelo carregador e apagava o que estava em andamento
+    // (ex.: os vídeos sendo gerados na Fábrica sumiam no meio).
+    const liberadoPara = useRef<string | null>(null);
 
     // Liberar acesso público irrestrito ao Blog (/blog) e postagens para indexação e SEO do Google
     if (location.pathname.startsWith("/blog")) {
@@ -105,6 +110,7 @@ export const ProtectedRoute = ({
     const needsSubscriptionState = requireSubscription || requireElite;
 
     if (loading || (needsSubscriptionState && (entitlementsLoading || subscription.loading))) {
+        if (user && liberadoPara.current === user.id) return <>{children}</>;
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -150,5 +156,6 @@ export const ProtectedRoute = ({
         return <AvisoDeAcesso motivo="sem_assinatura" email={user?.email} />;
     }
 
+    liberadoPara.current = user?.id ?? null;
     return <>{children}</>;
 };
