@@ -119,7 +119,7 @@ export function MontarPorToque({ ocupado, onMontar }: { ocupado: boolean; onMont
                   className={`animate-in fade-in zoom-in-95 duration-300 fill-mode-both flex min-h-12 items-center gap-2 rounded-xl border px-3 text-left text-[14px] font-semibold transition-all active:scale-95 ${destino === d.nome ? "border-[#F5F906] bg-[#F5F906]/15" : "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"}`}
                 >
                   <span className="text-[20px] leading-none">{d.emoji}</span>
-                  <span className="min-w-0 truncate">{d.nome}</span>
+                  <span className="min-w-0 leading-tight">{d.nome}</span>
                 </button>
               ))}
             </div>
