@@ -2962,6 +2962,8 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   linhaRef.current = linhaPrevia;
   const [legendaCopiada, setLegendaCopiada] = useState(false);
   const [miniaturas, setMiniaturas] = useState<Partial<Record<Modelo, string>>>({});
+  // painel aberto embaixo (estilo, cores, fonte…); declarado aqui porque as miniaturas dependem dele
+  const [folha, setFolha] = useState<null | "oferta" | "estilo" | "cores" | "fonte" | "duracao" | "formato">(null);
   const ocasiaoRef = useRef<Ocasiao>("nenhuma");
   ocasiaoRef.current = ocasiao;
   const temaAtual = (): Tema => {
@@ -3290,31 +3292,64 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     return () => link.remove();
   }, []);
 
-  // prévia ao vivo, em loop
+  // prévia ao vivo, em loop. Leve no celular: 30 quadros por segundo, só o vídeo da cena atual tocando,
+  // e tudo parado quando a prévia sai da tela ou a aba fica em segundo plano.
   useEffect(() => {
     if (carregando || gravando) return;
-    const ctx = canvasRef.current!.getContext("2d")!;
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
     let raf = 0;
-    const t0 = performance.now();
+    let visivel = true;
+    let tempo = 0; // segundos de prévia já mostrados (pausa não pula cena)
+    let ultimo = performance.now();
+    let ultimoDesenho = 0;
     let lastScene = -1;
-    const loop = () => {
+    const pausarTodos = () => vidsRef.current.forEach((v) => isVideo(v) && !v.paused && v.pause());
+    const tocarSo = (atual: Fundo | undefined) =>
+      vidsRef.current.forEach((v) => {
+        if (!isVideo(v)) return;
+        if (v === atual) v.play().catch(() => undefined);
+        else if (!v.paused) v.pause();
+      });
+    const loop = (agora: number) => {
+      raf = requestAnimationFrame(loop);
+      const dt = Math.min(agora - ultimo, 100);
+      ultimo = agora;
+      if (!visivel || document.hidden) return;
+      tempo += dt / 1000;
+      if (agora - ultimoDesenho < 32) return;
+      ultimoDesenho = agora;
       const L = linhaRef.current;
-      const t = ((performance.now() - t0) / 1000) % L.total;
+      const t = tempo % L.total;
       const sc = telaEm(t, L);
       if (sc !== lastScene) {
         const vs = vidsRef.current;
         const v = vs[sc % Math.max(vs.length, 1)];
-        if (v && isVideo(v)) { v.currentTime = 0; v.play(); }
+        if (v && isVideo(v)) v.currentTime = 0;
+        tocarSo(v);
         lastScene = sc;
       }
       const feed = formatoRef.current === "feed";
       drawFrame(ctx, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, modeloRef.current, ocasiaoRef.current, temaRef.current, L, feed);
       if (feed) mascaraFeed(ctx);
-      raf = requestAnimationFrame(loop);
     };
-    vidsRef.current.forEach((v) => isVideo(v) && v.play());
+    const obs = new IntersectionObserver(([e]) => {
+      visivel = e.isIntersecting;
+      if (!visivel) pausarTodos();
+      else lastScene = -1; // volta a tocar o vídeo da cena
+    });
+    obs.observe(canvas);
+    const aoTrocarAba = () => {
+      if (document.hidden) pausarTodos();
+      else lastScene = -1;
+    };
+    document.addEventListener("visibilitychange", aoTrocarAba);
     raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      obs.disconnect();
+      document.removeEventListener("visibilitychange", aoTrocarAba);
+    };
   }, [carregando, gravando, curto]);
 
   // Atalho de teste: desenha um momento do vídeo num modelo e devolve a imagem.
@@ -3352,15 +3387,15 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       pequeno.width = 108;
       pequeno.height = 192;
       const novas: Partial<Record<Modelo, string>> = {};
-      for (const m of MODELOS) {
+      for (const m of folha === "estilo" ? MODELOS : MODELOS.filter((x) => x.id === modeloRef.current)) {
         drawFrame(grande.getContext("2d")!, 2.8, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m.id, ocasiaoRef.current, temaRef.current);
         pequeno.getContext("2d")!.drawImage(grande, 0, 0, 108, 192);
         novas[m.id] = pequeno.toDataURL("image/jpeg", 0.7);
       }
-      setMiniaturas(novas);
-    }, 700);
+      setMiniaturas((a) => ({ ...a, ...novas }));
+    }, folha === "estilo" ? 150 : 700);
     return () => clearTimeout(id);
-  }, [carregando, gravando, dados, ocasiao, paleta, corLivre, fonte, logo]);
+  }, [carregando, gravando, dados, ocasiao, paleta, corLivre, fonte, logo, folha, modelo]);
 
   // Gera quadro a quadro (não depende de a tela estar visível nem da velocidade do aparelho).
   // fotografia das opções: mudar algo na tela durante a geração não altera o vídeo
@@ -3615,7 +3650,6 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     img.src = URL.createObjectURL(f);
   }
 
-  const [folha, setFolha] = useState<null | "oferta" | "estilo" | "cores" | "fonte" | "duracao" | "formato">(null);
   const [infoAberta, setInfoAberta] = useState(false);
   const [maisOpcoes, setMaisOpcoes] = useState(false);
 
