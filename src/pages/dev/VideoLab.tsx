@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Muxer, ArrayBufferTarget } from "mp4-muxer";
 import { supabase } from "@/integrations/supabase/client";
 import { FabricaProvider, useFabricaContext, type Pacote } from "@/hooks/useFabricaContext";
@@ -1634,6 +1634,8 @@ function camadaOcasiao(ctx: CanvasRenderingContext2D, oc: Ocasiao, t: number, ti
   if (tipo === "abertura" || tipo === "preco") seloOcasiao(ctx, oc, ease(lt / 0.5), feed ? (ehBlack(oc) ? 14 : 58) : 0);
 }
 
+const CHAVE_SALVO = "cv-gerador-video-v1";
+
 // ---------------- Contato padrão (igual em todos os estilos): logo, título e botões com ícone ----------------
 // Os mesmos ícones oficiais que saem nos anúncios da Fábrica (public/social-icons)
 const ARQ_ICONE: Record<Contato, string> = { whatsapp: "whatsapp", instagram: "instagram_fino", facebook: "facebook", email: "email_azul", site: "site" };
@@ -2206,7 +2208,7 @@ function cenaBf(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: nu
 // cartões brancos com ícones redondos e itens com check (estilo checklist) ———
 const AZUL_ESCURO = "#0B3FA6";
 const TINTA_PROMO = "#0B1F4D";
-function painelInclinado(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, cor: string, desenhar: () => void, rot = -0.045) {
+function painelInclinado(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, cor: string, desenhar: () => void, rot = 0) {
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(rot);
@@ -2867,7 +2869,15 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const [entrada, setEntrada] = useState<Entrada>("audio");
   const [frase, setFrase] = useState("");
   const [foto, setFoto] = useState<string | null>(null);
-  const [dados, setDados] = useState<Dados>({
+  // o que a agência preencheu fica salvo no aparelho: recarregar a página não apaga nada
+  const salvo = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem(CHAVE_SALVO) || "null") as { dados?: Partial<Dados>; contatos?: Contato[] } | null;
+    } catch {
+      return null;
+    }
+  }, []);
+  const [dados, setDados] = useState<Dados>(() => ({
     destino: "Cancún",
     chamada: "O Caribe mexicano te espera",
     pagamento: "cash",
@@ -2888,8 +2898,19 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     facebook: "",
     email: "",
     site: "",
-  });
-  const [contatos, setContatos] = useState<Contato[]>(["whatsapp"]);
+    ...(salvo?.dados || {}),
+  }));
+  const [contatos, setContatos] = useState<Contato[]>(salvo?.contatos?.length ? salvo.contatos : ["whatsapp"]);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(CHAVE_SALVO, JSON.stringify({ dados, contatos }));
+      } catch {
+        /* sem espaço ou modo privado: segue sem salvar */
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [dados, contatos]);
   const [modelo, setModelo] = useState<Modelo>(ORDEM_SUGERIDA[0]);
   const modeloRef = useRef<Modelo>(ORDEM_SUGERIDA[0]);
   modeloRef.current = modelo;
