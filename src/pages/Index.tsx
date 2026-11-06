@@ -29,7 +29,7 @@ import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRi
 import { Skeleton } from "@/components/ui/skeleton";
 import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Info, Bot, Image, Video, Zap, ShieldCheck, Layout } from "lucide-react";
+import { CheckCircle2, Info, Bot, Image, Video, Zap, ShieldCheck, Layout, Lock } from "lucide-react";
 import { ELITE_OFFER } from "@/lib/eliteOffer";
 import AutoplayLoopVideo from "@/components/travel-agency-content/AutoplayLoopVideo";
 const PortalStart = lazy(() => import("@/components/canva/PortalStart"));
@@ -1965,14 +1965,54 @@ const Index = () => {
                   </div>
 
                   <h2 className="mt-4 text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
-                    A Fábrica de Anúncios Liberou.
+                    {hasPremiumContent ? "Seu plano Start está ativo." : "A Fábrica de Anúncios Liberou."}
                   </h2>
                   <p className="mt-3 text-sm sm:text-base leading-relaxed text-slate-500 font-medium max-w-lg">
-                    A ferramenta mais poderosa do mercado está pronta. Digite o destino e receba seu anúncio pronto em 5 segundos.
+                    {hasPremiumContent
+                      ? "A biblioteca já é sua. A Fábrica de Anúncios, o Gerador de vídeo e o Construtor de Sites são do plano Elite: veja abaixo o que muda se quiser fazer o upgrade."
+                      : "A ferramenta mais poderosa do mercado está pronta. Digite o destino e receba seu anúncio pronto em 5 segundos."}
                   </p>
                 </div>
 
-                {/* Prévia dos Entregáveis */}
+                {/* Assinante Start: separa o que ele já tem do que é só do Elite */}
+                {hasPremiumContent && (
+                  <div className="mt-8 space-y-6">
+                    <div>
+                      <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-emerald-700">Já está no seu plano Start</div>
+                      <ul className="space-y-2">
+                        {[
+                          "Vídeos Reels de destinos prontos para postar",
+                          "Artes e stories editáveis no Canva",
+                          "Legendas e textos de oferta",
+                          "Calendário de postagens",
+                        ].map((t) => (
+                          <li key={t} className="flex items-start gap-2.5 rounded-xl bg-emerald-50 px-3.5 py-2.5 text-sm font-medium text-slate-800">
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                            {t}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">O Elite libera também</div>
+                      <ul className="space-y-2">
+                        {[
+                          ["Fábrica de Anúncios", "cards de oferta com a sua logo em segundos"],
+                          ["Gerador de vídeo", "fale o pacote e saem 3 vídeos prontos para os stories"],
+                          ["Construtor de Sites", "página do pacote pronta para mandar ao cliente"],
+                        ].map(([t, d]) => (
+                          <li key={t} className="flex items-start gap-2.5 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-600">
+                            <Lock className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                            <span><strong className="text-slate-900">{t}</strong>: {d}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* Prévia dos Entregáveis (quem ainda não assina) */}
+                {!hasPremiumContent && (
                 <div className="mt-10">
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
                     <Sparkles className="h-3.5 w-3.5" />
@@ -2021,11 +2061,12 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Valores do Plano Completo */}
                 <div className="mt-10">
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
-                    <span>Escolha seu plano de acesso</span>
+                    <span>{hasPremiumContent ? "Fazer upgrade para o Elite" : "Escolha seu plano de acesso"}</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
