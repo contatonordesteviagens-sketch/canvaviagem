@@ -1635,6 +1635,48 @@ function camadaOcasiao(ctx: CanvasRenderingContext2D, oc: Ocasiao, t: number, ti
   if (tipo === "abertura" || tipo === "preco") seloOcasiao(ctx, oc, ease(lt / 0.5), feed ? (ehBlack(oc) ? 14 : 58) : 0);
 }
 
+// Gerar com a tela escondida (outra aba, outro app, janela atrás) deixa o navegador sem decodificar o vídeo
+// e com os relógios a 1 por segundo: cada quadro levava ~1 s e o fundo saía congelado.
+// Então a geração pausa enquanto a tela está escondida e continua sozinha quando a pessoa volta.
+// A tela está parada? (aba escondida ou janela atrás de outra: o navegador para de desenhar a página,
+// às vezes sem avisar que ela ficou escondida). Se o próximo quadro da tela não chega em 300 ms, está parada.
+const telaParada = () =>
+  new Promise<boolean>((r) => {
+    if (document.hidden) return r(true);
+    let veio = false;
+    requestAnimationFrame(() => {
+      veio = true;
+      r(false);
+    });
+    setTimeout(() => !veio && r(true), 300);
+  });
+// espera a tela voltar a ser desenhada (a pessoa voltou para a aba/janela)
+const esperarTelaVisivel = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
+// Celular: mantém a tela acesa enquanto gera (onde o navegador permitir).
+type Trava = { release: () => Promise<void> };
+async function manterTelaAcesa(): Promise<() => void> {
+  const nav = navigator as Navigator & { wakeLock?: { request: (t: "screen") => Promise<Trava> } };
+  if (!nav.wakeLock) return () => undefined;
+  let trava: Trava | null = null;
+  const pedir = async () => {
+    try {
+      trava = await nav.wakeLock!.request("screen");
+    } catch {
+      trava = null;
+    }
+  };
+  // a trava cai quando a tela some; pede de novo quando a pessoa volta
+  const aoVoltar = () => {
+    if (!document.hidden) void pedir();
+  };
+  await pedir();
+  document.addEventListener("visibilitychange", aoVoltar);
+  return () => {
+    document.removeEventListener("visibilitychange", aoVoltar);
+    void trava?.release().catch(() => undefined);
+  };
+}
+
 const CHAVE_SALVO = "cv-gerador-video-v1";
 const CHAVE_FUNDOS = "cv-gerador-fundos-v1";
 function fundosSalvos(): Midia[] {
@@ -2994,6 +3036,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const [fotoEtapa, setFotoEtapa] = useState<"" | "recebida" | "lendo" | "buscando" | "pronta" | "erro">("");
   const [logo, setLogo] = useState<HTMLImageElement | null>(null);
   const [status, setStatus] = useState("Carregando vídeos…");
+  const [pausado, setPausado] = useState(false);
   const [url, setUrl] = useState<string | null>(null);
   const [gravando, setGravando] = useState(false);
   const [fontes, setFontes] = useState<{ videos: number; fotos: number } | null>(null);
@@ -3455,6 +3498,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   }
 
   async function gerar() {
+    const soltarTela = await manterTelaAcesa();
     setGravando(true);
     setEtapa("");
     setUrl(null);
@@ -3476,9 +3520,12 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       setStatus("Erro: " + (e as Error).message);
     }
     setGravando(false);
+    setPausado(false);
+    soltarTela();
   }
 
   async function gerarTres() {
+    const soltarTela = await manterTelaAcesa();
     setGravando(true);
     setEtapa(""); // a mensagem "toque em Gerar" já não vale: os vídeos estão saindo
     setUrl(null);
@@ -3509,6 +3556,8 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       setStatus("Erro: " + (e as Error).message);
     }
     setGravando(false);
+    setPausado(false);
+    soltarTela();
   }
 
   const legenda = montarLegenda(dados, contatos);
@@ -3605,6 +3654,16 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       const L = foto0.linha;
       const n = Math.round(L.total * FPS);
       for (let f = 0; f < n; f++) {
+        if (document.hidden || (f % 15 === 0 && (await telaParada()))) {
+          vids.forEach((v) => isVideo(v) && !v.paused && v.pause());
+          setPausado(true);
+          await esperarTelaVisivel();
+          setPausado(false);
+          for (const i of tocando) {
+            const v = vids[i % Math.max(vids.length, 1)];
+            if (v && isVideo(v)) await v.play().catch(() => undefined);
+          }
+        }
         const t = f / FPS;
         const ativos = [...Array(L.telas.length).keys()].filter((i) => t >= L.inicios[i] - FADE && t <= L.inicios[i] + L.telas[i].dur + FADE);
         // começa a tocar quem entrou e pausa quem saiu
@@ -4131,12 +4190,17 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
 
       {/* ——— Barra de ação (fixa no celular) ——— */}
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[#0A0A0B]/95 px-3 pt-2.5 pb-[max(10px,env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0">
+        {gravando && (
+          <p id="aviso-gerando" role="status" className={`mx-auto mb-2 max-w-md text-center text-[12px] font-semibold ${pausado ? "text-[#F5F906]" : "text-white/60"}`}>
+            {pausado ? "Pausado. Volte para esta tela e o vídeo continua de onde parou." : "Deixe esta tela aberta até terminar."}
+          </p>
+        )}
         <div className="mx-auto grid max-w-md grid-cols-[1fr_1.5fr] gap-2">
           <button id="gerar" disabled={carregando || gravando || ocupado || !GERA_MP4} className="min-h-12 rounded-2xl bg-white/[0.08] text-[15px] font-bold text-white disabled:opacity-50" onClick={gerar}>
             1 vídeo
           </button>
           <button id="gerar3" disabled={carregando || gravando || ocupado || !GERA_MP4} className="min-h-12 rounded-2xl text-[15px] font-black text-black disabled:opacity-60" style={{ background: "#F5F906" }} onClick={gerarTres}>
-            {gravando ? status : "3 vídeos diferentes"}
+            {gravando ? (pausado ? "Pausado" : status) : "3 vídeos diferentes"}
           </button>
         </div>
       </div>
