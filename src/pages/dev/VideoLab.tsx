@@ -8,6 +8,7 @@ import { useJornada } from "@/lib/jornada";
 import { OQueFazerAgora } from "@/components/jornada/OQueFazerAgora";
 import { salvarVideo } from "@/lib/biblioteca-videos";
 import { createPortal } from "react-dom";
+import { MontarPorToque } from "@/components/video/MontarPorToque";
 import { Check, ChevronRight, Download, Image as ImageIcon, Maximize2, Pencil, Share } from "lucide-react";
 import { NavegadorInternoAviso } from "@/components/jornada/NavegadorInternoAviso";
 
@@ -2846,7 +2847,7 @@ const PACOTE_EXEMPLO: Pacote = {
   included: ["Pousada com café da manhã", "Transfer Fortaleza–Jeri", "Passeio Rota Leste"],
 };
 
-type Entrada = "pacote" | "audio" | "texto" | "foto";
+type Entrada = "montar" | "pacote" | "audio" | "texto" | "foto";
 
 export default function VideoLab() {
   return (
@@ -2866,7 +2867,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const autoRodou = useRef(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const vidsRef = useRef<Fundo[]>([]);
-  const [entrada, setEntrada] = useState<Entrada>("audio");
+  const [entrada, setEntrada] = useState<Entrada>("montar");
   const [frase, setFrase] = useState("");
   const [foto, setFoto] = useState<string | null>(null);
   // o que a agência preencheu fica salvo no aparelho: recarregar a página não apaga nada
@@ -3571,6 +3572,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const rotulo = "mb-1 block text-[12px] font-semibold text-white/55";
   const set = <K extends keyof Dados>(k: K, v: Dados[K]) => setDados((d) => ({ ...d, [k]: v }));
   const abas: { id: Entrada; nome: string }[] = [
+    { id: "montar", nome: "Montar" },
     { id: "pacote", nome: "Pacotes" },
     { id: "audio", nome: "Áudio" },
     { id: "texto", nome: "Texto" },
@@ -3601,7 +3603,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
             </p>
           )}
           {resultados.length === 0 && <p className="px-1 text-[13px] text-white/55">Fale o pacote do seu jeito. Em 1 minuto saem 3 vídeos para postar.</p>}
-          <div role="tablist" aria-label="Como mandar o pacote" className="grid grid-cols-4 gap-1 rounded-2xl bg-white/[0.06] p-1">
+          <div role="tablist" aria-label="Como mandar o pacote" className="grid grid-cols-5 gap-1 rounded-2xl bg-white/[0.06] p-1">
             {abas.map((a) => (
               <button
                 key={a.id}
@@ -3617,6 +3619,16 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
           </div>
 
           <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            {entrada === "montar" && (
+              <MontarPorToque
+                ocupado={ocupado}
+                onMontar={(texto) => {
+                  enviar({ text: texto }).then((ok) => {
+                    if (ok) gerarTres();
+                  });
+                }}
+              />
+            )}
             {entrada === "pacote" && (
               <div className="flex flex-col gap-2">
                 <p className="text-[13px] text-white/55">Toque num pacote para virar vídeo.</p>
