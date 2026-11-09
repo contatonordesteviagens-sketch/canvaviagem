@@ -302,7 +302,7 @@ function prepararCtx(ctx: CanvasRenderingContext2D) {
 
 
 // ---------------- Modelos de vídeo (4 telas: destino, inclusos, preço, contato) ----------------
-type Modelo = "classico" | "neon" | "cartao" | "luxo" | "passagem" | "revista" | "postal" | "faixa" | "vibrante" | "bf" | "promo";
+type Modelo = "classico" | "neon" | "cartao" | "luxo" | "passagem" | "revista" | "postal" | "faixa" | "vibrante" | "bf" | "promo" | "montagem";
 const MODELOS: { id: Modelo; nome: string; desc: string }[] = [
   { id: "classico", nome: "Clássico", desc: "Letras grandes sobre o vídeo" },
   { id: "neon", nome: "Neon", desc: "Faixas amarelas, estilo oferta" },
@@ -315,12 +315,13 @@ const MODELOS: { id: Modelo; nome: string; desc: string }[] = [
   { id: "vibrante", nome: "Vibrante", desc: "Roxo e rosa, divertido" },
   { id: "bf", nome: "Black Friday", desc: "Preto e laranja, cartão forte e ícones" },
   { id: "promo", nome: "Promo azul", desc: "Cartões brancos e azul, estilo checklist" },
+  { id: "montagem", nome: "Montagem de viagem", desc: "Cenas de viagem com etiqueta 📍, título grande e ícones" },
 ];
 
 // Ordem dos estilos na lista e no rodízio. Em novembro os dois de Black Friday vêm primeiro e são o padrão.
 const ORDEM_SUGERIDA: Modelo[] = new Date().getMonth() === 10
-  ? ["bf", "promo", "classico", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal"]
-  : ["classico", "promo", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal", "bf"];
+  ? ["bf", "montagem", "promo", "classico", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal"]
+  : ["montagem", "classico", "promo", "faixa", "cartao", "neon", "vibrante", "luxo", "passagem", "revista", "postal", "bf"];
 const MODELOS_NA_ORDEM = ORDEM_SUGERIDA.map((id) => MODELOS.find((m) => m.id === id)!).filter(Boolean);
 
 const clamp01 = (t: number) => Math.min(Math.max(t, 0), 1);
@@ -1814,6 +1815,7 @@ const ESTILO_CTA: Record<Modelo, { titulo: string; molde: string; cor: () => str
   vibrante: { titulo: "Bora viajar?", molde: "900 {s}px Montserrat, Arial", cor: () => "#fff" },
   bf: { titulo: "Garanta sua vaga", molde: "900 {s}px Montserrat, Arial", cor: () => LARANJA },
   promo: { titulo: "Garanta sua vaga", molde: "italic 900 {s}px Montserrat, Arial", cor: () => "#fff" },
+  montagem: { titulo: "Fale conosco!", molde: "900 {s}px Montserrat, Arial", cor: () => "#fff" },
 };
 
 function ctaPadrao(ctx: CanvasRenderingContext2D, d: Dados, logo: HTMLImageElement | null, contatos: Contato[], lt: number, modelo: Modelo, y0 = 0) {
@@ -2455,10 +2457,213 @@ function cenaPromo(ctx: CanvasRenderingContext2D, cena: number, lt: number, out:
   ctx.globalAlpha = 1;
 }
 
+// ---------------- Montagem de viagem (referência: Reels de Black Friday do Lucas) ----------------
+// Cenas de viagem trocando, etiqueta "📍 TEXTO" no topo (1ª palavra em amarelo), título grande no centro com a
+// última palavra em amarelo, linha de aviãozinho, fileira de ícones do que inclui e "Fale conosco!" no fim.
+const AMARELO_MONTAGEM = () => GOLD;
+
+function etiquetaMontagem(ctx: CanvasRenderingContext2D, texto: string, lt: number, out: number) {
+  const k = ease(lt / 0.4);
+  ctx.save();
+  ctx.globalAlpha = out * k;
+  ctx.textAlign = "left";
+  ctx.font = "800 30px Montserrat, Arial";
+  const palavras = texto.toUpperCase().split(/\s+/).filter(Boolean);
+  const x0 = 70 + (1 - k) * -30;
+  const y = 250;
+  sombra(ctx, 14, "rgba(0,0,0,.6)");
+  ctx.fillStyle = "#fff";
+  ctx.fillText("📍", x0, y);
+  let x = x0 + 44;
+  palavras.forEach((p, i) => {
+    ctx.fillStyle = i === 0 ? AMARELO_MONTAGEM() : "#fff";
+    const larg = ctx.measureText(p + " ").width;
+    if (x + larg > W - 60) return;
+    ctx.fillText(p, x, y);
+    x += larg;
+  });
+  semSombra(ctx);
+  ctx.restore();
+}
+
+// linha tracejada em curva com um aviãozinho andando nela
+function aviaozinho(ctx: CanvasRenderingContext2D, lt: number, out: number, y: number) {
+  const k = clamp01(lt / 1.4);
+  ctx.save();
+  ctx.globalAlpha = out * 0.9;
+  ctx.strokeStyle = "rgba(255,255,255,.85)";
+  ctx.lineWidth = 3;
+  ctx.setLineDash([10, 10]);
+  ctx.beginPath();
+  const x0 = 90;
+  const x1 = W - 120;
+  const pontos = 40;
+  for (let i = 0; i <= pontos * k; i++) {
+    const u = i / pontos;
+    const px = x0 + (x1 - x0) * u;
+    const py = y + Math.sin(u * Math.PI * 1.5) * 50;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  const ux = k;
+  const ax = x0 + (x1 - x0) * ux;
+  const ay = y + Math.sin(ux * Math.PI * 1.5) * 50;
+  ctx.translate(ax, ay);
+  ctx.rotate(Math.cos(ux * Math.PI * 1.5) * 0.6 - 0.2);
+  ctx.font = "44px Arial";
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.fillText("✈", 0, 14);
+  ctx.restore();
+}
+
+// título grande com a última palavra destacada, em até 3 linhas
+function tituloMontagem(ctx: CanvasRenderingContext2D, texto: string, yCentro: number, lt: number, out: number, max = 96) {
+  const r = linhasQueCabem(ctx, texto.toUpperCase(), "900 {s}px Montserrat, Arial", max, 46, W - 120, 3);
+  const k = back((lt - 0.15) / 0.55);
+  ctx.save();
+  ctx.globalAlpha = out * clamp01((lt - 0.15) / 0.3);
+  ctx.textAlign = "center";
+  ctx.font = `900 ${r.tam}px Montserrat, Arial`;
+  const altura = r.linhas.length * r.tam * 1.05;
+  const y0 = yCentro - altura / 2 + r.tam * 0.8;
+  sombra(ctx, 26, "rgba(0,0,0,.55)");
+  r.linhas.forEach((linha, i) => {
+    const y = y0 + i * r.tam * 1.05 + (1 - k) * 40;
+    const ultima = i === r.linhas.length - 1;
+    if (!ultima) {
+      ctx.fillStyle = "#fff";
+      ctx.fillText(linha, W / 2, y);
+      return;
+    }
+    // na última linha, a última palavra em amarelo
+    const partes = linha.split(" ");
+    const fim = partes.pop() || "";
+    const comeco = partes.length ? partes.join(" ") + " " : "";
+    const wc = ctx.measureText(comeco).width;
+    const wf = ctx.measureText(fim).width;
+    const xi = W / 2 - (wc + wf) / 2;
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#fff";
+    ctx.fillText(comeco, xi, y);
+    ctx.fillStyle = AMARELO_MONTAGEM();
+    ctx.fillText(fim, xi + wc, y);
+    ctx.textAlign = "center";
+  });
+  semSombra(ctx);
+  ctx.restore();
+  return y0 + r.linhas.length * r.tam * 1.05;
+}
+
+function iconeDoItem(item: string) {
+  const t = item.toLowerCase();
+  if (/aére|aere|voo|passage|ida e volta|bagagem/.test(t)) return "✈️";
+  if (/hotel|hosped|pousada|resort|quarto|hostel|temporada/.test(t)) return "🏨";
+  if (/traslad|translad|transfer|ônibus|onibus|transporte|motorista|carro|van/.test(t)) return "🚐";
+  if (/café|cafe|almoço|almoco|refei|pensão|pensao|all inclusive|bebida|jantar|snack/.test(t)) return "🍽️";
+  if (/seguro/.test(t)) return "🛡️";
+  if (/ingresso|show|parque/.test(t)) return "🎟️";
+  if (/barco|lancha|catamar|mergulho|praia/.test(t)) return "🚤";
+  if (/passeio|tour|guia|buggy|4x4|trilha/.test(t)) return "🧭";
+  if (/piscina|spa/.test(t)) return "🏊";
+  return "✔️";
+}
+
+function cenaMontagem(ctx: CanvasRenderingContext2D, cena: number, lt: number, out: number, d: Dados, _logo: HTMLImageElement | null, _contatos: Contato[]) {
+  ctx.textAlign = "center";
+  if (cena === 0) {
+    // abertura: etiqueta com o tipo, aviãozinho e o destino grande
+    etiquetaMontagem(ctx, ehPacote(d) ? "Pacotes de viagem" : infoTipo(d).rotulo, lt, out);
+    aviaozinho(ctx, lt, out, 470);
+    const fim = tituloMontagem(ctx, d.destino || "Sua próxima viagem", 760, lt, out, 104);
+    const k = ease((lt - 0.8) / 0.5);
+    ctx.globalAlpha = out * k;
+    sombra(ctx, 16, "rgba(0,0,0,.6)");
+    ajustarFonte(ctx, "600 {s}px Montserrat, Arial", d.chamada, 38, W - 140);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(d.chamada, W / 2, fim + 30 + (1 - k) * 16);
+    semSombra(ctx);
+    ctx.globalAlpha = 1;
+  }
+  if (cena === 1) {
+    // o que inclui: etiqueta, título e a fileira de ícones (como "Pacotes completos ✈️🏨🚌☕")
+    etiquetaMontagem(ctx, "O que está incluso", lt, out);
+    const itens = d.itens.filter(Boolean).slice(0, 4);
+    const k = ease((lt - 0.1) / 0.45);
+    ctx.globalAlpha = out * k;
+    ctx.font = "800 34px Montserrat, Arial";
+    ctx.fillStyle = AMARELO_MONTAGEM();
+    sombra(ctx, 14, "rgba(0,0,0,.6)");
+    ctx.fillText(ehPacote(d) ? "PACOTES COMPLETOS" : infoTipo(d).curto.toUpperCase(), W / 2, 600 + (1 - k) * 20);
+    semSombra(ctx);
+    const lado = 104;
+    const gap = 26;
+    const total = itens.length * lado + (itens.length - 1) * gap;
+    itens.forEach((it, i) => {
+      const ki = back((lt - 0.3 - i * 0.12) / 0.45);
+      ctx.globalAlpha = out * clamp01((lt - 0.3 - i * 0.12) / 0.25);
+      const x = W / 2 - total / 2 + i * (lado + gap);
+      const y = 650;
+      ctx.save();
+      ctx.translate(x + lado / 2, y + lado / 2);
+      ctx.scale(0.6 + 0.4 * ki, 0.6 + 0.4 * ki);
+      roundRect(ctx, -lado / 2, -lado / 2, lado, lado, 22);
+      ctx.fillStyle = "#fff";
+      sombra(ctx, 18, "rgba(0,0,0,.35)");
+      ctx.fill();
+      semSombra(ctx);
+      ctx.font = "52px Arial";
+      ctx.textBaseline = "middle";
+      ctx.fillText(iconeDoItem(it), 0, 4);
+      ctx.textBaseline = "alphabetic";
+      ctx.restore();
+    });
+    // os nomes, pequenos, embaixo
+    ctx.globalAlpha = out * ease((lt - 0.8) / 0.5);
+    sombra(ctx, 12, "rgba(0,0,0,.6)");
+    ajustarFonte(ctx, "700 {s}px Montserrat, Arial", itens.join(" · "), 30, W - 120);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(itens.join(" · "), W / 2, 820);
+    semSombra(ctx);
+    ctx.globalAlpha = 1;
+  }
+  if (cena === 2) {
+    // preço por último: "a partir de" + valor grande, com o selo amarelo
+    etiquetaMontagem(ctx, d.destino || "Sua viagem", lt, out);
+    const pt = precoTextos(d);
+    const pk = back((lt - 0.2) / 0.55);
+    ctx.globalAlpha = out * clamp01((lt - 0.2) / 0.3);
+    ctx.save();
+    ctx.translate(W / 2, 700);
+    ctx.scale(0.7 + 0.3 * pk, 0.7 + 0.3 * pk);
+    sombra(ctx, 16, "rgba(0,0,0,.6)");
+    ajustarFonte(ctx, "800 {s}px Montserrat, Arial", pt.topo.toUpperCase(), 36, W - 140);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(pt.topo.toUpperCase(), 0, -100);
+    textoPreco(ctx, pt.valor, 0, 30, 140, W - 100, AMARELO_MONTAGEM());
+    if (pt.rodape) {
+      ctx.font = "600 36px Montserrat, Arial";
+      ctx.fillStyle = "#fff";
+      ctx.fillText(pt.rodape, 0, 100);
+    }
+    semSombra(ctx);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+}
+
 function cenaDestaque(ctx: CanvasRenderingContext2D, modelo: Modelo, texto: string, lt: number, out: number) {
   ctx.textAlign = "center";
   const k = ease((lt - 0.2) / 0.6);
   ctx.globalAlpha = out * k;
+  if (modelo === "montagem") {
+    etiquetaMontagem(ctx, texto, lt, out);
+    aviaozinho(ctx, lt, out, 860);
+    ctx.globalAlpha = 1;
+    return;
+  }
   if (modelo === "bf") {
     letrasBf(ctx, 40, 250, 64);
     const r = linhasQueCabem(ctx, texto, "900 {s}px Montserrat, Arial", 76, 40, W - 120, 2);
@@ -2720,7 +2925,7 @@ function drawFrame(
     } else {
       const fn = {
         classico: cenaClassico, neon: cenaNeon, cartao: cenaCartao, luxo: cenaLuxo,
-        passagem: cenaPassagem, revista: cenaRevista, postal: cenaPostal, faixa: cenaFaixa, vibrante: cenaVibrante, bf: cenaBf, promo: cenaPromo,
+        passagem: cenaPassagem, revista: cenaRevista, postal: cenaPostal, faixa: cenaFaixa, vibrante: cenaVibrante, bf: cenaBf, promo: cenaPromo, montagem: cenaMontagem,
       }[modelo];
       fn(ctx, CENA_MODELO[tipo], lt, out, d, logo, contatos);
     }
