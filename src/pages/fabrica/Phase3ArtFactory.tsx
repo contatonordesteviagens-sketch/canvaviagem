@@ -1753,7 +1753,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   const inputCls = "w-full bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05] focus:border-amber-400/60 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(251,191,36,0.15)] rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all duration-300";
 
   return (
-    <div className={`${creativeMode === "carousel" ? "w-full max-w-[1440px]" : "max-w-3xl"} mx-auto space-y-6`}>
+    <div className={`${creativeMode === "carousel" ? "w-full max-w-[1440px]" : "max-w-3xl lg:max-w-6xl"} mx-auto space-y-6`}>
       {!lockMode && (
         <div className="rounded-2xl border border-white/10 bg-[#0F0F11] p-1.5">
           <div className="grid grid-cols-2 gap-1.5" role="tablist" aria-label="Tipo de criação">
@@ -1796,6 +1796,9 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         />
       ) : (
         <>
+      {/* Computador: formulário à esquerda e a arte fixa à direita. Celular: formulário, arte logo depois do botão, ajustes. */}
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(340px,420px)] lg:items-start">
+      <div className="min-w-0 space-y-6 lg:col-start-1 lg:row-start-1">
 
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 bg-white/[0.02] border border-white/[0.08] p-6 rounded-2xl">
           <div className="sm:col-span-4">
@@ -2650,227 +2653,12 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
       </div>
 
-      {/* No celular o botão principal fica a mais de 2.000 px do topo: uma cópia fixa no rodapé (portal, para nenhum pai com transform prender o fixed). */}
-      {createPortal(
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0A0A0B]/95 p-3 backdrop-blur lg:hidden">
-        <button
-          onClick={() => { generateNext(); }}
-          disabled={loading || !destination || (genMode === "photo" && !selectedPhotoUrl) || (genMode === "custom" && !customImageData && !customLink.trim())}
-          className="mx-auto flex min-h-12 w-full max-w-md items-center justify-center gap-2 rounded-xl font-extrabold text-black disabled:opacity-40"
-          style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)` }}
-        >
-          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando…</> : <><Sparkles className="w-4 h-4" /> Gerar Anúncio</>}
-        </button>
-        {!destination && <p className="mt-1 text-center text-[11px] text-white/50">Escolha o destino acima para liberar.</p>}
-      </div>,
-      document.body)}
+      </div>
+      </div>
 
-      <div className={`${sectionCls} space-y-5`}>
-        {/* Fonte, tamanhos e cores: a maioria não mexe. Ficam recolhidos para a tela não assustar. */}
-        <details className="group rounded-xl border border-white/10 bg-black/20">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-[11px] font-bold text-white/70">
-            <span className="flex items-center gap-2">
-              <ChevronDown className="h-3.5 w-3.5 text-white/40 transition-transform group-open:-rotate-180" />
-              Ajustes avançados
-              <span className="hidden text-[10px] font-medium text-white/40 sm:inline">fonte, tamanho dos textos e cores</span>
-            </span>
-            <span className="text-[10px] font-medium text-white/40">{fontFamily} · T {Math.round(titleScale * 100)}%</span>
-          </summary>
-          <div className="space-y-4 px-3 pb-3">
-        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setFontOptionsOpen((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-sm font-bold text-white">Tipografia</span>
-              <span className="text-[10px] text-white/40 truncate" style={{ fontFamily: `${fontFamily}, Inter, sans-serif` }}>
-                {fontFamily} · T {Math.round(titleScale * 100)}% · D {Math.round(descScale * 100)}%
-              </span>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${fontOptionsOpen ? "rotate-180" : ""}`} />
-          </button>
-          {fontOptionsOpen && (
-            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              <div>
-                <label className={labelCls}>Fonte</label>
-                <select
-                  value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Montserrat"}
-                  onChange={(e) => setFontFamily(e.target.value)}
-                  className={inputCls}
-                >
-                  {FONT_PRESETS.map((f) => (
-                    <option key={f} value={f} className="bg-neutral-900 text-white">{f}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setAdvancedSizeOpen((v) => !v)}
-                  className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.04] transition-colors"
-                >
-                  <span className="text-[12px] font-semibold text-white/85">⚙️ Ajustes Avançados de Tamanho</span>
-                  <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${advancedSizeOpen ? "rotate-180" : ""}`} />
-                </button>
-                {advancedSizeOpen && (
-                  <div className="px-3 pb-3 pt-2 grid grid-cols-2 gap-3 border-t border-white/10">
-                    <div>
-                      <label className={labelCls}>Título <span className="text-white/40">({Math.round(titleScale * 100)}%)</span></label>
-                      <input type="range" min={0.6} max={1.6} step={0.05} value={titleScale}
-                        onChange={(e) => setTitleScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Descrição <span className="text-white/40">({Math.round(descScale * 100)}%)</span></label>
-                      <input type="range" min={0.6} max={1.6} step={0.05} value={descScale}
-                        onChange={(e) => setDescScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
-                <div className="flex items-baseline justify-between mb-2">
-                  <label className={labelCls}>Cor do texto</label>
-                  <span className="text-[10px] text-white/40">aplica em todos os textos</span>
-                </div>
-                <div className="grid grid-cols-10 gap-1 mb-3">
-                  {PRESET_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setTextColorOverride(c)}
-                      className={`w-5 h-5 rounded-full border transition-all ${(textColorOverride || "").toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
-                      style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
-                      aria-label={c}
-                      title={c}
-                    />
-                  ))}
-                </div>
-                <div className="flex gap-2 items-center">
-                  <label className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
-                    style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}>
-                    <input type="color" value={textColorOverride || "#ffffff"}
-                      onChange={(e) => setTextColorOverride(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    <span className="absolute inset-1.5 rounded-full border border-white/40" style={{ background: textColorOverride || "#ffffff" }} />
-                  </label>
-                  <input value={textColorOverride} onChange={(e) => setTextColorOverride(e.target.value)}
-                    placeholder="Padrão (branco)"
-                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase" />
-                  {textColorOverride && (
-                    <button onClick={() => setTextColorOverride("")}
-                      className="text-[11px] text-white/60 hover:text-white px-2 py-1 rounded border border-white/10">
-                      Limpar
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <button
-                onClick={() => { setFontFamily("Montserrat"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
-                className="text-[11px] text-white/60 hover:text-white underline"
-              >
-                Restaurar padrão
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setColorsOpen((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="text-sm font-bold text-white">Cores</span>
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
-                  style={{ background: primaryColor }}
-                  title={`Primária ${primaryColor}`}
-                />
-                <span
-                  className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
-                  style={{ background: secondaryColor }}
-                  title={`Secundária ${secondaryColor}`}
-                />
-                <span className="text-[10px] text-white/40 ml-1">
-                  · {baseTextMode === "light" ? "Textos claros" : "Textos escuros"}
-                </span>
-              </div>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${colorsOpen ? "rotate-180" : ""}`} />
-          </button>
-          {colorsOpen && (
-            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
-                  { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
-                ].map(({ label, value, setter, hint }) => (
-                  <div key={label} className="flex flex-col items-start gap-2">
-                    <div className="flex items-baseline justify-between w-full">
-                      <label className={labelCls}>{label}</label>
-                      <span className="text-[10px] text-white/40">{hint}</span>
-                    </div>
-                    <label
-                      className="relative w-12 h-12 rounded-full cursor-pointer overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
-                      style={{ background: value }}
-                      title="Clique para escolher uma cor"
-                    >
-                      <input
-                        type="color"
-                        value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"}
-                        onChange={(e) => setter(e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                      />
-                    </label>
-                    <span className="text-[10px] text-white/50 font-mono uppercase">{value}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <label className={labelCls}>Cor dos textos base</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setBaseTextMode("light")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all ${
-                      baseTextMode === "light"
-                        ? "bg-white text-black border-white"
-                        : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
-                    }`}
-                  >
-                    <span className="w-3 h-3 rounded-full bg-white border border-black/20" />
-                    Textos claros
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setBaseTextMode("dark")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all ${
-                      baseTextMode === "dark"
-                        ? "bg-neutral-900 text-white border-white"
-                        : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
-                    }`}
-                  >
-                    <span className="w-3 h-3 rounded-full bg-neutral-900 border border-white/40" />
-                    Textos escuros
-                  </button>
-                </div>
-                <p className="text-[10px] text-white/40 mt-1.5">Define a cor dos textos sobre a arte para garantir legibilidade.</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-          </div>
-        </details>
-
+      <div className="min-w-0 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
         {(generationError || generatedImages.length > 0) && (
-          <div ref={resultRef} id="fabrica-resultado" className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4 scroll-mt-24">
+          <div ref={resultRef} id="fabrica-resultado" className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4 scroll-mt-24">
             {generationError && (
               <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-100">
                 <div className="font-bold">Não foi possível gerar a imagem</div>
@@ -3122,6 +2910,235 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           </div>
         )}
 
+        {!generationError && generatedImages.length === 0 && (
+          <div className="hidden lg:flex aspect-[4/5] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-white/10 bg-white/[0.02] p-6 text-center">
+            <Sparkles className="h-8 w-8 text-white/25" />
+            <p className="text-[15px] font-bold text-white/70">Sua arte aparece aqui</p>
+            <p className="text-[13px] text-white/40">Escolha o destino, confira o preço e clique em "Gerar Anúncio".</p>
+          </div>
+        )}
+      </div>
+
+      <div className="min-w-0 space-y-6 lg:col-start-1 lg:row-start-2">
+      {/* No celular o botão principal fica a mais de 2.000 px do topo: uma cópia fixa no rodapé (portal, para nenhum pai com transform prender o fixed). */}
+      {createPortal(
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0A0A0B]/95 p-3 backdrop-blur lg:hidden">
+        <button
+          onClick={() => { generateNext(); }}
+          disabled={loading || !destination || (genMode === "photo" && !selectedPhotoUrl) || (genMode === "custom" && !customImageData && !customLink.trim())}
+          className="mx-auto flex min-h-12 w-full max-w-md items-center justify-center gap-2 rounded-xl font-extrabold text-black disabled:opacity-40"
+          style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)` }}
+        >
+          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando…</> : <><Sparkles className="w-4 h-4" /> Gerar Anúncio</>}
+        </button>
+        {!destination && <p className="mt-1 text-center text-[11px] text-white/50">Escolha o destino acima para liberar.</p>}
+      </div>,
+      document.body)}
+
+      <div className={`${sectionCls} space-y-5`}>
+        {/* Fonte, tamanhos e cores: a maioria não mexe. Ficam recolhidos para a tela não assustar. */}
+        <details className="group rounded-xl border border-white/10 bg-black/20">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-[11px] font-bold text-white/70">
+            <span className="flex items-center gap-2">
+              <ChevronDown className="h-3.5 w-3.5 text-white/40 transition-transform group-open:-rotate-180" />
+              Ajustes avançados
+              <span className="hidden text-[10px] font-medium text-white/40 sm:inline">fonte, tamanho dos textos e cores</span>
+            </span>
+            <span className="text-[10px] font-medium text-white/40">{fontFamily} · T {Math.round(titleScale * 100)}%</span>
+          </summary>
+          <div className="space-y-4 px-3 pb-3">
+        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setFontOptionsOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-sm font-bold text-white">Tipografia</span>
+              <span className="text-[10px] text-white/40 truncate" style={{ fontFamily: `${fontFamily}, Inter, sans-serif` }}>
+                {fontFamily} · T {Math.round(titleScale * 100)}% · D {Math.round(descScale * 100)}%
+              </span>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${fontOptionsOpen ? "rotate-180" : ""}`} />
+          </button>
+          {fontOptionsOpen && (
+            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
+              <div>
+                <label className={labelCls}>Fonte</label>
+                <select
+                  value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Montserrat"}
+                  onChange={(e) => setFontFamily(e.target.value)}
+                  className={inputCls}
+                >
+                  {FONT_PRESETS.map((f) => (
+                    <option key={f} value={f} className="bg-neutral-900 text-white">{f}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setAdvancedSizeOpen((v) => !v)}
+                  className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.04] transition-colors"
+                >
+                  <span className="text-[12px] font-semibold text-white/85">⚙️ Ajustes Avançados de Tamanho</span>
+                  <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${advancedSizeOpen ? "rotate-180" : ""}`} />
+                </button>
+                {advancedSizeOpen && (
+                  <div className="px-3 pb-3 pt-2 grid grid-cols-2 gap-3 border-t border-white/10">
+                    <div>
+                      <label className={labelCls}>Título <span className="text-white/40">({Math.round(titleScale * 100)}%)</span></label>
+                      <input type="range" min={0.6} max={1.6} step={0.05} value={titleScale}
+                        onChange={(e) => setTitleScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Descrição <span className="text-white/40">({Math.round(descScale * 100)}%)</span></label>
+                      <input type="range" min={0.6} max={1.6} step={0.05} value={descScale}
+                        onChange={(e) => setDescScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
+                <div className="flex items-baseline justify-between mb-2">
+                  <label className={labelCls}>Cor do texto</label>
+                  <span className="text-[10px] text-white/40">aplica em todos os textos</span>
+                </div>
+                <div className="grid grid-cols-10 gap-1 mb-3">
+                  {PRESET_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setTextColorOverride(c)}
+                      className={`w-5 h-5 rounded-full border transition-all ${(textColorOverride || "").toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
+                      style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
+                      aria-label={c}
+                      title={c}
+                    />
+                  ))}
+                </div>
+                <div className="flex gap-2 items-center">
+                  <label className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
+                    style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}>
+                    <input type="color" value={textColorOverride || "#ffffff"}
+                      onChange={(e) => setTextColorOverride(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                    <span className="absolute inset-1.5 rounded-full border border-white/40" style={{ background: textColorOverride || "#ffffff" }} />
+                  </label>
+                  <input value={textColorOverride} onChange={(e) => setTextColorOverride(e.target.value)}
+                    placeholder="Padrão (branco)"
+                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase" />
+                  {textColorOverride && (
+                    <button onClick={() => setTextColorOverride("")}
+                      className="text-[11px] text-white/60 hover:text-white px-2 py-1 rounded border border-white/10">
+                      Limpar
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <button
+                onClick={() => { setFontFamily("Montserrat"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
+                className="text-[11px] text-white/60 hover:text-white underline"
+              >
+                Restaurar padrão
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setColorsOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="text-sm font-bold text-white">Cores</span>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
+                  style={{ background: primaryColor }}
+                  title={`Primária ${primaryColor}`}
+                />
+                <span
+                  className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
+                  style={{ background: secondaryColor }}
+                  title={`Secundária ${secondaryColor}`}
+                />
+                <span className="text-[10px] text-white/40 ml-1">
+                  · {baseTextMode === "light" ? "Textos claros" : "Textos escuros"}
+                </span>
+              </div>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${colorsOpen ? "rotate-180" : ""}`} />
+          </button>
+          {colorsOpen && (
+            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
+                  { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
+                ].map(({ label, value, setter, hint }) => (
+                  <div key={label} className="flex flex-col items-start gap-2">
+                    <div className="flex items-baseline justify-between w-full">
+                      <label className={labelCls}>{label}</label>
+                      <span className="text-[10px] text-white/40">{hint}</span>
+                    </div>
+                    <label
+                      className="relative w-12 h-12 rounded-full cursor-pointer overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
+                      style={{ background: value }}
+                      title="Clique para escolher uma cor"
+                    >
+                      <input
+                        type="color"
+                        value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"}
+                        onChange={(e) => setter(e.target.value)}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </label>
+                    <span className="text-[10px] text-white/50 font-mono uppercase">{value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <label className={labelCls}>Cor dos textos base</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBaseTextMode("light")}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all ${
+                      baseTextMode === "light"
+                        ? "bg-white text-black border-white"
+                        : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    <span className="w-3 h-3 rounded-full bg-white border border-black/20" />
+                    Textos claros
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBaseTextMode("dark")}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all ${
+                      baseTextMode === "dark"
+                        ? "bg-neutral-900 text-white border-white"
+                        : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    <span className="w-3 h-3 rounded-full bg-neutral-900 border border-white/40" />
+                    Textos escuros
+                  </button>
+                </div>
+                <p className="text-[10px] text-white/40 mt-1.5">Define a cor dos textos sobre a arte para garantir legibilidade.</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+          </div>
+        </details>
+
         <div className="mt-8 pt-6 border-t border-white/[0.06] flex flex-col sm:flex-row gap-3">
           <button
             onClick={onBack}
@@ -3159,6 +3176,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             </button>
           </div>
         )}
+      </div>
       </div>
       </div>
         </>
