@@ -1857,7 +1857,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     {(() => {
                       const val = state.footerContact1Icon || "whatsapp";
                       const opt = CONTACT_OPTIONS.find(o => o.value === val);
-                      return opt?.img ? <img src={opt.img} alt={opt.label} className="w-5 h-5 object-contain" /> : <EyeOff className="w-4 h-4 text-white/60" aria-label="Contato oculto na arte" />;
+                      return opt?.img ? <img src={opt.img} alt={opt.label} className="w-5 h-5 object-contain" /> : <span className="flex" aria-label="Contato oculto na arte"><EyeOff className="w-4 h-4 text-white/60" /></span>;
                     })()}
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
@@ -1896,7 +1896,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     {(() => {
                       const val = state.footerContact2Icon || "instagram_fino";
                       const opt = CONTACT_OPTIONS.find(o => o.value === val);
-                      return opt?.img ? <img src={opt.img} alt={opt.label} className="w-5 h-5 object-contain" /> : <EyeOff className="w-4 h-4 text-white/60" aria-label="Contato oculto na arte" />;
+                      return opt?.img ? <img src={opt.img} alt={opt.label} className="w-5 h-5 object-contain" /> : <span className="flex" aria-label="Contato oculto na arte"><EyeOff className="w-4 h-4 text-white/60" /></span>;
                     })()}
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
