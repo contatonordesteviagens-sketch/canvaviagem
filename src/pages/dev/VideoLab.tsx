@@ -9,6 +9,7 @@ import { OQueFazerAgora } from "@/components/jornada/OQueFazerAgora";
 import { salvarVideo } from "@/lib/biblioteca-videos";
 import { createPortal } from "react-dom";
 import { MontarPorToque } from "@/components/video/MontarPorToque";
+import { QuadrosDeVideo, baixarVideo } from "@/lib/mp4-quadros";
 import { Check, ChevronRight, Download, Image as ImageIcon, Maximize2, Pencil, Share } from "lucide-react";
 import { NavegadorInternoAviso } from "@/components/jornada/NavegadorInternoAviso";
 
@@ -122,7 +123,8 @@ const CONTATOS: { id: Contato; nome: string; cor: string; texto: string }[] = [
 ];
 
 // Fundo de cada quadro: vídeo do destino ou, se faltar, foto com zoom.
-type Fundo = HTMLVideoElement | HTMLImageElement;
+// fundo: vídeo tocando (prévia), foto, ou canvas com o quadro lido do arquivo (geração rápida)
+type Fundo = HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
 type Midia = { tipo: "video" | "foto"; url: string; thumb?: string; nome?: string };
 const isVideo = (m: Fundo): m is HTMLVideoElement => m instanceof HTMLVideoElement;
 
@@ -134,8 +136,8 @@ const back = (t: number) => {
 };
 
 function drawCover(ctx: CanvasRenderingContext2D, m: Fundo, zoom: number, alt = H) {
-  const mw = isVideo(m) ? m.videoWidth : m.naturalWidth;
-  const mh = isVideo(m) ? m.videoHeight : m.naturalHeight;
+  const mw = isVideo(m) ? m.videoWidth : m instanceof HTMLCanvasElement ? m.width : m.naturalWidth;
+  const mh = isVideo(m) ? m.videoHeight : m instanceof HTMLCanvasElement ? m.height : m.naturalHeight;
   if (!mw) return;
   const s = Math.max(W / mw, alt / mh) * zoom;
   const w = mw * s;
@@ -3148,6 +3150,8 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       }
       const v = document.createElement("video");
       v.src = m.url;
+      // já baixa o arquivo para a geração rápida (lê os quadros direto dele)
+      if (typeof VideoDecoder !== "undefined") baixarVideo(m.url).catch(() => undefined);
       v.muted = true;
       v.playsInline = true;
       v.loop = true;
@@ -3693,8 +3697,13 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         });
       const L = foto0.linha;
       const n = Math.round(L.total * FPS);
+      // Geração rápida: cada vídeo de fundo é lido quadro a quadro do arquivo (não precisa tocar nem
+      // esperar o tempo real, e continua com a página minimizada). Se algum não der, só ele volta ao jeito antigo.
+      const fontes = await Promise.all(vids.map((v) => (isVideo(v) ? QuadrosDeVideo.abrir(v.currentSrc || v.src).catch(() => null) : Promise.resolve(null))));
+      const todosLidos = vids.every((v, i) => !isVideo(v) || fontes[i]);
+      const vidsDesenho: Fundo[] = vids.map((v, i) => fontes[i]?.canvas ?? v);
       for (let f = 0; f < n; f++) {
-        if (document.hidden || (f % 15 === 0 && (await telaParada()))) {
+        if (!todosLidos && (document.hidden || (f % 15 === 0 && (await telaParada())))) {
           vids.forEach((v) => isVideo(v) && !v.paused && v.pause());
           setPausado(true);
           await esperarTelaVisivel();
@@ -3709,7 +3718,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         // começa a tocar quem entrou e pausa quem saiu
         for (let i = 0; i < L.telas.length; i++) {
           const v = vids[i % Math.max(vids.length, 1)];
-          if (!v || !isVideo(v)) continue;
+          if (!v || !isVideo(v) || fontes[i % Math.max(vids.length, 1)]) continue;
           if (ativos.includes(i) && !tocando.has(i)) {
             tocando.add(i);
             v.currentTime = 0;
@@ -3720,21 +3729,33 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
           }
         }
         await Promise.all(ativos.map((i) => {
-          const v = vids[i % Math.max(vids.length, 1)];
-          return v && isVideo(v) ? esperar(v, Math.max(0, t - L.inicios[i] + FADE)) : Promise.resolve();
+          const k = i % Math.max(vids.length, 1);
+          const v = vids[k];
+          const local = Math.max(0, t - L.inicios[i] + FADE);
+          if (fontes[k]) return fontes[k]!.quadro(local);
+          return v && isVideo(v) ? esperar(v, local) : Promise.resolve();
         }));
         if (feed && gctx && sctx && grande) {
-          drawFrame(gctx, t, vids, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao, foto0.tema, L, true);
+          drawFrame(gctx, t, vidsDesenho, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao, foto0.tema, L, true);
           sctx.drawImage(grande, 0, RECORTE_FEED * 1.5, 1080, FEED_H, 0, 0, FEED_W, FEED_H);
         } else {
-          drawFrame(ctx, t, vids, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao, foto0.tema, L);
+          drawFrame(ctx, t, vidsDesenho, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao, foto0.tema, L);
         }
         const frame = new VideoFrame(saida || canvas, { timestamp: Math.round((f * 1e6) / FPS), duration: Math.round(1e6 / FPS) });
         enc.encode(frame, { keyFrame: f % 60 === 0 });
         frame.close();
         if (f % 15 === 0) progresso(Math.round((f / n) * 100));
-        if (enc.encodeQueueSize > 10) await new Promise((r) => setTimeout(r, 0));
+        // espera o codificador sem relógio (setTimeout fica a 1 por segundo com a aba escondida)
+        if (enc.encodeQueueSize > 10)
+          await new Promise<void>((r) => {
+            const h = () => {
+              enc.removeEventListener("dequeue", h);
+              r();
+            };
+            enc.addEventListener("dequeue", h);
+          });
       }
+      fontes.forEach((q) => q?.fechar());
       await enc.flush();
       muxer.finalize();
       vids.forEach((v) => isVideo(v) && v.pause());
