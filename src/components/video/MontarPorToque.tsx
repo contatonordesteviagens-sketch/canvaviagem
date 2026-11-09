@@ -160,11 +160,19 @@ const SERVICOS: Grupo[] = [
   },
 ];
 
+const MAIS_PROCURADOS: Record<"experiencia" | "servico", string[]> = {
+  experiencia: ["Praia e sol", "Serra e frio", "Resort all inclusive", "Cruzeiro", "Lua de mel", "Família com crianças"],
+  servico: ["Passagens aéreas", "Hotel", "Pacote completo", "Transfer", "Seguro viagem", "Passeio de barco"],
+};
+
 const CAMINHOS: { id: Caminho; nome: string; desc: string; emoji: string; cor: string }[] = [
-  { id: "destino", nome: "Um destino", desc: "Gramado, Cancún, Paris…", emoji: "📍", cor: "#F5F906" },
-  { id: "experiencia", nome: "Uma experiência", desc: "Praia, serra, lua de mel, cruzeiro…", emoji: "✨", cor: "#B98CFF" },
-  { id: "servico", nome: "Um serviço", desc: "Passagem, transfer, passeio, seguro…", emoji: "🛎️", cor: "#4DA3FF" },
+  { id: "destino", nome: "Destinos", desc: "Gramado, Cancún, Paris…", emoji: "📍", cor: "#F5F906" },
+  { id: "experiencia", nome: "Experiências", desc: "Praia, serra, lua de mel…", emoji: "✨", cor: "#B98CFF" },
+  { id: "servico", nome: "Serviços", desc: "Passagem, hotel, transfer…", emoji: "🛎️", cor: "#4DA3FF" },
 ];
+
+// Fica grudado embaixo (acima da barra de "1 vídeo / 3 vídeos" no celular): não precisa rolar para achar
+const GRUDA = "sticky bottom-[88px] z-10 shadow-[0_-12px_24px_8px_rgba(10,10,11,.9)] lg:bottom-4";
 
 // Botão de seguir quando dá para marcar mais de um (até 3)
 function BotaoContinuar({ qtd, nomes, onClick }: { qtd: number; nomes: string; onClick: () => void }) {
@@ -172,7 +180,7 @@ function BotaoContinuar({ qtd, nomes, onClick }: { qtd: number; nomes: string; o
     <button
       disabled={!qtd}
       onClick={onClick}
-      className="min-h-12 rounded-2xl text-[15px] font-extrabold text-black transition-transform active:scale-[.97] disabled:bg-white/[0.08] disabled:text-white/40"
+      className={`${GRUDA} min-h-12 rounded-2xl text-[15px] font-extrabold text-black transition-transform active:scale-[.97] disabled:bg-[#1c1c1f] disabled:text-white/40`}
       style={qtd ? { background: "#F5F906" } : undefined}
     >
       {qtd ? `Continuar com ${qtd > 1 ? `${qtd} escolhas` : nomes} →` : "Marque até 3 opções"}
@@ -189,8 +197,12 @@ export function MontarPorToque({
   ocasioes = [],
   ocasiao,
   onOcasiao,
+  ocasioesDestaque = 3,
+  onMeusPacotes,
 }: {
   ocupado: boolean;
+  ocasioesDestaque?: number;
+  onMeusPacotes?: () => void;
   onMontar: (texto: string, buscas?: string[]) => void;
   ocasioes?: OcasiaoQuiz[];
   ocasiao?: string;
@@ -211,12 +223,17 @@ export function MontarPorToque({
   const nomeOpcoes = opcoes.map((o) => o.nome).join(" + "); // para a tela
   const tituloOpcoes = (c: Caminho | null) => {
     const j = juntar(opcoes.map((o) => o.nome));
-    return j.length <= 30 ? j : c === "servico" ? "Serviços de viagem" : "Experiências de viagem";
+    const base = j.length <= 30 ? j : c === "servico" ? "Serviços de viagem" : "Experiências de viagem";
+    const comLugar = lugar.trim() ? `${base} em ${lugar.trim()}` : base;
+    return comLugar.length <= 38 ? comLugar : base;
   };
   const [extra, setExtra] = useState(""); // item próprio no "o que está incluso"
   const [extras, setExtras] = useState<string[]>([]);
   const [inclusos, setInclusos] = useState<string[]>([]);
   const [preco, setPreco] = useState("");
+  const [precoTipo, setPrecoTipo] = useState<"total" | "pessoa" | "parcelado">("pessoa");
+  const [verTodas, setVerTodas] = useState(false);
+  const [verOcasioes, setVerOcasioes] = useState(false);
 
   // passos de cada caminho (o 0 é a escolha do caminho)
   const passos: Record<Caminho, string[]> = {
@@ -271,7 +288,8 @@ export function MontarPorToque({
 
   function montar() {
     const p = preco.trim();
-    const valor = p ? `Por ${/^r\$/i.test(p) ? p : "R$ " + p}.` : "Valor sob consulta.";
+    const rs = /^r\$/i.test(p) ? p : "R$ " + p;
+    const valor = !p ? "Valor sob consulta." : precoTipo === "parcelado" ? `Em 10x de ${rs} por pessoa.` : precoTipo === "pessoa" ? `Por ${rs} por pessoa.` : `Por ${rs} no total.`;
     const inc = inclusos.length ? `Inclui: ${inclusos.join(", ")}.` : "";
     if (caminho === "destino") {
       if (!tipo || !destino) return;
@@ -305,27 +323,40 @@ export function MontarPorToque({
     } else setPasso(passo - 1);
   };
 
-  const grupos = (lista: Grupo[]) => (
-    <div className="flex flex-col gap-4">
-      {lista.map((g) => (
+  const cartaoOpcao = (o: Opcao, g: Grupo, i: number) => {
+    const on = opcoes.some((x) => x.nome === o.nome);
+    return (
+      <button
+        key={o.nome}
+        onClick={() => alternarOpcao(o, g)}
+        style={{ animationDelay: `${i * 25}ms`, ...(on ? { borderColor: g.cor, background: `${g.cor}26` } : {}) }}
+        className={`${cartao} relative flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-2.5 text-left text-[13px] font-semibold transition-all hover:bg-white/[0.08] active:scale-95`}
+      >
+        <span className="text-[18px] leading-none">{o.emoji}</span>
+        <span className="min-w-0 leading-tight">{o.nome}</span>
+        {on && <Check className="absolute right-1 top-1 h-3.5 w-3.5" style={{ color: g.cor }} />}
+      </button>
+    );
+  };
+  const grupos = (lista: Grupo[]) => {
+    const topo = MAIS_PROCURADOS[caminho === "servico" ? "servico" : "experiencia"];
+    const todos = lista.flatMap((g) => g.itens.map((o) => ({ o, g })));
+    const principais = topo.map((n) => todos.find((x) => x.o.nome === n)).filter(Boolean) as { o: Opcao; g: Grupo }[];
+    return (
+    <div className="flex flex-col gap-3">
+      <p className="text-[11px] font-bold uppercase tracking-wider text-white/45">Mais procurados</p>
+      <div className="grid grid-cols-2 gap-2">{principais.map(({ o, g }, i) => cartaoOpcao(o, g, i))}</div>
+      <button onClick={() => setVerTodas((v) => !v)} className="self-start text-[13px] font-semibold text-[#F5F906] underline-offset-4 hover:underline">
+        {verTodas ? "Ver menos" : `Ver todas as opções (${todos.length})`}
+      </button>
+      {/* com a lista toda aberta, o botão de seguir aparece também aqui em cima (não precisa rolar até o fim) */}
+      {verTodas && opcoes.length > 0 && <BotaoContinuar qtd={opcoes.length} nomes={nomeOpcoes} onClick={confirmarOpcoes} />}
+      {verTodas && lista.map((g) => (
         <div key={g.titulo}>
-          <p className="mb-2 text-[12px] font-bold uppercase tracking-wider" style={{ color: g.cor }}>
+          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider" style={{ color: g.cor }}>
             {g.titulo}
           </p>
-          <div className="grid grid-cols-2 gap-2">
-            {g.itens.map((o, i) => (
-              <button
-                key={o.nome}
-                onClick={() => alternarOpcao(o, g)}
-                style={{ animationDelay: `${i * 30}ms`, ...(opcoes.some((x) => x.nome === o.nome) ? { borderColor: g.cor, background: `${g.cor}26` } : {}) }}
-                className={`${cartao} relative flex min-h-12 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-left text-[14px] font-semibold transition-all hover:bg-white/[0.08] active:scale-95`}
-              >
-                <span className="text-[20px] leading-none">{o.emoji}</span>
-                <span className="min-w-0 leading-tight">{o.nome}</span>
-                {opcoes.some((x) => x.nome === o.nome) && <Check className="absolute right-1.5 top-1.5 h-3.5 w-3.5" style={{ color: g.cor }} />}
-              </button>
-            ))}
-          </div>
+          <div className="grid grid-cols-2 gap-2">{g.itens.filter((o) => !topo.includes(o.nome)).map((o, i) => cartaoOpcao(o, g, i))}</div>
         </div>
       ))}
       <form
@@ -351,7 +382,8 @@ export function MontarPorToque({
       </form>
       <BotaoContinuar qtd={opcoes.length} nomes={nomeOpcoes} onClick={confirmarOpcoes} />
     </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -396,6 +428,11 @@ export function MontarPorToque({
                 </span>
               </button>
             ))}
+            {onMeusPacotes && (
+              <button onClick={onMeusPacotes} className="mt-1 flex min-h-11 items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 text-[14px] font-semibold text-white/75 transition-colors hover:border-[#F5F906]/50 hover:text-white">
+                📦 Usar um pacote que já cadastrei
+              </button>
+            )}
           </div>
         )}
 
@@ -511,7 +548,7 @@ export function MontarPorToque({
                 className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
               />
             </label>
-            <button onClick={() => setPasso(3)} className="min-h-12 rounded-2xl bg-white/[0.12] text-[15px] font-bold transition-transform active:scale-[.97]">
+            <button onClick={() => setPasso(3)} className={`${GRUDA} min-h-12 rounded-2xl bg-[#F5F906] text-[15px] font-extrabold text-black transition-transform active:scale-[.97]`}>
               Continuar →
             </button>
           </div>
@@ -557,8 +594,15 @@ export function MontarPorToque({
                 + Item
               </button>
             </form>
+            <div className="flex flex-wrap gap-1.5">
+              {([["pessoa", "Por pessoa"], ["total", "Valor total"], ["parcelado", "Em 10x"]] as const).map(([id, nome]) => (
+                <button key={id} onClick={() => setPrecoTipo(id)} className={`min-h-9 rounded-full border px-3 text-[13px] font-semibold transition-all active:scale-95 ${precoTipo === id ? "border-[#F5F906] bg-[#F5F906] text-black" : "border-white/15 text-white/70"}`}>
+                  {nome}
+                </button>
+              ))}
+            </div>
             <label className="block">
-              <span className="mb-1 block text-[12px] font-semibold text-white/55">Preço (opcional, aparece só no fim do vídeo)</span>
+              <span className="mb-1 block text-[12px] font-semibold text-white/55">{precoTipo === "parcelado" ? "Valor da parcela" : "Preço"} (opcional, aparece só no fim do vídeo)</span>
               <input
                 inputMode="decimal"
                 value={preco}
@@ -567,7 +611,7 @@ export function MontarPorToque({
                 className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
               />
             </label>
-            <button onClick={() => setPasso(4)} className="min-h-12 rounded-2xl bg-white/[0.12] text-[15px] font-bold transition-transform active:scale-[.97]">
+            <button onClick={() => setPasso(4)} className={`${GRUDA} min-h-12 rounded-2xl bg-[#F5F906] text-[15px] font-extrabold text-black transition-transform active:scale-[.97]`}>
               Continuar →
             </button>
           </div>
@@ -578,7 +622,7 @@ export function MontarPorToque({
           <div className="flex flex-col gap-4">
             {ocasioes.length > 0 && onOcasiao && (
               <div className="flex flex-wrap gap-2">
-                {ocasioes.map((o, i) => {
+                {(verOcasioes ? ocasioes : ocasioes.slice(0, ocasioesDestaque)).map((o, i) => {
                   const on = (ocasiao || "nenhuma") === o.id;
                   return (
                     <button
@@ -592,12 +636,17 @@ export function MontarPorToque({
                     </button>
                   );
                 })}
+                {ocasioes.length > ocasioesDestaque && (
+                  <button onClick={() => setVerOcasioes((v) => !v)} className="min-h-11 px-2 text-[13px] font-semibold text-[#F5F906]">
+                    {verOcasioes ? "Ver menos" : "Outras datas…"}
+                  </button>
+                )}
               </div>
             )}
             <button
               disabled={ocupado}
               onClick={montar}
-              className="min-h-14 rounded-2xl text-[16px] font-extrabold text-black shadow-[0_8px_30px_-8px_rgba(245,249,6,.7)] transition-transform active:scale-[.97] disabled:opacity-60"
+              className={`${GRUDA} min-h-14 rounded-2xl text-[16px] font-extrabold text-black transition-transform active:scale-[.97] disabled:opacity-60`}
               style={{ background: "#F5F906" }}
             >
               {ocupado ? "Montando seus vídeos…" : "Montar meus 3 vídeos"}

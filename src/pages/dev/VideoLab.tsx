@@ -3754,7 +3754,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const set = <K extends keyof Dados>(k: K, v: Dados[K]) => setDados((d) => ({ ...d, [k]: v }));
   const abas: { id: Entrada; nome: string }[] = [
     { id: "montar", nome: "Montar" },
-    { id: "pacote", nome: "Pacotes" },
+    { id: "pacote", nome: "Meus pacotes" },
     { id: "audio", nome: "Áudio" },
     { id: "texto", nome: "Texto" },
     { id: "foto", nome: "Foto" },
@@ -3800,10 +3800,12 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
           </div>
 
           <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-            {entrada === "montar" && (
+            <div className={entrada === "montar" ? "" : "hidden"}>
               <MontarPorToque
                 ocupado={ocupado}
                 ocasioes={sazonais.lista.map((o) => ({ id: o.id, nome: o.nome }))}
+                ocasioesDestaque={sazonais.agora.length + 1}
+                onMeusPacotes={() => setEntrada("pacote")}
                 ocasiao={ocasiao}
                 onOcasiao={(id) => setOcasiao(id as Ocasiao)}
                 onMontar={(texto, buscas) => {
@@ -3812,7 +3814,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                   });
                 }}
               />
-            )}
+            </div>
             {entrada === "pacote" && (
               <div className="flex flex-col gap-2">
                 <p className="text-[13px] text-white/55">Toque num pacote para virar vídeo.</p>
@@ -3941,9 +3943,8 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         {/* ——— Prévia ——— */}
         <div id="previa" className="min-w-0 lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
           {/* destino e estilos em cima da prévia: toque num estilo e veja na hora */}
-          <p className="mb-2 truncate text-center text-[17px] font-extrabold">
-            <span className="mr-1">📍</span>
-            {dados.destino || "Seu destino"}
+          <p className="mb-2 truncate text-center text-[13px] text-white/55">
+            Prévia{dados.destino ? <> · <b className="text-white">{dados.destino}</b></> : null}
           </p>
           <p className="mb-2 text-center text-[12px] font-bold uppercase tracking-wider text-white/45">Escolha o visual do vídeo</p>
           <div ref={estilosRef} role="radiogroup" aria-label="Estilo do vídeo" className="-mx-1 mb-3 flex snap-x gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]">
@@ -3982,8 +3983,9 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
 
         {/* ——— 2. Visual ——— */}
         <div className="flex min-w-0 flex-col gap-5 lg:col-start-1">
+          {resultados.length > 0 && (
           <section>
-            <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-white/45">Visual</p>
+            <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-white/45">Ajustar o visual</p>
             <div className="divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
               <LinhaLista id="linha-oferta" titulo="Oferta sazonal" valor={ocasiao === "nenhuma" && sazonais.agora.length ? "Nenhuma · sugestão do mês na lista" : nomeOcasiao} destaque={sazonais.agora.some((a) => a.id === ocasiao)} onClick={() => setFolha("oferta")} />
               <LinhaLista id="linha-mais" titulo="Mais opções" valor={maisOpcoes ? "" : "cores, fonte, duração e formato"} aberto={maisOpcoes} onClick={() => setMaisOpcoes((v) => !v)} />
@@ -3993,6 +3995,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
               {maisOpcoes && <LinhaLista id="linha-formato" titulo="Formato" valor={formato === "feed" ? "Feed 4:5" : "Stories 9:16"} onClick={() => setFolha("formato")} />}
             </div>
           </section>
+          )}
 
           <section>
             <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-white/45">Informações</p>
