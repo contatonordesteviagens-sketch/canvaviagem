@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 
 // Quiz "O que você quer anunciar?": Destino, Experiência ou Serviço → detalhes → o que inclui + preço → ocasião.
@@ -203,7 +203,10 @@ export function MontarPorToque({
   onWhatsapp,
   curto,
   onCurto,
+  onPrevia,
 }: {
+  /** chamado a cada escolha com o título que vai no vídeo, para a prévia acompanhar o quiz */
+  onPrevia?: (titulo: string) => void;
   whatsapp?: string;
   onWhatsapp?: (w: string) => void;
   curto?: boolean;
@@ -242,6 +245,11 @@ export function MontarPorToque({
   const [precoTipo, setPrecoTipo] = useState<"total" | "pessoa" | "parcelado">("pessoa");
   const [verTodas, setVerTodas] = useState(false);
   const [verOcasioes, setVerOcasioes] = useState(false);
+  const tituloPrevia = caminho === "destino" ? destino : opcoes.length ? tituloOpcoes(caminho) : "";
+  useEffect(() => {
+    if (tituloPrevia) onPrevia?.(tituloPrevia);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tituloPrevia]);
 
   // passos de cada caminho (o 0 é a escolha do caminho)
   const passos: Record<Caminho, string[]> = {

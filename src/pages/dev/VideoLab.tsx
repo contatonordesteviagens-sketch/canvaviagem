@@ -3762,6 +3762,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       const u = URL.createObjectURL(blob);
       setUrl(u);
       setResultados([{ modelo: m, url: u, nome: nomeArquivo(m), roteiro, formato: formatoRef.current }]);
+      setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 200);
       await guardar(m, blob);
       registrarNaGestao(1);
       setStatus("Pronto! Seu vídeo está abaixo.");
@@ -3795,6 +3796,8 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         const u = URL.createObjectURL(blob);
         if (i === 0) setUrl(u);
         setResultados((r) => [...r, { modelo: m, url: u, nome: nomeArquivo(m), roteiro, formato: formatoRef.current }]);
+        // o primeiro vídeo pronto aparece na tela (no celular ele ficava lá embaixo, depois do quiz)
+        if (i === 0) setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 200);
         await guardar(m, blob);
       }
       registrarNaGestao(lista.length);
@@ -4108,6 +4111,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                 curto={curto}
                 onCurto={setCurto}
                 onMeusPacotes={() => setEntrada("pacote")}
+                onPrevia={(t) => setDados((d) => (d.destino === t ? d : { ...d, destino: t }))}
                 ocasiao={ocasiao}
                 onOcasiao={(id) => setOcasiao(id as Ocasiao)}
                 onMontar={(texto, buscas) => {
@@ -4249,7 +4253,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
             Prévia{dados.destino ? <> · <b className="text-white">{dados.destino}</b></> : null}
           </p>
           <p className="mb-2 text-center text-[12px] font-bold uppercase tracking-wider text-white/45">Escolha o visual do vídeo</p>
-          <div ref={estilosRef} role="radiogroup" aria-label="Estilo do vídeo" className="-mx-1 mb-3 flex snap-x gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]">
+          <div ref={estilosRef} role="radiogroup" aria-label="Estilo do vídeo" className="-mx-1 mb-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,black_85%,transparent)] lg:mb-3 lg:flex-wrap lg:justify-center lg:overflow-visible lg:[mask-image:none]">
             {MODELOS_NA_ORDEM.map((m) => {
               const ativo = modelo === m.id;
               return (
@@ -4264,7 +4268,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                     setModelo(m.id);
                     proximoRef.current = Math.max(0, ORDEM_SUGERIDA.indexOf(m.id));
                   }}
-                  className="group flex w-[68px] shrink-0 snap-start flex-col items-center gap-1 transition-transform duration-200 active:scale-95 disabled:opacity-50"
+                  className="group flex w-[68px] shrink-0 snap-start flex-col items-center gap-1 transition-transform duration-200 active:scale-95 disabled:opacity-50 lg:w-[60px]"
                 >
                   <span className={`block aspect-[9/16] w-full overflow-hidden rounded-lg border-2 transition-all ${ativo ? "border-[#F5F906] shadow-[0_4px_18px_-6px_rgba(245,249,6,.8)]" : "border-white/10 opacity-80 group-hover:opacity-100"}`}>
                     {miniaturas[m.id] ? <img src={miniaturas[m.id]} alt="" className="h-full w-full object-cover" /> : <span className="block h-full w-full animate-pulse bg-white/[0.06]" />}
@@ -4274,6 +4278,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
               );
             })}
           </div>
+          <p className="mb-3 text-center text-[11px] text-white/40 lg:hidden">Arraste para o lado e veja os {MODELOS_NA_ORDEM.length} visuais →</p>
           <div className="relative mx-auto w-full max-w-[190px] sm:max-w-[260px] lg:max-w-[min(300px,calc((100vh-330px)*0.5625))]">
             <canvas ref={canvasRef} width={W} height={H} className="block w-full rounded-2xl border border-white/10" />
             <span key={modelo} className="pointer-events-none absolute left-2 top-2 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-bold text-white animate-in fade-in slide-in-from-top-1 duration-300">
@@ -4300,7 +4305,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
           </section>
           )}
 
-          <section>
+          <section className={entrada === "montar" && resultados.length === 0 ? "hidden" : ""}>
             <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-white/45">Informações</p>
             <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
               <LinhaLista id="linha-info" titulo="Destino, preço e contatos" valor={ehPacote(dados) ? dados.destino : `${infoTipo(dados).curto} · ${dados.destino}`} aberto={infoAberta} onClick={() => setInfoAberta((v) => !v)} />
@@ -4415,7 +4420,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
             </div>
           </section>
 
-          <p id="status" className="text-[13px] text-white/60">{status}</p>
+          <p id="status" className={`text-[13px] text-white/60 ${status === "Pronto" || !status ? "hidden" : ""}`}>{status}</p>
           {restantes !== null && (
             <p id="restantes" className="-mt-3 text-[12px] text-white/40">
               {restantes > 0 ? `Você ainda pode montar ${restantes} pacote${restantes === 1 ? "" : "s"} em vídeo hoje.` : "Você usou os vídeos de hoje. Amanhã libera de novo."}
@@ -4424,14 +4429,14 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
 
           {/* ——— Seus vídeos ——— */}
           {resultados.length > 0 && (
-            <section id="resultados">
+            <section id="resultados" className="order-first" style={{ scrollMarginTop: 80 }}>
               <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-white/45">Seus vídeos</p>
               <div className="flex flex-col gap-4">
                 {resultados.map((r, i) => (
                   <article key={r.url} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
                     <video id={`video-${i}`} src={r.url} controls playsInline muted loop className="mx-auto aspect-[9/16] w-full max-w-[250px] rounded-xl bg-black" />
                     <p className="mt-2 text-center text-[13px] font-semibold text-white/80">
-                      Estilo {MODELOS.findIndex((m) => m.id === r.modelo) + 1} · {MODELOS.find((m) => m.id === r.modelo)?.nome}
+                      Vídeo {i + 1} · {MODELOS.find((m) => m.id === r.modelo)?.nome}
                       {resultados.length > 1 && <span className="font-normal text-white/50"> · {ROTEIROS.find((x) => x.id === r.roteiro)?.nome}</span>}
                       {r.formato === "feed" && <span className="font-normal text-white/50"> · Feed 4:5</span>}
                     </p>
@@ -4456,7 +4461,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
           )}
 
           {resultados.length > 0 && (
-            <section id="legenda" className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+            <section id="legenda" className="order-first rounded-2xl border border-white/10 bg-white/[0.03] p-3">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[12px] font-bold uppercase tracking-wide text-white/45">Legenda pronta para o post</p>
                 <button id="copiar-legenda" type="button" onClick={copiarLegenda} className="min-h-10 rounded-xl px-3 text-[13px] font-bold text-black" style={{ background: "#F5F906" }}>
@@ -4541,7 +4546,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
 
       {/* ——— Barra de ação (fixa no celular) ———
           No "Montar" o quiz tem o próprio botão: a barra só aparece depois de gerar (para refazer). */}
-      <div className={`${barraVisivel ? "" : "hidden lg:block"} fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[#0A0A0B]/95 px-3 pt-2.5 pb-[max(10px,env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0`}>
+      <div className={`${barraVisivel ? "" : "hidden"} fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[#0A0A0B]/95 px-3 pt-2.5 pb-[max(10px,env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0`}>
         {gravando && (
           <p id="aviso-gerando" role="status" className={`mx-auto mb-2 max-w-md text-center text-[12px] font-semibold ${pausado ? "text-[#F5F906]" : "text-white/60"}`}>
             {pausado ? "Pausado. Volte para esta tela e o vídeo continua de onde parou." : "Deixe esta tela aberta até terminar."}
