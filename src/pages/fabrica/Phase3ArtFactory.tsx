@@ -788,6 +788,16 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   });
   const [generationError, setGenerationError] = useState<string | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
+  // Arte nova: leva a pessoa até ela (no celular o resultado ficava ~3000px abaixo e parecia que nada acontecia).
+  const geracoesVistas = useRef(-1);
+  useEffect(() => {
+    if (geracoesVistas.current === -1) { geracoesVistas.current = generatedImages.length; return; }
+    if (generatedImages.length > 0) {
+      const t = setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
+      geracoesVistas.current = generatedImages.length;
+      return () => clearTimeout(t);
+    }
+  }, [generatedImages]);
   const [generationCount, setGenerationCount] = useState<number>(() => {
     const saved = localStorage.getItem("fabrica_gen_count");
     return saved ? parseInt(saved, 10) : 0;
@@ -1788,13 +1798,13 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
 
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 bg-white/[0.02] border border-white/[0.08] p-6 rounded-2xl">
           <div className="sm:col-span-4">
-            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidade Visual</label>
+            <label className="text-[13px] font-semibold text-white/65 mb-2.5 block">Sua marca na arte</label>
             {!state.logoBase64 ? (
-              <label className="flex flex-col items-center justify-center gap-2.5 p-6 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[110px]">
+              <label className="mb-2 flex flex-col items-center justify-center gap-2 p-4 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[96px]">
                 <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Upload className="w-5 h-5 text-white/40 group-hover:text-white/70" />
                 </div>
-                <span className="text-[10px] font-bold text-white/40 uppercase tracking-tighter group-hover:text-white/60">Subir Logo</span>
+                <span className="text-[13px] font-semibold text-white/55 group-hover:text-white/80">Enviar sua logo</span>
                 <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
               </label>
             ) : (
@@ -1836,8 +1846,8 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 </div>
               </div>
             )}
-               <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
-              <div className="w-[45%] relative">
+               <div className="mb-2 flex items-center gap-2 bg-white/[0.04] p-1 rounded-xl border border-white/10 focus-within:border-white/30 transition-colors">
+              <div className="shrink-0 relative">
                 <Select
                   value={state.footerContact1Icon || "whatsapp"}
                   onValueChange={(val) => update({ footerContact1Icon: val as any })}
@@ -1846,7 +1856,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     {(() => {
                       const val = state.footerContact1Icon || "whatsapp";
                       const opt = CONTACT_OPTIONS.find(o => o.value === val);
-                      return opt?.img ? <img src={opt.img} className="w-5 h-5 object-contain" /> : <div className="w-5 h-5" />;
+                      return opt?.img ? <img src={opt.img} alt={opt.label} className="w-5 h-5 object-contain" /> : <span className="text-[10px] font-bold text-white/60">Oculto</span>;
                     })()}
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
@@ -1861,7 +1871,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-[55%]">
+              <div className="min-w-0 flex-1">
                 <input
                   value={state.footerContact1Value ?? formatAdPhone(state.whatsapp || "")}
                   onChange={(e) => {
@@ -1870,13 +1880,13 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     update({ footerContact1Value: val });
                   }}
                   placeholder={state.footerContact1Icon?.startsWith("whatsapp") ? "(00) 9 0000-0000" : "Link ou Telefone"}
-                  className="w-full bg-transparent border-none px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/10"
+                  className="w-full bg-transparent border-none px-3 py-2 text-[13px] text-white outline-none placeholder:text-white/35"
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
-              <div className="w-[45%] relative">
+            <div className="mb-2 flex items-center gap-2 bg-white/[0.04] p-1 rounded-xl border border-white/10 focus-within:border-white/30 transition-colors">
+              <div className="shrink-0 relative">
                 <Select
                   value={state.footerContact2Icon || "instagram_fino"}
                   onValueChange={(val) => update({ footerContact2Icon: val as any })}
@@ -1885,7 +1895,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     {(() => {
                       const val = state.footerContact2Icon || "instagram_fino";
                       const opt = CONTACT_OPTIONS.find(o => o.value === val);
-                      return opt?.img ? <img src={opt.img} className="w-5 h-5 object-contain" /> : <div className="w-5 h-5" />;
+                      return opt?.img ? <img src={opt.img} alt={opt.label} className="w-5 h-5 object-contain" /> : <span className="text-[10px] font-bold text-white/60">Oculto</span>;
                     })()}
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
@@ -1900,7 +1910,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-[55%]">
+              <div className="min-w-0 flex-1">
                 <input
                   value={state.footerContact2Value ?? (state.instagram || "")}
                   onChange={(e) => {
@@ -1912,7 +1922,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     update({ footerContact2Value: val });
                   }}
                   placeholder={state.footerContact2Icon?.startsWith("instagram") ? "@usuario" : "Perfil ou Link"}
-                  className="w-full bg-transparent border-none px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/10"
+                  className="w-full bg-transparent border-none px-3 py-2 text-[13px] text-white outline-none placeholder:text-white/35"
                 />
               </div>
             </div>
@@ -1924,28 +1934,28 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setFormat("square")}
-              className={`p-2 flex items-center gap-3 rounded-xl border-2 text-left transition-all ${
+              className={`min-h-12 p-2 flex items-center gap-3 rounded-xl border-2 text-left transition-all ${
                 format === "square" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
               }`}
               style={format === "square" ? { borderColor: UI_ACCENT_BORDER, background: UI_ACCENT_SOFT } : undefined}
             >
               <Square className="w-5 h-5 text-white/80 flex-shrink-0" />
               <div>
-                <div className="text-[11px] font-bold text-white">Quadrado 1:1</div>
-                <div className="text-[9px] text-white/55">Feed Instagram (1080×1080)</div>
+                <div className="text-[13px] font-bold text-white">Quadrado 1:1</div>
+                <div className="text-[11px] text-white/55">Feed do Instagram (1080×1080)</div>
               </div>
             </button>
             <button
               onClick={() => setFormat("story")}
-              className={`p-2 flex items-center gap-3 rounded-xl border-2 text-left transition-all ${
+              className={`min-h-12 p-2 flex items-center gap-3 rounded-xl border-2 text-left transition-all ${
                 format === "story" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
               }`}
               style={format === "story" ? { borderColor: UI_ACCENT_BORDER, background: UI_ACCENT_SOFT } : undefined}
             >
               <Smartphone className="w-5 h-5 text-white/80 flex-shrink-0" />
               <div>
-                <div className="text-[11px] font-bold text-white">Stories 9:16</div>
-                <div className="text-[9px] text-white/55">Vertical (1080×1920)</div>
+                <div className="text-[13px] font-bold text-white">Stories 9:16</div>
+                <div className="text-[11px] text-white/55">Stories e status (1080×1920)</div>
               </div>
             </button>
           </div>
@@ -2643,7 +2653,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
       {createPortal(
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0A0A0B]/95 p-3 backdrop-blur lg:hidden">
         <button
-          onClick={() => { generateNext(); setTimeout(() => document.getElementById("fabrica-resultado")?.scrollIntoView({ behavior: "smooth", block: "start" }), 400); }}
+          onClick={() => { generateNext(); }}
           disabled={loading || !destination || (genMode === "photo" && !selectedPhotoUrl) || (genMode === "custom" && !customImageData && !customLink.trim())}
           className="mx-auto flex min-h-12 w-full max-w-md items-center justify-center gap-2 rounded-xl font-extrabold text-black disabled:opacity-40"
           style={{ background: `linear-gradient(135deg, ${UI_ACCENT}, #FCD34D)` }}
@@ -2859,7 +2869,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         </details>
 
         {(generationError || generatedImages.length > 0) && (
-          <div ref={resultRef} className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4 scroll-mt-24">
+          <div ref={resultRef} id="fabrica-resultado" className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4 scroll-mt-24">
             {generationError && (
               <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-100">
                 <div className="font-bold">Não foi possível gerar a imagem</div>
