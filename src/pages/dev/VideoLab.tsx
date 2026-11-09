@@ -3978,7 +3978,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const [infoAberta, setInfoAberta] = useState(false);
   const [maisOpcoes, setMaisOpcoes] = useState(false);
 
-  const campo = "w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2.5 text-[15px] text-white outline-none focus:border-[#F5F906]/60";
+  const campo = "w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2.5 text-[16px] text-white outline-none focus:border-[#F5F906]/60";
   const rotulo = "mb-1 block text-[12px] font-semibold text-white/55";
   const set = <K extends keyof Dados>(k: K, v: Dados[K]) => setDados((d) => ({ ...d, [k]: v }));
   const abas: { id: Entrada; nome: string }[] = [
@@ -3988,6 +3988,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     { id: "texto", nome: "✍️ Texto" },
     { id: "foto", nome: "📷 Foto" },
   ];
+  const barraVisivel = entrada !== "montar" || resultados.length > 0 || gravando;
   const nomeOcasiaoCurto = () => OCASIOES.find((o) => o.id === ocasiao)?.nome.replace(/^\S+\s/, "") || "Nenhuma";
   const chip = (on: boolean) =>
     `min-h-9 rounded-full border px-3 text-[13px] font-semibold transition-all active:scale-95 disabled:opacity-50 ${on ? "border-[#F5F906] bg-[#F5F906] text-black" : "border-white/15 text-white/75"}`;
@@ -4088,15 +4089,16 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                 role="tab"
                 aria-selected={entrada === a.id}
                 onClick={() => setEntrada(a.id)}
-                className={`min-h-11 rounded-xl text-[13px] font-semibold transition-colors ${entrada === a.id ? "bg-white/[0.14] text-white shadow-sm" : "text-white/60"}`}
+                className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl text-[12px] font-semibold leading-none transition-colors ${entrada === a.id ? "bg-white/[0.14] text-white shadow-sm" : "text-white/60"}`}
               >
-                {a.nome}
+                <span aria-hidden className="text-[15px] leading-none">{a.nome.split(" ")[0]}</span>
+                {a.nome.split(" ").slice(1).join(" ")}
               </button>
             ))}
           </div>
 
           <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-            <div className={entrada === "montar" ? "" : "hidden"}>
+            <div className={entrada === "montar" ? "" : "hidden"} style={{ ["--cv-gruda" as string]: barraVisivel ? "88px" : "12px" }}>
               <MontarPorToque
                 ocupado={ocupado}
                 ocasioes={sazonais.lista.map((o) => ({ id: o.id, nome: o.nome }))}
@@ -4537,8 +4539,9 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         </div>
       </div>
 
-      {/* ——— Barra de ação (fixa no celular) ——— */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[#0A0A0B]/95 px-3 pt-2.5 pb-[max(10px,env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0">
+      {/* ——— Barra de ação (fixa no celular) ———
+          No "Montar" o quiz tem o próprio botão: a barra só aparece depois de gerar (para refazer). */}
+      <div className={`${barraVisivel ? "" : "hidden lg:block"} fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[#0A0A0B]/95 px-3 pt-2.5 pb-[max(10px,env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0`}>
         {gravando && (
           <p id="aviso-gerando" role="status" className={`mx-auto mb-2 max-w-md text-center text-[12px] font-semibold ${pausado ? "text-[#F5F906]" : "text-white/60"}`}>
             {pausado ? "Pausado. Volte para esta tela e o vídeo continua de onde parou." : "Deixe esta tela aberta até terminar."}

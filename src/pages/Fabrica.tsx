@@ -146,7 +146,7 @@ const FabricaInner = () => {
 
   return (
     <div
-      className="min-h-screen flex bg-[#0A0A0B] text-white"
+      className="fabrica-app min-h-screen flex bg-[#0A0A0B] text-white"
       style={{
         fontFamily: "Inter, sans-serif",
       }}

@@ -1332,7 +1332,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             
             <button
               onClick={resetSiteToBlank}
-              className="w-full sm:w-auto mt-2 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
+              className="w-full sm:w-auto mt-2 min-h-11 sm:min-h-0 text-[12px] sm:text-[10px] font-bold text-white/60 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
               title="Limpar tudo e começar um novo site do zero"
             >
               Criar Novo Site
@@ -1964,7 +1964,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
                   <button
                     onClick={() => setPreviewMode("desktop")}
-                    className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all whitespace-nowrap ${
+                    className={`min-h-10 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase transition-all whitespace-nowrap ${
                       previewMode === "desktop" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
                     }`}
                   >
@@ -1972,7 +1972,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   </button>
                   <button
                     onClick={() => setPreviewMode("mobile")}
-                    className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all whitespace-nowrap ${
+                    className={`min-h-10 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase transition-all whitespace-nowrap ${
                       previewMode === "mobile" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
                     }`}
                   >

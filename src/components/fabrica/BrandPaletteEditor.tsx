@@ -135,7 +135,7 @@ function ColorRoleField({
           maxLength={7}
           spellCheck={false}
           aria-label={`${COPY[locale].hex} ${role.label.toLowerCase()}`}
-          className="w-full max-w-[70px] rounded-md border border-white/10 bg-black/20 px-1.5 py-1.5 text-[9px] sm:text-[10px] font-semibold text-center uppercase tracking-wide text-white outline-none transition-colors focus:border-white/35"
+          className="campo-compacto w-full max-w-[76px] rounded-md border border-white/10 bg-black/20 px-1 py-1.5 text-[12px] sm:text-[10px] font-semibold text-center uppercase sm:tracking-wide text-white outline-none transition-colors focus:border-white/35"
         />
       </div>
     </div>

@@ -2211,7 +2211,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 · Textos e preço</h3>
         <p className="text-[11px] text-white/40">É o que vai escrito na arte. Se não souber o que mudar, pode deixar como está.</p>
 
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:gap-3">
           <div>
             <label className={labelCls}>Destino *</label>
             <div className="relative">

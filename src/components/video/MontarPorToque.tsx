@@ -172,7 +172,7 @@ const CAMINHOS: { id: Caminho; nome: string; desc: string; emoji: string; cor: s
 ];
 
 // Fica grudado embaixo (acima da barra de "1 vídeo / 3 vídeos" no celular): não precisa rolar para achar
-const GRUDA = "sticky bottom-[88px] z-10 shadow-[0_-12px_24px_8px_rgba(10,10,11,.9)] lg:bottom-4";
+const GRUDA = "sticky bottom-[var(--cv-gruda,88px)] z-10 shadow-[0_-12px_24px_8px_rgba(10,10,11,.9)] lg:bottom-4";
 
 // Botão de seguir quando dá para marcar mais de um (até 3)
 function BotaoContinuar({ qtd, nomes, onClick }: { qtd: number; nomes: string; onClick: () => void }) {

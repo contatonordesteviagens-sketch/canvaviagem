@@ -61,6 +61,21 @@
   }
 }
 
+/* Celular: campo com letra < 16px faz o iPhone dar zoom sozinho ao tocar. */
+@media (max-width: 767px) {
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]):not(.campo-compacto),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  /* Fábrica: rótulos de 8–10px ficam ilegíveis no celular */
+  .fabrica-app .text-\[8px\],
+  .fabrica-app .text-\[9px\],
+  .fabrica-app .text-\[10px\] {
+    font-size: 11px;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -68,6 +83,8 @@
   }
   html, body {
     overflow-x: hidden;
+    /* clip corta o vazamento lateral sem virar área de rolagem (hidden quebrava os botões "sticky") */
+    overflow-x: clip;
     max-width: 100vw;
   }
   body {
