@@ -416,13 +416,12 @@ const FabricaInner = () => {
               <VoiceOnboarding onSaved={isES ? undefined : () => navigate("/fabrica/anuncio?gerar=1")} />
             </div>
 
-            <div className="h-4 w-px bg-white/10 mx-1 hidden sm:block"></div>
-
-            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 overflow-x-auto snap-x scroll-px-1 no-scrollbar pb-1 sm:pb-0 touch-pan-x [mask-image:linear-gradient(to_right,black_92%,transparent)] sm:[mask-image:none]">
+            {/* No computador o menu lateral já mostra tudo: os atalhos ficam só no celular, em duas fileiras (nada escondido). */}
+            <div className="grid w-full grid-cols-4 gap-1.5 md:hidden">
               <button
                 onClick={() => navigate(isES ? "/es/fabrica" : "/fabrica")}
                 ref={activeTab === "dashboard" ? activePillRef : undefined}
-                className={`px-3.5 py-2.5 sm:py-1.5 rounded-lg text-xs sm:text-[10px] font-bold border transition-colors whitespace-nowrap shrink-0 ${
+                className={`min-h-10 px-1 rounded-lg text-[12px] font-bold border transition-colors whitespace-nowrap ${
                   activeTab === "dashboard" ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
                 }`}
               >
@@ -435,14 +434,14 @@ const FabricaInner = () => {
                 { name: 'Carrossel', path: '/carrossel', phase: 2 },
                 { name: 'Site', path: '/site', phase: 3 },
                 { name: 'CRM', path: '/crm', phase: 4 },
-                { name: 'Meus Pacotes', path: '/planos', phase: 5 },
-                { name: 'Meus conteúdos', path: '/biblioteca', phase: 7 },
+                { name: 'Pacotes', path: '/planos', phase: 5 },
+                { name: 'Conteúdos', path: '/biblioteca', phase: 7 },
               ] as const).map(({ name, path, phase }) => (
                 <button
                   key={phase}
                   onClick={() => navigate(isES ? `/es/fabrica${path}` : `/fabrica${path}`)}
                   ref={activeTab === "phase" && activePhase === phase ? activePillRef : undefined}
-                  className={`px-3.5 py-2.5 sm:py-1.5 rounded-lg text-xs sm:text-[10px] font-bold border transition-colors whitespace-nowrap shrink-0 ${
+                  className={`min-h-10 px-1 rounded-lg text-[12px] font-bold border transition-colors whitespace-nowrap ${
                     activePhase === phase ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60 hover:text-white hover:bg-white/5"
                   }`}
                 >

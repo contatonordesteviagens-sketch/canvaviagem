@@ -115,6 +115,21 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   const queryClient = useQueryClient();
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const [quickPackageText, setQuickPackageText] = useState("");
+  // Perfil salva sozinho: mostra "✓ Salvo" por alguns segundos depois de cada mudança.
+  const perfilChave = [state.agencyName, state.agencyType, state.instagram, state.agencyEmail, state.whatsapp, state.address, state.logoBase64?.length].join("|");
+  const [perfilSalvo, setPerfilSalvo] = useState(false);
+  const perfilPrimeiro = useRef(true);
+  useEffect(() => {
+    if (perfilPrimeiro.current) { perfilPrimeiro.current = false; return; }
+    setPerfilSalvo(true);
+    const t = setTimeout(() => setPerfilSalvo(false), 2500);
+    return () => clearTimeout(t);
+  }, [perfilChave]);
+  const irParaPacote = () => {
+    const el = document.getElementById("fabrica-pacote-rapido");
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => document.getElementById("fabrica-pacote-rapido-input")?.focus({ preventScroll: true }), 450);
+  };
 
   // Quem veio do quiz já disse o destino e o momento da agência: a Fábrica começa com isso preenchido.
   // Espera o projeto carregar: aplicado antes, o carregamento sobrescreve e o que veio do quiz se perde.
@@ -739,6 +754,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     }
   };
 
+  const temHistorico = (state.allGeneratedAdImages?.length || 0) > 0 || publishedSites.length > 0 || realLeadsCount > 0;
   return (
     <div className="space-y-8 animate-fadeIn max-w-[1280px] mx-auto pb-12">
       <ProjectSwitchDialog
@@ -896,9 +912,11 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       <JornadaGuia
         onIr={(m) => {
           if (m.id === "perfil") {
-            // O microfone fica no topo da tela; os campos para quem prefere digitar vêm logo abaixo das missões.
-            window.scrollTo({ top: 0, behavior: "smooth" });
-            document.getElementById("fabrica-perfil")?.setAttribute("open", "");
+            // Abre o perfil, rola até ele e já coloca o cursor no nome (o microfone continua no topo para quem prefere falar).
+            const perfil = document.getElementById("fabrica-perfil");
+            perfil?.setAttribute("open", "");
+            perfil?.scrollIntoView({ behavior: "smooth", block: "start" });
+            setTimeout(() => document.getElementById("fabrica-nome-agencia")?.focus({ preventScroll: true }), 450);
             return;
           }
           const fases: Record<string, number> = { video: 6, postar_video: 6, anuncio: 1, carrossel: 2, site: 3, divulgar_site: 3, cliente: 4 };
@@ -909,29 +927,33 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       {/* Main Responsive Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Left Side: Agency Info & Brand (5 Cols) */}
-        <div className="md:col-span-5 space-y-6">
+        <div className="md:col-span-6 space-y-6">
           
           {/* CARD 1: IDENTIDADE & PERFIL DA AGÊNCIA */}
           <details 
             id="fabrica-perfil"
+            style={{ scrollMarginTop: 88 }}
             open={!state.agencyName || !state.whatsapp || whatsappIncomplete}
             className="group bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5 [&::-webkit-details-marker]:hidden"
           >
             <summary className="list-none outline-none cursor-pointer flex items-center justify-between">
-              <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2">
+              <h3 className="text-[15px] font-bold text-white/90 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 Dados do Perfil
               </h3>
               {whatsappIncomplete && (
                 <span className="text-[10px] font-bold text-red-400">⚠ WhatsApp incompleto</span>
               )}
-              <div className="text-[10px] text-white/40 font-bold group-open:hidden">▼ EXPANDIR</div>
-              <div className="text-[10px] text-white/40 font-bold hidden group-open:block">▲ RECOLHER</div>
+              <span className="ml-auto mr-3 text-[12px] font-semibold" aria-live="polite">
+                {perfilSalvo ? <span className="text-emerald-400">✓ Salvo</span> : <span className="text-white/35">Salva sozinho</span>}
+              </span>
+              <div className="flex min-h-9 items-center text-[12px] text-white/50 font-semibold group-open:hidden">Abrir ▾</div>
+              <div className="min-h-9 items-center text-[12px] text-white/50 font-semibold hidden group-open:flex">Fechar ▴</div>
             </summary>
 
             <div className="mt-5 space-y-5 animate-fade-in">
               {/* Logo e Nome */}
-            <div className="flex flex-row gap-4 sm:gap-6 items-start bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5">
+            <div className="flex flex-col min-[480px]:flex-row gap-4 sm:gap-6 items-start bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5">
               {/* Logo Box */}
               <div className="relative group flex-shrink-0 mt-1">
                 <div 
@@ -943,7 +965,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   ) : (
                     <>
                       <Upload className="w-5 h-5 text-white/30 mb-1 group-hover:text-amber-400 transition-colors" />
-                      <span className="text-[8px] font-bold text-white/40 uppercase tracking-wider">Logo</span>
+                      <span className="text-[11px] font-semibold text-white/50">Sua logo</span>
                     </>
                   )}
                   <input 
@@ -971,18 +993,19 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               {/* Nome e Tipo da Agência integrados ao card da Logo no Mobile e Desktop */}
               <div className="flex-1 w-full space-y-4">
                 <div>
-                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">Nome da Agência *</label>
+                  <label className="text-[13px] font-semibold text-white/65 block mb-1.5">Nome da Agência *</label>
                   <input 
                     type="text"
                     value={state.agencyName || ""}
                     onChange={(e) => update({ agencyName: e.target.value })}
-                    placeholder="Nome Comercial da sua Agência"
+                    id="fabrica-nome-agencia"
+                    placeholder="Nome da sua agência"
                     className="w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus:border-amber-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">Tipo de Agência</label>
+                  <label className="text-[13px] font-semibold text-white/65 block mb-1.5">Tipo de Agência</label>
                   <select 
                     value={state.agencyType || ""}
                     onChange={(e) => update({ agencyType: e.target.value as any })}
@@ -1002,7 +1025,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">Instagram Profissional</label>
+                  <label className="text-[13px] font-semibold text-white/65 block mb-1.5">Instagram Profissional</label>
                   <div className="relative">
                     <Instagram className="absolute left-3.5 top-3.5 w-4 h-4 text-white/30" />
                     <input 
@@ -1022,7 +1045,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">E-mail da Agência</label>
+                  <label className="text-[13px] font-semibold text-white/65 block mb-1.5">E-mail da Agência</label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-white/30" />
                     <input 
@@ -1037,7 +1060,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">WhatsApp de Vendas *</label>
+                <label className="text-[13px] font-semibold text-white/65 block mb-1.5">WhatsApp de Vendas *</label>
                   <div className="relative flex items-stretch w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus-within:border-amber-500/50 rounded-xl overflow-visible transition-all">
                     {/* Seletor de país / DDI */}
                     <button
@@ -1102,7 +1125,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     </p>
                   )}
                 </div>              <div>
-                <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">Endereço Físico (Mapa)</label>
+                <label className="text-[13px] font-semibold text-white/65 block mb-1.5">Endereço Físico (Mapa)</label>
                 <div className="relative">
                   <MapPin className="absolute left-3.5 top-3.5 w-4 h-4 text-white/30" />
                   <input 
@@ -1136,237 +1159,19 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           </details>
 
 
-          {/* NOVO BOTÃO DE CRIAR ANÚNCIO (F1) */}
+          {/* Próximo passo depois do perfil: cadastrar um pacote */}
           <button
              type="button"
-             onClick={() => onNavigate?.("phase", 1)}
-             className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-amber-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
+             onClick={irParaPacote}
+             className="w-full min-h-12 rounded-2xl border border-white/15 bg-white/[0.04] text-[15px] font-bold text-white hover:bg-white/[0.08] transition-all active:scale-[0.98]"
           >
-             <span className="flex items-center gap-2"><ImageIcon className="w-5 h-5" /> CRIAR ANÚNCIO</span>
+             Pronto! Agora cadastre um pacote →
           </button>
 
-          {/* CORES DA MARCA AQUI FORA */}
-          <div className="bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl">
-             <div className="mb-4">
-               <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 mb-1">
-                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                 Cores da marca
-               </h3>
-               <p className="text-[10px] leading-relaxed text-white/35">
-                 Defina uma vez e use automaticamente nos anúncios e nos sites.
-               </p>
-             </div>
-             <BrandPaletteEditor
-               compact
-               primaryColor={state.primaryColor}
-               secondaryColor={state.secondaryColor}
-               backgroundColor={state.backgroundColor || "#F4F6F9"}
-               onChange={(patch) => update(patch)}
-             />
-          </div>
-
-          {/* CARD RESUMO & HISTÓRICO DO USUÁRIO */}
-          <div className="mt-6 bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-                Resumo & Histórico da sua Fábrica
-              </h3>
-              <span className="text-[9px] text-white/30 uppercase font-semibold">Apenas o seu conteúdo</span>
-            </div>
-
-            {/* Cards de contagem */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              <div 
-                onClick={() => onNavigate?.("phase", 1)}
-                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-150 ease-out  active:scale-[0.98] flex flex-col items-center justify-center"
-              >
-                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center mb-1.5 sm:mb-2">
-                  <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-                <div className="text-xl sm:text-2xl font-black text-white leading-none">{state.allGeneratedAdImages?.length || 0}</div>
-                <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Imagens</div>
-              </div>
-              <div 
-                onClick={() => onNavigate?.("phase", 3)}
-                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-150 ease-out  active:scale-[0.98] flex flex-col items-center justify-center"
-              >
-                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-1.5 sm:mb-2">
-                  <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-                <div className="text-xl sm:text-2xl font-black text-white leading-none">{publishedSites.length}</div>
-                <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Sites</div>
-                {publishedSites.length > 0 && (
-                   <div className="text-[7.5px] sm:text-[9px] text-zinc-500/80 mt-2 leading-tight hidden sm:block">
-                     Dica: Para editar um projeto, selecione-o na lista <b>"EDITAR PROJETOS"</b> no topo da página.
-                   </div>
-                )}
-              </div>
-              <div 
-                onClick={() => onNavigate?.("phase", 4)}
-                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-amber-500/30 transition-all duration-150 ease-out  active:scale-[0.98] flex flex-col items-center justify-center"
-              >
-                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-1.5 sm:mb-2">
-                  <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-                <div className="text-xl sm:text-2xl font-black text-white leading-none">{realLeadsCount}</div>
-                <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Leads</div>
-              </div>
-            </div>
-
-            {/* Histórico de sites publicados no canvaviagem.com */}
-            {publishedSites.length > 0 && (
-              <div>
-                <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider mb-2">
-                  Sites publicados ({publishedSites.length})
-                </div>
-                <div className="space-y-1.5">
-                  {publishedSites.map((site) => {
-                    const publicUrl = `/view/${site.id}`;
-                    const url = `https://${site.id}.canvaviagem.com`;
-                    return (
-                      <div key={site.id} className="flex flex-col sm:flex-row gap-2">
-                        <a
-                          href={publicUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 flex items-center justify-between gap-2 min-w-0 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                            <span className="text-xs text-white/85 font-semibold truncate">{site.id}.canvaviagem.com</span>
-                          </div>
-                          <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white shrink-0" />
-                        </a>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              // 1. Tenta encontrar por ID exato do projeto (ignorando user.id se foi salvo com UUID do usuário)
-                              const exactProject = (site.project_id && site.project_id !== user?.id)
-                                ? savedProjects?.find((x) => x.id === site.project_id)
-                                : undefined;
-                              let p = exactProject && projectMatchesSite(exactProject, site)
-                                ? exactProject
-                                : undefined;
-  
-                              // 2. Se não encontrou por ID, procura pelo slug da URL ou nome da agência ou ID do site
-                              if (!p) {
-                                p = savedProjects?.find((x) => projectMatchesSite(x, site));
-                              }
-  
-                              if (!p?.state_snapshot) {
-                                await recoverPublishedSiteForEditing(site);
-                                return;
-                              }
-  
-                              await loadSavedProject(p);
-                              window.setTimeout(() => onNavigate?.("phase", 3), 100);
-                            }}
-                            className="flex-1 sm:flex-none px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 text-violet-400 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shrink-0"
-                          >
-                            <Pencil className="w-3.5 h-3.5" /> Editar Site
-                          </button>
-                          <button
-                            type="button"
-                          onClick={async () => {
-                            if (!window.confirm(`⚠️ Deseja realmente excluir o site publicado "${url}"? O projeto continuará salvo para edição.`)) return;
-                            try {
-                              const project = savedProjects?.find((candidate) => candidate.id === site.project_id) || savedProjects?.find((candidate) => {
-                                const snapshot = candidate.state_snapshot as any;
-                                const savedSlug = snapshot?.siteContent?.canvaViagemUrl?.replace(/^https?:\/\//, "")?.split(".")[0];
-                                return savedSlug === site.id;
-                              });
-                              const { error } = await supabase.from("public_sites").delete().eq("id", site.id).eq("owner_id", user!.id);
-                              if (error) throw error;
-                              if (project?.state_snapshot) {
-                                const nextSnapshot = {
-                                  ...project.state_snapshot,
-                                  siteContent: { ...project.state_snapshot.siteContent, canvaViagemUrl: "", vercelUrl: "" },
-                                };
-                                if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(project.id)) {
-                                  const { error: projectError } = await supabase.from("fabrica_diagnosticos" as any).update({ state_snapshot: nextSnapshot }).eq("id", project.id).eq("user_id", user!.id);
-                                  if (projectError) throw projectError;
-                                }
-                                if (project.id === state.projectId) {
-                                  update({ siteContent: { ...state.siteContent, canvaViagemUrl: "", vercelUrl: "" } });
-                                }
-                              }
-                              setPublishedSites(prev => prev.filter(s => s.id !== site.id));
-                              await Promise.all([
-                                queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
-                                queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
-                              ]);
-                              toast.success("Site despublicado. O projeto continua disponível para edição.");
-                            } catch (err: any) {
-                              toast.error(err?.message || "Erro ao excluir site publicado");
-                            }
-                          }}
-                            className="px-3.5 py-2.5 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/20 text-red-400 transition-all flex items-center justify-center shrink-0"
-                            title="Excluir site publicado"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-
-            {/* Histórico de imagens geradas (miniaturas) */}
-            {(state.allGeneratedAdImages?.length || 0) > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Últimas imagens geradas</div>
-                  <span className="text-[9px] text-white/30">{state.allGeneratedAdImages!.length} no total</span>
-                </div>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-                  {state.allGeneratedAdImages!.slice(-6).reverse().map((src, i) => (
-                    <a
-                      key={i}
-                      href={src}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="aspect-square rounded-lg overflow-hidden border border-white/5 hover:border-violet-500/40 transition-all bg-white/[0.02]"
-                    >
-                      <img src={src} alt={`Geração ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {(state.allGeneratedAdImages?.length || 0) === 0 && !state.siteContent?.canvaViagemUrl && !state.siteContent?.vercelUrl && (
-              <p className="text-[11px] text-white/40 italic text-center py-2">
-                Seu histórico aparecerá aqui assim que você gerar suas primeiras imagens ou publicar seu primeiro site.
-              </p>
-            )}
-            
-            {/* Call to action de Avançar para Fase 1 */}
-            <div className="pt-2 border-t border-white/5">
-              <button
-                onClick={() => {
-                  if (!canStartNewProject()) return;
-                  const confirmed = window.confirm(
-                    `Deseja começar um novo projeto em branco? O projeto atual ("${state.agencyName || "Sem nome"}") continuará salvo.`
-                  );
-                  if (!confirmed) return;
-                  reset();
-                  onNavigate?.("phase", 1);
-                }}
-                className="w-full py-3 rounded-xl bg-white/[0.03] hover:bg-violet-500/10 border border-white/5 hover:border-violet-500/30 text-white/60 hover:text-violet-400 text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
-              >
-                <Plus className="w-3.5 h-3.5" /> Começar Novo Projeto
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Right Side: Package Management (7 Cols) */}
-        <div className="md:col-span-7 space-y-6">
+        <div className="md:col-span-6 space-y-6">
           
           {/* Temporariamente oculto - voltar depois */}
           {false && <BusinessExtractor onExtract={handleExtractorData} />}
@@ -1377,19 +1182,19 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               <div>
                 <h3 
                   onClick={() => onNavigate?.("phase", 2)}
-                  className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 cursor-pointer hover:text-emerald-400 transition-colors group"
+                  className="text-[15px] font-bold text-white/90 flex items-center gap-2 cursor-pointer hover:text-amber-300 transition-colors group"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                   Pacotes prontos para vender ({state.selectedPackages.length})
                 </h3>
-                <span className="text-[9px] text-white/30 uppercase font-semibold">Usados no anúncio, carrossel e site</span>
+                <span className="text-[12px] text-white/45">Usados no anúncio, carrossel e site</span>
               </div>
             </div>
 
             {/* Pacote em uma frase: o jeito mais rápido de começar */}
             {!showAddForm && (
-              <div id="fabrica-pacote-rapido" className="mb-4 rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.05] p-3.5">
-                <label htmlFor="fabrica-pacote-rapido-input" className="block text-[11px] font-bold text-emerald-300">
+              <div id="fabrica-pacote-rapido" className="mb-4 rounded-2xl border border-amber-400/25 bg-amber-400/[0.05] p-3.5">
+                <label htmlFor="fabrica-pacote-rapido-input" className="block text-[13px] font-bold text-amber-200">
                   Criar pacote em uma frase
                 </label>
                 <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -1399,17 +1204,17 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     onChange={(e) => setQuickPackageText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && createQuickPackage()}
                     placeholder="Ex: Porto de Galinhas, 5 dias, R$ 1.997, hotel + transfer + passeios"
-                    className="min-h-11 flex-1 rounded-xl border border-white/10 bg-black/40 px-3 text-sm text-white placeholder-white/30 outline-none focus:border-emerald-400"
+                    className="min-h-11 flex-1 rounded-xl border border-white/10 bg-black/40 px-3 text-sm text-white placeholder-white/30 outline-none focus:border-amber-400"
                   />
                   <button
                     type="button"
                     onClick={createQuickPackage}
-                    className="min-h-11 shrink-0 rounded-xl bg-emerald-400 px-4 text-xs font-black uppercase tracking-wide text-black hover:brightness-110"
+                    className="min-h-11 shrink-0 rounded-xl bg-[#F5F906] px-5 text-[14px] font-black text-black hover:brightness-110"
                   >
                     Criar pacote
                   </button>
                 </div>
-                <p className="mt-1.5 text-[10px] text-white/40">Separe por vírgula: destino, duração, preço e o que está incluso. Dá para editar tudo depois.</p>
+                <p className="mt-1.5 text-[12px] text-white/45">Separe por vírgula: destino, duração, preço e o que está incluso. Dá para editar tudo depois.</p>
               </div>
             )}
 
@@ -1419,16 +1224,10 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 state.selectedPackages.length === 0 ? (
                   <div className="flex flex-col gap-3">
                     <button
-                      onClick={() => onNavigate?.("phase", 1)}
-                      className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black text-sm uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-amber-500/20 animate-fade-in"
-                    >
-                      <ImageIcon className="w-5 h-5" /> Criar Anúncio
-                    </button>
-                    <button
                       onClick={() => { setShowAddForm(true); setEditingId(null); }}
-                      className="w-full text-center py-2 text-[10px] font-bold text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors underline decoration-white/10 underline-offset-4"
+                      className="w-full min-h-11 text-center text-[13px] font-semibold text-white/55 hover:text-white transition-colors underline decoration-white/20 underline-offset-4"
                     >
-                      Ou adicione um pacote manualmente
+                      Prefere preencher campo por campo? Cadastrar à mão
                     </button>
                   </div>
                 ) : (
@@ -1673,13 +1472,234 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 <button
                    type="button"
                    onClick={() => onNavigate?.("phase", 1)}
-                   className="w-full mt-4 bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-3xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-amber-500/20 uppercase tracking-widest text-[13px] sm:text-[15px]"
+                   className="w-full mt-4 bg-amber-500 hover:bg-amber-400 text-black font-black py-4 rounded-3xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-amber-500/20 text-[15px]"
                 >
-                   <ImageIcon className="w-5 h-5 shrink-0" /> AVANÇAR PRÓXIMA ETAPA
+                   <ImageIcon className="w-5 h-5 shrink-0" /> Criar anúncio com meus pacotes
                 </button>
               )}
             </div>
           </div>
+
+          {/* CORES DA MARCA AQUI FORA */}
+          <div className="bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl">
+             <div className="mb-4">
+               <h3 className="text-[15px] font-bold text-white/90 flex items-center gap-2 mb-1">
+                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                 Cores da marca
+               </h3>
+               <p className="text-[12px] leading-relaxed text-white/45">
+                 Defina uma vez e use automaticamente nos anúncios e nos sites.
+               </p>
+             </div>
+             <BrandPaletteEditor
+               compact
+               primaryColor={state.primaryColor}
+               secondaryColor={state.secondaryColor}
+               backgroundColor={state.backgroundColor || "#F4F6F9"}
+               onChange={(patch) => update(patch)}
+             />
+          </div>
+
+          {/* CARD RESUMO & HISTÓRICO DO USUÁRIO: só aparece depois do primeiro conteúdo */}
+          {temHistorico && (
+          <div className="bg-[#1c1c1e]/60 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[15px] font-bold text-white/90 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+                Resumo & Histórico da sua Fábrica
+              </h3>
+              <span className="text-[12px] text-white/45">Apenas o seu conteúdo</span>
+            </div>
+
+            {/* Cards de contagem */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div 
+                onClick={() => onNavigate?.("phase", 1)}
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-150 ease-out  active:scale-[0.98] flex flex-col items-center justify-center"
+              >
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center mb-1.5 sm:mb-2">
+                  <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+                <div className="text-xl sm:text-2xl font-black text-white leading-none">{state.allGeneratedAdImages?.length || 0}</div>
+                <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Imagens</div>
+              </div>
+              <div 
+                onClick={() => onNavigate?.("phase", 3)}
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-150 ease-out  active:scale-[0.98] flex flex-col items-center justify-center"
+              >
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-1.5 sm:mb-2">
+                  <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+                <div className="text-xl sm:text-2xl font-black text-white leading-none">{publishedSites.length}</div>
+                <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Sites</div>
+                {publishedSites.length > 0 && (
+                   <div className="text-[7.5px] sm:text-[9px] text-zinc-500/80 mt-2 leading-tight hidden sm:block">
+                     Dica: Para editar um projeto, selecione-o na lista <b>"EDITAR PROJETOS"</b> no topo da página.
+                   </div>
+                )}
+              </div>
+              <div 
+                onClick={() => onNavigate?.("phase", 4)}
+                className="bg-white/[0.02] border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-amber-500/30 transition-all duration-150 ease-out  active:scale-[0.98] flex flex-col items-center justify-center"
+              >
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-1.5 sm:mb-2">
+                  <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+                <div className="text-xl sm:text-2xl font-black text-white leading-none">{realLeadsCount}</div>
+                <div className="text-[8px] sm:text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1 sm:mt-1.5">Leads</div>
+              </div>
+            </div>
+
+            {/* Histórico de sites publicados no canvaviagem.com */}
+            {publishedSites.length > 0 && (
+              <div>
+                <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider mb-2">
+                  Sites publicados ({publishedSites.length})
+                </div>
+                <div className="space-y-1.5">
+                  {publishedSites.map((site) => {
+                    const publicUrl = `/view/${site.id}`;
+                    const url = `https://${site.id}.canvaviagem.com`;
+                    return (
+                      <div key={site.id} className="flex flex-col sm:flex-row gap-2">
+                        <a
+                          href={publicUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-between gap-2 min-w-0 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <span className="text-xs text-white/85 font-semibold truncate">{site.id}.canvaviagem.com</span>
+                          </div>
+                          <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white shrink-0" />
+                        </a>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              // 1. Tenta encontrar por ID exato do projeto (ignorando user.id se foi salvo com UUID do usuário)
+                              const exactProject = (site.project_id && site.project_id !== user?.id)
+                                ? savedProjects?.find((x) => x.id === site.project_id)
+                                : undefined;
+                              let p = exactProject && projectMatchesSite(exactProject, site)
+                                ? exactProject
+                                : undefined;
+  
+                              // 2. Se não encontrou por ID, procura pelo slug da URL ou nome da agência ou ID do site
+                              if (!p) {
+                                p = savedProjects?.find((x) => projectMatchesSite(x, site));
+                              }
+  
+                              if (!p?.state_snapshot) {
+                                await recoverPublishedSiteForEditing(site);
+                                return;
+                              }
+  
+                              await loadSavedProject(p);
+                              window.setTimeout(() => onNavigate?.("phase", 3), 100);
+                            }}
+                            className="flex-1 sm:flex-none px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 text-violet-400 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shrink-0"
+                          >
+                            <Pencil className="w-3.5 h-3.5" /> Editar Site
+                          </button>
+                          <button
+                            type="button"
+                          onClick={async () => {
+                            if (!window.confirm(`⚠️ Deseja realmente excluir o site publicado "${url}"? O projeto continuará salvo para edição.`)) return;
+                            try {
+                              const project = savedProjects?.find((candidate) => candidate.id === site.project_id) || savedProjects?.find((candidate) => {
+                                const snapshot = candidate.state_snapshot as any;
+                                const savedSlug = snapshot?.siteContent?.canvaViagemUrl?.replace(/^https?:\/\//, "")?.split(".")[0];
+                                return savedSlug === site.id;
+                              });
+                              const { error } = await supabase.from("public_sites").delete().eq("id", site.id).eq("owner_id", user!.id);
+                              if (error) throw error;
+                              if (project?.state_snapshot) {
+                                const nextSnapshot = {
+                                  ...project.state_snapshot,
+                                  siteContent: { ...project.state_snapshot.siteContent, canvaViagemUrl: "", vercelUrl: "" },
+                                };
+                                if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(project.id)) {
+                                  const { error: projectError } = await supabase.from("fabrica_diagnosticos" as any).update({ state_snapshot: nextSnapshot }).eq("id", project.id).eq("user_id", user!.id);
+                                  if (projectError) throw projectError;
+                                }
+                                if (project.id === state.projectId) {
+                                  update({ siteContent: { ...state.siteContent, canvaViagemUrl: "", vercelUrl: "" } });
+                                }
+                              }
+                              setPublishedSites(prev => prev.filter(s => s.id !== site.id));
+                              await Promise.all([
+                                queryClient.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] }),
+                                queryClient.invalidateQueries({ queryKey: ["public-sites"] }),
+                              ]);
+                              toast.success("Site despublicado. O projeto continua disponível para edição.");
+                            } catch (err: any) {
+                              toast.error(err?.message || "Erro ao excluir site publicado");
+                            }
+                          }}
+                            className="px-3.5 py-2.5 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/20 text-red-400 transition-all flex items-center justify-center shrink-0"
+                            title="Excluir site publicado"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+
+            {/* Histórico de imagens geradas (miniaturas) */}
+            {(state.allGeneratedAdImages?.length || 0) > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Últimas imagens geradas</div>
+                  <span className="text-[9px] text-white/30">{state.allGeneratedAdImages!.length} no total</span>
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                  {state.allGeneratedAdImages!.slice(-6).reverse().map((src, i) => (
+                    <a
+                      key={i}
+                      href={src}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="aspect-square rounded-lg overflow-hidden border border-white/5 hover:border-violet-500/40 transition-all bg-white/[0.02]"
+                    >
+                      <img src={src} alt={`Geração ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(state.allGeneratedAdImages?.length || 0) === 0 && !state.siteContent?.canvaViagemUrl && !state.siteContent?.vercelUrl && (
+              <p className="text-[11px] text-white/40 italic text-center py-2">
+                Seu histórico aparecerá aqui assim que você gerar suas primeiras imagens ou publicar seu primeiro site.
+              </p>
+            )}
+            
+            {/* Call to action de Avançar para Fase 1 */}
+            <div className="pt-2 border-t border-white/5">
+              <button
+                onClick={() => {
+                  if (!canStartNewProject()) return;
+                  const confirmed = window.confirm(
+                    `Deseja começar um novo projeto em branco? O projeto atual ("${state.agencyName || "Sem nome"}") continuará salvo.`
+                  );
+                  if (!confirmed) return;
+                  reset();
+                  onNavigate?.("phase", 1);
+                }}
+                className="w-full py-3 rounded-xl bg-white/[0.03] hover:bg-violet-500/10 border border-white/5 hover:border-violet-500/30 text-white/60 hover:text-violet-400 text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+              >
+                <Plus className="w-3.5 h-3.5" /> Começar Novo Projeto
+              </button>
+            </div>
+          </div>
+          )}
         </div>
       </div>
     </div>

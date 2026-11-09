@@ -175,7 +175,7 @@ export function BrandPaletteEditor({
           <button
             type="button"
             onClick={() => onChange(DEFAULT_PALETTE)}
-            className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-white/45 transition-colors hover:text-white"
+            className="inline-flex min-h-11 items-center gap-1.5 px-1 text-[12px] font-semibold text-white/55 transition-colors hover:text-white"
           >
             <RotateCcw className="h-3 w-3" /> {copy.restore}
           </button>
