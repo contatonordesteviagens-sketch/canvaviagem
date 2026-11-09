@@ -21,13 +21,13 @@ const GUIDES: Record<FabricaGuideKey, GuideContent> = {
     tip: "Tudo salva sozinho. Pode fechar e voltar depois que nada se perde.",
   },
   video: {
-    title: "Gerador de vídeo em 3 passos",
+    title: "Vídeo pronto em 3 passos",
     steps: [
-      "Mande o pacote de um jeito só: fale no microfone, cole um texto, mande a foto do pacote ou escolha um pacote salvo.",
-      "A IA acha o destino, preenche o preço e o que inclui, e busca vídeos reais do lugar. Confira e mude o que quiser.",
-      "Toque em \"Gerar 3 vídeos\", escolha o que mais gostou e poste nos stories.",
+      "Escolha o que anunciar: um destino, uma experiência ou um serviço.",
+      "Marque o que está incluso e, se quiser, o preço.",
+      "Toque em \"Montar\", escolha o visual e baixe.",
     ],
-    tip: "Fale como se estivesse contando para um cliente. Quanto mais detalhes, melhor sai o vídeo.",
+    tip: "Também dá para falar no microfone, colar um texto ou mandar a foto do pacote nas outras abas.",
   },
   biblioteca: {
     title: "Tudo que você já gerou",

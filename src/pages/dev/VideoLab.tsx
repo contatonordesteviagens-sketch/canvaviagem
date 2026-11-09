@@ -3467,13 +3467,13 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       pequeno.width = 108;
       pequeno.height = 192;
       const novas: Partial<Record<Modelo, string>> = {};
-      for (const m of folha === "estilo" ? MODELOS : MODELOS.filter((x) => x.id === modeloRef.current)) {
+      for (const m of MODELOS) {
         drawFrame(grande.getContext("2d")!, 2.8, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m.id, ocasiaoRef.current, temaRef.current);
         pequeno.getContext("2d")!.drawImage(grande, 0, 0, 108, 192);
         novas[m.id] = pequeno.toDataURL("image/jpeg", 0.7);
       }
       setMiniaturas((a) => ({ ...a, ...novas }));
-    }, folha === "estilo" ? 150 : 700);
+    }, 900);
     return () => clearTimeout(id);
   }, [carregando, gravando, dados, ocasiao, paleta, corLivre, fonte, logo, folha, modelo]);
 
@@ -3945,34 +3945,39 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
             <span className="mr-1">📍</span>
             {dados.destino || "Seu destino"}
           </p>
-          <div ref={estilosRef} role="radiogroup" aria-label="Estilo do vídeo" className="-mx-1 mb-3 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] lg:flex-wrap lg:justify-center lg:overflow-visible">
-            {MODELOS_NA_ORDEM.map((m, i) => {
+          <p className="mb-2 text-center text-[12px] font-bold uppercase tracking-wider text-white/45">Escolha o visual do vídeo</p>
+          <div ref={estilosRef} role="radiogroup" aria-label="Estilo do vídeo" className="-mx-1 mb-3 flex snap-x gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]">
+            {MODELOS_NA_ORDEM.map((m) => {
               const ativo = modelo === m.id;
               return (
                 <button
                   key={m.id}
                   role="radio"
                   aria-checked={ativo}
+                  aria-label={m.nome}
+                  title={m.desc}
                   disabled={gravando}
                   onClick={() => {
                     setModelo(m.id);
                     proximoRef.current = Math.max(0, ORDEM_SUGERIDA.indexOf(m.id));
                   }}
-                  className={`flex min-h-10 shrink-0 snap-start items-center gap-1.5 rounded-full border px-3 text-[13px] font-bold transition-all duration-200 active:scale-95 disabled:opacity-50 ${ativo ? "border-[#F5F906] bg-[#F5F906] text-black shadow-[0_4px_18px_-6px_rgba(245,249,6,.8)]" : "border-white/15 bg-white/[0.05] text-white/75"}`}
+                  className="group flex w-[68px] shrink-0 snap-start flex-col items-center gap-1 transition-transform duration-200 active:scale-95 disabled:opacity-50"
                 >
-                  <span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] ${ativo ? "bg-black text-[#F5F906]" : "bg-white/15"}`}>{i + 1}</span>
-                  {m.nome}
+                  <span className={`block aspect-[9/16] w-full overflow-hidden rounded-lg border-2 transition-all ${ativo ? "border-[#F5F906] shadow-[0_4px_18px_-6px_rgba(245,249,6,.8)]" : "border-white/10 opacity-80 group-hover:opacity-100"}`}>
+                    {miniaturas[m.id] ? <img src={miniaturas[m.id]} alt="" className="h-full w-full object-cover" /> : <span className="block h-full w-full animate-pulse bg-white/[0.06]" />}
+                  </span>
+                  <span className={`w-full truncate text-center text-[11px] font-bold leading-tight ${ativo ? "text-[#F5F906]" : "text-white/70"}`}>{m.nome}</span>
                 </button>
               );
             })}
           </div>
-          <div className="relative mx-auto w-full max-w-[210px] sm:max-w-[300px] lg:max-w-[min(360px,calc((100vh-290px)*0.5625))]">
+          <div className="relative mx-auto w-full max-w-[190px] sm:max-w-[260px] lg:max-w-[min(300px,calc((100vh-330px)*0.5625))]">
             <canvas ref={canvasRef} width={W} height={H} className="block w-full rounded-2xl border border-white/10" />
             <span key={modelo} className="pointer-events-none absolute left-2 top-2 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-bold text-white animate-in fade-in slide-in-from-top-1 duration-300">
-              Estilo {Math.max(1, MODELOS_NA_ORDEM.findIndex((m) => m.id === modelo) + 1)}
+              {MODELOS.find((m) => m.id === modelo)?.nome}
             </span>
           </div>
-          <p className="mt-1.5 text-center text-[11px] text-white/40">Prévia ao vivo · toque num estilo para ver</p>
+          <p className="mt-1.5 text-center text-[11px] text-white/40">Prévia ao vivo</p>
         </div>
 
         {/* ——— 2. Visual ——— */}
@@ -3981,12 +3986,11 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
             <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-white/45">Visual</p>
             <div className="divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
               <LinhaLista id="linha-oferta" titulo="Oferta sazonal" valor={ocasiao === "nenhuma" && sazonais.agora.length ? "Nenhuma · sugestão do mês na lista" : nomeOcasiao} destaque={sazonais.agora.some((a) => a.id === ocasiao)} onClick={() => setFolha("oferta")} />
-              <LinhaLista id="linha-estilo" titulo="Estilo" valor={`${MODELOS[idxModelo]?.nome ?? ""} · muda a cada vídeo`} miniatura={miniaturas[modelo]} onClick={() => setFolha("estilo")} />
-              <LinhaLista id="linha-duracao" titulo="Duração" valor={curto ? "12 s · curto" : "22 s · completo"} onClick={() => setFolha("duracao")} />
-              <LinhaLista id="linha-formato" titulo="Formato" valor={formato === "feed" ? "Feed 4:5" : "Stories 9:16"} onClick={() => setFolha("formato")} />
-              <LinhaLista id="linha-mais" titulo="Mais opções" valor={maisOpcoes ? "" : "cores e fonte"} aberto={maisOpcoes} onClick={() => setMaisOpcoes((v) => !v)} />
+              <LinhaLista id="linha-mais" titulo="Mais opções" valor={maisOpcoes ? "" : "cores, fonte, duração e formato"} aberto={maisOpcoes} onClick={() => setMaisOpcoes((v) => !v)} />
               {maisOpcoes && <LinhaLista id="linha-cores" titulo="Cores" valor={nomePaleta} onClick={() => setFolha("cores")} />}
               {maisOpcoes && <LinhaLista id="linha-fonte" titulo="Fonte" valor={fonte} onClick={() => setFolha("fonte")} />}
+              {maisOpcoes && <LinhaLista id="linha-duracao" titulo="Duração" valor={curto ? "12 s · curto" : "22 s · completo"} onClick={() => setFolha("duracao")} />}
+              {maisOpcoes && <LinhaLista id="linha-formato" titulo="Formato" valor={formato === "feed" ? "Feed 4:5" : "Stories 9:16"} onClick={() => setFolha("formato")} />}
             </div>
           </section>
 
