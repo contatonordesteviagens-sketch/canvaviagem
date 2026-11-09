@@ -199,7 +199,15 @@ export function MontarPorToque({
   onOcasiao,
   ocasioesDestaque = 3,
   onMeusPacotes,
+  whatsapp,
+  onWhatsapp,
+  curto,
+  onCurto,
 }: {
+  whatsapp?: string;
+  onWhatsapp?: (w: string) => void;
+  curto?: boolean;
+  onCurto?: (c: boolean) => void;
   ocupado: boolean;
   ocasioesDestaque?: number;
   onMeusPacotes?: () => void;
@@ -237,9 +245,9 @@ export function MontarPorToque({
 
   // passos de cada caminho (o 0 é a escolha do caminho)
   const passos: Record<Caminho, string[]> = {
-    destino: ["O que você quer anunciar?", "Pra onde é a viagem?", "O que você está vendendo?", "O que está incluso?", "Tem alguma ocasião?"],
-    experiencia: ["O que você quer anunciar?", "Qual experiência?", "Pra onde?", "O que está incluso?", "Tem alguma ocasião?"],
-    servico: ["O que você quer anunciar?", "Qual serviço?", "Onde você atende?", "O que está incluso?", "Tem alguma ocasião?"],
+    destino: ["O que você quer anunciar?", "Pra onde é a viagem?", "O que você está vendendo?", "O que está incluso?", "Últimos detalhes"],
+    experiencia: ["O que você quer anunciar?", "Qual experiência?", "Pra onde?", "O que está incluso?", "Últimos detalhes"],
+    servico: ["O que você quer anunciar?", "Qual serviço?", "Onde você atende?", "O que está incluso?", "Últimos detalhes"],
   };
   const titulos = passos[caminho || "destino"];
   const total = titulos.length;
@@ -617,9 +625,34 @@ export function MontarPorToque({
           </div>
         )}
 
-        {/* 4 — ocasião + montar */}
+        {/* 4 — ocasião, contato, duração + montar */}
         {passo === 4 && (
           <div className="flex flex-col gap-4">
+            {onWhatsapp && (
+              <label className="block">
+                <span className="mb-1 block text-[12px] font-semibold text-white/55">WhatsApp que aparece no fim do vídeo</span>
+                <input
+                  inputMode="tel"
+                  value={whatsapp || ""}
+                  onChange={(e) => onWhatsapp(e.target.value)}
+                  placeholder="(11) 99999-9999"
+                  className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
+                />
+              </label>
+            )}
+            {onCurto && (
+              <div>
+                <span className="mb-1 block text-[12px] font-semibold text-white/55">Duração</span>
+                <div className="flex gap-1.5">
+                  {([[false, "22 s · completo"], [true, "12 s · curto"]] as const).map(([c, nome]) => (
+                    <button key={nome} onClick={() => onCurto(c)} className={`min-h-9 rounded-full border px-3 text-[13px] font-semibold transition-all active:scale-95 ${!!curto === c ? "border-[#F5F906] bg-[#F5F906] text-black" : "border-white/15 text-white/70"}`}>
+                      {nome}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <span className="-mb-2 block text-[12px] font-semibold text-white/55">Ocasião (opcional)</span>
             {ocasioes.length > 0 && onOcasiao && (
               <div className="flex flex-wrap gap-2">
                 {(verOcasioes ? ocasioes : ocasioes.slice(0, ocasioesDestaque)).map((o, i) => {

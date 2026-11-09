@@ -3091,6 +3091,9 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       facebook: fb || d.facebook,
       site: site || d.site,
     }));
+    // cores e fonte da marca (Fábrica): o vídeo já nasce com elas; dá para trocar depois em "Ajustar o visual"
+    if (fabrica.primaryColor) setPaleta("marca");
+    if (fabrica.fontFamily && FONTES.includes(fabrica.fontFamily)) setFonte(fabrica.fontFamily);
     if (fabrica.logoBase64) {
       // A logo pode vir como endereço de outro site (ex.: site publicado), não só embutida.
       // Sem crossOrigin ela "contamina" o canvas e o MP4 não é gerado ("tainted sources").
@@ -3753,12 +3756,79 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const rotulo = "mb-1 block text-[12px] font-semibold text-white/55";
   const set = <K extends keyof Dados>(k: K, v: Dados[K]) => setDados((d) => ({ ...d, [k]: v }));
   const abas: { id: Entrada; nome: string }[] = [
-    { id: "montar", nome: "Montar" },
-    { id: "pacote", nome: "Meus pacotes" },
-    { id: "audio", nome: "Áudio" },
-    { id: "texto", nome: "Texto" },
-    { id: "foto", nome: "Foto" },
+    { id: "montar", nome: "✨ Montar" },
+    { id: "pacote", nome: "📦 Pacotes" },
+    { id: "audio", nome: "🎙️ Áudio" },
+    { id: "texto", nome: "✍️ Texto" },
+    { id: "foto", nome: "📷 Foto" },
   ];
+  const nomeOcasiaoCurto = () => OCASIOES.find((o) => o.id === ocasiao)?.nome.replace(/^\S+\s/, "") || "Nenhuma";
+  const chip = (on: boolean) =>
+    `min-h-9 rounded-full border px-3 text-[13px] font-semibold transition-all active:scale-95 disabled:opacity-50 ${on ? "border-[#F5F906] bg-[#F5F906] text-black" : "border-white/15 text-white/75"}`;
+  const visualRapido = (
+    <div className="flex flex-col gap-3">
+      <div>
+        <p className="mb-1.5 text-[12px] font-semibold text-white/55">Cores</p>
+        <div className="flex flex-wrap gap-2">
+          {PALETAS.map((p) => {
+            const c1 = p.id === "marca" ? fabrica.primaryColor : p.id === "livre" ? corLivre.c1 : p.c1;
+            const c2 = p.id === "marca" ? fabrica.secondaryColor : p.id === "livre" ? corLivre.c2 : p.c2;
+            return (
+              <button key={p.id} disabled={gravando} onClick={() => setPaleta(p.id)} className={`${chip(paleta === p.id)} flex items-center gap-1.5`}>
+                {c1 && (
+                  <span className="flex">
+                    <span className="h-4 w-4 rounded-full ring-2 ring-[#141416]" style={{ background: c1 }} />
+                    {c2 && <span className="-ml-1.5 h-4 w-4 rounded-full ring-2 ring-[#141416]" style={{ background: c2 }} />}
+                  </span>
+                )}
+                {p.nome}
+              </button>
+            );
+          })}
+        </div>
+        {paleta === "livre" && (
+          <div className="mt-2 flex items-center gap-4 text-[13px]">
+            <label className="flex items-center gap-2">Cor 1 <input type="color" value={corLivre.c1} onChange={(e) => setCorLivre((c) => ({ ...c, c1: e.target.value }))} /></label>
+            <label className="flex items-center gap-2">Cor 2 <input type="color" value={corLivre.c2} onChange={(e) => setCorLivre((c) => ({ ...c, c2: e.target.value }))} /></label>
+          </div>
+        )}
+      </div>
+      <div>
+        <p className="mb-1.5 text-[12px] font-semibold text-white/55">Fonte</p>
+        <div className="flex flex-wrap gap-2">
+          {FONTES.slice(0, 6).map((fo) => (
+            <button key={fo} disabled={gravando} onClick={() => setFonte(fo)} className={chip(fonte === fo)} style={{ fontFamily: `'${fo}', sans-serif` }}>
+              {fo}
+            </button>
+          ))}
+          <button disabled={gravando} onClick={() => setFolha("fonte")} className={chip(!FONTES.slice(0, 6).includes(fonte))}>
+            {FONTES.slice(0, 6).includes(fonte) ? "Outras…" : fonte}
+          </button>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-4">
+        <div>
+          <p className="mb-1.5 text-[12px] font-semibold text-white/55">Duração</p>
+          <div className="flex gap-2">
+            <button disabled={gravando} onClick={() => setCurto(false)} className={chip(!curto)}>22 s</button>
+            <button disabled={gravando} onClick={() => setCurto(true)} className={chip(curto)}>12 s</button>
+          </div>
+        </div>
+        <div>
+          <p className="mb-1.5 text-[12px] font-semibold text-white/55">Formato</p>
+          <div className="flex gap-2">
+            <button disabled={gravando} onClick={() => setFormato("stories")} className={chip(formato === "stories")}>Stories</button>
+            <button disabled={gravando} onClick={() => setFormato("feed")} className={chip(formato === "feed")}>Feed 4:5</button>
+          </div>
+        </div>
+      </div>
+      <button disabled={gravando} onClick={() => setFolha("oferta")} className="flex min-h-11 items-center justify-between rounded-xl border border-white/10 px-3 text-[14px]">
+        <span className="text-white/55">Ocasião</span>
+        <span className="font-semibold">{nomeOcasiaoCurto()} ›</span>
+      </button>
+      <p className="text-[12px] text-white/45">O estilo você troca nos cartões em cima da prévia. Depois toque em gerar de novo.</p>
+    </div>
+  );
   const nomeOcasiao = OCASIOES.find((o) => o.id === ocasiao)?.nome.replace(/^\S+\s/, "") || "Nenhuma";
   const idxModelo = MODELOS.findIndex((m) => m.id === modelo);
   const nomePaleta = PALETAS.find((p) => p.id === paleta)?.nome || "Do estilo";
@@ -3783,7 +3853,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
               Este navegador não consegue montar o vídeo. Abra o Canva Viagem no <b>Chrome</b> ou no <b>Safari atualizado</b> (iPhone: iOS 16.4 ou mais novo), ou no computador.
             </p>
           )}
-          {resultados.length === 0 && <p className="px-1 text-[13px] text-white/55">Fale o pacote do seu jeito. Em 1 minuto saem 3 vídeos para postar.</p>}
+          {resultados.length === 0 && <p className="px-1 text-[13px] text-white/55">Como você quer criar o vídeo? Monte aqui, use um pacote seu, mande um áudio, um texto ou a foto do pacote.</p>}
           <div role="tablist" aria-label="Como mandar o pacote" className="grid grid-cols-5 gap-1 rounded-2xl bg-white/[0.06] p-1">
             {abas.map((a) => (
               <button
@@ -3805,6 +3875,10 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                 ocupado={ocupado}
                 ocasioes={sazonais.lista.map((o) => ({ id: o.id, nome: o.nome }))}
                 ocasioesDestaque={sazonais.agora.length + 1}
+                whatsapp={dados.whatsapp}
+                onWhatsapp={(w) => set("whatsapp", w)}
+                curto={curto}
+                onCurto={setCurto}
                 onMeusPacotes={() => setEntrada("pacote")}
                 ocasiao={ocasiao}
                 onOcasiao={(id) => setOcasiao(id as Ocasiao)}
@@ -3986,7 +4060,8 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
           {resultados.length > 0 && (
           <section>
             <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-wide text-white/45">Ajustar o visual</p>
-            <div className="divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">{visualRapido}</div>
+            <div className="hidden">
               <LinhaLista id="linha-oferta" titulo="Oferta sazonal" valor={ocasiao === "nenhuma" && sazonais.agora.length ? "Nenhuma · sugestão do mês na lista" : nomeOcasiao} destaque={sazonais.agora.some((a) => a.id === ocasiao)} onClick={() => setFolha("oferta")} />
               <LinhaLista id="linha-mais" titulo="Mais opções" valor={maisOpcoes ? "" : "cores, fonte, duração e formato"} aberto={maisOpcoes} onClick={() => setMaisOpcoes((v) => !v)} />
               {maisOpcoes && <LinhaLista id="linha-cores" titulo="Cores" valor={nomePaleta} onClick={() => setFolha("cores")} />}
@@ -4139,7 +4214,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                       <a id="baixar" href={r.url} download={r.nome} className={botaoIcone} aria-label="Baixar">
                         <Download className="h-5 w-5" /> Baixar
                       </a>
-                      <button onClick={() => { setModelo(r.modelo); setUrl(r.url); setEditando(true); }} className={botaoIcone} aria-label="Editar">
+                      <button onClick={() => { setModelo(r.modelo); setUrl(r.url); setEditando(true); setTimeout(() => document.getElementById("editor")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80); }} className={botaoIcone} aria-label="Editar">
                         <Pencil className="h-5 w-5" /> Editar
                       </button>
                       <button onClick={() => telaCheia(`video-${i}`)} className={botaoIcone} aria-label="Tela cheia">
@@ -4174,6 +4249,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
                 <h2 className="text-[15px] font-bold">Editar vídeo</h2>
                 <button className="min-h-10 px-2 text-[14px] font-semibold text-[#F5F906]" onClick={() => { setEditando(false); setTelaAberta(null); }}>Pronto</button>
               </div>
+              <div className="rounded-xl border border-white/10 p-3">{visualRapido}</div>
               <p className="text-[12px] text-white/50">Troque o fundo de uma tela ou mude o texto. Depois gere de novo.</p>
               {linhaPrevia.telas.map((tela, i) => {
                 const m = fundos[i % Math.max(fundos.length, 1)];
