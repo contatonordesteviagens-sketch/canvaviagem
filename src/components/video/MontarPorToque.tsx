@@ -166,6 +166,20 @@ const CAMINHOS: { id: Caminho; nome: string; desc: string; emoji: string; cor: s
   { id: "servico", nome: "Um serviço", desc: "Passagem, transfer, passeio, seguro…", emoji: "🛎️", cor: "#4DA3FF" },
 ];
 
+// Botão de seguir quando dá para marcar mais de um (até 3)
+function BotaoContinuar({ qtd, nomes, onClick }: { qtd: number; nomes: string; onClick: () => void }) {
+  return (
+    <button
+      disabled={!qtd}
+      onClick={onClick}
+      className="min-h-12 rounded-2xl text-[15px] font-extrabold text-black transition-transform active:scale-[.97] disabled:bg-white/[0.08] disabled:text-white/40"
+      style={qtd ? { background: "#F5F906" } : undefined}
+    >
+      {qtd ? `Continuar com ${qtd > 1 ? `${qtd} escolhas` : nomes} →` : "Marque até 3 opções"}
+    </button>
+  );
+}
+
 const entra = "animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both";
 const cartao = "animate-in fade-in zoom-in-95 duration-300 fill-mode-both";
 
@@ -185,11 +199,22 @@ export function MontarPorToque({
   const [caminho, setCaminho] = useState<Caminho | null>(null);
   const [passo, setPasso] = useState(0);
   const [regiao, setRegiao] = useState<Regiao>("nacional");
-  const [destino, setDestino] = useState("");
+  const [destinos, setDestinos] = useState<string[]>([]); // pode marcar mais de um
+  // título do vídeo cabe em até ~38 letras: com muitos destinos, "Gramado e mais 2"
+  const juntar = (l: string[]) => (l.length <= 1 ? l[0] || "" : `${l.slice(0, -1).join(", ")} e ${l[l.length - 1]}`);
+  const destino = juntar(destinos).length <= 38 ? juntar(destinos) : `${destinos[0]} e mais ${destinos.length - 1}`;
   const [lugar, setLugar] = useState(""); // onde (opcional) para experiência e serviço
   const [outro, setOutro] = useState("");
   const [tipo, setTipo] = useState<Tipo | null>(null);
-  const [opcao, setOpcao] = useState<(Opcao & { grupo: Grupo }) | null>(null);
+  const [opcoes, setOpcoes] = useState<(Opcao & { grupo: Grupo })[]>([]); // pode marcar mais de um
+  const opcao = opcoes[0] || null;
+  const nomeOpcoes = opcoes.map((o) => o.nome).join(" + "); // para a tela
+  const tituloOpcoes = (c: Caminho | null) => {
+    const j = juntar(opcoes.map((o) => o.nome));
+    return j.length <= 30 ? j : c === "servico" ? "Serviços de viagem" : "Experiências de viagem";
+  };
+  const [extra, setExtra] = useState(""); // item próprio no "o que está incluso"
+  const [extras, setExtras] = useState<string[]>([]);
   const [inclusos, setInclusos] = useState<string[]>([]);
   const [preco, setPreco] = useState("");
 
@@ -204,32 +229,44 @@ export function MontarPorToque({
 
   function escolherCaminho(c: Caminho) {
     setCaminho(c);
-    setOpcao(null);
+    setOpcoes([]);
     setTipo(null);
-    setDestino("");
+    setDestinos([]);
+    setExtras([]);
     setLugar("");
     setOutro("");
     setPasso(1);
   }
-  function escolherDestino(nome: string) {
-    setDestino(nome);
-    setPasso(2);
+  const MAX = 3;
+  function alternarDestino(nome: string) {
+    setDestinos((l) => (l.includes(nome) ? l.filter((x) => x !== nome) : l.length >= MAX ? l : [...l, nome]));
   }
   function escolherTipo(t: Tipo) {
     setTipo(t);
     setInclusos(t.inclusos.slice(0, 3));
     setPasso(3);
   }
-  function escolherOpcao(o: Opcao, g: Grupo) {
-    setOpcao({ ...o, grupo: g });
-    setInclusos(g.inclusos.slice(0, 3));
+  function alternarOpcao(o: Opcao, g: Grupo) {
+    setOpcoes((l) => (l.some((x) => x.nome === o.nome) ? l.filter((x) => x.nome !== o.nome) : l.length >= MAX ? l : [...l, { ...o, grupo: g }]));
+  }
+  function confirmarOpcoes() {
+    if (!opcoes.length) return;
+    setInclusos(opcoes[0].grupo.inclusos.slice(0, 3));
     setPasso(2);
+  }
+  function adicionarExtra() {
+    const n = extra.trim();
+    if (!n) return;
+    setExtras((l) => (l.includes(n) ? l : [...l, n]));
+    setInclusos((l) => (l.includes(n) ? l : [...l, n]));
+    setExtra("");
   }
   function alternar(item: string) {
     setInclusos((l) => (l.includes(item) ? l.filter((x) => x !== item) : [...l, item]));
   }
 
-  const listaInclusos = caminho === "destino" ? tipo?.inclusos || [] : opcao?.grupo.inclusos || [];
+  const baseInclusos = caminho === "destino" ? tipo?.inclusos || [] : [...new Set(opcoes.flatMap((o) => o.grupo.inclusos))];
+  const listaInclusos = [...baseInclusos, ...extras.filter((e) => !baseInclusos.includes(e))];
   const corAtual = caminho === "destino" ? tipo?.cor || "#F5F906" : opcao?.grupo.cor || "#F5F906";
 
   function montar() {
@@ -244,15 +281,19 @@ export function MontarPorToque({
     if (!opcao) return;
     const onde = lugar.trim() || (regiao === "nacional" ? "destinos nacionais" : regiao === "internacional" ? "destinos internacionais" : "destinos nacionais e internacionais");
     const rotulo = caminho === "servico" ? "Serviço" : "Experiência";
+    const titulo = tituloOpcoes(caminho);
     const texto = [
-      `${rotulo}: ${opcao.nome}, em ${onde}.`,
-      `Não é um destino específico: use "${opcao.nome}" como destino.`,
+      `${rotulo}: ${juntar(opcoes.map((o) => o.nome))}, em ${onde}.`,
+      `Não é um destino específico: use "${titulo}" como destino.`,
+      opcoes.length > 1 ? `Destaques: ${opcoes.map((o) => o.nome).join(", ")}.` : "",
       inc,
       valor,
     ]
       .filter(Boolean)
       .join(" ");
-    const buscas = [...(opcao.buscas || [])];
+    // termos de cada escolha, intercalados (1º de cada, depois o 2º de cada…)
+    const buscas: string[] = [];
+    for (let i = 0; i < 3; i++) for (const o of opcoes) if (o.buscas?.[i] && !buscas.includes(o.buscas[i])) buscas.push(o.buscas[i]);
     if (lugar.trim()) buscas.unshift(`${lugar.trim()} travel`);
     onMontar(texto, buscas);
   }
@@ -275,12 +316,13 @@ export function MontarPorToque({
             {g.itens.map((o, i) => (
               <button
                 key={o.nome}
-                onClick={() => escolherOpcao(o, g)}
-                style={{ animationDelay: `${i * 30}ms`, ...(opcao?.nome === o.nome ? { borderColor: g.cor, background: `${g.cor}22` } : {}) }}
-                className={`${cartao} flex min-h-12 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-left text-[14px] font-semibold transition-all hover:bg-white/[0.08] active:scale-95`}
+                onClick={() => alternarOpcao(o, g)}
+                style={{ animationDelay: `${i * 30}ms`, ...(opcoes.some((x) => x.nome === o.nome) ? { borderColor: g.cor, background: `${g.cor}26` } : {}) }}
+                className={`${cartao} relative flex min-h-12 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-left text-[14px] font-semibold transition-all hover:bg-white/[0.08] active:scale-95`}
               >
                 <span className="text-[20px] leading-none">{o.emoji}</span>
                 <span className="min-w-0 leading-tight">{o.nome}</span>
+                {opcoes.some((x) => x.nome === o.nome) && <Check className="absolute right-1.5 top-1.5 h-3.5 w-3.5" style={{ color: g.cor }} />}
               </button>
             ))}
           </div>
@@ -291,7 +333,10 @@ export function MontarPorToque({
         onSubmit={(e) => {
           e.preventDefault();
           const n = outro.trim();
-          if (n) escolherOpcao({ nome: n, emoji: "✨", buscas: [`${n} travel`, "travel vacation", "airplane window"] }, (caminho === "servico" ? SERVICOS : EXPERIENCIAS)[0]);
+          if (n) {
+            alternarOpcao({ nome: n, emoji: "✨", buscas: [`${n} travel`, "travel vacation", "airplane window"] }, (caminho === "servico" ? SERVICOS : EXPERIENCIAS)[0]);
+            setOutro("");
+          }
         }}
       >
         <input
@@ -301,9 +346,10 @@ export function MontarPorToque({
           className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
         />
         <button type="submit" className="min-h-12 shrink-0 rounded-xl bg-white/[0.12] px-4 text-[14px] font-bold transition-transform active:scale-95">
-          Ok
+          + Adicionar
         </button>
       </form>
+      <BotaoContinuar qtd={opcoes.length} nomes={nomeOpcoes} onClick={confirmarOpcoes} />
     </div>
   );
 
@@ -371,12 +417,13 @@ export function MontarPorToque({
               {DESTINOS[regiao === "internacional" ? "internacional" : "nacional"].map((d, i) => (
                 <button
                   key={d.nome}
-                  onClick={() => escolherDestino(d.nome)}
+                  onClick={() => alternarDestino(d.nome)}
                   style={{ animationDelay: `${i * 35}ms` }}
-                  className={`${cartao} flex min-h-12 items-center gap-2 rounded-xl border px-3 text-left text-[14px] font-semibold transition-all active:scale-95 ${destino === d.nome ? "border-[#F5F906] bg-[#F5F906]/15" : "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"}`}
+                  className={`${cartao} relative flex min-h-12 items-center gap-2 rounded-xl border px-3 text-left text-[14px] font-semibold transition-all active:scale-95 ${destinos.includes(d.nome) ? "border-[#F5F906] bg-[#F5F906]/15" : "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"}`}
                 >
                   <span className="text-[20px] leading-none">{d.emoji}</span>
                   <span className="min-w-0 leading-tight">{d.nome}</span>
+                  {destinos.includes(d.nome) && <Check className="absolute right-1.5 top-1.5 h-3.5 w-3.5 text-[#F5F906]" />}
                 </button>
               ))}
             </div>
@@ -384,7 +431,10 @@ export function MontarPorToque({
               className="flex gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (outro.trim()) escolherDestino(outro.trim());
+                if (outro.trim()) {
+                  alternarDestino(outro.trim());
+                  setOutro("");
+                }
               }}
             >
               <input
@@ -394,9 +444,21 @@ export function MontarPorToque({
                 className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
               />
               <button type="submit" className="min-h-12 shrink-0 rounded-xl bg-white/[0.12] px-4 text-[14px] font-bold transition-transform active:scale-95">
-                Ok
+                + Adicionar
               </button>
             </form>
+            {destinos.filter((d) => !DESTINOS.nacional.concat(DESTINOS.internacional).some((x) => x.nome === d)).length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {destinos
+                  .filter((d) => !DESTINOS.nacional.concat(DESTINOS.internacional).some((x) => x.nome === d))
+                  .map((d) => (
+                    <button key={d} onClick={() => alternarDestino(d)} className="flex min-h-10 items-center gap-1.5 rounded-full border border-[#F5F906] bg-[#F5F906]/15 px-3 text-[13px] font-semibold">
+                      <Check className="h-3.5 w-3.5 text-[#F5F906]" /> {d} <span className="text-white/50">✕</span>
+                    </button>
+                  ))}
+              </div>
+            )}
+            <BotaoContinuar qtd={destinos.length} nomes={destino} onClick={() => destinos.length && setPasso(2)} />
           </div>
         )}
 
@@ -427,7 +489,7 @@ export function MontarPorToque({
         {caminho !== "destino" && caminho && passo === 2 && opcao && (
           <div className="flex flex-col gap-3">
             <p className="-mt-1 text-[13px] text-white/55">
-              {opcao.emoji} {opcao.nome}. Não precisa ser um lugar específico.
+              {opcoes.map((o) => o.emoji).join(" ")} {nomeOpcoes}. Não precisa ser um lugar específico.
             </p>
             <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-white/[0.06] p-1">
               {(["nacional", "internacional", "ambos"] as Regiao[]).map((r) => (
@@ -459,7 +521,7 @@ export function MontarPorToque({
         {passo === 3 && (caminho === "destino" ? !!tipo : !!opcao) && (
           <div className="flex flex-col gap-4">
             <p className="-mt-1 text-[13px] text-white/55">
-              {caminho === "destino" ? `${tipo!.emoji} ${tipo!.nome} · ${destino}` : `${opcao!.emoji} ${opcao!.nome}${lugar.trim() ? ` · ${lugar.trim()}` : ""}`}. Toque para marcar o que entra.
+              {caminho === "destino" ? `${tipo!.emoji} ${tipo!.nome} · ${destino}` : `${opcoes.map((o) => o.emoji).join(" ")} ${nomeOpcoes}${lugar.trim() ? ` · ${lugar.trim()}` : ""}`}. Toque para marcar o que entra.
             </p>
             <div className="flex flex-wrap gap-2">
               {listaInclusos.map((it, i) => {
@@ -477,6 +539,24 @@ export function MontarPorToque({
                 );
               })}
             </div>
+            <form
+              className="flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                adicionarExtra();
+              }}
+            >
+              <input
+                value={extra}
+                onChange={(e) => setExtra(e.target.value)}
+                maxLength={28}
+                placeholder="Adicionar outro item (ex.: Passeio de barco)"
+                className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
+              />
+              <button type="submit" className="min-h-12 shrink-0 rounded-xl bg-white/[0.12] px-4 text-[14px] font-bold transition-transform active:scale-95">
+                + Item
+              </button>
+            </form>
             <label className="block">
               <span className="mb-1 block text-[12px] font-semibold text-white/55">Preço (opcional, aparece só no fim do vídeo)</span>
               <input
