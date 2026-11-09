@@ -3173,7 +3173,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     setStatus("Pronto");
   }
 
-  async function enviar(conteudo: { text?: string; image?: string }, aoBuscar?: () => void): Promise<boolean> {
+  async function enviar(conteudo: { text?: string; image?: string; buscas?: string[] }, aoBuscar?: () => void): Promise<boolean> {
     const texto = (conteudo.text || "").trim();
     if (!conteudo.image && texto.length < 5) {
       setAviso("Mande o pacote: destino, preço e o que está incluso.");
@@ -3219,7 +3219,22 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         instagram: d.instagram && !a.instagram ? d.instagram : a.instagram,
       }));
       if (d.instagram && !contatosRef.current.includes("instagram")) setContatos((c) => [...c, "instagram"]);
-      const midias: Midia[] = data.midias || [];
+      let midias: Midia[] = data.midias || [];
+      // Experiência ou serviço (sem destino fixo): fundos buscados pelos termos do tema, intercalados
+      const proprias = conteudo.buscas?.filter(Boolean) || [];
+      if (proprias.length) {
+        try {
+          const porTermo = await Promise.all(proprias.map((t) => buscarMidias(t).catch(() => [] as Midia[])));
+          const vistos = new Set<string>();
+          const mistura: Midia[] = [];
+          for (let i = 0; i < 10; i++)
+            for (const lista of porTermo) {
+              const m = lista[i];
+              if (m && !vistos.has(m.url)) { vistos.add(m.url); mistura.push(m); }
+            }
+          if (mistura.length >= 3) midias = mistura;
+        } catch { /* fica com os vídeos que o servidor achou */ }
+      }
       setPool(midias);
       if (midias.length === 0) {
         setAviso(`Não achei vídeos de ${d.destino}. Mantive os atuais.`);
@@ -3230,7 +3245,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         while (lista.length < CENAS) lista.push(midias[lista.length % midias.length]);
         // oferta que não é pacote: um fundo do tipo (avião, navio, resort…) na 2ª tela
         const termoTipo = TIPOS.find((x) => x.id === ((d.tipo as TipoOferta) || detectarTipo(texto)))?.busca;
-        if (termoTipo) {
+        if (termoTipo && !conteudo.buscas?.length) {
           try {
             const doTipo = await buscarMidias(termoTipo);
             if (doTipo[0]) lista[1] = doTipo[0];
@@ -3788,8 +3803,11 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
             {entrada === "montar" && (
               <MontarPorToque
                 ocupado={ocupado}
-                onMontar={(texto) => {
-                  enviar({ text: texto }).then((ok) => {
+                ocasioes={sazonais.lista.map((o) => ({ id: o.id, nome: o.nome }))}
+                ocasiao={ocasiao}
+                onOcasiao={(id) => setOcasiao(id as Ocasiao)}
+                onMontar={(texto, buscas) => {
+                  enviar({ text: texto, buscas }).then((ok) => {
                     if (ok) gerarTres();
                   });
                 }}

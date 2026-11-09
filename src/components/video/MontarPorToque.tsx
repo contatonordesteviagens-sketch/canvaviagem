@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 
-// Montar o vídeo só tocando: destino → tipo de oferta → o que está incluso → preço (opcional).
-// O texto montado vai pelo mesmo caminho do áudio, então destino, vídeos e campos saem iguais.
+// Quiz "O que você quer anunciar?": Destino, Experiência ou Serviço → detalhes → o que inclui + preço → ocasião.
+// O texto montado vai pelo mesmo caminho do áudio (a IA preenche os campos). Para Experiência e Serviço,
+// o quiz manda também termos de busca em inglês, para os vídeos de fundo combinarem com o tema.
 
-type Regiao = "nacional" | "internacional";
+type Caminho = "destino" | "experiencia" | "servico";
+type Regiao = "nacional" | "internacional" | "ambos";
+type Opcao = { nome: string; emoji: string; buscas?: string[] };
+type Grupo = { titulo: string; cor: string; inclusos: string[]; itens: Opcao[] };
 type Tipo = { id: string; nome: string; frase: string; emoji: string; cor: string; inclusos: string[] };
+export type OcasiaoQuiz = { id: string; nome: string };
 
-const DESTINOS: Record<Regiao, { nome: string; emoji: string }[]> = {
+const DESTINOS: Record<"nacional" | "internacional", Opcao[]> = {
   nacional: [
     { nome: "Gramado", emoji: "🌲" },
     { nome: "Porto de Galinhas", emoji: "🐠" },
@@ -41,51 +46,278 @@ const TIPOS: Tipo[] = [
   { id: "passeio", nome: "Passeio ou day use", frase: "Passeio", emoji: "🚤", cor: "#FF9A3D", inclusos: ["Transporte", "Guia", "Almoço", "Fotos"] },
 ];
 
-const entra = "animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both";
+// O que as agências mais vendem como experiência (sem precisar de um destino fixo)
+const EXPERIENCIAS: Grupo[] = [
+  {
+    titulo: "Natureza e clima",
+    cor: "#4BE08A",
+    inclusos: ["Aéreo ida e volta", "Hospedagem", "Café da manhã", "Passeios", "Traslados"],
+    itens: [
+      { nome: "Praia e sol", emoji: "🏖️", buscas: ["tropical beach", "beach resort pool", "turquoise sea aerial"] },
+      { nome: "Serra e frio", emoji: "🏔️", buscas: ["mountain cabin", "foggy mountains", "fireplace cozy"] },
+      { nome: "Natureza e trilhas", emoji: "🥾", buscas: ["hiking trail", "waterfall forest", "mountain hike"] },
+      { nome: "Aventura e ecoturismo", emoji: "🧗", buscas: ["adventure travel", "rafting river", "zipline forest"] },
+      { nome: "Mergulho", emoji: "🤿", buscas: ["scuba diving", "snorkeling reef", "underwater turtle"] },
+      { nome: "Neve e esqui", emoji: "⛷️", buscas: ["ski snow mountain", "snowy village", "snowboard"] },
+    ],
+  },
+  {
+    titulo: "Lazer e hospedagem",
+    cor: "#B98CFF",
+    inclusos: ["All inclusive", "Pensão completa", "Piscina", "Atividades", "Traslados"],
+    itens: [
+      { nome: "Resort all inclusive", emoji: "🍹", buscas: ["luxury resort pool", "all inclusive resort", "beach resort"] },
+      { nome: "Cruzeiro", emoji: "🚢", buscas: ["cruise ship ocean", "cruise deck pool", "ship sailing sea"] },
+      { nome: "Parques temáticos", emoji: "🎢", buscas: ["roller coaster", "amusement park", "theme park fireworks"] },
+      { nome: "Bem-estar e termas", emoji: "🧖", buscas: ["spa relaxation", "hot springs", "infinity pool relax"] },
+    ],
+  },
+  {
+    titulo: "Para quem é",
+    cor: "#FF9A3D",
+    inclusos: ["Aéreo ida e volta", "Hotel", "Café da manhã", "Passeios", "Traslados"],
+    itens: [
+      { nome: "Lua de mel", emoji: "💍", buscas: ["romantic couple beach", "couple sunset", "honeymoon resort"] },
+      { nome: "Família com crianças", emoji: "👨‍👩‍👧", buscas: ["family vacation beach", "kids pool resort", "family travel"] },
+      { nome: "Melhor idade", emoji: "🧓", buscas: ["senior couple travel", "elderly couple vacation", "seniors beach walk"] },
+      { nome: "Formatura e excursão", emoji: "🎓", buscas: ["friends trip", "young friends beach", "group of friends travel"] },
+      { nome: "Viagem com pet", emoji: "🐶", buscas: ["dog travel", "dog beach", "pet road trip"] },
+    ],
+  },
+  {
+    titulo: "Temas e eventos",
+    cor: "#4DA3FF",
+    inclusos: ["Aéreo ida e volta", "Hotel", "Ingressos", "Guia", "Traslados"],
+    itens: [
+      { nome: "Gastronomia e vinhos", emoji: "🍷", buscas: ["vineyard wine tasting", "gourmet food", "wine cellar"] },
+      { nome: "Religioso e fé", emoji: "⛪", buscas: ["church cathedral", "pilgrimage", "basilica interior"] },
+      { nome: "Cultura e história", emoji: "🏛️", buscas: ["historic city", "old town streets", "museum"] },
+      { nome: "Compras", emoji: "🛍️", buscas: ["shopping mall", "shopping bags street", "outlet shopping"] },
+      { nome: "Shows e eventos", emoji: "🎤", buscas: ["concert crowd", "music festival", "stadium lights"] },
+      { nome: "Réveillon", emoji: "🎆", buscas: ["new year fireworks", "fireworks beach", "celebration night"] },
+      { nome: "Carnaval", emoji: "🎭", buscas: ["carnival parade", "carnival brazil", "street party confetti"] },
+      { nome: "Casamento no destino", emoji: "💒", buscas: ["beach wedding", "destination wedding", "wedding ceremony outdoor"] },
+    ],
+  },
+];
 
-export function MontarPorToque({ ocupado, onMontar }: { ocupado: boolean; onMontar: (texto: string) => void }) {
+// Serviços de viagem (qualquer agência acha o seu)
+const SERVICOS: Grupo[] = [
+  {
+    titulo: "Transporte",
+    cor: "#4DA3FF",
+    inclusos: ["Ida e volta", "Motorista", "Bagagem inclusa", "Atendimento 24 h", "Privativo"],
+    itens: [
+      { nome: "Passagens aéreas", emoji: "✈️", buscas: ["airplane flying sky", "airplane window", "airport terminal"] },
+      { nome: "Transfer", emoji: "🚐", buscas: ["airport transfer van", "car driver airport", "luxury van"] },
+      { nome: "Aluguel de carro", emoji: "🚗", buscas: ["road trip car", "convertible car coast", "car driving scenic road"] },
+      { nome: "Ônibus e excursão", emoji: "🚌", buscas: ["tour bus road", "bus travel", "coach bus highway"] },
+      { nome: "Fretamento", emoji: "🛩️", buscas: ["private jet", "charter flight", "small airplane"] },
+    ],
+  },
+  {
+    titulo: "Hospedagem e pacotes",
+    cor: "#B98CFF",
+    inclusos: ["Café da manhã", "All inclusive", "Piscina", "Wi-Fi", "Estacionamento"],
+    itens: [
+      { nome: "Pacote completo", emoji: "🧳", buscas: ["travel suitcase", "vacation beach", "airplane window"] },
+      { nome: "Hotel", emoji: "🏨", buscas: ["hotel room", "hotel lobby", "hotel pool"] },
+      { nome: "Pousada", emoji: "🏡", buscas: ["cozy inn", "guesthouse garden", "bed and breakfast"] },
+      { nome: "Resort", emoji: "🌴", buscas: ["luxury resort pool", "beach resort", "resort aerial"] },
+      { nome: "Hostel", emoji: "🛏️", buscas: ["hostel friends", "backpackers", "youth hostel"] },
+      { nome: "Aluguel de temporada", emoji: "🏠", buscas: ["vacation rental house", "beach house", "villa pool"] },
+      { nome: "Cruzeiro", emoji: "🚢", buscas: ["cruise ship ocean", "cruise deck pool", "ship sailing sea"] },
+    ],
+  },
+  {
+    titulo: "Passeios e receptivo",
+    cor: "#FF9A3D",
+    inclusos: ["Transporte", "Guia", "Almoço", "Fotos", "Privativo", "Compartilhado"],
+    itens: [
+      { nome: "Passeio de barco", emoji: "🚤", buscas: ["boat tour sea", "speedboat ocean", "catamaran"] },
+      { nome: "Passeio de buggy", emoji: "🏜️", buscas: ["dune buggy", "sand dunes", "buggy ride beach"] },
+      { nome: "Passeio 4x4", emoji: "🚙", buscas: ["4x4 off road", "jeep tour", "off road adventure"] },
+      { nome: "City tour", emoji: "🏙️", buscas: ["city tour", "city skyline", "tourists walking city"] },
+      { nome: "Mergulho", emoji: "🤿", buscas: ["scuba diving", "snorkeling reef", "underwater turtle"] },
+      { nome: "Turismo receptivo", emoji: "🤝", buscas: ["tour guide group", "tourists sightseeing", "local tour"] },
+      { nome: "Guia de turismo", emoji: "🧭", buscas: ["tour guide", "guided tour", "travel guide group"] },
+    ],
+  },
+  {
+    titulo: "Ingressos, grupos e extras",
+    cor: "#4BE08A",
+    inclusos: ["Atendimento rápido", "Melhor preço", "Suporte na viagem", "Parcelamento"],
+    itens: [
+      { nome: "Ingressos", emoji: "🎟️", buscas: ["theme park entrance", "concert tickets", "attraction tourists"] },
+      { nome: "Restaurantes", emoji: "🍽️", buscas: ["restaurant dinner", "gourmet food", "seafood restaurant"] },
+      { nome: "Viagens em grupo", emoji: "👥", buscas: ["group of friends travel", "tour group", "friends trip"] },
+      { nome: "Viagem corporativa", emoji: "💼", buscas: ["business travel", "business airport", "conference event"] },
+      { nome: "Seguro viagem", emoji: "🛡️", buscas: ["airport passport", "traveler airport", "suitcase airport"] },
+      { nome: "Chip internacional", emoji: "📱", buscas: ["smartphone travel", "tourist phone map", "traveler phone"] },
+      { nome: "Câmbio", emoji: "💱", buscas: ["foreign currency", "money travel", "traveler wallet"] },
+      { nome: "Visto e passaporte", emoji: "🛂", buscas: ["passport stamp", "passport airport", "travel documents"] },
+    ],
+  },
+];
+
+const CAMINHOS: { id: Caminho; nome: string; desc: string; emoji: string; cor: string }[] = [
+  { id: "destino", nome: "Um destino", desc: "Gramado, Cancún, Paris…", emoji: "📍", cor: "#F5F906" },
+  { id: "experiencia", nome: "Uma experiência", desc: "Praia, serra, lua de mel, cruzeiro…", emoji: "✨", cor: "#B98CFF" },
+  { id: "servico", nome: "Um serviço", desc: "Passagem, transfer, passeio, seguro…", emoji: "🛎️", cor: "#4DA3FF" },
+];
+
+const entra = "animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both";
+const cartao = "animate-in fade-in zoom-in-95 duration-300 fill-mode-both";
+
+export function MontarPorToque({
+  ocupado,
+  onMontar,
+  ocasioes = [],
+  ocasiao,
+  onOcasiao,
+}: {
+  ocupado: boolean;
+  onMontar: (texto: string, buscas?: string[]) => void;
+  ocasioes?: OcasiaoQuiz[];
+  ocasiao?: string;
+  onOcasiao?: (id: string) => void;
+}) {
+  const [caminho, setCaminho] = useState<Caminho | null>(null);
   const [passo, setPasso] = useState(0);
   const [regiao, setRegiao] = useState<Regiao>("nacional");
   const [destino, setDestino] = useState("");
+  const [lugar, setLugar] = useState(""); // onde (opcional) para experiência e serviço
   const [outro, setOutro] = useState("");
   const [tipo, setTipo] = useState<Tipo | null>(null);
+  const [opcao, setOpcao] = useState<(Opcao & { grupo: Grupo }) | null>(null);
   const [inclusos, setInclusos] = useState<string[]>([]);
   const [preco, setPreco] = useState("");
 
+  // passos de cada caminho (o 0 é a escolha do caminho)
+  const passos: Record<Caminho, string[]> = {
+    destino: ["O que você quer anunciar?", "Pra onde é a viagem?", "O que você está vendendo?", "O que está incluso?", "Tem alguma ocasião?"],
+    experiencia: ["O que você quer anunciar?", "Qual experiência?", "Pra onde?", "O que está incluso?", "Tem alguma ocasião?"],
+    servico: ["O que você quer anunciar?", "Qual serviço?", "Onde você atende?", "O que está incluso?", "Tem alguma ocasião?"],
+  };
+  const titulos = passos[caminho || "destino"];
+  const total = titulos.length;
+
+  function escolherCaminho(c: Caminho) {
+    setCaminho(c);
+    setOpcao(null);
+    setTipo(null);
+    setDestino("");
+    setLugar("");
+    setOutro("");
+    setPasso(1);
+  }
   function escolherDestino(nome: string) {
     setDestino(nome);
-    setPasso(1);
+    setPasso(2);
   }
   function escolherTipo(t: Tipo) {
     setTipo(t);
     setInclusos(t.inclusos.slice(0, 3));
+    setPasso(3);
+  }
+  function escolherOpcao(o: Opcao, g: Grupo) {
+    setOpcao({ ...o, grupo: g });
+    setInclusos(g.inclusos.slice(0, 3));
     setPasso(2);
   }
   function alternar(item: string) {
     setInclusos((l) => (l.includes(item) ? l.filter((x) => x !== item) : [...l, item]));
   }
+
+  const listaInclusos = caminho === "destino" ? tipo?.inclusos || [] : opcao?.grupo.inclusos || [];
+  const corAtual = caminho === "destino" ? tipo?.cor || "#F5F906" : opcao?.grupo.cor || "#F5F906";
+
   function montar() {
-    if (!tipo || !destino) return;
-    const partes = [`${tipo.frase} para ${destino}.`];
-    if (inclusos.length) partes.push(`Inclui: ${inclusos.join(", ")}.`);
     const p = preco.trim();
-    partes.push(p ? `Por ${/^r\$/i.test(p) ? p : "R$ " + p}.` : "Valor sob consulta.");
-    onMontar(partes.join(" "));
+    const valor = p ? `Por ${/^r\$/i.test(p) ? p : "R$ " + p}.` : "Valor sob consulta.";
+    const inc = inclusos.length ? `Inclui: ${inclusos.join(", ")}.` : "";
+    if (caminho === "destino") {
+      if (!tipo || !destino) return;
+      onMontar([`${tipo.frase} para ${destino}.`, inc, valor].filter(Boolean).join(" "));
+      return;
+    }
+    if (!opcao) return;
+    const onde = lugar.trim() || (regiao === "nacional" ? "destinos nacionais" : regiao === "internacional" ? "destinos internacionais" : "destinos nacionais e internacionais");
+    const rotulo = caminho === "servico" ? "Serviço" : "Experiência";
+    const texto = [
+      `${rotulo}: ${opcao.nome}, em ${onde}.`,
+      `Não é um destino específico: use "${opcao.nome}" como destino.`,
+      inc,
+      valor,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const buscas = [...(opcao.buscas || [])];
+    if (lugar.trim()) buscas.unshift(`${lugar.trim()} travel`);
+    onMontar(texto, buscas);
   }
 
-  const titulos = ["Pra onde é a viagem?", "O que você está vendendo?", "O que está incluso?"];
+  const voltar = () => {
+    if (passo <= 1) {
+      setCaminho(null);
+      setPasso(0);
+    } else setPasso(passo - 1);
+  };
+
+  const grupos = (lista: Grupo[]) => (
+    <div className="flex flex-col gap-4">
+      {lista.map((g) => (
+        <div key={g.titulo}>
+          <p className="mb-2 text-[12px] font-bold uppercase tracking-wider" style={{ color: g.cor }}>
+            {g.titulo}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {g.itens.map((o, i) => (
+              <button
+                key={o.nome}
+                onClick={() => escolherOpcao(o, g)}
+                style={{ animationDelay: `${i * 30}ms`, ...(opcao?.nome === o.nome ? { borderColor: g.cor, background: `${g.cor}22` } : {}) }}
+                className={`${cartao} flex min-h-12 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-left text-[14px] font-semibold transition-all hover:bg-white/[0.08] active:scale-95`}
+              >
+                <span className="text-[20px] leading-none">{o.emoji}</span>
+                <span className="min-w-0 leading-tight">{o.nome}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+      <form
+        className="flex gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const n = outro.trim();
+          if (n) escolherOpcao({ nome: n, emoji: "✨", buscas: [`${n} travel`, "travel vacation", "airplane window"] }, (caminho === "servico" ? SERVICOS : EXPERIENCIAS)[0]);
+        }}
+      >
+        <input
+          value={outro}
+          onChange={(e) => setOutro(e.target.value)}
+          placeholder={caminho === "servico" ? "Outro serviço" : "Outra experiência"}
+          className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
+        />
+        <button type="submit" className="min-h-12 shrink-0 rounded-xl bg-white/[0.12] px-4 text-[14px] font-bold transition-transform active:scale-95">
+          Ok
+        </button>
+      </form>
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-4">
       {/* progresso */}
       <div className="flex items-center gap-2">
         {passo > 0 && (
-          <button aria-label="Voltar" onClick={() => setPasso(passo - 1)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] transition-transform active:scale-90">
+          <button aria-label="Voltar" onClick={voltar} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] transition-transform active:scale-90">
             <ArrowLeft className="h-4 w-4" />
           </button>
         )}
         <div className="flex flex-1 gap-1.5">
-          {[0, 1, 2].map((i) => (
+          {Array.from({ length: total }, (_, i) => (
             <span key={i} className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
               <span className="block h-full rounded-full bg-[#F5F906] transition-all duration-500" style={{ width: i <= passo ? "100%" : "0%" }} />
             </span>
@@ -93,14 +325,39 @@ export function MontarPorToque({ ocupado, onMontar }: { ocupado: boolean; onMont
         </div>
       </div>
 
-      <div key={passo} className={entra}>
-        <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-[#F5F906]">Passo {passo + 1} de 3</p>
+      <div key={`${caminho}-${passo}`} className={entra}>
+        <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-[#F5F906]">
+          Passo {passo + 1} de {total}
+        </p>
         <h3 className="mb-3 text-[19px] font-extrabold leading-tight">{titulos[passo]}</h3>
 
+        {/* 0 — escolher o caminho */}
         {passo === 0 && (
+          <div className="flex flex-col gap-2">
+            {CAMINHOS.map((c, i) => (
+              <button
+                key={c.id}
+                onClick={() => escolherCaminho(c.id)}
+                style={{ animationDelay: `${i * 60}ms`, borderColor: `${c.cor}55`, background: `linear-gradient(120deg, ${c.cor}22, ${c.cor}06)` }}
+                className={`${cartao} flex min-h-16 items-center gap-3 rounded-2xl border-2 px-4 text-left transition-transform active:scale-[.98]`}
+              >
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-[24px]" style={{ background: `${c.cor}33` }}>
+                  {c.emoji}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[16px] font-extrabold leading-tight">{c.nome}</span>
+                  <span className="block text-[13px] text-white/60">{c.desc}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* DESTINO — 1: região e destino */}
+        {caminho === "destino" && passo === 1 && (
           <div className="flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white/[0.06] p-1">
-              {(["nacional", "internacional"] as Regiao[]).map((r) => (
+              {(["nacional", "internacional"] as const).map((r) => (
                 <button
                   key={r}
                   onClick={() => setRegiao(r)}
@@ -111,12 +368,12 @@ export function MontarPorToque({ ocupado, onMontar }: { ocupado: boolean; onMont
               ))}
             </div>
             <div key={regiao} className="grid grid-cols-2 gap-2">
-              {DESTINOS[regiao].map((d, i) => (
+              {DESTINOS[regiao === "internacional" ? "internacional" : "nacional"].map((d, i) => (
                 <button
                   key={d.nome}
                   onClick={() => escolherDestino(d.nome)}
                   style={{ animationDelay: `${i * 35}ms` }}
-                  className={`animate-in fade-in zoom-in-95 duration-300 fill-mode-both flex min-h-12 items-center gap-2 rounded-xl border px-3 text-left text-[14px] font-semibold transition-all active:scale-95 ${destino === d.nome ? "border-[#F5F906] bg-[#F5F906]/15" : "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"}`}
+                  className={`${cartao} flex min-h-12 items-center gap-2 rounded-xl border px-3 text-left text-[14px] font-semibold transition-all active:scale-95 ${destino === d.nome ? "border-[#F5F906] bg-[#F5F906]/15" : "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"}`}
                 >
                   <span className="text-[20px] leading-none">{d.emoji}</span>
                   <span className="min-w-0 leading-tight">{d.nome}</span>
@@ -143,36 +400,76 @@ export function MontarPorToque({ ocupado, onMontar }: { ocupado: boolean; onMont
           </div>
         )}
 
-        {passo === 1 && (
+        {/* DESTINO — 2: tipo de oferta */}
+        {caminho === "destino" && passo === 2 && (
           <div className="grid grid-cols-2 gap-2">
             {TIPOS.map((t, i) => (
               <button
                 key={t.id}
                 onClick={() => escolherTipo(t)}
                 style={{ animationDelay: `${i * 45}ms`, borderColor: tipo?.id === t.id ? t.cor : `${t.cor}40`, background: `linear-gradient(160deg, ${t.cor}26, ${t.cor}08)` }}
-                className="animate-in fade-in zoom-in-95 duration-300 fill-mode-both flex min-h-24 flex-col items-start justify-between rounded-2xl border-2 p-3 text-left transition-transform active:scale-95"
+                className={`${cartao} flex min-h-24 flex-col items-start justify-between rounded-2xl border-2 p-3 text-left transition-transform active:scale-95`}
               >
-                <span className="grid h-10 w-10 place-items-center rounded-xl text-[22px]" style={{ background: `${t.cor}33` }}>{t.emoji}</span>
+                <span className="grid h-10 w-10 place-items-center rounded-xl text-[22px]" style={{ background: `${t.cor}33` }}>
+                  {t.emoji}
+                </span>
                 <span className="text-[14px] font-bold leading-tight">{t.nome}</span>
               </button>
             ))}
           </div>
         )}
 
-        {passo === 2 && tipo && (
+        {/* EXPERIÊNCIA / SERVIÇO — 1: escolher */}
+        {caminho === "experiencia" && passo === 1 && grupos(EXPERIENCIAS)}
+        {caminho === "servico" && passo === 1 && grupos(SERVICOS)}
+
+        {/* EXPERIÊNCIA / SERVIÇO — 2: onde (opcional) */}
+        {caminho !== "destino" && caminho && passo === 2 && opcao && (
+          <div className="flex flex-col gap-3">
+            <p className="-mt-1 text-[13px] text-white/55">
+              {opcao.emoji} {opcao.nome}. Não precisa ser um lugar específico.
+            </p>
+            <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-white/[0.06] p-1">
+              {(["nacional", "internacional", "ambos"] as Regiao[]).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRegiao(r)}
+                  className={`min-h-12 rounded-xl text-[13px] font-bold transition-all duration-200 active:scale-95 ${regiao === r ? "bg-[#F5F906] text-black shadow-lg" : "text-white/70"}`}
+                >
+                  {r === "nacional" ? "🌴 Nacional" : r === "internacional" ? "✈️ Internacional" : "🌎 Os dois"}
+                </button>
+              ))}
+            </div>
+            <label className="block">
+              <span className="mb-1 block text-[12px] font-semibold text-white/55">Cidade ou região (opcional)</span>
+              <input
+                value={lugar}
+                onChange={(e) => setLugar(e.target.value)}
+                placeholder={caminho === "servico" ? "Ex.: Fortaleza, Nordeste" : "Ex.: Serra Gaúcha, Caribe"}
+                className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
+              />
+            </label>
+            <button onClick={() => setPasso(3)} className="min-h-12 rounded-2xl bg-white/[0.12] text-[15px] font-bold transition-transform active:scale-[.97]">
+              Continuar →
+            </button>
+          </div>
+        )}
+
+        {/* 3 — o que inclui + preço (todos os caminhos) */}
+        {passo === 3 && (caminho === "destino" ? !!tipo : !!opcao) && (
           <div className="flex flex-col gap-4">
             <p className="-mt-1 text-[13px] text-white/55">
-              {tipo.emoji} {tipo.nome} · {destino}. Toque para marcar o que entra.
+              {caminho === "destino" ? `${tipo!.emoji} ${tipo!.nome} · ${destino}` : `${opcao!.emoji} ${opcao!.nome}${lugar.trim() ? ` · ${lugar.trim()}` : ""}`}. Toque para marcar o que entra.
             </p>
             <div className="flex flex-wrap gap-2">
-              {tipo.inclusos.map((it, i) => {
+              {listaInclusos.map((it, i) => {
                 const on = inclusos.includes(it);
                 return (
                   <button
                     key={it}
                     onClick={() => alternar(it)}
-                    style={{ animationDelay: `${i * 40}ms`, ...(on ? { background: tipo.cor, borderColor: tipo.cor } : {}) }}
-                    className={`animate-in fade-in zoom-in-95 duration-300 fill-mode-both flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-[14px] font-semibold transition-all active:scale-95 ${on ? "text-black" : "border-white/15 bg-white/[0.04] text-white/80"}`}
+                    style={{ animationDelay: `${i * 40}ms`, ...(on ? { background: corAtual, borderColor: corAtual } : {}) }}
+                    className={`${cartao} flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-[14px] font-semibold transition-all active:scale-95 ${on ? "text-black" : "border-white/15 bg-white/[0.04] text-white/80"}`}
                   >
                     {on && <Check className="h-4 w-4" />}
                     {it}
@@ -190,6 +487,33 @@ export function MontarPorToque({ ocupado, onMontar }: { ocupado: boolean; onMont
                 className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
               />
             </label>
+            <button onClick={() => setPasso(4)} className="min-h-12 rounded-2xl bg-white/[0.12] text-[15px] font-bold transition-transform active:scale-[.97]">
+              Continuar →
+            </button>
+          </div>
+        )}
+
+        {/* 4 — ocasião + montar */}
+        {passo === 4 && (
+          <div className="flex flex-col gap-4">
+            {ocasioes.length > 0 && onOcasiao && (
+              <div className="flex flex-wrap gap-2">
+                {ocasioes.map((o, i) => {
+                  const on = (ocasiao || "nenhuma") === o.id;
+                  return (
+                    <button
+                      key={o.id}
+                      onClick={() => onOcasiao(o.id)}
+                      style={{ animationDelay: `${i * 30}ms` }}
+                      className={`${cartao} flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-[14px] font-semibold transition-all active:scale-95 ${on ? "border-[#F5F906] bg-[#F5F906] text-black" : "border-white/15 bg-white/[0.04] text-white/80"}`}
+                    >
+                      {on && <Check className="h-4 w-4" />}
+                      {o.id === "nenhuma" ? "Sem ocasião" : o.nome}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <button
               disabled={ocupado}
               onClick={montar}
