@@ -18,6 +18,7 @@ import {
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
   Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2, Copy, ClipboardCheck, FileText, Key,
   LockKeyhole,
+  EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import { buildPackageSlug, createUniquePackageSlug } from "@/lib/package-details";
@@ -1856,7 +1857,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     {(() => {
                       const val = state.footerContact1Icon || "whatsapp";
                       const opt = CONTACT_OPTIONS.find(o => o.value === val);
-                      return opt?.img ? <img src={opt.img} alt={opt.label} className="w-5 h-5 object-contain" /> : <span className="text-[10px] font-bold text-white/60">Oculto</span>;
+                      return opt?.img ? <img src={opt.img} alt={opt.label} className="w-5 h-5 object-contain" /> : <EyeOff className="w-4 h-4 text-white/60" aria-label="Contato oculto na arte" />;
                     })()}
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
@@ -1895,7 +1896,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     {(() => {
                       const val = state.footerContact2Icon || "instagram_fino";
                       const opt = CONTACT_OPTIONS.find(o => o.value === val);
-                      return opt?.img ? <img src={opt.img} alt={opt.label} className="w-5 h-5 object-contain" /> : <span className="text-[10px] font-bold text-white/60">Oculto</span>;
+                      return opt?.img ? <img src={opt.img} alt={opt.label} className="w-5 h-5 object-contain" /> : <EyeOff className="w-4 h-4 text-white/60" aria-label="Contato oculto na arte" />;
                     })()}
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
