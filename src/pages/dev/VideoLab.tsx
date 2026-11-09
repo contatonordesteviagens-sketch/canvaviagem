@@ -1677,6 +1677,23 @@ async function manterTelaAcesa(): Promise<() => void> {
   };
 }
 
+// Logo que "contamina" o canvas (imagem de outro site sem permissão) impede gerar o MP4.
+// Testa num canvas de 1 px: se contaminar, o vídeo sai sem a logo em vez de dar erro.
+function logoSemContaminar(img: HTMLImageElement | null): HTMLImageElement | null {
+  if (!img) return null;
+  try {
+    const c = document.createElement("canvas");
+    c.width = 1;
+    c.height = 1;
+    const x = c.getContext("2d")!;
+    x.drawImage(img, 0, 0, 1, 1);
+    x.getImageData(0, 0, 1, 1);
+    return img;
+  } catch {
+    return null;
+  }
+}
+
 const CHAVE_SALVO = "cv-gerador-video-v1";
 const CHAVE_FUNDOS = "cv-gerador-fundos-v1";
 function fundosSalvos(): Midia[] {
@@ -3075,8 +3092,13 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       site: site || d.site,
     }));
     if (fabrica.logoBase64) {
+      // A logo pode vir como endereço de outro site (ex.: site publicado), não só embutida.
+      // Sem crossOrigin ela "contamina" o canvas e o MP4 não é gerado ("tainted sources").
+      // Com crossOrigin: se o site da imagem não permitir, ela não carrega e o vídeo sai sem logo, sem erro.
       const img = new Image();
+      if (/^https?:\/\//i.test(fabrica.logoBase64)) img.crossOrigin = "anonymous";
       img.onload = () => setLogo(img);
+      img.onerror = () => setLogo(null);
       img.src = fabrica.logoBase64;
     }
   }, [isHydrated, fabrica]);
@@ -3444,7 +3466,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   // fotografia das opções: mudar algo na tela durante a geração não altera o vídeo
   const fotografar = (modeloEscolhido: Modelo, roteiro: Roteiro = "padrao") => ({
     dados: structuredClone(dadosRef.current),
-    logo: logoRef.current,
+    logo: logoSemContaminar(logoRef.current),
     contatos: [...contatosRef.current],
     modelo: modeloEscolhido,
     ocasiao: ocasiaoRef.current,
