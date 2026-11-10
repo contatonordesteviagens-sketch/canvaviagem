@@ -324,6 +324,8 @@ export const FEITO: { data: string; itens: string[] }[] = [
       "Preço da Black em todo o site até 30/11: quiz, pagamento e avisos de upgrade não mostram mais R$ 97. Publicado.",
       "Diagnóstico de 01 a 10/11: 10 assinantes novos, todos por Pix e nenhum de anúncio. De quem vê o preço, 25% paga, mas só 4 pessoas por dia chegam lá.",
       "Onde mais se perde gente: 58% saem na tela de e-mail e o cartão não concluiu nenhuma compra.",
+      "E-mail só no fim do quiz: a página abre o quiz direto e o e-mail é pedido depois do diagnóstico, antes do plano. Pronto, aguardando publicar.",
+      "E-mail da Black para 104 compradores recentes da Hotmart criado como rascunho na Brevo. Falta o Lucas enviar.",
       "Nova meta: mais 20 assinantes em 5 dias. Caminho: chamar os 32 que viram o preço, sequência de 5 dias no grupo, oferta para quem compra pack na Hotmart e remarketing.",
     ],
   },
