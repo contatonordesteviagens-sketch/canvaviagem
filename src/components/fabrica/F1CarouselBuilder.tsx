@@ -5409,7 +5409,7 @@ export function F1CarouselBuilder({
                       </span>
                     )}
                     {usedByOtherSlide && !selected && (
-                      <span className="absolute inset-x-1 bottom-1 rounded bg-black/75 px-1 py-0.5 text-[7px] font-bold uppercase text-white/80">
+                      <span className="absolute inset-x-1 bottom-1 rounded bg-black/75 px-1 py-0.5 text-[9px] font-bold uppercase text-white/85">
                         {isEs ? "En uso" : "Em uso"}
                       </span>
                     )}
@@ -5427,7 +5427,7 @@ export function F1CarouselBuilder({
                     type="button"
                     disabled={searchingPhotos || photoPage <= 1}
                     onClick={() => void searchPhotos({ queryOverride: photoQuery || photoDestination, pageOverride: Math.max(1, photoPage - 1) })}
-                    className="min-h-8 rounded-lg border border-white/10 px-3 text-[9px] font-bold text-white/60 hover:bg-white/[0.05] disabled:opacity-30"
+                    className="min-h-10 rounded-lg border border-white/10 px-3 text-[12px] font-bold text-white/60 hover:bg-white/[0.05] disabled:opacity-30"
                   >
                     {isEs ? "Anterior" : "Anterior"}
                   </button>
@@ -5435,7 +5435,7 @@ export function F1CarouselBuilder({
                     type="button"
                     disabled={searchingPhotos || !photoHasMore}
                     onClick={() => void searchPhotos({ queryOverride: photoQuery || photoDestination, pageOverride: photoPage + 1 })}
-                    className="inline-flex min-h-8 items-center gap-1.5 rounded-lg border border-[#F5F906]/35 bg-[#F5F906]/[0.07] px-3 text-[9px] font-extrabold text-[#F5F906] hover:bg-[#F5F906]/[0.12] disabled:opacity-30"
+                    className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-[#F5F906]/35 bg-[#F5F906]/[0.07] px-3 text-[12px] font-extrabold text-[#F5F906] hover:bg-[#F5F906]/[0.12] disabled:opacity-30"
                   >
                     {isEs ? "Ver más fotos" : "Ver mais fotos"}
                     <ChevronRight className="h-3 w-3" />
@@ -5793,7 +5793,7 @@ export function F1CarouselBuilder({
               <button
                 type="button"
                 onClick={() => setShowAllFormats((v) => !v)}
-                className="mt-2 text-[11px] font-semibold text-white/50 underline-offset-2 hover:text-white hover:underline"
+                className="mt-1 min-h-11 text-[13px] font-semibold text-[#F5F906]/80 underline-offset-2 hover:text-white hover:underline"
               >
                 {showAllFormats
                   ? (isEs ? "Ver menos formatos" : "Ver menos formatos")
@@ -7364,6 +7364,7 @@ export function F1CarouselBuilder({
 
           {activeSlide && (
             <div className="mt-4 flex flex-col gap-4">
+              <div className="lg:hidden">{renderPhotoSelectionBox()}</div>
               <button
                 type="button"
                 onClick={() => document.getElementById("mobile-preview-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" })}
@@ -7477,7 +7478,7 @@ export function F1CarouselBuilder({
 
           {activeSlide && !activeCoverIsProtected && (
             <div className="space-y-4">
-              {renderPhotoSelectionBox()}
+              <div className="hidden lg:block">{renderPhotoSelectionBox()}</div>
             </div>
           )}
         </aside>
@@ -7608,8 +7609,10 @@ export function F1CarouselBuilder({
           box-shadow: 0 0 0 2px rgba(245,249,6,.12);
         }
         .f1-carousel-scroll {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255,255,255,.2) transparent;
+          scrollbar-width: none;
+        }
+        .f1-carousel-scroll::-webkit-scrollbar {
+          display: none;
         }
         details > summary {
           list-style: none;
