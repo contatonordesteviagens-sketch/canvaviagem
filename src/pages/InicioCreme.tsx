@@ -18,7 +18,7 @@ import { siteOfferDemos } from "@/lib/site-offer-demos";
 import { BLACK_FUNNEL_PATH, isBlackFunnel, markBlackFunnel } from "@/lib/black-funnel";
 import heroDashboard from "@/assets/hero_dashboard.jpg";
 
-import { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH, QUICK_LOGIN_PATH } from "@/lib/inicio-arte";
+import { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH } from "@/lib/inicio-arte";
 
 export { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH };
 
@@ -154,7 +154,8 @@ export default function InicioCreme() {
   const start = (source: string) => {
     trackInicioTeste("botao", { valor: source });
     if (user && subscription.subscribed) { navigate(hasEliteAccess(subscription) ? "/fabrica" : "/"); return; }
-    navigate(user ? ONBOARDING_PATH : QUICK_LOGIN_PATH);
+    // O e-mail é pedido no fim do quiz, depois do diagnóstico.
+    navigate(ONBOARDING_PATH);
   };
 
   return (

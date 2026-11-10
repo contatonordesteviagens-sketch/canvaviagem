@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, ChevronRight, Loader2, MapPin, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  generateTrialArts, ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH, prepareTrialLogo, QUICK_LOGIN_PATH, readTrialResult, resolveTrialDestino, saveTrialResult,
+  generateTrialArts, ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH, prepareTrialLogo, readTrialResult, resolveTrialDestino, saveTrialResult,
   TRIAL_DESTINOS, type TrialDestino, type TrialLogo,
 } from "@/lib/inicio-arte";
 import { trackInicioTeste } from "@/lib/inicio-teste";
@@ -94,7 +94,8 @@ export function ArtTrial() {
   const goOn = () => {
     trackInicioTeste("botao", { valor: "artes" });
     if (user && subscription.subscribed) { navigate("/fabrica"); return; }
-    navigate(user ? ONBOARDING_PATH : QUICK_LOGIN_PATH);
+    // O e-mail é pedido no fim do quiz, depois do diagnóstico.
+    navigate(ONBOARDING_PATH);
   };
 
   const ready = !generating && !failed && arts.length > 0;

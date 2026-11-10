@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentType, type FormEvent, type ReactNode } from "react";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowRight, Check, ChevronLeft, ChevronRight, Wallet, Sprout, Briefcase, TrendingUp, Palette, UserRound,
   Images, EyeOff, Rocket, Users, Clock, MessageCircleOff, Sparkles, Waves, Mountain, Plane, Ship, Bus, Globe2,
   PenLine, Frown, Flame, CalendarDays, Leaf, Eye, Gift, ShieldCheck, Lock, CircleCheck, MapPin, Instagram,
-  LayoutTemplate, MessageCircle, Download, Megaphone, Mic, Video, QrCode, CreditCard,
+  LayoutTemplate, MessageCircle, Download, Megaphone, Mic, Video, QrCode, CreditCard, Mail,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
@@ -16,6 +17,7 @@ import { isBlackFunnel } from "@/lib/black-funnel";
 import { PayWithPixButton } from "@/components/pix/PixCheckout";
 import { BrandMark, delay } from "@/components/cv-cream/shared";
 import { captureLead, readLeadEmail } from "@/lib/lead-capture";
+import { startWithEmail } from "@/lib/quick-start";
 import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
 import { ONBOARDING_DESTINO_KEY, yearGifs } from "@/pages/InicioCreme";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
@@ -30,13 +32,17 @@ type Option = { id: string; label: string; hint: string; icon: Icon };
 type QuestionStep = { kind: "question"; key: AnswerKey; title: string; sub: string; multi?: boolean; options: Option[] };
 type ScreenStep = { kind: "intro" | "result" | "offer" };
 type LoadingStep = { kind: "loading"; label: string; reviews: string[] };
-type Step = QuestionStep | ScreenStep | LoadingStep;
+type EmailStep = { kind: "email" };
+type Step = QuestionStep | ScreenStep | LoadingStep | EmailStep;
 type AnswerKey = "objetivo" | "ferramenta" | "desafio" | "momento" | "orcamentos" | "destinos" | "travas" | "prazo";
 type Answers = Partial<Record<AnswerKey, string[]>>;
 type Cycle = "monthly" | "semiannual" | "annual";
 
 // v6: telas de carregamento no lugar da tela de prova; as versões antigas guardavam o passo pela ordem antiga.
-const STORAGE_KEY = "cv-onboarding-v6";
+// v7: o e-mail saiu da entrada e virou um passo depois do diagnóstico (posição 9).
+const STORAGE_KEY = "cv-onboarding-v7";
+const OLD_STORAGE_KEY = "cv-onboarding-v6";
+const EMAIL_STEP = 9;
 const LOADING_MS = 7000;
 const OFFER_KEY = "cv-oferta-fim";
 const OFFER_MS = 18 * 60 * 1000;
@@ -103,6 +109,7 @@ const STEPS: Step[] = [
     reviews: ["Fiz 23 orçamentos só ontem e consegui fechar 5 pacotes.", "Eu comprei, estou usando e é maravilhoso o conteúdo."],
   },
   { kind: "result" },
+  { kind: "email" },
   {
     kind: "loading", label: "Liberando o seu plano…",
     reviews: ["Esse mês já saíram várias vendas, até aumentei a meta do mês.", "Ajudou muito aqui. Tava batendo cabeça para criar vídeos dos lugares para postar."],
@@ -112,7 +119,7 @@ const STEPS: Step[] = [
 
 const TOTAL = STEPS.length;
 // A barra anda mais no começo: duas perguntas respondidas já marcam 50%, para mostrar que é rápido.
-const PROGRESS = [8, 25, 38, 50, 62, 72, 82, 90, 94, 97, 100];
+const PROGRESS = [8, 25, 38, 50, 62, 72, 82, 90, 94, 96, 98, 100];
 
 const FIXES: Record<string, { title: string; fix: string; icon: Icon }> = {
   design: { title: "Você não sabe criar postagens", fix: "Vídeo, anúncio e carrossel já vêm prontos. Você só fala o pacote, ou manda a foto dele.", icon: Palette },
@@ -142,10 +149,13 @@ const PLANS = BLACK ? BLACK_PLANS : NORMAL_PLANS;
 
 function loadState(): { step: number; answers: Answers } {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const current = localStorage.getItem(STORAGE_KEY);
+    const raw = current ?? localStorage.getItem(OLD_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      const step = Math.min(Math.max(Number(parsed.step) || 0, 0), TOTAL - 1);
+      // Quem parou no quiz antigo volta para a mesma tela, uma posição adiante.
+      const saved = (Number(parsed.step) || 0) + (!current && Number(parsed.step) >= EMAIL_STEP ? 1 : 0);
+      const step = Math.min(Math.max(saved, 0), TOTAL - 1);
       return { step, answers: parsed.answers || {} };
     }
   } catch { /* storage indisponível */ }
@@ -198,10 +208,11 @@ export default function Onboarding() {
   }, [user]);
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL - 1));
-  // Voltando, pula as telas de carregamento.
   const back = () => setStep((s) => {
-    const previous = Math.max(s - 1, 0);
-    return STEPS[previous].kind === "loading" ? previous - 1 : previous;
+    let previous = Math.max(s - 1, 0);
+    // Voltando, pula o carregamento e o e-mail de quem já tem conta.
+    while (previous > 0 && (STEPS[previous].kind === "loading" || (STEPS[previous].kind === "email" && user))) previous -= 1;
+    return previous;
   });
 
   const current = STEPS[step];
@@ -254,6 +265,8 @@ export default function Onboarding() {
             <Question q={current} selected={answers[current.key] || []} onChoose={(id) => choose(current, id)} onContinue={next} />
           ) : current.kind === "loading" ? (
             <Loading label={current.label} reviews={current.reviews} onDone={next} />
+          ) : current.kind === "email" ? (
+            <EmailStep hasAccount={Boolean(user)} onNext={next} />
           ) : (
             <Screen kind={current.kind} answers={answers} destino={destinoPrincipal} plan={plan} setPlan={(c) => { trackInicioTeste("plano", { valor: c }); setPlan(c); }} onNext={next} onCheckout={() => checkout("cartao")} onPix={() => registerPayment("pix")} />
           )}
@@ -334,6 +347,50 @@ type ScreenProps = {
   kind: ScreenStep["kind"]; answers: Answers; destino: string; plan: Cycle;
   setPlan: (c: Cycle) => void; onNext: () => void; onCheckout: () => void; onPix: () => void;
 };
+
+/** O e-mail só é pedido depois do diagnóstico: quem já tem conta passa direto. */
+function EmailStep({ hasAccount, onNext }: { hasAccount: boolean; onNext: () => void }) {
+  const [email, setEmail] = useState(readLeadEmail);
+  const [busy, setBusy] = useState(false);
+  const done = useRef(false);
+  const finish = () => { if (!done.current) { done.current = true; onNext(); } };
+
+  useEffect(() => {
+    if (hasAccount) finish(); else trackInicioTeste("tela_email");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasAccount]);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    const value = email.toLowerCase().trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { toast.error("Confira o e-mail digitado."); return; }
+    setBusy(true);
+    trackInicioTeste("email");
+    const result = await startWithEmail(value, "/onboarding").catch(() => "fallback" as const);
+    if (result === "existing") toast.info("Esse e-mail já tem conta. Enviamos um link de acesso para ele.");
+    finish();
+  };
+
+  if (hasAccount) return null;
+  return (
+    <>
+      <Title sub="É com ele que você entra na plataforma. O seu plano aparece em seguida.">Seu diagnóstico está pronto. <Accent>Qual é o seu e-mail?</Accent></Title>
+      <form onSubmit={submit} className="cv-pop mt-7" style={delay(80)}>
+        <label htmlFor="quiz-email" className="text-[13px] font-bold">Seu melhor e-mail</label>
+        <div className="mt-2 flex items-center gap-3 rounded-full border px-4 focus-within:ring-2" style={{ borderColor: "var(--cv-line)", background: "var(--cv-card)", ["--tw-ring-color" as string]: "rgba(124,92,255,.35)" }}>
+          <Mail className="h-5 w-5 shrink-0" style={{ color: "var(--cv-muted)" }} />
+          <input
+            id="quiz-email" type="email" inputMode="email" autoComplete="email" placeholder="voce@suaagencia.com"
+            value={email} onChange={(e) => setEmail(e.target.value)} required disabled={busy}
+            className="h-14 w-full bg-transparent text-[16px] outline-none"
+          />
+        </div>
+        <button type="submit" disabled={busy} className="cv-btn mt-4 h-14 w-full text-base">{busy ? "Abrindo o seu plano…" : "Ver o meu plano"}</button>
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-[12px]" style={{ color: "var(--cv-muted)" }}><Lock className="h-3.5 w-3.5" /> Sem spam. Você sai da lista quando quiser.</p>
+      </form>
+    </>
+  );
+}
 
 function Screen(props: ScreenProps) {
   switch (props.kind) {
