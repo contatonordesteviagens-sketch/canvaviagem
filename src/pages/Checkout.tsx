@@ -5,7 +5,7 @@ import { ArrowLeft, Check, CreditCard, Lock, QrCode, ShieldCheck } from "lucide-
 import { useAuth } from "@/contexts/AuthContext";
 import { CardPanel } from "@/components/checkout/CardPanel";
 import { PixPanel, PIX_RENOVA_SOZINHO } from "@/components/checkout/PixPanel";
-import { CHECKOUT_PLANS, isCheckoutCycle, plansFor, type CheckoutCycle, type CheckoutOffer } from "@/components/checkout/checkout-plans";
+import { CHECKOUT_PLANS, isBlackFridayOpen, isCheckoutCycle, plansFor, type CheckoutCycle, type CheckoutOffer } from "@/components/checkout/checkout-plans";
 import { cn } from "@/lib/utils";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
 
@@ -63,7 +63,7 @@ export default function Checkout() {
   const rawPlan = params.get("plano");
   const plan: CheckoutCycle = isCheckoutCycle(rawPlan) ? rawPlan : "annual";
   const [method, setMethod] = useState<Method>(params.get("metodo") === "pix" ? "pix" : "cartao");
-  const offer: CheckoutOffer = params.get("oferta") === "black-friday" ? "black-friday" : null;
+  const offer: CheckoutOffer = params.get("oferta") === "black-friday" || isBlackFridayOpen() ? "black-friday" : null;
   const info = plansFor(offer)[plan];
 
   // Quem já assina não precisa pagar de novo (no localhost a tela fica visível para testes).

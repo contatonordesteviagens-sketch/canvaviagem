@@ -14,7 +14,8 @@ export function markBlackFunnel(on: boolean) {
 
 export function isBlackFunnel() {
   try {
-    return isBlackFridayOpen() && localStorage.getItem(KEY) === "1";
+    // Até 30/11 só existe o preço da Black: vale para quem chega por e-mail, login ou aviso de upgrade, não só pela /black.
+    return isBlackFridayOpen();
   } catch {
     return false;
   }

@@ -265,7 +265,7 @@ const App = () => {
                     <Route path="/site-para-agencia-de-viagens" element={<SiteOfferLanding />} />
                     <Route path="/carrosseis-para-agencia-de-viagens" element={<TravelAgencyContentLanding />} />
                     <Route path="/equipe-de-marketing-para-agencia-de-viagens" element={<OfferLanding variant="team" />} />
-                    <Route path="/inicio2" element={<Inicio2 />} />
+                    <Route path="/inicio2" element={<InicioEntry />} />
                     <Route path="/canva" element={<ProtectedRoute requireSubscription><CanvaClone /></ProtectedRoute>} />
                     <Route path="/diferencas" element={<Diferencas />} />
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />

@@ -15,7 +15,8 @@ export default function InicioEntry() {
   const { search } = useLocation();
   const legacy = LEGACY_PARAMS.some((key) => searchParams.has(key));
   // Até 30/11 só vendemos a Black: o tráfego da /inicio (anúncios inclusive) cai na /black, com a mesma origem.
-  if (!legacy && isBlackFridayOpen()) return <Navigate to={`/black${search}`} replace />;
+  // Os avisos de upgrade de dentro do app (página antiga, com R$ 97) vão para os planos da Black.
+  if (isBlackFridayOpen()) return <Navigate to={`${legacy ? "/black-friday" : "/black"}${search}`} replace />;
   return (
     <>
       <SuspendedSiteNotice />
