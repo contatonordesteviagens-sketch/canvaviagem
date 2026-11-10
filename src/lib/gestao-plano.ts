@@ -327,6 +327,12 @@ export const FEITO: { data: string; itens: string[] }[] = [
       "E-mail só no fim do quiz: a página abre o quiz direto e o e-mail é pedido depois do diagnóstico, antes do plano. Pronto, aguardando publicar.",
       "E-mail da Black para 104 compradores recentes da Hotmart criado como rascunho na Brevo. Falta o Lucas enviar.",
       "Nova meta: mais 20 assinantes em 5 dias. Caminho: chamar os 32 que viram o preço, sequência de 5 dias no grupo, oferta para quem compra pack na Hotmart e remarketing.",
+      "Gerador de vídeo: dois vídeos prontos em 1 clique (Nossos serviços e Viagem dos sonhos), feitos a partir dos dois vídeos de referência da Black Friday. O cliente abre, toca em gerar e o vídeo sai com cenas de viagem e música, sem preencher nada. Não gasta crédito de IA nem conta no limite de 15 por dia. Pronto, aguardando publicar.",
+      "Cada geração troca as cenas, a frase de abertura e a música. Quem quiser abre Personalizar: serviços, logo, WhatsApp, destino, oferta e música. O vídeo de pacote com preço continua, em \"Vídeo de um pacote ou destino\".",
+      "Música de fundo em todos os estilos de vídeo: 5 faixas de uso livre (CC0, do Freesound), opção de enviar a própria música ou tirar. Funciona também no iPhone sem codificador de áudio.",
+      "28 cenas de viagem (Pexels, uso comercial livre) guardadas no próprio site: o 1 clique não depende de busca externa. Origem de cada cena e música em public/video-fundos e public/video-musicas.",
+      "Correções no gerador: o número de WhatsApp de exemplo não sai mais no vídeo; o vídeo gerado toca com som; o player do Feed 4:5 não fica mais esticado; o celular abre um leitor de vídeo por cena em vez de todos de uma vez; duas cargas de fundo ao mesmo tempo não se atropelam mais.",
+      "Black Friday nos vídeos prontos só em novembro e sem desconto inventado: o padrão é \"Ofertas especiais\". O desconto de verdade a agência escreve em Personalizar.",
     ],
   },
   {

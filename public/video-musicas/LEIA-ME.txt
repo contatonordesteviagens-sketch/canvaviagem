@@ -1,0 +1,14 @@
+Músicas de fundo do Gerador de vídeo.
+
+Todas são CC0 (Creative Commons Zero, domínio público): uso livre, inclusive comercial e em anúncio, sem crédito obrigatório.
+Origem: Freesound (freesound.org), achadas pelo Openverse (openverse.org) com o filtro de licença CC0.
+Cada arquivo é um trecho de 40 s em AAC (.m4a), volume nivelado, com saída suave no fim.
+
+verao.m4a     "Happy Summer EDM Song", de Seth_Makes_Sounds        https://freesound.org/people/Seth_Makes_Sounds/sounds/687014
+violao.m4a    "Catchy Fun Guitar Beat", de Seth_Makes_Sounds       https://freesound.org/people/Seth_Makes_Sounds/sounds/686611
+acustica.m4a  "Upbeat Acoustic Guitar With Orchestra", guitarman213 https://freesound.org/people/guitarman213/sounds/709034
+ceu-azul.m4a  "Blue Sky", de Sergmusic                             https://freesound.org/people/Sergmusic/sounds/639933
+tropical.m4a  "Tropical beach", de szegvari                        https://freesound.org/people/szegvari/sounds/595776
+
+Para acrescentar uma música: salve o .m4a aqui (AAC, 44,1 kHz, estéreo, com saída suave no fim) e inclua na lista
+MUSICAS de src/lib/musica-video.ts. Só entre música com licença que permita uso comercial.

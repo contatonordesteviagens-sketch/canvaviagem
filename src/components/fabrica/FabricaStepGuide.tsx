@@ -21,13 +21,13 @@ const GUIDES: Record<FabricaGuideKey, GuideContent> = {
     tip: "Tudo salva sozinho. Pode fechar e voltar depois que nada se perde.",
   },
   video: {
-    title: "Vídeo pronto em 3 passos",
+    title: "Vídeo pronto em 1 clique",
     steps: [
-      "Escolha o que anunciar: um destino, uma experiência ou um serviço.",
-      "Marque o que está incluso e, se quiser, o preço.",
-      "Toque em \"Montar\", escolha o visual e baixe.",
+      "Escolha um dos dois vídeos prontos e toque em \"Gerar este vídeo\". Já sai com cenas de viagem e música.",
+      "Quer do seu jeito? Toque em \"Personalizar este vídeo\": serviços, logo, WhatsApp, destino e música.",
+      "Para anunciar um pacote com preço, abra \"Vídeo de um pacote ou destino\".",
     ],
-    tip: "Também dá para falar no microfone, colar um texto ou mandar a foto do pacote nas outras abas.",
+    tip: "Cada vez que você gera, o vídeo sai com cenas e música diferentes. Poste um por semana.",
   },
   biblioteca: {
     title: "Tudo que você já gerou",

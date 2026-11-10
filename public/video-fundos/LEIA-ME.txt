@@ -1,0 +1,15 @@
+Clipes de fundo dos vídeos prontos em 1 clique (Gerador de vídeo).
+
+Origem: Pexels (pexels.com), licença Pexels: uso livre, inclusive comercial, sem crédito obrigatório.
+Cada arquivo é um trecho de 4,6 s, 720x1280, sem áudio, cortado do vídeo original.
+Dois clipes por categoria: <categoria>-1.mp4 e <categoria>-2.mp4. O gerador alterna entre eles a cada geração.
+
+ID do vídeo no Pexels (https://www.pexels.com/video/<ID>/):
+praia-1 38005764 | praia-2 19534887 | resort-1 34325547 | resort-2 14695740 | cafe-1 34793944 | cafe-2 34793945
+buggy-1 36586974 | buggy-2 35750670 | mergulho-1 40653709 | mergulho-2 35619258 | casal-1 11212682 | casal-2 38792575
+cachoeira-1 20715484 | cachoeira-2 5345336 | piscina-1 5010489 | piscina-2 18680351 | barco-1 34782539 | barco-2 30070784
+aeroporto-1 34782568 | aeroporto-2 17551136 | janela-1 38043523 | janela-2 1686791 | bangalo-1 28156618 | bangalo-2 8546259
+veleiro-1 31945455 | veleiro-2 28408247 | balao-1 32944694 | balao-2 15322656
+
+Para trocar um clipe: salve outro MP4 (H.264, 720x1280, sem áudio, ~5 s) com o mesmo nome.
+Para criar uma categoria nova: acrescente em CATEGORIAS, no src/pages/dev/VideoLab.tsx.

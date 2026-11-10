@@ -5,9 +5,9 @@
 
 type Amostra = { offset: number; tamanho: number; tempo: number; duracao: number; chave: boolean };
 
-type Caixa = { tipo: string; inicio: number; fim: number; corpo: number };
+export type Caixa = { tipo: string; inicio: number; fim: number; corpo: number };
 
-function caixas(v: DataView, inicio: number, fim: number): Caixa[] {
+export function caixas(v: DataView, inicio: number, fim: number): Caixa[] {
   const lista: Caixa[] = [];
   let p = inicio;
   while (p + 8 <= fim) {
@@ -24,8 +24,8 @@ function caixas(v: DataView, inicio: number, fim: number): Caixa[] {
   }
   return lista;
 }
-const achar = (v: DataView, pai: Caixa, tipo: string) => caixas(v, pai.corpo, pai.fim).find((c) => c.tipo === tipo);
-const caminho = (v: DataView, pai: Caixa, ...tipos: string[]) => {
+export const achar = (v: DataView, pai: Caixa, tipo: string) => caixas(v, pai.corpo, pai.fim).find((c) => c.tipo === tipo);
+export const caminho = (v: DataView, pai: Caixa, ...tipos: string[]) => {
   let atual: Caixa | undefined = pai;
   for (const t of tipos) {
     atual = atual && achar(v, atual, t);
@@ -203,8 +203,8 @@ export function baixarVideo(url: string): Promise<ArrayBuffer> {
     });
     p.catch(() => baixados.delete(url));
     baixados.set(url, p);
-    // guarda só os últimos 12 (os fundos atuais e alguns anteriores)
-    if (baixados.size > 12) baixados.delete(baixados.keys().next().value as string);
+    // guarda só os últimos 18 (os fundos atuais e alguns anteriores)
+    if (baixados.size > 18) baixados.delete(baixados.keys().next().value as string);
   }
   return p;
 }
