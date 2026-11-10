@@ -62,6 +62,7 @@ const telaEm = (t: number, L: Linha = LINHA_PADRAO) => {
 };
 // O navegador consegue montar o MP4? (WebCodecs: Chrome, Edge, Safari 16.4+. Falta em iPhone antigo e em alguns navegadores internos.)
 const GERA_MP4 = typeof window !== "undefined" && "VideoEncoder" in window && "VideoFrame" in window;
+const CELULAR = typeof window !== "undefined" && (window.matchMedia?.("(pointer: coarse)").matches ?? false) && window.innerWidth < 900;
 // número antigo da tela em cada modelo: 0 destino, 1 inclusos, 2 preço, 3 contato
 const CENA_MODELO: Record<Tela, number> = { abertura: 0, inclusos: 1, destaque: -1, preco: 2, contato: 3 };
 
@@ -3354,9 +3355,17 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
         return img;
       }
       const v = document.createElement("video");
-      v.src = m.url;
-      // já baixa o arquivo para a geração rápida (lê os quadros direto dele)
-      if (typeof VideoDecoder !== "undefined") baixarVideo(m.url).catch(() => undefined);
+      v.dataset.origem = m.url;
+      if (typeof VideoDecoder !== "undefined") {
+        // Baixa uma vez só: o mesmo arquivo serve para a prévia e para a geração rápida.
+        // (Antes cada vídeo vinha duas vezes: ~30 MB a mais nos dados móveis.)
+        const limite = new Promise<never>((_, rej) => setTimeout(() => rej(new Error("lento")), 15000));
+        Promise.race([baixarVideo(m.url), limite])
+          .then((buf) => { if (!v.src) { v.src = URL.createObjectURL(new Blob([buf], { type: "video/mp4" })); v.load(); } })
+          .catch(() => { if (!v.src) { v.src = m.url; v.load(); } });
+      } else {
+        v.src = m.url;
+      }
       v.muted = true;
       v.defaultMuted = true;
       v.setAttribute("muted", "");
@@ -3376,14 +3385,17 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
               const ok = () => { if (!feito) { feito = true; clearTimeout(limite); r(); } };
               // iPhone: vídeo fora da tela não baixa sozinho e o "canplay" nunca chegava (ficava em "Carregando vídeos…").
               // Pede o carregamento, toca sem som por um instante e aceita o primeiro sinal de que há imagem.
-              const limite = setTimeout(ok, 10000);
+              const limite = setTimeout(ok, 20000);
               if (isVideo(el)) {
                 el.addEventListener("loadeddata", ok, { once: true });
                 el.addEventListener("canplay", ok, { once: true });
-                try {
-                  el.load();
-                  el.play().then(() => el.pause()).catch(() => undefined);
-                } catch { /* navegador sem play automático: o limite de tempo segue */ }
+                const tocar = () => {
+                  try {
+                    el.play().then(() => el.pause()).catch(() => undefined);
+                  } catch { /* navegador sem play automático: o limite de tempo segue */ }
+                };
+                if (el.getAttribute("src")) { el.load(); tocar(); }
+                else el.addEventListener("loadstart", tocar, { once: true });
               } else {
                 el.addEventListener("load", ok, { once: true });
                 if ((el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth) ok();
@@ -3396,7 +3408,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       setCarregando(false);
     }
     vidsRef.current.forEach((v) => {
-      if (isVideo(v)) { v.pause(); v.removeAttribute("src"); v.load(); }
+      if (isVideo(v)) { v.pause(); if (v.src.startsWith("blob:")) URL.revokeObjectURL(v.src); v.removeAttribute("src"); v.load(); }
     });
     vidsRef.current = els;
     setStatus("Pronto");
@@ -3775,7 +3787,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       proximoRef.current += 1;
       roteiroRef.current += 1;
       setModelo(m);
-      const blob = await renderizar(fotografar(m, roteiro), (p) => setStatus(`Gerando o vídeo… ${p}%`));
+      const blob = await renderizarComReserva(fotografar(m, roteiro), (p) => setStatus(`Gerando o vídeo… ${p}%`));
       const u = URL.createObjectURL(blob);
       setUrl(u);
       setResultados([{ modelo: m, url: u, nome: nomeArquivo(m), roteiro, formato: formatoRef.current }]);
@@ -3785,10 +3797,22 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       setStatus("Pronto! Seu vídeo está abaixo.");
     } catch (e) {
       setStatus("Erro: " + (e as Error).message);
+      setAviso(`Não consegui montar o vídeo neste aparelho (${(e as Error).message}). Feche outras abas e tente de novo; se continuar, abra no Chrome ou no Safari.`);
     }
     setGravando(false);
     setPausado(false);
     soltarTela();
+  }
+
+  // Se a geração rápida falhar no aparelho, tenta de novo do jeito simples antes de mostrar erro.
+  async function renderizarComReserva(foto: ReturnType<typeof fotografar>, progresso: (p: number) => void) {
+    try {
+      return await renderizar(foto, progresso);
+    } catch (e) {
+      console.warn("[video] geração rápida falhou, tentando do jeito simples", e);
+      progresso(0);
+      return await renderizar(foto, progresso, true);
+    }
   }
 
   async function gerarTres() {
@@ -3809,7 +3833,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       for (let i = 0; i < lista.length; i++) {
         const m = lista[i];
         const roteiro = roteiros[i % roteiros.length];
-        const blob = await renderizar(fotografar(m, roteiro), (p) => setStatus(`Vídeo ${i + 1} de ${lista.length}… ${p}%`));
+        const blob = await renderizarComReserva(fotografar(m, roteiro), (p) => setStatus(`Vídeo ${i + 1} de ${lista.length}… ${p}%`));
         const u = URL.createObjectURL(blob);
         if (i === 0) setUrl(u);
         setResultados((r) => [...r, { modelo: m, url: u, nome: nomeArquivo(m), roteiro, formato: formatoRef.current }]);
@@ -3823,6 +3847,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       setStatus(`Pronto! ${lista.length} vídeos em ${seg}s. Escolha o seu abaixo.`);
     } catch (e) {
       setStatus("Erro: " + (e as Error).message);
+      setAviso(`Não consegui montar o vídeo neste aparelho (${(e as Error).message}). Feche outras abas e tente de novo; se continuar, abra no Chrome ou no Safari.`);
     }
     setGravando(false);
     setPausado(false);
@@ -3859,8 +3884,9 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
     a.click();
   }
 
-  async function renderizar(foto0: ReturnType<typeof fotografar>, progresso: (p: number) => void): Promise<Blob> {
-    const FPS = 30;
+  async function renderizar(foto0: ReturnType<typeof fotografar>, progresso: (p: number) => void, semRapido = false): Promise<Blob> {
+    // celular: 24 quadros por segundo (20% menos trabalho, a diferença não aparece no Reels)
+    const FPS = CELULAR ? 24 : 30;
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
     const vids = vidsRef.current;
@@ -3893,8 +3919,12 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       }
       if (!codec) throw new Error("Este navegador não gera MP4");
       const muxer = new Muxer({ target: new ArrayBufferTarget(), video: { codec: "avc", width: OW, height: OH }, fastStart: "in-memory" });
-      const enc = new VideoEncoder({ output: (chunk, meta) => muxer.addVideoChunk(chunk, meta), error: (e) => { throw e; } });
-      enc.configure({ codec, width: OW, height: OH, bitrate: 4_500_000, framerate: FPS });
+      let erroEnc: Error | null = null;
+      const enc = new VideoEncoder({
+        output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+        error: (e) => { erroEnc = e as Error; },
+      });
+      enc.configure({ codec, width: OW, height: OH, bitrate: CELULAR ? 3_000_000 : 4_500_000, framerate: FPS });
       // Em vez de "pular" para cada quadro (lento: decodifica de novo a cada pulo),
       // cada vídeo toca normalmente e o quadro espera ele chegar no ponto certo.
       const tocando = new Set<number>();
@@ -3924,9 +3954,20 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       const n = Math.round(L.total * FPS);
       // Geração rápida: cada vídeo de fundo é lido quadro a quadro do arquivo (não precisa tocar nem
       // esperar o tempo real, e continua com a página minimizada). Se algum não der, só ele volta ao jeito antigo.
-      const fontes = await Promise.all(vids.map((v) => (isVideo(v) ? QuadrosDeVideo.abrir(v.currentSrc || v.src).catch(() => null) : Promise.resolve(null))));
-      const todosLidos = vids.every((v, i) => !isVideo(v) || fontes[i]);
+      const fontes: (QuadrosDeVideo | null)[] = semRapido
+        ? vids.map(() => null)
+        : await Promise.all(vids.map((v) => (isVideo(v) ? QuadrosDeVideo.abrir(v.dataset.origem || v.currentSrc || v.src).catch(() => null) : Promise.resolve(null))));
+      let todosLidos = vids.every((v, i) => !isVideo(v) || fontes[i]);
       const vidsDesenho: Fundo[] = vids.map((v, i) => fontes[i]?.canvas ?? v);
+      // um quadro que não chega em 3 s (celular sem memória, decodificador travado): aquele fundo passa a tocar normalmente
+      const comLimite = (k: number, p: Promise<void>) =>
+        Promise.race([p.then(() => true), new Promise<boolean>((r) => setTimeout(() => r(false), 3000))]).then((ok) => {
+          if (ok || !fontes[k]) return;
+          fontes[k]!.fechar();
+          fontes[k] = null;
+          vidsDesenho[k] = vids[k];
+          todosLidos = false;
+        });
       for (let f = 0; f < n; f++) {
         if (!todosLidos && (document.hidden || (f % 15 === 0 && (await telaParada())))) {
           vids.forEach((v) => isVideo(v) && !v.paused && v.pause());
@@ -3957,9 +3998,10 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
           const k = i % Math.max(vids.length, 1);
           const v = vids[k];
           const local = Math.max(0, t - L.inicios[i] + FADE);
-          if (fontes[k]) return fontes[k]!.quadro(local);
+          if (fontes[k]) return comLimite(k, fontes[k]!.quadro(local).catch(() => undefined));
           return v && isVideo(v) ? esperar(v, local) : Promise.resolve();
         }));
+        if (erroEnc) throw erroEnc;
         if (feed && gctx && sctx && grande) {
           drawFrame(gctx, t, vidsDesenho, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao, foto0.tema, L, true);
           sctx.drawImage(grande, 0, RECORTE_FEED * 1.5, 1080, FEED_H, 0, 0, FEED_W, FEED_H);
