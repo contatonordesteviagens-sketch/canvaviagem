@@ -3358,7 +3358,10 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       // já baixa o arquivo para a geração rápida (lê os quadros direto dele)
       if (typeof VideoDecoder !== "undefined") baixarVideo(m.url).catch(() => undefined);
       v.muted = true;
+      v.defaultMuted = true;
+      v.setAttribute("muted", "");
       v.playsInline = true;
+      v.setAttribute("playsinline", "");
       v.loop = true;
       v.crossOrigin = "anonymous";
       v.preload = "auto";
@@ -3368,10 +3371,24 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       await Promise.all(
         els.map(
           (el) =>
-            new Promise((r, rej) => {
-              if (isVideo(el)) el.addEventListener("canplay", r, { once: true });
-              else el.addEventListener("load", r, { once: true });
-              el.addEventListener("error", () => rej(new Error("Um vídeo do destino não carregou.")), { once: true });
+            new Promise<void>((r, rej) => {
+              let feito = false;
+              const ok = () => { if (!feito) { feito = true; clearTimeout(limite); r(); } };
+              // iPhone: vídeo fora da tela não baixa sozinho e o "canplay" nunca chegava (ficava em "Carregando vídeos…").
+              // Pede o carregamento, toca sem som por um instante e aceita o primeiro sinal de que há imagem.
+              const limite = setTimeout(ok, 10000);
+              if (isVideo(el)) {
+                el.addEventListener("loadeddata", ok, { once: true });
+                el.addEventListener("canplay", ok, { once: true });
+                try {
+                  el.load();
+                  el.play().then(() => el.pause()).catch(() => undefined);
+                } catch { /* navegador sem play automático: o limite de tempo segue */ }
+              } else {
+                el.addEventListener("load", ok, { once: true });
+                if ((el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth) ok();
+              }
+              el.addEventListener("error", () => { if (!feito) { feito = true; clearTimeout(limite); rej(new Error("Um vídeo do destino não carregou.")); } }, { once: true });
             }),
         ),
       );
