@@ -112,6 +112,10 @@ type Dados = {
   facebook: string;
   email: string;
   site: string;
+  /** frase grande da tela final ("Garanta sua vaga"); vazio = a do estilo */
+  ctaFinal?: string;
+  /** moldura da logo */
+  logoForma?: "redonda" | "arredondada" | "quadrada";
 };
 
 type Contato = "whatsapp" | "instagram" | "facebook" | "email" | "site";
@@ -155,6 +159,7 @@ function tituloInclusos(d: Dados, padrao: string) {
   return padrao === padrao.toUpperCase() ? t.toUpperCase() : t;
 }
 function tituloCta(d: Dados, padrao: string) {
+  if (d.ctaFinal?.trim()) return d.ctaFinal.trim();
   if (ehPacote(d)) return padrao;
   const t = infoTipo(d).cta;
   return padrao === padrao.toUpperCase() ? t.toUpperCase() : t;
@@ -389,14 +394,18 @@ function desenharLogo(ctx: CanvasRenderingContext2D, d: Dados, logo: HTMLImageEl
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(0.7 + 0.3 * k, 0.7 + 0.3 * k);
+  const forma = d.logoForma || "redonda";
   ctx.beginPath();
-  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  if (forma === "redonda") ctx.arc(0, 0, r, 0, Math.PI * 2);
+  else roundRect(ctx, -r * 0.92, -r * 0.92, r * 1.84, r * 1.84, forma === "arredondada" ? r * 0.36 : r * 0.08);
   ctx.fillStyle = fundo;
   sombra(ctx, 40, "rgba(0,0,0,.35)");
   ctx.fill();
   semSombra(ctx);
   if (logo) {
-    const s = Math.min((r * 1.48) / logo.width, (r * 1.48) / logo.height);
+    // no quadrado sobra mais espaço: a logo fica maior
+    const area = forma === "redonda" ? r * 1.48 : r * 1.6;
+    const s = Math.min(area / logo.width, area / logo.height);
     ctx.drawImage(logo, (-logo.width * s) / 2, (-logo.height * s) / 2, logo.width * s, logo.height * s);
   } else {
     ctx.fillStyle = "#14213d";
@@ -3638,7 +3647,7 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
       ultimo = agora;
       if (!visivel || document.hidden) return;
       tempo += dt / 1000;
-      if (agora - ultimoDesenho < 32) return;
+      if (agora - ultimoDesenho < (CELULAR ? 48 : 32)) return;
       ultimoDesenho = agora;
       const L = linhaRef.current;
       const t = tempo % L.total;
@@ -3701,16 +3710,16 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   useEffect(() => {
     if (carregando || gravando) return;
     const id = setTimeout(() => {
-      const grande = document.createElement("canvas");
-      grande.width = W;
-      grande.height = H;
       const pequeno = document.createElement("canvas");
-      pequeno.width = 108;
-      pequeno.height = 192;
+      pequeno.width = 216;
+      pequeno.height = 384;
+      const pc = pequeno.getContext("2d")!;
       const novas: Partial<Record<Modelo, string>> = {};
       for (const m of MODELOS) {
-        drawFrame(grande.getContext("2d")!, 2.8, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m.id, ocasiaoRef.current, temaRef.current);
-        pequeno.getContext("2d")!.drawImage(grande, 0, 0, 108, 192);
+        pc.save();
+        pc.scale(216 / W, 384 / H);
+        drawFrame(pc, 2.8, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, m.id, ocasiaoRef.current, temaRef.current);
+        pc.restore();
         novas[m.id] = pequeno.toDataURL("image/jpeg", 0.7);
       }
       setMiniaturas((a) => ({ ...a, ...novas }));
@@ -4054,8 +4063,46 @@ export function VideoLabTela({ embutido = false }: { embutido?: boolean }) {
   const nomeOcasiaoCurto = () => OCASIOES.find((o) => o.id === ocasiao)?.nome.replace(/^\S+\s/, "") || "Nenhuma";
   const chip = (on: boolean) =>
     `min-h-9 rounded-full border px-3 text-[13px] font-semibold transition-all active:scale-95 disabled:opacity-50 ${on ? "border-[#F5F906] bg-[#F5F906] text-black" : "border-white/15 text-white/75"}`;
+  const CTA_PADRAO = tituloCta({ ...dados, ctaFinal: "" }, ESTILO_CTA[modelo].titulo);
   const visualRapido = (
     <div className="flex flex-col gap-3">
+      <div>
+        <p className="mb-1.5 text-[12px] font-semibold text-white/55">Logo</p>
+        <div className="flex flex-wrap gap-2">
+          {([["redonda", "Redonda", "rounded-full"], ["arredondada", "Arredondada", "rounded-md"], ["quadrada", "Quadrada", "rounded-[2px]"]] as const).map(([id, nome, raio]) => (
+            <button key={id} disabled={gravando} onClick={() => set("logoForma", id)} className={`${chip((dados.logoForma || "redonda") === id)} flex items-center gap-1.5`}>
+              <span className={`h-4 w-4 border-2 border-current ${raio}`} />
+              {nome}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <label htmlFor="campo-cta-final" className="mb-1.5 block text-[12px] font-semibold text-white/55">Chamada final (tela do contato)</label>
+        <div className="flex gap-2">
+          <input
+            id="campo-cta-final"
+            className={campo}
+            maxLength={34}
+            placeholder={CTA_PADRAO}
+            value={dados.ctaFinal || ""}
+            disabled={gravando}
+            onChange={(e) => set("ctaFinal", e.target.value)}
+          />
+          {dados.ctaFinal ? (
+            <button type="button" disabled={gravando} onClick={() => set("ctaFinal", "")} className="min-h-11 shrink-0 rounded-xl border border-white/15 px-3 text-[13px] font-semibold text-white/70">
+              Padrão
+            </button>
+          ) : null}
+        </div>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {["Garanta sua vaga", "Chame no WhatsApp", "Reserve agora", "Fale com a gente", "Vagas limitadas"].map((t) => (
+            <button key={t} type="button" disabled={gravando} onClick={() => set("ctaFinal", t)} className={chip(dados.ctaFinal === t)}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
       <div>
         <p className="mb-1.5 text-[12px] font-semibold text-white/55">Cores</p>
         <div className="flex flex-wrap gap-2">
