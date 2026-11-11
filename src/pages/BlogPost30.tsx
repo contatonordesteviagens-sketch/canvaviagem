@@ -60,7 +60,7 @@ const BlogPost30 = () => {
 
                     <div className="prose prose-lg max-w-none space-y-8">
                         <div className="mb-10 rounded-2xl overflow-hidden shadow-xl border border-gray-200">
-                            <img src="/assets/blog/updated/invisibilidade_updated.png" alt="Primeiro mês como agente de viagem" className="w-full h-auto" />
+                            <img src="/assets/blog/updated/invisibilidade_updated.webp" alt="Primeiro mês como agente de viagem" className="w-full h-auto" />
                         </div>
 
                         <p className="text-xl text-slate-700 leading-relaxed font-medium">

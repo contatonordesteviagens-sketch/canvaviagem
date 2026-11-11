@@ -17,12 +17,12 @@ import {
   Zap,
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
-import showcaseAdCreation from "@/assets/images/showcase-ad-creation.png";
-import antesAmador from "@/assets/antes_amador.png";
-import depoisPremium from "@/assets/depois_premium.png";
-import depoimento1 from "@/assets/depoimento1.jpg";
-import depoimento2 from "@/assets/depoimento2.png";
-import depoimento3 from "@/assets/depoimento3.jpg";
+import showcaseAdCreation from "@/assets/images/showcase-ad-creation.webp";
+import antesAmador from "@/assets/antes_amador.webp";
+import depoisPremium from "@/assets/depois_premium.webp";
+import depoimento1 from "@/assets/depoimento1.webp";
+import depoimento2 from "@/assets/depoimento2.webp";
+import depoimento3 from "@/assets/depoimento3.webp";
 import lucasPortrait from "@/assets/lucas-ferrari-portrait.webp";
 import { trackEvent } from "@/hooks/useAnalyticsEvents";
 import { ELITE_OFFER } from "@/lib/eliteOffer";

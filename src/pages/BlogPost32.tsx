@@ -59,7 +59,7 @@ const BlogPost32 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/updated/custo_estrategia_updated.png"
+                                src="/assets/blog/updated/custo_estrategia_updated.webp"
                                 alt="Agente de viagem estressada analisando postagem sem engajamento"
                                 className="w-full h-auto object-cover"
                             />

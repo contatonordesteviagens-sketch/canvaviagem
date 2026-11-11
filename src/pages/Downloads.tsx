@@ -1,3 +1,4 @@
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import React, { useState } from "react";
 import { Download, Search, Sparkles, Video, ExternalLink, Globe } from "lucide-react";
 import { downloadLinks, DownloadItem } from "@/data/downloads";
@@ -8,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const Downloads = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTermInput, setSearchTerm] = useState("");
+  const searchTerm = useDebouncedValue(searchTermInput);
   const [activeTab, setActiveTab] = useState<string>("all");
 
   const categories = [
@@ -118,7 +120,7 @@ const Downloads = () => {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input 
               placeholder="Buscar destino (ex: Alter do Chão...)" 
-              value={searchTerm}
+              value={searchTermInput}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 h-11 rounded-xl bg-white dark:bg-slate-900/80 border-slate-200 dark:border-white/10 shadow-sm font-medium"
             />

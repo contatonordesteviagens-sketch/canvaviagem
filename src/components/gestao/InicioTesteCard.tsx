@@ -1,6 +1,6 @@
+import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,7 +79,7 @@ export function InicioTesteCard() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <div className="space-y-2" aria-busy="true">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-9 w-full" />)}</div>
         ) : (
           <Table>
             <TableHeader>

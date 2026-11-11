@@ -458,23 +458,34 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   const [addressOptions, setAddressOptions] = useState<any[]>([]);
   const [showAddressOptions, setShowAddressOptions] = useState(false);
   const addressTimeoutRef = useRef<any>(null);
+  const addressAbortRef = useRef<AbortController | null>(null);
 
   const handleAddressChange = (val: string) => {
     setAddressQuery(val);
     update({ address: val });
     if (addressTimeoutRef.current) clearTimeout(addressTimeoutRef.current);
+    // Cancela a busca anterior: a resposta de um texto antigo não pode chegar depois e trocar as sugestões.
+    addressAbortRef.current?.abort();
     if (!val || val.length < 4) {
       setAddressOptions([]);
       setShowAddressOptions(false);
       return;
     }
+    // 600 ms (e não 300): o serviço de endereços é gratuito e pede no máximo 1 consulta por segundo.
     addressTimeoutRef.current = setTimeout(() => {
-      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&addressdetails=1&limit=5&countrycodes=br`)
+      const controller = new AbortController();
+      addressAbortRef.current = controller;
+      // Serviço de fora: desiste em 8 segundos em vez de deixar a sugestão pendurada.
+      const limite = window.setTimeout(() => controller.abort(), 8000);
+      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&addressdetails=1&limit=5&countrycodes=br`, { signal: controller.signal })
         .then(r => r.json())
         .then(data => {
+          if (controller.signal.aborted) return;
           setAddressOptions(data);
           setShowAddressOptions(data.length > 0);
-        }).catch(() => {});
+        })
+        .catch(() => {})
+        .finally(() => window.clearTimeout(limite));
     }, 600);
   };
 

@@ -57,7 +57,7 @@ const BlogPost45 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/webinar/perplexity_ai_agencia_1773093400005_1773103377139.png"
+                                src="/assets/blog/webinar/perplexity_ai_agencia_1773093400005_1773103377139.webp"
                                 alt="Agente de viagem pesquisando no Perplexity AI"
                                 className="w-full h-auto object-cover"
                             />

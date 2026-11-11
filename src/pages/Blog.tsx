@@ -13,70 +13,70 @@ const blogPosts = [
         title: "Manual do ChatGPT Para Agência de Viagem: Prompts Prontos Para Vender Mais",
         excerpt: "Aprenda a usar o ChatGPT com prompts calibrados para criar legendas, roteiros e responder clientes em segundos.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "12 min",
-        image: "/assets/blog/webinar/chatgpt_agencia_viagem_1773093400001_1773103323481.png",
+        image: "/assets/blog/webinar/chatgpt_agencia_viagem_1773093400001_1773103323481.webp",
         slug: "chatgpt-para-agencia-de-viagem-manual-completo", category: "IA"
     },
     {
         title: "Google Gemini Para Agência de Viagem: O Guia Completo Para Pesquisa de Destinos",
         excerpt: "A potência do Google integrada ao seu atendimento. Use o Gemini para planejar roteiros e pesquisar tendências.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "10 min",
-        image: "/assets/blog/updated/google_gemini_updated.png",
+        image: "/assets/blog/updated/google_gemini_updated.webp",
         slug: "google-gemini-para-agencia-de-viagem", category: "IA"
     },
     {
         title: "Claude IA Para Agência de Viagem: A IA Que Escreve Como Uma Consultora Premium",
         excerpt: "Fuja da escrita robótica. Veja como o Claude cria propostas sofisticadas que geram desejo imediato.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "11 min",
-        image: "/assets/blog/updated/claude_ia_updated.png",
+        image: "/assets/blog/updated/claude_ia_updated.webp",
         slug: "claude-ia-para-agencia-de-viagem", category: "IA"
     },
     {
         title: "Manus AI Para Agência de Viagem: O Primeiro Agente Autônomo No Turismo",
         excerpt: "O assistente que trabalha por você: de pesquisas técnicas à consolidação de propostas complexas.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "9 min",
-        image: "/assets/blog/webinar/manus_ai_agencia_1773093400004_1773103364569.png",
+        image: "/assets/blog/webinar/manus_ai_agencia_1773093400004_1773103364569.webp",
         slug: "manus-ai-para-agencia-de-viagem", category: "IA"
     },
     {
         title: "Perplexity AI Para Agência de Viagem: expertise Instantânea Com Fontes Verificadas",
         excerpt: "Substitua horas de Google por segundos de Perplexity. Informações técnicas e requisitos de visto em tempo real.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "8 min",
-        image: "/assets/blog/webinar/perplexity_ai_agencia_1773093400005_1773103377139.png",
+        image: "/assets/blog/webinar/perplexity_ai_agencia_1773093400005_1773103377139.webp",
         slug: "perplexity-ai-para-agencia-de-viagem", category: "IA"
     },
     {
         title: "Grok IA Para Agência de Viagem: Como Identificar Tendências de Viagem No X",
         excerpt: "Identifique o que as pessoas estão comentando agora e antecipe as tendências do turismo com a IA do Elon Musk.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "7 min",
-        image: "/assets/blog/webinar/grok_ia_agencia_1773093400006_1773103397685.png",
+        image: "/assets/blog/webinar/grok_ia_agencia_1773093400006_1773103397685.webp",
         slug: "grok-ia-para-agencia-de-viagem", category: "IA"
     },
     {
         title: "Google Veo 3 No Turismo: Crie Vídeos Cinematográficos Para o Instagram Com IA",
         excerpt: "Hipnotize seus seguidores com vídeos 4K gerados por IA. O fim do problema de não ter Reels de qualidade.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "10 min",
-        image: "/assets/blog/updated/google_veo3_updated.png",
+        image: "/assets/blog/updated/google_veo3_updated.webp",
         slug: "google-veo-3-para-agencia-de-viagem", category: "IA"
     },
     {
         title: "Google NotebookLM Meta: Como Organizar Pesquisas de Viagem Complexas",
         excerpt: "Seu cérebro digital: carregue catálogos de operadoras e crie sínteses perfeitas em segundos.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "9 min",
-        image: "/assets/blog/updated/google_notebooklm_updated.png",
+        image: "/assets/blog/updated/google_notebooklm_updated.webp",
         slug: "google-notebooklm-para-agencia-de-viagem", category: "IA"
     },
     {
         title: "Meta AI No WhatsApp: O Copiloto de Vendas Que Você Já Tem No Celular",
         excerpt: "Aprenda a usar a IA integrada do WhatsApp e Instagram para agilizar seu atendimento diário.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "8 min",
-        image: "/assets/blog/updated/meta_ai_updated.png",
+        image: "/assets/blog/updated/meta_ai_updated.webp",
         slug: "meta-ai-para-agencia-de-viagem", category: "IA"
     },
     {
         title: "Guia Definitivo IA No Turismo 2026: O Que Realmente Funciona No Dia a Dia",
         excerpt: "O resumo final: como integrar as melhores ferramentas para triplicar seu faturamento e ter mais tempo livre.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "15 min",
-        image: "/assets/blog/webinar/mapa_agencia_5_estrelas_convite_1773093394115.png",
+        image: "/assets/blog/webinar/mapa_agencia_5_estrelas_convite_1773093394115.webp",
         slug: "guia-definitivo-ia-para-agencia-de-viagem-2026", category: "IA"
     },
     // ─── Posts Webinar (Aula Secreta) ─────────────────────────────────────────────
@@ -84,70 +84,70 @@ const blogPosts = [
         title: "Por Que Sua Agência de Viagem Está Invisível no Instagram em 2026 (E Como Sair Dessa)",
         excerpt: "Entenda por que sua agência não aparece para novos clientes e descubra o sistema para gerar orçamentos orgânicos.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "11 min",
-        image: "/assets/blog/updated/invisibilidade_updated.png",
+        image: "/assets/blog/updated/invisibilidade_updated.webp",
         slug: "agencia-de-viagem-invisivel-instagram-2026", category: "Webinar"
     },
     {
         title: "O Custo Real de Postar Sem Estratégia no Instagram da Sua Agência",
         excerpt: "Seu tempo é dinheiro. Descubra o impacto oculto de produzir conteúdo que não vende e como reverter esse prejuízo.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "8 min",
-        image: "/assets/blog/updated/custo_estrategia_updated.png",
+        image: "/assets/blog/updated/custo_estrategia_updated.webp",
         slug: "custo-real-postar-sem-estrategia-instagram", category: "Estratégia"
     },
     {
         title: "Decolar e Booking São Seus Concorrentes? A Verdade Inconveniente",
         excerpt: "Tentar competir no preço com gigantes é suicídio. Aprenda a usar sua autoridade para ganhar onde as OTAs falham.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "10 min",
-        image: "/assets/blog/updated/decolar_vs_agencia_updated.png",
+        image: "/assets/blog/updated/decolar_vs_agencia_updated.webp",
         slug: "decolar-booking-concorrentes-agencia-viagem", category: "Vendas"
     },
     {
         title: "O Perigo Silencioso de um Perfil Abandonado no Instagram",
         excerpt: "Um perfil sem movimento é uma agência 'fechada' para o cliente. Saiba como manter a confiança do viajante.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "9 min",
-        image: "/assets/blog/webinar/perfil_abandonado_1773093299043.png",
+        image: "/assets/blog/webinar/perfil_abandonado_1773093299043.webp",
         slug: "perigo-perfil-abandonado-instagram", category: "Marketing"
     },
     {
         title: "Agência de Viagem: Você Ten um Negócio ou um Hobby Caro?",
         excerpt: "A diferença entre quem lucra alto e quem apenas 'dá dicas' está no mindset e na estratégia visual.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "8 min",
-        image: "/assets/blog/updated/negocio_ou_hobby_updated.png",
+        image: "/assets/blog/updated/negocio_ou_hobby_updated.webp",
         slug: "agencia-de-viagem-negocio-ou-hobby", category: "Mindset"
     },
     {
         title: "Travamento no Canva: Por Que Você Demora Horas Para Criar um Único Post?",
         excerpt: "Aprenda o método para criar conteúdo profissional em minutos e acabar com a frustração da tela em branco.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "7 min",
-        image: "/assets/blog/webinar/trava_no_canva_1773093328349.png",
+        image: "/assets/blog/webinar/trava_no_canva_1773093328349.webp",
         slug: "travamento-no-canva-agencia-de-viagem-solucao", category: "Produtividade"
     },
     {
         title: "Agência vs Influenciador: Por Que Eles Ganham no Engajamento?",
         excerpt: "Descubra como copiar a tática de conexão dos influenciadores para gerar desejo e autoridade no seu perfil.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "9 min",
-        image: "/assets/blog/updated/agencia_vs_influenciador_updated.png",
+        image: "/assets/blog/updated/agencia_vs_influenciador_updated.webp",
         slug: "agencia-vs-influenciador-engajamento-viagem", category: "Engajamento"
     },
     {
         title: "Como Ter um Perfil de Agência Premium Sem Gastar R$ 1 com Designer",
         excerpt: "Você não precisa de agência para ter um visual de luxo. Aprenda os pilares do design que gera autoridade.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "8 min",
-        image: "/assets/blog/webinar/perfil_sem_designer_1773093380500.png",
+        image: "/assets/blog/webinar/perfil_sem_designer_1773093380500.webp",
         slug: "perfil-agencia-premium-sem-designer", category: "Design"
     },
     {
         title: "8 Sinais de Alerta: Seu Instagram Está Afastando Seus Clientes de Viagem?",
         excerpt: "Identifique os erros fatais que destroem sua conversão e saiba como limpar sua comunicação hoje mesmo.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "7 min",
-        image: "/assets/blog/updated/sinais_alerta_updated.png",
+        image: "/assets/blog/updated/sinais_alerta_updated.webp",
         slug: "sinais-alerta-instagram-agencia-viagem", category: "Diagnóstico"
     },
     {
         title: "O Mapa da Agência 5 Estrelas: O Caminho Para o Próximo Nível",
         excerpt: "Os 5 pilares para transformar sua agência em um negócio de alto faturamento e autoridade no turismo.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "10 min",
-        image: "/assets/blog/webinar/mapa_agencia_5_estrelas_convite_1773093394115.png",
+        image: "/assets/blog/webinar/mapa_agencia_5_estrelas_convite_1773093394115.webp",
         slug: "mapa-agencia-viagem-5-estrelas", category: "Estratégia"
     },
     // ─── Posts originais ──────────────────────────────────────────────────────────
@@ -155,42 +155,42 @@ const blogPosts = [
         title: "Marketing Digital para Agência de Viagem: O Guia Completo 2026",
         excerpt: "Descubra as estratégias que realmente funcionam para vender pacotes turísticos no novo cenário digital.",
         date: "07 Mar 2026", author: "Lucas Rocha", readTime: "8 min",
-        image: "/assets/blog/updated/marketing_digital_updated.png",
+        image: "/assets/blog/updated/marketing_digital_updated.webp",
         slug: "marketing-digital-para-agencia-de-viagem", category: "Marketing"
     },
     {
         title: "Como Criar Conteúdo para Agência de Viagem Sem Gravar Vídeo",
         excerpt: "Aprenda a manter um perfil profissional e atraente no Instagram sem precisar aparecer ou editar vídeos complexos.",
         date: "05 Mar 2026", author: "Lucas Rocha", readTime: "5 min",
-        image: "/assets/blog/updated/conteudo_sem_video_updated.png",
+        image: "/assets/blog/updated/conteudo_sem_video_updated.webp",
         slug: "como-criar-conteudo-agencia-de-viagem-sem-gravar-video", category: "Conteúdo"
     },
     {
         title: "O Que Postar no Instagram da Sua Agência de Viagem",
         excerpt: "Um guia prático com ideias de posts que geram desejo de viagem e convertem seguidores em clientes.",
         date: "01 Mar 2026", author: "Lucas Rocha", readTime: "6 min",
-        image: "/artes/instagram_content_strategy_turismo_premium_1772961022191.png",
+        image: "/artes/instagram_content_strategy_turismo_premium_1772961022191.webp",
         slug: "o-que-postar-no-instagram-agencia-de-viagem", category: "Instagram"
     },
     {
         title: "7 Destinos Nacionais para Vender Muito em 2026",
         excerpt: "Uma análise detalhada dos destinos tendência no Brasil que sua agência precisa oferecer agora.",
         date: "08 Mar 2026", author: "Lucas Rocha", readTime: "10 min",
-        image: "/assets/blog/updated/destinos_nacionais_updated.png",
+        image: "/assets/blog/updated/destinos_nacionais_updated.webp",
         slug: "destinos-nacionais-tendencia-2026", category: "Destinos"
     },
     {
         title: "Como Converter Seguidores em Clientes no WhatsApp",
         excerpt: "O script exato que as agências de sucesso usam para fechar vendas pelo aplicativo de mensagens.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "7 min",
-        image: "/artes/hands_holding_phone_whatsapp_business_realistic_1772961106417.png",
+        image: "/artes/hands_holding_phone_whatsapp_business_realistic_1772961106417.webp",
         slug: "converter-seguidores-whatsapp", category: "Vendas"
     },
     {
         title: "Como Fechar Vendas de Grupos e Faturar 5x Mais",
         excerpt: "Vender para grupos é o caminho mais curto para escalar o faturamento da sua agência.",
         date: "10 Mar 2026", author: "Lucas Rocha", readTime: "10 min",
-        image: "/assets/blog/updated/vendas_grupos_updated.png",
+        image: "/assets/blog/updated/vendas_grupos_updated.webp",
         slug: "fechar-vendas-grupos-viagem", category: "Estratégia"
     },
     {
@@ -204,21 +204,21 @@ const blogPosts = [
         title: "O Poder do Nicho: Por que Agências Especialistas Ganham Mais",
         excerpt: "Descubra por que focar em um nicho específico pode transformar sua agência em uma referência.",
         date: "12 Mar 2026", author: "Lucas Rocha", readTime: "9 min",
-        image: "/assets/blog/updated/poder_nicho_updated.png",
+        image: "/assets/blog/updated/poder_nicho_updated.webp",
         slug: "poder-nicho-turismo", category: "Nicho"
     },
     {
         title: "Como usar o ChatGPT para Criar Roteiros Irresistíveis em Minutos",
         excerpt: "Aprenda prompts exatos para usar a IA na criação de roteiros que encantam seus clientes.",
         date: "13 Mar 2026", author: "Lucas Rocha", readTime: "7 min",
-        image: "/artes/natural_travel_agent_cafeteria_1772956444129.png",
+        image: "/artes/natural_travel_agent_cafeteria_1772956444129.webp",
         slug: "chatgpt-roteiros-viagem", category: "IA"
     },
     {
         title: "Atendimento que Fideliza: O Segredo do Pós-Venda no Turismo",
         excerpt: "Aprenda como encantar seus clientes depois que a viagem termina e transformar viajantes em fãs.",
         date: "14 Mar 2026", author: "Lucas Rocha", readTime: "8 min",
-        image: "/artes/realistic_travel_agency_owner_marketing_1772956360091.png",
+        image: "/artes/realistic_travel_agency_owner_marketing_1772956360091.webp",
         slug: "pos-venda-fidelizacao-turismo", category: "Fidelização"
     },
     // ─── 20 Novos Posts SEO ───────────────────────────────────────────────────────
@@ -296,7 +296,7 @@ const blogPosts = [
         title: "Como Montar um Calendário de Conteúdo para Agência de Viagem",
         excerpt: "Planejamento completo de conteúdo mensal e semanal para agentes que querem postar com estratégia.",
         date: "25 Mar 2026", author: "Lucas Rocha", readTime: "11 min",
-        image: "/artes/business_couple_planning_trip_realistic_natural_1772961121060.png",
+        image: "/artes/business_couple_planning_trip_realistic_natural_1772961121060.webp",
         slug: "calendario-conteudo-agencia-de-viagem", category: "Planejamento"
     },
     {
@@ -310,14 +310,14 @@ const blogPosts = [
         title: "Como Criar um Grupo de Viagem Lucrativo pelo WhatsApp",
         excerpt: "Os 5 modelos de grupos de viagem mais lucrativos e como usar o WhatsApp para montar excursões que vendem.",
         date: "27 Mar 2026", author: "Lucas Rocha", readTime: "11 min",
-        image: "/assets/blog/updated/vendas_grupos_updated.png",
+        image: "/assets/blog/updated/vendas_grupos_updated.webp",
         slug: "criar-grupo-viagem-lucrativo-whatsapp", category: "Grupos"
     },
     {
         title: "Reels para Agência de Viagem: Como Criar Vídeos que Viralizam",
         excerpt: "5 hooks testados que param o scroll, a estrutura ideal de Reels e como atrair clientes com vídeos de 30 segundos.",
         date: "28 Mar 2026", author: "Lucas Rocha", readTime: "10 min",
-        image: "/artes/travel_agent_desk_natural_daylight_realistic_1772961095052.png",
+        image: "/artes/travel_agent_desk_natural_daylight_realistic_1772961095052.webp",
         slug: "reels-agencia-de-viagem", category: "Reels"
     },
     {
@@ -359,7 +359,7 @@ const blogPosts = [
         title: "Primeiro Mês como Agente de Viagem: O Que Esperar (Guia Honesto)",
         excerpt: "Guia honesto sobre o primeiro mês como agente autônomo — resultados reais, erros a evitar e como não desistir.",
         date: "04 Abr 2026", author: "Lucas Rocha", readTime: "12 min",
-        image: "/assets/blog/updated/invisibilidade_updated.png",
+        image: "/assets/blog/updated/invisibilidade_updated.webp",
         slug: "primeiro-mes-agente-de-viagem", category: "Iniciante"
     },
 ];
@@ -421,6 +421,8 @@ const Blog = () => {
                                     <div className="aspect-video overflow-hidden">
                                         <img
                                             src={post.image}
+                                            loading="lazy"
+                                            decoding="async"
                                             alt={post.title}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         />

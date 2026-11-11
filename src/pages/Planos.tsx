@@ -17,7 +17,7 @@ import { MinimalistHero } from "@/components/ui/minimalist-hero";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { Instagram } from "lucide-react";
-import garantia7dias from "@/assets/garantia-7-dias.png";
+import garantia7dias from "@/assets/garantia-7-dias.webp";
 import { createAbacateCheckout } from "@/lib/abacatePay";
 import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
 import { ImageTrail } from "@/components/ui/image-trail";
@@ -436,7 +436,7 @@ const Planos = () => {
         ]}
         mainText="Quem aparece todo dia vende mais. Voc├¬ precisa de conte├║dos que atraiam os viajantes certos. Criamos mais de 250 v├¡deos e 400 artes para transformar sua ag├¬ncia em uma refer├¬ncia."
         readMoreLink="#preco"
-        imageSrc="/hero-canva.png"
+        imageSrc="/hero-canva.webp"
         imageAlt="Plataforma Canva Viagem"
         overlayText={{ part1: 'VENDA', part2: 'MAIS' }}
         theme="light"

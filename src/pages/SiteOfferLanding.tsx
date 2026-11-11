@@ -25,8 +25,8 @@ import {
   Gift
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
-import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
-import paginaRoteiro from "@/assets/pagina_venda_roteiro.png";
+import showcaseLandingPages from "@/assets/images/showcase-landing-pages.webp";
+import paginaRoteiro from "@/assets/pagina_venda_roteiro.webp";
 import lucasPortrait from "@/assets/lucas-ferrari-portrait.webp";
 import { trackEvent } from "@/hooks/useAnalyticsEvents";
 import { ELITE_OFFER } from "@/lib/eliteOffer";

@@ -16,7 +16,7 @@ import { ArtTrial } from "@/components/cv-cream/ArtTrial";
 import { resolveInicioVariant, trackInicioTeste } from "@/lib/inicio-teste";
 import { siteOfferDemos } from "@/lib/site-offer-demos";
 import { BLACK_FUNNEL_PATH, isBlackFunnel, markBlackFunnel } from "@/lib/black-funnel";
-import heroDashboard from "@/assets/hero_dashboard.jpg";
+import heroDashboard from "@/assets/hero_dashboard.webp";
 
 import { ONBOARDING_DESTINO_KEY, ONBOARDING_LOGO_KEY, ONBOARDING_PATH } from "@/lib/inicio-arte";
 
@@ -633,7 +633,7 @@ function TeamImage() {
   return (
     <div className="cv-reveal relative mx-auto mt-10 max-w-4xl px-2 sm:px-10">
       <div className="overflow-hidden rounded-[32px] bg-[#0f172a] shadow-[0_30px_60px_-30px_rgba(15,23,42,.6)]">
-        <img src={heroDashboard} alt="Agente de viagens no notebook com o painel do Canva Viagem aberto" className="block h-auto w-full" loading="lazy" />
+        <img src={heroDashboard} alt="Agente de viagens no notebook com o painel do Canva Viagem aberto" width={1024} height={640} className="block h-auto w-full" loading="lazy" decoding="async" />
       </div>
       {chips.map((c) => (
         <span key={c.label} className={`cv-float absolute inline-flex items-center gap-1 rounded-xl border border-white/30 bg-white/85 px-1.5 py-1 text-[10px] font-bold shadow-lg backdrop-blur-md sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2 sm:text-[15px] ${c.pos}`} style={{ ...delay(c.d), ["--cv-rot" as string]: c.rot }}>

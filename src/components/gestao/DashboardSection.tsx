@@ -1,3 +1,4 @@
+import { PainelSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useState } from "react";
 import { useEmailDashboard } from "@/hooks/useEmailDashboard";
 import { useAdminDashboard, usePageViews } from "@/hooks/useAdminDashboard";
@@ -5,7 +6,7 @@ import { useStripeDashboard } from "@/hooks/useStripeDashboard";
 import { useMarketingFunnel } from "@/hooks/useMarketingFunnel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Users, MousePointer, TrendingUp, Activity, DollarSign, Percent, CreditCard, BarChart3, Wallet, Target, UserX, Clock, Mail, Globe } from "lucide-react";
+import { Users, MousePointer, TrendingUp, Activity, DollarSign, Percent, CreditCard, BarChart3, Wallet, Target, UserX, Clock, Mail, Globe } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -46,9 +47,7 @@ const OverviewTab = ({ dateRange }: OverviewTabProps) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <PainelSkeleton />
     );
   }
 

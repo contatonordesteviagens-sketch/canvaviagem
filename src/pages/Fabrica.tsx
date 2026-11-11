@@ -20,7 +20,7 @@ import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { 
   ArrowLeft, 
   Sparkles,
-  Loader2, 
+
   LayoutDashboard, 
   Image as ImageIcon, 
   Zap, 
@@ -508,6 +508,7 @@ const FabricaInner = () => {
 };
 
 import { FabricaUpgradeBlock } from "@/components/fabrica/FabricaUpgradeBlock";
+import { FabricaSkeleton } from "@/components/skeletons/PageSkeleton";
 
 const FabricaContent = () => {
   const { loading: authLoading } = useAuth();
@@ -517,12 +518,7 @@ const FabricaContent = () => {
   // Spinner SÓ no primeiro carregamento real (sem user e sem acesso já concedido).
   // Reverificações silenciosas em background NÃO devem mais derrubar pra esta tela.
   if (!localPreview && authLoading) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white">
-        <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-2" />
-        <span className="text-sm text-white/60">Verificando permissões de acesso...</span>
-      </div>
-    );
+    return <FabricaSkeleton />;
   }
 
   if (!localPreview && !can("fabrica.open")) {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -13,6 +13,7 @@ import { generateDiagnosticoPDF } from "@/lib/fabrica-pdf";
 import { hasEliteAccess, hasStartAccess } from "@/lib/planAccess";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useProfileBasics, useSetProfileName } from "@/hooks/useProfileBasics";
 
 interface ProfileData {
   name: string | null;
@@ -22,29 +23,19 @@ interface ProfileData {
 export default function MinhaConta() {
   const { user, subscription, signOut } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<ProfileData>({ name: null, email: null });
+  // Mesma consulta (com cache) que o cabeçalho usa: abrir Minha Conta não busca o perfil de novo.
+  const { data: profileBasics } = useProfileBasics(user?.id);
+  const setProfileName = useSetProfileName();
+  const profile: ProfileData = {
+    name: profileBasics?.name ?? null,
+    email: profileBasics ? profileBasics.email || user?.email || null : null,
+  };
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState("");
   const [savingName, setSavingName] = useState(false);
   const { data: diagnosticos = [] } = useDiagnosticos();
   const deleteDiag = useDeleteDiagnostico();
-
-  useEffect(() => {
-    if (!user) return;
-    const fetchProfile = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("name, email")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setProfile({
-        name: (data as { name?: string | null; email?: string | null } | null)?.name || null,
-        email: (data as { name?: string | null; email?: string | null } | null)?.email || user.email || null,
-      });
-    };
-    fetchProfile();
-  }, [user]);
 
 
 
@@ -63,7 +54,7 @@ export default function MinhaConta() {
         .eq("user_id", user.id);
         
       if (error) throw error;
-      setProfile(prev => ({ ...prev, name: editNameValue }));
+      setProfileName(user.id, editNameValue);
       setIsEditingName(false);
       toast.success("Nome atualizado com sucesso!");
     } catch (err) {

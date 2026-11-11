@@ -1,6 +1,6 @@
+import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -113,7 +113,7 @@ export function FunilQuizCard() {
       </CardHeader>
       <CardContent className="space-y-6">
         {isLoading ? (
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <div className="space-y-2" aria-busy="true">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-9 w-full" />)}</div>
         ) : (
           <Table>
             <TableHeader>

@@ -60,7 +60,7 @@ const BlogPost23 = () => {
 
                     <div className="prose prose-lg max-w-none space-y-8">
                         <div className="mb-10 rounded-2xl overflow-hidden shadow-xl border border-gray-200">
-                            <img src="/assets/blog/updated/vendas_grupos_updated.png" alt="Grupo de viagem pelo WhatsApp" className="w-full h-auto" />
+                            <img src="/assets/blog/updated/vendas_grupos_updated.webp" alt="Grupo de viagem pelo WhatsApp" className="w-full h-auto" />
                         </div>
 
                         <p className="text-xl text-slate-700 leading-relaxed font-medium">

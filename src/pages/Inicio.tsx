@@ -5,24 +5,24 @@ import {
 import "@/assets/inicio-design.css";
 import lucasPortrait from "@/assets/lucas-ferrari-portrait.webp";
 import logoImage from "@/assets/logo.png";
-import heroDashboard from "@/assets/hero_dashboard.jpg";
-import dashboardInterno from "@/assets/dashboard_interno.png";
-import antesAmador from "@/assets/antes_amador.png";
-import depoisPremium from "@/assets/depois_premium.png";
-import crmLeads from "@/assets/crm_leads.png";
-import paginaRoteiro from "@/assets/pagina_venda_roteiro.png";
-import depoimento1 from "@/assets/depoimento1.jpg";
-import depoimento2 from "@/assets/depoimento2.png";
-import depoimento3 from "@/assets/depoimento3.jpg";
+import heroDashboard from "@/assets/hero_dashboard.webp";
+import dashboardInterno from "@/assets/dashboard_interno.webp";
+import antesAmador from "@/assets/antes_amador.webp";
+import depoisPremium from "@/assets/depois_premium.webp";
+import crmLeads from "@/assets/crm_leads.webp";
+import paginaRoteiro from "@/assets/pagina_venda_roteiro.webp";
+import depoimento1 from "@/assets/depoimento1.webp";
+import depoimento2 from "@/assets/depoimento2.webp";
+import depoimento3 from "@/assets/depoimento3.webp";
 import { ProductDemo } from "../components/planos/ProductDemo";
 import { PricingAccordion } from "@/components/PricingAccordion";
 
 // Import local premium tools showcase images
-import showcaseAdCreation from "@/assets/images/showcase-ad-creation.png";
-import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
-import showcaseCrm from "@/assets/images/showcase-crm.png";
-import showcaseScheduler from "@/assets/images/showcase-scheduler.png";
-import showcasePremiumMedias from "@/assets/images/showcase-premium-medias.png";
+import showcaseAdCreation from "@/assets/images/showcase-ad-creation.webp";
+import showcaseLandingPages from "@/assets/images/showcase-landing-pages.webp";
+import showcaseCrm from "@/assets/images/showcase-crm.webp";
+import showcaseScheduler from "@/assets/images/showcase-scheduler.webp";
+import showcasePremiumMedias from "@/assets/images/showcase-premium-medias.webp";
 
 export default function Inicio() {
   const [isYearly, setIsYearly] = useState(false);
@@ -540,7 +540,7 @@ export default function Inicio() {
                   <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
                     <div>
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
-                        <img src="/images/LOC_MarTechB2C_CanvaPro_LandingPage_PremiumVideoTemplates_Small_pt-BR.png" alt="Mais de 300 vídeos Reels de destinos" className="w-full h-full object-cover" />
+                        <img src="/images/LOC_MarTechB2C_CanvaPro_LandingPage_PremiumVideoTemplates_Small_pt-BR.webp" alt="Mais de 300 vídeos Reels de destinos" className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
                         <span className="text-[#8b3dff]">🎬</span> Mais de 300 vídeos Reels
@@ -555,7 +555,7 @@ export default function Inicio() {
                   <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
                     <div>
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
-                        <img src="/images/PRO25001_JTBD_Section_Video_Tab_Captions.png" alt="Roteiros para vídeos" className="w-full h-full object-cover" />
+                        <img src="/images/PRO25001_JTBD_Section_Video_Tab_Captions.webp" alt="Roteiros para vídeos" className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
                         <span className="text-[#8b3dff]">💬</span> Roteiros e Textos para Vídeos
@@ -570,7 +570,7 @@ export default function Inicio() {
                   <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
                     <div>
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
-                        <img src="/images/Whiteboard_ProTemplates_Desktop_2x_pt-BR.png" alt="Acesso ao Google Drive" className="w-full h-full object-cover" />
+                        <img src="/images/Whiteboard_ProTemplates_Desktop_2x_pt-BR.webp" alt="Acesso ao Google Drive" className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
                         <span className="text-[#8b3dff]">📥</span> Download via Google Drive
@@ -590,7 +590,7 @@ export default function Inicio() {
                   <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
                     <div>
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
-                        <img src="/images/ArtistCollection_small_pt-BR.png" alt="Artes prontas para o Feed" className="w-full h-full object-cover" />
+                        <img src="/images/ArtistCollection_small_pt-BR.webp" alt="Artes prontas para o Feed" className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
                         <span className="text-[#8b3dff]">🎨</span> Artes prontas para o Feed
@@ -625,7 +625,7 @@ export default function Inicio() {
                   <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300 ring-2 ring-[#8b3dff]/30">
                     <div>
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
-                        <img src="/images/PRO25001_JTBD_Section_Brand_Tab_Magic_Write.png" alt="Vendedor de viagens com IA" className="w-full h-full object-cover" />
+                        <img src="/images/PRO25001_JTBD_Section_Brand_Tab_Magic_Write.webp" alt="Vendedor de viagens com IA" className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
                         <span className="text-[#8b3dff]">👑</span> Vendedor de Viagens IA
@@ -640,7 +640,7 @@ export default function Inicio() {
                   <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
                     <div>
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
-                        <img src="/images/LOC_MarTechB2C_CanvaPro_LandingPage_AIAdCreation_Small_pt-BR.png" alt="Agentes de marketing com IA" className="w-full h-full object-cover" />
+                        <img src="/images/LOC_MarTechB2C_CanvaPro_LandingPage_AIAdCreation_Small_pt-BR.webp" alt="Agentes de marketing com IA" className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
                         <span className="text-[#8b3dff]">🤖</span> Agentes IA de Marketing
@@ -655,7 +655,7 @@ export default function Inicio() {
                   <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
                     <div>
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
-                        <img src="/images/PRO25001_JTBD_Section_Spotlight_Tab_Style_Match.png" alt="Gerador de roteiros inteligente" className="w-full h-full object-cover" />
+                        <img src="/images/PRO25001_JTBD_Section_Spotlight_Tab_Style_Match.webp" alt="Gerador de roteiros inteligente" className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
                         <span className="text-[#8b3dff]">🗺️</span> Gerador IA de Roteiros
@@ -675,7 +675,7 @@ export default function Inicio() {
                   <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
                     <div>
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
-                        <img src="/images/PRO25001_JTBD_Section_Video_Tab_Captions.png" alt="Legendas prontas" className="w-full h-full object-cover" />
+                        <img src="/images/PRO25001_JTBD_Section_Video_Tab_Captions.webp" alt="Legendas prontas" className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
                         <span className="text-[#8b3dff]">✍️</span> Legendas Prontas
@@ -690,7 +690,7 @@ export default function Inicio() {
                   <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
                     <div>
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
-                        <img src="/images/LOC_MarTechB2C_CanvaPro_LandingPage_AdInspiration_Small_pt-BR.png" alt="Textos de ofertas validadas" className="w-full h-full object-cover" />
+                        <img src="/images/LOC_MarTechB2C_CanvaPro_LandingPage_AdInspiration_Small_pt-BR.webp" alt="Textos de ofertas validadas" className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
                         <span className="text-[#8b3dff]">💰</span> Textos de Ofertas
@@ -705,7 +705,7 @@ export default function Inicio() {
                   <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
                     <div>
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
-                        <img src="/images/PRO25001_JTBD_Section_Print_Tab_Disney_Collection.png" alt="Contratos de viagens validados" className="w-full h-full object-cover" />
+                        <img src="/images/PRO25001_JTBD_Section_Print_Tab_Disney_Collection.webp" alt="Contratos de viagens validados" className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
                         <span className="text-[#8b3dff]">📄</span> Modelos de Contratos

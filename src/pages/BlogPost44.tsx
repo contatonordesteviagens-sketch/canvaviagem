@@ -57,7 +57,7 @@ const BlogPost44 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/webinar/manus_ai_agencia_1773093400004_1773103364569.png"
+                                src="/assets/blog/webinar/manus_ai_agencia_1773093400004_1773103364569.webp"
                                 alt="Tecnologia Manus AI em operação"
                                 className="w-full h-auto object-cover"
                             />

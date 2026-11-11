@@ -59,7 +59,7 @@ const BlogPost37 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/updated/agencia_vs_influenciador_updated.png"
+                                src="/assets/blog/updated/agencia_vs_influenciador_updated.webp"
                                 alt="Diferença visual entre post de agência e post de influenciador"
                                 className="w-full h-auto object-cover"
                             />

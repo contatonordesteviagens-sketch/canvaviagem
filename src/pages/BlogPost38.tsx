@@ -57,7 +57,7 @@ const BlogPost38 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200 bg-white p-2">
                             <img
-                                src="/assets/blog/webinar/perfil_sem_designer_1773093380500.png"
+                                src="/assets/blog/webinar/perfil_sem_designer_1773093380500.webp"
                                 alt="Exemplo de design premium de agência feito de forma simples e elegante"
                                 className="w-full h-auto object-cover rounded-xl"
                             />

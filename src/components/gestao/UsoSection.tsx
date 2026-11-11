@@ -1,6 +1,8 @@
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { PainelSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Loader2, Search } from "lucide-react";
+import { AlertTriangle, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -83,7 +85,8 @@ const n = (v: number) => v.toLocaleString("pt-BR");
 export function UsoSection() {
   const [periodo, setPeriodo] = useState<Periodo>("tudo");
   const [grupo, setGrupo] = useState<Grupo>("ativos");
-  const [busca, setBusca] = useState("");
+  const [buscaInput, setBusca] = useState("");
+  const busca = useDebouncedValue(buscaInput);
   const [aberto, setAberto] = useState<Cliente | null>(null);
 
   const { data: base, isLoading: loadingBase, error: errorBase } = useAdminUserIntelligence();
@@ -182,7 +185,7 @@ export function UsoSection() {
   }, [noGrupo, busca]);
 
   if (loadingBase || loadingUso) {
-    return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    return <PainelSkeleton />;
   }
   if (errorBase || errorUso) {
     return <p className="py-10 text-center text-sm text-red-600">Não foi possível carregar os dados de uso agora.</p>;
@@ -246,7 +249,7 @@ export function UsoSection() {
           <CardTitle className="text-lg">Cada cliente ({n(linhas.length)})</CardTitle>
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar nome ou e-mail" className="pl-8" />
+            <Input value={buscaInput} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar nome ou e-mail" className="pl-8" />
           </div>
         </CardHeader>
         <CardContent>

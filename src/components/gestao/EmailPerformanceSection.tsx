@@ -1,7 +1,8 @@
+import { PainelSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useEmailDashboard } from "@/hooks/useEmailDashboard";
 import { useEmailMetrics } from "@/hooks/useMarketingFunnel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Mail, MailOpen, MousePointer, AlertTriangle, Send, CheckCircle } from "lucide-react";
+import { Mail, MailOpen, MousePointer, AlertTriangle, Send, CheckCircle } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -33,9 +34,7 @@ export const EmailPerformanceSection = ({ dateRange }: EmailPerformanceSectionPr
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <PainelSkeleton />
     );
   }
 

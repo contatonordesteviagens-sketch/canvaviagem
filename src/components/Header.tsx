@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
 import { hasEliteAccess } from "@/lib/planAccess";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useProfileBasics, useSetProfileName } from "@/hooks/useProfileBasics";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
@@ -44,11 +45,14 @@ const headerResourceItems = [
 
 const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
   const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, subscription, isAdmin } = useAuth();
+  const userId = user?.id;
+  const { data: profileBasics } = useProfileBasics(userId);
+  const setProfileName = useSetProfileName();
+  const userName = userId ? profileBasics?.name ?? null : null;
   const { theme, toggleTheme } = useTheme();
   const { t, language } = useLanguage();
   const { isCollapsed, toggleSidebar } = useSidebar();
@@ -60,37 +64,23 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   const showProximoNivel = language === 'pt';
 
   // Fetch user name from profile with realtime updates
+  // O nome vem do cache (uma consulta só, reaproveitada entre as telas); o aviso em tempo real atualiza o cache.
   useEffect(() => {
-    if (!user) {
-      setUserName(null);
-      return;
-    }
-
-    const fetchUserName = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("name")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      setUserName(data?.name || null);
-    };
-
-    fetchUserName();
+    if (!userId) return;
 
     // Subscribe to realtime updates on the user's profile
     const channel = supabase
-      .channel(`profile-${user.id}`)
+      .channel(`profile-${userId}`)
       .on(
         'postgres_changes',
         {
           event: 'UPDATE',
           schema: 'public',
           table: 'profiles',
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          setUserName((payload.new as { name?: string })?.name || null);
+          setProfileName(userId, (payload.new as { name?: string })?.name || null);
         }
       )
       .subscribe();
@@ -98,7 +88,8 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
 
 

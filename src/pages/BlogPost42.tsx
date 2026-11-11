@@ -59,7 +59,7 @@ const BlogPost42 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/updated/google_gemini_updated.png"
+                                src="/assets/blog/updated/google_gemini_updated.webp"
                                 alt="Agente de viagem usando Google Gemini"
                                 className="w-full h-auto object-cover"
                             />

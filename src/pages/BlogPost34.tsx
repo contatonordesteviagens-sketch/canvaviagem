@@ -57,7 +57,7 @@ const BlogPost34 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/webinar/perfil_abandonado_1773093299043.png"
+                                src="/assets/blog/webinar/perfil_abandonado_1773093299043.webp"
                                 alt="Representação visual de um perfil de agência de viagem desatualizado e sem vida"
                                 className="w-full h-auto object-cover"
                             />

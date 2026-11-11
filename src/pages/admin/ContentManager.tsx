@@ -1,3 +1,5 @@
+import { LoadMore, useLoadMore } from "@/components/ui/load-more";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,7 +92,8 @@ export default function ContentManager() {
   const queryClient = useQueryClient();
   const { data: contentItems, isLoading } = useAllContentItems();
   
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearch] = useState("");
+  const search = useDebouncedValue(searchInput);
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
@@ -171,6 +174,7 @@ export default function ContentManager() {
     const matchesType = typeFilter === "all" || item.type === typeFilter;
     return matchesSearch && matchesType;
   }) || [];
+  const contentPage = useLoadMore(filteredContent, 50, `${search}|${typeFilter}`);
 
   const handleEdit = (item: ContentItem) => {
     setEditingItem(item);
@@ -270,7 +274,7 @@ export default function ContentManager() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por título..."
-            value={search}
+            value={searchInput}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
           />
@@ -311,7 +315,7 @@ export default function ContentManager() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredContent.map((item) => (
+              {contentPage.visible.map((item) => (
                 <TableRow key={item.id} className={!item.is_active ? "opacity-50" : ""}>
                   <TableCell className="text-xl">{item.icon}</TableCell>
                   <TableCell className="font-medium">{item.title}</TableCell>
@@ -371,6 +375,7 @@ export default function ContentManager() {
               ))}
             </TableBody>
           </Table>
+          <LoadMore shown={contentPage.shown} total={contentPage.total} hasMore={contentPage.hasMore} onLoadMore={contentPage.loadMore} label="conteúdos" />
         </div>
       )}
 

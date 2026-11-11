@@ -59,7 +59,7 @@ const BlogPost33 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/updated/decolar_vs_agencia_updated.png"
+                                src="/assets/blog/updated/decolar_vs_agencia_updated.webp"
                                 alt="Agente de viagem especialista atendendo o cliente com autoridade"
                                 className="w-full h-auto object-cover"
                             />

@@ -57,7 +57,7 @@ const BlogPost50 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/webinar/mapa_agencia_5_estrelas_convite_1773093394115.png"
+                                src="/assets/blog/webinar/mapa_agencia_5_estrelas_convite_1773093394115.webp"
                                 alt="Agência de viagem do futuro 2026"
                                 className="w-full h-auto object-cover"
                             />

@@ -85,7 +85,7 @@ const BlogPost6 = () => {
                     <div className="prose prose-lg max-w-none space-y-8">
                         <div className="rounded-2xl overflow-hidden shadow-xl mb-10 border border-gray-200">
                             <img
-                                src="/assets/blog/updated/vendas_grupos_updated.png"
+                                src="/assets/blog/updated/vendas_grupos_updated.webp"
                                 alt="Grupo de viajantes felizes"
                                 className="w-full h-auto"
                             />
@@ -136,11 +136,11 @@ const BlogPost6 = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-12">
                             <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-100">
-                                <img src="/assets/blog/updated/vendas_grupos_updated.png" alt="Case: Grupo VIP Europa" className="w-full h-48 object-cover opacity-80" />
+                                <img src="/assets/blog/updated/vendas_grupos_updated.webp" alt="Case: Grupo VIP Europa" className="w-full h-48 object-cover opacity-80" />
                                 <div className="p-4 bg-white"><p className="text-xs font-bold text-blue-600 uppercase">Case: Grupo VIP Europa</p><p className="text-slate-600 text-sm">Faturamento de R$ 120k em 48 horas de lançamento.</p></div>
                             </div>
                             <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-100">
-                                <img src="/assets/blog/updated/vendas_grupos_updated.png" alt="Case: Expedição Jalapão" className="w-full h-48 object-cover scale-x-[-1] opacity-80" />
+                                <img src="/assets/blog/updated/vendas_grupos_updated.webp" alt="Case: Expedição Jalapão" className="w-full h-48 object-cover scale-x-[-1] opacity-80" />
                                 <div className="p-4 bg-white"><p className="text-xs font-bold text-blue-600 uppercase">Case: Expedição Jalapão</p><p className="text-slate-600 text-sm">Vagas esgotadas apenas com lista de espera no WhatsApp.</p></div>
                             </div>
                         </div>

@@ -11,7 +11,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { Suspense, lazy } from "react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { HelmetProvider } from "react-helmet-async";
-import { Loader2 } from "lucide-react";
+import { PageSkeleton } from "@/components/skeletons/PageSkeleton";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { SidebarNav } from "@/components/SidebarNav";
 import { useLocation } from "react-router-dom";
@@ -202,13 +202,13 @@ const getCanvaViagemSiteSlug = () => {
   return subdomain;
 };
 
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <Loader2 className="h-8 w-8 animate-spin text-primary opacity-50" />
-  </div>
-);
+// Enquanto o código da página chega: esqueleto com o formato da tela que vai abrir (antes era um spinner).
+const PageLoader = () => <PageSkeleton />;
 
-const queryClient = new QueryClient();
+// Voltar para a aba do navegador não refaz todas as consultas: cada hook já define por quanto tempo o dado vale.
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnWindowFocus: false } },
+});
 
 // Componente para rastreamento de UTM
 const UtmTracker = () => {

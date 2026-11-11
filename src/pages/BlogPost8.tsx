@@ -85,7 +85,7 @@ const BlogPost8 = () => {
                     <div className="prose prose-lg max-w-none space-y-8">
                         <div className="rounded-2xl overflow-hidden shadow-xl mb-10 border border-gray-200">
                             <img
-                                src="/assets/blog/updated/poder_nicho_updated.png"
+                                src="/assets/blog/updated/poder_nicho_updated.webp"
                                 alt="Mapa e acessórios de viagem focada"
                                 className="w-full h-auto"
                             />

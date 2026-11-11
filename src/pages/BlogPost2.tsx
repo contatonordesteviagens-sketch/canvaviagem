@@ -98,7 +98,7 @@ const BlogPost2 = () => {
                         {/* Imagem Hero */}
                         <div className="mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
                             <img
-                                src="/assets/blog/updated/conteudo_sem_video_updated.png"
+                                src="/assets/blog/updated/conteudo_sem_video_updated.webp"
                                 alt="Método de 3 passos para criar conteúdo para agência de viagem sem gravar vídeo"
                                 className="w-full object-cover"
                                 loading="eager"

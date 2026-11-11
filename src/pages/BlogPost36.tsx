@@ -57,7 +57,7 @@ const BlogPost36 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200 text-center bg-white p-4">
                             <img
-                                src="/assets/blog/webinar/trava_no_canva_1773093328349.png"
+                                src="/assets/blog/webinar/trava_no_canva_1773093328349.webp"
                                 alt="Agente de viagem frustrada na frente do computador com tela do Canva"
                                 className="w-full h-auto object-cover rounded-xl"
                             />

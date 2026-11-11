@@ -1,3 +1,4 @@
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,7 +61,8 @@ export default function ToolsManager() {
   const queryClient = useQueryClient();
   const { data: tools, isLoading } = useAllMarketingTools();
   
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearch] = useState("");
+  const search = useDebouncedValue(searchInput);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MarketingTool | null>(null);
   const [formData, setFormData] = useState<ToolFormData>(defaultFormData);
@@ -185,7 +187,7 @@ export default function ToolsManager() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Buscar ferramentas..."
-            value={search}
+            value={searchInput}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
           />

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, ClipboardList, Loader2, LayoutDashboard, FolderOpen, Upload, History, Users, MessageSquare, Globe } from "lucide-react";
+import { Activity, ClipboardList, LayoutDashboard, FolderOpen, Upload, History, Users, MessageSquare, Globe } from "lucide-react";
 import {
   useAllContentItems,
   useAllCaptions,
@@ -16,6 +16,7 @@ import {
   useIsAdmin,
 } from "@/hooks/useContent";
 import { toast } from "sonner";
+import { GestaoSkeleton, PainelSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useEffect } from "react";
 import { insertMissingCaptions } from "@/utils/insertMissing";
 
@@ -78,14 +79,7 @@ const Gestao = () => {
   const deleteTool = useDeleteMarketingTool();
 
   if (authLoading || adminLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Verificando permissões...</p>
-        </div>
-      </div>
-    );
+    return <GestaoSkeleton />;
   }
 
   if (!user) {
@@ -248,9 +242,7 @@ const Gestao = () => {
           {/* Content Tab */}
           <TabsContent value="content" className="mt-0">
             {isLoadingData ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
+              <PainelSkeleton cartoes={0} linhas={8} />
             ) : (
               <ContentSection
                 contentItems={contentItems || []}

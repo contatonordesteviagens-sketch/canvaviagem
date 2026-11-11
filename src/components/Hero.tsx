@@ -1,4 +1,4 @@
-import heroImage from "@/assets/influencers-banner.png";
+import heroImage from "@/assets/influencers-banner.webp";
 import { Sparkles } from "lucide-react";
 
 export const Hero = () => {

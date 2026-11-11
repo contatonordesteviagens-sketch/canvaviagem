@@ -23,9 +23,9 @@ import { ONBOARDING_DESTINO_KEY, yearGifs } from "@/pages/InicioCreme";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import { trackInicioTeste } from "@/lib/inicio-teste";
 import { readTrialResult, type TrialResult } from "@/lib/inicio-arte";
-import depoimento1 from "@/assets/depoimento1.jpg";
-import depoimento2 from "@/assets/depoimento2.png";
-import depoimento3 from "@/assets/depoimento3.jpg";
+import depoimento1 from "@/assets/depoimento1.webp";
+import depoimento2 from "@/assets/depoimento2.webp";
+import depoimento3 from "@/assets/depoimento3.webp";
 
 type Icon = ComponentType<{ className?: string }>;
 type Option = { id: string; label: string; hint: string; icon: Icon };
@@ -657,7 +657,7 @@ function ProofCarousel() {
         className="no-scrollbar -mx-5 mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3"
       >
         {[depoimento1, depoimento2, depoimento3].map((src, i) => (
-          <img key={src} src={src} alt={`Mensagem de cliente ${i + 1}`} loading="lazy" className="h-[260px] w-[78%] shrink-0 snap-center rounded-2xl border-4 border-white bg-black object-contain shadow-lg" />
+          <img key={src} src={src} alt={`Mensagem de cliente ${i + 1}`} loading="lazy" decoding="async" className="h-[260px] w-[78%] shrink-0 snap-center rounded-2xl border-4 border-white bg-black object-contain shadow-lg" />
         ))}
       </div>
       {!atEnd && (

@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { sazonaisPrimeiro } from "@/lib/sazonalTopo";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,45 +57,55 @@ export interface MarketingTool {
   updated_at: string;
 }
 
+// Uma consulta só por idioma traz todo o conteúdo ativo; cada tela filtra o seu tipo em cima do mesmo cache.
+// Antes, a página inicial fazia 5 consultas a content_items (vídeos, destaques, feed, stories, ofertas) e o
+// Calendário e a Fábrica repetiam a de vídeos. Agora é 1 requisição, reaproveitada por 5 minutos entre as telas.
+const PAGINA_CONTEUDO = 1000;
+
+const conteudoAtivoKey = (language: Language) => ["content-items", "ativos", language] as const;
+
+async function buscarConteudoAtivo(language: Language): Promise<ContentItem[]> {
+  const todos: ContentItem[] = [];
+  // A API devolve no máximo 1000 linhas por vez: busca em páginas até acabar (hoje cabe tudo na primeira).
+  for (let de = 0; ; de += PAGINA_CONTEUDO) {
+    let query = supabase
+      .from("content_items")
+      .select("*")
+      .eq("is_active", true)
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(de, de + PAGINA_CONTEUDO - 1);
+
+    // ⭐ FILTRAR POR IDIOMA NO BANCO ⭐
+    if (language === 'pt') {
+      query = query.or('language.eq.pt,language.is.null');
+    } else {
+      query = query.eq('language', language);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    todos.push(...((data || []) as ContentItem[]));
+    if (!data || data.length < PAGINA_CONTEUDO) break;
+  }
+  return todos;
+}
+
 // Hook para buscar content items por tipo with language priority ordering
 export const useContentItems = (type?: string | string[], featuredOnly?: boolean, forcedLanguage?: Language) => {
   const { language: contextLanguage } = useLanguage();
   const language = forcedLanguage || contextLanguage;
+  const tipos = type ? (Array.isArray(type) ? type.join("|") : type) : "";
 
-  return useQuery({
-    queryKey: ["content-items", type, featuredOnly, language],
-    queryFn: async () => {
-      let query = supabase
-        .from("content_items")
-        .select("*")
-        .eq("is_active", true)
-        .order("is_featured", { ascending: false })
-        .order("created_at", { ascending: false });
-
-      if (type) {
-        if (Array.isArray(type)) {
-          query = query.in("type", type);
-        } else {
-          query = query.eq("type", type);
-        }
-      }
-
-      if (featuredOnly) {
-        query = query.eq("is_featured", true);
-      }
-
-      // ⭐ FILTRAR POR IDIOMA NO BANCO ⭐
-      if (language === 'pt') {
-        query = query.or('language.eq.pt,language.is.null');
-      } else {
-        query = query.eq('language', language);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
+  const select = useCallback(
+    (todos: ContentItem[]) => {
+      const aceitos = tipos ? tipos.split("|") : null;
+      const filtrados = todos.filter(
+        (item) => (!aceitos || aceitos.includes(item.type)) && (!featuredOnly || item.is_featured),
+      );
       // Ordenar por display_order e created_at (sem fallback de idioma)
-      const ordenados = (data as ContentItem[]).sort((a, b) => {
+      const ordenados = filtrados.sort((a, b) => {
         const aOrder = a.display_order ?? 9999;
         const bOrder = b.display_order ?? 9999;
         if (aOrder !== bOrder) return aOrder - bOrder;
@@ -103,6 +114,13 @@ export const useContentItems = (type?: string | string[], featuredOnly?: boolean
       // datas que estão chegando (Black Friday, Natal, Réveillon, Carnaval) vão para o topo
       return sazonaisPrimeiro(ordenados, (i) => `${i.title || ""} ${i.subcategory || ""}`);
     },
+    [tipos, featuredOnly],
+  );
+
+  return useQuery({
+    queryKey: conteudoAtivoKey(language),
+    queryFn: () => buscarConteudoAtivo(language),
+    select,
     staleTime: 1000 * 60 * 5, // 5 minutos de cache
   });
 };
@@ -127,33 +145,21 @@ export const useNewestItemIds = () => {
 };
 
 // Hook para buscar itens em destaque (is_featured) - filtered by language
+// Sai do mesmo cache do conteúdo ativo: não faz requisição própria.
+const selecionarDestaques = (todos: ContentItem[]) =>
+  todos
+    .filter((item) => item.is_featured && (item.type === "video" || item.type === "seasonal"))
+    .sort((a, b) => (a.display_order ?? Number.MAX_SAFE_INTEGER) - (b.display_order ?? Number.MAX_SAFE_INTEGER))
+    .slice(0, 10);
+
 export const useFeaturedItems = (forcedLanguage?: Language) => {
   const { language: contextLanguage } = useLanguage();
   const language = forcedLanguage || contextLanguage;
 
   return useQuery({
-    queryKey: ["featured-items", language],
-    queryFn: async () => {
-      let query = supabase
-        .from("content_items")
-        .select("*")
-        .eq("is_active", true)
-        .eq("is_featured", true)
-        .in("type", ["video", "seasonal"])
-        .order("display_order", { ascending: true })
-        .limit(10);
-
-      // Filter by language in database
-      if (language === 'pt') {
-        query = query.or('language.eq.pt,language.is.null');
-      } else {
-        query = query.eq('language', language);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as ContentItem[];
-    },
+    queryKey: conteudoAtivoKey(language),
+    queryFn: () => buscarConteudoAtivo(language),
+    select: selecionarDestaques,
     staleTime: 1000 * 60 * 5, // 5 minutos de cache
   });
 };

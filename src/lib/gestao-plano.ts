@@ -1,7 +1,7 @@
 // Conteúdo da aba Gestão > Plano. Atualizar a cada rodada de trabalho: é a memória do projeto.
 // Nada de número inventado: o que é proposta está escrito como proposta.
 
-export const PLANO_ATUALIZADO_EM = "03/11/2026";
+export const PLANO_ATUALIZADO_EM = "11/11/2026";
 
 export type Owner = "Lucas" | "Claude" | "Automático";
 export type ProximoPasso = { quando: string; quem: Owner; oque: string; porque: string };
@@ -33,6 +33,7 @@ export const STATUS_GERAL = [
   { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo. Desde 03/11 existe a /black: a mesma página e o mesmo quiz da /inicio, com fundo preto e preço da Black, para quem ainda não conhece a ferramenta." },
   { area: "Automação de e-mails", estado: "ok", detalhe: "Black saindo pelo Brevo desde 17h15 de 03/11: 59 e-mails na primeira rodada, entregues e já com aberturas. Até 60 por hora. Quem nunca assinou recebe o link da /black; ex-assinante, o da /black-friday. A lista fria comprovada entra quando sobra espaço no limite. A função de e-mails precisa ser publicada pelo chat do Lovable a cada mudança." },
   { area: "Pixel do Meta no site", estado: "ok", detalhe: "O pixel da INFOS ALFA recebe eventos do canvaviagem.com desde 01/11, só pelo navegador. A conta está ativa." },
+  { area: "Velocidade do site", estado: "ok", detalhe: "Rodada de 11/11, ainda não publicada: as 56 fotos pesadas do site viraram WebP (37,4 MB para 2,9 MB, 92% menos). A página de anúncios caiu de 1,8 MB para 176 KB. A biblioteca do assinante faz 3 pedidos ao banco em vez de 7. Telas de carregamento com o formato do conteúdo no lugar da bolinha girando, busca que só filtra quando a pessoa para de digitar e listas longas de 50 em 50. Falta o sim do Lucas para publicar." },
   { area: "Segurança", estado: "ok", detalhe: "Conferida em 01/11: nenhuma chave secreta no site nem nos commits recentes, e dados de clientes fechados para quem não é admin. Sobram itens menores no checklist." },
   { area: "Liberação de acesso depois de pagar", estado: "atencao", detalhe: "Pix conferido com venda real em 31/10: acesso liberado em 30 segundos e cliente gerou e baixou arte. Falta o cartão." },
 ] as const;
@@ -238,6 +239,19 @@ export const CHECKLIST: ChecklistGrupo[] = [
       { id: "meta-anuncios-prontos", texto: "Anúncios e campanha prontos para aprovar", quem: "Claude" },
       { id: "meta-leitura-0311", texto: "Resultado lido em 03/11", quem: "Claude" },
       { id: "meta-fechamento", texto: "Meta fechada em 06/11, com custo por assinante", quem: "Claude" },
+    ],
+  },
+  {
+    titulo: "Velocidade do site (rodada de 11/11, ainda no computador)",
+    itens: [
+      { id: "perf-skeleton", texto: "Telas de carregamento com o formato do conteúdo (funil, quiz, pagamento, Fábrica, biblioteca, Gestão)", quem: "Claude", feito: true, nota: "No lugar da bolinha girando. A pessoa já vê o desenho da tela enquanto ela chega." },
+      { id: "perf-webp", texto: "56 fotos pesadas convertidas para WebP", quem: "Claude", feito: true, nota: "De 37,4 MB para 2,9 MB. Fotos do blog e das páginas de venda. Nenhuma imagem quebrada no teste." },
+      { id: "perf-duplicadas", texto: "Pedidos repetidos ao banco juntados", quem: "Claude", feito: true, nota: "Biblioteca do assinante: 7 pedidos viraram 3. O nome do cabeçalho deixou de ser buscado a cada troca de tela." },
+      { id: "perf-debounce", texto: "Busca só filtra quando a pessoa para de digitar (0,3 s)", quem: "Claude", feito: true, nota: "13 campos: biblioteca, downloads, Gestão e telas de admin. O campo de endereço da Fábrica cancela a busca anterior e desiste em 8 s." },
+      { id: "perf-paginacao", texto: "Listas longas de 50 em 50, com Carregar mais", quem: "Claude", feito: true, nota: "Usuários, leads da live, conteúdos e legendas. A exportação em CSV continua levando tudo." },
+      { id: "perf-celular", texto: "Testado em celular e computador pelo site local", quem: "Claude", feito: true },
+      { id: "perf-publicar", texto: "Publicar a rodada de velocidade", quem: "Lucas", nota: "Esperando o sim. São só telas e fotos: não mexe em pagamento, login nem no gerador de vídeo." },
+      { id: "perf-brotli", texto: "Ligar o Brotli no Cloudflare", quem: "Lucas", nota: "Hoje o site sai comprimido em gzip. O Brotli economiza mais ou menos 15% a mais e é um botão no painel do Cloudflare." },
     ],
   },
   {

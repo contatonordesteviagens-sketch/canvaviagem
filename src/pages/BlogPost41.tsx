@@ -57,7 +57,7 @@ const BlogPost41 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/webinar/chatgpt_agencia_viagem_1773093400001_1773103323481.png"
+                                src="/assets/blog/webinar/chatgpt_agencia_viagem_1773093400001_1773103323481.webp"
                                 alt="Agente de viagem usando ChatGPT"
                                 className="w-full h-auto object-cover"
                             />

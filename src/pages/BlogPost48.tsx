@@ -59,7 +59,7 @@ const BlogPost48 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/updated/google_notebooklm_updated.png"
+                                src="/assets/blog/updated/google_notebooklm_updated.webp"
                                 alt="Agente de viagem organizando documentos com NotebookLM"
                                 className="w-full h-auto object-cover opacity-90 brightness-95"
                             />

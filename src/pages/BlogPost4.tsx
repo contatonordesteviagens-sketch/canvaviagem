@@ -96,7 +96,7 @@ const BlogPost4 = () => {
                     <div className="prose prose-lg max-w-none space-y-8">
                         <div className="rounded-2xl overflow-hidden shadow-xl mb-10">
                             <img
-                                src="/assets/blog/updated/destinos_nacionais_updated.png"
+                                src="/assets/blog/updated/destinos_nacionais_updated.webp"
                                 alt="Destinos tendência no Brasil 2026"
                                 className="w-full h-auto"
                             />

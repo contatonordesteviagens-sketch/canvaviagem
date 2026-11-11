@@ -57,7 +57,7 @@ const BlogPost46 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/webinar/grok_ia_agencia_1773093400006_1773103397685.png"
+                                src="/assets/blog/webinar/grok_ia_agencia_1773093400006_1773103397685.webp"
                                 alt="Agente de viagem usando Grok IA"
                                 className="w-full h-auto object-cover"
                             />

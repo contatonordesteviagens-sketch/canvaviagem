@@ -1,3 +1,5 @@
+import { LoadMore, useLoadMore } from "@/components/ui/load-more";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,7 +64,8 @@ export default function CaptionsManager() {
   const queryClient = useQueryClient();
   const { data: captions, isLoading } = useAllCaptions();
   
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearch] = useState("");
+  const search = useDebouncedValue(searchInput);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Caption | null>(null);
@@ -141,6 +144,7 @@ export default function CaptionsManager() {
     const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
     return matchesSearch && matchesCategory;
   }) || [];
+  const captionsPage = useLoadMore(filteredCaptions, 50, `${search}|${categoryFilter}`);
 
   const handleEdit = (item: Caption) => {
     setEditingItem(item);
@@ -200,7 +204,7 @@ export default function CaptionsManager() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por destino ou texto..."
-            value={search}
+            value={searchInput}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
           />
@@ -235,7 +239,7 @@ export default function CaptionsManager() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCaptions.map((item) => (
+              {captionsPage.visible.map((item) => (
                 <TableRow key={item.id} className={!item.is_active ? "opacity-50" : ""}>
                   <TableCell className="font-medium">{item.destination}</TableCell>
                   <TableCell className="max-w-md">
@@ -283,6 +287,7 @@ export default function CaptionsManager() {
               ))}
             </TableBody>
           </Table>
+          <LoadMore shown={captionsPage.shown} total={captionsPage.total} hasMore={captionsPage.hasMore} onLoadMore={captionsPage.loadMore} label="legendas" />
         </div>
       )}
 

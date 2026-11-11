@@ -1,3 +1,5 @@
+import { LoadMore, useLoadMore } from "@/components/ui/load-more";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -130,7 +132,8 @@ const PRESET_PACKS: PresetPack[] = [
 
 export const LiveCommentsSection = () => {
   const [comments, setComments] = useState<ScheduledComment[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQueryInput, setSearchQuery] = useState("");
+  const searchQuery = useDebouncedValue(searchQueryInput);
   
   // Video Settings State
   const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/watch?v=Xqcw-NpPz08");
@@ -203,7 +206,8 @@ export const LiveCommentsSection = () => {
     }>;
   }
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [leadsSearch, setLeadsSearch] = useState("");
+  const [leadsSearchInput, setLeadsSearch] = useState("");
+  const leadsSearch = useDebouncedValue(leadsSearchInput);
   const [expandedLeadId, setExpandedLeadId] = useState<string | null>(null);
   const [nowTick, setNowTick] = useState(Date.now());
 
@@ -1083,6 +1087,9 @@ export const LiveCommentsSection = () => {
       return nameMatch || phoneMatch || dateMatch;
     });
   }, [leads, leadsSearch]);
+
+  // A tabela de leads mostra 50 por vez; métricas, contadores e exportações continuam usando todos.
+  const leadsPage = useLoadMore(filteredLeads, 50, leadsSearch);
 
   // ── CONTADORES & ANÁLISE DE MÉTRICAS (MEMOIZADO) ────────────────────
   const metricsStats = useMemo(() => {
@@ -2234,7 +2241,7 @@ export const LiveCommentsSection = () => {
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por @usuario, comentário ou tempo..."
-                value={searchQuery}
+                value={searchQueryInput}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 bg-muted/30 border-muted-foreground/10 focus:border-primary/30"
               />
@@ -2496,7 +2503,7 @@ export const LiveCommentsSection = () => {
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Buscar por nome, telefone ou data de entrada..."
-                    value={leadsSearch}
+                    value={leadsSearchInput}
                     onChange={(e) => setLeadsSearch(e.target.value)}
                     className="pl-9 bg-muted/30 border-muted-foreground/10 focus:border-emerald-500/30"
                   />
@@ -2547,7 +2554,7 @@ export const LiveCommentsSection = () => {
                     </TableHeader>
                     <TableBody>
                       {filteredLeads.length > 0 ? (
-                        filteredLeads.map((lead) => {
+                        leadsPage.visible.map((lead) => {
                           const isOnline = isLeadOnline(lead);
                           const entryCount = lead.entryCount || 1;
                           const isFrequent = entryCount >= 3;
@@ -2827,6 +2834,7 @@ export const LiveCommentsSection = () => {
                       )}
                     </TableBody>
                   </Table>
+                  <LoadMore shown={leadsPage.shown} total={leadsPage.total} hasMore={leadsPage.hasMore} onLoadMore={leadsPage.loadMore} label="leads" />
                 </div>
               </div>
             </CardContent>

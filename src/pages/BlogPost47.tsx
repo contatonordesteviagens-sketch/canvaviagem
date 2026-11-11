@@ -59,7 +59,7 @@ const BlogPost47 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/updated/google_veo3_updated.png"
+                                src="/assets/blog/updated/google_veo3_updated.webp"
                                 alt="Vídeo cinematográfico gerado pelo Google Veo 3"
                                 className="w-full h-auto object-cover"
                             />

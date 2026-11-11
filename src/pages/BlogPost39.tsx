@@ -57,7 +57,7 @@ const BlogPost39 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/updated/sinais_alerta_updated.png"
+                                src="/assets/blog/updated/sinais_alerta_updated.webp"
                                 alt="Checklist de erros comuns no perfil de uma agência de viagem"
                                 className="w-full h-auto object-cover"
                             />

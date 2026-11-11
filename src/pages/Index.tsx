@@ -1,3 +1,4 @@
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { aiTools } from "@/data/templates";
 import { hasPendingOnboarding } from "@/lib/onboarding-bridge";
 import { QuickStartActions } from "@/components/canva/QuickStartActions";
@@ -150,11 +151,13 @@ const Index = () => {
     document.documentElement.lang = 'pt';
     setLanguage('pt');
   }, [setLanguage]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQueryInput, setSearchQuery] = useState("");
+  const searchQuery = useDebouncedValue(searchQueryInput);
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
   const [showAllDownloads, setShowAllDownloads] = useState(false);
-  const [downloadSearch, setDownloadSearch] = useState("");
+  const [downloadSearchInput, setDownloadSearch] = useState("");
+  const downloadSearch = useDebouncedValue(downloadSearchInput);
   const [contentFilters, setContentFilters] = useState<ContentFilterType[]>([]);
   const [accessFilters, setAccessFilters] = useState<AccessFilterType[]>([]);
   const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
@@ -1299,7 +1302,7 @@ const Index = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           placeholder="Buscar destino..."
-                          value={downloadSearch}
+                          value={downloadSearchInput}
                           onChange={(e) => setDownloadSearch(e.target.value)}
                           className="pl-9 rounded-full bg-background/50 border-muted"
                         />
@@ -1789,7 +1792,7 @@ const Index = () => {
     <>
       {activeCategory === 'all' ? (
         <HeroBanner
-          searchValue={searchQuery}
+          searchValue={searchQueryInput}
           onSearchChange={(val) => {
             setSearchQuery(val);
           }}

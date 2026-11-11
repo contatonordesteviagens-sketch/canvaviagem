@@ -59,7 +59,7 @@ const BlogPost35 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/updated/negocio_ou_hobby_updated.png"
+                                src="/assets/blog/updated/negocio_ou_hobby_updated.webp"
                                 alt="Diferença entre a confusão do hobby e a organização profissional"
                                 className="w-full h-auto object-cover"
                             />

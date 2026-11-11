@@ -1,7 +1,7 @@
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
-import { Loader2 } from "lucide-react";
+import { PageSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useRef } from "react";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
 import { BLACK_FUNNEL_PATH } from "@/lib/black-funnel";
@@ -111,11 +111,7 @@ export const ProtectedRoute = ({
 
     if (loading || (needsSubscriptionState && (entitlementsLoading || subscription.loading))) {
         if (user && liberadoPara.current === user.id) return <>{children}</>;
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
+        return <PageSkeleton pathname={location.pathname} />;
     }
 
     // Special logic for Blog Posts:

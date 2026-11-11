@@ -1,3 +1,5 @@
+import { LoadMore, useLoadMore } from "@/components/ui/load-more";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,7 +30,8 @@ const STATUS_LABELS: Record<string, string> = {
 
 export const UsersSection = () => {
   const { data: users, isLoading } = useAdminUserIntelligence();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQueryInput, setSearchQuery] = useState("");
+  const searchQuery = useDebouncedValue(searchQueryInput);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [planFilter, setPlanFilter] = useState<string>("all");
   const [selectedUser, setSelectedUser] = useState<AdminUserIntelligence | null>(null);
@@ -56,6 +59,9 @@ export const UsersSection = () => {
       return matchesSearch && matchesStatus && matchesPlan;
     });
   }, [users, searchQuery, statusFilter, planFilter]);
+
+  // A tabela mostra 50 por vez; os contadores e o CSV continuam usando a lista inteira.
+  const usersPage = useLoadMore(filteredUsers, 50, `${searchQuery}|${statusFilter}|${planFilter}`);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -210,7 +216,7 @@ export const UsersSection = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por email ou nome..."
-                value={searchQuery}
+                value={searchQueryInput}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
@@ -267,7 +273,7 @@ export const UsersSection = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map((user) => (
+                  {usersPage.visible.map((user) => (
                     <TableRow
                       key={user.user_id}
                       className="cursor-pointer hover:bg-muted/50"
@@ -326,6 +332,7 @@ export const UsersSection = () => {
                   ))}
                 </TableBody>
               </Table>
+              <LoadMore shown={usersPage.shown} total={usersPage.total} hasMore={usersPage.hasMore} onLoadMore={usersPage.loadMore} label="usuários" />
             </div>
           )}
         </CardContent>

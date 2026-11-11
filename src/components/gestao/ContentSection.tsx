@@ -1,3 +1,4 @@
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -98,7 +99,8 @@ export const ContentSection = ({
   };
 
   // Filter states
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQueryInput, setSearchQuery] = useState("");
+  const searchQuery = useDebouncedValue(searchQueryInput);
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
@@ -860,7 +862,7 @@ export const ContentSection = ({
               <SortFilter />
             </div>
             <ContentFilters
-              searchQuery={searchQuery}
+              searchQuery={searchQueryInput}
               onSearchChange={setSearchQuery}
               typeFilter={typeFilter}
               onTypeChange={setTypeFilter}
@@ -901,7 +903,7 @@ export const ContentSection = ({
               <SortFilter />
             </div>
             <ContentFilters
-              searchQuery={searchQuery}
+              searchQuery={searchQueryInput}
               onSearchChange={setSearchQuery}
               typeFilter={typeFilter}
               onTypeChange={setTypeFilter}
@@ -939,7 +941,7 @@ export const ContentSection = ({
               <SortFilter />
             </div>
             <ContentFilters
-              searchQuery={searchQuery}
+              searchQuery={searchQueryInput}
               onSearchChange={setSearchQuery}
               typeFilter={typeFilter}
               onTypeChange={setTypeFilter}
@@ -962,7 +964,7 @@ export const ContentSection = ({
               <SortFilter />
             </div>
             <ContentFilters
-              searchQuery={searchQuery}
+              searchQuery={searchQueryInput}
               onSearchChange={setSearchQuery}
               typeFilter={typeFilter}
               onTypeChange={setTypeFilter}
@@ -985,7 +987,7 @@ export const ContentSection = ({
               <SortFilter />
             </div>
             <ContentFilters
-              searchQuery={searchQuery}
+              searchQuery={searchQueryInput}
               onSearchChange={setSearchQuery}
               typeFilter={typeFilter}
               onTypeChange={setTypeFilter}
@@ -1008,7 +1010,7 @@ export const ContentSection = ({
               <SortFilter />
             </div>
             <ContentFilters
-              searchQuery={searchQuery}
+              searchQuery={searchQueryInput}
               onSearchChange={setSearchQuery}
               typeFilter={typeFilter}
               onTypeChange={setTypeFilter}
@@ -1046,7 +1048,7 @@ export const ContentSection = ({
               <SortFilter />
             </div>
             <ContentFilters
-              searchQuery={searchQuery}
+              searchQuery={searchQueryInput}
               onSearchChange={setSearchQuery}
               typeFilter={typeFilter}
               onTypeChange={setTypeFilter}

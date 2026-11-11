@@ -59,7 +59,7 @@ const BlogPost31 = () => {
 
                         <div className="rounded-2xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
                             <img
-                                src="/assets/blog/updated/invisibilidade_updated.png"
+                                src="/assets/blog/updated/invisibilidade_updated.webp"
                                 alt="Agente de viagem frustrada com baixo engajamento no Instagram"
                                 className="w-full h-auto object-cover"
                             />

@@ -1,3 +1,4 @@
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,7 +38,8 @@ const LiveManager = () => {
   const [newComment, setNewComment] = useState<ScheduledComment>({ time: "", username: "", message: "" });
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editingComment, setEditingComment] = useState<ScheduledComment>({ time: "", username: "", message: "" });
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearch] = useState("");
+  const search = useDebouncedValue(searchInput);
 
   // ─── Pre-Play Comments ─────────────────────────────────────────────────────
   const [prePlayComments, setPrePlayComments] = useState([
@@ -431,7 +433,7 @@ const LiveManager = () => {
 
           {/* Search */}
           <Input
-            value={search}
+            value={searchInput}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por @usuário, comentário ou tempo..."
             className="bg-zinc-950 border-zinc-700 text-zinc-100 rounded-xl"
