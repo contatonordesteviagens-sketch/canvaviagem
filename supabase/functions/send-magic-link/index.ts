@@ -26,7 +26,7 @@ const generateEmailTemplate = (magicLink: string) => `
           
           <!-- Header com gradiente -->
           <tr>
-            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 40px 30px; text-align: center;">
+            <td bgcolor="#667eea" style="background-color: #667eea; background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 40px 30px; text-align: center;">
               <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
                 ✈️ Canva Viagem
               </h1>
@@ -47,17 +47,34 @@ const generateEmailTemplate = (magicLink: string) => `
                 Você solicitou acesso à sua conta. Clique no botão abaixo para entrar:
               </p>
               
-              <!-- Botão CTA -->
+              <!-- Botão CTA.
+                   O botão é uma célula com bgcolor sólido: o Outlook do computador ignora
+                   gradiente (e o texto branco sumia no fundo branco, deixando o e-mail sem botão). -->
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                 <tr>
-                  <td align="center" style="padding: 10px 0 30px;">
-                    <a href="${magicLink}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 18px 50px; border-radius: 50px; font-size: 16px; font-weight: 600; box-shadow: 0 10px 30px rgba(102,126,234,0.4); transition: all 0.3s ease;">
-                      Acessar Minha Conta →
-                    </a>
+                  <td align="center" style="padding: 10px 0 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td align="center" bgcolor="#5b5fd6" style="background-color: #5b5fd6; background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50px;">
+                          <a href="${magicLink}" target="_blank" style="display: inline-block; color: #ffffff; text-decoration: none; padding: 18px 50px; font-size: 16px; font-weight: 600; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border-radius: 50px;">
+                            Acessar Minha Conta &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
-              
+
+              <!-- Endereço do link escrito por extenso: funciona em qualquer programa de e-mail,
+                   mesmo nos que não mostram botões. -->
+              <p style="margin: 0 0 10px; color: #4a4a68; font-size: 14px; line-height: 1.6; text-align: center;">
+                Se o botão não aparecer, copie e cole este endereço no seu navegador:
+              </p>
+              <p style="margin: 0 0 20px; text-align: center; word-break: break-all;">
+                <a href="${magicLink}" target="_blank" style="color: #5b5fd6; font-size: 13px; text-decoration: underline;">${magicLink}</a>
+              </p>
+
               <!-- Info box -->
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #f8f9ff; border-radius: 12px; margin-top: 20px;">
                 <tr>

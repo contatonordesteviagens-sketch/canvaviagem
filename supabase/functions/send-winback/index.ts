@@ -39,7 +39,7 @@ const getEmailTemplate = (content: string, ctaText: string, ctaLink: string) => 
     <div style="padding: 40px 30px;">
       ${content}
       <div style="text-align: center; margin: 35px 0;">
-        <a href="${ctaLink}" style="display: inline-block; background: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 61, 255, 0.3);">
+        <a href="${ctaLink}" style="display: inline-block; background-color: #7D2AE8; background-image: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 61, 255, 0.3);">
           ${ctaText}
         </a>
       </div>
@@ -123,7 +123,7 @@ const getWinback3Content = (name: string) => {
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">
     Mas antes de encerrar — quero fazer uma oferta que não faço para quem nunca foi assinante:
   </p>
-  <div style="background: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); border-radius: 16px; padding: 30px; margin: 25px 0; text-align: center;">
+  <div style="background-color: #7D2AE8; background-image: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); border-radius: 16px; padding: 30px; margin: 25px 0; text-align: center;">
     <p style="color: #ffffff; font-size: 22px; margin: 0 0 10px 0; font-weight: bold;">
       Plano Anual por R$147
     </p>

@@ -47,7 +47,7 @@ const getEmailTemplate = (content: string, ctaText: string, ctaLink: string) => 
       
       <!-- Botão CTA -->
       <div style="text-align: center; margin: 35px 0;">
-        <a href="${ctaLink}" style="display: inline-block; background: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 61, 255, 0.3);">
+        <a href="${ctaLink}" style="display: inline-block; background-color: #7D2AE8; background-image: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 61, 255, 0.3);">
           ${ctaText}
         </a>
       </div>
@@ -134,7 +134,7 @@ const getEmail3Content = (name: string) => {
     Por isso quero te fazer uma proposta exclusiva, válida por <strong>48 horas</strong>:
   </p>
 
-  <div style="background: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); border-radius: 16px; padding: 30px; margin: 25px 0; text-align: center;">
+  <div style="background-color: #7D2AE8; background-image: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); border-radius: 16px; padding: 30px; margin: 25px 0; text-align: center;">
     <p style="color: #ffffff; font-size: 22px; margin: 0 0 10px 0; font-weight: bold;">
       Plano Anual por R$197
     </p>
@@ -206,7 +206,7 @@ const getEmail5Content = (name: string) => {
     Esta é a última vez que vou mencionar.
   </p>
 
-  <div style="background: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); border-radius: 16px; padding: 25px; margin: 25px 0; text-align: center;">
+  <div style="background-color: #7D2AE8; background-image: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); border-radius: 16px; padding: 25px; margin: 25px 0; text-align: center;">
     <p style="color: #ffffff; font-size: 18px; margin: 0 0 10px 0; font-weight: bold;">
       Agente Lucrativo — R$97
     </p>
