@@ -56,7 +56,8 @@ const GERADOR_ITENS = [
   "Os serviços inclusos, item por item",
   "O preço, a sua logo e o seu WhatsApp no final",
 ];
-const GERADOR_VIDEOS = ["/inicio/gerador-video-black.mp4", "/inicio/gerador-video-promo.mp4"];
+/** Os dois vídeos prontos em 1 clique da Fábrica: é exatamente o que o cliente recebe ao abrir o gerador. */
+const GERADOR_VIDEOS = ["/inicio/fabrica-video-servicos.mp4", "/inicio/fabrica-video-sonhos.mp4"];
 
 /**
  * Vídeo de exemplo que só baixa quando a pessoa chega perto dele.
@@ -114,7 +115,7 @@ function GeradorVideo({ black, onStart }: { black: boolean; onStart: () => void 
             ))}
           </div>
           <div className="cv-reveal" style={delay(180)}>
-            <p className="text-[13px] font-bold uppercase tracking-[0.6px]" style={{ color: "var(--cv-muted)" }}>Os dois vídeos saíram de um único texto, sem edição</p>
+            <p className="text-[13px] font-bold uppercase tracking-[0.6px]" style={{ color: "var(--cv-muted)" }}>Os dois saem em 1 clique, sem preencher nada</p>
             <ul className="mt-4 flex flex-col gap-3">
               {GERADOR_ITENS.map((t) => (
                 <li key={t} className="flex items-start gap-2.5 text-[16px] font-semibold leading-6">

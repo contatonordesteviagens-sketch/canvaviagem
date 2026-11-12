@@ -254,6 +254,7 @@ export const CHECKLIST: ChecklistGrupo[] = [
       { id: "perf2-videos", texto: "Vídeos e vitrine da /black só carregam quando a pessoa chega neles", quem: "Claude", feito: true, nota: "Tira 2,8 MB da primeira tela. Entra uma capa de 9 KB no lugar; o vídeo começa a tocar quando a seção se aproxima." },
       { id: "perf2-pixel", texto: "Rastreamento de anúncios sai da frente do site", quem: "Claude", feito: true, nota: "Meta e Google Ads (450 KB) passam a carregar depois que a página aparece. Testado: 16 eventos ficaram na fila e todos foram enviados, nenhum perdido." },
       { id: "perf2-pdf", texto: "Gerador de PDF só é baixado quando alguém pede o PDF", quem: "Claude", feito: true, nota: "O pacote da Fábrica caiu de 769 KB para 382 KB." },
+      { id: "videos-vitrine-fabrica", texto: "A /inicio e a /black mostram os dois vídeos prontos da Fábrica", quem: "Claude", feito: true, nota: "Saíram os vídeos antigos de exemplo. Agora são os dois vídeos prontos em 1 clique (Nossos serviços e Viagem dos sonhos), gerados no próprio gerador, iguais aos que o cliente recebe." },
       { id: "perf2-publicar", texto: "Publicar a segunda rodada de velocidade", quem: "Lucas", nota: "Esperando o sim. Mexe na primeira tela da /black, no rastreamento e no carregamento da Fábrica; não mexe em pagamento, login nem no gerador de vídeo." },
       { id: "perf-brotli", texto: "Ligar o Brotli no Cloudflare", quem: "Lucas", nota: "Hoje o site sai comprimido em gzip. O Brotli economiza mais ou menos 15% a mais e é um botão no painel do Cloudflare." },
     ],
