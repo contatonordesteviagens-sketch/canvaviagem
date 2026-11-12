@@ -88,28 +88,27 @@
 
 
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18034387036"></script>
+  <!-- Rastreamento (Google Ads e Meta) com carregamento adiado.
+       Os dois somavam cerca de 450 KB baixados antes de o site aparecer, e no celular isso atrasava
+       a primeira tela. Agora as chamadas entram numa fila na hora certa (nenhum evento se perde) e
+       os arquivos só são baixados depois que a página termina de carregar, ou assim que a pessoa
+       mexe na tela, o que vier primeiro. -->
   <script>
+    // Google Ads: a fila é o dataLayer, lido pelo gtag.js assim que ele chega.
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'AW-18034387036');
-  </script>
 
-  <!-- Performance: Meta Pixel com carregamento adiado -->
-  <script>
-    !function (f, b, e, v, n, t, s) {
+    // Meta: fbq() guarda as chamadas em n.queue até o fbevents.js chegar e processá-las.
+    !function (f, b, e, n) {
       if (f.fbq) return; n = f.fbq = function () {
         n.callMethod ?
           n.callMethod.apply(n, arguments) : n.queue.push(arguments)
       };
       if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
-      n.queue = []; t = b.createElement(e); t.async = !0;
-      t.src = v; s = b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t, s)
-    }(window, document, 'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
+      n.queue = [];
+    }(window, document, 'script');
 
     fbq('init', '1599242897762192');
     fbq('init', '1152272353771099');
@@ -119,6 +118,29 @@
     fbq('init', '2120347238758199');
     fbq('init', '4468467283440792');
     fbq('init', '1645968187276827');
+
+    (function () {
+      var carregado = false;
+      function carregarRastreamento() {
+        if (carregado) return;
+        carregado = true;
+        ['https://www.googletagmanager.com/gtag/js?id=AW-18034387036',
+         'https://connect.facebook.net/en_US/fbevents.js'].forEach(function (url) {
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = url;
+          document.head.appendChild(s);
+        });
+      }
+      // Depois de a página ficar pronta, ou na primeira vez que a pessoa mexe na tela.
+      ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(function (ev) {
+        window.addEventListener(ev, carregarRastreamento, { once: true, passive: true });
+      });
+      if (document.readyState === 'complete') setTimeout(carregarRastreamento, 1200);
+      else window.addEventListener('load', function () { setTimeout(carregarRastreamento, 1200); });
+      // Rede de segurança: mesmo sem load e sem toque, o rastreamento entra em 6 segundos.
+      setTimeout(carregarRastreamento, 6000);
+    })();
   </script>
 </head>
 

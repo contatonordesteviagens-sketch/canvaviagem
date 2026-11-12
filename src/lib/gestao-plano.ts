@@ -1,7 +1,7 @@
 // Conteúdo da aba Gestão > Plano. Atualizar a cada rodada de trabalho: é a memória do projeto.
 // Nada de número inventado: o que é proposta está escrito como proposta.
 
-export const PLANO_ATUALIZADO_EM = "11/11/2026";
+export const PLANO_ATUALIZADO_EM = "12/11/2026";
 
 export type Owner = "Lucas" | "Claude" | "Automático";
 export type ProximoPasso = { quando: string; quem: Owner; oque: string; porque: string };
@@ -33,7 +33,7 @@ export const STATUS_GERAL = [
   { area: "Página de planos e Black Vitalícia", estado: "ok", detalhe: "Cartão e Pix abrem com o valor certo. Desde 03/11 existe a /black: a mesma página e o mesmo quiz da /inicio, com fundo preto e preço da Black, para quem ainda não conhece a ferramenta." },
   { area: "Automação de e-mails", estado: "ok", detalhe: "Black saindo pelo Brevo desde 17h15 de 03/11: 59 e-mails na primeira rodada, entregues e já com aberturas. Até 60 por hora. Quem nunca assinou recebe o link da /black; ex-assinante, o da /black-friday. A lista fria comprovada entra quando sobra espaço no limite. A função de e-mails precisa ser publicada pelo chat do Lovable a cada mudança." },
   { area: "Pixel do Meta no site", estado: "ok", detalhe: "O pixel da INFOS ALFA recebe eventos do canvaviagem.com desde 01/11, só pelo navegador. A conta está ativa." },
-  { area: "Velocidade do site", estado: "ok", detalhe: "Rodada de 11/11, ainda não publicada: as 56 fotos pesadas do site viraram WebP (37,4 MB para 2,9 MB, 92% menos). A página de anúncios caiu de 1,8 MB para 176 KB. A biblioteca do assinante faz 3 pedidos ao banco em vez de 7. Telas de carregamento com o formato do conteúdo no lugar da bolinha girando, busca que só filtra quando a pessoa para de digitar e listas longas de 50 em 50. Falta o sim do Lucas para publicar." },
+  { area: "Velocidade do site", estado: "ok", detalhe: "No ar desde 11/11: 56 fotos viraram WebP (37,4 MB para 2,9 MB), telas de carregamento com o formato do conteúdo, busca com espera, listas de 50 em 50 e a biblioteca com 3 pedidos ao banco em vez de 7. Segunda rodada em 12/11, ainda no computador: a primeira tela da /black não baixa mais os 2 vídeos (1,9 MB) nem as 46 artes da vitrine (0,9 MB) antes da hora, o rastreamento de anúncios saiu da frente do site (450 KB) sem perder evento, e a Fábrica deixou de baixar o gerador de PDF (390 KB) de quem nunca pede PDF." },
   { area: "Segurança", estado: "ok", detalhe: "Conferida em 01/11: nenhuma chave secreta no site nem nos commits recentes, e dados de clientes fechados para quem não é admin. Sobram itens menores no checklist." },
   { area: "Liberação de acesso depois de pagar", estado: "atencao", detalhe: "Pix conferido com venda real em 31/10: acesso liberado em 30 segundos e cliente gerou e baixou arte. Falta o cartão." },
 ] as const;
@@ -250,7 +250,11 @@ export const CHECKLIST: ChecklistGrupo[] = [
       { id: "perf-debounce", texto: "Busca só filtra quando a pessoa para de digitar (0,3 s)", quem: "Claude", feito: true, nota: "13 campos: biblioteca, downloads, Gestão e telas de admin. O campo de endereço da Fábrica cancela a busca anterior e desiste em 8 s." },
       { id: "perf-paginacao", texto: "Listas longas de 50 em 50, com Carregar mais", quem: "Claude", feito: true, nota: "Usuários, leads da live, conteúdos e legendas. A exportação em CSV continua levando tudo." },
       { id: "perf-celular", texto: "Testado em celular e computador pelo site local", quem: "Claude", feito: true },
-      { id: "perf-publicar", texto: "Publicar a rodada de velocidade", quem: "Lucas", nota: "Esperando o sim. São só telas e fotos: não mexe em pagamento, login nem no gerador de vídeo." },
+      { id: "perf-publicar", texto: "Publicar a primeira rodada de velocidade", quem: "Lucas", feito: true, nota: "No ar em 11/11." },
+      { id: "perf2-videos", texto: "Vídeos e vitrine da /black só carregam quando a pessoa chega neles", quem: "Claude", feito: true, nota: "Tira 2,8 MB da primeira tela. Entra uma capa de 9 KB no lugar; o vídeo começa a tocar quando a seção se aproxima." },
+      { id: "perf2-pixel", texto: "Rastreamento de anúncios sai da frente do site", quem: "Claude", feito: true, nota: "Meta e Google Ads (450 KB) passam a carregar depois que a página aparece. Testado: 16 eventos ficaram na fila e todos foram enviados, nenhum perdido." },
+      { id: "perf2-pdf", texto: "Gerador de PDF só é baixado quando alguém pede o PDF", quem: "Claude", feito: true, nota: "O pacote da Fábrica caiu de 769 KB para 382 KB." },
+      { id: "perf2-publicar", texto: "Publicar a segunda rodada de velocidade", quem: "Lucas", nota: "Esperando o sim. Mexe na primeira tela da /black, no rastreamento e no carregamento da Fábrica; não mexe em pagamento, login nem no gerador de vídeo." },
       { id: "perf-brotli", texto: "Ligar o Brotli no Cloudflare", quem: "Lucas", nota: "Hoje o site sai comprimido em gzip. O Brotli economiza mais ou menos 15% a mais e é um botão no painel do Cloudflare." },
     ],
   },

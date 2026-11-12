@@ -58,6 +58,41 @@ const GERADOR_ITENS = [
 ];
 const GERADOR_VIDEOS = ["/inicio/gerador-video-black.mp4", "/inicio/gerador-video-promo.mp4"];
 
+/**
+ * Vídeo de exemplo que só baixa quando a pessoa chega perto dele.
+ * Antes, os dois vídeos (1,9 MB) vinham junto com a primeira tela, antes mesmo do texto aparecer.
+ * Agora entra a capa (9 KB) e o vídeo começa a tocar quando a seção se aproxima da tela.
+ */
+function VideoQuandoAparecer({ src, indice }: { src: string; indice: number }) {
+  const alvo = useRef<HTMLVideoElement>(null);
+  const [carregar, setCarregar] = useState(() => typeof IntersectionObserver === "undefined");
+  const capa = src.replace(/\.mp4$/, "-capa.webp");
+
+  useEffect(() => {
+    if (carregar) return;
+    const el = alvo.current;
+    if (!el) return;
+    const obs = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) { setCarregar(true); obs.disconnect(); } }, { rootMargin: "400px" });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [carregar]);
+
+  return (
+    <video
+      ref={alvo}
+      src={carregar ? src : undefined}
+      poster={capa}
+      className="aspect-[9/16] w-full rounded-[22px] object-cover shadow-[0_24px_50px_-28px_rgba(0,0,0,.6)]"
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload={carregar ? "auto" : "none"}
+      aria-label={`Exemplo de vídeo de pacote gerado ${indice + 1}`}
+    />
+  );
+}
+
 /** Seção da novidade: mostra os vídeos que a ferramenta gera a partir de um texto ou áudio. */
 function GeradorVideo({ black, onStart }: { black: boolean; onStart: () => void }) {
   return (
@@ -75,17 +110,7 @@ function GeradorVideo({ black, onStart }: { black: boolean; onStart: () => void 
         <div className="mt-10 grid items-center gap-8 md:grid-cols-[1fr_1.1fr]">
           <div className="cv-reveal mx-auto grid w-full max-w-[420px] grid-cols-2 gap-3" style={delay(100)}>
             {GERADOR_VIDEOS.map((src, i) => (
-              <video
-                key={src}
-                src={src}
-                className="aspect-[9/16] w-full rounded-[22px] object-cover shadow-[0_24px_50px_-28px_rgba(0,0,0,.6)]"
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload={i === 0 ? "auto" : "metadata"}
-                aria-label={`Exemplo de vídeo de pacote gerado ${i + 1}`}
-              />
+              <VideoQuandoAparecer key={src} src={src} indice={i} />
             ))}
           </div>
           <div className="cv-reveal" style={delay(180)}>

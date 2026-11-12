@@ -1,3 +1,5 @@
+import { QuandoAparecer } from "@/components/cv-cream/QuandoAparecer";
+
 // Vitrine usada na página inicial e no quiz: mesmas peças, mesma ordem.
 export type ShowcasePiece = { src: string; w: number; h: number; newSet?: boolean };
 
@@ -25,8 +27,24 @@ export const SHOWCASE_CAROUSELS: ShowcasePiece[] = [
   ...carousel("preto", [6, 7, 8]),
 ];
 
-/** Faixa infinita. Carrega tudo ao abrir: em faixa animada, o carregamento adiado deixava quadros vazios no celular. */
-export function ShowcaseRow({
+/** Altura reservada da faixa enquanto ela não entra na tela (inclui o py-2 do contêiner). */
+const ALTURA_RESERVADA = { tiny: 126, compact: 176, small: 186 } as const;
+
+/**
+ * Faixa infinita de artes. A faixa inteira só é montada quando está perto de aparecer:
+ * são 46 imagens, quase 1 MB, e todas ficam abaixo da primeira tela.
+ * Depois de montada, cada imagem continua carregando de uma vez (loading eager): em faixa
+ * animada, o carregamento adiado imagem a imagem deixava quadros vazios no celular.
+ */
+export function ShowcaseRow(props: Parameters<typeof FaixaShowcase>[0]) {
+  return (
+    <QuandoAparecer minHeight={ALTURA_RESERVADA[props.size ?? "small"]}>
+      <FaixaShowcase {...props} />
+    </QuandoAparecer>
+  );
+}
+
+function FaixaShowcase({
   pieces,
   alt,
   slow = false,
