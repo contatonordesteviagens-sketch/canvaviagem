@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { SpanishPixel } from "@/components/SpanishPixel";
 import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
 import { MetaPixel916689227676142 } from "@/components/MetaPixel916689227676142";
+import { MOEDA_ISO_ES, PRECO_START_ES, suporteWhatsAppUrlES } from "@/lib/precos-es";
 
 /**
  * Slow & Abundant Confetti Component
@@ -114,15 +115,15 @@ const ObrigadoES = () => {
     const timer = setTimeout(() => {
       if (!tracked) {
         console.log('[Meta Pixel ES] Disparando Purchase e Subscribe...');
-        trackESPurchase(29.00, 'USD');
-        trackESSubscribe(29.00, 'USD', 29.00 * 12);
+        trackESPurchase(PRECO_START_ES, MOEDA_ISO_ES);
+        trackESSubscribe(PRECO_START_ES, MOEDA_ISO_ES, PRECO_START_ES * 12);
         
         // Google Ads conversion for ES (optional if configured)
         if (typeof window !== 'undefined' && (window as any).gtag) {
           (window as any).gtag('event', 'conversion', {
             send_to: 'AW-18034387036/QeQUCJ-g7Y0cENzQu5dD',
-            value: 29.00,
-            currency: 'USD',
+            value: PRECO_START_ES,
+            currency: MOEDA_ISO_ES,
             transaction_id: Date.now().toString(),
           });
         }
@@ -187,8 +188,7 @@ const ObrigadoES = () => {
     }
   };
 
-  const supportWhatsAppUrl =
-    "https://wa.me/5585986411294?text=Hice%20la%20compra%20de%20Canva%20Viagem%20y%20me%20gustar%C3%ADa%20recibir%20soporte";
+  const supportWhatsAppUrl = suporteWhatsAppUrlES("Hola, he comprado Canva Viagem y necesito ayuda");
 
   return (
     <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center p-6 md:p-8 relative overflow-hidden" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
@@ -219,7 +219,7 @@ const ObrigadoES = () => {
               ¡Felicidades!
             </h1>
             <p className="text-xl md:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-white bg-clip-text text-transparent italic leading-tight">
-              ¡Ahora tienes contenidos de viajes para siempre!
+              ¡Ya estás dentro de Canva Viagem!
             </p>
           </div>
         </div>
@@ -312,7 +312,7 @@ const ObrigadoES = () => {
             >
               <Button className="w-full h-14 bg-[#25D366] hover:bg-[#22c35e] hover:scale-[1.02] text-white font-black shadow-[0_8px_24px_rgba(37,211,102,0.25)] border-none rounded-[1.25rem] gap-2 transition-transform uppercase text-xs tracking-widest">
                 <MessageCircle className="h-5 w-5 fill-current" />
-                Soporte VIP WhatsApp
+                Soporte por WhatsApp
               </Button>
             </a>
           </div>

@@ -202,6 +202,7 @@ export function PageSkeleton({ pathname }: { pathname?: string }) {
   const black = isBlackFridayOpen();
 
   if (path === "/onboarding") return <QuizSkeleton tom={black ? "escuro" : "claro"} />;
+  if (path === "/es/onboarding") return <QuizSkeleton tom="claro" />;
   if (path === "/black" || path === "/black-friday") return <FunilSkeleton tom="escuro" />;
   if (path === "/inicio" || path === "/inicio2") return <FunilSkeleton tom={black ? "escuro" : "claro"} />;
   if (path === "/planos" || path === "/es/inicio" || path === "/es/planos") return <FunilSkeleton />;

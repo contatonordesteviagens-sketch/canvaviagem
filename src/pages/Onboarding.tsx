@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ComponentType, type FormEvent, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ComponentType, type FormEvent, type ReactNode } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -11,7 +11,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
 import { trackMetaEvent } from "@/lib/meta-pixel-sales";
-import { ELITE_OFFER } from "@/lib/eliteOffer";
+import { ELITE_OFFER, withCheckoutIdentity } from "@/lib/eliteOffer";
 import { checkoutPath } from "@/components/checkout/checkout-plans";
 import { isBlackFunnel } from "@/lib/black-funnel";
 import { PayWithPixButton } from "@/components/pix/PixCheckout";
@@ -21,7 +21,9 @@ import { startWithEmail } from "@/lib/quick-start";
 import { ShowcaseRow, SHOWCASE_ADS, SHOWCASE_CAROUSELS } from "@/components/cv-cream/Showcase";
 import { ONBOARDING_DESTINO_KEY, yearGifs } from "@/pages/InicioCreme";
 import { isLocalPreviewEnabled } from "@/lib/localPreview";
-import { trackInicioTeste } from "@/lib/inicio-teste";
+import { trackInicioTeste, type InicioExtra, type InicioStep } from "@/lib/inicio-teste";
+import { CARGAS_ES, OFERTA_ES, PERGUNTAS_ES, TEXTOS, type QuizLang } from "@/lib/onboarding-textos";
+import { CHECKOUT_ES, GARANTIA_DIAS_ES, MOEDA_ISO_ES, PLANOS_ES, formatPrecio, type PlanoES } from "@/lib/precos-es";
 import { readTrialResult, type TrialResult } from "@/lib/inicio-arte";
 import depoimento1 from "@/assets/depoimento1.webp";
 import depoimento2 from "@/assets/depoimento2.webp";
@@ -31,7 +33,7 @@ type Icon = ComponentType<{ className?: string }>;
 type Option = { id: string; label: string; hint: string; icon: Icon };
 type QuestionStep = { kind: "question"; key: AnswerKey; title: string; sub: string; multi?: boolean; options: Option[] };
 type ScreenStep = { kind: "intro" | "result" | "offer" };
-type LoadingStep = { kind: "loading"; label: string; reviews: string[] };
+type LoadingStep = { kind: "loading"; label: string; reviews: string[]; plain?: boolean };
 type EmailStep = { kind: "email" };
 type Step = QuestionStep | ScreenStep | LoadingStep | EmailStep;
 type AnswerKey = "objetivo" | "ferramenta" | "desafio" | "momento" | "orcamentos" | "destinos" | "travas" | "prazo";
@@ -127,10 +129,6 @@ const FIXES: Record<string, { title: string; fix: string; icon: Icon }> = {
   vergonha: { title: "Seu Instagram ainda não parece de agência grande", fix: "Duas semanas de posts profissionais já mudam a cara do perfil.", icon: EyeOff },
 };
 
-const DESTINO_LABEL: Record<string, string> = {
-  praia: "Porto de Galinhas", serra: "Gramado", internacional: "Cancún", cruzeiro: "Cruzeiro pelo litoral", excursao: "Excursão de fim de semana",
-};
-
 type Plan = { cycle: Cycle; name: string; hint: string; price: string; per: string; note: string; value: number; popular?: boolean; was?: string };
 const NORMAL_PLANS: Plan[] = [
   { cycle: "monthly", name: "Mensal", hint: "Pra testar com calma", price: ELITE_OFFER.monthlyPrice, per: "/mês", note: "Cancele quando quiser", value: 97 },
@@ -145,6 +143,28 @@ const BLACK_PLANS: Plan[] = [
 ];
 const BLACK = isBlackFunnel();
 const PLANS = BLACK ? BLACK_PLANS : NORMAL_PLANS;
+
+// Espanhol: os mesmos passos, ids e ícones do STEPS, só com o texto trocado. Sem avaliações no carregamento.
+let cargaEs = 0;
+const STEPS_ES: Step[] = STEPS.map((s) => {
+  if (s.kind === "question") {
+    const es = PERGUNTAS_ES[s.key];
+    return { ...s, title: es.title, sub: es.sub, options: s.options.map((o, i) => ({ ...o, label: es.options[i][0], hint: es.options[i][1] })) };
+  }
+  if (s.kind === "loading") {
+    const es = CARGAS_ES[cargaEs++];
+    return { ...s, label: es.label, reviews: es.lines, plain: true };
+  }
+  return s;
+});
+const STEPS_BY_LANG: Record<QuizLang, Step[]> = { pt: STEPS, es: STEPS_ES };
+
+const LangContext = createContext<QuizLang>("pt");
+const useLang = () => useContext(LangContext);
+const useT = () => TEXTOS[useLang()];
+/** No espanhol cada evento leva o idioma; no português o evento sai igual ao de sempre. */
+const trackTeste = (lang: QuizLang, step: InicioStep, extra?: InicioExtra) =>
+  trackInicioTeste(step, lang === "es" ? { ...extra, lang: "es" } : extra);
 
 
 function loadState(): { step: number; answers: Answers } {
@@ -162,7 +182,13 @@ function loadState(): { step: number; answers: Answers } {
   return { step: 0, answers: {} };
 }
 
-export default function Onboarding() {
+export default function Onboarding({ lang = "pt" }: { lang?: QuizLang }) {
+  const es = lang === "es";
+  const t = TEXTOS[lang];
+  const steps = STEPS_BY_LANG[lang];
+  // Espanha não tem Black Friday nem Pix: tema claro e oferta própria.
+  const black = BLACK && !es;
+  const [tier, setTier] = useState<PlanoES>("elite");
   const navigate = useNavigate();
   const { user, subscription } = useAuth();
   const { track } = useEntitlements();
@@ -175,12 +201,12 @@ export default function Onboarding() {
   const destinoDigitado = useMemo(() => {
     try { return sessionStorage.getItem(ONBOARDING_DESTINO_KEY)?.trim() || ""; } catch { return ""; }
   }, []);
-  const destinoPrincipal = destinoDigitado || DESTINO_LABEL[answers.destinos?.[0] ?? ""] || "Cancún";
+  const destinoPrincipal = destinoDigitado || t.destinos[answers.destinos?.[0] ?? ""] || t.destinoPadrao;
 
   useEffect(() => {
     // Quem já assinou não precisa do quiz: vai direto para a Fábrica, que herda as respostas.
-    if (subscription.subscribed && !isLocalPreviewEnabled()) navigate("/fabrica", { replace: true });
-  }, [subscription.subscribed, navigate]);
+    if (subscription.subscribed && !isLocalPreviewEnabled()) navigate(es ? "/es/fabrica" : "/fabrica", { replace: true });
+  }, [subscription.subscribed, navigate, es]);
 
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, answers })); } catch { /* ignore */ }
@@ -189,23 +215,25 @@ export default function Onboarding() {
   useEffect(() => {
     if (!startedRef.current) {
       startedRef.current = true;
-      trackMetaEvent("ViewContent", { content_name: "Canva Viagem - Onboarding Quiz", content_category: "onboarding", content_type: "product" });
-      trackInicioTeste("quiz");
+      trackMetaEvent("ViewContent", { content_name: es ? "Canva Viagem - Onboarding Quiz ES" : "Canva Viagem - Onboarding Quiz", content_category: "onboarding", content_type: "product" });
+      trackTeste(lang, "quiz");
     }
-    track("onboarding_step", { step: step + 1, kind: STEPS[step].kind, key: (STEPS[step] as QuestionStep).key ?? null });
-    if (STEPS[step].kind !== "loading") trackInicioTeste("quiz_tela", { tela: (STEPS[step] as QuestionStep).key ?? STEPS[step].kind });
+    // O idioma só entra no registro do quiz em espanhol; o do português fica como sempre foi.
+    const idioma = es ? { lang: "es" } : {};
+    track("onboarding_step", { step: step + 1, kind: STEPS[step].kind, key: (STEPS[step] as QuestionStep).key ?? null, ...idioma });
+    if (STEPS[step].kind !== "loading") trackTeste(lang, "quiz_tela", { tela: (STEPS[step] as QuestionStep).key ?? STEPS[step].kind });
     // Sem sessão (quem já tem conta e ainda não confirmou o e-mail): registra pelo e-mail digitado.
-    if (!user) captureLead(readLeadEmail(), "step", { step: step + 1, kind: STEPS[step].kind, key: (STEPS[step] as QuestionStep).key ?? null });
+    if (!user) captureLead(readLeadEmail(), "step", { step: step + 1, kind: STEPS[step].kind, key: (STEPS[step] as QuestionStep).key ?? null, ...idioma });
     window.scrollTo({ top: 0 });
-  }, [step, track, user]);
+  }, [step, track, user, lang, es]);
 
   // Liga a conta ao grupo do teste, para a Gestão ver quem assinou em cada página.
   const contaMarcada = useRef(false);
   useEffect(() => {
     if (!user || contaMarcada.current) return;
     contaMarcada.current = true;
-    trackInicioTeste("conta");
-  }, [user]);
+    trackTeste(lang, "conta");
+  }, [user, lang]);
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL - 1));
   const back = () => setStep((s) => {
@@ -215,12 +243,12 @@ export default function Onboarding() {
     return previous;
   });
 
-  const current = STEPS[step];
+  const current = steps[step];
 
   const choose = (q: QuestionStep, id: string) => {
     const valor = q.options.find((o) => o.id === id)?.label;
     const marcando = !(answers[q.key] || []).includes(id);
-    if (marcando) trackInicioTeste("resposta", { tela: q.key, valor });
+    if (marcando) trackTeste(lang, "resposta", { tela: q.key, valor });
     if (q.multi) {
       setAnswers((a) => {
         const prev = a[q.key] || [];
@@ -245,13 +273,29 @@ export default function Onboarding() {
     navigate(checkoutPath(plan, method, BLACK ? "black-friday" : null));
   };
 
+  // Espanhol: só cartão e só ciclo mensal. Vai direto ao link do Stripe do plano escolhido, que cobra
+  // exatamente o preço mostrado (o /checkout do quiz em português cobra em reais e está em português).
+  const checkoutEs = () => {
+    const selected = PLANOS_ES[tier];
+    track("plan_selected", { billing_cycle: "monthly", feature: "onboarding", answers, method: "cartao", lang: "es", plano_es: tier });
+    trackTeste(lang, "pagar", { tela: tier, valor: "cartao", preco: selected.precoMes, moeda: MOEDA_ISO_ES });
+    if (!user) captureLead(readLeadEmail(), "plan", { billing_cycle: "monthly", lang: "es" });
+    trackMetaEvent("InitiateCheckout", { value: selected.precoMes, currency: MOEDA_ISO_ES, content_name: `Canva Viagem ${selected.nome}`, content_category: "onboarding" });
+    window.location.href = withCheckoutIdentity(CHECKOUT_ES[tier], user);
+  };
+  const chooseTier = (next: PlanoES) => {
+    trackTeste(lang, "plano", { valor: next, preco: PLANOS_ES[next].precoMes, moeda: MOEDA_ISO_ES });
+    setTier(next);
+  };
+
   return (
-    <div className={`cv-cream min-h-[100dvh]${BLACK ? " cv-black cv-flat" : ""}`}>
-      <Helmet><title>Seu plano — Canva Viagem</title></Helmet>
+    <LangContext.Provider value={lang}>
+    <div lang={es ? "es-ES" : undefined} className={`cv-cream min-h-[100dvh]${black ? " cv-black cv-flat" : ""}`}>
+      <Helmet><title>{t.pageTitle}</title></Helmet>
       <div className="mx-auto flex min-h-[100dvh] max-w-[440px] flex-col px-5">
         <header className="sticky top-0 z-20 pb-3 pt-3" style={{ background: "var(--cv-bg)" }}>
           <div className="flex items-center justify-between">
-            <button onClick={back} disabled={step === 0} aria-label="Voltar" className="grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-[var(--cv-sand)] disabled:opacity-0">
+            <button onClick={back} disabled={step === 0} aria-label={t.back} className="grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-[var(--cv-sand)] disabled:opacity-0">
               <ChevronLeft className="h-5 w-5" />
             </button>
             <BrandMark size={26} withName={false} />
@@ -264,15 +308,18 @@ export default function Onboarding() {
           {current.kind === "question" ? (
             <Question q={current} selected={answers[current.key] || []} onChoose={(id) => choose(current, id)} onContinue={next} />
           ) : current.kind === "loading" ? (
-            <Loading label={current.label} reviews={current.reviews} onDone={next} />
+            <Loading label={current.label} reviews={current.reviews} plain={current.plain} onDone={next} />
           ) : current.kind === "email" ? (
             <EmailStep hasAccount={Boolean(user)} onNext={next} />
+          ) : es && current.kind === "offer" ? (
+            <OfferES tier={tier} setTier={chooseTier} onCheckout={checkoutEs} />
           ) : (
             <Screen kind={current.kind} answers={answers} destino={destinoPrincipal} plan={plan} setPlan={(c) => { trackInicioTeste("plano", { valor: c }); setPlan(c); }} onNext={next} onCheckout={() => checkout("cartao")} onPix={() => registerPayment("pix")} />
           )}
         </main>
       </div>
     </div>
+    </LangContext.Provider>
   );
 }
 
@@ -306,6 +353,7 @@ function BottomCta({ children, onClick, disabled }: { children: ReactNode; onCli
 }
 
 function Question({ q, selected, onChoose, onContinue }: { q: QuestionStep; selected: string[]; onChoose: (id: string) => void; onContinue: () => void }) {
+  const t = useT();
   return (
     <>
       {/* Múltipla escolha: menor, para o botão de continuar aparecer sem rolar. */}
@@ -336,7 +384,7 @@ function Question({ q, selected, onChoose, onContinue }: { q: QuestionStep; sele
       </div>
       {q.multi && (
         <>
-          <BottomCta onClick={onContinue} disabled={selected.length === 0}>{selected.length === 0 ? "Escolha pelo menos um" : `Continuar (${selected.length})`}</BottomCta>
+          <BottomCta onClick={onContinue} disabled={selected.length === 0}>{selected.length === 0 ? t.chooseOne : t.continuar(selected.length)}</BottomCta>
         </>
       )}
     </>
@@ -350,43 +398,45 @@ type ScreenProps = {
 
 /** O e-mail só é pedido depois do diagnóstico: quem já tem conta passa direto. */
 function EmailStep({ hasAccount, onNext }: { hasAccount: boolean; onNext: () => void }) {
+  const lang = useLang();
+  const t = TEXTOS[lang].email;
   const [email, setEmail] = useState(readLeadEmail);
   const [busy, setBusy] = useState(false);
   const done = useRef(false);
   const finish = () => { if (!done.current) { done.current = true; onNext(); } };
 
   useEffect(() => {
-    if (hasAccount) finish(); else trackInicioTeste("tela_email");
+    if (hasAccount) finish(); else trackTeste(lang, "tela_email");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasAccount]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const value = email.toLowerCase().trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { toast.error("Confira o e-mail digitado."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { toast.error(t.invalid); return; }
     setBusy(true);
-    trackInicioTeste("email");
-    const result = await startWithEmail(value, "/onboarding").catch(() => "fallback" as const);
-    if (result === "existing") toast.info("Esse e-mail já tem conta. Enviamos um link de acesso para ele.");
+    trackTeste(lang, "email");
+    const result = await startWithEmail(value, lang === "es" ? "/es/onboarding" : "/onboarding").catch(() => "fallback" as const);
+    if (result === "existing") toast.info(t.existing);
     finish();
   };
 
   if (hasAccount) return null;
   return (
     <>
-      <Title sub="É com ele que você entra na plataforma. O seu plano aparece em seguida.">Seu diagnóstico está pronto. <Accent>Qual é o seu e-mail?</Accent></Title>
+      <Title sub={t.sub}>{t.title[0]}<Accent>{t.title[1]}</Accent></Title>
       <form onSubmit={submit} className="cv-pop mt-7" style={delay(80)}>
-        <label htmlFor="quiz-email" className="text-[13px] font-bold">Seu melhor e-mail</label>
+        <label htmlFor="quiz-email" className="text-[13px] font-bold">{t.label}</label>
         <div className="mt-2 flex items-center gap-3 rounded-full border px-4 focus-within:ring-2" style={{ borderColor: "var(--cv-line)", background: "var(--cv-card)", ["--tw-ring-color" as string]: "rgba(124,92,255,.35)" }}>
           <Mail className="h-5 w-5 shrink-0" style={{ color: "var(--cv-muted)" }} />
           <input
-            id="quiz-email" type="email" inputMode="email" autoComplete="email" placeholder="voce@suaagencia.com"
+            id="quiz-email" type="email" inputMode="email" autoComplete="email" placeholder={t.placeholder}
             value={email} onChange={(e) => setEmail(e.target.value)} required disabled={busy}
             className="h-14 w-full bg-transparent text-[16px] outline-none"
           />
         </div>
-        <button type="submit" disabled={busy} className="cv-btn mt-4 h-14 w-full text-base">{busy ? "Abrindo o seu plano…" : "Ver o meu plano"}</button>
-        <p className="mt-3 flex items-center justify-center gap-1.5 text-[12px]" style={{ color: "var(--cv-muted)" }}><Lock className="h-3.5 w-3.5" /> Sem spam. Você sai da lista quando quiser.</p>
+        <button type="submit" disabled={busy} className="cv-btn mt-4 h-14 w-full text-base">{busy ? t.busy : t.button}</button>
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-[12px]" style={{ color: "var(--cv-muted)" }}><Lock className="h-3.5 w-3.5" /> {t.footer}</p>
       </form>
     </>
   );
@@ -426,7 +476,7 @@ function TrialStack({ trial }: { trial: TrialResult }) {
 }
 
 /** Carregando em círculo, com avaliações curtas tiradas das mensagens de clientes. */
-function Loading({ label, reviews, onDone }: { label: string; reviews: string[]; onDone: () => void }) {
+function Loading({ label, reviews, plain, onDone }: { label: string; reviews: string[]; plain?: boolean; onDone: () => void }) {
   const [percent, setPercent] = useState(0);
   useEffect(() => {
     const started = Date.now();
@@ -447,7 +497,12 @@ function Loading({ label, reviews, onDone }: { label: string; reviews: string[];
       </div>
       <p className="mt-4 text-[20px] font-extrabold tracking-[-0.02em]">{label}</p>
       <div className="mt-6 w-full space-y-3 text-left">
-        {reviews.map((review, i) => (
+        {reviews.map((review, i) => plain ? (
+          // Linha de processo (espanhol): sem estrelas e sem aspas, porque não é avaliação de cliente.
+          <p key={review} className="cv-pop flex items-center gap-2 text-[15px] font-semibold leading-5" style={delay(600 + i * 2200)}>
+            <Check className="h-4 w-4 shrink-0 text-[#6440e6]" /> {review}
+          </p>
+        ) : (
           <div key={review} className="cv-pop cv-card p-4" style={delay(600 + i * 2200)}>
             <p className="flex items-center gap-1 text-[12px] font-bold" style={{ color: "var(--cv-muted)" }}>
               <span aria-hidden style={{ color: "#f5a623" }} className="text-[15px] tracking-[1px]">★★★★★</span> 5 estrelas
@@ -461,69 +516,56 @@ function Loading({ label, reviews, onDone }: { label: string; reviews: string[];
 }
 
 function Intro({ onNext }: { onNext: () => void }) {
+  const es = useLang() === "es";
+  const t = useT().intro;
   const [trial] = useState(readTrialResult);
   return (
     <>
       <div className="flex flex-col items-center text-center">
         <h1 className="cv-pop text-balance text-[28px] font-extrabold leading-[1.08] tracking-[-0.025em]" style={delay(80)}>
-          Fale da sua agência e <Accent>receba tudo pronto.</Accent>
+          {t.title[0]}<Accent>{t.title[1]}</Accent>
         </h1>
         <p className="cv-pop mt-2 max-w-[330px] text-[15px] leading-6" style={{ ...delay(160), color: "var(--cv-muted)" }}>
-          Responda o questionário de 1 minuto para <strong style={{ color: "var(--cv-fg)" }}>liberar o seu acesso.</strong>
+          {t.sub[0]}<strong style={{ color: "var(--cv-fg)" }}>{t.sub[1]}</strong>
         </p>
       </div>
       {trial ? (
         <TrialStack trial={trial} />
-      ) : (
+      ) : es ? null : (
+        // A vitrine é de artes brasileiras (preço em R$ e Pix): fica fora do espanhol até existir vitrine própria.
         <div className="cv-pop -mx-5 mt-6" style={delay(220)}>
-          <ShowcaseRow pieces={SHOWCASE_ADS} alt="Anúncio feito no Canva Viagem" />
-          <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt="Slide de carrossel feito no Canva Viagem" slow size="compact" className="mt-1" />
+          <ShowcaseRow pieces={SHOWCASE_ADS} alt={t.adAlt} />
+          <ShowcaseRow pieces={SHOWCASE_CAROUSELS} alt={t.carouselAlt} slow size="compact" className="mt-1" />
         </div>
       )}
-      <BottomCta onClick={onNext}>Começar agora <ArrowRight className="h-4 w-4" /></BottomCta>
-      <p className="mt-2 text-center text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>Avance para gerar mais artes sem marca d'água, com o seu preço e o seu WhatsApp.</p>
+      <BottomCta onClick={onNext}>{t.button} <ArrowRight className="h-4 w-4" /></BottomCta>
+      <p className="mt-2 text-center text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>{t.footer}</p>
     </>
   );
 }
 
 function Result({ answers, destino, onNext }: { answers: Answers; destino: string; onNext: () => void }) {
   const [openWeek2, setOpenWeek2] = useState(false);
+  const t = useT().result;
   const desafio = answers.desafio?.[0];
   const orcamentos = answers.orcamentos?.[0];
   // O que a pessoa respondeu e o que a plataforma faz por isso. Sem nota: não temos dado para medir ninguém.
   const pontos = [
-    { show: desafio === "tempo", label: "Falta tempo para postar", fix: "A arte sai em minutos, sem começar do zero." },
-    { show: desafio === "amador", label: "Os posts parecem amadores", fix: "Modelos prontos, com a sua logo e as suas cores." },
-    { show: desafio === "ninguem", label: "Posta e ninguém chama", fix: "Anúncio com preço e WhatsApp, e o site do pacote para receber o pedido." },
-    { show: desafio === "oque", label: "Não sabe o que postar", fix: "Uma sugestão do que postar em cada dia." },
-    { show: orcamentos === "zero" || orcamentos === "poucos", label: "Poucos pedidos de orçamento", fix: "Site com o botão do WhatsApp e seus clientes organizados em um só lugar." },
+    { show: desafio === "tempo", ...t.pontos.tempo },
+    { show: desafio === "amador", ...t.pontos.amador },
+    { show: desafio === "ninguem", ...t.pontos.ninguem },
+    { show: desafio === "oque", ...t.pontos.oque },
+    { show: orcamentos === "zero" || orcamentos === "poucos", ...t.pontos.poucos },
   ].filter((p) => p.show);
-  const pontosVisiveis = pontos.length ? pontos : [{ label: "Vender mais com a mesma rotina", fix: "Arte, site e clientes no mesmo lugar, sem precisar de equipe." }];
-  const weeks = [
-    [
-      { d: "Seg", t: `Anúncio de ${destino} + stories do pacote`, icon: Megaphone },
-      { d: "Ter", t: "Carrossel do pacote com dicas da viagem", icon: Images },
-      { d: "Qua", t: "Pacote publicado no seu site", icon: Globe2 },
-      { d: "Qui", t: "Vídeo pronto do destino", icon: Video },
-      { d: "Sex", t: "Stories e vídeo de outro pacote em promoção", icon: LayoutTemplate },
-      { d: "Sáb", t: "Responder orçamentos no WhatsApp e anunciar outro pacote", icon: MessageCircle },
-      { d: "Dom", t: "Organizar clientes no CRM e planejar a semana", icon: Users },
-    ],
-    [
-      { d: "Seg", t: "Anúncio de um pacote novo + stories com enquete", icon: Megaphone },
-      { d: "Ter", t: "Carrossel: o que fazer no destino", icon: Images },
-      { d: "Qua", t: "Página do pacote novo no site e link na bio", icon: Globe2 },
-      { d: "Qui", t: "Vídeo pronto de outro destino", icon: Video },
-      { d: "Sex", t: "Stories com contagem regressiva da promoção", icon: LayoutTemplate },
-      { d: "Sáb", t: "Mandar a página do pacote para quem pediu orçamento", icon: MessageCircle },
-      { d: "Dom", t: "CRM: quem fechou, quem falta responder e o plano da próxima semana", icon: Users },
-    ],
-  ];
+  const pontosVisiveis = pontos.length ? pontos : [t.pontos.padrao];
+  // Um ícone por dia, igual nas duas semanas e nos dois idiomas.
+  const icons: Icon[] = [Megaphone, Images, Globe2, Video, LayoutTemplate, MessageCircle, Users];
+  const weeks = t.semanas(destino).map((semana) => semana.map((texto, i) => ({ d: t.dias[i], t: texto, icon: icons[i] })));
   return (
     <>
-      <Title sub="Com base nas suas respostas">Seu diagnóstico <Accent>está pronto</Accent></Title>
+      <Title sub={t.sub}>{t.title[0]}<Accent>{t.title[1]}</Accent></Title>
       <div className="cv-pop cv-card mt-6 p-5" style={delay(120)}>
-        <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>O QUE VOCÊ NOS CONTOU</p>
+        <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>{t.told}</p>
         <div className="mt-3 space-y-3">
           {pontosVisiveis.map((p) => (
             <div key={p.label} className="flex items-start gap-3">
@@ -539,10 +581,10 @@ function Result({ answers, destino, onNext }: { answers: Answers; destino: strin
 
       <div className="cv-pop cv-card mt-4 p-5" style={delay(300)}>
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>O QUE POSTAR NAS 2 PRIMEIRAS SEMANAS</p>
+          <p className="text-[11px] font-bold tracking-[1.2px]" style={{ color: "var(--cv-muted)" }}>{t.postar}</p>
           <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-semibold" style={{ background: "var(--cv-soft)", color: "var(--cv-primary-ink)" }}><MapPin className="h-3 w-3" /> {destino}</span>
         </div>
-        <p className="mt-3 text-[13px] font-bold">Semana 1</p>
+        <p className="mt-3 text-[13px] font-bold">{t.semana1}</p>
         <WeekList days={weeks[0]} />
         <button
           type="button"
@@ -551,12 +593,12 @@ function Result({ answers, destino, onNext }: { answers: Answers; destino: strin
           className="mt-3 flex w-full items-center justify-between rounded-2xl px-3 py-2.5 text-left text-[13px] font-bold"
           style={{ background: "var(--cv-sand)" }}
         >
-          Semana 2 · novo pacote, mesmo ritmo
+          {t.semana2}
           <ChevronLeft className="h-4 w-4 transition-transform" style={{ transform: openWeek2 ? "rotate(90deg)" : "rotate(-90deg)" }} />
         </button>
         {openWeek2 && <WeekList days={weeks[1]} />}
       </div>
-      <BottomCta onClick={onNext}>Ver meu plano <ArrowRight className="h-4 w-4" /></BottomCta>
+      <BottomCta onClick={onNext}>{t.button} <ArrowRight className="h-4 w-4" /></BottomCta>
     </>
   );
 }
@@ -761,6 +803,78 @@ function Offer({ plan, setPlan, onCheckout, onPix }: { plan: Cycle; setPlan: (c:
       <div className="mt-5 border-t pt-4" style={{ background: "var(--cv-bg)", borderColor: "var(--cv-line)" }}>
         <p className="mb-2 text-center text-[13px] font-semibold">Plano {selected.name}: {selected.price}{selected.per}</p>
         <PayButtons plan={plan} onCheckout={onCheckout} onPix={onPix} />
+      </div>
+    </>
+  );
+}
+
+/**
+ * Oferta em espanhol: Start e Elite por mês, em dólar (src/lib/precos-es.ts), só cartão.
+ * Sem contador, sem avaliações, sem Pix e sem preço riscado. O valor vem antes do preço.
+ */
+function OfferES({ tier, setTier, onCheckout }: { tier: PlanoES; setTier: (p: PlanoES) => void; onCheckout: () => void }) {
+  const t = OFERTA_ES;
+  const selected = PLANOS_ES[tier];
+  const payButton = (
+    <button type="button" onClick={onCheckout} className="cv-btn h-12 w-full text-[14px]">
+      <CreditCard className="h-4 w-4" /> {t.pagar}
+    </button>
+  );
+  return (
+    <>
+      <Title sub={t.sub}>{t.title[0]}<Accent>{t.title[1]}</Accent></Title>
+
+      <div className="cv-card mt-4 p-4">
+        <p className="text-[15px] font-extrabold">{t.recebeTitle}</p>
+        <ul className="mt-2 space-y-1.5 text-[14px] leading-5">
+          {t.recebe.map((item) => (
+            <li key={item} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-[#16a34a]" /> {item}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-5 grid grid-cols-3 gap-2">
+        {yearGifs.previews.map((src, i) => (
+          <img key={src} src={src} alt={t.videoAlt(i + 1)} loading="lazy" className="aspect-[9/16] w-full rounded-2xl object-cover shadow-md" />
+        ))}
+      </div>
+
+      <div className="mt-5 space-y-3">
+        {(Object.keys(PLANOS_ES) as PlanoES[]).map((id, i) => {
+          const p = PLANOS_ES[id];
+          const on = id === tier;
+          return (
+            <div key={id} className="cv-pop rounded-[24px] border-2 transition-all" style={{ ...delay(180 + i * 80), background: on ? "var(--cv-soft-2)" : "var(--cv-card)", borderColor: on ? "var(--cv-primary)" : "var(--cv-line)" }}>
+              <button type="button" onClick={() => setTier(id)} aria-pressed={on} className="w-full p-4 text-left">
+                <div className="flex items-start gap-3">
+                  <span className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border" style={{ background: on ? "var(--cv-primary)" : "transparent", borderColor: on ? "var(--cv-primary)" : "var(--cv-ring)" }}>
+                    {on && <Check className="h-3 w-3 text-white" />}
+                  </span>
+                  <p className="flex flex-1 flex-wrap items-center gap-2 text-[17px] font-extrabold">
+                    {p.nome}
+                    {id === "elite" && <span className="rounded-full px-2 py-0.5 text-[10px] font-bold tracking-[0.6px] text-white" style={{ background: "var(--cv-primary)" }}>{t.recomendado}</span>}
+                  </p>
+                  <div className="text-right">
+                    <p className="text-[20px] font-extrabold" style={{ color: on ? "var(--cv-primary-ink)" : undefined }}>{formatPrecio(p.precoMes)}</p>
+                    <p className="text-[11px]" style={{ color: "var(--cv-muted)" }}>{t.per}</p>
+                  </div>
+                </div>
+                <p className="mt-3 border-t pt-2 text-[12px] font-semibold" style={{ borderColor: "var(--cv-line)", color: "var(--cv-muted)" }}>{t.note}</p>
+              </button>
+              {on && <div className="px-4 pb-4">{payButton}</div>}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="cv-card mt-5 p-4 text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>
+        <p className="inline-flex items-center gap-1.5 font-bold text-[var(--cv-fg)]"><ShieldCheck className="h-4 w-4" /> {t.garantia(GARANTIA_DIAS_ES)}</p>
+        <p className="mt-1">{t.garantiaTexto}</p>
+      </div>
+
+      <div className="mt-5 border-t pt-4" style={{ background: "var(--cv-bg)", borderColor: "var(--cv-line)" }}>
+        <p className="mb-2 text-center text-[13px] font-semibold">{t.resumo(selected.nome, formatPrecio(selected.precoMes))}</p>
+        {payButton}
       </div>
     </>
   );

@@ -1,7 +1,7 @@
 // Conteúdo da aba Gestão > Plano. Atualizar a cada rodada de trabalho: é a memória do projeto.
 // Nada de número inventado: o que é proposta está escrito como proposta.
 
-export const PLANO_ATUALIZADO_EM = "12/11/2026";
+export const PLANO_ATUALIZADO_EM = "13/11/2026";
 
 export type Owner = "Lucas" | "Claude" | "Automático";
 export type ProximoPasso = { quando: string; quem: Owner; oque: string; porque: string };
@@ -34,6 +34,7 @@ export const STATUS_GERAL = [
   { area: "Automação de e-mails", estado: "ok", detalhe: "Black saindo pelo Brevo desde 17h15 de 03/11: 59 e-mails na primeira rodada, entregues e já com aberturas. Até 60 por hora. Quem nunca assinou recebe o link da /black; ex-assinante, o da /black-friday. A lista fria comprovada entra quando sobra espaço no limite. A função de e-mails precisa ser publicada pelo chat do Lovable a cada mudança." },
   { area: "Pixel do Meta no site", estado: "ok", detalhe: "O pixel da INFOS ALFA recebe eventos do canvaviagem.com desde 01/11, só pelo navegador. A conta está ativa." },
   { area: "Velocidade do site", estado: "ok", detalhe: "No ar desde 11/11: 56 fotos viraram WebP (37,4 MB para 2,9 MB), telas de carregamento com o formato do conteúdo, busca com espera, listas de 50 em 50 e a biblioteca com 3 pedidos ao banco em vez de 7. Segunda rodada em 12/11, ainda no computador: a primeira tela da /black não baixa mais os 2 vídeos (1,9 MB) nem as 46 artes da vitrine (0,9 MB) antes da hora, o rastreamento de anúncios saiu da frente do site (450 KB) sem perder evento, e a Fábrica deixou de baixar o gerador de PDF (390 KB) de quem nunca pede PDF." },
+  { area: "Canva Viagem na Espanha (espanhol)", estado: "atencao", detalhe: "Aberto em 13/11, ainda só no computador. Prontos: /es/inicio e /es/planos refeitas em espanhol da Espanha com a marca Canva Viagem, sem português e sem números não confirmados, e o quiz em espanhol em /es/onboarding. Preço por decisão do Lucas: os links em dólar que já existem na Stripe (Start 29 e Elite 97 por mês); euro depois. Conta de anúncio CV TEST, ainda sem pixel. Falta antes de anunciar: gerador de vídeo em espanhol, exemplos de artes e vídeos da Espanha, aviso legal e cookies em espanhol, retorno da Stripe para a página de obrigado, e-mails e login em espanhol." },
   { area: "Segurança", estado: "ok", detalhe: "Conferida em 01/11: nenhuma chave secreta no site nem nos commits recentes, e dados de clientes fechados para quem não é admin. Sobram itens menores no checklist." },
   { area: "Liberação de acesso depois de pagar", estado: "atencao", detalhe: "Pix conferido com venda real em 31/10: acesso liberado em 30 segundos e cliente gerou e baixou arte. Falta o cartão." },
 ] as const;

@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 // Funil de venda e páginas públicas: o popup nunca aparece aqui (atrapalhava o checkout).
-const FUNNEL_PATHS = ['/inicio', '/inicio2', '/es/inicio', '/onboarding', '/checkout', '/pix', '/login', '/auth', '/planos', '/obrigado'];
+const FUNNEL_PATHS = ['/inicio', '/inicio2', '/es/inicio', '/onboarding', '/es/onboarding', '/checkout', '/pix', '/login', '/auth', '/planos', '/obrigado'];
 const SEEN_FLAG = 'install_prompt_seen';
 
 /**

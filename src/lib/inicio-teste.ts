@@ -38,6 +38,9 @@ export function resolveInicioVariant(search: string): InicioVariant {
   }
 }
 
+/** lang, preco e moeda só vêm do quiz em espanhol (preço próprio); sem eles vale o preço em reais. */
+export type InicioExtra = { tela?: string; valor?: string; lang?: string; preco?: number; moeda?: string };
+
 const PLAN_VALUES: Record<string, number> = { monthly: 97, semiannual: 347, annual: 482 };
 const REGISTRO_KEY = "cv-pixel-registro";
 
@@ -45,7 +48,7 @@ const REGISTRO_KEY = "cv-pixel-registro";
  * Cada etapa do funil vira um evento no pixel do Canva Viagem.
  * Visita (ViewContent), e-mail (Lead), início do pagamento (InitiateCheckout) e compra (Purchase) já saem nas próprias telas.
  */
-function sendToPixel(step: InicioStep, extra?: { tela?: string; valor?: string }) {
+function sendToPixel(step: InicioStep, extra?: InicioExtra) {
   const tela = extra?.tela;
   const valor = extra?.valor;
   switch (step) {
@@ -57,8 +60,8 @@ function sendToPixel(step: InicioStep, extra?: { tela?: string; valor?: string }
     case "quiz": return trackFunnelEvent("IniciouQuiz", {}, true);
     case "quiz_tela": return trackFunnelEvent("TelaQuiz", { tela: tela ?? "" }, true);
     case "resposta": return trackFunnelEvent("RespostaQuiz", { pergunta: tela ?? "", resposta: valor ?? "" }, true);
-    case "plano": return trackFunnelEvent("AddToCart", { value: PLAN_VALUES[valor ?? ""] ?? 0, currency: "BRL", content_name: `Canva Viagem ${valor ?? ""}` });
-    case "pagar": return trackFunnelEvent("AddPaymentInfo", { value: PLAN_VALUES[tela ?? ""] ?? 0, currency: "BRL", content_name: `Canva Viagem ${tela ?? ""}`, content_category: valor ?? "" });
+    case "plano": return trackFunnelEvent("AddToCart", { value: extra?.preco ?? PLAN_VALUES[valor ?? ""] ?? 0, currency: extra?.moeda ?? "BRL", content_name: `Canva Viagem ${valor ?? ""}` });
+    case "pagar": return trackFunnelEvent("AddPaymentInfo", { value: extra?.preco ?? PLAN_VALUES[tela ?? ""] ?? 0, currency: extra?.moeda ?? "BRL", content_name: `Canva Viagem ${tela ?? ""}`, content_category: valor ?? "" });
     case "conta": {
       // Uma vez por aparelho: a conta é marcada de novo a cada abertura do quiz.
       try {
@@ -83,7 +86,7 @@ function origemDaVisita() {
   }
 }
 
-export function trackInicioTeste(step: InicioStep, extra?: { tela?: string; valor?: string }) {
+export function trackInicioTeste(step: InicioStep, extra?: InicioExtra) {
   // Quem entra direto pelo link do quiz ou do e-mail, sem passar pela página, também conta no funil.
   const current = read() ?? { variant: "arte" as InicioVariant, manual: false };
   // Prévia do Lovable e site local não são visitantes: ficam fora da conta, como quem escolheu o grupo.

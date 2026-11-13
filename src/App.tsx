@@ -26,7 +26,7 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
   const hideSidebarPaths = [
     '/planos', '/pt/planos', '/black-friday', '/es/planos', '/auth', '/login', '/auth/verify', '/sucesso', '/obrigado', '/es/obrigado',
     '/pos-pagamento', '/canva', '/termos', '/privacidade', '/exclusao-de-dados',
-    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/black', '/inicio2', '/es/inicio', '/onboarding', '/pix', '/checkout',
+    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/black', '/inicio2', '/es/inicio', '/onboarding', '/es/onboarding', '/pix', '/checkout',
     '/anuncios-para-agencia-de-viagens', '/site-para-agencia-de-viagens', '/carrosseis-para-agencia-de-viagens',
     '/equipe-de-marketing-para-agencia-de-viagens', '/.lovable/oauth/consent'
   ];
@@ -260,6 +260,7 @@ const App = () => {
                     <Route path="/inicio" element={<InicioEntry />} />
                     <Route path="/black" element={<InicioBlack />} />
                     <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="/es/onboarding" element={<Onboarding lang="es" />} />
                     <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                     <Route path="/anuncios-para-agencia-de-viagens" element={<AdsOfferLanding />} />
                     <Route path="/site-para-agencia-de-viagens" element={<SiteOfferLanding />} />
