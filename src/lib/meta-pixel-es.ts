@@ -8,11 +8,19 @@ declare global {
 }
 
 const ES_PIXEL_ID = "1560736461820497";
+// Pixel "cv test" (1824488118557875), o da conta de anúncio CV TEST usada na Espanha: recebe os mesmos eventos.
+const ES_PIXEL_IDS = [ES_PIXEL_ID, "1824488118557875"] as const;
+const enviarES = (evento: string, dados?: Record<string, unknown>) => {
+  for (const id of ES_PIXEL_IDS) {
+    if (dados) window.fbq('trackSingle', id, evento, dados);
+    else window.fbq('trackSingle', id, evento);
+  }
+};
 
 // Track Purchase event for ES pixel only
 export const trackESPurchase = (value: number, currency: string = 'USD') => {
   if (typeof window !== 'undefined' && window.fbq) {
-    window.fbq('trackSingle', ES_PIXEL_ID, 'Purchase', {
+    enviarES('Purchase', {
       value,
       currency,
     });
@@ -23,7 +31,7 @@ export const trackESPurchase = (value: number, currency: string = 'USD') => {
 // Track Subscribe event for ES pixel only
 export const trackESSubscribe = (value: number, currency: string = 'USD', predictedLtv?: number) => {
   if (typeof window !== 'undefined' && window.fbq) {
-    window.fbq('trackSingle', ES_PIXEL_ID, 'Subscribe', {
+    enviarES('Subscribe', {
       value,
       currency,
       predicted_ltv: predictedLtv || value * 12,
@@ -35,7 +43,7 @@ export const trackESSubscribe = (value: number, currency: string = 'USD', predic
 // Track InitiateCheckout event for ES pixel only
 export const trackESInitiateCheckout = (value: number, currency: string = 'USD') => {
   if (typeof window !== 'undefined' && window.fbq) {
-    window.fbq('trackSingle', ES_PIXEL_ID, 'InitiateCheckout', {
+    enviarES('InitiateCheckout', {
       value,
       currency,
     });
@@ -46,7 +54,7 @@ export const trackESInitiateCheckout = (value: number, currency: string = 'USD')
 // Track ViewContent event for ES pixel only
 export const trackESViewContent = (contentName?: string) => {
   if (typeof window !== 'undefined' && window.fbq) {
-    window.fbq('trackSingle', ES_PIXEL_ID, 'ViewContent', {
+    enviarES('ViewContent', {
       content_name: contentName || 'Página ES',
     });
     console.log(`[Meta ES Pixel] ViewContent tracked: ${contentName || 'Página ES'}`);
@@ -56,7 +64,7 @@ export const trackESViewContent = (contentName?: string) => {
 // Track Lead event for ES pixel only
 export const trackESLead = () => {
   if (typeof window !== 'undefined' && window.fbq) {
-    window.fbq('trackSingle', ES_PIXEL_ID, 'Lead');
+    enviarES('Lead');
     console.log('[Meta ES Pixel] Lead tracked');
   }
 };
@@ -64,7 +72,7 @@ export const trackESLead = () => {
 // Track CompleteRegistration event for ES pixel only
 export const trackESCompleteRegistration = () => {
   if (typeof window !== 'undefined' && window.fbq) {
-    window.fbq('trackSingle', ES_PIXEL_ID, 'CompleteRegistration');
+    enviarES('CompleteRegistration');
     console.log('[Meta ES Pixel] CompleteRegistration tracked');
   }
 };
