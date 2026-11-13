@@ -123,7 +123,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
           <Link to={isESRoute ? "/es" : "/"} className={cn("flex items-center gap-3 hover:opacity-80 transition-opacity shrink-0 min-w-0", !isCollapsed ? "md:hidden" : "md:flex")}>
             <img
               src={logoImage}
-              alt="TravelMarketing"
+              alt="Canva Viagem"
               className="h-10 w-10 rounded-xl shadow-lg md:shadow-lg hover:shadow-xl transition-shadow object-cover shrink-0"
             />
             <div className="hidden sm:flex flex-col min-w-0">

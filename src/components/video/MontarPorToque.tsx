@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Check } from "lucide-react";
+import { tradutor, whatsExemplo, type LangVideo } from "@/lib/video-textos";
 
 // Quiz "O que você quer anunciar?": Destino, Experiência ou Serviço → detalhes → o que inclui + preço → ocasião.
 // O texto montado vai pelo mesmo caminho do áudio (a IA preenche os campos). Para Experiência e Serviço,
@@ -171,11 +172,53 @@ const CAMINHOS: { id: Caminho; nome: string; desc: string; emoji: string; cor: s
   { id: "servico", nome: "Serviços", desc: "Passagem, hotel, transfer…", emoji: "🛎️", cor: "#4DA3FF" },
 ];
 
+// Espanhol (Espanha): destinos que uma agência espanhola vende. A mecânica do quiz é a mesma.
+const DESTINOS_ES: Record<"nacional" | "internacional", Opcao[]> = {
+  nacional: [
+    { nome: "Canarias", emoji: "🌋" },
+    { nome: "Baleares", emoji: "🏝️" },
+    { nome: "Andalucía", emoji: "💃" },
+    { nome: "Barcelona", emoji: "🏛️" },
+    { nome: "Madrid", emoji: "🏙️" },
+    { nome: "Galicia", emoji: "🌊" },
+    { nome: "Costa del Sol", emoji: "☀️" },
+    { nome: "País Vasco", emoji: "🍽️" },
+    { nome: "Asturias", emoji: "⛰️" },
+    { nome: "Valencia", emoji: "🍊" },
+  ],
+  internacional: [
+    { nome: "Roma", emoji: "🏟️" },
+    { nome: "París", emoji: "🗼" },
+    { nome: "Nueva York", emoji: "🗽" },
+    { nome: "Riviera Maya", emoji: "🌴" },
+    { nome: "Marrakech", emoji: "🕌" },
+    { nome: "Japón", emoji: "🗾" },
+    { nome: "Lisboa", emoji: "🚋" },
+    { nome: "Londres", emoji: "🎡" },
+  ],
+};
+
+// Listas do quiz no idioma pedido. Em português são as listas de cima, sem mudança.
+function dadosDoQuiz(lang: LangVideo) {
+  if (lang !== "es") return { DESTINOS, TIPOS, EXPERIENCIAS, SERVICOS, MAIS_PROCURADOS, CAMINHOS };
+  const tr = tradutor(lang);
+  const grupo = (g: Grupo): Grupo => ({ ...g, titulo: tr(g.titulo), inclusos: g.inclusos.map((x) => tr(x)), itens: g.itens.map((o) => ({ ...o, nome: tr(o.nome) })) });
+  return {
+    DESTINOS: DESTINOS_ES,
+    TIPOS: TIPOS.map((t) => ({ ...t, nome: tr(t.nome), frase: tr(t.frase), inclusos: t.inclusos.map((x) => tr(x)) })),
+    EXPERIENCIAS: EXPERIENCIAS.map(grupo),
+    SERVICOS: SERVICOS.map(grupo),
+    MAIS_PROCURADOS: { experiencia: MAIS_PROCURADOS.experiencia.map((x) => tr(x)), servico: MAIS_PROCURADOS.servico.map((x) => tr(x)) },
+    CAMINHOS: CAMINHOS.map((c) => ({ ...c, nome: tr(c.nome), desc: tr(c.desc) })),
+  };
+}
+
 // Fica grudado embaixo (acima da barra de "1 vídeo / 3 vídeos" no celular): não precisa rolar para achar
 const GRUDA = "sticky bottom-[var(--cv-gruda,88px)] z-10 shadow-[0_-12px_24px_8px_rgba(10,10,11,.9)] lg:bottom-4";
 
 // Botão de seguir quando dá para marcar mais de um (até 3)
-function BotaoContinuar({ qtd, nomes, onClick }: { qtd: number; nomes: string; onClick: () => void }) {
+function BotaoContinuar({ qtd, nomes, onClick, lang }: { qtd: number; nomes: string; onClick: () => void; lang: LangVideo }) {
+  const tr = tradutor(lang);
   return (
     <button
       disabled={!qtd}
@@ -183,7 +226,7 @@ function BotaoContinuar({ qtd, nomes, onClick }: { qtd: number; nomes: string; o
       className={`${GRUDA} min-h-12 rounded-2xl text-[15px] font-extrabold text-black transition-transform active:scale-[.97] disabled:bg-[#1c1c1f] disabled:text-white/40`}
       style={qtd ? { background: "#F5F906" } : undefined}
     >
-      {qtd ? `Continuar com ${qtd > 1 ? `${qtd} escolhas` : nomes} →` : "Marque até 3 opções"}
+      {qtd ? (qtd > 1 ? tr("Continuar com {qtd} escolhas →", { qtd }) : tr("Continuar com {nomes} →", { nomes })) : tr("Marque até 3 opções")}
     </button>
   );
 }
@@ -204,7 +247,10 @@ export function MontarPorToque({
   curto,
   onCurto,
   onPrevia,
+  lang = "pt",
 }: {
+  /** idioma do quiz e do texto que ele manda para a IA (padrão: português) */
+  lang?: LangVideo;
   /** chamado a cada escolha com o título que vai no vídeo, para a prévia acompanhar o quiz */
   onPrevia?: (titulo: string) => void;
   whatsapp?: string;
@@ -219,13 +265,16 @@ export function MontarPorToque({
   ocasiao?: string;
   onOcasiao?: (id: string) => void;
 }) {
+  const tr = tradutor(lang);
+  const es = lang === "es";
+  const { DESTINOS, TIPOS, EXPERIENCIAS, SERVICOS, MAIS_PROCURADOS, CAMINHOS } = useMemo(() => dadosDoQuiz(lang), [lang]);
   const [caminho, setCaminho] = useState<Caminho | null>(null);
   const [passo, setPasso] = useState(0);
   const [regiao, setRegiao] = useState<Regiao>("nacional");
   const [destinos, setDestinos] = useState<string[]>([]); // pode marcar mais de um
   // título do vídeo cabe em até ~38 letras: com muitos destinos, "Gramado e mais 2"
-  const juntar = (l: string[]) => (l.length <= 1 ? l[0] || "" : `${l.slice(0, -1).join(", ")} e ${l[l.length - 1]}`);
-  const destino = juntar(destinos).length <= 38 ? juntar(destinos) : `${destinos[0]} e mais ${destinos.length - 1}`;
+  const juntar = (l: string[]) => (l.length <= 1 ? l[0] || "" : tr("{inicio} e {fim}", { inicio: l.slice(0, -1).join(", "), fim: l[l.length - 1] }));
+  const destino = juntar(destinos).length <= 38 ? juntar(destinos) : tr("{primeiro} e mais {n}", { primeiro: destinos[0], n: destinos.length - 1 });
   const [lugar, setLugar] = useState(""); // onde (opcional) para experiência e serviço
   const [outro, setOutro] = useState("");
   const [tipo, setTipo] = useState<Tipo | null>(null);
@@ -234,8 +283,8 @@ export function MontarPorToque({
   const nomeOpcoes = opcoes.map((o) => o.nome).join(" + "); // para a tela
   const tituloOpcoes = (c: Caminho | null) => {
     const j = juntar(opcoes.map((o) => o.nome));
-    const base = j.length <= 30 ? j : c === "servico" ? "Serviços de viagem" : "Experiências de viagem";
-    const comLugar = lugar.trim() ? `${base} em ${lugar.trim()}` : base;
+    const base = j.length <= 30 ? j : c === "servico" ? tr("Serviços de viagem") : tr("Experiências de viagem");
+    const comLugar = lugar.trim() ? tr("{base} em {lugar}", { base, lugar: lugar.trim() }) : base;
     return comLugar.length <= 38 ? comLugar : base;
   };
   const [extra, setExtra] = useState(""); // item próprio no "o que está incluso"
@@ -253,9 +302,9 @@ export function MontarPorToque({
 
   // passos de cada caminho (o 0 é a escolha do caminho)
   const passos: Record<Caminho, string[]> = {
-    destino: ["O que você quer anunciar?", "Pra onde é a viagem?", "O que você está vendendo?", "O que está incluso?", "Últimos detalhes"],
-    experiencia: ["O que você quer anunciar?", "Qual experiência?", "Pra onde?", "O que está incluso?", "Últimos detalhes"],
-    servico: ["O que você quer anunciar?", "Qual serviço?", "Onde você atende?", "O que está incluso?", "Últimos detalhes"],
+    destino: [tr("O que você quer anunciar?"), tr("Pra onde é a viagem?"), tr("O que você está vendendo?"), tr("O que está incluso?"), tr("Últimos detalhes")],
+    experiencia: [tr("O que você quer anunciar?"), tr("Qual experiência?"), tr("Pra onde?"), tr("O que está incluso?"), tr("Últimos detalhes")],
+    servico: [tr("O que você quer anunciar?"), tr("Qual serviço?"), tr("Onde você atende?"), tr("O que está incluso?"), tr("Últimos detalhes")],
   };
   const titulos = passos[caminho || "destino"];
   const total = titulos.length;
@@ -304,22 +353,23 @@ export function MontarPorToque({
 
   function montar() {
     const p = preco.trim();
-    const rs = /^r\$/i.test(p) ? p : "R$ " + p;
-    const valor = !p ? "Valor sob consulta." : precoTipo === "parcelado" ? `Em 10x de ${rs} por pessoa.` : precoTipo === "pessoa" ? `Por ${rs} por pessoa.` : `Por ${rs} no total.`;
-    const inc = inclusos.length ? `Inclui: ${inclusos.join(", ")}.` : "";
+    // Espanha: preço em euro ("1.250 €"); Brasil: "R$ 1.990"
+    const rs = es ? (/€|eur/i.test(p) ? p : `${p} €`) : /^r\$/i.test(p) ? p : "R$ " + p;
+    const valor = !p ? tr("Valor sob consulta.") : precoTipo === "parcelado" && !es ? `Em 10x de ${rs} por pessoa.` : precoTipo === "total" ? tr("Por {valor} no total.", { valor: rs }) : tr("Por {valor} por pessoa.", { valor: rs });
+    const inc = inclusos.length ? tr("Inclui: {itens}.", { itens: inclusos.join(", ") }) : "";
     if (caminho === "destino") {
       if (!tipo || !destino) return;
-      onMontar([`${tipo.frase} para ${destino}.`, inc, valor].filter(Boolean).join(" "));
+      onMontar([tr("{frase} para {destino}.", { frase: tipo.frase, destino }), inc, valor].filter(Boolean).join(" "));
       return;
     }
     if (!opcao) return;
-    const onde = lugar.trim() || (regiao === "nacional" ? "destinos nacionais" : regiao === "internacional" ? "destinos internacionais" : "destinos nacionais e internacionais");
-    const rotulo = caminho === "servico" ? "Serviço" : "Experiência";
+    const onde = lugar.trim() || (regiao === "nacional" ? tr("destinos nacionais") : regiao === "internacional" ? tr("destinos internacionais") : tr("destinos nacionais e internacionais"));
+    const rotulo = caminho === "servico" ? tr("Serviço") : tr("Experiência");
     const titulo = tituloOpcoes(caminho);
     const texto = [
-      `${rotulo}: ${juntar(opcoes.map((o) => o.nome))}, em ${onde}.`,
-      `Não é um destino específico: use "${titulo}" como destino.`,
-      opcoes.length > 1 ? `Destaques: ${opcoes.map((o) => o.nome).join(", ")}.` : "",
+      tr("{rotulo}: {nomes}, em {onde}.", { rotulo, nomes: juntar(opcoes.map((o) => o.nome)), onde }),
+      tr("Não é um destino específico: use \"{titulo}\" como destino.", { titulo }),
+      opcoes.length > 1 ? tr("Destaques: {nomes}.", { nomes: opcoes.map((o) => o.nome).join(", ") }) : "",
       inc,
       valor,
     ]
@@ -360,13 +410,13 @@ export function MontarPorToque({
     const principais = topo.map((n) => todos.find((x) => x.o.nome === n)).filter(Boolean) as { o: Opcao; g: Grupo }[];
     return (
     <div className="flex flex-col gap-3">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-white/45">Mais procurados</p>
+      <p className="text-[11px] font-bold uppercase tracking-wider text-white/45">{tr("Mais procurados")}</p>
       <div className="grid grid-cols-2 gap-2">{principais.map(({ o, g }, i) => cartaoOpcao(o, g, i))}</div>
       <button onClick={() => setVerTodas((v) => !v)} className="self-start text-[13px] font-semibold text-[#F5F906] underline-offset-4 hover:underline">
-        {verTodas ? "Ver menos" : `Ver todas as opções (${todos.length})`}
+        {verTodas ? tr("Ver menos") : tr("Ver todas as opções ({n})", { n: todos.length })}
       </button>
       {/* com a lista toda aberta, o botão de seguir aparece também aqui em cima (não precisa rolar até o fim) */}
-      {verTodas && opcoes.length > 0 && <BotaoContinuar qtd={opcoes.length} nomes={nomeOpcoes} onClick={confirmarOpcoes} />}
+      {verTodas && opcoes.length > 0 && <BotaoContinuar lang={lang} qtd={opcoes.length} nomes={nomeOpcoes} onClick={confirmarOpcoes} />}
       {verTodas && lista.map((g) => (
         <div key={g.titulo}>
           <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider" style={{ color: g.cor }}>
@@ -389,14 +439,14 @@ export function MontarPorToque({
         <input
           value={outro}
           onChange={(e) => setOutro(e.target.value)}
-          placeholder={caminho === "servico" ? "Outro serviço" : "Outra experiência"}
+          placeholder={caminho === "servico" ? tr("Outro serviço") : tr("Outra experiência")}
           className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
         />
         <button type="submit" className="min-h-12 shrink-0 rounded-xl bg-white/[0.12] px-4 text-[14px] font-bold transition-transform active:scale-95">
-          + Adicionar
+          {tr("+ Adicionar")}
         </button>
       </form>
-      <BotaoContinuar qtd={opcoes.length} nomes={nomeOpcoes} onClick={confirmarOpcoes} />
+      <BotaoContinuar lang={lang} qtd={opcoes.length} nomes={nomeOpcoes} onClick={confirmarOpcoes} />
     </div>
     );
   };
@@ -406,7 +456,7 @@ export function MontarPorToque({
       {/* progresso */}
       <div className="flex items-center gap-2">
         {passo > 0 && (
-          <button aria-label="Voltar" onClick={voltar} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] transition-transform active:scale-90">
+          <button aria-label={tr("Voltar")} onClick={voltar} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] transition-transform active:scale-90">
             <ArrowLeft className="h-4 w-4" />
           </button>
         )}
@@ -421,7 +471,7 @@ export function MontarPorToque({
 
       <div key={`${caminho}-${passo}`} className={entra}>
         <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-[#F5F906]">
-          Passo {passo + 1} de {total}
+          {tr("Passo {a} de {b}", { a: passo + 1, b: total })}
         </p>
         <h3 className="mb-3 text-[19px] font-extrabold leading-tight">{titulos[passo]}</h3>
 
@@ -446,7 +496,7 @@ export function MontarPorToque({
             ))}
             {onMeusPacotes && (
               <button onClick={onMeusPacotes} className="mt-1 flex min-h-11 items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 text-[14px] font-semibold text-white/75 transition-colors hover:border-[#F5F906]/50 hover:text-white">
-                📦 Usar um pacote que já cadastrei
+                {tr("📦 Usar um pacote que já cadastrei")}
               </button>
             )}
           </div>
@@ -462,7 +512,7 @@ export function MontarPorToque({
                   onClick={() => setRegiao(r)}
                   className={`min-h-12 rounded-xl text-[15px] font-bold transition-all duration-200 active:scale-95 ${regiao === r ? "bg-[#F5F906] text-black shadow-lg" : "text-white/70"}`}
                 >
-                  {r === "nacional" ? "🌴 Nacional" : "✈️ Internacional"}
+                  {r === "nacional" ? tr("🌴 Nacional") : tr("✈️ Internacional")}
                 </button>
               ))}
             </div>
@@ -493,11 +543,11 @@ export function MontarPorToque({
               <input
                 value={outro}
                 onChange={(e) => setOutro(e.target.value)}
-                placeholder="Outro destino"
+                placeholder={tr("Outro destino")}
                 className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
               />
               <button type="submit" className="min-h-12 shrink-0 rounded-xl bg-white/[0.12] px-4 text-[14px] font-bold transition-transform active:scale-95">
-                + Adicionar
+                {tr("+ Adicionar")}
               </button>
             </form>
             {destinos.filter((d) => !DESTINOS.nacional.concat(DESTINOS.internacional).some((x) => x.nome === d)).length > 0 && (
@@ -511,7 +561,7 @@ export function MontarPorToque({
                   ))}
               </div>
             )}
-            <BotaoContinuar qtd={destinos.length} nomes={destino} onClick={() => destinos.length && setPasso(2)} />
+            <BotaoContinuar lang={lang} qtd={destinos.length} nomes={destino} onClick={() => destinos.length && setPasso(2)} />
           </div>
         )}
 
@@ -542,7 +592,7 @@ export function MontarPorToque({
         {caminho !== "destino" && caminho && passo === 2 && opcao && (
           <div className="flex flex-col gap-3">
             <p className="-mt-1 text-[13px] text-white/55">
-              {opcoes.map((o) => o.emoji).join(" ")} {nomeOpcoes}. Não precisa ser um lugar específico.
+              {opcoes.map((o) => o.emoji).join(" ")} {nomeOpcoes}. {tr("Não precisa ser um lugar específico.")}
             </p>
             <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-white/[0.06] p-1">
               {(["nacional", "internacional", "ambos"] as Regiao[]).map((r) => (
@@ -551,21 +601,21 @@ export function MontarPorToque({
                   onClick={() => setRegiao(r)}
                   className={`min-h-12 rounded-xl text-[13px] font-bold transition-all duration-200 active:scale-95 ${regiao === r ? "bg-[#F5F906] text-black shadow-lg" : "text-white/70"}`}
                 >
-                  {r === "nacional" ? "🌴 Nacional" : r === "internacional" ? "✈️ Internacional" : "🌎 Os dois"}
+                  {r === "nacional" ? tr("🌴 Nacional") : r === "internacional" ? tr("✈️ Internacional") : tr("🌎 Os dois")}
                 </button>
               ))}
             </div>
             <label className="block">
-              <span className="mb-1 block text-[12px] font-semibold text-white/55">Cidade ou região (opcional)</span>
+              <span className="mb-1 block text-[12px] font-semibold text-white/55">{tr("Cidade ou região (opcional)")}</span>
               <input
                 value={lugar}
                 onChange={(e) => setLugar(e.target.value)}
-                placeholder={caminho === "servico" ? "Ex.: Fortaleza, Nordeste" : "Ex.: Serra Gaúcha, Caribe"}
+                placeholder={caminho === "servico" ? tr("Ex.: Fortaleza, Nordeste") : tr("Ex.: Serra Gaúcha, Caribe")}
                 className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
               />
             </label>
             <button onClick={() => setPasso(3)} className={`${GRUDA} min-h-12 rounded-2xl bg-[#F5F906] text-[15px] font-extrabold text-black transition-transform active:scale-[.97]`}>
-              Continuar →
+              {tr("Continuar →")}
             </button>
           </div>
         )}
@@ -574,7 +624,7 @@ export function MontarPorToque({
         {passo === 3 && (caminho === "destino" ? !!tipo : !!opcao) && (
           <div className="flex flex-col gap-4">
             <p className="-mt-1 text-[13px] text-white/55">
-              {caminho === "destino" ? `${tipo!.emoji} ${tipo!.nome} · ${destino}` : `${opcoes.map((o) => o.emoji).join(" ")} ${nomeOpcoes}${lugar.trim() ? ` · ${lugar.trim()}` : ""}`}. Toque para marcar o que entra.
+              {caminho === "destino" ? `${tipo!.emoji} ${tipo!.nome} · ${destino}` : `${opcoes.map((o) => o.emoji).join(" ")} ${nomeOpcoes}${lugar.trim() ? ` · ${lugar.trim()}` : ""}`}. {tr("Toque para marcar o que entra.")}
             </p>
             <div className="flex flex-wrap gap-2">
               {listaInclusos.map((it, i) => {
@@ -603,32 +653,32 @@ export function MontarPorToque({
                 value={extra}
                 onChange={(e) => setExtra(e.target.value)}
                 maxLength={28}
-                placeholder="Adicionar outro item (ex.: Passeio de barco)"
+                placeholder={tr("Adicionar outro item (ex.: Passeio de barco)")}
                 className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
               />
               <button type="submit" className="min-h-12 shrink-0 rounded-xl bg-white/[0.12] px-4 text-[14px] font-bold transition-transform active:scale-95">
-                + Item
+                {tr("+ Item")}
               </button>
             </form>
             <div className="flex flex-wrap gap-1.5">
-              {([["pessoa", "Por pessoa"], ["total", "Valor total"], ["parcelado", "Em 10x"]] as const).map(([id, nome]) => (
+              {([["pessoa", tr("Por pessoa")], ["total", tr("Valor total")], ["parcelado", tr("Em 10x")]] as const).filter(([id]) => !(es && id === "parcelado")).map(([id, nome]) => (
                 <button key={id} onClick={() => setPrecoTipo(id)} className={`min-h-9 rounded-full border px-3 text-[13px] font-semibold transition-all active:scale-95 ${precoTipo === id ? "border-[#F5F906] bg-[#F5F906] text-black" : "border-white/15 text-white/70"}`}>
                   {nome}
                 </button>
               ))}
             </div>
             <label className="block">
-              <span className="mb-1 block text-[12px] font-semibold text-white/55">{precoTipo === "parcelado" ? "Valor da parcela" : "Preço"} (opcional, aparece só no fim do vídeo)</span>
+              <span className="mb-1 block text-[12px] font-semibold text-white/55">{precoTipo === "parcelado" ? tr("Valor da parcela") : tr("Preço")}{tr(" (opcional, aparece só no fim do vídeo)")}</span>
               <input
                 inputMode="decimal"
                 value={preco}
                 onChange={(e) => setPreco(e.target.value)}
-                placeholder="Ex.: 1.990"
+                placeholder={tr("Ex.: 1.990")}
                 className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
               />
             </label>
             <button onClick={() => setPasso(4)} className={`${GRUDA} min-h-12 rounded-2xl bg-[#F5F906] text-[15px] font-extrabold text-black transition-transform active:scale-[.97]`}>
-              Continuar →
+              {tr("Continuar →")}
             </button>
           </div>
         )}
@@ -638,21 +688,21 @@ export function MontarPorToque({
           <div className="flex flex-col gap-4">
             {onWhatsapp && (
               <label className="block">
-                <span className="mb-1 block text-[12px] font-semibold text-white/55">WhatsApp que aparece no fim do vídeo</span>
+                <span className="mb-1 block text-[12px] font-semibold text-white/55">{tr("WhatsApp que aparece no fim do vídeo")}</span>
                 <input
                   inputMode="tel"
                   value={whatsapp || ""}
                   onChange={(e) => onWhatsapp(e.target.value)}
-                  placeholder="(11) 99999-9999"
+                  placeholder={whatsExemplo(lang)}
                   className="min-h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 text-[15px] outline-none focus:border-[#F5F906]/60"
                 />
               </label>
             )}
             {onCurto && (
               <div>
-                <span className="mb-1 block text-[12px] font-semibold text-white/55">Duração</span>
+                <span className="mb-1 block text-[12px] font-semibold text-white/55">{tr("Duração")}</span>
                 <div className="flex gap-1.5">
-                  {([[false, "22 s · completo"], [true, "12 s · curto"]] as const).map(([c, nome]) => (
+                  {([[false, tr("22 s · completo")], [true, tr("12 s · curto")]] as const).map(([c, nome]) => (
                     <button key={nome} onClick={() => onCurto(c)} className={`min-h-9 rounded-full border px-3 text-[13px] font-semibold transition-all active:scale-95 ${!!curto === c ? "border-[#F5F906] bg-[#F5F906] text-black" : "border-white/15 text-white/70"}`}>
                       {nome}
                     </button>
@@ -660,7 +710,7 @@ export function MontarPorToque({
                 </div>
               </div>
             )}
-            <span className="-mb-2 block text-[12px] font-semibold text-white/55">Ocasião (opcional)</span>
+            <span className="-mb-2 block text-[12px] font-semibold text-white/55">{tr("Ocasião (opcional)")}</span>
             {ocasioes.length > 0 && onOcasiao && (
               <div className="flex flex-wrap gap-2">
                 {(verOcasioes ? ocasioes : ocasioes.slice(0, ocasioesDestaque)).map((o, i) => {
@@ -673,13 +723,13 @@ export function MontarPorToque({
                       className={`${cartao} flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-[14px] font-semibold transition-all active:scale-95 ${on ? "border-[#F5F906] bg-[#F5F906] text-black" : "border-white/15 bg-white/[0.04] text-white/80"}`}
                     >
                       {on && <Check className="h-4 w-4" />}
-                      {o.id === "nenhuma" ? "Sem ocasião" : o.nome}
+                      {o.id === "nenhuma" ? tr("Sem ocasião") : o.nome}
                     </button>
                   );
                 })}
                 {ocasioes.length > ocasioesDestaque && (
                   <button onClick={() => setVerOcasioes((v) => !v)} className="min-h-11 px-2 text-[13px] font-semibold text-[#F5F906]">
-                    {verOcasioes ? "Ver menos" : "Outras datas…"}
+                    {verOcasioes ? tr("Ver menos") : tr("Outras datas…")}
                   </button>
                 )}
               </div>
@@ -690,7 +740,7 @@ export function MontarPorToque({
               className={`${GRUDA} min-h-14 rounded-2xl text-[16px] font-extrabold text-black transition-transform active:scale-[.97] disabled:opacity-60`}
               style={{ background: "#F5F906" }}
             >
-              {ocupado ? "Montando seus vídeos…" : "Montar meus 3 vídeos"}
+              {ocupado ? tr("Montando seus vídeos…") : tr("Montar meus 3 vídeos")}
             </button>
           </div>
         )}

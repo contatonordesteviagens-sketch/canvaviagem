@@ -42,6 +42,64 @@ Devolva SÓ um JSON com:
 Se for um serviço sem lugar (seguro viagem, chip internacional, câmbio, visto), use o nome do serviço como destino (ex.: Seguro Viagem) e buscas genéricas de viagem em inglês (airport, passport, suitcase, airplane window).
 Regras: não invente preço, telefone, Instagram nem nome de agência. Itens só do que foi informado; se nada foi informado, devolva []. Corrija erros comuns de transcrição em nomes de lugares. Se não der para saber o destino, devolva "destino": "".`;
 
+// Versão em espanhol da Espanha (body.lang === "es"). Mesmo JSON, mesmas chaves; muda idioma, moeda e formato.
+const SYSTEM_PROMPT_ES = `Montas un vídeo de stories (3 pantallas) para una agencia de viajes de España.
+Recibes el paquete de una de estas formas: lo que el agente ha dicho en un audio, un texto pegado, los datos de un paquete guardado, o la FOTO/CAPTURA de un paquete (de mayorista, de una publicación, de WhatsApp).
+PRIMERO averigua el destino (el lugar del viaje). Si es una foto, lee todo el texto de la imagen y mira también el paisaje.
+Si el texto no dice un lugar concreto (p. ej.: "Circuito Europeo", "Caribe", "Escapada"), reconoce el lugar por la foto de fondo (Coliseo = Roma, Torre Eiffel = París) y usa ese lugar como destino. Si es un circuito con varias ciudades, usa la ciudad que aparece en la foto o, sin foto clara, la región (p. ej.: Europa).
+Escribe TODOS los textos en español de España (tú, vosotros; nunca voseo, nunca portugués). Devuelve SOLO un JSON con estas claves exactas:
+{
+  "destino": "nombre del destino como se escribe en España, con tildes (p. ej.: Tenerife, Nueva York, Riviera Maya)",
+  "chamada": "frase corta y animada para la 1.ª pantalla, hasta 32 caracteres, sobre el destino (p. ej.: Las calas más bonitas de Menorca). Si el paquete tiene nombre propio, úsalo aquí",
+  "destaques": ["2 frases cortas, hasta 30 caracteres cada una, sobre lo que la persona va a vivir en el destino (p. ej.: Playas de agua turquesa, Atardeceres inolvidables)"],
+  "pagamento": "installments si el precio va a plazos (p. ej.: 10 plazos de 120 €), down_plus si es reserva/señal + plazos, cash si es pago único o solo un importe, free_quote si no hay precio",
+  "parcelas": "solo el número de plazos con x (p. ej.: 10x), o \\"\\"",
+  "entrada": "importe de la señal o reserva en formato 100 €, solo si es señal + plazos, si no \\"\\"",
+  "preco": "el importe principal en formato 1.250 € o 349,90 € (a plazos, el importe de cada plazo), o \\"\\". Usa la moneda que diga el agente; si no dice ninguna, euros",
+  "precoAntigo": "si hay un precio anterior tachado (p. ej.: antes 1.490 €, ahora 1.190 €), el importe anterior en formato 1.490 €, si no \\"\\"",
+  "pessoas": "para quién es el precio, empezando por 'por' o 'para' (p. ej.: por persona, para dos, para 2 adultos), o \\"\\"",
+  "saida": "ciudad o aeropuerto de salida, si se dice (p. ej.: Madrid), si no \\"\\"",
+  "datas": "fecha o periodo del viaje, corto, como se lee en un vídeo (p. ej.: del 12 al 17/12, 20/12/2026, julio 2027), si no \\"\\"",
+  "tipo": "uno de estos valores EXACTOS, sin traducir: pacote (vuelo + hotel, o paquete cerrado), aereo (solo vuelo), hotel (solo alojamiento o resort), cruzeiro (crucero), excursao (viaje en grupo, autobús, ida y vuelta en el día), passeio (excursión, tour, actividad), servico (seguro de viaje, eSIM, cambio de divisa, visado). En caso de duda, pacote",
+  "itens": ["hasta 4 cosas incluidas, cada una con hasta 24 caracteres, p. ej.: Vuelo ida y vuelta, Hotel 5 noches, Desayuno incluido, Traslados"],
+  "agencia": "nombre de la agencia si aparece, si no \\"\\"",
+  "whatsapp": "teléfono si aparece, tal como está escrito (p. ej.: +34 600 000 000), si no \\"\\"",
+  "instagram": "@ de Instagram si aparece, si no \\"\\"",
+  "buscas": ["4 términos cortos EN INGLÉS para encontrar vídeos reales de ese destino en un banco de vídeos, del más específico al más genérico (p. ej.: Menorca, Menorca cove, Menorca beach, Mediterranean beach)"]
+}
+Si es un servicio sin lugar (seguro de viaje, eSIM, cambio de divisa, visado), usa el nombre del servicio como destino (p. ej.: Seguro de viaje) y búsquedas genéricas de viaje en inglés (airport, passport, suitcase, airplane window).
+Reglas: no inventes precio, teléfono, Instagram ni nombre de agencia. Las cosas incluidas, solo las que se han dicho; si no se ha dicho nada, devuelve []. Corrige errores habituales de transcripción en nombres de lugares. Si no se puede saber el destino, devuelve "destino": "".`;
+
+// Mensagens que o cliente lê, por idioma.
+const MSG = {
+  pt: {
+    semLogin: "Limite de testes sem login atingido nesta hora. Tente mais tarde.",
+    limite: (n: number) => `Você já fez os ${n} vídeos de hoje. Amanhã libera de novo. Os de hoje estão em Meus conteúdos.`,
+    imagemGrande: "A imagem é grande demais. Mande um print menor.",
+    vazio: "Mande o pacote: um áudio, um texto ou uma foto.",
+    extras: (t: string) => `Informações extras do agente: ${t}`,
+    lerImagem: "Leia o pacote desta imagem.",
+    cheio: "Muita gente usando agora. Tente em alguns segundos.",
+    iaFalhou: "A IA não respondeu. Tente de novo.",
+    naoEntendi: "Não entendi o pacote. Fale o destino, o preço e o que está incluso.",
+    semDestino: "Não achei o destino. Diga ou mostre para onde é o pacote.",
+    erro: "Não consegui montar agora. Tente de novo.",
+  },
+  es: {
+    semLogin: "Se ha alcanzado el límite de pruebas sin cuenta en esta hora. Inténtalo más tarde.",
+    limite: (n: number) => `Ya has hecho los ${n} vídeos de hoy. Mañana vuelves a tener más. Los de hoy están en Mis contenidos.`,
+    imagemGrande: "La imagen pesa demasiado. Envía una captura más pequeña.",
+    vazio: "Envía el paquete: un audio, un texto o una foto.",
+    extras: (t: string) => `Información adicional del agente: ${t}`,
+    lerImagem: "Lee el paquete de esta imagen.",
+    cheio: "Hay mucha gente usándolo ahora. Inténtalo en unos segundos.",
+    iaFalhou: "La IA no ha respondido. Inténtalo de nuevo.",
+    naoEntendi: "No he entendido el paquete. Di el destino, el precio y qué incluye.",
+    semDestino: "No he encontrado el destino. Di o muestra a dónde es el paquete.",
+    erro: "No he podido montarlo ahora. Inténtalo de nuevo.",
+  },
+};
+
 // Cada vídeo gasta crédito de IA. Limite por cliente, por dia de Brasília (o áudio tem 10).
 const LIMITE_VIDEOS_POR_DIA = 15;
 const EVENTO_USO = "video_pronto_uso";
@@ -145,8 +203,13 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Método não permitido" }, 405);
 
+  let m: typeof MSG.pt = MSG.pt;
   try {
     const semLogin = req.headers.get("x-video-lab") === "sem-login";
+    // o corpo é lido uma vez só, antes de tudo, para saber o idioma das mensagens
+    const body = await req.json().catch(() => ({}));
+    const es = body?.lang === "es";
+    m = es ? MSG.es : MSG.pt;
     let userId: string | null = null;
     let usadosHoje = 0;
     if (!semLogin) {
@@ -154,15 +217,14 @@ serve(async (req) => {
       if (!access.ok) return access.response;
       userId = access.userId;
     } else if (!(await liberarSemLogin())) {
-      return json({ error: "Limite de testes sem login atingido nesta hora. Tente mais tarde." }, 429);
+      return json({ error: m.semLogin }, 429);
     }
 
-    const body = await req.json().catch(() => ({}));
     // a busca avulsa do editor não conta no limite diário
     if (userId && typeof body?.buscar !== "string") {
       usadosHoje = await videosUsadosHoje(userId);
       if (usadosHoje >= LIMITE_VIDEOS_POR_DIA) {
-        return json({ error: `Você já fez os ${LIMITE_VIDEOS_POR_DIA} vídeos de hoje. Amanhã libera de novo. Os de hoje estão em Meus conteúdos.`, videos_restantes: 0 }, 429);
+        return json({ error: m.limite(LIMITE_VIDEOS_POR_DIA), videos_restantes: 0 }, 429);
       }
     }
     if (typeof body?.buscar === "string" && body.buscar.trim().length >= 2) {
@@ -173,8 +235,8 @@ serve(async (req) => {
     }
     const texto = typeof body?.text === "string" ? body.text.trim().slice(0, 4000) : "";
     const imagem = typeof body?.image === "string" && body.image.startsWith("data:image/") ? body.image : "";
-    if (imagem.length > 7_000_000) return json({ error: "A imagem é grande demais. Mande um print menor." }, 413);
-    if (texto.length < 3 && !imagem) return json({ error: "Mande o pacote: um áudio, um texto ou uma foto." }, 400);
+    if (imagem.length > 7_000_000) return json({ error: m.imagemGrande }, 413);
+    if (texto.length < 3 && !imagem) return json({ error: m.vazio }, 400);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const PEXELS_API_KEY = Deno.env.get("PEXELS_API_KEY");
@@ -182,7 +244,7 @@ serve(async (req) => {
 
     const conteudo: unknown = imagem
       ? [
-          { type: "text", text: texto ? `Informações extras do agente: ${texto}` : "Leia o pacote desta imagem." },
+          { type: "text", text: texto ? m.extras(texto) : m.lerImagem },
           { type: "image_url", image_url: { url: imagem } },
         ]
       : texto;
@@ -193,7 +255,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: es ? SYSTEM_PROMPT_ES : SYSTEM_PROMPT },
           { role: "user", content: conteudo },
         ],
         response_format: { type: "json_object" },
@@ -201,14 +263,14 @@ serve(async (req) => {
     });
     if (!ai.ok) {
       console.error("fabrica-video-pronto ai", ai.status, await ai.text().catch(() => ""));
-      return json({ error: ai.status === 429 ? "Muita gente usando agora. Tente em alguns segundos." : "A IA não respondeu. Tente de novo." }, 502);
+      return json({ error: ai.status === 429 ? m.cheio : m.iaFalhou }, 502);
     }
     const raw = (await ai.json())?.choices?.[0]?.message?.content || "";
     let c: any = {};
     try {
       c = JSON.parse(String(raw).replace(/^```(?:json)?\s*|\s*```$/g, ""));
     } catch {
-      return json({ error: "Não entendi o pacote. Fale o destino, o preço e o que está incluso." }, 422);
+      return json({ error: m.naoEntendi }, 422);
     }
 
     const s = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -231,7 +293,7 @@ serve(async (req) => {
       whatsapp: s(c.whatsapp, 20),
       instagram: s(c.instagram, 40),
     };
-    if (!dados.destino) return json({ error: "Não achei o destino. Diga ou mostre para onde é o pacote.", dados }, 422);
+    if (!dados.destino) return json({ error: m.semDestino, dados }, 422);
 
     const buscas = (Array.isArray(c.buscas) ? c.buscas : []).map((b: unknown) => s(b, 60)).filter(Boolean).slice(0, 4);
     if (!buscas.includes(dados.destino)) buscas.unshift(dados.destino);
@@ -240,12 +302,12 @@ serve(async (req) => {
     let videosRestantes: number | null = null;
     if (userId) {
       const db = adminDb();
-      await db?.from("analytics_events").insert({ user_id: userId, event_type: EVENTO_USO, event_data: { destino: dados.destino }, url_path: "/fabrica/video" });
+      await db?.from("analytics_events").insert({ user_id: userId, event_type: EVENTO_USO, event_data: { destino: dados.destino, lang: es ? "es" : "pt" }, url_path: es ? "/es/fabrica/video" : "/fabrica/video" });
       videosRestantes = Math.max(0, LIMITE_VIDEOS_POR_DIA - usadosHoje - 1);
     }
     return json({ dados, midias, buscas, videos_restantes: videosRestantes });
   } catch (e) {
     console.error("fabrica-video-pronto error", e);
-    return json({ error: "Não consegui montar agora. Tente de novo." }, 500);
+    return json({ error: m.erro }, 500);
   }
 });

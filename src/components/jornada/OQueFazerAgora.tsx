@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Check, ChevronDown, ChevronUp, Rocket } from "lucide-react";
+import { tradutor, type LangVideo } from "@/lib/video-textos";
 
 export type Momento = "video" | "arte" | "carrossel" | "site" | "cliente";
 
@@ -68,12 +69,16 @@ export function OQueFazerAgora({
   feito,
   onConfirmar,
   extra,
+  lang = "pt",
 }: {
+  /** idioma dos textos (padrão: português; em espanhol só o momento "video" está traduzido) */
+  lang?: LangVideo;
   momento: Momento;
   feito?: boolean;
   onConfirmar?: () => void;
   extra?: React.ReactNode;
 }) {
+  const tr = tradutor(lang);
   const a = ACOES[momento];
   // Nas 3 primeiras vezes vem aberto; depois, recolhido num link.
   const [aberto, setAberto] = useState(() => {
@@ -91,7 +96,7 @@ export function OQueFazerAgora({
     >
       <button type="button" onClick={() => setAberto((v) => !v)} className="flex w-full items-center gap-2 text-left">
         <Rocket className="h-5 w-5 shrink-0 text-[#F5F906]" />
-        <span className="flex-1 text-sm font-extrabold sm:text-base">{a.titulo}</span>
+        <span className="flex-1 text-sm font-extrabold sm:text-base">{tr(a.titulo)}</span>
         {aberto ? <ChevronUp className="h-4 w-4 text-white/50" /> : <ChevronDown className="h-4 w-4 text-white/50" />}
       </button>
       {aberto && (
@@ -101,8 +106,8 @@ export function OQueFazerAgora({
               <li key={p.t} className="flex gap-3 rounded-xl bg-white/[0.04] p-3">
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#F5F906] text-sm font-black text-black">{i + 1}</span>
                 <div className="min-w-0">
-                  <p className="text-sm font-bold leading-tight">{p.t}</p>
-                  <p className="mt-0.5 text-xs text-white/60">{p.d}</p>
+                  <p className="text-sm font-bold leading-tight">{tr(p.t)}</p>
+                  <p className="mt-0.5 text-xs text-white/60">{tr(p.d)}</p>
                 </div>
               </li>
             ))}
@@ -115,7 +120,7 @@ export function OQueFazerAgora({
               onClick={onConfirmar}
               className={`mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold ${feito ? "bg-[#F5F906]/20 text-[#F5F906]" : "bg-[#F5F906] text-black"}`}
             >
-              <Check className="h-4 w-4" /> {feito ? "Feito! Missão concluída" : a.confirmar}
+              <Check className="h-4 w-4" /> {feito ? tr("Feito! Missão concluída") : tr(a.confirmar)}
             </button>
           )}
         </>

@@ -8,6 +8,7 @@ import { Phase4LandingBuilderES } from "@/pages/fabrica/Phase4LandingBuilderES";
 import { Phase5DashboardES } from "@/pages/fabrica/Phase5DashboardES";
 import { FabricaDashboardES } from "@/pages/fabrica/FabricaDashboardES";
 import { FabricaLibraryES } from "@/pages/fabrica/FabricaLibraryES";
+import { VideoLabTela } from "@/pages/dev/VideoLab";
 import { 
   ArrowLeft, 
   Sparkles, 
@@ -21,7 +22,8 @@ import {
   Library,
   Users,
   Menu,
-  X
+  X,
+  Clapperboard
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
@@ -34,6 +36,7 @@ import { FabricaLockedFeature } from "@/components/fabrica/FabricaLockedFeature"
 // /es/fabrica/carrossel abria o formulário de Anúncio.
 const getPhaseFromPathES = (pathname: string): number => {
   const p = pathname.toLowerCase();
+  if (p.includes("/video")) return 6; // Gerador de vídeo (igual ao PT: /fabrica/video)
   if (p.includes("/anuncio") || p.includes("/anuncios")) return 1;
   if (p.includes("/carrossel") || p.includes("/carrusel")) return 2;
   if (p.includes("/site") || p.includes("/sites") || p.includes("/sitio")) return 3;
@@ -43,7 +46,7 @@ const getPhaseFromPathES = (pathname: string): number => {
 };
 
 const FabricaInnerES = () => {
-  const { state, setPhase } = useFabricaContext();
+  const { state, setPhase: setPhaseCtx } = useFabricaContext();
   const { isAdmin } = useAuth();
   const { can } = useEntitlements();
   const navigate = useNavigate();
@@ -51,30 +54,45 @@ const FabricaInnerES = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "phase">("dashboard");
   const phaseFromPath = getPhaseFromPathES(location.pathname);
+  // O Gerador de vídeo só existe pela URL (/es/fabrica/video). Os botões das outras fases trocam a fase pelo estado,
+  // então, saindo do vídeo, a URL também precisa mudar (senão a tela continuaria no vídeo).
+  const emVideo = phaseFromPath === 6;
+  const baseFabrica = location.pathname.startsWith("/es") ? "/es/fabrica" : "/fabrica";
+  const ROTA_DA_FASE = ["", "/anuncio", "/carrusel", "/sitio", "/crm", "/planos"];
+  const setPhase = (fase: number) => {
+    setPhaseCtx(fase);
+    if (emVideo) navigate(`${baseFabrica}${ROTA_DA_FASE[fase] || ""}`);
+  };
+  const abrirVideo = () => {
+    setActiveTab("phase");
+    navigate(`${baseFabrica}/video`);
+  };
   const activePhase = phaseFromPath > 0 ? phaseFromPath : state.currentPhase;
   
   useEffect(() => {
     window.scrollTo(0, 0);
     const path = location.pathname.toLowerCase();
-    if (path.includes("/anuncio") || path.includes("/anuncios")) {
+    if (path.includes("/video")) {
       setActiveTab("phase");
-      if (state.currentPhase !== 1) setPhase(1);
+    } else if (path.includes("/anuncio") || path.includes("/anuncios")) {
+      setActiveTab("phase");
+      if (state.currentPhase !== 1) setPhaseCtx(1);
     } else if (path.includes("/carrossel") || path.includes("/carrusel")) {
       setActiveTab("phase");
-      if (state.currentPhase !== 2) setPhase(2);
+      if (state.currentPhase !== 2) setPhaseCtx(2);
     } else if (path.includes("/site") || path.includes("/sites") || path.includes("/sitio")) {
       setActiveTab("phase");
-      if (state.currentPhase !== 3) setPhase(3);
+      if (state.currentPhase !== 3) setPhaseCtx(3);
     } else if (path.includes("/crm")) {
       setActiveTab("phase");
-      if (state.currentPhase !== 4) setPhase(4);
+      if (state.currentPhase !== 4) setPhaseCtx(4);
     } else if (path.includes("/checkup") || path.includes("/plano") || path.includes("/plan") || path.includes("/planos") || path.includes("/projeto") || path.includes("/projetos")) {
       setActiveTab("phase");
-      if (state.currentPhase !== 5) setPhase(5);
+      if (state.currentPhase !== 5) setPhaseCtx(5);
     } else if (path === "/fabrica" || path === "/es/fabrica") {
       setActiveTab("dashboard");
     }
-  }, [location.pathname, state.currentPhase, setPhase]);
+  }, [location.pathname, state.currentPhase, setPhaseCtx]);
 
   useEffect(() => {
     const color = state.primaryColor || "#F59E0B";
@@ -95,6 +113,7 @@ const FabricaInnerES = () => {
   const getPhaseName = () => {
     if (activeTab === "dashboard") return "Panel Inicial";
     
+    if (activePhase === 6) return "Vídeo";
     if (activePhase === 1) return "Anuncio";
     if (activePhase === 2) return "Carrusel";
     if (activePhase === 3) return "Sitio";
@@ -146,6 +165,20 @@ const FabricaInnerES = () => {
             <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2 font-sans">
               GENERACIÓN
             </div>
+            <button
+              onClick={abrirVideo}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                activeTab === "phase" && activePhase === 6
+                  ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
+                  : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Clapperboard className={`w-4 h-4 ${activeTab === "phase" && activePhase === 6 ? "text-amber-400" : "text-white/40"}`} />
+                <span>Vídeo</span>
+              </div>
+              <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-black text-black">NUEVO</span>
+            </button>
             <button
               onClick={() => {
                 setPhase(1);
@@ -298,6 +331,17 @@ const FabricaInnerES = () => {
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Generación</div>
           <button
             onClick={() => {
+              setMobileMenuOpen(false);
+              abrirVideo();
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold flex items-center gap-2 ${
+              activeTab === "phase" && activePhase === 6 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            <Clapperboard className="w-4 h-4 text-amber-400" /><span>Vídeo</span><span className="ml-auto rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-black text-black">NUEVO</span>
+          </button>
+          <button
+            onClick={() => {
               setPhase(1);
               setActiveTab("phase");
               setMobileMenuOpen(false);
@@ -408,6 +452,7 @@ const FabricaInnerES = () => {
           )}
           {activeTab === "phase" && (
             <>
+              {activePhase === 6 && <VideoLabTela embutido lang="es" />}
               {activePhase === 1 && <Phase3ArtFactoryES key="phase1-ad-es" onNext={() => navigate("/es/fabrica/carrossel")} onBack={() => {}} lockMode={true} initialMode="ad" onSkipToSite={() => navigate("/es/fabrica/site")} />}
               {activePhase === 2 && <Phase3ArtFactoryES key="phase2-carousel-es" onNext={() => navigate("/es/fabrica/site")} onBack={() => navigate("/es/fabrica/anuncio")} lockMode={true} initialMode="carousel" />}
               {activePhase === 3 && <Phase4LandingBuilderES onNext={() => navigate("/es/fabrica/crm")} onBack={() => navigate("/es/fabrica/carrossel")} />}
@@ -455,7 +500,7 @@ const FabricaContentES = () => {
 
   return (
     <>
-      <SeoMetadata title="Fábrica de Viajes | Canva Viajes" description="Sistema completo de marketing y generación de anuncios con IA para agencias de viajes." />
+      <SeoMetadata title="Fábrica de Viajes | Canva Viagem" description="Sistema completo de marketing y generación de anuncios con IA para agencias de viajes." />
       <FabricaInnerES />
     </>
   );

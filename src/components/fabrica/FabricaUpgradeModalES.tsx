@@ -79,7 +79,7 @@ export const FabricaUpgradeModalES = ({ open, onOpenChange }: FabricaUpgradeModa
                   <Video className="h-4 w-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-slate-900">Canva Viajes Completo</h4>
+                  <h4 className="text-xs font-black text-slate-900">Canva Viagem Completo</h4>
                   <p className="text-[11px] text-slate-500 leading-tight mt-0.5">Videos Reels, Voces IA, guiones automáticos y CRM de leads incluido.</p>
                 </div>
               </div>
