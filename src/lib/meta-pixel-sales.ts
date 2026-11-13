@@ -4,6 +4,8 @@ export const LEGACY_SALES_PIXEL_ID = "916689227676142";
 export const INFOS_ALFA_PIXEL_ID = "4468467283440792";
 // Pixel só do Canva Viagem (02/11), para os anúncios da /inicio. Recebe também as etapas do funil.
 export const CANVA_INICIO_PIXEL_ID = "1645968187276827";
+// Segundo pixel do Canva Viagem (13/11). Recebe os mesmos eventos do pixel da /inicio.
+export const CANVA_INICIO_PIXEL_2_ID = "1824488118557875";
 
 export const META_PIXEL_IDS = [
   "1599242897762192",
@@ -14,9 +16,13 @@ export const META_PIXEL_IDS = [
   PRIMARY_META_PIXEL_ID,
   INFOS_ALFA_PIXEL_ID,
   CANVA_INICIO_PIXEL_ID,
+  CANVA_INICIO_PIXEL_2_ID,
 ] as const;
 
-export const SALES_PIXEL_IDS = [LEGACY_SALES_PIXEL_ID, PRIMARY_META_PIXEL_ID, INFOS_ALFA_PIXEL_ID, CANVA_INICIO_PIXEL_ID] as const;
+export const SALES_PIXEL_IDS = [LEGACY_SALES_PIXEL_ID, PRIMARY_META_PIXEL_ID, INFOS_ALFA_PIXEL_ID, CANVA_INICIO_PIXEL_ID, CANVA_INICIO_PIXEL_2_ID] as const;
+
+/** Pixels que recebem as etapas do funil da /inicio (inclui a página /black). */
+export const FUNNEL_PIXEL_IDS = [CANVA_INICIO_PIXEL_ID, CANVA_INICIO_PIXEL_2_ID] as const;
 
 type MetaEventData = Record<string, string | number | boolean | string[] | undefined>;
 
@@ -47,12 +53,14 @@ export const trackMetaPageView = (path: string) => trackMetaEvent(
   META_PIXEL_IDS,
 );
 
-/** Etapa do funil que só o pixel do Canva Viagem recebe. Evento padrão do Meta ou personalizado. */
+/** Etapa do funil que só os pixels do Canva Viagem recebem. Evento padrão do Meta ou personalizado. */
 export const trackFunnelEvent = (eventName: string, data: MetaEventData = {}, custom = false, eventId?: string) => {
   const fbq = getFbq();
   if (!fbq) return false;
   const method = custom ? "trackSingleCustom" : "trackSingle";
-  if (eventId) fbq(method, CANVA_INICIO_PIXEL_ID, eventName, data, { eventID: eventId });
-  else fbq(method, CANVA_INICIO_PIXEL_ID, eventName, data);
+  for (const pixelId of FUNNEL_PIXEL_IDS) {
+    if (eventId) fbq(method, pixelId, eventName, data, { eventID: eventId });
+    else fbq(method, pixelId, eventName, data);
+  }
   return true;
 };
