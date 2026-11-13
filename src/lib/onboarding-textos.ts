@@ -118,7 +118,7 @@ export const TEXTOS: Record<QuizLang, QuizTextos> = {
     },
     intro: {
       title: ["Cuéntanos de tu agencia y ", "recibe todo listo."],
-      sub: ["Responde un cuestionario de 1 minuto para ", "activar tu acceso."],
+      sub: ["Responde un cuestionario de 1 minuto y ", "te mostramos el plan para tu agencia."],
       adAlt: "Anuncio hecho en Canva Viagem",
       carouselAlt: "Diapositiva de carrusel hecha en Canva Viagem",
       button: "Empezar ahora",

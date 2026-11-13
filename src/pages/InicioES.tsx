@@ -153,9 +153,9 @@ export default function InicioES() {
             </div>
             <div className="cv-pop mt-7 flex flex-col items-center gap-2" style={delay(300)}>
               <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold" style={{ background: "var(--cv-fg)", color: "var(--cv-bg)" }}>
-                MÁS ARTES CADA DÍA
+                DISEÑOS PARA CADA DÍA
               </span>
-              <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Crea todos los anuncios, carruseles y stories que necesites en tu día a día.</p>
+              <p className="text-[14px] font-semibold" style={{ color: "var(--cv-muted)" }}>Crea los anuncios, carruseles y stories de tu día a día.</p>
             </div>
           </div>
         </section>
