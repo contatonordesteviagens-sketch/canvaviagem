@@ -12,6 +12,7 @@ import { trackESViewContent } from "@/lib/meta-pixel-es";
 import { GARANTIA_DIAS_ES } from "@/lib/precos-es";
 import { BrandMark, Eyebrow, delay, useReveal } from "@/components/cv-cream/shared";
 import { FaqES, PieES, PlanesES } from "@/components/cv-cream/PlanesES";
+import { LOGIN_ES_URL } from "@/lib/idioma-es";
 import heroDashboard from "@/assets/hero_dashboard.webp";
 
 /**
@@ -117,7 +118,7 @@ export default function InicioES() {
           <div className="flex items-center gap-1.5">
             {!user && (
               <button
-                onClick={() => navigate("/login?redirect=%2F")}
+                onClick={() => navigate(LOGIN_ES_URL)}
                 className="h-9 shrink-0 whitespace-nowrap rounded-full border px-3.5 text-[13px] font-bold"
                 style={{ borderColor: "currentColor" }}
               >

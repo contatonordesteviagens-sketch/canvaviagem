@@ -402,6 +402,9 @@ function EmailStep({ hasAccount, onNext }: { hasAccount: boolean; onNext: () => 
   const t = TEXTOS[lang].email;
   const [email, setEmail] = useState(readLeadEmail);
   const [busy, setBusy] = useState(false);
+  // Consentimento obrigatório só onde o texto existe (espanhol). Em português nada muda.
+  const consent = t.consent;
+  const [accepted, setAccepted] = useState(false);
   const done = useRef(false);
   const finish = () => { if (!done.current) { done.current = true; onNext(); } };
 
@@ -414,9 +417,10 @@ function EmailStep({ hasAccount, onNext }: { hasAccount: boolean; onNext: () => 
     e.preventDefault();
     const value = email.toLowerCase().trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { toast.error(t.invalid); return; }
+    if (consent && !accepted) { toast.error(consent.required); return; }
     setBusy(true);
     trackTeste(lang, "email");
-    const result = await startWithEmail(value, lang === "es" ? "/es/onboarding" : "/onboarding").catch(() => "fallback" as const);
+    const result = await startWithEmail(value, lang === "es" ? "/es/onboarding" : "/onboarding", lang).catch(() => "fallback" as const);
     if (result === "existing") toast.info(t.existing);
     finish();
   };
@@ -435,7 +439,21 @@ function EmailStep({ hasAccount, onNext }: { hasAccount: boolean; onNext: () => 
             className="h-14 w-full bg-transparent text-[16px] outline-none"
           />
         </div>
-        <button type="submit" disabled={busy} className="cv-btn mt-4 h-14 w-full text-base">{busy ? t.busy : t.button}</button>
+        {consent && (
+          <label htmlFor="quiz-consent" className="mt-4 flex cursor-pointer items-start gap-2.5 text-left text-[13px] leading-5" style={{ color: "var(--cv-muted)" }}>
+            <input
+              id="quiz-consent" type="checkbox" required checked={accepted} disabled={busy}
+              onChange={(e) => setAccepted(e.target.checked)}
+              className="mt-0.5 h-5 w-5 shrink-0" style={{ accentColor: "var(--cv-primary)" }}
+            />
+            <span>
+              {consent.text[0]}
+              <a href={consent.href} target="_blank" rel="noopener noreferrer" className="font-semibold underline">{consent.text[1]}</a>
+              {consent.text[2]}
+            </span>
+          </label>
+        )}
+        <button type="submit" disabled={busy || Boolean(consent && !accepted)} className="cv-btn mt-4 h-14 w-full text-base disabled:cursor-not-allowed disabled:opacity-50">{busy ? t.busy : t.button}</button>
         <p className="mt-3 flex items-center justify-center gap-1.5 text-[12px]" style={{ color: "var(--cv-muted)" }}><Lock className="h-3.5 w-3.5" /> {t.footer}</p>
       </form>
     </>

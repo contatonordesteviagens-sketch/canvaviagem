@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { SpanishPixel } from "@/components/SpanishPixel";
 import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
 import { MetaPixel916689227676142 } from "@/components/MetaPixel916689227676142";
+import { LOGIN_ES_URL } from "@/lib/idioma-es";
 import { MOEDA_ISO_ES, PRECO_ELITE_ANUAL_ES, PRECO_ELITE_ES, PRECO_START_ANUAL_ES, PRECO_START_ES, suporteWhatsAppUrlES } from "@/lib/precos-es";
 
 /**
@@ -160,12 +161,15 @@ const ObrigadoES = () => {
       const { data, error } = await supabase.functions.invoke("send-magic-link", {
         body: {
           email: email.toLowerCase().trim(),
-          siteUrl: window.location.origin
+          siteUrl: window.location.origin,
+          // e-mail em espanhol, com o link voltando para a área /es
+          lang: "es",
+          redirect: "/es",
         },
       });
       if (error || !data?.success) {
         const errorMsg = data?.error || error?.message || "Error al enviar el enlace";
-        if (errorMsg.includes("rate limit") || errorMsg.includes("muitas tentativas")) {
+        if (errorMsg.includes("rate limit") || errorMsg.includes("muitas tentativas") || errorMsg.includes("Demasiad")) {
           toast.error("Demasiados intentos. Espera unos minutos.");
         } else {
           toast.error(errorMsg);
@@ -188,7 +192,10 @@ const ObrigadoES = () => {
       const { data, error } = await supabase.functions.invoke("send-magic-link", {
         body: {
           email: email.toLowerCase().trim(),
-          siteUrl: window.location.origin
+          siteUrl: window.location.origin,
+          // e-mail em espanhol, com o link voltando para a área /es
+          lang: "es",
+          redirect: "/es",
         },
       });
       if (error || !data?.success) { toast.error(data?.error || "Error al reenviar enlace."); return; }
@@ -279,7 +286,7 @@ const ObrigadoES = () => {
                   ¡Enlace enviado a {email}!
                 </p>
                 <p className="text-zinc-400 text-sm leading-relaxed font-medium">
-                  Verifica tu bandeja de entrada y spam. <br /> El enlace expira en 1 hora.
+                  Verifica tu bandeja de entrada y spam. <br /> El enlace caduca en 7 días.
                 </p>
               </div>
 
@@ -309,7 +316,7 @@ const ObrigadoES = () => {
             {/* Login fallback styled as clean ghost link */}
             <Button
               variant="ghost"
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate(LOGIN_ES_URL)}
               className="w-full h-14 font-bold text-sm text-zinc-500 hover:text-white hover:bg-white/5 rounded-[1.25rem] gap-2 transition-colors"
             >
               <ArrowRight className="h-5 w-5" />

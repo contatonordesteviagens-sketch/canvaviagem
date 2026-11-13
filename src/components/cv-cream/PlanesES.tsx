@@ -127,16 +127,17 @@ export function FaqES() {
 
 /**
  * Pie de las páginas ES.
- * PENDIENTE: aviso legal con [DATOS_EMPRESA], política de cookies y banner de cookies (LSSI/RGPD).
- * Hoy enlaza a los términos y a la privacidad existentes, que están en portugués.
+ * Enlaza a los términos y a la privacidad en español (/es/terminos, /es/privacidad).
+ * PENDIENTE: completar [DATOS_EMPRESA] en esas dos páginas (razón social, NIF/CNPJ, domicilio).
  */
 export function PieES() {
   return (
     <footer className="mx-auto mt-24 flex max-w-5xl flex-col items-center justify-between gap-4 border-t pt-6 text-[13px] sm:flex-row" style={{ borderColor: "rgba(32,28,19,.12)", color: "var(--cv-muted)" }}>
       <BrandMark size={32} withName={false} />
       <div className="flex flex-wrap justify-center gap-5">
-        <a href="/termos" className="hover:underline">Términos</a>
-        <a href="/privacidade" className="hover:underline">Privacidad</a>
+        <a href="/es/terminos" className="hover:underline">Términos</a>
+        <a href="/es/privacidad" className="hover:underline">Privacidad</a>
+        <a href="/es/privacidad#cookies" className="hover:underline">Cookies</a>
         <a href={`mailto:${SUPORTE_EMAIL_ES}`} className="hover:underline">Contacto</a>
       </div>
       <p>© {new Date().getFullYear()} Canva Viagem. Todos los derechos reservados.</p>

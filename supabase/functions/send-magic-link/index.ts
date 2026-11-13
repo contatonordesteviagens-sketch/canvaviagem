@@ -109,6 +109,98 @@ const generateEmailTemplate = (magicLink: string) => `
 </html>
 `;
 
+// Versão em espanhol da Espanha (lang: "es"). Só cores sólidas: o Outlook apaga degradê.
+// O link vai escrito por extenso logo abaixo do botão.
+const generateEmailTemplateES = (magicLink: string) => `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tu enlace de acceso - Canva Viagem</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f0fb;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#f1f0fb" style="background-color: #f1f0fb; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 20px; overflow: hidden;">
+
+          <tr>
+            <td bgcolor="#5b5fd6" style="background-color: #5b5fd6; padding: 40px 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
+                Canva Viagem
+              </h1>
+              <p style="margin: 10px 0 0; color: #ffffff; font-size: 14px;">
+                Marketing listo para agencias de viajes
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 50px 40px;">
+              <h2 style="margin: 0 0 20px; color: #1a1a2e; font-size: 24px; font-weight: 600; text-align: center;">
+                Tu enlace de acceso
+              </h2>
+
+              <p style="margin: 0 0 30px; color: #4a4a68; font-size: 16px; line-height: 1.6; text-align: center;">
+                Has pedido acceso a tu cuenta. Pulsa el bot&oacute;n para entrar:
+              </p>
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td align="center" style="padding: 10px 0 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td align="center" bgcolor="#5b5fd6" style="background-color: #5b5fd6; border-radius: 50px;">
+                          <a href="${magicLink}" target="_blank" style="display: inline-block; color: #ffffff; text-decoration: none; padding: 18px 50px; font-size: 16px; font-weight: 600; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border-radius: 50px;">
+                            Entrar en mi cuenta &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0 0 10px; color: #4a4a68; font-size: 14px; line-height: 1.6; text-align: center;">
+                Si no ves el bot&oacute;n, copia y pega esta direcci&oacute;n en tu navegador:
+              </p>
+              <p style="margin: 0 0 20px; text-align: center; word-break: break-all;">
+                <a href="${magicLink}" target="_blank" style="color: #5b5fd6; font-size: 13px; text-decoration: underline;">${magicLink}</a>
+              </p>
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#f8f9ff" style="background-color: #f8f9ff; border-radius: 12px; margin-top: 20px;">
+                <tr>
+                  <td style="padding: 20px;">
+                    <p style="margin: 0; color: #5b5fd6; font-size: 14px; text-align: center;">
+                      Este enlace caduca en <strong>7 d&iacute;as</strong>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <tr>
+            <td bgcolor="#f8f9ff" style="background-color: #f8f9ff; padding: 30px 40px; text-align: center; border-top: 1px solid #eeeeee;">
+              <p style="margin: 0 0 10px; color: #6b6b85; font-size: 12px;">
+                Si no has pedido este acceso, ignora este correo.
+              </p>
+              <p style="margin: 0; color: #6b6b85; font-size: 11px;">
+                &copy; ${new Date().getFullYear()} Canva Viagem. Todos los derechos reservados.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -116,7 +208,9 @@ serve(async (req) => {
   }
 
   try {
-    const { email, name, phone, redirect } = await req.json();
+    const { email, name, phone, redirect, lang } = await req.json();
+    // Fluxo espanhol (login em espanhol, /es/obrigado, quiz /es/onboarding). Qualquer outro valor segue em português.
+    const es = lang === "es";
 
     console.log("[MAGIC-LINK] Processing request:", {
       email: email ? email.substring(0, 5) + "***" : "missing",
@@ -126,7 +220,7 @@ serve(async (req) => {
 
     if (!email || typeof email !== "string") {
       return new Response(
-        JSON.stringify({ error: "Email é obrigatório" }),
+        JSON.stringify({ error: es ? "El correo es obligatorio" : "Email é obrigatório" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -135,7 +229,7 @@ serve(async (req) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return new Response(
-        JSON.stringify({ error: "Formato de email inválido" }),
+        JSON.stringify({ error: es ? "El formato del correo no es válido" : "Formato de email inválido" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -159,7 +253,7 @@ serve(async (req) => {
     if (!rateCheckError && recentTokens && recentTokens.length >= 3) {
       console.log("[MAGIC-LINK] Rate limit exceeded for:", normalizedEmail.substring(0, 5) + "***");
       return new Response(
-        JSON.stringify({ error: "Muitas solicitações. Aguarde alguns minutos e tente novamente." }),
+        JSON.stringify({ error: es ? "Demasiados intentos. Espera unos minutos y vuelve a intentarlo." : "Muitas solicitações. Aguarde alguns minutos e tente novamente." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -214,7 +308,7 @@ serve(async (req) => {
     if (insertError) {
       console.error("Error inserting token:", insertError);
       return new Response(
-        JSON.stringify({ error: "Erro ao processar solicitação" }),
+        JSON.stringify({ error: es ? "No hemos podido procesar la solicitud" : "Erro ao processar solicitação" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -223,7 +317,10 @@ serve(async (req) => {
     // para evitar open redirect / phishing via siteUrl controlado pelo atacante.
     const baseUrl = canonicalSiteUrl();
     const magicLinkParams = new URLSearchParams({ token });
+    // Espanhol sem destino definido: volta para a área /es. O lang=es deixa a tela de verificação em espanhol.
+    if (es && !safeRedirect) safeRedirect = "/es";
     if (safeRedirect) magicLinkParams.set("redirect", safeRedirect);
+    if (es) magicLinkParams.set("lang", "es");
     const magicLink = `${baseUrl}/auth/verify?${magicLinkParams.toString()}`;
     console.log("[MAGIC-LINK] Magic link generated successfully");
 
@@ -233,8 +330,8 @@ serve(async (req) => {
     const emailResponse = await resend.emails.send({
       from: fromAddress,
       to: [email],
-      subject: "🔐 Seu Link de Acesso - Canva Viagem",
-      html: generateEmailTemplate(magicLink),
+      subject: es ? "Tu enlace de acceso a Canva Viagem" : "🔐 Seu Link de Acesso - Canva Viagem",
+      html: es ? generateEmailTemplateES(magicLink) : generateEmailTemplate(magicLink),
     });
 
     console.log("[MAGIC-LINK] Email sent:", JSON.stringify({
@@ -247,7 +344,7 @@ serve(async (req) => {
     if (emailResponse.error) {
       console.error("[MAGIC-LINK] Resend error details:", JSON.stringify(emailResponse.error));
       return new Response(
-        JSON.stringify({ error: "Erro ao enviar email. Tente novamente." }),
+        JSON.stringify({ error: es ? "No hemos podido enviar el correo. Inténtalo de nuevo." : "Erro ao enviar email. Tente novamente." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -260,11 +357,11 @@ serve(async (req) => {
         type: "sent",
         email_type: "magic_link",
         recipient_email: email,
-        metadata: { token_id: token }
+        metadata: es ? { token_id: token, lang: "es" } : { token_id: token }
       });
 
     return new Response(
-      JSON.stringify({ success: true, message: "Link enviado com sucesso" }),
+      JSON.stringify({ success: true, message: es ? "Enlace enviado" : "Link enviado com sucesso" }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

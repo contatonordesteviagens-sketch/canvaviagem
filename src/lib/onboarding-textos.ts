@@ -14,6 +14,8 @@ export type QuizTextos = {
   email: {
     invalid: string; existing: string; title: [string, string]; sub: string; label: string;
     placeholder: string; busy: string; button: string; footer: string;
+    /** Só em espanhol: casilla obrigatória de consentimento no passo do e-mail. [antes do link, texto do link, depois do link]. */
+    consent?: { text: [string, string, string]; href: string; required: string };
   };
   intro: { title: [string, string]; sub: [string, string]; adAlt: string; carouselAlt: string; button: string; footer: string };
   result: {
@@ -108,6 +110,11 @@ export const TEXTOS: Record<QuizLang, QuizTextos> = {
       busy: "Abriendo tu plan…",
       button: "Ver mi plan",
       footer: "Sin spam. Te das de baja cuando quieras.",
+      consent: {
+        text: ["He leído y acepto la ", "política de privacidad", " y quiero recibir mi acceso y comunicaciones de Canva Viagem por correo."],
+        href: "/es/privacidad",
+        required: "Marca la casilla para continuar.",
+      },
     },
     intro: {
       title: ["Cuéntanos de tu agencia y ", "recibe todo listo."],

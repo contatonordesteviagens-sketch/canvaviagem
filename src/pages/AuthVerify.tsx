@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { isEliteProduct, isStartProduct } from "@/lib/planAccess";
+import { ehCaminhoES, ehFluxoES } from "@/lib/idioma-es";
+import { AUTH_TEXTOS } from "@/lib/auth-textos";
 
 const pendingAuthStateKey = "cv:pending-auth-checkout";
 // sem destino definido: biblioteca ("/"), nunca a página de vendas
@@ -37,6 +39,9 @@ const AuthVerify = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const redirectFromUrl = searchParams.get("redirect");
+  // Idioma da tela: espanhol só para quem vem do fluxo /es (regra única em src/lib/idioma-es.ts).
+  const es = ehFluxoES();
+  const t = AUTH_TEXTOS[es ? "es" : "pt"];
   let pendingCheckoutState: { path: string; emailHash: string; createdAt: number } | null = null;
   try {
     const pendingState = JSON.parse(localStorage.getItem(pendingAuthStateKey) || "null") as {
@@ -61,7 +66,9 @@ const AuthVerify = () => {
   }
   const safeRedirectFromUrl = getSafeRedirect(redirectFromUrl);
   const safeRedirectFromBrowser = getSafeRedirect(pendingCheckoutState?.path || null);
-  const redirectTo = safeRedirectFromUrl || safeRedirectFromBrowser || fallbackPath;
+  // Fluxo espanhol: assinante volta para a biblioteca /es; quem ainda não assinou, para os planos em espanhol.
+  const fallbackDoIdioma = es ? "/es/planos" : fallbackPath;
+  const redirectTo = safeRedirectFromUrl || safeRedirectFromBrowser || fallbackDoIdioma;
   const hasOfferRedirect = Boolean(safeRedirectFromUrl || safeRedirectFromBrowser);
 
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
@@ -73,7 +80,7 @@ const AuthVerify = () => {
   useEffect(() => {
     if (!token) {
       setStatus("error");
-      setErrorMessage("Token não encontrado na URL.");
+      setErrorMessage(t.tokenAusente);
       return;
     }
     if (verificationTokenRef.current === token) return;
@@ -100,7 +107,7 @@ const AuthVerify = () => {
       });
 
       if (error) {
-        let detailedError = "Ocorreu um erro ao verificar seu link.";
+        let detailedError: string = t.erroVerificar;
 
         // O Supabase JS esconde o body do erro em caso de 400/500 nas Edge Functions.
         // Lemos a resposta original para mostrar a mensagem real (ex.: link reenviado).
@@ -108,16 +115,16 @@ const AuthVerify = () => {
           const context = (error as { context?: Response }).context;
           if (context && typeof context.json === "function") {
             const body = await context.clone().json();
-            if (body?.error) detailedError = body.error;
+            if (body?.error) detailedError = es ? t.linkInvalido : body.error;
           } else if (error.message?.includes("non-2xx status code")) {
-            detailedError = "Este link é inválido, expirou ou já foi utilizado. Por favor, solicite um novo acesso.";
+            detailedError = t.linkInvalido;
           } else {
-            detailedError = error.message || detailedError;
+            detailedError = es ? detailedError : error.message || detailedError;
           }
         } catch {
           detailedError = error.message?.includes("non-2xx status code")
-            ? "Este link é inválido, expirou ou já foi utilizado. Por favor, solicite um novo acesso."
-            : error.message || detailedError;
+            ? t.linkInvalido
+            : es ? detailedError : error.message || detailedError;
         }
 
         setStatus("error");
@@ -128,7 +135,7 @@ const AuthVerify = () => {
 
       if (!data?.success) {
         setStatus("error");
-        setErrorMessage(data?.error || "Erro ao verificar token");
+        setErrorMessage(es ? t.erroToken : data?.error || t.erroToken);
         return;
       }
 
@@ -147,7 +154,7 @@ const AuthVerify = () => {
       if (sessionError) {
         console.error("Session error:", sessionError);
         setStatus("error");
-        setErrorMessage("Erro ao criar sessão. Tente novamente.");
+        setErrorMessage(t.erroSessao);
         return;
       }
 
@@ -187,12 +194,15 @@ const AuthVerify = () => {
           : null;
         if (!authenticatedEmailHash || authenticatedEmailHash !== pendingCheckoutState.emailHash) {
           localStorage.removeItem(pendingAuthStateKey);
-          verifiedRedirectTo = fallbackPath;
+          verifiedRedirectTo = fallbackDoIdioma;
         }
       }
 
       if (data.subscribed) {
-        verifiedRedirectTo = "/";
+        verifiedRedirectTo = es ? "/es" : "/";
+      } else if (es && ehCaminhoES(verifiedRedirectTo) && /^\/es\/?$/.test(verifiedRedirectTo)) {
+        // /es é a biblioteca de assinantes: sem assinatura, a pessoa vai para os planos em espanhol.
+        verifiedRedirectTo = "/es/planos";
       }
 
       setStatus("success");
@@ -205,12 +215,12 @@ const AuthVerify = () => {
     } catch (error) {
       console.error("Verify error:", error);
       setStatus("error");
-      setErrorMessage("Erro ao processar verificação.");
+      setErrorMessage(t.erroVerificacao);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 flex items-center justify-center p-4">
+    <div lang={es ? "es-ES" : undefined} className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 flex items-center justify-center p-4">
       <Card className="w-full max-w-md text-center border-primary/20 shadow-2xl">
         <CardContent className="pt-12 pb-8 px-8 space-y-6">
           {status === "loading" && (
@@ -220,10 +230,10 @@ const AuthVerify = () => {
               </div>
               <div className="space-y-2">
                 <h1 className="text-2xl font-bold text-foreground">
-                  Verificando seu acesso...
+                  {t.verificando}
                 </h1>
                 <p className="text-muted-foreground">
-                  Aguarde enquanto validamos seu link.
+                  {t.aguarde}
                 </p>
               </div>
             </>
@@ -231,39 +241,39 @@ const AuthVerify = () => {
 
           {status === "success" && (
             <>
-              <NavegadorInternoAviso className="mb-2" />
+              <NavegadorInternoAviso className="mb-2" lang={es ? "es" : "pt"} />
               <div className="mx-auto w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center">
                 <CheckCircle className="h-10 w-10 text-primary" />
               </div>
               <div className="space-y-2">
                 <h1 className="text-2xl font-bold text-primary">
                   {isSubscribed ? (
-                    isEliteProduct(productId) ? "Acesso liberado ao Plano Elite! ✨" :
-                    isStartProduct(productId) ? "Acesso ao plano Start! ✨" :
-                    "Acesso Premium Confirmado! ✨"
-                  ) : "Conta Acessada! 👋"}
+                    isEliteProduct(productId) ? t.okElite :
+                    isStartProduct(productId) ? t.okStart :
+                    t.okPremium
+                  ) : t.okConta}
                 </h1>
                 <p className="text-muted-foreground">
                   {isSubscribed
-                    ? "Tudo pronto! Aproveite seus recursos exclusivos."
-                    : "Sua conta foi confirmada. Escolha uma assinatura para liberar a plataforma."}
+                    ? t.okAssinante
+                    : t.okSemAssinatura}
                 </p>
                 {!isSubscribed && (
                   <div className="pt-4">
                     <Button
                       variant="outline"
                       className="w-full border-amber-500 text-amber-600 hover:bg-amber-50"
-                      onClick={() => navigate("/inicio#planos")}
+                      onClick={() => navigate(t.planosVerifyPath)}
                     >
                       <RefreshCw className="mr-2 h-4 w-4" />
-                      Ver Planos Premium
+                      {t.verPlanosPremium}
                     </Button>
                   </div>
                 )}
                 <p className="text-[10px] text-muted-foreground mt-4 italic">
                   {hasOfferRedirect
-                    ? "Redirecionando para concluir sua assinatura..."
-                    : "Se você abriu o link em outro aparelho, escolha novamente a oferta na próxima tela."}
+                    ? t.redirecionando
+                    : t.outroAparelho}
                 </p>
               </div>
             </>
@@ -276,7 +286,7 @@ const AuthVerify = () => {
               </div>
               <div className="space-y-2">
                 <h1 className="text-2xl font-bold text-destructive">
-                  Erro na Verificação
+                  {t.erroTitulo}
                 </h1>
                 <p className="text-muted-foreground">
                   {errorMessage}
@@ -285,18 +295,18 @@ const AuthVerify = () => {
 
               <div className="space-y-3 pt-4">
                 <Button
-                  onClick={() => navigate("/login")}
+                  onClick={() => navigate(t.loginPath)}
                   className="w-full"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  Solicitar Novo Link
+                  {t.novoLink}
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => navigate("/")}
+                  onClick={() => navigate(t.homePath)}
                   className="w-full"
                 >
-                  Voltar para Home
+                  {t.voltarHome}
                 </Button>
               </div>
             </>

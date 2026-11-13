@@ -18,6 +18,7 @@ import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { MetaPixelRouteTracker } from "@/components/MetaPixelRouteTracker";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { AvisoCookiesES } from "@/components/AvisoCookiesES";
 
 const PlatformLayoutController = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -25,7 +26,7 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
 
   const hideSidebarPaths = [
     '/planos', '/pt/planos', '/black-friday', '/es/planos', '/auth', '/login', '/auth/verify', '/sucesso', '/obrigado', '/es/obrigado',
-    '/pos-pagamento', '/canva', '/termos', '/privacidade', '/exclusao-de-dados',
+    '/pos-pagamento', '/canva', '/termos', '/privacidade', '/es/terminos', '/es/privacidad', '/exclusao-de-dados',
     '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/black', '/inicio2', '/es/inicio', '/onboarding', '/es/onboarding', '/pix', '/checkout',
     '/anuncios-para-agencia-de-viagens', '/site-para-agencia-de-viagens', '/carrosseis-para-agencia-de-viagens',
     '/equipe-de-marketing-para-agencia-de-viagens', '/.lovable/oauth/consent'
@@ -87,6 +88,8 @@ const Marketing = lazy(() => import("./pages/admin/Marketing"));
 const LiveManager = lazy(() => import("./pages/admin/LiveManager"));
 const Termos = lazy(() => import("./pages/Termos"));
 const Privacidade = lazy(() => import("./pages/Privacidade"));
+const TerminosES = lazy(() => import("./pages/TerminosES"));
+const PrivacidadES = lazy(() => import("./pages/PrivacidadES"));
 const ExclusaoDados = lazy(() => import("./pages/ExclusaoDados"));
 const ProximoNivel = lazy(() => import("./pages/ProximoNivel"));
 const Progresso = lazy(() => import("./pages/Progresso"));
@@ -234,6 +237,7 @@ const App = () => {
                   <MetaPixelRouteTracker />
                   <UtmTracker />
                   <InstallPrompt />
+                  <AvisoCookiesES />
 
                   <Suspense fallback={<PageLoader />}>
                     {canvaViagemSiteSlug ? (
@@ -289,6 +293,8 @@ const App = () => {
                     } />
                     <Route path="/es/planos" element={<SalesPageES />} />
                     <Route path="/es/obrigado" element={<ObrigadoES />} />
+                    <Route path="/es/terminos" element={<TerminosES />} />
+                    <Route path="/es/privacidad" element={<PrivacidadES />} />
                     <Route path="/es/fabrica" element={<ProtectedRoute requireElite><FabricaES /></ProtectedRoute>} />
                     <Route path="/es/fabrica/*" element={<ProtectedRoute requireElite><FabricaES /></ProtectedRoute>} />
                     {/* Canonical Spanish landing page route. */}

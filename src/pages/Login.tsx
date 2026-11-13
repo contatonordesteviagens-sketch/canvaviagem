@@ -14,6 +14,8 @@ import { getMarketingAttribution, useAssociateUtmToUser } from "@/hooks/useTrack
 import { trackEvent, ANALYTICS_EVENTS } from "@/hooks/useAnalyticsEvents";
 import { formatPhoneBR, cleanPhone } from "@/lib/phone-utils";
 import logoImage from "@/assets/logo.png";
+import { ehFluxoES } from "@/lib/idioma-es";
+import { AUTH_TEXTOS } from "@/lib/auth-textos";
 import { GoogleSignInButton, AuthDivider } from "@/components/auth/GoogleSignInButton";
 import { BrandMark, Eyebrow } from "@/components/cv-cream/shared";
 import { LEAD_EMAIL_KEY } from "@/lib/lead-capture";
@@ -88,6 +90,9 @@ const Login = () => {
 
   const rawRedirect = searchParams.get("redirect");
   const redirectTo = getSafeRedirect(rawRedirect);
+  // Idioma da tela: espanhol só para quem vem do fluxo /es (regra única em src/lib/idioma-es.ts).
+  const es = ehFluxoES();
+  const t = AUTH_TEXTOS[es ? "es" : "pt"];
   // Vindo da página inicial: e-mail novo entra direto no quiz, sem a tela "Link Enviado!".
   // Vindo da /black-friday: o mesmo atalho, levando direto ao pagamento.
   const quickToCheckout = Boolean(redirectTo?.startsWith("/checkout"));
@@ -133,10 +138,10 @@ const Login = () => {
       } else {
         // logado vai sempre para a biblioteca; o "/" espera a assinatura carregar
         // (antes, quem ainda não tinha a assinatura confirmada caía na página de vendas)
-        navigate("/");
+        navigate(t.inicioLogado);
       }
     }
-  }, [user, loading, subscription, navigate, redirectTo]);
+  }, [user, loading, subscription, navigate, redirectTo, t]);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneBR(e.target.value);
@@ -147,13 +152,13 @@ const Login = () => {
     e.preventDefault();
 
     if (!email) {
-      toast.error("Por favor, insira seu email.");
+      toast.error(t.emailVazio);
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast.error("Por favor, insira um email válido.");
+      toast.error(t.emailInvalido);
       return;
     }
 
@@ -187,13 +192,14 @@ const Login = () => {
           phone: phone ? cleanPhone(phone) : null,
           siteUrl: window.location.origin, // CRITICAL FIX: Add siteUrl
           redirect: redirectTo,
+          ...(es ? { lang: "es" } : {}),
         },
       });
 
       if (error || !data?.success) {
-        const errorMsg = data?.error || error?.message || "Erro ao enviar link";
-        if (errorMsg.includes("rate limit") || errorMsg.includes("muitas tentativas")) {
-          toast.error("Muitas tentativas. Aguarde alguns minutos.");
+        const errorMsg = data?.error || (es ? t.erroEnviar : error?.message) || t.erroEnviar;
+        if (errorMsg.includes("rate limit") || errorMsg.includes("muitas tentativas") || errorMsg.includes("Demasiad")) {
+          toast.error(t.muitasTentativas);
         } else {
           toast.error(errorMsg);
         }
@@ -201,10 +207,10 @@ const Login = () => {
       }
 
       setMagicLinkSent(true);
-      toast.success("Link enviado! Verifique seu email.");
+      toast.success(t.linkEnviadoToast);
     } catch (error) {
       console.error("Error sending magic link:", error);
-      toast.error("Erro ao processar.");
+      toast.error(t.erroProcessar);
     } finally {
       setIsLoading(false);
     }
@@ -222,17 +228,18 @@ const Login = () => {
           phone: phone ? cleanPhone(phone) : null,
           siteUrl: window.location.origin,
           redirect: redirectTo,
+          ...(es ? { lang: "es" } : {}),
         },
       });
 
       if (error || !data?.success) {
-        toast.error(data?.error || "Erro ao reenviar link.");
+        toast.error(data?.error || t.erroReenviar);
         return;
       }
 
-      toast.success("Link reenviado!");
+      toast.success(t.linkReenviado);
     } catch (error) {
-      toast.error("Erro ao processar.");
+      toast.error(t.erroProcessar);
     } finally {
       setIsLoading(false);
     }
@@ -275,7 +282,7 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F1F0FB] dark:bg-background p-4 font-sans">
+    <div lang={es ? "es-ES" : undefined} className="min-h-screen flex items-center justify-center bg-[#F1F0FB] dark:bg-background p-4 font-sans">
       <div className="w-full max-w-[440px] flex flex-col items-center animate-in fade-in zoom-in duration-500">
 
         {/* Top Logo Section */}
@@ -284,7 +291,7 @@ const Login = () => {
             Canva Viagem
           </h1>
           <p className="text-muted-foreground font-medium text-sm mt-3">
-            Faça o login via e-mail para acessar o Canva Viagem
+            {t.subtitulo}
           </p>
         </div>
 
@@ -293,9 +300,9 @@ const Login = () => {
             {!magicLinkSent ? (
               <div className="space-y-8">
                 <div className="text-center space-y-2">
-                  <h2 className="text-xl font-bold">Acesse sua Conta</h2>
+                  <h2 className="text-xl font-bold">{t.titulo}</h2>
                   <p className="text-muted-foreground text-sm">
-                    Entrar sem senha usando seu e-mail
+                    {t.semSenha}
                   </p>
                 </div>
 
@@ -306,13 +313,13 @@ const Login = () => {
 
                 <form onSubmit={handleSendMagicLink} className="space-y-5">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">E-mail de Acesso</Label>
+                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{t.labelEmail}</Label>
                     <div className="relative group">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                       <Input
                         id="email"
                         type="email"
-                        placeholder="seu@email.com"
+                        placeholder={t.placeholder}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -321,7 +328,7 @@ const Login = () => {
                       />
                     </div>
                     <p className="text-[10px] text-muted-foreground px-1 italic">
-                      * Use o e-mail cadastrado na sua compra.
+                      {t.dicaEmail}
                     </p>
                   </div>
 
@@ -335,7 +342,7 @@ const Login = () => {
                       <Loader2 className="h-6 w-6 animate-spin" />
                     ) : (
                       <>
-                        Enviar Link de Acesso
+                        {t.botaoEnviar}
                         <Mail className="ml-2 h-5 w-5 opacity-80" />
                       </>
                     )}
@@ -349,16 +356,16 @@ const Login = () => {
                     <CheckCircle className="h-10 w-10 text-green-500" />
                   </div>
                   <div className="space-y-2">
-                    <h2 className="text-2xl font-bold">Link Enviado! 📬</h2>
+                    <h2 className="text-2xl font-bold">{t.enviadoTitulo}</h2>
                     <p className="text-muted-foreground text-sm max-w-[280px] mx-auto">
-                      Enviamos um link mágico para <span className="font-bold text-foreground">{email}</span>. Clique no botão lá para entrar.
+                      {t.enviadoAntes}<span className="font-bold text-foreground">{email}</span>{t.enviadoDepois}
                     </p>
                   </div>
                 </div>
 
                 <div className="bg-primary/5 rounded-3xl p-5 border border-primary/10 space-y-3">
                   <p className="text-xs text-center text-muted-foreground font-medium">
-                    Não recebeu? Verifique a pasta de <span className="text-destructive font-bold">Spam</span> ou use o botão abaixo:
+                    {t.naoRecebeuAntes}<span className="text-destructive font-bold">Spam</span>{t.naoRecebeuDepois}
                   </p>
                   <Button
                     variant="outline"
@@ -370,7 +377,7 @@ const Login = () => {
                       <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       <>
-                        Reenviar Acesso
+                        {t.reenviar}
                         <RefreshCw className="ml-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500" />
                       </>
                     )}
@@ -383,7 +390,7 @@ const Login = () => {
                   className="w-full rounded-2xl text-muted-foreground"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Voltar e usar outro e-mail
+                  {t.voltarOutroEmail}
                 </Button>
               </div>
             )}
@@ -394,7 +401,7 @@ const Login = () => {
                 <div className="w-full border-t border-primary/5"></div>
               </div>
               <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-[0.2em]">
-                <span className="bg-white dark:bg-card px-4 text-muted-foreground/40 italic">Ainda não tem conta?</span>
+                <span className="bg-white dark:bg-card px-4 text-muted-foreground/40 italic">{t.semConta}</span>
               </div>
             </div>
 
@@ -402,16 +409,16 @@ const Login = () => {
             <div className="space-y-6">
               <div className="text-center px-4">
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Para acesso ilimitado aos nossos designs e estratégias, você precisa ser assinante.
+                  {t.precisaAssinar}
                 </p>
               </div>
               <Button
                 variant="outline"
-                onClick={() => navigate("/inicio")}
+                onClick={() => navigate(t.planosPath)}
                 className="w-full h-14 rounded-2xl border-dashed border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all"
               >
                 <Sparkles className="mr-2 h-4 w-4 text-amber-500" />
-                Conhecer Planos e Assinar
+                {t.verPlanos}
               </Button>
             </div>
           </CardContent>
@@ -419,9 +426,9 @@ const Login = () => {
 
         {/* Support Footer */}
         <div className="mt-12 text-center space-y-4">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Precisa de Ajuda?</p>
+          <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">{t.ajuda}</p>
           <a
-            href="https://wa.me/5585986411294?text=Ol%C3%A1%20adquiri%20o%20Canva%20Viagem.%20"
+            href={t.suporteUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 bg-white dark:bg-card/50 px-6 py-3 rounded-2xl shadow-sm border border-black/5 hover:shadow-md transition-all group"
@@ -429,9 +436,9 @@ const Login = () => {
             <div className="w-8 h-8 rounded-full bg-[#25D366]/10 flex items-center justify-center">
               <MessageCircle className="h-4 w-4 text-[#25D366]" />
             </div>
-            <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Suporte WhatsApp</span>
+            <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{t.suporte}</span>
           </a>
-          <p className="text-[10px] text-muted-foreground/40 font-medium">© 2025 Canva Viagem • Todos os direitos reservados</p>
+          <p className="text-[10px] text-muted-foreground/40 font-medium">{t.direitos}</p>
         </div>
       </div>
     </div>

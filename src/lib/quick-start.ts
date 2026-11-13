@@ -10,7 +10,7 @@ import { trackMetaEvent } from "@/lib/meta-pixel-sales";
  */
 export type QuickStartResult = "session" | "existing" | "fallback";
 
-export async function startWithEmail(email: string, redirect: string | null): Promise<QuickStartResult> {
+export async function startWithEmail(email: string, redirect: string | null, lang: "pt" | "es" = "pt"): Promise<QuickStartResult> {
   const normalizedEmail = email.toLowerCase().trim();
   try { localStorage.setItem(LEAD_EMAIL_KEY, normalizedEmail); } catch { /* storage indisponível */ }
   captureLead(normalizedEmail, "lead");
@@ -23,7 +23,7 @@ export async function startWithEmail(email: string, redirect: string | null): Pr
   if (signUp?.session) return "session";
   if (signUpError && /already|exists/i.test(`${signUpError.code ?? ""} ${signUpError.message}`)) {
     const { data: linkSent } = await supabase.functions
-      .invoke("send-magic-link", { body: { email: normalizedEmail, siteUrl: window.location.origin, redirect } })
+      .invoke("send-magic-link", { body: { email: normalizedEmail, siteUrl: window.location.origin, redirect, ...(lang === "es" ? { lang: "es" } : {}) } })
       .catch(() => ({ data: null }));
     if (linkSent?.success) return "existing";
   }
