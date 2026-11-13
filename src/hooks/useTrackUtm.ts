@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { rastreamentoPermitido } from "@/lib/rastreamento-consentimento";
+import { COOKIES_ES_EVENT } from "@/lib/cookies-es";
 
 interface UtmData {
   session_id: string;
@@ -72,6 +74,8 @@ export const clearMarketingAttribution = () => {
 export const useTrackUtm = () => {
   useEffect(() => {
     const trackUtm = async () => {
+      // Fluxo espanhol sem "Aceptar": não grava origem/UTM/referrer; grava assim que a pessoa aceitar.
+      if (!rastreamentoPermitido()) return;
       // Check if already tracked this session
       const alreadyTracked = sessionStorage.getItem("utm_tracked");
       if (alreadyTracked) return;
@@ -119,6 +123,9 @@ export const useTrackUtm = () => {
     };
 
     trackUtm();
+    const aoEscolher = () => { void trackUtm(); };
+    window.addEventListener(COOKIES_ES_EVENT, aoEscolher);
+    return () => window.removeEventListener(COOKIES_ES_EVENT, aoEscolher);
   }, []);
 };
 

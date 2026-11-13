@@ -1,6 +1,8 @@
 // Meta Pixel ES (Spanish) - Separate tracking for Spanish-speaking users
 // Pixel ID: 1560736461820497
 
+import { rastreamentoPermitido } from "@/lib/rastreamento-consentimento";
+
 declare global {
   interface Window {
     fbq: (...args: unknown[]) => void;
@@ -19,7 +21,7 @@ const enviarES = (evento: string, dados?: Record<string, unknown>) => {
 
 // Track Purchase event for ES pixel only
 export const trackESPurchase = (value: number, currency: string = 'USD') => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     enviarES('Purchase', {
       value,
       currency,
@@ -30,7 +32,7 @@ export const trackESPurchase = (value: number, currency: string = 'USD') => {
 
 // Track Subscribe event for ES pixel only
 export const trackESSubscribe = (value: number, currency: string = 'USD', predictedLtv?: number) => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     enviarES('Subscribe', {
       value,
       currency,
@@ -42,7 +44,7 @@ export const trackESSubscribe = (value: number, currency: string = 'USD', predic
 
 // Track InitiateCheckout event for ES pixel only
 export const trackESInitiateCheckout = (value: number, currency: string = 'USD') => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     enviarES('InitiateCheckout', {
       value,
       currency,
@@ -53,7 +55,7 @@ export const trackESInitiateCheckout = (value: number, currency: string = 'USD')
 
 // Track ViewContent event for ES pixel only
 export const trackESViewContent = (contentName?: string) => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     enviarES('ViewContent', {
       content_name: contentName || 'Página ES',
     });
@@ -63,7 +65,7 @@ export const trackESViewContent = (contentName?: string) => {
 
 // Track Lead event for ES pixel only
 export const trackESLead = () => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     enviarES('Lead');
     console.log('[Meta ES Pixel] Lead tracked');
   }
@@ -71,7 +73,7 @@ export const trackESLead = () => {
 
 // Track CompleteRegistration event for ES pixel only
 export const trackESCompleteRegistration = () => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     enviarES('CompleteRegistration');
     console.log('[Meta ES Pixel] CompleteRegistration tracked');
   }

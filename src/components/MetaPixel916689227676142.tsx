@@ -1,11 +1,15 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useRastreamentoPermitido } from '@/lib/rastreamento-consentimento';
 
 interface MetaPixelProps {
   isPurchase?: boolean;
 }
 
 export const MetaPixel916689227676142 = ({ isPurchase = false }: MetaPixelProps) => {
+  // Fluxo espanhol: nada é injetado (nem script nem noscript) até o "Aceptar"; no Brasil é sempre true.
+  const permitido = useRastreamentoPermitido();
+  if (!permitido) return null;
   return (
     <Helmet>
       {/* Meta Pixel Code */}

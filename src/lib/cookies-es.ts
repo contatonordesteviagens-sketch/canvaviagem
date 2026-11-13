@@ -1,9 +1,10 @@
 // Escolha do visitante no aviso de cookies das páginas /es (src/components/AvisoCookiesES.tsx).
-// ATENÇÃO: hoje isto só REGISTRA a escolha. Os pixels do Meta e a etiqueta do Google Ads são carregados
-// em index.html para o site inteiro (Brasil incluído) e não consultam este valor antes de carregar.
+// Esta escolha É respeitada: no fluxo espanhol, index.html só baixa/inicia os pixels do Meta e a etiqueta
+// do Google Ads com "aceptado" (e ao receber o evento abaixo); src/lib/rastreamento-consentimento.ts barra
+// eventos, analítica e UTM sem "aceptado". No Brasil nada muda.
 
 export const COOKIES_ES_KEY = "cv-es-cookies";
-/** Evento disparado na janela quando a pessoa escolhe: quem for bloquear os pixels pode ouvir aqui. */
+/** Evento disparado na janela quando a pessoa escolhe: index.html e os componentes de rastreamento ouvem aqui. */
 export const COOKIES_ES_EVENT = "cv-es-cookies";
 
 export type ConsentimientoCookiesES = "aceptado" | "rechazado";

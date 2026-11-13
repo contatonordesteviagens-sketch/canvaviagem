@@ -60,14 +60,12 @@ const GENERADOR_ITEMS = [
   "El precio, tu logo y tu WhatsApp al final",
 ];
 
-const reelsGifs = {
-  main: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm5kcmcybmE2aTFkOTU3ZDNqYmZkbHQ2YjRibjB1NjFtN2RoNWdrMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6osnZ6joYcPfERZsaE/giphy.gif",
-  previews: [
-    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3J2anV0aTVkYWowbDl1ZXFtNnB4ZWUwcnVnZTVzOW91ZzNncGNvNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbylDFYWSU46XeLcsS/giphy.gif",
-    "https://media4.giphy.com/media/VVMI7dobalrJhKmQOZ/giphy.gif",
-    "https://media4.giphy.com/media/tJPdq4gvTvr8CgIyWI/giphy.gif",
-  ],
-};
+// Antes había GIFs de terceros (Giphy) con texto en portugués. Ahora son bloques sin multimedia.
+const CONTENIDO_LISTO = [
+  ["Reels por destino", "Vídeos verticales listos para publicar, con imágenes reales del destino."],
+  ["Diseños por destino", "Imágenes para feed y stories, sin partir de una página en blanco."],
+  ["Calendario diario", "Te dice qué publicar cada día, para que no tengas que decidirlo tú."],
+] as const;
 
 export default function InicioES() {
   const navigate = useNavigate();
@@ -188,7 +186,7 @@ export default function InicioES() {
             <div className="cv-reveal mx-auto mt-8 grid max-w-3xl overflow-hidden rounded-[28px] border bg-white shadow-[0_18px_40px_-26px_rgba(32,28,19,.35)] sm:grid-cols-2" style={{ borderColor: "var(--cv-line)" }}>
               <div className="p-6 text-center sm:text-left">
                 <p className="text-[22px] font-extrabold leading-tight tracking-[-0.02em]">Habla de tu agencia y de tu paquete</p>
-                <p className="mt-2 text-[15px] leading-6" style={{ color: "var(--cv-muted)" }}>Ejemplo: «Punta Cana, 8 días, pareja, 1.450 por persona en habitación doble»</p>
+                <p className="mt-2 text-[15px] leading-6" style={{ color: "var(--cv-muted)" }}>Ejemplo: «Punta Cana, 8 días, pareja, 1.450 € por persona en habitación doble»</p>
                 <p className="mt-2 text-[15px] font-bold">Todo listo en minutos.</p>
               </div>
               <button
@@ -283,16 +281,16 @@ export default function InicioES() {
               <Eyebrow>Contenido listo</Eyebrow>
               <h2 className="cv-h2 mt-4">Contenido para publicar sin tener que inventar nada.</h2>
               <p className="mt-4 text-lg leading-7" style={{ color: "var(--cv-muted)" }}>
-                Vídeos Reels y artes por destino, con un calendario que te dice qué publicar cada día.
+                Vídeos Reels y diseños por destino, con un calendario que te dice qué publicar cada día.
               </p>
             </div>
             <div className="cv-reveal mt-8" style={delay(140)}>
-              <div className="overflow-hidden rounded-[28px] bg-white p-3 shadow-[0_24px_50px_-30px_rgba(32,28,19,.45)]">
-                <img src={reelsGifs.main} alt="Vídeos Reels de destinos en móviles" className="w-full rounded-2xl object-cover" loading="lazy" />
-              </div>
-              <div className="mt-3 grid grid-cols-3 gap-3">
-                {reelsGifs.previews.map((g, i) => (
-                  <img key={g} src={g} alt={`Ejemplo de Reels ${i + 1}`} className="aspect-[9/16] w-full rounded-2xl object-cover shadow-md" loading="lazy" />
+              <div className="grid gap-3 sm:grid-cols-3">
+                {CONTENIDO_LISTO.map(([titulo, texto]) => (
+                  <div key={titulo} className="rounded-[24px] bg-white p-5 shadow-[0_24px_50px_-30px_rgba(32,28,19,.45)]">
+                    <h3 className="text-base font-bold">{titulo}</h3>
+                    <p className="mt-2 text-sm leading-6" style={{ color: "var(--cv-muted)" }}>{texto}</p>
+                  </div>
                 ))}
               </div>
             </div>

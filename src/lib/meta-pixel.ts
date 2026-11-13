@@ -6,6 +6,7 @@ declare global {
 }
 
 import { supabase } from "@/integrations/supabase/client";
+import { rastreamentoPermitido } from "@/lib/rastreamento-consentimento";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -15,6 +16,8 @@ const sendServerEvent = async (
   customData?: Record<string, unknown>,
   userData?: Record<string, unknown>
 ) => {
+  // Fluxo espanhol sem "Aceptar": nem o servidor manda evento ao Meta.
+  if (!rastreamentoPermitido()) return;
   try {
     // Security: Only send server-side events if user is authenticated
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -72,7 +75,7 @@ const sendServerEvent = async (
 
 // Evento: Visualização de Conteúdo
 export const trackViewContent = (contentName?: string) => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'ViewContent', {
       content_name: contentName || 'Página',
     });
@@ -86,7 +89,7 @@ export const trackViewContent = (contentName?: string) => {
 
 // Evento: Cadastro Completo
 export const trackCompleteRegistration = () => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'CompleteRegistration');
   }
   
@@ -96,7 +99,7 @@ export const trackCompleteRegistration = () => {
 
 // Evento: Iniciar Checkout
 export const trackInitiateCheckout = (value: number, currency: string = 'BRL') => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'InitiateCheckout', {
       value: value,
       currency: currency,
@@ -112,7 +115,7 @@ export const trackInitiateCheckout = (value: number, currency: string = 'BRL') =
 
 // Evento: Compra/Assinatura Completa
 export const trackPurchase = (value: number, currency: string = 'BRL') => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'Purchase', {
       value: value,
       currency: currency,
@@ -128,7 +131,7 @@ export const trackPurchase = (value: number, currency: string = 'BRL') => {
 
 // Evento: Assinatura (Subscribe)
 export const trackSubscribe = (value: number, currency: string = 'BRL', predictedLtv?: number) => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'Subscribe', {
       value: value,
       currency: currency,
@@ -146,7 +149,7 @@ export const trackSubscribe = (value: number, currency: string = 'BRL', predicte
 
 // Evento: Lead (quando demonstra interesse)
 export const trackLead = () => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'Lead');
   }
   
@@ -156,7 +159,7 @@ export const trackLead = () => {
 
 // Evento: AddToCart (adicionar ao carrinho)
 export const trackAddToCart = (value: number, currency: string = 'BRL', contentName?: string) => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'AddToCart', {
       value,
       currency,
@@ -174,7 +177,7 @@ export const trackAddToCart = (value: number, currency: string = 'BRL', contentN
 
 // Evento: Search (pesquisa)
 export const trackSearch = (searchQuery: string) => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'Search', {
       search_string: searchQuery,
     });
@@ -188,7 +191,7 @@ export const trackSearch = (searchQuery: string) => {
 
 // Evento: Contact (contato)
 export const trackContact = () => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'Contact');
   }
   
@@ -198,7 +201,7 @@ export const trackContact = () => {
 
 // Evento: CustomizeProduct (personalização)
 export const trackCustomizeProduct = (contentName?: string) => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'CustomizeProduct', {
       content_name: contentName,
     });
@@ -212,7 +215,7 @@ export const trackCustomizeProduct = (contentName?: string) => {
 
 // Evento: StartTrial (iniciar trial)
 export const trackStartTrial = (value?: number, currency: string = 'BRL') => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'StartTrial', {
       value,
       currency,
@@ -228,7 +231,7 @@ export const trackStartTrial = (value?: number, currency: string = 'BRL') => {
 
 // Evento: SubmitApplication (enviar aplicação/formulário)
 export const trackSubmitApplication = () => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'SubmitApplication');
   }
   
@@ -238,7 +241,7 @@ export const trackSubmitApplication = () => {
 
 // Evento: PageView (pode ser chamado manualmente para SPAs)
 export const trackPageView = () => {
-  if (typeof window !== 'undefined' && window.fbq) {
+  if (typeof window !== 'undefined' && rastreamentoPermitido() && window.fbq) {
     window.fbq('track', 'PageView');
   }
   

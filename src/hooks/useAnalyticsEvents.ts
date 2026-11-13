@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
+import { rastreamentoPermitido } from "@/lib/rastreamento-consentimento";
 
 // Get or create session ID
 const getSessionId = () => {
@@ -16,6 +17,8 @@ export const trackEvent = async (
   eventType: string,
   eventData?: Json
 ) => {
+  // Fluxo espanhol sem "Aceptar": não grava evento de navegação/funil identificável (session_id, user_id).
+  if (!rastreamentoPermitido()) return;
   try {
     const sessionId = getSessionId();
     const { data: { user } } = await supabase.auth.getUser();

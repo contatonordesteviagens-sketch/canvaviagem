@@ -1,16 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { ehCaminhoES } from "@/lib/idioma-es";
 import { consentimientoCookiesES, guardarConsentimientoCookiesES, type ConsentimientoCookiesES } from "@/lib/cookies-es";
+import { ehFluxoESAtual, iniciarRastreamento } from "@/lib/rastreamento-consentimento";
 
 /**
  * Aviso de cookies só para os caminhos que começam com /es. Nas páginas brasileiras não aparece.
- * LIMITAÇÃO: registra a escolha, mas ainda NÃO bloqueia os pixels (eles carregam em index.html
- * para o site inteiro). Ver src/lib/cookies-es.ts.
+ * Consentimento de verdade: nas rotas do fluxo espanhol, os pixels do Meta, a etiqueta do Google Ads e a
+ * analítica identificável só entram depois do "Aceptar" (index.html + src/lib/rastreamento-consentimento.ts).
+ * "Rechazar" ou sem escolha: nada carrega.
  */
 export function AvisoCookiesES() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const [escolha, setEscolha] = useState<ConsentimientoCookiesES | null>(consentimientoCookiesES);
+
+  // Navegação SPA: quem sai do fluxo espanhol para uma rota brasileira sem ter aceitado cai na regra
+  // brasileira, e o rastreamento carrega ali (se já carregou, não faz nada).
+  useEffect(() => {
+    if (!ehFluxoESAtual()) iniciarRastreamento();
+  }, [pathname, search]);
 
   if (!ehCaminhoES(pathname) || escolha) return null;
 
@@ -32,7 +40,7 @@ export function AvisoCookiesES() {
         style={{ pointerEvents: "auto", background: "#ffffff", color: "#201c13", borderColor: "#e3dcc6" }}
       >
         <p className="flex-1 text-[13px] leading-5">
-          Usamos cookies y píxeles de Meta y Google Ads para medir nuestra publicidad, además de analítica propia.{" "}
+          Solo cargamos los píxeles de Meta y Google Ads (para medir nuestra publicidad) y nuestra analítica si pulsas «Aceptar». Si rechazas, no se carga nada.{" "}
           <a href="/es/privacidad#cookies" className="font-semibold underline">Más información</a>
         </p>
         <div className="flex shrink-0 gap-2">

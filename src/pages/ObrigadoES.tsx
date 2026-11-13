@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { SpanishPixel } from "@/components/SpanishPixel";
 import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
 import { MetaPixel916689227676142 } from "@/components/MetaPixel916689227676142";
+import { useRastreamentoPermitido } from "@/lib/rastreamento-consentimento";
 import { LOGIN_ES_URL } from "@/lib/idioma-es";
 import { MOEDA_ISO_ES, PRECO_ELITE_ANUAL_ES, PRECO_ELITE_ES, PRECO_START_ANUAL_ES, PRECO_START_ES, suporteWhatsAppUrlES } from "@/lib/precos-es";
 
@@ -116,12 +117,15 @@ const ObrigadoES = () => {
     : (anual ? PRECO_START_ANUAL_ES : PRECO_START_ES);
   const valorAno = anual ? valorPago : valorPago * 12;
   const [showConfetti, setShowConfetti] = useState(true);
+  // Sem "Aceptar" nenhuma conversão (Meta nem Google) sai; ao aceitar, a compra é contada na hora.
+  const rastreioPermitido = useRastreamentoPermitido();
 
   useEffect(() => {
     if (emailFromUrl) setEmail(decodeURIComponent(emailFromUrl));
   }, [emailFromUrl]);
 
   useEffect(() => {
+    if (!rastreioPermitido) return;
     // Delay to ensure Meta Pixel is fully initialized from index.html
     const timer = setTimeout(() => {
       const chave = `cv-es-compra-${sessionId}`;
@@ -146,7 +150,7 @@ const ObrigadoES = () => {
     }, 2500); // 2.5s delay to ensure all pixels are initialized
 
     return () => clearTimeout(timer);
-  }, [tracked, compraValida, sessionId, valorPago, valorAno]);
+  }, [tracked, compraValida, sessionId, valorPago, valorAno, rastreioPermitido]);
 
   useEffect(() => {
     const t = setTimeout(() => setShowConfetti(false), 10500);

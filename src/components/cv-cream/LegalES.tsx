@@ -7,7 +7,7 @@ import { PieES } from "@/components/cv-cream/PlanesES";
 export const DATOS_EMPRESA_PENDIENTE = "[DATOS_EMPRESA: pendiente]";
 
 /** Moldura das páginas legais em espanhol (/es/terminos, /es/privacidad). */
-export function LegalES({ title, updated, children }: { title: string; updated: string; children: ReactNode }) {
+export function LegalES({ title, updated, description, children }: { title: string; updated: string; description?: string; children: ReactNode }) {
   useEffect(() => {
     const anterior = document.documentElement.lang;
     document.documentElement.lang = "es";
@@ -27,6 +27,8 @@ export function LegalES({ title, updated, children }: { title: string; updated: 
       <Helmet>
         <html lang="es" />
         <title>{`${title} | Canva Viagem`}</title>
+        {description && <meta name="description" content={description} />}
+        {description && <meta property="og:description" content={description} />}
       </Helmet>
       <header className="mx-auto flex max-w-3xl justify-start pt-6">
         <a href="/es/inicio" aria-label="Canva Viagem"><BrandMark size={36} /></a>

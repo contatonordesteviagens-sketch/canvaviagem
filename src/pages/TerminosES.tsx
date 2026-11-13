@@ -1,5 +1,5 @@
 import { DATOS_EMPRESA_PENDIENTE, LegalES, SeccionLegal, enlaceLegal } from "@/components/cv-cream/LegalES";
-import { GARANTIA_DIAS_ES, MOEDA_ES, SUPORTE_WHATSAPP_ES } from "@/lib/precos-es";
+import { GARANTIA_DIAS_ES, MOEDA_ES, SUPORTE_EMAIL_ES, SUPORTE_WHATSAPP_ES } from "@/lib/precos-es";
 
 /**
  * /es/terminos: traducción fiel de src/pages/Termos.tsx (mismas cláusulas y mismos datos de contacto).
@@ -7,12 +7,12 @@ import { GARANTIA_DIAS_ES, MOEDA_ES, SUPORTE_WHATSAPP_ES } from "@/lib/precos-es
  * por Stripe y la garantía de GARANTIA_DIAS_ES. Ningún dato de empresa se inventa aquí.
  */
 const TerminosES = () => (
-  <LegalES title="Términos de uso" updated="noviembre de 2026">
+  <LegalES title="Términos de uso" updated="noviembre de 2026" description="Términos de uso de Canva Viagem: planes, pago, reembolso y soporte para agencias de viajes.">
     <SeccionLegal title="Titular del sitio">
       <p>
         Razón social: <strong>{DATOS_EMPRESA_PENDIENTE}</strong>. NIF/CNPJ: <strong>{DATOS_EMPRESA_PENDIENTE}</strong>. Domicilio:{" "}
         <strong>{DATOS_EMPRESA_PENDIENTE}</strong>. Correo de contacto:{" "}
-        <a href="mailto:contato@canvaviagem.com" className={enlaceLegal}>contato@canvaviagem.com</a>.
+        <a href={`mailto:${SUPORTE_EMAIL_ES}`} className={enlaceLegal}>{SUPORTE_EMAIL_ES}</a>.
       </p>
     </SeccionLegal>
 
@@ -56,7 +56,7 @@ const TerminosES = () => (
     <SeccionLegal title="6. Contacto">
       <p>
         Para dudas sobre estos términos, escríbenos a:{" "}
-        <a href="mailto:contato@canvaviagem.com" className={enlaceLegal}>contato@canvaviagem.com</a>
+        <a href={`mailto:${SUPORTE_EMAIL_ES}`} className={enlaceLegal}>{SUPORTE_EMAIL_ES}</a>
       </p>
       <p>
         Consulta también nuestra <a href="/es/privacidad" className={enlaceLegal}>política de privacidad</a>.

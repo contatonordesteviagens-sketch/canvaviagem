@@ -94,9 +94,41 @@
        os arquivos só são baixados depois que a página termina de carregar, ou assim que a pessoa
        mexe na tela, o que vier primeiro. -->
   <script>
+    // CONSENTIMENTO (fluxo espanhol): nas rotas /es, e em /login e /auth quando em espanhol, NADA do Meta
+    // nem do Google é inicializado ou baixado até a pessoa clicar "Aceptar" (chave cv-es-cookies).
+    // Em qualquer outra rota (Brasil) o rastreamento inicia na hora, exatamente como antes.
+    // Mesma regra de src/lib/idioma-es.ts, reescrita aqui em JS puro.
+    function cvEhFluxoES() {
+      try {
+        var re = /^\/es(?:[\/?#]|$)/;
+        if (re.test(location.pathname)) return true;
+        if (/^\/(?:login|auth)(?:\/|$)/.test(location.pathname)) {
+          var p = new URLSearchParams(location.search);
+          var lang = (p.get('lang') || '').toLowerCase();
+          if (lang === 'es') return true;
+          if (lang === 'pt') return false;
+          if (re.test(p.get('redirect') || '')) return true;
+          try { return localStorage.getItem('canva-viagem-language') === 'es'; } catch (e) { return false; }
+        }
+      } catch (e) { /* sem URL legível: segue a regra brasileira */ }
+      return false;
+    }
+    function cvAceitou() {
+      try {
+        var v = JSON.parse(localStorage.getItem('cv-es-cookies') || 'null');
+        return !!v && v.valor === 'aceptado';
+      } catch (e) { return false; }
+    }
+
+    var cvRastreamentoIniciado = false;
+    // Idempotente. imediato=true baixa os arquivos já (usado logo após o "Aceptar").
+    window.__cvIniciarRastreamento = function (imediato) {
+      if (cvRastreamentoIniciado) { if (imediato && window.__cvCarregarRastreamento) window.__cvCarregarRastreamento(); return; }
+      cvRastreamentoIniciado = true;
+
     // Google Ads: a fila é o dataLayer, lido pelo gtag.js assim que ele chega.
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    window.gtag = function () { window.dataLayer.push(arguments); };
     gtag('js', new Date());
     gtag('config', 'AW-18034387036');
 
@@ -133,6 +165,7 @@
           document.head.appendChild(s);
         });
       }
+      window.__cvCarregarRastreamento = carregarRastreamento;
       // Depois de a página ficar pronta, ou na primeira vez que a pessoa mexe na tela.
       ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(function (ev) {
         window.addEventListener(ev, carregarRastreamento, { once: true, passive: true });
@@ -142,26 +175,20 @@
       // Rede de segurança: mesmo sem load e sem toque, o rastreamento entra em 6 segundos.
       setTimeout(carregarRastreamento, 6000);
     })();
+    if (imediato && window.__cvCarregarRastreamento) window.__cvCarregarRastreamento();
+    };
+
+    if (!cvEhFluxoES() || cvAceitou()) {
+      window.__cvIniciarRastreamento();
+    }
+    // "Aceptar" (disparado por src/lib/cookies-es.ts): carrega tudo na hora, sem recarregar a página.
+    window.addEventListener('cv-es-cookies', function (ev) {
+      if (ev && ev.detail === 'aceptado') window.__cvIniciarRastreamento(true);
+    });
   </script>
 </head>
 
 <body>
-  <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=1645968187276827&ev=PageView&noscript=1" /></noscript>
-  <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=1824488118557875&ev=PageView&noscript=1" /></noscript>
-  <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=2120347238758199&ev=PageView&noscript=1" /></noscript>
-  <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=1599242897762192&ev=PageView&noscript=1" /></noscript>
-  <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=1152272353771099&ev=PageView&noscript=1" /></noscript>
-  <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=4254631328136179&ev=PageView&noscript=1" /></noscript>
-  <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=1560736461820497&ev=PageView&noscript=1" /></noscript>
-  <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=916689227676142&ev=PageView&noscript=1" /></noscript>
 
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>

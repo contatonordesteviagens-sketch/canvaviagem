@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { MetaPixelRouteTracker } from "@/components/MetaPixelRouteTracker";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { AvisoCookiesES } from "@/components/AvisoCookiesES";
+import { TituloES } from "@/components/TituloES";
 
 const PlatformLayoutController = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -238,6 +239,7 @@ const App = () => {
                   <UtmTracker />
                   <InstallPrompt />
                   <AvisoCookiesES />
+                  <TituloES />
 
                   <Suspense fallback={<PageLoader />}>
                     {canvaViagemSiteSlug ? (
