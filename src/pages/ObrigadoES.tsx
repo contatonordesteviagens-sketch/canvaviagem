@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { SpanishPixel } from "@/components/SpanishPixel";
 import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
 import { MetaPixel916689227676142 } from "@/components/MetaPixel916689227676142";
-import { MOEDA_ISO_ES, PRECO_START_ES, suporteWhatsAppUrlES } from "@/lib/precos-es";
+import { MOEDA_ISO_ES, PRECO_ELITE_ANUAL_ES, PRECO_ELITE_ES, PRECO_START_ANUAL_ES, PRECO_START_ES, suporteWhatsAppUrlES } from "@/lib/precos-es";
 
 /**
  * Slow & Abundant Confetti Component
@@ -104,6 +104,16 @@ const ObrigadoES = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [tracked, setTracked] = useState(false);
+  // A compra só conta quando a Stripe devolve o cliente com o id da sessão de pagamento (cs_...).
+  // Quem só abre a página não dispara conversão. Plano e ciclo vêm na URL de retorno de cada link.
+  const sessionId = searchParams.get("session_id") || "";
+  const compraValida = sessionId.startsWith("cs_");
+  const planoPago = searchParams.get("plano") === "elite" ? "elite" : "start";
+  const anual = searchParams.get("ciclo") === "anual";
+  const valorPago = planoPago === "elite"
+    ? (anual ? PRECO_ELITE_ANUAL_ES : PRECO_ELITE_ES)
+    : (anual ? PRECO_START_ANUAL_ES : PRECO_START_ES);
+  const valorAno = anual ? valorPago : valorPago * 12;
   const [showConfetti, setShowConfetti] = useState(true);
 
   useEffect(() => {
@@ -113,18 +123,21 @@ const ObrigadoES = () => {
   useEffect(() => {
     // Delay to ensure Meta Pixel is fully initialized from index.html
     const timer = setTimeout(() => {
-      if (!tracked) {
-        console.log('[Meta Pixel ES] Disparando Purchase e Subscribe...');
-        trackESPurchase(PRECO_START_ES, MOEDA_ISO_ES);
-        trackESSubscribe(PRECO_START_ES, MOEDA_ISO_ES, PRECO_START_ES * 12);
+      const chave = `cv-es-compra-${sessionId}`;
+      let jaContou = false;
+      try { jaContou = sessionStorage.getItem(chave) === "1"; } catch { /* sem armazenamento: conta uma vez por montagem */ }
+      if (!tracked && compraValida && !jaContou) {
+        try { sessionStorage.setItem(chave, "1"); } catch { /* idem */ }
+        trackESPurchase(valorPago, MOEDA_ISO_ES);
+        trackESSubscribe(valorPago, MOEDA_ISO_ES, valorAno);
         
         // Google Ads conversion for ES (optional if configured)
         if (typeof window !== 'undefined' && (window as any).gtag) {
           (window as any).gtag('event', 'conversion', {
             send_to: 'AW-18034387036/QeQUCJ-g7Y0cENzQu5dD',
-            value: PRECO_START_ES,
+            value: valorPago,
             currency: MOEDA_ISO_ES,
-            transaction_id: Date.now().toString(),
+            transaction_id: sessionId,
           });
         }
         setTracked(true);
@@ -132,7 +145,7 @@ const ObrigadoES = () => {
     }, 2500); // 2.5s delay to ensure all pixels are initialized
 
     return () => clearTimeout(timer);
-  }, [tracked]);
+  }, [tracked, compraValida, sessionId, valorPago, valorAno]);
 
   useEffect(() => {
     const t = setTimeout(() => setShowConfetti(false), 10500);
@@ -197,7 +210,7 @@ const ObrigadoES = () => {
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/5 blur-[100px] pointer-events-none" />
 
       <SpanishPixel />
-      <MetaPixel916689227676142 isPurchase={true} />
+      <MetaPixel916689227676142 isPurchase={compraValida} />
       {showConfetti && <ConfettiCanvas />}
 
       <div className="w-full max-w-md flex flex-col items-center relative z-10 gap-8">
