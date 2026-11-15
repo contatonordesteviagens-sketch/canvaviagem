@@ -1,3 +1,4 @@
+import { getMetaMatchData } from "@/lib/meta-match";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, Copy, ExternalLink, Loader2, QrCode, RefreshCw } from "lucide-react";
@@ -120,7 +121,7 @@ export function PixPanel({ plan, onSwitchToCard, offer = null }: { plan: Checkou
     try {
       try { sessionStorage.setItem(TAX_ID_KEY, onlyDigits(taxId)); } catch { /* sem storage */ }
       const { data, error: fnError } = await supabase.functions.invoke("woovi-create-charge", {
-        body: { plan, taxId: onlyDigits(taxId), ...(offer ? { offer } : {}) },
+        body: { plan, taxId: onlyDigits(taxId), ...(offer ? { offer } : {}), ...getMetaMatchData() },
       });
       if (fnError || !data?.brCode) throw new Error(data?.error || fnError?.message || "Falha ao gerar o Pix");
       // Nunca mostra um QR com valor diferente do preço anunciado.

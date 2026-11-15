@@ -1,6 +1,7 @@
 // Cria a cobrança Pix (Woovi) para o usuário LOGADO.
 // Entrada: { plan: "monthly" | "semiannual" | "annual" } + Authorization: Bearer <sessão>
 // Saída:   { correlationID, value, brCode, qrCodeImage, paymentLinkUrl, expiresDate }
+import { matchFromRequest } from "../_shared/metaCapi.ts";
 import { adminClient, userFromRequest } from "../_shared/wooviAuth.ts";
 import { corsHeaders, createWooviCharge, isPixPlan, PIX_QUICK_EXPIRES_IN_SECONDS, json, PIX_PLANS, savePixCharge, isBlackFridayOpen, PIX_BLACK_FRIDAY_CENTS } from "../_shared/woovi.ts";
 
@@ -28,7 +29,13 @@ Deno.serve(async (req) => {
     }
     const charge = await createWooviCharge({ plan, userId: user.id, email, name, blackFriday: wantsBlackFriday, expiresIn: body?.quick === true ? PIX_QUICK_EXPIRES_IN_SECONDS : undefined });
     console.log("[WOOVI-CREATE] Cobrança criada", { userId: user.id, plan, correlationID: charge.correlationID });
-    await savePixCharge(db, charge, email);
+    const m = matchFromRequest(req, body);
+    const utm = (k: string) => (typeof body?.[k] === "string" && body[k].trim() ? body[k].trim().slice(0, 200) : null);
+    await savePixCharge(db, charge, email, {
+      fbp: m.fbp ?? null, fbc: m.fbc ?? null, client_ip: m.ip ?? null, client_user_agent: m.userAgent ?? null,
+      utm_source: utm("utm_source"), utm_medium: utm("utm_medium"), utm_campaign: utm("utm_campaign"),
+      utm_content: utm("utm_content"), utm_term: utm("utm_term"),
+    });
 
     return json({
       correlationID: charge.correlationID,

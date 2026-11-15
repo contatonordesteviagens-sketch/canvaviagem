@@ -3,6 +3,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
 import { isEliteProduct } from "../_shared/planAccess.ts";
+import { matchFromRequest } from "../_shared/metaCapi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -158,9 +159,12 @@ serve(async (req) => {
     // "embedded": a página /checkout mostra o formulário da Stripe dentro do site e recebe client_secret.
     let uiMode: "hosted" | "embedded" = "hosted";
     let offer = "";
+    let metaMatch: Record<string, string> = {};
     try {
       const body = await req.json();
       if (body?.ui_mode === "embedded") uiMode = "embedded";
+      const m = matchFromRequest(req, body);
+      for (const [k, v] of Object.entries({ meta_fbp: m.fbp, meta_fbc: m.fbc, meta_ip: m.ip, meta_ua: m.userAgent })) if (v) metaMatch[k] = v;
       if (body?.offer === "black-friday") {
         // Com a oferta fechada, recusa em vez de cobrar o preço cheio de quem viu a metade.
         if (Date.now() >= BLACK_FRIDAY_ENDS_AT) {
@@ -290,6 +294,7 @@ serve(async (req) => {
         return_to: returnTo,
         landing_path: landingPath,
         landing_variant: landingVariant,
+        ...metaMatch,
       },
     };
 

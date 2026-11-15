@@ -1,3 +1,4 @@
+import { getMetaMatchData } from "@/lib/meta-match";
 import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js";
@@ -42,7 +43,7 @@ export function CardPanel({ plan, offer = null }: { plan: CheckoutCycle; offer?:
     (async () => {
       try {
         const { data, error } = await supabase.functions.invoke("create-checkout", {
-          body: { billing_cycle: plan, ui_mode: "embedded", return_to: "/fabrica", ...(offer ? { offer } : {}) },
+          body: { billing_cycle: plan, ui_mode: "embedded", return_to: "/fabrica", ...(offer ? { offer } : {}), ...getMetaMatchData() },
         });
         if (cancelled) return;
         if (!error && typeof data?.clientSecret === "string" && data.clientSecret) {

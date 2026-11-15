@@ -6,6 +6,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { sendUnifiedWelcomeEmail } from "../_shared/welcomeEmail.ts";
 import { assertOfficialSupabaseProject } from "../_shared/officialProjectGuard.ts";
 import { resolveStripePlanProduct } from "../_shared/planAccess.ts";
+import { enrichFromProfile, sendPurchaseToMeta } from "../_shared/metaCapi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,11 +54,13 @@ async function trackPaidInvoiceConversion(invoice: Stripe.Invoice, supabase: any
   }
 
   let landingVariant = "general";
+  let subMeta: Record<string, string> = {};
   const subscriptionId = invoice.subscription as string | null;
   if (subscriptionId) {
     try {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       landingVariant = subscription.metadata?.landing_variant || "general";
+      subMeta = (subscription.metadata || {}) as Record<string, string>;
     } catch (error: any) {
       logStep("WARN: subscription metadata unavailable for conversion", { invoiceId: invoice.id, error: error.message });
     }
@@ -98,39 +101,23 @@ async function trackPaidInvoiceConversion(invoice: Stripe.Invoice, supabase: any
     }
   }
 
-  const accessToken = Deno.env.get("META_CAPI_TOKEN_2120347238758199");
   let metaSent = false;
-  if (accessToken) {
-    try {
-      const userData: Record<string, unknown> = {};
-      if (isValidEmail(email)) userData.em = [await sha256Hex(email)];
-      const response = await fetch("https://graph.facebook.com/v18.0/2120347238758199/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: AbortSignal.timeout(8000),
-        body: JSON.stringify({
-          access_token: accessToken,
-          data: [{
-            event_name: "Purchase",
-            event_time: Math.floor(Date.now() / 1000),
-            event_id: eventId,
-            event_source_url: "https://canvaviagem.com/obrigado",
-            action_source: "website",
-            user_data: userData,
-            custom_data: { value, currency },
-          }],
-        }),
-      });
-      metaSent = response.ok;
-      if (!response.ok) {
-        logStep("WARN: Meta CAPI paid conversion failed", { invoiceId: invoice.id, status: response.status });
-      }
-    } catch (error: any) {
-      logStep("WARN: Meta CAPI paid conversion request failed", { invoiceId: invoice.id, error: error.message });
-    }
-  } else {
-    logStep("WARN: Meta CAPI token not configured for paid conversion", { invoiceId: invoice.id });
-    metaSent = true;
+  try {
+    const match = await enrichFromProfile(supabase, {
+      email: isValidEmail(email) ? email : null,
+      userId: subMeta.user_id || null,
+      fbp: subMeta.meta_fbp, fbc: subMeta.meta_fbc, ip: subMeta.meta_ip, userAgent: subMeta.meta_ua,
+    });
+    const result = await sendPurchaseToMeta({
+      eventId, value, currency, sourceUrl: "https://canvaviagem.com/obrigado", match,
+      log: (step, details) => logStep(`Meta CAPI: ${step}`, details),
+    });
+    // Sem token configurado não fica pendente; com token, basta um pixel aceitar (o event_id evita duplicar no reenvio).
+    metaSent = result.configured === 0 || result.sent > 0;
+    if (result.configured === 0) logStep("WARN: Meta CAPI token not configured for paid conversion", { invoiceId: invoice.id });
+    else logStep("Meta CAPI paid conversion", { invoiceId: invoice.id, ...result });
+  } catch (error: any) {
+    logStep("WARN: Meta CAPI paid conversion request failed", { invoiceId: invoice.id, error: error.message });
   }
 
   if (!metaSent) {

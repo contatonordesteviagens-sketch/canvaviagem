@@ -965,42 +965,69 @@ export type Database = {
       }
       pix_charges: {
         Row: {
+          client_ip: string | null
+          client_user_agent: string | null
           correlation_id: string
           created_at: string
           email: string | null
           expires_at: string | null
+          fbc: string | null
+          fbp: string | null
           paid_at: string | null
           payment_link_url: string | null
           plan: string
           status: string
           updated_at: string
           user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
           value_cents: number
         }
         Insert: {
+          client_ip?: string | null
+          client_user_agent?: string | null
           correlation_id: string
           created_at?: string
           email?: string | null
           expires_at?: string | null
+          fbc?: string | null
+          fbp?: string | null
           paid_at?: string | null
           payment_link_url?: string | null
           plan: string
           status?: string
           updated_at?: string
           user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
           value_cents: number
         }
         Update: {
+          client_ip?: string | null
+          client_user_agent?: string | null
           correlation_id?: string
           created_at?: string
           email?: string | null
           expires_at?: string | null
+          fbc?: string | null
+          fbp?: string | null
           paid_at?: string | null
           payment_link_url?: string | null
           plan?: string
           status?: string
           updated_at?: string
           user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
           value_cents?: number
         }
         Relationships: []

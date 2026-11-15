@@ -1,3 +1,4 @@
+import { getMetaMatchData } from "@/lib/meta-match";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, Copy, Loader2, QrCode, RefreshCw } from "lucide-react";
@@ -100,7 +101,7 @@ export function PixCheckoutModal({
     setError(null);
     setCharge(null);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke("woovi-create-charge", { body: { plan, quick, ...(offer ? { offer } : {}) } });
+      const { data, error: fnError } = await supabase.functions.invoke("woovi-create-charge", { body: { plan, quick, ...(offer ? { offer } : {}), ...getMetaMatchData() } });
       if (fnError || !data?.brCode) throw new Error(data?.error || fnError?.message || "Falha ao gerar o Pix");
       setCharge(data as Charge);
       setNudgeEnd(new Date(Date.now() + NUDGE_MS).toISOString());

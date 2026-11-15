@@ -124,7 +124,7 @@ export async function createWooviCharge(params: {
  * Guarda/atualiza a cobrança em pix_charges (funil e recuperação de quem não pagou).
  * Nunca derruba o pagamento: erro aqui só vai para o log.
  */
-export async function savePixCharge(db: SupabaseClient, charge: WooviCharge | null, email?: string | null): Promise<void> {
+export async function savePixCharge(db: SupabaseClient, charge: WooviCharge | null, email?: string | null, extra?: Record<string, string | null>): Promise<void> {
   if (!charge?.correlationID) return;
   const parsed = parseCorrelationId(charge.correlationID);
   if (!parsed) return;
@@ -148,6 +148,7 @@ export async function savePixCharge(db: SupabaseClient, charge: WooviCharge | nu
     };
     if (status === "COMPLETED") row.paid_at = charge.paidAt ?? charge.updatedAt ?? new Date().toISOString();
     if (charge.createdAt) row.created_at = charge.createdAt;
+    if (extra) for (const [k, v] of Object.entries(extra)) if (v) row[k] = v;
     const { error } = await db.from("pix_charges").upsert(row, { onConflict: "correlation_id" });
     if (error) console.warn("[WOOVI] pix_charges não gravou:", error.message);
   } catch (err) {
