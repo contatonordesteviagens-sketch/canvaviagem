@@ -1,7 +1,7 @@
 // Conteúdo da aba Gestão > Plano. Atualizar a cada rodada de trabalho: é a memória do projeto.
 // Nada de número inventado: o que é proposta está escrito como proposta.
 
-export const PLANO_ATUALIZADO_EM = "13/11/2026";
+export const PLANO_ATUALIZADO_EM = "16/11/2026";
 
 export type Owner = "Lucas" | "Claude" | "Automático";
 export type ProximoPasso = { quando: string; quem: Owner; oque: string; porque: string };
@@ -338,6 +338,15 @@ export const CHECKLIST: ChecklistGrupo[] = [
 ];
 
 export const FEITO: { data: string; itens: string[] }[] = [
+  {
+    data: "16/11",
+    itens: [
+      "Pedido de cliente no gerador de vídeo: o parcelado mostra \"a partir de 10x de\" (nunca \"até\") e dá para escrever o texto acima do preço. Publicado.",
+      "Vídeo de pacote com vários lugares (ex.: Praga, Viena e Budapeste): o destino vem primeiro em Personalizar e cada cena mostra uma das cidades. Publicado.",
+      "Legendas, modelos e sites prontos sem \"até 10x\": com valor virou \"a partir de\", sem valor virou \"em 10x\". A legenda do Vale Sagrado tinha uma mensagem de erro no meio e foi consertada. Publicado.",
+      "Protótipo do Início novo (estilo Canva) pronto para o Lucas testar em localhost. Não está no ar: só vai depois da aprovação.",
+    ],
+  },
   {
     data: "10/11",
     itens: [
