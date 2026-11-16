@@ -18,7 +18,7 @@ export const contentLibrary: ContentLibraryItem[] = [
         category: 'offer',
         title: '🌊 Rio de Janeiro (RJ)',
         text: `📍 RIO DE JANEIRO | 4 NOITES\n💰 A partir de R$ 2.200/pessoa\n✈️ Aéreo + Hotel 4★ + Café da manhã\n💳 10x sem juros | Pix: 5% desconto`,
-        fullText: `🌊 RIO DE JANEIRO — A CIDADE MARAVILHOSA TE ESPERA!\n\n4 noites com tudo que você precisa para uma viagem inesquecível.\n\n✅ INCLUI:\n• Passagem aérea (ida e volta)\n• Hotel 3★ ou 4★ em Copacabana ou Ipanema\n• Café da manhã todos os dias\n• Transfer aeroporto / hotel / aeroporto\n\nROTEIRO SUGERIDO:\n• Dia 1 → Cristo Redentor + Pão de Açúcar\n• Dia 2 → Praias de Ipanema e Copacabana\n• Dia 3 → Santa Teresa + Lapa + vida noturna\n• Dia 4 → Maracanã ou Jardim Botânico\n\n💰 A PARTIR DE R$ 2.200/PESSOA\n💳 Parcelamento: até 10x sem juros no cartão\n📲 Pix com 5% de desconto à vista\n\nVagas limitadas! Reserve já!\n📞 [TELEFONE] | 💬 WhatsApp: [NÚMERO]\n🌐 [SITE] | 📧 [EMAIL]\n[NOME DA AGÊNCIA] — Sua viagem, nossa especialidade.`,
+        fullText: `🌊 RIO DE JANEIRO — A CIDADE MARAVILHOSA TE ESPERA!\n\n4 noites com tudo que você precisa para uma viagem inesquecível.\n\n✅ INCLUI:\n• Passagem aérea (ida e volta)\n• Hotel 3★ ou 4★ em Copacabana ou Ipanema\n• Café da manhã todos os dias\n• Transfer aeroporto / hotel / aeroporto\n\nROTEIRO SUGERIDO:\n• Dia 1 → Cristo Redentor + Pão de Açúcar\n• Dia 2 → Praias de Ipanema e Copacabana\n• Dia 3 → Santa Teresa + Lapa + vida noturna\n• Dia 4 → Maracanã ou Jardim Botânico\n\n💰 A PARTIR DE R$ 2.200/PESSOA\n💳 Parcelamento: em 10x sem juros no cartão\n📲 Pix com 5% de desconto à vista\n\nVagas limitadas! Reserve já!\n📞 [TELEFONE] | 💬 WhatsApp: [NÚMERO]\n🌐 [SITE] | 📧 [EMAIL]\n[NOME DA AGÊNCIA] — Sua viagem, nossa especialidade.`,
         isPremium: false,
         tags: ['Nacional', 'Praia', 'Cultura'],
         icon: '🌊'
@@ -544,7 +544,7 @@ export const contentLibrary: ContentLibraryItem[] = [
         category: 'script',
         title: '💳 Condições de Pagamento — Padrão',
         text: `Texto padrão para incluir no final de todas as ofertas com formas de pagamento e políticas.`,
-        fullText: `CONDIÇÕES E FORMAS DE PAGAMENTO\n\n💳 CARTÃO DE CRÉDITO: até 10x sem juros\n📲 PIX: 5% de desconto (pagamento à vista)\n🏦 TRANSFERÊNCIA BANCÁRIA: consulte condições\n\nO QUE ESTÁ INCLUÍDO (salvo indicação contrária):\n✅ Passagem aérea (ida e volta) — classe econômica\n✅ Hospedagem conforme descrito (hotel/pousada/resort)\n✅ Café da manhã diário\n✅ Transfer aeroporto / hotel / aeroporto\n✅ Taxas de reserva e impostos\n\nO QUE NÃO ESTÁ INCLUÍDO:\n❌ Despesas pessoais e gorjetas\n❌ Alimentação além do café da manhã\n❌ Passeios opcionais (consulte valores)\n❌ Seguro viagem (RECOMENDAMOS — consulte)\n❌ Taxas de bagagem despachada\n\nRESERVA E CANCELAMENTO:\n📌 Confirmação: 30% a 50% de entrada\n📌 Saldo: até 15 dias antes da viagem\n📌 Cancelamento: sujeito à política de cada operadora\n📌 Documentação: verificar com antecedência\n\n[NOME DA AGÊNCIA] | CADASTUR: [NÚMERO]\n[TELEFONE] | [EMAIL] | [SITE]`,
+        fullText: `CONDIÇÕES E FORMAS DE PAGAMENTO\n\n💳 CARTÃO DE CRÉDITO: em 10x sem juros\n📲 PIX: 5% de desconto (pagamento à vista)\n🏦 TRANSFERÊNCIA BANCÁRIA: consulte condições\n\nO QUE ESTÁ INCLUÍDO (salvo indicação contrária):\n✅ Passagem aérea (ida e volta) — classe econômica\n✅ Hospedagem conforme descrito (hotel/pousada/resort)\n✅ Café da manhã diário\n✅ Transfer aeroporto / hotel / aeroporto\n✅ Taxas de reserva e impostos\n\nO QUE NÃO ESTÁ INCLUÍDO:\n❌ Despesas pessoais e gorjetas\n❌ Alimentação além do café da manhã\n❌ Passeios opcionais (consulte valores)\n❌ Seguro viagem (RECOMENDAMOS — consulte)\n❌ Taxas de bagagem despachada\n\nRESERVA E CANCELAMENTO:\n📌 Confirmação: 30% a 50% de entrada\n📌 Saldo: até 15 dias antes da viagem\n📌 Cancelamento: sujeito à política de cada operadora\n📌 Documentação: verificar com antecedência\n\n[NOME DA AGÊNCIA] | CADASTUR: [NÚMERO]\n[TELEFONE] | [EMAIL] | [SITE]`,
         isPremium: true,
         tags: ['Pagamento', 'Condições'],
         icon: '💳'
@@ -554,7 +554,7 @@ export const contentLibrary: ContentLibraryItem[] = [
         category: 'script',
         title: '📱 Condições Versão Curta — Stories',
         text: `Versão resumida de condições para stories e cards rápidos.`,
-        fullText: `💳 FORMAS DE PAGAMENTO:\n• Pix: 5% de desconto\n• Cartão: até 10x sem juros\n\nInclui: aéreo + hotel + café da manhã + transfer\n\nVagas limitadas | Preços sujeitos à disponibilidade\n\n📞 [TELEFONE] | 💬 WhatsApp: [NÚMERO]`,
+        fullText: `💳 FORMAS DE PAGAMENTO:\n• Pix: 5% de desconto\n• Cartão: em 10x sem juros\n\nInclui: aéreo + hotel + café da manhã + transfer\n\nVagas limitadas | Preços sujeitos à disponibilidade\n\n📞 [TELEFONE] | 💬 WhatsApp: [NÚMERO]`,
         isPremium: true,
         tags: ['Pagamento', 'Stories'],
         icon: '📱'

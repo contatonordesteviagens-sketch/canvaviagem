@@ -186,7 +186,7 @@ export const templates: Template[] = [
     "title": "Vale Sagrado",
     "url": "https://www.canva.com/design/DAGgIaWq6JM/w5oMJAcSAnbT-IdIr4RHhg/view?utm_content=DAGgIaWq6JM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Está na hora de planejar suas férias dos sonhos no Vale Sagrado! 🏔️✨ ComSorry about that, something didn't go as planned. Please try again, and if you're still seeing this message, go ahead and restart the app.\n\n\n\n\n\n\nLEGENDAS AGÊNCIA DE VIAGEM\nARTE 1\nEstá na hora de deixar de sonhar e começar a planejar suas férias dos sonhos. Que tal curtir 5 dias no paraíso, com tudo que você precisa para relaxar e aproveitar ao máximo? 😎🌊\n🔸 Pacote Completo Inclui: ✈️ Passagem aérea de ida e volta 🧳 Bagagem despachada 🏨 5 diárias em hotel de luxo\nE o melhor: você pode fazer tudo isso em até 10x de R$450,00! Não perca a chance de viver essa experiência única. 🌟\n📲 Garanta já o seu pacote e prepare-se para uma aventura que vai ficar marcada na memória!\n#ViajarÉViver #CancunDream #AgenciaDeViagens #PacotesDeViagem #DestinoDosSonhos  #DescontoEspecial"
+    "description": "Está na hora de planejar suas férias dos sonhos no Vale Sagrado! 🏔️✨ Com as montanhas dos Andes, vilarejos incas e o caminho para Machu Picchu, é uma viagem para guardar na memória. Que tal curtir 5 dias por lá, com tudo que você precisa para aproveitar ao máximo? 🏔️🦙\n🔸 Pacote Completo Inclui: ✈️ Passagem aérea de ida e volta 🧳 Bagagem despachada 🏨 5 diárias em hotel de luxo\nE o melhor: você pode fazer tudo isso a partir de 10x de R$450,00! Não perca a chance de viver essa experiência única. 🌟\n📲 Garanta já o seu pacote e prepare-se para uma aventura que vai ficar marcada na memória!\n#ViajarÉViver #CancunDream #AgenciaDeViagens #PacotesDeViagem #DestinoDosSonhos  #DescontoEspecial"
   , "drive_url": "https://drive.google.com/file/d/153DwvNqOJzPksR1XjUXHoMYp6IX79_n2/view?usp=drive_link"},
   {
     "title": "Veneza",
@@ -462,7 +462,7 @@ export const templates: Template[] = [
     "title": "Bariloche",
     "url": "https://www.canva.com/design/DAGgICGduVA/AE_OxvSOWEEtHfPOD_4AWA/view?utm_content=DAGgICGduVA&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem para Bariloche sem preocupações! ❄️✈️ Conhecida pelas montanhas nevadas e chocolates artesanais, Bariloche é perfeita para o inverno. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para esquiar, em até 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens"
+    "description": "Planeje sua viagem para Bariloche sem preocupações! ❄️✈️ Conhecida pelas montanhas nevadas e chocolates artesanais, Bariloche é perfeita para o inverno. Nosso pacote inclui ✈️ passagens, 🏨 hospedagem e passeios para esquiar, em 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens"
   , "drive_url": "https://drive.google.com/file/d/13lituNWpsQYcVpH-B2iBYWaYMZHAFZiP/view?usp=drive_link"},
   {
     "title": "Boston",
@@ -546,7 +546,7 @@ export const templates: Template[] = [
     "title": "Grécia",
     "url": "https://www.canva.com/design/DAGgIGpU45c/L2mK-u75F_cQ_i-q1R2D6w/view?utm_content=DAGgIGpU45c&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem dos sonhos para a Grécia! 🏛️✨ Com ilhas como Santorini e Mykonos, a Grécia é perfeita para quem ama história e praias. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios, com parcelamento em até 12x.\n✔️ Um destino incrível para relaxar e explorar.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ExplorarOMundo #PacotesDeViagem #FériasPerfeitas"
+    "description": "Planeje sua viagem dos sonhos para a Grécia! 🏛️✨ Com ilhas como Santorini e Mykonos, a Grécia é perfeita para quem ama história e praias. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios, com parcelamento em 12x.\n✔️ Um destino incrível para relaxar e explorar.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ExplorarOMundo #PacotesDeViagem #FériasPerfeitas"
   , "drive_url": "https://drive.google.com/file/d/12w7XtopwQlCFeq5dAVx8b_6YTPkGVru_/view?usp=drive_link"},
   {
     "title": "Israel",
@@ -582,7 +582,7 @@ export const templates: Template[] = [
     "title": "Montevidéu",
     "url": "https://www.canva.com/design/DAGgIEv81n8/16sFv3o7t2n_95k022u8_A/view?utm_content=DAGgIEv81n8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Proporcione uma experiência mágica em Montevidéu! 🏙️✨ A capital uruguaia tem um charme único, com a Rambla, o Mercado del Puerto e o centro histórico. Nosso pacote em até 12x sem juros inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer a cidade.\n✔️ Viva momentos únicos nesse destino sul-americano.\nGaranta seu pacote pelo WhatsApp: (99) 9 9999-9999\n#Montevidéu #FériasInternacionais #MagiaDaViagem"
+    "description": "Proporcione uma experiência mágica em Montevidéu! 🏙️✨ A capital uruguaia tem um charme único, com a Rambla, o Mercado del Puerto e o centro histórico. Nosso pacote em 12x sem juros inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer a cidade.\n✔️ Viva momentos únicos nesse destino sul-americano.\nGaranta seu pacote pelo WhatsApp: (99) 9 9999-9999\n#Montevidéu #FériasInternacionais #MagiaDaViagem"
   },
   {
     "title": "Namíbia",
@@ -600,7 +600,7 @@ export const templates: Template[] = [
     "title": "Nova Zelândia",
     "url": "https://www.canva.com/design/DAGgINGc6Z8/OsM-5OopG49o8mN0rd0RMg/view?utm_content=DAGgINGc6Z8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Encante-se com a Nova Zelândia! 🏔️✨ Com paisagens de tirar o fôlego, como os fiordes de Milford Sound e as locações de \"O Senhor dos Anéis\", esse destino é um sonho. Nosso pacote em até 10x de R$850,00 inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Uma viagem para explorar a natureza e a cultura Maori.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#NovaZelândia #PacotesDeViagem #FériasNaNatureza"
+    "description": "Encante-se com a Nova Zelândia! 🏔️✨ Com paisagens de tirar o fôlego, como os fiordes de Milford Sound e as locações de \"O Senhor dos Anéis\", esse destino é um sonho. Nosso pacote a partir de 10x de R$850,00 inclui ✈️ passagens e 🏨 hospedagem.\n✔️ Uma viagem para explorar a natureza e a cultura Maori.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#NovaZelândia #PacotesDeViagem #FériasNaNatureza"
   },
   {
     "title": "Orlando",
@@ -696,7 +696,7 @@ export const templates: Template[] = [
     "title": "Atenas",
     "url": "https://www.canva.com/design/DAGgIVLFL6c/sN4xUOkZJTbGJ5vZ6kQ18Q/view?utm_content=DAGgIVLFL6c&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Proporcione uma experiência mágica em Atenas! 🏛️✨ Conhecida pela Acrópole e pela história grega, Atenas é um destino fascinante. Nosso pacote em até 12x sem juros inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer a cidade.\n✔️ Viva momentos únicos nesse destino histórico.\nGaranta seu pacote pelo WhatsApp: (99) 9 9999-9999\n#Atenas #FériasInternacionais #MagiaDaViagem"
+    "description": "Proporcione uma experiência mágica em Atenas! 🏛️✨ Conhecida pela Acrópole e pela história grega, Atenas é um destino fascinante. Nosso pacote em 12x sem juros inclui ✈️ passagens, 🏨 hospedagem e passeios para conhecer a cidade.\n✔️ Viva momentos únicos nesse destino histórico.\nGaranta seu pacote pelo WhatsApp: (99) 9 9999-9999\n#Atenas #FériasInternacionais #MagiaDaViagem"
   , "drive_url": "https://drive.google.com/file/d/14UQcXCy5m5KruQryEqeR-S2Y36bPUYVa/view?usp=drive_link"},
   {
     "title": "Bali",
@@ -810,7 +810,7 @@ export const templates: Template[] = [
     "title": "Los Angeles",
     "url": "https://www.canva.com/design/DAGgIFgynkQ/sTk_DjnzNhbRFLmpJgDAkQ/view?utm_content=DAGgIFgynkQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Encante-se com Los Angeles! 🌟✨ Com a Calçada da Fama e as praias de Santa Monica, LA é um destino dos sonhos. Nosso pacote em até 10x de R$850,00 inclui ✈️ passagens e 🏨 hospedagem para você explorar Hollywood e muito mais.\n✔️ Uma viagem para explorar a cultura americana.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#LosAngeles #PacotesDeViagem #FériasNaCali \nTokyo\nCada aventura em Tokyo faz parte de quem somos! 🏯✨ Conhecida pela modernidade de Shibuya e pela tradição de Asakusa, Tokyo é fascinante. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você criar histórias inesquecíveis.\n✔️ Viva experiências únicas nesse destino japonês.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MemóriasInesquecíveis #AventuraEDescoberta"
+    "description": "Encante-se com Los Angeles! 🌟✨ Com a Calçada da Fama e as praias de Santa Monica, LA é um destino dos sonhos. Nosso pacote a partir de 10x de R$850,00 inclui ✈️ passagens e 🏨 hospedagem para você explorar Hollywood e muito mais.\n✔️ Uma viagem para explorar a cultura americana.\nGaranta sua viagem pelo WhatsApp: (99) 9 9999-9999\n#LosAngeles #PacotesDeViagem #FériasNaCali \nTokyo\nCada aventura em Tokyo faz parte de quem somos! 🏯✨ Conhecida pela modernidade de Shibuya e pela tradição de Asakusa, Tokyo é fascinante. Nossos pacotes incluem ✈️ passagens e 🏨 hospedagem para você criar histórias inesquecíveis.\n✔️ Viva experiências únicas nesse destino japonês.\nPlaneje agora pelo WhatsApp: (99) 9 9999-9999\n#ViajarÉViver #MemóriasInesquecíveis #AventuraEDescoberta"
   },
   {
     "title": "Madri",
@@ -966,13 +966,13 @@ export const templates: Template[] = [
     "title": "Fernando de Noronha",
     "url": "https://www.canva.com/design/DAGgHZ-fCuI/RFrxKhGE6O92snzhuuv0BA/view?utm_content=DAGgHZ-fCuI&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem para Fernando de Noronha sem preocupações! 🐠🏝️ Esse arquipélago é famoso pelas praias paradisíacas e vida marinha rica, ideal para mergulhos inesquecíveis. Nosso pacote completo inclui ✈️ passagens aéreas, 🏨 hospedagem em pousada charmosa e até opções de passeios para explorar a ilha, tudo em até 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens"
+    "description": "Planeje sua viagem para Fernando de Noronha sem preocupações! 🐠🏝️ Esse arquipélago é famoso pelas praias paradisíacas e vida marinha rica, ideal para mergulhos inesquecíveis. Nosso pacote completo inclui ✈️ passagens aéreas, 🏨 hospedagem em pousada charmosa e até opções de passeios para explorar a ilha, tudo em 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens"
   , "drive_url": "https://drive.google.com/file/d/10yEMLzRjLik8_3MM-Oz77oBJQWZODZHX/view?usp=drive_link"},
   {
     "title": "Fernando de Noronha 2",
     "url": "https://www.canva.com/design/DAGgHZ-fCuI/RFrxKhGE6O92snzhuuv0BA/view?utm_content=DAGgHZ-fCuI&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem para Fernando de Noronha sem preocupações! 🐠🏝️ Esse arquipélago é famoso pelas praias paradisíacas e vida marinha rica, ideal para mergulhos inesquecíveis. Nosso pacote completo inclui ✈️ passagens aéreas, 🏨 hospedagem em pousada charmosa e até opções de passeios para explorar a ilha, tudo em até 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens"
+    "description": "Planeje sua viagem para Fernando de Noronha sem preocupações! 🐠🏝️ Esse arquipélago é famoso pelas praias paradisíacas e vida marinha rica, ideal para mergulhos inesquecíveis. Nosso pacote completo inclui ✈️ passagens aéreas, 🏨 hospedagem em pousada charmosa e até opções de passeios para explorar a ilha, tudo em 10x sem juros.\n✔️ Suporte personalizado para você curtir cada momento.\nFale conosco pelo WhatsApp: (99) 9 9999-9999\n#ViajarSemPreocupação #PacoteDeViagem #AgenciaDeViagens"
   , "drive_url": "https://drive.google.com/file/d/10yEMLzRjLik8_3MM-Oz77oBJQWZODZHX/view?usp=drive_link"},
   {
     "title": "Florianópolis",
@@ -1116,7 +1116,7 @@ export const templates: Template[] = [
     "title": "Trancoso - BA",
     "url": "https://www.canva.com/design/DAGhx91gbYs/ZrP6pSy-0JFNwSuMRCuL0g/view?utm_content=DAGhx91gbYs&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
     "type": "video",
-    "description": "Planeje sua viagem dos sonhos para Trancoso - BA! 🏖️✨ Com praias paradisíacas e um centrinho charmoso, Trancoso é perfeito para relaxar e curtir a natureza. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios, com parcelamento em até 12x.\n✔️ Um destino incrível para quem busca paz e beleza.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ExplorarOMundo #PacotesDeViagem #FériasPerfeitas"
+    "description": "Planeje sua viagem dos sonhos para Trancoso - BA! 🏖️✨ Com praias paradisíacas e um centrinho charmoso, Trancoso é perfeito para relaxar e curtir a natureza. Nossos pacotes personalizados incluem ✈️ passagens, 🏨 hospedagem e passeios, com parcelamento em 12x.\n✔️ Um destino incrível para quem busca paz e beleza.\nFale com a gente pelo WhatsApp: (99) 9 9999-9999\n#ExplorarOMundo #PacotesDeViagem #FériasPerfeitas"
   , "drive_url": "https://drive.google.com/file/d/1LzpTyiMRisNfFU4eHe1lih4muE0up3cS/view?usp=drive_link"}
 ];
 

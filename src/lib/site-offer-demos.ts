@@ -78,7 +78,7 @@ const definitions: DemoDefinition[] = [
         duration: "5 dias e 4 noites",
         departureLocation: "Fortaleza",
         accommodation: "Pousada selecionada com café da manhã",
-        paymentTerms: "Entrada + saldo em até 10x no cartão",
+        paymentTerms: "Entrada + saldo em 10x no cartão",
         itinerary: ["Dia 1: chegada e traslado", "Dia 2: litoral leste", "Dia 3: dia livre", "Dia 4: vila e pôr do sol", "Dia 5: retorno"],
       }),
       packageItem("brisa-porto", "Porto de Galinhas em Família", "12x de R$ 319", "https://samoaresort.com.br/wp-content/uploads/2020/08/portodegalinhas.jpg", {
@@ -137,7 +137,7 @@ const definitions: DemoDefinition[] = [
         travelDates: "Março, abril e maio",
         duration: "7 dias e 6 noites",
         accommodation: "Hotel 4 estrelas no centro",
-        paymentTerms: "Entrada de 20% + até 12x",
+        paymentTerms: "Entrada de 20% + 12x",
         highlights: ["Torre Eiffel", "Cruzeiro pelo Sena", "Montmartre"],
         included: ["Aéreo ida e volta", "Hotel com café", "Transfer", "Passeio panorâmico"],
       }),

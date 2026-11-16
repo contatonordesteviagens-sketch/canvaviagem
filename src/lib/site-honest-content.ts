@@ -74,7 +74,7 @@ const legacyClaims: Record<string, string> = {
   "Acesso a hotéis e experiências que não estão disponíveis para o público geral.": HONEST_DEFAULTS.equipeFeatures[2].desc,
   "Melhor Custo-Benefício": HONEST_DEFAULTS.equipeFeatures[3].title,
   "Nossa rede de parceiros oferece condições especiais que você não encontra em outros lugares.": HONEST_DEFAULTS.equipeFeatures[3].desc,
-  "Sim! Em até 12x no cartão de crédito, sem juros em condições selecionadas.": HONEST_DEFAULTS.faq[0].a,
+  "Sim! Em 12x no cartão de crédito, sem juros em condições selecionadas.": HONEST_DEFAULTS.faq[0].a,
   "Somos uma agência regularizada com CNPJ ativo e parceria direta com operadoras.": HONEST_DEFAULTS.faq[1].a,
   "Como tira dúvidas?": HONEST_DEFAULTS.faq[3].q,
   "Atendimento direto pelo WhatsApp, com resposta em até 1h em horário comercial.": HONEST_DEFAULTS.faq[3].a,

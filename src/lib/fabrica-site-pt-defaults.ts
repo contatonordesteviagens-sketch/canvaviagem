@@ -51,7 +51,7 @@ const ptDefaults: Record<string, string> = {
   "Países Visitados": "Países Atendidos",
   "Satisfacción": "Satisfação",
   "¿Se puede pagar en cuotas?": "Vocês parcelam?",
-  "¡Sí! Hasta 12 cuotas con tarjeta de crédito, sin intereses en condiciones seleccionadas.": "Sim! Em até 12x no cartão de crédito, sem juros em condições selecionadas.",
+  "¡Sí! Hasta 12 cuotas con tarjeta de crédito, sin intereses en condiciones seleccionadas.": "Sim! Em 12x no cartão de crédito, sem juros em condições selecionadas.",
   "¿Es seguro contratar con ustedes?": "É seguro contratar com vocês?",
   "Somos una agencia regulada con registro activo y asociación directa con operadores.": "Somos uma agência regularizada com CNPJ ativo e parceria direta com operadoras.",
   "¿Y si necesito cancelar?": "E se eu precisar cancelar?",
