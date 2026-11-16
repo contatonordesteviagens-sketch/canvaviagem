@@ -10,7 +10,7 @@ import { salvarVideo } from "@/lib/biblioteca-videos";
 import { createPortal } from "react-dom";
 import { MontarPorToque } from "@/components/video/MontarPorToque";
 import { QuadrosDeVideo, baixarVideo } from "@/lib/mp4-quadros";
-import { Check, ChevronRight, Download, Image as ImageIcon, Maximize2, Pencil, Share } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Clapperboard, Download, Image as ImageIcon, Maximize2, Music, Pencil, Share, Shuffle, Stamp, Type } from "lucide-react";
 import { NavegadorInternoAviso } from "@/components/jornada/NavegadorInternoAviso";
 import { MUSICAS, musicaDaVez, prepararMusica, type EscolhaMusica, type FaixaAac } from "@/lib/musica-video";
 import { SeletorMusica } from "@/components/video/SeletorMusica";
@@ -120,6 +120,8 @@ type Dados = {
   parcelas: string;
   entrada: string;
   preco: string;
+  /** texto acima do preço escrito pelo cliente ("a partir de", "10x de"...); vazio = o do tipo de pagamento */
+  precoRotulo?: string;
   precoAntigo: string;
   pessoas: string;
   saida: string;
@@ -257,6 +259,8 @@ function detectarTipo(texto: string): TipoOferta {
 function precoTextos(d: Dados): { topo: string; valor: string; rodape: string } {
   const semPreco = d.pagamento === "free_quote" || !d.preco.trim();
   if (semPreco) return { topo: tx("condições especiais"), valor: tx("Sob consulta"), rodape: tx("peça sua cotação") };
+  const proprio = (d.precoRotulo || "").trim();
+  if (proprio) return { topo: proprio, valor: d.preco, rodape: d.pessoas };
   if (langVideo() === "es") {
     // Espanha: parcelamento não é comum. Só mostra parcelas quando elas vieram (do servidor ou do cliente), sem inventar "10x".
     const n = qtdParcelas(d.parcelas);
@@ -265,7 +269,7 @@ function precoTextos(d: Dados): { topo: string; valor: string; rodape: string } 
       return { topo: (n ? tx("entrada {entrada} + {n} plazos de", { entrada: d.entrada, n }) : tx("entrada {entrada} + resto", { entrada: d.entrada })).replace(/\s+/g, " "), valor: d.preco, rodape: d.pessoas };
     return { topo: tx("a partir de"), valor: d.preco, rodape: d.pessoas };
   }
-  if (d.pagamento === "installments") return { topo: `em até ${d.parcelas || "10x"} de`, valor: d.preco, rodape: d.pessoas };
+  if (d.pagamento === "installments") return { topo: `a partir de ${d.parcelas || "10x"} de`, valor: d.preco, rodape: d.pessoas };
   if (d.pagamento === "down_plus")
     return { topo: `entrada ${d.entrada || ""} + ${d.parcelas || "10x"} de`.replace(/\s+/g, " "), valor: d.preco, rodape: d.pessoas };
   return { topo: tx("a partir de"), valor: d.preco, rodape: d.pessoas };
@@ -2872,6 +2876,15 @@ function linhaPronta(modelo: Modelo, p: Pronto, curto = false): Linha {
   }
   return L;
 }
+/** "Praga, Viena e Budapeste" → ["Praga", "Viena", "Budapeste"] (no máximo 4 lugares). */
+function separarDestinos(texto: string): string[] {
+  return texto
+    .split(/\s*(?:,|;|\/|\+|&|\be\b|\by\b)\s*/i)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2)
+    .slice(0, 4);
+}
+
 /** Os clipes de fundo de um vídeo pronto. A variação troca a categoria das cenas fixas e o clipe de cada categoria. */
 function fundosDoPronto(L: Linha, variacao: number): Midia[] {
   const usados = new Set<string>();
@@ -3702,12 +3715,17 @@ export default function VideoLab() {
   );
 }
 
-export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boolean; lang?: LangVideo }) {
+/** Editor simples aberto pelo Início novo: começa num vídeo pronto (com textos e cenas do modelo escolhido). */
+export type EditorSimples = { modelo: "lista" | "pergunta"; nome?: string; pronto?: Record<string, unknown>; gerarJa?: boolean; aoVoltar: () => void };
+type AbaSimples = "texto" | "cenas" | "musica" | "marca";
+
+export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embutido?: boolean; lang?: LangVideo; simples?: EditorSimples }) {
   // idioma do gerador: vale para a interface e para o texto desenhado no vídeo (precisa vir antes dos estados iniciais)
   setLangVideo(lang);
   const es = lang === "es";
   // em espanhol o rascunho salvo no aparelho é outro (os textos padrão são diferentes)
-  const chaveSalvo = es ? `${CHAVE_SALVO}-es` : CHAVE_SALVO;
+  // o editor simples guarda o rascunho à parte: o que se muda nele não troca os textos do gerador completo
+  const chaveSalvo = (es ? `${CHAVE_SALVO}-es` : CHAVE_SALVO) + (simples ? "-simples" : "");
   const { state: fabrica, isHydrated } = useFabricaContext();
   const { user } = useAuth();
   const { marcar, marcada } = useJornada();
@@ -3751,12 +3769,15 @@ export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boo
     site: "",
     ...(salvo?.dados || {}),
     // textos do vídeo pronto: o que o cliente editou fica; sem edição, vale o padrão do mês (Black Friday só em novembro)
-    pronto: salvo?.dados?.pronto?.editado ? { ...prontoPadrao(), ...salvo.dados.pronto } : prontoPadrao(),
+    pronto: simples ? { ...prontoPadrao(), ...((simples.pronto || {}) as Partial<Pronto>) } : salvo?.dados?.pronto?.editado ? { ...prontoPadrao(), ...salvo.dados.pronto } : prontoPadrao(),
     variacao: proximaVariacao(false),
   }));
   // "Montar vídeo de um pacote" (quiz, áudio, texto, foto) fica fechado: o padrão é o vídeo pronto em 1 clique
   const [modoPacote, setModoPacote] = useState(params.get("gerar") === "1");
   const [personalizando, setPersonalizando] = useState(false);
+  const [abaSimples, setAbaSimples] = useState<AbaSimples>("texto");
+  const [cenaAberta, setCenaAberta] = useState<number | null>(null);
+  const gerouJaRef = useRef(false);
   // música de fundo: rodízio das faixas da casa, uma fixa, a do cliente ou nenhuma
   const [musica, setMusica] = useState<EscolhaMusica>(() => {
     try {
@@ -3787,7 +3808,7 @@ export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boo
     }, 400);
     return () => clearTimeout(t);
   }, [dados, contatos]);
-  const [modelo, setModelo] = useState<Modelo>(params.get("gerar") === "1" ? ORDEM_SUGERIDA[0] : PRONTOS[0]);
+  const [modelo, setModelo] = useState<Modelo>(simples ? simples.modelo : params.get("gerar") === "1" ? ORDEM_SUGERIDA[0] : PRONTOS[0]);
   const modeloRef = useRef<Modelo>(modelo);
   modeloRef.current = modelo;
   // fileira de estilos no celular: o estilo ativo (inclusive quando o gerador troca sozinho) fica à vista
@@ -4224,7 +4245,7 @@ export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boo
         destinoCarregadoRef.current = destino;
         if (destino) {
           try {
-            const achados = (await buscarMidias(destino)).filter((x) => x.tipo === "video");
+            const achados = await videosDosDestinos(destino);
             if (achados.length >= 3) lista = lista.map((x, i) => achados[(i + variacao) % achados.length] || x);
             else setAviso(tx("Achei poucos vídeos de {destino}. Usei as cenas de viagem da casa.", { destino }));
           } catch {
@@ -4250,6 +4271,16 @@ export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boo
     setGravando(false);
     setPausado(false);
     soltarTela();
+  }
+
+  // Pacote com vários lugares ("Praga, Viena e Budapeste"): busca cada um e intercala, para cada cena mostrar uma cidade.
+  async function videosDosDestinos(destino: string): Promise<Midia[]> {
+    const lugares = separarDestinos(destino);
+    const porLugar = await Promise.all(lugares.map((l) => buscarMidias(l).then((m) => m.filter((x) => x.tipo === "video")).catch(() => [] as Midia[])));
+    const juntos: Midia[] = [];
+    for (let i = 0; i < Math.max(0, ...porLugar.map((p) => p.length)); i++)
+      for (const p of porLugar) if (p[i] && !juntos.some((x) => x.url === p[i].url)) juntos.push(p[i]);
+    return juntos;
   }
 
   // Busca avulsa no Pexels (não conta no limite diário).
@@ -4981,6 +5012,215 @@ export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boo
   };
   const botaoIcone = "flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl bg-white/[0.06] text-[11px] font-semibold text-white/80 active:bg-white/[0.12]";
 
+
+  // ——— Editor simples (Início novo): a prévia fica sempre à vista e as opções vêm em abas, uma por vez ———
+  useEffect(() => {
+    if (!simples?.gerarJa || carregando || gerouJaRef.current) return;
+    gerouJaRef.current = true;
+    gerarPronto(modeloRef.current, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [carregando]);
+  if (simples) {
+    const ABAS_SIMPLES: { id: AbaSimples; nome: string; icone: typeof Type }[] = [
+      { id: "texto", nome: tx("Texto"), icone: Type },
+      { id: "cenas", nome: tx("Cenas"), icone: Clapperboard },
+      { id: "musica", nome: tx("Música"), icone: Music },
+      { id: "marca", nome: tx("Sua marca"), icone: Stamp },
+    ];
+    const maxItens = modelo === "lista" ? 7 : 4;
+    const sugestoes = (modelo === "lista"
+      ? ["Cruzeiros", "Lua de mel", "Passagens", "Seguro viagem", "Grupos", "Resorts", "Disney"]
+      : ["Resorts", "Cruzeiros", "Lua de mel", "Em família"]
+    ).map((t) => tx(t)).filter((t) => !listaPronta.some((x) => x.titulo.trim().toLowerCase() === t.toLowerCase()));
+    const somarItem = (titulo: string) => {
+      const livre = CATEGORIAS.find((c) => !listaPronta.some((x) => x.fundo === c.id))?.id || "praia";
+      setPronto({ [campoLista]: [...listaPronta, { titulo, sub: "", fundo: livre }] });
+    };
+    const resultado = !gravando ? resultados[0] : undefined;
+    const podeGerar = !carregando && !gravando && !ocupado && GERA_MP4;
+    return (
+      <div data-editor-simples className="fixed inset-0 z-40 flex flex-col bg-[#0A0A0B] text-white lg:flex-row">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <header className="flex items-center gap-2 px-3 py-2.5">
+            <button type="button" aria-label={tx("Voltar")} onClick={simples.aoVoltar} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 active:bg-white/10"><ArrowLeft className="h-5 w-5" /></button>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[14px] font-extrabold">{simples.nome || MODELOS.find((m) => m.id === modelo)?.nome}</div>
+              <div className="truncate text-[11px] text-white/45">{tx("Vídeo com música · muda o que quiser e baixa")}</div>
+            </div>
+            <button type="button" id="s-gerar" disabled={!podeGerar} onClick={() => gerarPronto(modelo, false)} className="flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 text-[14px] font-black text-black disabled:opacity-60" style={{ background: "#F5F906" }}>
+              <Download className="h-4 w-4" />{gravando ? tx("Gerando…") : tx("Baixar vídeo")}
+            </button>
+          </header>
+          <div className="relative min-h-0 flex-1">
+            <div className="absolute inset-x-3 bottom-2 top-0 flex items-center justify-center">
+              <div className="relative h-full max-w-full" style={{ aspectRatio: "9 / 16" }}>
+                <canvas ref={canvasRef} width={W} height={H} className="block h-full w-full rounded-2xl border border-white/10" />
+                {carregando && !gravando && <span className="absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-black/70 px-3 py-1 text-[11px] font-semibold">{tx("Carregando as cenas…")}</span>}
+                {gravando && (
+                  <div id="s-progresso" className="absolute inset-0 grid place-items-center rounded-2xl bg-black/70 p-4 text-center">
+                    <div>
+                      <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-[#F5F906]" />
+                      <p className="mt-3 text-[14px] font-bold">{status}</p>
+                      <p className="mt-1 text-[11px] text-white/55">{tx("Leva cerca de 1 minuto. Deixe esta tela aberta.")}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 flex-col border-t border-white/10 bg-[#141416] lg:h-full lg:w-[420px] lg:border-l lg:border-t-0">
+          <div role="tablist" className="flex">
+            {ABAS_SIMPLES.map((a) => (
+              <button key={a.id} type="button" role="tab" id={"s-aba-" + a.id} aria-selected={abaSimples === a.id} onClick={() => setAbaSimples(a.id)} className={"flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 border-b-2 text-[11px] font-bold " + (abaSimples === a.id ? "border-[#F5F906] text-white" : "border-transparent text-white/45")}>
+                <a.icone className="h-4 w-4" />{a.nome}
+              </button>
+            ))}
+          </div>
+          <div className={"h-[34dvh] overflow-y-auto p-3 lg:h-auto lg:flex-1 " + (gravando ? "pointer-events-none opacity-50" : "")}>
+            {aviso && <p className="mb-3 rounded-xl border border-amber-400/40 bg-amber-500/10 p-2.5 text-[12px] text-amber-100">{aviso}</p>}
+            {abaSimples === "texto" && (
+              <div className="flex flex-col gap-3">
+                <div>
+                  <p className={rotulo}>{tx("Título do vídeo")}</p>
+                  <div className="grid grid-cols-2 gap-2 lg:grid-cols-3">
+                    <input id="s-titulo" aria-label={tx("Título")} className={campo} maxLength={16} value={pronto.titulo} onChange={(e) => setPronto({ titulo: e.target.value })} />
+                    <input aria-label={tx("Em destaque")} className={campo} maxLength={16} value={pronto.destaque} onChange={(e) => setPronto({ destaque: e.target.value })} />
+                    <input aria-label={tx("Linha de baixo")} className={campo + " col-span-2 lg:col-span-1"} maxLength={22} value={pronto.subtitulo} onChange={(e) => setPronto({ subtitulo: e.target.value })} />
+                  </div>
+                </div>
+                <div>
+                  <p className={rotulo}>{modelo === "lista" ? tx("O que a sua agência vende") : tx("Ofertas do vídeo")}</p>
+                  <div className="flex flex-col gap-2">
+                    {listaPronta.map((it, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <span className="w-6 shrink-0 text-center text-[13px] font-black text-[#F5F906]">{String(i + 1).padStart(2, "0")}</span>
+                        <input aria-label={tx("Título do item {n}", { n: i + 1 })} className={campo} maxLength={modelo === "lista" ? 16 : 14} placeholder={tx("Ex.: Cruzeiros")} value={it.titulo} onChange={(e) => mudarItem(i, { titulo: e.target.value })} />
+                        <input aria-label={tx("Detalhe do item {n}", { n: i + 1 })} className={campo} maxLength={modelo === "lista" ? 24 : 34} placeholder={tx("detalhe")} value={it.sub} onChange={(e) => mudarItem(i, { sub: e.target.value })} />
+                        <button type="button" aria-label={tx("Tirar o item {n}", { n: i + 1 })} onClick={() => tirarItem(i)} className="grid h-11 w-10 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-[18px] text-white/70 active:bg-white/[0.12]">×</button>
+                      </div>
+                    ))}
+                  </div>
+                  {listaPronta.length < maxItens && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {sugestoes.slice(0, 5).map((t) => (
+                        <button key={t} type="button" onClick={() => somarItem(t)} className="min-h-9 rounded-full border border-white/15 px-3 text-[13px] font-semibold text-white/75 active:bg-white/10">+ {t}</button>
+                      ))}
+                      <button type="button" onClick={() => somarItem("")} className="min-h-9 rounded-full border border-dashed border-white/25 px-3 text-[13px] font-semibold text-white/75">{tx("+ Outro")}</button>
+                    </div>
+                  )}
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                  <div>
+                    <label htmlFor="s-selo" className={rotulo}>{tx("Oferta em destaque (só escreva desconto se for verdade)")}</label>
+                    <input id="s-selo" className={campo} maxLength={26} value={pronto.selo} onChange={(e) => setPronto({ selo: e.target.value })} />
+                  </div>
+                  <div>
+                    <label htmlFor="s-fecho" className={rotulo}>{tx("Frase final")}</label>
+                    <input id="s-fecho" className={campo} maxLength={44} value={pronto.fecho} onChange={(e) => setPronto({ fecho: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+            )}
+            {abaSimples === "cenas" && (
+              <div className="flex flex-col gap-3">
+                <button type="button" id="s-trocar-cenas" disabled={carregando} onClick={() => setDados((d) => ({ ...d, variacao: proximaVariacao() }))} className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#F5F906]/50 bg-[#F5F906]/[0.08] text-[14px] font-bold disabled:opacity-60">
+                  <Shuffle className="h-4 w-4 text-[#F5F906]" />{tx("Sortear outras cenas")}
+                </button>
+                <div>
+                  <p className={rotulo}>{tx("Cena de cada parte (toque para trocar)")}</p>
+                  <div className="flex flex-col gap-2">
+                    {listaPronta.map((it, i) => (
+                      <div key={i} className="rounded-xl border border-white/10">
+                        <button type="button" id={"s-cena-" + i} aria-expanded={cenaAberta === i} onClick={() => setCenaAberta(cenaAberta === i ? null : i)} className="flex min-h-14 w-full items-center gap-3 px-2 text-left">
+                          <img src={"/video-fundos/capas/" + it.fundo + "-1.jpg"} alt="" className="h-11 w-8 shrink-0 rounded-md object-cover" />
+                          <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">{it.titulo || tx("Item {n}", { n: i + 1 })}</span>
+                          <span className="shrink-0 text-[12px] text-white/50">{CATEGORIAS.find((c) => c.id === it.fundo)?.nome}</span>
+                          <ChevronRight className={"h-4 w-4 shrink-0 text-white/40 transition-transform " + (cenaAberta === i ? "rotate-90" : "")} />
+                        </button>
+                        {cenaAberta === i && (
+                          <div className="grid grid-cols-5 gap-1.5 p-2 pt-0 lg:grid-cols-4">
+                            {CATEGORIAS.map((c) => (
+                              <button key={c.id} type="button" aria-label={c.nome} aria-pressed={it.fundo === c.id} onClick={() => { mudarItem(i, { fundo: c.id }); setCenaAberta(null); }} className={"overflow-hidden rounded-lg border-2 " + (it.fundo === c.id ? "border-[#F5F906]" : "border-transparent")}>
+                                <img src={"/video-fundos/capas/" + c.id + "-1.jpg"} alt="" loading="lazy" className="aspect-[3/4] w-full object-cover" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="s-destino" className={rotulo}>{tx("Quer cenas de um lugar só? Escreva o destino (opcional)")}</label>
+                  <input id="s-destino" className={campo} maxLength={40} placeholder={tx("Ex.: Maragogi")} value={pronto.destino || ""} onChange={(e) => setPronto({ destino: e.target.value })} />
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  <div>
+                    <p className={rotulo}>{tx("Formato")}</p>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => setFormato("stories")} className={chip(formato === "stories")}>{tx("Reels e Stories")}</button>
+                      <button type="button" onClick={() => setFormato("feed")} className={chip(formato === "feed")}>{tx("Feed 4:5")}</button>
+                    </div>
+                  </div>
+                  <div>
+                    <p className={rotulo}>{tx("Duração")}</p>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => setCurto(false)} className={chip(!curto)}>{tx("Completo")}</button>
+                      <button type="button" onClick={() => setCurto(true)} className={chip(curto)}>{tx("Curto")}</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {abaSimples === "musica" && <SeletorMusica lang={lang} escolha={musica} onEscolha={setMusica} arquivo={musicaArquivo} onArquivo={setMusicaArquivo} desabilitado={gravando} />}
+            {abaSimples === "marca" && (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <label className="flex min-h-16 flex-1 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-white/20 px-3 text-[14px] font-semibold">
+                    {logo ? <img src={logo.src} alt="" className="h-11 w-11 rounded-lg bg-white object-contain p-0.5" /> : <span className="grid h-11 w-11 place-items-center rounded-lg bg-white/[0.06] text-[10px] text-white/50">logo</span>}
+                    {logo ? tx("Trocar a logo") : tx("Enviar a logo")}
+                    <input id="s-logo" type="file" accept="image/*" className="hidden" onChange={(e) => onLogo(e.target.files?.[0])} />
+                  </label>
+                  {logo && <button type="button" onClick={() => setLogo(null)} className="min-h-11 px-2 text-[13px] font-semibold text-white/60">{tx("Tirar")}</button>}
+                </div>
+                <div>
+                  <label htmlFor="s-agencia" className={rotulo}>{tx("Nome da agência")}</label>
+                  <input id="s-agencia" className={campo} placeholder={tx("Ex.: Sol Viagens")} value={agenciaReal(dados)} onChange={(e) => set("agencia", e.target.value)} />
+                </div>
+                <div>
+                  <label htmlFor="s-whats" className={rotulo}>{tx("WhatsApp (aparece no final)")}</label>
+                  <input id="s-whats" className={campo} inputMode="tel" placeholder="(82) 99999-9999" value={whatsReal(dados)} onChange={(e) => set("whatsapp", e.target.value)} />
+                </div>
+                <p className="text-[11px] text-white/40">{tx("A logo, o nome e o WhatsApp aparecem na última cena do vídeo.")}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {resultado && (
+          <div id="s-resultado" className="fixed inset-0 z-50 flex flex-col items-center overflow-y-auto bg-[#0A0A0B] p-4">
+            <p className="mt-1 text-[20px] font-black">{tx("Seu vídeo está pronto")}</p>
+            <p className="text-[12px] text-white/50">{resultado.musica ? "♪ " + resultado.musica + " · " : ""}{tx("ficou guardado em Meus conteúdos")}</p>
+            <video src={resultado.url} controls autoPlay playsInline loop muted={!resultado.musica} className={"mt-3 max-h-[52dvh] rounded-2xl bg-black " + (resultado.formato === "feed" ? "aspect-[4/5]" : "aspect-[9/16]")} />
+            <div className="mt-4 flex w-full max-w-sm flex-col gap-2">
+              <a id="s-baixar" href={resultado.url} download={resultado.nome} className="flex min-h-14 items-center justify-center gap-2 rounded-full text-[16px] font-black text-black" style={{ background: "#F5F906" }}>
+                <Download className="h-5 w-5" />{tx("Baixar vídeo")}
+              </a>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => compartilhar(resultado)} className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/15 text-[14px] font-bold"><Share className="h-4 w-4" />{tx("Enviar")}</button>
+                <button type="button" id="s-legenda" onClick={copiarLegenda} className="min-h-12 rounded-full border border-white/15 text-[14px] font-bold">{legendaCopiada ? tx("Legenda copiada!") : tx("Copiar legenda")}</button>
+              </div>
+              <button type="button" id="s-editar-mais" onClick={() => setResultados([])} className="flex min-h-12 items-center justify-center gap-2 rounded-full text-[14px] font-bold text-white/75"><Pencil className="h-4 w-4" />{tx("Mudar mais alguma coisa")}</button>
+              <button type="button" onClick={simples.aoVoltar} className="min-h-11 text-[13px] font-semibold text-white/50">{tx("Voltar ao Início")}</button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={embutido ? "text-white" : "min-h-screen bg-[#0A0A0B] p-4 text-white"}>
       <style>{`@keyframes cvScan { 0% { top: 0% } 50% { top: 97% } 100% { top: 0% } } .cv-scan { animation: cvScan 1.6s ease-in-out infinite; }`}</style>
@@ -5034,6 +5274,15 @@ export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boo
             </button>
             {personalizando && ehPronto(modelo) && (
               <div id="personalizar" className="mt-3 flex flex-col gap-4">
+                <div className="rounded-xl border border-[#F5F906]/40 bg-[#F5F906]/[0.06] p-3">
+                  <label htmlFor="p-destino" className="mb-1 block text-[13px] font-bold">{tx("Vídeo de um destino ou pacote? Escreva os lugares")}</label>
+                  <input id="p-destino" className={campo} maxLength={60} placeholder={tx("Ex.: Praga, Viena e Budapeste")} value={pronto.destino || ""} onChange={(e) => setPronto({ destino: e.target.value })} />
+                  <p className="mt-1.5 text-[11px] leading-snug text-white/55">
+                    {(pronto.destino || "").trim()
+                      ? tx("Todas as cenas vão mostrar {lugares}.", { lugares: separarDestinos(pronto.destino || "").join(", ") })
+                      : tx("Vazio = cenas de viagem variadas (praia, resort, avião...).")}
+                  </p>
+                </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <label htmlFor="p-agencia" className={rotulo}>{tx("Nome da agência")}</label>
@@ -5097,11 +5346,17 @@ export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boo
                         </div>
                         <div className="mt-2 grid grid-cols-[1fr_auto] gap-2 pl-8">
                           <input aria-label={tx("Detalhe do item {n}", { n: i + 1 })} className={campo} maxLength={modelo === "lista" ? 24 : 34} placeholder={modelo === "lista" ? tx("Ex.: pelo Brasil e pelo mundo") : tx("Ex.: naquele hotel dos sonhos")} value={it.sub} onChange={(e) => mudarItem(i, { sub: e.target.value })} />
-                          <select aria-label={tx("Cena de fundo do item {n}", { n: i + 1 })} className={campo + " w-auto max-w-[9.5rem]"} value={it.fundo} onChange={(e) => mudarItem(i, { fundo: e.target.value as CategoriaFundo })}>
-                            {CATEGORIAS.map((c) => (
-                              <option key={c.id} value={c.id}>{c.nome}</option>
-                            ))}
-                          </select>
+                          {(pronto.destino || "").trim() ? (
+                            <span className="grid max-w-[9.5rem] place-items-center rounded-xl bg-white/[0.06] px-2 text-center text-[11px] font-semibold leading-tight text-white/70">
+                              {tx("Cena do destino")}
+                            </span>
+                          ) : (
+                            <select aria-label={tx("Cena de fundo do item {n}", { n: i + 1 })} className={campo + " w-auto max-w-[9.5rem]"} value={it.fundo} onChange={(e) => mudarItem(i, { fundo: e.target.value as CategoriaFundo })}>
+                              {CATEGORIAS.map((c) => (
+                                <option key={c.id} value={c.id}>{c.nome}</option>
+                              ))}
+                            </select>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -5112,11 +5367,7 @@ export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boo
                     </button>
                   )}
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="p-destino" className={rotulo}>{tx("Destino das cenas (opcional)")}</label>
-                    <input id="p-destino" className={campo} maxLength={40} placeholder={tx("Ex.: Maragogi. Vazio = cenas variadas")} value={pronto.destino || ""} onChange={(e) => setPronto({ destino: e.target.value })} />
-                  </div>
+                <div>
                   <div>
                     <label htmlFor="p-fecho" className={rotulo}>{tx("Frase final")}</label>
                     <input id="p-fecho" className={campo} maxLength={44} value={pronto.fecho} onChange={(e) => setPronto({ fecho: e.target.value })} />
@@ -5419,6 +5670,12 @@ export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boo
                   </div>
                   {dados.pagamento !== "free_quote" && (
                     <div>
+                      <label className={rotulo}>{tx("Texto acima do preço (opcional)")}</label>
+                      <input id="campo-precoRotulo" className={campo} maxLength={32} placeholder={precoTextos({ ...dados, precoRotulo: "" }).topo} value={dados.precoRotulo || ""} onChange={(e) => set("precoRotulo", e.target.value)} />
+                    </div>
+                  )}
+                  {dados.pagamento !== "free_quote" && (
+                    <div>
                       <label className={rotulo}>{tx("Preço antigo, riscado (opcional)")}</label>
                       <input id="campo-precoAntigo" className={campo} placeholder={tx("Ex.: R$ 4.990")} value={dados.precoAntigo} onChange={(e) => set("precoAntigo", e.target.value)} />
                     </div>
@@ -5538,14 +5795,23 @@ export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boo
             <OQueFazerAgora lang={lang} momento="video" feito={marcada("postar_video")} onConfirmar={() => { marcar("postar_video"); setMostrarOqueFazer(false); }} />
           )}
 
+          {!editando && (ehPronto(modelo) || modoPacote || resultados.length > 0) && (
+            <button type="button" id="abrir-editor" disabled={gravando} onClick={() => setEditando(true)} className="flex min-h-14 w-full items-center justify-between gap-3 rounded-2xl border border-[#F5F906]/50 bg-[#F5F906]/[0.06] px-4 text-left active:bg-[#F5F906]/[0.12]">
+              <span>
+                <span className="flex items-center gap-2 text-[15px] font-bold"><Pencil className="h-4 w-4 text-[#F5F906]" />{tx("Editar cada cena do vídeo")}</span>
+                <span className="block text-[12px] text-white/55">{tx("Mude os textos, o preço e o vídeo de fundo de cada cena.")}</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-white/40" />
+            </button>
+          )}
           {editando && (
-            <section id="editor" className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+            <section id="editor" className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-3" style={{ scrollMarginTop: 80 }}>
               <div className="flex items-center justify-between">
-                <h2 className="text-[15px] font-bold">{tx("Editar vídeo")}</h2>
-                <button className="min-h-10 px-2 text-[14px] font-semibold text-[#F5F906]" onClick={() => { setEditando(false); setTelaAberta(null); }}>{tx("Pronto")}</button>
+                <h2 className="text-[15px] font-bold">{tx("Editar cada cena do vídeo")}</h2>
+                <button className="min-h-11 px-2 text-[14px] font-semibold text-[#F5F906]" onClick={() => { setEditando(false); setTelaAberta(null); }}>{tx("Fechar")}</button>
               </div>
               <div className="rounded-xl border border-white/10 p-3">{visualRapido}</div>
-              <p className="text-[12px] text-white/50">{tx("Troque o fundo de uma tela ou mude o texto. Depois gere de novo.")}</p>
+              <p className="text-[12px] text-white/50">{tx("Mude o texto, o preço ou o fundo de qualquer cena. A prévia muda na hora; depois toque em gerar de novo.")}</p>
               {linhaPrevia.telas.map((tela, i) => {
                 const m = fundos[i % Math.max(fundos.length, 1)];
                 const nDest = linhaPrevia.telas.slice(0, i).filter((x) => x.tipo === "destaque").length;
@@ -5557,28 +5823,76 @@ export function VideoLabTela({ embutido = false, lang = "pt" }: { embutido?: boo
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-[13px] font-semibold">{i + 1}. {tela.nome} <span className="text-[11px] text-white/40">({tela.dur}s)</span></p>
-                        {tela.tipo === "abertura" && <input className={campo + " mt-1"} value={dados.chamada} onChange={(e) => set("chamada", e.target.value)} />}
-                        {tela.tipo === "destaque" && (
-                          <input
-                            className={campo + " mt-1"}
-                            value={dados.destaques[nDest] || ""}
-                            placeholder={tx("Frase desta tela")}
-                            onChange={(e) => {
-                              const ds = [...dados.destaques];
-                              ds[nDest] = e.target.value;
-                              set("destaques", ds);
-                            }}
-                          />
+                        {tela.tipo === "livre" && (
+                          <button type="button" className="min-h-8 text-left text-[12px] font-semibold text-[#F5F906] underline" onClick={() => { setPersonalizando(true); setTimeout(() => document.getElementById("personalizar")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80); }}>{tx("Mudar o texto desta cena")}</button>
                         )}
-                        {tela.tipo === "preco" && <input className={campo + " mt-1"} value={dados.preco} onChange={(e) => set("preco", e.target.value)} />}
-                        {tela.tipo === "inclusos" && <p className="text-[11px] text-white/40">{tx("Os itens ficam em Informações.")}</p>}
-                        {tela.tipo === "contato" && <p className="text-[11px] text-white/40">{tx("Os contatos ficam em Informações.")}</p>}
-                        {tela.tipo === "livre" && <p className="text-[11px] text-white/40">{tx("O texto fica em \"Personalizar este vídeo\".")}</p>}
                       </div>
-                      <button id={`trocar-${i}`} onClick={() => setTelaAberta(telaAberta === i ? null : i)} className="min-h-10 rounded-lg bg-white/[0.08] px-3 text-[12px] font-bold">
+                      <button id={`trocar-${i}`} onClick={() => setTelaAberta(telaAberta === i ? null : i)} className="min-h-11 rounded-lg bg-white/[0.08] px-3 text-[12px] font-bold">
                         {tx("Trocar fundo")}
                       </button>
                     </div>
+                    {tela.tipo === "abertura" && (
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                        <div>
+                          <label className={rotulo}>{tx("Destino")}</label>
+                          <input id="cena-destino" className={campo} value={dados.destino} onChange={(e) => set("destino", e.target.value)} />
+                        </div>
+                        <div>
+                          <label className={rotulo}>{tx("Frase de abertura")}</label>
+                          <input id="cena-chamada" className={campo} value={dados.chamada} onChange={(e) => set("chamada", e.target.value)} />
+                        </div>
+                      </div>
+                    )}
+                    {tela.tipo === "destaque" && (
+                      <input
+                        className={campo + " mt-2"}
+                        value={dados.destaques[nDest] || ""}
+                        placeholder={tx("Frase desta tela")}
+                        onChange={(e) => {
+                          const ds = [...dados.destaques];
+                          ds[nDest] = e.target.value;
+                          set("destaques", ds);
+                        }}
+                      />
+                    )}
+                    {tela.tipo === "preco" && (
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        <div>
+                          <label className={rotulo}>{tx("Texto acima do preço")}</label>
+                          <input id="cena-precoRotulo" className={campo} maxLength={32} placeholder={precoTextos({ ...dados, precoRotulo: "" }).topo} value={dados.precoRotulo || ""} onChange={(e) => set("precoRotulo", e.target.value)} />
+                        </div>
+                        <div>
+                          <label className={rotulo}>{tx("Preço")}</label>
+                          <input id="cena-preco" className={campo} placeholder={tx("Ex.: R$ 1.990")} value={dados.preco} onChange={(e) => setDados((d) => ({ ...d, preco: e.target.value, pagamento: d.pagamento === "free_quote" && e.target.value.trim() ? "cash" : d.pagamento }))} />
+                        </div>
+                        <div>
+                          <label className={rotulo}>{tx("Texto abaixo do preço")}</label>
+                          <input id="cena-pessoas" className={campo} placeholder={tx("por pessoa")} value={dados.pessoas} onChange={(e) => set("pessoas", e.target.value)} />
+                        </div>
+                        <div>
+                          <label className={rotulo}>{tx("Preço antigo, riscado (opcional)")}</label>
+                          <input id="cena-precoAntigo" className={campo} placeholder={tx("Ex.: R$ 4.990")} value={dados.precoAntigo} onChange={(e) => set("precoAntigo", e.target.value)} />
+                        </div>
+                      </div>
+                    )}
+                    {tela.tipo === "inclusos" && (
+                      <div className="mt-2">
+                        <label className={rotulo}>{tx("O que está incluso (um por linha, até 4)")}</label>
+                        <textarea id="cena-itens" className={campo} rows={4} value={dados.itens.join("\n")} onChange={(e) => set("itens", e.target.value.split("\n"))} />
+                      </div>
+                    )}
+                    {tela.tipo === "contato" && (
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                        <div>
+                          <label className={rotulo}>{tx("Frase final")}</label>
+                          <input id="cena-cta" className={campo} maxLength={32} placeholder={tx("Ex.: Garanta sua vaga")} value={dados.ctaFinal || ""} onChange={(e) => set("ctaFinal", e.target.value)} />
+                        </div>
+                        <div>
+                          <label className={rotulo}>WhatsApp</label>
+                          <input id="cena-whats" className={campo} inputMode="tel" value={dados.whatsapp} onChange={(e) => set("whatsapp", e.target.value)} />
+                        </div>
+                      </div>
+                    )}
                     {telaAberta === i && (
                       <div className="mt-2 flex flex-col gap-2">
                         <div className="flex gap-2">
