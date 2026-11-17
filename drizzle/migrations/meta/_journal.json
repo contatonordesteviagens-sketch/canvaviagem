@@ -71,6 +71,13 @@
       "when": 1794761988957,
       "tag": "0009_pix_charges_meta_match",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794893362552,
+      "tag": "0010_restrict_calendar_and_site_asset_storage",
+      "breakpoints": true
     }
   ]
 }
