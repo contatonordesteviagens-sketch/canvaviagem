@@ -119,7 +119,8 @@ serve(async (req) => {
       || req.headers.get("x-real-ip")
       || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       || "unknown";
-    const guestKey = `guest:${forwardedIp}:${(req.headers.get("user-agent") || "unknown").slice(0, 80)}`;
+    // Visitante conta só pelo IP (trocar o navegador/user-agent não zera o limite).
+    const guestKey = `guest:${forwardedIp}`;
     const requesterKey = access.ok ? `user:${access.userId}` : guestKey;
     // Guests may search while building their first preview, but at a much
     // tighter rate than authenticated accounts to protect provider credits.
@@ -144,7 +145,8 @@ serve(async (req) => {
     const body = await req.json();
     const query = typeof body?.query === "string" ? body.query.trim().slice(0, 120) : "";
     const requestedEngine = typeof body?.engine === "string" ? body.engine.toLowerCase() : "pexels";
-    const engine = requestedEngine === "google" ? "google" : "pexels";
+    // Google é pago por consulta: só para quem entrou na conta.
+    const engine = requestedEngine === "google" && access.ok ? "google" : "pexels";
     const allowFallback = body.fallback !== false;
     const orientation: PhotoOrientation =
       body.orientation === "portrait" || body.orientation === "square"

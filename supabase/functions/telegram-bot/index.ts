@@ -22,8 +22,15 @@ const AGENDA = [
     { num: 6, titulo: "Templates Canva para Agência de Viagem", slug: "templates-canva-agencia-viagem", status: "⏳ Pendente" },
 ]
 
+// SEGURANÇA (17/11/2026): quando TELEGRAM_WEBHOOK_SECRET estiver configurado (e o mesmo valor
+// for passado no setWebhook como secret_token), só o Telegram de verdade consegue chamar este bot.
+const WEBHOOK_SECRET = Deno.env.get("TELEGRAM_WEBHOOK_SECRET") ?? ""
+
 serve(async (req) => {
     try {
+        if (WEBHOOK_SECRET && req.headers.get("x-telegram-bot-api-secret-token") !== WEBHOOK_SECRET) {
+            return new Response("forbidden", { status: 403 })
+        }
         const body = await req.json()
         const message = body?.message
         if (!message) return new Response("OK")

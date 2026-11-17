@@ -131,10 +131,10 @@ const PosPagamento = () => {
       return;
     }
 
-    // Apenas mostrar confirmação na página (sem redirecionar para WhatsApp)
+    // Por segurança o link vai só para o e-mail do comprador (nunca volta para a tela).
     setMagicLinkSent(true);
-    setSentVia('whatsapp');
-    toast.success("Link de acesso gerado! Verifique seu WhatsApp.");
+    setSentVia('email');
+    toast.success("Link de acesso enviado! Verifique seu e-mail.");
     } catch (error) {
       console.error("Error generating WhatsApp link:", error);
       toast.error("Erro ao processar. Tente por email.");

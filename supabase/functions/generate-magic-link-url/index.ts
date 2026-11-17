@@ -1,84 +1,51 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { canonicalSiteUrl } from "../_shared/siteUrl.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-interface GenerateLinkRequest {
-  email: string;
-  name?: string;
-  phone?: string;
-}
-
+// SEGURANÇA (17/11/2026): esta função devolvia o link de acesso na resposta para
+// QUALQUER e-mail, sem login. Quem chamasse com o e-mail de um cliente (ou do admin)
+// entrava na conta dele. Agora ela só repassa para send-magic-link, que manda o link
+// para a caixa de e-mail do dono (com limite de 3 pedidos a cada 15 minutos).
+// O link NUNCA volta na resposta.
 serve(async (req) => {
-  console.log("[GENERATE-MAGIC-LINK-URL] Function started");
-
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+
   try {
-    const { email, name, phone }: GenerateLinkRequest = await req.json();
-    console.log("[GENERATE-MAGIC-LINK-URL] Request received for email:", email?.substring(0, 3) + "***");
-
-    // Validate email
-    if (!email || !email.includes("@")) {
-      console.log("[GENERATE-MAGIC-LINK-URL] Invalid email provided");
-      return new Response(
-        JSON.stringify({ error: "Email é obrigatório e deve ser válido" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const { email, name, phone } = await req.json();
+    if (!email || typeof email !== "string" || !email.includes("@") || email.length > 254) {
+      return json({ error: "Email é obrigatório e deve ser válido" }, 400);
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
-    // Generate unique token
-    const token = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hour expiry
-    const cleanPhone = phone ? phone.replace(/\D/g, '') : null;
-
-    console.log("[GENERATE-MAGIC-LINK-URL] Inserting token into database");
-
-    const { error: insertError } = await supabaseAdmin
-      .from("magic_link_tokens")
-      .insert({
+    const resposta = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-magic-link`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+      },
+      body: JSON.stringify({
         email: email.toLowerCase().trim(),
-        token,
-        expires_at: expiresAt.toISOString(),
-        name: name?.trim() || null,
-        phone: cleanPhone,
-      });
-
-    if (insertError) {
-      console.error("[GENERATE-MAGIC-LINK-URL] Insert error:", insertError);
-      return new Response(
-        JSON.stringify({ error: "Erro ao gerar link de acesso" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+        name: typeof name === "string" ? name.slice(0, 120) : undefined,
+        phone: typeof phone === "string" ? phone.slice(0, 30) : undefined,
+      }),
+    });
+    const dados = await resposta.json().catch(() => ({}));
+    if (!resposta.ok) {
+      return json({ error: (dados as { error?: string }).error || "Erro ao enviar link de acesso" }, resposta.status);
     }
-
-    // Build magic link URL
-    const baseUrl = canonicalSiteUrl();
-    const magicLink = `${baseUrl}/auth/verify?token=${token}`;
-
-    console.log("[GENERATE-MAGIC-LINK-URL] Magic link generated successfully");
-
-    return new Response(
-      JSON.stringify({ success: true, magicLink }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return json({ success: true, sentVia: "email" });
   } catch (error) {
     console.error("[GENERATE-MAGIC-LINK-URL] Error:", error);
-    return new Response(
-      JSON.stringify({ error: "Erro interno ao processar solicitação" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return json({ error: "Erro interno ao processar solicitação" }, 500);
   }
 });

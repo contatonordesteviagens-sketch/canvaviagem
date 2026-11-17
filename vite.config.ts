@@ -16,7 +16,8 @@ export default defineConfig(({ mode }) => ({
         rewrite: (path) => path.replace(/^\/api\/abacate/, ''),
         configure: (proxy, options) => {
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            proxyReq.setHeader('Authorization', 'Bearer abc_prod_6jPB0Cn3XxNpwqz1mxEDwG1a');
+            // Chave fora do código (17/11/2026): defina ABACATE_API_KEY no ambiente local se precisar.
+            if (process.env.ABACATE_API_KEY) proxyReq.setHeader('Authorization', `Bearer ${process.env.ABACATE_API_KEY}`);
           });
         }
       }

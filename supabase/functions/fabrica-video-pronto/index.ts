@@ -205,7 +205,11 @@ serve(async (req) => {
 
   let m: typeof MSG.pt = MSG.pt;
   try {
-    const semLogin = req.headers.get("x-video-lab") === "sem-login";
+    // SEGURANÇA (17/11/2026): o teste sem login chamava IA paga para qualquer pessoa na internet.
+    // Agora só funciona se o segredo VIDEO_PRONTO_SEM_LOGIN = "sim" estiver ligado no Supabase
+    // (desligado em produção). Para testar no laboratório local, entre na conta.
+    const semLogin = req.headers.get("x-video-lab") === "sem-login"
+      && Deno.env.get("VIDEO_PRONTO_SEM_LOGIN") === "sim";
     // o corpo é lido uma vez só, antes de tudo, para saber o idioma das mensagens
     const body = await req.json().catch(() => ({}));
     const es = body?.lang === "es";
