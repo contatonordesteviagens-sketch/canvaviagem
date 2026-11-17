@@ -131,14 +131,42 @@ function zapLegivel(numero: string, ddi = "55"): string {
   return `+${ddi} ${d}`;
 }
 
-/** Logo sobre uma placa branca arredondada: aparece em cima de qualquer vídeo (logo escura no mar sumia). */
-async function logoNaPlaca(img: HTMLImageElement): Promise<string> {
-  const lw = 520, lh = Math.round(lw * (img.naturalHeight / Math.max(1, img.naturalWidth)));
-  const alt = Math.min(lh, 300), larg = Math.round(lw * (alt / Math.max(1, lh)));
-  const pad = 36;
+/** Formato da logo no vídeo: placa branca (padrão), redonda, quadrada ou do jeito que veio (sem fundo). */
+export type FormatoLogo = "placa" | "redonda" | "quadrada" | "original";
+export const FORMATOS_LOGO: { id: FormatoLogo; nome: string }[] = [
+  { id: "placa", nome: "Placa" }, { id: "redonda", nome: "Redonda" }, { id: "quadrada", nome: "Quadrada" }, { id: "original", nome: "Sem fundo" },
+];
+export const ONDE_LOGO: { id: "todas" | "inicio-fim" | "fim" | "nenhuma"; nome: string }[] = [
+  { id: "todas", nome: "Em todas as cenas" }, { id: "inicio-fim", nome: "Início e fim" }, { id: "fim", nome: "Só no fim" }, { id: "nenhuma", nome: "Sem logo" },
+];
+
+/** Logo sobre uma placa branca: aparece em cima de qualquer vídeo (logo escura no mar sumia). */
+async function logoNaPlaca(img: HTMLImageElement, formato: FormatoLogo = "placa"): Promise<string> {
+  const nw = Math.max(1, img.naturalWidth), nh = Math.max(1, img.naturalHeight);
   const c = document.createElement("canvas");
-  c.width = larg + pad * 2; c.height = alt + pad * 2;
   const g = c.getContext("2d")!;
+  if (formato === "redonda" || formato === "quadrada") {
+    // a logo inteira cabe dentro do círculo (ou do quadrado), sem cortar
+    const L = 600;
+    c.width = L; c.height = L;
+    g.fillStyle = "rgba(255,255,255,0.96)";
+    g.beginPath();
+    if (formato === "redonda") g.arc(L / 2, L / 2, L / 2, 0, Math.PI * 2); else g.roundRect(0, 0, L, L, 64);
+    g.fill();
+    const cabe = formato === "redonda" ? L * 0.66 : L * 0.8;
+    const k = Math.min(cabe / nw, cabe / nh);
+    g.drawImage(img, (L - nw * k) / 2, (L - nh * k) / 2, nw * k, nh * k);
+    return c.toDataURL("image/png");
+  }
+  const lw = 520, lh = Math.round(lw * (nh / nw));
+  const alt = Math.min(lh, 300), larg = Math.round(lw * (alt / Math.max(1, lh)));
+  if (formato === "original") {
+    c.width = larg; c.height = alt;
+    g.drawImage(img, 0, 0, larg, alt);
+    return c.toDataURL("image/png");
+  }
+  const pad = 36;
+  c.width = larg + pad * 2; c.height = alt + pad * 2;
   g.fillStyle = "rgba(255,255,255,0.94)";
   g.beginPath(); g.roundRect(0, 0, c.width, c.height, Math.min(48, c.height / 2)); g.fill();
   g.drawImage(img, pad, pad, larg, alt);
@@ -245,18 +273,25 @@ function animacoes(x: Extra[]): Record<string, AnimItem> {
  * As páginas (cenas) de um vídeo pronto. Cada uma tem o clipe, o tempo, a transição e os textos como itens.
  * `variacao` troca a frase de abertura do modelo "pergunta".
  */
+/** Logo grande da última cena (no lugar de onde fica no fecho). */
+export function logoGrande(placa: { src: string; nw: number; r: number }, y: number, id = novoId()): Extra {
+  const w = Math.round(Math.min(340, (placa.r > 0.9 ? 260 : 200) / Math.max(0.3, placa.r)));
+  return { id, tipo: "imagem", src: placa.src, base: placa.src, nw: placa.nw, w, r: placa.r, x: W / 2, y: Math.round(y), logo: true };
+}
+
 /** A logo na placa branca, pronta para entrar numa cena (null se a imagem não abrir). */
-export async function placaDaLogo(logo: string): Promise<{ src: string; nw: number; r: number } | null> {
+export async function placaDaLogo(logo: string, formato: FormatoLogo = "placa"): Promise<{ src: string; nw: number; r: number } | null> {
   try {
     const src = logo.startsWith("data:") || logo.startsWith("http") || logo.startsWith("blob:") ? logo : `data:image/png;base64,${logo}`;
-    const img = await carregarImagem(await logoNaPlaca(await carregarImagem(src)));
+    const img = await carregarImagem(await logoNaPlaca(await carregarImagem(src), formato));
     return { src: img.src, nw: img.naturalWidth, r: img.naturalHeight / Math.max(1, img.naturalWidth) };
   } catch { return null; }
 }
 
 /** Logo pequena no alto da cena: dentro do recorte 4:5 do feed (285 a 1635) e abaixo do nome do perfil no Reels. */
 export function logoPequena(placa: { src: string; nw: number; r: number }, id = novoId()): Extra {
-  const w = Math.round(Math.min(230, 96 / Math.max(0.25, placa.r)));
+  // redonda e quadrada ficam um pouco maiores (a logo fica dentro, menor)
+  const w = Math.round(Math.min(230, (placa.r > 0.9 ? 150 : 96) / Math.max(0.25, placa.r)));
   return { id, tipo: "imagem", src: placa.src, base: placa.src, nw: placa.nw, w, r: placa.r, x: W / 2, y: Math.round(320 + (w * placa.r) / 2), logo: true };
 }
 

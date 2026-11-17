@@ -5,7 +5,7 @@
 export type Idioma = "pt-BR" | "es-ES";
 export type Tom = "alegre" | "normal" | "calmo";
 export type Voz = { id: string; nome: string; genero: "F" | "M"; idioma: Idioma; jeito: string };
-export type Narracao = { ligada: boolean; voz: string; vel: number; tom: Tom; legendas: boolean; /** texto que a pessoa lê ao gravar (sem valor = texto das cenas) */ roteiro?: string; /** aba aberta e voz de IA escolhida */ aba?: "ia" | "propria"; vozIA?: string };
+export type Narracao = { ligada: boolean; voz: string; vel: number; tom: Tom; legendas: boolean; /** texto que a pessoa lê ao gravar (sem valor = texto das cenas) */ roteiro?: string; /** aba aberta e voz de IA escolhida */ aba?: "ia" | "propria"; vozIA?: string; /** volume da música (1 = 100%) */ volMusica?: number };
 
 /** 8 vozes neurais: 2 femininas e 2 masculinas em cada idioma */
 export const VOZES: Voz[] = [
@@ -19,7 +19,7 @@ export const VOZES: Voz[] = [
   { id: "es-ES-ArnauNeural", nome: "Arnau", genero: "M", idioma: "es-ES", jeito: "Calmo (Espanha)" },
 ];
 export const vozDe = (id: string | undefined) => VOZES.find((v) => v.id === id) || VOZES[0];
-export const NARRACAO_PADRAO: Narracao = { ligada: false, voz: VOZES[0].id, vel: 1.1, tom: "alegre", legendas: true };
+export const NARRACAO_PADRAO: Narracao = { ligada: false, voz: VOZES[0].id, vel: 1.1, tom: "alegre", legendas: false };
 /** O tom muda a altura e o ritmo da voz (funciona em todas as vozes). */
 export const TONS: Record<Tom, { nome: string; pitch: string; ritmo: number }> = {
   alegre: { nome: "Alegre", pitch: "+6%", ritmo: 1.04 },
@@ -138,12 +138,20 @@ const limpo = (s: string) => s.replace(/\s+/g, " ").trim();
 /** Uma frase por cena, feita com o que aparece na tela (o que é falado bate com o que é mostrado). */
 export function roteiroDasCenas(cenas: TextosCena[], l: Idioma, agencia = ""): string[] {
   const pt = l === "pt-BR";
+  // o que já foi falado numa cena não se repete nas outras (ex.: a última cena repete o título do vídeo)
+  // (só trechos de 2 palavras ou mais: palavra solta como "Voo" pode voltar numa lista)
+  let dito = " ";
+  const chave = (s: string) => s.toLowerCase().replace(/[^a-zà-ÿ0-9]+/g, " ").trim();
   return cenas.map((c, i) => {
     const ultima = i === cenas.length - 1 && cenas.length > 1;
     // texto todo em maiúsculas vira normal (o roteiro é para ler e editar); linhas que continuam a frase se juntam
     // fora: @perfil, telefone e números de enfeite ("01", "#2", "3.")
     const soltos = c.soltos.map((t) => limpo(t.replace(/\s*[·•|]\s*/g, ", "))).filter((t) => t && !/^@|^\(?\d{2}\)?\s?\d{4,5}|^[#nº]?\d{1,2}[.)]?$/i.test(t))
-      .map((t) => (t === t.toUpperCase() && /[A-ZÀ-Ý]{3}/.test(t) ? t.charAt(0) + t.slice(1).toLowerCase() : t));
+      .map((t) => (t === t.toUpperCase() && /[A-ZÀ-Ý]{3}/.test(t) ? t.charAt(0) + t.slice(1).toLowerCase() : t))
+      .map((t) => t.split(/,\s*/).filter((p) => { const k = chave(p); return !!k && !(k.includes(" ") && dito.includes(` ${k} `)); }).join(", ") + (/,$/.test(t) ? "," : ""))
+      .filter((t) => t !== ",")
+      .filter(Boolean);
+    dito += soltos.map(chave).join(" ") + " ";
     if (c.livre) {
       // junta sem ponto quando a linha seguinte continua a frase (começa minúscula ou a anterior termina em "em", "de", "para"...)
       const continua = (acc: string, x: string) => /^[a-zà-ý]/.test(x) || /^(e|y|com|con|para|por|de|da|do)\b/i.test(x) || /(?:^|\s)(em|en|de|da|do|para|com|con|no|na|a|o|e|y|por)$/i.test(acc);
@@ -154,13 +162,22 @@ export function roteiroDasCenas(cenas: TextosCena[], l: Idioma, agencia = ""): s
       let t = soltos.reduce((acc, x, k) => {
         if (!acc) return x;
         const fim = ultimaFrase(acc);
-        if (palavras(fim) === 1 && !/[,.!?:]$/.test(acc) && /^[A-ZÀ-Ý][a-zà-ý]+\s+\S/.test(x)) return `${acc} ${x}`;
+        const minuscula = (s: string) => (/^[A-ZÀ-Ý](?![A-ZÀ-Ý])/.test(s) ? s.charAt(0).toLowerCase() + s.slice(1) : s);
+        // "Você escolhe o destino," + "A gente monta o resto" vira uma frase só
+        if (/,$/.test(acc)) return `${acc} ${minuscula(x)}`;
+        // "Pacote" + "Personalizado" (duas palavras soltas) vira "Pacote personalizado"
+        if (palavras(fim) <= 2 && !/[,.!?:]$/.test(acc) && /^[A-ZÀ-Ý][a-zà-ý]+$/.test(x)) return `${acc} ${minuscula(x)}`;
+        if (palavras(fim) === 1 && !/[,.!?:]$/.test(acc) && /^[A-ZÀ-Ý][a-zà-ý]+\s+\S/.test(x)) return `${acc} ${/^(e|y|com|con|para|por|de|da|do|dos|das|no|na)\s/i.test(x) ? minuscula(x) : x}`;
+        // "É só escolher" + "O seu destino" vira "É só escolher o seu destino"
+        if (palavras(fim) <= 4 && !/[,.!?:]$/.test(acc) && /^(o|a|os|as)\s+(seu|sua|seus|suas)\s/i.test(x)) return `${acc} ${minuscula(x)}`;
         if (palavras(fim) <= 2 && !/[,.!?:]$/.test(acc) && /^(a|o|as|os|um|uma|aquele|aquela|aqueles|aquelas|seu|sua|el|la|los|las|tu)\s/i.test(x) && !/^[A-ZÀ-Ý]{2}/.test(x))
           return `${acc}, ${x.charAt(0).toLowerCase() + x.slice(1)}`;
         return (i === 0 && k === 1) || continua(acc, x) ? `${acc} ${/^[A-ZÀ-Ý](?![A-ZÀ-Ý])/.test(x) ? x.charAt(0).toLowerCase() + x.slice(1) : x}` : `${acc}. ${x}`;
       }, "").replace(/\.\s*\./g, ".");
       if (!t && i === 0 && c.destino) t = c.destino;
-      if (ultima) t = t ? `${t}. ${pt ? "Chame no WhatsApp" : "Escríbenos por WhatsApp"}${agencia ? (pt ? " da " : " de ") + agencia : ""}.` : (pt ? "Chame no WhatsApp e reserve." : "Escríbenos por WhatsApp y reserva.");
+      // se a cena já fala do WhatsApp, não repete o convite
+      if (ultima && /whats/i.test(t)) { const sem = t.replace(/[.!?]+$/, ""); t = `${sem}${agencia && /whatsapp$/i.test(sem) ? (pt ? " da " : " de ") + agencia : ""}.`; }
+      else if (ultima) t = t ? `${t}. ${pt ? "Chame no WhatsApp" : "Escríbenos por WhatsApp"}${agencia ? (pt ? " da " : " de ") + agencia : ""}.` : (pt ? "Chame no WhatsApp e reserve." : "Escríbenos por WhatsApp y reserva.");
       return limpo(t);
     }
     const nome = limpo(c.titulo || (c.destino ? (pt ? "Pacote " : "Paquete ") + c.destino : ""));

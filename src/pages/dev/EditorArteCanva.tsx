@@ -5,16 +5,21 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Check, Copy, Download, Image as ImageIcon, LayoutGrid, Minus, Palette, Pencil, Plus, Redo2,
   Bold, Briefcase, Italic, Group, Ungroup, BoxSelect, Settings2, Shapes, Smartphone, Tag, Trash2, Type, Undo2, X, ListChecks,
-  AlignLeft, AlignCenter, AlignRight, Sparkles, Move, Droplet, Crop, SlidersHorizontal, ImagePlus, Lock, LockOpen, ChevronsUp, ChevronsDown,
+  AlignLeft, AlignCenter, AlignRight, Sparkles, Move, Droplet, PenLine, Crop, SlidersHorizontal, ImagePlus, Lock, LockOpen, ChevronsUp, ChevronsDown,
   ArrowUp, ArrowDown, AlignStartVertical, AlignCenterVertical, AlignEndVertical, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, LetterText, GripVertical, ClipboardCopy, Smartphone as Celular, Save, Link2, Eye, Users,
   ClipboardPaste, CopyPlus, Film, Music, Play, Clock, Layers, Wand2, ChevronLeft, ChevronRight, Mic,
+  Languages,
 } from "lucide-react";
 import { NARRACAO_PADRAO, pedacosDaLegenda, roteiroDasCenas, vozDe, type Narracao, type TextosCena } from "@/lib/narracao";
 import { INICIO_VOZ, textoCorrido, type VozGravada } from "@/lib/voz-gravada";
-import { traduzirTextos, type IdiomaVideo } from "@/lib/traducao";
+import { traduzirTextos, type EtapaTraducao, type IdiomaVideo } from "@/lib/traducao";
 import { VOZES_IA } from "@/lib/voz-ia";
 import { aiTools } from "@/data/templates";
 import { PainelNarracao } from "./video-narracao";
+import { PainelTraduzir } from "./video-traduzir";
+import { FaixasAudio, OpcoesAudio, type PosCena, type SelAudio } from "./video-faixas";
+import { clipeInicial, fimClipe, montarVoz, type ClipeVoz } from "@/lib/faixa-audio";
+import type { VozNaFaixa } from "@/lib/musica-video";
 /** Narrador de Ofertas: agente no ChatGPT que escreve a narração do pacote (o mesmo da lista de ferramentas de IA) */
 const LINK_NARRADOR = aiTools.find((t) => t.id === "ia-narrador")?.url || "https://chatgpt.com/g/g-zuVzD4urh-redador";
 
@@ -39,7 +44,7 @@ function linhasIguais(frase: string, max: number): string {
 }
 import { MODELOS_REDE, type ModeloRede } from "./arte-extras";
 import { desenharLetra, familiaDa, italicoDa, mudarFonte, negritoDa, tingirForma } from "./arte-pecas";
-import { CATEGORIAS_FORMA, MOLDES_IMAGEM, desenharForma, formaPorId, svgDaForma } from "./arte-formas";
+import { CATEGORIAS_FORMA, MOLDES_IMAGEM, desenharForma, formaComEspessura, formaPorId, svgDaForma, temEspessura } from "./arte-formas";
 import { gerarLegenda, legendaDoVideo, nomeLimpo, zapDeLer } from "./arte-legenda";
 import { ehIOS, fazerMp4, fazerPdf, podeMp4 } from "./arte-saida";
 import { lerProjeto, midiaFaltando, novoIdProjeto, salvarProjeto } from "@/lib/biblioteca-artes";
@@ -61,19 +66,19 @@ import { KIT, corHex, lerKit, type KitMarca } from "./editor-comum/kit-marca";
 import { AnuncioAgente, BotaoAcao, TOTAL_ANUNCIOS } from "./editor-comum/pecas";
 import { ALTURA_FAIXA, type AnimItem, type CenaVideo, type VisualCena } from "./arte-nova";
 import { ESTILOS_CENA } from "./arte-estilos";
-import { CLIPES, capaDoClipe, cenaEmBranco, durDa, logoPequena, paginasDoVideo, placaDaLogo } from "./video-paginas";
+import { CLIPES, FORMATOS_LOGO, ONDE_LOGO, capaDoClipe, cenaEmBranco, durDa, logoGrande, logoPequena, paginasDoVideo, placaDaLogo, type FormatoLogo } from "./video-paginas";
 import { fazerGif, fazerVideoMp4, linhaDas, musicaDoVideo, prepararCena, type CenaPronta } from "./video-saida";
 import { CenaNoPalco, PainelAnimarItem, PainelMusica, PainelVideoFundo, TocadorVideo, VideoNoPalco } from "./video-editor";
 import { PainelCena } from "./video-cena";
-import { CATEGORIAS_VIDEO, VIDEOS, type VideoPronto } from "./videos-prontos";
+import { CATEGORIAS_VIDEO, VIDEOS, VISUAIS_VIDEO, type VideoPronto } from "./videos-prontos";
 
 const AMARELO = "#F5F906";
 const semAcentoTela = (t: string) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 const LARGURA = 1080;
-type Ferramenta = "modelos" | "foto" | "texto" | "preco" | "inclusos" | "elementos" | "marca" | "cores" | "formato" | "cor" | "efeitos" | "posicao" | "estiloIcone" | "video" | "musica" | "animar" | "cena" | "narracao";
+type Ferramenta = "modelos" | "foto" | "texto" | "preco" | "inclusos" | "elementos" | "marca" | "cores" | "formato" | "cor" | "efeitos" | "posicao" | "estiloIcone" | "video" | "musica" | "animar" | "cena" | "narracao" | "traduzir";
 /** painéis que abrem a partir do item escolhido (não ficam na barra de ferramentas) */
 const CONTEXTUAIS: Ferramenta[] = ["cor", "efeitos", "posicao", "estiloIcone"];
-type Sub = "transp" | "espaco" | "cortar" | "filtro" | "modeloRede" | "forma";
+type Sub = "transp" | "espaco" | "cortar" | "filtro" | "modeloRede" | "forma" | "espessura";
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "arte";
 /** itens que estão no meio da arte (com camada) vão para o motor desenhar na ordem certa */
 const camadasDe = (lista: Extra[]): CamadaArte[] => lista.filter((e) => e.z != null).map((e) => ({ z: e.z as number, src: e.src, x: e.x, y: e.y, w: e.w, h: e.w * e.r, rot: e.rot }));
@@ -131,14 +136,13 @@ const FERRAMENTAS_VIDEO: { id: Ferramenta; nome: string; icone: typeof Type }[] 
   { id: "inclusos", nome: "Inclui", icone: ListChecks }, { id: "elementos", nome: "Elementos", icone: Shapes },
   { id: "marca", nome: "Sua marca", icone: Briefcase }, { id: "cores", nome: "Cores", icone: Palette },
   { id: "musica", nome: "Música", icone: Music }, { id: "narracao", nome: "Narração", icone: Mic },
+  { id: "traduzir", nome: "Traduzir", icone: Languages },
 ];
 // no celular a cena e o Animar também ficam na barra de baixo (no computador ficam na barra de cima)
 // ordem do celular: o que mais se usa primeiro (cabem 5 sem rolar: Texto, Vídeo, Música, Narração, Modelos)
 const FERR_V = (id: Ferramenta) => FERRAMENTAS_VIDEO.find((f) => f.id === id)!;
-const FERRAMENTAS_VIDEO_CEL = [FERR_V("texto"), FERR_V("video"), FERR_V("musica"), FERR_V("narracao"), FERR_V("modelos"), { id: "cena" as Ferramenta, nome: "Cena", icone: Clock }, { id: "animar" as Ferramenta, nome: "Animar", icone: Wand2 }, FERR_V("preco"), FERR_V("marca"), FERR_V("cores"), FERR_V("elementos"), FERR_V("inclusos")];
-const VISUAIS_CENA: { id: VisualCena; nome: string; desc: string }[] = [
-  { id: "classico", nome: "Clássico", desc: "vídeo na tela toda" }, { id: "faixa", nome: "Faixa com imagem", desc: "vídeo em cima e o texto na faixa escura" }, { id: "azul", nome: "Azul", desc: "vídeo com véu azul" },
-];
+const FERRAMENTAS_VIDEO_CEL = [FERR_V("texto"), FERR_V("video"), FERR_V("musica"), FERR_V("narracao"), FERR_V("modelos"), { id: "cena" as Ferramenta, nome: "Cena", icone: Clock }, { id: "animar" as Ferramenta, nome: "Animar", icone: Wand2 }, FERR_V("preco"), FERR_V("marca"), FERR_V("cores"), FERR_V("elementos"), FERR_V("inclusos"), FERR_V("traduzir")];
+const VISUAIS_CENA = VISUAIS_VIDEO;
 const segs = (x: number) => x.toFixed(1).replace(".", ",") + " s";
 type Estado = { a: Arte; t: ArtTweakMap; x: Extra[] };
 
@@ -758,9 +762,12 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
     const fm = formaPorId(id);
     if (!fm) return;
     const cor = a.cor2 || AMARELO;
-    const d = desenharForma(fm, cor);
+    // moldura entra grande (a tela toda no story) e desenhada em alta para a linha fina não borrar
+    const moldura = id.startsWith("moldura-");
+    const d = desenharForma(fm, cor, moldura ? 1920 : 640);
     setErro("");
-    novoExtra({ tipo: "forma", base: d.src, cor, src: d.src, nw: d.w, w: fm.linha ? Math.round(LARGURA * 0.4) : Math.round(LARGURA * 0.24), r: d.r });
+    const w = moldura ? Math.round(LARGURA * (fm.h > fm.w * 1.5 ? (altura >= 1900 ? 1 : 0.5) : 0.8)) : fm.linha ? Math.round(LARGURA * 0.4) : Math.round(LARGURA * 0.24);
+    novoExtra({ tipo: "forma", base: d.src, cor, src: d.src, nw: d.w, w, r: d.r, forma: id, esp: 1 }, moldura ? { x: LARGURA / 2, y: altura / 2 } : {});
   }
   // formas de imagem: toque numa forma com uma foto escolhida = a foto ganha a forma; sem foto = escolher uma
   const inputMoldura = useRef<HTMLInputElement>(null);
@@ -784,6 +791,10 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
       try {
         if (n.tipo === "rede" && n.rede) d = await seloRede(n.rede, n.texto || "", n.modelo, n.cor);
         else if (n.tipo === "letra") d = await desenharLetra(n.texto || " ", n.fonte || '800 80px "Montserrat"', n.cor || "#111111", n.ls || 0);
+        else if (n.tipo === "forma" && n.forma && formaPorId(n.forma)) {
+          // forma do menu: desenha de novo na cor e na espessura escolhidas (moldura em alta, como quando entra)
+          d = desenharForma(formaComEspessura(formaPorId(n.forma)!, n.esp ?? 1), n.cor || AMARELO, n.forma.startsWith("moldura-") ? 1920 : 640);
+        }
         else if (n.tipo === "forma" && n.base) {
           if (n.cor) d = await tingirForma(n.base, n.cor);
           else { const img = await carregarImagem(n.base); d = { src: n.base, w: img.naturalWidth, r: img.naturalHeight / img.naturalWidth }; }
@@ -1340,11 +1351,20 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
   // ——— narração ———
   // a voz gravada fica só na memória (não vai para o projeto salvo)
   const [vozFaixa, setVozFaixa] = useState<VozGravada | null>(null);
+  // a voz vira pedaços na faixa de baixo (dividir, cortar, mover, velocidade, volume)
+  const [clipesVoz, setClipesVoz] = useState<ClipeVoz[]>([]);
+  const [selAudio, setSelAudio] = useState<SelAudio>(null);
+  const [cursorAudio, setCursorAudio] = useState<number | null>(null);
+  const ultimaVoz = useRef("");
+  const trocarVoz = (v: VozGravada | null) => {
+    if (vozFaixa && vozFaixa !== v) URL.revokeObjectURL(vozFaixa.url);
+    setVozFaixa(v); setClipesVoz(v ? [clipeInicial(v)] : []); setSelAudio(null); setCursorAudio(null);
+  };
   const estDe = (i: number) => (i === pag ? vivo : paginas[i].est);
   const narracao: Narracao = { ...NARRACAO_PADRAO, ...((pag === 0 ? cena.narracao : paginas[0]?.est.a.cena?.narracao) || {}) };
   const textosDe = (est: Estado): TextosCena => ({
     titulo: est.a.titulo, destino: est.a.destino, inclusos: est.a.inclusos || [], preco: est.a.preco, parcelas: est.a.parcelas,
-    soltos: est.x.filter((e) => (e.tipo === "texto" || e.tipo === "letra") && e.texto).sort((p, q) => p.y - q.y).map((e) => e.texto!), livre: !!est.a.cena?.livre,
+    soltos: est.x.filter((e) => (e.tipo === "texto" || e.tipo === "letra") && e.texto && !e.legenda).sort((p, q) => p.y - q.y).map((e) => e.texto!), livre: !!est.a.cena?.livre,
   });
   const falasDas = (lista: Estado[]) => {
     const auto = roteiroDasCenas(lista.map(textosDe), vozDe(narracao.voz).idioma, fabrica.agencyName || "");
@@ -1378,21 +1398,68 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
     setTimeout(() => setAviso(""), 3500);
   };
   /** Põe a voz gravada no vídeo inteiro e a legenda dela nas cenas (cada trecho na cena em que é falado). */
-  const comFala = (cenas: CenaPronta[], lista: Estado[]) => {
-    if (!vozFaixa) return { vozes: [] as { audio: ArrayBuffer; inicio: number }[], aviso: "" };
+  const comFala = async (cenas: CenaPronta[], lista: Estado[]) => {
+    const volMusica = narracao.volMusica ?? 1;
+    if (!vozFaixa || !clipesVoz.length) {
+      if (Math.abs(volMusica - 1) > 0.01 && cenas[0]) cenas[0] = { ...cenas[0], fala: { pedacos: [], legenda: false, volMusica } };
+      return { vozes: [] as VozNaFaixa[], aviso: "" };
+    }
     const { ini, total } = linhaDas(cenas);
+    // a voz montada com os pedaços da faixa (cortes, velocidade e volume)
+    const m = await montarVoz(vozFaixa, clipesVoz, total);
+    if (ultimaVoz.current) URL.revokeObjectURL(ultimaVoz.current);
+    ultimaVoz.current = m.url;
+    const a0 = m.trechos[0][0], z0 = Math.min(total, Math.max(...m.trechos.map((t) => t[1])));
     const texto = (narracao.roteiro ?? textoCorrido(falasDas(lista))).trim();
-    const pedacos = texto ? pedacosDaLegenda(texto, INICIO_VOZ, Math.min(vozFaixa.dur, total - INICIO_VOZ)) : [];
+    const pedacos = texto && z0 > a0 ? pedacosDaLegenda(texto, a0, z0 - a0) : [];
     cenas.forEach((c, i) => {
       const a = ini[i], b = a + c.dur;
       const meus = pedacos.filter((p) => p.a >= a && p.a < b).map((p) => ({ t: p.t, a: p.a - a, b: Math.min(p.b, b) - a }));
-      cenas[i] = { ...c, fala: { pedacos: meus, legenda: narracao.legendas, audio: i === 0 ? vozFaixa.url : undefined } };
+      cenas[i] = { ...c, fala: { pedacos: meus, legenda: false, audio: i === 0 ? m.url : undefined, trechos: m.trechos, volMusica } };
     });
-    return { vozes: [{ audio: vozFaixa.audio, inicio: INICIO_VOZ }], aviso: "" };
+    return { vozes: [{ audio: m.wav, inicio: INICIO_VOZ, trechos: m.trechos }] as VozNaFaixa[], aviso: "" };
+  };
+  /** Liga ou desliga a legenda: cada cena ganha um texto (camada comum: muda, move, frente/trás) com o trecho
+   *  do roteiro falado nela. Desligar tira só esses textos. Começa desligada. */
+  const ligarLegendas = async (on: boolean) => {
+    const lista = guardarPagina();
+    marcarCenas();
+    const nova: Pagina[] = [];
+    if (!on) {
+      for (const p of lista) nova.push({ ...p, est: { ...p.est, x: p.est.x.filter((e) => !e.legenda) }, hist: undefined, mini: undefined });
+    } else {
+      const durs = lista.map((p) => durDa(p.est.a));
+      const total = durs.reduce((s, d) => s + d, 0);
+      const texto = (narracao.roteiro ?? textoCorrido(falasDas(lista.map((p) => p.est)))).trim();
+      const pedacos = texto ? pedacosDaLegenda(texto, 0, total) : [];
+      let t = 0;
+      for (let i = 0; i < lista.length; i++) {
+        const p = lista[i], ini = t, fim = t + durs[i];
+        t = fim;
+        const palavras = pedacos.filter((q) => q.a >= ini && q.a < fim).map((q) => q.t).join(" ").split(" ").filter(Boolean);
+        const x = p.est.x.filter((e) => !e.legenda);
+        if (palavras.length) {
+          // linhas de até 5 palavras, para caber na tela
+          const linhas: string[] = [];
+          for (let k = 0; k < palavras.length; k += 5) linhas.push(palavras.slice(k, k + 5).join(" "));
+          const frase = linhas.join("\n");
+          try {
+            const d = await desenharTexto("cenaFaixa", frase);
+            const w = Math.round(Math.min(LARGURA * 0.86, d.w));
+            x.push({ id: `leg${Date.now().toString(36)}${i}`, tipo: "texto", estilo: "cenaFaixa", texto: frase, src: d.src, nw: d.w, w, r: d.r, x: LARGURA / 2, y: Math.round(altura * 0.8), legenda: true });
+          } catch { /* sem desenho, a cena fica sem legenda */ }
+        }
+        nova.push({ ...p, est: { ...p.est, x }, hist: undefined, mini: undefined });
+      }
+    }
+    const n0 = nova[0].est.a.cena || {};
+    nova[0] = { ...nova[0], est: { ...nova[0].est, a: { ...nova[0].est.a, cena: { ...n0, narracao: { ...narracao, legendas: on } } } } };
+    abrirPagina(nova, pag);
+    setSujo(true);
   };
   /** Traduz o vídeo inteiro (textos de todas as cenas, preço por extenso, inclusos e o texto da narração).
    *  Dá para desfazer (volta tudo ao português). A voz não muda sozinha: depois gera de novo no idioma. */
-  const traduzirVideo = async (para: IdiomaVideo, comFala: boolean, aoAvancar?: (p: number) => void) => {
+  const traduzirVideo = async (para: IdiomaVideo, comFala: boolean, aoAvancar?: (p: number, etapa: EtapaTraducao) => void) => {
     const lista = guardarPagina();
     const roteiro = narracao.roteiro ?? textoCorrido(falas);
     const textos: string[] = comFala ? [roteiro] : [];
@@ -1400,7 +1467,12 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
     lista.forEach(({ est: { a: ar, x } }) => {
       pega(ar.titulo); pega(ar.promo); pega(ar.periodo); pega(ar.prefixo); pega(ar.complemento); pega(ar.destino);
       ar.inclusos.forEach(pega); pega(ar.cena?.fala);
-      x.forEach((e) => { if (e.tipo === "texto" || e.tipo === "letra") pega(e.texto); if (e.preco) { pega(e.preco.prefixo); pega(e.preco.sufixo); } });
+      x.forEach((e) => {
+        if (e.tipo === "texto" || e.tipo === "letra") pega(e.texto);
+        if (e.preco) { pega(e.preco.prefixo); pega(e.preco.sufixo); }
+        // botão do WhatsApp: traduz a chamada ("Chame no WhatsApp"), o número fica
+        if (e.tipo === "rede" && e.rede === "whatsapp" && e.texto) pega(e.texto.split(" · ")[0]);
+      });
     });
     const mapa = await traduzirTextos(textos, para, aoAvancar);
     const tr = (t?: string) => (t && mapa.get(t.trim())) || t;
@@ -1412,6 +1484,13 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
         inclusos: ar.inclusos.map((t) => tr(t) || t), cena: ar.cena ? { ...ar.cena, fala: tr(ar.cena.fala) } : ar.cena };
       const x2 = await Promise.all(p.est.x.map(async (e) => {
         if ((e.tipo === "texto" || e.tipo === "letra") && e.texto && tr(e.texto) !== e.texto) return textoTraduzido(e, tr(e.texto)!);
+        if (e.tipo === "rede" && e.rede && e.texto) {
+          const [chamada, ...resto] = e.texto.split(" · ");
+          const nova = tr(chamada);
+          if (!nova || nova === chamada) return e;
+          const txt = [nova, ...resto].join(" · ");
+          try { const d = await seloRede(e.rede, txt, e.modelo, e.cor); return { ...e, texto: txt, src: d.src, r: d.r, nw: d.w, w: e.nw ? Math.round(e.w * (d.w / e.nw)) : e.w }; } catch { return e; }
+        }
         if (e.tipo === "preco" && e.estilo && e.preco) {
           const pr = { ...e.preco, prefixo: tr(e.preco.prefixo) || "", sufixo: tr(e.preco.sufixo) || "" };
           try { const d = await processarExtra(await desenharPreco(e.estilo, pr, e.cor), e.fx); return { ...e, preco: pr, src: d.src, r: d.r, nw: d.w, w: e.nw ? Math.round(e.w * (d.w / e.nw)) : e.w }; } catch { return e; }
@@ -1427,8 +1506,15 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
     setSujo(true);
   };
   // trocar o visual leva o grupo de itens junto: na faixa escura (Faixa) ou no meio da tela (Clássico e Azul)
-  const mudarVisual = (v: VisualCena) => {
-    const at = vivoRef.current;
+  const mudarVisual = (v: VisualCena) => gravar(comVisual(vivoRef.current, v));
+  /** o mesmo estilo em todas as cenas do vídeo */
+  const visualEmTodas = (v: VisualCena) => {
+    const lista = guardarPagina();
+    marcarCenas();
+    abrirPagina(lista.map((p) => ({ ...p, est: comVisual(p.est, v), hist: undefined, mini: undefined })), pag);
+    setSujo(true);
+  };
+  const comVisual = (at: Estado, v: VisualCena): Estado => {
     const antes = at.a.cena?.livre ? at.a.cena.visual || "classico" : null;
     const na: Arte = { ...at.a, cena: { ...(at.a.cena || {}), livre: true, visual: v } };
     const H = 1920;
@@ -1442,7 +1528,7 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
       const k = v === "faixa" ? Math.min(1, ((H - faixaIni) * 0.86) / Math.max(1, alto)) : 1;
       x = at.x.map((e) => (e.z != null ? e : { ...e, w: Math.round(e.w * k), x: Math.round(LARGURA / 2 + (e.x - LARGURA / 2) * k), y: Math.round(alvoCy + (e.y - cy) * k) }));
     }
-    gravar({ ...at, a: na, x });
+    return { ...at, a: na, x };
   };
   const trocarVideoInteiro = (v: VideoPronto) => {
     if (!window.confirm(`Trocar o vídeo inteiro por "${v.nome}"? As cenas de agora saem (use Salvar antes, se quiser guardar).`)) return;
@@ -1469,6 +1555,31 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
   const arrastePagina = useRef<number | null>(null);
   // celular: segurar uma cena ~0,3 s e arrastar para o lado muda a ordem (o arrastar do computador não funciona no toque)
   const faixaPaginas = useRef<HTMLDivElement>(null);
+  // posição de cada miniatura (para as faixas de voz e música ficarem embaixo da cena certa)
+  const linhaCenas = useRef<HTMLDivElement>(null);
+  const [posCenas, setPosCenas] = useState<PosCena[]>([]);
+  const [largLinha, setLargLinha] = useState(0);
+  const chaveDurs = dursCenas.join(",");
+  useEffect(() => {
+    const row = linhaCenas.current;
+    if (!modoVideo || !row) return;
+    const medir = () => {
+      const durs = chaveDurs.split(",").map(Number);
+      let t = 0;
+      const p = [...row.querySelectorAll<HTMLElement>("[data-pagina]")].map((el, i) => {
+        const d = durs[i] || 3;
+        const r = { x0: el.offsetLeft, x1: el.offsetLeft + el.offsetWidth, t0: t, t1: t + d };
+        t += d;
+        return r;
+      });
+      setPosCenas((ant) => (JSON.stringify(ant) === JSON.stringify(p) ? ant : p));
+      setLargLinha(row.scrollWidth);
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(row);
+    return () => ro.disconnect();
+  }, [modoVideo, chaveDurs, paginas.length]);
   const [arrasteToque, setArrasteToque] = useState<{ de: number; para: number } | null>(null);
   const toque = useRef<{ x: number; y: number; i: number; timer: number | null; ativo: boolean; para: number }>({ x: 0, y: 0, i: 0, timer: null, ativo: false, para: 0 });
   const iniciarToquePagina = (e: React.TouchEvent, i: number) => {
@@ -1650,7 +1761,9 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
     }
   }
   const concluirSair = (para: "voltar" | "conta") => (para === "conta" ? navigate("/minha-conta") : aoVoltar());
-  const tentarSair = (para: "voltar" | "conta" = "voltar") => { if (!sujo) concluirSair(para); else setSair(para); };
+  // a voz fica só na memória (não vai junto ao salvar): com voz no vídeo, sempre pergunta antes de sair
+  const perdeAlgo = sujo || !!vozFaixa;
+  const tentarSair = (para: "voltar" | "conta" = "voltar") => { if (!perdeAlgo) concluirSair(para); else setSair(para); };
 
   // ——— baixar: formato, tamanho livre, legenda, postar, dicas ———
   const [compart, setCompart] = useState(false);
@@ -1704,6 +1817,50 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
     setSujo(true);
     setAviso(tem ? "Troquei a logo em todas as cenas." : "Coloquei a sua logo no alto de todas as cenas.");
     setTimeout(() => setAviso(""), 2500);
+  };
+  /** Onde a logo aparece (todas as cenas, início e fim, só no fim, nenhuma) e o formato (placa, redonda, quadrada, sem fundo). */
+  const logoVideo = paginas[0] ? estDe(0).a.cena?.logoVideo : undefined;
+  const arrumarLogo = async (mudou: Partial<NonNullable<CenaVideo["logoVideo"]>>) => {
+    if (!modoVideo) return;
+    const cfg = { onde: logoVideo?.onde ?? "todas", formato: logoVideo?.formato ?? "placa", ...mudou } as NonNullable<CenaVideo["logoVideo"]>;
+    const logo = fabrica.logoBase64;
+    const placa = logo && cfg.onde !== "nenhuma" ? await placaDaLogo(logo, cfg.formato as FormatoLogo) : null;
+    if (logo && cfg.onde !== "nenhuma" && !placa) { setAviso("Não consegui abrir a sua logo. Envie de novo em Sua marca."); return; }
+    const lista = guardarPagina();
+    const n = lista.length;
+    const quer = (i: number) => cfg.onde === "todas" || (cfg.onde === "inicio-fim" && (i === 0 || i === n - 1)) || (cfg.onde === "fim" && i === n - 1);
+    const nova = lista.map((p, i) => {
+      const atual = p.est.x.filter((e) => e.logo);
+      let x = p.est.x;
+      let anim = p.est.a.cena?.animEl;
+      if (!placa || !quer(i)) x = x.filter((e) => !e.logo);
+      else if (atual.length) {
+        // mesma altura de antes, no mesmo lugar
+        // mesmo lugar; tamanho certo para o formato novo (pequena nas cenas, grande no fecho)
+        const ref = i === n - 1 && n > 1 ? logoGrande(placa, 560) : logoPequena(placa);
+        x = x.map((e) => {
+          if (!e.logo) return e;
+          // a base da logo fica onde estava: ela cresce para cima e não cobre o texto
+          const base = e.y + (e.w * e.r) / 2, h = ref.w * placa.r;
+          return { ...e, src: placa.src, base: placa.src, nw: placa.nw, r: placa.r, w: ref.w, y: Math.round(Math.max(40 + h / 2, base - h / 2)) };
+        });
+      } else {
+        let lg = i === n - 1 && n > 1 ? logoGrande(placa, 560) : logoPequena(placa);
+        if (i === n - 1 && n > 1) {
+          // na última cena a logo grande fica logo acima do primeiro texto
+          const textos = x.filter((e) => e.tipo === "texto" || e.tipo === "rede");
+          const topo = textos.length ? Math.min(...textos.map((e) => e.y - (e.w * e.r) / 2)) : altura * 0.6;
+          lg = { ...lg, y: Math.round(Math.max(300 + (lg.w * lg.r) / 2, topo - 40 - (lg.w * lg.r) / 2)) };
+        }
+        x = [...x, lg];
+        anim = { ...(anim || {}), [lg.id]: { anim: i === n - 1 ? "zoom" as const : "nenhuma" as const, vel: "normal" as const, atraso: 0 } };
+      }
+      const cena = p.est.a.cena ? { ...p.est.a.cena, animEl: anim, ...(i === 0 ? { logoVideo: cfg } : {}) } : p.est.a.cena;
+      return { ...p, est: { ...p.est, a: { ...p.est.a, cena }, x }, hist: undefined, mini: undefined };
+    });
+    marcarCenas();
+    abrirPagina(nova, pag);
+    setSujo(true);
   };
   // vídeo: legenda feita do que as cenas mostram; arte: do destino, inclusos e preço
   const legendaAgora = (n: number) => {
@@ -1788,7 +1945,7 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
         const escalaV = fmt.id === "gif" ? 1 : Math.max(1, largV / LARGURA);
         const cenas = [];
         for (let i = 0; i < todas.length; i++) { cenas.push(await prepararCena(todas[i], marca, escalaV)); setGerando(3 + ((i + 1) / todas.length) * 10); }
-        const narr = comFala(cenas, todas);
+        const narr = await comFala(cenas, todas);
         if (narr.aviso) avisoVideo = `${narr.aviso} O vídeo saiu com a legenda, sem a voz.`;
         const nomeV = `video-${slug(nomeDe(guardarPagina()))}`;
         if (fmt.id === "gif") {
@@ -1798,11 +1955,11 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
           const mus = musicaDoVideo(todas[0].a.cena?.musica);
           let blob: Blob;
           try {
-            blob = await fazerVideoMp4(cenas, mus?.arquivo, largV, (p) => setGerando(15 + p * 83), (m) => setAvisoComp(m), narr.vozes);
+            blob = await fazerVideoMp4(cenas, mus?.arquivo, largV, (p) => setGerando(15 + p * 83), (m) => setAvisoComp(m), narr.vozes, narracao.volMusica ?? 1);
           } catch (e) {
             // aparelho que não faz vídeo tão grande: sai em Full HD e avisa
             if (largV <= 1080) throw e;
-            blob = await fazerVideoMp4(cenas, mus?.arquivo, 1080, (p) => setGerando(15 + p * 83), (m) => setAvisoComp(m), narr.vozes);
+            blob = await fazerVideoMp4(cenas, mus?.arquivo, 1080, (p) => setGerando(15 + p * 83), (m) => setAvisoComp(m), narr.vozes, narracao.volMusica ?? 1);
             avisoVideo = `Este aparelho não faz vídeo em ${largV} px. Saiu em Full HD (1080 × 1920).`;
           }
           out.push({ nome: `${nomeV}.mp4`, url: URL.createObjectURL(blob), blob });
@@ -1917,12 +2074,17 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
 
   compartRef.current = compart || !!escolhaModelo || !!sair || linkAberto;
   useEffect(() => {
-    if (!sujo) return;
+    if (!perdeAlgo) return;
     const avisar = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; };
     window.addEventListener("beforeunload", avisar);
     return () => window.removeEventListener("beforeunload", avisar);
-  }, [sujo]);
+  }, [perdeAlgo]);
 
+  const opcoesAudio = modoVideo && selAudio ? (
+    <OpcoesAudio sel={selAudio} clipes={clipesVoz} mudarClipes={(c) => { setClipesVoz(c); setSujo(true); }} cursor={cursorAudio}
+      volMusica={narracao.volMusica ?? 1} mudarVolMusica={(v) => mudarNarracao({ volMusica: v })}
+      aoTrocarMusica={() => setFerr("musica")} aoTirarMusica={() => { escolherMusica(""); setSelAudio(null); }} aoFechar={() => { setSelAudio(null); setCursorAudio(null); }} />
+  ) : null;
   const abrirPainel = (id: Ferramenta) => { setSub(null); setFerr(ferr === id ? null : id); };
   const { claro } = useTemaNovo();
   const corBarra = claro ? "#FFFFFF" : "#E9E9EC";
@@ -2047,9 +2209,10 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
       {ferr === "musica" && <PainelMusica atual={musicaId} aoEscolher={escolherMusica} />}
       {ferr === "narracao" && modoVideo && (
         <PainelNarracao n={narracao} mudar={mudarNarracao} sugerido={textoCorrido(falas)} total={dursCenas.reduce((s, d) => s + d, 0)}
-          voz={vozFaixa} aoVoz={(v) => { if (vozFaixa && vozFaixa !== v) URL.revokeObjectURL(vozFaixa.url); setVozFaixa(v); }}
-          esticar={esticarVideo} agencia={fabrica.agencyName || ""} linkNarrador={LINK_NARRADOR} traduzir={traduzirVideo} />
+          voz={vozFaixa} aoVoz={trocarVoz} fimVoz={clipesVoz.length ? Math.max(...clipesVoz.map(fimClipe)) : undefined}
+          esticar={esticarVideo} agencia={fabrica.agencyName || ""} linkNarrador={LINK_NARRADOR} aoLegendas={(on) => void ligarLegendas(on)} verVideo={() => setTocando(true)} />
       )}
+      {ferr === "traduzir" && modoVideo && <PainelTraduzir traduzir={traduzirVideo} irParaNarracao={() => setFerr("narracao")} />}
       {ferr === "cena" && (
         <PainelCena
           nome={`Cena ${pag + 1} de ${paginas.length}`} ajuste={cena} durPadrao={3} durClipe={duracaoClipe} semFundo inteiro={!a.video}
@@ -2070,7 +2233,8 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
             <div className="flex flex-wrap gap-1.5">
               {VISUAIS_CENA.map((v) => <button key={v.id} data-visual-cena={v.id} onClick={() => mudarVisual(v.id)} className={chip(!!cena.livre && (cena.visual || "classico") === v.id)}>{v.nome}</button>)}
             </div>
-            <p className="mt-1.5 text-[11px] text-white/45">{VISUAIS_CENA.map((v) => `${v.nome}: ${v.desc}`).join(". ")}.</p>
+            <p className="mt-1.5 text-[11px] text-white/45">{VISUAIS_CENA.find((v) => v.id === (cena.visual || "classico"))?.desc}</p>
+            <button type="button" data-visual-todas onClick={() => visualEmTodas((cena.visual || "classico") as VisualCena)} className="mt-2 min-h-10 w-full rounded-xl border border-white/15 text-[13px] font-bold">Usar este estilo no vídeo inteiro</button>
           </div>
           <p className={rotulo}>Ou use um anúncio nesta cena (o vídeo toca no lugar da foto)</p>
         </div>
@@ -2381,10 +2545,29 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
               <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) lerArquivo(f, (u) => { update({ logoBase64: u }); void logoNoVideo(u); }); e.target.value = ""; }} />
             </label>
           </div>
-          {fabrica.logoBase64 && (
+          {fabrica.logoBase64 && !modoVideo && (
             <div className="flex gap-1.5">
               <button onClick={() => update({ logoFormat: "circle" })} className={chip(fabrica.logoFormat !== "square")}>Logo redonda</button>
               <button onClick={() => update({ logoFormat: "square" })} className={chip(fabrica.logoFormat === "square")}>Logo quadrada</button>
+            </div>
+          )}
+          {modoVideo && (
+            <div data-logo-video className="flex flex-col gap-2.5 rounded-2xl border border-white/10 p-3">
+              <p className="text-[14px] font-extrabold">Logo no vídeo</p>
+              {!fabrica.logoBase64 && <p className="text-[12px] text-white/55">Envie a sua logo acima para escolher onde ela aparece.</p>}
+              <div>
+                <p className={rotulo}>Onde aparece</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {ONDE_LOGO.map((o) => <button key={o.id} type="button" data-logo-onde={o.id} disabled={!fabrica.logoBase64 && o.id !== "nenhuma"} onClick={() => void arrumarLogo({ onde: o.id })} className={chip((logoVideo?.onde ?? "todas") === o.id) + " disabled:opacity-40"}>{o.nome}</button>)}
+                </div>
+              </div>
+              <div>
+                <p className={rotulo}>Formato</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {FORMATOS_LOGO.map((f) => <button key={f.id} type="button" data-logo-formato={f.id} disabled={!fabrica.logoBase64} onClick={() => void arrumarLogo({ formato: f.id })} className={chip((logoVideo?.formato ?? "placa") === f.id) + " disabled:opacity-40"}>{f.nome}</button>)}
+                </div>
+                <p className="mt-1.5 text-[11px] text-white/45">Sem fundo: use uma logo em PNG com fundo transparente.</p>
+              </div>
             </div>
           )}
           <div>
@@ -2732,6 +2915,7 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
       {extraSel?.tipo === "imagem" && botaoSub("forma", "Forma", Shapes)}
       {ehImagem && !fotoVideo && botaoSub("filtro", "Cores", SlidersHorizontal)}
       {extraSel?.tipo === "icone" && botaoPainel("estiloIcone", "Estilo", Shapes)}
+      {extraSel?.tipo === "forma" && extraSel.forma && formaPorId(extraSel.forma) && temEspessura(formaPorId(extraSel.forma)!) && botaoSub("espessura", "Espessura", PenLine)}
       {!fotoVideo && botaoSub("transp", "Transparência", Droplet)}
       {!fotoVideo && botaoPainel("efeitos", "Efeitos", Sparkles)}
       {botaoPainel("posicao", "Posição", Move)}
@@ -2755,6 +2939,7 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
   const popSub = sub && sel && marcados.length <= 1 && (
     <div data-sub={sub} className="flex w-full max-w-[560px] flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl p-3 shadow-xl" style={{ background: corBarra, border: "1px solid rgba(0,0,0,.12)", color: "#111" }} onPointerDown={(e) => e.stopPropagation()}>
       {sub === "transp" && barrinha("transp", "Transparência", Math.round(opacSel * 100), 0, 100, 1, (v) => mudarFx({ opacidade: v / 100 }, false), `${Math.round(opacSel * 100)}%`)}
+      {sub === "espessura" && extraSel?.tipo === "forma" && barrinha("espessura", "Espessura (mais fina ou mais grossa)", Math.round((extraSel.esp ?? 1) * 100), 25, 400, 5, (v) => void redesenharExtra(extraSel.id, { esp: v / 100 }), `${Math.round((extraSel.esp ?? 1) * 100)}%`)}
       {sub === "espaco" && (
         <>
           {barrinha("letras", "Espaço entre as letras", ajusteSel.letterSpacing ?? 0, -100, 800, 10, (v) => ajustar(sel, { letterSpacing: v || undefined }, false))}
@@ -2983,7 +3168,10 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
               )}
             </div>
           )}
-          {modoVideo && !sel && (
+          {modoVideo && !sel && selAudio && (
+            <div data-opcoes-audio-topo className="pointer-events-none absolute inset-x-3 top-3 z-30 hidden justify-center lg:flex [&>*]:pointer-events-auto" onPointerDown={(e) => e.stopPropagation()}>{opcoesAudio}</div>
+          )}
+          {modoVideo && !sel && !selAudio && (
             <div className="pointer-events-none absolute inset-x-3 top-3 z-30 hidden justify-center lg:flex [&>*]:pointer-events-auto" onPointerDown={(e) => e.stopPropagation()}>
               <div data-barra-cena className="flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-2xl p-1 shadow-xl" style={{ background: corBarra, border: "1px solid rgba(0,0,0,.12)" }}>
                 <span className="shrink-0 px-2 text-[12px] font-black" style={{ color: "#111" }}>Cena {pag + 1} de {paginas.length}</span>
@@ -3029,7 +3217,10 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
             {guias.h.map((g) => <span key={`h${g}`} data-guia="h" className="pointer-events-none absolute inset-x-0 z-20 h-px" style={{ top: `${(g / altura) * 100}%`, background: "#FF2BD6", boxShadow: "0 0 0 .5px rgba(255,43,214,.4)" }} />)}
           </div>
           </div>
-          <div ref={faixaPaginas} data-paginas className="mt-3 flex max-w-full shrink-0 items-center gap-2 overflow-x-auto px-1 py-1" onPointerDown={(e) => e.stopPropagation()} onTouchEnd={soltarToquePagina} onTouchCancel={soltarToquePagina}>
+          {/* no celular, as opções do áudio ficam logo acima das cenas; no computador, no topo (no lugar da barra da cena) */}
+          {modoVideo && selAudio && <div className="mt-2 w-full max-w-full px-1 lg:hidden">{opcoesAudio}</div>}
+          <div ref={faixaPaginas} data-paginas className="mt-3 max-w-full shrink-0 overflow-x-auto px-1 py-1" onPointerDown={(e) => e.stopPropagation()} onTouchEnd={soltarToquePagina} onTouchCancel={soltarToquePagina}>
+            <div ref={linhaCenas} className="relative flex w-max items-center gap-2">
             {modoVideo && (
               <button data-ver-video onClick={() => setTocando(true)} disabled={montandoVideo} className="flex h-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-md px-3 text-[11px] font-black text-black disabled:opacity-60" style={{ background: AMARELO }}>
                 <Play className="h-4 w-4" />Ver vídeo<span className="font-bold tabular-nums">{segs(durTotal)}</span>
@@ -3040,7 +3231,7 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
               const ap = i === pag ? a : p.est.a;
               const capa = modoVideo ? capaDoClipe(ap.video) : undefined;
               return (
-                <button key={p.id} data-pagina={i + 1} aria-label={`${modoVideo ? "Cena" : "Página"} ${i + 1}`} aria-current={i === pag || undefined} onClick={() => irParaPagina(i)}
+                <button key={p.id} data-pagina={i + 1} aria-label={`${modoVideo ? "Cena" : "Página"} ${i + 1}`} aria-current={i === pag || undefined} onClick={() => { setSelAudio(null); irParaPagina(i); }}
                   draggable={paginas.length > 1} title={paginas.length > 1 ? "Arraste para mudar a ordem" : undefined}
                   onDragStart={(e) => { arrastePagina.current = i; e.dataTransfer.effectAllowed = "move"; }}
                   onDragOver={(e) => { if (arrastePagina.current != null) e.preventDefault(); }}
@@ -3066,6 +3257,14 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
             )}
             {modoVideo && <button data-duplicar-cena aria-label="Duplicar esta cena" title="Duplicar esta cena" onClick={duplicarCena} className="grid h-16 w-10 shrink-0 place-items-center rounded-md text-white/55 hover:bg-white/[0.06]"><CopyPlus className="h-4 w-4" /></button>}
             {paginas.length > 1 && <button data-apagar-pagina aria-label={modoVideo ? "Apagar esta cena" : "Apagar esta página"} title={modoVideo ? "Apagar esta cena" : "Apagar esta página"} onClick={apagarPagina} className={`grid ${modoVideo ? "h-16" : "h-12"} w-10 shrink-0 place-items-center rounded-md text-white/55 hover:bg-white/[0.06]`}><Trash2 className="h-4 w-4" /></button>}
+            </div>
+            {modoVideo && (
+              <FaixasAudio pos={posCenas} largura={largLinha} total={dursCenas.reduce((s, d) => s + d, 0)}
+                voz={vozFaixa} clipes={clipesVoz} mudarClipes={setClipesVoz}
+                musica={musicaDoVideo(musicaId) || null} volMusica={narracao.volMusica ?? 1}
+                sel={selAudio} setSel={setSelAudio} cursor={cursorAudio} setCursor={setCursorAudio}
+                aoAdicionarVoz={() => setFerr("narracao")} aoAdicionarMusica={() => setFerr("musica")} />
+            )}
           </div>
           {modoVideo && paginas.length > 1 && <p data-dica-arrastar className="mt-1 text-center text-[11px] text-white/45 sm:hidden [html.fabrica-claro_&]:text-black/50">{arrasteToque ? "Solte onde a cena deve ficar" : "Segure uma cena e arraste para mudar a ordem"}</p>}
           <p className="mt-1 hidden text-center text-[12px] text-white/40 sm:block">{modoVarios ? "Toque nos itens para juntar ou tirar da seleção. Depois arraste um deles para mover todos." : marcados.length > 1 ? "Arraste um dos itens para mover todos juntos. Shift+clique junta ou tira um item." : sel ? "Toque de novo para escrever. Arraste para mudar de lugar. Shift+clique escolhe vários." : modoVideo ? "Toque num texto para mexer nele. Toque no vídeo para trocar ou escolher o trecho." : "Toque num texto, no preço ou na logo para mexer neles."}</p>
@@ -3112,7 +3311,7 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
 
       {tocando && (
         <TocadorVideo
-          preparar={async () => { const lista = guardarPagina().map((p) => p.est); const cenas = await Promise.all(lista.map((e) => prepararCena(e, marca))); comFala(cenas, lista); return cenas; }}
+          preparar={async () => { const lista = guardarPagina().map((p) => p.est); const cenas = await Promise.all(lista.map((e) => prepararCena(e, marca))); await comFala(cenas, lista); return cenas; }}
           musica={musicaDoVideo(musicaId)?.arquivo}
           aoFechar={() => setTocando(false)}
           aoBaixar={() => { setTocando(false); abrirCompartilhar(); }}
@@ -3330,6 +3529,7 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
           <div className="w-full max-w-[380px] rounded-3xl border border-white/10 bg-[#141416] p-5 shadow-2xl" onPointerDown={(e) => e.stopPropagation()}>
             <h2 className="text-[17px] font-extrabold">Salvar este projeto?</h2>
             <p className="mt-1.5 text-[13px] text-white/65">Salvando, ele fica em Continue criando e você reabre depois do jeito que deixou{paginas.length > 1 ? `, com as ${paginas.length} páginas` : ""}. Descartando, as mudanças somem.</p>
+            {vozFaixa && <p data-sair-voz className="narr-alerta mt-2 rounded-xl p-2.5 text-[13px] font-semibold">A voz não fica salva no projeto. Baixe o vídeo antes de sair para não perder a narração.</p>}
             <div className="mt-4 flex flex-col gap-2">
               <button data-sair-salvar onClick={async () => { const para = sair || "voltar"; if (await salvarAgora()) { setSair(""); concluirSair(para); } }} disabled={salvando === "salvando"} className="min-h-12 rounded-full text-[15px] font-black text-black disabled:opacity-60" style={{ background: "linear-gradient(135deg, #F5F906 0%, #FFD77A 100%)" }}>{salvando === "salvando" ? "Salvando…" : "Salvar e sair"}</button>
               <button data-sair-descartar onClick={() => { const para = sair || "voltar"; setSair(""); setSujo(false); concluirSair(para); }} className="min-h-11 rounded-full border border-white/20 text-[14px] font-bold">Descartar e sair</button>

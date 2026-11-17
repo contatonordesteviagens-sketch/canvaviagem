@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
+import logoCanva from "@/assets/logo.png";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertTriangle, ArrowLeft, BookOpen, Bot, CalendarDays, ChevronLeft, ChevronRight, Clapperboard, Download, FolderOpen, Globe,
@@ -31,6 +32,22 @@ const ACENTO = "var(--cv-acento-texto, #F5F906)";
 
 // ————————————————— Vídeos prontos (catálogo em videos-prontos.ts) —————————————————
 /** Cartão do vídeo pronto: cena de viagem rodando com o título por cima. Só toca quando está à vista. */
+/** O véu de cada estilo na capa do cartão (o mesmo desenho do vídeo, em CSS). */
+function VeuCapa({ visual }: { visual: NonNullable<VideoPronto["visual"]> }) {
+  const g = (s: string) => ({ background: `linear-gradient(to bottom, ${s})` });
+  const base = "absolute inset-0";
+  if (visual === "azul") return <div className={base} style={g("rgba(12,70,200,.5), rgba(8,48,143,.5), rgba(4,22,80,.85)")} />;
+  if (visual === "luxo") return <div className={base} style={{ ...g("rgba(0,0,0,.55), rgba(0,0,0,.25) 45%, rgba(0,0,0,.88)"), boxShadow: "inset 0 0 0 3.9cqw transparent, inset 0 0 0 4.4cqw #D4AF37" }} />;
+  if (visual === "neon") return <div className={base} style={{ ...g("rgba(70,0,130,.55), rgba(30,0,80,.35), rgba(10,0,40,.85)"), borderTop: "1.1cqw solid #ff2bd6", borderBottom: "1.1cqw solid #22e3ff" }} />;
+  if (visual === "vibrante") return <div className={base} style={g("rgba(255,110,0,.5), rgba(255,0,120,.22), rgba(120,0,90,.8)")} />;
+  if (visual === "cartao") return <div className={base} style={g("rgba(0,0,0,.35), rgba(0,0,0,.55)")}><div className="absolute inset-x-[5.5%] top-[30%] h-[50%] rounded-[4cqw] border border-white/30 bg-black/50" /></div>;
+  if (visual === "postal") return <div className={base} style={{ ...g("rgba(0,0,0,.5), rgba(0,0,0,.05) 28%, rgba(0,0,0,.72)"), borderStyle: "solid", borderColor: "#FBF8F1", borderWidth: "3.7cqw 3.7cqw 8cqw" }} />;
+  if (visual === "revista") return <div className={base} style={g("rgba(0,0,0,.62), rgba(0,0,0,.1) 16%, rgba(0,0,0,.12) 60%, rgba(0,0,0,.82)")}><div className="absolute inset-[3%] border-[0.3cqw] border-white/85" /></div>;
+  if (visual === "passagem") return <div className={base} style={g("rgba(6,30,70,.55), rgba(6,30,70,.3), rgba(4,18,45,.85)")}><div className="absolute inset-x-[5%] top-[84%] border-t-[0.4cqw] border-dashed border-white/55" /></div>;
+  if (visual === "bf") return <div className={base} style={{ ...g("rgba(0,0,0,.6), rgba(0,0,0,.35), rgba(0,0,0,.88)"), borderTop: "2cqw solid #FFC629", borderBottom: "2cqw solid #FFC629" }} />;
+  return <div className={base + " bg-gradient-to-b from-black/55 via-black/5 to-black/70"} />;
+}
+
 function CapaVideo({ v, className = "" }: { v: VideoPronto; className?: string }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
@@ -47,7 +64,7 @@ function CapaVideo({ v, className = "" }: { v: VideoPronto; className?: string }
       {faixa ? (
         <div className="absolute inset-x-0 bottom-0 top-[47%] bg-[#0a0a0c]" style={{ borderTop: "0.9cqw solid #FFC629" }} />
       ) : (
-        <div className={"absolute inset-0 " + (v.visual === "azul" ? "bg-gradient-to-b from-[#0c46c8]/50 via-[#08308f]/50 to-[#041650]/85" : "bg-gradient-to-b from-black/55 via-black/5 to-black/70")} />
+        <VeuCapa visual={v.visual || "classico"} />
       )}
       <div className={"fn-sobre-foto absolute inset-x-[7%] text-center font-black uppercase leading-[1.05] text-white " + (faixa ? "top-[60%]" : "top-[16%]")} style={{ fontSize: "9cqw" }}>
         {v.capa[0]}{" "}
@@ -62,6 +79,32 @@ function CapaVideo({ v, className = "" }: { v: VideoPronto; className?: string }
 
 // ————————————————— Peças do Início —————————————————
 /** Fileira que rola para o lado: arrasta no celular, setas no computador. */
+/** Fila de botões (filtros) que rola para o lado: setas no computador, roda do mouse e arrastar no celular. */
+function ChipsRolaveis({ children, className = "", dado }: { children: React.ReactNode; className?: string; dado?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pode, setPode] = useState({ antes: false, depois: false });
+  const medir = () => { const el = ref.current; if (!el) return; setPode({ antes: el.scrollLeft > 4, depois: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 }); };
+  useEffect(() => {
+    medir();
+    const el = ref.current;
+    const t = setTimeout(medir, 400);
+    // roda do mouse (para cima/baixo) rola a fila para o lado
+    const roda = (e: WheelEvent) => { if (!el || el.scrollWidth <= el.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; e.preventDefault(); el.scrollBy({ left: e.deltaY }); };
+    el?.addEventListener("wheel", roda, { passive: false });
+    window.addEventListener("resize", medir);
+    return () => { clearTimeout(t); el?.removeEventListener("wheel", roda); window.removeEventListener("resize", medir); };
+  }, []);
+  const rolar = (d: number) => ref.current?.scrollBy({ left: d * ref.current.clientWidth * 0.7, behavior: "smooth" });
+  const seta = "absolute top-1/2 z-20 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-white/15 bg-[#1b1b1b] shadow-xl hover:bg-[#262626]";
+  return (
+    <div className={`relative ${className}`}>
+      {pode.antes && <button type="button" aria-label="Ver os filtros anteriores" onClick={() => rolar(-1)} className={`${seta} left-0`}><ChevronLeft className="h-4 w-4" /></button>}
+      <div ref={ref} data-chips={dado} onScroll={medir} className={`-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 ${pode.antes ? "sm:pl-11" : "sm:pl-0"} ${pode.depois ? "sm:pr-11" : "sm:pr-0"}`}>{children}</div>
+      {pode.depois && <button type="button" aria-label="Ver mais filtros" onClick={() => rolar(1)} className={`${seta} right-0`}><ChevronRight className="h-4 w-4" /></button>}
+    </div>
+  );
+}
+
 function Fileira({ id, titulo, sub, verTudo, topo, children }: { id?: string; titulo: string; sub?: string; verTudo?: { texto: string; ir: () => void }; topo?: React.ReactNode; children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const [pode, setPode] = useState({ antes: false, depois: false });
@@ -180,7 +223,7 @@ function Inicio() {
 
         <main className="min-w-0 flex-1 px-4 pt-4 sm:px-8">
           <div className="flex items-center justify-between lg:hidden">
-            <div className="text-[15px] font-black tracking-tight">Canva Viagem</div>
+            <img src={logoCanva} alt="Canva Viagem" className="h-8 w-8 rounded-lg object-cover" />
             <BotaoTema compacto />
           </div>
 
@@ -238,11 +281,11 @@ function Inicio() {
 
           <Fileira id="videos-prontos" titulo="Modelos para você: vídeos" sub="Vídeos prontos da sua agência, com música. Toque em um para ver, mudar o que quiser e baixar." verTudo={{ texto: "Ver todos", ir: () => setSp({ criar: "video" }) }}
             topo={
-              <div data-categorias-video className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
+              <ChipsRolaveis className="mb-3" dado="categorias-video">
                 {([["todos", "Todos"], ...CATEGORIAS_VIDEO.map((c) => [c.id, c.nome])] as [string, string][]).map(([id, nome]) => (
                   <button key={id} data-categoria={id} aria-pressed={catVideo === id} onClick={(e) => { setCatVideo(id as CategoriaVideo | "todos"); e.currentTarget.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }); }} className={"min-h-10 shrink-0 rounded-full border px-4 text-[13px] font-bold " + (catVideo === id ? "border-transparent text-black" : "border-white/15 text-white/75 hover:bg-white/[0.06]")} style={catVideo === id ? { background: AMARELO } : undefined}>{nome}</button>
                 ))}
-              </div>
+              </ChipsRolaveis>
             }>
             {VIDEOS.filter((v) => catVideo === "todos" || v.cat === catVideo).map((v) => (
               <button key={v.id} data-video={v.id} onClick={() => setPrevia({ tipo: "video", v })} className="w-36 shrink-0 snap-start text-left transition-transform hover:-translate-y-1 sm:w-44">
@@ -429,11 +472,11 @@ function EscolherVideo({ aoEscolher, aoVoltar }: { aoEscolher: (id: string) => v
         </div>
         <h2 className="mt-8 text-[17px] font-black">Vídeo da sua agência</h2>
         <p className="mt-0.5 text-[13px] text-white/55">Pronto para postar. Depois você muda os textos, as cenas, o tempo de cada cena, a animação e a música.</p>
-        <div className="sticky top-0 z-10 -mx-4 mt-4 flex gap-2 overflow-x-auto bg-[hsl(var(--background))] px-4 py-2 [scrollbar-width:none] sm:mx-0 sm:px-0">
+        <ChipsRolaveis className="sticky top-0 z-10 mt-4 bg-[hsl(var(--background))] py-2" dado="filtro-agencia">
           {CATEGORIAS_VIDEO.map((c) => (
             <a key={c.id} href={"#cat-" + c.id} onClick={(e) => { e.preventDefault(); document.getElementById("cat-" + c.id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="min-h-10 shrink-0 rounded-full border border-white/15 px-4 py-2 text-[13px] font-bold text-white/80 hover:bg-white/[0.06]">{c.nome}</a>
           ))}
-        </div>
+        </ChipsRolaveis>
         <div id="escolher-video">
           {CATEGORIAS_VIDEO.map((c) => (
             <section key={c.id} id={"cat-" + c.id} data-cat-video={c.id} className="scroll-mt-16">

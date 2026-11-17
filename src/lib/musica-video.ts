@@ -142,20 +142,20 @@ function recortar(faixa: FaixaAac, segundos: number, doFim: boolean): FaixaAac {
 
 /** Caminho A: decodifica, corta, suaviza entrada e saída e codifica em AAC. */
 /** Uma fala da narração: o áudio (MP3) e o segundo do vídeo em que começa. */
-export type VozNaFaixa = { audio: ArrayBuffer; inicio: number };
+export type VozNaFaixa = { audio: ArrayBuffer; inicio: number; /** segundos do vídeo em que a voz fala (sem isso, a fala inteira) */ trechos?: [number, number][]; /** volume da voz (1 = 100%) */ vol?: number };
 
-async function codificar(buf: ArrayBuffer | null, segundos: number, vozes: VozNaFaixa[] = []): Promise<FaixaAac> {
+async function codificar(buf: ArrayBuffer | null, segundos: number, vozes: VozNaFaixa[] = [], volMusica = 1): Promise<FaixaAac> {
   const config = { codec: "mp4a.40.2", sampleRate: TAXA, numberOfChannels: 2, bitrate: 128_000 };
   const ok = await AudioEncoder.isConfigSupported(config);
   if (!ok.supported) throw new Error("sem AAC");
   const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   const ac = new Ctx();
   let original: AudioBuffer | null = null;
-  const falas: { b: AudioBuffer; inicio: number }[] = [];
+  const falas: { b: AudioBuffer; inicio: number; trechos?: [number, number][]; vol: number }[] = [];
   try {
     if (buf) original = await ac.decodeAudioData(buf.slice(0));
     for (const v of vozes) {
-      try { falas.push({ b: await ac.decodeAudioData(v.audio.slice(0)), inicio: v.inicio }); } catch { /* fala com problema: segue sem ela */ }
+      try { falas.push({ b: await ac.decodeAudioData(v.audio.slice(0)), inicio: v.inicio, trechos: v.trechos, vol: v.vol ?? 1 }); } catch { /* fala com problema: segue sem ela */ }
     }
   } finally {
     ac.close().catch(() => undefined);
@@ -168,10 +168,11 @@ async function codificar(buf: ArrayBuffer | null, segundos: number, vozes: VozNa
     const ganho = off.createGain();
     const saida = Math.min(2, segundos / 4);
     // com narração a música fica mais baixa e abaixa mais enquanto a voz fala (a voz sempre na frente)
-    const base = falas.length ? 0.5 : 0.9, sobVoz = 0.14;
+    // enquanto a voz fala a música fica em 15%; sem voz, 100%. O volume escolhido multiplica.
+    const base = Math.min(1.5, volMusica), sobVoz = 0.15 * volMusica;
     ganho.gain.setValueAtTime(0, 0);
     ganho.gain.linearRampToValueAtTime(base, 0.25);
-    const trechos = falas.map((f) => [Math.max(0.3, f.inicio - 0.15), Math.min(segundos - saida, f.inicio + f.b.duration + 0.25)] as const).filter(([a, z]) => z > a).sort((x, y) => x[0] - y[0]);
+    const trechos = falas.flatMap((f) => f.trechos ?? [[f.inicio, f.inicio + f.b.duration] as [number, number]]).map(([a, z]) => [Math.max(0.3, a - 0.15), Math.min(segundos - saida, z + 0.25)] as const).filter(([a, z]) => z > a).sort((x, y) => x[0] - y[0]);
     // junta falas coladas (não sobe e desce a música entre uma frase e outra)
     const juntos: [number, number][] = [];
     for (const [a, z] of trechos) { const u = juntos[juntos.length - 1]; if (u && a - u[1] < 0.6) u[1] = Math.max(u[1], z); else juntos.push([a, z]); }
@@ -190,7 +191,7 @@ async function codificar(buf: ArrayBuffer | null, segundos: number, vozes: VozNa
     const src = off.createBufferSource();
     src.buffer = f.b;
     const g = off.createGain();
-    g.gain.value = 1;
+    g.gain.value = f.vol;
     src.connect(g).connect(off.destination);
     src.start(Math.max(0, f.inicio));
   }
@@ -241,9 +242,9 @@ async function codificar(buf: ArrayBuffer | null, segundos: number, vozes: VozNa
  * `forcarCopia` é só para teste (simula o iPhone sem AudioEncoder).
  */
 /** Música (ou nenhuma) + falas da narração numa faixa só. Precisa do codificador de áudio do navegador. */
-export async function prepararTrilha(fonte: string | Blob | null, segundos: number, vozes: VozNaFaixa[]): Promise<FaixaAac> {
+export async function prepararTrilha(fonte: string | Blob | null, segundos: number, vozes: VozNaFaixa[], volMusica = 1): Promise<FaixaAac> {
   if (!temCodificador()) throw new Error("Este navegador não junta a voz ao vídeo. Use o Chrome ou o Safari atualizado.");
-  return codificar(fonte ? await lerArquivo(fonte) : null, segundos, vozes);
+  return codificar(fonte ? await lerArquivo(fonte) : null, segundos, vozes, volMusica);
 }
 
 export async function prepararMusica(fonte: string | Blob, segundos: number, daCasa: boolean, forcarCopia = false): Promise<FaixaAac> {

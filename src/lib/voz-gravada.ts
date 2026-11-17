@@ -146,7 +146,7 @@ export async function prepararVoz(arquivo: Blob, origem: VozGravada["origem"]): 
   return { audio, dur: out.length / taxa, origem, url: URL.createObjectURL(new Blob([audio], { type: "audio/wav" })) };
 }
 
-function wavDe(d: Float32Array, taxa: number): ArrayBuffer {
+export function wavDe(d: Float32Array, taxa: number): ArrayBuffer {
   const buf = new ArrayBuffer(44 + d.length * 2);
   const v = new DataView(buf);
   const txt = (o: number, s: string) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };

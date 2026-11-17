@@ -14,7 +14,7 @@ export type EstadoCena = { a: Arte; t: ArtTweakMap; x: Extra[] };
 type Caixa = { x: number; y: number; w: number; h: number };
 type ItemAnimado = { img: CanvasImageSource; caixa: Caixa; inteiro: boolean; rot?: number; anim: AnimItem };
 /** Fala da narração na cena: pedaços da legenda (segundos dentro da cena) e o áudio para a prévia. */
-export type FalaPronta = { pedacos: { t: string; a: number; b: number }[]; audio?: string; legenda: boolean };
+export type FalaPronta = { pedacos: { t: string; a: number; b: number }[]; audio?: string; legenda: boolean; /** onde a voz fala (para a música abaixar) e o volume da música */ trechos?: [number, number][]; volMusica?: number };
 export type CenaPronta = { dur: number; aj: AjusteCena; base: CanvasImageSource; itens: ItemAnimado[]; caixa: Caixa | null; video?: string; altura: number; fala?: FalaPronta; textos?: { y: number; h: number }[] };
 
 const LARG = 1080;
@@ -217,7 +217,11 @@ export function tocarPrevia(canvas: HTMLCanvasElement, cenas: CenaPronta[], musi
   });
   const audio = musica ? new Audio(musica) : null;
   const comVoz = cenas.some((c) => c.fala?.audio);
-  if (audio) { audio.volume = comVoz ? 0.3 : 0.7; void audio.play().catch(() => undefined); }
+  const f0 = cenas.find((c) => c.fala)?.fala;
+  const volM = f0?.volMusica ?? 1, trechos = f0?.trechos;
+  // a música abaixa para 15% enquanto a voz fala; sem voz, volume cheio (o volume escolhido multiplica)
+  const volumeEm = (t: number) => Math.max(0, Math.min(1, comVoz && (!trechos || trechos.some(([a, z]) => t >= a - 0.15 && t <= z + 0.25)) ? 0.15 * volM : volM));
+  if (audio) { audio.volume = volumeEm(0); void audio.play().catch(() => undefined); }
   const falas = cenas.map((c) => (c.fala?.audio ? new Audio(c.fala.audio) : null));
   const falou = new Set<number>();
   const ativos = new Set<number>();
@@ -239,6 +243,7 @@ export function tocarPrevia(canvas: HTMLCanvasElement, cenas: CenaPronta[], musi
       void v.play().catch(() => undefined);
     });
     ativos.forEach((j) => { if (!agora.has(j)) { ativos.delete(j); vids[j]?.pause(); } });
+    if (audio) audio.volume = volumeEm(t);
     const fa = falas[q.i];
     if (fa && !falou.has(q.i) && q.local >= ENTRADA_VOZ) { falou.add(q.i); void fa.play().catch(() => undefined); }
     desenharVideo(ctx, cenas, ini, t, (j) => {
@@ -312,7 +317,7 @@ async function abrirLeitor(url: string): Promise<Leitor> {
   };
 }
 
-export async function fazerVideoMp4(cenas: CenaPronta[], musica: string | undefined, largura: number, aoAvancar?: (p: number) => void, aoAviso?: (m: string) => void, vozes: VozNaFaixa[] = []): Promise<Blob> {
+export async function fazerVideoMp4(cenas: CenaPronta[], musica: string | undefined, largura: number, aoAvancar?: (p: number) => void, aoAviso?: (m: string) => void, vozes: VozNaFaixa[] = [], volMusica = 1): Promise<Blob> {
   if (!podeFazerVideo()) throw new Error("Este navegador não faz vídeo MP4.");
   const altura = cenas[0]?.altura || 1920;
   const W = Math.round(largura / 2) * 2, H = Math.round((largura * altura) / LARG / 2) * 2;
@@ -330,13 +335,16 @@ export async function fazerVideoMp4(cenas: CenaPronta[], musica: string | undefi
   if (vozes.length) {
     // narração: a voz e a música viram uma faixa só (a música abaixa enquanto a voz fala)
     try {
-      faixa = await prepararTrilha(musica || null, total, vozes);
+      faixa = await prepararTrilha(musica || null, total, vozes, volMusica);
     } catch (e) {
       // iPhone sem codificador de áudio: melhor sair o vídeo com a música do que não sair nada
       aoAviso?.("Este aparelho não junta a voz ao vídeo. Saiu com a música, sem a narração. No computador ou no Chrome a voz entra.");
       console.warn("[video] narração falhou", e);
       if (musica) { try { faixa = await prepararMusica(musica, total, true); } catch { faixa = null; } }
     }
+  } else if (musica && Math.abs(volMusica - 1) > 0.01) {
+    // volume da música mudado: passa pelo misturador (sem ele, sai no volume normal)
+    try { faixa = await prepararTrilha(musica, total, [], volMusica); } catch { try { faixa = await prepararMusica(musica, total, true); } catch { faixa = null; } }
   } else if (musica) {
     try { faixa = await prepararMusica(musica, total, true); } catch (e) { aoAviso?.((e as Error).message?.includes(".m4a") ? (e as Error).message : "Não consegui colocar a música neste aparelho. O vídeo saiu sem música."); }
   }

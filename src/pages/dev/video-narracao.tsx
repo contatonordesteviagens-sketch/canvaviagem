@@ -6,10 +6,9 @@
 // Textos curtos de propósito: o Lucas pediu "quanto menos palavras, melhor".
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AlertTriangle, Check, ClipboardPaste, Copy, Download, ExternalLink, Languages, Loader2, Mic, Pause, Play, RotateCcw, Sparkles, Square, Trash2, Upload, Wand2, X } from "lucide-react";
+import { AlertTriangle, Check, ClipboardPaste, Copy, Loader2, Pause, Play, RotateCcw, Square, Trash2, X } from "lucide-react";
 import type { Narracao } from "@/lib/narracao";
 import { INICIO_VOZ, abrirMicrofone, podeGravar, prepararVoz, tempoDeLeitura, type Microfone, type VozGravada } from "@/lib/voz-gravada";
-import { IDIOMAS_VIDEO, type IdiomaVideo } from "@/lib/traducao";
 import { AMOSTRA, IDIOMAS_IA, VOZES_IA, gerarVozIA, vozIA, vozesBaixadas, type IdiomaIA, type Progresso } from "@/lib/voz-ia";
 
 const seg = (s: number) => Math.round(s) + " s";
@@ -23,14 +22,18 @@ type Props = {
   /** segundos do vídeo */
   total: number;
   voz: VozGravada | null; aoVoz: (v: VozGravada | null) => void;
+  /** segundo do vídeo em que a voz termina (depois dos cortes na faixa) */
+  fimVoz?: number;
+  /** liga/desliga a legenda (vira texto editável em cada cena) */
+  aoLegendas: (on: boolean) => void;
   /** deixa o vídeo com esta duração (as cenas crescem na mesma proporção) */
   esticar: (dur: number) => void;
   agencia: string; linkNarrador: string;
-  /** traduz os textos de todas as cenas (e a fala, se pedir) */
-  traduzir: (para: IdiomaVideo, comFala: boolean, aoAvancar?: (p: number) => void) => Promise<void>;
+  /** toca o vídeo inteiro com a voz e a música, sem baixar */
+  verVideo: () => void;
 };
 
-export function PainelNarracao({ n, mudar, sugerido, total, voz, aoVoz, esticar, agencia, linkNarrador, traduzir }: Props) {
+export function PainelNarracao({ n, mudar, sugerido, total, voz, aoVoz, esticar, agencia, linkNarrador, fimVoz, aoLegendas, verVideo }: Props) {
   const texto = n.roteiro ?? sugerido;
   const leitura = tempoDeLeitura(texto);
   const cabe = Math.max(1, total - INICIO_VOZ - 0.2);
@@ -45,15 +48,16 @@ export function PainelNarracao({ n, mudar, sugerido, total, voz, aoVoz, esticar,
   const [ouvindo, setOuvindo] = useState(false);
   const [teste, setTeste] = useState<VozGravada | null>(null);
   const [lendo, setLendo] = useState(false);
-  const [traduzindo, setTraduzindo] = useState<{ para: IdiomaVideo; pct: number } | null>(null);
-  const [traduzFala, setTraduzFala] = useState(true);
-  const [traduzido, setTraduzido] = useState<IdiomaVideo | null>(null);
+  /** voz feita e ainda fora do vídeo: ouve antes e só entra com "Adicionar no vídeo" */
+  const [pronta, setPronta] = useState<VozGravada | null>(null);
   const som = useRef<HTMLAudioElement | null>(null);
   const arquivo = useRef<HTMLInputElement>(null);
   useEffect(() => () => { som.current?.pause(); }, []);
   useEffect(() => { void vozesBaixadas().then(setBaixadas); }, []);
 
   const pararSom = () => { som.current?.pause(); setOuvindo(false); };
+  const trocarPronta = (v: VozGravada | null) => { pararSom(); setPronta((antes) => { if (antes && antes !== v) URL.revokeObjectURL(antes.url); return v; }); };
+  const adicionar = () => { if (!pronta) return; pararSom(); aoVoz(pronta); setPronta(null); };
   const ouvir = (v: VozGravada) => {
     if (ouvindo) { pararSom(); return; }
     const a = new Audio(v.url);
@@ -71,8 +75,10 @@ export function PainelNarracao({ n, mudar, sugerido, total, voz, aoVoz, esticar,
     try {
       const v = await gerarVozIA(amostra ? AMOSTRA[vozIA(id).idioma] : texto, id, (p) => setGerando({ id, amostra, p }));
       setBaixadas((b) => new Set(b).add(id));
+      // pede ao navegador para não apagar a voz baixada (assim ela não baixa de novo)
+      void navigator.storage?.persist?.().catch(() => undefined);
       if (amostra) { const a = new Audio(v.url); som.current = a; void a.play().catch(() => undefined); }
-      else aoVoz(v);
+      else { trocarPronta(v); }
     } catch (e) { setAviso((e as Error).message); }
     setGerando(null);
   };
@@ -86,7 +92,7 @@ export function PainelNarracao({ n, mudar, sugerido, total, voz, aoVoz, esticar,
     try {
       const v = await prepararVoz(blob, "gravada");
       if (modo === "teste") { setTeste(v); som.current?.pause(); const a = new Audio(v.url); som.current = a; void a.play().catch(() => undefined); }
-      else { aoVoz(v); setTeste(null); }
+      else { trocarPronta(v); setTeste(null); }
     } catch (e) { setAviso((e as Error).message); }
     setLendo(false);
   };
@@ -95,25 +101,10 @@ export function PainelNarracao({ n, mudar, sugerido, total, voz, aoVoz, esticar,
     if (!f) return;
     if (f.size > 30 * 1024 * 1024) { setAviso("Áudio grande demais (máximo 30 MB)."); return; }
     setLendo(true);
-    try { aoVoz(await prepararVoz(f, "enviada")); } catch (e) { setAviso((e as Error).message); }
+    try { trocarPronta(await prepararVoz(f, "enviada")); } catch (e) { setAviso((e as Error).message); }
     setLendo(false);
   };
   const gravar = (modo: "video" | "teste") => { setAviso(""); pararSom(); setGravando(modo); };
-
-  // ——— tradução ———
-  const traduzirPara = async (para: IdiomaVideo) => {
-    if (traduzindo) return;
-    setAviso(""); setTraduzido(null);
-    setTraduzindo({ para, pct: 0 });
-    try {
-      await traduzir(para, traduzFala, (pct) => setTraduzindo({ para, pct }));
-      setTraduzido(para);
-      setTimeout(() => setTraduzido((t) => (t === para ? null : t)), 9000);
-      if (traduzFala) setIdioma(para);
-    } catch (e) { setAviso((e as Error).message || "Não consegui traduzir agora. Tente de novo."); }
-    setTraduzindo(null);
-  };
-  const nomeIdioma = (id: IdiomaVideo) => IDIOMAS_VIDEO.find((i) => i.id === id)?.nome || id;
 
   // ——— texto ———
   const colar = async () => {
@@ -127,8 +118,9 @@ export function PainelNarracao({ n, mudar, sugerido, total, voz, aoVoz, esticar,
     try { await navigator.clipboard.writeText(exemplo); setCopiado(true); setTimeout(() => setCopiado(false), 2000); } catch { setAviso("Toque e segure no exemplo para copiar."); }
   };
 
-  const passou = voz ? voz.dur + INICIO_VOZ > total + 0.1 : false;
-  const durCerta = voz ? Math.ceil(voz.dur + INICIO_VOZ + 0.6) : total;
+  const fim = voz ? fimVoz ?? voz.dur + INICIO_VOZ : 0;
+  const passou = voz ? fim > total + 0.1 : false;
+  const durCerta = voz ? Math.ceil(fim + 0.6) : total;
   const longo = leitura > cabe;
 
   const caixaTexto = (
@@ -155,7 +147,7 @@ export function PainelNarracao({ n, mudar, sugerido, total, voz, aoVoz, esticar,
       <div data-abas-narracao className="grid grid-cols-2 gap-1 rounded-xl bg-white/[0.06] p-1">
         {(["ia", "propria"] as const).map((q) => (
           <button key={q} type="button" data-aba-narracao={q} onClick={() => { setAviso(""); mudar({ aba: q }); }} className={`flex min-h-9 items-center justify-center gap-1.5 rounded-lg text-[13px] font-bold ${aba === q ? "bg-white/[0.14] text-white" : "text-white/60"}`}>
-            {q === "ia" ? <><Wand2 className="h-4 w-4" />Voz de IA</> : <><Mic className="h-4 w-4" />Sua voz</>}
+            {q === "ia" ? "Voz de IA" : "Sua voz"}
           </button>
         ))}
       </div>
@@ -167,13 +159,27 @@ export function PainelNarracao({ n, mudar, sugerido, total, voz, aoVoz, esticar,
         </p>
       )}
 
-      {voz && (
-        <section data-voz-no-video className="narr-ok rounded-2xl p-3">
-          <p className="flex items-center gap-1.5 text-[15px] font-black"><Check className="h-5 w-5" />Voz no vídeo · {seg(voz.dur)}</p>
-          <div className="mt-2.5 flex flex-wrap gap-1.5">
-            <button type="button" data-ouvir-voz onClick={() => ouvir(voz)} className={`${botao} border border-white/20`}>{ouvindo ? <><Pause className="h-4 w-4" />Parar</> : <><Play className="h-4 w-4" />Ouvir</>}</button>
-            <button type="button" data-tirar-voz onClick={() => { pararSom(); aoVoz(null); }} className={`${botao} text-white/60`}><Trash2 className="h-4 w-4" />Tirar</button>
+      {pronta && (
+        <section data-voz-pronta className="narr-cartao rounded-2xl p-3">
+          <p className="text-[15px] font-black">Voz pronta · {seg(pronta.dur)}</p>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <button type="button" data-ouvir-pronta onClick={() => ouvir(pronta)} className={`${botao} border border-white/20`}>{ouvindo ? <><Pause className="h-4 w-4" />Parar</> : <><Play className="h-4 w-4" />Ouvir</>}</button>
+            <button type="button" data-remover-pronta onClick={() => trocarPronta(null)} className={`${botao} border border-white/20`}><Trash2 className="h-4 w-4" />Remover</button>
           </div>
+          <button type="button" data-adicionar-voz onClick={adicionar} className="mt-2 min-h-12 w-full rounded-full text-[15px] font-black text-black" style={{ background: "#F5F906" }}>Adicionar no vídeo</button>
+        </section>
+      )}
+
+      {voz && !pronta && (
+        <section data-voz-no-video className="narr-ok rounded-2xl p-3">
+          <p className="text-[15px] font-black">Voz no vídeo · {seg(voz.dur)}</p>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <button type="button" data-ouvir-voz onClick={() => ouvir(voz)} className={`${botao} border border-white/20`}>{ouvindo ? <><Pause className="h-4 w-4" />Parar</> : <><Play className="h-4 w-4" />Ouvir</>}</button>
+            <button type="button" data-tirar-voz onClick={() => { pararSom(); aoVoz(null); }} className={`${botao} border border-white/20`}><Trash2 className="h-4 w-4" />Remover</button>
+          </div>
+          <button type="button" data-ver-com-voz onClick={() => { pararSom(); verVideo(); }} className="mt-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-black text-black" style={{ background: "#F5F906" }}>
+            <Play className="h-5 w-5" />Ver o vídeo com a voz
+          </button>
           {passou && (
             <button type="button" data-esticar-video onClick={() => esticar(durCerta)} className="mt-2.5 min-h-11 w-full rounded-full text-[14px] font-black text-black" style={{ background: "#F5F906" }}>
               Fala maior que o vídeo · Aumentar para {seg(durCerta)}
@@ -184,9 +190,9 @@ export function PainelNarracao({ n, mudar, sugerido, total, voz, aoVoz, esticar,
 
       {aba === "ia" ? (
         <>
-          <div className="flex gap-1.5">
+          <div className="grid grid-cols-3 gap-1.5">
             {IDIOMAS_IA.map((l) => (
-              <button key={l.id} type="button" data-idioma-ia={l.id} onClick={() => setIdioma(l.id)} className={`min-h-9 flex-1 rounded-full text-[13px] font-bold ${idioma === l.id ? "narr-chip-ativo" : "narr-chip"}`}>{l.nome}</button>
+              <button key={l.id} type="button" data-idioma-ia={l.id} onClick={() => setIdioma(l.id)} className={`min-h-9 rounded-full text-[13px] font-bold ${idioma === l.id ? "narr-chip-ativo" : "narr-chip"}`}>{l.nome}</button>
             ))}
           </div>
           <div data-vozes-ia className="grid grid-cols-2 gap-1.5">
@@ -210,74 +216,53 @@ export function PainelNarracao({ n, mudar, sugerido, total, voz, aoVoz, esticar,
           {gerando?.amostra && <p className="narr-destaque -mt-2 text-[12px] font-bold">{progressoTexto(gerando.p)}</p>}
 
           <button type="button" data-gerar-voz-ia onClick={() => void gerarIA(escolhida.id, false)} disabled={!!gerando || !texto.trim()}
-            className="relative flex min-h-14 items-center justify-center overflow-hidden rounded-2xl text-[16px] font-black text-black disabled:opacity-60" style={{ background: "#F5F906" }}>
+            className={`relative flex items-center justify-center overflow-hidden rounded-2xl font-black disabled:opacity-60 ${pronta ? "narr-contorno min-h-12 border text-[14px]" : "min-h-14 text-[16px] text-black"}`} style={pronta ? undefined : { background: "#F5F906" }}>
             {gerando && !gerando.amostra && <span className="absolute inset-y-0 left-0 bg-black/15 transition-[width]" style={{ width: `${Math.round(gerando.p.pct * 100)}%` }} />}
             <span className="relative flex items-center gap-2">
-              {gerando && !gerando.amostra ? <><Loader2 className="h-5 w-5 animate-spin" />{progressoTexto(gerando.p)}</> : <><Wand2 className="h-5 w-5" />{voz?.origem === "ia" ? "Gerar de novo" : "Gerar voz"} · {escolhida.nome}</>}
+              {gerando && !gerando.amostra ? <><Loader2 className="h-5 w-5 animate-spin" />{progressoTexto(gerando.p)}</> : <>{pronta || voz?.origem === "ia" ? "Gerar de novo" : "Gerar voz"} · {escolhida.nome}</>}
             </span>
           </button>
-          {!baixadas.has(escolhida.id) && !gerando && <p className="-mt-2 flex items-center justify-center gap-1 text-[11px] font-semibold text-white/45"><Download className="h-3.5 w-3.5" />1ª vez baixa a voz ({escolhida.mb} MB). Depois é na hora.</p>}
+          {!baixadas.has(escolhida.id) && !gerando && <p className="-mt-2 text-center text-[11px] font-semibold text-white/45">1ª vez baixa a voz ({escolhida.mb} MB). Depois é na hora.</p>}
           {caixaTexto}
         </>
       ) : (
         <>
           <button type="button" data-gravar-voz onClick={() => gravar("video")} disabled={!podeGravar() || lendo}
             className="flex min-h-14 items-center justify-center gap-2.5 rounded-2xl text-[17px] font-black text-black disabled:opacity-50" style={{ background: "#F5F906" }}>
-            <Mic className="h-6 w-6" />{lendo ? "Preparando…" : voz?.origem === "gravada" ? "Gravar de novo" : "Gravar voz"}
+            {lendo ? "Preparando…" : pronta?.origem === "gravada" || voz?.origem === "gravada" ? "Gravar de novo" : "Gravar voz"}
           </button>
           {!podeGravar() && <p className="narr-destaque text-[13px] font-bold">Este navegador não grava. Use o Chrome ou envie um áudio.</p>}
           <div data-dicas-gravar className="flex items-center justify-between gap-2">
             <p className="text-[12px] font-semibold text-white/60">Lugar silencioso, celular perto da boca.</p>
             <button type="button" data-teste-voz onClick={() => (teste ? ouvir(teste) : gravar("teste"))} disabled={!podeGravar() || lendo} className={`${botao} narr-contorno shrink-0 border disabled:opacity-40`}>
-              {teste ? (ouvindo ? <><Pause className="h-4 w-4" />Parar</> : <><Play className="h-4 w-4" />Ouvir teste</>) : <><Mic className="h-4 w-4" />Teste 5 s</>}
+              {teste ? (ouvindo ? "Parar" : "Ouvir teste") : "Teste 5 s"}
             </button>
           </div>
           {caixaTexto}
-          <button type="button" data-enviar-audio onClick={() => arquivo.current?.click()} disabled={lendo} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/25 text-[13px] font-bold disabled:opacity-50"><Upload className="h-4 w-4" />Enviar áudio pronto</button>
+          <button type="button" data-enviar-audio onClick={() => arquivo.current?.click()} disabled={lendo} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/25 text-[13px] font-bold disabled:opacity-50">Enviar áudio pronto</button>
           <input ref={arquivo} data-arquivo-audio type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.opus" className="hidden" onChange={(e) => { void enviar(e.target.files?.[0]); e.target.value = ""; }} />
         </>
       )}
 
       <section data-narrador-ofertas className="narr-cartao rounded-2xl p-3">
-        <p className="flex items-center gap-1.5 text-[15px] font-black"><Sparkles className="narr-destaque h-4 w-4" />Quer um texto novo?</p>
+        <p className="text-[15px] font-black">Quer um texto novo?</p>
         <p className="mt-1 text-[13px] text-white/70">Mande seu pacote ao Narrador. Cole o texto aqui.</p>
         <div className="mt-2 flex items-start gap-2 rounded-xl bg-black/30 p-2.5">
           <p data-exemplo-narrador className="flex-1 select-text text-[12px] leading-snug text-white/80">{exemplo}</p>
           <button type="button" data-copiar-exemplo onClick={copiarExemplo} aria-label="Copiar exemplo" className="narr-destaque shrink-0 p-1">{copiado ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}</button>
         </div>
         <a href={linkNarrador} target="_blank" rel="noopener noreferrer" data-abrir-narrador className="mt-2 flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-white text-[14px] font-black text-black">
-          <ExternalLink className="h-4 w-4" />Abrir Narrador
+          Abrir Narrador
         </a>
       </section>
 
       <label className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-white/10 px-3">
-        <span className="text-[14px] font-bold">Legenda na tela</span>
-        <input type="checkbox" data-legendas checked={n.legendas} onChange={(e) => mudar({ legendas: e.target.checked })} className="h-5 w-5 accent-[#F5F906]" />
+        <span className="min-w-0">
+          <span className="block text-[14px] font-bold">Legenda na tela</span>
+          <span className="block text-[12px] font-semibold text-white/55">Vira um texto em cada cena: dá para mudar, mover e apagar.</span>
+        </span>
+        <input type="checkbox" data-legendas checked={!!n.legendas} onChange={(e) => aoLegendas(e.target.checked)} className="h-5 w-5 shrink-0 accent-[#F5F906]" />
       </label>
-
-      <section data-traduzir-video className="narr-cartao rounded-2xl p-3">
-        <p className="flex items-center gap-1.5 text-[15px] font-black"><Languages className="narr-destaque h-4 w-4" />Traduzir vídeo</p>
-        <p className="mt-1 text-[13px] text-white/70">Todos os textos das cenas mudam de idioma.</p>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          {IDIOMAS_VIDEO.map((i) => (
-            <button key={i.id} type="button" data-traduzir-para={i.id} disabled={!!traduzindo} onClick={() => void traduzirPara(i.id)}
-              className={`relative flex min-h-12 items-center justify-center gap-2 overflow-hidden rounded-xl text-[14px] font-black disabled:opacity-60 ${traduzido === i.id ? "narr-chip-ativo" : "narr-chip"}`}>
-              {traduzindo?.para === i.id && <span className="absolute inset-y-0 left-0 bg-[#F5F906]/40" style={{ width: `${Math.max(8, traduzindo.pct * 100)}%` }} />}
-              <Languages className="relative h-4 w-4" />
-              <span className="relative">{traduzindo?.para === i.id ? "Traduzindo…" : i.nome}</span>
-            </button>
-          ))}
-        </div>
-        <label className="mt-2 flex min-h-10 items-center gap-2 text-[13px] font-bold">
-          <input type="checkbox" data-traduzir-fala checked={traduzFala} onChange={(e) => setTraduzFala(e.target.checked)} className="h-5 w-5 accent-[#F5F906]" />
-          Traduzir a fala também
-        </label>
-        {traduzido && (
-          <p data-traduzido className="narr-ok mt-1 rounded-xl px-3 py-2 text-[13px] font-bold">
-            Pronto: vídeo em {nomeIdioma(traduzido)}.{traduzFala ? " Agora toque em Gerar voz." : ""} Desfazer volta ao português.
-          </p>
-        )}
-      </section>
 
       {gravando && (
         <Teleprompter texto={gravando === "teste" ? (texto.split(/(?<=[.!?])\s+/).slice(0, 2).join(" ") || texto) : texto}

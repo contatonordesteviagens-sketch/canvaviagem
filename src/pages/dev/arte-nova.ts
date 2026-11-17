@@ -32,7 +32,7 @@ export type Arte = {
   /** vídeo: os ajustes desta cena (tempo, transição, trecho, velocidade, enquadrar, animação) */
   cena?: CenaVideo;
 };
-export type VisualCena = "classico" | "faixa" | "azul";
+export type VisualCena = import("./videos-prontos").VisualVideo;
 export type AnimItem = { anim: import("./video-cena").Animacao; modo?: import("./video-cena").ModoAnim; vel?: import("./video-cena").VelAnim; atraso?: number };
 export type CenaVideo = import("./video-cena").AjusteCena & {
   /** cena só com o vídeo (sem o layout de anúncio): os textos são itens soltos por cima */
@@ -51,6 +51,8 @@ export type CenaVideo = import("./video-cena").AjusteCena & {
   fala?: string;
   /** só na primeira cena: a narração do vídeo inteiro (voz, velocidade, tom, legenda) */
   narracao?: import("@/lib/narracao").Narracao;
+  /** só na primeira cena: em que cenas a logo aparece e em que formato */
+  logoVideo?: { onde: "todas" | "inicio-fim" | "fim" | "nenhuma"; formato: import("./video-paginas").FormatoLogo };
 };
 export type Marca = { primaryColor?: string; secondaryColor?: string; logoBase64?: string; logoFormat?: string; whatsapp?: string; instagram?: string };
 
@@ -191,6 +193,62 @@ function fotoBranca() {
 /** Altura da parte do vídeo no visual "faixa" (o resto é a faixa escura com os textos). */
 export const ALTURA_FAIXA = 0.47;
 export const AMARELO_CENA = "#FFC629";
+/** Véu (cor por cima do vídeo) e moldura de cada estilo do vídeo. Os mesmos estilos do vídeo de pacote. */
+function degrade(x: CanvasRenderingContext2D, H: number, paradas: [number, string][]) {
+  const g = x.createLinearGradient(0, 0, 0, H);
+  paradas.forEach(([p, c]) => g.addColorStop(p, c));
+  return g;
+}
+export function veuDoVisual(x: CanvasRenderingContext2D, W: number, H: number, visual: VisualCena, fotoH = H) {
+  const pinta = (paradas: [number, string][]) => { x.fillStyle = degrade(x, H, paradas); x.fillRect(0, 0, W, H); };
+  const classico = () => pinta([[0, "rgba(0,0,0,.5)"], [0.28, "rgba(0,0,0,.05)"], [0.6, "rgba(0,0,0,.08)"], [1, "rgba(0,0,0,.72)"]]);
+  x.save();
+  if (visual === "faixa") {
+    x.fillStyle = "#0a0a0c"; x.fillRect(0, fotoH, W, H - fotoH);
+    x.fillStyle = AMARELO_CENA; x.fillRect(0, fotoH, W, 10);
+  } else if (visual === "azul") {
+    pinta([[0, "rgba(12,70,200,.5)"], [0.5, "rgba(8,48,143,.5)"], [1, "rgba(4,22,80,.85)"]]);
+  } else if (visual === "luxo") {
+    pinta([[0, "rgba(0,0,0,.55)"], [0.45, "rgba(0,0,0,.25)"], [1, "rgba(0,0,0,.88)"]]);
+    x.strokeStyle = "#D4AF37"; x.lineWidth = 5; x.strokeRect(42, 42, W - 84, H - 84);
+    x.lineWidth = 2; x.strokeRect(62, 62, W - 124, H - 124);
+  } else if (visual === "neon") {
+    pinta([[0, "rgba(70,0,130,.55)"], [0.5, "rgba(30,0,80,.35)"], [1, "rgba(10,0,40,.85)"]]);
+    x.shadowBlur = 36;
+    x.shadowColor = "#ff2bd6"; x.fillStyle = "#ff2bd6"; x.fillRect(0, 0, W, 12);
+    x.shadowColor = "#22e3ff"; x.fillStyle = "#22e3ff"; x.fillRect(0, H - 12, W, 12);
+  } else if (visual === "vibrante") {
+    pinta([[0, "rgba(255,110,0,.5)"], [0.5, "rgba(255,0,120,.22)"], [1, "rgba(120,0,90,.8)"]]);
+  } else if (visual === "cartao") {
+    pinta([[0, "rgba(0,0,0,.35)"], [1, "rgba(0,0,0,.55)"]]);
+    x.beginPath(); x.roundRect(60, H * 0.3, W - 120, H * 0.5, 48);
+    x.fillStyle = "rgba(0,0,0,.5)"; x.fill();
+    x.strokeStyle = "rgba(255,255,255,.3)"; x.lineWidth = 3; x.stroke();
+  } else if (visual === "postal") {
+    classico();
+    const b = 40;
+    x.fillStyle = "#FBF8F1";
+    x.fillRect(0, 0, W, b); x.fillRect(0, H - b * 2.2, W, b * 2.2); x.fillRect(0, 0, b, H); x.fillRect(W - b, 0, b, H);
+    x.setLineDash([14, 10]); x.strokeStyle = "rgba(0,0,0,.25)"; x.lineWidth = 3;
+    x.strokeRect(b + 14, b + 14, W - (b + 14) * 2, H - b * 3.2 - 28);
+  } else if (visual === "revista") {
+    pinta([[0, "rgba(0,0,0,.62)"], [0.16, "rgba(0,0,0,.1)"], [0.6, "rgba(0,0,0,.12)"], [1, "rgba(0,0,0,.82)"]]);
+    x.strokeStyle = "rgba(255,255,255,.85)"; x.lineWidth = 3; x.strokeRect(34, 34, W - 68, H - 68);
+    x.fillStyle = AMARELO_CENA; x.fillRect(W / 2 - 90, 96, 180, 8);
+  } else if (visual === "passagem") {
+    pinta([[0, "rgba(6,30,70,.55)"], [0.5, "rgba(6,30,70,.3)"], [1, "rgba(4,18,45,.85)"]]);
+    const y = H * 0.84;
+    x.setLineDash([18, 14]); x.strokeStyle = "rgba(255,255,255,.55)"; x.lineWidth = 4;
+    x.beginPath(); x.moveTo(60, y); x.lineTo(W - 60, y); x.stroke();
+    x.setLineDash([]); x.fillStyle = "rgba(0,0,0,.7)";
+    x.beginPath(); x.arc(0, y, 38, 0, Math.PI * 2); x.arc(W, y, 38, 0, Math.PI * 2); x.fill();
+  } else if (visual === "bf") {
+    pinta([[0, "rgba(0,0,0,.6)"], [0.5, "rgba(0,0,0,.35)"], [1, "rgba(0,0,0,.88)"]]);
+    x.fillStyle = AMARELO_CENA; x.fillRect(0, 0, W, 22); x.fillRect(0, H - 22, W, 22);
+  } else classico();
+  x.restore();
+}
+
 /**
  * Cena livre do vídeo: só o fundo (vídeo ou foto), o véu do visual escolhido e os itens com camada.
  * Os textos são itens soltos do editor (dá para tocar, mudar, mover e animar cada um).
@@ -214,18 +272,7 @@ async function comporCena(a: Arte, aoMedir: ((els: ArtElementBox[]) => void) | u
       x.drawImage(img, (img.naturalWidth - sw) / 2, (img.naturalHeight - sh) / 2, sw, sh, 0, 0, W, fotoH);
     } catch { /* sem a foto: fica o fundo escuro */ }
   }
-  if (visual === "azul") {
-    const g = x.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, "rgba(12,70,200,.5)"); g.addColorStop(0.5, "rgba(8,48,143,.5)"); g.addColorStop(1, "rgba(4,22,80,.85)");
-    x.fillStyle = g; x.fillRect(0, 0, W, H);
-  } else if (visual === "faixa") {
-    x.fillStyle = "#0a0a0c"; x.fillRect(0, fotoH, W, H - fotoH);
-    x.fillStyle = AMARELO_CENA; x.fillRect(0, fotoH, W, 10);
-  } else {
-    const g = x.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, "rgba(0,0,0,.5)"); g.addColorStop(0.28, "rgba(0,0,0,.05)"); g.addColorStop(0.6, "rgba(0,0,0,.08)"); g.addColorStop(1, "rgba(0,0,0,.72)");
-    x.fillStyle = g; x.fillRect(0, 0, W, H);
-  }
+  veuDoVisual(x, W, H, visual, fotoH);
   for (const cam of camadas.slice().sort((p, q) => p.z - q.z)) {
     x.save();
     x.translate(cam.x, cam.y);

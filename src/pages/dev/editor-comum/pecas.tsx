@@ -4,10 +4,13 @@ import { Sparkles, type LucideIcon } from "lucide-react";
 // Recados da formação Agente de Viagens Lucrativo: um diferente a cada download, cada um com outra situação.
 // Só promete o que a página da formação promete (/quiz-agente-lucrativo).
 export const TOTAL_ANUNCIOS = 6;
+/** Página da formação (abre sempre em nova guia). */
+export const URL_FORMACAO = "/quiz-agente-lucrativo";
 export function AnuncioAgente({ qual }: { qual: number }) {
-  const saiba = () => window.open("/quiz-agente-lucrativo", "_blank", "noopener");
+  // sempre em NOVA guia: o cliente não pode sair do editor (perderia o vídeo)
+  const link = { href: URL_FORMACAO, target: "_blank", rel: "noopener noreferrer" } as const;
   const botao = (texto: string, escuro = false) => (
-    <button data-anuncio-saiba onClick={saiba} className="mt-3 rounded-full px-4 py-2 text-[13px] font-black" style={escuro ? { background: "#111", color: "#F5F906" } : { background: "#F5F906", color: "#111" }}>{texto}</button>
+    <a data-anuncio-saiba {...link} className="mt-3 inline-block rounded-full px-4 py-2 text-[13px] font-black" style={escuro ? { background: "#111", color: "#F5F906" } : { background: "#F5F906", color: "#111" }}>{texto}</a>
   );
   const n = ((qual % TOTAL_ANUNCIOS) + TOTAL_ANUNCIOS) % TOTAL_ANUNCIOS;
   if (n === 0) return (
@@ -29,7 +32,7 @@ export function AnuncioAgente({ qual }: { qual: number }) {
     <div data-anuncio="2" className="mt-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl" style={{ background: "#F5F906", color: "#111" }}><Sparkles className="h-5 w-5" /></span>
       <p className="min-w-0 flex-1 text-[13px] leading-snug text-white/80"><b className="text-white">Arte pronta. E a venda?</b> Na formação Agente de Viagens Lucrativo você aprende a usar artes e vídeos para vender viagens todos os dias.</p>
-      <button data-anuncio-saiba onClick={saiba} className="shrink-0 rounded-full px-3 py-2 text-[12px] font-black" style={{ background: "#F5F906", color: "#111" }}>Saiba mais</button>
+      <a data-anuncio-saiba {...link} className="shrink-0 rounded-full px-3 py-2 text-[12px] font-black" style={{ background: "#F5F906", color: "#111" }}>Saiba mais</a>
     </div>
   );
   if (n === 3) return (
@@ -44,9 +47,9 @@ export function AnuncioAgente({ qual }: { qual: number }) {
       <p className="text-[11px] font-black uppercase tracking-wider text-[#F5F906]">Agente de Viagens Lucrativo</p>
       <p className="mt-1 text-[15px] font-extrabold">Use essas artes para vender mais viagens</p>
       <ul className="mt-2 flex flex-col gap-1 text-[12px] text-white/75">
-        <li>✓ O que postar e quando</li>
-        <li>✓ Como levar o cliente do post para o WhatsApp</li>
-        <li>✓ Como fechar o pacote na conversa</li>
+        <li>· O que postar e quando</li>
+        <li>· Como levar o cliente do post para o WhatsApp</li>
+        <li>· Como fechar o pacote na conversa</li>
       </ul>
       {botao("Saiba mais")}
     </div>

@@ -7,6 +7,7 @@ import {
 import { useTheme } from "@/contexts/ThemeContext";
 import "@/styles/fabrica-tema-claro.css";
 import "./fabrica-nova.css";
+import logoCanva from "@/assets/logo.png";
 import { AvisoPlanoCompleto } from "./AvisoPlanoCompleto";
 
 // PROTÓTIPO (só localhost): um menu só para o sistema inteiro (Início novo, portal, Fábrica, Vendedor IA),
@@ -148,7 +149,7 @@ export function MenuNovo() {
     <>
       <aside data-menu-novo className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col overflow-y-auto border-r border-white/10 bg-[#141416] p-3 text-white lg:flex">
         <div className="mb-3 flex items-center justify-between gap-2 px-1 pt-1">
-          <button onClick={() => navigate("/dev/fabrica-nova")} className="px-2 text-left text-[15px] font-black tracking-tight">Canva Viagem</button>
+          <button data-logo-menu onClick={() => navigate("/dev/fabrica-nova")} aria-label="Canva Viagem: início" className="rounded-lg p-1 hover:bg-white/[0.06]"><img src={logoCanva} alt="Canva Viagem" className="h-8 w-8 rounded-lg object-cover" /></button>
           <VoltarAvancar />
         </div>
         <Lista />
@@ -178,7 +179,7 @@ export function MenuNovo() {
       {aberto && (
         <div data-menu-cheio className="fixed inset-0 z-50 overflow-y-auto bg-[#0A0A0B] p-4 text-white lg:hidden">
           <div className="mb-2 flex items-center justify-between">
-            <div className="text-[15px] font-black">Canva Viagem</div>
+            <img src={logoCanva} alt="Canva Viagem" className="h-8 w-8 rounded-lg object-cover" />
             <div className="flex gap-2">
               <BotaoTema compacto />
               <button aria-label="Fechar o menu" onClick={() => setAberto(false)} className="grid h-11 w-11 place-items-center rounded-full border border-white/10"><X className="h-5 w-5" /></button>

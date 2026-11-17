@@ -16,6 +16,10 @@ export type Forma = {
   contorno?: boolean;
   /** linha: tracejado, ponta de seta e espessura */
   linha?: { dash?: number[]; seta?: 0 | 1 | 2; redonda?: boolean; grossura?: number };
+  /** refaz o caminho com outra espessura (k = 1 é a normal): molduras e setas */
+  gerar?: (k: number) => string;
+  /** espessura escolhida (multiplica a da linha e a da borda) */
+  esp?: number;
 };
 
 export type CategoriaForma = { id: string; nome: string; formas: Forma[] };
@@ -49,7 +53,45 @@ const circ = (cx: number, cy: number, r: number) => `M${cx - r} ${cy}A${r} ${r} 
 const CORACAO = "M50 88C20 66 0 50 0 28C0 12 12 0 27 0C38 0 46 6 50 15C54 6 62 0 73 0C88 0 100 12 100 28C100 50 80 66 50 88Z";
 const NUVEM = "M30 90A30 30 0 0 1 25 30A35 35 0 0 1 90 18A28 28 0 0 1 125 50A22 22 0 0 1 115 90Z";
 
+/** Retângulo (arredondado se r > 0) como caminho. */
+const ret = (x: number, y: number, w: number, h: number, r = 0) => r
+  ? `M${x + r} ${y}H${x + w - r}A${r} ${r} 0 0 1 ${x + w} ${y + r}V${y + h - r}A${r} ${r} 0 0 1 ${x + w - r} ${y + h}H${x + r}A${r} ${r} 0 0 1 ${x} ${y + h - r}V${y + r}A${r} ${r} 0 0 1 ${x + r} ${y}Z`
+  : `M${x} ${y}H${x + w}V${y + h}H${x}Z`;
+/** Moldura: o de fora menos o de dentro (furo no meio). `e` = espessura. */
+const aro = (w: number, h: number, e: number, r = 0) => ret(0, 0, w, h, r) + ret(e, e, w - e * 2, h - e * 2, Math.max(0, r - e));
+/** Cantos de moldura (quatro "L"). */
+const cantos = (w: number, h: number, e: number, t: number) =>
+  `M0 0H${t}V${e}H${e}V${t}H0Z` + `M${w} 0V${t}H${w - e}V${e}H${w - t}V0Z` + `M0 ${h}V${h - t}H${e}V${h - e}H${t}V${h}Z` + `M${w} ${h}H${w - t}V${h - e}H${w - e}V${h - t}H${w}Z`;
+const elipse = (cx: number, cy: number, rx: number, ry: number) => `M${cx - rx} ${cy}A${rx} ${ry} 0 1 0 ${cx + rx} ${cy}A${rx} ${ry} 0 1 0 ${cx - rx} ${cy}Z`;
+/** Espessura base vezes k, sem passar de 1/4 do lado menor (o furo do meio nunca some). */
+const esp = (base: number, k: number, menor: number) => r2(Math.min(menor / 4, Math.max(0.3, base * k)));
+/** Forma que muda de espessura (molduras e setas). */
+const molde = (id: string, nome: string, w: number, h: number, gerar: (k: number) => string, par = false): Forma => ({ id, nome, w, h, d: gerar(1), gerar, ...(par ? { par } : {}) });
+/** Meia grossura do corpo da seta (15 = normal). */
+const corpo = (k: number) => r2(Math.min(36, Math.max(3, 15 * k)));
+
 export const CATEGORIAS_FORMA: CategoriaForma[] = [
+  {
+    // molduras com furo no meio: dá para pôr por cima do vídeo ou da foto inteira (formato story 9:16 ou quadrado)
+    id: "molduras", nome: "Molduras",
+    formas: [
+      molde("moldura-fina", "Moldura fina", 90, 160, (k) => aro(90, 160, esp(2, k, 90)), true),
+      molde("moldura-grossa", "Moldura grossa", 90, 160, (k) => aro(90, 160, esp(6, k, 90)), true),
+      molde("moldura-dupla", "Moldura dupla", 90, 160, (k) => {
+        const e = esp(2, k, 90), o = e + 3, f = esp(1.2, k, 60);
+        return aro(90, 160, e) + ret(o, o, 90 - o * 2, 160 - o * 2) + ret(o + f, o + f, 90 - (o + f) * 2, 160 - (o + f) * 2);
+      }, true),
+      molde("moldura-arredondada", "Moldura arredondada", 90, 160, (k) => aro(90, 160, esp(3, k, 90), 12), true),
+      molde("moldura-cantos", "Cantos", 90, 160, (k) => cantos(90, 160, esp(2.5, k, 90), 18)),
+      molde("moldura-cantos-grossos", "Cantos grossos", 90, 160, (k) => cantos(90, 160, esp(5, k, 90), 24)),
+      molde("moldura-polaroid", "Polaroid", 90, 110, (k) => { const e = esp(6, k, 90); return ret(0, 0, 90, 110) + ret(e, e, 90 - e * 2, 110 - e - Math.max(24, e * 2)); }, true),
+      molde("moldura-arco", "Janela em arco", 90, 160, (k) => { const e = esp(4, k, 90); return "M0 160V45A45 45 0 0 1 90 45V160Z" + `M${e} ${160 - e}V45A${45 - e} ${45 - e} 0 0 1 ${90 - e} 45V${160 - e}Z`; }, true),
+      molde("moldura-oval", "Moldura oval", 90, 160, (k) => { const e = esp(3, k, 90); return elipse(45, 80, 45, 80) + elipse(45, 80, 45 - e, 80 - e); }, true),
+      molde("moldura-circulo", "Moldura redonda", 100, 100, (k) => circ(50, 50, 50) + circ(50, 50, 50 - esp(3.5, k, 100)), true),
+      molde("moldura-quadrada", "Moldura quadrada", 100, 100, (k) => aro(100, 100, esp(2.5, k, 100)), true),
+      molde("moldura-quadrada-cantos", "Cantos (quadrado)", 100, 100, (k) => cantos(100, 100, esp(3, k, 100), 20)),
+    ],
+  },
   {
     id: "linhas", nome: "Linhas",
     formas: [
@@ -109,11 +151,11 @@ export const CATEGORIAS_FORMA: CategoriaForma[] = [
   {
     id: "setas", nome: "Setas",
     formas: [
-      { id: "seta-direita", nome: "Seta para a direita", w: 120, h: 80, d: "M0 25H75V0L120 40L75 80V55H0Z" },
-      { id: "seta-esquerda", nome: "Seta para a esquerda", w: 120, h: 80, d: "M120 25H45V0L0 40L45 80V55H120Z" },
-      { id: "seta-cima", nome: "Seta para cima", w: 80, h: 120, d: "M25 120V45H0L40 0L80 45H55V120Z" },
-      { id: "seta-baixo", nome: "Seta para baixo", w: 80, h: 120, d: "M25 0V75H0L40 120L80 75H55V0Z" },
-      { id: "seta-dupla", nome: "Seta dupla", w: 140, h: 80, d: "M0 40L35 0V25H105V0L140 40L105 80V55H35V80Z" },
+      molde("seta-direita", "Seta para a direita", 120, 80, (k) => `M0 ${40 - corpo(k)}H75V0L120 40L75 80V${40 + corpo(k)}H0Z`),
+      molde("seta-esquerda", "Seta para a esquerda", 120, 80, (k) => `M120 ${40 - corpo(k)}H45V0L0 40L45 80V${40 + corpo(k)}H120Z`),
+      molde("seta-cima", "Seta para cima", 80, 120, (k) => `M${40 - corpo(k)} 120V45H0L40 0L80 45H${40 + corpo(k)}V120Z`),
+      molde("seta-baixo", "Seta para baixo", 80, 120, (k) => `M${40 - corpo(k)} 0V75H0L40 120L80 75H${40 + corpo(k)}V0Z`),
+      molde("seta-dupla", "Seta dupla", 140, 80, (k) => `M0 40L35 0V${40 - corpo(k)}H105V0L140 40L105 80V${40 + corpo(k)}H35V80Z`),
       { id: "chevron", nome: "Divisa", w: 100, h: 80, d: "M0 0H60L100 40L60 80H0L40 40Z" },
       { id: "seta-etiqueta", nome: "Seta etiqueta", w: 120, h: 70, d: "M0 0H85L120 35L85 70H0Z" },
     ],
@@ -181,7 +223,22 @@ export const MOLDES_IMAGEM: Forma[] = [
 ].map((id) => TODAS.get(id)!).filter(Boolean);
 
 /** Espessura da linha e do contorno, em unidades do desenho. */
-const grossuraDe = (f: Forma) => (f.linha ? 6 * (f.linha.grossura || 1) : Math.min(f.w, f.h) * 0.08);
+const grossuraDe = (f: Forma) => (f.linha ? 6 * (f.linha.grossura || 1) : Math.min(f.w, f.h) * 0.08) * (f.esp ?? 1);
+
+/** Dá para mudar a espessura desta forma? (molduras, linhas, setas e formas "só a borda") */
+export const temEspessura = (f: Forma) => !!(f.gerar || f.linha || f.contorno);
+
+/** A mesma forma com outra espessura (k = 1 é a normal; 0,25 bem fina, 4 bem grossa). */
+export function formaComEspessura(f: Forma, k: number): Forma {
+  if (!temEspessura(f) || k === 1) return f;
+  if (f.gerar) return { ...f, d: f.gerar(k) };
+  if (f.linha) {
+    // linha grossa precisa de mais altura para caber a ponta da seta
+    const g = 6 * (f.linha.grossura || 1) * k;
+    return { ...f, esp: k, h: Math.max(f.h, Math.ceil(g * (f.linha.seta ? 4.4 : 1.4)) + 4) };
+  }
+  return { ...f, esp: Math.min(k, 3) };
+}
 
 /** Pinta a forma num contexto já escalado para as unidades do desenho. */
 function pintarForma(x: CanvasRenderingContext2D, f: Forma, cor: string) {

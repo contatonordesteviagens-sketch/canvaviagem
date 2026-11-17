@@ -23,6 +23,8 @@ export type Extra = {
   icone?: string;
   rede?: Rede;
   texto?: string;
+  /** legenda da narração (liga e desliga junto em todas as cenas; fora isso, é um texto como outro qualquer) */
+  legenda?: boolean;
   /** estilo do texto pronto ou do selo de preço (arte-estilos.ts) */
   estilo?: string;
   cor?: string;
@@ -35,6 +37,9 @@ export type Extra = {
   base?: string;
   /** giro em graus */
   rot?: number;
+  /** forma do menu Elementos (arte-formas.ts) e a espessura dela (1 = normal): moldura, linha, seta e borda */
+  forma?: string;
+  esp?: number;
   /** é a logo da agência (placa branca): troca sozinha quando a logo muda em "Sua marca" */
   logo?: boolean;
   src: string;
