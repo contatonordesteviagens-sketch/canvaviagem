@@ -92,6 +92,26 @@ export const CTA_TEXT = "RESERVE AGORA";
 
 const isLight = (hex: string) => contrastOn(hex) !== "#ffffff";
 
+const luz = (hex: string) => {
+  const h = (hex || "").replace("#", "");
+  const n = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h.slice(0, 6), 16);
+  if (!Number.isFinite(n)) return 0;
+  const lin = (v: number) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+};
+const contraste = (a: string, b: string) => { const x = luz(a), y = luz(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+/** Letra em cima de um fundo de destaque: a cor das letras escolhida ou a cor 2, quando dá para ler; senão branco ou preto.
+ *  Assim "preto e amarelo" sai mesmo preto e amarelo (faixa preta, letra amarela). */
+/** A cor forte do modelo: a cor 1; se ela for clara e a cor 2 escura, a cor 2 (em vez de escurecer o amarelo e virar mostarda). */
+const escuraDa = (m: ProArtModel, tom: number) =>
+  !isLight(m.primary) ? m.primary : !isLight(m.secondary) ? m.secondary : shadeColor(m.primary, tom);
+const sobre = (m: ProArtModel, bg: string): string => {
+  for (const c of [m.textColorOverride, m.secondary, m.primary]) {
+    if (c && /^#[0-9a-f]{3,8}$/i.test(c) && contraste(c, bg) >= 3) return c;
+  }
+  return contrastOn(bg);
+};
+
 type Fonts = { sans: string; display: string; serif: string };
 const fontsOf = (m: ProArtModel): Fonts => {
   const user = (m.fontFamily || "").trim();
@@ -513,14 +533,14 @@ async function layoutV0(m: ProArtModel) {
 
   const content = (k: number, dry: boolean): number => {
     let y = startY;
-    const kw = pill(ctx, x, y, m.promoName.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 22 * K * k, family: f.sans, weight: 900, h: 44 * K * k, padX: 20 }, dry);
+    const kw = pill(ctx, x, y, m.promoName.toUpperCase(), { bg: accent, fg: sobre(m, accent), size: 22 * K * k, family: f.sans, weight: 900, h: 44 * K * k, padX: 20 }, dry);
     if (m.travelPeriod) pill(ctx, x + kw + 12, y, m.travelPeriod.toUpperCase(), { bg: "transparent", fg, size: 22 * K * k, family: f.sans, weight: 800, h: 44 * K * k, padX: 18, stroke: fg }, dry);
     y += 44 * K * k + 24;
     const hs = (F.story ? 96 : 78) * k;
     y += paragraph(ctx, m.headline, x, y, w, { weight: 900, size: hs, family: f.display, color: fg, maxLines: 2, lineHeight: hs * 1.02 }, dry);
     y += 16;
     if (m.city) {
-      pill(ctx, x, y, `Saindo de ${m.city}`, { bg: accent, fg: contrastOn(accent), size: 24 * K * k, family: f.sans, weight: 800, h: 46 * K * k, padX: 20 }, dry);
+      pill(ctx, x, y, `Saindo de ${m.city}`, { bg: accent, fg: sobre(m, accent), size: 24 * K * k, family: f.sans, weight: 800, h: 46 * K * k, padX: 20 }, dry);
       y += 46 * K * k + 22;
     } else {
       y += 6;
@@ -528,14 +548,14 @@ async function layoutV0(m: ProArtModel) {
     const leftW = Math.round(w * 0.46);
     const rightX = x + leftW + 40;
     const rightW = w - leftW - 40;
-    const listH = iconList(ctx, m.highlights.slice(0, 5), x, y, leftW, { size: 28 * K * k, family: f.sans, color: fg, iconColor: accent, gap: 50 * K * k }, dry);
+    const listH = iconList(ctx, m.highlights.slice(0, 6), x, y, leftW, { size: 28 * K * k, family: f.sans, color: fg, iconColor: accent, gap: 50 * K * k }, dry);
     let rightH = 0;
     if (m.isExperience) {
-      rightH = experienceBlock(ctx, m, rightX, y, rightW, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 64 * K * k, withHeadline: false }, dry);
+      rightH = experienceBlock(ctx, m, rightX, y, rightW, { fg, ctaBg: accent, ctaFg: sobre(m, accent), size: 64 * K * k, withHeadline: false }, dry);
     } else {
-      rightH = priceBlock(ctx, m, rightX, y - 6, rightW, { fg, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 150 : 118) * k, align: "right" }, dry);
+      rightH = priceBlock(ctx, m, rightX, y - 6, rightW, { fg, accentBg: accent, accentFg: sobre(m, accent), size: (F.story ? 150 : 118) * k, align: "right" }, dry);
       if (m.price.pixText) {
-        pill(ctx, x + w, y + rightH + 8, m.price.pixText.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 20 * K * k, family: f.sans, weight: 900, h: 42 * K * k, padX: 20, align: "right" }, dry);
+        pill(ctx, x + w, y + rightH + 8, m.price.pixText.toUpperCase(), { bg: accent, fg: sobre(m, accent), size: 20 * K * k, family: f.sans, weight: 900, h: 42 * K * k, padX: 20, align: "right" }, dry);
         rightH += 8 + 42 * K * k;
       }
     }
@@ -570,7 +590,7 @@ async function layoutV1(m: ProArtModel) {
   const panelW = Math.round(width * (F.story ? 0.58 : 0.52));
   const cream = "#F8F5EE";
   const ink = "#15171A";
-  const accent = isLight(m.primary) ? shadeColor(m.primary, -45) : m.primary;
+  const accent = escuraDa(m, -45);
   const x = F.M;
   const w = panelW - F.M - 40;
   const startY = F.story ? F.top + 30 : 72;
@@ -591,9 +611,10 @@ async function layoutV1(m: ProArtModel) {
       ctx.shadowColor = "rgba(0,0,0,0.25)";
       ctx.shadowBlur = 30;
       ctx.shadowOffsetX = 10;
-      fillRoundRect(ctx, -40, y, panelW + (F.story ? 90 : 120) + 40, ribbonH, 28, accent);
+      // a faixa do título é a cor 1 como a pessoa escolheu (amarela, se ela quiser); a letra pega a cor 2 quando dá leitura
+      fillRoundRect(ctx, -40, y, panelW + (F.story ? 90 : 120) + 40, ribbonH, 28, m.primary);
       ctx.restore();
-      ctx.fillStyle = contrastOn(accent);
+      ctx.fillStyle = sobre(m, m.primary);
       ctx.textAlign = "left";
       ctx.textBaseline = "alphabetic";
       setFont(ctx, 400, rs * 0.78, f.display);
@@ -607,14 +628,14 @@ async function layoutV1(m: ProArtModel) {
       pill(ctx, x, y, sub.toUpperCase(), { bg: "transparent", fg: accent, size: 20 * K * k, family: f.sans, weight: 800, h: 40 * K * k, padX: 18, stroke: accent, maxW: w }, dry);
       y += 40 * K * k + 24;
     }
-    y += iconList(ctx, m.highlights.slice(0, 5), x, y, w, { size: 30 * K * k, family: f.sans, color: ink, iconColor: accent, gap: 60 * K * k }, dry);
+    y += iconList(ctx, m.highlights.slice(0, 6), x, y, w, { size: 30 * K * k, family: f.sans, color: ink, iconColor: accent, gap: 60 * K * k }, dry);
     y += 22;
     if (m.isExperience) {
-      y += experienceBlock(ctx, m, x, y, w, { fg: ink, ctaBg: accent, ctaFg: contrastOn(accent), size: 64 * K * k, withHeadline: false }, dry);
+      y += experienceBlock(ctx, m, x, y, w, { fg: ink, ctaBg: accent, ctaFg: sobre(m, accent), size: 64 * K * k, withHeadline: false }, dry);
     } else {
-      y += priceBlock(ctx, m, x, y, w, { fg: accent, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 150 : 110) * k }, dry) + 14;
+      y += priceBlock(ctx, m, x, y, w, { fg: accent, accentBg: accent, accentFg: sobre(m, accent), size: (F.story ? 150 : 110) * k }, dry) + 14;
       if (m.price.pixText) {
-        pill(ctx, x, y, m.price.pixText.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 20 * K * k, family: f.sans, weight: 900, h: 42 * K * k, padX: 20, maxW: w }, dry);
+        pill(ctx, x, y, m.price.pixText.toUpperCase(), { bg: accent, fg: sobre(m, accent), size: 20 * K * k, family: f.sans, weight: 900, h: 42 * K * k, padX: 20, maxW: w }, dry);
         y += 42 * K * k;
       }
     }
@@ -655,7 +676,7 @@ async function layoutV2(m: ProArtModel) {
   const F = frame(m);
   const f = fontsOf(m);
   const ink = "#15171A";
-  const accent = isLight(m.primary) ? shadeColor(m.primary, -45) : m.primary;
+  const accent = escuraDa(m, -45);
   const soft = isLight(m.secondary) ? m.secondary : "#F2F4F7";
   const x = F.M;
   const w = width - F.M * 2;
@@ -672,22 +693,22 @@ async function layoutV2(m: ProArtModel) {
     if (m.isExperience) {
       y += iconList(ctx, m.highlights.slice(0, 6), x, y, w, { size: 30 * K * k, family: f.sans, color: ink, iconColor: accent, gap: 56 * K * k, columns: 2 }, dry);
       y += 14;
-      y += experienceBlock(ctx, m, x, y, w, { fg: ink, ctaBg: accent, ctaFg: contrastOn(accent), size: 60 * K * k, withHeadline: false }, dry);
+      y += experienceBlock(ctx, m, x, y, w, { fg: ink, ctaBg: accent, ctaFg: sobre(m, accent), size: 60 * K * k, withHeadline: false }, dry);
     } else {
       const leftW = Math.round(w * 0.5);
       const cardX = x + leftW + 24;
       const cardW = w - leftW - 24;
-      const listH = iconList(ctx, m.highlights.slice(0, 5), x, y, leftW, { size: 30 * K * k, family: f.sans, color: ink, iconColor: accent, gap: 58 * K * k }, dry);
-      const priceH = priceBlock(ctx, m, cardX + 28, y + 24, cardW - 56, { fg: contrastOn(soft) === "#ffffff" ? "#ffffff" : accent, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 118 : 96) * k, align: "center" }, true);
+      const listH = iconList(ctx, m.highlights.slice(0, 6), x, y, leftW, { size: 30 * K * k, family: f.sans, color: ink, iconColor: accent, gap: 58 * K * k }, dry);
+      const priceH = priceBlock(ctx, m, cardX + 28, y + 24, cardW - 56, { fg: contrastOn(soft) === "#ffffff" ? "#ffffff" : accent, accentBg: accent, accentFg: sobre(m, accent), size: (F.story ? 118 : 96) * k, align: "center" }, true);
       const cardH = priceH + 48;
       if (!dry) {
         fillRoundRect(ctx, cardX, y, cardW, cardH, 28, soft);
-        priceBlock(ctx, m, cardX + 28, y + 24, cardW - 56, { fg: contrastOn(soft) === "#ffffff" ? "#ffffff" : accent, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 118 : 96) * k, align: "center" });
+        priceBlock(ctx, m, cardX + 28, y + 24, cardW - 56, { fg: contrastOn(soft) === "#ffffff" ? "#ffffff" : accent, accentBg: accent, accentFg: sobre(m, accent), size: (F.story ? 118 : 96) * k, align: "center" });
       }
       y += Math.max(listH, cardH);
       if (m.price.pixText) {
         y += 14;
-        pill(ctx, x, y, m.price.pixText.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 20 * K * k, family: f.sans, weight: 800, h: 42 * K * k, padX: 20 }, dry);
+        pill(ctx, x, y, m.price.pixText.toUpperCase(), { bg: accent, fg: sobre(m, accent), size: 20 * K * k, family: f.sans, weight: 800, h: 42 * K * k, padX: 20 }, dry);
         y += 42 * K * k;
       }
     }
@@ -721,7 +742,7 @@ async function layoutV2(m: ProArtModel) {
   ctx.shadowOffsetY = 8;
   fillRoundRect(ctx, -30, ribbonY, Math.min(width - 30, x + ribbonW + 60) + 30, ribbonH, 24, accent);
   ctx.restore();
-  ctx.fillStyle = contrastOn(accent);
+  ctx.fillStyle = sobre(m, accent);
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   setFont(ctx, 900, rsize, f.display);
@@ -750,9 +771,9 @@ async function layoutV3(m: ProArtModel) {
     y += paragraph(ctx, m.destination, x, y, innerW, { weight: 400, size: 64 * k, family: f.display, color: fg, maxLines: 1, minSize: 34 }, dry) + 12;
     y += iconStrip(ctx, m, x, y, fg, 26 * k, dry) + 8;
     if (m.isExperience) {
-      y += experienceBlock(ctx, m, x, y, innerW, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 54 * k }, dry);
+      y += experienceBlock(ctx, m, x, y, innerW, { fg, ctaBg: accent, ctaFg: sobre(m, accent), size: 54 * k }, dry);
     } else {
-      y += priceBlock(ctx, m, x, y, innerW, { fg, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 170 : 150) * k }, dry);
+      y += priceBlock(ctx, m, x, y, innerW, { fg, accentBg: accent, accentFg: sobre(m, accent), size: (F.story ? 170 : 150) * k }, dry);
     }
     return y - y0;
   };
@@ -780,7 +801,7 @@ async function layoutV4(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
   const f = fontsOf(m);
-  const base = isLight(m.primary) ? shadeColor(m.primary, -60) : m.primary;
+  const base = escuraDa(m, -60);
   const accent = isLight(m.secondary) ? m.secondary : "#ffffff";
   const fg = contrastOn(base);
   const x = F.M;
@@ -815,19 +836,19 @@ async function layoutV4(m: ProArtModel) {
     y += 86 * k;
     // dois cartões com a mesma altura
     const leftH = m.isExperience
-      ? experienceBlock(ctx, m, x + 28, y + 28, leftW - 56, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 60 * k, withHeadline: false }, true)
-      : priceBlock(ctx, m, x + 28, y + 24, leftW - 56, { fg, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 124 : 112) * k }, true);
+      ? experienceBlock(ctx, m, x + 28, y + 28, leftW - 56, { fg, ctaBg: accent, ctaFg: sobre(m, accent), size: 60 * k, withHeadline: false }, true)
+      : priceBlock(ctx, m, x + 28, y + 24, leftW - 56, { fg, accentBg: accent, accentFg: sobre(m, accent), size: (F.story ? 124 : 112) * k }, true);
     const rx = x + leftW + gap + 24;
     let rightH = 0;
     if (m.travelPeriod) rightH += 54 * k;
-    rightH += iconList(ctx, m.highlights.slice(0, 5), rx, 0, rightW - 48, { size: 24 * k, family: f.sans, color: fg, iconColor: accent, gap: 44 * k }, true);
+    rightH += iconList(ctx, m.highlights.slice(0, 6), rx, 0, rightW - 48, { size: 24 * k, family: f.sans, color: fg, iconColor: accent, gap: 44 * k }, true);
     const cardH = Math.max(leftH, rightH) + 52;
     if (!dry) {
       const softBg = "rgba(255,255,255,0.10)";
       fillRoundRect(ctx, x, y, leftW, cardH, 26, softBg);
       fillRoundRect(ctx, x + leftW + gap, y, rightW, cardH, 26, softBg);
-      if (m.isExperience) experienceBlock(ctx, m, x + 28, y + 28, leftW - 56, { fg, ctaBg: accent, ctaFg: contrastOn(accent), size: 60 * k, withHeadline: false });
-      else priceBlock(ctx, m, x + 28, y + (cardH - leftH) / 2, leftW - 56, { fg, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 124 : 112) * k });
+      if (m.isExperience) experienceBlock(ctx, m, x + 28, y + 28, leftW - 56, { fg, ctaBg: accent, ctaFg: sobre(m, accent), size: 60 * k, withHeadline: false });
+      else priceBlock(ctx, m, x + 28, y + (cardH - leftH) / 2, leftW - 56, { fg, accentBg: accent, accentFg: sobre(m, accent), size: (F.story ? 124 : 112) * k });
       let ry = y + 26;
       if (m.travelPeriod) {
         setFont(ctx, 900, 30 * k, f.display);
@@ -836,7 +857,7 @@ async function layoutV4(m: ProArtModel) {
         ctx.fillText(m.travelPeriod, rx, ry + 28 * k);
         ry += 54 * k;
       }
-      iconList(ctx, m.highlights.slice(0, 5), rx, ry, rightW - 48, { size: 24 * k, family: f.sans, color: fg, iconColor: accent, gap: 44 * k });
+      iconList(ctx, m.highlights.slice(0, 6), rx, ry, rightW - 48, { size: 24 * k, family: f.sans, color: fg, iconColor: accent, gap: 44 * k });
     }
     y += cardH;
     if (m.isExperience) {
@@ -855,7 +876,7 @@ async function layoutV4(m: ProArtModel) {
   ctx.fillRect(0, 0, width, height);
   if (F.story) drawPhoto(m, 0, 0, width, topY + photoH, 0.45);
   else drawPhoto(m, F.M - 20, topY, width - (F.M - 20) * 2, photoH, 0.45, 36);
-  pill(ctx, width / 2, topY + 28, m.promoName.toUpperCase(), { bg: accent, fg: contrastOn(accent), size: 24, family: f.sans, weight: 900, h: 50, padX: 24, align: "center" });
+  pill(ctx, width / 2, topY + 28, m.promoName.toUpperCase(), { bg: accent, fg: sobre(m, accent), size: 24, family: f.sans, weight: 900, h: 50, padX: 24, align: "center" });
   content(k, false, contentTop);
   if (!m.isExperience) legalLine(ctx, m, F.footerTop - 14, "rgba(255,255,255,0.6)");
   await branding(m);
@@ -866,7 +887,7 @@ async function layoutV5(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
   const f = fontsOf(m);
-  const accent = isLight(m.primary) ? shadeColor(m.primary, -45) : m.primary;
+  const accent = escuraDa(m, -45);
   // cor "pop" (selo e preço) só quando a secundária é saturada e escura o bastante
   // para ler sobre o cartão branco; creme/branco caem para a cor da marca.
   const secondaryPop = shadeColor(m.secondary, -10);
@@ -888,7 +909,7 @@ async function layoutV5(m: ProArtModel) {
     const icons = m.highlights.slice(0, 5);
     const iconSize = 44 * k;
     const pills = [m.travelPeriod].filter(Boolean) as string[];
-    const pillOpts: PillOpts = { bg: accent, fg: contrastOn(accent), size: 22 * k, family: f.sans, weight: 800, h: 44 * k, padX: 20 };
+    const pillOpts: PillOpts = { bg: accent, fg: sobre(m, accent), size: 22 * k, family: f.sans, weight: 800, h: 44 * k, padX: 20 };
     const pillsW = pills.reduce((acc, t) => acc + pill(ctx, 0, 0, t.toUpperCase(), pillOpts, true) + 14, 0);
     const rowW = icons.length * (iconSize + 22) + pillsW;
     if (!dry) {
@@ -903,9 +924,9 @@ async function layoutV5(m: ProArtModel) {
     if (m.isExperience) {
       const inc = icons.map((h) => h.text).join("  ·  ");
       y += paragraph(ctx, inc, cx, y, innerW, { weight: 600, size: 24 * k, family: f.sans, color: "#3A3F47", maxLines: 2, align: "center" }, dry) + 22;
-      y += experienceBlock(ctx, m, ix, y, innerW, { fg: accent, ctaBg: pop, ctaFg: contrastOn(pop), size: 64 * k, align: "center", withHeadline: false, withSubtitle: false }, dry);
+      y += experienceBlock(ctx, m, ix, y, innerW, { fg: accent, ctaBg: pop, ctaFg: sobre(m, pop), size: 64 * k, align: "center", withHeadline: false, withSubtitle: false }, dry);
     } else {
-      y += priceBlock(ctx, m, ix, y, innerW, { fg: priceColor, accentBg: accent, accentFg: contrastOn(accent), size: (F.story ? 150 : 136) * k, align: "center" }, dry);
+      y += priceBlock(ctx, m, ix, y, innerW, { fg: priceColor, accentBg: accent, accentFg: sobre(m, accent), size: (F.story ? 150 : 136) * k, align: "center" }, dry);
     }
     return y - y0;
   };
@@ -924,7 +945,7 @@ async function layoutV5(m: ProArtModel) {
   ctx.shadowOffsetY = 14;
   fillRoundRect(ctx, cardX, cardY, cardW, cardH, 40, "#ffffff");
   ctx.restore();
-  pill(ctx, cx, cardY - 26, m.promoName.toUpperCase(), { bg: pop, fg: contrastOn(pop), size: 26, family: f.sans, weight: 900, h: 52, padX: 26, align: "center" });
+  pill(ctx, cx, cardY - 26, m.promoName.toUpperCase(), { bg: pop, fg: sobre(m, pop), size: 26, family: f.sans, weight: 900, h: 52, padX: 26, align: "center" });
   content(k, false, cardY + padTop);
   if (!m.isExperience) legalLine(ctx, m, F.footerTop - 14);
   await branding(m);
@@ -935,8 +956,8 @@ async function layoutV6(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
   const f = fontsOf(m);
-  const accent = isLight(m.primary) ? shadeColor(m.primary, -45) : m.primary;
-  const fg = contrastOn(accent);
+  const accent = escuraDa(m, -45);
+  const fg = sobre(m, accent);
   const splitX = Math.round(width * 0.5);
   const lcx = splitX / 2;
   const colW = splitX - F.M * 1.3;
@@ -1010,8 +1031,8 @@ async function layoutV7(m: ProArtModel) {
   const { ctx, width, height } = m;
   const F = frame(m);
   const f = fontsOf(m);
-  const accent = isLight(m.primary) ? shadeColor(m.primary, -45) : m.primary;
-  const accentFg = contrastOn(accent);
+  const accent = escuraDa(m, -45);
+  const accentFg = sobre(m, accent);
   const pad = 40;
   const cardX = F.M;
   const cardMaxW = Math.round(width * 0.82) - F.M;
@@ -1087,7 +1108,7 @@ async function layoutV8(m: ProArtModel) {
   const F = frame(m);
   const f = fontsOf(m);
   const accent = isLight(m.secondary) ? m.secondary : (isLight(m.primary) ? m.primary : "#F5C518");
-  const accentFg = contrastOn(accent);
+  const accentFg = sobre(m, accent);
   const cx = width / 2;
   const maxW = width - F.M * 2;
 
@@ -1129,7 +1150,7 @@ async function layoutV8(m: ProArtModel) {
 
 /** Coluna escura + coluna da marca: cores das duas colunas a partir da paleta. */
 function columnPair(m: ProArtModel) {
-  const dark = isLight(m.primary) ? shadeColor(m.primary, -60) : m.primary;
+  const dark = escuraDa(m, -60);
   const side = isLight(m.secondary) ? m.secondary : "#ffffff";
   return { dark, side };
 }
@@ -1140,7 +1161,7 @@ async function layoutV9(m: ProArtModel) {
   const F = frame(m);
   const f = fontsOf(m);
   const { dark, side } = columnPair(m);
-  const darkFg = contrastOn(dark);
+  const darkFg = sobre(m, dark);
   const sideFg = contrastOn(side);
   const splitX = Math.round(width * 0.58);
   const x = F.M;
@@ -1232,7 +1253,7 @@ async function layoutV10(m: ProArtModel) {
   const F = frame(m);
   const f = fontsOf(m);
   const accent = isLight(m.secondary) ? m.secondary : (isLight(m.primary) ? m.primary : "#F5C518");
-  const accentFg = contrastOn(accent);
+  const accentFg = sobre(m, accent);
   const cx = width / 2;
   const maxW = width - F.M * 2;
   const script = "'Dancing Script', 'Playfair Display', cursive";
@@ -1300,8 +1321,8 @@ async function layoutV11(m: ProArtModel) {
   const f = fontsOf(m);
   const { dark } = columnPair(m);
   const accent = isLight(m.secondary) ? m.secondary : "#ffffff";
-  const accentFg = contrastOn(accent);
-  const darkFg = contrastOn(dark);
+  const accentFg = sobre(m, accent);
+  const darkFg = sobre(m, dark);
   const cx = width / 2;
   const x = F.M;
   const w = width - F.M * 2;

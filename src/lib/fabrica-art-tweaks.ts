@@ -50,6 +50,31 @@ export interface ArtElementTweak {
   bold?: boolean;
   /** Itálico. */
   italic?: boolean;
+  /** Cor do texto ou da forma (editor do Início novo). */
+  color?: string;
+  /** Degradê no lugar da cor: [de, para], da esquerda para a direita. */
+  gradient?: [string, string];
+  /** Efeito do texto ou do bloco (no jeito do Canva). */
+  effect?: ArtEffect;
+  /** Espaço entre letras, em milésimos do tamanho da fonte (-100 a 800). */
+  letterSpacing?: number;
+  /** Espaço entre linhas (multiplica o tamanho da fonte; padrão 1.1). */
+  lineSpacing?: number;
+  /** Troca a família da fonte deste texto. */
+  fontFamily?: string;
+  /** Corte da imagem: quanto tirar de cada lado (0 a 0.45). */
+  crop?: { l: number; t: number; r: number; b: number };
+  /** Filtro de cor da imagem (CSS filter). */
+  filter?: string;
+}
+
+export type ArtEffectKind = "sombra" | "brilho" | "eco" | "contorno" | "fundo" | "vazado" | "neon" | "falha" | "desalinhado" | "curvar";
+export interface ArtEffect {
+  tipo: ArtEffectKind;
+  /** Cor do efeito (vazio: automática). */
+  cor?: string;
+  /** Força de 0 a 100 (padrão 50). */
+  forca?: number;
 }
 
 export type ArtTweakMap = Record<string, ArtElementTweak>;
@@ -68,6 +93,12 @@ export interface ArtElementBox {
   text?: string;
   /** Se false, o editor esconde as alças de escala (só move). */
   resizable?: boolean;
+  /** Texto: tamanho da fonte em px da arte (sem a escala do ajuste), peso, família, itálico e alinhamento originais. */
+  fontSize?: number;
+  fontWeight?: number;
+  fontFamily?: string;
+  italic?: boolean;
+  align?: string;
 }
 
 

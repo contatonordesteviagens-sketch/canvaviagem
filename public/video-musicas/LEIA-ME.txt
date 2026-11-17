@@ -9,6 +9,25 @@ violao.m4a    "Catchy Fun Guitar Beat", de Seth_Makes_Sounds       https://frees
 acustica.m4a  "Upbeat Acoustic Guitar With Orchestra", guitarman213 https://freesound.org/people/guitarman213/sounds/709034
 ceu-azul.m4a  "Blue Sky", de Sergmusic                             https://freesound.org/people/Sergmusic/sounds/639933
 tropical.m4a  "Tropical beach", de szegvari                        https://freesound.org/people/szegvari/sounds/595776
+latina.m4a        "Cuban Ensemble Mood Style Happy Band Dance Cinematic Music", de szegvari  https://freesound.org/people/szegvari/sounds/619557
+lofi.m4a          "Lofi Beat Loafy", de Seth_Makes_Sounds           https://freesound.org/people/Seth_Makes_Sounds/sounds/653503
+violao-calmo.m4a  "simple relaxing guitar loop", de Kodack          https://freesound.org/people/Kodack/sounds/395037
+passo-leve.m4a    "Laidback Steps", de code_box                     https://freesound.org/people/code_box/sounds/554626
+aventura.m4a      "Adventura", de Vrymaa                            https://freesound.org/people/Vrymaa/sounds/722392
 
 Para acrescentar uma música: salve o .m4a aqui (AAC, 44,1 kHz, estéreo, com saída suave no fim) e inclua na lista
 MUSICAS de src/lib/musica-video.ts. Só entre música com licença que permita uso comercial.
+
+17/11/2026 (todas CC0, Openverse/Freesound, normalizadas a -16 LUFS):
+- comercial.m4a: code_box, https://freesound.org/people/code_box/sounds/561190
+- groove.m4a: code_box, https://freesound.org/people/code_box/sounds/566952
+- tropical-eletronica.m4a: szegvari, https://freesound.org/people/szegvari/sounds/594201
+- violao-feliz.m4a: guitarman213, https://freesound.org/people/guitarman213/sounds/713738
+- manha.m4a: mareproduction, https://freesound.org/people/mareproduction/sounds/467470
+- cordas.m4a: Bigvegie, https://freesound.org/people/Bigvegie/sounds/683104
+- jazz.m4a: TheoTer, https://freesound.org/people/TheoTer/sounds/510802
+- piano-jazz.m4a: szegvari, https://freesound.org/people/szegvari/sounds/570347
+- piano-suave.m4a: Johnnie_Holiday, https://freesound.org/people/Johnnie_Holiday/sounds/554602
+- chill.m4a: bainmack, https://freesound.org/people/bainmack/sounds/632681
+- cinema.m4a: DeVern, https://freesound.org/people/DeVern/sounds/384202
+- epica.m4a: edtijo, https://freesound.org/people/edtijo/sounds/218744

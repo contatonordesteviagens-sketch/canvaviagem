@@ -497,8 +497,10 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
   const { reserve, commit, release, track, can, tier, remaining } = useEntitlements();
   const [showExportPaywall, setShowExportPaywall] = useState(false);
   const guestPaywallTimerRef = useRef<number | null>(null);
-  const isAdPreviewLocked = tier === "guest"
-    || (!can("ad.export") && remaining?.ad_export === 0);
+  // no localhost (desenvolvimento) fica tudo liberado para testar; no site publicado vale a assinatura
+  const liberadoDev = import.meta.env.DEV;
+  const isAdPreviewLocked = !liberadoDev && (tier === "guest"
+    || (!can("ad.export") && remaining?.ad_export === 0));
   const { data: savedProjects } = useDiagnosticos();
   useEffect(() => () => {
     if (guestPaywallTimerRef.current) window.clearTimeout(guestPaywallTimerRef.current);
@@ -1240,7 +1242,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         if (typeof window !== "undefined") {
           window.localStorage.setItem("cv:guest-has-generated", "true");
           window.dispatchEvent(new Event("fabrica:generated"));
-          if (!user) {
+          if (!user && !liberadoDev) {
             if (guestPaywallTimerRef.current) window.clearTimeout(guestPaywallTimerRef.current);
             guestPaywallTimerRef.current = window.setTimeout(() => {
               setShowExportPaywall(true);
@@ -1249,7 +1251,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
         }
         track("ad_preview_generated", { amount, mode: genMode, format });
       };
-      if (!user) {
+      if (!user && !liberadoDev) {
         const source = refImage || selectedPhotoUrl || customImageData;
         const teaser = await createGuestPreviewArt({
           url: source,
@@ -1369,7 +1371,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             } as GeneratedArt;
           })
         );
-        const visibleComposed = await protectGuestPreviewArts(composed, Boolean(user));
+        const visibleComposed = await protectGuestPreviewArts(composed, Boolean(user) || import.meta.env.DEV);
         registerGeneration(categoria, "photo", format, {
           layoutId: chosen[0],
           headline: promoName || "OFERTA ESPECIAL",
@@ -1514,7 +1516,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 createdAt: Date.now()
               } as GeneratedArt);
           }
-          const visibleFinalImages = await protectGuestPreviewArts(finalImages, Boolean(user));
+          const visibleFinalImages = await protectGuestPreviewArts(finalImages, Boolean(user) || import.meta.env.DEV);
           setGeneratedImages((prev) => {
             const merged = isBatchMode ? visibleFinalImages : [...prev, ...visibleFinalImages].slice(-3);
             return merged;
@@ -1606,7 +1608,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
           } as GeneratedArt;
         })
       );
-      const visibleCustomImages = await protectGuestPreviewArts(imagesCustom, Boolean(user));
+      const visibleCustomImages = await protectGuestPreviewArts(imagesCustom, Boolean(user) || import.meta.env.DEV);
       registerGeneration(categoria, "custom", format, {
         layoutId: chosen[0],
         headline: promoName || "OFERTA ESPECIAL",
@@ -1675,6 +1677,16 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
 
   const downloadPNG = async () => {
     if (generatedImages.length === 0) return;
+    if (!user && liberadoDev) {
+      // localhost sem conta: baixa direto, sem cota
+      (isBatchMode ? generatedImages.map((i) => i.url) : [generatedImage?.url || ""]).forEach((img, idx) => {
+        const a = document.createElement("a");
+        a.href = img;
+        a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${format}${isBatchMode ? `-v${idx + 1}` : ""}.png`;
+        document.body.appendChild(a); a.click(); a.remove();
+      });
+      return;
+    }
     if (!user) {
       setShowExportPaywall(true);
       return;
@@ -1850,6 +1862,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                 </div>
               </div>
             )}
+            <label className="text-[13px] font-semibold text-white/65 mb-2 mt-3 block">Contatos no rodapé da arte</label>
                <div className="mb-2 flex items-center gap-2 bg-white/[0.04] p-1 rounded-xl border border-white/10 focus-within:border-white/30 transition-colors">
               <div className="shrink-0 relative">
                 <Select
@@ -2299,7 +2312,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
             </div>
           </div>
 
-          <div className="col-span-2">
+          <div className="min-[420px]:col-span-2">
             <label className={labelCls} title="{destino} é trocado automaticamente pelo nome do destino">Título do anúncio <span className="normal-case font-normal text-white/35">· vai sair assim: <b className="text-white/80">{resolvedAdTitle}</b></span></label>
             <div className="relative">
               <input
@@ -2414,7 +2427,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                   <select
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value as Currency)}
-                    className="bg-white/[0.06] border border-white/10 rounded-xl px-2 py-3 text-white text-xs outline-none focus:border-white/40 cursor-pointer"
+                    className="bg-white/[0.06] border border-white/10 w-[58px] shrink-0 rounded-xl px-1.5 py-3 text-white text-xs outline-none focus:border-white/40 cursor-pointer"
                   >
                     {CURRENCY_PRESETS.map((c) => (
                       <option key={c.id} value={c.id} className="bg-neutral-900">{c.symbol}</option>
@@ -2425,7 +2438,7 @@ export const Phase3ArtFactory = ({ onNext, onBack, initialMode = "ad", lockMode 
                     onChange={(e) => setPrice(e.target.value)}
                     onFocus={(e) => e.target.select()}
                     placeholder="1.499,00"
-                    className={`${inputCls} flex-1`}
+                    className={`${inputCls} min-w-0 flex-1 !px-3`}
                   />
                 </div>
               </div>

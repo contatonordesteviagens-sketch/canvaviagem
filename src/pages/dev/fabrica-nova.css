@@ -1,0 +1,104 @@
+/* PROTÓTIPO do Início novo: o fundo não é preto chapado.
+   Escuro: grafite com um brilho amarelo bem leve no topo. Claro: o mesmo cinza da Fábrica (#F2F2F7).
+   As outras cores seguem o tema claro da Fábrica (src/styles/fabrica-tema-claro.css). */
+.fn-pagina {
+  background:
+    radial-gradient(900px 360px at 50% -120px, rgba(245, 249, 6, 0.09), transparent 70%),
+    linear-gradient(180deg, #131316 0%, #0D0D10 520px);
+}
+html.fabrica-claro .fn-pagina {
+  background:
+    radial-gradient(900px 360px at 50% -120px, rgba(245, 249, 6, 0.22), transparent 70%),
+    #F2F2F7 !important;
+}
+/* texto sobre foto ou vídeo continua branco nos dois temas */
+html.fabrica-claro .fn-sobre-foto.fn-sobre-foto,
+html.fabrica-claro .fn-sobre-foto.fn-sobre-foto [class~="text-white"] { color: #ffffff !important; }
+html.fabrica-claro .fn-sobre-foto svg { color: #ffffff; }
+/* tons que o tema claro da Fábrica não cobre */
+html.fabrica-claro [class~="text-white/65"] { color: rgba(17, 17, 19, 0.72) !important; }
+html.fabrica-claro [class~="hover:bg-white/5"]:hover { background-color: rgba(17, 17, 19, 0.05) !important; }
+html.fabrica-claro [class~="bg-neutral-900"] { background-color: #E5E5EA !important; }
+html.fabrica-claro .fn-sombra { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.05); }
+
+/* Fábrica dentro do menu único: some o menu e o topo próprios dela */
+.fn-com-menu [data-fabrica-menu],
+.fn-com-menu [data-fabrica-topo],
+.fn-com-menu [data-fabrica-atalhos] { display: none !important; }
+.fn-com-menu > main { padding-top: 1rem !important; }
+
+/* Menu único: as telas antigas (portal, downloads, ferramentas) usam as mesmas cores da Fábrica */
+html:has([data-menu-novo]) {
+  --primary: 61 95% 49%;
+  --primary-foreground: 240 6% 8%;
+  --ring: 61 95% 49%;
+}
+html.dark:has([data-menu-novo]) {
+  --background: 240 6% 7%;
+  --card: 240 5% 10%;
+  --popover: 240 5% 10%;
+  --muted: 240 5% 14%;
+  --secondary: 240 5% 14%;
+  --accent: 240 5% 16%;
+  --border: 240 5% 17%;
+  --input: 240 5% 17%;
+}
+html.light:has([data-menu-novo]) {
+  --background: 240 24% 96%;
+  --primary: 61 90% 45%;
+}
+
+/* Menu único: telas antigas sem azul, roxo e rosa (só a cor da marca) */
+html:has([data-menu-novo]) [data-voltar-canva] { display: none; }
+html:has([data-menu-novo]) .bg-gradient-to-r.from-blue-600 {
+  background: #F5F906 !important;
+  color: #0D0D10 !important;
+  box-shadow: none !important;
+}
+html:has([data-menu-novo]) .bg-clip-text.from-blue-600,
+html:has([data-menu-novo]) .bg-clip-text.from-\[\#4da5fc\] {
+  background: none !important;
+  -webkit-text-fill-color: currentColor;
+  color: var(--cv-acento-texto, #F5F906) !important;
+}
+html:has([data-menu-novo]) .bg-clip-text.from-blue-600 { color: hsl(var(--foreground)) !important; }
+html:has([data-menu-novo]) .from-blue-900\/10 {
+  background: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+html:has([data-menu-novo]) .bg-blue-500\/10 { background: rgba(245, 249, 6, 0.1) !important; }
+html:has([data-menu-novo]) .border-blue-500\/20 { border-color: rgba(245, 249, 6, 0.25) !important; }
+html:has([data-menu-novo]) .text-blue-600,
+html:has([data-menu-novo]) .text-blue-400 { color: var(--cv-acento-texto, #F5F906) !important; }
+html:has([data-menu-novo]) .from-blue-100,
+html:has([data-menu-novo]) .from-purple-100,
+html:has([data-menu-novo]) .from-cyan-100,
+html:has([data-menu-novo]) .from-pink-100,
+html:has([data-menu-novo]) .from-indigo-100 { background: hsl(var(--muted)) !important; }
+html:has([data-menu-novo]) .bg-blue-600,
+html:has([data-menu-novo]) .bg-blue-500,
+html:has([data-menu-novo]) .bg-\[\#1488fc\] {
+  background: #F5F906 !important;
+  color: #0D0D10 !important;
+  box-shadow: none !important;
+}
+
+/* Menu único no tema claro, em qualquer tela (portal ou Fábrica) */
+html.light:has([data-menu-novo]) { --cv-acento-texto: #7A6A00; }
+html.light :is([data-menu-novo], [data-barra-novo], [data-menu-cheio]) {
+  background: #FFFFFF !important;
+  color: #16161A !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+html.light :is([data-menu-novo], [data-barra-novo], [data-menu-cheio]) .text-white { color: #16161A !important; }
+html.light :is([data-menu-novo], [data-barra-novo], [data-menu-cheio]) :is(.text-white\/65, .text-white\/60) { color: rgba(22, 22, 26, 0.7) !important; }
+html.light :is([data-menu-novo], [data-barra-novo], [data-menu-cheio]) .text-white\/35 { color: rgba(22, 22, 26, 0.45) !important; }
+html.light :is([data-menu-novo], [data-barra-novo], [data-menu-cheio]) .bg-white\/10 { background: rgba(0, 0, 0, 0.06) !important; }
+html.light :is([data-menu-novo], [data-barra-novo], [data-menu-cheio]) .hover\:bg-white\/5:hover { background: rgba(0, 0, 0, 0.04) !important; }
+html.light :is([data-menu-novo], [data-barra-novo], [data-menu-cheio]) .border-white\/10 { border-color: rgba(0, 0, 0, 0.08) !important; }
+
+/* Menu único: some a barra de baixo e o topo antigos do portal no celular */
+html:has([data-menu-novo]) :is([data-barra-antiga], [data-topo-antigo]) { display: none !important; }
+
+/* Voltar do celular no tema claro */
+html.light [data-voltar-celular] { color: #16161A !important; border-color: rgba(0, 0, 0, 0.15) !important; background: #FFFFFF !important; }

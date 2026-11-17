@@ -1,4 +1,5 @@
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { usaMenuNovo } from "@/pages/dev/menu-novo-flag";
 import { aiTools } from "@/data/templates";
 import { hasPendingOnboarding } from "@/lib/onboarding-bridge";
 import { QuickStartActions } from "@/components/canva/QuickStartActions";
@@ -611,7 +612,7 @@ const Index = () => {
                 </button>
               </div>
             )}
-            <div className="flex items-center mb-6 gap-4">
+            <div className={usaMenuNovo() ? "hidden" : "flex items-center mb-6 gap-4"}>
               <AccessFilter
                 selectedFilters={accessFilters}
                 onFiltersChange={setAccessFilters}
@@ -1066,7 +1067,7 @@ const Index = () => {
               subtitle={searchQuery.trim() ? `${displayedSortedVideos.length} vídeo(s) encontrado(s)` : "Templates prontos para editar no Canva e publicar"}
             />
 
-            <div className="flex items-center mb-6 gap-4">
+            <div className={usaMenuNovo() ? "hidden" : "flex items-center mb-6 gap-4"}>
               <AccessFilter
                 selectedFilters={accessFilters}
                 onFiltersChange={(newFilters) => {
@@ -1811,7 +1812,8 @@ const Index = () => {
           {categoryNavNode}
         </HeroBanner>
       ) : (
-        categoryNavNode
+        // protótipo do menu único: as categorias já estão no menu lateral
+        usaMenuNovo() ? null : categoryNavNode
       )}
 
       {renderContent()}

@@ -15,6 +15,23 @@ export const MUSICAS: Musica[] = [
   { id: "acustica", nome: "Acústica", clima: "Violão com orquestra", arquivo: "/video-musicas/acustica.m4a", autor: "guitarman213", fonte: "https://freesound.org/people/guitarman213/sounds/709034" },
   { id: "ceu-azul", nome: "Céu azul", clima: "Alegre, ukulele", arquivo: "/video-musicas/ceu-azul.m4a", autor: "Sergmusic", fonte: "https://freesound.org/people/Sergmusic/sounds/639933" },
   { id: "tropical", nome: "Praia tropical", clima: "Calma, de praia", arquivo: "/video-musicas/tropical.m4a", autor: "szegvari", fonte: "https://freesound.org/people/szegvari/sounds/595776" },
+  { id: "latina", nome: "Latina", clima: "Animada, banda cubana", arquivo: "/video-musicas/latina.m4a", autor: "szegvari", fonte: "https://freesound.org/people/szegvari/sounds/619557" },
+  { id: "lofi", nome: "Lo-fi", clima: "Calma, batida suave", arquivo: "/video-musicas/lofi.m4a", autor: "Seth_Makes_Sounds", fonte: "https://freesound.org/people/Seth_Makes_Sounds/sounds/653503" },
+  { id: "violao-calmo", nome: "Violão calmo", clima: "Relaxante, só violão", arquivo: "/video-musicas/violao-calmo.m4a", autor: "Kodack", fonte: "https://freesound.org/people/Kodack/sounds/395037" },
+  { id: "passo-leve", nome: "Passo leve", clima: "Tranquila", arquivo: "/video-musicas/passo-leve.m4a", autor: "code_box", fonte: "https://freesound.org/people/code_box/sounds/554626" },
+  { id: "aventura", nome: "Aventura", clima: "Instrumental", arquivo: "/video-musicas/aventura.m4a", autor: "Vrymaa", fonte: "https://freesound.org/people/Vrymaa/sounds/722392" },
+  { id: "comercial", nome: "Comercial", clima: "Animada, de propaganda", arquivo: "/video-musicas/comercial.m4a", autor: "code_box", fonte: "https://freesound.org/people/code_box/sounds/561190" },
+  { id: "groove", nome: "Groove", clima: "Animada, com baixo", arquivo: "/video-musicas/groove.m4a", autor: "code_box", fonte: "https://freesound.org/people/code_box/sounds/566952" },
+  { id: "tropical-eletronica", nome: "Tropical eletrônica", clima: "Animada, de praia", arquivo: "/video-musicas/tropical-eletronica.m4a", autor: "szegvari", fonte: "https://freesound.org/people/szegvari/sounds/594201" },
+  { id: "violao-feliz", nome: "Violão feliz", clima: "Alegre, só violão", arquivo: "/video-musicas/violao-feliz.m4a", autor: "guitarman213", fonte: "https://freesound.org/people/guitarman213/sounds/713738" },
+  { id: "manha", nome: "Manhã", clima: "Leve, guitarra", arquivo: "/video-musicas/manha.m4a", autor: "mareproduction", fonte: "https://freesound.org/people/mareproduction/sounds/467470" },
+  { id: "cordas", nome: "Cordas alegres", clima: "Alegre, orquestra", arquivo: "/video-musicas/cordas.m4a", autor: "Bigvegie", fonte: "https://freesound.org/people/Bigvegie/sounds/683104" },
+  { id: "jazz", nome: "Jazz", clima: "Animada, banda de jazz", arquivo: "/video-musicas/jazz.m4a", autor: "TheoTer", fonte: "https://freesound.org/people/TheoTer/sounds/510802" },
+  { id: "piano-jazz", nome: "Piano jazz", clima: "Calma, de noite", arquivo: "/video-musicas/piano-jazz.m4a", autor: "szegvari", fonte: "https://freesound.org/people/szegvari/sounds/570347" },
+  { id: "piano-suave", nome: "Piano suave", clima: "Calma, romântica", arquivo: "/video-musicas/piano-suave.m4a", autor: "Johnnie_Holiday", fonte: "https://freesound.org/people/Johnnie_Holiday/sounds/554602" },
+  { id: "chill", nome: "Chill", clima: "Calma, relaxante", arquivo: "/video-musicas/chill.m4a", autor: "bainmack", fonte: "https://freesound.org/people/bainmack/sounds/632681" },
+  { id: "cinema", nome: "Cinema", clima: "Calma, de filme", arquivo: "/video-musicas/cinema.m4a", autor: "DeVern", fonte: "https://freesound.org/people/DeVern/sounds/384202" },
+  { id: "epica", nome: "Épica", clima: "Forte, orquestra", arquivo: "/video-musicas/epica.m4a", autor: "edtijo", fonte: "https://freesound.org/people/edtijo/sounds/218744" },
 ];
 
 /** Escolha do cliente: rodízio das faixas da casa, uma faixa fixa, a música dele ou nenhuma. */
@@ -124,30 +141,59 @@ function recortar(faixa: FaixaAac, segundos: number, doFim: boolean): FaixaAac {
 }
 
 /** Caminho A: decodifica, corta, suaviza entrada e saída e codifica em AAC. */
-async function codificar(buf: ArrayBuffer, segundos: number): Promise<FaixaAac> {
+/** Uma fala da narração: o áudio (MP3) e o segundo do vídeo em que começa. */
+export type VozNaFaixa = { audio: ArrayBuffer; inicio: number };
+
+async function codificar(buf: ArrayBuffer | null, segundos: number, vozes: VozNaFaixa[] = []): Promise<FaixaAac> {
   const config = { codec: "mp4a.40.2", sampleRate: TAXA, numberOfChannels: 2, bitrate: 128_000 };
   const ok = await AudioEncoder.isConfigSupported(config);
   if (!ok.supported) throw new Error("sem AAC");
   const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   const ac = new Ctx();
-  let original: AudioBuffer;
+  let original: AudioBuffer | null = null;
+  const falas: { b: AudioBuffer; inicio: number }[] = [];
   try {
-    original = await ac.decodeAudioData(buf.slice(0));
+    if (buf) original = await ac.decodeAudioData(buf.slice(0));
+    for (const v of vozes) {
+      try { falas.push({ b: await ac.decodeAudioData(v.audio.slice(0)), inicio: v.inicio }); } catch { /* fala com problema: segue sem ela */ }
+    }
   } finally {
     ac.close().catch(() => undefined);
   }
   const off = new OfflineAudioContext(2, Math.ceil(segundos * TAXA), TAXA);
-  const src = off.createBufferSource();
-  src.buffer = original;
-  src.loop = original.duration < segundos; // música mais curta que o vídeo: repete
-  const ganho = off.createGain();
-  const saida = Math.min(2, segundos / 4);
-  ganho.gain.setValueAtTime(0, 0);
-  ganho.gain.linearRampToValueAtTime(0.9, 0.25);
-  ganho.gain.setValueAtTime(0.9, Math.max(0.3, segundos - saida));
-  ganho.gain.linearRampToValueAtTime(0, segundos);
-  src.connect(ganho).connect(off.destination);
-  src.start(0);
+  if (original) {
+    const src = off.createBufferSource();
+    src.buffer = original;
+    src.loop = original.duration < segundos; // música mais curta que o vídeo: repete
+    const ganho = off.createGain();
+    const saida = Math.min(2, segundos / 4);
+    // com narração a música fica mais baixa e abaixa mais enquanto a voz fala (a voz sempre na frente)
+    const base = falas.length ? 0.5 : 0.9, sobVoz = 0.14;
+    ganho.gain.setValueAtTime(0, 0);
+    ganho.gain.linearRampToValueAtTime(base, 0.25);
+    const trechos = falas.map((f) => [Math.max(0.3, f.inicio - 0.15), Math.min(segundos - saida, f.inicio + f.b.duration + 0.25)] as const).filter(([a, z]) => z > a).sort((x, y) => x[0] - y[0]);
+    // junta falas coladas (não sobe e desce a música entre uma frase e outra)
+    const juntos: [number, number][] = [];
+    for (const [a, z] of trechos) { const u = juntos[juntos.length - 1]; if (u && a - u[1] < 0.6) u[1] = Math.max(u[1], z); else juntos.push([a, z]); }
+    for (const [a, z] of juntos) {
+      ganho.gain.setValueAtTime(base, a);
+      ganho.gain.linearRampToValueAtTime(sobVoz, a + 0.2);
+      ganho.gain.setValueAtTime(sobVoz, z);
+      ganho.gain.linearRampToValueAtTime(base, z + 0.35);
+    }
+    ganho.gain.setValueAtTime(base, Math.max(0.3, segundos - saida));
+    ganho.gain.linearRampToValueAtTime(0, segundos);
+    src.connect(ganho).connect(off.destination);
+    src.start(0);
+  }
+  for (const f of falas) {
+    const src = off.createBufferSource();
+    src.buffer = f.b;
+    const g = off.createGain();
+    g.gain.value = 1;
+    src.connect(g).connect(off.destination);
+    src.start(Math.max(0, f.inicio));
+  }
   const pronto = await off.startRendering();
 
   const blocos: FaixaAac["blocos"] = [];
@@ -194,6 +240,12 @@ async function codificar(buf: ArrayBuffer, segundos: number): Promise<FaixaAac> 
  * Prepara a música no tamanho do vídeo. `daCasa` = faixa do Canva Viagem (.m4a com saída suave no fim).
  * `forcarCopia` é só para teste (simula o iPhone sem AudioEncoder).
  */
+/** Música (ou nenhuma) + falas da narração numa faixa só. Precisa do codificador de áudio do navegador. */
+export async function prepararTrilha(fonte: string | Blob | null, segundos: number, vozes: VozNaFaixa[]): Promise<FaixaAac> {
+  if (!temCodificador()) throw new Error("Este navegador não junta a voz ao vídeo. Use o Chrome ou o Safari atualizado.");
+  return codificar(fonte ? await lerArquivo(fonte) : null, segundos, vozes);
+}
+
 export async function prepararMusica(fonte: string | Blob, segundos: number, daCasa: boolean, forcarCopia = false): Promise<FaixaAac> {
   const buf = await lerArquivo(fonte);
   if (temCodificador() && !forcarCopia) {

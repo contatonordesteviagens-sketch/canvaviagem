@@ -17,6 +17,8 @@ import { VideoLabTela } from "@/pages/dev/VideoLab";
 import { Clapperboard, FolderHeart, Moon, Sun } from "lucide-react";
 import "@/styles/fabrica-tema-claro.css";
 import { useEntitlements } from "@/contexts/EntitlementsContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { usaMenuNovo } from "@/pages/dev/menu-novo-flag";
 import { 
   ArrowLeft, 
   Sparkles,
@@ -65,7 +67,10 @@ const FabricaInner = () => {
   const [temaClaro, setTemaClaro] = useState(() => {
     try { return localStorage.getItem("cv-fabrica-tema") === "claro"; } catch { return false; }
   });
+  // o mesmo botão vale para o portal: claro aqui = claro lá
+  const { setTheme } = useTheme();
   useEffect(() => {
+    setTheme(temaClaro ? "light" : "dark");
     document.documentElement.classList.toggle("fabrica-claro", temaClaro);
     try { localStorage.setItem("cv-fabrica-tema", temaClaro ? "claro" : "escuro"); } catch { /* sem storage */ }
     return () => document.documentElement.classList.remove("fabrica-claro");
@@ -146,13 +151,13 @@ const FabricaInner = () => {
 
   return (
     <div
-      className="fabrica-app min-h-screen flex bg-[#0A0A0B] text-white"
+      className={`fabrica-app min-h-screen flex bg-[#0A0A0B] text-white${usaMenuNovo() ? " fn-com-menu" : ""}`}
       style={{
         fontFamily: "Inter, sans-serif",
       }}
     >
       {/* â”€â”€ SIDEBAR LATERAL ESQUERDA (DESKTOP) â”€â”€ */}
-      <aside className="w-64 border-r border-white/5 bg-[#0F0F11] flex-shrink-0 flex flex-col hidden md:flex sticky top-0 h-screen z-40 select-none">
+      <aside data-fabrica-menu className="w-64 border-r border-white/5 bg-[#0F0F11] flex-shrink-0 flex flex-col hidden md:flex sticky top-0 h-screen z-40 select-none">
         {/* Brand Header */}
         <div className="p-6 border-b border-white/5 flex items-center gap-3">
           <div>
@@ -321,7 +326,7 @@ const FabricaInner = () => {
       </aside>
 
         {/* ── MOBILE HEADER (SELETOR COMPATÍVEL) ── */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0F0F11] border-b border-white/5 flex items-center justify-between px-4 z-50 animate-slideDown">
+      <div data-fabrica-topo className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0F0F11] border-b border-white/5 flex items-center justify-between px-4 z-50 animate-slideDown">
         <div className="flex items-center gap-2 min-w-0 pr-2">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-500 to-yellow-300 shrink-0">
             <Sparkles className="w-3.5 h-3.5 text-black" />
@@ -417,7 +422,7 @@ const FabricaInner = () => {
             </div>
 
             {/* No computador o menu lateral já mostra tudo: os atalhos ficam só no celular, em duas fileiras (nada escondido). */}
-            <div className="grid w-full grid-cols-4 gap-1.5 md:hidden">
+            <div data-fabrica-atalhos className="grid w-full grid-cols-4 gap-1.5 md:hidden">
               <button
                 onClick={() => navigate(isES ? "/es/fabrica" : "/fabrica")}
                 ref={activeTab === "dashboard" ? activePillRef : undefined}

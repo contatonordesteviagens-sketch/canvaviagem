@@ -386,6 +386,7 @@ const ES: Record<string, string> = {
   "Este navegador não gera MP4": "Este navegador no genera MP4",
   "Não consegui colocar a música neste aparelho. O vídeo saiu sem música.": "No he podido poner la música en este dispositivo. El vídeo ha salido sin música.",
   "Neste aparelho a música precisa ser um arquivo .m4a (AAC). O vídeo saiu sem música.": "En este dispositivo la música tiene que ser un archivo .m4a (AAC). El vídeo ha salido sin música.",
+  "Este aparelho não junta a voz ao vídeo. Saiu com a música, sem a narração. No computador ou no Chrome a voz entra.": "Este dispositivo no junta la voz al vídeo. Ha salido con la música, sin la narración. En el ordenador o en Chrome la voz entra.",
 
   // ----- abas e ajustes
   "✨ Montar": "✨ Montar",

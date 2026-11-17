@@ -269,6 +269,8 @@ export interface FabricaState {
   depoimentos: Depoimento[];
   primaryColor: string;
   secondaryColor: string;
+  /** kit de marca do editor de artes: cores e fontes da agência (vai junto para a conta) */
+  kitMarca?: { cores: string[]; fonteTitulo: string; fonteTexto: string };
   backgroundColor?: string;
   sectionOrder?: string[];
   currentPhase: number;

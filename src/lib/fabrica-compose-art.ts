@@ -253,8 +253,16 @@ interface ComposeTravelAdOptions {
   legacyLayouts?: boolean;
   /** ADMIN: ajustes finos por elemento ({ id: { dx, dy, scale } }). */
   artTweaks?: ArtTweakMap;
+  /** Ajustes feitos pelo usuário no editor simples (mover, tamanho, texto, esconder). Valem também nos layouts pro. */
+  userTweaks?: ArtTweakMap;
   /** ADMIN: callback com as caixas dos elementos desenhados (para o editor visual). */
   onArtElements?: (elements: ArtElementBox[]) => void;
+  /** Desenha maior (2 = 2160px, 3.556 = 4K). As medidas da arte continuam em 1080. */
+  renderScale?: number;
+  /** Editor de vídeo: onde a foto seria desenhada fica transparente (o vídeo da cena aparece por trás). */
+  punchPhoto?: boolean;
+  /** Itens do editor desenhados no meio da arte (atrás de algum elemento). */
+  injectedLayers?: import("@/lib/fabrica-art-recorder").ArtInjectedLayer[];
 }
 
 /** Formata telefone no padrão (XX) 9 XXXX-XXXX */
@@ -962,10 +970,30 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const width = 1080;
   const height = format === "story" ? 1920 : 1080;
   const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
+  const escalaSaida = options.renderScale && options.renderScale > 0 ? options.renderScale : 1;
+  canvas.width = Math.round(width * escalaSaida);
+  canvas.height = Math.round(height * escalaSaida);
   const rawCtx = canvas.getContext("2d");
   if (!rawCtx) throw new Error("Canvas 2D não suportado");
+  if (escalaSaida !== 1) rawCtx.scale(escalaSaida, escalaSaida);
+  // Vídeo: a foto vira um buraco. Toda vez que a foto é desenhada, ela apaga (destination-out) em vez de pintar,
+  // respeitando o recorte de cada modelo (cantos redondos, metade da arte etc.).
+  let fotoVazada: unknown = null;
+  if (options.punchPhoto) {
+    const desenharOriginal = rawCtx.drawImage.bind(rawCtx) as (...a: unknown[]) => void;
+    (rawCtx as unknown as { drawImage: (...a: unknown[]) => void }).drawImage = (fonte: unknown, ...resto: unknown[]) => {
+      if (fotoVazada && fonte === fotoVazada) {
+        rawCtx.save();
+        rawCtx.globalCompositeOperation = "destination-out";
+        rawCtx.globalAlpha = 1;
+        rawCtx.filter = "none";
+        desenharOriginal(fonte, ...resto);
+        rawCtx.restore();
+        return;
+      }
+      desenharOriginal(fonte, ...resto);
+    };
+  }
 
   // ADMIN — gravador universal: torna TODO elemento (texto, imagem, forma) de
   // QUALQUER variação editável (mover, escalar, girar, esconder, reordenar,
@@ -974,7 +1002,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     && PRO_VARIANTS.has(((((typeof forceVariant === "number" ? forceVariant : variation) % PRO_TOTAL_VARIANTS) + PRO_TOTAL_VARIANTS) % PRO_TOTAL_VARIANTS));
   // Os presets de ajuste fino (ArtTweakMap) são indexados pela ordem dos elementos dos
   // layouts ANTIGOS. Aplicá-los nos layouts pro desloca, gira e esconde textos.
-  const recorder = createArtRecorder(rawCtx, usesProLayout ? undefined : options.artTweaks);
+  // Ajustes que o próprio usuário fez no editor simples valem em qualquer layout (são da arte dele, não presets).
+  const recorder = createArtRecorder(rawCtx, options.userTweaks ?? (usesProLayout ? undefined : options.artTweaks), { escala: escalaSaida, camadas: options.injectedLayers });
   const ctx = recorder.ctx;
   const originalToDataURL = canvas.toDataURL.bind(canvas);
   (canvas as any).toDataURL = (...args: any[]) => {
@@ -1060,6 +1089,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   }
 
   const image = await loadImage(imageUrl);
+  if (options.punchPhoto) fotoVazada = image;
 
   // Title-case helper to evitar "saindo de fortaleza" minusculo
   const toTitle = (s?: string) =>
@@ -5448,8 +5478,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
       highlights: proHighlights.length ? proHighlights : fallbackIncluded,
       price: {
         has: hasPriceValue,
-        sym: curSym,
-        intPart,
+        // sem preço: nada de "R$" solto; o lugar do valor vira o convite para consultar
+        sym: hasPriceValue ? curSym : "",
+        intPart: hasPriceValue ? intPart : "Consulte",
         cents,
         topLabel: hasPriceValue ? (topLabel || "").trim() : "",
         prefix: typeof pricePrefix === "string" ? pricePrefix.trim() : "a partir de",

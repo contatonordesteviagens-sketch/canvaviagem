@@ -275,7 +275,7 @@ const VendedorIA: React.FC = () => {
 
         {/* Back link to Canva Viagem Hub */}
         <div className="px-4 pb-2">
-          <button 
+          <button data-voltar-canva 
             onClick={() => navigate('/')} 
             className="w-full flex items-center gap-2.5 px-3 py-2 text-[10px] font-bold text-[#8a8a8f] hover:text-white hover:bg-white/5 rounded-xl transition-all"
           >

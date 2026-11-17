@@ -10,10 +10,11 @@ import { salvarVideo } from "@/lib/biblioteca-videos";
 import { createPortal } from "react-dom";
 import { MontarPorToque } from "@/components/video/MontarPorToque";
 import { QuadrosDeVideo, baixarVideo } from "@/lib/mp4-quadros";
-import { ArrowLeft, Check, ChevronRight, Clapperboard, Download, Image as ImageIcon, Maximize2, Music, Pencil, Share, Shuffle, Stamp, Type } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Clapperboard, Download, Film, Image as ImageIcon, Maximize2, Music, Pencil, Share, Shuffle, Sparkles, Stamp, Type } from "lucide-react";
 import { NavegadorInternoAviso } from "@/components/jornada/NavegadorInternoAviso";
 import { MUSICAS, musicaDaVez, prepararMusica, type EscolhaMusica, type FaixaAac } from "@/lib/musica-video";
 import { SeletorMusica } from "@/components/video/SeletorMusica";
+import { PainelAnimar, PainelCena, ajusteDe, assinaturaAjustes, assinaturaClipes, chaveCena, comAnimacao, comClipesTrocados, enquadrar, entradaFundo, tempoNoClipe, veuEscuro, type AjusteCena } from "./video-cena";
 import { tx, setLangVideo, langVideo, comTextos, comMoeda, qtdParcelas, whatsExemplo, type LangVideo } from "@/lib/video-textos";
 
 // Listas fixas do módulo: os campos de texto passam a sair no idioma do gerador que está na tela.
@@ -40,7 +41,7 @@ const CATEGORIAS: { id: CategoriaFundo; nome: string }[] = [
 ];
 traduzivel(CATEGORIAS, ["nome"]);
 const CLIPES_POR_CATEGORIA = 2;
-type TelaDef = { tipo: Tela; dur: number; nome: string; parte?: PartePronta; n?: number; cats?: CategoriaFundo[] };
+type TelaDef = { tipo: Tela; dur: number; nome: string; parte?: PartePronta; n?: number; cats?: CategoriaFundo[]; /** chave dos ajustes da cena (vídeos prontos) */ k?: string };
 const TELAS: TelaDef[] = [
   { tipo: "abertura", dur: 4.5, nome: "Abertura" },
   { tipo: "inclusos", dur: 3.8, nome: "O que inclui" },
@@ -110,6 +111,8 @@ traduzivel(TIPOS, ["nome", "rotulo", "curto", "inclusos", "cta"]);
 type Formato = "stories" | "feed";
 // Feed 4:5: o vídeo sai com 1080×1350, recortando a faixa central do quadro 9:16 (de RECORTE_FEED até RECORTE_FEED + 900)
 const FEED_W = 1080;
+/** Qualidades do MP4 (o desenho é feito em 720 px e ampliado): HD 720, Full HD 1080, 2K 1440, 4K 2160 de largura */
+const QUALIDADES = [{ k: 1, nome: "HD" }, { k: 1.5, nome: "Full HD" }, { k: 2, nome: "2K" }, { k: 3, nome: "4K" }];
 const FEED_H = 1350;
 const RECORTE_FEED = 170;
 
@@ -168,7 +171,18 @@ type Pronto = {
   destino?: string;
   /** o cliente mexeu: não volta ao padrão do mês sozinho */
   editado?: boolean;
+  /** visual: clássico (vídeo na tela toda), faixa (vídeo em cima, texto na faixa escura) ou azul */
+  visual?: VisualPronto;
+  /** ajustes de cada cena (tempo, transição, trecho, velocidade, enquadrar, animação) e do vídeo inteiro */
+  ajustes?: Record<string, AjusteCena>;
+  todas?: AjusteCena;
 };
+type VisualPronto = "classico" | "faixa" | "azul";
+const VISUAIS: { id: VisualPronto; nome: string }[] = [{ id: "classico", nome: "Clássico" }, { id: "faixa", nome: "Faixa com imagem" }, { id: "azul", nome: "Azul" }];
+traduzivel(VISUAIS, ["nome"]);
+// visual "faixa": o vídeo fica até esta altura; o texto desce para a faixa escura
+const LINHA_FAIXA_P = 600;
+const CENTRO_PARTE: Partial<Record<PartePronta, number>> = { intro: 520, item: 880, oferta: 560, gancho: 590, virada: 590, resumo: 590, escolha: 590, etiqueta: 640 };
 
 type Contato = "whatsapp" | "instagram" | "facebook" | "email" | "site";
 const CONTATOS: { id: Contato; nome: string; cor: string; texto: string }[] = [
@@ -480,6 +494,8 @@ function desenharPilulas(ctx: CanvasRenderingContext2D, d: Dados, contatos: Cont
 }
 
 function desenharLogo(ctx: CanvasRenderingContext2D, d: Dados, logo: HTMLImageElement | null, x: number, y: number, r: number, k: number, fundo = "#fff") {
+  // sem logo e sem o nome de verdade: não desenha o círculo com "Sua Agência" (sairia no vídeo do cliente)
+  if (!logo && (!d.agencia || d.agencia === tx("Sua Agência"))) return;
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(0.7 + 0.3 * k, 0.7 + 0.3 * k);
@@ -2844,7 +2860,10 @@ function prontoPadrao(hoje = new Date()): Pronto {
 
 /** As cenas de um vídeo pronto, na ordem, com o tipo de fundo de cada uma. */
 function telasProntas(modelo: Modelo, p: Pronto, curto: boolean): TelaDef[] {
-  const cena = (parte: PartePronta, dur: number, nome: string, cats: CategoriaFundo[], n = 0): TelaDef => ({ tipo: "livre", dur, nome, parte, n, cats });
+  const cena = (parte: PartePronta, dur: number, nome: string, cats: CategoriaFundo[], n = 0): TelaDef => {
+    const k = chaveCena(parte, n);
+    return { tipo: "livre", dur: ajusteDe(p, k).dur ?? dur, nome, parte, n, cats, k };
+  };
   if (modelo === "lista") {
     const itens = p.itens.filter((i) => i.titulo.trim()).slice(0, curto ? 4 : 7);
     return [
@@ -2867,7 +2886,7 @@ function telasProntas(modelo: Modelo, p: Pronto, curto: boolean): TelaDef[] {
 }
 const cacheLinhaPronta = new Map<string, Linha>();
 function linhaPronta(modelo: Modelo, p: Pronto, curto = false): Linha {
-  const chave = `${modelo}|${curto}|${p.itens.map((i) => i.titulo + i.fundo).join(",")}|${p.ofertas.map((i) => i.titulo + i.fundo).join(",")}`;
+  const chave = `${modelo}|${curto}|${p.itens.map((i) => i.titulo + i.fundo).join(",")}|${p.ofertas.map((i) => i.titulo + i.fundo).join(",")}|${assinaturaAjustes(p)}`;
   let L = cacheLinhaPronta.get(chave);
   if (!L) {
     if (cacheLinhaPronta.size > 20) cacheLinhaPronta.clear();
@@ -3379,8 +3398,9 @@ function drawFrame(
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, W, H);
-  const dividida = modelo === "faixa";
-  const alturaFundo = dividida ? LINHA_FAIXA : H;
+  const visualP = pronto ? d.pronto?.visual || "classico" : "classico";
+  const dividida = modelo === "faixa" || visualP === "faixa";
+  const alturaFundo = visualP === "faixa" ? LINHA_FAIXA_P : dividida ? LINHA_FAIXA : H;
 
   // fundo: um vídeo (ou foto) por tela, com zoom lento e fusão entre telas
   for (let i = 0; i < L.telas.length; i++) {
@@ -3389,7 +3409,10 @@ function drawFrame(
     const dur = L.telas[i].dur;
     const local = t - L.inicios[i];
     if (local < -FADE || local > dur + FADE) continue;
-    ctx.globalAlpha = i === 0 ? 1 : clamp01(ease((local + FADE) / FADE));
+    const aj = pronto ? ajusteDe(d.pronto, L.telas[i].k) : {};
+    const en = entradaFundo(aj, local, FADE, i === 0);
+    if (!en.mostra) continue;
+    ctx.globalAlpha = en.alpha;
     const p = clamp01(local / dur);
     ctx.save();
     if (dividida) {
@@ -3397,8 +3420,18 @@ function drawFrame(
       ctx.rect(0, 0, W, alturaFundo);
       ctx.clip();
     }
-    if (isVideo(m)) drawCover(ctx, m, 1.04 + 0.08 * p, alturaFundo);
-    else {
+    if (en.dx) ctx.translate(en.dx, 0);
+    if (en.escala !== 1) {
+      ctx.translate(W / 2, alturaFundo / 2);
+      ctx.scale(en.escala, en.escala);
+      ctx.translate(-W / 2, -alturaFundo / 2);
+    }
+    if (isVideo(m)) {
+      const z = (1.04 + 0.08 * p) * (aj.zoom || 1);
+      const o = enquadrar(aj, z, alturaFundo);
+      ctx.translate(o.x, o.y);
+      drawCover(ctx, m, z, alturaFundo);
+    } else {
       // foto: zoom e passeio lateral alternando o lado
       ctx.translate((i % 2 ? -1 : 1) * (p - 0.5) * 60, 0);
       drawCover(ctx, m, 1.08 + 0.14 * p, alturaFundo);
@@ -3406,6 +3439,16 @@ function drawFrame(
     ctx.restore();
   }
   ctx.globalAlpha = 1;
+  // transição "pelo preto": escurece no ponto da troca
+  if (pronto) {
+    for (let i = 1; i < L.telas.length; i++) {
+      const v = veuEscuro(ajusteDe(d.pronto, L.telas[i].k), t - L.inicios[i], FADE);
+      if (v > 0) {
+        ctx.fillStyle = `rgba(0,0,0,${v})`;
+        ctx.fillRect(0, 0, W, alturaFundo);
+      }
+    }
+  }
 
   const cena = telaEm(t, L);
   const lt = t - L.inicios[cena];
@@ -3468,20 +3511,39 @@ function drawFrame(
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
   ctx.textBaseline = "alphabetic";
+  // visual azul: o vídeo ganha um banho de azul (como o chroma das peças de promoção)
+  if (visualP === "azul") {
+    const b = ctx.createLinearGradient(0, 0, 0, H);
+    b.addColorStop(0, "rgba(12,70,200,.42)");
+    b.addColorStop(0.6, "rgba(8,48,150,.5)");
+    b.addColorStop(1, "rgba(4,22,80,.82)");
+    ctx.fillStyle = b;
+    ctx.fillRect(0, 0, W, H);
+  }
 
   // tela dividida: bloco preto embaixo e a linha sempre na mesma altura
   if (dividida) {
     ctx.fillStyle = "#0a0a0c";
-    ctx.fillRect(0, LINHA_FAIXA, W, H - LINHA_FAIXA);
-    ctx.fillStyle = NEON;
-    ctx.fillRect(0, LINHA_FAIXA - 4, W, 8);
+    ctx.fillRect(0, alturaFundo, W, H - alturaFundo);
+    ctx.fillStyle = visualP === "faixa" ? amareloP() : NEON;
+    ctx.fillRect(0, alturaFundo - 4, W, 8);
   }
 
   // conteúdo um pouco menor e mais perto do centro (respeita a sangria do Instagram);
   // os estilos que encostam nas bordas de propósito ficam em tamanho cheio
   const encolhe = !(modelo === "neon" || modelo === "faixa" || modelo === "bf" || modelo === "promo");
   if (pronto) {
-    cenaPronta(ctx, modelo, L.telas[cena], lt, out, d, logo, contatos);
+    const tela = L.telas[cena];
+    const desce = visualP === "faixa" ? CENTRO_PARTE[tela.parte || "intro"] : undefined;
+    ctx.save();
+    if (desce != null) {
+      // texto na faixa escura: um pouco menor e centrado nela
+      ctx.translate(W / 2, (LINHA_FAIXA_P + H) / 2);
+      ctx.scale(0.86, 0.86);
+      ctx.translate(-W / 2, -desce);
+    }
+    comAnimacao(ctx, ajusteDe(d.pronto, tela.k), lt, out, (l, o) => cenaPronta(ctx, modelo, tela, l, o, d, logo, contatos));
+    ctx.restore();
   } else if (tipo === "contato") {
     ctaPadrao(ctx, d, logo, contatos, lt, modelo, dividida ? 120 : 0);
   } else {
@@ -3717,7 +3779,7 @@ export default function VideoLab() {
 
 /** Editor simples aberto pelo Início novo: começa num vídeo pronto (com textos e cenas do modelo escolhido). */
 export type EditorSimples = { modelo: "lista" | "pergunta"; nome?: string; pronto?: Record<string, unknown>; gerarJa?: boolean; aoVoltar: () => void };
-type AbaSimples = "texto" | "cenas" | "musica" | "marca";
+type AbaSimples = "texto" | "cenas" | "musica" | "marca" | "animar" | "cena";
 
 export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embutido?: boolean; lang?: LangVideo; simples?: EditorSimples }) {
   // idioma do gerador: vale para a interface e para o texto desenhado no vídeo (precisa vir antes dos estados iniciais)
@@ -3735,7 +3797,9 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
   const autoRodou = useRef(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const vidsRef = useRef<Fundo[]>([]);
-  const [entrada, setEntrada] = useState<Entrada>("montar");
+  // ?entrada=audio|texto|foto|pacote (tela "Que vídeo você quer fazer?"): abre o vídeo de pacote já naquela aba
+  const entradaPedida = (["montar", "pacote", "audio", "texto", "foto"] as const).find((e) => e === params.get("entrada"));
+  const [entrada, setEntrada] = useState<Entrada>(entradaPedida || "montar");
   const [frase, setFrase] = useState("");
   const [foto, setFoto] = useState<string | null>(null);
   // o que a agência preencheu fica salvo no aparelho: recarregar a página não apaga nada
@@ -3773,10 +3837,20 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
     variacao: proximaVariacao(false),
   }));
   // "Montar vídeo de um pacote" (quiz, áudio, texto, foto) fica fechado: o padrão é o vídeo pronto em 1 clique
-  const [modoPacote, setModoPacote] = useState(params.get("gerar") === "1");
+  // ?estilo=neon (Início novo): abre direto no vídeo de pacote com aquele estilo
+  const estiloPedido = MODELOS.find((m) => m.id === params.get("estilo") && !ehPronto(m.id))?.id;
+  const [modoPacote, setModoPacote] = useState(params.get("gerar") === "1" || !!estiloPedido || !!entradaPedida);
+  useEffect(() => {
+    if (entradaPedida) setTimeout(() => document.getElementById("abrir-pacote")?.scrollIntoView({ behavior: "smooth", block: "start" }), 400);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [personalizando, setPersonalizando] = useState(false);
   const [abaSimples, setAbaSimples] = useState<AbaSimples>("texto");
   const [cenaAberta, setCenaAberta] = useState<number | null>(null);
+  // cena escolhida no editor (null = o vídeo inteiro): a prévia repete só ela
+  const [cenaSel, setCenaSel] = useState<number | null>(null);
+  const focoRef = useRef<number | null>(null);
+  focoRef.current = cenaSel;
   const gerouJaRef = useRef(false);
   // música de fundo: rodízio das faixas da casa, uma fixa, a do cliente ou nenhuma
   const [musica, setMusica] = useState<EscolhaMusica>(() => {
@@ -3808,7 +3882,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
     }, 400);
     return () => clearTimeout(t);
   }, [dados, contatos]);
-  const [modelo, setModelo] = useState<Modelo>(simples ? simples.modelo : params.get("gerar") === "1" ? ORDEM_SUGERIDA[0] : PRONTOS[0]);
+  const [modelo, setModelo] = useState<Modelo>(simples ? simples.modelo : estiloPedido ? estiloPedido : params.get("gerar") === "1" ? ORDEM_SUGERIDA[0] : PRONTOS[0]);
   const modeloRef = useRef<Modelo>(modelo);
   modeloRef.current = modelo;
   // fileira de estilos no celular: o estilo ativo (inclusive quando o gerador troca sozinho) fica à vista
@@ -3822,7 +3896,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
   }, [modelo]);
   // Rodízio: cada "Gerar" usa o estilo seguinte da ordem (1 vídeo) ou os 3 seguintes (3 vídeos),
   // para nunca repetir a variação anterior. Escolher um estilo na lista reposiciona o rodízio nele.
-  const proximoRef = useRef(0);
+  const proximoRef = useRef(estiloPedido ? Math.max(0, ORDEM_SUGERIDA.indexOf(estiloPedido)) : 0);
   const roteiroRef = useRef(0);
   // a oferta do mês fica sugerida na lista (selo AGORA), mas só entra se o cliente escolher
   const sazonais = ocasioesDoMes();
@@ -3834,6 +3908,10 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
   // formato: stories 9:16 (720×1280) ou feed 4:5 (1080×1350, recorte do centro)
   const [formato, setFormato] = useState<Formato>("stories");
   const formatoRef = useRef<Formato>("stories");
+  // qualidade do MP4: multiplica o desenho de 720 px (1 = HD, 1,5 = Full HD, 2 = 2K, 3 = 4K)
+  const [qualidade, setQualidade] = useState(1.5);
+  const qualidadeRef = useRef(1.5);
+  qualidadeRef.current = qualidade;
   formatoRef.current = formato;
   // duração: completo (22 s, 6 telas) ou curto (12 s: abertura, preço e contato)
   const [curto, setCurto] = useState(false);
@@ -4195,7 +4273,8 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
   // Um fundo trocado à mão fica até uma dessas coisas mudar.
   const chaveFundosRef = useRef("");
   const destinoCarregadoRef = useRef("");
-  const chaveDoPronto = (m: Modelo, L: Linha, variacao: number) => `${m}|${variacao}|${L.telas.map((t) => (t.cats || []).join("+")).join(",")}`;
+  const chaveDoPronto = (m: Modelo, L: Linha, variacao: number) => `${m}|${variacao}|${L.telas.map((t) => (t.cats || []).join("+")).join(",")}|${assinaturaClipes(dadosRef.current.pronto)}`;
+  const fundosComTrocas = (L: Linha, lista: Midia[]) => comClipesTrocados(lista, L.telas.map((t) => t.k), dadosRef.current.pronto);
   const chavePrevia = ehPronto(modelo) ? chaveDoPronto(modelo, linhaPrevia, dados.variacao || 0) : "";
   useEffect(() => {
     if (!chavePrevia) {
@@ -4208,7 +4287,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
       () => {
         chaveFundosRef.current = chavePrevia;
         destinoCarregadoRef.current = "";
-        carregarFundos(fundosDoPronto(L, dadosRef.current.variacao || 0), L.telas.length).catch((e) => setAviso((e as Error).message));
+        carregarFundos(fundosComTrocas(L, fundosDoPronto(L, dadosRef.current.variacao || 0)), L.telas.length).catch((e) => setAviso((e as Error).message));
       },
       chaveFundosRef.current ? 600 : 0,
     );
@@ -4252,7 +4331,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
             setAviso(tx("Não consegui buscar vídeos de {destino} agora. Usei as cenas de viagem da casa.", { destino }));
           }
         }
-        await carregarFundos(lista, L.telas.length);
+        await carregarFundos(fundosComTrocas(L, lista), L.telas.length);
       }
       await document.fonts.load("900 40px Montserrat").catch(() => undefined);
       const foto = fotografar(m, "padrao");
@@ -4388,6 +4467,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
     let ultimo = performance.now();
     let ultimoDesenho = 0;
     let lastScene = -1;
+    let ultimaMarca = "";
     const pausarTodos = () => vidsRef.current.forEach((v) => isVideo(v) && !v.paused && v.pause());
     const tocarSo = (atual: Fundo | undefined) =>
       vidsRef.current.forEach((v) => {
@@ -4404,14 +4484,23 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
       if (agora - ultimoDesenho < (CELULAR ? 48 : 32)) return;
       ultimoDesenho = agora;
       const L = linhaRef.current;
-      const t = tempo % L.total;
+      const foco = focoRef.current;
+      const so = foco != null && foco < L.telas.length ? foco : -1;
+      const t = so >= 0 ? L.inicios[so] + (tempo % L.telas[so].dur) : tempo % L.total;
       const sc = telaEm(t, L);
-      if (sc !== lastScene) {
+      const aj = ehPronto(modeloRef.current) ? ajusteDe(dadosRef.current.pronto, L.telas[sc].k) : {};
+      // a cena recomeça quando muda, quando dá a volta (cena repetindo) ou quando o trecho/velocidade mudam
+      const marca = `${sc}|${so >= 0 ? Math.floor(tempo / L.telas[so].dur) : ""}|${aj.inicio ?? 0}|${aj.velocidade ?? 1}|${vidsRef.current.length}`;
+      if (marca !== ultimaMarca) {
         const vs = vidsRef.current;
         const v = vs[sc % Math.max(vs.length, 1)];
-        if (v && isVideo(v)) v.currentTime = 0;
+        if (v && isVideo(v)) {
+          v.playbackRate = aj.velocidade || 1;
+          v.currentTime = aj.inicio || 0;
+        }
         tocarSo(v);
         lastScene = sc;
+        ultimaMarca = marca;
       }
       const feed = formatoRef.current === "feed";
       drawFrame(ctx, t, vidsRef.current, dadosRef.current, logoRef.current, contatosRef.current, modeloRef.current, ocasiaoRef.current, temaRef.current, L, feed);
@@ -4420,12 +4509,12 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
     const obs = new IntersectionObserver(([e]) => {
       visivel = e.isIntersecting;
       if (!visivel) pausarTodos();
-      else lastScene = -1; // volta a tocar o vídeo da cena
+      else { lastScene = -1; ultimaMarca = ""; } // volta a tocar o vídeo da cena
     });
     obs.observe(canvas);
     const aoTrocarAba = () => {
       if (document.hidden) pausarTodos();
-      else lastScene = -1;
+      else { lastScene = -1; ultimaMarca = ""; }
     };
     document.addEventListener("visibilitychange", aoTrocarAba);
     raf = requestAnimationFrame(loop);
@@ -4484,7 +4573,9 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
 
   // Gera quadro a quadro (não depende de a tela estar visível nem da velocidade do aparelho).
   // fotografia das opções: mudar algo na tela durante a geração não altera o vídeo
-  const fotografar = (modeloEscolhido: Modelo, roteiro: Roteiro = "padrao") => ({
+  // desloca: começa a lista de vídeos de fundo em outro ponto (os 3 vídeos não abrem todos com a mesma cena)
+  const fotografar = (modeloEscolhido: Modelo, roteiro: Roteiro = "padrao", desloca = 0) => ({
+    desloca: ehPronto(modeloEscolhido) ? 0 : desloca,
     dados: structuredClone(dadosRef.current),
     logo: logoSemContaminar(logoRef.current),
     contatos: [...contatosRef.current],
@@ -4601,7 +4692,9 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
     setResultados([]);
     // os 3 estilos seguintes do rodízio (a próxima rodada começa de onde esta parou)
     const inicio = proximoRef.current;
-    const lista: Modelo[] = [0, 1, 2].map((i) => ORDEM_SUGERIDA[(inicio + i) % ORDEM_SUGERIDA.length]);
+    // vale a ocasião que a pessoa marcou: "Sem ocasião" não leva o visual de Black Friday; Black Friday vem primeiro
+    const ordem = ehBlack(ocasiao) ? (["bf", ...ORDEM_SUGERIDA.filter((m) => m !== "bf")] as Modelo[]) : ORDEM_SUGERIDA.filter((m) => m !== "bf");
+    const lista: Modelo[] = ehBlack(ocasiao) && inicio === 0 ? ordem.slice(0, 3) : [0, 1, 2].map((i) => ordem[(inicio + i) % ordem.length]);
     proximoRef.current += 3;
     setModelo(lista[0]);
     // cada um dos 3 com um roteiro: destino primeiro, preço primeiro, frase de impacto primeiro
@@ -4611,7 +4704,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
       for (let i = 0; i < lista.length; i++) {
         const m = lista[i];
         const roteiro = roteiros[i % roteiros.length];
-        const foto = fotografar(m, roteiro);
+        const foto = fotografar(m, roteiro, i * 2);
         const blob = await renderizarComReserva(foto, (p) => setStatus(tx("Vídeo {i} de {n}… {p}%", { i: i + 1, n: lista.length, p })));
         const u = URL.createObjectURL(blob);
         if (i === 0) setUrl(u);
@@ -4668,33 +4761,45 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
     const FPS = CELULAR ? 24 : 30;
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
-    const vids = vidsRef.current;
+    const todosVids = vidsRef.current;
+    const d = todosVids.length ? ((foto0.desloca || 0) % todosVids.length) : 0;
+    const vids = d ? [...todosVids.slice(d), ...todosVids.slice(0, d)] : todosVids;
     vids.forEach((v) => isVideo(v) && v.pause());
     {
-      // feed 4:5: desenha em 1080×1920 (nítido) e recorta a faixa central 1080×1350; stories: o canvas de sempre
+      // o desenho é feito em 720×1280 e ampliado pela qualidade escolhida (HD 1×, Full HD 1,5×, 2K 2×, 4K 3×).
+      // feed 4:5: desenha a tela inteira ampliada e recorta a faixa central (720×900 vezes a qualidade).
       const feed = foto0.formato === "feed";
-      const OW = feed ? FEED_W : W;
-      const OH = feed ? FEED_H : H;
+      const qPedida = qualidadeRef.current;
+      const codecsDe = (w: number, h: number) => (w * h > 2_100_000 ? ["avc1.640033", "avc1.640034", "avc1.4d0033"] : w * h > 1_000_000 ? ["avc1.640028", "avc1.640032", "avc1.4d0028"] : ["avc1.4d0028", "avc1.640028", "avc1.42002a"]);
+      let q = qPedida, codec = "";
+      const taxaDe = (w: number, h: number) => Math.round(Math.max(2_400_000, w * h * (CELULAR ? 2 : 2.4)) * (foto0.linha.total > 24 ? 0.85 : 1));
+      // aparelho que não faz o tamanho pedido: desce até um que ele faça
+      for (const tentativa of [qPedida, ...QUALIDADES.map((x) => x.k).filter((k) => k < qPedida).reverse()]) {
+        const w = Math.round(W * tentativa), h = Math.round((feed ? 900 : H) * tentativa);
+        for (const c of codecsDe(w, h)) {
+          try { if ((await VideoEncoder.isConfigSupported({ codec: c, width: w, height: h, bitrate: taxaDe(w, h), framerate: FPS })).supported) { codec = c; break; } } catch { /* próximo */ }
+        }
+        if (codec) { q = tentativa; break; }
+      }
+      if (codec && q < qPedida) setAviso(tx("Este aparelho não faz vídeo nessa qualidade. Saiu em {q}.", { q: QUALIDADES.find((x) => x.k === q)?.nome || "HD" }));
+      const OW = Math.round(W * q);
+      const OH = Math.round((feed ? 900 : H) * q);
       let gctx: CanvasRenderingContext2D | null = null;
       let saida: HTMLCanvasElement | null = null;
       let sctx: CanvasRenderingContext2D | null = null;
       let grande: HTMLCanvasElement | null = null;
-      if (feed) {
+      if (feed || q !== 1) {
         grande = document.createElement("canvas");
-        grande.width = 1080;
-        grande.height = 1920;
+        grande.width = OW;
+        grande.height = Math.round(H * q);
         gctx = grande.getContext("2d")!;
-        gctx.scale(1.5, 1.5);
-        saida = document.createElement("canvas");
-        saida.width = FEED_W;
-        saida.height = FEED_H;
-        sctx = saida.getContext("2d")!;
-      }
-      const codecs = ["avc1.4d0028", "avc1.640028", "avc1.42002a"];
-      let codec = "";
-      for (const c of codecs) {
-        const ok = await VideoEncoder.isConfigSupported({ codec: c, width: OW, height: OH, bitrate: 4_500_000, framerate: FPS });
-        if (ok.supported) { codec = c; break; }
+        gctx.scale(q, q);
+        if (feed) {
+          saida = document.createElement("canvas");
+          saida.width = OW;
+          saida.height = OH;
+          sctx = saida.getContext("2d")!;
+        } else saida = grande;
       }
       if (!codec) throw new Error(tx("Este navegador não gera MP4"));
       // música de fundo: preparada antes (o MP4 precisa saber se terá trilha de áudio). Se falhar, o vídeo sai sem música.
@@ -4735,7 +4840,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
       });
       // vídeo mais longo (os prontos têm ~28 s) usa taxa menor: o arquivo fica perto de 10 MB e passa no WhatsApp sem demora
       const longo = foto0.linha.total > 24;
-      enc.configure({ codec, width: OW, height: OH, bitrate: CELULAR ? (longo ? 2_400_000 : 3_000_000) : longo ? 3_000_000 : 4_500_000, framerate: FPS });
+      enc.configure({ codec, width: OW, height: OH, bitrate: taxaDe(OW, OH), framerate: FPS });
       // Em vez de "pular" para cada quadro (lento: decodifica de novo a cada pulo),
       // cada vídeo toca normalmente e o quadro espera ele chegar no ponto certo.
       const tocando = new Set<number>();
@@ -4813,7 +4918,9 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
           if (!v || !isVideo(v) || fontes[i % Math.max(vids.length, 1)]) continue;
           if (ativos.includes(i) && !tocando.has(i)) {
             tocando.add(i);
-            v.currentTime = 0;
+            const ajG = ehPronto(foto0.modelo) ? ajusteDe(foto0.dados.pronto, L.telas[i].k) : {};
+            v.playbackRate = ajG.velocidade || 1;
+            v.currentTime = ajG.inicio || 0;
             await v.play().catch(() => undefined);
           } else if (!ativos.includes(i) && tocando.has(i)) {
             tocando.delete(i);
@@ -4823,14 +4930,17 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
         await Promise.all(ativos.map((i) => {
           const k = i % Math.max(vids.length, 1);
           const v = vids[k];
-          const local = Math.max(0, t - L.inicios[i] + FADE);
+          const ajG = ehPronto(foto0.modelo) ? ajusteDe(foto0.dados.pronto, L.telas[i].k) : {};
+          const local = tempoNoClipe(ajG, t - L.inicios[i] + FADE);
           if (fontes[k]) return comLimite(k, fontes[k]!.quadro(local).catch(() => undefined));
           return v && isVideo(v) ? esperar(v, local) : Promise.resolve();
         }));
         if (erroEnc) throw erroEnc;
         if (feed && gctx && sctx && grande) {
           drawFrame(gctx, t, vidsDesenho, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao, foto0.tema, L, true);
-          sctx.drawImage(grande, 0, RECORTE_FEED * 1.5, 1080, FEED_H, 0, 0, FEED_W, FEED_H);
+          sctx.drawImage(grande, 0, RECORTE_FEED * q, OW, OH, 0, 0, OW, OH);
+        } else if (gctx) {
+          drawFrame(gctx, t, vidsDesenho, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao, foto0.tema, L);
         } else {
           drawFrame(ctx, t, vidsDesenho, foto0.dados, foto0.logo, foto0.contatos, foto0.modelo, foto0.ocasiao, foto0.tema, L);
         }
@@ -4993,6 +5103,12 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
             <button disabled={gravando} onClick={() => setFormato("feed")} className={chip(formato === "feed")}>{tx("Feed 4:5")}</button>
           </div>
         </div>
+        <div>
+          <p className="mb-1.5 text-[12px] font-semibold text-white/55">{tx("Qualidade")}</p>
+          <div className="flex flex-wrap gap-2">
+            {QUALIDADES.map((q) => <button key={q.k} data-qualidade={q.k} disabled={gravando} onClick={() => setQualidade(q.k)} className={chip(qualidade === q.k)}>{q.nome}</button>)}
+          </div>
+        </div>
       </div>
       <button disabled={gravando} onClick={() => setFolha("oferta")} className={`${ehPronto(modelo) ? "hidden" : "flex"} min-h-11 items-center justify-between rounded-xl border border-white/10 px-3 text-[14px]`}>
         <span className="text-white/55">{tx("Ocasião")}</span>
@@ -5020,13 +5136,60 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
     gerarPronto(modeloRef.current, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [carregando]);
+  // número de cada cena no vídeo (mesma ordem de telasProntas)
+  const cenaTitulo = modelo === "lista" ? 1 : curto ? 2 : 3;
+  const primeiraCenaItem = cenaTitulo + 1;
   if (simples) {
     const ABAS_SIMPLES: { id: AbaSimples; nome: string; icone: typeof Type }[] = [
+      { id: "cena", nome: tx("Cena"), icone: Clapperboard },
       { id: "texto", nome: tx("Texto"), icone: Type },
-      { id: "cenas", nome: tx("Cenas"), icone: Clapperboard },
+      { id: "animar", nome: tx("Animar"), icone: Sparkles },
+      { id: "cenas", nome: tx("Vídeo"), icone: Film },
       { id: "musica", nome: tx("Música"), icone: Music },
       { id: "marca", nome: tx("Sua marca"), icone: Stamp },
     ];
+    // ——— cena escolhida (null = o vídeo inteiro) ———
+    const telasSimples = linhaPrevia.telas;
+    const selValida = cenaSel != null && cenaSel < telasSimples.length ? cenaSel : null;
+    const telaSel = selValida != null ? telasSimples[selValida] : null;
+    const nomeSel = telaSel ? tx("Cena {n}", { n: (selValida as number) + 1 }) + " · " + telaSel.nome : tx("Vídeo inteiro (todas as cenas)");
+    const ajusteSel: AjusteCena = telaSel ? ajusteDe(pronto, telaSel.k) : pronto.todas || {};
+    const mudarAjuste = (p: Partial<AjusteCena>) => {
+      if (telaSel?.k) setPronto({ ajustes: { ...(pronto.ajustes || {}), [telaSel.k]: { ...(pronto.ajustes?.[telaSel.k] || {}), ...p } } });
+      else setPronto({ todas: { ...(pronto.todas || {}), ...p } });
+    };
+    const aplicarEmTodas = (campos: (keyof AjusteCena)[]) => {
+      const todas: Record<string, unknown> = { ...(pronto.todas || {}) };
+      campos.forEach((c) => { todas[c] = ajusteSel[c]; });
+      const ajustes = Object.fromEntries(Object.entries(pronto.ajustes || {}).map(([k, a]) => {
+        const b: Record<string, unknown> = { ...a };
+        campos.forEach((c) => delete b[c]);
+        return [k, b as AjusteCena];
+      }));
+      setPronto({ todas: todas as AjusteCena, ajustes });
+    };
+    const capaDe = (url?: string) => {
+      const m = url?.match(/\/video-fundos\/([a-z]+-\d)\.mp4$/);
+      return m ? `/video-fundos/capas/${m[1]}.jpg` : undefined;
+    };
+    const durClipeSel = (() => {
+      if (selValida == null) return 0;
+      const v = vidsRef.current[selValida];
+      return v && isVideo(v) && Number.isFinite(v.duration) ? v.duration : 0;
+    })();
+    const durModelo = telaSel ? telasProntas(modelo, { ...pronto, ajustes: {}, todas: {} }, curto)[selValida as number]?.dur ?? telaSel.dur : 3;
+    const clipesCasa = CATEGORIAS.flatMap((c) => [1, 2].map((n) => ({ url: `/video-fundos/${c.id}-${n}.mp4`, capa: `/video-fundos/capas/${c.id}-${n}.jpg`, nome: `${c.nome} ${n}` })));
+    const segs = (x: number) => x.toFixed(1).replace(".", ",") + " s";
+    const escolherCena = (i: number | null) => {
+      setCenaSel(i);
+      if (i != null && !window.matchMedia("(min-width: 1024px)").matches && abaSimples !== "animar") setAbaSimples("cena");
+    };
+    const painelCena = (
+      <PainelCena
+        nome={nomeSel} ajuste={ajusteSel} durPadrao={durModelo} durClipe={durClipeSel} mudar={mudarAjuste} aplicarEmTodas={aplicarEmTodas}
+        clipes={clipesCasa} capaAtual={selValida != null ? (capaDe(fundos[selValida]?.url) || fundos[selValida]?.thumb) : undefined} inteiro={selValida == null}
+      />
+    );
     const maxItens = modelo === "lista" ? 7 : 4;
     const sugestoes = (modelo === "lista"
       ? ["Cruzeiros", "Lua de mel", "Passagens", "Seguro viagem", "Grupos", "Resorts", "Disney"]
@@ -5056,6 +5219,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
               <div className="relative h-full max-w-full" style={{ aspectRatio: "9 / 16" }}>
                 <canvas ref={canvasRef} width={W} height={H} className="block h-full w-full rounded-2xl border border-white/10" />
                 {carregando && !gravando && <span className="absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-black/70 px-3 py-1 text-[11px] font-semibold">{tx("Carregando as cenas…")}</span>}
+                {selValida != null && !gravando && <span data-repetindo className="absolute left-2 top-2 rounded-full px-2.5 py-1 text-[11px] font-bold" style={{ background: "rgba(0,0,0,.72)", color: "#fff" }}>{tx("Cena {n} repetindo", { n: selValida + 1 })}</span>}
                 {gravando && (
                   <div id="s-progresso" className="absolute inset-0 grid place-items-center rounded-2xl bg-black/70 p-4 text-center">
                     <div>
@@ -5068,37 +5232,76 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
               </div>
             </div>
           </div>
+          <div data-faixa-cenas className="flex shrink-0 gap-2 overflow-x-auto px-3 pb-2 pt-1 [scrollbar-width:none]">
+            <button type="button" data-cena-sel="todas" aria-pressed={selValida == null} onClick={() => escolherCena(null)} className={"flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border-2 py-1.5 text-[11px] font-bold " + (selValida == null ? "border-[#F5F906] bg-[#F5F906]/10" : "border-white/10 bg-white/[0.04]")}>
+              <Film className="h-4 w-4" />{tx("Todas")}<span className="font-semibold tabular-nums text-white/50">{segs(linhaPrevia.total)}</span>
+            </button>
+            {telasSimples.map((tl, i) => {
+              const capa = capaDe(fundos[i]?.url) || fundos[i]?.thumb;
+              return (
+                <button key={(tl.k || "") + i} type="button" data-cena-sel={i} aria-pressed={selValida === i} aria-label={tx("Cena {n}", { n: i + 1 }) + " · " + tl.nome} title={tl.nome} onClick={() => escolherCena(i)} className={"flex w-14 shrink-0 flex-col items-center gap-0.5 rounded-xl border-2 p-0.5 " + (selValida === i ? "border-[#F5F906]" : "border-transparent")}>
+                  <span className="relative block h-14 w-full overflow-hidden rounded-lg bg-white/[0.08]">
+                    {capa && <img src={capa} alt="" loading="lazy" className="h-full w-full object-cover" />}
+                    <span className="absolute left-0.5 top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-black/70 px-1 text-[10px] font-black">{i + 1}</span>
+                  </span>
+                  <span className="text-[10px] font-semibold tabular-nums text-white/60">{segs(tl.dur)}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="flex shrink-0 flex-col border-t border-white/10 bg-[#141416] lg:h-full lg:w-[420px] lg:border-l lg:border-t-0">
+        <aside data-menu-direita className="hidden min-h-0 shrink-0 overflow-y-auto border-l border-white/10 bg-[#141416] p-4 lg:block lg:w-[360px]">
+          {painelCena}
+        </aside>
+
+        <div className="flex shrink-0 flex-col border-t border-white/10 bg-[#141416] lg:order-first lg:h-full lg:w-[380px] lg:border-r lg:border-t-0">
           <div role="tablist" className="flex">
             {ABAS_SIMPLES.map((a) => (
-              <button key={a.id} type="button" role="tab" id={"s-aba-" + a.id} aria-selected={abaSimples === a.id} onClick={() => setAbaSimples(a.id)} className={"flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 border-b-2 text-[11px] font-bold " + (abaSimples === a.id ? "border-[#F5F906] text-white" : "border-transparent text-white/45")}>
+              <button key={a.id} type="button" role="tab" id={"s-aba-" + a.id} aria-selected={abaSimples === a.id} onClick={() => setAbaSimples(a.id)} className={"flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 border-b-2 text-[11px] font-bold " + (a.id === "cena" ? "lg:hidden " : "") + (abaSimples === a.id ? "border-[#F5F906] text-white" : "border-transparent text-white/45")}>
                 <a.icone className="h-4 w-4" />{a.nome}
               </button>
             ))}
           </div>
           <div className={"h-[34dvh] overflow-y-auto p-3 lg:h-auto lg:flex-1 " + (gravando ? "pointer-events-none opacity-50" : "")}>
             {aviso && <p className="mb-3 rounded-xl border border-amber-400/40 bg-amber-500/10 p-2.5 text-[12px] text-amber-100">{aviso}</p>}
+            {abaSimples === "cena" && (
+              <>
+                <div className="lg:hidden">{painelCena}</div>
+                <p className="hidden text-[13px] text-white/55 lg:block">{tx("A cena escolhida fica no menu da direita.")}</p>
+              </>
+            )}
+            {abaSimples === "animar" && (
+              <>
+                {selValida == null && <p className="mb-3 rounded-xl bg-white/[0.05] p-2.5 text-[12px] text-white/65">{tx("Vale para todas as cenas. Para animar só uma, toque nela embaixo da prévia.")}</p>}
+                <PainelAnimar nome={nomeSel} ajuste={ajusteSel} durCena={telaSel?.dur ?? 3} mudar={mudarAjuste} aplicarEmTodas={aplicarEmTodas} />
+              </>
+            )}
             {abaSimples === "texto" && (
-              <div className="flex flex-col gap-3">
-                <div>
-                  <p className={rotulo}>{tx("Título do vídeo")}</p>
-                  <div className="grid grid-cols-2 gap-2 lg:grid-cols-3">
-                    <input id="s-titulo" aria-label={tx("Título")} className={campo} maxLength={16} value={pronto.titulo} onChange={(e) => setPronto({ titulo: e.target.value })} />
-                    <input aria-label={tx("Em destaque")} className={campo} maxLength={16} value={pronto.destaque} onChange={(e) => setPronto({ destaque: e.target.value })} />
-                    <input aria-label={tx("Linha de baixo")} className={campo + " col-span-2 lg:col-span-1"} maxLength={22} value={pronto.subtitulo} onChange={(e) => setPronto({ subtitulo: e.target.value })} />
+              <div className="flex flex-col gap-4">
+                <p className="text-[12px] leading-snug text-white/55">{tx("Cada bloco abaixo é uma cena do vídeo, na ordem em que aparece.")}</p>
+                <div className="rounded-xl border border-white/10 p-3">
+                  <p className="text-[13px] font-extrabold"><span className="text-[#F5F906]">{tx("Cena {n}", { n: cenaTitulo })}</span> · {tx("Título grande")}</p>
+                  <p className="mb-2 text-[11px] text-white/50">{modelo === "lista" ? tx("É o que abre o vídeo.") : tx("Aparece logo depois da pergunta.")}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="block"><span className="mb-1 block text-[11px] text-white/50">{tx("Primeira linha")}</span><input id="s-titulo" className={campo} maxLength={16} value={pronto.titulo} onChange={(e) => setPronto({ titulo: e.target.value })} /></label>
+                    <label className="block"><span className="mb-1 block text-[11px] text-white/50">{tx("Em destaque (colorido)")}</span><input className={campo} maxLength={16} value={pronto.destaque} onChange={(e) => setPronto({ destaque: e.target.value })} /></label>
+                    <label className="col-span-2 block"><span className="mb-1 block text-[11px] text-white/50">{tx("Linha de baixo")}</span><input className={campo} maxLength={22} value={pronto.subtitulo} onChange={(e) => setPronto({ subtitulo: e.target.value })} /></label>
                   </div>
                 </div>
                 <div>
-                  <p className={rotulo}>{modelo === "lista" ? tx("O que a sua agência vende") : tx("Ofertas do vídeo")}</p>
+                  <p className="mb-2 text-[13px] font-extrabold">{modelo === "lista" ? tx("Cenas do meio: o que a sua agência vende") : tx("Cenas do meio: as ofertas")}</p>
                   <div className="flex flex-col gap-2">
                     {listaPronta.map((it, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <span className="w-6 shrink-0 text-center text-[13px] font-black text-[#F5F906]">{String(i + 1).padStart(2, "0")}</span>
-                        <input aria-label={tx("Título do item {n}", { n: i + 1 })} className={campo} maxLength={modelo === "lista" ? 16 : 14} placeholder={tx("Ex.: Cruzeiros")} value={it.titulo} onChange={(e) => mudarItem(i, { titulo: e.target.value })} />
-                        <input aria-label={tx("Detalhe do item {n}", { n: i + 1 })} className={campo} maxLength={modelo === "lista" ? 24 : 34} placeholder={tx("detalhe")} value={it.sub} onChange={(e) => mudarItem(i, { sub: e.target.value })} />
-                        <button type="button" aria-label={tx("Tirar o item {n}", { n: i + 1 })} onClick={() => tirarItem(i)} className="grid h-11 w-10 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-[18px] text-white/70 active:bg-white/[0.12]">×</button>
+                      <div key={i} className="rounded-xl border border-white/10 p-2.5">
+                        <div className="mb-1.5 flex items-center justify-between gap-2">
+                          <span className="text-[13px] font-extrabold"><span className="text-[#F5F906]">{tx("Cena {n}", { n: primeiraCenaItem + i })}</span>{it.titulo ? " · " + it.titulo : ""}</span>
+                          <button type="button" aria-label={tx("Tirar a cena {n}", { n: primeiraCenaItem + i })} onClick={() => tirarItem(i)} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/[0.06] text-[17px] text-white/70 active:bg-white/[0.12]">×</button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <label className="block"><span className="mb-1 block text-[11px] text-white/50">{tx("Nome (grande)")}</span><input aria-label={tx("Título do item {n}", { n: i + 1 })} className={campo} maxLength={modelo === "lista" ? 16 : 14} placeholder={tx("Ex.: Cruzeiros")} value={it.titulo} onChange={(e) => mudarItem(i, { titulo: e.target.value })} /></label>
+                          <label className="block"><span className="mb-1 block text-[11px] text-white/50">{tx("Detalhe (pequeno)")}</span><input aria-label={tx("Detalhe do item {n}", { n: i + 1 })} className={campo} maxLength={modelo === "lista" ? 24 : 34} placeholder={tx("Ex.: pelo mundo")} value={it.sub} onChange={(e) => mudarItem(i, { sub: e.target.value })} /></label>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -5111,15 +5314,17 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
                     </div>
                   )}
                 </div>
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-                  <div>
-                    <label htmlFor="s-selo" className={rotulo}>{tx("Oferta em destaque (só escreva desconto se for verdade)")}</label>
+                {modelo === "lista" && !curto && (
+                  <div className="rounded-xl border border-white/10 p-3">
+                    <label htmlFor="s-selo" className="block text-[13px] font-extrabold"><span className="text-[#F5F906]">{tx("Cena {n}", { n: primeiraCenaItem + listaPronta.length })}</span> · {tx("Selo de oferta")}</label>
+                    <p className="mb-2 text-[11px] text-white/50">{tx("Só escreva desconto se for verdade.")}</p>
                     <input id="s-selo" className={campo} maxLength={26} value={pronto.selo} onChange={(e) => setPronto({ selo: e.target.value })} />
                   </div>
-                  <div>
-                    <label htmlFor="s-fecho" className={rotulo}>{tx("Frase final")}</label>
-                    <input id="s-fecho" className={campo} maxLength={44} value={pronto.fecho} onChange={(e) => setPronto({ fecho: e.target.value })} />
-                  </div>
+                )}
+                <div className="rounded-xl border border-white/10 p-3">
+                  <label htmlFor="s-fecho" className="block text-[13px] font-extrabold"><span className="text-[#F5F906]">{tx("Última cena")}</span> · {tx("Frase final")}</label>
+                  <p className="mb-2 text-[11px] text-white/50">{tx("Aparece com a sua logo e o seu WhatsApp.")}</p>
+                  <input id="s-fecho" className={campo} maxLength={44} value={pronto.fecho} onChange={(e) => setPronto({ fecho: e.target.value })} />
                 </div>
               </div>
             )}
@@ -5129,13 +5334,20 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
                   <Shuffle className="h-4 w-4 text-[#F5F906]" />{tx("Sortear outras cenas")}
                 </button>
                 <div>
-                  <p className={rotulo}>{tx("Cena de cada parte (toque para trocar)")}</p>
+                  <p className={rotulo}>{tx("Visual do vídeo")}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {VISUAIS.map((v) => <button key={v.id} type="button" data-visual={v.id} onClick={() => setPronto({ visual: v.id })} className={chip((pronto.visual || "classico") === v.id)}>{v.nome}</button>)}
+                  </div>
+                </div>
+                <div>
+                  <p className={rotulo}>{tx("Vídeo de fundo de cada cena (toque para trocar)")}</p>
+                  <p className="-mt-1 mb-2 text-[11px] text-white/45">{tx("A abertura e a última cena usam vídeos da casa. As do meio você escolhe aqui.")}</p>
                   <div className="flex flex-col gap-2">
                     {listaPronta.map((it, i) => (
                       <div key={i} className="rounded-xl border border-white/10">
                         <button type="button" id={"s-cena-" + i} aria-expanded={cenaAberta === i} onClick={() => setCenaAberta(cenaAberta === i ? null : i)} className="flex min-h-14 w-full items-center gap-3 px-2 text-left">
                           <img src={"/video-fundos/capas/" + it.fundo + "-1.jpg"} alt="" className="h-11 w-8 shrink-0 rounded-md object-cover" />
-                          <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">{it.titulo || tx("Item {n}", { n: i + 1 })}</span>
+                          <span className="min-w-0 flex-1 truncate text-[14px] font-semibold"><span className="text-[#F5F906]">{tx("Cena {n}", { n: primeiraCenaItem + i })}</span> · {it.titulo || tx("sem nome")}</span>
                           <span className="shrink-0 text-[12px] text-white/50">{CATEGORIAS.find((c) => c.id === it.fundo)?.nome}</span>
                           <ChevronRight className={"h-4 w-4 shrink-0 text-white/40 transition-transform " + (cenaAberta === i ? "rotate-90" : "")} />
                         </button>
@@ -5153,8 +5365,8 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="s-destino" className={rotulo}>{tx("Quer cenas de um lugar só? Escreva o destino (opcional)")}</label>
-                  <input id="s-destino" className={campo} maxLength={40} placeholder={tx("Ex.: Maragogi")} value={pronto.destino || ""} onChange={(e) => setPronto({ destino: e.target.value })} />
+                  <label htmlFor="s-destino" className={rotulo}>{tx("Vídeo de um destino ou pacote? Escreva os lugares")}</label>
+                  <input id="s-destino" className={campo} maxLength={60} placeholder={tx("Ex.: Praga, Viena e Budapeste")} value={pronto.destino || ""} onChange={(e) => setPronto({ destino: e.target.value })} />
                 </div>
                 <div className="flex flex-wrap gap-4">
                   <div>
@@ -5162,6 +5374,12 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
                     <div className="flex gap-2">
                       <button type="button" onClick={() => setFormato("stories")} className={chip(formato === "stories")}>{tx("Reels e Stories")}</button>
                       <button type="button" onClick={() => setFormato("feed")} className={chip(formato === "feed")}>{tx("Feed 4:5")}</button>
+                    </div>
+                  </div>
+                  <div>
+                    <p className={rotulo}>{tx("Qualidade")}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {QUALIDADES.map((q) => <button key={q.k} type="button" data-qualidade={q.k} onClick={() => setQualidade(q.k)} className={chip(qualidade === q.k)}>{q.nome}</button>)}
                     </div>
                   </div>
                   <div>
@@ -5193,7 +5411,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
                   <label htmlFor="s-whats" className={rotulo}>{tx("WhatsApp (aparece no final)")}</label>
                   <input id="s-whats" className={campo} inputMode="tel" placeholder="(82) 99999-9999" value={whatsReal(dados)} onChange={(e) => set("whatsapp", e.target.value)} />
                 </div>
-                <p className="text-[11px] text-white/40">{tx("A logo, o nome e o WhatsApp aparecem na última cena do vídeo.")}</p>
+                <p className="text-[11px] text-white/40">{tx("A logo, o nome e o WhatsApp aparecem na última cena do vídeo.")}{fabrica.agencyName || fabrica.logoBase64 ? " " + tx("Já vieram dos seus Dados do Perfil.") : " " + tx("Preencha uma vez nos Dados do Perfil e eles entram sozinhos em tudo.")}</p>
               </div>
             )}
           </div>
@@ -5420,7 +5638,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
                 ocupado={ocupado}
                 ocasioes={sazonais.lista.map((o) => ({ id: o.id, nome: o.nome }))}
                 ocasioesDestaque={sazonais.agora.length + 1}
-                whatsapp={dados.whatsapp}
+                whatsapp={whatsReal(dados)}
                 onWhatsapp={(w) => set("whatsapp", w)}
                 curto={curto}
                 onCurto={setCurto}
@@ -5756,7 +5974,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
                     <p className="mt-2 text-center text-[13px] font-semibold text-white/80">
                       {tx("Vídeo ")}{i + 1} · {MODELOS.find((m) => m.id === r.modelo)?.nome}
                       <span className="font-normal text-white/50"> · {r.musica ? `♪ ${r.musica}` : tx("sem música")}</span>
-                      {resultados.length > 1 && <span className="font-normal text-white/50"> · {ROTEIROS.find((x) => x.id === r.roteiro)?.nome}</span>}
+                      {resultados.length > 1 && !curto && <span className="font-normal text-white/50"> · {ROTEIROS.find((x) => x.id === r.roteiro)?.nome}</span>}
                       {r.formato === "feed" && <span className="font-normal text-white/50">{tx(" · Feed 4:5")}</span>}
                     </p>
                     <div className="mt-2 grid grid-cols-4 gap-2">
@@ -5889,7 +6107,7 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
                         </div>
                         <div>
                           <label className={rotulo}>WhatsApp</label>
-                          <input id="cena-whats" className={campo} inputMode="tel" value={dados.whatsapp} onChange={(e) => set("whatsapp", e.target.value)} />
+                          <input id="cena-whats" className={campo} inputMode="tel" placeholder="(82) 99999-9999" value={whatsReal(dados)} onChange={(e) => set("whatsapp", e.target.value)} />
                         </div>
                       </div>
                     )}
@@ -6012,8 +6230,8 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
       </Folha>
       <Folha aberta={folha === "formato"} titulo={tx("Formato")} onFechar={() => setFolha(null)}>
         {[
-          { id: "stories" as Formato, nome: tx("Stories 9:16"), desc: tx("720×1280 · stories, Reels e status do WhatsApp") },
-          { id: "feed" as Formato, nome: tx("Feed 4:5"), desc: tx("1080×1350 · post no feed do Instagram e do Facebook") },
+          { id: "stories" as Formato, nome: tx("Stories 9:16"), desc: tx("Stories, Reels e status do WhatsApp") },
+          { id: "feed" as Formato, nome: tx("Feed 4:5"), desc: tx("Post no feed do Instagram e do Facebook") },
         ].map((o) => (
           <button key={o.id} id={`formato-${o.id}`} disabled={gravando} onClick={() => { setFormato(o.id); setFolha(null); }} className="flex min-h-14 w-full items-center justify-between gap-3 px-4 py-2 text-left">
             <span>
@@ -6021,6 +6239,13 @@ export function VideoLabTela({ embutido = false, lang = "pt", simples }: { embut
               <span className="block text-[12px] text-white/50">{o.desc}</span>
             </span>
             {formato === o.id && <Check className="h-5 w-5 shrink-0 text-[#F5F906]" />}
+          </button>
+        ))}
+        <p className="px-4 pt-3 text-[13px] font-semibold text-white/55">{tx("Qualidade")}</p>
+        {QUALIDADES.map((q) => (
+          <button key={q.k} data-qualidade={q.k} disabled={gravando} onClick={() => setQualidade(q.k)} className="flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left">
+            <span><span className="block text-[16px] font-semibold">{q.nome}</span><span className="block text-[12px] text-white/50">{formato === "feed" ? `${Math.round(720 * q.k)}×${Math.round(900 * q.k)}` : `${Math.round(720 * q.k)}×${Math.round(1280 * q.k)}`}</span></span>
+            {qualidade === q.k && <Check className="h-5 w-5 shrink-0 text-[#F5F906]" />}
           </button>
         ))}
       </Folha>

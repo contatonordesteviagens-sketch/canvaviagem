@@ -20,6 +20,10 @@ import { MetaPixelRouteTracker } from "@/components/MetaPixelRouteTracker";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { AvisoCookiesES } from "@/components/AvisoCookiesES";
 import { TituloES } from "@/components/TituloES";
+import { usaMenuNovo } from "@/pages/dev/menu-novo-flag";
+
+// PROTÓTIPO (só localhost): menu único do Início novo em todas as telas do sistema
+const MenuNovoDev = import.meta.env.DEV ? lazy(() => import("./pages/dev/MenuNovo").then((m) => ({ default: m.MenuNovo }))) : null;
 
 const PlatformLayoutController = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -28,7 +32,7 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
   const hideSidebarPaths = [
     '/planos', '/pt/planos', '/black-friday', '/es/planos', '/auth', '/login', '/auth/verify', '/sucesso', '/obrigado', '/es/obrigado',
     '/pos-pagamento', '/canva', '/termos', '/privacidade', '/es/terminos', '/es/privacidad', '/exclusao-de-dados',
-    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/inicio', '/black', '/inicio2', '/es/inicio', '/onboarding', '/es/onboarding', '/pix', '/checkout',
+    '/live-aovivo', '/imersao-ao-vivo', '/aula-secreta', '/quiz-agente-lucrativo', '/inicio', '/black', '/inicio2', '/es/inicio', '/onboarding', '/es/onboarding', '/pix', '/checkout',
     '/anuncios-para-agencia-de-viagens', '/site-para-agencia-de-viagens', '/carrosseis-para-agencia-de-viagens',
     '/equipe-de-marketing-para-agencia-de-viagens', '/.lovable/oauth/consent'
   ];
@@ -41,8 +45,20 @@ const PlatformLayoutController = ({ children }: { children: React.ReactNode }) =
     normalizedPathname.startsWith('/auth/') ||
     normalizedPathname.startsWith('/view/') ||
     normalizedPathname.startsWith('/fabrica') ||
+    normalizedPathname.startsWith('/dev/fabrica-nova') ||
+    normalizedPathname.startsWith('/anuncios/arte/') ||
     normalizedPathname.startsWith('/es/fabrica')
   );
+
+  const ehPublica = hideSidebarPaths.includes(normalizedPathname) || normalizedPathname.startsWith("/auth/") || normalizedPathname.startsWith("/view/");
+  if (MenuNovoDev && !ehPublica && usaMenuNovo()) {
+    return (
+      <div className="min-h-screen w-full">
+        <Suspense fallback={null}><MenuNovoDev /></Suspense>
+        <div className="min-w-0 pb-16 lg:pb-0 lg:pl-60">{children}</div>
+      </div>
+    );
+  }
 
   if (shouldHideSidebar) {
     return <>{children}</>;
@@ -92,7 +108,7 @@ const Privacidade = lazy(() => import("./pages/Privacidade"));
 const TerminosES = lazy(() => import("./pages/TerminosES"));
 const PrivacidadES = lazy(() => import("./pages/PrivacidadES"));
 const ExclusaoDados = lazy(() => import("./pages/ExclusaoDados"));
-const ProximoNivel = lazy(() => import("./pages/ProximoNivel"));
+const QuizAgenteLucrativo = lazy(() => import("./pages/QuizAgenteLucrativo"));
 const Progresso = lazy(() => import("./pages/Progresso"));
 const Sugestoes = lazy(() => import("./pages/Sugestoes"));
 const AuthVerify = lazy(() => import("./pages/AuthVerify"));
@@ -170,6 +186,8 @@ const VendedorIA = lazy(() => import("./pages/vendedor-ia/VendedorIA"));
 const Tutorial = lazy(() => import("./pages/Tutorial"));
 const ArtesLab = import.meta.env.DEV ? lazy(() => import("./pages/dev/ArtesLab")) : null;
 const VideoLab = lazy(() => import("./pages/dev/VideoLab"));
+const FabricaNova = import.meta.env.DEV ? lazy(() => import("./pages/dev/FabricaNova")) : null;
+const ArteCompartilhada = import.meta.env.DEV ? lazy(() => import("./pages/dev/ArteCompartilhada")) : null;
 const CarrosselLab = import.meta.env.DEV ? lazy(() => import("./pages/dev/CarrosselLab")) : null;
 
 const RESERVED_CANVA_VIAGEM_SUBDOMAINS = new Set([
@@ -266,6 +284,7 @@ const App = () => {
                     <Route path="/inicio" element={<InicioEntry />} />
                     <Route path="/black" element={<InicioBlack />} />
                     <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="/quiz-agente-lucrativo" element={<QuizAgenteLucrativo />} />
                     <Route path="/es/onboarding" element={<Onboarding lang="es" />} />
                     <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                     <Route path="/anuncios-para-agencia-de-viagens" element={<AdsOfferLanding />} />
@@ -330,11 +349,8 @@ const App = () => {
                     <Route path="/termos" element={<Termos />} />
                     <Route path="/privacidade" element={<Privacidade />} />
                     <Route path="/exclusao-de-dados" element={<ExclusaoDados />} />
-                    <Route path="/proximo-nivel" element={
-                      <ProtectedRoute requireSubscription>
-                        <ProximoNivel />
-                      </ProtectedRoute>
-                    } />
+                    {/* A página com vídeo saiu: o Agente Lucrativo agora é vendido pelo quiz. */}
+                    <Route path="/proximo-nivel" element={<Navigate to="/quiz-agente-lucrativo" replace />} />
                     <Route path="/progresso" element={
                       <ProtectedRoute requireSubscription>
                         <Progresso />
@@ -433,6 +449,8 @@ const App = () => {
                     <Route path="/admin-video-lab" element={<ProtectedRoute requireAdmin><VideoLab /></ProtectedRoute>} />
                     {import.meta.env.DEV && <Route path="/dev/video-lab" element={<VideoLab />} />}
                     <Route path="/video-pronto" element={<Navigate to="/fabrica/video" replace />} />
+                    {FabricaNova && <Route path="/dev/fabrica-nova" element={<FabricaNova />} />}
+                    {ArteCompartilhada && <Route path="/anuncios/arte/:slug" element={<ArteCompartilhada />} />}
                     {CarrosselLab && <Route path="/dev/carrossel-lab" element={<CarrosselLab />} />}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

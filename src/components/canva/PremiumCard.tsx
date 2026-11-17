@@ -117,7 +117,27 @@ const PremiumCardComponent = ({
 
   const isVideo = contentType === 'video' || contentType === 'seasonal';
   // downloadOnly cards must never show the Drive button (would open wrong video folder)
-  const finalDriveUrl = downloadOnly ? null : (driveUrl || (isVideo ? getFallbackDriveUrl() : null));
+  // Arte não usa o Drive: o link guardado em algumas artes era o vídeo de Reels do mesmo destino.
+  const finalDriveUrl = downloadOnly || !isVideo ? null : (driveUrl || getFallbackDriveUrl());
+  // Arte com imagem: "Baixar" baixa a própria arte
+  const baixaImagem = !downloadOnly && !isVideo && !!imageUrl;
+
+  const baixarArquivo = (source: string) => {
+    const safeFileName = (downloadFileName || title || "arte-canva-viagem")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase();
+    const extension = source.match(/\.(png|jpe?g|webp)(?:$|\?)/i)?.[1] || "webp";
+    const anchor = document.createElement("a");
+    anchor.href = source;
+    anchor.download = `${safeFileName || "arte-canva-viagem"}.${extension}`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    toast.success("Arte baixada!");
+  };
 
   const handleCopyCaption = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -145,21 +165,7 @@ const PremiumCardComponent = ({
       e.preventDefault();
       if (onClick) onClick();
 
-      const source = imageUrl || url;
-      const safeFileName = (downloadFileName || title || "arte-canva-viagem")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-zA-Z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .toLowerCase();
-      const extension = source.match(/\.(png|jpe?g|webp)(?:$|\?)/i)?.[1] || "webp";
-      const anchor = document.createElement("a");
-      anchor.href = source;
-      anchor.download = `${safeFileName || "arte-canva-viagem"}.${extension}`;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      toast.success("Arte baixada!");
+      baixarArquivo(imageUrl || url);
       return;
     }
     
@@ -258,12 +264,7 @@ const PremiumCardComponent = ({
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           </>
         ) : (
-          <div className={cn(
-            "w-full h-full bg-gradient-to-br flex flex-col items-center justify-center p-3 md:p-4",
-            gradient
-          )}>
-            <span className="text-3xl md:text-5xl mb-2">{icon}</span>
-          </div>
+          <div className="w-full h-full bg-gradient-to-br from-zinc-700 to-zinc-900" />
         )}
 
         {/* Content overlay */}
@@ -275,7 +276,7 @@ const PremiumCardComponent = ({
 
           {/* CTA Button */}
           <div className="grid grid-cols-2 gap-1.5">
-            <button className="col-span-2 bg-white/95 backdrop-blur-sm text-foreground font-medium min-h-10 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center justify-center gap-1.5 text-xs md:text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
+            <button className={cn(baixaImagem ? "col-span-1" : "col-span-2", "bg-white/95 backdrop-blur-sm text-slate-900 font-medium min-h-10 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center justify-center gap-1.5 text-xs md:text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm")}>
               {downloadOnly ? (
                 <Download className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-600" />
               ) : (
@@ -293,6 +294,25 @@ const PremiumCardComponent = ({
                 <Copy className="w-3.5 h-3.5" />
                 <span className="hidden md:inline">Legenda</span>
                 <span className="md:hidden">Legenda</span>
+              </button>
+            )}
+
+            {baixaImagem && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (onPremiumRequired) {
+                    onPremiumRequired();
+                    return;
+                  }
+                  baixarArquivo(imageUrl!);
+                }}
+                title="Baixar a arte"
+                className="col-span-1 bg-primary text-primary-foreground font-medium min-h-10 py-1.5 px-1 md:py-2 md:px-2 rounded-lg flex items-center justify-center gap-1 text-[10px] md:text-xs transition-all duration-300 hover:brightness-110 active:scale-95 shadow-sm"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Baixar</span>
               </button>
             )}
 

@@ -159,3 +159,7 @@ html.fabrica-claro [class~="bg-[#F5F906]/20"] { background-color: rgba(0, 0, 0, 
 /* barras fixas do rodapé */
 html.fabrica-claro [class~="bg-zinc-950/95"] { background-color: rgba(242, 242, 247, 0.96) !important; }
 html.fabrica-claro [class~="shadow-amber-500/10"] { box-shadow: none !important; }
+
+/* Exemplos dentro dos campos (placeholder) escritos em branco: no claro ficam cinza legível */
+html.fabrica-claro [class*="placeholder:text-white"]::placeholder,
+html.fabrica-claro [class*="placeholder-white"]::placeholder { color: rgba(17, 17, 19, 0.42) !important; }

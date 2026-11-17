@@ -275,12 +275,17 @@ export class QuadrosDeVideo {
     this.iniciar();
   }
 
+  // dá a vez ao decodificador: o quadro sai, a fila anda ou passa um instante (o que vier antes).
+  // Esperar só pelo aviso deixava o vídeo a 2 quadros por segundo em alguns navegadores.
   private esperarSaida() {
     return new Promise<void>((r) => {
-      this.avisar = () => {
+      const fim = () => {
+        clearTimeout(relogio);
         this.avisar = null;
         r();
       };
+      const relogio = setTimeout(fim, 0);
+      this.avisar = fim;
     });
   }
 
