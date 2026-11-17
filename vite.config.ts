@@ -9,19 +9,6 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    proxy: {
-      '/api/abacate': {
-        target: 'https://api.abacatepay.com/v1',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/abacate/, ''),
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            // Chave fora do código (17/11/2026): defina ABACATE_API_KEY no ambiente local se precisar.
-            if (process.env.ABACATE_API_KEY) proxyReq.setHeader('Authorization', `Bearer ${process.env.ABACATE_API_KEY}`);
-          });
-        }
-      }
-    }
   },
   plugins: [react(), mode === "development" && componentTagger(), mcpPlugin()].filter(Boolean),
   resolve: {
