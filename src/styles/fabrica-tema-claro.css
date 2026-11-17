@@ -163,3 +163,21 @@ html.fabrica-claro [class~="shadow-amber-500/10"] { box-shadow: none !important;
 /* Exemplos dentro dos campos (placeholder) escritos em branco: no claro ficam cinza legível */
 html.fabrica-claro [class*="placeholder:text-white"]::placeholder,
 html.fabrica-claro [class*="placeholder-white"]::placeholder { color: rgba(17, 17, 19, 0.42) !important; }
+
+/* Painel de narração do editor de vídeo: destaque amarelo no escuro, azul no claro */
+.narr-destaque { color: #F5F906; }
+.narr-contorno { color: #F5F906; border-color: rgba(245, 249, 6, 0.45); }
+.narr-chip { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.85); }
+.narr-alerta { background: rgba(255, 138, 61, 0.16); color: #FFB37A; }
+.narr-ok { background: rgba(245, 249, 6, 0.1); border: 1px solid rgba(245, 249, 6, 0.6); }
+.narr-cartao { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); }
+html.fabrica-claro .narr-destaque { color: #1D4ED8; }
+html.fabrica-claro .narr-contorno { color: #1D4ED8; border-color: rgba(29, 78, 216, 0.4); }
+html.fabrica-claro .narr-chip { background: #E8EEFF; color: #1E3A8A; }
+html.fabrica-claro .narr-alerta { background: #FFF1E6; color: #B4470B; }
+html.fabrica-claro .narr-ok { background: #FFFBD1; border-color: #E5D800; }
+html.fabrica-claro .narr-cartao { background: #ffffff; border-color: rgba(0, 0, 0, 0.1); }
+.narr-chip-ativo { background: #F5F906; color: #000000; }
+.narr-sel { border-color: #F5F906 !important; background: rgba(245, 249, 6, 0.08); }
+html.fabrica-claro .narr-chip-ativo { background: #1D4ED8; color: #ffffff; }
+html.fabrica-claro .narr-sel { border-color: #1D4ED8 !important; background: #EEF3FF; }

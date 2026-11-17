@@ -1,12 +1,11 @@
-/** Narração dos vídeos: vozes grátis (Azure Speech, faixa gratuita de 500 mil letras por mês), roteiro feito
- *  a partir das cenas, texto pronto para falar (números e siglas por extenso), revisor de pronúncia e de tempo,
- *  e o pedido da voz ao servidor (função "narrar"). A chave da voz fica só no servidor. */
-import { supabase } from "@/integrations/supabase/client";
+/** Narração dos vídeos: roteiro feito a partir das cenas, texto pronto para falar (números e siglas por extenso),
+ *  revisor de tempo e a legenda no tempo da voz. A voz em si é a do próprio cliente (src/lib/voz-gravada.ts):
+ *  as vozes de servidor (Azure) foram tiradas em 17/11/2026. A lista VOZES ficou só para saber o idioma. */
 
 export type Idioma = "pt-BR" | "es-ES";
 export type Tom = "alegre" | "normal" | "calmo";
 export type Voz = { id: string; nome: string; genero: "F" | "M"; idioma: Idioma; jeito: string };
-export type Narracao = { ligada: boolean; voz: string; vel: number; tom: Tom; legendas: boolean };
+export type Narracao = { ligada: boolean; voz: string; vel: number; tom: Tom; legendas: boolean; /** texto que a pessoa lê ao gravar (sem valor = texto das cenas) */ roteiro?: string; /** aba aberta e voz de IA escolhida */ aba?: "ia" | "propria"; vozIA?: string };
 
 /** 8 vozes neurais: 2 femininas e 2 masculinas em cada idioma */
 export const VOZES: Voz[] = [
@@ -148,7 +147,18 @@ export function roteiroDasCenas(cenas: TextosCena[], l: Idioma, agencia = ""): s
     if (c.livre) {
       // junta sem ponto quando a linha seguinte continua a frase (começa minúscula ou a anterior termina em "em", "de", "para"...)
       const continua = (acc: string, x: string) => /^[a-zà-ý]/.test(x) || /^(e|y|com|con|para|por|de|da|do)\b/i.test(x) || /(?:^|\s)(em|en|de|da|do|para|com|con|no|na|a|o|e|y|por)$/i.test(acc);
-      let t = soltos.reduce((acc, x, k) => (!acc ? x : (i === 0 && k === 1) || continua(acc, x) ? `${acc} ${/^[A-ZÀ-Ý](?![A-ZÀ-Ý])/.test(x) ? x.charAt(0).toLowerCase() + x.slice(1) : x}` : `${acc}. ${x}`), "").replace(/\.\s*\./g, ".");
+      // frase curta de 1 ou 2 palavras ("Hotéis", "A dois") seguida de "aquele hotel...", "a viagem..." vira "Hotéis, aquele hotel..."
+      // e palavra solta seguida de nome ("Black" + "Friday de viagens") vira "Black Friday de viagens"
+      const ultimaFrase = (acc: string) => (acc.split(/[.!?]\s+/).pop() || acc).trim();
+      const palavras = (f: string) => f.split(/\s+/).filter(Boolean).length;
+      let t = soltos.reduce((acc, x, k) => {
+        if (!acc) return x;
+        const fim = ultimaFrase(acc);
+        if (palavras(fim) === 1 && !/[,.!?:]$/.test(acc) && /^[A-ZÀ-Ý][a-zà-ý]+\s+\S/.test(x)) return `${acc} ${x}`;
+        if (palavras(fim) <= 2 && !/[,.!?:]$/.test(acc) && /^(a|o|as|os|um|uma|aquele|aquela|aqueles|aquelas|seu|sua|el|la|los|las|tu)\s/i.test(x) && !/^[A-ZÀ-Ý]{2}/.test(x))
+          return `${acc}, ${x.charAt(0).toLowerCase() + x.slice(1)}`;
+        return (i === 0 && k === 1) || continua(acc, x) ? `${acc} ${/^[A-ZÀ-Ý](?![A-ZÀ-Ý])/.test(x) ? x.charAt(0).toLowerCase() + x.slice(1) : x}` : `${acc}. ${x}`;
+      }, "").replace(/\.\s*\./g, ".");
       if (!t && i === 0 && c.destino) t = c.destino;
       if (ultima) t = t ? `${t}. ${pt ? "Chame no WhatsApp" : "Escríbenos por WhatsApp"}${agencia ? (pt ? " da " : " de ") + agencia : ""}.` : (pt ? "Chame no WhatsApp e reserve." : "Escríbenos por WhatsApp y reserva.");
       return limpo(t);
@@ -192,44 +202,6 @@ export function revisarNarracao(falas: string[], durs: number[], n: Narracao): A
     if (palavrasDe(txt) > 28) avisos.push({ nivel: "atencao", cena: i, msg: `Cena ${i + 1}: frase longa. No vídeo curto, até 20 palavras por cena prende mais.` });
   });
   return avisos;
-}
-
-// ---------- voz (servidor) ----------
-const cache = new Map<string, Promise<ArrayBuffer>>();
-/** Pede a voz ao servidor (função "narrar"): devolve o MP3. A mesma fala com a mesma voz não é pedida duas vezes. */
-export function gerarVoz(texto: string, n: Narracao): Promise<ArrayBuffer> {
-  const v = vozDe(n.voz);
-  const falado = textoParaFala(texto, v.idioma);
-  const chave = [v.id, n.vel, n.tom, falado].join("|");
-  const ja = cache.get(chave);
-  if (ja) return ja;
-  const p = (async () => {
-    const { data, error } = await supabase.functions.invoke("narrar", { body: { texto: falado, voz: v.id, vel: n.vel * TONS[n.tom].ritmo, tom: TONS[n.tom].pitch } });
-    if (error) throw new Error(/not found|404|Failed to send/i.test(error.message) ? "A voz ainda não está ligada no servidor." : "Não consegui gerar a voz agora. Tente de novo.");
-    if (data instanceof ArrayBuffer) return data;
-    if (data instanceof Blob) return data.arrayBuffer();
-    if (data?.audio) return Uint8Array.from(atob(data.audio), (c) => c.charCodeAt(0)).buffer;
-    throw new Error("Não consegui gerar a voz agora. Tente de novo.");
-  })();
-  cache.set(chave, p);
-  p.catch(() => cache.delete(chave));
-  return p;
-}
-
-/** Prévia só para ouvir o ritmo, com a voz do próprio aparelho (não vai para o vídeo). */
-export function ouvirNoAparelho(texto: string, n: Narracao): () => void {
-  const v = vozDe(n.voz);
-  if (!("speechSynthesis" in window)) return () => undefined;
-  const u = new SpeechSynthesisUtterance(textoParaFala(texto, v.idioma));
-  u.lang = v.idioma;
-  u.rate = n.vel * TONS[n.tom].ritmo;
-  u.pitch = n.tom === "alegre" ? 1.1 : n.tom === "calmo" ? 0.92 : 1;
-  const local = speechSynthesis.getVoices().filter((x) => x.lang.replace("_", "-").startsWith(v.idioma));
-  const certa = local.find((x) => (v.genero === "F" ? /female|maria|francisca|helena|luciana|elvira|monica/i : /male|daniel|antonio|jorge|alvaro|felipe/i).test(x.name)) || local[0];
-  if (certa) u.voice = certa;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
-  return () => speechSynthesis.cancel();
 }
 
 /** Legenda: quebra a fala em pedaços curtos (até ~5 palavras) e divide o tempo da voz entre eles pelo tamanho. */

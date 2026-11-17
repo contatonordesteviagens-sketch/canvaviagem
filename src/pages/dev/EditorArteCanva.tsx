@@ -9,8 +9,14 @@ import {
   ArrowUp, ArrowDown, AlignStartVertical, AlignCenterVertical, AlignEndVertical, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, LetterText, GripVertical, ClipboardCopy, Smartphone as Celular, Save, Link2, Eye, Users,
   ClipboardPaste, CopyPlus, Film, Music, Play, Clock, Layers, Wand2, ChevronLeft, ChevronRight, Mic,
 } from "lucide-react";
-import { ENTRADA_VOZ, NARRACAO_PADRAO, gerarVoz, pedacosDaLegenda, revisarNarracao, roteiroDasCenas, tempoDaFala, vozDe, type Narracao, type TextosCena } from "@/lib/narracao";
+import { NARRACAO_PADRAO, pedacosDaLegenda, roteiroDasCenas, vozDe, type Narracao, type TextosCena } from "@/lib/narracao";
+import { INICIO_VOZ, textoCorrido, type VozGravada } from "@/lib/voz-gravada";
+import { traduzirTextos, type IdiomaVideo } from "@/lib/traducao";
+import { VOZES_IA } from "@/lib/voz-ia";
+import { aiTools } from "@/data/templates";
 import { PainelNarracao } from "./video-narracao";
+/** Narrador de Ofertas: agente no ChatGPT que escreve a narração do pacote (o mesmo da lista de ferramentas de IA) */
+const LINK_NARRADOR = aiTools.find((t) => t.id === "ia-narrador")?.url || "https://chatgpt.com/g/g-zuVzD4urh-redador";
 
 /** Quebra a frase em até 3 linhas de tamanho parecido, cada uma com no máximo `max` letras quando der. */
 function linhasIguais(frase: string, max: number): string {
@@ -135,6 +141,31 @@ const VISUAIS_CENA: { id: VisualCena; nome: string; desc: string }[] = [
 ];
 const segs = (x: number) => x.toFixed(1).replace(".", ",") + " s";
 type Estado = { a: Arte; t: ArtTweakMap; x: Extra[] };
+
+/** Redesenha um texto já colocado com outras palavras, no mesmo estilo e na mesma escala (usado na tradução do vídeo). */
+async function textoTraduzido(e: Extra, novo: string): Promise<Extra> {
+  try {
+    let d: { src: string; w: number; r: number } | null = null;
+    let txt = novo;
+    if (e.tipo === "letra") d = await desenharLetra(txt || " ", e.fonte || '800 80px "Montserrat"', e.cor || "#111111", e.ls || 0);
+    else if (e.tipo === "texto" && e.estilo) {
+      const caixaAlta = /^cena(Titulo|Amarelo|Etiqueta|Pilula|Numero|Pequeno)$/.test(e.estilo);
+      txt = caixaAlta ? (txt || " ").toLocaleUpperCase() : txt || " ";
+      d = await desenharTexto(e.estilo, txt, e.cor);
+      const escala = e.nw ? e.w / e.nw : 0;
+      if (escala && !txt.includes("\n") && d.w * escala > LARGURA * 0.92) {
+        const quebrado = linhasIguais(txt, Math.max(8, Math.floor(txt.length * ((LARGURA * 0.88) / (d.w * escala)))));
+        if (quebrado !== txt) { txt = quebrado; d = await desenharTexto(e.estilo, txt, e.cor); }
+      }
+    }
+    if (!d) return { ...e, texto: novo };
+    d = await processarExtra(d, e.fx);
+    let w = e.nw ? Math.round(e.w * (d.w / e.nw)) : e.w;
+    if (w > LARGURA * 0.92) w = Math.round(LARGURA * 0.92);
+    const x = Math.min(LARGURA - w / 2 - 20, Math.max(w / 2 + 20, e.x));
+    return { ...e, texto: novo, src: d.src, r: d.r, nw: d.w, w, x: Math.round(x) };
+  } catch { return e; }
+}
 const iniciaisDe = (nome?: string) => {
   const p = (nome || "").trim().split(/\s+/).filter((w) => w && !/^(de|da|do|das|dos|e|&)$/i.test(w));
   return p.length ? (p[0][0] + (p[1]?.[0] || "")).toUpperCase() : "C";
@@ -1307,6 +1338,8 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
     setSujo(true);
   };
   // ——— narração ———
+  // a voz gravada fica só na memória (não vai para o projeto salvo)
+  const [vozFaixa, setVozFaixa] = useState<VozGravada | null>(null);
   const estDe = (i: number) => (i === pag ? vivo : paginas[i].est);
   const narracao: Narracao = { ...NARRACAO_PADRAO, ...((pag === 0 ? cena.narracao : paginas[0]?.est.a.cena?.narracao) || {}) };
   const textosDe = (est: Estado): TextosCena => ({
@@ -1336,39 +1369,62 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
     setPaginas(lista);
     setSujo(true);
   };
-  const refazerRoteiro = () => mudarVariasCenas(() => ({ fala: undefined }));
-  const ajustarTemposDaFala = () => {
-    const ajustes = new Map(revisarNarracao(falas, dursCenas, narracao).filter((x) => x.ajuste).map((x) => [x.cena, x.ajuste!.dur]));
-    mudarVariasCenas((i) => (ajustes.has(i) ? { dur: ajustes.get(i) } : null));
-    setAviso("Pronto: cada cena ficou do tamanho da fala.");
-    setTimeout(() => setAviso(""), 3000);
+  /** Deixa o vídeo com `dur` segundos: cada cena cresce na mesma proporção (para a voz gravada caber inteira). */
+  const esticarVideo = (dur: number) => {
+    const soma = dursCenas.reduce((s, d) => s + d, 0) || 1;
+    const f = dur / soma;
+    mudarVariasCenas((i) => ({ dur: Math.min(20, Math.max(1.5, Math.round(dursCenas[i] * f * 10) / 10)) }));
+    setAviso(`Pronto: o vídeo agora tem cerca de ${dur.toFixed(1).replace(".", ",")} s e a sua voz cabe inteira.`);
+    setTimeout(() => setAviso(""), 3500);
   };
-  /** Põe a fala nas cenas prontas (legenda no tempo da voz). Com `comVoz`, pede as vozes ao servidor. */
-  const comFala = async (cenas: CenaPronta[], lista: Estado[], comVoz: boolean, aoAvancar?: (p: number) => void) => {
-    if (!narracao.ligada) return { vozes: [] as { audio: ArrayBuffer; inicio: number }[], aviso: "" };
-    const textos = falasDas(lista);
-    const { ini } = linhaDas(cenas);
-    const vozes: { audio: ArrayBuffer; inicio: number }[] = [];
-    let aviso = "";
-    const ac = comVoz ? new AudioContext() : null;
-    try {
-      for (let i = 0; i < cenas.length; i++) {
-        const texto = (textos[i] || "").trim();
-        if (!texto) continue;
-        let dur = tempoDaFala(texto, vozDe(narracao.voz).idioma, narracao.vel, narracao.tom);
-        let audio: ArrayBuffer | undefined;
-        if (comVoz && !aviso) {
-          try {
-            audio = await gerarVoz(texto, narracao);
-            dur = (await ac!.decodeAudioData(audio.slice(0))).duration;
-          } catch (e) { aviso = (e as Error).message; audio = undefined; }
+  /** Põe a voz gravada no vídeo inteiro e a legenda dela nas cenas (cada trecho na cena em que é falado). */
+  const comFala = (cenas: CenaPronta[], lista: Estado[]) => {
+    if (!vozFaixa) return { vozes: [] as { audio: ArrayBuffer; inicio: number }[], aviso: "" };
+    const { ini, total } = linhaDas(cenas);
+    const texto = (narracao.roteiro ?? textoCorrido(falasDas(lista))).trim();
+    const pedacos = texto ? pedacosDaLegenda(texto, INICIO_VOZ, Math.min(vozFaixa.dur, total - INICIO_VOZ)) : [];
+    cenas.forEach((c, i) => {
+      const a = ini[i], b = a + c.dur;
+      const meus = pedacos.filter((p) => p.a >= a && p.a < b).map((p) => ({ t: p.t, a: p.a - a, b: Math.min(p.b, b) - a }));
+      cenas[i] = { ...c, fala: { pedacos: meus, legenda: narracao.legendas, audio: i === 0 ? vozFaixa.url : undefined } };
+    });
+    return { vozes: [{ audio: vozFaixa.audio, inicio: INICIO_VOZ }], aviso: "" };
+  };
+  /** Traduz o vídeo inteiro (textos de todas as cenas, preço por extenso, inclusos e o texto da narração).
+   *  Dá para desfazer (volta tudo ao português). A voz não muda sozinha: depois gera de novo no idioma. */
+  const traduzirVideo = async (para: IdiomaVideo, comFala: boolean, aoAvancar?: (p: number) => void) => {
+    const lista = guardarPagina();
+    const roteiro = narracao.roteiro ?? textoCorrido(falas);
+    const textos: string[] = comFala ? [roteiro] : [];
+    const pega = (t?: string) => { if (t && t.trim()) textos.push(t); };
+    lista.forEach(({ est: { a: ar, x } }) => {
+      pega(ar.titulo); pega(ar.promo); pega(ar.periodo); pega(ar.prefixo); pega(ar.complemento); pega(ar.destino);
+      ar.inclusos.forEach(pega); pega(ar.cena?.fala);
+      x.forEach((e) => { if (e.tipo === "texto" || e.tipo === "letra") pega(e.texto); if (e.preco) { pega(e.preco.prefixo); pega(e.preco.sufixo); } });
+    });
+    const mapa = await traduzirTextos(textos, para, aoAvancar);
+    const tr = (t?: string) => (t && mapa.get(t.trim())) || t;
+    marcarCenas();
+    const nova: Pagina[] = [];
+    for (const p of lista) {
+      const ar = p.est.a;
+      const a2: Arte = { ...ar, titulo: tr(ar.titulo) || "", promo: tr(ar.promo) || "", periodo: tr(ar.periodo) || "", prefixo: tr(ar.prefixo) || "", complemento: tr(ar.complemento) || "", destino: tr(ar.destino) || "",
+        inclusos: ar.inclusos.map((t) => tr(t) || t), cena: ar.cena ? { ...ar.cena, fala: tr(ar.cena.fala) } : ar.cena };
+      const x2 = await Promise.all(p.est.x.map(async (e) => {
+        if ((e.tipo === "texto" || e.tipo === "letra") && e.texto && tr(e.texto) !== e.texto) return textoTraduzido(e, tr(e.texto)!);
+        if (e.tipo === "preco" && e.estilo && e.preco) {
+          const pr = { ...e.preco, prefixo: tr(e.preco.prefixo) || "", sufixo: tr(e.preco.sufixo) || "" };
+          try { const d = await processarExtra(await desenharPreco(e.estilo, pr, e.cor), e.fx); return { ...e, preco: pr, src: d.src, r: d.r, nw: d.w, w: e.nw ? Math.round(e.w * (d.w / e.nw)) : e.w }; } catch { return e; }
         }
-        if (audio) vozes.push({ audio, inicio: ini[i] + ENTRADA_VOZ });
-        cenas[i] = { ...cenas[i], fala: { pedacos: pedacosDaLegenda(texto, ENTRADA_VOZ, dur), legenda: narracao.legendas, audio: audio ? URL.createObjectURL(new Blob([audio], { type: "audio/mpeg" })) : undefined } };
-        aoAvancar?.((i + 1) / cenas.length);
-      }
-    } finally { ac?.close().catch(() => undefined); }
-    return { vozes, aviso };
+        return e;
+      }));
+      nova.push({ ...p, est: { ...p.est, a: a2, x: x2 }, hist: undefined, mini: undefined });
+    }
+    // texto da narração traduzido fica guardado na primeira cena
+    const n0 = nova[0].est.a.cena || {};
+    nova[0] = { ...nova[0], est: { ...nova[0].est, a: { ...nova[0].est.a, cena: { ...n0, narracao: { ...narracao, ...(comFala ? { roteiro: tr(roteiro), aba: "ia" as const, vozIA: VOZES_IA.find((v) => v.idioma === para)?.id } : {}) } } } } };
+    abrirPagina(nova, pag);
+    setSujo(true);
   };
   // trocar o visual leva o grupo de itens junto: na faixa escura (Faixa) ou no meio da tela (Clássico e Azul)
   const mudarVisual = (v: VisualCena) => {
@@ -1732,7 +1788,7 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
         const escalaV = fmt.id === "gif" ? 1 : Math.max(1, largV / LARGURA);
         const cenas = [];
         for (let i = 0; i < todas.length; i++) { cenas.push(await prepararCena(todas[i], marca, escalaV)); setGerando(3 + ((i + 1) / todas.length) * 10); }
-        const narr = await comFala(cenas, todas, fmt.id === "mp4", (p) => setGerando(13 + p * 2));
+        const narr = comFala(cenas, todas);
         if (narr.aviso) avisoVideo = `${narr.aviso} O vídeo saiu com a legenda, sem a voz.`;
         const nomeV = `video-${slug(nomeDe(guardarPagina()))}`;
         if (fmt.id === "gif") {
@@ -1990,9 +2046,9 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
       {ferr === "video" && <PainelVideoFundo atual={a.video} nome={cena.clipeNome} aoEscolher={escolherClipe} aoUsarFoto={usarFotoNaCena} />}
       {ferr === "musica" && <PainelMusica atual={musicaId} aoEscolher={escolherMusica} />}
       {ferr === "narracao" && modoVideo && (
-        <PainelNarracao n={narracao} mudar={mudarNarracao} falas={falas} durs={dursCenas}
-          mudarFala={(i, t) => mudarCenaDe(i, { fala: t })} mudarDur={(i, d) => mudarCenaDe(i, { dur: d })}
-          refazerRoteiro={refazerRoteiro} ajustarTodas={ajustarTemposDaFala} />
+        <PainelNarracao n={narracao} mudar={mudarNarracao} sugerido={textoCorrido(falas)} total={dursCenas.reduce((s, d) => s + d, 0)}
+          voz={vozFaixa} aoVoz={(v) => { if (vozFaixa && vozFaixa !== v) URL.revokeObjectURL(vozFaixa.url); setVozFaixa(v); }}
+          esticar={esticarVideo} agencia={fabrica.agencyName || ""} linkNarrador={LINK_NARRADOR} traduzir={traduzirVideo} />
       )}
       {ferr === "cena" && (
         <PainelCena
@@ -3056,7 +3112,7 @@ export default function EditorArteCanva({ variantInicial, formatoInicial = "squa
 
       {tocando && (
         <TocadorVideo
-          preparar={async () => { const lista = guardarPagina().map((p) => p.est); const cenas = await Promise.all(lista.map((e) => prepararCena(e, marca))); await comFala(cenas, lista, true); return cenas; }}
+          preparar={async () => { const lista = guardarPagina().map((p) => p.est); const cenas = await Promise.all(lista.map((e) => prepararCena(e, marca))); comFala(cenas, lista); return cenas; }}
           musica={musicaDoVideo(musicaId)?.arquivo}
           aoFechar={() => setTocando(false)}
           aoBaixar={() => { setTocando(false); abrirCompartilhar(); }}
